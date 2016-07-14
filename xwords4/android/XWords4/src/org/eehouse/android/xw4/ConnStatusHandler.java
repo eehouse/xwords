@@ -101,7 +101,7 @@ public class ConnStatusHandler {
             return format( context, m_time );
         }
 
-        public void update( boolean success ) 
+        public void update( boolean success )
         {
             long now = System.currentTimeMillis();
             if ( success ) {
@@ -112,19 +112,19 @@ public class ConnStatusHandler {
             successNewer = success;
         }
 
-        private String format( Context context, Time time ) 
+        private String format( Context context, Time time )
         {
-            CharSequence seq = 
-                DateUtils.getRelativeDateTimeString( context, 
+            CharSequence seq =
+                DateUtils.getRelativeDateTimeString( context,
                                                      time.toMillis(true),
                                                      DateUtils.SECOND_IN_MILLIS,
-                                                     DateUtils.WEEK_IN_MILLIS, 
+                                                     DateUtils.WEEK_IN_MILLIS,
                                                      0 );
             return seq.toString();
         }
 
         // called during deserialization
-        private void readObject( ObjectInputStream in ) 
+        private void readObject( ObjectInputStream in )
             throws java.io.IOException, java.lang.ClassNotFoundException
         {
             in.defaultReadObject();
@@ -134,7 +134,7 @@ public class ConnStatusHandler {
 
     private ConnStatusHandler() {}
 
-    private static HashMap<CommsConnType,SuccessRecord[]> s_records = 
+    private static HashMap<CommsConnType,SuccessRecord[]> s_records =
         new HashMap<CommsConnType,SuccessRecord[]>();
     private static Class s_lockObj = ConnStatusHandler.class;
     private static boolean s_needsSave = false;
@@ -184,20 +184,20 @@ public class ConnStatusHandler {
             StringBuffer sb = new StringBuffer();
             String tmp;
             synchronized( s_lockObj ) {
-                sb.append( LocUtils.getString( context, 
+                sb.append( LocUtils.getString( context,
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
                     String did = "";
                     if ( BuildConfig.DEBUG
                          && CommsConnType.COMMS_CONN_RELAY == typ ) {
-                        did = String.format( "(DevID: %d) ", 
+                        did = String.format( "(DevID: %d) ",
                                              DevID.getRelayDevIDInt(context) );
                     }
-                    sb.append( String.format( "\n\n*** %s %s***\n", 
+                    sb.append( String.format( "\n\n*** %s %s***\n",
                                               typ.longName( context ), did ) );
                     SuccessRecord record = recordFor( typ, false );
-                    tmp = LocUtils.getString( context, record.successNewer? 
+                    tmp = LocUtils.getString( context, record.successNewer?
                                               R.string.connstat_succ :
                                               R.string.connstat_unsucc );
                     sb.append( LocUtils
@@ -215,14 +215,14 @@ public class ConnStatusHandler {
                         }
                     }
                     if ( 0 != fmtId ) {
-                        sb.append( LocUtils.getString( context, fmtId, 
+                        sb.append( LocUtils.getString( context, fmtId,
                                                        record.olderStr( context )));
                     }
                     sb.append( "\n\n" );
 
                     record = recordFor( typ, true );
                     if ( record.haveSuccess() ) {
-                        sb.append( LocUtils.getString( context, 
+                        sb.append( LocUtils.getString( context,
                                                        R.string.connstat_lastreceipt_fmt,
                                                        record.newerStr( context ) ) );
                     } else {
@@ -300,7 +300,7 @@ public class ConnStatusHandler {
         showSuccessOut( s_cbacks );
     }
 
-    public static void draw( Context context, Canvas canvas, Resources res, 
+    public static void draw( Context context, Canvas canvas, Resources res,
                              CommsConnTypeSet connTypes, boolean isSolo )
     {
         if ( !isSolo && null != s_rect ) {
@@ -347,8 +347,8 @@ public class ConnStatusHandler {
         }
     }
 
-    private static void drawQuarter( Canvas canvas, Resources res, Rect rect, 
-                                     CommsConnTypeSet connTypes, 
+    private static void drawQuarter( Canvas canvas, Resources res, Rect rect,
+                                     CommsConnTypeSet connTypes,
                                      boolean enabled, boolean isIn )
     {
         enabled = enabled && null != newestSuccess( connTypes, isIn );
@@ -358,10 +358,10 @@ public class ConnStatusHandler {
         int arrowID;
         boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
         if ( isIn ) {
-            arrowID = showSuccesses ? 
+            arrowID = showSuccesses ?
                 R.drawable.in_arrow_active : R.drawable.in_arrow;
         } else {
-            arrowID = showSuccesses ? 
+            arrowID = showSuccesses ?
                 R.drawable.out_arrow_active : R.drawable.out_arrow;
         }
         drawIn( canvas, res, arrowID, rect );
@@ -373,14 +373,14 @@ public class ConnStatusHandler {
     public static void loadState( Context context )
     {
         synchronized( s_lockObj ) {
-            String as64 = XWPrefs.getPrefsString( context, 
+            String as64 = XWPrefs.getPrefsString( context,
                                                   R.string.key_connstat_data );
             if ( null != as64 && 0 < as64.length() ) {
                 try {
                     byte[] bytes = XwJNI.base64Decode( as64 );
-                    ObjectInputStream ois = 
+                    ObjectInputStream ois =
                         new ObjectInputStream( new ByteArrayInputStream(bytes) );
-                    s_records = 
+                    s_records =
                         (HashMap<CommsConnType,SuccessRecord[]>)ois.readObject();
                 // } catch ( java.io.StreamCorruptedException sce ) {
                 //     DbgUtils.logf( "loadState: %s", sce.toString() );
@@ -397,7 +397,7 @@ public class ConnStatusHandler {
         }
     }
 
-    private static void saveState( final Context context, 
+    private static void saveState( final Context context,
                                    ConnStatusCBacks cbcks )
     {
         if ( null == cbcks ) {
@@ -463,7 +463,7 @@ public class ConnStatusHandler {
         icon.draw( canvas );
     }
 
-    private static SuccessRecord newestSuccess( CommsConnTypeSet connTypes, 
+    private static SuccessRecord newestSuccess( CommsConnTypeSet connTypes,
                                                 boolean isIn )
     {
         SuccessRecord result = null;
@@ -486,7 +486,7 @@ public class ConnStatusHandler {
     {
         SuccessRecord[] records = s_records.get( connType );
         if ( null == records ) {
-            records = new SuccessRecord[] { new SuccessRecord(), 
+            records = new SuccessRecord[] { new SuccessRecord(),
                                             new SuccessRecord(),
             };
             s_records.put( connType, records );
@@ -505,9 +505,9 @@ public class ConnStatusHandler {
                     = new ObjectOutputStream( bas );
                 out.writeObject(s_records);
                 out.flush();
-                String as64 = 
+                String as64 =
                     XwJNI.base64Encode( bas.toByteArray() );
-                XWPrefs.setPrefsString( context, R.string.key_connstat_data, 
+                XWPrefs.setPrefsString( context, R.string.key_connstat_data,
                                         as64 );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
@@ -515,7 +515,7 @@ public class ConnStatusHandler {
             s_needsSave = false;
         }
     }
-    
+
     private static boolean anyTypeEnabled( Context context, CommsConnTypeSet connTypes )
     {
         boolean enabled = false;
@@ -553,7 +553,7 @@ public class ConnStatusHandler {
         return result;
     }
 
-    private static boolean getAirplaneModeOn( Context context ) 
+    private static boolean getAirplaneModeOn( Context context )
     {
         boolean result =
             0 != Settings.System.getInt( context.getContentResolver(),

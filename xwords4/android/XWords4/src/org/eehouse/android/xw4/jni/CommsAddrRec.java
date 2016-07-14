@@ -47,7 +47,7 @@ public class CommsAddrRec {
         COMMS_CONN_BT,
         COMMS_CONN_SMS;
 
-        public String longName( Context context ) 
+        public String longName( Context context )
         {
             int id = 0;
             switch( this ) {
@@ -69,13 +69,13 @@ public class CommsAddrRec {
 
         public CommsConnTypeSet() { this(BIT_VECTOR_MASK); }
 
-        public CommsConnTypeSet( int bits, boolean isVector ) 
+        public CommsConnTypeSet( int bits, boolean isVector )
         {
             this( bits | BIT_VECTOR_MASK );
             Assert.assertTrue( isVector );
         }
 
-        public CommsConnTypeSet( int bits ) 
+        public CommsConnTypeSet( int bits )
         {
             boolean isVector = 0 != (BIT_VECTOR_MASK & bits);
             bits &= ~BIT_VECTOR_MASK;
@@ -118,7 +118,7 @@ public class CommsAddrRec {
             return s_supported;
         }
 
-        public static void removeUnsupported( Context context, 
+        public static void removeUnsupported( Context context,
                                               CommsConnTypeSet set )
         {
             // Remove anything no longer supported. This probably only
@@ -188,47 +188,47 @@ public class CommsAddrRec {
     public String sms_phone;
     public int sms_port;                // SMS port, if they still use those
 
-    public CommsAddrRec( CommsConnType cTyp ) 
+    public CommsAddrRec( CommsConnType cTyp )
     {
         this();
         conTypes.add( cTyp );
     }
 
-    public CommsAddrRec() 
+    public CommsAddrRec()
     {
         conTypes = new CommsConnTypeSet();
     }
 
-    public CommsAddrRec( CommsConnTypeSet types ) 
+    public CommsAddrRec( CommsConnTypeSet types )
     {
         conTypes = types;
     }
 
-    public CommsAddrRec( String host, int port ) 
+    public CommsAddrRec( String host, int port )
     {
         this( CommsConnType.COMMS_CONN_RELAY );
         setRelayParams( host, port );
     }
 
-    public CommsAddrRec( String btName, String btAddr ) 
+    public CommsAddrRec( String btName, String btAddr )
     {
         this( CommsConnType.COMMS_CONN_BT );
         setBTParams( btAddr, btName );
     }
 
-    public CommsAddrRec( String phone ) 
+    public CommsAddrRec( String phone )
     {
         this( CommsConnType.COMMS_CONN_SMS );
         sms_phone = phone;
         sms_port = 2;           // something other that 0 (need to fix comms)
     }
 
-    public CommsAddrRec( final CommsAddrRec src ) 
+    public CommsAddrRec( final CommsAddrRec src )
     {
         this.copyFrom( src );
     }
 
-    public boolean contains( CommsConnType typ ) 
+    public boolean contains( CommsConnType typ )
     {
         return null != conTypes && conTypes.contains( typ );
     }
@@ -295,7 +295,7 @@ public class CommsAddrRec {
                         || ip_relay_port != other.ip_relay_port;
                 break;
             default:
-                DbgUtils.logf( "changesMatter: not handling case: %s", 
+                DbgUtils.logf( "changesMatter: not handling case: %s",
                                conType.toString() );
                 break;
             }

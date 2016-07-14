@@ -48,11 +48,11 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class GameListItem extends LinearLayout 
+public class GameListItem extends LinearLayout
     implements View.OnClickListener, SelectableItem.LongClickHandler {
 
     private static final int SUMMARY_WAIT_MSECS = 1000;
-    
+
     private static HashSet<Long> s_invalRows = new HashSet<Long>();
 
     private Activity m_activity;
@@ -81,7 +81,7 @@ public class GameListItem extends LinearLayout
     private boolean m_selected = false;
     private DrawSelDelegate m_dsdel;
 
-    public GameListItem( Context cx, AttributeSet as ) 
+    public GameListItem( Context cx, AttributeSet as )
     {
         super( cx, as );
         m_context = cx;
@@ -111,7 +111,7 @@ public class GameListItem extends LinearLayout
         return m_summary;
     }
 
-    private void init( Handler handler, long rowid, int fieldID, 
+    private void init( Handler handler, long rowid, int fieldID,
                        SelectableItem cb )
     {
         m_handler = handler;
@@ -149,7 +149,7 @@ public class GameListItem extends LinearLayout
     }
 
     @Override
-    protected void onDraw( Canvas canvas ) 
+    protected void onDraw( Canvas canvas )
     {
         super.onDraw( canvas );
         if ( DBUtils.ROWID_NOTFOUND != m_rowid ) {
@@ -228,7 +228,7 @@ public class GameListItem extends LinearLayout
         }
 
         m_name.setBackgroundColor( android.R.color.transparent );
-        m_name.setPct( m_handler, m_haveTurn && !m_expanded, 
+        m_name.setPct( m_handler, m_haveTurn && !m_expanded,
                        m_haveTurnLocal, m_lastMoveTime );
     }
 
@@ -251,8 +251,8 @@ public class GameListItem extends LinearLayout
                 value = String.format( "%d", m_summary.nPacketsPending );
                 break;
             case R.string.game_summary_field_language:
-                value = 
-                    DictLangCache.getLangName( m_context, 
+                value =
+                    DictLangCache.getLangName( m_context,
                                                m_summary.dictLang );
                 value = LocUtils.xlateLang( m_context, value, true );
                 break;
@@ -266,12 +266,12 @@ public class GameListItem extends LinearLayout
 
             String name = GameUtils.getName( m_context, m_rowid );
             if ( null != value ) {
-                value = LocUtils.getString( m_context, R.string.str_game_name_fmt, 
+                value = LocUtils.getString( m_context, R.string.str_game_name_fmt,
                                             name, value );
             } else {
                 value = name;
             }
-                        
+
             m_name.setText( value );
         }
         return state;
@@ -300,7 +300,7 @@ public class GameListItem extends LinearLayout
                         haveALocalTurn = true;
                     }
                 }
-                tmp.setPct( m_handler, thisHasTurn, isLocal[0], 
+                tmp.setPct( m_handler, thisHasTurn, isLocal[0],
                             summary.lastMoveTime );
                 m_list.addView( tmp, ii );
             }
@@ -309,7 +309,7 @@ public class GameListItem extends LinearLayout
 
             long lastMoveTime = summary.lastMoveTime;
             lastMoveTime *= 1000;
-            DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
+            DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT,
                                                             DateFormat.SHORT );
             m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
@@ -330,7 +330,7 @@ public class GameListItem extends LinearLayout
                 m_role.setVisibility( View.GONE );
             }
 
-            update( expanded, summary.lastMoveTime, haveATurn, 
+            update( expanded, summary.lastMoveTime, haveATurn,
                     haveALocalTurn );
         }
     }
@@ -352,7 +352,7 @@ public class GameListItem extends LinearLayout
 
     private class LoadItemTask extends AsyncTask<Void, Void, GameSummary> {
         @Override
-        protected GameSummary doInBackground( Void... unused ) 
+        protected GameSummary doInBackground( Void... unused )
         {
             return DBUtils.getSummary( m_context, m_rowid, SUMMARY_WAIT_MSECS );
         } // doInBackground
@@ -365,7 +365,7 @@ public class GameListItem extends LinearLayout
                     // Try again. Maybe it's open
                     JNIThread thread = JNIThread.getRetained( m_rowid );
                     if ( null != thread ) {
-                        summary = DBUtils.getSummary( m_context, 
+                        summary = DBUtils.getSummary( m_context,
                                                       thread.getLock() );
                         thread.release();
                     }
@@ -380,7 +380,7 @@ public class GameListItem extends LinearLayout
                 setLoaded( null != m_summary );
                 if ( null == summary ) {
                     m_viewUnloaded
-                        .setText( LocUtils.getString( m_context, 
+                        .setText( LocUtils.getString( m_context,
                                                       R.string.summary_busy ) );
                 }
                 synchronized( s_invalRows ) {
@@ -391,14 +391,14 @@ public class GameListItem extends LinearLayout
     } // class LoadItemTask
 
     public static GameListItem makeForRow( Context context, View convertView,
-                                           long rowid, Handler handler, 
+                                           long rowid, Handler handler,
                                            int fieldID, SelectableItem cb )
     {
         GameListItem result;
         if ( null != convertView && convertView instanceof GameListItem ) {
             result = (GameListItem)convertView;
         } else {
-            result = (GameListItem)LocUtils.inflate( context, 
+            result = (GameListItem)LocUtils.inflate( context,
                                                      R.layout.game_list_item );
             result.findViews();
         }
@@ -406,7 +406,7 @@ public class GameListItem extends LinearLayout
         return result;
     }
 
-    public static void inval( long rowid ) 
+    public static void inval( long rowid )
     {
         synchronized( s_invalRows ) {
             s_invalRows.add( rowid );

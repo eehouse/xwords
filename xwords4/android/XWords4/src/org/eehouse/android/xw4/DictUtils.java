@@ -81,7 +81,7 @@ public class DictUtils {
                 }
             } );
     }
- 
+
     public static class DictPairs {
         public byte[][] m_bytes;
         public String[] m_paths;
@@ -113,13 +113,13 @@ public class DictUtils {
         public String name;
         public DictLoc loc;
 
-        @Override 
-        public boolean equals( Object obj ) 
+        @Override
+        public boolean equals( Object obj )
         {
             boolean result = false;
             if ( obj instanceof DictAndLoc ) {
                 DictAndLoc other = (DictAndLoc)obj;
-                
+
                 result = name.equals( other.name )
                     && loc.equals( other.loc );
             }
@@ -131,7 +131,7 @@ public class DictUtils {
             return name.compareTo( other.name );
         }
     }
- 
+
     public static void invalDictList()
     {
         s_dictListCache = null;
@@ -139,7 +139,7 @@ public class DictUtils {
         // changes?
     }
 
-    private static void tryDir( Context context, File dir, boolean strict, 
+    private static void tryDir( Context context, File dir, boolean strict,
                                 DictLoc loc, ArrayList<DictAndLoc> al )
     {
         if ( null != dir ) {
@@ -161,7 +161,7 @@ public class DictUtils {
 
             for ( String file : getAssets( context ) ) {
                 if ( isDict( context, file, null ) ) {
-                    al.add( new DictAndLoc( removeDictExtn( file ), 
+                    al.add( new DictAndLoc( removeDictExtn( file ),
                                             DictLoc.BUILT_IN ) );
                 }
             }
@@ -174,10 +174,10 @@ public class DictUtils {
             }
 
             tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, al );
-            tryDir( context, getDownloadDir( context ), true, 
+            tryDir( context, getDownloadDir( context ), true,
                     DictLoc.DOWNLOAD, al );
 
-            s_dictListCache = 
+            s_dictListCache =
                 al.toArray( new DictUtils.DictAndLoc[al.size()] );
         }
         return s_dictListCache;
@@ -221,7 +221,7 @@ public class DictUtils {
             }
         }
 
-        // DbgUtils.logf( "getDictLoc(%s)=>%h(%s)", name, loc, 
+        // DbgUtils.logf( "getDictLoc(%s)=>%h(%s)", name, loc,
         //                ((null != loc)?loc.toString():"UNKNOWN") );
         return loc;
     }
@@ -262,12 +262,12 @@ public class DictUtils {
         boolean success = false;
 
         try {
-            FileInputStream fis = DictLoc.INTERNAL == from 
+            FileInputStream fis = DictLoc.INTERNAL == from
                 ? context.openFileInput( name )
                 : new FileInputStream( getDictFile( context, name, from ) );
 
-            FileOutputStream fos = DictLoc.INTERNAL == to 
-                ? context.openFileOutput( name, Context.MODE_PRIVATE ) 
+            FileOutputStream fos = DictLoc.INTERNAL == to
+                ? context.openFileOutput( name, Context.MODE_PRIVATE )
                 : new FileOutputStream( getDictFile( context, name, to ) );
 
             success = DBUtils.copyFileStream( fos, fis );
@@ -376,7 +376,7 @@ public class DictUtils {
                 DbgUtils.loge( ioe );
             }
         }
-        
+
         return bytes;
     } // openDict
 
@@ -447,7 +447,7 @@ public class DictUtils {
     }
 
     public static boolean saveDict( Context context, InputStream in,
-                                    String name, DictLoc loc, 
+                                    String name, DictLoc loc,
                                     DownProgListener dpl )
     {
         boolean success = false;
@@ -524,13 +524,13 @@ public class DictUtils {
         DbgUtils.logf( "uri: %s", uri.toString() );
         intent.putExtra( Intent.EXTRA_STREAM, uri );
 
-        intent.putExtra( Intent.EXTRA_SUBJECT, 
+        intent.putExtra( Intent.EXTRA_SUBJECT,
                          context.getString( R.string.share_subject ) );
-        intent.putExtra( Intent.EXTRA_TEXT, 
+        intent.putExtra( Intent.EXTRA_TEXT,
                          Utils.format( context, R.string.share_bodyf, name ) );
 
         String title = context.getString( R.string.share_chooser );
-        context.startActivity( Intent.createChooser( intent, title ) ); 
+        context.startActivity( Intent.createChooser( intent, title ) );
     }
      */
 
@@ -538,7 +538,7 @@ public class DictUtils {
     {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
- 
+
     private static boolean isDict( Context context, String file, File dir )
     {
         boolean ok = file.endsWith( XWConstants.DICT_EXTN );
@@ -559,7 +559,7 @@ public class DictUtils {
         return str;
     }
 
-    public static String addDictExtn( String str ) 
+    public static String addDictExtn( String str )
     {
         if ( ! str.endsWith( XWConstants.DICT_EXTN ) ) {
             str += XWConstants.DICT_EXTN;
@@ -577,7 +577,7 @@ public class DictUtils {
             return new String[0];
         }
     }
-    
+
     public static boolean haveWriteableSD()
     {
         String state = Environment.getExternalStorageState();

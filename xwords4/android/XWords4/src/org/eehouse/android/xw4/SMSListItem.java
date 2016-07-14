@@ -28,8 +28,8 @@ import android.util.AttributeSet;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
 public class SMSListItem extends LinearLayout  {
-        
-    public SMSListItem( Context cx, AttributeSet as ) 
+
+    public SMSListItem( Context cx, AttributeSet as )
     {
         super( cx, as );
     }

@@ -27,7 +27,7 @@ import android.view.View;
 public class DrawSelDelegate {
     private View m_view;
     private Drawable m_origDrawable;
-    private static ColorDrawable s_selDrawable = 
+    private static ColorDrawable s_selDrawable =
         new ColorDrawable( XWApp.SEL_COLOR );
 
     protected DrawSelDelegate( View view )

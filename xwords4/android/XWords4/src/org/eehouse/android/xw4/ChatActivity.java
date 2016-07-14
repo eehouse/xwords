@@ -25,7 +25,7 @@ import android.os.Bundle;
 public class ChatActivity extends XWActivity {
 
     @Override
-    public void onCreate( Bundle savedInstanceState ) 
+    public void onCreate( Bundle savedInstanceState )
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
             ChatDelegate dlgt = new ChatDelegate( this, savedInstanceState );

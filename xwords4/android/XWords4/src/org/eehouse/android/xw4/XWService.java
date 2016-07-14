@@ -95,8 +95,8 @@ class XWService extends Service {
     // Meant to be overridden
     protected MultiMsgSink getSink( long rowid ) { Assert.fail(); return null; }
 
-    protected ReceiveResult receiveMessage( Context context, int gameID, 
-                                            MultiMsgSink sink, byte[] msg, 
+    protected ReceiveResult receiveMessage( Context context, int gameID,
+                                            MultiMsgSink sink, byte[] msg,
                                             CommsAddrRec addr )
     {
         ReceiveResult result;
@@ -114,8 +114,8 @@ class XWService extends Service {
         return result;
     }
 
-    protected boolean receiveMessage( Context context, long rowid, 
-                                      MultiMsgSink sink, byte[] msg, 
+    protected boolean receiveMessage( Context context, long rowid,
+                                      MultiMsgSink sink, byte[] msg,
                                       CommsAddrRec addr )
     {
         boolean allConsumed = true;
@@ -126,12 +126,12 @@ class XWService extends Service {
             consumed = true;
             jniThread.receive( msg, addr ).release();
         } else {
-            GameUtils.BackMoveResult bmr = 
+            GameUtils.BackMoveResult bmr =
                 new GameUtils.BackMoveResult();
             if ( null == sink ) {
                 sink = getSink( rowid );
             }
-            if ( GameUtils.feedMessage( context, rowid, msg, addr, 
+            if ( GameUtils.feedMessage( context, rowid, msg, addr,
                                         sink, bmr, isLocalP ) ) {
                 consumed = true;
                 GameUtils.postMoveNotification( context, rowid, bmr,

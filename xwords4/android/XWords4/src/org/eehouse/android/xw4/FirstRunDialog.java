@@ -42,7 +42,7 @@ public class FirstRunDialog {
         view.setWebViewClient( new WebViewClient() {
                 private boolean m_loaded = false;
                 @Override
-                public boolean shouldOverrideUrlLoading( WebView view, 
+                public boolean shouldOverrideUrlLoading( WebView view,
                                                          String url ) {
                     boolean result = false;
                     if ( url.startsWith("mailto:") ){

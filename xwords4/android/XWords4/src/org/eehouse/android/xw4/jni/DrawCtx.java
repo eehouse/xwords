@@ -47,12 +47,12 @@ public interface DrawCtx {
     boolean measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );
     void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );
-    void score_drawPlayer( Rect rInner, Rect rOuter, int gotPct, 
+    void score_drawPlayer( Rect rInner, Rect rOuter, int gotPct,
                            DrawScoreInfo dsi );
 
     // New way of drawing
     // boolean drawRemText( int nTilesLeft, boolean focussed, Rect rect );
-    // void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData, 
+    // void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData,
     //                         Rect[] playerRects );
 
     void drawTimer( Rect rect, int player, int secondsLeft );
@@ -64,11 +64,11 @@ public interface DrawCtx {
                           int flags );
     boolean trayBegin ( Rect rect, int owner, int score );
     boolean drawTile( Rect rect, String text, int val, int flags );
-    boolean drawTileMidDrag ( Rect rect, String text, int val, int owner, 
+    boolean drawTileMidDrag ( Rect rect, String text, int val, int owner,
                               int flags );
     boolean drawTileBack( Rect rect, int flags );
     void drawTrayDivider( Rect rect, int flags );
-    void score_pendingScore( Rect rect, int score, int playerNum, int curTurn, 
+    void score_pendingScore( Rect rect, int score, int playerNum, int curTurn,
                              int flags );
 
     public static final int BONUS_NONE = 0;

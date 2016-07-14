@@ -66,14 +66,14 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_INDEX = "index";
     private static final String k_URL = "url";
     private static final String k_DEVID = "did";
-    private static final String k_DEBUG = "dbg";    
+    private static final String k_DEBUG = "dbg";
     private static final String k_XLATEINFO = "xlatinfo";
     private static final String k_STRINGSHASH = "strings";
 
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        if ( null != intent && null != intent.getAction() 
+        if ( null != intent && null != intent.getAction()
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
             restartTimer( context );
         } else {
@@ -97,7 +97,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
         interval_millis = (interval_millis / 2)
             + Math.abs(Utils.nextRandomInt() % interval_millis);
-        am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+        am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP,
                                 SystemClock.elapsedRealtime() + interval_millis,
                                 interval_millis, pi );
     }
@@ -112,13 +112,13 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    public static void checkVersions( Context context, boolean fromUI ) 
+    public static void checkVersions( Context context, boolean fromUI )
     {
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
         int versionCode;
-        try { 
+        try {
             versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
         } catch ( PackageManager.NameNotFoundException nnfe ) {
             DbgUtils.loge( nnfe );
@@ -131,7 +131,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         } else {
             String installer = pm.getInstallerPackageName( packageName );
 
-            try { 
+            try {
                 JSONObject appParams = new JSONObject();
 
                 appParams.put( k_AVERS, versionCode );
@@ -180,7 +180,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
                 DbgUtils.logdf( "current update: %s", params.toString() );
-                new UpdateQueryTask( context, params, fromUI, pm, 
+                new UpdateQueryTask( context, params, fromUI, pm,
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
@@ -212,8 +212,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    private static JSONObject makeDictParams( Context context, 
-                                              DictUtils.DictAndLoc dal, 
+    private static JSONObject makeDictParams( Context context,
+                                              DictUtils.DictAndLoc dal,
                                               int index )
     {
         JSONObject params = new JSONObject();
@@ -245,9 +245,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         private String m_packageName;
         private DictUtils.DictAndLoc[] m_dals;
 
-        public UpdateQueryTask( Context context, JSONObject params, 
-                                boolean fromUI, PackageManager pm, 
-                                String packageName, 
+        public UpdateQueryTask( Context context, JSONObject params,
+                                boolean fromUI, PackageManager pm,
+                                String packageName,
                                 DictUtils.DictAndLoc[] dals )
         {
             m_context = context;
@@ -287,7 +287,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                     if ( jobj.has( k_APP ) ) {
                         JSONObject app = jobj.getJSONObject( k_APP );
                         if ( app.has( k_URL ) ) {
-                            ApplicationInfo ai = 
+                            ApplicationInfo ai =
                                 m_pm.getApplicationInfo( m_packageName, 0);
                             String label = m_pm.getApplicationLabel( ai ).toString();
 
@@ -299,7 +299,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             if ( null == downloads ) {
                                 useBrowser = true;
                             } else {
-                                File tmp = new File( downloads, 
+                                File tmp = new File( downloads,
                                                      "xx" + XWConstants.APK_EXTN );
                                 useBrowser = !Utils.canInstall( m_context, tmp );
                             }
@@ -307,25 +307,25 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             Intent intent;
                             String url = app.getString( k_URL );
                             if ( useBrowser ) {
-                                intent = new Intent( Intent.ACTION_VIEW, 
+                                intent = new Intent( Intent.ACTION_VIEW,
                                                      Uri.parse(url) );
                             } else {
                                 intent = DwnldDelegate
                                     .makeAppDownloadIntent( m_context, url );
                             }
 
-                            String title = 
+                            String title =
                                 LocUtils.getString( m_context, R.string.new_app_avail_fmt,
                                                     label );
-                            String body = 
-                                LocUtils.getString( m_context, 
+                            String body =
+                                LocUtils.getString( m_context,
                                                     R.string.new_app_avail );
-                            Utils.postNotification( m_context, intent, title, 
+                            Utils.postNotification( m_context, intent, title,
                                                     body, url.hashCode() );
                             gotOne = true;
                         }
                     }
-                    
+
                     // dictionaries upgrade
                     if ( jobj.has( k_DICTS ) ) {
                         JSONArray dicts = jobj.getJSONArray( k_DICTS );
@@ -335,17 +335,17 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 String url = dict.getString( k_URL );
                                 int index = dict.getInt( k_INDEX );
                                 DictUtils.DictAndLoc dal = m_dals[index];
-                                Intent intent = 
+                                Intent intent =
                                     new Intent( m_context, DictsActivity.class );
                                 intent.putExtra( NEW_DICT_URL, url );
                                 intent.putExtra( NEW_DICT_NAME, dal.name );
                                 intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
-                                String body = 
-                                    LocUtils.getString( m_context, 
+                                String body =
+                                    LocUtils.getString( m_context,
                                                         R.string.new_dict_avail_fmt,
                                                         dal.name );
-                                Utils.postNotification( m_context, intent, 
-                                                        R.string.new_dict_avail, 
+                                Utils.postNotification( m_context, intent,
+                                                        R.string.new_dict_avail,
                                                         body, url.hashCode() );
                                 gotOne = true;
                             }
@@ -359,7 +359,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                         if ( 0 < nAdded ) {
                             gotOne = true;
                             String msg = LocUtils
-                                .getQuantityString( m_context, R.plurals.new_xlations_fmt, 
+                                .getQuantityString( m_context, R.plurals.new_xlations_fmt,
                                                     nAdded, nAdded );
                             Utils.showToast( m_context, msg );
                         }

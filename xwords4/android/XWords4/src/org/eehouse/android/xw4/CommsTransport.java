@@ -38,7 +38,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 
-public class CommsTransport implements TransportProcs, 
+public class CommsTransport implements TransportProcs,
                                        NetStateCache.StateChangedIf {
     private Selector m_selector;
     private SocketChannel m_socketChannel;
@@ -80,7 +80,7 @@ public class CommsTransport implements TransportProcs,
             if ( !XWApp.UDP_ENABLED ) {
                 m_done = false;
                 boolean failed = true;
-                try {   
+                try {
                     if ( XWApp.onEmulator() ) {
                         System.setProperty("java.net.preferIPv6Addresses", "false");
                     }
@@ -94,13 +94,13 @@ public class CommsTransport implements TransportProcs,
                     DbgUtils.loge( ioe );
                 } catch ( UnresolvedAddressException uae ) {
                     DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
-                                   m_useHost, m_relayAddr.ip_relay_port, 
+                                   m_useHost, m_relayAddr.ip_relay_port,
                                    uae.toString() );
                 }
 
                 m_thread = null;
                 if ( failed ) {
-                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL, 
+                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL,
                                         CommsConnType.COMMS_CONN_RELAY );
                 }
             }
@@ -121,10 +121,10 @@ public class CommsTransport implements TransportProcs,
                                 try {
                                     m_socketChannel = SocketChannel.open();
                                     m_socketChannel.configureBlocking( false );
-                                    DbgUtils.logf( "connecting to %s:%d", 
-                                                   m_useHost, 
+                                    DbgUtils.logf( "connecting to %s:%d",
+                                                   m_useHost,
                                                    m_relayAddr.ip_relay_port );
-                                    InetSocketAddress isa = new 
+                                    InetSocketAddress isa = new
                                         InetSocketAddress(m_useHost,
                                                           m_relayAddr.ip_relay_port );
                                     m_socketChannel.connect( isa );
@@ -163,10 +163,10 @@ public class CommsTransport implements TransportProcs,
                         SelectionKey key = iter.next();
                         SocketChannel channel = (SocketChannel)key.channel();
                         iter.remove();
-                        try { 
+                        try {
                             if (key.isValid() && key.isConnectable()) {
                                 if ( !channel.finishConnect() ) {
-                                    key.cancel(); 
+                                    key.cancel();
                                 }
                             }
                             if (key.isValid() && key.isReadable()) {
@@ -181,7 +181,7 @@ public class CommsTransport implements TransportProcs,
                                 }
                                 ConnStatusHandler.
                                     updateStatusIn( m_context, null,
-                                                    CommsConnType.COMMS_CONN_RELAY, 
+                                                    CommsConnType.COMMS_CONN_RELAY,
                                                     0 <= nRead );
                             }
                             if (key.isValid() && key.isWritable()) {
@@ -196,7 +196,7 @@ public class CommsTransport implements TransportProcs,
                             }
                         } catch ( java.io.IOException ioe ) {
                             DbgUtils.logf( "%s: cancelling key", ioe.toString() );
-                            key.cancel(); 
+                            key.cancel();
                             failed = true;
                             break outer_loop;
                         } catch ( java.nio.channels.
@@ -210,7 +210,7 @@ public class CommsTransport implements TransportProcs,
             return failed;
         } // loop
     }
-    
+
     public void setReceiver( JNIThread jnit )
     {
         m_jniThread = jnit;
@@ -229,7 +229,7 @@ public class CommsTransport implements TransportProcs,
     {
         if ( !nowAvailable ) {
             waitToStopImpl();
-            m_jniThread.handle( JNICmd.CMD_TRANSFAIL, 
+            m_jniThread.handle( JNICmd.CMD_TRANSFAIL,
                                 CommsConnType.COMMS_CONN_RELAY );
         }
     }
@@ -295,7 +295,7 @@ public class CommsTransport implements TransportProcs,
     {
         if ( !XWApp.UDP_ENABLED ) {
             m_bytesIn.flip();
-        
+
             for ( ; ; ) {
                 int len = m_bytesIn.remaining();
                 if ( len <= 0 ) {
@@ -306,7 +306,7 @@ public class CommsTransport implements TransportProcs,
                     Assert.assertTrue( len > 1 ); // tell me if I see this case
                     if ( len == 1 ) {       // half a length byte...
                         break;              // can I leave it in the buffer?
-                    } else {                
+                    } else {
                         m_packetIn = new byte[m_bytesIn.getShort()];
                         m_haveLen = 0;
                     }
@@ -349,16 +349,16 @@ public class CommsTransport implements TransportProcs,
 
     public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
 
-    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr, 
+    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                               CommsConnType conType, int gameID )
     {
-        DbgUtils.logdf( "CommsTransport.transportSend(len=%d, typ=%s)", 
+        DbgUtils.logdf( "CommsTransport.transportSend(len=%d, typ=%s)",
                         buf.length, conType.toString() );
         int nSent = -1;
         Assert.assertNotNull( addr );
         Assert.assertTrue( addr.contains( conType ) );
 
-        if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY 
+        if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY
              && null == m_relayAddr ) {
             m_relayAddr = new CommsAddrRec( addr );
             m_useHost = NetUtils.forceHost( m_relayAddr.ip_relay_hostName );
@@ -374,7 +374,7 @@ public class CommsTransport implements TransportProcs,
                 nSent = buf.length;
             }
         } else {
-            nSent = sendForAddr( m_context, addr, conType, m_rowid, 
+            nSent = sendForAddr( m_context, addr, conType, m_rowid,
                                  gameID, buf );
         }
 
@@ -388,30 +388,30 @@ public class CommsTransport implements TransportProcs,
     public void relayStatus( CommsRelayState newState )
     {
         DbgUtils.logf( "relayStatus called; state=%s", newState.toString() );
-        
+
         switch( newState ) {
         case COMMS_RELAYSTATE_UNCONNECTED:
         case COMMS_RELAYSTATE_DENIED:
         case COMMS_RELAYSTATE_CONNECT_PENDING:
             ConnStatusHandler.updateStatus( m_context, null,
-                                            CommsConnType.COMMS_CONN_RELAY, 
+                                            CommsConnType.COMMS_CONN_RELAY,
                                             false );
             break;
-        case COMMS_RELAYSTATE_CONNECTED: 
-        case COMMS_RELAYSTATE_RECONNECTED: 
+        case COMMS_RELAYSTATE_CONNECTED:
+        case COMMS_RELAYSTATE_RECONNECTED:
             ConnStatusHandler.updateStatusOut( m_context, null,
-                                               CommsConnType.COMMS_CONN_RELAY, 
+                                               CommsConnType.COMMS_CONN_RELAY,
                                                true );
             break;
         case COMMS_RELAYSTATE_ALLCONNECTED:
             ConnStatusHandler.updateStatusIn( m_context, null,
-                                              CommsConnType.COMMS_CONN_RELAY, 
+                                              CommsConnType.COMMS_CONN_RELAY,
                                               true );
             break;
         }
     }
 
-    public void relayConnd( String room, int devOrder, boolean allHere, 
+    public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {
         m_tpHandler.tpmRelayConnd( room, devOrder, allHere, nMissing );
@@ -428,8 +428,8 @@ public class CommsTransport implements TransportProcs,
         return false;
     }
 
-    private static int sendForAddr( Context context, CommsAddrRec addr, 
-                                    CommsConnType conType, long rowID, 
+    private static int sendForAddr( Context context, CommsAddrRec addr,
+                                    CommsConnType conType, long rowID,
                                     int gameID, byte[] buf )
     {
         int nSent = -1;
@@ -439,7 +439,7 @@ public class CommsTransport implements TransportProcs,
             nSent = RelayService.sendPacket( context, rowID, buf );
             break;
         case COMMS_CONN_SMS:
-            nSent = SMSService.sendPacket( context, addr.sms_phone, 
+            nSent = SMSService.sendPacket( context, addr.sms_phone,
                                            gameID, buf );
             break;
         case COMMS_CONN_BT:

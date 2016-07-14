@@ -61,7 +61,7 @@ abstract class InviteDelegate extends ListDelegateBase
         m_lastDev = intent.getStringExtra( INTENT_KEY_LASTDEV );
     }
 
-    protected void init( int button_invite, int button_rescan, 
+    protected void init( int button_invite, int button_rescan,
                          int button_clear, int desc_id, String descTxt )
     {
         m_okButton = (Button)findViewById( button_invite );
@@ -87,7 +87,7 @@ abstract class InviteDelegate extends ListDelegateBase
     ////////////////////////////////////////
     // View.OnClickListener
     ////////////////////////////////////////
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         if ( m_okButton == view ) {
             Intent intent = new Intent();

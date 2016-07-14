@@ -66,7 +66,7 @@ public class DbgUtils {
         logf( true, msg );
     }
 
-    public static void logf( boolean persist, String msg ) 
+    public static void logf( boolean persist, String msg )
     {
         if ( s_doLog ) {
             String time = "";
@@ -162,7 +162,7 @@ public class DbgUtils {
     //     }
     // }
 
-    public static void dumpCursor( Cursor cursor ) 
+    public static void dumpCursor( Cursor cursor )
     {
         if ( s_doLog ) {
             String dump = DatabaseUtils.dumpCursorToString( cursor );

@@ -29,7 +29,7 @@ import android.widget.TextView;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class ListGroup extends LinearLayout 
+public class ListGroup extends LinearLayout
     implements View.OnClickListener {
 
     private boolean m_expanded;
@@ -39,7 +39,7 @@ public class ListGroup extends LinearLayout
     private GroupStateListener m_listener;
     private int m_posn;
 
-    public ListGroup( Context cx, AttributeSet as ) 
+    public ListGroup( Context cx, AttributeSet as )
     {
         super( cx, as );
     }
@@ -50,7 +50,7 @@ public class ListGroup extends LinearLayout
         super.onFinishInflate();
         m_expandButton = (ImageButton)findViewById( R.id.expander );
         m_text = (TextView)findViewById( R.id.game_name );
-        
+
         m_expandButton.setOnClickListener( this );
         setOnClickListener( this );
 
@@ -66,7 +66,7 @@ public class ListGroup extends LinearLayout
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         m_expanded = !m_expanded;
         m_listener.onGroupExpandedChanged( this, m_expanded );
@@ -89,8 +89,8 @@ public class ListGroup extends LinearLayout
         }
     }
 
-    public static ListGroup make( Context context, View convertView, 
-                                  GroupStateListener lstnr, int posn, 
+    public static ListGroup make( Context context, View convertView,
+                                  GroupStateListener lstnr, int posn,
                                   String desc, boolean expanded )
     {
         ListGroup result;

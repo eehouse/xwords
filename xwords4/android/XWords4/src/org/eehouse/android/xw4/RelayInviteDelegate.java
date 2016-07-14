@@ -70,7 +70,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
-    public static void launchForResult( Activity activity, int nMissing, 
+    public static void launchForResult( Activity activity, int nMissing,
                                         RequestCode requestCode )
     {
         Intent intent = new Intent( activity, RelayInviteActivity.class );
@@ -87,9 +87,9 @@ public class RelayInviteDelegate extends InviteDelegate {
     protected void init( Bundle savedInstanceState )
     {
         String msg = getString( R.string.button_invite );
-        msg = getQuantityString( R.plurals.invite_relay_desc_fmt, m_nMissing, 
+        msg = getQuantityString( R.plurals.invite_relay_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear, 
+        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear,
                     R.id.invite_desc, msg );
 
         // getBundledData( savedInstanceState );
@@ -120,7 +120,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         rebuildList( true );
     }
 
-    // protected void onSaveInstanceState( Bundle outState ) 
+    // protected void onSaveInstanceState( Bundle outState )
     // {
     //     outState.putString( SAVE_NAME, m_pendingName );
     //     outState.putString( SAVE_NUMBER, m_pendingNumber );
@@ -133,8 +133,8 @@ public class RelayInviteDelegate extends InviteDelegate {
     //         m_pendingNumber = bundle.getString( SAVE_NUMBER );
     //     }
     // }
-    
-    // protected void onActivityResult( int requestCode, int resultCode, 
+
+    // protected void onActivityResult( int requestCode, int resultCode,
     //                                  Intent data )
     // {
     //     // super.onActivityResult( requestCode, resultCode, data );
@@ -148,7 +148,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     // }
 
     // protected Dialog onCreateDialog( int id )
-    // {        
+    // {
     //     Dialog dialog = super.onCreateDialog( id );
     //     if ( null == dialog ) {
     //         DialogInterface.OnClickListener lstnr;
@@ -196,7 +196,7 @@ public class RelayInviteDelegate extends InviteDelegate {
             new ListOpponentsTask( m_activity, relayIDs, rowIDss[0] ).execute();
         }
 
-        // Intent intent = new Intent( Intent.ACTION_PICK, 
+        // Intent intent = new Intent( Intent.ACTION_PICK,
         //                             ContactsContract.Contacts.CONTENT_URI );
         // intent.setType( Phone.CONTENT_TYPE );
         // startActivityForResult( intent, GET_CONTACT );
@@ -230,7 +230,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     }
 
     @Override
-    protected void tryEnable() 
+    protected void tryEnable()
     {
         if ( null != m_devIDRecs ) {
             int nPlayers = 0;
@@ -265,8 +265,8 @@ public class RelayInviteDelegate extends InviteDelegate {
             break;
         case DlgDelegate.DISMISS_BUTTON:
             if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-                showConfirmThen( R.string.warn_unlimited, 
-                                 R.string.button_yes, 
+                showConfirmThen( R.string.warn_unlimited,
+                                 R.string.button_yes,
                                  Action.POST_WARNING_ACTION );
             }
             break;
@@ -291,9 +291,9 @@ public class RelayInviteDelegate extends InviteDelegate {
     // {
     //     Uri data = intent.getData();
     //     Cursor cursor = m_activity
-    //         .managedQuery( data, 
-    //                        new String[] { Phone.DISPLAY_NAME, 
-    //                                       Phone.NUMBER, 
+    //         .managedQuery( data,
+    //                        new String[] { Phone.DISPLAY_NAME,
+    //                                       Phone.NUMBER,
     //                                       Phone.TYPE },
     //                        null, null, null );
     //     // Have seen a crash reporting
@@ -302,10 +302,10 @@ public class RelayInviteDelegate extends InviteDelegate {
     //     // long time to return.  Be safe.
     //     if ( null != cursor && !cursor.isClosed() ) {
     //         if ( cursor.moveToFirst() ) {
-    //             String name = 
+    //             String name =
     //                 cursor.getString( cursor.
     //                                   getColumnIndex( Phone.DISPLAY_NAME));
-    //             String number = 
+    //             String number =
     //                 cursor.getString( cursor.
     //                                   getColumnIndex( Phone.NUMBER ) );
 
@@ -314,14 +314,14 @@ public class RelayInviteDelegate extends InviteDelegate {
     //             // m_pendingName = name;
     //             // m_pendingNumber = number;
     //             if ( Phone.TYPE_MOBILE == type ) {
-    //                 showConfirmThen( R.string.warn_unlimited, 
-    //                                  R.string.button_yes, 
+    //                 showConfirmThen( R.string.warn_unlimited,
+    //                                  R.string.button_yes,
     //                                  Action.POST_WARNING_ACTION );
     //             } else {
     //                 m_immobileConfirmed = false;
-    //                 String msg = getString( R.string.warn_nomobile_fmt, 
+    //                 String msg = getString( R.string.warn_nomobile_fmt,
     //                                         number, name );
-    //                 showConfirmThen( msg, R.string.button_yes, 
+    //                 showConfirmThen( msg, R.string.button_yes,
     //                                  Action.USE_IMMOBILE_ACTION );
     //             }
     //         }
@@ -426,7 +426,7 @@ public class RelayInviteDelegate extends InviteDelegate {
             m_items = new SMSListItem[m_devIDRecs.size()];
         }
 
-        public Object getItem( final int position ) 
+        public Object getItem( final int position )
         {
             // For some reason I can't cache items to be returned.
             // Checking/unchecking breaks for some but not all items,
@@ -434,13 +434,13 @@ public class RelayInviteDelegate extends InviteDelegate {
             // view.  So build them anew each time (but still cache
             // for by-index access.)
 
-            SMSListItem item = 
+            SMSListItem item =
                 (SMSListItem)inflate( R.layout.smsinviter_item );
             item.setChecked( m_devIDRecs.get(position).m_isChecked );
 
             CompoundButton.OnCheckedChangeListener lstnr =
                 new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton bv, 
+                    public void onCheckedChanged( CompoundButton bv,
                                                   boolean isChecked ) {
                         m_devIDRecs.get(position).m_isChecked = isChecked;
                         tryEnable();
@@ -456,7 +456,7 @@ public class RelayInviteDelegate extends InviteDelegate {
             if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     item.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter = 
+                ArrayAdapter<String> adapter =
                     new ArrayAdapter<String>( m_activity, android.R.layout
                                               .simple_spinner_item );
                 for ( int ii = 1; ii <= m_nMissing; ++ii ) {
@@ -466,8 +466,8 @@ public class RelayInviteDelegate extends InviteDelegate {
                 spinner.setAdapter( adapter );
                 spinner.setVisibility( View.VISIBLE );
                 spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent, 
-                                                    View view, int pos, 
+                        public void onItemSelected( AdapterView<?> parent,
+                                                    View view, int pos,
                                                     long id )
                         {
                             rec.m_nPlayers = 1 + pos;
@@ -481,7 +481,7 @@ public class RelayInviteDelegate extends InviteDelegate {
             return item;
         }
 
-        public View getView( final int position, View convertView, 
+        public View getView( final int position, View convertView,
                              ViewGroup parent ) {
             return (View)getItem( position );
         }

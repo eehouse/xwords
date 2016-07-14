@@ -57,7 +57,7 @@ public class LocSearcher {
 
         public boolean matches( String term )
         {
-            return m_english.contains( term ) || 
+            return m_english.contains( term ) ||
                 (null != m_xlation && m_xlation.contains( term ) );
         }
 
@@ -115,7 +115,7 @@ public class LocSearcher {
                             matches.add( pair );
                         }
                     }
-                    m_filteredPairs = m_matchingPairs = 
+                    m_filteredPairs = m_matchingPairs =
                         matches.toArray( new Pair[matches.size()] );
                 }
                 String term = m_lastTerm;
@@ -130,7 +130,7 @@ public class LocSearcher {
         if ( null == term || 0 == term.length() ) {
             m_matchingPairs = m_filteredPairs;
         } else {
-            Pair[] usePairs = null != m_lastTerm && term.contains(m_lastTerm) 
+            Pair[] usePairs = null != m_lastTerm && term.contains(m_lastTerm)
                 ? m_matchingPairs : m_filteredPairs;
             DbgUtils.logf( "start: searching %d pairs", usePairs.length );
             ArrayList<Pair> matches = new ArrayList<Pair>();
@@ -156,7 +156,7 @@ public class LocSearcher {
 
     private static FilterFunc s_modifiedProc = new FilterFunc() {
             public boolean passes( Context context, Pair pair ) {
-                return null != 
+                return null !=
                     LocUtils.getLocalXlation( context, pair.getKey(), true );
             }
         };
@@ -174,7 +174,7 @@ public class LocSearcher {
             m_contextName = contextName;
         }
 
-        public boolean passes( Context context, Pair pair ) 
+        public boolean passes( Context context, Pair pair )
         {
             return LocUtils.inLatestScreen( pair.getKey(), m_contextName );
         }

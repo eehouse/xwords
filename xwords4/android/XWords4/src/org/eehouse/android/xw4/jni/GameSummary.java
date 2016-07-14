@@ -99,7 +99,7 @@ public class GameSummary {
     public Context getContext()
     {
         Assert.assertNotNull( m_context );
-        return m_context; 
+        return m_context;
     }
 
     public boolean inRelayGame()
@@ -134,7 +134,7 @@ public class GameSummary {
 
     public String getRematchName()
     {
-        return LocUtils.getString( m_context, R.string.rematch_name_fmt, 
+        return LocUtils.getString( m_context, R.string.rematch_name_fmt,
                                    playerNames() );
     }
 
@@ -145,13 +145,13 @@ public class GameSummary {
 
             m_remotePhones = new String[remoteDevs.length];
             for ( int ii = 0; ii < remoteDevs.length; ++ii ) {
-                m_remotePhones[ii] = 
+                m_remotePhones[ii] =
                     Utils.phoneToContact( context, remoteDevs[ii], true );
             }
         }
     }
 
-    public void readPlayers( String playersStr ) 
+    public void readPlayers( String playersStr )
     {
         if ( null != playersStr ) {
             m_players = new String[nPlayers];
@@ -167,7 +167,7 @@ public class GameSummary {
                 int prev = nxt;
                 nxt = playersStr.indexOf( sep, nxt );
                 String name = -1 == nxt ?
-                    playersStr.substring( prev ) : 
+                    playersStr.substring( prev ) :
                     playersStr.substring( prev, nxt );
                 m_players[ii] = name;
                 if ( -1 == nxt ) {
@@ -178,7 +178,7 @@ public class GameSummary {
         }
     }
 
-    public void setPlayerSummary( String summary ) 
+    public void setPlayerSummary( String summary )
     {
         m_playersSummary = summary;
     }
@@ -212,7 +212,7 @@ public class GameSummary {
                                                  R.string.summary_invites_out );
                 }
             }
-            
+
             // If we're using relay to connect, get status from that
             if ( null == result
                  && conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
@@ -229,7 +229,7 @@ public class GameSummary {
                 }
                 result = LocUtils.getString( m_context, fmtID, roomName );
             }
-                
+
             // Otherwise, use BT or SMS
             if ( null == result ) {
                 if ( conTypes.contains( CommsConnType.COMMS_CONN_BT )
@@ -242,9 +242,9 @@ public class GameSummary {
                         }
                     } else if ( gameOver ) {
                         fmtID = R.string.summary_gameover;
-                    } else if ( null != remoteDevs 
+                    } else if ( null != remoteDevs
                                 && conTypes.contains( CommsConnType.COMMS_CONN_SMS)){
-                        result = 
+                        result =
                             LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
                                                 TextUtils.join(", ", m_remotePhones) );
                     } else {
@@ -268,7 +268,7 @@ public class GameSummary {
             // anyway, e.g. via BT.
             result = 0 > turn && !gameOver;
         }
-        // DbgUtils.logf( "relayConnectPending()=>%b (turn=%d)", result, 
+        // DbgUtils.logf( "relayConnectPending()=>%b (turn=%d)", result,
         //                turn );
         return result;
     }
@@ -299,7 +299,7 @@ public class GameSummary {
         }
         return result;
     }
-    
+
     public boolean anyMissing()
     {
         return 0 < countMissing();
@@ -323,12 +323,12 @@ public class GameSummary {
         return result;
     }
 
-    public void setGiFlags( int flags ) 
+    public void setGiFlags( int flags )
     {
         m_giFlags = new Integer( flags );
     }
 
-    public String summarizePlayer( int indx ) 
+    public String summarizePlayer( int indx )
     {
         String player = m_players[indx];
         int formatID = 0;
@@ -367,7 +367,7 @@ public class GameSummary {
         return result;
     }
 
-    public boolean isNextToPlay( int indx, boolean[] isLocal ) 
+    public boolean isNextToPlay( int indx, boolean[] isLocal )
     {
         boolean isNext = indx == turn;
         if ( isNext ) {
@@ -392,7 +392,7 @@ public class GameSummary {
         return m_players[prevTurn];
     }
 
-    public String dictNames( String separator ) 
+    public String dictNames( String separator )
     {
         String list = null;
         if ( null != m_gi ) {

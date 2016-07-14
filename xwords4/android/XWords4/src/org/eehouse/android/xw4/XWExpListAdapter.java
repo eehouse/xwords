@@ -58,7 +58,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
     abstract View getView( Object dataObj, View convertView );
 
     @Override
-    public int getCount() 
+    public int getCount()
     {
         if ( null == m_listObjs ) {
             m_listObjs = makeListData();
@@ -74,7 +74,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
 
     @Override
     public int getItemViewType( int position )
-    { 
+    {
         return m_types.get( m_listObjs[position].getClass() );
     }
 
@@ -82,12 +82,12 @@ abstract class XWExpListAdapter extends XWListAdapter {
     {
         return m_types.size();
     }
-        
+
     @Override
     public View getView( int position, View convertView, ViewGroup parent )
     {
         View result = getView( m_listObjs[position], convertView );
-        // DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result, 
+        // DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result,
         //                result.getClass().getName() );
         return result;
     }
@@ -142,13 +142,13 @@ abstract class XWExpListAdapter extends XWListAdapter {
         System.arraycopy( m_listObjs, 0, newArray, 0, groupIndex + 1 ); // 1: include parent
         int nAbove = m_listObjs.length - (groupIndex + nChildren + 1);
         if ( end < m_listObjs.length ) {
-            System.arraycopy( m_listObjs, end, newArray, groupIndex + 1, 
+            System.arraycopy( m_listObjs, end, newArray, groupIndex + 1,
                               m_listObjs.length - end );
         }
         m_listObjs = newArray;
         notifyDataSetChanged();
     }
-    
+
     protected void addChildrenOf( int groupIndex, List<Object> children )
     {
         int nToAdd = children.size();
@@ -161,7 +161,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
         }
         System.arraycopy( m_listObjs, groupIndex + 1,
                           newArray, groupIndex + 1 + nToAdd,
-                          m_listObjs.length - groupIndex - 1 ); 
+                          m_listObjs.length - groupIndex - 1 );
         m_listObjs = newArray;
         notifyDataSetChanged();
     }
@@ -181,7 +181,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
         }
 
         if ( 0 < nLost ) {
-            m_listObjs = Arrays.copyOfRange( m_listObjs, 
+            m_listObjs = Arrays.copyOfRange( m_listObjs,
                                              0, m_listObjs.length - nLost );
             notifyDataSetChanged();
         }
@@ -207,7 +207,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
 
     protected void swapGroups( int groupPosn1, int groupPosn2 )
     {
-        // switch if needed so we know the direction 
+        // switch if needed so we know the direction
         if ( groupPosn1 > groupPosn2 ) {
             int tmp = groupPosn2;
             groupPosn2 = groupPosn1;
@@ -216,7 +216,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
 
         int groupIndx1 = indexForPosition( groupPosn1 );
         int groupIndx2 = indexForPosition( groupPosn2 );
-        
+
         // copy out the lower group subarray
         int groupEnd1 = findGroupEnd( groupIndx1 );
         Object[] tmp1 = Arrays.copyOfRange( m_listObjs, groupIndx1, groupEnd1 );

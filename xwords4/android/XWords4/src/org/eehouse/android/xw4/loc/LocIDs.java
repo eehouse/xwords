@@ -49,7 +49,7 @@ public class LocIDs extends LocIDsData {
         return S_IDS.length;
     }
 
-    protected static HashMap<String, Integer> getS_MAP( Context context ) 
+    protected static HashMap<String, Integer> getS_MAP( Context context )
     {
         if ( null == S_MAP ) {
             S_MAP = new HashMap<String, Integer>(S_IDS.length);

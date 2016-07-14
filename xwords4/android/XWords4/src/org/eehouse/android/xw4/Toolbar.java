@@ -95,7 +95,7 @@ public class Toolbar {
         return button;
     }
 
-    public void setListener( int index, final int msgID, final int prefsKey, 
+    public void setListener( int index, final int msgID, final int prefsKey,
                              final Action action )
     {
         View.OnClickListener listener = new View.OnClickListener() {
@@ -106,7 +106,7 @@ public class Toolbar {
         setListener( index, listener );
     }
 
-    public void setLongClickListener( int index, final int msgID, 
+    public void setLongClickListener( int index, final int msgID,
                                       final int prefsKey, final Action action )
     {
         View.OnLongClickListener listener = new View.OnLongClickListener() {
@@ -166,7 +166,7 @@ public class Toolbar {
         }
     }
 
-    private void setLongClickListener( int index, 
+    private void setLongClickListener( int index,
                                        View.OnLongClickListener listener )
     {
         ImageButton button = getViewFor( index );

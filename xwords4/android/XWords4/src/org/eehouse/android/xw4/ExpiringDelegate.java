@@ -42,7 +42,7 @@ public class ExpiringDelegate {
     private static final long INTERVAL_SECS = 3 * 24 * 60 * 60;
     // private static final long INTERVAL_SECS = 60 * 10;   // for testing
 
-    private static boolean s_kitkat = 
+    private static boolean s_kitkat =
         19 <= Integer.valueOf( android.os.Build.VERSION.SDK );
 
     private Context m_context;
@@ -90,7 +90,7 @@ public class ExpiringDelegate {
                 }
             }
 
-            DbgUtils.logdf( "ExpUpdater: ref had %d refs, now has %d expiringdelegate views", 
+            DbgUtils.logdf( "ExpUpdater: ref had %d refs, now has %d expiringdelegate views",
                             sizeBefore, dlgts.size() );
 
             for ( ExpiringDelegate dlgt : dlgts ) {
@@ -100,7 +100,7 @@ public class ExpiringDelegate {
             reschedule();
         }
 
-        private void reschedule() 
+        private void reschedule()
         {
             m_handler.postDelayed( this, INTERVAL_SECS * 1000 / 100 );
         }
@@ -130,8 +130,8 @@ public class ExpiringDelegate {
     private static ExpUpdater s_updater;
     static {
         s_rect = new Rect();
-        s_paint = new Paint(); 
-        s_paint.setStyle(Paint.Style.STROKE);  
+        s_paint = new Paint();
+        s_paint.setStyle(Paint.Style.STROKE);
         s_paint.setStrokeWidth( 1 );
         s_points = new float[4*6];
         s_updater = new ExpUpdater();
@@ -149,7 +149,7 @@ public class ExpiringDelegate {
         s_updater.setHandler( handler );
     }
 
-    public void configure( boolean haveTurn, boolean haveTurnLocal, 
+    public void configure( boolean haveTurn, boolean haveTurnLocal,
                            long startSecs )
     {
         m_active = haveTurn;
@@ -173,7 +173,7 @@ public class ExpiringDelegate {
         m_dsdel.showSelected( m_selected );
     }
 
-    public void onDraw( Canvas canvas ) 
+    public void onDraw( Canvas canvas )
     {
         if ( m_selected ) {
             // do nothing; the drawable's set already
@@ -194,14 +194,14 @@ public class ExpiringDelegate {
                        s_rect.left, s_rect.bottom - 1 );
 
             // left horizontals
-            addPoints( 1, s_rect.left, s_rect.top, 
+            addPoints( 1, s_rect.left, s_rect.top,
                        s_rect.left + redWidth, s_rect.top );
             addPoints( 2, s_rect.left, s_rect.bottom - 1,
                        s_rect.left + redWidth,
                        s_rect.bottom - 1 );
 
             // right horizontals
-            addPoints( 3, s_rect.left + redWidth, s_rect.top, 
+            addPoints( 3, s_rect.left + redWidth, s_rect.top,
                        s_rect.right - 1, s_rect.top );
             addPoints( 4, s_rect.left + redWidth, s_rect.bottom - 1,
                        s_rect.right - 1, s_rect.bottom - 1 );
@@ -253,11 +253,11 @@ public class ExpiringDelegate {
         Bitmap bm = Bitmap.createBitmap( 100, 1, Bitmap.Config.ARGB_8888 );
         Canvas canvas = new Canvas(bm);
 
-        Paint paint = new Paint(); 
-        paint.setStyle(Paint.Style.FILL);  
-        paint.setColor( Color.RED ); 
+        Paint paint = new Paint();
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor( Color.RED );
         canvas.drawRect( 0, 0, pct, 1, paint );
-        paint.setColor( Utils.TURN_COLOR ); 
+        paint.setColor( Utils.TURN_COLOR );
         canvas.drawRect( pct, 0, 100, 1, paint );
         return new BitmapDrawable( m_context.getResources(), bm );
     }

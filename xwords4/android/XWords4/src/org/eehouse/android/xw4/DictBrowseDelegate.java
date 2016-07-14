@@ -87,11 +87,11 @@ public class DictBrowseDelegate extends ListDelegateBase
             XwJNI.dict_iter_setMinMax( m_dictClosure, m_browseState.m_minShown,
                                        m_browseState.m_maxShown );
             m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
-            
+
             int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
                 R.string.dict_browse_title1_fmt : R.string.dict_browse_title_fmt;
-            setTitle( getString( format, m_name, m_nWords, 
-                                 m_browseState.m_minShown, 
+            setTitle( getString( format, m_name, m_nWords,
+                                 m_browseState.m_minShown,
                                  m_browseState.m_maxShown ));
 
             String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
@@ -103,7 +103,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             }
         }
 
-        public Object getItem( int position ) 
+        public Object getItem( int position )
         {
             TextView text = (TextView)
                 inflate( android.R.layout.simple_list_item_1 );
@@ -121,7 +121,7 @@ public class DictBrowseDelegate extends ListDelegateBase
 
         public long getItemId( int position ) { return position; }
 
-        public int getCount() { 
+        public int getCount() {
             Assert.assertTrue( 0 != m_dictClosure );
             return m_nWords;
         }
@@ -134,7 +134,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             }
             return m_indices[section];
         }
-        
+
         public int getSectionForPosition( int position )
         {
             int section = Arrays.binarySearch( m_indices, position );
@@ -146,8 +146,8 @@ public class DictBrowseDelegate extends ListDelegateBase
             }
             return section;
         }
-        
-        public Object[] getSections() 
+
+        public Object[] getSections()
         {
             m_prefixes = XwJNI.dict_iter_getPrefixes( m_dictClosure );
             m_indices = XwJNI.dict_iter_getIndices( m_dictClosure );
@@ -161,7 +161,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         m_activity = delegator.getActivity();
     }
 
-    protected void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState )
     {
         Bundle args = getArguments();
         String name = null == args? null : args.getString( DICT_NAME );
@@ -170,7 +170,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             finish();
         } else {
             m_name = name;
-            m_loc = 
+            m_loc =
                 DictUtils.DictLoc.values()[args.getInt( DICT_LOC, 0 )];
             m_lang = DictLangCache.getDictLangCode( m_activity, name );
 
@@ -188,7 +188,7 @@ public class DictBrowseDelegate extends ListDelegateBase
                 m_browseState.m_top = 0;
             }
             if ( null == m_browseState.m_counts ) {
-                m_browseState.m_counts = 
+                m_browseState.m_counts =
                     XwJNI.dict_iter_getCounts( m_dictClosure );
             }
 
@@ -281,7 +281,7 @@ public class DictBrowseDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
-    public void onItemSelected( AdapterView<?> parent, View view, 
+    public void onItemSelected( AdapterView<?> parent, View view,
                                 int position, long id )
     {
         TextView text = (TextView)view;
@@ -306,7 +306,7 @@ public class DictBrowseDelegate extends ListDelegateBase
     @Override
     public void dlgButtonClicked( Action action, int which, Object[] params )
     {
-        Assert.assertTrue( Action.FINISH_ACTION == action ); 
+        Assert.assertTrue( Action.FINISH_ACTION == action );
         finish();
     }
 
@@ -331,7 +331,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         edit.setText( text );
     }
 
-    private void showPrefix() 
+    private void showPrefix()
     {
         String text = m_browseState.m_prefix;
         if ( null != text && 0 < text.length() ) {
@@ -339,7 +339,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             if ( 0 <= pos ) {
                 getListView().setSelection( pos );
             } else {
-                DbgUtils.showf( m_activity, R.string.dict_browse_nowords_fmt, 
+                DbgUtils.showf( m_activity, R.string.dict_browse_nowords_fmt,
                                 m_name, text );
             }
         }
@@ -352,7 +352,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         // adapter/making it recognized a changed dataset.  So, as a
         // workaround, relaunch the activity with different
         // parameters.
-        if ( m_browseState.m_minShown != min || 
+        if ( m_browseState.m_minShown != min ||
              m_browseState.m_maxShown != max ) {
 
             m_browseState.m_pos = 0;
@@ -377,7 +377,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             ++m_minAvail;
         }
         m_maxAvail = XwJNI.MAX_COLS_DICT;
-        while ( 0 == counts[m_maxAvail] ) { // 
+        while ( 0 == counts[m_maxAvail] ) { //
             --m_maxAvail;
         }
     }
@@ -394,7 +394,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             nums[ii] = String.format( "%d", min + ii );
         }
         ArrayAdapter<String> adapter = new
-            ArrayAdapter<String>( m_activity, 
+            ArrayAdapter<String>( m_activity,
                                   //android.R.layout.simple_spinner_dropdown_item,
                                   android.R.layout.simple_spinner_item,
                                   nums );
@@ -411,12 +411,12 @@ public class DictBrowseDelegate extends ListDelegateBase
         // current max the largest min allowed, and the current
         // min the smallest max allowed.
         m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
-        makeAdapter( m_minSpinner, m_minAvail, m_browseState.m_maxShown, 
+        makeAdapter( m_minSpinner, m_minAvail, m_browseState.m_maxShown,
                      m_browseState.m_minShown );
         m_minSpinner.setOnItemSelectedListener( this );
 
         m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
-        makeAdapter( m_maxSpinner, m_browseState.m_minShown, 
+        makeAdapter( m_maxSpinner, m_browseState.m_minShown,
                      m_maxAvail, m_browseState.m_maxShown );
         m_maxSpinner.setOnItemSelectedListener( this );
     }
@@ -433,7 +433,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         }
     }
 
-    public static void launch( Delegator delegator, String name, 
+    public static void launch( Delegator delegator, String name,
                                DictUtils.DictLoc loc )
     {
         Bundle bundle = new Bundle();

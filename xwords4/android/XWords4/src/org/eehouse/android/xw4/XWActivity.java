@@ -43,7 +43,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onCreate(this=%H)", 
+            DbgUtils.logf( "%s.onCreate(this=%H)",
                            getClass().getSimpleName(), this );
         }
         super.onCreate( savedInstanceState );
@@ -58,7 +58,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     }
 
     @Override
-    protected void onSaveInstanceState( Bundle outState ) 
+    protected void onSaveInstanceState( Bundle outState )
     {
         super.onSaveInstanceState( outState );
         m_dlgt.onSaveInstanceState( outState );
@@ -68,7 +68,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onPause()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onPause(this=%H)", 
+            DbgUtils.logf( "%s.onPause(this=%H)",
                            getClass().getSimpleName(), this );
         }
         m_dlgt.onPause();
@@ -79,7 +79,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onResume(this=%H)", 
+            DbgUtils.logf( "%s.onResume(this=%H)",
                            getClass().getSimpleName(), this );
         }
         super.onResume();
@@ -90,7 +90,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStart(this=%H)", 
+            DbgUtils.logf( "%s.onStart(this=%H)",
                            getClass().getSimpleName(), this );
         }
         super.onStart();
@@ -101,7 +101,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStop(this=%H)", 
+            DbgUtils.logf( "%s.onStop(this=%H)",
                            getClass().getSimpleName(), this );
         }
         m_dlgt.onStop();
@@ -112,7 +112,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onDestroy()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onDestroy(this=%H)", 
+            DbgUtils.logf( "%s.onDestroy(this=%H)",
                            getClass().getSimpleName(), this );
         }
         m_dlgt.onDestroy();
@@ -134,20 +134,20 @@ public class XWActivity extends FragmentActivity implements Delegator {
     }
 
     @Override
-    public boolean onCreateOptionsMenu( Menu menu ) 
+    public boolean onCreateOptionsMenu( Menu menu )
     {
         return m_dlgt.onCreateOptionsMenu( menu );
     }
 
     @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
+    public boolean onPrepareOptionsMenu( Menu menu )
     {
         return m_dlgt.onPrepareOptionsMenu( menu )
             || super.onPrepareOptionsMenu( menu );
     } // onPrepareOptionsMenu
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         return m_dlgt.onOptionsItemSelected( item )
             || super.onOptionsItemSelected( item );
@@ -192,10 +192,10 @@ public class XWActivity extends FragmentActivity implements Delegator {
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, 
+    protected void onActivityResult( int requestCode, int resultCode,
                                      Intent data )
     {
-        RequestCode rc = RequestCode.values()[requestCode]; 
+        RequestCode rc = RequestCode.values()[requestCode];
         m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
@@ -219,7 +219,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     }
 
     public void setListAdapter( ListAdapter adapter )
-    { 
+    {
         getListView().setAdapter( adapter );
     }
 
@@ -232,13 +232,13 @@ public class XWActivity extends FragmentActivity implements Delegator {
         return false;
     }
 
-    public void addFragment( XWFragment fragment, Bundle extras ) 
+    public void addFragment( XWFragment fragment, Bundle extras )
     {
         Assert.fail();
     }
 
-    public void addFragmentForResult( XWFragment fragment, Bundle extras, 
-                                      RequestCode request  ) 
+    public void addFragmentForResult( XWFragment fragment, Bundle extras,
+                                      RequestCode request  )
     {
         Assert.fail();
     }

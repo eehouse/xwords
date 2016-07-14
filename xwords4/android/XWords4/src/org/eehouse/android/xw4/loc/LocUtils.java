@@ -88,7 +88,7 @@ public class LocUtils {
     private static Map<String, HashSet<String> > s_contextSets
         = new HashMap<String, HashSet<String> >();
     private static Map<String, String> s_langMap = null;
-    
+
     public static void localeChanged( Context context, String newLocale )
     {
         saveLocalData( context );
@@ -160,7 +160,7 @@ public class LocUtils {
         int result = 0;
         if ( null == s_langCodeMap ) {
             s_langCodeMap = new HashMap<String, Integer>();
-            String[] langCodes = 
+            String[] langCodes =
                 context.getResources().getStringArray( R.array.language_codes );
             for ( int ii = 0; ii < langCodes.length; ++ii ) {
                 String item = langCodes[ii];
@@ -215,7 +215,7 @@ public class LocUtils {
         return result;
     }
 
-    private static String xlateString( Context context, String str, 
+    private static String xlateString( Context context, String str,
                                        boolean associate )
     {
         if ( LocIDs.getS_MAP( context ).containsKey( str ) ) {
@@ -263,7 +263,7 @@ public class LocUtils {
         return result;
     }
 
-    public static String getString( Context context, int id ) 
+    public static String getString( Context context, int id )
     {
         return getString( context, true, id );
     }
@@ -279,7 +279,7 @@ public class LocUtils {
                 result = getXlation( context, key, canUseDB );
             }
         }
-        
+
         if ( null == result ) {
             result = context.getString( id );
         }
@@ -307,7 +307,7 @@ public class LocUtils {
         return result;
     }
 
-    public static String getQuantityString( Context context, int id, 
+    public static String getQuantityString( Context context, int id,
                                             int quantity )
     {
         if ( XWApp.LOCUTILS_ENABLED ) {
@@ -318,7 +318,7 @@ public class LocUtils {
         return result;
     }
 
-    public static String getQuantityString( Context context, int id, 
+    public static String getQuantityString( Context context, int id,
                                             int quantity, Object... params )
     {
         if ( XWApp.LOCUTILS_ENABLED ) {
@@ -412,7 +412,7 @@ public class LocUtils {
         JSONObject result = null;
         if ( XWApp.LOCUTILS_ENABLED ) {
             try {
-                String version = 
+                String version =
                     DBUtils.getStringFor( context, localeKey(locale), "0" );
                 result = new JSONObject()
                     .put( k_LOCALE, locale )
@@ -449,7 +449,7 @@ public class LocUtils {
                                    pairs.length(), newVersion );
 
                     int len = pairs.length();
-                    Map<String,String> newXlations = 
+                    Map<String,String> newXlations =
                         new HashMap<String,String>( len );
                     for ( int jj = 0; jj < len; ++jj ) {
                         JSONObject pair = pairs.getJSONObject( jj );
@@ -493,7 +493,7 @@ public class LocUtils {
         return result;
     }
 
-    private static void xlateMenu( final Activity activity, 
+    private static void xlateMenu( final Activity activity,
                                    final WeakReference<Menu> rootRef,
                                    Menu menu, int depth )
     {
@@ -530,13 +530,13 @@ public class LocUtils {
                         public boolean onMenuItemClick( MenuItem item ) {
                             s_latestMenuRef = rootRef;
 
-                            Intent intent = 
+                            Intent intent =
                                 new Intent( activity, LocActivity.class );
-                            intent.putExtra( CONTEXT_NAME, 
+                            intent.putExtra( CONTEXT_NAME,
                                              activity.getClass().getName() );
                             activity.startActivity( intent );
                             return true;
-                        } 
+                        }
                     });
         }
     }
@@ -594,7 +594,7 @@ public class LocUtils {
     private static void loadXlations( Context context )
     {
         if ( null == s_xlationsLocal || null == s_xlationsBlessed ) {
-            Object[] asObjs = 
+            Object[] asObjs =
                 DBUtils.getXlations( context, getCurLocale( context ) );
             s_xlationsLocal = (Map<String,String>)asObjs[0];
             s_xlationsBlessed = (Map<String,String>)asObjs[1];
@@ -622,10 +622,10 @@ public class LocUtils {
         return s_idsToKeys.get( id );
     }
 
-    private static void xlateView( Context context, String contextName, 
+    private static void xlateView( Context context, String contextName,
                                    View view, int depth )
     {
-        // DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
+        // DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth,
         //                view.getClass().getName(), view instanceof ViewGroup );
         if ( view instanceof Button ) {
             Button button = (Button)view;
@@ -652,7 +652,7 @@ public class LocUtils {
         }
 
         // A Spinner, for instance, ISA ViewGroup, so this is a separate test.
-        if ( view instanceof ViewGroup ) { 
+        if ( view instanceof ViewGroup ) {
             ViewGroup asGroup = (ViewGroup)view;
             int count =	asGroup.getChildCount();
             for ( int ii = 0; ii < count; ++ii ) {
@@ -662,10 +662,10 @@ public class LocUtils {
         }
     }
 
-    public static void xlatePreferences( Context context, Preference pref, 
+    public static void xlatePreferences( Context context, Preference pref,
                                          int depth )
     {
-        // DbgUtils.logf( "xlatePreferences(depth=%d, view=%s, canRecurse=%b)", depth, 
+        // DbgUtils.logf( "xlatePreferences(depth=%d, view=%s, canRecurse=%b)", depth,
         //                pref.getClass().getName(), pref instanceof PreferenceGroup );
 
         String str = xlateString( context, pref.getSummary() );
@@ -693,7 +693,7 @@ public class LocUtils {
             }
 
             // ListPreference isa DialogPreference
-            if ( dp instanceof ListPreference ) { 
+            if ( dp instanceof ListPreference ) {
                 ListPreference lp = (ListPreference) dp;
                 CharSequence[] entries = lp.getEntries();
                 if ( null != entries ) {
@@ -797,7 +797,7 @@ public class LocUtils {
 
     private static Pattern s_patUnicode = Pattern.compile("(\\\\[Uu][0-9a-fA-F]{4})");
     private static Pattern s_patCr = Pattern.compile("\\\\n");
-    
+
     private static String replaceEscaped( String txt )
     {
         // String orig = txt;
@@ -862,14 +862,14 @@ public class LocUtils {
         }
 
         @Override
-        public AlertDialog.Builder setPositiveButton( int textId, 
+        public AlertDialog.Builder setPositiveButton( int textId,
                                                       OnClickListener listener )
         {
             String str = getString( m_context, textId );
             return setPositiveButton( str, listener );
         }
         @Override
-        public AlertDialog.Builder setNeutralButton( int textId, 
+        public AlertDialog.Builder setNeutralButton( int textId,
                                                      OnClickListener listener )
         {
             String str = getString( m_context, textId );
@@ -877,7 +877,7 @@ public class LocUtils {
         }
 
         @Override
-        public AlertDialog.Builder setNegativeButton( int textId, 
+        public AlertDialog.Builder setNegativeButton( int textId,
                                                       OnClickListener listener )
         {
             String str = getString( m_context, textId );

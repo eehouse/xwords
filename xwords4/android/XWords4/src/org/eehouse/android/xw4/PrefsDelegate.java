@@ -163,22 +163,22 @@ public class PrefsDelegate extends DelegateBase
 
         hideStuff();
     }
-    
+
     @Override
-    protected void onResume() 
+    protected void onResume()
     {
         super.onResume();
-        getSharedPreferences().registerOnSharedPreferenceChangeListener(this);   
+        getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
 
-    protected void onPause() 
+    protected void onPause()
     {
         getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
     }
 
     @Override
-    public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
+    public void onSharedPreferenceChanged( SharedPreferences sp, String key )
     {
         if ( s_keysHash.containsKey( key ) ) {
             switch( s_keysHash.get( key ) ) {
@@ -305,17 +305,17 @@ public class PrefsDelegate extends DelegateBase
         lp.setEntryValues( langs );
     }
 
-    private void forceDictsMatch( String newLang ) 
+    private void forceDictsMatch( String newLang )
     {
         int code = DictLangCache.getLangLangCode( m_activity, newLang );
-        int[] keyIds = { R.string.key_default_dict, 
+        int[] keyIds = { R.string.key_default_dict,
                          R.string.key_default_robodict };
         for ( int id : keyIds ) {
             String key = getString( id );
             DictListPreference pref = (DictListPreference)m_activity.findPreference( key );
             String curDict = pref.getValue().toString();
             if ( ! DictUtils.dictExists( m_activity, curDict )
-                 || code != DictLangCache.getDictLangCode( m_activity, 
+                 || code != DictLangCache.getDictLangCode( m_activity,
                                                            curDict ) ) {
                 pref.invalidate();
             }

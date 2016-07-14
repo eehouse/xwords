@@ -48,7 +48,7 @@ public class XWApp extends Application {
     public static final boolean OFFER_DUALPANE = false;
     // BT class "COMPUTERS" includes tablets like the Nexus 9
     public static final boolean BT_SCAN_COMPUTERS = true;
-    
+
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
     public static final int SEL_COLOR = Color.argb( 0xFF, 0x09, 0x70, 0x93 );
@@ -66,7 +66,7 @@ public class XWApp extends Application {
         // This one line should always get logged even if logging is
         // off -- because logging is on by default until logEnable is
         // called.
-        DbgUtils.logf( "XWApp.onCreate(); git_rev=%s", 
+        DbgUtils.logf( "XWApp.onCreate(); git_rev=%s",
                        getString( R.string.git_rev ) );
         DbgUtils.logEnable( this );
 
@@ -108,7 +108,7 @@ public class XWApp extends Application {
         return s_UUID;
     }
 
-    public static String getAppName( Context context ) 
+    public static String getAppName( Context context )
     {
         return context.getString( R.string.app_name );
     }

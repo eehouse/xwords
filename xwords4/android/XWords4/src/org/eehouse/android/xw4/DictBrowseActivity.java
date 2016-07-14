@@ -27,7 +27,7 @@ public class DictBrowseActivity extends XWActivity {
     private DictBrowseDelegate m_dlgt;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
         m_dlgt = new DictBrowseDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );

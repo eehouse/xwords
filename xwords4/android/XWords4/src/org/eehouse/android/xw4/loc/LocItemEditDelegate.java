@@ -56,7 +56,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
 
     protected LocItemEditDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.loc_item_edit, 
+        super( delegator, savedInstanceState, R.layout.loc_item_edit,
                R.menu.loc_item_menu );
         m_activity = delegator.getActivity();
     }
@@ -69,7 +69,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         TextView view = (TextView)findViewById( R.id.english_view );
         m_keyFmts = getFmtSet( key, view );
         if ( 0 < m_keyFmts.size() ) {
-            showNotAgainDlg( R.string.not_again_fmt_expl, 
+            showNotAgainDlg( R.string.not_again_fmt_expl,
                              R.string.key_na_fmt_expl );
         }
 
@@ -104,7 +104,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
     }
 
     @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
+    public boolean onPrepareOptionsMenu( Menu menu )
     {
         CharSequence editTxt = m_edit.getText();
         boolean haveTxt = null != editTxt && 0 < editTxt.length();
@@ -112,14 +112,14 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         Utils.setItemVisible( menu, R.id.loc_item_clear, haveTxt );
         Utils.setItemVisible( menu, R.id.loc_item_check, haveTxt );
         Utils.setItemVisible( menu, R.id.loc_item_copy_eng, !haveTxt );
-        Utils.setItemVisible( menu, R.id.loc_item_copy_bless, 
+        Utils.setItemVisible( menu, R.id.loc_item_copy_bless,
                               m_haveBlessed && !haveTxt );
 
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         String newText = null;
         int id = item.getItemId();

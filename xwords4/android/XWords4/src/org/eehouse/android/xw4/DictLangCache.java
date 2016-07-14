@@ -72,7 +72,7 @@ public class DictLangCache {
                 String lang = getLangName( m_context, dal.name );
                 if ( null != lang && 0 != lang.length() ) {
                     if ( ! m_map.containsValue( lang ) ) {
-                        String locName = LocUtils.xlateLang( m_context, lang, 
+                        String locName = LocUtils.xlateLang( m_context, lang,
                                                              true );
                         m_map.put( locName, lang );
                     }
@@ -81,7 +81,7 @@ public class DictLangCache {
 
             // Now build the array data
             clear();
-            for ( Iterator<String> iter = m_map.keySet().iterator(); 
+            for ( Iterator<String> iter = m_map.keySet().iterator();
                   iter.hasNext(); ) {
                 String locName = iter.next();
                 add( locName );
@@ -113,7 +113,7 @@ public class DictLangCache {
         }
     }
 
-    private static Comparator<String> KeepLast = 
+    private static Comparator<String> KeepLast =
         new Comparator<String>() {
             public int compare( String str1, String str2 )
             {
@@ -133,10 +133,10 @@ public class DictLangCache {
         DictInfo info = getInfo( context, dal );
         if ( null != info ) {
             int wordCount = info.wordCount;
-            
+
             String langName = getLangName( context, dal.name );
             String locName = LocUtils.xlateLang( context, langName );
-            result = LocUtils.getString( context, R.string.dict_desc_fmt, 
+            result = LocUtils.getString( context, R.string.dict_desc_fmt,
                                          dal.name, locName,
                                          wordCount );
         }
@@ -259,7 +259,7 @@ public class DictLangCache {
         return result;
     }
 
-    private static Comparator<DictInfo> s_ByCount = 
+    private static Comparator<DictInfo> s_ByCount =
         new Comparator<DictInfo>() {
             public int compare( DictInfo di1, DictInfo di2 )
             {
@@ -337,9 +337,9 @@ public class DictLangCache {
             s_handler.post( new Runnable() {
                     public void run() {
                         if ( null != s_dictsAdapter ) {
-                            rebuildAdapter( s_dictsAdapter, 
+                            rebuildAdapter( s_dictsAdapter,
                                             DictLangCache.
-                                            getHaveLang( context, 
+                                            getHaveLang( context,
                                                          s_adaptedLang ) );
                         }
                         if ( null != s_langsAdapter ) {
@@ -370,7 +370,7 @@ public class DictLangCache {
         return langs.toArray( result );
     }
 
-    public static String getBestDefault( Context context, int lang, 
+    public static String getBestDefault( Context context, int lang,
                                          boolean human )
     {
         String dict = human? CommonPrefs.getDefaultHumanDict( context )
@@ -410,19 +410,19 @@ public class DictLangCache {
     public static LangsArrayAdapter getLangsAdapter( Context context )
     {
         if ( null == s_langsAdapter ) {
-            s_langsAdapter = 
-                new LangsArrayAdapter( context, 
+            s_langsAdapter =
+                new LangsArrayAdapter( context,
                                        android.R.layout.simple_spinner_item );
             s_langsAdapter.rebuild();
         }
         return s_langsAdapter;
     }
 
-    public static ArrayAdapter<String> getDictsAdapter( Context context, 
+    public static ArrayAdapter<String> getDictsAdapter( Context context,
                                                         int lang )
     {
         if ( lang != s_adaptedLang ) {
-            s_dictsAdapter = 
+            s_dictsAdapter =
                 new ArrayAdapter<String>( context,
                                           android.R.layout.simple_spinner_item );
             rebuildAdapter( s_dictsAdapter, getHaveLang( context, lang ) );
@@ -473,7 +473,7 @@ public class DictLangCache {
 
         // Tmp test that recovers from problem with new background download code
         if ( null != info && 0 == info.langCode ) {
-            DbgUtils.logf( "getInfo: dropping info for %s b/c lang code wrong", 
+            DbgUtils.logf( "getInfo: dropping info for %s b/c lang code wrong",
                            dal.name );
             info = null;
         }
@@ -483,9 +483,9 @@ public class DictLangCache {
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, names );
 
             info = new DictInfo();
-            if ( XwJNI.dict_getInfo( pairs.m_bytes[0], dal.name, 
-                                     pairs.m_paths[0], 
-                                     JNIUtilsImpl.get( context ), 
+            if ( XwJNI.dict_getInfo( pairs.m_bytes[0], dal.name,
+                                     pairs.m_paths[0],
+                                     JNIUtilsImpl.get( context ),
                                      DictLoc.DOWNLOAD == dal.loc,
                                      info ) ) {
 

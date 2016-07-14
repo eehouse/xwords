@@ -43,7 +43,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class MainActivity extends XWActivity 
+public class MainActivity extends XWActivity
     implements FragmentManager.OnBackStackChangedListener {
     private static final int MAX_PANES_LANDSCAPE = 2;
 
@@ -151,7 +151,7 @@ public class MainActivity extends XWActivity
             for ( int ii = hiddenCount; ii >= 0; --ii ) {
                 View child = m_root.getChildAt( ii );
                 Fragment frag = fm.findFragmentById( child.getId() );
-                // DbgUtils.logf( "left-most case (child %d): %s", hiddenCount, 
+                // DbgUtils.logf( "left-most case (child %d): %s", hiddenCount,
                 //                frag.getClass().getSimpleName() );
                 handled = ((XWFragment)frag).getDelegate()
                     .handleNewIntent( intent );
@@ -159,7 +159,7 @@ public class MainActivity extends XWActivity
                 if ( handled ) {
                     break;
                 } else if ( ii > 0 ) {
-                    DbgUtils.logf( "popping %s", 
+                    DbgUtils.logf( "popping %s",
                                    frag.getClass().getSimpleName() );
                     fm.popBackStackImmediate(); // callback removes view
                 }
@@ -177,7 +177,7 @@ public class MainActivity extends XWActivity
         View child = m_root.getChildAt( m_root.getChildCount() - 1 );
         Fragment frag = getSupportFragmentManager()
             .findFragmentById( child.getId() );
-        boolean handled = null != frag 
+        boolean handled = null != frag
             &&((XWFragment)frag).getDelegate().handleBackPressed();
         return handled;
     }
@@ -206,13 +206,13 @@ public class MainActivity extends XWActivity
     }
 
     @Override
-    public void addFragment( XWFragment fragment, Bundle extras ) 
+    public void addFragment( XWFragment fragment, Bundle extras )
     {
         addFragmentImpl( fragment, extras, this );
     }
 
     @Override
-    public void addFragmentForResult( XWFragment fragment, Bundle extras, 
+    public void addFragmentForResult( XWFragment fragment, Bundle extras,
                                       RequestCode requestCode )
     {
         DbgUtils.logf( "addFragmentForResult(): dropping requestCode" );
@@ -236,7 +236,7 @@ public class MainActivity extends XWActivity
             finish();
         } else if ( fragCount == m_root.getChildCount() - 1 ) {
             // View child = m_root.getChildAt( fragCount );
-            // DbgUtils.logf( "onBackStackChanged(): removing view with id %x", 
+            // DbgUtils.logf( "onBackStackChanged(): removing view with id %x",
             //                child.getId() );
             m_root.removeViewAt( fragCount );
             setVisiblePanes();
@@ -268,7 +268,7 @@ public class MainActivity extends XWActivity
     {
         int result;
         int orientation = getResources().getConfiguration().orientation;
-        if ( XWPrefs.getIsTablet( this ) 
+        if ( XWPrefs.getIsTablet( this )
              && Configuration.ORIENTATION_LANDSCAPE == orientation ) {
             result = MAX_PANES_LANDSCAPE;
         } else {
@@ -301,8 +301,8 @@ public class MainActivity extends XWActivity
         }
     }
 
-    private void addFragmentImpl( Fragment fragment, Bundle bundle, 
-                                  Delegator parent ) 
+    private void addFragmentImpl( Fragment fragment, Bundle bundle,
+                                  Delegator parent )
     {
         fragment.setArguments( bundle );
         addFragmentImpl( fragment, parent );

@@ -51,7 +51,7 @@ public class LocalPlayer {
         secondsUsed = src.secondsUsed;
     }
 
-    public boolean isRobot() 
+    public boolean isRobot()
     {
         return robotIQ > 0;
     }

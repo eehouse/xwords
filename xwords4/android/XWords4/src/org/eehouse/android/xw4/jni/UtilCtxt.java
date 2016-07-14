@@ -38,7 +38,7 @@ public interface UtilCtxt {
     public static final int PICKER_BACKUP = -2;
 
     int userPickTileBlank( int playerNum, String[] texts );
-    int userPickTileTray( int playerNum, String[] tiles, 
+    int userPickTileTray( int playerNum, String[] tiles,
                           String[] curTiles, int nPicked );
 
     String askPassword( String name );
@@ -133,7 +133,7 @@ public interface UtilCtxt {
     void informMove( int turn, String expl, String words );
     void informUndo();
 
-    void informNetDict( int lang, String oldName, String newName, 
+    void informNetDict( int lang, String oldName, String newName,
                         String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
     void informMissing( boolean isServer, CommsConnTypeSet connTypes,
@@ -143,7 +143,7 @@ public interface UtilCtxt {
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
 
-    boolean warnIllegalWord( String dict, String[] words, int turn, 
+    boolean warnIllegalWord( String dict, String[] words, int turn,
                              boolean turnLost );
 
     void showChat( String msg, int fromIndx, String fromName );

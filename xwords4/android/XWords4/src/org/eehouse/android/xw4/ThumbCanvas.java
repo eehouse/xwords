@@ -36,14 +36,14 @@ public class ThumbCanvas extends BoardCanvas {
     // These should not be needed if common code gets fixed!  So the
     // whole class should go away. PENDING
     @Override
-    public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
+    public boolean scoreBegin( Rect rect, int numPlayers, int[] scores,
                                int remCount )
     {
         return false;
     }
 
     @Override
-    public boolean trayBegin( Rect rect, int owner, int score ) 
+    public boolean trayBegin( Rect rect, int owner, int score )
     {
         return false;
     }

@@ -47,7 +47,7 @@ public class CommonPrefs extends XWPrefs {
 
     public boolean showBoardArrow;
     public boolean showRobotScores;
-    public boolean hideTileValues; 
+    public boolean hideTileValues;
     public boolean skipCommitConfirm;
     public boolean showColors;
     public boolean sortNewTiles;
@@ -72,13 +72,13 @@ public class CommonPrefs extends XWPrefs {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
 
-        showBoardArrow = getBoolean( context, sp, R.string.key_show_arrow, 
+        showBoardArrow = getBoolean( context, sp, R.string.key_show_arrow,
                                      true );
-        showRobotScores = getBoolean( context, sp, R.string.key_explain_robot, 
+        showRobotScores = getBoolean( context, sp, R.string.key_explain_robot,
                                       false );
-        hideTileValues = getBoolean( context, sp, R.string.key_hide_values, 
+        hideTileValues = getBoolean( context, sp, R.string.key_hide_values,
                                      false );
-        skipCommitConfirm = getBoolean( context, sp, 
+        skipCommitConfirm = getBoolean( context, sp,
                                         R.string.key_skip_confirm, false );
         showColors = getBoolean( context, sp, R.string.key_color_tiles, true );
         sortNewTiles = getBoolean( context, sp, R.string.key_sort_tiles, true );
@@ -117,7 +117,7 @@ public class CommonPrefs extends XWPrefs {
         return this;
     }
 
-    private boolean getBoolean( Context context, SharedPreferences sp, 
+    private boolean getBoolean( Context context, SharedPreferences sp,
                                 int id, boolean dflt )
     {
         String key = LocUtils.getString( context, id );
@@ -149,7 +149,7 @@ public class CommonPrefs extends XWPrefs {
             result = Integer.parseInt( value.substring( 0, 2 ) );
         } catch ( Exception ex ) {
             result = 15;
-        } 
+        }
         return result;
     }
 
@@ -170,7 +170,7 @@ public class CommonPrefs extends XWPrefs {
         }
         return value;
     }
-    
+
     public static String getDefaultOriginalPlayerName( Context context,
                                                        int num )
     {
@@ -205,12 +205,12 @@ public class CommonPrefs extends XWPrefs {
         setPrefsString( context, R.string.key_player1_name, value );
     }
 
-    public static CurGameInfo.XWPhoniesChoice 
+    public static CurGameInfo.XWPhoniesChoice
         getDefaultPhonies( Context context )
     {
         String value = getPrefsString( context, R.string.key_default_phonies );
 
-        CurGameInfo.XWPhoniesChoice result = 
+        CurGameInfo.XWPhoniesChoice result =
             CurGameInfo.XWPhoniesChoice.PHONIES_IGNORE;
         Resources res = context.getResources();
         String[] names = res.getStringArray( R.array.phony_names );
@@ -223,14 +223,14 @@ public class CommonPrefs extends XWPrefs {
         }
         return result;
     }
-    
+
     public static boolean getDefaultTimerEnabled( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_default_timerenabled, 
+        return getPrefsBoolean( context, R.string.key_default_timerenabled,
                                 false );
     }
 
-    public static boolean getDefaultHintsAllowed( Context context, 
+    public static boolean getDefaultHintsAllowed( Context context,
                                                   boolean networked )
     {
         int key = networked ?
@@ -246,7 +246,7 @@ public class CommonPrefs extends XWPrefs {
     public static boolean getHideTitleBar( Context context )
     {
         boolean hideByDefault = 11 > Integer.valueOf( Build.VERSION.SDK );
-        return getPrefsBoolean( context, R.string.key_hide_title, 
+        return getPrefsBoolean( context, R.string.key_hide_title,
                                 hideByDefault );
     }
 

@@ -204,7 +204,7 @@ public class NetLaunchInfo {
         calcValid();
     }
 
-    private NetLaunchInfo( int gamID, String gamNam, int dictLang, 
+    private NetLaunchInfo( int gamID, String gamNam, int dictLang,
                            String dictName, int nPlayers )
     {
         this();
@@ -262,7 +262,7 @@ public class NetLaunchInfo {
     }
 
     public String inviteID()
-    { 
+    {
         String result = inviteID;
         if ( null == result ) {
             result = GameUtils.formatGameID( gameID );
@@ -272,7 +272,7 @@ public class NetLaunchInfo {
     }
 
     public int gameID()
-    { 
+    {
         int result = gameID;
         if ( 0 == result ) {
             Assert.assertNotNull( inviteID );
@@ -369,12 +369,12 @@ public class NetLaunchInfo {
     private void init( Context context, String data )
     {
         CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
-        try { 
+        try {
             JSONObject json = new JSONObject( data );
 
             int flags = json.optInt(ADDRS_KEY, -1);
             boolean hasAddrs = -1 != flags;
-            m_addrs = hasAddrs ? 
+            m_addrs = hasAddrs ?
                 new CommsConnTypeSet( flags ) : new CommsConnTypeSet();
 
             lang = json.optInt( MultiService.LANG, -1 );
@@ -475,7 +475,7 @@ public class NetLaunchInfo {
 
         return result;
     }
-    
+
     public void addRelayInfo( String aRoom, String inviteID )
     {
         room = aRoom;

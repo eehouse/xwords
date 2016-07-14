@@ -74,7 +74,7 @@ import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 
 public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
-               SelectableItem, MountEventReceiver.SDCardNotifiee, 
+               SelectableItem, MountEventReceiver.SDCardNotifiee,
                DlgDelegate.DlgClickNotify, GroupStateListener,
                DownloadFinishedListener, XWListItem.ExpandedListener {
 
@@ -109,25 +109,25 @@ public class DictsDelegate extends ListDelegateBase
     private String m_noteNone;
 
     private static interface SafePopup {
-        public void doPopup( Delegator dlgtor, View button, 
+        public void doPopup( Delegator dlgtor, View button,
                              String curDict, int lang );
     }
     private static SafePopup s_safePopup = null;
 
     private static class SafePopupImpl implements SafePopup {
-        public void doPopup( final Delegator dlgtor, View button, 
+        public void doPopup( final Delegator dlgtor, View button,
                              String curDict, int lang ) {
 
             final HashMap<MenuItem, DictAndLoc> itemData
                 = new HashMap<MenuItem, DictAndLoc>();
 
-            MenuItem.OnMenuItemClickListener listener = 
+            MenuItem.OnMenuItemClickListener listener =
                 new MenuItem.OnMenuItemClickListener() {
                     public boolean onMenuItemClick( MenuItem item )
                     {
                         DictAndLoc dal = itemData.get( item );
 
-                        DictBrowseDelegate.launch( dlgtor, dal.name, 
+                        DictBrowseDelegate.launch( dlgtor, dal.name,
                                                    dal.loc );
                         return true;
                     }
@@ -140,7 +140,7 @@ public class DictsDelegate extends ListDelegateBase
             // Add at top but save until have dal info
             MenuItem curItem =
                 menu.add( LocUtils.getString( context,
-                                              R.string.cur_menu_marker_fmt, 
+                                              R.string.cur_menu_marker_fmt,
                                               curDict ) );
 
             DictAndLoc[] dals = DictLangCache.getDALsHaveLang( context, lang );
@@ -161,7 +161,7 @@ public class DictsDelegate extends ListDelegateBase
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String lang, int nWords, 
+        public DictInfo( String name, String lang, int nWords,
                          long nBytes, String note )
         {
             m_name = name;
@@ -178,7 +178,7 @@ public class DictsDelegate extends ListDelegateBase
     private static class LangInfo {
         int m_numDicts;
         int m_posn;
-        public LangInfo( int posn, int numDicts ) 
+        public LangInfo( int posn, int numDicts )
         {
             m_posn = posn;
             m_numDicts = numDicts;
@@ -191,7 +191,7 @@ public class DictsDelegate extends ListDelegateBase
     private class DictListAdapter extends XWExpListAdapter {
         private Context m_context;
 
-        public DictListAdapter( Context context ) 
+        public DictListAdapter( Context context )
         {
             super( new Class[] { LangInfo.class,
                                  DictAndLoc.class,
@@ -207,7 +207,7 @@ public class DictsDelegate extends ListDelegateBase
             int nLangs = m_langs.length;
             for ( int ii = 0; ii < nLangs; ++ii ) {
                 String langName = m_langs[ii];
-                if ( null != m_filterLang && 
+                if ( null != m_filterLang &&
                      ! m_filterLang.equals(langName) ) {
                     continue;
                 }
@@ -235,12 +235,12 @@ public class DictsDelegate extends ListDelegateBase
                                                               langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
                 String locLangName = xlateLang( langName );
-                String name = getQuantityString( R.plurals.lang_name_fmt, 
+                String name = getQuantityString( R.plurals.lang_name_fmt,
                                                  info.m_numDicts,
                                                  locLangName, info.m_numDicts );
                 name = Utils.capitalize( name );
-                result = ListGroup.make( m_context, convertView, 
-                                         DictsDelegate.this, groupPos, name, 
+                result = ListGroup.make( m_context, convertView,
+                                         DictsDelegate.this, groupPos, name,
                                          expanded );
             } else {
                 XWListItem item;
@@ -286,7 +286,7 @@ public class DictsDelegate extends ListDelegateBase
                 } else {
                     Assert.fail();
                 }
-            } 
+            }
             return result;
         }
 
@@ -349,7 +349,7 @@ public class DictsDelegate extends ListDelegateBase
 
     protected DictsDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.dict_browse, 
+        super( delegator, savedInstanceState, R.layout.dict_browse,
                R.menu.dicts_menu );
         m_activity = delegator.getActivity();
     }
@@ -374,8 +374,8 @@ public class DictsDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlgi, int item ) {
                         moveTo[0] = item;
                         AlertDialog dlg = (AlertDialog)dlgi;
-                        Button btn = 
-                            dlg.getButton( AlertDialog.BUTTON_POSITIVE ); 
+                        Button btn =
+                            dlg.getButton( AlertDialog.BUTTON_POSITIVE );
                         btn.setEnabled( true );
                     }
                 };
@@ -389,12 +389,12 @@ public class DictsDelegate extends ListDelegateBase
                             if ( fromLoc == toLoc ) {
                                 DbgUtils.logf( "not moving %s: same loc", name );
                             } else if ( DictUtils.moveDict( m_activity,
-                                                            name, fromLoc, 
+                                                            name, fromLoc,
                                                             toLoc ) ) {
                                 selItem.setComment( m_locNames[toLoc.ordinal()] );
                                 selItem.setCached( toLoc );
                                 selItem.invalidate();
-                                DBUtils.dictsMoveInfo( m_activity, name, 
+                                DBUtils.dictsMoveInfo( m_activity, name,
                                                        fromLoc, toLoc );
                             } else {
                                 DbgUtils.logf( "moveDict(%s) failed", name );
@@ -418,12 +418,12 @@ public class DictsDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
-                            setDefault( row, R.string.key_default_dict, 
+                            setDefault( row, R.string.key_default_dict,
                                         R.string.key_default_robodict );
                         }
-                        if ( DialogInterface.BUTTON_NEGATIVE == item 
+                        if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_NEUTRAL == item ) {
-                            setDefault( row, R.string.key_default_robodict, 
+                            setDefault( row, R.string.key_default_robodict,
                                         R.string.key_default_dict );
                         }
                     }
@@ -449,7 +449,7 @@ public class DictsDelegate extends ListDelegateBase
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
                         DwnldDelegate
-                            .downloadDictInBack( m_activity, lang, 
+                            .downloadDictInBack( m_activity, lang,
                                                  name, DictsDelegate.this );
                     }
                 };
@@ -459,7 +459,7 @@ public class DictsDelegate extends ListDelegateBase
                     }
                 };
 
-            dialog = MultiService.missingDictDialog( m_activity, getIntent(), 
+            dialog = MultiService.missingDictDialog( m_activity, getIntent(),
                                                      lstnr, lstnr2 );
             break;
 
@@ -488,7 +488,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    protected void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState )
     {
         m_onServerStr = getString( R.string.dict_on_server );
         m_closedLangs = new HashSet<String>();
@@ -504,7 +504,7 @@ public class DictsDelegate extends ListDelegateBase
 
         m_listView = getListView();
         m_listView.setOnItemLongClickListener( this );
-        
+
         m_checkbox = (CheckBox)findViewById( R.id.show_remote );
         m_checkbox.setOnClickListener( this );
 
@@ -515,7 +515,7 @@ public class DictsDelegate extends ListDelegateBase
             if ( MultiService.isMissingDictIntent( intent ) ) {
                 showDialog( DlgID.DICT_OR_DECLINE );
             } else {
-                boolean showRemote = intent.getBooleanExtra( DICT_SHOWREMOTE, 
+                boolean showRemote = intent.getBooleanExtra( DICT_SHOWREMOTE,
                                                              false );
                 if ( showRemote ) {
                     m_quickFetchMode = true;
@@ -555,18 +555,18 @@ public class DictsDelegate extends ListDelegateBase
         setTitleBar();
     }
 
-    protected void onStop() 
+    protected void onStop()
     {
         MountEventReceiver.unregister( this );
     }
 
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         if ( view == m_checkbox ) {
             switchShowingRemote( m_checkbox.isChecked() );
         } else {
             XWListItem item = (XWListItem)view;
-            DictBrowseDelegate.launch( getDelegator(), item.getText(), 
+            DictBrowseDelegate.launch( getDelegator(), item.getText(),
                                        (DictLoc)item.getCached() );
         }
     }
@@ -591,22 +591,22 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
+    public boolean onPrepareOptionsMenu( Menu menu )
     {
         // int nSel = m_selDicts.size();
         int[] nSels = countSelDicts();
-        Utils.setItemVisible( menu, R.id.dicts_select, 
+        Utils.setItemVisible( menu, R.id.dicts_select,
                               1 == nSels[SEL_LOCAL] && 0 == nSels[SEL_REMOTE] );
 
         // NO -- test if any downloadable selected
-        Utils.setItemVisible( menu, R.id.dicts_download, 
+        Utils.setItemVisible( menu, R.id.dicts_download,
                               0 == nSels[SEL_LOCAL] && 0 < nSels[SEL_REMOTE] );
 
-        Utils.setItemVisible( menu, R.id.dicts_deselect_all, 
+        Utils.setItemVisible( menu, R.id.dicts_deselect_all,
                               0 < nSels[SEL_LOCAL] || 0 < nSels[SEL_REMOTE] );
 
         boolean allVolatile = 0 == nSels[SEL_REMOTE] && selItemsVolatile();
-        Utils.setItemVisible( menu, R.id.dicts_move, 
+        Utils.setItemVisible( menu, R.id.dicts_move,
                               allVolatile && DictUtils.haveWriteableSD() );
         Utils.setItemVisible( menu, R.id.dicts_delete, allVolatile );
 
@@ -635,14 +635,14 @@ public class DictsDelegate extends ListDelegateBase
             Uri[] uris = new Uri[countNeedDownload()];
             String[] names = new String[uris.length];
             int count = 0;
-            for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+            for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
                   iter.hasNext(); ) {
                 XWListItem litm = iter.next();
                 Object cached = litm.getCached();
                 if ( cached instanceof DictInfo ) {
                     DictInfo info = (DictInfo)cached;
                     String name = litm.getText();
-                    Uri uri = Utils.makeDictUri( m_activity, info.m_lang, 
+                    Uri uri = Utils.makeDictUri( m_activity, info.m_lang,
                                                  name );
                     uris[count] = uri;
                     names[count] = name;
@@ -676,7 +676,7 @@ public class DictsDelegate extends ListDelegateBase
     private int countNeedDownload()
     {
         int result = 0;
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
               iter.hasNext(); ) {
             XWListItem litm = iter.next();
             Object obj = litm.getCached();
@@ -691,9 +691,9 @@ public class DictsDelegate extends ListDelegateBase
     {
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
-            String name = 
+            String name =
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_NAME );
-            String url = 
+            String url =
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
             Uri uri = Uri.parse( url );
             DwnldDelegate.downloadDictInBack( m_activity, uri, name, null );
@@ -745,11 +745,11 @@ public class DictsDelegate extends ListDelegateBase
         }
         saveClosed();
     }
-    
+
     //////////////////////////////////////////////////////////////////////
     // OnItemLongClickListener interface
     //////////////////////////////////////////////////////////////////////
-    public boolean onItemLongClick( AdapterView<?> parent, View view, 
+    public boolean onItemLongClick( AdapterView<?> parent, View view,
                                     int position, long id ) {
         boolean success = view instanceof SelectableItem.LongClickHandler;
         if ( success ) {
@@ -758,10 +758,10 @@ public class DictsDelegate extends ListDelegateBase
         return success;
     }
 
-    private boolean selItemsVolatile() 
+    private boolean selItemsVolatile()
     {
         boolean result = 0 < m_selDicts.size();
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
               result && iter.hasNext(); ) {
             Object obj = iter.next().getCached();
             if ( obj instanceof DictLoc ) {
@@ -779,7 +779,7 @@ public class DictsDelegate extends ListDelegateBase
     private void deleteSelected()
     {
         XWListItem[] items = getSelItems();
-        String msg = getQuantityString( R.plurals.confirm_delete_dict_fmt, 
+        String msg = getQuantityString( R.plurals.confirm_delete_dict_fmt,
                                         items.length, getJoinedNames( items ) );
 
         // Confirm.  And for each dict, warn if (after ALL are deleted) any
@@ -796,7 +796,7 @@ public class DictsDelegate extends ListDelegateBase
             public String dictsStr()
             {
                 if ( null == m_asArray ) {
-                    String[] arr = delDicts.toArray(new String[delDicts.size()]); 
+                    String[] arr = delDicts.toArray(new String[delDicts.size()]);
                     m_asArray = TextUtils.join( ", ", arr );
                 }
                 return m_asArray;
@@ -962,7 +962,7 @@ public class DictsDelegate extends ListDelegateBase
     {
         XWListItem[] items = new XWListItem[m_selDicts.size()];
         int indx = 0;
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
               iter.hasNext(); ) {
             items[indx++] = iter.next();
         }
@@ -974,7 +974,7 @@ public class DictsDelegate extends ListDelegateBase
     {
         int[] results = new int[2];
         Assert.assertTrue( 0 == results[0] && 0 == results[1] );
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
               iter.hasNext(); ) {
             Object obj = iter.next().getCached();
             if ( obj instanceof DictLoc ) {
@@ -1000,7 +1000,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    private String[] makeDictDirItems() 
+    private String[] makeDictDirItems()
     {
         boolean showDownload = DictUtils.haveDownloadDir( m_activity );
         int nItems = showDownload ? 3 : 2;
@@ -1033,7 +1033,7 @@ public class DictsDelegate extends ListDelegateBase
         // return mkDownloadIntent( context, dict_url );
     }
 
-    public static void downloadForResult( Activity activity, RequestCode requestCode, 
+    public static void downloadForResult( Activity activity, RequestCode requestCode,
                                           int lang, String name )
     {
         Intent intent = new Intent( activity, DictsActivity.class );
@@ -1093,25 +1093,25 @@ public class DictsDelegate extends ListDelegateBase
         final DictInfo info = (DictInfo)me.getCached();
         if ( expanded ) {
             m_expandedItems.add( info ); // may already be there
-            LinearLayout view = 
+            LinearLayout view =
                 (LinearLayout)inflate( R.layout.remote_dict_details );
             Button button = (Button)view.findViewById( R.id.download_button );
             button.setOnClickListener( new View.OnClickListener() {
                     public void onClick( View view ) {
                         DwnldDelegate.
-                            downloadDictInBack( m_activity, info.m_lang, 
-                                                info.m_name, 
+                            downloadDictInBack( m_activity, info.m_lang,
+                                                info.m_name,
                                                 DictsDelegate.this );
                     }
                 } );
-            
+
             long kBytes = (info.m_nBytes + 999) / 1000;
             String note = null == info.m_note ? m_noteNone : info.m_note;
-            String msg = getString( R.string.dict_info_fmt, info.m_nWords, 
+            String msg = getString( R.string.dict_info_fmt, info.m_nWords,
                                     kBytes, note );
             TextView summary = (TextView)view.findViewById( R.id.details );
             summary.setText( msg );
-            
+
             me.addExpandedView( view );
         } else {
             me.removeExpandedView();
@@ -1122,7 +1122,7 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////////////////////////
-    public void downloadFinished( String lang, final String name, 
+    public void downloadFinished( String lang, final String name,
                                   final boolean success )
     {
         if ( success && m_showRemote ) {
@@ -1161,7 +1161,7 @@ public class DictsDelegate extends ListDelegateBase
         DbgUtils.logf( "itemClicked not implemented" );
     }
 
-    public void itemToggled( SelectableItem.LongClickHandler toggled, 
+    public void itemToggled( SelectableItem.LongClickHandler toggled,
                              boolean selected )
     {
         XWListItem dictView = (XWListItem)toggled;
@@ -1188,14 +1188,14 @@ public class DictsDelegate extends ListDelegateBase
         private String m_langName;
         private OnGotLcDictListener m_lstnr;
 
-        public GetDefaultDictTask( Context context, String lc, 
+        public GetDefaultDictTask( Context context, String lc,
                                    OnGotLcDictListener lnr ) {
             m_context = context;
             m_lc = lc;
             m_lstnr = lnr;
         }
 
-        @Override 
+        @Override
         public String doInBackground( Void... unused )
         {
             // FIXME: this should pass up the language code to retrieve and
@@ -1231,7 +1231,7 @@ public class DictsDelegate extends ListDelegateBase
                                     break;
                                 } else {
                                     int nWords = dict.getInt( "nWords" );
-                                    if ( null == theOne 
+                                    if ( null == theOne
                                          || nWords > theOneNWords ) {
                                         theOne = dict;
                                         theOneNWords = nWords;
@@ -1245,8 +1245,8 @@ public class DictsDelegate extends ListDelegateBase
                         // the flag so we don't try again, even though
                         // we've failed.
                         if ( null == theOne ) {
-                            XWPrefs.setPrefsBoolean( m_context, 
-                                                     R.string.key_got_langdict, 
+                            XWPrefs.setPrefsBoolean( m_context,
+                                                     R.string.key_got_langdict,
                                                      true );
                         }
 
@@ -1270,7 +1270,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    private class FetchListTask extends AsyncTask<Void, Void, Boolean> 
+    private class FetchListTask extends AsyncTask<Void, Void, Boolean>
         implements OnCancelListener {
         private Context m_context;
 
@@ -1280,7 +1280,7 @@ public class DictsDelegate extends ListDelegateBase
             startProgress( R.string.progress_title, R.string.remote_empty, this );
         }
 
-        @Override 
+        @Override
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
@@ -1300,21 +1300,21 @@ public class DictsDelegate extends ListDelegateBase
             }
             return new Boolean( success );
         }
-            
-        @Override 
+
+        @Override
         protected void onCancelled()
         {
             m_remoteInfo = null;
             m_showRemote = false;
         }
 
-        @Override 
+        @Override
         protected void onCancelled( Boolean success )
         {
             onCancelled();
         }
 
-        @Override 
+        @Override
         protected void onPostExecute( Boolean success )
         {
             if ( success ) {
@@ -1326,7 +1326,7 @@ public class DictsDelegate extends ListDelegateBase
                     String joined = TextUtils.join( ", ", names );
                     showConfirmThen( getString( R.string.update_dicts_fmt,
                                                 joined ),
-                                     R.string.button_download, 
+                                     R.string.button_download,
                                      Action.UPDATE_DICTS_ACTION );
                 }
             } else {
@@ -1359,8 +1359,8 @@ public class DictsDelegate extends ListDelegateBase
                     for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
                         JSONObject langObj = langs.getJSONObject( ii );
                         String langName = langObj.getString( "lang" );
-                    
-                        if ( null != m_filterLang && 
+
+                        if ( null != m_filterLang &&
                              ! m_filterLang.equals( langName ) ) {
                             continue;
                         }
@@ -1371,9 +1371,9 @@ public class DictsDelegate extends ListDelegateBase
 
                         JSONArray dicts = langObj.getJSONArray( "dicts" );
                         int nDicts = dicts.length();
-                        ArrayList<DictInfo> dictNames = 
+                        ArrayList<DictInfo> dictNames =
                             new ArrayList<DictInfo>();
-                        for ( int jj = 0; !isCancelled() && jj < nDicts; 
+                        for ( int jj = 0; !isCancelled() && jj < nDicts;
                               ++jj ) {
                             JSONObject dict = dicts.getJSONObject( jj );
                             String name = dict.getString( "xwd" );
@@ -1389,18 +1389,18 @@ public class DictsDelegate extends ListDelegateBase
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
-                                if ( DictLangCache.haveDict( m_activity, 
+                                if ( DictLangCache.haveDict( m_activity,
                                                              langName, name )){
                                     boolean matches = true;
                                     String curSum = DictLangCache
                                         .getDictMD5Sum( m_activity, name );
                                     if ( null != curSum ) {
-                                        JSONArray sums = 
+                                        JSONArray sums =
                                             dict.getJSONArray("md5sums");
                                         if ( null != sums ) {
                                             matches = false;
-                                            for ( int kk = 0; 
-                                                  !matches && kk < sums.length(); 
+                                            for ( int kk = 0;
+                                                  !matches && kk < sums.length();
                                                   ++kk ) {
                                                 String sum = sums.getString( kk );
                                                 matches = sum.equals( curSum );
@@ -1408,8 +1408,8 @@ public class DictsDelegate extends ListDelegateBase
                                         }
                                     }
                                     if ( !matches ) {
-                                        Uri uri = 
-                                            Utils.makeDictUri( m_activity, 
+                                        Uri uri =
+                                            Utils.makeDictUri( m_activity,
                                                                langName, name );
                                         m_needUpdates.put( name, uri );
                                     }

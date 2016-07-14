@@ -64,12 +64,12 @@ public class NFCUtils {
     private static class SafeNFCImpl implements SafeNFC {
         public void register( final Activity activity, final NFCActor actor )
         {
-            NfcManager manager = 
+            NfcManager manager =
                 (NfcManager)activity.getSystemService( Context.NFC_SERVICE );
             if ( null != manager ) {
                 NfcAdapter adapter = manager.getDefaultAdapter();
                 if ( null != adapter ) {
-                    NfcAdapter.CreateNdefMessageCallback cb = 
+                    NfcAdapter.CreateNdefMessageCallback cb =
                         new NfcAdapter.CreateNdefMessageCallback() {
                             public NdefMessage createNdefMessage( NfcEvent evt )
                             {
@@ -93,7 +93,7 @@ public class NFCUtils {
     public static boolean[] nfcAvail( Context context )
     {
         if ( null == s_nfcAvail ) {
-            s_nfcAvail = new boolean[] { 
+            s_nfcAvail = new boolean[] {
                 s_inSDK && null != getNFCAdapter( context ),
                 false
             };
@@ -110,7 +110,7 @@ public class NFCUtils {
 
         String action = intent.getAction();
         if ( NfcAdapter.ACTION_NDEF_DISCOVERED.equals( action ) ) {
-            Parcelable[] rawMsgs = 
+            Parcelable[] rawMsgs =
                 intent.getParcelableArrayExtra( NfcAdapter.EXTRA_NDEF_MESSAGES );
             // only one message sent during the beam
             NdefMessage msg = (NdefMessage)rawMsgs[0];
@@ -140,7 +140,7 @@ public class NFCUtils {
     {
         DialogInterface.OnClickListener lstnr
             = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, 
+                    public void onClick( DialogInterface dialog,
                                          int item ) {
                         activity.
                             startActivity( new Intent("android.settings"
@@ -159,8 +159,8 @@ public class NFCUtils {
     {
         String mimeType = LocUtils.getString( activity, R.string.xwords_nfc_mime );
         NdefMessage msg = new NdefMessage( new NdefRecord[] {
-                new NdefRecord(NdefRecord.TNF_MIME_MEDIA, 
-                               mimeType.getBytes(), new byte[0], 
+                new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+                               mimeType.getBytes(), new byte[0],
                                data.getBytes())
                 ,NdefRecord.
                 createApplicationRecord( activity.getPackageName() )
@@ -170,9 +170,9 @@ public class NFCUtils {
 
     private static NfcAdapter getNFCAdapter( Context context )
     {
-        NfcManager manager = 
+        NfcManager manager =
             (NfcManager)context.getSystemService( Context.NFC_SERVICE );
         return manager.getDefaultAdapter();
     }
-    
+
 }

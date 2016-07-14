@@ -24,9 +24,9 @@ import android.os.Bundle;
 public class StudyListActivity extends XWActivity {
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
-        StudyListDelegate dlgt = 
+        StudyListDelegate dlgt =
             new StudyListDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, dlgt );
     }

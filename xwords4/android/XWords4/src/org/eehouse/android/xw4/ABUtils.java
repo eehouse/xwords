@@ -25,13 +25,13 @@ import android.content.Context;
 import android.view.ViewConfiguration;
 
 public class ABUtils {
-    private static int s_sdkVersion = 
+    private static int s_sdkVersion =
         Integer.valueOf( android.os.Build.VERSION.SDK );
 
     private static interface SafeInvalOptionsMenu {
         public void doInval( Activity activity );
     }
-    private static class SafeInvalOptionsMenuImpl 
+    private static class SafeInvalOptionsMenuImpl
         implements SafeInvalOptionsMenu {
         public void doInval( Activity activity ) {
             activity.invalidateOptionsMenu();
@@ -42,7 +42,7 @@ public class ABUtils {
     private static interface SafeHasMenuKey {
         public boolean hasMenuKey( Context context );
     }
-    private static class SafeHasMenuKeyImpl 
+    private static class SafeHasMenuKeyImpl
         implements SafeHasMenuKey {
         public boolean hasMenuKey( Context context )
         {

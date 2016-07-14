@@ -47,7 +47,7 @@ public class ChatDelegate extends DelegateBase {
     private static final String INTENT_KEY_PLAYER = "intent_key_player";
     private static final String INTENT_KEY_NAMES = "intent_key_names";
     private static final String INTENT_KEY_LOCS = "intent_key_locs";
-    
+
     private static ChatDelegate s_visibleThis;
     private long m_rowid;
     private int m_curPlayer;
@@ -110,7 +110,7 @@ public class ChatDelegate extends DelegateBase {
                     }
                 } );
         }
-     
+
         DBUtils.HistoryPair[] pairs
             = DBUtils.getChatHistory( m_activity, m_rowid, locals );
         if ( null != pairs ) {
@@ -125,7 +125,7 @@ public class ChatDelegate extends DelegateBase {
     } // init
 
     @Override
-    protected void onResume() 
+    protected void onResume()
     {
         super.onResume();
         m_jniThreadRef = JNIThread.getRetained( m_rowid );
@@ -135,7 +135,7 @@ public class ChatDelegate extends DelegateBase {
         } else {
             s_visibleThis = this;
             int[] startAndEnd = new int[2];
-            String curMsg = DBUtils.getCurChat( m_activity, m_rowid, 
+            String curMsg = DBUtils.getCurChat( m_activity, m_rowid,
                                                 m_curPlayer, startAndEnd );
             if ( null != curMsg && 0 < curMsg.length() ) {
                 m_edit.setText( curMsg );
@@ -169,7 +169,7 @@ public class ChatDelegate extends DelegateBase {
         TextView view = (TextView)row.findViewById( R.id.chat_row_text );
         view.setText( msg );
         view = (TextView)row.findViewById( R.id.chat_row_name );
-        view.setText( getString( R.string.chat_sender_fmt, 
+        view.setText( getString( R.string.chat_sender_fmt,
                                  m_names[playerIndx] ) );
         m_layout.addView( row );
 
@@ -210,7 +210,7 @@ public class ChatDelegate extends DelegateBase {
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
         switch ( item.getItemId() ) {
@@ -236,7 +236,7 @@ public class ChatDelegate extends DelegateBase {
         case CLEAR_ACTION:
             if ( AlertDialog.BUTTON_POSITIVE == which ) {
                 DBUtils.clearChatHistory( m_activity, m_rowid );
-                TableLayout layout = 
+                TableLayout layout =
                     (TableLayout)findViewById( R.id.chat_history );
                 layout.removeAllViews();
             }
@@ -257,9 +257,9 @@ public class ChatDelegate extends DelegateBase {
         return handled;
     }
 
-    public static void startForResult( Delegator delegator, 
+    public static void startForResult( Delegator delegator,
                                        RequestCode requestCode,
-                                       long rowID, int curPlayer, 
+                                       long rowID, int curPlayer,
                                        String[] names, boolean[] locs )
     {
         Assert.assertFalse( -1 == curPlayer );

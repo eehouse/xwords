@@ -65,7 +65,7 @@ import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
-               DwnldDelegate.DownloadFinishedListener, 
+               DwnldDelegate.DownloadFinishedListener,
                ConnStatusHandler.ConnStatusCBacks,
                NFCUtils.NFCActor {
 
@@ -155,11 +155,11 @@ public class BoardDelegate extends DelegateBase
         public void run() {
             m_timers[m_why] = null;
             if ( null != m_jniThread ) {
-                m_jniThread.handleBkgrnd( JNICmd.CMD_TIMER_FIRED, 
+                m_jniThread.handleBkgrnd( JNICmd.CMD_TIMER_FIRED,
                                           m_why, m_when, m_handle );
             }
         }
-    } 
+    }
 
     protected Dialog onCreateDialog( int id )
     {
@@ -179,7 +179,7 @@ public class BoardDelegate extends DelegateBase
                     .setPositiveButton( android.R.string.ok, null );
                 if ( DlgID.DLG_RETRY == dlgID ) {
                     lstnr = new OnClickListener() {
-                            public void onClick( DialogInterface dlg, 
+                            public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
                                 handleViaThread( JNICmd.CMD_RESET );
                             }
@@ -188,7 +188,7 @@ public class BoardDelegate extends DelegateBase
                 } else if ( DlgID.GAME_OVER == dlgID
                             && rematchSupported( true ) ) {
                     lstnr = new OnClickListener() {
-                            public void onClick( DialogInterface dlg, 
+                            public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
                                 doRematchIf();
                             }
@@ -198,7 +198,7 @@ public class BoardDelegate extends DelegateBase
                             && BuildConfig.DEBUG && null != m_connTypes
                             && m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     lstnr = new OnClickListener() {
-                            public void onClick( DialogInterface dlg, 
+                            public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
                                 NetStateCache.reset( m_activity );
                                 RelayService.reset( m_activity );
@@ -213,7 +213,7 @@ public class BoardDelegate extends DelegateBase
             case DLG_USEDICT:
             case DLG_GETDICT:
                 lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dlg, 
+                        public void onClick( DialogInterface dlg,
                                              int whichButton ) {
                             if ( DlgID.DLG_USEDICT == dlgID ) {
                                 setGotGameDict( m_getDict );
@@ -239,7 +239,7 @@ public class BoardDelegate extends DelegateBase
                     .setMessage( R.string.msg_dev_deleted )
                     .setPositiveButton( android.R.string.ok, null );
                 lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dlg, 
+                        public void onClick( DialogInterface dlg,
                                              int whichButton ) {
                             deleteAndClose();
                         }
@@ -251,13 +251,13 @@ public class BoardDelegate extends DelegateBase
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
             case DLG_SCORES:
-            case DLG_BADWORDS_BLK: 
+            case DLG_BADWORDS_BLK:
                 ab = ab.setMessage( m_dlgBytes );
                 if ( 0 != m_dlgTitle ) {
                     ab.setTitle( m_dlgTitle );
                 }
                 lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dialog, 
+                        public void onClick( DialogInterface dialog,
                                              int whichButton ) {
                             m_resultCode = 1;
                         }
@@ -267,7 +267,7 @@ public class BoardDelegate extends DelegateBase
                                       lstnr );
                 if ( DlgID.QUERY_REQUEST_BLK == dlgID ) {
                     lstnr = new OnClickListener() {
-                            public void onClick( DialogInterface dialog, 
+                            public void onClick( DialogInterface dialog,
                                                  int whichButton ) {
                                 m_resultCode = 0;
                             }
@@ -278,7 +278,7 @@ public class BoardDelegate extends DelegateBase
                         String buttonTxt;
                         boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
                         if ( m_words.length == 1 ) {
-                            int resID = studyOn 
+                            int resID = studyOn
                                 ? R.string.button_lookup_study_fmt
                                 : R.string.button_lookup_fmt;
                             buttonTxt = getString( resID, m_words[0] );
@@ -288,11 +288,11 @@ public class BoardDelegate extends DelegateBase
                             buttonTxt = getString( resID );
                         }
                         lstnr = new OnClickListener() {
-                                public void onClick( DialogInterface dialog, 
+                                public void onClick( DialogInterface dialog,
                                                      int whichButton ) {
-                                    showNotAgainDlgThen( R.string.not_again_lookup, 
+                                    showNotAgainDlgThen( R.string.not_again_lookup,
                                                          R.string.
-                                                         key_na_lookup, 
+                                                         key_na_lookup,
                                                          Action.LOOKUP_ACTION );
                                 }
                             };
@@ -307,7 +307,7 @@ public class BoardDelegate extends DelegateBase
             case PICK_TILE_REQUESTBLANK_BLK:
             case PICK_TILE_REQUESTTRAY_BLK:
                 lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dialog, 
+                        public void onClick( DialogInterface dialog,
                                              int item ) {
                             m_resultCode = item;
                         }
@@ -320,17 +320,17 @@ public class BoardDelegate extends DelegateBase
                     ab.setTitle( getString( R.string.cur_tiles_fmt, m_curTiles ) );
                     if ( m_canUndoTiles ) {
                         OnClickListener undoClicked = new OnClickListener() {
-                                public void onClick( DialogInterface dialog, 
+                                public void onClick( DialogInterface dialog,
                                                      int whichButton ) {
                                     m_resultCode = UtilCtxt.PICKER_BACKUP;
                                     removeDialog( dlgID );
                                 }
                             };
-                        ab.setPositiveButton( R.string.tilepick_undo, 
+                        ab.setPositiveButton( R.string.tilepick_undo,
                                               undoClicked );
                     }
                     OnClickListener doAllClicked = new OnClickListener() {
-                            public void onClick( DialogInterface dialog, 
+                            public void onClick( DialogInterface dialog,
                                                  int whichButton ) {
                                 m_resultCode = UtilCtxt.PICKER_PICKALL;
                                 removeDialog( dlgID );
@@ -345,7 +345,7 @@ public class BoardDelegate extends DelegateBase
 
             case ASK_PASSWORD_BLK:
                 m_dlgTitleStr = getString( R.string.msg_ask_password_fmt, m_pwdName );
-                LinearLayout pwdLayout = 
+                LinearLayout pwdLayout =
                     (LinearLayout)inflate( R.layout.passwd_view );
                 m_passwdEdit = (EditText)pwdLayout.findViewById( R.id.edit );
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
@@ -353,7 +353,7 @@ public class BoardDelegate extends DelegateBase
                     .setView( pwdLayout )
                     .setPositiveButton( android.R.string.ok,
                                         new OnClickListener() {
-                                            public void 
+                                            public void
                                                 onClick( DialogInterface dlg,
                                                          int whichButton ) {
                                                 m_resultCode = 1;
@@ -368,8 +368,8 @@ public class BoardDelegate extends DelegateBase
                     .setMessage( R.string.ids_endnow )
                     .setPositiveButton( R.string.button_yes,
                                         new OnClickListener() {
-                                            public void 
-                                                onClick( DialogInterface dlg, 
+                                            public void
+                                                onClick( DialogInterface dlg,
                                                          int item ) {
                                                 handleViaThread(JNICmd.CMD_ENDGAME);
                                             }
@@ -379,14 +379,14 @@ public class BoardDelegate extends DelegateBase
                 break;
             case DLG_INVITE:
                 lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dialog, 
+                        public void onClick( DialogInterface dialog,
                                              int item ) {
                             if ( !m_relayMissing ||
                                  ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
                                 Assert.assertTrue( 0 < m_nMissing );
                                 if ( m_summary.hasRematchInfo() ) {
                                     tryRematchInvites( true );
-                                } else {                                
+                                } else {
                                     showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION,
                                                            m_sentInfo );
                                 }
@@ -396,18 +396,18 @@ public class BoardDelegate extends DelegateBase
                         }
                     };
                 OnClickListener lstnrWait = new OnClickListener() {
-                        public void onClick( DialogInterface dialog, 
+                        public void onClick( DialogInterface dialog,
                                              int item ) {
                             finish();
                         }
                     };
                 OnClickListener lstnrMore = new OnClickListener() {
-                        public void onClick( DialogInterface dialog, 
+                        public void onClick( DialogInterface dialog,
                                              int item ) {
                             showOKOnlyDialog( m_sentInfo.getAsText( m_activity ) );
                         }
                     };
-                
+
                 dialog = ab.setTitle( "foo" )
                     .setMessage( "" )
                     .setPositiveButton( "", lstnr )
@@ -458,8 +458,8 @@ public class BoardDelegate extends DelegateBase
                     CommsConnTypeSet without = (CommsConnTypeSet)
                         m_connTypes.clone();
                     without.remove( CommsConnType.COMMS_CONN_RELAY );
-                    message += "\n\n" 
-                        + getString( R.string.drop_relay_warning_fmt, 
+                    message += "\n\n"
+                        + getString( R.string.drop_relay_warning_fmt,
                                      without.toString( m_activity ) );
                     buttonTxt = R.string.newgame_drop_relay;
                 }
@@ -473,7 +473,7 @@ public class BoardDelegate extends DelegateBase
                         message = getString( R.string.rematch_msg );
                     } else {
                         titleID = R.string.waiting_invite_title;
-                        message = getQuantityString( R.plurals.invite_sent_fmt, 
+                        message = getQuantityString( R.plurals.invite_sent_fmt,
                                                      nSent, nSent, m_nMissing );
                     }
                     buttonTxt = R.string.button_reinvite;
@@ -485,7 +485,7 @@ public class BoardDelegate extends DelegateBase
                     nukeInviteButton = true;
                 } else {
                     titleID = R.string.waiting_title;
-                    message = getQuantityString( R.plurals.invite_msg_fmt, 
+                    message = getQuantityString( R.plurals.invite_msg_fmt,
                                                  m_nMissing, m_nMissing );
                 }
 
@@ -517,7 +517,7 @@ public class BoardDelegate extends DelegateBase
             }
             button = ad.getButton( AlertDialog.BUTTON_NEUTRAL );
             button.setVisibility( nukeNeutButton ? View.GONE : View.VISIBLE );
-            
+
             break;
         default:
             super.prepareDialog( dlgID, dialog );
@@ -531,7 +531,7 @@ public class BoardDelegate extends DelegateBase
         m_activity = delegator.getActivity();
     }
 
-    protected void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState )
     {
         getBundledData( savedInstanceState );
 
@@ -577,7 +577,7 @@ public class BoardDelegate extends DelegateBase
                         break;
                     case JNIThread.TOOLBAR_STATES:
                         if ( null != m_jniThread ) {
-                            m_gsi = 
+                            m_gsi =
                                 m_jniThread.getGameStateInfo();
                             updateToolbar();
                             if ( m_inTrade != m_gsi.inTrade ) {
@@ -590,7 +590,7 @@ public class BoardDelegate extends DelegateBase
                         break;
                     case JNIThread.GOT_WORDS:
                         CurGameInfo gi = m_jniThreadRef.getGI();
-                        launchLookup( wordsToArray((String)msg.obj), 
+                        launchLookup( wordsToArray((String)msg.obj),
                                       gi.dictLang );
                         break;
                     case JNIThread.GAME_OVER:
@@ -600,7 +600,7 @@ public class BoardDelegate extends DelegateBase
                         break;
                     case JNIThread.MSGS_SENT:
                         int nSent = (Integer)msg.obj;
-                        showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
+                        showToast( getQuantityString( R.plurals.resent_msgs_fmt,
                                                       nSent, nSent ) );
                         break;
                     }
@@ -636,7 +636,7 @@ public class BoardDelegate extends DelegateBase
         super.onResume();
         doResume( false );
     }
-    
+
     protected void onPause()
     {
         closeIfFinishing( false );
@@ -670,7 +670,7 @@ public class BoardDelegate extends DelegateBase
         super.onDestroy();
     }
 
-    protected void onSaveInstanceState( Bundle outState ) 
+    protected void onSaveInstanceState( Bundle outState )
     {
         outState.putInt( DLG_TITLE, m_dlgTitle );
         outState.putString( DLG_TITLESTR, m_dlgTitleStr );
@@ -809,7 +809,7 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
+    public boolean onPrepareOptionsMenu( Menu menu )
     {
         boolean inTrade = false;
         MenuItem item;
@@ -829,31 +829,31 @@ public class BoardDelegate extends DelegateBase
             item = menu.findItem( R.id.board_menu_tray );
             item.setTitle( getString( strId ) );
 
-            Utils.setItemVisible( menu, R.id.board_menu_flip, 
+            Utils.setItemVisible( menu, R.id.board_menu_flip,
                                   m_gsi.visTileCount >= 1 );
-            Utils.setItemVisible( menu, R.id.board_menu_toggle, 
+            Utils.setItemVisible( menu, R.id.board_menu_toggle,
                                   m_gsi.visTileCount >= 1 );
-            Utils.setItemVisible( menu, R.id.board_menu_juggle, 
+            Utils.setItemVisible( menu, R.id.board_menu_juggle,
                                   m_gsi.canShuffle );
-            Utils.setItemVisible( menu, R.id.board_menu_undo_current, 
+            Utils.setItemVisible( menu, R.id.board_menu_undo_current,
                                   m_gsi.canRedo );
-            Utils.setItemVisible( menu, R.id.board_menu_hint_prev, 
+            Utils.setItemVisible( menu, R.id.board_menu_hint_prev,
                                   m_gsi.canHint );
-            Utils.setItemVisible( menu, R.id.board_menu_hint_next, 
+            Utils.setItemVisible( menu, R.id.board_menu_hint_next,
                                   m_gsi.canHint );
-            Utils.setItemVisible( menu, R.id.board_menu_chat, 
+            Utils.setItemVisible( menu, R.id.board_menu_chat,
                                   BuildConstants.CHAT_SUPPORTED
                                   && m_gsi.canChat );
-            Utils.setItemVisible( menu, R.id.board_menu_tray, 
+            Utils.setItemVisible( menu, R.id.board_menu_tray,
                                   !inTrade && m_gsi.canHideRack );
-            Utils.setItemVisible( menu, R.id.board_menu_trade, 
+            Utils.setItemVisible( menu, R.id.board_menu_trade,
                                   m_gsi.canTrade );
-            Utils.setItemVisible( menu, R.id.board_menu_undo_last, 
+            Utils.setItemVisible( menu, R.id.board_menu_undo_last,
                                   m_gsi.canUndo );
         }
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
-        Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
+        Utils.setItemVisible( menu, R.id.board_menu_trade_commit,
                               inTrade && m_gsi.tradeTilesSelected
                               && m_gsi.curTurnSelected );
         Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
@@ -890,7 +890,7 @@ public class BoardDelegate extends DelegateBase
                              || XWPrefs.getDebugEnabled( m_activity ) );
         Utils.setItemVisible( menu, R.id.board_menu_game_netstats, enable );
         Utils.setItemVisible( menu, R.id.board_menu_game_invites, enable );
-                              
+
         enable = XWPrefs.getStudyEnabled( m_activity );
         Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
@@ -898,7 +898,7 @@ public class BoardDelegate extends DelegateBase
     } // onPrepareOptionsMenu
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
         JNICmd cmd = JNICmd.CMD_NONE;
@@ -907,11 +907,11 @@ public class BoardDelegate extends DelegateBase
         int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
-            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr, 
+            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr,
                                                         m_view.getCurPlayer() );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
-                showNotAgainDlgThen( R.string.not_again_done, 
-                                     R.string.key_notagain_done, 
+                showNotAgainDlgThen( R.string.not_again_done,
+                                     R.string.key_notagain_done,
                                      Action.COMMIT_ACTION );
             } else {
                 dlgButtonClicked( Action.COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
@@ -987,7 +987,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_game_counts:
-            handleViaThread( JNICmd.CMD_COUNTS_VALUES, 
+            handleViaThread( JNICmd.CMD_COUNTS_VALUES,
                              R.string.counts_values_title );
             break;
         case R.id.board_menu_game_left:
@@ -1077,7 +1077,7 @@ public class BoardDelegate extends DelegateBase
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
                 View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
-                     DictsDelegate.handleDictsPopup( getDelegator(), button, 
+                     DictsDelegate.handleDictsPopup( getDelegator(), button,
                                                      curDict, m_gi.dictLang ) ){
                     break;
                 }
@@ -1133,7 +1133,7 @@ public class BoardDelegate extends DelegateBase
                         }
                     } );
                 break;
-                
+
             default:
                 handled = false;
             }
@@ -1148,7 +1148,7 @@ public class BoardDelegate extends DelegateBase
         }
     } // dlgButtonClicked
 
-    public void inviteChoiceMade( Action action, InviteMeans means, 
+    public void inviteChoiceMade( Action action, InviteMeans means,
                                   Object[] params )
     {
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
@@ -1173,7 +1173,7 @@ public class BoardDelegate extends DelegateBase
                                                    RequestCode.SMS_INVITE_RESULT );
                 break;
             case RELAY:
-                RelayInviteDelegate.launchForResult( m_activity, m_nMissing, 
+                RelayInviteDelegate.launchForResult( m_activity, m_nMissing,
                                                      RequestCode.RELAY_INVITE_RESULT );
                 break;
             case EMAIL:
@@ -1201,7 +1201,7 @@ public class BoardDelegate extends DelegateBase
     // View.OnClickListener interface
     //////////////////////////////////////////////////
     @Override
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         if ( view == m_exchCommmitButton ) {
             handleViaThread( JNICmd.CMD_COMMIT );
@@ -1221,7 +1221,7 @@ public class BoardDelegate extends DelegateBase
         case MESSAGE_ACCEPTED:
         case MESSAGE_REFUSED:
             ConnStatusHandler.
-                updateStatusIn( m_activity, this, CommsConnType.COMMS_CONN_BT, 
+                updateStatusIn( m_activity, this, CommsConnType.COMMS_CONN_BT,
                                 MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
             break;
         case MESSAGE_NOGAME:
@@ -1249,7 +1249,7 @@ public class BoardDelegate extends DelegateBase
                 m_progressShown = false;
                 stopProgress();     // in case it's a BT invite
             }
-            final String msg = 
+            final String msg =
                 getString( R.string.err_dup_invite_fmt, (String)args[0] );
             post( new Runnable() {
                     public void run() {
@@ -1268,7 +1268,7 @@ public class BoardDelegate extends DelegateBase
         case SMS_SEND_FAILED_NORADIO:
 
             // if ( null != m_jniThread ) {
-            //     boolean accepted = 
+            //     boolean accepted =
             //         MultiService.MultiEvent.SMS_RECEIVE_OK == event
             //         || MultiService.MultiEvent.SMS_SEND_OK == event;
             //     m_jniThread.handle( JNICmd.CMD_DRAW_SMS_STATUS, accepted );
@@ -1358,7 +1358,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////
-    public void downloadFinished( String lang, final String name, 
+    public void downloadFinished( String lang, final String name,
                                   boolean success )
     {
         if ( success ) {
@@ -1366,7 +1366,7 @@ public class BoardDelegate extends DelegateBase
                     public void run() {
                         setGotGameDict( name );
                     }
-                } ); 
+                } );
         }
     }
 
@@ -1453,7 +1453,7 @@ public class BoardDelegate extends DelegateBase
 
     private void askNoAddrsDelete()
     {
-        showConfirmThen( R.string.connstat_net_noaddr, 
+        showConfirmThen( R.string.connstat_net_noaddr,
                          R.string.list_item_delete,
                          Action.DELETE_AND_EXIT );
     }
@@ -1508,10 +1508,10 @@ public class BoardDelegate extends DelegateBase
         case KeyEvent.KEYCODE_DPAD_RIGHT:
             xpKey = XwJNI.XP_Key.XP_CURSOR_KEY_RIGHT;
             break;
-        case KeyEvent.KEYCODE_DPAD_UP:         
+        case KeyEvent.KEYCODE_DPAD_UP:
             xpKey = XwJNI.XP_Key.XP_CURSOR_KEY_UP;
             break;
-        case KeyEvent.KEYCODE_SPACE:         
+        case KeyEvent.KEYCODE_SPACE:
             xpKey = XwJNI.XP_Key.XP_RAISEFOCUS_KEY;
             break;
         }
@@ -1615,7 +1615,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != toastStr ) {
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
-                dlgButtonClicked( Action.SHOW_EXPL_ACTION, 
+                dlgButtonClicked( Action.SHOW_EXPL_ACTION,
                                   AlertDialog.BUTTON_POSITIVE, null );
             } else {
                 showNotAgainDlgThen( naMsg, naKey, Action.SHOW_EXPL_ACTION );
@@ -1633,7 +1633,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void requestTime() 
+        public void requestTime()
         {
             runOnUiThread( new Runnable() {
                     public void run() {
@@ -1645,7 +1645,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void remSelected() 
+        public void remSelected()
         {
             handleViaThread( JNICmd.CMD_REMAINING, R.string.tiles_left_title );
         }
@@ -1745,7 +1745,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void clearTimer( int why ) 
+        public void clearTimer( int why )
         {
             if ( null != m_timers[why] ) {
                 removeCallbacks( m_timers[why] );
@@ -1763,13 +1763,13 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public int userPickTileTray( int playerNum, String[] texts, 
+        public int userPickTileTray( int playerNum, String[] texts,
                                      String[] curTiles, int nPicked )
         {
             m_texts = texts;
             m_curTiles = TextUtils.join( ", ", curTiles );
             m_canUndoTiles = 0 < nPicked;
-            waitBlockingDialog( DlgID.PICK_TILE_REQUESTTRAY_BLK, 
+            waitBlockingDialog( DlgID.PICK_TILE_REQUESTTRAY_BLK,
                                 UtilCtxt.PICKER_PICKALL );
             return m_resultCode;
         }
@@ -1795,7 +1795,7 @@ public class BoardDelegate extends DelegateBase
                 m_nMissing = 0;
                 post( new Runnable() {
                         public void run() {
-                            showNotAgainDlg( R.string.not_again_turnchanged, 
+                            showNotAgainDlg( R.string.not_again_turnchanged,
                                              R.string.key_notagain_turnchanged );
                         }
                     } );
@@ -1844,7 +1844,7 @@ public class BoardDelegate extends DelegateBase
         public boolean confirmTrade( String[] tiles )
         {
             m_dlgTitle = R.string.info_title;
-            m_dlgBytes = 
+            m_dlgBytes =
                 getQuantityString( R.plurals.query_trade_fmt, tiles.length,
                                    tiles.length, TextUtils.join( ", ", tiles ));
             return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
@@ -1928,7 +1928,7 @@ public class BoardDelegate extends DelegateBase
         {
             m_connTypes = connTypes;
             Assert.assertTrue( isServer || 0 == nMissing );
-            // DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)", 
+            // DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)",
             //                isServer, nDevs, nMissing );
             m_nGuestDevs = nDevs;
 
@@ -1961,7 +1961,7 @@ public class BoardDelegate extends DelegateBase
                 GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
                 bmr.m_lmi = lmi;
                 boolean[] locals = m_gi.playersLocal();
-                GameUtils.postMoveNotification( m_activity, m_rowid, 
+                GameUtils.postMoveNotification( m_activity, m_rowid,
                                                 bmr, locals[turn] );
             }
         }
@@ -1969,13 +1969,13 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void informUndo()
         {
-            nonBlockingDialog( DlgID.DLG_OKONLY, 
+            nonBlockingDialog( DlgID.DLG_OKONLY,
                                getString( R.string.remote_undone ) );
         }
 
         @Override
-        public void informNetDict( int code, String oldName, 
-                                   String newName, String newSum, 
+        public void informNetDict( int code, String oldName,
+                                   String newName, String newSum,
                                    CurGameInfo.XWPhoniesChoice phonies )
         {
             // If it's same dict and same sum, we're good.  That
@@ -1997,7 +1997,7 @@ public class BoardDelegate extends DelegateBase
                 DlgID dlgID;
                 msg = getString( R.string.inform_dict_diffdict_fmt,
                                  oldName, newName, newName );
-                if ( DictLangCache.haveDict( m_activity, code, 
+                if ( DictLangCache.haveDict( m_activity, code,
                                              newName ) ) {
                     dlgID = DlgID.DLG_USEDICT;
                 } else {
@@ -2022,13 +2022,13 @@ public class BoardDelegate extends DelegateBase
         //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
         // }
         @Override
-        public boolean warnIllegalWord( String dict, String[] words, int turn, 
+        public boolean warnIllegalWord( String dict, String[] words, int turn,
                                         boolean turnLost )
         {
             boolean accept = turnLost;
 
             String wordsString = TextUtils.join( ", ", words );
-            String message = 
+            String message =
                 getString( R.string.ids_badwords_fmt, wordsString, dict );
 
             if ( turnLost ) {
@@ -2057,7 +2057,7 @@ public class BoardDelegate extends DelegateBase
                         public void run() {
                             DBUtils.appendChatHistory( m_activity, m_rowid, msg,
                                                        fromIndx );
-                            if ( ! ChatDelegate.append( m_rowid, msg, 
+                            if ( ! ChatDelegate.append( m_rowid, msg,
                                                         fromIndx ) ) {
                                 startChatActivity();
                             }
@@ -2065,7 +2065,7 @@ public class BoardDelegate extends DelegateBase
                     } );
             }
         }
-    } // class BoardUtilCtxt 
+    } // class BoardUtilCtxt
 
     private void doResume( boolean isStart )
     {
@@ -2151,7 +2151,7 @@ public class BoardDelegate extends DelegateBase
             case COMMS_CONN_SMS:
                 break;
             default:
-                DbgUtils.logf( "tickle: unexpected type %s", 
+                DbgUtils.logf( "tickle: unexpected type %s",
                                typ.toString() );
                 Assert.fail();
             }
@@ -2171,7 +2171,7 @@ public class BoardDelegate extends DelegateBase
                     }
                     if ( 0 == nMissing || !m_relayMissing ) {
                         dismissDialog( DlgID.DLG_INVITE );
-                    } 
+                    }
                 }
             } );
     }
@@ -2201,7 +2201,7 @@ public class BoardDelegate extends DelegateBase
                                             R.string.not_again_browse,
                                             R.string.key_na_browse,
                                             Action.BUTTON_BROWSE_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
+            m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV,
                                    R.string.not_again_hintprev,
                                    R.string.key_notagain_hintprev,
                                    Action.PREV_HINT_ACTION );
@@ -2231,7 +2231,7 @@ public class BoardDelegate extends DelegateBase
                                    Action.UNDO_ACTION );
             if ( BuildConstants.CHAT_SUPPORTED ) {
                 m_toolbar.setListener( Toolbar.BUTTON_CHAT,
-                                       R.string.not_again_chat, 
+                                       R.string.not_again_chat,
                                        R.string.key_notagain_chat,
                                        Action.CHAT_ACTION );
             }
@@ -2287,7 +2287,7 @@ public class BoardDelegate extends DelegateBase
         return result;
     }
 
-    private void nonBlockingDialog( final DlgID dlgID, String txt ) 
+    private void nonBlockingDialog( final DlgID dlgID, String txt )
     {
         switch ( dlgID ) {
         case DLG_OKONLY:
@@ -2359,7 +2359,7 @@ public class BoardDelegate extends DelegateBase
             if ( XWPrefs.getThumbEnabled( m_activity ) ) {
                 // Before we dispose, and after JNIThread has
                 // relinquished interest, redraw on smaller scale.
-                Bitmap thumb = 
+                Bitmap thumb =
                     GameUtils.takeSnapshot( m_activity, m_jniGamePtr, m_gi );
                 DBUtils.saveThumbnail( m_activity, m_gameLock, thumb );
             }
@@ -2367,7 +2367,7 @@ public class BoardDelegate extends DelegateBase
             m_gameLock = null;
         }
     }
-    
+
     private void waitCloseGame( boolean save )
     {
         pauseGame();
@@ -2384,7 +2384,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
-                showConfirmThen( R.string.warn_sms_disabled, 
+                showConfirmThen( R.string.warn_sms_disabled,
                                  R.string.button_enable_sms,
                                  R.string.button_later,
                                  Action.ENABLE_SMS_ASK );
@@ -2401,7 +2401,7 @@ public class BoardDelegate extends DelegateBase
             }
         }
     }
-    
+
     private void trySendChats()
     {
         if ( BuildConstants.CHAT_SUPPORTED && null != m_jniThread ) {
@@ -2426,7 +2426,7 @@ public class BoardDelegate extends DelegateBase
                 int nPlayers = m_missingCounts[ii];
                 Assert.assertTrue( 0 <= m_nGuestDevs );
                 int forceChannel = ii + m_nGuestDevs + 1;
-                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi,
                                                        nPlayers, forceChannel );
                 if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
@@ -2455,7 +2455,7 @@ public class BoardDelegate extends DelegateBase
                 case RELAY:
                     try {
                         int destDevID = Integer.parseInt( dev ); // failing
-                        RelayService.inviteRemote( m_activity, destDevID, 
+                        RelayService.inviteRemote( m_activity, destDevID,
                                                    null, nli );
                     } catch (NumberFormatException nfi) {
                         DbgUtils.loge( nfi );
@@ -2482,9 +2482,9 @@ public class BoardDelegate extends DelegateBase
             m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
             m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
             m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
-            m_toolbar.update( Toolbar.BUTTON_CHAT, 
+            m_toolbar.update( Toolbar.BUTTON_CHAT,
                               BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
-            m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
+            m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT,
                               null != m_gi.dictName( m_view.getCurPlayer() ) );
         }
     }
@@ -2560,7 +2560,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_handler ) {
             m_handler.removeCallbacks( which );
         } else {
-            DbgUtils.logf( "removeCallbacks: dropping %h because handler null", 
+            DbgUtils.logf( "removeCallbacks: dropping %h because handler null",
                            which );
         }
     }
@@ -2588,7 +2588,7 @@ public class BoardDelegate extends DelegateBase
         return null != summary && rematchSupported( null, summary );
     }
 
-    private static boolean rematchSupported( Context context, 
+    private static boolean rematchSupported( Context context,
                                              GameSummary summary )
     {
         boolean supported = false;
@@ -2607,8 +2607,8 @@ public class BoardDelegate extends DelegateBase
                 } else if ( null != context ) {
                     // show the button if people haven't dismissed the hint yet
                     supported = ! XWPrefs
-                        .getPrefsBoolean( context, 
-                                          R.string.key_na_rematch_two_only, 
+                        .getPrefsBoolean( context,
+                                          R.string.key_na_rematch_two_only,
                                           false );
                 }
             }
@@ -2618,14 +2618,14 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematchIf()
     {
-        if ( doRematchIf( m_activity, this, m_rowid, m_summary, m_gi, 
+        if ( doRematchIf( m_activity, this, m_rowid, m_summary, m_gi,
                           m_jniGamePtr ) ) {
             finish();
         }
     }
 
-    private static boolean doRematchIf( Activity activity, DelegateBase dlgt, 
-                                        long rowid, GameSummary summary, 
+    private static boolean doRematchIf( Activity activity, DelegateBase dlgt,
+                                        long rowid, GameSummary summary,
                                         CurGameInfo gi, GamePtr jniGamePtr )
     {
         boolean success = false;
@@ -2639,7 +2639,7 @@ public class BoardDelegate extends DelegateBase
             } else if ( 2 != gi.nPlayers ) {
                 Assert.assertNotNull( dlgt );
                 if ( null != dlgt ) {
-                    dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only, 
+                    dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only,
                                           R.string.key_na_rematch_two_only );
                 }
                 doIt = false;
@@ -2650,7 +2650,7 @@ public class BoardDelegate extends DelegateBase
                     if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
                         Assert.assertNull( btAddr );
                         btAddr = addr.bt_btAddr;
-                    } 
+                    }
                     if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
                         Assert.assertNull( phone );
                         phone = addr.sms_phone;
@@ -2666,7 +2666,7 @@ public class BoardDelegate extends DelegateBase
                 CommsConnTypeSet connTypes = summary.conTypes;
                 String newName = summary.getRematchName();
                 Intent intent = GamesListDelegate
-                    .makeRematchIntent( activity, rowid, gi, connTypes, btAddr, 
+                    .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
                                         phone, relayID, newName );
                 if ( null != intent ) {
                     activity.startActivity( intent );
@@ -2708,7 +2708,7 @@ public class BoardDelegate extends DelegateBase
                 // only supports a single invite for now!
                 int numHere = 1;
                 int forceChannel = 1;
-                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere, 
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere,
                                                        forceChannel );
 
                 String value;
@@ -2748,7 +2748,7 @@ public class BoardDelegate extends DelegateBase
 
     private void retrySMSInvites( Object[] params )
     {
-        if ( null != params && 2 == params.length 
+        if ( null != params && 2 == params.length
              && params[0] instanceof NetLaunchInfo
              && params[1] instanceof String ) {
             sendSMSInviteIf( (String)params[1], (NetLaunchInfo)params[0],
@@ -2757,7 +2757,7 @@ public class BoardDelegate extends DelegateBase
             DbgUtils.logf( "retrySMSInvites: tests failed" );
         }
     }
-    
+
     private void recordInviteSent( InviteMeans means, String dev )
     {
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );

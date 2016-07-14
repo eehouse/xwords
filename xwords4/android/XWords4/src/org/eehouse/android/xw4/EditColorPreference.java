@@ -43,9 +43,9 @@ public class EditColorPreference extends DialogPreference {
     private int m_curColor;
     // m_updateText: prevent loop that resets edittext cursor
     private boolean m_updateText = true;
-    private static final int m_seekbarIds[] = { R.id.seek_red, R.id.seek_green, 
+    private static final int m_seekbarIds[] = { R.id.seek_red, R.id.seek_green,
                                                 R.id.seek_blue };
-    private static final int m_editIds[] = { R.id.edit_red, R.id.edit_green, 
+    private static final int m_editIds[] = { R.id.edit_red, R.id.edit_green,
                                              R.id.edit_blue };
 
     private class SBCL implements SeekBar.OnSeekBarChangeListener {
@@ -59,7 +59,7 @@ public class EditColorPreference extends DialogPreference {
             m_editTxt = editTxt;
         }
 
-        public void onProgressChanged( SeekBar seekBar, int progress, 
+        public void onProgressChanged( SeekBar seekBar, int progress,
                                        boolean fromUser )
         {
             if ( m_updateText ) {
@@ -87,11 +87,11 @@ public class EditColorPreference extends DialogPreference {
         {
         }
 
-        public void beforeTextChanged( CharSequence s, int st, int cnt, int a ) 
+        public void beforeTextChanged( CharSequence s, int st, int cnt, int a )
         {
         }
 
-        public void onTextChanged( CharSequence s, int start, 
+        public void onTextChanged( CharSequence s, int start,
                                    int before, int count )
         {
             int val;
@@ -110,7 +110,7 @@ public class EditColorPreference extends DialogPreference {
     {
         super( context, attrs );
         m_context = context;
-        
+
         setWidgetLayoutResource( R.layout.color_display );
         setDialogLayoutResource( R.layout.color_edit );
 
@@ -134,9 +134,9 @@ public class EditColorPreference extends DialogPreference {
             persistInt( (Integer)defaultValue );
         }
     }
-    
+
     @Override
-    protected void onBindView( View parent ) 
+    protected void onBindView( View parent )
     {
         super.onBindView( parent );
         View sample = parent.findViewById( R.id.color_display_sample );
@@ -156,11 +156,11 @@ public class EditColorPreference extends DialogPreference {
         View sample = view.findViewById( R.id.color_edit_sample );
         sample.setBackgroundColor( m_curColor );
     }
-    
+
     @Override
     protected void onPrepareDialogBuilder( AlertDialog.Builder builder )
     {
-        DialogInterface.OnClickListener lstnr = 
+        DialogInterface.OnClickListener lstnr =
             new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick( DialogInterface dialog, int which )
@@ -179,7 +179,7 @@ public class EditColorPreference extends DialogPreference {
         super.onPrepareDialogBuilder( builder );
     }
 
-    private void setOneByte( View parent, int indx ) 
+    private void setOneByte( View parent, int indx )
     {
         int shift = 16 - (indx*8);
         int byt = (m_curColor >> shift) & 0xFF;

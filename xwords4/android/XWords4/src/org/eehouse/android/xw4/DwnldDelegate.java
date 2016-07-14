@@ -89,7 +89,7 @@ public class DwnldDelegate extends ListDelegateBase {
     private static Map<Uri,ListenerData> s_listeners =
         new HashMap<Uri,ListenerData>();
 
-    private class DownloadFilesTask extends AsyncTask<Void, Void, Void> 
+    private class DownloadFilesTask extends AsyncTask<Void, Void, Void>
         implements DictUtils.DownProgListener {
         private String m_savedDict = null;
         private Uri m_uri = null;
@@ -122,8 +122,8 @@ public class DwnldDelegate extends ListDelegateBase {
             m_appFile = null;
 
             try {
-                URI jUri = new URI( m_uri.getScheme(), 
-                                    m_uri.getSchemeSpecificPart(), 
+                URI jUri = new URI( m_uri.getScheme(),
+                                    m_uri.getSchemeSpecificPart(),
                                     m_uri.getFragment() );
                 URLConnection conn = jUri.toURL().openConnection();
                 final int fileLen = conn.getContentLength();
@@ -150,7 +150,7 @@ public class DwnldDelegate extends ListDelegateBase {
             return null;
         }
 
-        @Override 
+        @Override
         protected void onCancelled()
         {
             callListener( m_uri, false );
@@ -160,9 +160,9 @@ public class DwnldDelegate extends ListDelegateBase {
         protected void onPostExecute( Void unused )
         {
             if ( null != m_savedDict ) {
-                DictUtils.DictLoc loc = 
+                DictUtils.DictLoc loc =
                     XWPrefs.getDefaultLoc( m_activity );
-                DictLangCache.inval( m_activity, m_savedDict, 
+                DictLangCache.inval( m_activity, m_savedDict,
                                      loc, true );
                 callListener( m_uri, true );
             } else if ( null != m_appFile ) {
@@ -196,7 +196,7 @@ public class DwnldDelegate extends ListDelegateBase {
                 });
         }
 
-        private File saveToDownloads( InputStream is, String name, 
+        private File saveToDownloads( InputStream is, String name,
                                       DictUtils.DownProgListener dpl )
         {
             boolean success = false;
@@ -271,7 +271,7 @@ public class DwnldDelegate extends ListDelegateBase {
                     m_views.add( item );
                 }
             }
-        } else if ( (null != intent.getType() 
+        } else if ( (null != intent.getType()
                      && intent.getType().equals( "application/x-xwordsdict" ))
                     || uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
             item = (LinearLayout)inflate( R.layout.import_dict_item );
@@ -296,9 +296,9 @@ public class DwnldDelegate extends ListDelegateBase {
             for ( int ii = 0; ii < uris.length; ++ii ) {
                 String showName = basename( uris[ii].getPath() );
                 showName = DictUtils.removeDictExtn( showName );
-                String msg = 
+                String msg =
                     getString( R.string.downloading_dict_fmt, showName );
-                
+
                 dft = m_dfts.get( ii );
                 dft.setLabel( msg );
                 dft.execute();
@@ -308,9 +308,9 @@ public class DwnldDelegate extends ListDelegateBase {
 
     @Override
     protected boolean handleBackPressed()
-    {  
+    {
         // cancel any tasks that remain
-        for ( Iterator<DownloadFilesTask> iter = m_dfts.iterator(); 
+        for ( Iterator<DownloadFilesTask> iter = m_dfts.iterator();
               iter.hasNext(); ) {
             DownloadFilesTask dft = iter.next();
             dft.cancel( true );
@@ -323,7 +323,7 @@ public class DwnldDelegate extends ListDelegateBase {
         setListAdapter( new ImportListAdapter() );
     }
 
-    private String saveDict( InputStream inputStream, String name, 
+    private String saveDict( InputStream inputStream, String name,
                              DictUtils.DownProgListener dpl )
     {
         DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( m_activity );
@@ -345,7 +345,7 @@ public class DwnldDelegate extends ListDelegateBase {
         return result;
     }
 
-    private static void rememberListener( Uri uri, String name, 
+    private static void rememberListener( Uri uri, String name,
                                           DownloadFinishedListener lstnr )
     {
         ListenerData ld = new ListenerData( uri, name, lstnr );
@@ -354,7 +354,7 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     }
 
-    private static void callListener( Uri uri, boolean success ) 
+    private static void callListener( Uri uri, boolean success )
     {
         if ( null != uri ) {
             ListenerData ld;
@@ -375,16 +375,16 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     }
 
-    public static void downloadDictInBack( Context context, String langName, 
-                                           String name, 
+    public static void downloadDictInBack( Context context, String langName,
+                                           String name,
                                            DownloadFinishedListener lstnr )
     {
         Uri uri = Utils.makeDictUri( context, langName, name );
         downloadDictInBack( context, uri, name, lstnr );
     }
 
-    public static void downloadDictInBack( Context context, int lang, 
-                                           String name, 
+    public static void downloadDictInBack( Context context, int lang,
+                                           String name,
                                            DownloadFinishedListener lstnr )
     {
         Uri uri = Utils.makeDictUri( context, lang, name );
@@ -392,7 +392,7 @@ public class DwnldDelegate extends ListDelegateBase {
     }
 
     public static void downloadDictInBack( Context context, Uri uri,
-                                           String name, 
+                                           String name,
                                            DownloadFinishedListener lstnr )
     {
         Uri[] uris = new Uri[] { uri };
@@ -401,7 +401,7 @@ public class DwnldDelegate extends ListDelegateBase {
     }
 
     public static void downloadDictsInBack( Context context, Uri[] uris,
-                                            String[] names, 
+                                            String[] names,
                                             DownloadFinishedListener lstnr )
     {
         if ( null != lstnr ) {

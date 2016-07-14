@@ -70,7 +70,7 @@ public class Utils {
     private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
-    private static HashMap<String,String> s_phonesHash = 
+    private static HashMap<String,String> s_phonesHash =
         new HashMap<String,String>();
     private static Boolean s_hasSmallScreen = null;
     private static Random s_random = new Random();
@@ -127,7 +127,7 @@ public class Utils {
         s_deviceSupportSMS = null; // force to check again
     }
 
-    public static void notImpl( Context context ) 
+    public static void notImpl( Context context )
     {
         String text = "Feature coming soon";
         showToast( context, text );
@@ -149,7 +149,7 @@ public class Utils {
         showToast( context, msg );
     }
 
-    public static void setRemoveOnDismiss( final Activity activity, 
+    public static void setRemoveOnDismiss( final Activity activity,
                                            Dialog dialog, DlgID dlgID )
     {
         final int id = dlgID.ordinal();
@@ -171,9 +171,9 @@ public class Utils {
         Intent intent = new Intent( Intent.ACTION_SEND );
         intent.setType( "message/rfc822" ); // force email
         intent.putExtra( Intent.EXTRA_SUBJECT,
-                         LocUtils.getString( context, 
+                         LocUtils.getString( context,
                                              R.string.email_author_subject ) );
-        String[] addrs = { LocUtils.getString( context, 
+        String[] addrs = { LocUtils.getString( context,
                                                R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
@@ -184,22 +184,22 @@ public class Utils {
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
     }
 
-    public static void postNotification( Context context, Intent intent, 
+    public static void postNotification( Context context, Intent intent,
                                          int titleID, int bodyID, int id )
     {
-        postNotification( context, intent, titleID, 
+        postNotification( context, intent, titleID,
                           LocUtils.getString( context, bodyID ), id );
     }
 
-    public static void postNotification( Context context, Intent intent, 
+    public static void postNotification( Context context, Intent intent,
                                          int titleID, String body, int id )
     {
         String title = LocUtils.getString( context, titleID );
         postNotification( context, intent, title, body, id );
     }
 
-    public static void postNotification( Context context, Intent intent, 
-                                         String title, String body, 
+    public static void postNotification( Context context, Intent intent,
+                                         String title, String body,
                                          int id )
     {
         /* nextRandomInt: per this link
@@ -209,10 +209,10 @@ public class Utils {
            though the docs say that param's ignored.
         */
         PendingIntent pi = null == intent ? null
-            : PendingIntent.getActivity( context, Utils.nextRandomInt(), intent, 
+            : PendingIntent.getActivity( context, Utils.nextRandomInt(), intent,
                                          PendingIntent.FLAG_ONE_SHOT );
 
-        Notification notification = 
+        Notification notification =
             new Notification( R.drawable.icon48x48, title,
                               System.currentTimeMillis() );
 
@@ -249,7 +249,7 @@ public class Utils {
 
     // adapted from
     // http://stackoverflow.com/questions/2174048/how-to-look-up-a-contacts-name-from-their-phone-number-on-android
-    public static String phoneToContact( Context context, String phone, 
+    public static String phoneToContact( Context context, String phone,
                                          boolean phoneStandsIn )
     {
         // I'm assuming that since context is passed this needn't
@@ -265,9 +265,9 @@ public class Utils {
                     ContentResolver contentResolver = context.getContentResolver();
                     Cursor cursor =
                         contentResolver
-                        .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
-                                                      Uri.encode( phone )), 
-                                new String[] { PhoneLookup.DISPLAY_NAME }, 
+                        .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI,
+                                                      Uri.encode( phone )),
+                                new String[] { PhoneLookup.DISPLAY_NAME },
                                 null, null, null );
                     if ( cursor.moveToNext() ) {
                         int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
@@ -361,7 +361,7 @@ public class Utils {
         if ( null == s_hasSmallScreen ) {
             int screenLayout = context.getResources().
                 getConfiguration().screenLayout;
-            boolean hasSmallScreen = 
+            boolean hasSmallScreen =
                 (screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK)
                 == Configuration.SCREENLAYOUT_SIZE_SMALL;
             s_hasSmallScreen = new Boolean( hasSmallScreen );
@@ -450,7 +450,7 @@ public class Utils {
         PackageManager pm = context.getPackageManager();
         Intent intent = makeInstallIntent( path );
         List<ResolveInfo> doers =
-            pm.queryIntentActivities( intent, 
+            pm.queryIntentActivities( intent,
                                       PackageManager.MATCH_DEFAULT_ONLY );
         result = 0 < doers.size();
         return result;
@@ -466,7 +466,7 @@ public class Utils {
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
         String installer = pm.getInstallerPackageName( packageName );
-        boolean result = "com.google.android.feedback".equals( installer ) 
+        boolean result = "com.google.android.feedback".equals( installer )
             || "com.android.vending".equals( installer );
         return result;
     }
@@ -476,18 +476,18 @@ public class Utils {
         if ( null == s_isFirstBootThisVersion ) {
             final int thisVersion = getAppVersion( context );
             int prevVersion = 0;
-            SharedPreferences prefs = 
-                context.getSharedPreferences( HIDDEN_PREFS, 
+            SharedPreferences prefs =
+                context.getSharedPreferences( HIDDEN_PREFS,
                                               Context.MODE_PRIVATE );
 
 
             if ( 0 < thisVersion ) {
-                prefs = context.getSharedPreferences( HIDDEN_PREFS, 
+                prefs = context.getSharedPreferences( HIDDEN_PREFS,
                                                       Context.MODE_PRIVATE );
                 prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
             }
             boolean newVersion = prevVersion != thisVersion;
-        
+
             s_isFirstBootThisVersion = new Boolean( newVersion );
             s_isFirstBootEver = new Boolean( -1 == prevVersion );
 

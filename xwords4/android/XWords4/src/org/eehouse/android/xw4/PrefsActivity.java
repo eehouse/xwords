@@ -49,23 +49,23 @@ public class PrefsActivity extends PreferenceActivity
 
         m_dlgt.init( savedInstanceState );
     }
-    
+
     @Override
-    protected void onStart() 
+    protected void onStart()
     {
         LocUtils.xlatePreferences( this );
         super.onStart();
     }
 
     @Override
-    protected void onResume() 
+    protected void onResume()
     {
         super.onResume();
         m_dlgt.onResume();
    }
 
     @Override
-    protected void onPause() 
+    protected void onPause()
     {
         super.onPause();
         m_dlgt.onPause();

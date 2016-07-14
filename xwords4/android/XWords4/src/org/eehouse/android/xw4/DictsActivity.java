@@ -39,7 +39,7 @@ public class DictsActivity extends XWActivity {
     private DictsDelegate m_dlgt;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
         m_dlgt = new DictsDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );

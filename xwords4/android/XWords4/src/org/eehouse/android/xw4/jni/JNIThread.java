@@ -60,7 +60,7 @@ public class JNIThread extends Thread {
     public static JNIThread getCurrent() {
         JNIThread result = null;
         synchronized( s_curThreads ) {
-            // DbgUtils.logf( "JNIThread.getCurrent(): have %d threads", 
+            // DbgUtils.logf( "JNIThread.getCurrent(): have %d threads",
             //                s_curThreads.size() );
             if ( 1 == s_curThreads.size() ) {
                 result = s_curThreads.iterator().next();
@@ -186,9 +186,9 @@ public class JNIThread extends Thread {
         m_rowid = rowid;
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
-    
+
     public JNIThread configure( Context context, SyncedDraw drawer,
-                                UtilCtxtImpl utils, 
+                                UtilCtxtImpl utils,
                                 TransportProcs.TPMsgHandler xportHandler,
                                 Handler handler )
     {
@@ -219,7 +219,7 @@ public class JNIThread extends Thread {
         XwJNI.gi_from_stream( m_gi, stream );
 
         m_summary = DBUtils.getSummary( context, m_lock );
-        
+
         if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
             m_xport = new CommsTransport( context, xportHandler, m_rowid,
                                           m_gi.serverRole );
@@ -229,16 +229,16 @@ public class JNIThread extends Thread {
         CommonPrefs cp = CommonPrefs.get( context );
         JNIUtils jniUtils = JNIUtilsImpl.get( context );
         if ( null == stream ||
-             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                          m_gi, dictNames, 
-                                          pairs.m_bytes, 
-                                          pairs.m_paths, 
-                                          m_gi.langName(), 
+             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream,
+                                          m_gi, dictNames,
+                                          pairs.m_bytes,
+                                          pairs.m_paths,
+                                          m_gi.langName(),
                                           utils, jniUtils,
                                           null, cp, m_xport ) ) {
-            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, dictNames, 
-                                    pairs.m_bytes, pairs.m_paths, 
-                                    m_gi.langName(), utils, jniUtils, 
+            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, dictNames,
+                                    pairs.m_bytes, pairs.m_paths,
+                                    m_gi.langName(), utils, jniUtils,
                                     null, cp, m_xport );
         }
 
@@ -322,8 +322,8 @@ public class JNIThread extends Thread {
 
         boolean squareTiles = XWPrefs.getSquareTiles( m_context );
         XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
-                                  150 /*scorePct*/, 200 /*trayPct*/, 
-                                  width, fontWidth, fontHeight, squareTiles, 
+                                  150 /*scorePct*/, 200 /*trayPct*/,
+                                  width, fontWidth, fontHeight, squareTiles,
                                   dims /* out param */ );
 
         // Make space for net status icon if appropriate
@@ -331,7 +331,7 @@ public class JNIThread extends Thread {
             int statusWidth = dims.boardWidth / 15;
             dims.scoreWidth -= statusWidth;
             int left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth;
-            ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
+            ConnStatusHandler.setRect( left, dims.top, left + statusWidth,
                                        dims.top + dims.scoreHt );
         } else {
             ConnStatusHandler.clearRect();
@@ -342,7 +342,7 @@ public class JNIThread extends Thread {
         m_drawer.dimsChanged( dims );
     }
 
-    private boolean nextSame( JNICmd cmd ) 
+    private boolean nextSame( JNICmd cmd )
     {
         QueueElem nextElem = m_queue.peek();
         return null != nextElem && nextElem.m_cmd == cmd;
@@ -417,7 +417,7 @@ public class JNIThread extends Thread {
     }
 
     @SuppressWarnings("fallthrough")
-    public void run() 
+    public void run()
     {
         boolean[] barr = new boolean[2]; // scratch boolean
         for ( ; ; ) {
@@ -470,7 +470,7 @@ public class JNIThread extends Thread {
                     dims = (BoardDims)args0;
                     XwJNI.board_applyLayout( m_jniGamePtr, dims );
                 } else {
-                    doLayout( (Integer)args0, (Integer)args[1], 
+                    doLayout( (Integer)args0, (Integer)args[1],
                               (Integer)args[2], (Integer)args[3] );
                 }
                 draw = true;
@@ -501,7 +501,7 @@ public class JNIThread extends Thread {
             case CMD_RECEIVE:
                 CommsAddrRec ret = (CommsAddrRec)args[1];
                 Assert.assertNotNull( ret );
-                draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
+                draw = XwJNI.game_receiveMessage( m_jniGamePtr,
                                                   (byte[])args[0], ret );
                 handle( JNICmd.CMD_DO );
                 if ( draw ) {
@@ -519,13 +519,13 @@ public class JNIThread extends Thread {
                 // e.g. colors, aren't known by common code so
                 // board_prefsChanged's return value isn't enough.
                 XwJNI.board_invalAll( m_jniGamePtr );
-                XwJNI.board_server_prefsChanged( m_jniGamePtr, 
+                XwJNI.board_server_prefsChanged( m_jniGamePtr,
                                                  CommonPrefs.get( m_context ) );
                 draw = true;
                 break;
 
             case CMD_PEN_DOWN:
-                draw = XwJNI.board_handlePenDown( m_jniGamePtr, 
+                draw = XwJNI.board_handlePenDown( m_jniGamePtr,
                                                   ((Integer)args[0]).intValue(),
                                                   ((Integer)args[1]).intValue(),
                                                   barr );
@@ -534,12 +534,12 @@ public class JNIThread extends Thread {
                 if ( nextSame( JNICmd.CMD_PEN_MOVE ) ) {
                     continue;
                 }
-                draw = XwJNI.board_handlePenMove( m_jniGamePtr, 
+                draw = XwJNI.board_handlePenMove( m_jniGamePtr,
                                                   ((Integer)args[0]).intValue(),
                                                   ((Integer)args[1]).intValue() );
                 break;
             case CMD_PEN_UP:
-                draw = XwJNI.board_handlePenUp( m_jniGamePtr, 
+                draw = XwJNI.board_handlePenUp( m_jniGamePtr,
                                                 ((Integer)args[0]).intValue(),
                                                 ((Integer)args[1]).intValue() );
                 break;
@@ -582,7 +582,7 @@ public class JNIThread extends Thread {
                 if ( nextSame( elem.m_cmd ) ) {
                     continue;
                 }
-                draw = XwJNI.board_requestHint( m_jniGamePtr, false, 
+                draw = XwJNI.board_requestHint( m_jniGamePtr, false,
                                                 JNICmd.CMD_PREV_HINT==elem.m_cmd,
                                                 barr );
                 if ( barr[0] ) {
@@ -602,7 +602,7 @@ public class JNIThread extends Thread {
                 draw = XwJNI.board_zoom( m_jniGamePtr, zoomBy, barr );
                 break;
             case CMD_ZOOM:
-                draw = XwJNI.board_zoom( m_jniGamePtr, 
+                draw = XwJNI.board_zoom( m_jniGamePtr,
                                          ((Integer)args[0]).intValue(),
                                          barr );
                 break;
@@ -623,9 +623,9 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_RESEND:
-                int nSent = 
-                    XwJNI.comms_resendAll( m_jniGamePtr, 
-                                           ((Boolean)args[0]).booleanValue(),           
+                int nSent =
+                    XwJNI.comms_resendAll( m_jniGamePtr,
+                                           ((Boolean)args[0]).booleanValue(),
                                            ((Boolean)args[1]).booleanValue() );
                 if ( ((Boolean)args[2]).booleanValue() ) {
                     Message.obtain(m_handler, MSGS_SENT, nSent).sendToTarget();
@@ -638,7 +638,7 @@ public class JNIThread extends Thread {
             case CMD_HISTORY:
                 boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
                 sendForDialog( ((Integer)args[0]).intValue(),
-                               XwJNI.model_writeGameHistory( m_jniGamePtr, 
+                               XwJNI.model_writeGameHistory( m_jniGamePtr,
                                                              gameOver ) );
                 break;
 
@@ -661,7 +661,7 @@ public class JNIThread extends Thread {
                         ((Boolean)args[0]).booleanValue();
                     int titleID = auto? R.string.summary_gameover
                         : R.string.finalscores_title;
-                    
+
                     String text = XwJNI.server_writeFinalScores( m_jniGamePtr );
                     Message.obtain( m_handler, GAME_OVER, titleID, 0, text )
                         .sendToTarget();
@@ -679,7 +679,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_TIMER_FIRED:
-                draw = XwJNI.timerFired( m_jniGamePtr, 
+                draw = XwJNI.timerFired( m_jniGamePtr,
                                          ((Integer)args[0]).intValue(),
                                          ((Integer)args[1]).intValue(),
                                          ((Integer)args[2]).intValue() );
@@ -728,12 +728,12 @@ public class JNIThread extends Thread {
     {
         handle( JNICmd.CMD_SENDCHAT, chat );
     }
-    
+
     public void handle( JNICmd cmd, Object... args )
     {
         m_queue.add( new QueueElem( cmd, true, args ) );
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
-            DbgUtils.logf( "WARNING: adding %s to stopped thread!!!", 
+            DbgUtils.logf( "WARNING: adding %s to stopped thread!!!",
                            cmd.toString() );
             DbgUtils.printStack();
         }
@@ -752,10 +752,10 @@ public class JNIThread extends Thread {
     private void retain_sync()
     {
         ++m_refCount;
-        DbgUtils.logf( "JNIThread.retain_sync(rowid=%d): m_refCount: %d", 
+        DbgUtils.logf( "JNIThread.retain_sync(rowid=%d): m_refCount: %d",
                        m_rowid, m_refCount );
     }
-    
+
     public JNIThread retain()
     {
         synchronized( s_instances ) {
@@ -773,7 +773,7 @@ public class JNIThread extends Thread {
                 stop = true;
             }
         }
-        DbgUtils.logf( "JNIThread.release(rowid=%d): m_refCount: %d", 
+        DbgUtils.logf( "JNIThread.release(rowid=%d): m_refCount: %d",
                        m_rowid, m_refCount );
 
         if ( stop ) {

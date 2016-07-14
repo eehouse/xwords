@@ -96,11 +96,11 @@ public class SMSService extends XWService {
     private static final String PHONE = "PHONE";
     private static final String GAMEDATA_STR = "GD";
 
-    private static final String PHONE_RECS_KEY = 
+    private static final String PHONE_RECS_KEY =
         SMSService.class.getName() + "_PHONES";
 
     private static Boolean s_showToasts = null;
-    
+
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
     private enum SMS_CMD { NONE, INVITE, DATA, DEATH, ACK, };
@@ -184,7 +184,7 @@ public class SMSService extends XWService {
         s_phoneInfo = null;
     }
 
-    public static void smsToastEnable( boolean newVal ) 
+    public static void smsToastEnable( boolean newVal )
     {
         s_showToasts = newVal;
     }
@@ -196,7 +196,7 @@ public class SMSService extends XWService {
     }
 
     // NBS case
-    public static void handleFrom( Context context, byte[] buffer, 
+    public static void handleFrom( Context context, byte[] buffer,
                                    String phone )
     {
         Intent intent = getIntentTo( context, SMSAction.HANDLEDATA );
@@ -216,7 +216,7 @@ public class SMSService extends XWService {
         context.startService( intent );
     }
 
-    public static int sendPacket( Context context, String phone, 
+    public static int sendPacket( Context context, String phone,
                                   int gameID, byte[] binmsg )
     {
         int nSent = -1;
@@ -258,7 +258,7 @@ public class SMSService extends XWService {
                 String tmp = msg.substring( 1 + msg.lastIndexOf( " " ) );
 
                 int headerLen = XWApp.SMS_PUBLIC_HEADER.length();
-                String hashString = 
+                String hashString =
                     msg.substring( headerLen, headerLen + 4 );
                 int hashRead = Integer.parseInt( hashString, 16 );
                 int hashCode = 0xFFFF & tmp.hashCode();
@@ -283,7 +283,7 @@ public class SMSService extends XWService {
     private static boolean showToasts( Context context )
     {
         if ( null == s_showToasts ) {
-            s_showToasts = 
+            s_showToasts =
                 XWPrefs.getPrefsBoolean( context, R.string.key_show_sms, false );
         }
         return s_showToasts;
@@ -378,8 +378,8 @@ public class SMSService extends XWService {
 
             result = Service.START_STICKY;
         }
-        
-        if ( Service.START_NOT_STICKY == result 
+
+        if ( Service.START_NOT_STICKY == result
              || !XWPrefs.getSMSEnabled( this ) ) {
             stopSelf( startId );
         }
@@ -469,7 +469,7 @@ public class SMSService extends XWService {
         return result;
     }
 
-    private byte[][] breakAndEncode( byte msg[] ) throws java.io.IOException 
+    private byte[][] breakAndEncode( byte msg[] ) throws java.io.IOException
     {
         byte[][] result = null;
         int count = (msg.length + (MAX_LEN_BINARY-1)) / MAX_LEN_BINARY;
@@ -485,7 +485,7 @@ public class SMSService extends XWService {
                     len = MAX_LEN_BINARY;
                 }
                 end += len;
-                byte[] part = new byte[4 + len]; 
+                byte[] part = new byte[4 + len];
                 part[0] = (byte)SMS_PROTO_VERSION;
                 part[1] = (byte)msgID;
                 part[2] = (byte)ii;
@@ -505,7 +505,7 @@ public class SMSService extends XWService {
     private void receive( SMS_CMD cmd, byte[] data, String phone )
     {
         DbgUtils.logf( "SMSService.receive(cmd=%s)", cmd.toString() );
-        DataInputStream dis = 
+        DataInputStream dis =
             new DataInputStream( new ByteArrayInputStream(data) );
         try {
             switch( cmd ) {
@@ -517,9 +517,9 @@ public class SMSService extends XWService {
                         makeForInvite( phone, nli );
                     } else {
                         Intent intent = MultiService
-                            .makeMissingDictIntent( this, nli, 
+                            .makeMissingDictIntent( this, nli,
                                                     DictFetchOwner.OWNER_SMS );
-                        MultiService.postMissingDictNotification( this, intent, 
+                        MultiService.postMissingDictNotification( this, intent,
                                                                   nli.gameID() );
                     }
                 } else {
@@ -538,7 +538,7 @@ public class SMSService extends XWService {
                 break;
             case ACK:
                 gameID = dis.readInt();
-                sendResult( MultiEvent.NEWGAME_SUCCESS, 
+                sendResult( MultiEvent.NEWGAME_SUCCESS,
                                      gameID );
                 break;
             default:
@@ -566,7 +566,7 @@ public class SMSService extends XWService {
         }
     }
 
-    private boolean tryAssemble( String senderPhone, int id, int index, 
+    private boolean tryAssemble( String senderPhone, int id, int index,
                                  int count, byte[] msg )
     {
         boolean success = true;
@@ -574,8 +574,8 @@ public class SMSService extends XWService {
             success = disAssemble( senderPhone, msg );
         } else if ( count > 0 && count < MAX_MSG_COUNT && index < count ) {
             // required?  Should always be in main thread.
-            synchronized( s_partialMsgs ) { 
-                HashMap<Integer, MsgStore> perPhone = 
+            synchronized( s_partialMsgs ) {
+                HashMap<Integer, MsgStore> perPhone =
                     s_partialMsgs.get( senderPhone );
                 if ( null == perPhone ) {
                     perPhone = new HashMap <Integer, MsgStore>();
@@ -601,7 +601,7 @@ public class SMSService extends XWService {
     private boolean disAssemble( String senderPhone, byte[] fullMsg )
     {
         boolean success = false;
-        DataInputStream dis = 
+        DataInputStream dis =
             new DataInputStream( new ByteArrayInputStream(fullMsg) );
         try {
             byte proto = dis.readByte();
@@ -638,7 +638,7 @@ public class SMSService extends XWService {
     private void postNotification( String phone, int gameID, long rowid )
     {
         String owner = Utils.phoneToContact( this, phone, true );
-        String body = LocUtils.getString( this, R.string.new_name_body_fmt, 
+        String body = LocUtils.getString( this, R.string.new_name_body_fmt,
                                           owner );
         GameUtils.postInvitedNotification( this, gameID, body, rowid );
     }
@@ -681,7 +681,7 @@ public class SMSService extends XWService {
                     PendingIntent sent = makeStatusIntent( MSG_SENT );
                     PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
                     for ( byte[] fragment : fragments ) {
-                        mgr.sendDataMessage( phone, null, nbsPort, fragment, sent, 
+                        mgr.sendDataMessage( phone, null, nbsPort, fragment, sent,
                                              delivery );
                         DbgUtils.logf( "SMSService.sendBuffers(): sent %d byte fragment",
                                        fragment.length );
@@ -703,8 +703,8 @@ public class SMSService extends XWService {
             DbgUtils.showf( this, "Sent msg %d", s_nSent );
         }
 
-        ConnStatusHandler.updateStatusOut( this, null, 
-                                           CommsConnType.COMMS_CONN_SMS, 
+        ConnStatusHandler.updateStatusOut( this, null,
+                                           CommsConnType.COMMS_CONN_SMS,
                                            success );
         return success;
     }
@@ -721,7 +721,7 @@ public class SMSService extends XWService {
     {
         m_sentReceiver = new BroadcastReceiver() {
                 @Override
-                public void onReceive(Context arg0, Intent arg1) 
+                public void onReceive(Context arg0, Intent arg1)
                 {
                     switch ( getResultCode() ) {
                     case Activity.RESULT_OK:
@@ -830,7 +830,7 @@ public class SMSService extends XWService {
             m_msgsData[index] = msg;
             return this;
         }
-        
+
         public boolean isComplete()
         {
             int count = null != m_msgsText ? m_msgsText.length : m_msgsData.length;
@@ -838,7 +838,7 @@ public class SMSService extends XWService {
             return complete;
         }
 
-        public String messageText() 
+        public String messageText()
         {
             StringBuffer sb = new StringBuffer(m_fullLength);
             for ( String msg : m_msgsText ) {
@@ -847,7 +847,7 @@ public class SMSService extends XWService {
             return sb.toString();
         }
 
-        public byte[] messageData() 
+        public byte[] messageData()
         {
             byte[] result = new byte[m_fullLength];
             int indx = 0;

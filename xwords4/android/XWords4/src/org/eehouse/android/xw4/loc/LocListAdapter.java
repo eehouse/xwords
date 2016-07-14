@@ -36,7 +36,7 @@ public class LocListAdapter extends XWListAdapter {
     private View.OnClickListener m_listener;
 
     protected LocListAdapter( Context context, ListView listView,
-                              LocSearcher searcher, 
+                              LocSearcher searcher,
                               View.OnClickListener listener )
     {
         m_context = context;
@@ -46,7 +46,7 @@ public class LocListAdapter extends XWListAdapter {
     }
 
     @Override
-    public int getCount() 
+    public int getCount()
     {
         int count = m_searcher.matchSize();
         // DbgUtils.logf(" LocListAdapter.getCount() => %d", count );

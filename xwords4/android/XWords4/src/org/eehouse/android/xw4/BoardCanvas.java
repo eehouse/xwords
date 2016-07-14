@@ -136,7 +136,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         this( activity, activity, bitmap, jniThread, dims );
     }
 
-    private BoardCanvas( Context context, Activity activity, Bitmap bitmap, 
+    private BoardCanvas( Context context, Activity activity, Bitmap bitmap,
                          JNIThread jniThread, BoardDims dims )
     {
         super( bitmap );
@@ -193,12 +193,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return m_trayOwner;
     }
 
-    public int curPending() 
+    public int curPending()
     {
         return m_pendingScore;
     }
 
-    public void setInTrade( boolean inTrade ) 
+    public void setInTrade( boolean inTrade )
     {
         if ( m_inTrade != inTrade ) {
             m_inTrade = inTrade;
@@ -207,7 +207,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
 
     // DrawCtxt interface implementation
-    public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
+    public boolean scoreBegin( Rect rect, int numPlayers, int[] scores,
                                int remCount )
     {
         fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
@@ -215,15 +215,15 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return true;
     }
 
-    public boolean measureRemText( Rect r, int nTilesLeft, int[] width, 
-                                   int[] height ) 
+    public boolean measureRemText( Rect r, int nTilesLeft, int[] width,
+                                   int[] height )
     {
         boolean showREM = 0 <= nTilesLeft;
         if ( showREM ) {
             // should cache a formatter
             m_remText = String.format( "%d", nTilesLeft );
             m_fillPaint.setTextSize( m_mediumFontHt );
-            m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
+            m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(),
                                        m_boundsScratch );
 
             int minWidth = m_boundsScratch.width();
@@ -236,7 +236,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return showREM;
     }
 
-    public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, 
+    public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft,
                              boolean focussed )
     {
         int indx = focussed ? CommonPrefs.COLOR_FOCUS
@@ -247,7 +247,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawCentered( m_remText, rInner, null );
     }
 
-    public void measureScoreText( Rect rect, DrawScoreInfo dsi, 
+    public void measureScoreText( Rect rect, DrawScoreInfo dsi,
                                   int[] width, int[] height )
     {
         String[] scoreInfo = new String[dsi.isTurn?1:2];
@@ -283,7 +283,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
         int needWidth = 0;
         for ( int ii = 0; ii < scoreInfo.length; ++ii ) {
-            m_fillPaint.getTextBounds( scoreInfo[ii], 0, scoreInfo[ii].length(), 
+            m_fillPaint.getTextBounds( scoreInfo[ii], 0, scoreInfo[ii].length(),
                                        m_boundsScratch );
             if ( needWidth < m_boundsScratch.width() ) {
                 needWidth = m_boundsScratch.width();
@@ -297,7 +297,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         height[0] = rect.height();
     }
 
-    public void score_drawPlayer( Rect rInner, Rect rOuter, 
+    public void score_drawPlayer( Rect rInner, Rect rOuter,
                                   int gotPct, DrawScoreInfo dsi )
     {
         if ( 0 != (dsi.flags & CELL_ISCURSOR) ) {
@@ -332,7 +332,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
             String negSign = secondsLeft < 0? "-":"";
             secondsLeft = Math.abs( secondsLeft );
-            String time = String.format( "%s%d:%02d", negSign, secondsLeft/60, 
+            String time = String.format( "%s%d:%02d", negSign, secondsLeft/60,
                                          secondsLeft%60 );
 
             fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
@@ -352,8 +352,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
 
     public boolean drawCell( final Rect rect, String text, int tile, int value,
-                             int owner, int bonus, int hintAtts, 
-                             final int flags ) 
+                             int owner, int bonus, int hintAtts,
+                             final int flags )
     {
         boolean canDraw = figureFontDims();
         if ( canDraw ) {
@@ -425,7 +425,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     } // drawCell
 
     private boolean m_arrowHintShown = false;
-    public void drawBoardArrow( Rect rect, int bonus, boolean vert, 
+    public void drawBoardArrow( Rect rect, int bonus, boolean vert,
                                 int hintAtts, int flags )
     {
         // figure out if the background is more dark than light
@@ -458,7 +458,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             //     handler.post( new Runnable() {
             //             public void run() {
             //                 m_parent.
-            //                     showNotAgainDlgThen( R.string.not_again_arrow, 
+            //                     showNotAgainDlgThen( R.string.not_again_arrow,
             //                                          R.string.
             //                                          key_notagain_arrow );
             //             } } );
@@ -466,30 +466,30 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public boolean trayBegin( Rect rect, int owner, int score ) 
+    public boolean trayBegin( Rect rect, int owner, int score )
     {
         m_trayOwner = owner;
         m_pendingScore = score;
         return true;
     }
 
-    public boolean drawTile( Rect rect, String text, int val, int flags ) 
+    public boolean drawTile( Rect rect, String text, int val, int flags )
     {
         return drawTileImpl( rect, text, val, flags, true );
     }
 
-    public boolean drawTileMidDrag( Rect rect, String text, int val, int owner, 
-                                 int flags ) 
+    public boolean drawTileMidDrag( Rect rect, String text, int val, int owner,
+                                 int flags )
     {
         return drawTileImpl( rect, text, val, flags, false );
     }
 
-    public boolean drawTileBack( Rect rect, int flags ) 
+    public boolean drawTileBack( Rect rect, int flags )
     {
         return drawTileImpl( rect, "?", -1, flags, true );
     }
 
-    public void drawTrayDivider( Rect rect, int flags ) 
+    public void drawTrayDivider( Rect rect, int flags )
     {
         boolean isCursor = 0 != (flags & CELL_ISCURSOR);
         boolean selected = 0 != (flags & CELL_HIGHLIGHT);
@@ -505,11 +505,11 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public void score_pendingScore( Rect rect, int score, int playerNum, 
-                                    int curTurn, int flags ) 
+    public void score_pendingScore( Rect rect, int score, int playerNum,
+                                    int curTurn, int flags )
     {
         String text = score >= 0? String.format( "%d", score ) : "??";
-        int otherIndx = (0 == (flags & CELL_ISCURSOR)) 
+        int otherIndx = (0 == (flags & CELL_ISCURSOR))
             ? CommonPrefs.COLOR_BACKGRND : CommonPrefs.COLOR_FOCUS;
         ++rect.top;
         fillRectOther( rect, otherIndx );
@@ -524,7 +524,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawCentered( text, rect, null );
 
         rect.offset( 0, rect.height() );
-        drawCentered( LocUtils.getString( m_context, R.string.pts ), 
+        drawCentered( LocUtils.getString( m_context, R.string.pts ),
                       rect, null );
     }
 
@@ -569,7 +569,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    private boolean drawTileImpl( Rect rect, String text, int val, 
+    private boolean drawTileImpl( Rect rect, String text, int val,
                                   int flags, boolean clearBack )
     {
         boolean canDraw = figureFontDims();
@@ -587,7 +587,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             }
 
             if ( isCursor || notEmpty ) {
-                int color = m_otherColors[isCursor? CommonPrefs.COLOR_FOCUS 
+                int color = m_otherColors[isCursor? CommonPrefs.COLOR_FOCUS
                                           : CommonPrefs.COLOR_TILE_BACK];
                 if ( !clearBack ) {
                     color &= 0x7FFFFFFF; // translucent if being dragged.
@@ -628,23 +628,23 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    private void drawCentered( String text, Rect rect, FontDims fontDims ) 
+    private void drawCentered( String text, Rect rect, FontDims fontDims )
     {
         drawIn( text, rect, fontDims, Paint.Align.CENTER );
     }
 
-    private void drawIn( String text, Rect rect, FontDims fontDims, 
-                         Paint.Align align ) 
+    private void drawIn( String text, Rect rect, FontDims fontDims,
+                         Paint.Align align )
     {
         int descent = -1;
         int textSize;
         if ( null == fontDims ) {
             textSize = rect.height() - SCORE_HT_DROP;
         } else {
-            int height = rect.height() - 4; // borders and padding, 2 each 
+            int height = rect.height() - 4; // borders and padding, 2 each
             descent = fontDims.descentFor( height );
             textSize = fontDims.heightFor( height );
-            // DbgUtils.logf( "using descent: " + descent + " and textSize: " 
+            // DbgUtils.logf( "using descent: " + descent + " and textSize: "
             //             + textSize + " in height " + height );
         }
         m_fillPaint.setTextSize( textSize );
@@ -671,13 +671,13 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     } // drawCentered
 
-    private void drawScaled( String text, final Rect rect, 
+    private void drawScaled( String text, final Rect rect,
                              Rect textBounds, int descent )
     {
         textBounds.bottom = rect.height();
 
         Bitmap bitmap = Bitmap.createBitmap( textBounds.width(),
-                                             rect.height(), 
+                                             rect.height(),
                                              Bitmap.Config.ARGB_8888 );
 
         Canvas canvas = new Canvas( bitmap );
@@ -705,7 +705,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         if ( val >= 0 ) {
             int divisor = m_hasSmallScreen ? 3 : 4;
             if ( null == m_valRect ) {
-                m_valRect = new Rect( 0, 0, rect.width() / divisor, 
+                m_valRect = new Rect( 0, 0, rect.width() / divisor,
                                       rect.height() / divisor );
                 m_valRect.inset( offset, offset );
             }
@@ -714,7 +714,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             text = String.format( "%d", val );
             m_fillPaint.setTextSize( m_valRect.height() );
             m_fillPaint.setTextAlign( Paint.Align.RIGHT );
-            drawText( text, m_valRect.right, m_valRect.bottom, 
+            drawText( text, m_valRect.right, m_valRect.bottom,
                       m_fillPaint );
             if ( FRAME_TRAY_RECTS ) {
                 drawRect( m_valRect, m_strokePaint );
@@ -745,7 +745,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             paint.setTextAlign( Paint.Align.LEFT );
             paint.setTextSize( ht );
 
-            Bitmap bitmap = Bitmap.createBitmap( width, (ht*3)/2, 
+            Bitmap bitmap = Bitmap.createBitmap( width, (ht*3)/2,
                                                  Bitmap.Config.ARGB_8888 );
             Canvas canvas = new Canvas( bitmap );
 
@@ -800,7 +800,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     }
                 }
             }
-        
+
             m_fontDims = new FontDims( ht, topRow, bottomRow, maxWidth );
         }
         return null != m_fontDims;
@@ -855,7 +855,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                  }
              }
 
-             arrow = new BitmapDrawable(bitmap); 
+             arrow = new BitmapDrawable(bitmap);
          }
          return arrow;
     }

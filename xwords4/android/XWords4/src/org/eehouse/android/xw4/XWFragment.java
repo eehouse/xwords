@@ -53,8 +53,8 @@ public class XWFragment extends Fragment implements Delegator {
     }
 
     @Override
-    public View onCreateView( LayoutInflater inflater, ViewGroup container, 
-                              Bundle savedInstanceState ) 
+    public View onCreateView( LayoutInflater inflater, ViewGroup container,
+                              Bundle savedInstanceState )
     {
         DbgUtils.logdf( "%s.onCreateView() called", this.getClass().getSimpleName() );
         return m_dlgt.inflateView( inflater, container );
@@ -63,7 +63,7 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
-        DbgUtils.logdf( "%s.onActivityCreated() called", 
+        DbgUtils.logdf( "%s.onActivityCreated() called",
                         this.getClass().getSimpleName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
@@ -75,7 +75,7 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public void onPause()
     {
-        DbgUtils.logdf( "%s.onPause() called", 
+        DbgUtils.logdf( "%s.onPause() called",
                         this.getClass().getSimpleName() );
         m_dlgt.onPause();
         super.onPause();
@@ -91,7 +91,7 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public void onStart()
     {
-        DbgUtils.logdf( "%s.onStart() called", 
+        DbgUtils.logdf( "%s.onStart() called",
                         this.getClass().getSimpleName() );
         super.onStart();
         m_dlgt.onStart();
@@ -100,7 +100,7 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public void onStop()
     {
-        DbgUtils.logdf( "%s.onStop() called", 
+        DbgUtils.logdf( "%s.onStop() called",
                         this.getClass().getSimpleName() );
         m_dlgt.onStop();
         super.onStop();
@@ -109,7 +109,7 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public void onDestroy()
     {
-        DbgUtils.logdf( "%s.onDestroy() called", 
+        DbgUtils.logdf( "%s.onDestroy() called",
                         this.getClass().getSimpleName() );
         m_dlgt.onDestroy();
         super.onDestroy();
@@ -128,7 +128,7 @@ public class XWFragment extends Fragment implements Delegator {
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         return m_dlgt.onOptionsItemSelected( item );
     }
@@ -142,20 +142,20 @@ public class XWFragment extends Fragment implements Delegator {
     public boolean inDPMode() {
         MainActivity main = (MainActivity)getActivity();
         Assert.assertTrue( main.inDPMode() ); // otherwise should be somewhere else
-        return true; 
+        return true;
     }
 
     @Override
-    public void addFragment( XWFragment fragment, Bundle extras ) 
-    { 
+    public void addFragment( XWFragment fragment, Bundle extras )
+    {
         MainActivity main = (MainActivity)getActivity();
         main.addFragment( fragment, extras );
     }
 
     @Override
-    public void addFragmentForResult( XWFragment fragment, Bundle extras, 
-                                      RequestCode code ) 
-    { 
+    public void addFragmentForResult( XWFragment fragment, Bundle extras,
+                                      RequestCode code )
+    {
         MainActivity main = (MainActivity)getActivity();
         main.addFragmentForResult( fragment, extras, code );
     }
@@ -169,7 +169,7 @@ public class XWFragment extends Fragment implements Delegator {
     }
 
     public void setListAdapter( ListAdapter adapter )
-    { 
+    {
         getListView().setAdapter( adapter );
     }
 

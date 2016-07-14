@@ -35,7 +35,7 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    protected void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState )
     {
     }
 

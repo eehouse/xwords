@@ -37,7 +37,7 @@
 
 // import junit.framework.Assert;
 
-// public class FragActivity extends FragmentActivity 
+// public class FragActivity extends FragmentActivity
 //     implements FragmentManager.OnBackStackChangedListener {
 
 //     private static final int MAX_PANES_LANDSCAPE = 3;
@@ -54,7 +54,7 @@
 //     private Boolean m_isPortrait;
 
 //     @Override
-//     public void onCreate( Bundle savedInstanceState ) 
+//     public void onCreate( Bundle savedInstanceState )
 //     {
 //         s_this = this;
 //         super.onCreate( savedInstanceState );
@@ -74,7 +74,7 @@
 //     }
 
 //     @Override
-//     public void onBackPressed() 
+//     public void onBackPressed()
 //     {
 //         DbgUtils.logf( "FragActivity.onBackPressed()" );
 //         super.onBackPressed();
@@ -165,8 +165,8 @@
 //         getSupportFragmentManager().popBackStack();
 //     }
 
-//     private void addFragmentImpl( Fragment fragment, Bundle bundle, 
-//                                   Delegator parent ) 
+//     private void addFragmentImpl( Fragment fragment, Bundle bundle,
+//                                   Delegator parent )
 //     {
 //         fragment.setArguments( bundle );
 //         addFragmentImpl( fragment, parent );
@@ -275,7 +275,7 @@
 //     {
 //         int result;
 //         int orientation = getResources().getConfiguration().orientation;
-//         if ( XWPrefs.getIsTablet( this ) 
+//         if ( XWPrefs.getIsTablet( this )
 //              && Configuration.ORIENTATION_LANDSCAPE == orientation ) {
 //             result = 2;
 //         } else {
@@ -295,14 +295,14 @@
 //         addFragment( fragment, bundle, null );
 //     }
 
-//     public static void addFragment( Fragment fragment, Bundle bundle, 
-//                                     Delegator parent ) 
+//     public static void addFragment( Fragment fragment, Bundle bundle,
+//                                     Delegator parent )
 //     {
 //         getThis().addFragmentImpl( fragment, bundle, parent );
 //     }
 
-//     public static void addFragmentForResult( Fragment fragment, Bundle bundle, 
-//                                              RequestCode requestCode, Delegator parent ) 
+//     public static void addFragmentForResult( Fragment fragment, Bundle bundle,
+//                                              RequestCode requestCode, Delegator parent )
 //     {
 //         getThis().addFragmentImpl( fragment, bundle, parent );
 //     }

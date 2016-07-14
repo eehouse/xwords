@@ -35,7 +35,7 @@ class ExpiringTextView extends TextView {
         m_context = context;
     }
 
-    public void setPct( Handler handler, boolean haveTurn, 
+    public void setPct( Handler handler, boolean haveTurn,
                         boolean haveTurnLocal, long startSecs )
     {
         ExpiringDelegate delegate = getDelegate();
@@ -44,7 +44,7 @@ class ExpiringTextView extends TextView {
         setPct( haveTurn, haveTurnLocal, startSecs );
     }
 
-    public void setPct( boolean haveTurn, boolean haveTurnLocal, 
+    public void setPct( boolean haveTurn, boolean haveTurnLocal,
                         long startSecs )
     {
         if ( null != m_delegate ) {
@@ -53,7 +53,7 @@ class ExpiringTextView extends TextView {
     }
 
     @Override
-    protected void onDraw( Canvas canvas ) 
+    protected void onDraw( Canvas canvas )
     {
         super.onDraw( canvas );
         if ( null != m_delegate ) {

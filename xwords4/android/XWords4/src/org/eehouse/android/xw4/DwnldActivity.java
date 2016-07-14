@@ -27,14 +27,14 @@ import android.view.Window;
 public class DwnldActivity extends XWActivity {
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
         requestWindowFeature( Window.FEATURE_NO_TITLE );
         requestWindowFeature( Window.FEATURE_LEFT_ICON );
         getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
                                                            R.drawable.icon48x48 );
-        
-        DwnldDelegate dlgt = 
+
+        DwnldDelegate dlgt =
             new DwnldDelegate( this, savedInstanceState );
 
         super.onCreate( savedInstanceState, dlgt );

@@ -149,7 +149,7 @@ public class MultiService {
         String inviter = intent.getStringExtra( INVITER );
         int msgID = (null == inviter) ? R.string.invite_dict_missing_body_noname_fmt
             : R.string.invite_dict_missing_body_fmt;
-        String msg = LocUtils.getString( context, msgID, inviter, dict, 
+        String msg = LocUtils.getString( context, msgID, inviter, dict,
                                          LocUtils.xlateLang( context, langStr));
 
         return LocUtils.makeAlertBuilder( context )
@@ -160,10 +160,10 @@ public class MultiService {
             .create();
     }
 
-    public static void postMissingDictNotification( Context content, 
+    public static void postMissingDictNotification( Context content,
                                                     Intent intent, int id )
     {
-        Utils.postNotification( content, intent, R.string.missing_dict_title, 
+        Utils.postNotification( content, intent, R.string.missing_dict_title,
                                 R.string.missing_dict_detail, id );
     }
 

@@ -47,7 +47,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
     private NoNameFound m_nnf;
 
     public RefreshNamesTask( Context context, NoNameFound nnf,
-                             int lang, int nInGame, 
+                             int lang, int nInGame,
                              Spinner getsResults )
     {
         super();
@@ -65,7 +65,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
     }
 
     @Override
-    protected String[] doInBackground( Void...unused ) 
+    protected String[] doInBackground( Void...unused )
     {
         ArrayList<String> names = new ArrayList<String>();
         DbgUtils.logf( "doInBackground()" );
@@ -73,9 +73,9 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
         try {
             Socket socket = NetUtils.makeProxySocket( m_context, 15000 );
             if ( null != socket ) {
-                DataOutputStream outStream = 
+                DataOutputStream outStream =
                     new DataOutputStream( socket.getOutputStream() );
-        
+
                 outStream.writeShort( 4 );                // total packet length
                 outStream.writeByte( NetUtils.PROTOCOL_VERSION );
                 outStream.writeByte( NetUtils.PRX_PUB_ROOMS );
@@ -84,7 +84,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
                 outStream.flush();
 
                 // read result -- will block
-                DataInputStream dis = 
+                DataInputStream dis =
                     new DataInputStream(socket.getInputStream());
                 short len = dis.readShort();
                 short nRooms = dis.readShort();
@@ -112,7 +112,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
             DbgUtils.loge( ioe );
         }
         DbgUtils.logf( "doInBackground() returning" );
-        return names.toArray( new String[names.size()] );        
+        return names.toArray( new String[names.size()] );
     }
 
      // protected void onProgressUpdate(Integer... progress) {
@@ -123,7 +123,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
      protected void onPostExecute( String[] result )
      {
          DbgUtils.logf( "onPostExecute()" );
-         ArrayAdapter<String> adapter = 
+         ArrayAdapter<String> adapter =
              new ArrayAdapter<String>( m_context,
                                        android.R.layout.simple_spinner_item,
                                        result );
