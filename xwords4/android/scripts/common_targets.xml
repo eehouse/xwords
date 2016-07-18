@@ -100,6 +100,13 @@
         </exec>
     </target>
 
+    <!-- For some reason project.properties is suddenly getting
+         removed by clean and not regenerated. So make sure it's
+         there. -->
+    <target name="my-check-props">
+        <exec executable="../scripts/setup_local_props.sh" />
+    </target>
+
     <target name="my-pre-compile">
         <copy file="./gen/org/eehouse/android/${VARIANT_NAME}/R.java" todir="archive"/>
 
