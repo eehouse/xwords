@@ -1570,7 +1570,7 @@ public class BoardDelegate extends DelegateBase
     private void handleConndMessage( String room, int devOrder, // <- hostID
                                      boolean allHere, int nMissing )
     {
-        dismissInviteAlert( nMissing, true );
+        boolean skipDismiss = false;
 
         int naMsg = 0;
         int naKey = 0;
@@ -1598,6 +1598,7 @@ public class BoardDelegate extends DelegateBase
                     m_room = room;
                     showDialog( DlgID.DLG_INVITE );
                     invalidateOptionsMenuIf();
+                    skipDismiss = true;
                 } else {
                     toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
                                                   devOrder, room, nMissing );
@@ -1620,6 +1621,10 @@ public class BoardDelegate extends DelegateBase
             } else {
                 showNotAgainDlgThen( naMsg, naKey, Action.SHOW_EXPL_ACTION );
             }
+        }
+
+        if ( !skipDismiss ) {
+            dismissInviteAlert( nMissing, true ); // NO!!!
         }
 
         invalidateOptionsMenuIf();
@@ -1926,25 +1931,29 @@ public class BoardDelegate extends DelegateBase
         public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
                                    int nDevs, final int nMissing )
         {
+            boolean doDismiss = true;
             m_connTypes = connTypes;
             Assert.assertTrue( isServer || 0 == nMissing );
             // DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)",
             //                isServer, nDevs, nMissing );
             m_nGuestDevs = nDevs;
 
-            // If we might have put up an alert earlier, take it down
-            dismissInviteAlert( nMissing, !m_relayMissing );
-
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
             if ( null != connTypes && 0 == connTypes.size() ) {
                 askNoAddrsDelete();
             } else if ( 0 < nMissing && isServer && !m_haveInvited ) {
+                doDismiss = false;
                 post( new Runnable() {
                         public void run() {
                             showDialog( DlgID.DLG_INVITE );
                         }
                     } );
+            }
+
+            // If we might have put up an alert earlier, take it down
+            if ( doDismiss ) {
+                dismissInviteAlert( nMissing, !m_relayMissing );
             }
         }
 
