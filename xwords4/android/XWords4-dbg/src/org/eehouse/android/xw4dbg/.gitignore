@@ -137,3 +137,5 @@ XWFragment.java
 ConfirmingCheckBoxPreference.java
 RelayCheckBoxPreference.java
 MainActivity.java
+DictsFrag.java
+DualpaneDelegate.java
