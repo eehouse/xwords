@@ -1751,48 +1751,49 @@ public class GamesListDelegate extends ListDelegateBase
 
     private boolean handleSelGroupsItem( int itemID, long[] groupIDs )
     {
-        boolean handled = true;
-        String msg;
-        Assert.assertTrue( 0 < groupIDs.length );
-        long groupID = groupIDs[0];
-        switch( itemID ) {
-        case R.id.games_group_delete:
-            long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
-            if ( m_selGroupIDs.contains( dftGroup ) ) {
-                msg = getString( R.string.cannot_delete_default_group_fmt,
-                                 m_adapter.groupName( dftGroup ) );
-                showOKOnlyDialog( msg );
-            } else {
-                Assert.assertTrue( 0 < groupIDs.length );
-                msg = getQuantityString( R.plurals.groups_confirm_del_fmt,
-                                         groupIDs.length, groupIDs.length );
+        boolean handled = 0 < groupIDs.length;
+        if ( handled ) {
+            String msg;
+            long groupID = groupIDs[0];
+            switch( itemID ) {
+            case R.id.games_group_delete:
+                long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
+                if ( m_selGroupIDs.contains( dftGroup ) ) {
+                    msg = getString( R.string.cannot_delete_default_group_fmt,
+                                     m_adapter.groupName( dftGroup ) );
+                    showOKOnlyDialog( msg );
+                } else {
+                    Assert.assertTrue( 0 < groupIDs.length );
+                    msg = getQuantityString( R.plurals.groups_confirm_del_fmt,
+                                             groupIDs.length, groupIDs.length );
 
-                int nGames = 0;
-                for ( long tmp : groupIDs ) {
-                    nGames += m_adapter.getChildrenCount( tmp );
+                    int nGames = 0;
+                    for ( long tmp : groupIDs ) {
+                        nGames += m_adapter.getChildrenCount( tmp );
+                    }
+                    if ( 0 < nGames ) {
+                        msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
+                                                  nGames, nGames );
+                    }
+                    showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
                 }
-                if ( 0 < nGames ) {
-                    msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
-                                              nGames, nGames );
-                }
-                showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
+                break;
+            case R.id.games_group_default:
+                XWPrefs.setDefaultNewGameGroup( m_activity, groupID );
+                break;
+            case R.id.games_group_rename:
+                m_groupid = groupID;
+                showDialog( DlgID.RENAME_GROUP );
+                break;
+            case R.id.games_group_moveup:
+                moveGroup( groupID, true );
+                break;
+            case R.id.games_group_movedown:
+                moveGroup( groupID, false );
+                break;
+            default:
+                handled = false;
             }
-            break;
-        case R.id.games_group_default:
-            XWPrefs.setDefaultNewGameGroup( m_activity, groupID );
-            break;
-        case R.id.games_group_rename:
-            m_groupid = groupID;
-            showDialog( DlgID.RENAME_GROUP );
-            break;
-        case R.id.games_group_moveup:
-            moveGroup( groupID, true );
-            break;
-        case R.id.games_group_movedown:
-            moveGroup( groupID, false );
-            break;
-        default:
-            handled = false;
         }
         return handled;
     }
@@ -1900,6 +1901,8 @@ public class GamesListDelegate extends ListDelegateBase
             hasDicts = GameUtils.gameDictsHere( m_activity, rowid, missingNames,
                                                 missingLang );
         } catch ( GameUtils.NoSuchGameException nsge ) {
+            hasDicts = true;    // irrelevant question
+        } catch ( GameLock.GameLockedException gle ) {
             hasDicts = true;    // irrelevant question
         }
 
