@@ -39,6 +39,11 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.LinearLayout;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
@@ -55,6 +60,10 @@ public class MainActivity extends XWActivity
     private int m_maxPanes;
     private int m_nextID = 0x00FFFFFF;
     private Boolean m_isPortrait;
+
+    // for tracking launchForResult callback recipients
+    private Map<RequestCode, WeakReference<DelegateBase>> m_pendingCodes
+        = new HashMap<RequestCode, WeakReference<DelegateBase>>();
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -215,8 +224,35 @@ public class MainActivity extends XWActivity
     public void addFragmentForResult( XWFragment fragment, Bundle extras,
                                       RequestCode requestCode )
     {
-        DbgUtils.logf( "addFragmentForResult(): dropping requestCode" );
+        DbgUtils.assertOnUIThread();
+
+        WeakReference<DelegateBase> ref
+            = new WeakReference<DelegateBase>(fragment.getDelegate());
+        m_pendingCodes.put( requestCode, ref );
+
         addFragmentImpl( fragment, extras, this );
+    }
+
+    protected void setFragmentResult( DelegateBase delegate, int resultCode, 
+                                      Intent data )
+    {
+        DbgUtils.assertOnUIThread();
+        RequestCode requestCode = null;
+        Iterator<RequestCode> iter = m_pendingCodes.keySet().iterator();
+        while ( iter.hasNext() ) {
+            RequestCode key = iter.next();
+            WeakReference<DelegateBase> ref = m_pendingCodes.get(key);
+            DelegateBase thisOne = ref.get();
+            if ( null != thisOne && thisOne.equals(delegate) ) {
+                requestCode = key;
+                iter.remove();
+                break;
+            }
+        }
+
+        if ( null != requestCode ) {
+            delegate.onActivityResult( requestCode, resultCode, data );
+        }
     }
 
     protected void finishFragment()

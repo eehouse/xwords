@@ -1213,7 +1213,7 @@ public class GameConfigDelegate extends DelegateBase
         bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
         bundle.putBoolean( INTENT_FORRESULT_ROWID, true );
 
-        if ( false && delegator.inDPMode() ) {
+        if ( delegator.inDPMode() ) {
             delegator.addFragmentForResult( new GameConfigFrag(), bundle, requestCode );
         } else {
             Activity activity = delegator.getActivity();
