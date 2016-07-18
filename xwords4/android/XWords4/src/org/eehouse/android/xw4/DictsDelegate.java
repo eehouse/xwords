@@ -1446,4 +1446,15 @@ public class DictsDelegate extends ListDelegateBase
             cancel( true );
         }
     } // class FetchListTask
+
+    public static void start( Delegator delegator )
+    {
+        if ( delegator.inDPMode() ) {
+            delegator.addFragment( new DictsFrag(), null );
+        } else {
+            Activity activity = delegator.getActivity();
+            Intent intent = new Intent( activity, DictsActivity.class );
+            activity.startActivity( intent );
+        }
+    }
 }

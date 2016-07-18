@@ -1455,7 +1455,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_dicts:
-            DictsActivity.start( m_activity );
+            DictsDelegate.start( getDelegator() );
             break;
 
         case R.id.games_menu_checkmoves:

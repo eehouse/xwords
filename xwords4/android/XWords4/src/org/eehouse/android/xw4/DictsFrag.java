@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2016 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,28 +19,13 @@
 
 package org.eehouse.android.xw4;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 
-import java.util.HashMap;
-
-import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.loc.LocUtils;
-
-public class DictsActivity extends XWActivity {
-
-    // I can't provide a subclass of MenuItem to hold DictAndLoc, so
-    // settle for a hash on the side.
-    private DictsDelegate m_dlgt;
+public class DictsFrag extends XWFragment {
 
     @Override
-    protected void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        m_dlgt = new DictsDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
-    } // onCreate
+        super.onCreate( new DictsDelegate( this, sis ), sis, true );
+    }
 }
