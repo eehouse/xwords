@@ -55,21 +55,6 @@ import junit.framework.Assert;
 
 public class JNIThread extends Thread {
 
-    private static Set<JNIThread> s_curThreads = new HashSet<JNIThread>();
-
-    public static JNIThread getCurrent() {
-        JNIThread result = null;
-        synchronized( s_curThreads ) {
-            // DbgUtils.logf( "JNIThread.getCurrent(): have %d threads",
-            //                s_curThreads.size() );
-            if ( 1 == s_curThreads.size() ) {
-                result = s_curThreads.iterator().next();
-            }
-        }
-        // DbgUtils.logf( "JNIThread.getCurrent() => %H", result );
-        return result;
-    }
-
     public enum JNICmd { CMD_NONE,
             // CMD_RUN,
             CMD_DRAW,
