@@ -91,6 +91,7 @@ public class GameConfigDelegate extends DelegateBase
     private boolean m_forResult;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
+    private JNIThread m_jniThread;
     private int m_whichPlayer;
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
@@ -509,6 +510,7 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     protected void onResume()
     {
+        m_jniThread = JNIThread.getRetained( m_rowid );
         super.onResume();
         loadGame();
     }
@@ -517,6 +519,10 @@ public class GameConfigDelegate extends DelegateBase
     {
         m_giOrig = null;        // flag for onStart and onResume
         super.onPause();
+        if ( null != m_jniThread ) {
+            m_jniThread.release();
+            m_jniThread = null;
+        }
     }
 
     protected void onSaveInstanceState( Bundle outState )
@@ -551,8 +557,16 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
 
-            GameLock gameLock = new GameLock( m_rowid, false ).lock();
-            XwJNI.GamePtr gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
+            GameLock gameLock;
+            XwJNI.GamePtr gamePtr;
+            if ( null == m_jniThread ) {
+                 gameLock = new GameLock( m_rowid, false ).lock();
+                 gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
+            } else {
+                gameLock = m_jniThread.getLock();
+                gamePtr = m_jniThread.getGamePtr();
+            }
+
             if ( null == gamePtr ) {
                 showDictGoneFinish();
             } else {
@@ -584,9 +598,11 @@ public class GameConfigDelegate extends DelegateBase
                                                 relayPort );
                 }
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
-                gamePtr.release();
 
-                gameLock.unlock();
+                if ( null == m_jniThread ) {
+                    gamePtr.release();
+                    gameLock.unlock();
+                }
 
                 m_car = new CommsAddrRec( m_carOrig );
 
@@ -1162,11 +1178,15 @@ public class GameConfigDelegate extends DelegateBase
     private void applyChanges( boolean forceNew )
     {
         if ( !isFinishing() ) {
-            GameLock gameLock = new GameLock( m_rowid, true ).lock();
+            GameLock gameLock = m_jniThread == null
+                ? new GameLock( m_rowid, true ).lock()
+                : m_jniThread.getLock();
             GameUtils.applyChanges( m_activity, m_gi, m_car, gameLock,
                                     forceNew );
             DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
-            gameLock.unlock();
+            if ( null == m_jniThread ) {
+                gameLock.unlock();
+            }
         }
     }
 
