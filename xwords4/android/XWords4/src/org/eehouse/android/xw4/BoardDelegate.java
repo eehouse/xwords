@@ -702,15 +702,6 @@ public class BoardDelegate extends DelegateBase
         if ( Activity.RESULT_CANCELED != resultCode ) {
             InviteMeans missingMeans = null;
             switch ( requestCode ) {
-            case CHAT_REQUEST:
-                if ( BuildConstants.CHAT_SUPPORTED ) {
-                    String msg = data.getStringExtra( INTENT_KEY_CHAT );
-                    if ( null != msg && msg.length() > 0 ) {
-                        m_pendingChats.add( msg );
-                        trySendChats();
-                    }
-                }
-                break;
             case BT_INVITE_RESULT:
                 missingMeans = InviteMeans.BLUETOOTH;
                 break;
@@ -2334,8 +2325,8 @@ public class BoardDelegate extends DelegateBase
             int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
             String[] names = m_gi.playerNames();
             boolean[] locs = m_gi.playersLocal(); // to convert old histories
-            ChatDelegate.startForResult( getDelegator(), RequestCode.CHAT_REQUEST,
-                                         m_rowid, curPlayer, names, locs );
+            ChatDelegate.start( getDelegator(), m_rowid, curPlayer, 
+                                names, locs );
         }
     }
 

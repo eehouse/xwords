@@ -25,7 +25,6 @@ public enum RequestCode {
     __UNUSED,
 
     // BoardDelegate
-    CHAT_REQUEST,
     BT_INVITE_RESULT,
     SMS_INVITE_RESULT,
     RELAY_INVITE_RESULT,

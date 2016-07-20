@@ -252,10 +252,9 @@ public class ChatDelegate extends DelegateBase {
         return handled;
     }
 
-    public static void startForResult( Delegator delegator,
-                                       RequestCode requestCode,
-                                       long rowID, int curPlayer,
-                                       String[] names, boolean[] locs )
+    public static void start( Delegator delegator,
+                              long rowID, int curPlayer,
+                              String[] names, boolean[] locs )
     {
         Assert.assertFalse( -1 == curPlayer );
         Bundle bundle = new Bundle();
@@ -270,7 +269,7 @@ public class ChatDelegate extends DelegateBase {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, ChatActivity.class );
             intent.putExtras( bundle );
-            activity.startActivityForResult( intent, requestCode.ordinal() );
+            activity.startActivity( intent );
         }
     }
 }
