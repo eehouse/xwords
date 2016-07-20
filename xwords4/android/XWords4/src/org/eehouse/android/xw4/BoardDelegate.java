@@ -854,8 +854,7 @@ public class BoardDelegate extends DelegateBase
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit,
-                              inTrade && m_gsi.tradeTilesSelected
-                              && m_gsi.curTurnSelected );
+                              inTrade && m_gsi.tradeTilesSelected );
         Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
 
         if ( !inTrade ) {
