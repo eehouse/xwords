@@ -188,16 +188,11 @@ public class ChatDelegate extends DelegateBase {
 
     private void handleSend() {
         String text = m_edit.getText().toString();
-        if ( null == text || text.length() == 0 ) {
-            setResult( Activity.RESULT_CANCELED );
-            finish();
-        } else {
-            DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer );
-            addRow( text, m_curPlayer );
-            m_edit.setText( null );
+        DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer );
+        addRow( text, m_curPlayer );
+        m_edit.setText( null );
 
-            m_jniThreadRef.sendChat( text );
-        }
+        m_jniThreadRef.sendChat( text );
     }
 
     @Override
