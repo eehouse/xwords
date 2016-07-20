@@ -23,6 +23,8 @@ import android.os.Bundle;
 
 public class DictBrowseFrag extends XWFragment {
 
+    public DictBrowseFrag( Delegator parent ) { super( parent ); }
+
     @Override
     public void onCreate( Bundle sis )
     {

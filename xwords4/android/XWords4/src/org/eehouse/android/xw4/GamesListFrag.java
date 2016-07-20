@@ -24,6 +24,8 @@ import android.os.Bundle;
 
 public class GamesListFrag extends XWFragment {
 
+    public GamesListFrag( Delegator parent ) { super( parent ); }
+
     @Override
     public void onCreate( Bundle sis )
     {

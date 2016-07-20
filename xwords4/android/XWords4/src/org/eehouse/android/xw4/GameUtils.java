@@ -853,7 +853,7 @@ public class GameUtils {
     {
         Bundle extras = makeLaunchExtras( rowid, invited );
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new BoardFrag(), extras );
+            delegator.addFragment( new BoardFrag( delegator ), extras );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, BoardActivity.class );
@@ -1093,7 +1093,7 @@ public class GameUtils {
         extras.putLong( INTENT_KEY_ROWID, rowid );
 
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new GameConfigFrag(), extras );
+            delegator.addFragment( new GameConfigFrag( delegator ), extras );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, GameConfigActivity.class );

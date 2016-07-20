@@ -37,7 +37,12 @@ import junit.framework.Assert;
 public class XWFragment extends Fragment implements Delegator {
 
     private DelegateBase m_dlgt;
+    private Delegator m_parent;
     private boolean m_hasOptionsMenu = false;
+
+    public XWFragment( Delegator parent ) { m_parent = parent; }
+
+    public Delegator getParent() { return m_parent; }
 
     protected void onCreate( DelegateBase dlgt, Bundle sis, boolean hasOptionsMenu )
     {

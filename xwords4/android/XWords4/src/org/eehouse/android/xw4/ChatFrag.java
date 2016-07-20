@@ -23,6 +23,8 @@ import android.os.Bundle;
 
 public class ChatFrag extends XWFragment {
 
+    public ChatFrag( Delegator parent ) { super( parent ); }
+
     @Override
     public void onCreate( Bundle sis )
     {

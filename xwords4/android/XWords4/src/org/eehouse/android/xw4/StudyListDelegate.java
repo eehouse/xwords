@@ -363,7 +363,7 @@ public class StudyListDelegate extends ListDelegateBase
             }
 
             if ( delegator.inDPMode() ) {
-                delegator.addFragment( new StudyListFrag(), bundle );
+                delegator.addFragment( new StudyListFrag( delegator ), bundle );
             } else {
                 Intent intent = new Intent( activity, StudyListActivity.class );
                 intent.putExtras( bundle );

@@ -265,7 +265,7 @@ public class ChatDelegate extends DelegateBase {
         bundle.putBooleanArray( INTENT_KEY_LOCS, locs );
 
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new ChatFrag(), bundle );
+            delegator.addFragment( new ChatFrag( delegator ), bundle );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, ChatActivity.class );

@@ -87,7 +87,8 @@ public class MainActivity extends XWActivity
             if ( savedInstanceState == null ) {
                 // In case this activity was started with special instructions from an Intent,
                 // pass the Intent's extras to the fragment as arguments
-                addFragmentImpl( new GamesListFrag(), getIntent().getExtras(), null );
+                addFragmentImpl( new GamesListFrag(null),
+                                 getIntent().getExtras(), null );
             }
         }
     } // onCreate
@@ -217,7 +218,7 @@ public class MainActivity extends XWActivity
     @Override
     public void addFragment( XWFragment fragment, Bundle extras )
     {
-        addFragmentImpl( fragment, extras, this );
+        addFragmentImpl( fragment, extras, fragment.getParent() );
     }
 
     @Override
@@ -230,7 +231,7 @@ public class MainActivity extends XWActivity
             = new WeakReference<DelegateBase>(fragment.getDelegate());
         m_pendingCodes.put( requestCode, ref );
 
-        addFragmentImpl( fragment, extras, this );
+        addFragmentImpl( fragment, extras, fragment.getParent() );
     }
 
     protected void setFragmentResult( DelegateBase delegate, int resultCode, 
@@ -344,9 +345,9 @@ public class MainActivity extends XWActivity
         addFragmentImpl( fragment, parent );
     }
 
-    private void addFragmentImpl( Fragment fragment, Delegator delegator )
+    private void addFragmentImpl( Fragment fragment, Delegator parent )
     {
-        String newName = fragment.getClass().getName();
+        String newName = fragment.getClass().getSimpleName();
         boolean replace = false;
         FragmentManager fm = getSupportFragmentManager();
         int fragCount = fm.getBackStackEntryCount();
@@ -357,23 +358,18 @@ public class MainActivity extends XWActivity
         // Replace IF we're adding something of the same class at right OR if
         // we're adding something with the existing left pane as its parent
         // (delegator)
-        if ( 0 < fragCount ) {
-            FragmentManager.BackStackEntry entry = fm.getBackStackEntryAt( fragCount - 1 );
+        if ( 1 < fragCount ) {
+            Assert.assertTrue( MAX_PANES_LANDSCAPE == 2 ); // otherwise FIXME
+            FragmentManager.BackStackEntry entry
+                = fm.getBackStackEntryAt( fragCount - 2 );
             String curName = entry.getName();
-            DbgUtils.logf( "name of last entry: %s", curName );
-            replace = curName.equals( newName );
+            String delName = parent.getClass().getSimpleName();
+            // DbgUtils.logf( "comparing %s, %s", curName, delName );
+            replace = curName.equals( delName );
+        }
 
-            if ( !replace && 1 < fragCount ) {
-                entry = fm.getBackStackEntryAt( fragCount - 2 );
-                curName = entry.getName();
-                String delName = delegator.getClass().getName();
-                DbgUtils.logf( "comparing %s, %s", curName, delName );
-                replace = curName.equals( delName );
-            }
-
-            if ( replace ) {
-                fm.popBackStack();
-            }
+        if ( replace ) {
+            fm.popBackStack();
         }
 
         // Replace doesn't seem to work with generated IDs, so we'll create a
