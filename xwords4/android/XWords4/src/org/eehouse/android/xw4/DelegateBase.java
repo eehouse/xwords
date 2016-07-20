@@ -38,6 +38,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import java.util.ArrayList;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
@@ -58,6 +59,7 @@ public class DelegateBase implements DlgClickNotify,
     private int m_layoutID;
     private View m_rootView;
     private boolean m_isVisible;
+    private ArrayList<Runnable> m_visibleProcs = new ArrayList<Runnable>();
 
     public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
@@ -116,6 +118,7 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_isVisible = true;
         XWService.setListener( this );
+        runIfVisible();
     }
 
     protected void onPause()
@@ -272,6 +275,16 @@ public class DelegateBase implements DlgClickNotify,
         DbgUtils.logdf( "%s.getContainerSize(): width => %d, height => %d",
                         getClass().getSimpleName(), result.x, result.y );
         return result;
+    }
+
+    private void runIfVisible()
+    {
+        if ( isVisible() ) {
+            for ( Runnable proc : m_visibleProcs ) {
+                post( proc );
+            }
+            m_visibleProcs.clear();
+        }
     }
 
     protected String getString( int resID, Object... params )
@@ -599,6 +612,12 @@ public class DelegateBase implements DlgClickNotify,
         DbgUtils.logf( "%s.handleNewIntent(%s): not handling",
                        getClass().getSimpleName(), intent.toString() );
         return false;           // not handled
+    }
+
+    protected void runWhenActive( Runnable proc )
+    {
+        m_visibleProcs.add( proc );
+        runIfVisible();
     }
 
     //////////////////////////////////////////////////

@@ -1595,7 +1595,7 @@ public class GamesListDelegate extends ListDelegateBase
     public void downloadFinished( String lang, String name,
                                   final boolean success )
     {
-        post( new Runnable() {
+        runWhenActive( new Runnable() {
                 public void run() {
                     boolean madeGame = false;
                     if ( success ) {
