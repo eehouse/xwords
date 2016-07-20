@@ -272,10 +272,10 @@ public class MainActivity extends XWActivity
         if ( 0 == fragCount ) {
             finish();
         } else if ( fragCount == m_root.getChildCount() - 1 ) {
-            // View child = m_root.getChildAt( fragCount );
+            View child = m_root.getChildAt( fragCount );
             // DbgUtils.logf( "onBackStackChanged(): removing view with id %x",
             //                child.getId() );
-            m_root.removeViewAt( fragCount );
+            m_root.removeView( child );
             setVisiblePanes();
         }
     }
