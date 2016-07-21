@@ -111,7 +111,8 @@ public class DelegateBase implements DlgClickNotify,
     protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
-        DbgUtils.logf( "DelegateBase.onActivityResult(): subclass responsibility!!!" );
+        DbgUtils.logf( "%s.onActivityResult(): subclass responsibility!!!", 
+                       getClass().getSimpleName() );
     }
 
     protected void onResume()

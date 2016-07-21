@@ -185,12 +185,23 @@ public class MainActivity extends XWActivity
      */
     protected boolean dispatchBackPressed()
     {
-        View child = m_root.getChildAt( m_root.getChildCount() - 1 );
-        Fragment frag = getSupportFragmentManager()
-            .findFragmentById( child.getId() );
+        XWFragment frag = getTopFragment();
         boolean handled = null != frag
-            &&((XWFragment)frag).getDelegate().handleBackPressed();
+            && frag.getDelegate().handleBackPressed();
         return handled;
+    }
+
+    protected void dispatchOnActivityResult( RequestCode requestCode, 
+                                             int resultCode, Intent data )
+    {
+        XWFragment frag = getTopFragment();
+
+        if ( null != frag ) {
+            frag.onActivityResult( requestCode.ordinal(), resultCode, data );
+        } else {
+            DbgUtils.logdf( "dispatchOnActivityResult(): can't dispatch %s", 
+                            requestCode.toString() );
+        }
     }
 
     protected Point getFragmentSize()
@@ -304,6 +315,14 @@ public class MainActivity extends XWActivity
     ////////////////////////////////////////////////////////////////////////
     // Dualpane mode stuff
     ////////////////////////////////////////////////////////////////////////
+
+    private XWFragment getTopFragment()
+    {
+        View child = m_root.getChildAt( m_root.getChildCount() - 1 );
+        XWFragment frag = (XWFragment)getSupportFragmentManager()
+            .findFragmentById( child.getId() );
+        return frag;
+    }
 
     // Walk all Fragment children and if they care notify of change.
     private void tellOrientationChanged()

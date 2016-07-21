@@ -90,6 +90,8 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public void onResume()
     {
+        DbgUtils.logdf( "%s.onResume() called",
+                        this.getClass().getSimpleName() );
         super.onResume();
         m_dlgt.onResume();
     }

@@ -68,4 +68,11 @@ public class DualpaneDelegate extends DelegateBase {
         DbgUtils.logf( "DualpaneDelegate.handleBackPressed() => %b", handled );
         return handled;
     }
+
+    @Override
+    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
+    {
+        MainActivity main = (MainActivity)m_activity;
+        main.dispatchOnActivityResult( requestCode, resultCode, data );
+    }
 }
