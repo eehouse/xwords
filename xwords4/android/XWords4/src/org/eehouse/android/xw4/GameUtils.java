@@ -1087,22 +1087,6 @@ public class GameUtils {
         DBUtils.saveSummary( context, lock, summary );
     } // applyChanges
 
-    public static void doConfig( Delegator delegator, long rowid )
-    {
-        Bundle extras = new Bundle();
-        extras.putLong( INTENT_KEY_ROWID, rowid );
-
-        if ( delegator.inDPMode() ) {
-            delegator.addFragment( new GameConfigFrag( delegator ), extras );
-        } else {
-            Activity activity = delegator.getActivity();
-            Intent intent = new Intent( activity, GameConfigActivity.class );
-            intent.setAction( Intent.ACTION_EDIT );
-            intent.putExtras( extras );
-            activity.startActivity( intent );
-        }
-    }
-
     public static String formatGameID( int gameID )
     {
         Assert.assertTrue( 0 != gameID );

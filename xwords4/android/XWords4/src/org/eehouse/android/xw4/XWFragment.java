@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -121,6 +122,15 @@ public class XWFragment extends Fragment implements Delegator {
     }
 
     @Override
+    public void onActivityResult( int requestCode, int resultCode, Intent data )
+    {
+        DbgUtils.logdf( "%s.onActivityResult() called",
+                        this.getClass().getSimpleName() );
+        m_dlgt.onActivityResult( RequestCode.values()[requestCode], 
+                                 resultCode, data );
+    }
+
+    @Override
     public void onPrepareOptionsMenu( Menu menu )
     {
         m_dlgt.onPrepareOptionsMenu( menu );
@@ -162,7 +172,7 @@ public class XWFragment extends Fragment implements Delegator {
                                       RequestCode code )
     {
         MainActivity main = (MainActivity)getActivity();
-        main.addFragmentForResult( fragment, extras, code );
+        main.addFragmentForResult( fragment, extras, code, this );
     }
 
     public DelegateBase getDelegate() { return m_dlgt; }

@@ -216,7 +216,8 @@ public class DelegateBase implements DlgClickNotify,
     {
         if ( m_activity instanceof MainActivity ) {
             MainActivity main = (MainActivity)m_activity;
-            main.setFragmentResult( this, result, intent );
+            XWFragment fragment = (XWFragment)m_delegator;
+            main.setFragmentResult( fragment, result, intent );
         } else {
             m_activity.setResult( result, intent );
         }

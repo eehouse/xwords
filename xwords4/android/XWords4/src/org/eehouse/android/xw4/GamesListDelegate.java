@@ -1678,7 +1678,9 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_config:
-            GameUtils.doConfig( getDelegator(), selRowIDs[0] );
+            GameConfigDelegate.editForResult( getDelegator(),
+                                              RequestCode.CONFIG_GAME,
+                                              selRowIDs[0] );
             break;
 
         case R.id.games_game_move:

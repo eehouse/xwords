@@ -221,44 +221,48 @@ public class MainActivity extends XWActivity
         addFragmentImpl( fragment, extras, fragment.getParent() );
     }
 
-    @Override
+    private class PendingResultCache {
+        private WeakReference<Fragment> m_frag;
+        public int m_request;
+        public int m_result;
+        public Intent m_data;
+        public PendingResultCache( Fragment target, int request, int result, Intent data ) {
+            m_frag = new WeakReference<Fragment>(target);
+            m_request = request;
+            m_result = result;
+            m_data = data;
+        }
+
+        public Fragment getTarget() { return m_frag.get(); }
+    }
+    private PendingResultCache m_pendingResult;
+
     public void addFragmentForResult( XWFragment fragment, Bundle extras,
-                                      RequestCode requestCode )
+                                      RequestCode requestCode, XWFragment registrant )
     {
         DbgUtils.assertOnUIThread();
 
-        WeakReference<DelegateBase> ref
-            = new WeakReference<DelegateBase>(fragment.getDelegate());
-        m_pendingCodes.put( requestCode, ref );
+        fragment.setTargetFragment( registrant, requestCode.ordinal() );
 
         addFragmentImpl( fragment, extras, fragment.getParent() );
     }
 
-    protected void setFragmentResult( DelegateBase delegate, int resultCode, 
+    protected void setFragmentResult( XWFragment fragment, int resultCode,
                                       Intent data )
     {
-        DbgUtils.assertOnUIThread();
-        RequestCode requestCode = null;
-        Iterator<RequestCode> iter = m_pendingCodes.keySet().iterator();
-        while ( iter.hasNext() ) {
-            RequestCode key = iter.next();
-            WeakReference<DelegateBase> ref = m_pendingCodes.get(key);
-            DelegateBase thisOne = ref.get();
-            if ( null != thisOne && thisOne.equals(delegate) ) {
-                requestCode = key;
-                iter.remove();
-                break;
-            }
-        }
+        Fragment target = fragment.getTargetFragment();
+        int requestCode = fragment.getTargetRequestCode();
 
-        if ( null != requestCode ) {
-            delegate.onActivityResult( requestCode, resultCode, data );
-        }
+        Assert.assertNull( m_pendingResult );
+        m_pendingResult = new PendingResultCache( target, requestCode,
+                                                  resultCode, data );
     }
 
     protected void finishFragment()
     {
-        getSupportFragmentManager().popBackStack();
+        // Assert.assertTrue( fragment instanceof XWFragment );
+        // DbgUtils.logf( "MainActivity.finishFragment(%s)", fragment.toString() );
+        getSupportFragmentManager().popBackStack/*Immediate*/();
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -271,12 +275,26 @@ public class MainActivity extends XWActivity
         int fragCount = getSupportFragmentManager().getBackStackEntryCount();
         if ( 0 == fragCount ) {
             finish();
-        } else if ( fragCount == m_root.getChildCount() - 1 ) {
-            View child = m_root.getChildAt( fragCount );
-            // DbgUtils.logf( "onBackStackChanged(): removing view with id %x",
-            //                child.getId() );
-            m_root.removeView( child );
-            setVisiblePanes();
+        } else {
+            if ( fragCount == m_root.getChildCount() - 1 ) {
+                View child = m_root.getChildAt( fragCount );
+                // DbgUtils.logf( "onBackStackChanged(): removing view with id %x",
+                //                    child.getId() );
+                m_root.removeView( child );
+                setVisiblePanes();
+            }
+
+            // If there's a pending on-result call, make it.
+            if ( null != m_pendingResult ) {
+                Fragment target = m_pendingResult.getTarget();
+                if ( null != target ) {
+                    DbgUtils.logf( "onBackStackChanged(): calling onActivityResult()" );
+                    target.onActivityResult( m_pendingResult.m_request,
+                                             m_pendingResult.m_result,
+                                             m_pendingResult.m_data );
+                }
+                m_pendingResult = null;
+            }
         }
     }
 
