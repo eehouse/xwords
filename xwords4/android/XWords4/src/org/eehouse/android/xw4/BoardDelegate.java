@@ -564,53 +564,7 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
-        Handler handler = new Handler() {
-                public void handleMessage( Message msg ) {
-                    switch( msg.what ) {
-                    case JNIThread.DIALOG:
-                        m_dlgBytes = (String)msg.obj;
-                        m_dlgTitle = msg.arg1;
-                        showDialog( DlgID.DLG_OKONLY );
-                        break;
-                    case JNIThread.QUERY_ENDGAME:
-                        showDialog( DlgID.QUERY_ENDGAME );
-                        break;
-                    case JNIThread.TOOLBAR_STATES:
-                        if ( null != m_jniThread ) {
-                            m_gsi =
-                                m_jniThread.getGameStateInfo();
-                            updateToolbar();
-                            if ( m_inTrade != m_gsi.inTrade ) {
-                                m_inTrade = m_gsi.inTrade;
-                            }
-                            m_view.setInTrade( m_inTrade );
-                            adjustTradeVisibility();
-                            invalidateOptionsMenuIf();
-                        }
-                        break;
-                    case JNIThread.GOT_WORDS:
-                        CurGameInfo gi = m_jniThreadRef.getGI();
-                        launchLookup( wordsToArray((String)msg.obj),
-                                      gi.dictLang );
-                        break;
-                    case JNIThread.GAME_OVER:
-                        m_dlgBytes = (String)msg.obj;
-                        m_dlgTitle = msg.arg1;
-                        showDialog( DlgID.GAME_OVER );
-                        break;
-                    case JNIThread.MSGS_SENT:
-                        int nSent = (Integer)msg.obj;
-                        showToast( getQuantityString( R.plurals.resent_msgs_fmt,
-                                                      nSent, nSent ) );
-                        break;
-                    }
-                }
-            };
-
-        m_jniThreadRef = JNIThread.getRetained( m_rowid, true ).
-            configure( m_activity, m_view, m_utils, this, handler );
-        m_jniGamePtr = m_jniThreadRef.getGamePtr();
-        Assert.assertNotNull( m_jniGamePtr );
+        m_jniThreadRef = JNIThread.getRetained( m_rowid, true );
 
         // see http://stackoverflow.com/questions/680180/where-to-stop- \
         // destroy-threads-in-android-service-class
@@ -735,10 +689,6 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
-            } else if ( ! isFinishing() ) {
-                if ( m_relayMissing || 0 < m_nMissing ) {
-                    showDialog( DlgID.DLG_INVITE );
-                }
             }
         }
     }
@@ -2072,6 +2022,11 @@ public class BoardDelegate extends DelegateBase
         if ( firstStart ) {
             m_handler = new Handler();
             m_blockingDlgID = DlgID.NONE;
+
+            m_jniThreadRef.configure( m_activity, m_view, m_utils, this, 
+                                      makeJNIHandler() );
+            m_jniGamePtr = m_jniThreadRef.getGamePtr();
+            Assert.assertNotNull( m_jniGamePtr );
         }
 
         try {
@@ -2083,6 +2038,53 @@ public class BoardDelegate extends DelegateBase
         } catch ( GameUtils.NoSuchGameException nsge ) {
             finish();
         }
+    }
+
+    private Handler makeJNIHandler()
+    {
+        Handler handler = new Handler() {
+                public void handleMessage( Message msg ) {
+                    switch( msg.what ) {
+                    case JNIThread.DIALOG:
+                        m_dlgBytes = (String)msg.obj;
+                        m_dlgTitle = msg.arg1;
+                        showDialog( DlgID.DLG_OKONLY );
+                        break;
+                    case JNIThread.QUERY_ENDGAME:
+                        showDialog( DlgID.QUERY_ENDGAME );
+                        break;
+                    case JNIThread.TOOLBAR_STATES:
+                        if ( null != m_jniThread ) {
+                            m_gsi =
+                                m_jniThread.getGameStateInfo();
+                            updateToolbar();
+                            if ( m_inTrade != m_gsi.inTrade ) {
+                                m_inTrade = m_gsi.inTrade;
+                            }
+                            m_view.setInTrade( m_inTrade );
+                            adjustTradeVisibility();
+                            invalidateOptionsMenuIf();
+                        }
+                        break;
+                    case JNIThread.GOT_WORDS:
+                        CurGameInfo gi = m_jniThreadRef.getGI();
+                        launchLookup( wordsToArray((String)msg.obj),
+                                      gi.dictLang );
+                        break;
+                    case JNIThread.GAME_OVER:
+                        m_dlgBytes = (String)msg.obj;
+                        m_dlgTitle = msg.arg1;
+                        showDialog( DlgID.GAME_OVER );
+                        break;
+                    case JNIThread.MSGS_SENT:
+                        int nSent = (Integer)msg.obj;
+                        showToast( getQuantityString( R.plurals.resent_msgs_fmt,
+                                                      nSent, nSent ) );
+                        break;
+                    }
+                }
+            };
+        return handler;
     }
 
     private void resumeGame( boolean isStart )
