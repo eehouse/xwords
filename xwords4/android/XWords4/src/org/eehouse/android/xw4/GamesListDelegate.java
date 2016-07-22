@@ -1568,16 +1568,18 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.setItemVisible( menu, hideId, false );
 
             if ( null != item ) {
-                enable = BoardDelegate.rematchSupported( m_activity,
-                                                         item.getRowID() );
+                long rowID = item.getRowID();
+                enable = BoardDelegate.rematchSupported( m_activity, rowID );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
                 enable = item.getSummary().isMultiGame()
                     && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
+
+                enable = !m_launchedGames.contains( rowID );
+                Utils.setItemVisible( menu, R.id.games_game_delete, enable );
             }
         }
-
     }
 
     public boolean onContextItemSelected( MenuItem item )
