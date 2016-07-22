@@ -1407,11 +1407,10 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = enable && !m_launchedGames.contains( row );
             }
             Utils.setItemVisible( menu, R.id.games_game_delete, enable );
+            Utils.setItemVisible( menu, R.id.games_game_reset, enable );
 
             // multiple games can be regrouped/reset.
             Utils.setItemVisible( menu, R.id.games_game_move,
-                                  0 < nGamesSelected );
-            Utils.setItemVisible( menu, R.id.games_game_reset,
                                   0 < nGamesSelected );
 
             // Hide rate-me if not a google play app
