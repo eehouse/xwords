@@ -348,38 +348,36 @@ public class GameUtils {
                                        CurGameInfo gi )
     {
         Bitmap thumb = null;
-        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            if ( XWPrefs.getThumbEnabled( context ) ) {
-                int nCols = gi.boardSize;
-                int pct = XWPrefs.getThumbPct( context );
-                Assert.assertTrue( 0 < pct );
+        if ( XWPrefs.getThumbEnabled( context ) ) {
+            int nCols = gi.boardSize;
+            int pct = XWPrefs.getThumbPct( context );
+            Assert.assertTrue( 0 < pct );
 
-                if ( null == s_minScreen ) {
-                    if ( context instanceof Activity ) {
-                        Activity activity = (Activity)context;
-                        Display display =
-                            activity.getWindowManager().getDefaultDisplay();
-                        int width = display.getWidth();
-                        int height = display.getHeight();
-                        s_minScreen = new Integer( Math.min( width, height ) );
-                    }
+            if ( null == s_minScreen ) {
+                if ( context instanceof Activity ) {
+                    Activity activity = (Activity)context;
+                    Display display =
+                        activity.getWindowManager().getDefaultDisplay();
+                    int width = display.getWidth();
+                    int height = display.getHeight();
+                    s_minScreen = new Integer( Math.min( width, height ) );
                 }
-                if ( null != s_minScreen ) {
-                    int dim = s_minScreen * pct / 100;
-                    int size = dim - (dim % nCols);
+            }
+            if ( null != s_minScreen ) {
+                int dim = s_minScreen * pct / 100;
+                int size = dim - (dim % nCols);
 
-                    thumb = Bitmap.createBitmap( size, size,
-                                                 Bitmap.Config.ARGB_8888 );
+                thumb = Bitmap.createBitmap( size, size,
+                                             Bitmap.Config.ARGB_8888 );
 
-                    XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
-                                              0, 0, 0, 20, 20, false, null );
+                XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
+                                          0, 0, 0, 20, 20, false, null );
 
-                    ThumbCanvas canvas = new ThumbCanvas( context, thumb );
-                    XwJNI.board_setDraw( gamePtr, canvas );
-                    XwJNI.board_invalAll( gamePtr );
-                    Assert.assertNotNull( gamePtr );
-                    XwJNI.board_draw( gamePtr );
-                }
+                ThumbCanvas canvas = new ThumbCanvas( context, thumb );
+                XwJNI.board_setDraw( gamePtr, canvas );
+                XwJNI.board_invalAll( gamePtr );
+                Assert.assertNotNull( gamePtr );
+                XwJNI.board_draw( gamePtr );
             }
         }
         return thumb;

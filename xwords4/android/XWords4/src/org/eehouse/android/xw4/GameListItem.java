@@ -198,9 +198,7 @@ public class GameListItem extends LinearLayout
         m_state = (TextView)findViewById( R.id.state );
         m_modTime = (TextView)findViewById( R.id.modtime );
         m_marker = (ImageView)findViewById( R.id.msg_marker );
-        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            m_thumb = (ImageView)findViewById( R.id.thumbnail );
-        }
+        m_thumb = (ImageView)findViewById( R.id.thumbnail );
         m_role = (TextView)findViewById( R.id.role );
     }
 
@@ -221,11 +219,10 @@ public class GameListItem extends LinearLayout
                                          R.drawable.expander_ic_maximized :
                                          R.drawable.expander_ic_minimized);
         m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
-        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            int vis = m_expanded && XWPrefs.getThumbEnabled( m_context )
-                ? View.VISIBLE : View.GONE;
-            m_thumb.setVisibility( vis );
-        }
+
+        int vis = m_expanded && XWPrefs.getThumbEnabled( m_context )
+            ? View.VISIBLE : View.GONE;
+        m_thumb.setVisibility( vis );
 
         m_name.setBackgroundColor( android.R.color.transparent );
         m_name.setPct( m_handler, m_haveTurn && !m_expanded,
@@ -448,14 +445,12 @@ public class GameListItem extends LinearLayout
 
     private static void enqueueGetThumbnail( GameListItem item, long rowid )
     {
-        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            s_queue.add( new ThumbQueueElem( item, rowid ) );
+        s_queue.add( new ThumbQueueElem( item, rowid ) );
 
-            synchronized( GameListItem.class ) {
-                if ( null == s_thumbThread ) {
-                    s_thumbThread = makeThumbThread();
-                    s_thumbThread.start();
-                }
+        synchronized( GameListItem.class ) {
+            if ( null == s_thumbThread ) {
+                s_thumbThread = makeThumbThread();
+                s_thumbThread.start();
             }
         }
     }

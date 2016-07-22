@@ -660,48 +660,44 @@ public class DBUtils {
     public static void saveThumbnail( Context context, GameLock lock,
                                       Bitmap thumb )
     {
-        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            long rowid = lock.getRowid();
-            String selection = String.format( ROW_ID_FMT, rowid );
-            ContentValues values = new ContentValues();
+        long rowid = lock.getRowid();
+        String selection = String.format( ROW_ID_FMT, rowid );
+        ContentValues values = new ContentValues();
 
-            if ( null == thumb ) {
-                values.putNull( DBHelper.THUMBNAIL );
-            } else {
-                ByteArrayOutputStream bas = new ByteArrayOutputStream();
-                thumb.compress( CompressFormat.PNG, 0, bas );
-                values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
-            }
+        if ( null == thumb ) {
+            values.putNull( DBHelper.THUMBNAIL );
+        } else {
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+            thumb.compress( CompressFormat.PNG, 0, bas );
+            values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
+        }
 
-            initDB( context );
-            synchronized( s_dbHelper ) {
-                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
 
-                long result = db.update( DBHelper.TABLE_NAME_SUM,
-                                         values, selection, null );
-                Assert.assertTrue( result >= 0 );
+            long result = db.update( DBHelper.TABLE_NAME_SUM,
+                                     values, selection, null );
+            Assert.assertTrue( result >= 0 );
 
-                db.close();
+            db.close();
 
-                notifyListeners( rowid, GameChangeType.GAME_CHANGED );
-            }
+            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
         }
     }
 
     public static void clearThumbnails( Context context )
     {
-        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            ContentValues values = new ContentValues();
-            values.putNull( DBHelper.THUMBNAIL );
-            initDB( context );
-            synchronized( s_dbHelper ) {
-                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-                long result = db.update( DBHelper.TABLE_NAME_SUM,
-                                         values, null, null );
-                db.close();
+        ContentValues values = new ContentValues();
+        values.putNull( DBHelper.THUMBNAIL );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            long result = db.update( DBHelper.TABLE_NAME_SUM,
+                                     values, null, null );
+            db.close();
 
-                notifyListeners( ROWIDS_ALL, GameChangeType.GAME_CHANGED );
-            }
+            notifyListeners( ROWIDS_ALL, GameChangeType.GAME_CHANGED );
         }
     }
 
@@ -1465,27 +1461,25 @@ public class DBUtils {
     public static Bitmap getThumbnail( Context context, long rowid )
     {
         Bitmap thumb = null;
-        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            byte[] data = null;
-            String[] columns = { DBHelper.THUMBNAIL };
-            String selection = String.format( ROW_ID_FMT, rowid );
+        byte[] data = null;
+        String[] columns = { DBHelper.THUMBNAIL };
+        String selection = String.format( ROW_ID_FMT, rowid );
 
-            initDB( context );
-            synchronized( s_dbHelper ) {
-                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-                Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns,
-                                          selection, null, null, null, null );
-                if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                    data = cursor.getBlob( cursor.
-                                           getColumnIndex(DBHelper.THUMBNAIL));
-                }
-                cursor.close();
-                db.close();
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns,
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                data = cursor.getBlob( cursor.
+                                       getColumnIndex(DBHelper.THUMBNAIL));
             }
+            cursor.close();
+            db.close();
+        }
 
-            if ( null != data ) {
-                thumb = BitmapFactory.decodeByteArray( data, 0, data.length );
-            }
+        if ( null != data ) {
+            thumb = BitmapFactory.decodeByteArray( data, 0, data.length );
         }
         return thumb;
     }
