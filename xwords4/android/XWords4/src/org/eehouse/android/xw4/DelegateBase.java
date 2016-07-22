@@ -89,9 +89,9 @@ public class DelegateBase implements DlgClickNotify,
     protected void onSaveInstanceState( Bundle outState ) {}
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
-    public void onCreateContextMenu( ContextMenu menu, View view,
-                                     ContextMenuInfo menuInfo ) {}
-    public boolean onContextItemSelected( MenuItem item ) { return false; }
+    protected void onCreateContextMenu( ContextMenu menu, View view,
+                                        ContextMenuInfo menuInfo ) {}
+    protected boolean onContextItemSelected( MenuItem item ) { return false; }
     protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}

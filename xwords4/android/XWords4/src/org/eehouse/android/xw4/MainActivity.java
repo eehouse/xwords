@@ -34,6 +34,9 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager.BackStackEntry;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout.LayoutParams;
@@ -204,6 +207,28 @@ public class MainActivity extends XWActivity
         }
     }
 
+    protected void dispatchOnCreateContextMenu( ContextMenu menu, View view,
+                                                ContextMenuInfo menuInfo )
+    {
+        XWFragment[] frags = getVisibleFragments();
+        for ( XWFragment frag : frags ) {
+            frag.getDelegate().onCreateContextMenu( menu, view, menuInfo );
+        }
+    }
+
+    protected boolean dispatchOnContextItemSelected( MenuItem item )
+    {
+        boolean handled = false;
+        XWFragment[] frags = getVisibleFragments();
+        for ( XWFragment frag : frags ) {
+            handled = frag.getDelegate().onContextItemSelected( item );
+            if ( handled ) {
+                break;
+            }
+        }
+        return handled;
+    }
+
     protected Point getFragmentSize()
     {
         Rect rect = new Rect();
@@ -322,6 +347,20 @@ public class MainActivity extends XWActivity
         XWFragment frag = (XWFragment)getSupportFragmentManager()
             .findFragmentById( child.getId() );
         return frag;
+    }
+
+    private XWFragment[] getVisibleFragments()
+    {
+        int childCount = m_root.getChildCount();
+        int count = Math.min( m_maxPanes, childCount );
+        XWFragment[] result = new XWFragment[count];
+        for ( int ii = 0; ii < count; ++ii ) {
+            View child = m_root.getChildAt( childCount - 1 - ii );
+            result[ii] = (XWFragment)getSupportFragmentManager()
+                .findFragmentById( child.getId() );
+        }
+
+        return result;
     }
 
     // Walk all Fragment children and if they care notify of change.

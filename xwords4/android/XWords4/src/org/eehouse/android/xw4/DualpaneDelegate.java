@@ -24,6 +24,10 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
+import android.view.MenuItem;
+import android.view.View;
 
 public class DualpaneDelegate extends DelegateBase {
     private Activity m_activity;
@@ -75,4 +79,20 @@ public class DualpaneDelegate extends DelegateBase {
         MainActivity main = (MainActivity)m_activity;
         main.dispatchOnActivityResult( requestCode, resultCode, data );
     }
+
+    @Override
+    protected void onCreateContextMenu( ContextMenu menu, View view, 
+                                        ContextMenuInfo menuInfo )
+    {
+        MainActivity main = (MainActivity)m_activity;
+        main.dispatchOnCreateContextMenu( menu, view, menuInfo );
+    }
+
+    @Override
+    protected boolean onContextItemSelected( MenuItem item )
+    {
+        MainActivity main = (MainActivity)m_activity;
+        return main.dispatchOnContextItemSelected( item );
+    }
+
 }
