@@ -92,7 +92,6 @@ public class DelegateBase implements DlgClickNotify,
     public void onCreateContextMenu( ContextMenu menu, View view,
                                      ContextMenuInfo menuInfo ) {}
     public boolean onContextItemSelected( MenuItem item ) { return false; }
-    protected void onStart() {}
     protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
@@ -121,10 +120,17 @@ public class DelegateBase implements DlgClickNotify,
                        getClass().getSimpleName() );
     }
 
+    protected void onStart()
+    {
+        if ( s_instances.containsKey(getClass()) ) {
+            DbgUtils.logdf( "%s.onStart(): replacing curThis", 
+                            getClass().getSimpleName() );
+        }
+        s_instances.put( getClass(), new WeakReference<DelegateBase>(this) );
+    }
+
     protected void onResume()
     {
-        Assert.assertFalse( s_instances.containsKey(getClass()) );
-        s_instances.put( getClass(), new WeakReference<DelegateBase>(this) );
         m_isVisible = true;
         XWService.setListener( this );
         runIfVisible();
@@ -132,16 +138,18 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onPause()
     {
-        s_instances.remove( getClass() );
         m_isVisible = false;
         XWService.setListener( null );
     }
 
     protected DelegateBase curThis()
     {
+        DelegateBase result = null;
         WeakReference<DelegateBase> ref = s_instances.get( getClass() );
-        DelegateBase result = ref.get();
-        DbgUtils.logf( "%s.curThis() => %s", this.toString(), result.toString() );
+        if ( null != ref ) {
+            result = ref.get();
+        }
+        // DbgUtils.logdf( "%s.curThis() => " + result, this.toString() );
         return result;
     }
 
