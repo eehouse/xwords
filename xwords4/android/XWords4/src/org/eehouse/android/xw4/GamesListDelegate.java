@@ -1211,10 +1211,13 @@ public class GamesListDelegate extends ListDelegateBase
                 break;
             case RESET_GAMES:
                 long[] rowids = (long[])params[0];
+                boolean changed = false;
                 for ( long rowid : rowids ) {
-                    GameUtils.resetGame( m_activity, rowid );
+                    changed = GameUtils.resetGame( m_activity, rowid ) || changed;
                 }
-                mkListAdapter(); // required because position may change
+                if ( changed ) {
+                    mkListAdapter(); // required because position may change
+                }
                 break;
             case SYNC_MENU:
                 doSyncMenuitem();
@@ -1578,6 +1581,7 @@ public class GamesListDelegate extends ListDelegateBase
 
                 enable = !m_launchedGames.contains( rowID );
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
+                Utils.setItemVisible( menu, R.id.games_game_reset, enable );
             }
         }
     }

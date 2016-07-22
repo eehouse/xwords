@@ -150,8 +150,9 @@ public class GameUtils {
         return lockDest;
     } // resetGame
 
-    public static void resetGame( Context context, long rowidIn )
+    public static boolean resetGame( Context context, long rowidIn )
     {
+        boolean success = false;
         GameLock lock = new GameLock( rowidIn, true ).lock( 500 );
         if ( null != lock ) {
             tellDied( context, lock, true );
@@ -159,9 +160,11 @@ public class GameUtils {
             lock.unlock();
 
             Utils.cancelNotification( context, (int)rowidIn );
+            success = true;
         } else {
             DbgUtils.logf( "resetGame: unable to open rowid %d", rowidIn );
         }
+        return success;
     }
 
     private static int setFromFeedImpl( FeedUtilsImpl feedImpl )
