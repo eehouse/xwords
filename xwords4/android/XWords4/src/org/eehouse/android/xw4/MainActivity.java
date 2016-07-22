@@ -282,9 +282,9 @@ public class MainActivity extends XWActivity
     //////////////////////////////////////////////////////////////////////
     public void onBackStackChanged()
     {
-        DbgUtils.logf( "MainActivity.onBackStackChanged()" );
         // make sure the right-most are visible
         int fragCount = getSupportFragmentManager().getBackStackEntryCount();
+        DbgUtils.logf( "MainActivity.onBackStackChanged(); count now %d", fragCount );
         if ( 0 == fragCount ) {
             finish();
         } else {

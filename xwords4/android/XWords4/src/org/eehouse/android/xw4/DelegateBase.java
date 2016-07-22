@@ -174,7 +174,9 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean isFinishing()
     {
-        return m_activity.isFinishing();
+        boolean result = m_activity.isFinishing();
+        // DbgUtils.logf( "%s.isFinishing() => %b", getClass().getSimpleName(), result );
+        return result;
     }
 
     protected Intent getIntent()

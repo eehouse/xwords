@@ -207,6 +207,7 @@ public class DlgDelegate {
 
     protected void showDialog( DlgID dlgID )
     {
+        // DbgUtils.logf( "showDialog(%s)", dlgID.toString() );
         if ( !m_activity.isFinishing() ) {
             s_pendings.put( dlgID, new WeakReference<DelegateBase>(m_dlgt) );
             m_activity.showDialog( dlgID.ordinal() );

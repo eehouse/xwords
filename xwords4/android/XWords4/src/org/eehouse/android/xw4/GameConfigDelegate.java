@@ -65,7 +65,7 @@ public class GameConfigDelegate extends DelegateBase
                ,XWListItem.DeleteCallback
                ,RefreshNamesTask.NoNameFound {
 
-    private static final String INTENT_FORRESULT_ROWID = "forresult";
+    private static final String INTENT_FORRESULT_NEWGAME = "newgame";
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
 
@@ -73,6 +73,7 @@ public class GameConfigDelegate extends DelegateBase
     private CheckBox m_joinPublicCheck;
     private CheckBox m_gameLockedCheck;
     private boolean m_isLocked;
+    private boolean m_haveClosed;
     private LinearLayout m_publicRoomsSet;
     private LinearLayout m_privateRoomsSet;
 
@@ -88,7 +89,7 @@ public class GameConfigDelegate extends DelegateBase
     private Spinner m_roomChoose;
     // private Button m_configureButton;
     private long m_rowid;
-    private boolean m_forResult;
+    private boolean m_isNewGame;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
     private JNIThread m_jniThread;
@@ -226,9 +227,13 @@ public class GameConfigDelegate extends DelegateBase
                         public void onDismiss( DialogInterface di )
                         {
                             GameConfigDelegate self = curThis();
-                            if ( self.m_gi.forceRemoteConsistent() ) {
+                            if ( null != self
+                                 && self.m_gi.forceRemoteConsistent() ) {
                                 self.showToast( R.string.forced_consistent );
                                 self.loadPlayersList();
+                            } else {
+                                DbgUtils.logf( "GameConfigDelegate.onDismiss(): "
+                                               + "no visible self" );
                             }
                         }
                     };
@@ -242,7 +247,7 @@ public class GameConfigDelegate extends DelegateBase
                             GameConfigDelegate self = curThis();
                             self.applyChanges( true );
                             if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
-                                self.launchGame();
+                                self.launchGame( true );
                             }
                         }
                     };
@@ -254,7 +259,7 @@ public class GameConfigDelegate extends DelegateBase
                     dlpos = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
-                                curThis().launchGame();
+                                curThis().finishAndLaunch();
                             }
                         };
                 } else {
@@ -266,7 +271,7 @@ public class GameConfigDelegate extends DelegateBase
                 dialog.setOnDismissListener( new DialogInterface.
                                              OnDismissListener() {
                         public void onDismiss( DialogInterface di ) {
-                            curThis().finish();
+                            curThis().closeNoSave();
                         }
                     });
                 break;
@@ -479,7 +484,7 @@ public class GameConfigDelegate extends DelegateBase
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, DBUtils.ROWID_NOTFOUND );
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != m_rowid );
-        m_forResult = args.getBoolean( INTENT_FORRESULT_ROWID, false );
+        m_isNewGame = args.getBoolean( INTENT_FORRESULT_NEWGAME, false );
 
         m_connectSetRelay = findViewById( R.id.connect_set_relay );
 
@@ -678,6 +683,8 @@ public class GameConfigDelegate extends DelegateBase
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
         boolean callSuper = false;
+        Assert.assertTrue( curThis() == this );
+
         if ( AlertDialog.BUTTON_POSITIVE == button ) {
             switch( action ) {
             case LOCKED_CHANGE_ACTION:
@@ -687,10 +694,10 @@ public class GameConfigDelegate extends DelegateBase
                 Utils.launchSettings( m_activity );
                 break;
             case DELETE_AND_EXIT:
-                if ( m_forResult ) {
+                if ( m_isNewGame ) {
                     deleteGame();
                 }
-                finish();
+                closeNoSave();
                 break;
             case SET_ENABLE_PUBLIC:
                 XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_pubroom,
@@ -747,26 +754,19 @@ public class GameConfigDelegate extends DelegateBase
             // from here if there's no confirmation needed, or launch
             // a new dialog whose OK button does the same thing.
             saveChanges();
+
             if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
                 showConfirmThen( R.string.config_no_connvia,
                                  R.string.button_discard,
                                  R.string.button_edit,
                                  Action.DELETE_AND_EXIT );
-            } else if ( m_forResult ) {
-                applyChanges( true );
-                Intent intent = new Intent();
-                intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
-                setResult( Activity.RESULT_OK, intent );
-                finish();
-            } else if ( !m_gameStarted ) { // no confirm needed
-                applyChanges( true );
-                launchGame();
+            } else if ( m_isNewGame || !m_gameStarted ) {
+                saveAndClose( true );
             } else if ( m_giOrig.changesMatter(m_gi)
                         || m_carOrig.changesMatter(m_car) ) {
                 showDialog( DlgID.CONFIRM_CHANGE_PLAY );
             } else {
-                applyChanges( false );
-                launchGame();
+                finishAndLaunch();
             }
 
         } else {
@@ -774,12 +774,42 @@ public class GameConfigDelegate extends DelegateBase
         }
     } // onClick
 
+    private void saveAndClose( boolean forceNew )
+    {
+        DbgUtils.logf( "GameConfigDelegate.saveAndClose(forceNew=%b)",
+                       forceNew );
+        applyChanges( forceNew );
+
+        finishAndLaunch();
+    }
+
+    private void finishAndLaunch()
+    {
+        if ( !m_haveClosed ) {
+            m_haveClosed = true;
+            DbgUtils.logf( "GameConfigDelegate.finishAndLaunch()" );
+            Intent intent = new Intent();
+            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
+            setResult( Activity.RESULT_OK, intent );
+            finish();
+        }
+    }
+
+    private void closeNoSave()
+    {
+        if ( !m_haveClosed ) {
+            m_haveClosed = true;
+            setResult( Activity.RESULT_CANCELED, null );
+            finish();
+        }
+    }
+
     @Override
     protected boolean handleBackPressed()
     {
         boolean consumed = false;
         if ( ! isFinishing() ) {
-            if ( m_forResult ) {
+            if ( m_isNewGame ) {
                 deleteGame();
             } else {
                 saveChanges();
@@ -1200,13 +1230,13 @@ public class GameConfigDelegate extends DelegateBase
         }
     }
 
-    private void launchGame()
+    private void launchGame( boolean forceNew )
     {
         if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && 0 == m_car.ip_relay_invite.length() ) {
             showOKOnlyDialog( R.string.no_empty_rooms );
         } else {
-            GameUtils.launchGameAndFinish( getDelegator(), m_rowid );
+            saveAndClose( forceNew );
         }
     }
 
@@ -1237,11 +1267,11 @@ public class GameConfigDelegate extends DelegateBase
 
     public static void editForResult( Delegator delegator,
                                       RequestCode requestCode,
-                                      long rowID )
+                                      long rowID, boolean newGame )
     {
         Bundle bundle = new Bundle();
         bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
-        bundle.putBoolean( INTENT_FORRESULT_ROWID, true );
+        bundle.putBoolean( INTENT_FORRESULT_NEWGAME, newGame );
 
         if ( delegator.inDPMode() ) {
             delegator.addFragmentForResult( new GameConfigFrag( delegator ),

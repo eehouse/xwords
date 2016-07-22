@@ -867,12 +867,6 @@ public class GameUtils {
         launchGame( delegator, rowid, false );
     }
 
-    public static void launchGameAndFinish( Delegator delegator, long rowid )
-    {
-        launchGame( delegator, rowid );
-        delegator.getActivity().finish();
-    }
-
     private static class FeedUtilsImpl extends UtilCtxtImpl {
         private Context m_context;
         private long m_rowid;

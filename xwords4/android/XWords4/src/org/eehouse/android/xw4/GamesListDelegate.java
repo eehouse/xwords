@@ -1695,7 +1695,7 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_game_config:
             GameConfigDelegate.editForResult( getDelegator(),
                                               RequestCode.CONFIG_GAME,
-                                              selRowIDs[0] );
+                                              selRowIDs[0], false );
             break;
 
         case R.id.games_game_move:
@@ -2502,7 +2502,7 @@ public class GamesListDelegate extends ListDelegateBase
                 // configure it
                 GameConfigDelegate.editForResult( getDelegator(),
                                                   RequestCode.CONFIG_GAME,
-                                                  rowID );
+                                                  rowID, true );
             } else {
                 // launch it
                 GameUtils.launchGame( getDelegator(), rowID );
