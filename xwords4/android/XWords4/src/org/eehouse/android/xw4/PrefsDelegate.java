@@ -82,7 +82,8 @@ public class PrefsDelegate extends DelegateBase
                 confirmID = R.string.confirm_revert_colors;
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            SharedPreferences sp = getSharedPreferences();
+                            PrefsDelegate self = (PrefsDelegate)curThis();
+                            SharedPreferences sp = self.getSharedPreferences();
                             SharedPreferences.Editor editor = sp.edit();
                             int[] colorKeys = {
                                 R.string.key_player0,
@@ -103,7 +104,7 @@ public class PrefsDelegate extends DelegateBase
                                 editor.remove( getString(colorKey) );
                             }
                             editor.commit();
-                            relaunch();
+                            self.relaunch();
                         }
                     };
                 break;
@@ -111,11 +112,12 @@ public class PrefsDelegate extends DelegateBase
                 confirmID = R.string.confirm_revert_all;
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            SharedPreferences sp = getSharedPreferences();
+                            PrefsDelegate self = (PrefsDelegate)curThis();
+                            SharedPreferences sp = self.getSharedPreferences();
                             SharedPreferences.Editor editor = sp.edit();
                             editor.clear();
                             editor.commit();
-                            relaunch();
+                            self.relaunch();
                         }
                     };
                 break;
@@ -149,13 +151,13 @@ public class PrefsDelegate extends DelegateBase
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_COLORS );
+                    curThis().showDialog( DlgID.REVERT_COLORS );
                 }
             } );
         button = (Button)findViewById( R.id.revert_all );
         button.setOnClickListener(new View.OnClickListener() {
                 public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_ALL );
+                    curThis().showDialog( DlgID.REVERT_ALL );
                 }
             } );
 

@@ -382,19 +382,20 @@ public class DictsDelegate extends ListDelegateBase
 
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        DictLoc toLoc = itemToRealLoc( moveTo[0] );
+                        DictsDelegate self = curThis();
+                        DictLoc toLoc = self.itemToRealLoc( moveTo[0] );
                         for ( XWListItem selItem : selItems ) {
                             DictLoc fromLoc = (DictLoc)selItem.getCached();
                             String name = selItem.getText();
                             if ( fromLoc == toLoc ) {
                                 DbgUtils.logf( "not moving %s: same loc", name );
-                            } else if ( DictUtils.moveDict( m_activity,
-                                                            name, fromLoc,
+                            } else if ( DictUtils.moveDict( self.m_activity,
+                                                            name, fromLoc, 
                                                             toLoc ) ) {
-                                selItem.setComment( m_locNames[toLoc.ordinal()] );
+                                selItem.setComment( self.m_locNames[toLoc.ordinal()] );
                                 selItem.setCached( toLoc );
                                 selItem.invalidate();
-                                DBUtils.dictsMoveInfo( m_activity, name,
+                                DBUtils.dictsMoveInfo( self.m_activity, name,
                                                        fromLoc, toLoc );
                             } else {
                                 DbgUtils.logf( "moveDict(%s) failed", name );
@@ -416,15 +417,16 @@ public class DictsDelegate extends ListDelegateBase
             final XWListItem row = m_selDicts.values().iterator().next();
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
+                        DictsDelegate self = curThis();
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
-                            setDefault( row, R.string.key_default_dict,
-                                        R.string.key_default_robodict );
+                            self.setDefault( row, R.string.key_default_dict,
+                                             R.string.key_default_robodict );
                         }
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_NEUTRAL == item ) {
-                            setDefault( row, R.string.key_default_robodict,
-                                        R.string.key_default_dict );
+                            self.setDefault( row, R.string.key_default_robodict,
+                                             R.string.key_default_dict );
                         }
                     }
                 };
@@ -444,18 +446,18 @@ public class DictsDelegate extends ListDelegateBase
         case DICT_OR_DECLINE:
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        Intent intent = getIntent();
+                        DictsDelegate self = curThis();
+                        Intent intent = self.getIntent();
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
                         String name = intent.getStringExtra( MultiService.DICT );
-                        m_launchedForMissing = true;
+                        self.m_launchedForMissing = true;
                         DwnldDelegate
-                            .downloadDictInBack( m_activity, lang,
-                                                 name, DictsDelegate.this );
+                            .downloadDictInBack( self.m_activity, lang, name, self );
                     }
                 };
             lstnr2 = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        finish();
+                        curThis().finish();
                     }
                 };
 
@@ -1083,6 +1085,12 @@ public class DictsDelegate extends ListDelegateBase
             s_safePopup.doPopup( delegator, button, curDict, lang );
         }
         return canHandle;
+    }
+
+    @Override
+    protected DictsDelegate curThis()
+    {
+        return (DictsDelegate)super.curThis();
     }
 
     //////////////////////////////////////////////////////////////////////

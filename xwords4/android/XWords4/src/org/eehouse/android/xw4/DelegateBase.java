@@ -38,7 +38,11 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
@@ -60,6 +64,8 @@ public class DelegateBase implements DlgClickNotify,
     private View m_rootView;
     private boolean m_isVisible;
     private ArrayList<Runnable> m_visibleProcs = new ArrayList<Runnable>();
+    private static Map<Class, WeakReference<DelegateBase>> s_instances
+        = new HashMap<Class, WeakReference<DelegateBase>>();
 
     public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
@@ -117,6 +123,8 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onResume()
     {
+        Assert.assertFalse( s_instances.containsKey(getClass()) );
+        s_instances.put( getClass(), new WeakReference<DelegateBase>(this) );
         m_isVisible = true;
         XWService.setListener( this );
         runIfVisible();
@@ -124,8 +132,17 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onPause()
     {
+        s_instances.remove( getClass() );
         m_isVisible = false;
         XWService.setListener( null );
+    }
+
+    protected DelegateBase curThis()
+    {
+        WeakReference<DelegateBase> ref = s_instances.get( getClass() );
+        DelegateBase result = ref.get();
+        DbgUtils.logf( "%s.curThis() => %s", this.toString(), result.toString() );
+        return result;
     }
 
     public boolean onCreateOptionsMenu( Menu menu, MenuInflater inflater )

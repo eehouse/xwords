@@ -147,13 +147,14 @@ public class SMSInviteDelegate extends InviteDelegate {
                 namerView.setKeyListener(DialerKeyListener.getInstance());
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
+                            SMSInviteDelegate self = (SMSInviteDelegate)curThis();
                             String number = namerView.getName();
                             PhoneRec rec = new PhoneRec( number );
-                            m_pendingNumber = number;
-                            m_pendingName = null;
-                            showConfirmThen( R.string.warn_unlimited,
-                                             R.string.button_yes,
-                                             Action.POST_WARNING_ACTION );
+                            self.m_pendingNumber = number;
+                            self.m_pendingName = null;
+                            self.showConfirmThen( R.string.warn_unlimited,
+                                                  R.string.button_yes,
+                                                  Action.POST_WARNING_ACTION );
                         }
                     };
                 dialog = makeAlertBuilder()

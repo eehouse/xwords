@@ -181,7 +181,7 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
-                                handleViaThread( JNICmd.CMD_RESET );
+                                curThis().handleViaThread( JNICmd.CMD_RESET );
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
@@ -190,7 +190,7 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
-                                doRematchIf();
+                                curThis().doRematchIf();
                             }
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
@@ -215,14 +215,14 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg,
                                              int whichButton ) {
+                            BoardDelegate self = curThis();
                             if ( DlgID.DLG_USEDICT == dlgID ) {
-                                setGotGameDict( m_getDict );
+                                self.setGotGameDict( m_getDict );
                             } else {
                                 DwnldDelegate
-                                    .downloadDictInBack( m_activity,
-                                                         m_gi.dictLang,
-                                                         m_getDict,
-                                                         BoardDelegate.this );
+                                    .downloadDictInBack( self.m_activity,
+                                                         self.m_gi.dictLang,
+                                                         self.m_getDict, self );
                             }
                         }
                     };
@@ -241,7 +241,7 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg,
                                              int whichButton ) {
-                            deleteAndClose();
+                            curThis().deleteAndClose();
                         }
                     };
                 ab.setNegativeButton( R.string.button_delete, lstnr );
@@ -259,7 +259,7 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog,
                                              int whichButton ) {
-                            m_resultCode = 1;
+                            curThis().m_resultCode = 1;
                         }
                     };
                 ab.setPositiveButton( DlgID.QUERY_REQUEST_BLK == dlgID ?
@@ -269,7 +269,7 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dialog,
                                                  int whichButton ) {
-                                m_resultCode = 0;
+                                curThis().m_resultCode = 0;
                             }
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
@@ -290,10 +290,11 @@ public class BoardDelegate extends DelegateBase
                         lstnr = new OnClickListener() {
                                 public void onClick( DialogInterface dialog,
                                                      int whichButton ) {
-                                    showNotAgainDlgThen( R.string.not_again_lookup,
-                                                         R.string.
-                                                         key_na_lookup,
-                                                         Action.LOOKUP_ACTION );
+                                    curThis().
+                                        showNotAgainDlgThen( R.string.not_again_lookup,
+                                                             R.string.
+                                                             key_na_lookup,
+                                                             Action.LOOKUP_ACTION );
                                 }
                             };
                         ab.setNegativeButton( buttonTxt, lstnr );
@@ -309,7 +310,7 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog,
                                              int item ) {
-                            m_resultCode = item;
+                            curThis().m_resultCode = item;
                         }
                     };
                 ab.setItems( m_texts, lstnr );
@@ -322,8 +323,9 @@ public class BoardDelegate extends DelegateBase
                         OnClickListener undoClicked = new OnClickListener() {
                                 public void onClick( DialogInterface dialog,
                                                      int whichButton ) {
-                                    m_resultCode = UtilCtxt.PICKER_BACKUP;
-                                    removeDialog( dlgID );
+                                    BoardDelegate self = curThis();
+                                    self.m_resultCode = UtilCtxt.PICKER_BACKUP;
+                                    self.removeDialog( dlgID );
                                 }
                             };
                         ab.setPositiveButton( R.string.tilepick_undo,
@@ -332,8 +334,9 @@ public class BoardDelegate extends DelegateBase
                     OnClickListener doAllClicked = new OnClickListener() {
                             public void onClick( DialogInterface dialog,
                                                  int whichButton ) {
-                                m_resultCode = UtilCtxt.PICKER_PICKALL;
-                                removeDialog( dlgID );
+                                BoardDelegate self = curThis();
+                                self.m_resultCode = UtilCtxt.PICKER_PICKALL;
+                                self.removeDialog( dlgID );
                             }
                         };
                     ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
@@ -379,32 +382,34 @@ public class BoardDelegate extends DelegateBase
                 break;
             case DLG_INVITE:
                 lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dialog,
-                                             int item ) {
-                            if ( !m_relayMissing ||
-                                 ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
-                                Assert.assertTrue( 0 < m_nMissing );
-                                if ( m_summary.hasRematchInfo() ) {
-                                    tryRematchInvites( true );
+                        public void onClick( DialogInterface dialog, int item ){
+                            BoardDelegate self = curThis();
+                            if ( !self.m_relayMissing ||
+                                 ! self.m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
+                                Assert.assertTrue( 0 < self.m_nMissing );
+                                if ( self.m_summary.hasRematchInfo() ) {
+                                    self.tryRematchInvites( true );
                                 } else {
-                                    showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION,
-                                                           m_sentInfo );
+                                    self.showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION,
+                                                                self.m_sentInfo );
                                 }
                             } else {
-                                askDropRelay();
+                                self.askDropRelay();
                             }
                         }
                     };
                 OnClickListener lstnrWait = new OnClickListener() {
                         public void onClick( DialogInterface dialog,
                                              int item ) {
-                            finish();
+                            curThis().finish();
                         }
                     };
                 OnClickListener lstnrMore = new OnClickListener() {
                         public void onClick( DialogInterface dialog,
                                              int item ) {
-                            showOKOnlyDialog( m_sentInfo.getAsText( m_activity ) );
+                            BoardDelegate self = curThis();
+                            self.showOKOnlyDialog( self.m_sentInfo
+                                                   .getAsText( self.m_activity ) );
                         }
                     };
 
@@ -1382,6 +1387,12 @@ public class BoardDelegate extends DelegateBase
     public Handler getHandler()
     {
         return m_handler;
+    }
+
+    @Override
+    protected BoardDelegate curThis()
+    {
+        return (BoardDelegate)super.curThis();
     }
 
     private void deleteAndClose()

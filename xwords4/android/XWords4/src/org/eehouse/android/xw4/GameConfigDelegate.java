@@ -182,8 +182,9 @@ public class GameConfigDelegate extends DelegateBase
                                             public void
                                                 onClick( DialogInterface dlg,
                                                          int button ) {
-                                                getPlayerSettings( dlg );
-                                                loadPlayersList();
+                                                GameConfigDelegate self = curThis();
+                                                self.getPlayerSettings( dlg );
+                                                self.loadPlayersList();
                                             }
                                         })
                     .setNegativeButton( android.R.string.cancel, null )
@@ -211,7 +212,7 @@ public class GameConfigDelegate extends DelegateBase
                 dlpos = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg,
                                              int whichButton ) {
-                            loadPlayersList();
+                            curThis().loadPlayersList();
                         }
                     };
                 dialog = makeAlertBuilder()
@@ -224,9 +225,10 @@ public class GameConfigDelegate extends DelegateBase
                         @Override
                         public void onDismiss( DialogInterface di )
                         {
-                            if ( m_gi.forceRemoteConsistent() ) {
-                                showToast( R.string.forced_consistent );
-                                loadPlayersList();
+                            GameConfigDelegate self = curThis();
+                            if ( self.m_gi.forceRemoteConsistent() ) {
+                                self.showToast( R.string.forced_consistent );
+                                self.loadPlayersList();
                             }
                         }
                     };
@@ -237,9 +239,10 @@ public class GameConfigDelegate extends DelegateBase
                 dlpos = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg,
                                              int whichButton ) {
-                            applyChanges( true );
+                            GameConfigDelegate self = curThis();
+                            self.applyChanges( true );
                             if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
-                                launchGame();
+                                self.launchGame();
                             }
                         }
                     };
@@ -251,7 +254,7 @@ public class GameConfigDelegate extends DelegateBase
                     dlpos = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
-                                launchGame();
+                                curThis().launchGame();
                             }
                         };
                 } else {
@@ -263,7 +266,7 @@ public class GameConfigDelegate extends DelegateBase
                 dialog.setOnDismissListener( new DialogInterface.
                                              OnDismissListener() {
                         public void onDismiss( DialogInterface di ) {
-                            finish();
+                            curThis().finish();
                         }
                     });
                 break;
@@ -289,16 +292,17 @@ public class GameConfigDelegate extends DelegateBase
                 final DialogInterface.OnClickListener lstnr =
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int button ) {
-                            m_conTypes = items.getTypes();
+                            GameConfigDelegate self = curThis();
+                            self.m_conTypes = items.getTypes();
                             if ( cb.isChecked()) {
-                                XWPrefs.setAddrTypes( m_activity, m_conTypes );
+                                XWPrefs.setAddrTypes( self.m_activity, self.m_conTypes );
                             }
 
-                            m_car.populate( m_activity, m_conTypes );
+                            self.m_car.populate( self.m_activity, self.m_conTypes );
 
-                            setConnLabel();
-                            setupRelayStuffIf( false );
-                            showHideRelayStuff();
+                            self.setConnLabel();
+                            self.setupRelayStuffIf( false );
+                            self.showHideRelayStuff();
                         }
                     };
 
@@ -792,6 +796,12 @@ public class GameConfigDelegate extends DelegateBase
         }
 
         return consumed;
+    }
+
+    @Override
+    protected GameConfigDelegate curThis()
+    {
+        return (GameConfigDelegate)super.curThis();
     }
 
     private void deleteGame()
