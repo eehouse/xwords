@@ -1756,6 +1756,7 @@ public class BoardDelegate extends DelegateBase
                         }
                     } );
                 handleViaThread( JNICmd. CMD_ZOOM, -8 );
+                handleViaThread( JNICmd.CMD_SAVE );
             }
         }
 
@@ -2367,14 +2368,6 @@ public class BoardDelegate extends DelegateBase
             m_jniThread = null;
 
             m_view.stopHandling();
-
-            if ( XWPrefs.getThumbEnabled( m_activity ) ) {
-                // Before we dispose, and after JNIThread has
-                // relinquished interest, redraw on smaller scale.
-                Bitmap thumb =
-                    GameUtils.takeSnapshot( m_activity, m_jniGamePtr, m_gi );
-                DBUtils.saveThumbnail( m_activity, m_gameLock, thumb );
-            }
 
             m_gameLock = null;
         }

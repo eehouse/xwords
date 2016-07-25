@@ -293,9 +293,16 @@ public class GameUtils {
                                         UtilCtxt util, TransportProcs tp,
                                         GameLock lock )
     {
+        byte[] stream = savedGame( context, lock );
+        return loadMakeGame( context, gi, util, tp, stream, lock.getRowid() );
+    }
+
+    private static GamePtr loadMakeGame( Context context, CurGameInfo gi,
+                                         UtilCtxt util, TransportProcs tp,
+                                         byte[] stream, long rowid )
+    {
         GamePtr gamePtr = null;
 
-        byte[] stream = savedGame( context, lock );
         if ( null == stream ) {
             DbgUtils.logf( "loadMakeGame: no saved game!");
         } else {
@@ -306,7 +313,7 @@ public class GameUtils {
                 DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable",
                                TextUtils.join( ",", dictNames ) );
             } else {
-                gamePtr = XwJNI.initJNI( lock.getRowid() );
+                gamePtr = XwJNI.initJNI( rowid );
 
                 String langName = gi.langName();
                 boolean madeGame =
@@ -327,19 +334,34 @@ public class GameUtils {
         return gamePtr;
     }
 
-    public static Bitmap loadMakeBitmap( Activity activity, long rowid )
+    public static Bitmap loadMakeBitmap( Context context, long rowid )
     {
         Bitmap thumb = null;
         GameLock lock = new GameLock( rowid, false );
         if ( lock.tryLock() ) {
-            CurGameInfo gi = new CurGameInfo( activity );
-            GamePtr gamePtr = loadMakeGame( activity, gi, lock );
+            CurGameInfo gi = new CurGameInfo( context );
+            GamePtr gamePtr = loadMakeGame( context, gi, lock );
             if ( null != gamePtr ) {
-                thumb = takeSnapshot( activity, gamePtr, gi );
+                thumb = takeSnapshot( context, gamePtr, gi );
                 gamePtr.release();
-                DBUtils.saveThumbnail( activity, lock, thumb );
+                DBUtils.saveThumbnail( context, lock, thumb );
             }
             lock.unlock();
+        }
+        return thumb;
+    }
+
+    public static Bitmap loadMakeBitmap( Context context, byte[] stream, 
+                                         GameLock lock )
+    {
+        Bitmap thumb = null;
+        CurGameInfo gi = new CurGameInfo( context );
+        GamePtr gamePtr = loadMakeGame( context, gi, null, null, stream, 
+                                        lock.getRowid() );
+        if ( null != gamePtr ) {
+            thumb = takeSnapshot( context, gamePtr, gi );
+            gamePtr.release();
+            DBUtils.saveThumbnail( context, lock, thumb );
         }
         return thumb;
     }

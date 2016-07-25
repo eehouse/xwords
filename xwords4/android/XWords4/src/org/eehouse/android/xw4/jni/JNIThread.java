@@ -378,9 +378,12 @@ public class JNIThread extends Thread {
                 XwJNI.game_summarize( m_jniGamePtr, summary );
                 DBUtils.saveGame( m_context, m_lock, state, false );
                 DBUtils.saveSummary( m_context, m_lock, summary );
+
                 // There'd better be no way for saveGame above to fail!
                 XwJNI.game_saveSucceeded( m_jniGamePtr );
                 m_lastSavedState = state;
+
+                GameUtils.loadMakeBitmap( m_context, state, m_lock );
             }
         }
     }
