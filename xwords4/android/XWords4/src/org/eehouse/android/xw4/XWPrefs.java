@@ -445,8 +445,10 @@ public class XWPrefs {
 
     public static boolean getIsTablet( Context context )
     {
-        return isTablet( context ) ||
+        boolean result = isTablet( context ) ||
             getPrefsBoolean( context, R.string.key_force_tablet, false );
+        // DbgUtils.logf( "getIsTablet() => %b", result );
+        return result;
     }
 
     public static boolean dualpaneEnabled( Context context )

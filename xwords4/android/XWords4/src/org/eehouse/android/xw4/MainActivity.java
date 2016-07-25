@@ -390,6 +390,7 @@ public class MainActivity extends XWActivity
         } else {
             result = 1;
         }
+        // DbgUtils.logf( "maxPanes() => %d", result );
         return result;
     }
 
