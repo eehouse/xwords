@@ -2596,7 +2596,7 @@ setTurn( ServerCtxt* server, XP_S16 turn )
 {
     XP_ASSERT( -1 == turn
                || (!amServer(server) || (0 == server->nv.pendingRegistrations)));
-    if ( server->nv.currentTurn != turn ) {
+    if ( server->nv.currentTurn != turn || 1 == server->vol.gi->nPlayers ) {
         server->nv.currentTurn = turn;
         server->nv.lastMoveTime = util_getCurSeconds( server->vol.util );
         callTurnChangeListener( server );
