@@ -52,6 +52,7 @@ openGamesDB( const char* dbName )
         ",gameid INT"
         ",ntotal INT(2)"
         ",nmissing INT(2)"
+        ",lastMoveTime INT"
         ")";
     result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
 
@@ -159,6 +160,7 @@ summarize( CommonGlobals* cGlobals )
     XP_S16 nMoves = model_getNMoves( cGlobals->game.model );
     XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
     XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
+    XP_U32 lastMoveTime = server_getLastMoveTime( cGlobals->game.server );
     XP_U16 seed = 0;
     XP_S16 nMissing = 0;
     XP_U16 nTotal = cGlobals->gi->nPlayers;
@@ -203,11 +205,12 @@ summarize( CommonGlobals* cGlobals )
     }
 
     const char* fmt = "UPDATE games "
-        " SET room='%s', ended=%d, turn=%d, ntotal=%d, nmissing=%d, nmoves=%d, seed=%d, gameid=%d, connvia='%s'"
+        " SET room='%s', ended=%d, turn=%d, ntotal=%d, nmissing=%d, nmoves=%d, seed=%d, "
+        " gameid=%d, connvia='%s', lastMoveTime=%d"
         " WHERE rowid=%lld";
     XP_UCHAR buf[256];
     snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, nTotal, nMissing, 
-              nMoves, seed, gameID, connvia, cGlobals->selRow );
+              nMoves, seed, gameID, connvia, lastMoveTime, cGlobals->selRow );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
     int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
@@ -259,7 +262,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT room, ended, turn, nmoves, ntotal, nmissing, "
-        "seed, connvia, gameid "
+        "seed, connvia, gameid, lastMoveTime "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -279,6 +282,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->seed = sqlite3_column_int( ppStmt, 6 );
         getColumnText( ppStmt, 7, gib->conn, sizeof(gib->conn) );
         gib->gameID = sqlite3_column_int( ppStmt, 8 );
+        gib->lastMoveTime = sqlite3_column_int( ppStmt, 9 );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
     }
     sqlite3_finalize( ppStmt );

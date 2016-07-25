@@ -38,8 +38,8 @@ typedef struct _GameInfo {
     XP_U16 nTotal;
     XP_S16 nMissing;
     XP_U16 seed;
+    XP_U32 lastMoveTime;
 } GameInfo;
-
 
 sqlite3* openGamesDB( const char* dbName );
 void closeGamesDB( sqlite3* dbp );
