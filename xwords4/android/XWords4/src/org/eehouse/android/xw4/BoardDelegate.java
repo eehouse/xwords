@@ -2121,7 +2121,12 @@ public class BoardDelegate extends DelegateBase
 
             int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
             if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
-                startChatActivity();
+                post( new Runnable() {
+                        @Override
+                        public void run() {
+                            startChatActivity();
+                        }
+                    } );
             }
             if ( m_overNotShown ) {
                 boolean auto = false;
