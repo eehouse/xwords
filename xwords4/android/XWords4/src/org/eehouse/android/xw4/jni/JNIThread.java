@@ -752,7 +752,9 @@ public class JNIThread extends Thread {
         return this;
     }
 
-    public void release()
+    public void release() { release( true ); }
+
+    public void release( boolean save )
     {
         boolean stop = false;
         synchronized( s_instances ) {
@@ -766,7 +768,7 @@ public class JNIThread extends Thread {
 
         if ( stop ) {
             waitToStop( true );
-        } else if ( null != m_lastSavedState ) { // has configure() run?
+        } else if ( save && null != m_lastSavedState ) { // has configure() run?
             handle( JNICmd.CMD_SAVE );         // in case releaser has made changes
         }
     }
