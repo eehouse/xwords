@@ -766,7 +766,7 @@ public class JNIThread extends Thread {
 
         if ( stop ) {
             waitToStop( true );
-        } else {
+        } else if ( null != m_lastSavedState ) { // has configure() run?
             handle( JNICmd.CMD_SAVE );         // in case releaser has made changes
         }
     }
