@@ -35,6 +35,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
@@ -243,7 +244,10 @@ public class Utils {
         if ( CommonPrefs.getSoundNotify( context ) ) {
             Uri uri = RingtoneManager
                 .getDefaultUri( RingtoneManager.TYPE_NOTIFICATION );
-            RingtoneManager.getRingtone( context, uri ).play();
+            Ringtone ringtone = RingtoneManager.getRingtone( context, uri );
+            if ( null != ringtone ) {
+                ringtone.play();
+            }
         }
     }
 
