@@ -20,17 +20,12 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.net.Uri;
-import android.os.Bundle;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager.BackStackEntry;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -39,7 +34,6 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.LinearLayout;
 
 import java.lang.ref.WeakReference;
@@ -455,8 +449,11 @@ public class MainActivity extends XWActivity
         // Replace doesn't seem to work with generated IDs, so we'll create a
         // new FrameLayout each time.  If we're replacing, we'll replace the
         // current rightmost FrameLayout.  Otherwise we'll add a new one.
+        LinearLayout.LayoutParams lp
+            = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams
+                                            .MATCH_PARENT, 1.0f);
         FrameLayout cont = new FrameLayout( this );
-        cont.setLayoutParams( new LayoutParams(0, LayoutParams.MATCH_PARENT, 1.0f) );
+        cont.setLayoutParams( lp );
         int id = --m_nextID;
         cont.setId( id );
         if ( LOG_IDS ) {
