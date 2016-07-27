@@ -72,7 +72,9 @@ esac
 
 # if we're running for the first time in this directory/variant,
 # generate local.properties
-[ -e local.properties ] || ../scripts/setup_local_props.sh
+if [ -e ../scripts/setup_local_props.sh ]; then
+	[ -e local.properties ] || ../scripts/setup_local_props.sh
+fi
 
 # If this fails, the "set -e" above means we won't try to install anything
 [ -n "$CMDS" ] && ant $CMDS
