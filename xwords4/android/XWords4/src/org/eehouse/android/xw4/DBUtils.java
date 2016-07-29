@@ -1268,32 +1268,30 @@ public class DBUtils {
                                                 boolean[] playersLocal )
     {
         HistoryPair[] result = null;
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            String[] columns = { DBHelper.SENDER, DBHelper.MESSAGE };
-            String selection = String.format( "%s=%d", DBHelper.ROW, rowid );
-            initDB( context );
-            synchronized( s_dbHelper ) {
-                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-                Cursor cursor = db.query( DBHelper.TABLE_NAME_CHAT, columns,
-                                          selection, null, null, null, null );
-                if ( 0 < cursor.getCount() ) {
-                    result = new HistoryPair[cursor.getCount()];
-                    int msgIndex = cursor.getColumnIndex( DBHelper.MESSAGE );
-                    int plyrIndex = cursor.getColumnIndex( DBHelper.SENDER );
-                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-                        String msg = cursor.getString( msgIndex );
-                        int plyr = cursor.getInt( plyrIndex );
-                        HistoryPair pair = new HistoryPair(msg, plyr );
-                        result[ii] = pair;
-                    }
+        String[] columns = { DBHelper.SENDER, DBHelper.MESSAGE };
+        String selection = String.format( "%s=%d", DBHelper.ROW, rowid );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_CHAT, columns,
+                                      selection, null, null, null, null );
+            if ( 0 < cursor.getCount() ) {
+                result = new HistoryPair[cursor.getCount()];
+                int msgIndex = cursor.getColumnIndex( DBHelper.MESSAGE );
+                int plyrIndex = cursor.getColumnIndex( DBHelper.SENDER );
+                for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                    String msg = cursor.getString( msgIndex );
+                    int plyr = cursor.getInt( plyrIndex );
+                    HistoryPair pair = new HistoryPair(msg, plyr );
+                    result[ii] = pair;
                 }
-                cursor.close();
-                db.close();
             }
+            cursor.close();
+            db.close();
+        }
 
-            if ( null == result ) {
-                result = convertChatString( context, rowid, playersLocal );
-            }
+        if ( null == result ) {
+            result = convertChatString( context, rowid, playersLocal );
         }
         return result;
     }
@@ -1792,24 +1790,22 @@ public class DBUtils {
     private static String getChatHistoryStr( Context context, long rowid )
     {
         String result = null;
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            String[] columns = { DBHelper.CHAT_HISTORY };
-            String selection = String.format( ROW_ID_FMT, rowid );
-            initDB( context );
-            synchronized( s_dbHelper ) {
-                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+        String[] columns = { DBHelper.CHAT_HISTORY };
+        String selection = String.format( ROW_ID_FMT, rowid );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-                Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns,
-                                          selection, null, null, null, null );
-                if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                    result =
-                        cursor.getString( cursor
-                                          .getColumnIndex(DBHelper
-                                                          .CHAT_HISTORY));
-                }
-                cursor.close();
-                db.close();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns,
+                                      selection, null, null, null, null );
+            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                result =
+                    cursor.getString( cursor
+                                      .getColumnIndex(DBHelper
+                                                      .CHAT_HISTORY));
             }
+            cursor.close();
+            db.close();
         }
         return result;
     }

@@ -27,12 +27,10 @@
             <arg value="${build.target}"/>
         </exec>
 
-        <property name="CHAT_ENABLED" value="true" />
         <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">
             <arg value="BUILD_TARGET=${build.target}" />
             <arg value="-j3"/>
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
-            <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
             <arg value="VARIANT=${VARIANT_NAME}" />
             <arg value="V=1" />
         </exec>
@@ -59,14 +57,12 @@
             <arg value="${VARIANT_NAME}"/>
         </exec>
 
-        <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
+        <exec dir="." executable="../scripts/genvers.sh" output="/dev/null"
               failonerror="true">
           <arg value="--variant" />
           <arg value="${VARIANT_NAME}" />
           <arg value="--client-vers" />
           <arg value="${INITIAL_CLIENT_VERS}" />
-          <arg value="--chat-enabled"/>
-          <arg value="${CHAT_ENABLED}" />
           <arg value="--vers-outfile" />
           <arg value="./assets/gitvers.txt" />
         </exec>

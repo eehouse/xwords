@@ -134,7 +134,7 @@ dependencies {
 task genVers(type: Exec) {
     workingDir '../'
     commandLine '../scripts/genvers.sh', '--variant', VARIANT_NAME, 
-    '--client-vers', INITIAL_CLIENT_VERS, '--chat-enabled', CHAT_ENABLED,
+    '--client-vers', INITIAL_CLIENT_VERS, 
     '--thumbnail-enabled', THUMBNAIL_ENABLED,
     '--vers-outfile', "assets/gitvers.txt"
 }

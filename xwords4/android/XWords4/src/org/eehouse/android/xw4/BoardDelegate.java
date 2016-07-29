@@ -540,9 +540,7 @@ public class BoardDelegate extends DelegateBase
     {
         getBundledData( savedInstanceState );
 
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            m_pendingChats = new ArrayList<String>();
-        }
+        m_pendingChats = new ArrayList<String>();
 
         m_utils = new BoardUtilCtxt();
         m_jniu = JNIUtilsImpl.get( m_activity );
@@ -788,8 +786,7 @@ public class BoardDelegate extends DelegateBase
             Utils.setItemVisible( menu, R.id.board_menu_hint_next,
                                   m_gsi.canHint );
             Utils.setItemVisible( menu, R.id.board_menu_chat,
-                                  BuildConstants.CHAT_SUPPORTED
-                                  && m_gsi.canChat );
+                                  m_gsi.canChat );
             Utils.setItemVisible( menu, R.id.board_menu_tray,
                                   !inTrade && m_gsi.canHideRack );
             Utils.setItemVisible( menu, R.id.board_menu_trade,
@@ -2013,18 +2010,16 @@ public class BoardDelegate extends DelegateBase
         public void showChat( final String msg, final int fromIndx,
                               String fromPlayer )
         {
-            if ( BuildConstants.CHAT_SUPPORTED ) {
-                runOnUiThread( new Runnable() {
-                        public void run() {
-                            DBUtils.appendChatHistory( m_activity, m_rowid, msg,
-                                                       fromIndx );
-                            if ( ! ChatDelegate.append( m_rowid, msg,
-                                                        fromIndx ) ) {
-                                startChatActivity();
-                            }
+            runOnUiThread( new Runnable() {
+                    public void run() {
+                        DBUtils.appendChatHistory( m_activity, m_rowid, msg,
+                                                   fromIndx );
+                        if ( ! ChatDelegate.append( m_rowid, msg,
+                                                    fromIndx ) ) {
+                            startChatActivity();
                         }
-                    } );
-            }
+                    }
+                } );
         }
     } // class BoardUtilCtxt
 
@@ -2247,12 +2242,10 @@ public class BoardDelegate extends DelegateBase
                                    R.string.not_again_undo,
                                    R.string.key_notagain_undo,
                                    Action.UNDO_ACTION );
-            if ( BuildConstants.CHAT_SUPPORTED ) {
-                m_toolbar.setListener( Toolbar.BUTTON_CHAT,
-                                       R.string.not_again_chat,
-                                       R.string.key_notagain_chat,
-                                       Action.CHAT_ACTION );
-            }
+            m_toolbar.setListener( Toolbar.BUTTON_CHAT,
+                                   R.string.not_again_chat,
+                                   R.string.key_notagain_chat,
+                                   Action.CHAT_ACTION );
         }
     } // populateToolbar
 
@@ -2340,13 +2333,11 @@ public class BoardDelegate extends DelegateBase
 
     private void startChatActivity()
     {
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
-            String[] names = m_gi.playerNames();
-            boolean[] locs = m_gi.playersLocal(); // to convert old histories
-            ChatDelegate.start( getDelegator(), m_rowid, curPlayer, 
-                                names, locs );
-        }
+        int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
+        String[] names = m_gi.playerNames();
+        boolean[] locs = m_gi.playersLocal(); // to convert old histories
+        ChatDelegate.start( getDelegator(), m_rowid, curPlayer,
+                            names, locs );
     }
 
     private void closeIfFinishing( boolean force )
@@ -2414,13 +2405,11 @@ public class BoardDelegate extends DelegateBase
 
     private void trySendChats()
     {
-        if ( BuildConstants.CHAT_SUPPORTED && null != m_jniThread ) {
-            Iterator<String> iter = m_pendingChats.iterator();
-            while ( iter.hasNext() ) {
-                handleViaThread( JNICmd.CMD_SENDCHAT, iter.next() );
-            }
-            m_pendingChats.clear();
+        Iterator<String> iter = m_pendingChats.iterator();
+        while ( iter.hasNext() ) {
+            handleViaThread( JNICmd.CMD_SENDCHAT, iter.next() );
         }
+        m_pendingChats.clear();
     }
 
     private void tryInvites()
@@ -2492,8 +2481,7 @@ public class BoardDelegate extends DelegateBase
             m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
             m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
             m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
-            m_toolbar.update( Toolbar.BUTTON_CHAT,
-                              BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
+            m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.canChat );
             m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT,
                               null != m_gi.dictName( m_view.getCurPlayer() ) );
         }

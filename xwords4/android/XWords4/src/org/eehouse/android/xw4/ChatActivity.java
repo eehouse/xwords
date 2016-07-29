@@ -27,9 +27,7 @@ public class ChatActivity extends XWActivity {
     @Override
     public void onCreate( Bundle savedInstanceState )
     {
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            ChatDelegate dlgt = new ChatDelegate( this, savedInstanceState );
-            super.onCreate( savedInstanceState, dlgt );
-        }
+        ChatDelegate dlgt = new ChatDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, dlgt );
     }
 }
