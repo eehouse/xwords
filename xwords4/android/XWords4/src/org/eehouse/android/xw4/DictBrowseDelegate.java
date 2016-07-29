@@ -446,6 +446,10 @@ public class DictBrowseDelegate extends ListDelegateBase
     {
         DictUtils.DictLoc loc
             = DictUtils.getDictLoc( delegator.getActivity(), name );
-        launch( delegator, name, loc );
+        if ( null == loc ) {
+            DbgUtils.logf( "DictBrowseDelegate.launch(): DictLoc null; try again?" );
+        } else {
+            launch( delegator, name, loc );
+        }
     }
 }
