@@ -57,7 +57,7 @@
                android:debuggable="false"
                >
 
-    <activity android:name="GamesListActivity"
+    <activity android:name="MainActivity"
               android:label="@string/app_name"
               android:launchMode="standard"
               android:configChanges="keyboardHidden|orientation|screenSize"

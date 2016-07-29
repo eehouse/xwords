@@ -68,9 +68,9 @@ public class XWSumListPreference extends XWListPreference {
 
             if ( !done ) {
                 newEntries = new CharSequence[entries.length + addRows.length];
-                System.arraycopy( entries, 0, newEntries, 0, 
+                System.arraycopy( entries, 0, newEntries, 0,
                                   entries.length );
-                System.arraycopy( addRows, 0, newEntries, entries.length, 
+                System.arraycopy( addRows, 0, newEntries, entries.length,
                                   addRows.length );
                 setEntries( newEntries );
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -u -x
+set -e -u
 
 # use this: adb -s 04bd25af2523aae6 shell "pm  list packages" | grep org.eehouse
 
@@ -17,7 +17,7 @@ usage() {
 	echo "    [--apk <path/to/apk>]  # default is to use package names of all known apks"
 	echo "    [--pkg-name tld.whatever.more] # explicit package name"
 	echo "    [--serial <serial>]    # default is to use all attached devices"
-    echo "uninstall crosswords variant"
+    echo "uninstall apps based on known .apk or package name"
     exit 1
 }
 

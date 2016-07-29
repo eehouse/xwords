@@ -56,7 +56,7 @@ public class DictListPreference extends XWListPreference {
             String name = dals[ii].name;
             if ( langCode == DictLangCache.getDictLangCode( context, name ) ) {
                 values.add( name );
-                dictEntries.add( DictLangCache.annotatedDictName( context, 
+                dictEntries.add( DictLangCache.annotatedDictName( context,
                                                                   dals[ii] ) );
             }
         }

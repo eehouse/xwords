@@ -84,9 +84,9 @@ public class BTInviteDelegate extends InviteDelegate {
         m_counts = new HashMap<String, Integer>();
 
         String msg = getString( R.string.bt_pick_addall_button );
-        msg = getQuantityString( R.plurals.invite_bt_desc_fmt, m_nMissing, 
+        msg = getQuantityString( R.plurals.invite_bt_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_rescan, 
+        super.init( R.id.button_invite, R.id.button_rescan,
                     R.id.button_clear, R.id.invite_desc, msg );
         BTService.clearDevices( m_activity, null ); // will return names
     }
@@ -134,7 +134,7 @@ public class BTInviteDelegate extends InviteDelegate {
         if ( 0 < count ) {
             BTService.scan( m_activity );
         } else {
-            showConfirmThen( R.string.bt_no_devs, R.string.button_go_settings, 
+            showConfirmThen( R.string.bt_no_devs, R.string.button_go_settings,
                              Action.OPEN_BT_PREFS_ACTION );
         }
     }
@@ -171,7 +171,7 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
-    protected void tryEnable() 
+    protected void tryEnable()
     {
         String[][] devs = new String[1][];
         int[][] counts = new int[1][];
@@ -210,7 +210,7 @@ public class BTInviteDelegate extends InviteDelegate {
             if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     layout.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter = 
+                ArrayAdapter<String> adapter =
                     new ArrayAdapter<String>( m_activity, android.R.layout
                                               .simple_spinner_item );
                 for ( int ii = 1; ii <= m_nMissing; ++ii ) {
@@ -220,8 +220,8 @@ public class BTInviteDelegate extends InviteDelegate {
                 spinner.setAdapter( adapter );
                 spinner.setVisibility( View.VISIBLE );
                 spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent, 
-                                                    View view, int pos, 
+                        public void onItemSelected( AdapterView<?> parent,
+                                                    View view, int pos,
                                                     long id )
                         {
                             m_counts.put( btAddr, 1 + pos );
@@ -232,9 +232,9 @@ public class BTInviteDelegate extends InviteDelegate {
                     } );
             }
 
-            CompoundButton.OnCheckedChangeListener listener = 
+            CompoundButton.OnCheckedChangeListener listener =
                 new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton buttonView, 
+                    public void onCheckedChanged( CompoundButton buttonView,
                                                   boolean isChecked ) {
                         if ( isChecked ) {
                             m_checked.add( layout );

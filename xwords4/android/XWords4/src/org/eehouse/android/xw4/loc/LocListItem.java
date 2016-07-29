@@ -43,7 +43,7 @@ public class LocListItem extends LinearLayout {
     private int m_position;
     private TextView m_xlated;
 
-    public LocListItem( Context cx, AttributeSet as ) 
+    public LocListItem( Context cx, AttributeSet as )
     {
         super( cx, as );
     }
@@ -52,7 +52,7 @@ public class LocListItem extends LinearLayout {
     protected void onFinishInflate()
     {
         super.onFinishInflate();
-        m_xlated = (TextView)findViewById( R.id.xlated_view ); 
+        m_xlated = (TextView)findViewById( R.id.xlated_view );
     }
 
     protected void update()
@@ -89,11 +89,11 @@ public class LocListItem extends LinearLayout {
         }
     }
 
-    protected static LocListItem create( Context context, 
-                                         LocSearcher.Pair pair, 
+    protected static LocListItem create( Context context,
+                                         LocSearcher.Pair pair,
                                          int position )
     {
-        LocListItem result = 
+        LocListItem result =
             (LocListItem)LocUtils.inflate( context, R.layout.loc_list_item );
         result.m_pair = pair;
         result.m_position = position;

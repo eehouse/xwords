@@ -72,7 +72,7 @@ public class LookupAlert extends LinearLayout
     private static String[] s_lookupUrls;
     private static ArrayAdapter<String> s_urlsAdapter;
     private static final int LIST_LAYOUT = android.R.layout.simple_list_item_1;
-    
+
     private static int s_lang = -1;
     private static String s_langName;
 
@@ -115,7 +115,7 @@ public class LookupAlert extends LinearLayout
     //     m_state = STATE_DONE;
     //     adjustState( 1 );
 
-    //     m_wordsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT, 
+    //     m_wordsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT,
     //                                                m_words );
     //     getListView().setOnItemClickListener( this );
 
@@ -147,7 +147,7 @@ public class LookupAlert extends LinearLayout
         m_state = STATE_DONE;
         adjustState( 1 );
 
-        m_wordsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT, 
+        m_wordsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT,
                                                    m_words );
         m_listView = (ListView)findViewById( android.R.id.list );
         m_listView.setOnItemClickListener( this );
@@ -167,7 +167,7 @@ public class LookupAlert extends LinearLayout
     }
 
     // @Override
-    // protected void onSaveInstanceState( Bundle outState ) 
+    // protected void onSaveInstanceState( Bundle outState )
     // {
     //     super.onSaveInstanceState( outState );
     //     outState.putInt( STATE, m_state );
@@ -188,9 +188,9 @@ public class LookupAlert extends LinearLayout
     // }
 
     //////////////////////////////////////////////////////////////////////
-    // View.OnClickListener 
+    // View.OnClickListener
     //////////////////////////////////////////////////////////////////////
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         if ( view == m_doneButton ) {
             switchState( -1 );
@@ -198,16 +198,16 @@ public class LookupAlert extends LinearLayout
             String word = m_words[m_wordIndex];
             DBUtils.addToStudyList( m_context, word, s_lang );
 
-            String msg = LocUtils.getString( m_context, R.string.add_done_fmt, 
+            String msg = LocUtils.getString( m_context, R.string.add_done_fmt,
                                              word, s_langName );
             Utils.showToast( m_context, msg );
         }
     }
 
     //////////////////////////////////////////////////////////////////////
-    // AdapterView.OnItemClickListener 
+    // AdapterView.OnItemClickListener
     //////////////////////////////////////////////////////////////////////
-    public void onItemClick( AdapterView<?> parentView, View view, 
+    public void onItemClick( AdapterView<?> parentView, View view,
                              int position, long id )
     {
         if ( STATE_WORDS == m_state ) {
@@ -252,7 +252,7 @@ public class LookupAlert extends LinearLayout
             break;
         case STATE_WORDS:
             m_listView.setAdapter( m_wordsAdapter );
-            setSummary( m_studyOn ? 
+            setSummary( m_studyOn ?
                         R.string.title_lookup_study : R.string.title_lookup );
             m_doneButton.setText( R.string.button_done );
             m_studyButton.setVisibility( View.GONE );
@@ -271,7 +271,7 @@ public class LookupAlert extends LinearLayout
             }
             break;
         case STATE_LOOKUP:
-            lookupWord( m_context, m_words[m_wordIndex], 
+            lookupWord( m_context, m_words[m_wordIndex],
                         s_lookupUrls[m_urlIndex] );
             switchState( -1 );
             break;
@@ -291,7 +291,7 @@ public class LookupAlert extends LinearLayout
             Uri uri = Uri.parse( dict_url );
             Intent intent = new Intent( Intent.ACTION_VIEW, uri );
             intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        
+
             try {
                 context.startActivity( intent );
             } catch ( android.content.ActivityNotFoundException anfe ) {
@@ -323,7 +323,7 @@ public class LookupAlert extends LinearLayout
             }
             s_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
-            s_urlsAdapter = new ArrayAdapter<String>( context, LIST_LAYOUT, 
+            s_urlsAdapter = new ArrayAdapter<String>( context, LIST_LAYOUT,
                                                       s_lookupNames );
             s_lang = lang;
             String langName = DictLangCache.getLangName( context, lang );
@@ -338,7 +338,7 @@ public class LookupAlert extends LinearLayout
 
     private void setSummary( String word )
     {
-        String title = 
+        String title =
             LocUtils.getString( m_context, R.string.pick_url_title_fmt, word );
         m_summary.setText( title );
     }
@@ -356,7 +356,7 @@ public class LookupAlert extends LinearLayout
         return handled;
     }
 
-    public static boolean needAlert( Context context, String[] words, 
+    public static boolean needAlert( Context context, String[] words,
                                      int langCode, boolean noStudy )
     {
         boolean result = !noStudy || 1 < words.length;
@@ -367,7 +367,7 @@ public class LookupAlert extends LinearLayout
         return result;
     }
 
-    public static Bundle makeParams( String[] words, int lang, 
+    public static Bundle makeParams( String[] words, int lang,
                                      boolean noStudyOption )
     {
         Bundle bundle = new Bundle();
@@ -391,7 +391,7 @@ public class LookupAlert extends LinearLayout
         return result;
     }
 
-    protected static void launchWordLookup( Context context, String word, 
+    protected static void launchWordLookup( Context context, String word,
                                             int langCode )
     {
         setLang( context, langCode );

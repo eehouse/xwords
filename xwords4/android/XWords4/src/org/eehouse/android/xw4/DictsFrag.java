@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2016 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,14 +21,13 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-public class StudyListActivity extends XWActivity {
+public class DictsFrag extends XWFragment {
+
+    public DictsFrag( Delegator parent ) { super( parent ); }
 
     @Override
-    protected void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        StudyListDelegate dlgt =
-            new StudyListDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, dlgt );
+        super.onCreate( new DictsDelegate( this, sis ), sis, true );
     }
-
 }

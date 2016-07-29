@@ -31,7 +31,7 @@ import android.widget.TextView;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class GameListGroup extends ExpiringLinearLayout 
+public class GameListGroup extends ExpiringLinearLayout
     implements SelectableItem.LongClickHandler,
                View.OnClickListener,
                View.OnLongClickListener
@@ -81,7 +81,7 @@ public class GameListGroup extends ExpiringLinearLayout
         return result;
     }
 
-    public GameListGroup( Context cx, AttributeSet as ) 
+    public GameListGroup( Context cx, AttributeSet as )
     {
         super( cx, as );
     }
@@ -137,7 +137,7 @@ public class GameListGroup extends ExpiringLinearLayout
     //////////////////////////////////////////////////
     // View.OnLongClickListener interface
     //////////////////////////////////////////////////
-    public boolean onLongClick( View view ) 
+    public boolean onLongClick( View view )
     {
         boolean handled = ! XWApp.CONTEXT_MENUS_ENABLED;
         if ( handled ) {
@@ -149,7 +149,7 @@ public class GameListGroup extends ExpiringLinearLayout
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         if ( 0 < m_nGames ) {
             m_expanded = !m_expanded;
@@ -161,7 +161,7 @@ public class GameListGroup extends ExpiringLinearLayout
     private void setButton()
     {
         if ( null != m_expandButton ) {
-            m_expandButton.setVisibility( 0 == m_nGames ? 
+            m_expandButton.setVisibility( 0 == m_nGames ?
                                           View.GONE : View.VISIBLE );
             m_expandButton.setImageResource( m_expanded ?
                                              R.drawable.expander_ic_maximized :

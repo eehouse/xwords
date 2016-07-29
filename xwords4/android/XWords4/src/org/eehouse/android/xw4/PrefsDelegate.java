@@ -82,7 +82,8 @@ public class PrefsDelegate extends DelegateBase
                 confirmID = R.string.confirm_revert_colors;
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            SharedPreferences sp = getSharedPreferences();
+                            PrefsDelegate self = (PrefsDelegate)curThis();
+                            SharedPreferences sp = self.getSharedPreferences();
                             SharedPreferences.Editor editor = sp.edit();
                             int[] colorKeys = {
                                 R.string.key_player0,
@@ -103,7 +104,7 @@ public class PrefsDelegate extends DelegateBase
                                 editor.remove( getString(colorKey) );
                             }
                             editor.commit();
-                            relaunch();
+                            self.relaunch();
                         }
                     };
                 break;
@@ -111,11 +112,12 @@ public class PrefsDelegate extends DelegateBase
                 confirmID = R.string.confirm_revert_all;
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            SharedPreferences sp = getSharedPreferences();
+                            PrefsDelegate self = (PrefsDelegate)curThis();
+                            SharedPreferences sp = self.getSharedPreferences();
                             SharedPreferences.Editor editor = sp.edit();
                             editor.clear();
                             editor.commit();
-                            relaunch();
+                            self.relaunch();
                         }
                     };
                 break;
@@ -149,13 +151,13 @@ public class PrefsDelegate extends DelegateBase
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_COLORS );
+                    curThis().showDialog( DlgID.REVERT_COLORS );
                 }
             } );
         button = (Button)findViewById( R.id.revert_all );
         button.setOnClickListener(new View.OnClickListener() {
                 public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_ALL );
+                    curThis().showDialog( DlgID.REVERT_ALL );
                 }
             } );
 
@@ -163,22 +165,22 @@ public class PrefsDelegate extends DelegateBase
 
         hideStuff();
     }
-    
+
     @Override
-    protected void onResume() 
+    protected void onResume()
     {
         super.onResume();
-        getSharedPreferences().registerOnSharedPreferenceChangeListener(this);   
+        getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
 
-    protected void onPause() 
+    protected void onPause()
     {
         getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
     }
 
     @Override
-    public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
+    public void onSharedPreferenceChanged( SharedPreferences sp, String key )
     {
         if ( s_keysHash.containsKey( key ) ) {
             switch( s_keysHash.get( key ) ) {
@@ -240,7 +242,6 @@ public class PrefsDelegate extends DelegateBase
     @Override
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        DbgUtils.logf( "PrefsDelegate.dlgButtonClicked(%s)", action.toString() );
         boolean handled = AlertDialog.BUTTON_POSITIVE == button;
         if ( handled ) {
             switch ( action ) {
@@ -306,17 +307,17 @@ public class PrefsDelegate extends DelegateBase
         lp.setEntryValues( langs );
     }
 
-    private void forceDictsMatch( String newLang ) 
+    private void forceDictsMatch( String newLang )
     {
         int code = DictLangCache.getLangLangCode( m_activity, newLang );
-        int[] keyIds = { R.string.key_default_dict, 
+        int[] keyIds = { R.string.key_default_dict,
                          R.string.key_default_robodict };
         for ( int id : keyIds ) {
             String key = getString( id );
             DictListPreference pref = (DictListPreference)m_activity.findPreference( key );
             String curDict = pref.getValue().toString();
             if ( ! DictUtils.dictExists( m_activity, curDict )
-                 || code != DictLangCache.getDictLangCode( m_activity, 
+                 || code != DictLangCache.getDictLangCode( m_activity,
                                                            curDict ) ) {
                 pref.invalidate();
             }

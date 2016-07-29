@@ -23,6 +23,8 @@ import android.os.Bundle;
 
 public class GameConfigFrag extends XWFragment {
 
+    public GameConfigFrag( Delegator parent ) { super( parent ); }
+
     @Override
     public void onCreate( Bundle sis )
     {

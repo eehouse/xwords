@@ -37,7 +37,7 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.Delegator;
 
-public class LocDelegate extends ListDelegateBase 
+public class LocDelegate extends ListDelegateBase
     implements View.OnClickListener,
                OnItemSelectedListener {
 
@@ -56,14 +56,15 @@ public class LocDelegate extends ListDelegateBase
         m_activity = delegator.getActivity();
     }
 
-    protected boolean onBackPressed()
+    @Override
+    protected boolean handleBackPressed()
     {
         LocUtils.saveLocalData( m_activity );
         return false;
     }
 
     @Override
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         if ( view instanceof LocListItem ) {
             m_lastItem = (LocListItem)view;
@@ -94,7 +95,7 @@ public class LocDelegate extends ListDelegateBase
         setListAdapter( m_adapter );
     }
 
-    protected void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState )
     {
         m_searchButton = (ImageButton)findViewById( R.id.loc_search_button );
         m_searchButton.setOnClickListener( this );
@@ -116,7 +117,7 @@ public class LocDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
-    public void onItemSelected( AdapterView<?> parent, View view, 
+    public void onItemSelected( AdapterView<?> parent, View view,
                                 int position, long id )
     {
         m_searcher.start( position );

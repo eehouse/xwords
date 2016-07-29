@@ -44,8 +44,8 @@ public abstract class XWListAdapter extends BaseAdapter
     public int getCount() { return m_count; }
     public Object getItem( int position ) { return null; }
     public long getItemId( int position ) { return position; }
-    public int getItemViewType( int position ) { 
-        return ListAdapter.IGNORE_ITEM_VIEW_TYPE; 
+    public int getItemViewType( int position ) {
+        return ListAdapter.IGNORE_ITEM_VIEW_TYPE;
     }
     public int getViewTypeCount() { return 1; }
     public boolean hasStableIds() { return true; }

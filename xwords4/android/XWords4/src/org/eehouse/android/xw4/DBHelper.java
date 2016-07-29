@@ -87,7 +87,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String WORDCOUNT = "WORDCOUNT";
     public static final String WORDCOUNTS = "WORDCOUNTS";
     public static final String LANGCODE = "LANGCODE";
-    public static final String LOC = "LOC";     
+    public static final String LOC = "LOC";
     public static final String ITERMIN = "ITERMIN";
     public static final String ITERMAX = "ITERMAX";
     public static final String ITERPOS = "ITERPOS";
@@ -236,7 +236,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate( SQLiteDatabase db ) 
+    public void onCreate( SQLiteDatabase db )
     {
         createTable( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
         createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
@@ -254,7 +254,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     @SuppressWarnings("fallthrough")
-    public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) 
+    public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
     {
         DbgUtils.logf( false, "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
@@ -359,9 +359,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( cmd );
     }
 
-    private void createTable( SQLiteDatabase db, String name, String[][] data ) 
+    private void createTable( SQLiteDatabase db, String name, String[][] data )
     {
-        StringBuilder query = 
+        StringBuilder query =
             new StringBuilder( String.format("CREATE TABLE %s (", name ) );
 
         for ( int ii = 0; ii < data.length; ++ii ) {
@@ -438,11 +438,11 @@ public class DBHelper extends SQLiteOpenHelper {
     // Move all existing games to the row previously named "cur games'
     private void moveToCurGames( SQLiteDatabase db )
     {
-        String name = LocUtils.getString( m_context, false, 
+        String name = LocUtils.getString( m_context, false,
                                           R.string.group_cur_games );
         String[] columns = { "rowid" };
         String selection = String.format( "%s = '%s'", GROUPNAME, name );
-        Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
+        Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns,
                                   selection, null, null, null, null );
         if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
             long rowid = cursor.getLong( cursor.getColumnIndex("rowid") );
@@ -454,7 +454,7 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
     }
 
-    private void makeAutoincrement( SQLiteDatabase db, String name, 
+    private void makeAutoincrement( SQLiteDatabase db, String name,
                                     String[][] data )
     {
         db.beginTransaction();
@@ -468,9 +468,9 @@ public class DBHelper extends SQLiteOpenHelper {
             }
             createTable( db, name, data );
             forceRowidHigh( db, name );
-            
+
             if ( null != columnNames ) {
-                ArrayList<String> oldCols = 
+                ArrayList<String> oldCols =
                     new ArrayList<String>( Arrays.asList( columnNames ) );
 
                 // Make a list of columns in the new DB, using it to
@@ -488,23 +488,23 @@ public class DBHelper extends SQLiteOpenHelper {
                 oldCols.retainAll( newCols );
 
                 String cols = TextUtils.join( ",", oldCols );
-                query = 
+                query =
                     String.format( "INSERT INTO %s (%s) SELECT %s from temp_%s",
                                    name, cols, cols, name );
                 db.execSQL( query );
             }
             db.execSQL( String.format( "DROP table temp_%s", name ) );
-            
+
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
         }
     }
 
-    private void setColumnsEqual( SQLiteDatabase db, String table, 
+    private void setColumnsEqual( SQLiteDatabase db, String table,
                                   String dest, String src )
     {
-        String query = String.format( "UPDATE %s set %s = %s", table, 
+        String query = String.format( "UPDATE %s set %s = %s", table,
                                       dest, src );
         db.execSQL( query );
     }

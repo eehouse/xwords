@@ -43,9 +43,9 @@ public class RelayCheckBoxPreference extends ConfirmingCheckBoxPreference {
         PrefsActivity activity = (PrefsActivity)getContext();
         int count = DBUtils.getRelayGameCount( activity );
         if ( 0 < count ) {
-            String msg = LocUtils.getString( activity, 
+            String msg = LocUtils.getString( activity,
                                              R.string.warn_relay_havegames );
-            msg += LocUtils.getQuantityString( activity, R.plurals.warn_relay_games_fmt, 
+            msg += LocUtils.getQuantityString( activity, R.plurals.warn_relay_games_fmt,
                                                count, count );
             activity.showConfirmThen( msg, R.string.button_disable_relay,
                                       android.R.string.cancel,

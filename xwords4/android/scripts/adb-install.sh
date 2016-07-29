@@ -16,22 +16,9 @@ APKS=''
 DEVICES=''
 DIRNAME=$(basename $(pwd))
 ADB="$(which adb)"
-MAIN=GamesListActivity
+MAIN=MainActivity
 
-case $DIRNAME in
-    XWords4-dbg)
-        PKG=xw4dbg
-        ;;
-    XWords4-bt)
-        PKG=xw4bt
-        ;;
-    XWords4)
-        PKG=xw4
-        ;;
-    *)
-        usage "running in unexpected directory $DIRNAME"
-        ;;
-esac
+PKG=$(xmlstarlet sel -T -t -m "/manifest" -v @package -n AndroidManifest.xml)
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -76,7 +63,7 @@ for DEVICE in $DEVICES; do
 		ls -l $APK
 		$ADB -s $DEVICE install -r $APK
 		$ADB -s $DEVICE shell am start \
-			 -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.${MAIN}
+			 -n ${PKG}/${PKG}.${MAIN}
 	done
 	COUNT=$((COUNT+1))
 done

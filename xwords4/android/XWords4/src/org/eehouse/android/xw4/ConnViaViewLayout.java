@@ -54,7 +54,7 @@ public class ConnViaViewLayout extends LinearLayout {
     }
 
     protected void configure( CommsConnTypeSet types,
-                              CheckEnabledWarner cew, 
+                              CheckEnabledWarner cew,
                               SetEmptyWarner sew,
                               DlgDelegate.HasDlgDelegate dlgDlgt )
     {
@@ -87,10 +87,10 @@ public class ConnViaViewLayout extends LinearLayout {
             box.setText( typ.longName( context ) );
             box.setChecked( m_curSet.contains( typ ) );
             list.addView( item );
-            
+
             final CommsConnType typf = typ;
             box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton buttonView, 
+                    public void onCheckedChanged( CompoundButton buttonView,
                                                   boolean isChecked ) {
                         if ( isChecked ) {
                             showNotAgainTypeTip( typf );
@@ -153,7 +153,7 @@ public class ConnViaViewLayout extends LinearLayout {
                 Assert.fail();
                 break;
             }
-            m_dlgDlgt.showNotAgainDlgThen( msgID, keyID, 
+            m_dlgDlgt.showNotAgainDlgThen( msgID, keyID,
                                            DlgDelegate.Action.SKIP_CALLBACK );
 
         }

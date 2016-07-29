@@ -57,7 +57,7 @@ public class NetUtils {
     public static byte PRX_GET_MSGS = 4;
     public static byte PRX_PUT_MSGS = 5;
 
-    public static Socket makeProxySocket( Context context, 
+    public static Socket makeProxySocket( Context context,
                                           int timeoutMillis )
     {
         Socket socket = null;
@@ -101,7 +101,7 @@ public class NetUtils {
                 }
 
                 try {
-                    DataOutputStream outStream = 
+                    DataOutputStream outStream =
                         new DataOutputStream( socket.getOutputStream() );
                     outStream.writeShort( 2 + 2 + (2*nObits) + strLens );
                     outStream.writeByte( NetUtils.PROTOCOL_VERSION );
@@ -119,7 +119,7 @@ public class NetUtils {
 
                     outStream.flush();
 
-                    DataInputStream dis = 
+                    DataInputStream dis =
                         new DataInputStream( socket.getInputStream() );
                     short resLen = dis.readShort();
                     socket.close();
@@ -149,7 +149,7 @@ public class NetUtils {
         try {
             Socket socket = makeProxySocket( context, 8000 );
             if ( null != socket ) {
-                DataOutputStream outStream = 
+                DataOutputStream outStream =
                     new DataOutputStream( socket.getOutputStream() );
 
                 // total packet size
@@ -168,7 +168,7 @@ public class NetUtils {
                 }
                 outStream.flush();
 
-                DataInputStream dis = 
+                DataInputStream dis =
                     new DataInputStream(socket.getInputStream());
                 short resLen = dis.readShort();          // total message length
                 short nameCount = dis.readShort();
@@ -213,12 +213,12 @@ public class NetUtils {
         return host;
     }
 
-    protected static HttpURLConnection makeHttpConn( Context context, 
+    protected static HttpURLConnection makeHttpConn( Context context,
                                                      String proc )
     {
         HttpURLConnection result = null;
         try {
-            String url = String.format( "%s/%s", 
+            String url = String.format( "%s/%s",
                                         XWPrefs.getDefaultUpdateUrl( context ),
                                         proc );
             result = (HttpURLConnection)new URL(url).openConnection();
@@ -239,7 +239,7 @@ public class NetUtils {
         params.put( k_PARAMS, param.toString() );
         String paramsString = getPostDataString( params );
 
-        if ( null != paramsString ) { 
+        if ( null != paramsString ) {
             try {
                 conn.setReadTimeout( 15000 );
                 conn.setConnectTimeout( 15000 );
@@ -249,7 +249,7 @@ public class NetUtils {
                 conn.setFixedLengthStreamingMode( paramsString.length() );
 
                 OutputStream os = conn.getOutputStream();
-                BufferedWriter writer 
+                BufferedWriter writer
                     = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
                 writer.write( paramsString );
                 writer.flush();
@@ -284,7 +284,7 @@ public class NetUtils {
         return result;
     }
 
-    private static String getPostDataString( Map<String, String> params ) 
+    private static String getPostDataString( Map<String, String> params )
     {
         String result = null;
         try {

@@ -31,7 +31,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class HeaderWithExpander extends LinearLayout 
+public class HeaderWithExpander extends LinearLayout
     implements View.OnClickListener {
 
     private boolean m_expanded;
@@ -43,7 +43,7 @@ public class HeaderWithExpander extends LinearLayout
         public void expanded( boolean expanded );
     }
 
-    public HeaderWithExpander( Context cx, AttributeSet as ) 
+    public HeaderWithExpander( Context cx, AttributeSet as )
     {
         super( cx, as );
     }
@@ -55,7 +55,7 @@ public class HeaderWithExpander extends LinearLayout
         m_label = (TextView)findViewById( R.id.label );
     }
 
-    public void setExpanded( boolean expanded ) 
+    public void setExpanded( boolean expanded )
     {
         m_expanded = expanded;
         if ( null != m_listener ) {
@@ -81,7 +81,7 @@ public class HeaderWithExpander extends LinearLayout
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         setExpanded( !m_expanded );
     }

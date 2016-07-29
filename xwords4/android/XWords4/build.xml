@@ -58,12 +58,13 @@
     <property name="INITIAL_CLIENT_VERS" value="8"/>
     <property name="VARIANT_NAME" value="xw4"/>
     <property name="APP_NAME" value="Crosswords"/>
+    <property name="SKIP_LANGS" value="values-de"/>
 
     <target name="-pre-clean">
         <antcall target="my-pre-clean" />
     </target>
 
-    <target name="-pre-build" depends="my-copy-src">
+    <target name="-pre-build" depends="my-copy-src, my-check-props">
         <antcall target="my-pre-build">
             <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
             <param name="APP_NAME" value="${APP_NAME}"/>

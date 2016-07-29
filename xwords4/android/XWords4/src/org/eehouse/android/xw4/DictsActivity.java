@@ -39,16 +39,9 @@ public class DictsActivity extends XWActivity {
     private DictsDelegate m_dlgt;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
         m_dlgt = new DictsDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
-
-    public static void start( Context context )
-    {
-        Intent intent = new Intent( context, DictsActivity.class );
-        context.startActivity( intent );
-    }
-
 }

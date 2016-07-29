@@ -35,13 +35,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     }
 
     @Override
-    protected void onError( Context context, String error ) 
+    protected void onError( Context context, String error )
     {
         DbgUtils.logdf("GCMIntentService.onError(%s)", error );
     }
 
     @Override
-    protected void onRegistered( Context context, String regId ) 
+    protected void onRegistered( Context context, String regId )
     {
         DbgUtils.logdf( "GCMIntentService.onRegistered(%s)", regId );
         DevID.setGCMDevID( context, regId );
@@ -49,7 +49,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     }
 
     @Override
-    protected void onUnregistered( Context context, String regId ) 
+    protected void onUnregistered( Context context, String regId )
     {
         DbgUtils.logdf( "GCMIntentService.onUnregistered(%s)", regId );
         DevID.clearGCMDevID( context );
@@ -58,7 +58,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     }
 
     @Override
-    protected void onMessage( Context context, Intent intent ) 
+    protected void onMessage( Context context, Intent intent )
     {
         DbgUtils.logdf( "GCMIntentService.onMessage()" );
         notifyRelayService( context, true );
@@ -108,7 +108,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                     Intent alertIntent = GamesListDelegate
                         .makeAlertIntent( this, value );
                     int code = value.hashCode() ^ title.hashCode();
-                    Utils.postNotification( context, alertIntent, title, 
+                    Utils.postNotification( context, alertIntent, title,
                                             teaser, code );
                 }
             }

@@ -79,7 +79,7 @@ public class NetStateCache {
             }
             if ( now - s_lastNetCheck > (1000 * 20) ) { // 20 seconds
                 s_lastNetCheck = now;
-            
+
                 boolean netAvail = getIsConnected( context );
                 if ( netAvail ) {
                     DbgUtils.logf( "netAvail(): second-guessing successful!!!" );
@@ -168,7 +168,7 @@ public class NetStateCache {
             }
         }
     }
-    
+
     private static class PvtBroadcastReceiver extends BroadcastReceiver {
         private Runnable mNotifyLater;
         private Handler mHandler;
@@ -182,7 +182,7 @@ public class NetStateCache {
         }
 
         @Override
-        public void onReceive( Context context, Intent intent ) 
+        public void onReceive( Context context, Intent intent )
         {
             DbgUtils.assertOnUIThread();
 
@@ -192,7 +192,7 @@ public class NetStateCache {
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
-                DbgUtils.logdf( "NetStateCache.PvtBroadcastReceiver.onReceive(state=%s)", 
+                DbgUtils.logdf( "NetStateCache.PvtBroadcastReceiver.onReceive(state=%s)",
                                 state.toString() );
 
                 boolean netAvail;

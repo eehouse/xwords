@@ -85,13 +85,10 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void init( Bundle savedInstanceState )
     {
-        // super.init( R.id.button_invite, R.id.button_add, 
-        //             R.id.button_clear, R.id.invite_desc,
-        //             R.string.invite_sms_desc_fmt );
         String msg = getString( R.string.button_invite );
-        msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing, 
+        msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear, 
+        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear,
                     R.id.invite_desc, msg );
 
         getBundledData( savedInstanceState );
@@ -108,7 +105,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         rebuildList( true );
     }
 
-    protected void onSaveInstanceState( Bundle outState ) 
+    protected void onSaveInstanceState( Bundle outState )
     {
         outState.putString( SAVE_NAME, m_pendingName );
         outState.putString( SAVE_NUMBER, m_pendingNumber );
@@ -121,9 +118,9 @@ public class SMSInviteDelegate extends InviteDelegate {
             m_pendingNumber = bundle.getString( SAVE_NUMBER );
         }
     }
-    
+
     @Override
-    protected void onActivityResult( RequestCode requestCode, int resultCode, 
+    protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
         // super.onActivityResult( requestCode, resultCode, data );
@@ -137,7 +134,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     }
 
     protected Dialog onCreateDialog( int id )
-    {        
+    {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
@@ -150,13 +147,14 @@ public class SMSInviteDelegate extends InviteDelegate {
                 namerView.setKeyListener(DialerKeyListener.getInstance());
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
+                            SMSInviteDelegate self = (SMSInviteDelegate)curThis();
                             String number = namerView.getName();
                             PhoneRec rec = new PhoneRec( number );
-                            m_pendingNumber = number;
-                            m_pendingName = null;
-                            showConfirmThen( R.string.warn_unlimited, 
-                                             R.string.button_yes, 
-                                             Action.POST_WARNING_ACTION );
+                            self.m_pendingNumber = number;
+                            self.m_pendingName = null;
+                            self.showConfirmThen( R.string.warn_unlimited,
+                                                  R.string.button_yes,
+                                                  Action.POST_WARNING_ACTION );
                         }
                     };
                 dialog = makeAlertBuilder()
@@ -173,7 +171,7 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void scan()
     {
-        Intent intent = new Intent( Intent.ACTION_PICK, 
+        Intent intent = new Intent( Intent.ACTION_PICK,
                                     ContactsContract.Contacts.CONTENT_URI );
         intent.setType( Phone.CONTENT_TYPE );
         startActivityForResult( intent, RequestCode.GET_CONTACT );
@@ -182,7 +180,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     protected void clearSelected()
     {
         int count = countChecks();
-        String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt, 
+        String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
                                         count, count );
         showConfirmThen( msg, Action.CLEAR_ACTION );
     }
@@ -210,7 +208,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     }
 
     @Override
-    protected void tryEnable() 
+    protected void tryEnable()
     {
         if ( null != m_phoneRecs ) {
             int nPlayers = 0;
@@ -249,8 +247,8 @@ public class SMSInviteDelegate extends InviteDelegate {
             break;
         case DlgDelegate.DISMISS_BUTTON:
             if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-                showConfirmThen( R.string.warn_unlimited, 
-                                 R.string.button_yes, 
+                showConfirmThen( R.string.warn_unlimited,
+                                 R.string.button_yes,
                                  Action.POST_WARNING_ACTION );
             }
             break;
@@ -275,9 +273,9 @@ public class SMSInviteDelegate extends InviteDelegate {
     {
         Uri data = intent.getData();
         Cursor cursor = m_activity
-            .managedQuery( data, 
-                           new String[] { Phone.DISPLAY_NAME, 
-                                          Phone.NUMBER, 
+            .managedQuery( data,
+                           new String[] { Phone.DISPLAY_NAME,
+                                          Phone.NUMBER,
                                           Phone.TYPE },
                            null, null, null );
         // Have seen a crash reporting
@@ -286,10 +284,10 @@ public class SMSInviteDelegate extends InviteDelegate {
         // long time to return.  Be safe.
         if ( null != cursor && !cursor.isClosed() ) {
             if ( cursor.moveToFirst() ) {
-                String name = 
+                String name =
                     cursor.getString( cursor.
                                       getColumnIndex( Phone.DISPLAY_NAME));
-                String number = 
+                String number =
                     cursor.getString( cursor.
                                       getColumnIndex( Phone.NUMBER ) );
 
@@ -298,14 +296,14 @@ public class SMSInviteDelegate extends InviteDelegate {
                 m_pendingName = name;
                 m_pendingNumber = number;
                 if ( Phone.TYPE_MOBILE == type ) {
-                    showConfirmThen( R.string.warn_unlimited, 
-                                     R.string.button_yes, 
+                    showConfirmThen( R.string.warn_unlimited,
+                                     R.string.button_yes,
                                      Action.POST_WARNING_ACTION );
                 } else {
                     m_immobileConfirmed = false;
-                    String msg = getString( R.string.warn_nomobile_fmt, 
+                    String msg = getString( R.string.warn_nomobile_fmt,
                                             number, name );
-                    showConfirmThen( msg, R.string.button_yes, 
+                    showConfirmThen( msg, R.string.button_yes,
                                      Action.USE_IMMOBILE_ACTION );
                 }
             }
@@ -418,7 +416,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             m_items = new SMSListItem[m_phoneRecs.size()];
         }
 
-        public Object getItem( final int position ) 
+        public Object getItem( final int position )
         {
             // For some reason I can't cache items to be returned.
             // Checking/unchecking breaks for some but not all items,
@@ -426,13 +424,13 @@ public class SMSInviteDelegate extends InviteDelegate {
             // view.  So build them anew each time (but still cache
             // for by-index access.)
 
-            SMSListItem item = 
+            SMSListItem item =
                 (SMSListItem)inflate( R.layout.smsinviter_item );
             item.setChecked( m_phoneRecs.get(position).m_isChecked );
 
             CompoundButton.OnCheckedChangeListener lstnr =
                 new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton bv, 
+                    public void onCheckedChanged( CompoundButton bv,
                                                   boolean isChecked ) {
                         m_phoneRecs.get(position).m_isChecked = isChecked;
                         tryEnable();
@@ -448,7 +446,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     item.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter = 
+                ArrayAdapter<String> adapter =
                     new ArrayAdapter<String>( m_activity, android.R.layout
                                               .simple_spinner_item );
                 for ( int ii = 1; ii <= m_nMissing; ++ii ) {
@@ -458,8 +456,8 @@ public class SMSInviteDelegate extends InviteDelegate {
                 spinner.setAdapter( adapter );
                 spinner.setVisibility( View.VISIBLE );
                 spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent, 
-                                                    View view, int pos, 
+                        public void onItemSelected( AdapterView<?> parent,
+                                                    View view, int pos,
                                                     long id )
                         {
                             rec.m_nPlayers = 1 + pos;
@@ -473,7 +471,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             return item;
         }
 
-        public View getView( final int position, View convertView, 
+        public View getView( final int position, View convertView,
                              ViewGroup parent ) {
             return (View)getItem( position );
         }

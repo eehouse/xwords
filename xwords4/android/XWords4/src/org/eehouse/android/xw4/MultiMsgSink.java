@@ -79,7 +79,7 @@ public class MultiMsgSink implements TransportProcs {
 
     public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
 
-    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr, 
+    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                               CommsConnType typ, int gameID )
     {
         int nSent = -1;
@@ -97,7 +97,7 @@ public class MultiMsgSink implements TransportProcs {
             Assert.fail();
             break;
         }
-        DbgUtils.logf( "MultiMsgSink.transportSend(): sent %d via %s", 
+        DbgUtils.logf( "MultiMsgSink.transportSend(): sent %d via %s",
                        nSent, typ.toString() );
         if ( 0 < nSent ) {
             DbgUtils.logdf( "MultiMsgSink.transportSend: adding %s", msgNo );
@@ -115,7 +115,7 @@ public class MultiMsgSink implements TransportProcs {
     {
     }
 
-    public void relayConnd( String room, int devOrder, boolean allHere, 
+    public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {
     }
@@ -123,7 +123,7 @@ public class MultiMsgSink implements TransportProcs {
     public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
         // Assert.fail();
-        int nSent = RelayService.sendNoConnPacket( m_context, getRowID(), 
+        int nSent = RelayService.sendNoConnPacket( m_context, getRowID(),
                                                    relayID, buf );
         boolean success = buf.length == nSent;
         if ( success ) {

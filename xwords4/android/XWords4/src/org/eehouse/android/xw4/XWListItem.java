@@ -33,7 +33,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class XWListItem extends LinearLayout 
+public class XWListItem extends LinearLayout
     implements SelectableItem.LongClickHandler, View.OnClickListener {
     private int m_position;
     private Object m_cached;
@@ -123,7 +123,7 @@ public class XWListItem extends LinearLayout
         }
     }
 
-    public void setDeleteCallback( DeleteCallback cb ) 
+    public void setDeleteCallback( DeleteCallback cb )
     {
         m_delCb = cb;
         ImageButton button = (ImageButton)findViewById( R.id.del );
@@ -150,7 +150,7 @@ public class XWListItem extends LinearLayout
     }
 
     @Override
-    public void setEnabled( boolean enabled ) 
+    public void setEnabled( boolean enabled )
     {
         ImageButton button = (ImageButton)findViewById( R.id.del );
         button.setEnabled( enabled );
@@ -174,14 +174,14 @@ public class XWListItem extends LinearLayout
         return m_cached;
     }
 
-    // SelectableItem.LongClickHandler interface 
+    // SelectableItem.LongClickHandler interface
     public void longClicked()
     {
         toggleSelected();
     }
 
     // View.OnClickListener interface
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         if ( m_checkbox == view ) {
             setSelected( m_checkbox.isChecked() );

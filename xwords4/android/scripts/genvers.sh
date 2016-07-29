@@ -6,14 +6,11 @@ STRINGS_HASH=""
 OUT_PATH=""
 VARIANT=""
 CLIENT_VERS_RELAY=""
-CHAT_SUPPORTED=""
-THUMBNAIL_SUPPORTED=""
 GCM_SENDER_ID=${GCM_SENDER_ID:-""}
 CRITTERCISM_APP_ID=${CRITTERCISM_APP_ID:-""}
 
 usage() {
     echo "usage: $0 --variant <variant> --client-vers <relay_vers> \\"
-	echo "   --chat-enabled <trueOrFalse> --thumbnail-enabled <trueOrFalse> \\"
 	echo "   [--vers-outfile path/to/versout.txt]"
     exit 1
 }
@@ -29,14 +26,6 @@ while [ $# -gt 0 ]; do
 			CLIENT_VERS_RELAY=$2
 			shift
 			;;
-		--chat-enabled)
-			CHAT_SUPPORTED=$2
-			shift
-			;;
-		--thumbnail-enabled)
-			THUMBNAIL_SUPPORTED=$2
-			shift
-			;;
 		--vers-outfile)
 			OUT_PATH=$2
 			shift
@@ -48,7 +37,7 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-[ -n "$VARIANT" -a -n "$CLIENT_VERS_RELAY" -a -n "$CHAT_SUPPORTED" -a -n "$THUMBNAIL_SUPPORTED" ] || usage
+[ -n "$VARIANT" -a -n "$CLIENT_VERS_RELAY" ] || usage
 
 BUILD_DIR=$(basename $(pwd))
 cd $(dirname $0)
@@ -119,8 +108,6 @@ public class BuildConstants {
     public static final String GIT_REV = "$SHORTVERS";
     public static final String STRINGS_HASH = "$STRINGS_HASH";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
-    public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
-    public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
     public static final long BUILD_STAMP = $(date +'%s');
     public static final String DBG_TAG = "$DBG_TAG";
     public static final String VARIANT = "$VARIANT";

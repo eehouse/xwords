@@ -19,13 +19,14 @@
 
 package org.eehouse.android.xw4;
 
-import android.graphics.Rect;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.graphics.Point;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -37,6 +38,11 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
@@ -57,13 +63,16 @@ public class DelegateBase implements DlgClickNotify,
     private int m_layoutID;
     private View m_rootView;
     private boolean m_isVisible;
+    private ArrayList<Runnable> m_visibleProcs = new ArrayList<Runnable>();
+    private static Map<Class, WeakReference<DelegateBase>> s_instances
+        = new HashMap<Class, WeakReference<DelegateBase>>();
 
     public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
         this( delegator, bundle, layoutID, R.menu.empty );
     }
 
-    public DelegateBase( Delegator delegator, Bundle bundle, 
+    public DelegateBase( Delegator delegator, Bundle bundle,
                          int layoutID, int menuID )
     {
         Assert.assertTrue( 0 < menuID );
@@ -80,16 +89,15 @@ public class DelegateBase implements DlgClickNotify,
     protected void onSaveInstanceState( Bundle outState ) {}
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
-    public void onCreateContextMenu( ContextMenu menu, View view,
-                                     ContextMenuInfo menuInfo ) {}
-    public boolean onContextItemSelected( MenuItem item ) { return false; }
-    protected void onStart() {}
+    protected void onCreateContextMenu( ContextMenu menu, View view,
+                                        ContextMenuInfo menuInfo ) {}
+    protected boolean onContextItemSelected( MenuItem item ) { return false; }
     protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
-    protected boolean onBackPressed() { return false; }
+    protected boolean handleBackPressed() { return false; }
     public void orientationChanged() {}
-    
+
     protected void requestWindowFeature( int feature ) {}
 
     // Fragments only
@@ -105,22 +113,44 @@ public class DelegateBase implements DlgClickNotify,
         return view;
     }
 
-    protected void onActivityResult( RequestCode requestCode, int resultCode, 
-                                     Intent data ) 
+    protected void onActivityResult( RequestCode requestCode, int resultCode,
+                                     Intent data )
     {
-        DbgUtils.logf( "DelegateBase.onActivityResult(): subclass responsibility!!!" );
+        DbgUtils.logf( "%s.onActivityResult(): subclass responsibility!!!", 
+                       getClass().getSimpleName() );
     }
 
-    protected void onResume() 
+    protected void onStart()
+    {
+        if ( s_instances.containsKey(getClass()) ) {
+            DbgUtils.logdf( "%s.onStart(): replacing curThis", 
+                            getClass().getSimpleName() );
+        }
+        s_instances.put( getClass(), new WeakReference<DelegateBase>(this) );
+    }
+
+    protected void onResume()
     {
         m_isVisible = true;
         XWService.setListener( this );
+        runIfVisible();
     }
 
     protected void onPause()
     {
         m_isVisible = false;
         XWService.setListener( null );
+    }
+
+    protected DelegateBase curThis()
+    {
+        DelegateBase result = null;
+        WeakReference<DelegateBase> ref = s_instances.get( getClass() );
+        if ( null != ref ) {
+            result = ref.get();
+        }
+        // DbgUtils.logdf( "%s.curThis() => " + result, this.toString() );
+        return result;
     }
 
     public boolean onCreateOptionsMenu( Menu menu, MenuInflater inflater )
@@ -144,7 +174,9 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean isFinishing()
     {
-        return m_activity.isFinishing();
+        boolean result = m_activity.isFinishing();
+        // DbgUtils.logf( "%s.isFinishing() => %b", getClass().getSimpleName(), result );
+        return result;
     }
 
     protected Intent getIntent()
@@ -202,7 +234,7 @@ public class DelegateBase implements DlgClickNotify,
         return m_activity.getTitle().toString();
     }
 
-    protected void startActivityForResult( Intent intent, 
+    protected void startActivityForResult( Intent intent,
                                            RequestCode requestCode )
     {
         m_activity.startActivityForResult( intent, requestCode.ordinal() );
@@ -210,8 +242,10 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void setResult( int result, Intent intent )
     {
-        if ( m_activity instanceof FragActivity ) {
-            Assert.fail();
+        if ( m_activity instanceof MainActivity ) {
+            MainActivity main = (MainActivity)m_activity;
+            XWFragment fragment = (XWFragment)m_delegator;
+            main.setFragmentResult( fragment, result, intent );
         } else {
             m_activity.setResult( result, intent );
         }
@@ -234,34 +268,52 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void finish()
     {
-        if ( m_activity instanceof FragActivity ) {
-            ((FragActivity)m_activity).finishFragment();
-        } else {
+        boolean handled = false;
+        if ( m_activity instanceof MainActivity ) {
+            MainActivity main = (MainActivity)m_activity;
+            if ( main.inDPMode() ) {
+                main.finishFragment();
+                handled = true;
+            }
+        }
+
+        if ( !handled ) {
             m_activity.finish();
         }
     }
 
     protected boolean isPortrait()
     {
-        int[] containerDims = getContainerDims( new int[2] );
-        boolean result = containerDims[0] < containerDims[1];
-        DbgUtils.logdf( "%s.isPortrait() => %b", getClass().getName(), result );
+        Point size = getContainerSize();
+        boolean result = size.x < size.y;
+        DbgUtils.logdf( "%s.isPortrait() => %b",
+                        getClass().getSimpleName(), result );
         return result;
     }
 
-    protected int[] getContainerDims( int[] outDims )
+    private Point getContainerSize()
     {
-        if ( m_activity instanceof FragActivity ) {
-            ((FragActivity)m_activity).getFragmentDims( outDims );
+        Point result = null;
+        if ( m_activity instanceof MainActivity ) {
+            result = ((MainActivity)m_activity).getFragmentSize();
         } else {
             Rect rect = new Rect();
             m_rootView.getWindowVisibleDisplayFrame( rect );
-            outDims[0] = rect.width();
-            outDims[1] = rect.height();
+            result = new Point( rect.width(), rect.height() );
         }
-        DbgUtils.logdf( "%s.getContainerDims(): width => %d, height => %d",
-                        getClass().getName(), outDims[0], outDims[1] );
-        return outDims;
+        DbgUtils.logdf( "%s.getContainerSize(): width => %d, height => %d",
+                        getClass().getSimpleName(), result.x, result.y );
+        return result;
+    }
+
+    private void runIfVisible()
+    {
+        if ( isVisible() ) {
+            for ( Runnable proc : m_visibleProcs ) {
+                post( proc );
+            }
+            m_visibleProcs.clear();
+        }
     }
 
     protected String getString( int resID, Object... params )
@@ -279,10 +331,10 @@ public class DelegateBase implements DlgClickNotify,
         return LocUtils.xlateLang( m_activity, langCode, caps );
     }
 
-    protected String getQuantityString( int resID, int quantity, 
+    protected String getQuantityString( int resID, int quantity,
                                         Object... params )
     {
-        return LocUtils.getQuantityString( m_activity, resID, quantity, 
+        return LocUtils.getQuantityString( m_activity, resID, quantity,
                                            params );
     }
 
@@ -463,7 +515,7 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showConfirmThen( null, msg, action, params );
     }
 
-    protected void showConfirmThen( Runnable onNA, String msg, int posButton, 
+    protected void showConfirmThen( Runnable onNA, String msg, int posButton,
                                     Action action, Object... params )
     {
         m_dlgDelegate.showConfirmThen( onNA, msg, posButton, action, params );
@@ -491,7 +543,7 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action, params );
     }
 
-    protected void showConfirmThen( int msg, int posButton, Action action, 
+    protected void showConfirmThen( int msg, int posButton, Action action,
                                     Object... params )
     {
         m_dlgDelegate.showConfirmThen( msg, posButton, action, params );
@@ -502,10 +554,10 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showConfirmThen( msgID, action );
     }
 
-    public void showConfirmThen( Runnable onNA, String msg, int posButton, 
+    public void showConfirmThen( Runnable onNA, String msg, int posButton,
                                  int negButton, Action action, Object... params )
     {
-        m_dlgDelegate.showConfirmThen( onNA, msg, posButton, negButton, action, 
+        m_dlgDelegate.showConfirmThen( onNA, msg, posButton, negButton, action,
                                        params );
     }
 
@@ -551,13 +603,13 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.startProgress( titleID, msg, null );
     }
 
-    protected void startProgress( int titleID, int msgID, 
+    protected void startProgress( int titleID, int msgID,
                                   OnCancelListener lstnr )
     {
         m_dlgDelegate.startProgress( titleID, msgID, lstnr );
     }
 
-    protected void startProgress( int titleID, String msg, 
+    protected void startProgress( int titleID, String msg,
                                   OnCancelListener lstnr )
     {
         m_dlgDelegate.startProgress( titleID, msg, lstnr );
@@ -584,7 +636,19 @@ public class DelegateBase implements DlgClickNotify,
     }
 
     protected boolean isVisible() { return m_isVisible; }
-    
+
+    protected boolean handleNewIntent( Intent intent ) {
+        DbgUtils.logf( "%s.handleNewIntent(%s): not handling",
+                       getClass().getSimpleName(), intent.toString() );
+        return false;           // not handled
+    }
+
+    protected void runWhenActive( Runnable proc )
+    {
+        m_visibleProcs.add( proc );
+        runIfVisible();
+    }
+
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface
     //////////////////////////////////////////////////
@@ -609,7 +673,7 @@ public class DelegateBase implements DlgClickNotify,
             m_dlgDelegate.eventOccurred( event, args );
             break;
         default:
-            DbgUtils.logdf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", 
+            DbgUtils.logdf( "DelegateBase.eventOccurred(event=%s) (DROPPED)",
                             event.toString() );
             break;
         }
@@ -680,5 +744,4 @@ public class DelegateBase implements DlgClickNotify,
     {
         Assert.fail();
     }
-
 }

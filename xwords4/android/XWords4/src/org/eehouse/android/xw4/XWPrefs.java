@@ -74,7 +74,7 @@ public class XWPrefs {
 
     public static boolean getHideNewgameButtons( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_hide_newgames, 
+        return getPrefsBoolean( context, R.string.key_hide_newgames,
                                 false );
     }
 
@@ -101,7 +101,7 @@ public class XWPrefs {
         try {
             result = Integer.parseInt( val );
         } catch ( Exception ex ) {
-        } 
+        }
         return result;
     }
 
@@ -117,7 +117,7 @@ public class XWPrefs {
         try {
             result = Integer.parseInt( val );
         } catch ( Exception ex ) {
-        } 
+        }
         // DbgUtils.logf( "getDefaultProxyPort=>%d", result );
         return result;
     }
@@ -139,7 +139,7 @@ public class XWPrefs {
 
     public static int getDefaultPlayerMinutes( Context context )
     {
-        String value = 
+        String value =
             getPrefsString( context, R.string.key_initial_player_minutes );
         int result;
         try {
@@ -195,14 +195,14 @@ public class XWPrefs {
         return sp.getBoolean( key, defaultValue );
     }
 
-    public static void setPrefsBoolean( Context context, int keyID, 
+    public static void setPrefsBoolean( Context context, int keyID,
                                         boolean newValue )
     {
         String key = context.getString( keyID );
         setPrefsBoolean( context, key, newValue );
     }
 
-    private static void setPrefsBoolean( Context context, String key, 
+    private static void setPrefsBoolean( Context context, String key,
                                          boolean newValue )
     {
         SharedPreferences sp = PreferenceManager
@@ -233,7 +233,7 @@ public class XWPrefs {
 
     public static void setClosedLangs( Context context, String[] langs )
     {
-        setPrefsString( context, R.string.key_closed_langs, 
+        setPrefsString( context, R.string.key_closed_langs,
                         TextUtils.join( "\n", langs ) );
     }
 
@@ -277,7 +277,7 @@ public class XWPrefs {
     {
         String id = getPrefsString( context, R.string.key_dev_id );
         if ( null == id || 0 == id.length() ) {
-            id = String.format( "%08X-%08X", Utils.nextRandomInt(), 
+            id = String.format( "%08X-%08X", Utils.nextRandomInt(),
                                 Utils.nextRandomInt() );
             setPrefsString( context, R.string.key_dev_id, id );
         }
@@ -296,7 +296,7 @@ public class XWPrefs {
     {
         return getPrefsString( context, R.string.key_download_path );
     }
-    
+
     public static boolean getDefaultLocInternal( Context context )
     {
         return getPrefsBoolean( context, R.string.key_default_loc, true );
@@ -304,7 +304,7 @@ public class XWPrefs {
 
     public static long getDefaultNewGameGroup( Context context )
     {
-        long groupID = getPrefsLong( context, R.string.key_default_group, 
+        long groupID = getPrefsLong( context, R.string.key_default_group,
                                      DBUtils.GROUPID_UNSPEC );
         if ( DBUtils.GROUPID_UNSPEC == groupID ) {
             groupID = DBUtils.getAnyGroup( context );
@@ -337,7 +337,7 @@ public class XWPrefs {
     public static long[] getGroupPositions( Context context )
     {
         long[] posns = null;
-        String[] longStrs = getPrefsStringArray( context, 
+        String[] longStrs = getPrefsStringArray( context,
                                                  R.string.key_group_posns );
         if ( null != longStrs ) {
             posns = new long[longStrs.length];
@@ -384,7 +384,7 @@ public class XWPrefs {
         return sp.getString( key, "" );
     }
 
-    protected static void setPrefsString( Context context, int keyID, 
+    protected static void setPrefsString( Context context, int keyID,
                                           String newValue )
     {
         SharedPreferences sp = PreferenceManager
@@ -412,7 +412,7 @@ public class XWPrefs {
         return result;
     }
 
-    protected static void setPrefsStringArray( Context context, int keyID, 
+    protected static void setPrefsStringArray( Context context, int keyID,
                                                String[] value )
     {
         setPrefsString( context, keyID, TextUtils.join( "\n", value ) );
@@ -445,8 +445,15 @@ public class XWPrefs {
 
     public static boolean getIsTablet( Context context )
     {
-        return isTablet( context ) ||
+        boolean result = isTablet( context ) ||
             getPrefsBoolean( context, R.string.key_force_tablet, false );
+        // DbgUtils.logf( "getIsTablet() => %b", result );
+        return result;
+    }
+
+    public static boolean dualpaneEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_dualpane, false );
     }
 
     public static CommsConnTypeSet getAddrTypes( Context context )
@@ -485,12 +492,12 @@ public class XWPrefs {
     private static boolean isTablet( Context context )
     {
         if ( null == s_isTablet ) {
-            int screenLayout = 
+            int screenLayout =
                 context.getResources().getConfiguration().screenLayout;
             int size = screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
-            s_isTablet = 
+            s_isTablet =
                 new Boolean(Configuration.SCREENLAYOUT_SIZE_LARGE <= size);
         }
         return s_isTablet;
-    }        
+    }
 }

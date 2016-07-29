@@ -31,7 +31,7 @@ public class BoardDims {
     public int cellSize, maxCellSize;
     public int timerWidth;
 
-    // public String toString() 
+    // public String toString()
     // {
     //     return "width: " + width
     //         + " height: " + height

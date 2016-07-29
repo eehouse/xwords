@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -34,12 +35,15 @@ import android.widget.ListView;
 
 import junit.framework.Assert;
 
-public class XWFragment extends Fragment 
-    implements Delegator, 
-               FragActivity.OrientChangeListener {
+public class XWFragment extends Fragment implements Delegator {
 
     private DelegateBase m_dlgt;
+    private Delegator m_parent;
     private boolean m_hasOptionsMenu = false;
+
+    public XWFragment( Delegator parent ) { m_parent = parent; }
+
+    public Delegator getParent() { return m_parent; }
 
     protected void onCreate( DelegateBase dlgt, Bundle sis, boolean hasOptionsMenu )
     {
@@ -49,23 +53,24 @@ public class XWFragment extends Fragment
 
     protected void onCreate( DelegateBase dlgt, Bundle sis )
     {
-        DbgUtils.logdf( "%s.onCreate() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onCreate() called", this.getClass().getSimpleName() );
         super.onCreate( sis );
         m_dlgt = dlgt;
     }
 
     @Override
-    public View onCreateView( LayoutInflater inflater, ViewGroup container, 
-                              Bundle savedInstanceState ) 
+    public View onCreateView( LayoutInflater inflater, ViewGroup container,
+                              Bundle savedInstanceState )
     {
-        DbgUtils.logdf( "%s.onCreateView() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onCreateView() called", this.getClass().getSimpleName() );
         return m_dlgt.inflateView( inflater, container );
     }
 
     @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
-        DbgUtils.logdf( "%s.onActivityCreated() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onActivityCreated() called",
+                        this.getClass().getSimpleName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
         if ( m_hasOptionsMenu ) {
@@ -76,7 +81,8 @@ public class XWFragment extends Fragment
     @Override
     public void onPause()
     {
-        DbgUtils.logdf( "%s.onPause() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onPause() called",
+                        this.getClass().getSimpleName() );
         m_dlgt.onPause();
         super.onPause();
     }
@@ -84,6 +90,8 @@ public class XWFragment extends Fragment
     @Override
     public void onResume()
     {
+        DbgUtils.logdf( "%s.onResume() called",
+                        this.getClass().getSimpleName() );
         super.onResume();
         m_dlgt.onResume();
     }
@@ -91,7 +99,8 @@ public class XWFragment extends Fragment
     @Override
     public void onStart()
     {
-        DbgUtils.logdf( "%s.onStart() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onStart() called",
+                        this.getClass().getSimpleName() );
         super.onStart();
         m_dlgt.onStart();
     }
@@ -99,7 +108,8 @@ public class XWFragment extends Fragment
     @Override
     public void onStop()
     {
-        DbgUtils.logdf( "%s.onStop() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onStop() called",
+                        this.getClass().getSimpleName() );
         m_dlgt.onStop();
         super.onStop();
     }
@@ -107,9 +117,19 @@ public class XWFragment extends Fragment
     @Override
     public void onDestroy()
     {
-        DbgUtils.logdf( "%s.onDestroy() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onDestroy() called",
+                        this.getClass().getSimpleName() );
         m_dlgt.onDestroy();
         super.onDestroy();
+    }
+
+    @Override
+    public void onActivityResult( int requestCode, int resultCode, Intent data )
+    {
+        DbgUtils.logdf( "%s.onActivityResult() called",
+                        this.getClass().getSimpleName() );
+        m_dlgt.onActivityResult( RequestCode.values()[requestCode], 
+                                 resultCode, data );
     }
 
     @Override
@@ -125,7 +145,7 @@ public class XWFragment extends Fragment
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         return m_dlgt.onOptionsItemSelected( item );
     }
@@ -135,11 +155,29 @@ public class XWFragment extends Fragment
         Assert.fail();
     }
 
-    // FragActivity.OrientChangeListener
-    public void orientationChanged()
-    {
-        m_dlgt.orientationChanged();
+    @Override
+    public boolean inDPMode() {
+        MainActivity main = (MainActivity)getActivity();
+        Assert.assertTrue( main.inDPMode() ); // otherwise should be somewhere else
+        return true;
     }
+
+    @Override
+    public void addFragment( XWFragment fragment, Bundle extras )
+    {
+        MainActivity main = (MainActivity)getActivity();
+        main.addFragment( fragment, extras );
+    }
+
+    @Override
+    public void addFragmentForResult( XWFragment fragment, Bundle extras,
+                                      RequestCode code )
+    {
+        MainActivity main = (MainActivity)getActivity();
+        main.addFragmentForResult( fragment, extras, code, this );
+    }
+
+    public DelegateBase getDelegate() { return m_dlgt; }
 
     public ListView getListView()
     {
@@ -148,7 +186,7 @@ public class XWFragment extends Fragment
     }
 
     public void setListAdapter( ListAdapter adapter )
-    { 
+    {
         getListView().setAdapter( adapter );
     }
 
@@ -157,5 +195,3 @@ public class XWFragment extends Fragment
         return getListView().getAdapter();
     }
 }
-
-

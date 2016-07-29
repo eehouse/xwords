@@ -53,7 +53,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         return 0;
     }
 
-    public int userPickTileTray( int playerNum, String[] texts, 
+    public int userPickTileTray( int playerNum, String[] texts,
                                  String[] curTiles, int nPicked )
     {
         subclassOverride( "userPickTileTray" );
@@ -264,14 +264,14 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "informUndo" );
     }
 
-    public void informNetDict( int lang, String oldName, 
-                               String newName, String newSum, 
+    public void informNetDict( int lang, String oldName,
+                               String newName, String newSum,
                                CurGameInfo.XWPhoniesChoice phonies )
     {
         subclassOverride( "informNetDict" );
     }
 
-    public void informMissing( boolean isServer, 
+    public void informMissing( boolean isServer,
                                CommsConnTypeSet connTypes,
                                int nDevices, int nMissingPlayers )
     {
@@ -285,7 +285,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "notifyGameOver" );
     }
 
-    public boolean warnIllegalWord( String dict, String[] words, int turn, 
+    public boolean warnIllegalWord( String dict, String[] words, int turn,
                                     boolean turnLost )
     {
         subclassOverride( "warnIllegalWord" );

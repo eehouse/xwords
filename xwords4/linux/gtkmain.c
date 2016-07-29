@@ -76,7 +76,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM, CONN_ITEM, OVER_ITEM, TURN_ITEM, 
-       NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM, N_ITEMS };
+       NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM, LASTTURN_ITEM, N_ITEMS };
 
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
@@ -159,6 +159,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "NMoves", NMOVES_ITEM );
     addTextColumn( list, "NTotal", NTOTAL_ITEM );
     addTextColumn( list, "NMissing", MISSING_ITEM );
+    addTextColumn( list, "LastTurn", LASTTURN_ITEM );
 
     GtkListStore* store = gtk_list_store_new( N_ITEMS, 
                                               G_TYPE_INT64,   /* ROW_ITEM */
@@ -171,7 +172,8 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_INT,     /* NMOVES_ITEM */
                                               G_TYPE_INT,     /* NTOTAL_ITEM */
-                                              G_TYPE_INT      /* MISSING_ITEM */
+                                              G_TYPE_INT,     /* MISSING_ITEM */
+                                              G_TYPE_INT      /* LASTTURN_ITEM */
                                               );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
@@ -220,6 +222,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         NMOVES_ITEM, gib->nMoves,
                         NTOTAL_ITEM, gib->nTotal,
                         MISSING_ITEM, gib->nMissing,
+                        LASTTURN_ITEM, gib->lastMoveTime,
                         -1 );
     XP_LOGF( "DONE adding" );
 }

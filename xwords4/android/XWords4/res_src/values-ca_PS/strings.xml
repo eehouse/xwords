@@ -943,7 +943,8 @@
          tapping. -->
   <string name="hide_crosshairs">DISABLE CROSSHAIRS</string>
   <!-- explanation of the above -->
-  <string name="hide_crosshairs_summary">DO NOT VISUALLY INDICATE WHICH BOARD CELL IS TOUCHED</string>
+  <string name="hide_crosshairs_summary">DO NOT SHOW WHICH BOARD
+    CELL IS TOUCHED</string>
   <string name="network_behavior">NETWORK GAME SETTINGS</string>
   <!-- explanation of the above -->
   <string name="network_behavior_summary">SETTINGS THAT APPLY TO
@@ -2057,8 +2058,8 @@
     WHAT\'S AVAILABLE.</string>
   <string name="force_tablet_title">FORCE TABLET LAYOUT</string>
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
-  <!-- <string name="enable_dualpane_title">Enable dualpane</string> -->
-  <!-- <string name="enable_dualpane_summary">Side-by-side views, very experimental!</string> -->
+  <string name="enable_dualpane_title">ENABLE DUALPANE</string>
+  <string name="enable_dualpane_summary">SIDE-BY-SIDE VIEWS, VERY EXPERIMENTAL!</string>
   <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">REMINDER: IT\'S YOUR TURN</string>
   <!-- body of warning notification reminder message. First three
@@ -2227,7 +2228,7 @@
   <string name="pref_group_relay_title">RELAY STUFF</string>
   <string name="pref_group_relay_summary">PREFS RELATED TO PLAY VIA INTERNET/RELAY</string>
   <string name="pref_group_l10n_title">LOCALIZATION STUFF</string>
-  <!-- <string name="pref_group_tablets_title">Tablets Stuff</string> -->
+  <string name="pref_group_tablets_title">TABLETS STUFF</string>
   <string name="pref_group_l10n_summary">PREFS RELATED TO IN-APP LOCALIZATION</string>
   <string name="pref_item_update_title">UPDATE BETWEEN RELEASES</string>
   <string name="pref_item_update_summary">GET INTERMEDIATE BUILDS</string>

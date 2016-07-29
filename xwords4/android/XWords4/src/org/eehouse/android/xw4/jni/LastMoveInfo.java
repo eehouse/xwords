@@ -40,7 +40,7 @@ public class LastMoveInfo {
     public int nTiles;
     public String word;
 
-    public String format( Context context ) 
+    public String format( Context context )
     {
         String result = null;
         if ( isValid ) {
@@ -50,20 +50,20 @@ public class LastMoveInfo {
                 break;
             case MOVE_TYPE:
                 if ( 0 == nTiles ) {
-                    result = LocUtils.getString( context, R.string.lmi_pass_fmt, 
+                    result = LocUtils.getString( context, R.string.lmi_pass_fmt,
                                                  name );
                 } else {
-                    result = LocUtils.getQuantityString( context, R.plurals.lmi_move_fmt, 
+                    result = LocUtils.getQuantityString( context, R.plurals.lmi_move_fmt,
                                                          score, name, word, score );
                 }
                 break;
             case TRADE_TYPE:
                 result = LocUtils
-                    .getQuantityString( context, R.plurals.lmi_trade_fmt, 
+                    .getQuantityString( context, R.plurals.lmi_trade_fmt,
                                         nTiles, name, nTiles );
                 break;
             case PHONY_TYPE:
-                result = LocUtils.getString( context, R.string.lmi_phony_fmt, 
+                result = LocUtils.getString( context, R.string.lmi_phony_fmt,
                                              name );
                 break;
             }

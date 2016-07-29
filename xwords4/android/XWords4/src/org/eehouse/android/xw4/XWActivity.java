@@ -24,6 +24,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -35,16 +36,15 @@ import android.widget.ListView;
 
 import junit.framework.Assert;
 
-import junit.framework.Assert;
-
-public class XWActivity extends Activity implements Delegator {
+public class XWActivity extends FragmentActivity implements Delegator {
 
     private DelegateBase m_dlgt;
 
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
+            DbgUtils.logf( "%s.onCreate(this=%H)",
+                           getClass().getSimpleName(), this );
         }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
@@ -58,7 +58,7 @@ public class XWActivity extends Activity implements Delegator {
     }
 
     @Override
-    protected void onSaveInstanceState( Bundle outState ) 
+    protected void onSaveInstanceState( Bundle outState )
     {
         super.onSaveInstanceState( outState );
         m_dlgt.onSaveInstanceState( outState );
@@ -68,7 +68,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onPause()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
+            DbgUtils.logf( "%s.onPause(this=%H)",
+                           getClass().getSimpleName(), this );
         }
         m_dlgt.onPause();
         super.onPause();
@@ -78,7 +79,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
+            DbgUtils.logf( "%s.onResume(this=%H)",
+                           getClass().getSimpleName(), this );
         }
         super.onResume();
         m_dlgt.onResume();
@@ -88,7 +90,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
+            DbgUtils.logf( "%s.onStart(this=%H)",
+                           getClass().getSimpleName(), this );
         }
         super.onStart();
         m_dlgt.onStart();
@@ -98,7 +101,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
+            DbgUtils.logf( "%s.onStop(this=%H)",
+                           getClass().getSimpleName(), this );
         }
         m_dlgt.onStop();
         super.onStop();
@@ -108,7 +112,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onDestroy()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onDestroy(this=%H)", getClass().getName(), this );
+            DbgUtils.logf( "%s.onDestroy(this=%H)",
+                           getClass().getSimpleName(), this );
         }
         m_dlgt.onDestroy();
         super.onDestroy();
@@ -123,26 +128,26 @@ public class XWActivity extends Activity implements Delegator {
 
     @Override
     public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
+        if ( !m_dlgt.handleBackPressed() ) {
             super.onBackPressed();
         }
     }
 
     @Override
-    public boolean onCreateOptionsMenu( Menu menu ) 
+    public boolean onCreateOptionsMenu( Menu menu )
     {
         return m_dlgt.onCreateOptionsMenu( menu );
     }
 
     @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
+    public boolean onPrepareOptionsMenu( Menu menu )
     {
         return m_dlgt.onPrepareOptionsMenu( menu )
             || super.onPrepareOptionsMenu( menu );
     } // onPrepareOptionsMenu
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         return m_dlgt.onOptionsItemSelected( item )
             || super.onOptionsItemSelected( item );
@@ -187,10 +192,10 @@ public class XWActivity extends Activity implements Delegator {
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, 
+    protected void onActivityResult( int requestCode, int resultCode,
                                      Intent data )
     {
-        RequestCode rc = RequestCode.values()[requestCode]; 
+        RequestCode rc = RequestCode.values()[requestCode];
         m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
@@ -214,12 +219,27 @@ public class XWActivity extends Activity implements Delegator {
     }
 
     public void setListAdapter( ListAdapter adapter )
-    { 
+    {
         getListView().setAdapter( adapter );
     }
 
     public ListAdapter getListAdapter()
     {
         return getListView().getAdapter();
+    }
+
+    public boolean inDPMode() {
+        return false;
+    }
+
+    public void addFragment( XWFragment fragment, Bundle extras )
+    {
+        Assert.fail();
+    }
+
+    public void addFragmentForResult( XWFragment fragment, Bundle extras,
+                                      RequestCode request  )
+    {
+        Assert.fail();
     }
 }

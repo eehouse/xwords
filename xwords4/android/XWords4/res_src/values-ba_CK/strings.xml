@@ -943,7 +943,8 @@
          tapping. -->
   <string name="hide_crosshairs">Elbasid sriahssorc</string>
   <!-- explanation of the above -->
-  <string name="hide_crosshairs_summary">Od ton yllausiv etacidni hcihw draob llec si dehcuot</string>
+  <string name="hide_crosshairs_summary">Od ton wohs hcihw draob
+    llec si dehcuot</string>
   <string name="network_behavior">Krowten emag sgnittes</string>
   <!-- explanation of the above -->
   <string name="network_behavior_summary">Sgnittes taht ylppa ot
@@ -2057,8 +2058,8 @@
     tahw\'s elbaliava.</string>
   <string name="force_tablet_title">Ecrof telbat tuoyal</string>
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
-  <!-- <string name="enable_dualpane_title">Enable dualpane</string> -->
-  <!-- <string name="enable_dualpane_summary">Side-by-side views, very experimental!</string> -->
+  <string name="enable_dualpane_title">Elbane enaplaud</string>
+  <string name="enable_dualpane_summary">Edis-yb-edis ,sweiv yrev !latnemirepxe</string>
   <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">Rednimer: Ti\'s ruoy nrut</string>
   <!-- body of warning notification reminder message. First three
@@ -2227,7 +2228,7 @@
   <string name="pref_group_relay_title">Yaler Ffuts</string>
   <string name="pref_group_relay_summary">Sferp detaler ot yalp aiv yaler/tenretni</string>
   <string name="pref_group_l10n_title">Noitazilacol Ffuts</string>
-  <!-- <string name="pref_group_tablets_title">Tablets Stuff</string> -->
+  <string name="pref_group_tablets_title">Stelbat Ffuts</string>
   <string name="pref_group_l10n_summary">Sferp detaler ot ppa-ni noitazilacol</string>
   <string name="pref_item_update_title">Etadpu neewteb sesaeler</string>
   <string name="pref_item_update_summary">Teg etaidemretni sdliub</string>

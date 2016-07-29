@@ -29,9 +29,9 @@ public class OnBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        if ( null != intent && null != intent.getAction() 
+        if ( null != intent && null != intent.getAction()
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            DbgUtils.logf( "OnBootReceiver: got ACTION_BOOT_COMPLETED" );
+            DbgUtils.logdf( "OnBootReceiver: got ACTION_BOOT_COMPLETED" );
             startTimers( context );
         }
     }

@@ -62,11 +62,29 @@ typedef struct _JNIGlobalState {
     MPSLOT
 } JNIGlobalState;
 
+// #define LOG_MAPPING
+
 #define GAMEPTR_IS_OBJECT
 #ifdef GAMEPTR_IS_OBJECT
 typedef jobject GamePtrType;
 #else
 typedef int GamePtrType;
+#endif
+
+#ifdef LOG_MAPPING
+static int 
+countUsed(const EnvThreadInfo* ti)
+{
+    int count = 0;
+    for ( int ii = 0; ii < ti->nEntries; ++ii ) {
+        EnvThreadEntry* entry = &ti->entries[ii];
+        if ( 0 != entry->owner ) {
+            XP_LOGF( "%s(): ii=%d; owner: %x", __func__, ii, (unsigned int)entry->owner );
+            ++count;
+        }
+    }
+    return count;
+}
 #endif
 
 static void
@@ -100,17 +118,20 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
         if ( !firstEmpty ) {    /* out of slots */
             if ( 0 == nEntries ) { /* first time */
                 nEntries = 2;
-                ti->entries = 
-                    XP_MALLOC( ti->mpool, nEntries * sizeof(*ti->entries) );
+                XP_ASSERT( !ti->entries );
             } else {
                 nEntries *= 2;
-                ti->entries = XP_REALLOC( ti->mpool, ti->entries, 
-                                          nEntries * sizeof(*ti->entries) );
             }
-            // XP_LOGF( "%s: num env entries now %d", __func__, nEntries );
-            firstEmpty = &ti->entries[ti->nEntries]; /* first new entry */
-            XP_MEMSET( firstEmpty, 0, nEntries - ti->nEntries );
+            EnvThreadEntry* entries = XP_CALLOC( ti->mpool, nEntries * sizeof(*entries) );
+            if ( !!ti->entries ) {
+                XP_MEMCPY( entries, ti->entries, ti->nEntries * sizeof(*ti->entries) );
+            }
+            firstEmpty = &entries[ti->nEntries]; /* first new entry */
+            ti->entries = entries;
             ti->nEntries = nEntries;
+#ifdef LOG_MAPPING
+            XP_LOGF( "%s: num env entries now %d", __func__, nEntries );
+#endif
         }
 
         XP_ASSERT( !!firstEmpty );
@@ -119,6 +140,7 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
 #ifdef LOG_MAPPING
         XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__,
                  firstEmpty - ti->entries, env, (int)self );
+        XP_LOGF( "%s: num entries USED now %d", __func__, countUsed(ti) );
 #endif
     }
 
@@ -150,6 +172,9 @@ map_remove( EnvThreadInfo* ti, JNIEnv* env )
 #endif   
             ti->entries[ii].env = NULL;
             ti->entries[ii].owner = 0;
+#ifdef LOG_MAPPING
+            XP_LOGF( "%s: %d entries left", __func__, countUsed( ti ) );
+#endif
         }
     }
     pthread_mutex_unlock( &ti->mtxThreads );
@@ -1261,6 +1286,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1do
 {
     jboolean result;
     XWJNI_START();
+    XP_ASSERT( !!state->game.server );
     result = server_do( state->game.server );
     XWJNI_END();
     return result;

@@ -34,13 +34,13 @@ public class BoardActivity extends XWActivity {
     private BoardDelegate m_dlgt;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
         if ( CommonPrefs.getHideTitleBar( this )
              && ABUtils.haveMenuKey( this ) ) {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
-        
+
         m_dlgt = new BoardDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
 

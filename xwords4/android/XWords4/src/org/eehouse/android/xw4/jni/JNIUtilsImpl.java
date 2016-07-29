@@ -72,7 +72,7 @@ public class JNIUtilsImpl implements JNIUtils {
             DbgUtils.logf( "splitFaces: %s", uee.toString() );
             isr = new InputStreamReader( bais );
         }
-        
+
         int[] codePoints = new int[1];
 
         // "A aB bC c"
@@ -119,7 +119,7 @@ public class JNIUtilsImpl implements JNIUtils {
                 face.add( letter );
             }
         }
-        
+
         String[][] result = faces.toArray( new String[faces.size()][] );
         return result;
     }

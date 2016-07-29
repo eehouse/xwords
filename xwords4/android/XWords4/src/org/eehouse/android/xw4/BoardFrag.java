@@ -24,6 +24,8 @@ import android.os.Bundle;
 
 public class BoardFrag extends XWFragment {
 
+    public BoardFrag( Delegator parent ) { super( parent ); }
+
     @Override
     public void onCreate( Bundle sis )
     {

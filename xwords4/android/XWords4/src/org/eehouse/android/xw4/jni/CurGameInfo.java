@@ -85,7 +85,7 @@ public class CurGameInfo {
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
             : DeviceRole.SERVER_STANDALONE;
-        hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context, 
+        hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed( context,
                                                                isNetworked );
         phoniesAction = CommonPrefs.getDefaultPhonies( context );
         timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
@@ -143,7 +143,7 @@ public class CurGameInfo {
         timerEnabled = src.timerEnabled;
         allowPickTiles = src.allowPickTiles;
         allowHintRect = src.allowHintRect;
-        
+
         int ii;
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             players[ii] = new LocalPlayer( src.players[ii] );
@@ -348,9 +348,9 @@ public class CurGameInfo {
     }
 
     // Replace any dict that doesn't exist with newDict
-    public void replaceDicts( String newDict ) 
+    public void replaceDicts( String newDict )
     {
-        String[] dicts = 
+        String[] dicts =
             DictLangCache.getHaveLang( m_context, dictLang );
         HashSet<String> installed = new HashSet<String>( Arrays.asList(dicts) );
 
@@ -391,24 +391,24 @@ public class CurGameInfo {
         return dname;
     }
 
-    public String getName() 
+    public String getName()
     {
         // Assert.assertNotNull( m_name );
         return m_name;
     }
 
-    public void setName( String name ) 
+    public void setName( String name )
     {
         m_name = name;
     }
 
-    public boolean addPlayer() 
+    public boolean addPlayer()
     {
         boolean added = nPlayers < MAX_NUM_PLAYERS;
         // We can add either by adding a player, if nPlayers <
         // MAX_NUM_PLAYERS, or by making an unusable player usable.
         if ( added ) {
-            players[nPlayers].isLocal = 
+            players[nPlayers].isLocal =
                 serverRole == DeviceRole.SERVER_STANDALONE;
             ++nPlayers;
         }
@@ -468,7 +468,7 @@ public class CurGameInfo {
 
             for ( int ii = nPlayers - 1; ii > 0; --ii ) {
                 // Contrary to docs, nextInt() comes back negative!
-                int rand = Math.abs(rgen.nextInt()); 
+                int rand = Math.abs(rgen.nextInt());
                 int indx = rand % (ii+1);
                 if ( indx != ii ) {
                     LocalPlayer tmp = players[ii];
@@ -487,14 +487,14 @@ public class CurGameInfo {
         // matches langauge.  Otherwise pick an arbitrary dict in the
         // right language.
 
-        String humanDict = 
+        String humanDict =
             DictLangCache.getBestDefault( m_context, dictLang, true );
-        String robotDict = 
+        String robotDict =
             DictLangCache.getBestDefault( m_context, dictLang, false );
 
-        if ( null == dictName 
-             || ! DictUtils.dictExists( m_context, dictName ) 
-             || dictLang != DictLangCache.getDictLangCode( m_context, 
+        if ( null == dictName
+             || ! DictUtils.dictExists( m_context, dictName )
+             || dictLang != DictLangCache.getDictLangCode( m_context,
                                                            dictName ) ) {
             dictName = humanDict;
         }
@@ -503,7 +503,7 @@ public class CurGameInfo {
             LocalPlayer lp = players[ii];
 
             if ( null != lp.dictName &&
-                 dictLang != DictLangCache.getDictLangCode( m_context, 
+                 dictLang != DictLangCache.getDictLangCode( m_context,
                                                             lp.dictName ) ) {
                 lp.dictName = null;
             }

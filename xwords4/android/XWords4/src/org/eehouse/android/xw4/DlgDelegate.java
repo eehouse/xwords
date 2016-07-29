@@ -122,11 +122,12 @@ public class DlgDelegate {
         ENABLE_SMS_DO,
         ENABLE_BT_DO,
         ENABLE_RELAY_DO,
+        ENABLE_RELAY_DO_OR,
         DISABLE_RELAY_DO,
     }
 
     public static class ActionPair {
-        public ActionPair( Action act, int str ) { 
+        public ActionPair( Action act, int str ) {
             buttonStr = str; action = act;
         }
         public int buttonStr;
@@ -156,8 +157,8 @@ public class DlgDelegate {
         void showNotAgainDlgThen( int msgID, int prefsKey, Action action );
     }
 
-    private static Map<Integer, WeakReference<DelegateBase>> s_pendings
-        = new HashMap<Integer, WeakReference<DelegateBase>>();
+    private static Map<DlgID, WeakReference<DelegateBase>> s_pendings
+        = new HashMap<DlgID, WeakReference<DelegateBase>>();
     private Activity m_activity;
     private DelegateBase m_dlgt;
     private DlgClickNotify m_clickCallback;
@@ -167,8 +168,8 @@ public class DlgDelegate {
 
     private HashMap<DlgID, DlgState> m_dlgStates;
 
-    public DlgDelegate( Activity activity, DelegateBase dlgt, 
-                        DlgClickNotify callback, Bundle bundle ) 
+    public DlgDelegate( Activity activity, DelegateBase dlgt,
+                        DlgClickNotify callback, Bundle bundle )
     {
         m_activity = activity;
         m_dlgt = dlgt;
@@ -187,7 +188,7 @@ public class DlgDelegate {
         }
     }
 
-    public void onSaveInstanceState( Bundle outState ) 
+    public void onSaveInstanceState( Bundle outState )
     {
         int[] ids = new int[m_dlgStates.size()];
         if ( 0 < ids.length ) {
@@ -206,15 +207,13 @@ public class DlgDelegate {
 
     protected void showDialog( DlgID dlgID )
     {
-        int id = dlgID.ordinal();
-        if ( m_activity instanceof FragActivity ) {
-            s_pendings.put( id, new WeakReference<DelegateBase>(m_dlgt) );
-        }
+        // DbgUtils.logf( "showDialog(%s)", dlgID.toString() );
         if ( !m_activity.isFinishing() ) {
-            m_activity.showDialog( id );
+            s_pendings.put( dlgID, new WeakReference<DelegateBase>(m_dlgt) );
+            m_activity.showDialog( dlgID.ordinal() );
         }
     }
-    
+
     public Dialog createDialog( int id )
     {
         Dialog dialog = null;
@@ -299,8 +298,8 @@ public class DlgDelegate {
         showDialog( DlgID.DIALOG_ENABLESMS );
     }
 
-    public void showNotAgainDlgThen( String msg, int prefsKey, 
-                                     final Action action, ActionPair more, 
+    public void showNotAgainDlgThen( String msg, int prefsKey,
+                                     final Action action, ActionPair more,
                                      final Object[] params )
     {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
@@ -317,18 +316,18 @@ public class DlgDelegate {
                     });
             }
         } else {
-            DlgState state = 
-                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, prefsKey, action, more, 
+            DlgState state =
+                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, prefsKey, action, more,
                               params );
             addState( state );
             showDialog( DlgID.DIALOG_NOTAGAIN );
         }
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action, 
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
                                      ActionPair more, Object[] params )
     {
-        showNotAgainDlgThen( getString( msgID ), prefsKey, action, more, 
+        showNotAgainDlgThen( getString( msgID ), prefsKey, action, more,
                              params );
     }
 
@@ -337,7 +336,7 @@ public class DlgDelegate {
         showNotAgainDlgThen( msgID, prefsKey, action, null, null );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action, 
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
                                      ActionPair more )
     {
         showNotAgainDlgThen( msgID, prefsKey, action, more, null );
@@ -392,21 +391,21 @@ public class DlgDelegate {
     public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( null, getString(msg), posButton, android.R.string.cancel, 
+        showConfirmThen( null, getString(msg), posButton, android.R.string.cancel,
                          action, params );
     }
 
     public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( onNA, msg, posButton, android.R.string.cancel, action, 
+        showConfirmThen( onNA, msg, posButton, android.R.string.cancel, action,
                          params );
     }
 
-    public void showConfirmThen( Runnable onNA, String msg, int posButton, 
+    public void showConfirmThen( Runnable onNA, String msg, int posButton,
                                  int negButton, Action action, Object[] params )
     {
-        DlgState state = new DlgState( DlgID.CONFIRM_THEN, onNA, msg, posButton, 
+        DlgState state = new DlgState( DlgID.CONFIRM_THEN, onNA, msg, posButton,
                                        negButton, action, 0, params );
         addState( state );
         showDialog( DlgID.CONFIRM_THEN );
@@ -428,7 +427,7 @@ public class DlgDelegate {
                         DlgClickNotify.InviteMeans means
                             = DlgClickNotify.InviteMeans.EMAIL;
                         m_clickCallback.inviteChoiceMade( action, means, null );
-                    } 
+                    }
                 });
         }
     }
@@ -463,7 +462,7 @@ public class DlgDelegate {
     {
         String title = getString( titleID );
         m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
-        
+
         if ( null != lstnr ) {
             m_progress.setCancelable( true );
             m_progress.setOnCancelListener( lstnr );
@@ -489,14 +488,14 @@ public class DlgDelegate {
         return true;
     }
 
-    public void eventOccurred( MultiService.MultiEvent event, 
+    public void eventOccurred( MultiService.MultiEvent event,
                                final Object ... args )
     {
         String msg = null;
         boolean asToast = true;
         switch( event ) {
         case MESSAGE_RESEND:
-            msg = getString( R.string.bt_resend_fmt, (String)args[0], 
+            msg = getString( R.string.bt_resend_fmt, (String)args[0],
                              (Long)args[1], (Integer)args[2] );
             break;
         case MESSAGE_FAILOUT:
@@ -532,7 +531,7 @@ public class DlgDelegate {
         final View view = LocUtils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
 
-        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL, 
+        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL,
                                                         DateFormat.FULL );
         String dateString
             = df.format( new Date( BuildConstants.BUILD_STAMP * 1000 ) );
@@ -555,7 +554,7 @@ public class DlgDelegate {
         builder.setNegativeButton( R.string.changes_button,
                                    new OnClickListener() {
                                        @Override
-                                       public void onClick( DialogInterface dlg, 
+                                       public void onClick( DialogInterface dlg,
                                                             int which )
                                        {
                                            FirstRunDialog.show( m_activity );
@@ -602,7 +601,7 @@ public class DlgDelegate {
                     public void onClick( DialogInterface dlg, int item ) {
                         checkNotAgainCheck( state, naView );
                         m_clickCallback.
-                            dlgButtonClicked( more.action, 
+                            dlgButtonClicked( more.action,
                                               AlertDialog.BUTTON_POSITIVE,
                                               more.params );
                     }
@@ -629,13 +628,13 @@ public class DlgDelegate {
             .setPositiveButton( state.m_posButton, lstnr )
             .setNegativeButton( state.m_negButton, lstnr );
         Dialog dialog = builder.create();
-        
+
         return setCallbackDismissListener( dialog, state, dlgID );
     }
 
     private Dialog createInviteChoicesDialog( final DlgState state, DlgID dlgID )
     {
-        final ArrayList<DlgClickNotify.InviteMeans> means = 
+        final ArrayList<DlgClickNotify.InviteMeans> means =
             new ArrayList<DlgClickNotify.InviteMeans>();
         ArrayList<String> items = new ArrayList<String>();
         DlgClickNotify.InviteMeans lastMeans = null;
@@ -643,7 +642,7 @@ public class DlgDelegate {
              && state.m_params[0] instanceof SentInvitesInfo ) {
             lastMeans =((SentInvitesInfo)state.m_params[0]).getLastMeans();
         }
-        
+
         if ( XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS(m_activity) ) {
             items.add( getString( R.string.invite_choice_sms ) );
             means.add( DlgClickNotify.InviteMeans.SMS );
@@ -654,7 +653,7 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_bt ) );
             means.add( DlgClickNotify.InviteMeans.BLUETOOTH );
         }
-        if ( XWPrefs.getNFCToSelfEnabled( m_activity ) 
+        if ( XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0] ) {
             items.add( getString( R.string.invite_choice_nfc ) );
             means.add( DlgClickNotify.InviteMeans.NFC );
@@ -681,7 +680,7 @@ public class DlgDelegate {
                     sel[0] = view;
                     switch ( means.get(view) ) {
                     case CLIPBOARD:
-                        String msg = 
+                        String msg =
                             getString( R.string.not_again_clip_expl_fmt,
                                        getString(R.string.slmenu_copy_sel) );
                         showNotAgainDlgThen( msg, R.string.key_na_clip_expl );
@@ -705,8 +704,8 @@ public class DlgDelegate {
                     Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
                     int indx = sel[0];
                     if ( 0 <= indx ) {
-                        m_clickCallback.inviteChoiceMade( state.m_action, 
-                                                          means.get(indx), 
+                        m_clickCallback.inviteChoiceMade( state.m_action,
+                                                          means.get(indx),
                                                           state.m_params );
                     }
                 }
@@ -753,14 +752,14 @@ public class DlgDelegate {
     {
         final View layout = LocUtils.inflate( m_activity, R.layout.confirm_sms );
 
-        DialogInterface.OnClickListener lstnr = 
+        DialogInterface.OnClickListener lstnr =
             new DialogInterface.OnClickListener() {
                 public void onClick( DialogInterface dlg, int item ) {
                     Spinner reasons = (Spinner)
                         layout.findViewById( R.id.confirm_sms_reasons );
                     boolean enabled = 0 < reasons.getSelectedItemPosition();
                     Assert.assertTrue( enabled );
-                    m_clickCallback.dlgButtonClicked( state.m_action, 
+                    m_clickCallback.dlgButtonClicked( state.m_action,
                                                       AlertDialog.BUTTON_POSITIVE,
                                                       state.m_params );
                 }
@@ -784,13 +783,13 @@ public class DlgDelegate {
         button.setEnabled( enabled );
     }
 
-    private void prepareEnableSMSDialog( final Dialog dialog ) 
+    private void prepareEnableSMSDialog( final Dialog dialog )
     {
         final Spinner reasons = (Spinner)
             dialog.findViewById( R.id.confirm_sms_reasons );
 
-        OnItemSelectedListener onItemSel = new OnItemSelectedListener() { 
-                public void onItemSelected( AdapterView<?> parent, View view, 
+        OnItemSelectedListener onItemSel = new OnItemSelectedListener() {
+                public void onItemSelected( AdapterView<?> parent, View view,
                                             int position, long id )
                 {
                     checkEnableButton( dialog, reasons );
@@ -811,8 +810,8 @@ public class DlgDelegate {
                     checkNotAgainCheck( state, naView );
 
                     if ( Action.SKIP_CALLBACK != state.m_action ) {
-                        m_clickCallback.dlgButtonClicked( state.m_action, 
-                                                          button, 
+                        m_clickCallback.dlgButtonClicked( state.m_action,
+                                                          button,
                                                           state.m_params );
                     }
                 }
@@ -824,7 +823,7 @@ public class DlgDelegate {
     {
         if ( null != naView && naView.getChecked() ) {
             if ( 0 != state.m_prefsKey ) {
-                XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
+                XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey,
                                          true );
             } else if ( null != state.m_onNAChecked ) {
                 state.m_onNAChecked.run();
@@ -832,7 +831,7 @@ public class DlgDelegate {
         }
     }
 
-    private Dialog setCallbackDismissListener( final Dialog dialog, 
+    private Dialog setCallbackDismissListener( final Dialog dialog,
                                                final DlgState state,
                                                DlgID dlgID )
     {
@@ -842,8 +841,8 @@ public class DlgDelegate {
                     public void onDismiss( DialogInterface di ) {
                         dropState( state );
                         if ( Action.SKIP_CALLBACK != state.m_action ) {
-                            m_clickCallback.dlgButtonClicked( state.m_action, 
-                                                              DISMISS_BUTTON, 
+                            m_clickCallback.dlgButtonClicked( state.m_action,
+                                                              DISMISS_BUTTON,
                                                               state.m_params );
                         }
                         m_activity.removeDialog( id );
@@ -867,7 +866,7 @@ public class DlgDelegate {
         Assert.assertNotNull( state );
         // Assert.assertTrue( state == m_dlgStates.get( state.m_id ) );
         m_dlgStates.remove( state.m_id );
-        // DbgUtils.logf( "dropState: active dialogs now %d from %d ", 
+        // DbgUtils.logf( "dropState: active dialogs now %d from %d ",
         //                m_dlgStates.size(), nDlgs );
     }
 
@@ -876,7 +875,7 @@ public class DlgDelegate {
         // I'm getting serialization failures on devices pointing at
         // DlgState but the code below says the object's fine (as it
         // should be.)  Just to have a record....
-        // 
+        //
         // Bundle bundle = new Bundle();
         // DbgUtils.logf( "addState: testing serializable" );
         // bundle.putSerializable( "foo", state );
@@ -889,7 +888,8 @@ public class DlgDelegate {
     public static Dialog onCreateDialog( int id )
     {
         Dialog result = null;
-        WeakReference<DelegateBase> ref = s_pendings.get( id );
+        DlgID dlgID = DlgID.values()[id];
+        WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
         DelegateBase dlgt = ref.get();
         if ( null != dlgt ) {
             result = dlgt.onCreateDialog( id );
@@ -899,10 +899,11 @@ public class DlgDelegate {
 
     public static void onPrepareDialog( int id, Dialog dialog )
     {
-        WeakReference<DelegateBase> ref = s_pendings.get( id );
+        DlgID dlgID = DlgID.values()[id];
+        WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
         DelegateBase dlgt = ref.get();
         if ( null != dlgt ) {
-            dlgt.prepareDialog( DlgID.values()[id], dialog );
+            dlgt.prepareDialog( dlgID, dialog );
         }
     }
 

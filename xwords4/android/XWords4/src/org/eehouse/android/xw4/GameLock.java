@@ -44,10 +44,10 @@ public class GameLock {
 
     public static class GameLockedException extends RuntimeException {}
 
-    private static HashMap<Long, GameLock> 
+    private static HashMap<Long, GameLock>
         s_locks = new HashMap<Long,GameLock>();
 
-    public GameLock( long rowid, boolean isForWrite ) 
+    public GameLock( long rowid, boolean isForWrite )
     {
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         m_rowid = rowid;
@@ -78,7 +78,7 @@ public class GameLock {
                 s_locks.put( m_rowid, this );
                 ++m_lockCount;
                 gotIt = true;
-                    
+
                 if ( DEBUG_LOCKS ) {
                     StackTraceElement[] trace
                         = Thread.currentThread().getStackTrace();
@@ -94,17 +94,17 @@ public class GameLock {
                 gotIt = true;
                 owner = null;
             } else if ( DEBUG_LOCKS ) {
-                DbgUtils.logf( "tryLock(): rowid %d already held by lock %H", 
+                DbgUtils.logf( "tryLock(): rowid %d already held by lock %H",
                                m_rowid, owner );
             }
         }
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logf( "GameLock.tryLock %H (rowid=%d) => %b", 
+            DbgUtils.logf( "GameLock.tryLock %H (rowid=%d) => %b",
                            this, m_rowid, gotIt );
         }
         return owner;
     }
-        
+
     // Wait forever (but may assert if too long)
     public GameLock lock()
     {
@@ -120,7 +120,7 @@ public class GameLock {
         long sleptTime = 0;
 
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logf( "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid, 
+            DbgUtils.logf( "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid,
                            maxMillis );
         }
 
@@ -160,7 +160,7 @@ public class GameLock {
                 if ( DEBUG_LOCKS ) {
                     DbgUtils.logf( "lock %H overlocked", this );
                 }
-                Assert.fail();  // firing
+                Assert.fail();
             }
         }
         // DbgUtils.logf( "GameLock.lock(%s) done", m_path );
@@ -180,13 +180,13 @@ public class GameLock {
             --m_lockCount;
 
             if ( DEBUG_LOCKS ) {
-                DbgUtils.logf( "GameLock.unlock: this: %H (rowid:%d) unlocked", 
+                DbgUtils.logf( "GameLock.unlock: this: %H (rowid:%d) unlocked",
                                this, m_rowid );
             }
         }
     }
 
-    public long getRowid() 
+    public long getRowid()
     {
         return m_rowid;
     }

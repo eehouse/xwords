@@ -32,7 +32,7 @@ public class ExpiringLinearLayout extends LinearLayout {
         super( context, as );
     }
 
-    public void setPct( Handler handler, boolean haveTurn, 
+    public void setPct( Handler handler, boolean haveTurn,
                         boolean haveTurnLocal, long startSecs )
     {
         if ( null == m_delegate ) {
@@ -49,7 +49,7 @@ public class ExpiringLinearLayout extends LinearLayout {
 
     @Override
     // not called unless setWillNotDraw( false ) called
-    protected void onDraw( Canvas canvas ) 
+    protected void onDraw( Canvas canvas )
     {
         super.onDraw( canvas );
         if ( null != m_delegate ) {

@@ -39,7 +39,7 @@ public class BTReceiver extends BroadcastReceiver {
             if ( action.equals( BluetoothDevice.ACTION_ACL_CONNECTED ) ) {
                 BTService.startService( context );
             } else if ( action.equals( BluetoothAdapter.ACTION_STATE_CHANGED ) ) {
-                int newState = 
+                int newState =
                     intent.getIntExtra( BluetoothAdapter.EXTRA_STATE, -1 );
                 switch ( newState ) {
                 case BluetoothAdapter.STATE_OFF:

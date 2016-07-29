@@ -126,7 +126,7 @@ public class DevID {
         int storedVers = DBUtils.getIntFor( context, GCM_REGVERS_KEY, 0 );
         // TRANSITIONAL
         if ( 0 == storedVers ) {
-            storedVers = XWPrefs.getPrefsInt( context, 
+            storedVers = XWPrefs.getPrefsInt( context,
                                               R.string.key_gcmvers_regid, 0 );
             if ( 0 != storedVers ) {
                 DBUtils.setIntFor( context, GCM_REGVERS_KEY, storedVers );

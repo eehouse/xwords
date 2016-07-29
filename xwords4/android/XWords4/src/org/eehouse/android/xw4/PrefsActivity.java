@@ -26,6 +26,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
@@ -47,23 +49,24 @@ public class PrefsActivity extends PreferenceActivity
 
         m_dlgt.init( savedInstanceState );
     }
-    
+
     @Override
-    protected void onStart() 
+    protected void onStart()
     {
         LocUtils.xlatePreferences( this );
         super.onStart();
+        m_dlgt.onStart();
     }
 
     @Override
-    protected void onResume() 
+    protected void onResume()
     {
         super.onResume();
         m_dlgt.onResume();
    }
 
     @Override
-    protected void onPause() 
+    protected void onPause()
     {
         super.onPause();
         m_dlgt.onPause();
@@ -141,4 +144,9 @@ public class PrefsActivity extends PreferenceActivity
     {
         return getIntent().getExtras();
     }
+
+    public boolean inDPMode() { Assert.fail(); return false; }
+    public void addFragment( XWFragment fragment, Bundle extras ) { Assert.fail(); }
+    public void addFragmentForResult( XWFragment fragment, Bundle extras,
+                                      RequestCode code ) { Assert.fail(); }
 }

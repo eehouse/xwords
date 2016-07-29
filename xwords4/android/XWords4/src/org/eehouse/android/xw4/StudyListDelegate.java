@@ -55,7 +55,7 @@ public class StudyListDelegate extends ListDelegateBase
     protected static final int NO_LANG = -1;
 
     protected static final String START_LANG = "START_LANG";
-    
+
     private Activity m_activity;
     private Spinner m_spinner;
     private View m_pickView;    // LinearLayout, actually
@@ -73,7 +73,7 @@ public class StudyListDelegate extends ListDelegateBase
         m_activity = delegator.getActivity();
     }
 
-    protected void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState )
     {
         m_list = (ListView)findViewById( android.R.id.list );
 
@@ -86,7 +86,7 @@ public class StudyListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected boolean onBackPressed() 
+    protected boolean handleBackPressed()
     {
         boolean handled = 0 < m_checkeds.size();
         if ( handled ) {
@@ -96,17 +96,17 @@ public class StudyListDelegate extends ListDelegateBase
     }
 
     @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
+    public boolean onPrepareOptionsMenu( Menu menu )
     {
         int nSel = m_checkeds.size();
         Utils.setItemVisible( menu, R.id.slmenu_copy_sel, 0 < nSel );
         Utils.setItemVisible( menu, R.id.slmenu_clear_sel, 0 < nSel );
-        Utils.setItemVisible( menu, R.id.slmenu_select_all, 
+        Utils.setItemVisible( menu, R.id.slmenu_select_all,
                               m_words.length > nSel );
         Utils.setItemVisible( menu, R.id.slmenu_deselect_all, 0 < nSel );
         boolean enable = 1 == nSel;
         if ( enable ) {
-            String title = getString( R.string.button_lookup_fmt, 
+            String title = getString( R.string.button_lookup_fmt,
                                       getSelWords()[0] );
             menu.findItem( R.id.slmenu_lookup_sel ).setTitle( title );
         }
@@ -121,11 +121,11 @@ public class StudyListDelegate extends ListDelegateBase
         switch ( item.getItemId() ) {
         case R.id.slmenu_copy_sel:
             showNotAgainDlgThen( R.string.not_again_studycopy,
-                                 R.string.key_na_studycopy, 
+                                 R.string.key_na_studycopy,
                                  Action.SL_COPY_ACTION );
             break;
         case R.id.slmenu_clear_sel:
-            String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt, 
+            String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt,
                                             m_checkeds.size(), m_checkeds.size() );
             showConfirmThen( msg, Action.SL_CLEAR_ACTION );
             break;
@@ -163,7 +163,7 @@ public class StudyListDelegate extends ListDelegateBase
                 if ( selWords.length == m_words.length ) {
                     selWords = null; // all: easier on DB :-)
                 }
-                DBUtils.studyListClear( m_activity, m_langCodes[m_langPosition], 
+                DBUtils.studyListClear( m_activity, m_langCodes[m_langPosition],
                                         selWords );
                 initOrFinish( null );
                 break;
@@ -173,7 +173,7 @@ public class StudyListDelegate extends ListDelegateBase
                     getSystemService( Context.CLIPBOARD_SERVICE );
                 clipboard.setText( TextUtils.join( "\n", selWords ) );
 
-                String msg = getQuantityString( R.plurals.paste_done_fmt, 
+                String msg = getQuantityString( R.plurals.paste_done_fmt,
                                                 selWords.length, selWords.length );
                 showToast( msg );
                 break;
@@ -187,7 +187,7 @@ public class StudyListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
-    public void onItemSelected( AdapterView<?> parent, View view, 
+    public void onItemSelected( AdapterView<?> parent, View view,
                                 int position, long id )
     {
         m_langPosition = position;
@@ -201,7 +201,7 @@ public class StudyListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // View.OnLongClickListener interface
     //////////////////////////////////////////////////
-    public boolean onLongClick( View view ) 
+    public boolean onLongClick( View view )
     {
         boolean success = view instanceof SelectableItem.LongClickHandler;
         if ( success ) {
@@ -213,7 +213,7 @@ public class StudyListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
-    public void onClick( View view ) 
+    public void onClick( View view )
     {
         XWListItem item = (XWListItem)view;
         String[] words = { m_words[item.getPosition()] };
@@ -229,7 +229,7 @@ public class StudyListDelegate extends ListDelegateBase
         m_checkeds.add( ((XWListItem)clicked).getPosition() );
     }
 
-    public void itemToggled( SelectableItem.LongClickHandler toggled, 
+    public void itemToggled( SelectableItem.LongClickHandler toggled,
                              boolean selected )
     {
         int position = ((XWListItem)toggled).getPosition();
@@ -256,7 +256,7 @@ public class StudyListDelegate extends ListDelegateBase
         makeAdapter();
 
         String langName = DictLangCache.getLangName( m_activity, lang );
-        m_origTitle = getString( R.string.studylist_title_fmt, 
+        m_origTitle = getString( R.string.studylist_title_fmt,
                                  xlateLang( langName ) );
         setTitleBar();
     }
@@ -293,9 +293,8 @@ public class StudyListDelegate extends ListDelegateBase
                 }
             }
 
-            DbgUtils.logf( "creating studylist adapter" );
             ArrayAdapter<String> adapter = new
-                ArrayAdapter<String>( m_activity, 
+                ArrayAdapter<String>( m_activity,
                                       android.R.layout.simple_spinner_item,
                                       myNames );
             adapter.setDropDownViewResource( android.R.layout.
@@ -345,17 +344,17 @@ public class StudyListDelegate extends ListDelegateBase
         setTitleBar();
     }
 
-    public static void launchOrAlert( Delegator delegator, int lang, 
+    public static void launchOrAlert( Delegator delegator, int lang,
                                       DlgDelegate.HasDlgDelegate dlg )
     {
         String msg = null;
         Activity activity = delegator.getActivity();
         if ( 0 == DBUtils.studyListLangs( activity ).length ) {
             msg = LocUtils.getString( activity, R.string.study_no_lists );
-        } else if ( NO_LANG != lang && 
+        } else if ( NO_LANG != lang &&
                     0 == DBUtils.studyListWords( activity, lang ).length ) {
             String langname = DictLangCache.getLangName( activity, lang );
-            msg = LocUtils.getString( activity, R.string.study_no_lang_fmt, 
+            msg = LocUtils.getString( activity, R.string.study_no_lang_fmt,
                                       langname );
         } else {
             Bundle bundle = new Bundle();
@@ -363,9 +362,8 @@ public class StudyListDelegate extends ListDelegateBase
                 bundle.putInt( START_LANG, lang );
             }
 
-            if ( activity instanceof FragActivity ) {
-                StudyListFrag frag = new StudyListFrag();
-                ((FragActivity)activity).addFragment( frag, bundle, delegator );
+            if ( delegator.inDPMode() ) {
+                delegator.addFragment( new StudyListFrag( delegator ), bundle );
             } else {
                 Intent intent = new Intent( activity, StudyListActivity.class );
                 intent.putExtras( bundle );
@@ -386,7 +384,7 @@ public class StudyListDelegate extends ListDelegateBase
         }
 
         public View getView( int position, View convertView, ViewGroup parent ){
-            XWListItem item = 
+            XWListItem item =
                 XWListItem.inflate( m_activity, StudyListDelegate.this );
             item.setPosition( position );
             item.setText( m_words[position] );

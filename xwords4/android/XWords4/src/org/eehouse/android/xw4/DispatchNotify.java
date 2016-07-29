@@ -34,7 +34,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 public class DispatchNotify extends Activity {
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
         super.onCreate( savedInstanceState );
 

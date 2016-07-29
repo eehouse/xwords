@@ -32,7 +32,7 @@ public class LocItemEditActivity extends XWActivity {
     private LocItemEditDelegate m_dlgt;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState )
     {
         m_dlgt = new LocItemEditDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );

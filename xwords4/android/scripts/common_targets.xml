@@ -27,14 +27,10 @@
             <arg value="${build.target}"/>
         </exec>
 
-        <property name="CHAT_ENABLED" value="true" />
-        <property name="THUMBNAIL_ENABLED" value="true" />
         <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">
             <arg value="BUILD_TARGET=${build.target}" />
             <arg value="-j3"/>
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
-            <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
-            <arg value="THUMBNAIL_ENABLED=${THUMBNAIL_ENABLED}" />
             <arg value="VARIANT=${VARIANT_NAME}" />
             <arg value="V=1" />
         </exec>
@@ -44,8 +40,11 @@
               />
 
         <exec dir="." executable="../scripts/copy-strings.py" 
-              failonerror="true" output="/dev/null" 
-              />
+              failonerror="true" output="/dev/null"
+              >
+            <arg value="-k"/>
+            <arg value="${SKIP_LANGS}"/>
+        </exec>
 
         <exec dir="." executable="../scripts/mk_xml.py" 
               failonerror="true" 
@@ -58,16 +57,12 @@
             <arg value="${VARIANT_NAME}"/>
         </exec>
 
-        <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
+        <exec dir="." executable="../scripts/genvers.sh" output="/dev/null"
               failonerror="true">
           <arg value="--variant" />
           <arg value="${VARIANT_NAME}" />
           <arg value="--client-vers" />
           <arg value="${INITIAL_CLIENT_VERS}" />
-          <arg value="--chat-enabled"/>
-          <arg value="${CHAT_ENABLED}" />
-          <arg value="--thumbnail-enabled"/>
-          <arg value="${THUMBNAIL_ENABLED}" />
           <arg value="--vers-outfile" />
           <arg value="./assets/gitvers.txt" />
         </exec>
@@ -95,6 +90,13 @@
             <arg value="--dest-dir"/>
             <arg value="./res_src"/>
         </exec>
+    </target>
+
+    <!-- For some reason project.properties is suddenly getting
+         removed by clean and not regenerated. So make sure it's
+         there. -->
+    <target name="my-check-props">
+        <exec executable="../scripts/setup_local_props.sh" />
     </target>
 
     <target name="my-pre-compile">

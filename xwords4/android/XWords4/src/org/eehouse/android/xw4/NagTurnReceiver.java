@@ -76,31 +76,31 @@ public class NagTurnReceiver extends BroadcastReceiver {
                         continue;
                     }
 
-                    info.m_nextNag = figureNextNag( context, 
+                    info.m_nextNag = figureNextNag( context,
                                                     info.m_lastMoveMillis );
                     boolean lastWarning = 0 == info.m_nextNag;
 
                     long rowid = info.m_rowid;
-                    GameSummary summary = DBUtils.getSummary( context, rowid, 
+                    GameSummary summary = DBUtils.getSummary( context, rowid,
                                                               10 );
-                    String prevPlayer = null == summary 
+                    String prevPlayer = null == summary
                         ? LocUtils.getString(context, R.string.prev_player)
                         : summary.getPrevPlayer();
 
-                    Intent msgIntent = 
+                    Intent msgIntent =
                         GamesListDelegate.makeRowidIntent( context, rowid );
                     String millis = formatMillis( context,
                                                   now - info.m_lastMoveMillis);
                     String body =
-                        String.format( LocUtils.getString(context, 
+                        String.format( LocUtils.getString(context,
                                                           R.string.nag_body_fmt),
                                        prevPlayer, millis );
                     if ( lastWarning ) {
                         body = LocUtils
                             .getString( context, R.string.nag_warn_last_fmt, body );
                     }
-                    Utils.postNotification( context, msgIntent, 
-                                            R.string.nag_title, body, 
+                    Utils.postNotification( context, msgIntent,
+                                            R.string.nag_title, body,
                                             (int)rowid );
 
                 }
@@ -162,7 +162,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
     private static long[] getIntervals( Context context )
     {
         long[] result = null;
-        String pref = 
+        String pref =
             XWPrefs.getPrefsString( context, R.string.key_nag_intervals );
         if ( null != pref && 0 < pref.length() ) {
             if ( pref.equals( s_lastStr ) ) {
@@ -205,7 +205,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
         for ( int[] datum : s_fmtData ) {
             long val = seconds / datum[0];
             if ( 1 <= val ) {
-                results.add( LocUtils.getQuantityString( context, datum[1], 
+                results.add( LocUtils.getQuantityString( context, datum[1],
                                                          (int)val, val ) );
                 seconds %= datum[0];
             }
@@ -217,13 +217,13 @@ public class NagTurnReceiver extends BroadcastReceiver {
     private static boolean getNagsDisabled( Context context )
     {
         if ( null == s_nagsDisabledNet ) {
-            boolean nagsDisabled = 
-                XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag, 
+            boolean nagsDisabled =
+                XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag,
                                          false );
             s_nagsDisabledNet = new Boolean( nagsDisabled );
         }
         if ( null == s_nagsDisabledSolo ) {
-            boolean nagsDisabled = 
+            boolean nagsDisabled =
                 XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag_solo,
                                          true );
             s_nagsDisabledSolo = new Boolean( nagsDisabled );
