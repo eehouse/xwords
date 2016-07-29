@@ -78,8 +78,8 @@ countUsed(const EnvThreadInfo* ti)
     int count = 0;
     for ( int ii = 0; ii < ti->nEntries; ++ii ) {
         EnvThreadEntry* entry = &ti->entries[ii];
-        XP_LOGF( "%s(): ii=%d; owner: %x", __func__, ii, (unsigned int)entry->owner );
         if ( 0 != entry->owner ) {
+            XP_LOGF( "%s(): ii=%d; owner: %x", __func__, ii, (unsigned int)entry->owner );
             ++count;
         }
     }
