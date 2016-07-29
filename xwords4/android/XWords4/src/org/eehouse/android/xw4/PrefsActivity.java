@@ -55,6 +55,7 @@ public class PrefsActivity extends PreferenceActivity
     {
         LocUtils.xlatePreferences( this );
         super.onStart();
+        m_dlgt.onStart();
     }
 
     @Override
