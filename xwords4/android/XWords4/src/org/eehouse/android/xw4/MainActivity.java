@@ -48,7 +48,7 @@ import junit.framework.Assert;
 public class MainActivity extends XWActivity
     implements FragmentManager.OnBackStackChangedListener {
     private static final int MAX_PANES_LANDSCAPE = 2;
-    private static final boolean LOG_IDS = false;
+    private static final boolean LOG_IDS = true;
 
     private DelegateBase m_dlgt;
     private boolean m_dpEnabled;
