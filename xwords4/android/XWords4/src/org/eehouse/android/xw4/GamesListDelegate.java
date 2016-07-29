@@ -964,9 +964,14 @@ public class GamesListDelegate extends ListDelegateBase
 
         NetUtils.informOfDeaths( m_activity );
 
-        tryStartsFromIntent( getIntent() );
+        post( new Runnable() {
+                @Override
+                public void run() {
+                    tryStartsFromIntent( getIntent() );
+                    getDictForLangIf();
+                }
+            } );
 
-        getDictForLangIf();
     } // init
 
     @Override
