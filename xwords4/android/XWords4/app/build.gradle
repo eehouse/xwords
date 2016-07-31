@@ -1,7 +1,6 @@
 def VARIANT_NAME = 'xw4'
 def INITIAL_CLIENT_VERS = 6
 def CHAT_ENABLED = true
-def THUMBNAIL_ENABLED = true
 def LIBS_DEBUG = 'libs-debug'
 def LIBS_RELEASE = 'libs-release'
 def VERSION_CODE_BASE = 1
@@ -135,7 +134,6 @@ task genVers(type: Exec) {
     workingDir '../'
     commandLine '../scripts/genvers.sh', '--variant', VARIANT_NAME, 
     '--client-vers', INITIAL_CLIENT_VERS, 
-    '--thumbnail-enabled', THUMBNAIL_ENABLED,
     '--vers-outfile', "assets/gitvers.txt"
 }
 
@@ -161,17 +159,15 @@ preBuild.dependsOn myPreBuild
 task ndkBuildDebug(type: Exec) {
     workingDir '../'
     commandLine '../scripts/ndkbuild.sh', '-j3', "CHAT_ENABLED=$CHAT_ENABLED",
-        "THUMBNAIL_ENABLED=$THUMBNAIL_ENABLED", 'BUILD_TARGET=debug',
-        "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS", "VARIANT=$VARIANT_NAME",
-        "NDK_LIBS_OUT=$LIBS_DEBUG", 'NDK_OUT=./obj-debug'
+        'BUILD_TARGET=debug', "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
+        "VARIANT=$VARIANT_NAME", "NDK_LIBS_OUT=$LIBS_DEBUG", 'NDK_OUT=./obj-debug'
 }
 
 task ndkBuildRelease(type: Exec) {
     workingDir '../'
     commandLine '../scripts/ndkbuild.sh', '-j3', "CHAT_ENABLED=$CHAT_ENABLED",
-        "THUMBNAIL_ENABLED=$THUMBNAIL_ENABLED", 'BUILD_TARGET=release',
-        "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS", "VARIANT=$VARIANT_NAME", 
-        "NDK_LIBS_OUT=$LIBS_RELEASE", 'NDK_OUT=./obj-release'
+        'BUILD_TARGET=release', "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
+        "VARIANT=$VARIANT_NAME", "NDK_LIBS_OUT=$LIBS_RELEASE", 'NDK_OUT=./obj-release'
 }
 
 task mkXml(type: Exec) {
