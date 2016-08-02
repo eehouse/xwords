@@ -140,7 +140,7 @@ public class JNIThread extends Thread {
     private boolean m_stopped = false;
     private boolean m_saveOnStop = false;
     private GamePtr m_jniGamePtr;
-    private byte[] m_lastSavedState;
+    private int m_lastSavedState = 0;
     private GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
@@ -227,7 +227,7 @@ public class JNIThread extends Thread {
                                     null, cp, m_xport );
         }
 
-        m_lastSavedState = stream;
+        m_lastSavedState = Arrays.hashCode( stream );
         return this;
     }
 
@@ -363,15 +363,14 @@ public class JNIThread extends Thread {
             m_gi.dictName = m_newDict;
         }
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-        boolean arraysEqual = Arrays.equals( m_lastSavedState, state );
-        boolean hashesEqual = Arrays.hashCode( m_lastSavedState) == Arrays.hashCode(state);
-        DbgUtils.logf( "arraysEqual: %b; hashesEqual: %b", arraysEqual, hashesEqual );
+        int newHash = Arrays.hashCode( state );
+        boolean hashesEqual = m_lastSavedState == newHash;
         // PENDING: once certain this is true, stop saving the full array and
         // instead save the hash. Also, update it after each save.
-        Assert.assertTrue( arraysEqual == hashesEqual );
-        if ( Arrays.equals( m_lastSavedState, state ) ) {
+        if ( hashesEqual ) {
             DbgUtils.logdf( "JNIThread.save_jni(): no change in game; can skip saving" );
         } else {
+            // Don't need this!!!! this only runs on the run() thread
             synchronized( this ) {
                 Assert.assertNotNull( m_lock );
                 GameSummary summary = new GameSummary( m_context, m_gi );
@@ -381,7 +380,7 @@ public class JNIThread extends Thread {
 
                 // There'd better be no way for saveGame above to fail!
                 XwJNI.game_saveSucceeded( m_jniGamePtr );
-                m_lastSavedState = state;
+                m_lastSavedState = newHash;
 
                 GameUtils.loadMakeBitmap( m_context, state, m_lock );
             }
@@ -391,9 +390,11 @@ public class JNIThread extends Thread {
     boolean m_running = false;
     public void startOnce()
     {
-        if ( !m_running ) {
-            m_running = true;
-            start();
+        synchronized ( this ) {
+            if ( !m_running ) {
+                m_running = true;
+                start();
+            }
         }
     }
 
@@ -768,7 +769,7 @@ public class JNIThread extends Thread {
 
         if ( stop ) {
             waitToStop( true );
-        } else if ( save && null != m_lastSavedState ) { // has configure() run?
+        } else if ( save && 0 != m_lastSavedState ) { // has configure() run?
             handle( JNICmd.CMD_SAVE );         // in case releaser has made changes
         }
     }
