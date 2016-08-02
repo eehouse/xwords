@@ -232,6 +232,12 @@
                         android:defaultValue="false"
                         />
 
+    <CheckBoxPreference android:key="@string/key_notify_sound"
+                        android:title="@string/notify_sound"
+                        android:summary="@string/notify_other_summary"
+                        android:defaultValue="true"
+                        />
+
     <PreferenceScreen android:title="@string/disable_nags_title"
                       >
 
@@ -314,11 +320,6 @@
           />
     </PreferenceScreen>
 
-    <CheckBoxPreference android:key="@string/key_notify_sound"
-                        android:title="@string/notify_sound"
-                        android:summary="@string/notify_other_summary"
-                        android:defaultValue="true"
-                        />
     <CheckBoxPreference android:key="@string/key_notify_vibrate"
                         android:title="@string/notify_vibrate"
                         android:summary="@string/notify_other_summary"
