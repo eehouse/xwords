@@ -91,7 +91,6 @@ initCairo( GtkDrawCtx* dctx )
     XP_LOGF( "dctx->cairo=%p", dctx->_cairo );
     cairo_set_line_width( dctx->_cairo, 1.0 );
     cairo_set_line_cap( dctx->_cairo, CAIRO_LINE_CAP_SQUARE );
-    // cairo_set_source_rgb( dctx->_cairo, 0, 0, 0 );
 }
 
 static void
@@ -437,6 +436,24 @@ gtk_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx),
 {
 }
 
+static void
+gtk_draw_beginDraw( DrawCtx* p_dctx )
+{
+#ifdef USE_CAIRO
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    initCairo( dctx );
+#endif
+}
+
+static void
+gtk_draw_endDraw( DrawCtx* p_dctx )
+{
+#ifdef USE_CAIRO
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    destroyCairo( dctx );
+#endif
+}
+
 static XP_Bool
 gtk_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 width, XP_U16 height,
@@ -448,7 +465,6 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect,
     dctx->cellHeight = height;
 
 #ifdef USE_CAIRO
-    initCairo( dctx );
     //gdk_cairo_set_source_color( dctx->cairo, &dctx->black );
 #else
     gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
@@ -464,17 +480,12 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* gtk_draw_boardBegin */
 
 static void
-gtk_draw_objFinished( DrawCtx* p_dctx, 
-                      BoardObjectType typ,
+gtk_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx),
+                      BoardObjectType XP_UNUSED(typ),
                       const XP_Rect* XP_UNUSED(rect), 
                       DrawFocusState XP_UNUSED(dfs) )
 {
-    if ( OBJ_BOARD == typ ) {
-        GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-        destroyCairo( dctx );
-    }
-} /* draw_finished */
-
+} /* gtk_draw_objFinished */
 
 static XP_Bool
 gtk_draw_vertScrollBoard( DrawCtx* p_dctx, XP_Rect* rect,
@@ -716,12 +727,9 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
                     XP_U16 owner, XP_S16 XP_UNUSED(owner), 
                     DrawFocusState XP_UNUSED(dfs) )
 {
-    XP_USE( p_dctx );
-    XP_USE( owner );
-    return XP_FALSE;
-    /* GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
-    /* dctx->trayOwner = owner; */
-    /* return XP_TRUE; */
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    dctx->trayOwner = owner;
+    return XP_TRUE;
 } /* gtk_draw_trayBegin */
 
 static XP_Bool
@@ -904,15 +912,10 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
                      XP_S16 XP_UNUSED(remCount), 
                      DrawFocusState XP_UNUSED(dfs) )
 {
-    XP_USE( p_dctx );
-    XP_USE( rect );
-    return XP_FALSE;
-/*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
-
-/* /\*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); *\/ */
-/*     gtkEraseRect( dctx, rect ); */
-/*     dctx->scoreIsVertical = rect->height > rect->width; */
-/*     return XP_TRUE; */
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    gtkEraseRect( dctx, rect );
+    dctx->scoreIsVertical = rect->height > rect->width;
+    return XP_TRUE;
 } /* gtk_draw_scoreBegin */
 
 static PangoLayout*
@@ -1429,6 +1432,8 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 
     InitDrawDefaults( dctx->vtable );
 #else
+    SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, gtk );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_endDraw, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, gtk );
@@ -1446,6 +1451,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, gtk );
+
 #ifdef XWFEATURE_SCOREONEPASS
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayers, gtk );
