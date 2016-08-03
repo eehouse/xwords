@@ -418,7 +418,7 @@ addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
 {
     GtkWidget* button = gtk_button_new_with_label( label );
     gtk_container_add( GTK_CONTAINER(parent), button );
-    g_signal_connect( GTK_OBJECT(button), "clicked",
+    g_signal_connect( button, "clicked",
                       G_CALLBACK(proc), closure );
     gtk_widget_show( button );
     return button;
@@ -459,7 +459,7 @@ makeGamesWindow( GtkAppGlobals* apg )
 
     setWindowTitle( apg );
     
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
     GtkWidget* list = init_games_list( apg );
@@ -477,7 +477,7 @@ makeGamesWindow( GtkAppGlobals* apg )
         g_slist_free( games );
     }
 
-    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_widget_show( hbox );
     gtk_container_add( GTK_CONTAINER(vbox), hbox );
 

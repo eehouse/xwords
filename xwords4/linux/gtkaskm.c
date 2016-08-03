@@ -50,7 +50,7 @@ gtkaskm( const gchar* message, AskMInfo* infos, int nInfos )
     gtk_window_set_title( GTK_WINDOW(dialog), message );
 
     int ii;
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );//gtk_vbox_new
     for ( ii = 0; ii < nInfos; ++ii ) {
         AskMInfo* info = &infos[ii];
         GtkWidget* row = makeLabeledField( info->label, &fields[ii], *info->result );
@@ -58,19 +58,21 @@ gtkaskm( const gchar* message, AskMInfo* infos, int nInfos )
         gtk_widget_show( row );
     }
 
-    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     state.okButton = gtk_button_new_with_label( "Ok" );
-    g_signal_connect( GTK_OBJECT(state.okButton), "clicked", 
+    g_signal_connect( state.okButton, "clicked", 
                       G_CALLBACK(button_clicked), &state );
     gtk_box_pack_start( GTK_BOX(hbox), state.okButton, FALSE, TRUE, 0 );
     state.cancelButton = gtk_button_new_with_label( "Cancel" );
-    g_signal_connect( GTK_OBJECT(state.cancelButton), "clicked", 
+    g_signal_connect( state.cancelButton, "clicked", 
                       G_CALLBACK(button_clicked), &state );
     gtk_box_pack_start( GTK_BOX(hbox), state.cancelButton, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
-    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
-                      vbox);
+    /* gtk_container_add(GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dialog))), */
+    /*                   vbox); */
+    XP_LOGF( "%s(): not adding vbox!!!", __func__ );
+    XP_ASSERT(0);
     gtk_widget_show_all( dialog );
 
     gtk_main();

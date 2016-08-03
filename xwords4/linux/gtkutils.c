@@ -27,7 +27,7 @@ GtkWidget*
 makeButton( const char* text, GCallback func, gpointer data )
 {
     GtkWidget* button = gtk_button_new_with_label( text );
-    g_signal_connect( GTK_OBJECT(button), "clicked", func, data );
+    g_signal_connect( button, "clicked", func, data );
     gtk_widget_show( button );
 
     return button;
@@ -47,7 +47,7 @@ makeLabeledField( const char* labelText, GtkWidget** field,
         gtk_entry_set_text( GTK_ENTRY(*field), initialVal );
     }
 
-    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), *field, FALSE, TRUE, 0 );
     return hbox;

@@ -95,7 +95,7 @@ gtkaskdict( GSList* dicts, gchar* buf, gint buflen )
     }
 
     GtkWidget* button = gtk_button_new_with_label( "Ok" );
-    g_signal_connect( GTK_OBJECT(button), "clicked", 
+    g_signal_connect( button, "clicked", 
                       G_CALLBACK(on_clicked), NULL );
     gtk_box_pack_start( GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
                         button, FALSE, TRUE, 0 );

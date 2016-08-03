@@ -168,7 +168,7 @@ makeRelayPage( GtkInviteState* state, PageData* data )
 {
     data->okButtonTxt = "Invite via Relay";
 
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     GtkWidget* hbox;
 
     hbox = makeLabeledField( "Invitee DeviceID", &state->devID, NULL );
@@ -185,7 +185,7 @@ makeBTPage( GtkInviteState* state, PageData* data )
 {
     data->okButtonTxt = "Invite via Bluetooth";
 
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
     GtkWidget* hbox = makeLabeledField( "Invitee device", &state->bthost, NULL );
     if ( addr_hasType( state->addr, data->pageType ) ) {
@@ -234,7 +234,7 @@ makeSMSPage( GtkInviteState* state, PageData* data )
 {
     data->okButtonTxt = "Invite via SMS";
 
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );
     const gchar* phone = hasSMS ?
         state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
@@ -290,9 +290,9 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
 
     GtkWidget* dialog;
     GtkWidget* hbox;
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     GtkWidget* label = gtk_label_new( "Invite how many:" );
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
 
@@ -308,7 +308,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     state.notebook = gtk_notebook_new();
-    g_signal_connect( GTK_OBJECT(state.notebook), "switch-page",
+    g_signal_connect( state.notebook, "switch-page",
                       G_CALLBACK(onPageChanged), &state );
 
     PageData* data;
@@ -351,7 +351,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
     gtk_widget_show( state.notebook );
 
     /* buttons at the bottom */
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     state.okButton = makeButton( state.pageData[0].okButtonTxt, 
                                  (GCallback)handle_ok, &state );
     gtk_box_pack_start( GTK_BOX(hbox), state.okButton, FALSE, TRUE, 0 );
@@ -365,7 +365,8 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
-    gtk_container_add( GTK_CONTAINER( gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox );
+    // gtk_container_add( GTK_CONTAINER( gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox );
+    XP_ASSERT(0);
 
     gtk_widget_show_all( dialog );
     gtk_main();

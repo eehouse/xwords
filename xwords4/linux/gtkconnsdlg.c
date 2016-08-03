@@ -183,13 +183,12 @@ boxWithUseCheck( GtkConnsState* state, PageData* data )
     XP_Bool set = addr_hasType( state->addr, data->pageType );
     data->doUse = set;
 
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
     gchar buf[32];
     snprintf( buf, sizeof(buf), "Connect via %s", data->labelText );
     GtkWidget* check = gtk_check_button_new_with_label( buf );
-    g_signal_connect( GTK_OBJECT(check),
-                      "toggled", G_CALLBACK(useCheckToggled), data );
+    g_signal_connect( check, "toggled", G_CALLBACK(useCheckToggled), data );
     gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(check), set );
     gtk_box_pack_start( GTK_BOX(vbox), check, FALSE, TRUE, 0);
 
@@ -378,7 +377,7 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
                                     data->label );
 #endif
 
-    vbox = gtk_vbox_new( FALSE, 0 );
+    vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), state.notebook, FALSE, TRUE, 0 );
 
     /* Set page to the first we actually have */
@@ -392,7 +391,7 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     gtk_widget_show( state.notebook );
 
     /* buttons at the bottom */
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), 
                         makeButton( "Ok", (GCallback)handle_ok, &state ),
                         FALSE, TRUE, 0 );
@@ -408,7 +407,7 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
-    gtk_container_add( GTK_CONTAINER( gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox );
+    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
 
     gtk_widget_show_all( dialog );
     gtk_main();

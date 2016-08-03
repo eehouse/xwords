@@ -218,10 +218,10 @@ makeNewGameDialog( GtkNewGameState* state )
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
 
-    vbox = gtk_vbox_new( FALSE, 0 );
+    vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
                         FALSE, TRUE, 0 );
     roleCombo = gtk_combo_box_text_new();
@@ -232,7 +232,7 @@ makeNewGameDialog( GtkNewGameState* state )
                                         roles[ii] );
     }
     gtk_box_pack_start( GTK_BOX(hbox), roleCombo, FALSE, TRUE, 0 );
-    g_signal_connect( GTK_OBJECT(roleCombo), "changed", 
+    g_signal_connect( roleCombo, "changed", 
                       G_CALLBACK(role_combo_changed), state );
 
     state->settingsButton = makeButton( "Settings...", 
@@ -244,7 +244,7 @@ makeNewGameDialog( GtkNewGameState* state )
 #endif
 
     /* NPlayers menu */
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     state->nPlayersLabel = gtk_label_new("");
     gtk_box_pack_start( GTK_BOX(hbox), state->nPlayersLabel, FALSE, TRUE, 0 );
 
@@ -261,7 +261,7 @@ makeNewGameDialog( GtkNewGameState* state )
 
     gtk_widget_show( nPlayersCombo );
     gtk_box_pack_start( GTK_BOX(hbox), nPlayersCombo, FALSE, TRUE, 0 );
-    g_signal_connect( GTK_OBJECT(nPlayersCombo), "changed", 
+    g_signal_connect( nPlayersCombo, "changed", 
                       G_CALLBACK(nplayers_menu_changed), state );
 
     state->juggleButton = makeButton( "Juggle", 
@@ -283,13 +283,13 @@ makeNewGameDialog( GtkNewGameState* state )
         GtkWidget* robotCheck = gtk_check_button_new_with_label( "Robot" );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        g_signal_connect( GTK_OBJECT(remoteCheck), "toggled", 
+        g_signal_connect( remoteCheck, "toggled", 
                           (GCallback)handle_remote_toggled, state );
 #endif
-        g_signal_connect( GTK_OBJECT(robotCheck), "toggled", 
+        g_signal_connect( robotCheck, "toggled", 
                           (GCallback)handle_robot_toggled, state );
 
-        hbox = gtk_hbox_new( FALSE, 0 );
+        hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         gtk_box_pack_start( GTK_BOX(hbox), remoteCheck, FALSE, TRUE, 0 );
@@ -323,7 +323,7 @@ makeNewGameDialog( GtkNewGameState* state )
     }
 
     /* board size choices */
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Board size"),
                         FALSE, TRUE, 0 );
 
@@ -342,7 +342,7 @@ makeNewGameDialog( GtkNewGameState* state )
         }
     }
 
-    g_signal_connect( GTK_OBJECT(boardSizeCombo), "changed", 
+    g_signal_connect( boardSizeCombo, "changed", 
                       G_CALLBACK(size_combo_changed), state );
 
     gtk_widget_show( boardSizeCombo );
@@ -351,7 +351,7 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Dictionary: "),
                         FALSE, TRUE, 0 );
     dictCombo = gtk_combo_box_text_new();
-    g_signal_connect( GTK_OBJECT(dictCombo), "changed", 
+    g_signal_connect( dictCombo, "changed", 
                       G_CALLBACK(dict_combo_changed), state );
     gtk_widget_show( dictCombo );
     gtk_box_pack_start( GTK_BOX(hbox), dictCombo, FALSE, TRUE, 0 );
@@ -376,7 +376,7 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     /* buttons at the bottom */
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), 
                         makeButton( "Ok", (GCallback)handle_ok, state ),
                         FALSE, TRUE, 0 );
@@ -395,7 +395,7 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );
-    gtk_container_add( GTK_CONTAINER( gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox);
+    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
 
     gtk_widget_show_all (dialog);
 
