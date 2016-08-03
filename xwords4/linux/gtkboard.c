@@ -942,7 +942,7 @@ makeAddSubmenu( GtkWidget* menubar, gchar* label )
     GtkWidget* item;
 
     item = gtk_menu_item_new_with_label( label );
-    gtk_menu_bar_append( GTK_MENU_BAR(menubar), item );
+    gtk_menu_shell_append( GTK_MENU_SHELL(menubar), item );
     
     submenu = gtk_menu_new();
     gtk_menu_item_set_submenu( GTK_MENU_ITEM(item), submenu );
@@ -1254,7 +1254,7 @@ frame_active( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
 static GtkWidget*
 createAddItem( GtkWidget* parent, gchar* label, 
-               GtkSignalFunc handlerFunc, GtkGameGlobals* globals ) 
+               GCallback handlerFunc, GtkGameGlobals* globals ) 
 {
     GtkWidget* item = gtk_menu_item_new_with_label( label );
 
@@ -1265,7 +1265,7 @@ createAddItem( GtkWidget* parent, gchar* label,
                           G_CALLBACK(handlerFunc), globals );
     }
     
-    gtk_menu_append( GTK_MENU(parent), item );
+    gtk_menu_shell_append( GTK_MENU_SHELL(parent), item );
     gtk_widget_show( item );
 
     return item;
@@ -1279,69 +1279,69 @@ makeMenus( GtkGameGlobals* globals )
 
     fileMenu = makeAddSubmenu( menubar, "File" );
     (void)createAddItem( fileMenu, "Tile values", 
-                         GTK_SIGNAL_FUNC(tile_values), globals );
+                         (GCallback)tile_values, globals );
     (void)createAddItem( fileMenu, "Game history", 
-                         GTK_SIGNAL_FUNC(game_history), globals );
+                         (GCallback)game_history, globals );
 #ifdef TEXT_MODEL
     (void)createAddItem( fileMenu, "Dump board", 
-                         GTK_SIGNAL_FUNC(dump_board), globals );
+                         (GCallback)dump_board, globals );
 #endif
 
     (void)createAddItem( fileMenu, "Final scores", 
-                         GTK_SIGNAL_FUNC(final_scores), globals );
+                         (GCallback)final_scores, globals );
 
     (void)createAddItem( fileMenu, "New game", 
-                         GTK_SIGNAL_FUNC(new_game), globals );
+                         (GCallback)new_game, globals );
     (void)createAddItem( fileMenu, "Game info", 
-                         GTK_SIGNAL_FUNC(game_info), globals );
+                         (GCallback)game_info, globals );
 
     (void)createAddItem( fileMenu, "Load game", 
-                         GTK_SIGNAL_FUNC(load_game), globals );
+                         (GCallback)load_game, globals );
     (void)createAddItem( fileMenu, "Save game", 
-                         GTK_SIGNAL_FUNC(save_game), globals );
+                         (GCallback)save_game, globals );
 #ifdef XWFEATURE_CHANGEDICT
     (void)createAddItem( fileMenu, "Change dictionary", 
-                         GTK_SIGNAL_FUNC(change_dictionary), globals );
+                         (GCallback)change_dictionary, globals );
 #endif
     (void)createAddItem( fileMenu, "Cancel trade", 
-                         GTK_SIGNAL_FUNC(handle_trade_cancel), globals );
+                         (GCallback)handle_trade_cancel, globals );
 
     fileMenu = makeAddSubmenu( menubar, "Edit" );
 
     (void)createAddItem( fileMenu, "Undo", 
-                         GTK_SIGNAL_FUNC(handle_undo), globals );
+                         (GCallback)handle_undo, globals );
     (void)createAddItem( fileMenu, "Redo", 
-                         GTK_SIGNAL_FUNC(handle_redo), globals );
+                         (GCallback)handle_redo, globals );
 
 #ifdef FEATURE_TRAY_EDIT
     (void)createAddItem( fileMenu, "Allow tray edit", 
-                         GTK_SIGNAL_FUNC(handle_trayEditToggle_on), globals );
+                         (GCallback)handle_trayEditToggle_on, globals );
     (void)createAddItem( fileMenu, "Dis-allow tray edit", 
-                         GTK_SIGNAL_FUNC(handle_trayEditToggle_off), globals );
+                         (GCallback)handle_trayEditToggle_off, globals );
 #endif
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     (void)createAddItem( fileMenu, "Resend", 
-                         GTK_SIGNAL_FUNC(handle_resend), globals );
+                         (GCallback)handle_resend, globals );
 #ifdef XWFEATURE_COMMSACK
     (void)createAddItem( fileMenu, "ack any", 
-                         GTK_SIGNAL_FUNC(handle_ack), globals );
+                         (GCallback)handle_ack, globals );
 #endif
 # ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
-                         GTK_SIGNAL_FUNC(handle_commstats), globals );
+                         (GCallback)handle_commstats, globals );
 # endif
 #endif
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
-                         GTK_SIGNAL_FUNC(handle_memstats), globals );
+                         (GCallback)handle_memstats, globals );
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT
     fileMenu = makeAddSubmenu( menubar, "Test" );
     (void)createAddItem( fileMenu, "Frame active area", 
-                         GTK_SIGNAL_FUNC(frame_active), globals );
+                         (GCallback)frame_active, globals );
 #endif
     /*     (void)createAddItem( fileMenu, "Print board",  */
     /* 			 GTK_SIGNAL_FUNC(handle_print_board), globals ); */
@@ -1580,7 +1580,7 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         globals->adjustment->page_size = nRows;
         globals->adjustment->value = 0.0;
 
-        gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
+        g_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
         gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
     }
 

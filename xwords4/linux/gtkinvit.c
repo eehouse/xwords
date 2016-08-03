@@ -120,7 +120,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 
     /* get the number to invite */
     gchar* num = 
-        gtk_combo_box_get_active_text( GTK_COMBO_BOX(state->nPlayersCombo) );
+        gtk_combo_box_text_get_active_text( GTK_COMBO_BOX_TEXT(state->nPlayersCombo) );
     *(state->nPlayersP) = atoi( num );
         
     state->cancelled = XP_FALSE;
@@ -193,7 +193,7 @@ makeBTPage( GtkInviteState* state, PageData* data )
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
-    state->bgScanButton = makeButton( "Scan", GTK_SIGNAL_FUNC(handle_scan),
+    state->bgScanButton = makeButton( "Scan", (GCallback)handle_scan,
                                       state );
     gtk_box_pack_start( GTK_BOX(vbox), state->bgScanButton, FALSE, TRUE, 0 );
 
@@ -296,11 +296,11 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
     GtkWidget* label = gtk_label_new( "Invite how many:" );
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
 
-    state.nPlayersCombo = gtk_combo_box_new_text();
+    state.nPlayersCombo = gtk_combo_box_text_new();
     for ( int ii = 1; ii <= state.maxPlayers; ++ii ) {
         gchar buf[8];
         sprintf( buf, "%d", ii );
-        gtk_combo_box_append_text( GTK_COMBO_BOX(state.nPlayersCombo), buf );
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(state.nPlayersCombo), buf );
     }
     gtk_combo_box_set_active( GTK_COMBO_BOX(state.nPlayersCombo), 0 );
     gtk_box_pack_start( GTK_BOX(hbox), state.nPlayersCombo, FALSE, TRUE, 0 );
@@ -353,11 +353,10 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
     /* buttons at the bottom */
     hbox = gtk_hbox_new( FALSE, 0 );
     state.okButton = makeButton( state.pageData[0].okButtonTxt, 
-                                 GTK_SIGNAL_FUNC(handle_ok), &state );
+                                 (GCallback)handle_ok, &state );
     gtk_box_pack_start( GTK_BOX(hbox), state.okButton, FALSE, TRUE, 0 );
-    gtk_box_pack_start( GTK_BOX(hbox), 
-                        makeButton( "Cancel", 
-                                    GTK_SIGNAL_FUNC(handle_cancel), 
+    gtk_box_pack_start( GTK_BOX(hbox),
+                        makeButton( "Cancel", (GCallback)handle_cancel,
                                     &state ),
                         FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );

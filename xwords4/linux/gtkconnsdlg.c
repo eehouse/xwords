@@ -264,7 +264,7 @@ makeBTPage( GtkConnsState* state, PageData* data )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->bthost, !state->readOnly );
 
-    state->bgScanButton = makeButton( "Scan", GTK_SIGNAL_FUNC(handle_scan), 
+    state->bgScanButton = makeButton( "Scan", (GCallback)handle_scan,
                                       state );
     gtk_box_pack_start( GTK_BOX(vbox), state->bgScanButton, FALSE, TRUE, 0 );
 
@@ -394,12 +394,11 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     /* buttons at the bottom */
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), 
-                        makeButton( "Ok", GTK_SIGNAL_FUNC(handle_ok), &state ),
+                        makeButton( "Ok", (GCallback)handle_ok, &state ),
                         FALSE, TRUE, 0 );
     if ( !readOnly ) {
         gtk_box_pack_start( GTK_BOX(hbox), 
-                            makeButton( "Cancel", 
-                                        GTK_SIGNAL_FUNC(handle_cancel), 
+                            makeButton( "Cancel", (GCallback)handle_cancel,
                                         &state ),
                             FALSE, TRUE, 0 );
     }
