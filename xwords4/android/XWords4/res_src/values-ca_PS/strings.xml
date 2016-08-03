@@ -2228,7 +2228,6 @@
   <string name="pref_group_relay_title">RELAY STUFF</string>
   <string name="pref_group_relay_summary">PREFS RELATED TO PLAY VIA INTERNET/RELAY</string>
   <string name="pref_group_l10n_title">LOCALIZATION STUFF</string>
-  <string name="pref_group_tablets_title">TABLETS STUFF</string>
   <string name="pref_group_l10n_summary">PREFS RELATED TO IN-APP LOCALIZATION</string>
   <string name="pref_item_update_title">UPDATE BETWEEN RELEASES</string>
   <string name="pref_item_update_summary">GET INTERMEDIATE BUILDS</string>
@@ -2299,4 +2298,20 @@
   PLAYER NAME \"%1$s\". WOULD YOU LIKE TO PERSONALIZE WITH YOUR OWN
   NAME BEFORE YOU CREATE THIS GAME?</string>
   <string name="no_invites">THIS GAME HAS SENT NO INVITATIONS</string>
+  <string name="invite_dualpane">YOU APPEAR TO BE RUNNING A
+  TABLET-SIZED DEVICE. WOULD YOU LIKE TO TRY AN EXPERIMENTAL NEW
+  FEATURE THAT LETS YOU VIEW TWO PANES (E.G. BOARD AND CHAT)
+  SIDE-BY-SIDE WHEN YOUR DEVICE IS HORIZONTAL?
+
+  \n\nYOU CAN DISABLE THE FEATURE LATER USING THE NEW \"DISABLE
+  SIDE-BY-SIDE\" MENU ITEM. OR VIA APP SETTINGS.
+
+  \n\nPLEASE LET ME KNOW IF YOU LIKE THE FEATURE, REPORT CRASHES, MAKE
+  SUGGESTIONS, ETC.!!</string>
+  <string name="enable_dualpane">ENABLE SIDE-BY-SIDE</string>
+  <string name="post_dualpane_title">RELAUNCH AFTER CHANGE</string>
+  <string name="post_dualpane_on_body">START CROSSWORDS WITH SIDE-BY-SIDE ENABLED!</string>
+  <string name="post_dualpane_off_body">START CROSSWORDS WITH SIDE-BY-SIDE DISABLED</string>
+  <string name="disable_dualpane">DISABLE SIDE-BY-SIDE</string>
+  <string name="dualpane_restart">EXITING APP…</string>
 </resources>

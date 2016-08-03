@@ -341,6 +341,9 @@ public class PrefsDelegate extends DelegateBase
         if ( ABUtils.haveActionBar() ) {
             hideOne( R.string.key_hide_title, R.string.prefs_appearance );
         }
-    }
 
+        if ( !XWPrefs.getIsTablet( m_activity ) ) {
+            hideOne( R.string.key_enable_dualpane, R.string.prefs_appearance );
+        }
+    }
 }

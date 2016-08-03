@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -69,6 +70,7 @@ public class DlgDelegate {
         SET_HIDE_NEWGAME_BUTTONS,
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,
+        ENABLE_DUALPANE,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
@@ -133,6 +135,23 @@ public class DlgDelegate {
         public int buttonStr;
         public Action action;
         public Object[] params; // null for now
+    }
+
+    // typesafe int, basically
+    public static class NAKey implements Runnable {
+        private Context m_context;
+        private int m_nakey;
+        public NAKey(int key) { m_nakey = key; }
+        boolean isSet( Context context ) {
+            m_context = context; // hack!!!
+            return XWPrefs.getPrefsBoolean( context, m_nakey, false );
+        }
+
+        @Override
+        public void run() {
+            Assert.assertNotNull( m_context );
+            XWPrefs.setPrefsBoolean( m_context, m_nakey, true );
+        }
     }
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
@@ -374,41 +393,55 @@ public class DlgDelegate {
 
     public void showConfirmThen( int msg, int posButton, int negButton, Action action )
     {
-        showConfirmThen( null, getString(msg), posButton, negButton, action, null );
+        showConfirmThen( null, null, getString(msg), posButton, negButton, action, null );
     }
 
     public void showConfirmThen( String msg, int posButton, int negButton, Action action )
     {
-        showConfirmThen( null, msg, posButton, negButton, action, null );
+        showConfirmThen( null, null, msg, posButton, negButton, action, null );
     }
 
     public void showConfirmThen( int msg, int posButton, int negButton, Action action,
                                  Object... params )
     {
-        showConfirmThen( null, getString(msg), posButton, negButton, action, params );
+        showConfirmThen( null, null, getString(msg), posButton, negButton, action, params );
     }
 
     public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( null, getString(msg), posButton, android.R.string.cancel,
+        showConfirmThen( null, null, getString(msg), posButton, android.R.string.cancel,
                          action, params );
     }
 
     public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( onNA, msg, posButton, android.R.string.cancel, action,
+        showConfirmThen( null, onNA, msg, posButton, android.R.string.cancel, action,
                          params );
     }
 
-    public void showConfirmThen( Runnable onNA, String msg, int posButton,
+    public void showConfirmThen( NAKey nakey, int msgId, int posButtonId,
+                                 Action action )
+    {
+        showConfirmThen( nakey, null, getString(msgId), posButtonId,
+                         android.R.string.cancel, action, null );
+    }
+    
+    public void showConfirmThen( NAKey nakey, Runnable onNA, String msg, int posButton,
                                  int negButton, Action action, Object[] params )
     {
-        DlgState state = new DlgState( DlgID.CONFIRM_THEN, onNA, msg, posButton,
-                                       negButton, action, 0, params );
-        addState( state );
-        showDialog( DlgID.CONFIRM_THEN );
+        if ( null != nakey ) {
+            Assert.assertNull( onNA );
+            onNA = nakey;     // so the run() method will be called to set the key
+        }
+        if ( null == nakey || !nakey.isSet( m_activity ) ) {
+            DlgState state
+                = new DlgState( DlgID.CONFIRM_THEN, onNA, msg, posButton,
+                                negButton, action, 0, params );
+            addState( state );
+            showDialog( DlgID.CONFIRM_THEN );
+        }
     }
 
     public void showInviteChoicesThen( final Action action,

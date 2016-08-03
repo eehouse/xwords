@@ -63,6 +63,7 @@ import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.DlgDelegate.NAKey;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.jni.*;
@@ -947,11 +948,22 @@ public class GamesListDelegate extends ListDelegateBase
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
-        if ( isUpgrade && !s_firstShown ) {
-            if ( LocUtils.getCurLangCode( m_activity ).equals( "en" ) ) {
-                FirstRunDialog.show( m_activity );
+        if ( true || isUpgrade ) {
+            if ( !s_firstShown ) {
+                if ( LocUtils.getCurLangCode( m_activity ).equals( "en" ) ) {
+                    FirstRunDialog.show( m_activity );
+                }
+                s_firstShown = true;
             }
-            s_firstShown = true;
+
+            if ( !XWPrefs.getPrefsBoolean( m_activity,
+                                           R.string.key_enable_dualpane, false )
+                 && XWPrefs.getIsTablet( m_activity ) ) {
+                showConfirmThen( new NAKey(R.string.key_notagain_dualpane),
+                                 R.string.invite_dualpane,
+                                 R.string.enable_dualpane,
+                                 Action.ENABLE_DUALPANE );
+            }
         }
 
         m_newGameButtons = new Button[] {
@@ -1256,6 +1268,9 @@ public class GamesListDelegate extends ListDelegateBase
             case OPEN_GAME:
                 doOpenGame( params );
                 break;
+            case ENABLE_DUALPANE:
+                setDualpaneAndFinish( true );
+                break;
             case CLEAR_SELS:
                 clearSelections();
                 break;
@@ -1429,6 +1444,10 @@ public class GamesListDelegate extends ListDelegateBase
                 0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
             Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
 
+            enable = XWPrefs.getPrefsBoolean( m_activity, R.string.key_enable_dualpane,
+                                              false );
+            Utils.setItemVisible( menu, R.id.games_menu_disable_dualpane, enable );
+
             Assert.assertTrue( m_menuPrepared );
         } else {
             DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
@@ -1461,6 +1480,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         switch ( itemID ) {
             // There's no selection for these items, so nothing to clear
+
+        case R.id.games_menu_disable_dualpane:
+            setDualpaneAndFinish( false );
+            break;
         case R.id.games_menu_resend:
             GameUtils.resendAllIf( m_activity, null, true );
             break;
@@ -2518,6 +2541,20 @@ public class GamesListDelegate extends ListDelegateBase
                 GameUtils.launchGame( getDelegator(), rowID );
             }
         }
+    }
+
+    private void setDualpaneAndFinish( boolean enable )
+    {
+        XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_dualpane,
+                                 enable );
+        Intent intent = makeSelfIntent( m_activity );
+        int bodyID = enable ? R.string.post_dualpane_on_body
+            : R.string.post_dualpane_off_body;
+        Utils.postNotification( m_activity, intent,
+                                R.string.post_dualpane_title,
+                                bodyID, R.string.post_dualpane_title );
+        Utils.showToast( m_activity, R.string.dualpane_restart );
+        m_activity.finish();
     }
 
     public static void boardDestroyed( long rowid )

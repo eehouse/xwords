@@ -67,7 +67,7 @@
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
   <string name="key_force_tablet">key_force_tablet</string>
-  <string name="key_enable_dualpane">key_enable_dualpane</string>
+  <string name="key_enable_dualpane">key_enable_dualpane2</string>
   <string name="key_force_radio">key_force_radio</string>
   <string name="key_addrs_pref">key_addrs_pref</string>
 
@@ -91,6 +91,7 @@
   <string name="key_notagain_sync">key_notagain_sync</string>
   <!-- <string name="key_notagain_sms_ready">key_notagain_sms_ready</string> -->
   <string name="key_notagain_newselect">key_notagain_newselect</string>
+  <string name="key_notagain_dualpane">key_notagain_dualpane</string>
   <string name="key_notagain_backclears">key_notagain_backclears</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
   <string name="key_notagain_relay">key_notagain_relay</string>
