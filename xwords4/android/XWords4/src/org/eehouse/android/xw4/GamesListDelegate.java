@@ -948,7 +948,7 @@ public class GamesListDelegate extends ListDelegateBase
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
-        if ( true || isUpgrade ) {
+        if ( isUpgrade ) {
             if ( !s_firstShown ) {
                 if ( LocUtils.getCurLangCode( m_activity ).equals( "en" ) ) {
                     FirstRunDialog.show( m_activity );
@@ -956,6 +956,10 @@ public class GamesListDelegate extends ListDelegateBase
                 s_firstShown = true;
             }
 
+        }
+
+        // Combine with above when "true" removed
+        if ( true || isUpgrade ) {
             if ( !XWPrefs.getPrefsBoolean( m_activity,
                                            R.string.key_enable_dualpane, false )
                  && XWPrefs.getIsTablet( m_activity ) ) {
