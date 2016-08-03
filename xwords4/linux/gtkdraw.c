@@ -85,7 +85,7 @@ gtkInsetRect( XP_Rect* r, short i )
 static void
 initCairo( GtkDrawCtx* dctx )
 {
-    LOG_FUNC();
+    XP_LOGF( "%s(dctx=%p)", __func__, dctx );
     XP_ASSERT( !dctx->_cairo );
     dctx->_cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
     XP_LOGF( "dctx->cairo=%p", dctx->_cairo );
@@ -96,7 +96,7 @@ initCairo( GtkDrawCtx* dctx )
 static void
 destroyCairo( GtkDrawCtx* dctx )
 {
-    LOG_FUNC();
+    XP_LOGF( "%s(dctx=%p)", __func__, dctx );
     XP_ASSERT( !!dctx->_cairo );
     cairo_destroy(dctx->_cairo);
     dctx->_cairo = NULL;
@@ -136,13 +136,19 @@ draw_rectangle( const GtkDrawCtx* dctx,
 }
 
 static void
-gtkFillRect( GtkDrawCtx* dctx, const XP_Rect* rect, const GdkRGBA* color )
+gtkSetForeground( const GtkDrawCtx* dctx, const GdkRGBA* color )
 {
 #ifdef USE_CAIRO
     gdk_cairo_set_source_rgba( getCairo(dctx), color );
 #else
     gdk_gc_set_foreground( dctx->drawGC, color );
 #endif
+}
+
+static void
+gtkFillRect( GtkDrawCtx* dctx, const XP_Rect* rect, const GdkRGBA* color )
+{
+    gtkSetForeground( dctx, color );
     draw_rectangle( dctx, DRAW_WHAT(dctx), NULL, TRUE,
                     rect->left, rect->top, rect->width, 
                     rect->height );
@@ -275,14 +281,16 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
                 const GdkRGBA* frground,
                 const GdkRGBA* bkgrnd )
 {
-    XP_LOGF( "%s(%s)", __func__, str );
+    // XP_LOGF( "%s(%s)", __func__, str );
     gint xx = where->left;
     gint yy = where->top;
 #ifdef USE_CAIRO
     cairo_t* cr = getCairo( dctx );
 #endif
 
-    if ( !layout ) {
+    if ( !!layout ) {
+        g_object_ref( layout );
+    } else {
 #ifdef USE_CAIRO
         gdk_cairo_set_source_rgba( cr, frground );
         layout = pango_cairo_create_layout( cr );
@@ -464,11 +472,7 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect,
     dctx->cellWidth = width;
     dctx->cellHeight = height;
 
-#ifdef USE_CAIRO
-    //gdk_cairo_set_source_color( dctx->cairo, &dctx->black );
-#else
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-#endif
+    gtkSetForeground( dctx, &dctx->black );
 
     gdkrect = *(GdkRectangle*)rect;
     ++gdkrect.width;
@@ -534,11 +538,7 @@ drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
         XP_Rect lrect = *rect;
         gtkInsetRect( &lrect, 1 );
 
-#ifdef USE_CAIRO
-        //gdk_cairo_set_source_color( dctx->cairo, &dctx->black );
-#else
-        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-#endif
+        gtkSetForeground( dctx, &dctx->black );
 
         if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
             draw_rectangle( dctx, DRAW_WHAT(dctx),
@@ -656,17 +656,9 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
         XP_Bool isBlank = (flags & CELL_ISBLANK) != 0;
         GdkRGBA* foreground;
         if ( cursor ) {
-#ifdef USE_CAIRO
-            //gdk_cairo_set_source_color( dctx->cairo, cursor );
-#else
-            gdk_gc_set_foreground( dctx->drawGC, cursor );
-#endif
+            gtkSetForeground( dctx, cursor );
         } else if ( !highlight ) {
-#ifdef USE_CAIRO
-            //gdk_cairo_set_source_color( dctx->cairo, &dctx->tileBack );
-#else
-            gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
-#endif
+            gtkSetForeground( dctx, &dctx->tileBack );
         }
         draw_rectangle( dctx, DRAW_WHAT(dctx), NULL, TRUE,
                         rectInset.left, rectInset.top,
@@ -784,11 +776,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
         }
 
         /* frame the tile */
-#ifdef USE_CAIRO
-        //gdk_cairo_set_source_color( dctx->cairo, &dctx->black );
-#else
-        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-#endif
+        gtkSetForeground( dctx, &dctx->black );
         draw_rectangle( dctx, DRAW_WHAT(dctx),
                         NULL,
                         FALSE,
@@ -865,16 +853,11 @@ gtk_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
         --r.height;
     }
 
-#ifdef USE_CAIRO
-    //gdk_cairo_set_source_color( dctx->cairo, &dctx->black );
-#else
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-#endif
+    gtkSetForeground( dctx, &dctx->black );
     draw_rectangle( dctx, DRAW_WHAT(dctx),
                     NULL,
                     !selected, 
                     r.left, r.top, r.width, r.height);
-    
 } /* gtk_draw_drawTrayDivider */
 
 static void 
@@ -1003,11 +986,7 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
         gtkFillRect( dctx, rOuter, cursor );
     }
 
-#ifdef USE_CAIRO
-    //gdk_cairo_set_source_color( dctx->cairo, &dctx->playerColors[playerNum] );
-#else
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->playerColors[playerNum] );
-#endif
+    gtkSetForeground( dctx, &dctx->playerColors[playerNum] );
 
     if ( dsi->selected ) {
         XP_Rect selRect = *rOuter;
@@ -1334,11 +1313,7 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect localR = *rect;
 
-#ifdef USE_CAIRO
-    //gdk_cairo_set_source_color( dctx->cairo, &dctx->black );
-#else
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-#endif
+    gtkSetForeground( dctx, &dctx->black );
 
     /* play some skanky games to get the shadow drawn under and to the
        right... */
@@ -1543,4 +1518,3 @@ frame_active_rect( GtkDrawCtx* dctx, const XP_Rect* rect )
 }
 
 #endif /* PLATFORM_GTK */
-
