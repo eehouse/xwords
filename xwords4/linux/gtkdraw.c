@@ -24,7 +24,7 @@
 
 #undef GDK_DISABLE_DEPRECATED
 
-#include <gdk/gdkdrawable.h>
+#include <gdk/gdk.h>
 
 #include "gtkboard.h"
 #include "draw.h"

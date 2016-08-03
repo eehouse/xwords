@@ -33,6 +33,8 @@ CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 #CFLAGS += -Os -Werror -Wunused
 endif
 
+CFLAGS += -DGTK_DISABLE_SINGLE_INCLUDES
+
 BUILD_PLAT_DIR = $(BUILD_DIR)/$(PLATFORM)
 
 # CC = llvm-gcc
