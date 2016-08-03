@@ -205,31 +205,31 @@ evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
 
     switch( keyval ) {
 #ifdef KEYBOARD_NAV
-    case GDK_Return:
+    case GDK_KEY_Return:
         xpkey = XP_RETURN_KEY;
         break;
-    case GDK_space:
+    case GDK_KEY_space:
         xpkey = XP_RAISEFOCUS_KEY;
         break;
 
-    case GDK_Left:
+    case GDK_KEY_Left:
         xpkey = XP_CURSOR_KEY_LEFT;
         movesCursor = XP_TRUE;
         break;
-    case GDK_Right:
+    case GDK_KEY_Right:
         xpkey = XP_CURSOR_KEY_RIGHT;
         movesCursor = XP_TRUE;
         break;
-    case GDK_Up:
+    case GDK_KEY_Up:
         xpkey = XP_CURSOR_KEY_UP;
         movesCursor = XP_TRUE;
         break;
-    case GDK_Down:
+    case GDK_KEY_Down:
         xpkey = XP_CURSOR_KEY_DOWN;
         movesCursor = XP_TRUE;
         break;
 #endif
-    case GDK_BackSpace:
+    case GDK_KEY_BackSpace:
         XP_LOGF( "... it's a DEL" );
         xpkey = XP_CURSOR_KEY_DEL;
         break;
