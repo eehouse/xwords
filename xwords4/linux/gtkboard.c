@@ -705,10 +705,11 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     CommonGlobals* cGlobals = &globals->cGlobals;
     BoardCtxt* board = cGlobals->game.board;
 
-    short bdWidth = widget->allocation.width - (GTK_RIGHT_MARGIN
-						+ GTK_BOARD_LEFT_MARGIN);
-    short bdHeight = widget->allocation.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
-      - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
+    GtkAllocation alloc;
+    gtk_widget_get_allocation( widget, &alloc );
+    short bdWidth = alloc.width - (GTK_RIGHT_MARGIN + GTK_BOARD_LEFT_MARGIN);
+    short bdHeight = alloc.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
+        - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
 
 #ifdef COMMON_LAYOUT
     XP_ASSERT( !cGlobals->params->verticalScore ); /* not supported */
@@ -1549,7 +1550,7 @@ static void
 scroll_value_changed( GtkAdjustment *adj, GtkGameGlobals* globals )
 {
     XP_U16 newValue;
-    gfloat newValueF = adj->value;
+    gfloat newValueF = gtk_adjustment_get_value( adj );
 
     /* XP_ASSERT( newValueF >= 0.0 */
     /*            && newValueF <= globals->cGlobals.params->nHidden ); */
@@ -1577,8 +1578,8 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     if ( globals->cGlobals.params->nHidden > 0 ) {
         gint nRows = globals->cGlobals.gi->boardSize;
-        globals->adjustment->page_size = nRows;
-        globals->adjustment->value = 0.0;
+        gtk_adjustment_set_page_size( globals->adjustment, nRows );
+        gtk_adjustment_set_value( globals->adjustment, 0.0 );
 
         g_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
         gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
@@ -1814,9 +1815,9 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     if ( !!globals->adjustment ) {
         gint nRows = globals->cGlobals.gi->boardSize;
-        globals->adjustment->page_size = nRows - maxOffset;
-        globals->adjustment->value = newOffset;
-        gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
+        gtk_adjustment_set_page_size(globals->adjustment, nRows - maxOffset);
+        gtk_adjustment_set_value(globals->adjustment, newOffset);
+        gtk_adjustment_value_changed( globals->adjustment );
     }
 } /* gtk_util_yOffsetChange */
 

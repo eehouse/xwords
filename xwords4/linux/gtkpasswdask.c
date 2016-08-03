@@ -52,8 +52,8 @@ gtkpasswdask( const char* name, char* outbuf, XP_U16* buflen )
     snprintf( buf, sizeof(buf), "Password for player \"%s\"", name );
     label = gtk_label_new( buf );
 
-    gtk_container_add( GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
-                       label );
+    gtk_container_add( GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+                       label);
 
     /* we need a text field and two buttons as well */
     vbox = gtk_vbox_new(FALSE, 0);
@@ -75,7 +75,7 @@ gtkpasswdask( const char* name, char* outbuf, XP_U16* buflen )
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
-    gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area), vbox);
+    gtk_container_add( GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox);
 
     gtk_widget_show_all( dialog );
 

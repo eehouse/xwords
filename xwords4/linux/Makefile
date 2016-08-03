@@ -33,8 +33,10 @@ CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 #CFLAGS += -Os -Werror -Wunused
 endif
 
+# Getting ready for gtk 3.x
 CFLAGS += -DGTK_DISABLE_SINGLE_INCLUDES
 CFLAGS += -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED
+CFLAGS += -DGSEAL_ENABLE
 
 BUILD_PLAT_DIR = $(BUILD_DIR)/$(PLATFORM)
 

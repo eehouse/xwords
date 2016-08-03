@@ -80,7 +80,8 @@ gtkaskdict( GSList* dicts, gchar* buf, gint buflen )
     GtkWidget* dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
     GtkWidget* list = gtk_tree_view_new();
-    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dialog)->vbox), list, TRUE, TRUE, 5);
+    gtk_box_pack_start( GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+                        list, TRUE, TRUE, 5);
 
     init_list( list );
 
@@ -96,7 +97,7 @@ gtkaskdict( GSList* dicts, gchar* buf, gint buflen )
     GtkWidget* button = gtk_button_new_with_label( "Ok" );
     g_signal_connect( GTK_OBJECT(button), "clicked", 
                       G_CALLBACK(on_clicked), NULL );
-    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dialog)->vbox), button, 
+    gtk_box_pack_start( GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), button,
                         FALSE, TRUE, 0 );
     // gtk_widget_show( button );
 

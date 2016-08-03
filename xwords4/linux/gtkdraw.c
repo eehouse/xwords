@@ -64,7 +64,7 @@ gtkInsetRect( XP_Rect* r, short i )
 #if 0
 #define DRAW_WHAT(dc) ((dc)->globals->pixmap)
 #else
-#define DRAW_WHAT(dc) ((dc)->drawing_area->window)
+#define DRAW_WHAT(dc) (gtk_widget_get_window((dc)->drawing_area))
 #endif
 
 #define GTKMIN_W_HT 12
@@ -126,8 +126,8 @@ static void
 gtkEraseRect( const GtkDrawCtx* dctx, const XP_Rect* rect )
 {
     set_color_cairo( dctx, 0xFFFF, 0xFFFF, 0xFFFF );
-    draw_rectangle( dctx, DRAW_WHAT(dctx),
-                    dctx->drawing_area->style->white_gc,
+    const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
+    draw_rectangle( dctx, DRAW_WHAT(dctx), style->white_gc,
                     TRUE, rect->left, rect->top, 
                     rect->width, rect->height );
 } /* gtkEraseRect */
@@ -286,6 +286,7 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
     XP_U16 i;
     XP_S16 nBytes;
     XP_U16 nCols, nRows;
+    const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
     
     nCols = lbs->nCols;
     nRows = lbs->nRows;
@@ -293,8 +294,7 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
     nBytes = lbs->nBytes;
 
     pm = gdk_pixmap_new( DRAW_WHAT(dctx), nCols, nRows, -1 );
-
-    draw_rectangle( dctx, pm, dctx->drawing_area->style->white_gc, TRUE,
+    draw_rectangle( dctx, pm, style->white_gc, TRUE,
                     0, 0, nCols, nRows );
 
     x = 0;
@@ -307,7 +307,7 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
             if ( draw ) {
 #ifdef USE_CAIRO
 #else
-                gdk_draw_point( pm, dctx->drawing_area->style->black_gc, x, y );
+                gdk_draw_point( pm, style->black_gc, x, y );
 #endif
             }
             byte <<= 1;
@@ -349,12 +349,12 @@ static void
 gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    GtkAllocation* alloc = &dctx->drawing_area->allocation;
+    GtkAllocation alloc;
+    gtk_widget_get_allocation( dctx->drawing_area, &alloc );
+    const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
 
-    draw_rectangle( dctx, DRAW_WHAT(dctx),
-                    dctx->drawing_area->style->white_gc,
-                    TRUE,
-                    0, 0, alloc->width, alloc->height );
+    draw_rectangle( dctx, DRAW_WHAT(dctx), style->white_gc, TRUE,
+                    0, 0, alloc.width, alloc.height );
 
 	g_list_foreach( dctx->fontsPerSize, freer, NULL );
 	g_list_free( dctx->fontsPerSize );
@@ -1387,7 +1387,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
         /* } else { */
         /*     window = GTK_WIDGET(drawing_area)->window; */
         /* } */
-        GdkWindow* window = GTK_WIDGET(drawing_area)->window;
+        GdkWindow* window = gtk_widget_get_window(drawing_area);
         XP_ASSERT( !!window );
 #ifdef USE_CAIRO
         dctx->cr = gdk_cairo_create( window );

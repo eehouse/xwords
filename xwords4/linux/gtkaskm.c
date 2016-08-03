@@ -69,7 +69,8 @@ gtkaskm( const gchar* message, AskMInfo* infos, int nInfos )
     gtk_box_pack_start( GTK_BOX(hbox), state.cancelButton, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
-    gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area), vbox);
+    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
+                      vbox);
     gtk_widget_show_all( dialog );
 
     gtk_main();

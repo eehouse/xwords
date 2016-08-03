@@ -111,7 +111,7 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
         txt = "Choose a letter for your blank.";
     }
     label = gtk_label_new( txt );
-    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
+    gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
                        label);
 
     if ( forTray ) {
@@ -124,11 +124,11 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
         }
 
         GtkWidget* curTilesLabel = gtk_label_new( curTilesBuf );
-        gtk_container_add( GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
+        gtk_container_add( GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
                            curTilesLabel );
     }
 
-    gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area), vbox);
+    gtk_container_add( GTK_CONTAINER( gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox);
     gtk_widget_show_all( dialog );
 
     gtk_main();
