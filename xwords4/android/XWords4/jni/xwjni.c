@@ -62,7 +62,8 @@ typedef struct _JNIGlobalState {
     MPSLOT
 } JNIGlobalState;
 
-// #define LOG_MAPPING
+#define LOG_MAPPING
+// #define LOG_MAPPING_ALL
 
 #define GAMEPTR_IS_OBJECT
 #ifdef GAMEPTR_IS_OBJECT
@@ -79,7 +80,9 @@ countUsed(const EnvThreadInfo* ti)
     for ( int ii = 0; ii < ti->nEntries; ++ii ) {
         EnvThreadEntry* entry = &ti->entries[ii];
         if ( 0 != entry->owner ) {
+# ifdef LOG_MAPPING_ALL
             XP_LOGF( "%s(): ii=%d; owner: %x", __func__, ii, (unsigned int)entry->owner );
+# endif
             ++count;
         }
     }
@@ -145,7 +148,7 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
     }
 
     pthread_mutex_unlock( &ti->mtxThreads );
-}
+} /* map_thread */
 
 static void
 map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
