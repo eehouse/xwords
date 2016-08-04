@@ -85,7 +85,7 @@ curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx),
                         DrawFocusState XP_UNUSED(dfs) )
 {
     return XP_TRUE;
-} /* draw_finish */
+} /* curses_draw_boardBegin */
 
 static XP_Bool
 curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx), 
@@ -95,7 +95,7 @@ curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx),
                        DrawFocusState XP_UNUSED(dfs) )
 {
     return XP_TRUE;
-} /* draw_finish */
+} /* curses_draw_trayBegin */
 
 static XP_Bool
 curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
@@ -579,25 +579,28 @@ curses_draw_frameTray( DrawCtx* p_dctx, XP_Rect* rect )
 } /* curses_draw_frameTray */
 #endif
 
-static void
+static XP_Bool
 draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
+    return XP_FALSE;
 } /* draw_doNothing */
 
 DrawCtx* 
 cursesDrawCtxtMake( WINDOW* boardWin )
 {
     CursesDrawCtx* dctx = malloc( sizeof(CursesDrawCtx) );
-    int ii;
 
     dctx->vtable = malloc( sizeof(*(((CursesDrawCtx*)dctx)->vtable)) );
 
-    for ( ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
+    for ( int ii = 0;
+          ii < sizeof(*dctx->vtable)/sizeof(draw_doNothing);
+          ++ii ) {
         ((void**)(dctx->vtable))[ii] = draw_doNothing;
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, curses );
+        
     SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, curses );
