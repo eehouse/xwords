@@ -292,12 +292,7 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
     if ( !!layout ) {
         g_object_ref( layout );
     } else {
-        layout = pango_cairo_create_layout( cr );
-        gchar buf[32];
-        sprintf( buf, "Sans Bold %d", (fontHt * 2) / 3 );
-        PangoFontDescription* desc = pango_font_description_from_string( buf );
-        pango_layout_set_font_description( layout, desc );
-        pango_font_description_free( desc );
+        layout = layout_for_ht( dctx, fontHt );
     }
 
     pango_layout_set_text( layout, (char*)str, XP_STRLEN(str) );
@@ -1382,13 +1377,11 @@ allocAndSet( GDKCOLORMAP* map, GdkRGBA* color, unsigned short red,
 DrawCtx* 
 gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 {
-    GtkDrawCtx* dctx = g_malloc0( sizeof(GtkDrawCtx) );
-
-    short ii;
+    GtkDrawCtx* dctx = g_malloc0( sizeof(*dctx) );
 
     dctx->vtable = g_malloc( sizeof(*(((GtkDrawCtx*)dctx)->vtable)) );
 
-    for ( ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
+    for ( int ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
         ((void**)(dctx->vtable))[ii] = draw_doNothing; /* bad? */
     }
 
