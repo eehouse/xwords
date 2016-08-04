@@ -39,9 +39,9 @@ typedef enum {
 } XP_GTK_JUST;
 
 typedef struct FontPerSize {
-	unsigned int ht;
-	PangoFontDescription* fontdesc;
-	PangoLayout* layout;
+    unsigned int ht;
+    PangoFontDescription* fontdesc;
+    PangoLayout* layout;
 } FontPerSize;
 
 static void gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds, 
@@ -234,44 +234,44 @@ gtk_prim_draw_measureText( DrawCtx* p_dctx, XP_UCHAR* str,
 
 static gint
 compForHt( gconstpointer  a,
-		   gconstpointer  b )
+           gconstpointer  b )
 {
-	FontPerSize* fps1 = (FontPerSize*)a;
-	FontPerSize* fps2 = (FontPerSize*)b;
-	return fps1->ht - fps2->ht;
+    FontPerSize* fps1 = (FontPerSize*)a;
+    FontPerSize* fps2 = (FontPerSize*)b;
+    return fps1->ht - fps2->ht;
 }
 
 static PangoLayout*
 layout_for_ht( GtkDrawCtx* dctx, XP_U16 ht )
 {
-	PangoLayout* layout = NULL;
+    PangoLayout* layout = NULL;
 
-	/* Try to find a cached layout.  Otherwise create a new one. */
-	FontPerSize fps = { .ht = ht };
-	GList* gl = g_list_find_custom( dctx->fontsPerSize, &fps,
-									compForHt );
-	if ( NULL != gl ) {
-        layout = ((FontPerSize*)gl->data)->layout;
-	}
+    /* Try to find a cached layout.  Otherwise create a new one. */
+    FontPerSize fps = { .ht = ht };
+    GList* gl = g_list_find_custom( dctx->fontsPerSize, &fps,
+                                    compForHt );
+    if ( NULL != gl ) {
+        layout = g_object_ref(((FontPerSize*)gl->data)->layout);
+    }
 
-	if ( NULL == layout ) {
-		FontPerSize* fps = g_malloc( sizeof(*fps) );
-		dctx->fontsPerSize = g_list_insert( dctx->fontsPerSize, fps, 0 );
+    if ( NULL == layout ) {
+        FontPerSize* fps = g_malloc( sizeof(*fps) );
+        dctx->fontsPerSize = g_list_insert( dctx->fontsPerSize, fps, 0 );
 
-		char font[32];
-		snprintf( font, sizeof(font), "helvetica normal %dpx", ht );
+        char font[32];
+        snprintf( font, sizeof(font), "helvetica normal %dpx", ht );
 
         layout = pango_layout_new( dctx->pangoContext );
         fps->fontdesc = pango_font_description_from_string( font );
         pango_layout_set_font_description( layout, fps->fontdesc );
-        fps->layout = layout;
+        fps->layout = g_object_ref( layout );
 
-		/* This only happens first time??? */
-		pango_layout_set_alignment( layout, PANGO_ALIGN_CENTER );
-		fps->ht = ht;
-	}
+        /* This only happens first time??? */
+        pango_layout_set_alignment( layout, PANGO_ALIGN_CENTER );
+        fps->ht = ht;
+    }
 
-	return layout;
+    return layout;
 } /* layout_for_ht */
 
 static void
@@ -281,27 +281,23 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
                 const GdkRGBA* frground,
                 const GdkRGBA* bkgrnd )
 {
-    // XP_LOGF( "%s(%s)", __func__, str );
+    // XP_LOGF( "%s(%s, %d, %d)", __func__, str, where->left, where->top );
     gint xx = where->left;
     gint yy = where->top;
 #ifdef USE_CAIRO
     cairo_t* cr = getCairo( dctx );
 #endif
 
+    gdk_cairo_set_source_rgba( cr, frground );
     if ( !!layout ) {
         g_object_ref( layout );
     } else {
-#ifdef USE_CAIRO
-        gdk_cairo_set_source_rgba( cr, frground );
         layout = pango_cairo_create_layout( cr );
         gchar buf[32];
         sprintf( buf, "Sans Bold %d", (fontHt * 2) / 3 );
         PangoFontDescription* desc = pango_font_description_from_string( buf );
         pango_layout_set_font_description( layout, desc );
         pango_font_description_free( desc );
-#else
-        layout = layout_for_ht( dctx, fontHt );
-#endif
     }
 
     pango_layout_set_text( layout, (char*)str, XP_STRLEN(str) );
@@ -407,10 +403,10 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
 static void
 freer( gpointer data, gpointer XP_UNUSED(user_data) )
 {
-	FontPerSize* fps = (FontPerSize*)data;
-	pango_font_description_free( fps->fontdesc );
-	g_object_unref( fps->layout );
-	g_free( fps );
+    FontPerSize* fps = (FontPerSize*)data;
+    pango_font_description_free( fps->fontdesc );
+    g_object_unref( fps->layout );
+    g_free( fps );
 }
 
 static void
@@ -429,8 +425,8 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
                     0, 0, alloc.width, alloc.height );
 #endif
 
-	g_list_foreach( dctx->fontsPerSize, freer, NULL );
-	g_list_free( dctx->fontsPerSize );
+    g_list_foreach( dctx->fontsPerSize, freer, NULL );
+    g_list_free( dctx->fontsPerSize );
 
     g_object_unref( dctx->pangoContext );
 
@@ -914,6 +910,7 @@ getLayoutToFitRect( GtkDrawCtx* dctx, const XP_UCHAR* str, const XP_Rect* rect,
     layout = layout_for_ht( dctx, 24 );
     pango_layout_set_text( layout, (char*)str, len );
     pango_layout_get_pixel_size( layout, &width, &height );
+    g_object_unref( layout );
 
     /* Figure the ratio of is to should-be.  The smaller of these is the one
        we must use. */
@@ -941,10 +938,8 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
-    PangoLayout* layout;
-
     XP_SNPRINTF( buf, sizeof(buf), "rem:%d", nTilesLeft );
-    layout = getLayoutToFitRect( dctx, buf, rect, NULL );
+    PangoLayout* layout = getLayoutToFitRect( dctx, buf, rect, NULL );
 
     if ( !!widthP ) {
         int width, height;
@@ -957,6 +952,7 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
         }
         *widthP = width;
         *heightP = height;
+        XP_LOGF( "%s(): setting width: %d, height: %d", __func__, width, height );
     } else {
         const GdkRGBA* cursor = NULL;
         if ( focussed ) {
@@ -965,8 +961,9 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
         }
         draw_string_at( dctx, layout, buf, rect->height,
                         rect, XP_GTK_JUST_TOPLEFT,
-                        &dctx->black, cursor );
+                        &dctx->black, NULL );
     }
+    g_object_unref( layout );
 } /* gtkDrawDrawRemText */
 
 static void
@@ -1199,9 +1196,9 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     GdkRGBA* txtColor;
 
     if ( score >= 0 ) {
-		XP_SNPRINTF( buf, VSIZE(buf), "%.3d", score );
+        XP_SNPRINTF( buf, VSIZE(buf), "%.3d", score );
     } else {
-		XP_STRNCPY( buf, "???", VSIZE(buf)  );
+        XP_STRNCPY( buf, "???", VSIZE(buf)  );
     }
 
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); */
@@ -1215,7 +1212,7 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
         gtkEraseRect( dctx, &localR );
     }
 
-	ht = localR.height >> 2;
+    ht = localR.height >> 2;
     txtColor = (playerNum == curTurn) ? &dctx->black : &dctx->grey;
     draw_string_at( dctx, NULL, "Pts:", ht,
                     &localR, XP_GTK_JUST_TOPLEFT, txtColor, cursor );
@@ -1284,7 +1281,7 @@ gtk_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWMiniTextType textHint )
         str = "Triple letter"; break;
     case BONUS_TRIPLE_WORD:
         str = "Triple word"; break;
-    case INTRADE_MW_TEXT:	
+    case INTRADE_MW_TEXT:
         str = "Trading tiles;\nclick D when done"; break;
     default:
         XP_ASSERT( XP_FALSE );
@@ -1299,7 +1296,7 @@ gtk_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     int height, width;
 
-	PangoLayout* layout = layout_for_ht( dctx, GTKMIN_W_HT );
+    PangoLayout* layout = layout_for_ht( dctx, GTKMIN_W_HT );
     pango_layout_set_text( layout, (char*)str, XP_STRLEN(str) );
     pango_layout_get_pixel_size( layout, &width, &height );
     *heightP = height;
@@ -1450,7 +1447,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, gtk );
 #endif
 
-	dctx->pangoContext = gtk_widget_get_pango_context( drawing_area );
+    dctx->pangoContext = gtk_widget_get_pango_context( drawing_area );
     dctx->drawing_area = drawing_area;
     dctx->globals = globals;
 
