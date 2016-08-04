@@ -146,8 +146,6 @@ public class JNIThread extends Thread {
     private CurGameInfo m_gi;
     private Handler m_handler;
     private SyncedDraw m_drawer;
-    private static final int kMinDivWidth = 10;
-    private int m_connsIconID = 0;
     private String m_newDict = null;
     private long m_rowid;
     private int m_refCount;
@@ -166,9 +164,10 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    private JNIThread( long rowid )
+    private JNIThread( GameLock lock )
     {
-        m_rowid = rowid;
+        m_lock = lock;
+        m_rowid = lock.getRowid();
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
 
@@ -180,12 +179,6 @@ public class JNIThread extends Thread {
         m_context = context;
         m_drawer = drawer;
         m_handler = handler;
-
-        if ( null == m_lock ) {
-            m_lock = new GameLock( m_rowid, true ).lock();
-        } else {
-            m_jniGamePtr.release(); // let the old game copy go
-        }
 
         // If this isn't true then the queue has to be allowed to empty,
         // working on the old game state, before we can re-use any of this.
@@ -785,7 +778,7 @@ public class JNIThread extends Thread {
         synchronized( s_instances ) {
             result = s_instances.get( rowid );
             if ( null == result && makeNew ) {
-                result = new JNIThread( rowid );
+                result = new JNIThread( new GameLock( rowid, true ).lock() );
                 s_instances.put( rowid, result );
             }
             if ( null != result ) {
