@@ -812,55 +812,6 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     return TRUE;
 } /* configure_event */
 
-/* Redraw the screen from the backing pixmap */
-static gint
-expose_event( GtkWidget* XP_UNUSED(widget),
-              GdkEventExpose* XP_UNUSED(event),
-              GtkGameGlobals* globals )
-{
-    /*
-    gdk_draw_rectangle( widget->window,//((GtkDrawCtx*)globals->draw)->pixmap,
-			widget->style->white_gc,
-			TRUE,
-			0, 0,
-			widget->allocation.width,
-			widget->allocation.height+widget->allocation.y );
-    */
-    /* I want to inval only the area that's exposed, but the rect is always
-       empty, even when clearly shouldn't be.  Need to investigate.  Until
-       fixed, use board_invalAll to ensure board is drawn.*/
-/*     board_invalRect( globals->cGlobals.game.board, (XP_Rect*)&event->area ); */
-
-    board_invalAll( globals->cGlobals.game.board );
-    board_draw( globals->cGlobals.game.board );
-    draw_gtk_status( globals->draw, globals->stateChar );
-    
-/*     gdk_draw_pixmap( widget->window, */
-/* 		     widget->style->fg_gc[GTK_WIDGET_STATE (widget)], */
-/* 		     ((GtkDrawCtx*)globals->draw)->pixmap, */
-/* 		     event->area.x, event->area.y, */
-/* 		     event->area.x, event->area.y, */
-/* 		     event->area.width, event->area.height ); */
-
-    return FALSE;
-} /* expose_event */
-
-#if 0
-static gint
-handle_client_event( GtkWidget *widget, GdkEventClient *event,
-		     GtkGameGlobals* globals )
-{
-    XP_LOGF( "handle_client_event called: event->type = " );
-    if ( event->type == GDK_CLIENT_EVENT ) {
-	XP_LOGF( "GDK_CLIENT_EVENT" );
-	return 1;
-    } else {
-	XP_LOGF( "%d", event->type );	
-	return 0;
-    }
-} /* handle_client_event */
-#endif
-
 void
 destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
@@ -1259,8 +1210,6 @@ createAddItem( GtkWidget* parent, gchar* label,
                GCallback handlerFunc, GtkGameGlobals* globals ) 
 {
     GtkWidget* item = gtk_menu_item_new_with_label( label );
-
-/*      g_print( "createAddItem called with label %s\n", label ); */
 
     if ( handlerFunc != NULL ) {
         g_signal_connect( item, "activate", G_CALLBACK(handlerFunc),
@@ -2653,11 +2602,19 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     setupGtkUtilCallbacks( globals, globals->cGlobals.util );
 }
 
+/* This gets called all the time, e.g. when the mouse moves across
+   drawing-area boundaries. So invalidating is crazy expensive. But this is a
+   test app....*/
+
 static gboolean
 on_draw_event( GtkWidget *widget, cairo_t* cr, gpointer user_data )
 {
-    LOG_FUNC();
-    XP_USE(user_data);
+    // XP_LOGF( "%s(widget=%p)", __func__, widget );
+    GtkGameGlobals* globals = (GtkGameGlobals*)user_data;
+    board_invalAll( globals->cGlobals.game.board );
+    board_draw( globals->cGlobals.game.board );
+    draw_gtk_status( globals->draw, globals->stateChar );
+
     XP_USE(widget);
     XP_USE(cr);
     return FALSE;
@@ -2748,8 +2705,6 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox/* drawing_area */, TRUE, TRUE, 0);
 
-    g_signal_connect( drawing_area, "expose_event",
-                      G_CALLBACK(expose_event), globals );
     g_signal_connect( drawing_area,"configure_event",
                       G_CALLBACK(configure_event), globals );
     g_signal_connect( drawing_area, "button_press_event",

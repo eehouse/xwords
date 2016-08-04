@@ -85,10 +85,10 @@ gtkInsetRect( XP_Rect* r, short i )
 static void
 initCairo( GtkDrawCtx* dctx )
 {
-    XP_LOGF( "%s(dctx=%p)", __func__, dctx );
+    /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !dctx->_cairo );
     dctx->_cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
-    XP_LOGF( "dctx->cairo=%p", dctx->_cairo );
+    /* XP_LOGF( "dctx->cairo=%p", dctx->_cairo ); */
     cairo_set_line_width( dctx->_cairo, 1.0 );
     cairo_set_line_cap( dctx->_cairo, CAIRO_LINE_CAP_SQUARE );
 }
@@ -96,7 +96,7 @@ initCairo( GtkDrawCtx* dctx )
 static void
 destroyCairo( GtkDrawCtx* dctx )
 {
-    XP_LOGF( "%s(dctx=%p)", __func__, dctx );
+    /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !!dctx->_cairo );
     cairo_destroy(dctx->_cairo);
     dctx->_cairo = NULL;
@@ -468,9 +468,7 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect,
     gdkrect = *(GdkRectangle*)rect;
     ++gdkrect.width;
     ++gdkrect.height;
-/*     gdk_gc_set_clip_rectangle( dctx->drawGC, &gdkrect ); */
 
-    LOG_RETURN_VOID();
     return XP_TRUE;
 } /* gtk_draw_boardBegin */
 
@@ -947,7 +945,6 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
         }
         *widthP = width;
         *heightP = height;
-        XP_LOGF( "%s(): setting width: %d, height: %d", __func__, width, height );
     } else {
         const GdkRGBA* cursor = NULL;
         if ( focussed ) {
@@ -1485,6 +1482,8 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 void
 draw_gtk_status( GtkDrawCtx* dctx, char ch )
 {
+    initCairo( dctx );
+
     GtkGameGlobals* globals = dctx->globals;
 
     XP_Rect rect = {
@@ -1499,6 +1498,8 @@ draw_gtk_status( GtkDrawCtx* dctx, char ch )
     draw_string_at( dctx, NULL, str, GTKMIN_W_HT,
                     &rect, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
+
+    destroyCairo( dctx );
 }
 
 void
