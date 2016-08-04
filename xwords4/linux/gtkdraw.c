@@ -1005,8 +1005,9 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
                         selRect.width, selRect.height );
         if ( hasCursor ) {
             gtkFillRect( dctx, rInner, cursor );
+        } else {
+            gtkEraseRect( dctx, rInner );
         }
-        gtkEraseRect( dctx, rInner );
     }
 
 /*     XP_U16 fontHt = rInner->height; */
