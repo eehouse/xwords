@@ -116,7 +116,7 @@ typedef struct DrawCtxVTable {
     void DRAW_VTABLE_NAME(dictChanged)( DrawCtx* dctx, XP_S16 playerNum,
                                         const DictionaryCtxt* dict );
 
-    void DRAW_VTABLE_NAME(beginDraw) ( DrawCtx* dctx );
+    XP_Bool DRAW_VTABLE_NAME(beginDraw) ( DrawCtx* dctx );
     void DRAW_VTABLE_NAME(endDraw) ( DrawCtx* dctx );
 
     XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, 

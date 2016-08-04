@@ -349,7 +349,7 @@ and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player,
 }
 
 /* Not used on android yet */
-static void and_draw_beginDraw( DrawCtx* XP_UNUSED(dctx) ) {}
+static XP_Bool and_draw_beginDraw( DrawCtx* XP_UNUSED(dctx) ) {return XP_TRUE;}
 static void and_draw_endDraw( DrawCtx* XP_UNUSED(dctx) ) {}
 
 static XP_Bool

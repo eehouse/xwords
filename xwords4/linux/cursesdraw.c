@@ -79,6 +79,12 @@ curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx),
 }
 
 static XP_Bool
+curses_draw_beginDraw( DrawCtx* XP_UNUSED(p_dctx) )
+{
+    return XP_TRUE;
+}
+
+static XP_Bool
 curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), 
                         const XP_Rect* XP_UNUSED(rect), 
                         XP_U16 XP_UNUSED(width), XP_U16 XP_UNUSED(height),
@@ -582,6 +588,7 @@ curses_draw_frameTray( DrawCtx* p_dctx, XP_Rect* rect )
 static XP_Bool
 draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
+    LOG_FUNC();
     return XP_FALSE;
 } /* draw_doNothing */
 
@@ -593,18 +600,19 @@ cursesDrawCtxtMake( WINDOW* boardWin )
     dctx->vtable = malloc( sizeof(*(((CursesDrawCtx*)dctx)->vtable)) );
 
     for ( int ii = 0;
-          ii < sizeof(*dctx->vtable)/sizeof(draw_doNothing);
+          ii < sizeof(*dctx->vtable)/sizeof(dctx->vtable->m_draw_destroyCtxt);
           ++ii ) {
         ((void**)(dctx->vtable))[ii] = draw_doNothing;
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, curses );
-        
+
+    SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, curses );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, curses );
 
 #ifdef XWFEATURE_SCOREONEPASS
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, curses );

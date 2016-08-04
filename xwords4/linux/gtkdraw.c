@@ -82,15 +82,20 @@ gtkInsetRect( XP_Rect* r, short i )
 # define GDKCOLORMAP GdkColormap
 #endif
 
-static void
+static XP_Bool
 initCairo( GtkDrawCtx* dctx )
 {
     /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !dctx->_cairo );
-    dctx->_cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
-    /* XP_LOGF( "dctx->cairo=%p", dctx->_cairo ); */
-    cairo_set_line_width( dctx->_cairo, 1.0 );
-    cairo_set_line_cap( dctx->_cairo, CAIRO_LINE_CAP_SQUARE );
+    cairo_t* cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
+    XP_Bool inited = !!cairo;
+    if ( inited ) {
+        dctx->_cairo = cairo;
+        /* XP_LOGF( "dctx->cairo=%p", dctx->_cairo ); */
+        cairo_set_line_width( cairo, 1.0 );
+        cairo_set_line_cap( cairo, CAIRO_LINE_CAP_SQUARE );
+    }
+    return inited;
 }
 
 static void
@@ -435,12 +440,12 @@ gtk_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx),
 {
 }
 
-static void
+static XP_Bool
 gtk_draw_beginDraw( DrawCtx* p_dctx )
 {
 #ifdef USE_CAIRO
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    initCairo( dctx );
+    return initCairo( dctx );
 #endif
 }
 
@@ -1482,24 +1487,24 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 void
 draw_gtk_status( GtkDrawCtx* dctx, char ch )
 {
-    initCairo( dctx );
+    if ( initCairo( dctx ) ) {
+        GtkGameGlobals* globals = dctx->globals;
 
-    GtkGameGlobals* globals = dctx->globals;
+        XP_Rect rect = {
+            .left = globals->netStatLeft,
+            .top = globals->netStatTop,
+            .width = GTK_NETSTAT_WIDTH,
+            .height = GTK_HOR_SCORE_HEIGHT
+        };
+        gtkEraseRect( dctx, &rect );
 
-    XP_Rect rect = {
-        .left = globals->netStatLeft,
-        .top = globals->netStatTop,
-        .width = GTK_NETSTAT_WIDTH,
-        .height = GTK_HOR_SCORE_HEIGHT
-    };
-    gtkEraseRect( dctx, &rect );
+        const XP_UCHAR str[2] = { ch, '\0' };
+        draw_string_at( dctx, NULL, str, GTKMIN_W_HT,
+                        &rect, XP_GTK_JUST_CENTER,
+                        &dctx->black, NULL );
 
-    const XP_UCHAR str[2] = { ch, '\0' };
-    draw_string_at( dctx, NULL, str, GTKMIN_W_HT,
-                    &rect, XP_GTK_JUST_CENTER,
-                    &dctx->black, NULL );
-
-    destroyCairo( dctx );
+        destroyCairo( dctx );
+    }
 }
 
 void

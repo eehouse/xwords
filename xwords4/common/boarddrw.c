@@ -624,13 +624,14 @@ XP_Bool
 board_draw( BoardCtxt* board )
 {
     if ( !!board->draw && board->boardBounds.width > 0 ) {
-        draw_beginDraw( board->draw );
+        if ( draw_beginDraw( board->draw ) ) {
 
-        drawScoreBoard( board );
-        drawTray( board );
-        drawBoard( board );
+            drawScoreBoard( board );
+            drawTray( board );
+            drawBoard( board );
 
-        draw_endDraw( board->draw );
+            draw_endDraw( board->draw );
+        }
     }
     return !board->needsDrawing && 0 == board->trayInvalBits;
 } /* board_draw */
