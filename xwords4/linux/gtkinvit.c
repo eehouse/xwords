@@ -365,8 +365,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
-    // gtk_container_add( GTK_CONTAINER( gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox );
-    XP_ASSERT(0);
+    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
 
     gtk_widget_show_all( dialog );
     gtk_main();

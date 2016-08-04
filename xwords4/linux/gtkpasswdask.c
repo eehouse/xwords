@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -75,8 +76,7 @@ gtkpasswdask( const char* name, char* outbuf, XP_U16* buflen )
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
-    // gtk_container_add( GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox);
-    XP_ASSERT(0);
+    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
 
     gtk_widget_show_all( dialog );
 

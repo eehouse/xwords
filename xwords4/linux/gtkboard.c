@@ -2683,7 +2683,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     gtk_widget_set_size_request( GTK_WIDGET(drawing_area), width, height );
 
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
-    gtk_box_pack_start( GTK_BOX (hbox), drawing_area, TRUE, TRUE, 0);
+    gtk_box_pack_start( GTK_BOX(hbox), drawing_area, TRUE, TRUE, 0);
 
     /* install scrollbar even if not needed -- since zooming can make it
        needed later */
