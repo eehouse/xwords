@@ -24,6 +24,9 @@
 #include "linuxutl.h"
 #include "main.h"
 
+#define SNAP_WIDTH 200
+#define SNAP_HEIGHT 200
+
 static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
                            int len );
 #ifdef DEBUG
@@ -173,10 +176,8 @@ addSnap( CommonGlobals* cGlobals )
 
     BoardCtxt* board = cGlobals->game.board;
     GtkDrawCtx* dctx = (GtkDrawCtx*)board_getDraw( board );
-    addSurface( dctx, 100, 100 );
-    board_invalAll( board );
-    board_draw( board );
-    board_invalAll( board );
+    addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
+    board_drawSnapshot( board, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
 
     XWStreamCtxt* stream = make_simple_stream( cGlobals );
     getImage( dctx, stream );

@@ -703,8 +703,11 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
                     DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    dctx->trayOwner = owner;
-    return XP_TRUE;
+    XP_Bool doDraw = !dctx->surface;
+    if ( doDraw ) {
+        dctx->trayOwner = owner;
+    }
+    return doDraw;
 } /* gtk_draw_trayBegin */
 
 static XP_Bool
@@ -873,9 +876,12 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
                      DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    gtkEraseRect( dctx, rect );
-    dctx->scoreIsVertical = rect->height > rect->width;
-    return XP_TRUE;
+    XP_Bool doDraw = !dctx->surface;
+    if ( doDraw ) {
+        gtkEraseRect( dctx, rect );
+        dctx->scoreIsVertical = rect->height > rect->width;
+    }
+    return doDraw;
 } /* gtk_draw_scoreBegin */
 
 static PangoLayout*

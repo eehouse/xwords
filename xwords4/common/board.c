@@ -105,7 +105,6 @@ static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 static XP_Bool invalCellsWithTiles( BoardCtxt* board );
 
 static void setTimerIf( BoardCtxt* board );
-static void clearTimerIf( const BoardCtxt* board );
 
 static XP_Bool p_board_timerFired( void* closure, XWTimerReason why );
 
@@ -174,14 +173,6 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 
         result->star_row = (XP_U16)(model_numRows(model) / 2);
 
-        model_setBoardListener( model, boardCellChanged, result );
-        model_setTrayListener( model, boardTilesChanged, result );
-        model_setDictListener( model, dictChanged, result );
-        server_setTurnChangeListener( server, boardTurnChanged, result );
-        server_setGameOverListener( server, boardGameOver, result );
-
-        setTimerIf( result );
-
 #ifdef KEYBOARD_NAV     
         {
             /* set up some useful initial values */
@@ -202,7 +193,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 void
 board_destroy( BoardCtxt* board )
 {
-    clearTimerIf( board );
+    util_clearTimer( board->util, TIMER_TIMERTICK );
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
@@ -222,6 +213,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 #endif
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
+    board_setCallbacks( board );
 
     if ( version >= STREAM_VERS_4YOFFSET) {
         board->sd[SCROLL_H].offset = (XP_U16)stream_getBits( stream, 4 );
@@ -405,6 +397,21 @@ board_reset( BoardCtxt* board )
     setTimerIf( board );
 } /* board_reset */
 
+void
+board_drawSnapshot( const BoardCtxt* curBoard, DrawCtx* dctx,
+                    XP_U16 width, XP_U16 height )
+{
+    BoardCtxt* newBoard = board_make( MPPARM(curBoard->mpool)
+                                      curBoard->model,
+                                      curBoard->server, dctx, curBoard->util );
+
+    XP_U16 fontWidth = width / curBoard->gi->boardSize;
+    board_figureLayout( newBoard, curBoard->gi, 0, 0, width, height,
+                        0, 0, 0, fontWidth, width, XP_TRUE, NULL );
+    board_draw( newBoard );
+    board_destroy( newBoard );
+}
+
 #ifdef COMMON_LAYOUT
 # if 0
 static void
@@ -576,6 +583,18 @@ board_applyLayout( BoardCtxt* board, const BoardDims* dims )
                       dims->trayWidth, dims->trayHt );
 }
 #endif
+
+void
+board_setCallbacks( BoardCtxt* board )
+{
+    model_setBoardListener( board->model, boardCellChanged, board );
+    model_setTrayListener( board->model, boardTilesChanged, board );
+    model_setDictListener( board->model, dictChanged, board );
+    server_setTurnChangeListener( board->server, boardTurnChanged, board );
+    server_setGameOverListener( board->server, boardGameOver, board );
+
+    setTimerIf( board );
+}
 
 void
 board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
@@ -1289,12 +1308,6 @@ setTimerIf( BoardCtxt* board )
         board->timerPending = XP_TRUE;
     }
 } /* setTimerIf */
-
-static void
-clearTimerIf( const BoardCtxt* board )
-{
-    util_clearTimer( board->util, TIMER_TIMERTICK );
-}
 
 static void
 timerFiredForTimer( BoardCtxt* board )
