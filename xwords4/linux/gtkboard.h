@@ -45,6 +45,7 @@ typedef struct GtkDrawCtx {
 
 /*     GdkDrawable* pixmap; */
     GtkWidget* drawing_area;
+    cairo_surface_t* surface;
     struct GtkGameGlobals* globals;
 
 #ifdef USE_CAIRO
@@ -62,8 +63,6 @@ typedef struct GtkDrawCtx {
     GdkRGBA bonusColors[4];
     GdkRGBA playerColors[MAX_NUM_PLAYERS];
 
-    /* new for gtk 2.0 */
-    PangoContext* pangoContext;
 	GList* fontsPerSize;
 
     struct {

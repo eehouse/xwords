@@ -306,6 +306,12 @@ board_setDraw( BoardCtxt* board, DrawCtx* draw )
     }
 }
 
+DrawCtx*
+board_getDraw( const BoardCtxt* board )
+{
+    return board->draw;
+}
+
 void
 board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
 {

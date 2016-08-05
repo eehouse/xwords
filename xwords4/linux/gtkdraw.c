@@ -62,12 +62,6 @@ gtkInsetRect( XP_Rect* r, short i )
     r->height -= i;
 } /* gtkInsetRect */
 
-#if 0
-#define DRAW_WHAT(dc) ((dc)->globals->pixmap)
-#else
-#define DRAW_WHAT(dc) (gtk_widget_get_window((dc)->drawing_area))
-#endif
-
 #define GTKMIN_W_HT 12
 
 #ifdef USE_CAIRO
@@ -87,7 +81,15 @@ initCairo( GtkDrawCtx* dctx )
 {
     /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !dctx->_cairo );
-    cairo_t* cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
+    cairo_t* cairo = NULL;
+
+    if ( !!dctx->surface ) {
+        cairo = cairo_create( dctx->surface );
+    } else if ( !!dctx->drawing_area ) {
+        cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
+    } else {
+        XP_ASSERT( 0 );
+    }
     XP_Bool inited = !!cairo;
     if ( inited ) {
         dctx->_cairo = cairo;
@@ -116,8 +118,6 @@ getCairo( const GtkDrawCtx* dctx )
 
 static void 
 draw_rectangle( const GtkDrawCtx* dctx, 
-                GDKDRAWABLE* XP_UNUSED_CAIRO(drawable), 
-                GDKGC* XP_UNUSED_CAIRO(gc), 
                 gboolean fill, gint left, gint top, gint width, 
                 gint height )
 {
@@ -154,9 +154,8 @@ static void
 gtkFillRect( GtkDrawCtx* dctx, const XP_Rect* rect, const GdkRGBA* color )
 {
     gtkSetForeground( dctx, color );
-    draw_rectangle( dctx, DRAW_WHAT(dctx), NULL, TRUE,
-                    rect->left, rect->top, rect->width, 
-                    rect->height );
+    draw_rectangle( dctx, TRUE, rect->left, rect->top,
+                    rect->width, rect->height );
 }
 
 static void
@@ -175,8 +174,7 @@ gtkEraseRect( const GtkDrawCtx* dctx, const XP_Rect* rect )
 {
     set_color_cairo( dctx, 0xFFFF, 0xFFFF, 0xFFFF );
     // const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
-    draw_rectangle( dctx, DRAW_WHAT(dctx), NULL, //style->white_gc,
-                    TRUE, rect->left, rect->top, 
+    draw_rectangle( dctx, TRUE, rect->left, rect->top,
                     rect->width, rect->height );
 } /* gtkEraseRect */
 
@@ -266,7 +264,9 @@ layout_for_ht( GtkDrawCtx* dctx, XP_U16 ht )
         char font[32];
         snprintf( font, sizeof(font), "helvetica normal %dpx", ht );
 
-        layout = pango_layout_new( dctx->pangoContext );
+        PangoContext* pc = pango_cairo_create_context( getCairo(dctx) );
+        layout = pango_layout_new( pc );
+        g_object_unref( pc );
         fps->fontdesc = pango_font_description_from_string( font );
         pango_layout_set_font_description( layout, fps->fontdesc );
         fps->layout = g_object_ref( layout );
@@ -352,7 +352,7 @@ drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
     nBytes = lbs->nBytes;
 
 #ifdef USE_CAIRO
-    draw_rectangle( dctx, NULL, NULL, TRUE, 0, 0, nCols, nRows );
+    draw_rectangle( dctx, TRUE, 0, 0, nCols, nRows );
 #else
     const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
     GdkPixmap* pm = gdk_pixmap_new( DRAW_WHAT(dctx), nCols, nRows, -1 );
@@ -417,8 +417,7 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
     gtk_widget_get_allocation( dctx->drawing_area, &alloc );
 
 #ifdef USE_CAIRO
-    draw_rectangle( dctx, NULL, NULL, TRUE,
-                    0, 0, alloc.width, alloc.height );
+    draw_rectangle( dctx, TRUE, 0, 0, alloc.width, alloc.height );
 #else
     const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
     draw_rectangle( dctx, DRAW_WHAT(dctx), style->white_gc, TRUE,
@@ -427,8 +426,6 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 
     g_list_foreach( dctx->fontsPerSize, freer, NULL );
     g_list_free( dctx->fontsPerSize );
-
-    g_object_unref( dctx->pangoContext );
 
 } /* gtk_draw_destroyCtxt */
 
@@ -535,25 +532,21 @@ drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
         gtkSetForeground( dctx, &dctx->black );
 
         if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
-            draw_rectangle( dctx, DRAW_WHAT(dctx),
-                            NULL, FALSE, lrect.left, lrect.top, 
+            draw_rectangle( dctx, FALSE, lrect.left, lrect.top,
                             0, lrect.height);
         }
         if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
-            draw_rectangle( dctx, DRAW_WHAT(dctx),
-                            NULL, FALSE, lrect.left, lrect.top, 
+            draw_rectangle( dctx, FALSE, lrect.left, lrect.top,
                             lrect.width, 0/*rectInset.height*/);
         }
         if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
-            draw_rectangle( dctx, DRAW_WHAT(dctx),
-                            NULL, FALSE, lrect.left+lrect.width, 
+            draw_rectangle( dctx, FALSE, lrect.left+lrect.width,
                             lrect.top, 
                             0, lrect.height);
         }
         if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
-            draw_rectangle( dctx, DRAW_WHAT(dctx),
-                            NULL, FALSE, lrect.left, 
-                            lrect.top+lrect.height, 
+            draw_rectangle( dctx, FALSE, lrect.left,
+                            lrect.top+lrect.height,
                             lrect.width, 0 );
         }
     }
@@ -609,11 +602,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
 #else
         gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
 #endif
-        draw_rectangle( dctx, DRAW_WHAT(dctx),
-                        NULL,
-                        FALSE,
-                        rect->left, rect->top, rect->width, 
-                        rect->height );
+        draw_rectangle( dctx, FALSE, rect->left, rect->top,
+                        rect->width, rect->height );
     }
 
     /* We draw just an empty, potentially colored, square IFF there's nothing
@@ -654,8 +644,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
         } else if ( !highlight ) {
             gtkSetForeground( dctx, &dctx->tileBack );
         }
-        draw_rectangle( dctx, DRAW_WHAT(dctx), NULL, TRUE,
-                        rectInset.left, rectInset.top,
+        draw_rectangle( dctx, TRUE, rectInset.left, rectInset.top,
                         rectInset.width+1, rectInset.height+1 );
 
         if ( isBlank && 0 == strcmp("_",letter ) ) {
@@ -771,17 +760,13 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 
         /* frame the tile */
         gtkSetForeground( dctx, &dctx->black );
-        draw_rectangle( dctx, DRAW_WHAT(dctx),
-                        NULL,
-                        FALSE,
-                        insetR.left, insetR.top, insetR.width, 
+        draw_rectangle( dctx, FALSE,
+                        insetR.left, insetR.top, insetR.width,
                         insetR.height );
 
         if ( (flags & CELL_HIGHLIGHT) != 0 ) {
             gtkInsetRect( &insetR, 1 );
-            draw_rectangle( dctx, DRAW_WHAT(dctx),
-                            NULL,
-                            FALSE, insetR.left, insetR.top, 
+            draw_rectangle( dctx, FALSE, insetR.left, insetR.top,
                             insetR.width, insetR.height);
         }
     }
@@ -848,9 +833,7 @@ gtk_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
     gtkSetForeground( dctx, &dctx->black );
-    draw_rectangle( dctx, DRAW_WHAT(dctx),
-                    NULL,
-                    !selected, 
+    draw_rectangle( dctx, !selected,
                     r.left, r.top, r.width, r.height);
 } /* gtk_draw_drawTrayDivider */
 
@@ -1000,8 +983,7 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
             }
         }
 
-        draw_rectangle( dctx, DRAW_WHAT(dctx), NULL,
-                        TRUE, selRect.left, selRect.top, 
+        draw_rectangle( dctx, TRUE, selRect.left, selRect.top,
                         selRect.width, selRect.height );
         if ( hasCursor ) {
             gtkFillRect( dctx, rInner, cursor );
@@ -1443,7 +1425,6 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, gtk );
 #endif
 
-    dctx->pangoContext = gtk_widget_get_pango_context( drawing_area );
     dctx->drawing_area = drawing_area;
     dctx->globals = globals;
 
@@ -1484,6 +1465,42 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 
     return (DrawCtx*)dctx;
 } /* gtkDrawCtxtMake */
+
+void
+addSurface( GtkDrawCtx* dctx, int width, int height )
+{
+    XP_ASSERT( !dctx->surface );
+    dctx->surface = cairo_image_surface_create( CAIRO_FORMAT_RGB24, width, height );
+    XP_ASSERT( !!dctx->surface );
+}
+
+void
+removeSurface( GtkDrawCtx* dctx )
+{
+    XP_ASSERT( !!dctx->surface );
+    g_object_unref( dctx->surface );
+    dctx->surface = NULL;
+}
+
+static cairo_status_t
+write_func( void *closure, const unsigned char *data,
+            unsigned int length )
+{
+    XWStreamCtxt* stream = (XWStreamCtxt*)closure;
+    stream_putBytes( stream, data, length );
+    return CAIRO_STATUS_SUCCESS;
+}
+
+void
+getImage( GtkDrawCtx* dctx, XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+    XP_ASSERT( !!dctx->surface );
+    cairo_status_t status =
+        cairo_surface_write_to_png_stream( dctx->surface,
+                                           write_func, stream );
+    XP_ASSERT( CAIRO_STATUS_SUCCESS == status );
+}
 
 void
 draw_gtk_status( GtkDrawCtx* dctx, char ch )

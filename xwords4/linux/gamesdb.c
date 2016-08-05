@@ -19,6 +19,9 @@
  */
 
 #include "gamesdb.h"
+#include "gtkboard.h"
+#include "gtkdraw.h"
+#include "linuxutl.h"
 #include "main.h"
 
 static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
@@ -164,26 +167,24 @@ writeToDB( XWStreamCtxt* stream, void* closure )
 }
 
 static void
-addSnap( sqlite3* pDb, sqlite3_int64 curRow )
+addSnap( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
 
-    char* filename = "./red.png";
-    GError *error = NULL;
-    GdkPixbuf* snap = gdk_pixbuf_new_from_file_at_size( filename, 80, 80, &error );
-    XP_ASSERT( !!snap );
+    BoardCtxt* board = cGlobals->game.board;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)board_getDraw( board );
+    addSurface( dctx, 100, 100 );
+    board_invalAll( board );
+    board_draw( board );
+    board_invalAll( board );
 
-    gchar* buffer;
-    gsize buffer_size;
-    gboolean worked = gdk_pixbuf_save_to_buffer( snap, &buffer, &buffer_size,
-                                                 "png", &error, NULL );
-    XP_ASSERT( worked );
-    sqlite3_int64 newRow = writeBlobColumnData( (const XP_U8*)buffer, buffer_size,
-                                                CUR_STREAM_VERS, pDb, curRow, "snap" );
-    XP_ASSERT( curRow == newRow );
-    
-    g_free( buffer );
-    g_object_unref( snap );
+    XWStreamCtxt* stream = make_simple_stream( cGlobals );
+    getImage( dctx, stream );
+    removeSurface( dctx );
+    sqlite3_int64 newRow = writeBlobColumnStream( stream, cGlobals->pDb,
+                                                  cGlobals->selRow, "snap" );
+    XP_ASSERT( cGlobals->selRow == newRow );
+    stream_destroy( stream );
 }
 
 void
@@ -255,7 +256,7 @@ summarize( CommonGlobals* cGlobals )
     sqlite3_finalize( stmt );
     XP_USE( result );
 
-    addSnap( cGlobals->pDb, cGlobals->selRow );
+    addSnap( cGlobals );
 }
 
 GSList*
