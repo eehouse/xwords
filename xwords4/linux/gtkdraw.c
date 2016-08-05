@@ -93,8 +93,11 @@ initCairo( GtkDrawCtx* dctx )
     XP_Bool inited = !!cairo;
     if ( inited ) {
         dctx->_cairo = cairo;
-        /* XP_LOGF( "dctx->cairo=%p", dctx->_cairo ); */
-        cairo_set_line_width( cairo, 1.0 );
+        if ( !!dctx->surface ) {
+            cairo_set_line_width( cairo, 0.1 );
+        } else {
+            cairo_set_line_width( cairo, 1.0 );
+        }
         cairo_set_line_cap( cairo, CAIRO_LINE_CAP_SQUARE );
     }
     return inited;

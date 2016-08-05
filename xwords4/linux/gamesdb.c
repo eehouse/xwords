@@ -24,8 +24,8 @@
 #include "linuxutl.h"
 #include "main.h"
 
-#define SNAP_WIDTH 200
-#define SNAP_HEIGHT 200
+#define SNAP_WIDTH 150
+#define SNAP_HEIGHT 150
 
 static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
                            int len );
@@ -322,21 +322,16 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
 
         /* Load the snapshot */
+        GdkPixbuf* snap = NULL;
         const XP_U8* ptr = sqlite3_column_blob( ppStmt, 10 );
-        int size = sqlite3_column_bytes( ppStmt, 10 );
-        /* Skip the version that's written in */
-        ptr += sizeof(XP_U16); size -= sizeof(XP_U16);
-        GInputStream* istr = g_memory_input_stream_new_from_data( ptr, size, NULL );
-        GError *error = NULL;
-        GdkPixbuf* snap = gdk_pixbuf_new_from_stream( istr, NULL, &error );
-        g_object_unref( istr );
-
-        if ( !snap ) {
-            XP_LOGF( "%s(): error from gdk_pixbuf_new_from_stream(): %s",
-                     __func__, error->message );
-            g_error_free( error );
+        if ( !!ptr ) {
+            int size = sqlite3_column_bytes( ppStmt, 10 );
+            /* Skip the version that's written in */
+            ptr += sizeof(XP_U16); size -= sizeof(XP_U16);
+            GInputStream* istr = g_memory_input_stream_new_from_data( ptr, size, NULL );
+            snap = gdk_pixbuf_new_from_stream( istr, NULL, NULL );
+            g_object_unref( istr );
         }
-        XP_ASSERT( !!snap );
         gib->snap = snap;
     }
     sqlite3_finalize( ppStmt );
