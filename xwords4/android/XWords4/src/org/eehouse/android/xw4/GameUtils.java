@@ -391,15 +391,8 @@ public class GameUtils {
 
                 thumb = Bitmap.createBitmap( size, size,
                                              Bitmap.Config.ARGB_8888 );
-
-                XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
-                                          0, 0, 0, 20, 20, false, null );
-
                 ThumbCanvas canvas = new ThumbCanvas( context, thumb );
-                XwJNI.board_setDraw( gamePtr, canvas );
-                XwJNI.board_invalAll( gamePtr );
-                Assert.assertNotNull( gamePtr );
-                XwJNI.board_draw( gamePtr );
+                XwJNI.board_drawSnapshot( gamePtr, canvas, size, size );
             }
         }
         return thumb;

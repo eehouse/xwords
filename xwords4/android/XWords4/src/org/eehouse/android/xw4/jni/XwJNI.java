@@ -268,6 +268,8 @@ public class XwJNI {
     public static native void board_setDraw( GamePtr gamePtr, DrawCtx draw );
     public static native void board_invalAll( GamePtr gamePtr );
     public static native boolean board_draw( GamePtr gamePtr );
+    public static native void board_drawSnapshot( GamePtr gamePtr, DrawCtx draw,
+                                                  int width, int height );
 
     // Only if COMMON_LAYOUT defined
     public static native void board_figureLayout( GamePtr gamePtr, CurGameInfo gi,

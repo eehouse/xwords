@@ -404,10 +404,10 @@ board_drawSnapshot( const BoardCtxt* curBoard, DrawCtx* dctx,
     BoardCtxt* newBoard = board_make( MPPARM(curBoard->mpool)
                                       curBoard->model,
                                       curBoard->server, dctx, curBoard->util );
-
+    board_setDraw( newBoard, dctx ); /* so draw_dictChanged() will get called */
     XP_U16 fontWidth = width / curBoard->gi->boardSize;
     board_figureLayout( newBoard, curBoard->gi, 0, 0, width, height,
-                        0, 0, 0, fontWidth, width, XP_TRUE, NULL );
+                        0, 0, 0, fontWidth, width, XP_FALSE, NULL );
     board_draw( newBoard );
     board_destroy( newBoard );
 }

@@ -976,6 +976,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
     return result;
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1drawSnapshot
+( JNIEnv *env, jclass C, GamePtrType gamePtr, jobject jdraw, jint width,
+  jint height )
+{
+    XWJNI_START();
+    DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->globalJNI->ti, jdraw );
+    board_drawSnapshot( state->game.board, newDraw, width, height );
+    destroyDraw( &newDraw );
+    XWJNI_END();
+}
+
 #ifdef COMMON_LAYOUT
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout

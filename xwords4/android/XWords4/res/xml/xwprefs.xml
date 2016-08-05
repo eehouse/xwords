@@ -116,20 +116,19 @@
         android:defaultValue="@string/game_summary_field_opponents"
         />
 
-    <CheckBoxPreference android:key="@string/key_enable_dualpane"
-                        android:title="@string/enable_dualpane_title"
-                        android:summary="@string/enable_dualpane_summary"
+    <CheckBoxPreference android:key="@string/key_hide_newgames"
+                        android:title="@string/hide_newgames_title"
+                        android:summary="@string/hide_newgames_summary"
                         android:defaultValue="false"
                         />
-
     <CheckBoxPreference android:key="@string/key_hide_title"
                         android:title="@string/hide_title"
                         android:summary="@string/hide_title_summary"
                         android:defaultValue="false"
                         />
-    <CheckBoxPreference android:key="@string/key_hide_newgames"
-                        android:title="@string/hide_newgames_title"
-                        android:summary="@string/hide_newgames_summary"
+    <CheckBoxPreference android:key="@string/key_enable_dualpane"
+                        android:title="@string/enable_dualpane_title"
+                        android:summary="@string/enable_dualpane_summary"
                         android:defaultValue="false"
                         />
     <CheckBoxPreference android:key="@string/key_show_arrow"
