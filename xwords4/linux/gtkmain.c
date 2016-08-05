@@ -473,9 +473,13 @@ makeGamesWindow( GtkAppGlobals* apg )
                       G_CALLBACK(handle_destroy), apg );
 
     setWindowTitle( apg );
+
+    GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
+    gtk_container_add( GTK_CONTAINER(window), swin );
+    gtk_widget_show( swin );
     
     GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add( GTK_CONTAINER(window), vbox );
+    gtk_container_add( GTK_CONTAINER(swin), vbox );
     gtk_widget_show( vbox );
     GtkWidget* list = init_games_list( apg );
     apg->listWidget = list;
