@@ -203,9 +203,13 @@ public class GameListItem extends LinearLayout
         if ( loaded != m_loaded ) {
             m_loaded = loaded;
 
-            // This should be enough to invalidate
-            m_viewUnloaded.setVisibility( loaded ? View.INVISIBLE : View.VISIBLE );
-            m_viewLoaded.setVisibility( loaded ? View.VISIBLE : View.INVISIBLE );
+            if ( loaded ) {
+                // This should be enough to invalidate
+                m_viewUnloaded.setVisibility( View.INVISIBLE );
+                m_viewLoaded.setVisibility( View.VISIBLE );
+            } else {
+                m_viewLoaded.invalidate();
+            }
         }
     }
 
