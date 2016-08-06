@@ -418,6 +418,13 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
         // freeGlobals( globals );
     }
     g_slist_free( apg->globalsList );
+
+    gchar buf[64];
+    sprintf( buf, "%d:%d:%d:%d", apg->lastConfigure.x,
+             apg->lastConfigure.y, apg->lastConfigure.width,
+             apg->lastConfigure.height );
+    db_store( apg->params->pDb, KEY_WIN_LOC, buf );
+
     gtk_main_quit();
 }
 
@@ -426,6 +433,16 @@ handle_quit_button( GtkWidget* XP_UNUSED(widget), gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
     handle_destroy( NULL, apg );
+}
+
+static gboolean
+window_configured( GtkWidget* XP_UNUSED(widget),
+                   GdkEventConfigure* event, GtkAppGlobals* apg )
+{
+    /* XP_LOGF( "%s(x=%d, y=%d, width=%d, height=%d)", __func__, */
+    /*          event->x, event->y, event->width, event->height ); */
+    apg->lastConfigure = *event;
+    return FALSE;
 }
 
 static GtkWidget*
@@ -463,6 +480,19 @@ setWindowTitle( GtkAppGlobals* apg )
 }
 
 static void
+trySetWinConfig( GtkAppGlobals* apg )
+{
+    gchar buf[64];
+    if ( db_fetch( apg->params->pDb, KEY_WIN_LOC, buf, sizeof(buf)) ) {
+        int xx, yy, width, height;
+        sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
+
+        gtk_window_resize( GTK_WINDOW(apg->window), width, height );
+        gtk_window_move (GTK_WINDOW(apg->window), xx, yy );
+    }
+}
+
+static void
 makeGamesWindow( GtkAppGlobals* apg )
 {
     GtkWidget* window;
@@ -471,8 +501,12 @@ makeGamesWindow( GtkAppGlobals* apg )
     apg->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     g_signal_connect( G_OBJECT(window), "destroy",
                       G_CALLBACK(handle_destroy), apg );
+    g_signal_connect( window, "configure_event",
+                      G_CALLBACK(window_configured), apg );
 
     setWindowTitle( apg );
+
+    trySetWinConfig( apg );
 
     GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
     gtk_container_add( GTK_CONTAINER(window), swin );
