@@ -408,6 +408,10 @@ board_drawSnapshot( const BoardCtxt* curBoard, DrawCtx* dctx,
     XP_U16 fontWidth = width / curBoard->gi->boardSize;
     board_figureLayout( newBoard, curBoard->gi, 0, 0, width, height,
                         0, 0, 0, fontWidth, width, XP_FALSE, NULL );
+
+    newBoard->showColors = curBoard->showColors;
+    newBoard->showGrid = curBoard->showGrid;
+
     board_draw( newBoard );
     board_destroy( newBoard );
 }

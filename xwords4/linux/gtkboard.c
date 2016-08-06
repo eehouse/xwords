@@ -699,6 +699,7 @@ static gboolean
 configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                  GtkGameGlobals* globals )
 {
+    globals->gridOn = XP_TRUE;
     if ( globals->draw == NULL ) {
         createOrLoadObjects( globals );
     }
@@ -800,7 +801,6 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                       GTK_DIVIDER_WIDTH );
 
 #endif
-    globals->gridOn = XP_TRUE;
 
     setCtrlsForTray( globals );
     board_invalAll( board );
@@ -821,7 +821,6 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     }
     saveGame( &globals->cGlobals );
     windowDestroyed( globals );
-    // gtk_main_quit();
 }
 
 static void
