@@ -375,7 +375,9 @@ public class JNIThread extends Thread {
                 XwJNI.game_saveSucceeded( m_jniGamePtr );
                 m_lastSavedState = newHash;
 
-                GameUtils.loadMakeBitmap( m_context, state, m_lock );
+                Bitmap thumb
+                    = GameUtils.takeSnapshot( m_context, m_jniGamePtr, m_gi );
+                DBUtils.saveThumbnail( m_context, m_lock, thumb );
             }
         }
     }

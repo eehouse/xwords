@@ -351,21 +351,6 @@ public class GameUtils {
         return thumb;
     }
 
-    public static Bitmap loadMakeBitmap( Context context, byte[] stream, 
-                                         GameLock lock )
-    {
-        Bitmap thumb = null;
-        CurGameInfo gi = new CurGameInfo( context );
-        GamePtr gamePtr = loadMakeGame( context, gi, null, null, stream, 
-                                        lock.getRowid() );
-        if ( null != gamePtr ) {
-            thumb = takeSnapshot( context, gamePtr, gi );
-            gamePtr.release();
-            DBUtils.saveThumbnail( context, lock, thumb );
-        }
-        return thumb;
-    }
-
     public static Bitmap takeSnapshot( Context context, GamePtr gamePtr,
                                        CurGameInfo gi )
     {
