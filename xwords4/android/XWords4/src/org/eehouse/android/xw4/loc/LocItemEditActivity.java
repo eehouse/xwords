@@ -20,10 +20,7 @@
 
 package org.eehouse.android.xw4.loc;
 
-import android.content.Context;
-import android.util.AttributeSet;
 import android.os.Bundle;
-import android.content.Intent;
 
 import org.eehouse.android.xw4.XWActivity;
 

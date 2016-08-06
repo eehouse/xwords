@@ -24,39 +24,33 @@ import android.app.Activity;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass.Device.Major;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
-import java.util.Map.Entry;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import org.eehouse.android.xw4.MultiService.DictFetchOwner;
-import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
-import org.eehouse.android.xw4.jni.LastMoveInfo;
-import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.XWService.ReceiveResult;
-
-import junit.framework.Assert;
 
 public class BTService extends XWService {
     private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";

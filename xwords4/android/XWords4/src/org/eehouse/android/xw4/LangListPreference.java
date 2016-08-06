@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.preference.PreferenceActivity;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

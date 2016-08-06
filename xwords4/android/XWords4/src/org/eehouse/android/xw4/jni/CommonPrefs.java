@@ -23,16 +23,12 @@ package org.eehouse.android.xw4.jni;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Paint;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.XWPrefs;
-import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictUtils;
-import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CommonPrefs extends XWPrefs {

@@ -20,10 +20,8 @@
 
 package org.eehouse.android.xw4;
 
-import android.widget.ListAdapter;
-import android.content.Context;
-import android.database.DataSetObserver;
 import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
 
 /**
  * Let's see if we can implement a few of these methods just once.

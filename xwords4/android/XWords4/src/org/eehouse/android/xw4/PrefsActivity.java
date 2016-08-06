@@ -22,14 +22,13 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class PrefsActivity extends PreferenceActivity
     implements Delegator, DlgDelegate.HasDlgDelegate {

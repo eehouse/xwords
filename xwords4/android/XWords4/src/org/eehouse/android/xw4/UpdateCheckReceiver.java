@@ -30,16 +30,13 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
-import java.net.HttpURLConnection;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.eehouse.android.xw4.loc.LocUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import org.eehouse.android.xw4.loc.LocUtils;
+import java.io.File;
+import java.net.HttpURLConnection;
 
 public class UpdateCheckReceiver extends BroadcastReceiver {
 

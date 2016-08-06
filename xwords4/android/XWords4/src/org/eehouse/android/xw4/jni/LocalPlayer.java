@@ -21,8 +21,10 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
-import org.eehouse.android.xw4.R;
+
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.R;
 
 public class LocalPlayer {
     public String name;

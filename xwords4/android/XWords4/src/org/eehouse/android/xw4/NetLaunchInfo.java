@@ -25,19 +25,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import java.io.InputStream;
-import java.util.Iterator;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.util.Iterator;
 
 public class NetLaunchInfo {
     private static final String ADDRS_KEY = "ad";

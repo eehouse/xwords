@@ -23,8 +23,6 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import junit.framework.Assert;
-
 import org.eehouse.android.xw4.loc.LocUtils;
 
 

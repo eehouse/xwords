@@ -20,13 +20,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.preference.ListPreference;
 import android.content.Context;
 import android.util.AttributeSet;
 
 import java.util.ArrayList;
-
-import junit.framework.Assert;
 
 public class DictListPreference extends XWListPreference {
 

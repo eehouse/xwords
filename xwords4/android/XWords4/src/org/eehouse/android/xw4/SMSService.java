@@ -20,51 +20,37 @@
 
 package org.eehouse.android.xw4;
 
-import android.telephony.TelephonyManager;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
-import android.telephony.SmsMessage;
+import android.telephony.TelephonyManager;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.lang.System;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.XWService.ReceiveResult;
-import org.eehouse.android.xw4.GameUtils.BackMoveResult;
-import org.eehouse.android.xw4.MultiService.DictFetchOwner;
-import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
-import org.eehouse.android.xw4.jni.LastMoveInfo;
-import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.JNIThread;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class SMSService extends XWService {
 

@@ -21,16 +21,17 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Utils;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.*;
 
 public class JNIUtilsImpl implements JNIUtils {
 

@@ -20,11 +20,11 @@
 
 package org.eehouse.android.xw4;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
-
-import android.os.Parcelable;
-import android.os.Parcel;
 
 public class DlgState implements Parcelable {
     public DlgID m_id;

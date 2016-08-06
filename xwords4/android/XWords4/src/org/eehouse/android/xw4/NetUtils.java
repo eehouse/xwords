@@ -21,8 +21,12 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-
 import android.text.TextUtils;
+
+import junit.framework.Assert;
+
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -38,13 +42,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
 import javax.net.SocketFactory;
-
-import org.json.JSONObject;
-
-import junit.framework.Assert;
 
 public class NetUtils {
 

@@ -26,7 +26,18 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
-import android.os.IBinder;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.GameUtils.BackMoveResult;
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
+import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -42,20 +53,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.MultiService.DictFetchOwner;
-import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.GameUtils.BackMoveResult;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
-import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.jni.LastMoveInfo;
-import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
-import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.JNIThread;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayService extends XWService
     implements NetStateCache.StateChangedIf {

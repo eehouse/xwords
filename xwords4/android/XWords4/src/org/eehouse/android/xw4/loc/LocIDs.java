@@ -21,13 +21,10 @@
 package org.eehouse.android.xw4.loc;
 
 import android.content.Context;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DbgUtils;
+
+import java.util.HashMap;
 
 public class LocIDs extends LocIDsData {
     private static String[] s_keys;

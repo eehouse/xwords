@@ -20,11 +20,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.preference.Preference;
-import android.preference.ListPreference;
 import android.content.Context;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.util.AttributeSet;
-import junit.framework.Assert;
 
 
 public class PollListPreference extends ListPreference

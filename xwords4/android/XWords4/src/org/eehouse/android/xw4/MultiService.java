@@ -20,11 +20,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 
 import junit.framework.Assert;
 

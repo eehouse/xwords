@@ -21,22 +21,15 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
-
 import android.content.Context;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
-
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
-
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -44,11 +37,11 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+
+import java.util.ArrayList;
 
 public class LookupAlert extends LinearLayout
     implements View.OnClickListener, Dialog.OnKeyListener,

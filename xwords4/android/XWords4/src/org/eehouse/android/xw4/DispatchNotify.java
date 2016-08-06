@@ -21,15 +21,8 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.Intent;
 import android.net.Uri;
-import android.widget.Toast;
 import android.os.Bundle;
-import java.util.HashSet;
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.jni.GameSummary;
 
 public class DispatchNotify extends Activity {
 

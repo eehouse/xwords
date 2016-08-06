@@ -20,8 +20,6 @@
 
 package org.eehouse.android.xw4.jni;
 
-import android.graphics.drawable.BitmapDrawable;
-
 public interface JNIUtils {
 
     // Stuff I can't do in C....

@@ -23,8 +23,10 @@ package org.eehouse.android.xw4;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
+
 import org.json.JSONArray;
 
 public class GCMIntentService extends GCMBaseIntentService {

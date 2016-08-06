@@ -23,18 +23,10 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
-import java.lang.InterruptedException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.HashSet;
-import java.util.Set;
+
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.CommsTransport;
 import org.eehouse.android.xw4.ConnStatusHandler;
@@ -44,14 +36,16 @@ import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.Toolbar;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
-import org.eehouse.android.xw4.jni.DrawCtx;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 
-import junit.framework.Assert;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class JNIThread extends Thread {
 

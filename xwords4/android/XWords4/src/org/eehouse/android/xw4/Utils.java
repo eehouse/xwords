@@ -29,7 +29,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -47,16 +46,17 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Utils {
     public static final int TURN_COLOR = 0x7F00FF00;

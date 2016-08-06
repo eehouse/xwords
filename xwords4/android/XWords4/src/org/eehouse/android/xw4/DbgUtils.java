@@ -22,26 +22,17 @@ package org.eehouse.android.xw4;
 
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Looper;
-import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
-import android.widget.Toast;
-import java.lang.Thread;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.Iterator;
-import java.util.Set;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+
+import java.util.Formatter;
 
 public class DbgUtils {
     private static final String TAG = BuildConstants.DBG_TAG;

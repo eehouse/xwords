@@ -25,7 +25,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import java.util.ArrayList;
 
 import junit.framework.Assert;
 

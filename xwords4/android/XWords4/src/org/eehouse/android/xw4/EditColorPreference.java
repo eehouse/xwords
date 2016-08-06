@@ -20,20 +20,18 @@
 
 package org.eehouse.android.xw4;
 
-import android.preference.DialogPreference;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
+import android.preference.DialogPreference;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.SeekBar;
 import android.widget.EditText;
-import android.app.Dialog;
-import android.content.SharedPreferences;
-import android.app.AlertDialog;
-import android.text.TextWatcher;
-import android.text.Editable;
-import junit.framework.Assert;
+import android.widget.SeekBar;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

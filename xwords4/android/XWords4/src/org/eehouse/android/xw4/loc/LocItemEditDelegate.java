@@ -33,16 +33,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
-import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DelegateBase;
 import org.eehouse.android.xw4.Delegator;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
-import org.eehouse.android.xw4.Delegator;
+
+import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
 

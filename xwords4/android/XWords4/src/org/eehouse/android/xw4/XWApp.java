@@ -26,9 +26,9 @@ import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
-import java.util.UUID;
-
 import org.eehouse.android.xw4.jni.XwJNI;
+
+import java.util.UUID;
 
 public class XWApp extends Application {
 

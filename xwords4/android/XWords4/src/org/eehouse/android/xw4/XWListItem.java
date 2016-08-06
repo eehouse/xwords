@@ -21,15 +21,12 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.CheckBox;
-
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

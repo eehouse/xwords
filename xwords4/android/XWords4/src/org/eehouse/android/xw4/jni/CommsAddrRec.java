@@ -22,9 +22,6 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.text.TextUtils;
-import java.net.InetAddress;
-import java.util.HashSet;
-import java.util.Iterator;
 
 import junit.framework.Assert;
 
@@ -36,6 +33,10 @@ import org.eehouse.android.xw4.SMSService;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
+
+import java.net.InetAddress;
+import java.util.HashSet;
+import java.util.Iterator;
 
 public class CommsAddrRec {
 

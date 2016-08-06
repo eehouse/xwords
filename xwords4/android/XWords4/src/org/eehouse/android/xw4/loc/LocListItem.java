@@ -23,17 +23,10 @@ package org.eehouse.android.xw4.loc;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
-import android.view.View.OnFocusChangeListener;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import junit.framework.Assert;
-
 import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.Utils;
-import org.eehouse.android.xw4.DbgUtils;
 
 public class LocListItem extends LinearLayout {
 

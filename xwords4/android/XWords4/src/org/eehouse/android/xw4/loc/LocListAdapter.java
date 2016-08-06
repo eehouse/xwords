@@ -21,12 +21,11 @@
 package org.eehouse.android.xw4.loc;
 
 import android.content.Context;
-import android.widget.ListView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import org.eehouse.android.xw4.XWListAdapter;
-import org.eehouse.android.xw4.DbgUtils;
 
 public class LocListAdapter extends XWListAdapter {
 

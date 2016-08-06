@@ -20,11 +20,11 @@
 
 package org.eehouse.android.xw4;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 
 public class BTReceiver extends BroadcastReceiver {
 

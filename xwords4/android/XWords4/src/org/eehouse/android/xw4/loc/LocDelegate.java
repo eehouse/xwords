@@ -26,16 +26,14 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Delegator;
 import org.eehouse.android.xw4.ListDelegateBase;
 import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.Utils;
-import org.eehouse.android.xw4.Delegator;
 
 public class LocDelegate extends ListDelegateBase
     implements View.OnClickListener,

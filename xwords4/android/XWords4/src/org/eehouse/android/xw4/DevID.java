@@ -30,9 +30,8 @@ package org.eehouse.android.xw4;
  */
 
 import android.content.Context;
-import com.google.android.gcm.GCMRegistrar;
 
-import junit.framework.Assert;
+import com.google.android.gcm.GCMRegistrar;
 
 public class DevID {
 

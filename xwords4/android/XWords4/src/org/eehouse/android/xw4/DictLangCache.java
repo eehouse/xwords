@@ -25,6 +25,16 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.widget.ArrayAdapter;
 
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DictUtils.DictAndLoc;
+import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.DictInfo;
+import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -33,16 +43,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.DictUtils.DictLoc;
-import org.eehouse.android.xw4.jni.JNIUtilsImpl;
-import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.DictInfo;
-import org.eehouse.android.xw4.jni.CommonPrefs;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictLangCache {
     private static String[] s_langNames;
