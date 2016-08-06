@@ -176,16 +176,20 @@ addSnap( CommonGlobals* cGlobals )
 
     BoardCtxt* board = cGlobals->game.board;
     GtkDrawCtx* dctx = (GtkDrawCtx*)board_getDraw( board );
-    addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
-    board_drawSnapshot( board, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
+    if ( !!dctx ) {
+        addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
+        board_drawSnapshot( board, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
 
-    XWStreamCtxt* stream = make_simple_stream( cGlobals );
-    getImage( dctx, stream );
-    removeSurface( dctx );
-    sqlite3_int64 newRow = writeBlobColumnStream( stream, cGlobals->pDb,
-                                                  cGlobals->selRow, "snap" );
-    XP_ASSERT( cGlobals->selRow == newRow );
-    stream_destroy( stream );
+        XWStreamCtxt* stream = make_simple_stream( cGlobals );
+        getImage( dctx, stream );
+        removeSurface( dctx );
+        sqlite3_int64 newRow = writeBlobColumnStream( stream, cGlobals->pDb,
+                                                      cGlobals->selRow, "snap" );
+        XP_ASSERT( cGlobals->selRow == newRow );
+        stream_destroy( stream );
+    }
+
+    LOG_RETURN_VOID();
 }
 
 void
