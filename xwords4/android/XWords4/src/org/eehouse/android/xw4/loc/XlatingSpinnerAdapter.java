@@ -25,8 +25,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SpinnerAdapter;
 
-import org.eehouse.android.xw4.DbgUtils;
-
 public class XlatingSpinnerAdapter implements SpinnerAdapter {
 
     private SpinnerAdapter m_adapter;

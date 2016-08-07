@@ -131,6 +131,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                                 util );
     game->board = board_make( MPPARM(mpool) game->model, game->server, 
                               NULL, util );
+    board_setCallbacks( game->board );
 
     server_prefsChanged( game->server, cp );
     board_prefsChanged( game->board, cp );

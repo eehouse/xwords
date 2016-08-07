@@ -205,31 +205,31 @@ evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
 
     switch( keyval ) {
 #ifdef KEYBOARD_NAV
-    case GDK_Return:
+    case GDK_KEY_Return:
         xpkey = XP_RETURN_KEY;
         break;
-    case GDK_space:
+    case GDK_KEY_space:
         xpkey = XP_RAISEFOCUS_KEY;
         break;
 
-    case GDK_Left:
+    case GDK_KEY_Left:
         xpkey = XP_CURSOR_KEY_LEFT;
         movesCursor = XP_TRUE;
         break;
-    case GDK_Right:
+    case GDK_KEY_Right:
         xpkey = XP_CURSOR_KEY_RIGHT;
         movesCursor = XP_TRUE;
         break;
-    case GDK_Up:
+    case GDK_KEY_Up:
         xpkey = XP_CURSOR_KEY_UP;
         movesCursor = XP_TRUE;
         break;
-    case GDK_Down:
+    case GDK_KEY_Down:
         xpkey = XP_CURSOR_KEY_DOWN;
         movesCursor = XP_TRUE;
         break;
 #endif
-    case GDK_BackSpace:
+    case GDK_KEY_BackSpace:
         XP_LOGF( "... it's a DEL" );
         xpkey = XP_CURSOR_KEY_DEL;
         break;
@@ -482,7 +482,8 @@ addDropChecks( GtkGameGlobals* globals )
             datum->typ = typ;
             datum->comms = comms;
 
-            GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+            GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
             gchar buf[32];
             snprintf( buf, sizeof(buf), "Drop %s messages", 
                       ConnType2Str( typ ) );
@@ -494,7 +495,7 @@ addDropChecks( GtkGameGlobals* globals )
             if ( comms_getAddrDisabled( comms, typ, XP_FALSE ) ) {
                 gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(widget), TRUE );
             }
-            g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
+            g_signal_connect( widget, "toggled", G_CALLBACK(drop_msg_toggle),
                               datum );
             gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
             gtk_widget_show( widget );
@@ -503,7 +504,7 @@ addDropChecks( GtkGameGlobals* globals )
             if ( comms_getAddrDisabled( comms, typ, XP_TRUE ) ) {
                 gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(widget), TRUE );
             }
-            g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
+            g_signal_connect( widget, "toggled", G_CALLBACK(drop_msg_toggle),
                               (void*)(((long)datum) | 1) );
             gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
             gtk_widget_show( widget );
@@ -698,6 +699,7 @@ static gboolean
 configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                  GtkGameGlobals* globals )
 {
+    globals->gridOn = XP_TRUE;
     if ( globals->draw == NULL ) {
         createOrLoadObjects( globals );
     }
@@ -705,10 +707,11 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     CommonGlobals* cGlobals = &globals->cGlobals;
     BoardCtxt* board = cGlobals->game.board;
 
-    short bdWidth = widget->allocation.width - (GTK_RIGHT_MARGIN
-						+ GTK_BOARD_LEFT_MARGIN);
-    short bdHeight = widget->allocation.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
-      - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
+    GtkAllocation alloc;
+    gtk_widget_get_allocation( widget, &alloc );
+    short bdWidth = alloc.width - (GTK_RIGHT_MARGIN + GTK_BOARD_LEFT_MARGIN);
+    short bdHeight = alloc.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
+        - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
 
 #ifdef COMMON_LAYOUT
     XP_ASSERT( !cGlobals->params->verticalScore ); /* not supported */
@@ -798,7 +801,6 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                       GTK_DIVIDER_WIDTH );
 
 #endif
-    globals->gridOn = XP_TRUE;
 
     setCtrlsForTray( globals );
     board_invalAll( board );
@@ -810,55 +812,6 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     return TRUE;
 } /* configure_event */
 
-/* Redraw the screen from the backing pixmap */
-static gint
-expose_event( GtkWidget* XP_UNUSED(widget),
-              GdkEventExpose* XP_UNUSED(event),
-              GtkGameGlobals* globals )
-{
-    /*
-    gdk_draw_rectangle( widget->window,//((GtkDrawCtx*)globals->draw)->pixmap,
-			widget->style->white_gc,
-			TRUE,
-			0, 0,
-			widget->allocation.width,
-			widget->allocation.height+widget->allocation.y );
-    */
-    /* I want to inval only the area that's exposed, but the rect is always
-       empty, even when clearly shouldn't be.  Need to investigate.  Until
-       fixed, use board_invalAll to ensure board is drawn.*/
-/*     board_invalRect( globals->cGlobals.game.board, (XP_Rect*)&event->area ); */
-
-    board_invalAll( globals->cGlobals.game.board );
-    board_draw( globals->cGlobals.game.board );
-    draw_gtk_status( globals->draw, globals->stateChar );
-    
-/*     gdk_draw_pixmap( widget->window, */
-/* 		     widget->style->fg_gc[GTK_WIDGET_STATE (widget)], */
-/* 		     ((GtkDrawCtx*)globals->draw)->pixmap, */
-/* 		     event->area.x, event->area.y, */
-/* 		     event->area.x, event->area.y, */
-/* 		     event->area.width, event->area.height ); */
-
-    return FALSE;
-} /* expose_event */
-
-#if 0
-static gint
-handle_client_event( GtkWidget *widget, GdkEventClient *event,
-		     GtkGameGlobals* globals )
-{
-    XP_LOGF( "handle_client_event called: event->type = " );
-    if ( event->type == GDK_CLIENT_EVENT ) {
-	XP_LOGF( "GDK_CLIENT_EVENT" );
-	return 1;
-    } else {
-	XP_LOGF( "%d", event->type );	
-	return 0;
-    }
-} /* handle_client_event */
-#endif
-
 void
 destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
@@ -868,7 +821,6 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     }
     saveGame( &globals->cGlobals );
     windowDestroyed( globals );
-    // gtk_main_quit();
 }
 
 static void
@@ -942,7 +894,7 @@ makeAddSubmenu( GtkWidget* menubar, gchar* label )
     GtkWidget* item;
 
     item = gtk_menu_item_new_with_label( label );
-    gtk_menu_bar_append( GTK_MENU_BAR(menubar), item );
+    gtk_menu_shell_append( GTK_MENU_SHELL(menubar), item );
     
     submenu = gtk_menu_new();
     gtk_menu_item_set_submenu( GTK_MENU_ITEM(item), submenu );
@@ -1254,18 +1206,16 @@ frame_active( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
 static GtkWidget*
 createAddItem( GtkWidget* parent, gchar* label, 
-               GtkSignalFunc handlerFunc, GtkGameGlobals* globals ) 
+               GCallback handlerFunc, GtkGameGlobals* globals ) 
 {
     GtkWidget* item = gtk_menu_item_new_with_label( label );
 
-/*      g_print( "createAddItem called with label %s\n", label ); */
-
     if ( handlerFunc != NULL ) {
-        g_signal_connect( GTK_OBJECT(item), "activate",
-                          G_CALLBACK(handlerFunc), globals );
+        g_signal_connect( item, "activate", G_CALLBACK(handlerFunc),
+                          globals );
     }
     
-    gtk_menu_append( GTK_MENU(parent), item );
+    gtk_menu_shell_append( GTK_MENU_SHELL(parent), item );
     gtk_widget_show( item );
 
     return item;
@@ -1279,69 +1229,69 @@ makeMenus( GtkGameGlobals* globals )
 
     fileMenu = makeAddSubmenu( menubar, "File" );
     (void)createAddItem( fileMenu, "Tile values", 
-                         GTK_SIGNAL_FUNC(tile_values), globals );
+                         (GCallback)tile_values, globals );
     (void)createAddItem( fileMenu, "Game history", 
-                         GTK_SIGNAL_FUNC(game_history), globals );
+                         (GCallback)game_history, globals );
 #ifdef TEXT_MODEL
     (void)createAddItem( fileMenu, "Dump board", 
-                         GTK_SIGNAL_FUNC(dump_board), globals );
+                         (GCallback)dump_board, globals );
 #endif
 
     (void)createAddItem( fileMenu, "Final scores", 
-                         GTK_SIGNAL_FUNC(final_scores), globals );
+                         (GCallback)final_scores, globals );
 
     (void)createAddItem( fileMenu, "New game", 
-                         GTK_SIGNAL_FUNC(new_game), globals );
+                         (GCallback)new_game, globals );
     (void)createAddItem( fileMenu, "Game info", 
-                         GTK_SIGNAL_FUNC(game_info), globals );
+                         (GCallback)game_info, globals );
 
     (void)createAddItem( fileMenu, "Load game", 
-                         GTK_SIGNAL_FUNC(load_game), globals );
+                         (GCallback)load_game, globals );
     (void)createAddItem( fileMenu, "Save game", 
-                         GTK_SIGNAL_FUNC(save_game), globals );
+                         (GCallback)save_game, globals );
 #ifdef XWFEATURE_CHANGEDICT
     (void)createAddItem( fileMenu, "Change dictionary", 
-                         GTK_SIGNAL_FUNC(change_dictionary), globals );
+                         (GCallback)change_dictionary, globals );
 #endif
     (void)createAddItem( fileMenu, "Cancel trade", 
-                         GTK_SIGNAL_FUNC(handle_trade_cancel), globals );
+                         (GCallback)handle_trade_cancel, globals );
 
     fileMenu = makeAddSubmenu( menubar, "Edit" );
 
     (void)createAddItem( fileMenu, "Undo", 
-                         GTK_SIGNAL_FUNC(handle_undo), globals );
+                         (GCallback)handle_undo, globals );
     (void)createAddItem( fileMenu, "Redo", 
-                         GTK_SIGNAL_FUNC(handle_redo), globals );
+                         (GCallback)handle_redo, globals );
 
 #ifdef FEATURE_TRAY_EDIT
     (void)createAddItem( fileMenu, "Allow tray edit", 
-                         GTK_SIGNAL_FUNC(handle_trayEditToggle_on), globals );
+                         (GCallback)handle_trayEditToggle_on, globals );
     (void)createAddItem( fileMenu, "Dis-allow tray edit", 
-                         GTK_SIGNAL_FUNC(handle_trayEditToggle_off), globals );
+                         (GCallback)handle_trayEditToggle_off, globals );
 #endif
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     (void)createAddItem( fileMenu, "Resend", 
-                         GTK_SIGNAL_FUNC(handle_resend), globals );
+                         (GCallback)handle_resend, globals );
 #ifdef XWFEATURE_COMMSACK
     (void)createAddItem( fileMenu, "ack any", 
-                         GTK_SIGNAL_FUNC(handle_ack), globals );
+                         (GCallback)handle_ack, globals );
 #endif
 # ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
-                         GTK_SIGNAL_FUNC(handle_commstats), globals );
+                         (GCallback)handle_commstats, globals );
 # endif
 #endif
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
-                         GTK_SIGNAL_FUNC(handle_memstats), globals );
+                         (GCallback)handle_memstats, globals );
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT
     fileMenu = makeAddSubmenu( menubar, "Test" );
     (void)createAddItem( fileMenu, "Frame active area", 
-                         GTK_SIGNAL_FUNC(frame_active), globals );
+                         (GCallback)frame_active, globals );
 #endif
     /*     (void)createAddItem( fileMenu, "Print board",  */
     /* 			 GTK_SIGNAL_FUNC(handle_print_board), globals ); */
@@ -1549,7 +1499,7 @@ static void
 scroll_value_changed( GtkAdjustment *adj, GtkGameGlobals* globals )
 {
     XP_U16 newValue;
-    gfloat newValueF = adj->value;
+    gfloat newValueF = gtk_adjustment_get_value( adj );
 
     /* XP_ASSERT( newValueF >= 0.0 */
     /*            && newValueF <= globals->cGlobals.params->nHidden ); */
@@ -1577,11 +1527,11 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     if ( globals->cGlobals.params->nHidden > 0 ) {
         gint nRows = globals->cGlobals.gi->boardSize;
-        globals->adjustment->page_size = nRows;
-        globals->adjustment->value = 0.0;
+        gtk_adjustment_set_page_size( globals->adjustment, nRows );
+        gtk_adjustment_set_value( globals->adjustment, 0.0 );
 
-        gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
-        gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
+        g_signal_emit_by_name( globals->adjustment, "changed" );
+        // gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
     }
 
     board = globals->cGlobals.game.board;
@@ -1793,7 +1743,7 @@ setCtrlsForTray( GtkGameGlobals* XP_UNUSED(globals) )
 
         globals->adjustment->value = 
             board_getYOffset( globals->cGlobals.game.board );
-        gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
+        gtk_signal_emit_by_name( globals->adjustment, "changed" );
     }
 #endif
 } /* setCtrlsForTray */
@@ -1814,9 +1764,9 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     if ( !!globals->adjustment ) {
         gint nRows = globals->cGlobals.gi->boardSize;
-        globals->adjustment->page_size = nRows - maxOffset;
-        globals->adjustment->value = newOffset;
-        gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
+        gtk_adjustment_set_page_size(globals->adjustment, nRows - maxOffset);
+        gtk_adjustment_set_value(globals->adjustment, newOffset);
+        // gtk_adjustment_value_changed( globals->adjustment );
     }
 } /* gtk_util_yOffsetChange */
 
@@ -2331,7 +2281,7 @@ makeShowButtonFromBitmap( void* closure, const gchar* filename,
     gtk_widget_show (button);
 
     if ( func != NULL ) {
-        g_signal_connect( GTK_OBJECT(button), "clicked", func, closure );
+        g_signal_connect( button, "clicked", func, closure );
     }
 
     return button;
@@ -2343,7 +2293,7 @@ makeVerticalBar( GtkGameGlobals* globals, GtkWidget* XP_UNUSED(window) )
     GtkWidget* vbox;
     GtkWidget* button;
 
-    vbox = gtk_vbutton_box_new();
+    vbox = gtk_button_box_new( GTK_ORIENTATION_VERTICAL );
 
     button = makeShowButtonFromBitmap( globals, "../flip.xpm", "f", 
                                        G_CALLBACK(handle_flip_button) );
@@ -2420,7 +2370,7 @@ addButton( GtkWidget* hbox, gchar* label, GCallback func, GtkGameGlobals* global
 {
     GtkWidget* button = gtk_button_new_with_label( label );
     gtk_widget_show( button );
-    g_signal_connect( GTK_OBJECT(button), "clicked", G_CALLBACK(func), globals );
+    g_signal_connect( button, "clicked", G_CALLBACK(func), globals );
     gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);
     return button;
  }
@@ -2428,7 +2378,7 @@ addButton( GtkWidget* hbox, gchar* label, GCallback func, GtkGameGlobals* global
 static GtkWidget* 
 makeButtons( GtkGameGlobals* globals )
 {
-    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     globals->buttons_hbox = hbox;
 
     (void)addButton( hbox, "Grid", G_CALLBACK(handle_grid_button), globals );
@@ -2651,6 +2601,24 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     setupGtkUtilCallbacks( globals, globals->cGlobals.util );
 }
 
+/* This gets called all the time, e.g. when the mouse moves across
+   drawing-area boundaries. So invalidating is crazy expensive. But this is a
+   test app....*/
+
+static gboolean
+on_draw_event( GtkWidget *widget, cairo_t* cr, gpointer user_data )
+{
+    // XP_LOGF( "%s(widget=%p)", __func__, widget );
+    GtkGameGlobals* globals = (GtkGameGlobals*)user_data;
+    board_invalAll( globals->cGlobals.game.board );
+    board_draw( globals->cGlobals.game.board );
+    draw_gtk_status( globals->draw, globals->stateChar );
+
+    XP_USE(widget);
+    XP_USE(cr);
+    return FALSE;
+}
+
 void
 initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 {
@@ -2675,21 +2643,21 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
         gtk_window_set_title( GTK_WINDOW(window), params->fileName );
     }
 
-    vbox = gtk_vbox_new (FALSE, 0);
+    vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
 
-    g_signal_connect( G_OBJECT (window), "destroy",
-                      G_CALLBACK( destroy_board_window ), globals );
+    g_signal_connect( window, "destroy", G_CALLBACK(destroy_board_window),
+                      globals );
     XP_ASSERT( !!globals );
-    g_signal_connect( G_OBJECT (window), "show",
-                      G_CALLBACK( on_board_window_shown ), globals );
+    g_signal_connect( window, "show", G_CALLBACK( on_board_window_shown ),
+                      globals );
 
     menubar = makeMenus( globals );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 
 #if ! defined XWFEATURE_STANDALONE_ONLY && defined DEBUG
-    globals->drop_checks_vbox = gtk_vbox_new( FALSE, 0 );
+    globals->drop_checks_vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), globals->drop_checks_vbox, 
                         FALSE, TRUE, 0 );
 #endif
@@ -2697,6 +2665,8 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     gtk_box_pack_start( GTK_BOX(vbox), makeButtons( globals ), FALSE, TRUE, 0);
 
     drawing_area = gtk_drawing_area_new();
+    g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(on_draw_event), globals);
+
     globals->drawing_area = drawing_area;
     gtk_widget_show( drawing_area );
 
@@ -2711,8 +2681,8 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 
     gtk_widget_set_size_request( GTK_WIDGET(drawing_area), width, height );
 
-    hbox = gtk_hbox_new( FALSE, 0 );
-    gtk_box_pack_start( GTK_BOX (hbox), drawing_area, TRUE, TRUE, 0);
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), drawing_area, TRUE, TRUE, 0);
 
     /* install scrollbar even if not needed -- since zooming can make it
        needed later */
@@ -2721,8 +2691,8 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     globals->adjustment = (GtkAdjustment*)
         gtk_adjustment_new( 0, 0, nRows, 1, 2, 
                             nRows - params->nHidden );
-    vscrollbar = gtk_vscrollbar_new( globals->adjustment );
-    g_signal_connect( GTK_OBJECT(globals->adjustment), "value_changed",
+    vscrollbar = gtk_scrollbar_new( GTK_ORIENTATION_VERTICAL, globals->adjustment );
+    g_signal_connect( globals->adjustment, "value_changed",
                       G_CALLBACK(scroll_value_changed), globals );
     gtk_widget_show( vscrollbar );
     gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, TRUE, TRUE, 0 );
@@ -2734,25 +2704,23 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox/* drawing_area */, TRUE, TRUE, 0);
 
-    g_signal_connect( GTK_OBJECT(drawing_area), "expose_event",
-                      G_CALLBACK(expose_event), globals );
-    g_signal_connect( GTK_OBJECT(drawing_area),"configure_event",
+    g_signal_connect( drawing_area,"configure_event",
                       G_CALLBACK(configure_event), globals );
-    g_signal_connect( GTK_OBJECT(drawing_area), "button_press_event",
+    g_signal_connect( drawing_area, "button_press_event",
                       G_CALLBACK(button_press_event), globals );
-    g_signal_connect( GTK_OBJECT(drawing_area), "motion_notify_event",
+    g_signal_connect( drawing_area, "motion_notify_event",
                       G_CALLBACK(motion_notify_event), globals );
-    g_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
+    g_signal_connect( drawing_area, "button_release_event",
                       G_CALLBACK(button_release_event), globals );
 
     setOneSecondTimer( cGlobals );
 
 #ifdef KEY_SUPPORT
 # ifdef KEYBOARD_NAV
-    g_signal_connect( GTK_OBJECT(window), "key_press_event",
+    g_signal_connect( window, "key_press_event",
                       G_CALLBACK(key_press_event), globals );
 # endif
-    g_signal_connect( GTK_OBJECT(window), "key_release_event",
+    g_signal_connect( window, "key_release_event",
                       G_CALLBACK(key_release_event), globals );
 #endif
 

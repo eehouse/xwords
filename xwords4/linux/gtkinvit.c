@@ -120,7 +120,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 
     /* get the number to invite */
     gchar* num = 
-        gtk_combo_box_get_active_text( GTK_COMBO_BOX(state->nPlayersCombo) );
+        gtk_combo_box_text_get_active_text( GTK_COMBO_BOX_TEXT(state->nPlayersCombo) );
     *(state->nPlayersP) = atoi( num );
         
     state->cancelled = XP_FALSE;
@@ -168,7 +168,7 @@ makeRelayPage( GtkInviteState* state, PageData* data )
 {
     data->okButtonTxt = "Invite via Relay";
 
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     GtkWidget* hbox;
 
     hbox = makeLabeledField( "Invitee DeviceID", &state->devID, NULL );
@@ -185,7 +185,7 @@ makeBTPage( GtkInviteState* state, PageData* data )
 {
     data->okButtonTxt = "Invite via Bluetooth";
 
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
     GtkWidget* hbox = makeLabeledField( "Invitee device", &state->bthost, NULL );
     if ( addr_hasType( state->addr, data->pageType ) ) {
@@ -193,7 +193,7 @@ makeBTPage( GtkInviteState* state, PageData* data )
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
-    state->bgScanButton = makeButton( "Scan", GTK_SIGNAL_FUNC(handle_scan),
+    state->bgScanButton = makeButton( "Scan", (GCallback)handle_scan,
                                       state );
     gtk_box_pack_start( GTK_BOX(vbox), state->bgScanButton, FALSE, TRUE, 0 );
 
@@ -234,7 +234,7 @@ makeSMSPage( GtkInviteState* state, PageData* data )
 {
     data->okButtonTxt = "Invite via SMS";
 
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );
     const gchar* phone = hasSMS ?
         state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
@@ -290,17 +290,17 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
 
     GtkWidget* dialog;
     GtkWidget* hbox;
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     GtkWidget* label = gtk_label_new( "Invite how many:" );
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
 
-    state.nPlayersCombo = gtk_combo_box_new_text();
+    state.nPlayersCombo = gtk_combo_box_text_new();
     for ( int ii = 1; ii <= state.maxPlayers; ++ii ) {
         gchar buf[8];
         sprintf( buf, "%d", ii );
-        gtk_combo_box_append_text( GTK_COMBO_BOX(state.nPlayersCombo), buf );
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(state.nPlayersCombo), buf );
     }
     gtk_combo_box_set_active( GTK_COMBO_BOX(state.nPlayersCombo), 0 );
     gtk_box_pack_start( GTK_BOX(hbox), state.nPlayersCombo, FALSE, TRUE, 0 );
@@ -308,7 +308,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     state.notebook = gtk_notebook_new();
-    g_signal_connect( GTK_OBJECT(state.notebook), "switch-page",
+    g_signal_connect( state.notebook, "switch-page",
                       G_CALLBACK(onPageChanged), &state );
 
     PageData* data;
@@ -351,13 +351,12 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
     gtk_widget_show( state.notebook );
 
     /* buttons at the bottom */
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     state.okButton = makeButton( state.pageData[0].okButtonTxt, 
-                                 GTK_SIGNAL_FUNC(handle_ok), &state );
+                                 (GCallback)handle_ok, &state );
     gtk_box_pack_start( GTK_BOX(hbox), state.okButton, FALSE, TRUE, 0 );
-    gtk_box_pack_start( GTK_BOX(hbox), 
-                        makeButton( "Cancel", 
-                                    GTK_SIGNAL_FUNC(handle_cancel), 
+    gtk_box_pack_start( GTK_BOX(hbox),
+                        makeButton( "Cancel", (GCallback)handle_cancel,
                                     &state ),
                         FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -366,8 +365,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
-    gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area), vbox );
-
+    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
 
     gtk_widget_show_all( dialog );
     gtk_main();

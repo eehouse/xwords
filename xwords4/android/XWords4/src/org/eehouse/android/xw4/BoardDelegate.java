@@ -24,13 +24,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,29 +37,36 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.Semaphore;
-
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
-import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
-import org.eehouse.android.xw4.jni.JNIThread.*;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.JNIThread;
+import org.eehouse.android.xw4.jni.JNIThread.JNICmd;
+import org.eehouse.android.xw4.jni.JNIUtils;
+import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.TransportProcs;
+import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.UtilCtxtImpl;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.Semaphore;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -1539,29 +1544,28 @@ public class BoardDelegate extends DelegateBase
             }
         } else if ( nMissing > 0 ) {
             if ( m_summary.hasRematchInfo() ) {
-                tryRematchInvites( false );
+                skipDismiss = !tryRematchInvites( false );
+            } else if ( !m_haveInvited ) {
+                m_haveInvited = true;
+                m_room = room;
+                showDialog( DlgID.DLG_INVITE );
+                invalidateOptionsMenuIf();
+                skipDismiss = true;
             } else {
-                if ( !m_haveInvited ) {
-                    m_haveInvited = true;
-                    m_room = room;
-                    showDialog( DlgID.DLG_INVITE );
-                    invalidateOptionsMenuIf();
-                    skipDismiss = true;
+                toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
+                                              devOrder, room, nMissing );
+                if ( devOrder == 1 ) {
+                    naMsg = R.string.not_again_conndfirst;
+                    naKey = R.string.key_notagain_conndfirst;
                 } else {
-                    toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
-                                                  devOrder, room, nMissing );
-                    if ( devOrder == 1 ) {
-                        naMsg = R.string.not_again_conndfirst;
-                        naKey = R.string.key_notagain_conndfirst;
-                    } else {
-                        naMsg = R.string.not_again_conndmid;
-                        naKey = R.string.key_notagain_conndmid;
-                    }
+                    naMsg = R.string.not_again_conndmid;
+                    naKey = R.string.key_notagain_conndmid;
                 }
             }
         }
 
         if ( null != toastStr ) {
+            DbgUtils.logf( "handleConndMessage(): toastStr: %s", toastStr );
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
                 dlgButtonClicked( Action.SHOW_EXPL_ACTION,
@@ -1752,7 +1756,7 @@ public class BoardDelegate extends DelegateBase
                                              R.string.key_notagain_turnchanged );
                         }
                     } );
-                handleViaThread( JNICmd. CMD_ZOOM, -8 );
+                handleViaThread( JNICmd.CMD_ZOOM, -8 );
                 handleViaThread( JNICmd.CMD_SAVE );
             }
         }
@@ -2692,7 +2696,8 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void tryRematchInvites( boolean force )
+    // Return true if anything sent
+    private boolean tryRematchInvites( boolean force )
     {
         if ( XWApp.REMATCH_SUPPORTED ) {
             if ( !force ) {
@@ -2728,6 +2733,7 @@ public class BoardDelegate extends DelegateBase
                 showToast( R.string.rematch_sent_toast );
             }
         }
+        return force;
     }
 
     private void sendSMSInviteIf( String phone, NetLaunchInfo nli,

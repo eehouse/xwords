@@ -22,18 +22,15 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
-import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Toolbar {

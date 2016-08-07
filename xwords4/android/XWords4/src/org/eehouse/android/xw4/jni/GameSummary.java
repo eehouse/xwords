@@ -22,10 +22,8 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.text.TextUtils;
-import java.util.Iterator;
 
 import junit.framework.Assert;
-import org.json.JSONObject;
 
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
@@ -36,6 +34,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.json.JSONObject;
 
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo

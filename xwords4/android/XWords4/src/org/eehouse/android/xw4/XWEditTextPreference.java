@@ -20,11 +20,9 @@
 
 package org.eehouse.android.xw4;
 
-import android.preference.EditTextPreference;
 import android.content.Context;
+import android.preference.EditTextPreference;
 import android.util.AttributeSet;
-
-import junit.framework.Assert;
 
 public class XWEditTextPreference extends EditTextPreference {
 

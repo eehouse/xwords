@@ -13,13 +13,14 @@
      android:background="@android:drawable/list_selector_background"
      >
 
+  <FrameLayout android:layout_width="fill_parent"
+               android:layout_height="wrap_content"
+               >
     <TextView android:id="@+id/view_unloaded"
-              android:layout_width="fill_parent" 
-              android:layout_height="wrap_content"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
               android:textAppearance="?android:attr/textAppearanceLarge"
               android:gravity="center"
-              android:paddingTop="10dp"
-              android:paddingBottom="10dp"
               android:text="@string/game_list_tmp"
               />
 
@@ -118,5 +119,6 @@
                       />
 
         </LinearLayout>
-    </LinearLayout>
+      </LinearLayout>
+    </FrameLayout>
 </org.eehouse.android.xw4.GameListItem>

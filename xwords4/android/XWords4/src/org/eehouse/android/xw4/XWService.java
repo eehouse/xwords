@@ -25,9 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
@@ -35,6 +32,9 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
+
+import java.util.HashSet;
+import java.util.Set;
 
 class XWService extends Service {
     public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };

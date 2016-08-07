@@ -249,6 +249,8 @@ typedef struct _GtkAppGlobals {
     GtkWidget* openButton;
     GtkWidget* rematchButton;
     GtkWidget* deleteButton;
+    /* save window position */
+    GdkEventConfigure lastConfigure;
 } GtkAppGlobals;
 
 #endif

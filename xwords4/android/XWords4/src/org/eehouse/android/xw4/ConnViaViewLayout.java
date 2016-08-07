@@ -23,17 +23,15 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.CheckBox;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
 
-import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
-
-import junit.framework.Assert;
 
 public class ConnViaViewLayout extends LinearLayout {
     private CommsConnTypeSet m_curSet;

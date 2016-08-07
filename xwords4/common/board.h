@@ -64,13 +64,18 @@ BoardCtxt* board_makeFromStream( MPFORMAL XWStreamCtxt* stream,
                                  ModelCtxt* model, ServerCtxt* server, 
                                  DrawCtx* draw, XW_UtilCtxt* util,
                                  XP_U16 nPlayers );
+void board_setCallbacks( BoardCtxt* board );
 void board_setDraw( BoardCtxt* board, DrawCtx* draw );
+DrawCtx* board_getDraw( const BoardCtxt* board );
 
 void board_destroy( BoardCtxt* board );
 
 void board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream );
 
 void board_reset( BoardCtxt* board );
+
+void board_drawSnapshot( const BoardCtxt* board, DrawCtx* dctx,
+                         XP_U16 width, XP_U16 height );
 
     /* Layout.  Either done internally or by client */
 #ifdef COMMON_LAYOUT

@@ -20,11 +20,8 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
 import android.content.Context;
-import android.preference.CheckBoxPreference;
 import android.util.AttributeSet;
-import android.view.View;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 

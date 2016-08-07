@@ -27,28 +27,24 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import junit.framework.Assert;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-
 import java.net.URI;
 import java.net.URLConnection;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import junit.framework.Assert;
 
 public class DwnldDelegate extends ListDelegateBase {
 

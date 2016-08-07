@@ -2597,7 +2597,6 @@
   <string name="pref_group_relay_title">Relay Stuff</string>
   <string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>
   <string name="pref_group_l10n_title">Localization Stuff</string>
-  <string name="pref_group_tablets_title">Tablets Stuff</string>
   <string name="pref_group_l10n_summary">Prefs related to in-app localization</string>
   <string name="pref_item_update_title">Update between releases</string>
   <string name="pref_item_update_summary">Get intermediate builds</string>
@@ -2689,4 +2688,22 @@
   name before you create this game?</string>
 
   <string name="no_invites">This game has sent no invitations</string>
+
+  <string name="invite_dualpane">You appear to be running a
+  tablet-sized device. Would you like to try an experimental new
+  feature that lets you view two panes (e.g. board and chat)
+  side-by-side when your device is horizontal?
+
+  \n\nYou can disable the feature later using the new \"Disable
+  side-by-side\" menu item. Or via App Settings.
+
+  \n\nPlease let me know if you like the feature, report crashes, make
+  suggestions, etc.!!</string>
+  <string name="enable_dualpane">Enable side-by-side</string>
+  <string name="post_dualpane_title">Relaunch after change</string>
+  <string name="post_dualpane_on_body">Start Crosswords with side-by-side enabled!</string>
+  <string name="post_dualpane_off_body">Start Crosswords with side-by-side disabled</string>
+
+  <string name="disable_dualpane">Disable side-by-side</string>
+  <string name="dualpane_restart">Exiting app…</string>
 </resources>

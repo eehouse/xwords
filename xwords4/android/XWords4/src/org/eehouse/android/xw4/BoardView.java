@@ -31,10 +31,15 @@ import android.util.FloatMath;
 import android.view.MotionEvent;
 import android.view.View;
 
-import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.BoardDims;
+import org.eehouse.android.xw4.jni.BoardHandler;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.JNIThread;
+import org.eehouse.android.xw4.jni.SyncedDraw;
+import org.eehouse.android.xw4.jni.XwJNI;
 
 public class BoardView extends View implements BoardHandler, SyncedDraw {
 

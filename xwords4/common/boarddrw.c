@@ -361,7 +361,6 @@ drawBoard( BoardCtxt* board )
     }
 } /* drawBoard */
 
-
 static XP_Bool
 drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
 {
@@ -625,12 +624,14 @@ XP_Bool
 board_draw( BoardCtxt* board )
 {
     if ( !!board->draw && board->boardBounds.width > 0 ) {
+        if ( draw_beginDraw( board->draw ) ) {
 
-        drawScoreBoard( board );
+            drawScoreBoard( board );
+            drawTray( board );
+            drawBoard( board );
 
-        drawTray( board );
-
-        drawBoard( board );
+            draw_endDraw( board->draw );
+        }
     }
     return !board->needsDrawing && 0 == board->trayInvalBits;
 } /* board_draw */

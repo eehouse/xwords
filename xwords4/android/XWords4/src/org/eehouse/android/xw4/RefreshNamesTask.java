@@ -21,17 +21,17 @@
 package org.eehouse.android.xw4;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import java.io.InputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.util.ArrayList;
-import java.net.Socket;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
 
 public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
 

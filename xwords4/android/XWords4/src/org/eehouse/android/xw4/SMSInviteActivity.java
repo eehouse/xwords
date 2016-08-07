@@ -20,8 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 
 public class SMSInviteActivity extends InviteActivity {

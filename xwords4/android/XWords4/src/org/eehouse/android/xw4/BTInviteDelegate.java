@@ -26,26 +26,24 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Spinner;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Iterator;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
-import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
 

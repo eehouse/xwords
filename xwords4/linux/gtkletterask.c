@@ -58,17 +58,17 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
 
     XP_MEMSET( results, XP_FALSE, sizeof(results) );
 
-    vbox = gtk_vbox_new( FALSE, 0 );
+    vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
     for ( ii = 0; ii < nTiles; ++ii ) {
 
         if ( ii % BUTTONS_PER_ROW == 0 ) {
-            hbox = gtk_hbox_new( FALSE, 0 );
+            hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
         }
         button = gtk_button_new_with_label( texts[ii] );
 
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-        g_signal_connect( GTK_OBJECT(button), "clicked", 
+        g_signal_connect( button, "clicked", 
                           G_CALLBACK(set_bool_and_quit), &results[ii] );
         gtk_widget_show( button );
 
@@ -79,16 +79,16 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
     }
 
 #ifdef FEATURE_TRAY_EDIT
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
 
     button = gtk_button_new_with_label( "Just pick em!" );
-    g_signal_connect( GTK_OBJECT(button), "clicked", 
+    g_signal_connect( button, "clicked", 
                       G_CALLBACK(abort_button_event), NULL );
     gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
     gtk_widget_show( button );
 
     button = gtk_button_new_with_label( "Back up" );
-    g_signal_connect( GTK_OBJECT(button), "clicked", 
+    g_signal_connect( button, "clicked", 
                       G_CALLBACK(set_bool_and_quit), &backedUp );
     gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
     gtk_widget_show( button );
@@ -111,7 +111,7 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
         txt = "Choose a letter for your blank.";
     }
     label = gtk_label_new( txt );
-    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
+    gtk_container_add (GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
                        label);
 
     if ( forTray ) {
@@ -124,11 +124,12 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
         }
 
         GtkWidget* curTilesLabel = gtk_label_new( curTilesBuf );
-        gtk_container_add( GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
+        gtk_container_add( GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
                            curTilesLabel );
     }
 
-    gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area), vbox);
+    // gtk_container_add( GTK_CONTAINER( gtk_dialog_get_action_area(GTK_DIALOG(dialog))), vbox);
+    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
     gtk_widget_show_all( dialog );
 
     gtk_main();

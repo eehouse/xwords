@@ -26,8 +26,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
-import junit.framework.Assert;
-
 public class SMSReceiver extends BroadcastReceiver {
 
     @Override

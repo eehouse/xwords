@@ -48,10 +48,10 @@ askNTiles( XP_U16 max, XP_U16 deflt )
 
     sprintf( defbuf, "Limit hint to how many tiles (deflt=%d)?", deflt );
     label = gtk_label_new( defbuf );
-    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
-                       label);
+    gtk_container_add( GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+                       label );
 
-    hbox = gtk_hbox_new( FALSE, 0 );
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     for ( i = 0; i < max; ++i ) {
         XP_UCHAR buf[3];
 
@@ -59,20 +59,20 @@ askNTiles( XP_U16 max, XP_U16 deflt )
         button = gtk_button_new_with_label( buf );
 
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-        g_signal_connect( GTK_OBJECT(button), "clicked", 
+        g_signal_connect( button, "clicked", 
                           G_CALLBACK(button_event), 
                           &results[i] );
         gtk_widget_show( button );
     }
     gtk_widget_show( hbox );
-    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dialog)->vbox), hbox, 
-                        FALSE, TRUE, 0 );
+
+    GtkWidget* dlgVBox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_box_pack_start( GTK_BOX(dlgVBox), hbox, FALSE, TRUE, 0 );
 
     sprintf( defbuf, "Default (%d)", deflt );
     button = gtk_button_new_with_label( defbuf );
-    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, 
-                        TRUE, 0 );
-    g_signal_connect( GTK_OBJECT(button), "clicked", 
+    gtk_box_pack_start( GTK_BOX(dlgVBox), button, FALSE, TRUE, 0 );
+    g_signal_connect( button, "clicked", 
                       G_CALLBACK(button_event), 
                       &results[deflt-1] );
     gtk_widget_show( button );

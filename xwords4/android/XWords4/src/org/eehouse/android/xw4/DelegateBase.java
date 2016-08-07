@@ -24,11 +24,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.graphics.Point;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,18 +39,18 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.DlgDelegate.ActionPair;
-import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
-
-import junit.framework.Assert;
 
 public class DelegateBase implements DlgClickNotify,
                                      DlgDelegate.HasDlgDelegate,
@@ -549,6 +549,12 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showConfirmThen( msg, posButton, action, params );
     }
 
+    public void showConfirmThen( DlgDelegate.NAKey nakey, int msgId,
+                                 int posButtonId, Action action )
+    {
+        m_dlgDelegate.showConfirmThen( nakey, msgId, posButtonId, action );
+    }
+
     protected void showConfirmThen( int msgID, Action action )
     {
         m_dlgDelegate.showConfirmThen( msgID, action );
@@ -557,8 +563,8 @@ public class DelegateBase implements DlgClickNotify,
     public void showConfirmThen( Runnable onNA, String msg, int posButton,
                                  int negButton, Action action, Object... params )
     {
-        m_dlgDelegate.showConfirmThen( onNA, msg, posButton, negButton, action,
-                                       params );
+        m_dlgDelegate.showConfirmThen( null, onNA, msg, posButton, negButton,
+                                       action, params );
     }
 
     protected boolean post( Runnable runnable )

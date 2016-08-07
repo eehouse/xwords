@@ -22,7 +22,6 @@ package org.eehouse.android.xw4.jni;
 import android.content.Context;
 
 import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class LastMoveInfo {

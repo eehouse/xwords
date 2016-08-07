@@ -75,8 +75,9 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
     return result;
 }
 
-enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM, CONN_ITEM, OVER_ITEM, TURN_ITEM, 
-       NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM, LASTTURN_ITEM, N_ITEMS };
+enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM,
+       CONN_ITEM, OVER_ITEM, TURN_ITEM, NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM,
+       LASTTURN_ITEM, N_ITEMS };
 
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
@@ -143,12 +144,23 @@ addTextColumn( GtkWidget* list, const gchar* title, int item )
     gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
 }
 
+static void
+addImageColumn( GtkWidget* list, const gchar* title, int item )
+{
+    GtkCellRenderer* renderer = gtk_cell_renderer_pixbuf_new();
+    GtkTreeViewColumn* column =
+        gtk_tree_view_column_new_with_attributes( title, renderer,
+                                                  "pixbuf", item, NULL );
+    gtk_tree_view_append_column( GTK_TREE_VIEW(list), column );
+}
+
 static GtkWidget*
 init_games_list( GtkAppGlobals* apg )
 {
     GtkWidget* list = gtk_tree_view_new();
 
     addTextColumn( list, "Row", ROW_ITEM );
+    addImageColumn( list, "Snap", ROW_THUMB );
     addTextColumn( list, "Name", NAME_ITEM );
     addTextColumn( list, "Room", ROOM_ITEM );
     addTextColumn( list, "GameID", GAMEID_ITEM );
@@ -163,6 +175,7 @@ init_games_list( GtkAppGlobals* apg )
 
     GtkListStore* store = gtk_list_store_new( N_ITEMS, 
                                               G_TYPE_INT64,   /* ROW_ITEM */
+                                              GDK_TYPE_PIXBUF,/* ROW_THUMB */
                                               G_TYPE_STRING,  /* NAME_ITEM */
                                               G_TYPE_STRING,  /* ROOM_ITEM */
                                               G_TYPE_INT,     /* GAMEID_ITEM */
@@ -212,6 +225,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
     }
     gtk_list_store_set( store, &iter, 
                         ROW_ITEM, rowid,
+                        ROW_THUMB, gib->snap,
                         NAME_ITEM, gib->name,
                         ROOM_ITEM, gib->room,
                         GAMEID_ITEM, gib->gameID,
@@ -385,6 +399,7 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
         } else {
             XP_LOGF( "%s: not calling relaycon_deleted: no relayID", __func__ );
         }
+        g_object_unref( gib.snap );
     }
     apg->selRows = g_array_set_size( apg->selRows, 0 );
     updateButtons( apg );
@@ -403,6 +418,13 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
         // freeGlobals( globals );
     }
     g_slist_free( apg->globalsList );
+
+    gchar buf[64];
+    sprintf( buf, "%d:%d:%d:%d", apg->lastConfigure.x,
+             apg->lastConfigure.y, apg->lastConfigure.width,
+             apg->lastConfigure.height );
+    db_store( apg->params->pDb, KEY_WIN_LOC, buf );
+
     gtk_main_quit();
 }
 
@@ -413,12 +435,22 @@ handle_quit_button( GtkWidget* XP_UNUSED(widget), gpointer data )
     handle_destroy( NULL, apg );
 }
 
+static gboolean
+window_configured( GtkWidget* XP_UNUSED(widget),
+                   GdkEventConfigure* event, GtkAppGlobals* apg )
+{
+    /* XP_LOGF( "%s(x=%d, y=%d, width=%d, height=%d)", __func__, */
+    /*          event->x, event->y, event->width, event->height ); */
+    apg->lastConfigure = *event;
+    return FALSE;
+}
+
 static GtkWidget*
 addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
 {
     GtkWidget* button = gtk_button_new_with_label( label );
     gtk_container_add( GTK_CONTAINER(parent), button );
-    g_signal_connect( GTK_OBJECT(button), "clicked",
+    g_signal_connect( button, "clicked",
                       G_CALLBACK(proc), closure );
     gtk_widget_show( button );
     return button;
@@ -448,6 +480,19 @@ setWindowTitle( GtkAppGlobals* apg )
 }
 
 static void
+trySetWinConfig( GtkAppGlobals* apg )
+{
+    gchar buf[64];
+    if ( db_fetch( apg->params->pDb, KEY_WIN_LOC, buf, sizeof(buf)) ) {
+        int xx, yy, width, height;
+        sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
+
+        gtk_window_resize( GTK_WINDOW(apg->window), width, height );
+        gtk_window_move (GTK_WINDOW(apg->window), xx, yy );
+    }
+}
+
+static void
 makeGamesWindow( GtkAppGlobals* apg )
 {
     GtkWidget* window;
@@ -456,11 +501,19 @@ makeGamesWindow( GtkAppGlobals* apg )
     apg->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     g_signal_connect( G_OBJECT(window), "destroy",
                       G_CALLBACK(handle_destroy), apg );
+    g_signal_connect( window, "configure_event",
+                      G_CALLBACK(window_configured), apg );
 
     setWindowTitle( apg );
+
+    trySetWinConfig( apg );
+
+    GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
+    gtk_container_add( GTK_CONTAINER(window), swin );
+    gtk_widget_show( swin );
     
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
-    gtk_container_add( GTK_CONTAINER(window), vbox );
+    GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add( GTK_CONTAINER(swin), vbox );
     gtk_widget_show( vbox );
     GtkWidget* list = init_games_list( apg );
     apg->listWidget = list;
@@ -477,7 +530,7 @@ makeGamesWindow( GtkAppGlobals* apg )
         g_slist_free( games );
     }
 
-    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_widget_show( hbox );
     gtk_container_add( GTK_CONTAINER(vbox), hbox );
 
@@ -531,6 +584,7 @@ onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
     GameInfo gib;
     if ( getGameInfo( apg->params->pDb, rowid, &gib ) ) {
         add_to_list( apg->listWidget, rowid, isNew, &gib );
+        g_object_unref( gib.snap );
     }
 }
 

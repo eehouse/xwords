@@ -20,31 +20,22 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.AssetManager;
-import android.net.Uri;
 import android.os.Environment;
-import android.text.Html;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.XwJNI;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class DictUtils {
 

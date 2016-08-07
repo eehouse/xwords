@@ -24,33 +24,39 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.DrawCtx;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.JNIThread;
+import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.TransportProcs;
+import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.UtilCtxtImpl;
+import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.HashSet;
-import java.util.concurrent.locks.Lock;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
-import org.eehouse.android.xw4.jni.LastMoveInfo;
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
-import org.eehouse.android.xw4.loc.LocUtils;
+import java.util.Iterator;
 
 public class GameUtils {
 
@@ -351,21 +357,6 @@ public class GameUtils {
         return thumb;
     }
 
-    public static Bitmap loadMakeBitmap( Context context, byte[] stream, 
-                                         GameLock lock )
-    {
-        Bitmap thumb = null;
-        CurGameInfo gi = new CurGameInfo( context );
-        GamePtr gamePtr = loadMakeGame( context, gi, null, null, stream, 
-                                        lock.getRowid() );
-        if ( null != gamePtr ) {
-            thumb = takeSnapshot( context, gamePtr, gi );
-            gamePtr.release();
-            DBUtils.saveThumbnail( context, lock, thumb );
-        }
-        return thumb;
-    }
-
     public static Bitmap takeSnapshot( Context context, GamePtr gamePtr,
                                        CurGameInfo gi )
     {
@@ -391,15 +382,8 @@ public class GameUtils {
 
                 thumb = Bitmap.createBitmap( size, size,
                                              Bitmap.Config.ARGB_8888 );
-
-                XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
-                                          0, 0, 0, 20, 20, false, null );
-
                 ThumbCanvas canvas = new ThumbCanvas( context, thumb );
-                XwJNI.board_setDraw( gamePtr, canvas );
-                XwJNI.board_invalAll( gamePtr );
-                Assert.assertNotNull( gamePtr );
-                XwJNI.board_draw( gamePtr );
+                XwJNI.board_drawSnapshot( gamePtr, canvas, size, size );
             }
         }
         return thumb;

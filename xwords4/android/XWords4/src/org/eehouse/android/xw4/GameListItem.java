@@ -24,10 +24,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
@@ -36,17 +33,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.JNIThread;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
-import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.jni.JNIThread;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameListItem extends LinearLayout
     implements View.OnClickListener, SelectableItem.LongClickHandler {
@@ -207,9 +203,13 @@ public class GameListItem extends LinearLayout
         if ( loaded != m_loaded ) {
             m_loaded = loaded;
 
-            // This should be enough to invalidate
-            m_viewUnloaded.setVisibility( loaded ? View.GONE : View.VISIBLE );
-            m_viewLoaded.setVisibility( loaded ? View.VISIBLE : View.GONE );
+            if ( loaded ) {
+                // This should be enough to invalidate
+                m_viewUnloaded.setVisibility( View.INVISIBLE );
+                m_viewLoaded.setVisibility( View.VISIBLE );
+            } else {
+                m_viewLoaded.invalidate();
+            }
         }
     }
 

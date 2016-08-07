@@ -21,18 +21,19 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
-import java.util.ArrayList;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.DictLangCache;
+import org.eehouse.android.xw4.DictUtils;
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.loc.LocUtils;
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
-import junit.framework.Assert;
-import org.json.JSONObject;
-
-import org.eehouse.android.xw4.DbgUtils;
-import org.eehouse.android.xw4.DictUtils;
-import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.DictLangCache;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CurGameInfo {
 

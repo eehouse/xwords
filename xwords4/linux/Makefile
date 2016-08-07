@@ -33,6 +33,11 @@ CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 #CFLAGS += -Os -Werror -Wunused
 endif
 
+# Getting ready for gtk 3.x
+CFLAGS += -DGTK_DISABLE_SINGLE_INCLUDES
+CFLAGS += -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED
+CFLAGS += -DGSEAL_ENABLE
+
 BUILD_PLAT_DIR = $(BUILD_DIR)/$(PLATFORM)
 
 # CC = llvm-gcc
@@ -48,7 +53,7 @@ DO_CURSES += -DCURSES_SMALL_SCREEN
 endif
 DO_GTK = -DPLATFORM_GTK
 DO_GTK += -DXWFEATURE_BOARDWORDS
-# DO_GTK += -DUSE_CAIRO
+DO_GTK += -DUSE_CAIRO
 
 # uncomment for standalone build
 # STANDALONE = -DXWFEATURE_STANDALONE_ONLY
@@ -184,7 +189,6 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkboard.o \
 	$(BUILD_PLAT_DIR)/gtkdraw.o \
 	$(BUILD_PLAT_DIR)/gtkask.o \
-	$(BUILD_PLAT_DIR)/gtkaskm.o \
 	$(BUILD_PLAT_DIR)/gtkletterask.o \
 	$(BUILD_PLAT_DIR)/gtkpasswdask.o \
 	$(BUILD_PLAT_DIR)/gtknewgame.o \
@@ -234,8 +238,8 @@ LIBS += -lbluetooth
 endif
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
-	LIBS += `pkg-config --libs gtk+-2.0`
-	CFLAGS += `pkg-config --cflags gtk+-2.0`
+	LIBS += `pkg-config --libs gtk+-3.0`
+	CFLAGS += `pkg-config --cflags gtk+-3.0`
 #   CFLAGS += -DGDK_DISABLE_DEPRECATED
 	POINTER_SUPPORT = -DPOINTER_SUPPORT
 endif

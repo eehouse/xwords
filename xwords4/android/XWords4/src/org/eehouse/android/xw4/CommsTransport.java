@@ -21,6 +21,16 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.JNIThread;
+import org.eehouse.android.xw4.jni.JNIThread.JNICmd;
+import org.eehouse.android.xw4.jni.TransportProcs;
+
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -30,13 +40,6 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
 import java.util.Iterator;
 import java.util.Vector;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
-import org.eehouse.android.xw4.jni.JNIThread.*;
 
 public class CommsTransport implements TransportProcs,
                                        NetStateCache.StateChangedIf {

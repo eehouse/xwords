@@ -30,7 +30,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
+
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.BoardDims;
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -40,8 +41,6 @@ import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
 import org.eehouse.android.xw4.loc.LocUtils;
-
-import junit.framework.Assert;
 
 public class BoardCanvas extends Canvas implements DrawCtx {
     private static final int BLACK = 0xFF000000;

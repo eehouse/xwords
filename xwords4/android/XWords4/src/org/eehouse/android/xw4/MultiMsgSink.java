@@ -21,13 +21,15 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import java.util.HashSet;
-import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.TransportProcs;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class MultiMsgSink implements TransportProcs {
     private long m_rowid;

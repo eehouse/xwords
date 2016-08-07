@@ -348,6 +348,10 @@ and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player,
     }
 }
 
+/* Not used on android yet */
+static XP_Bool and_draw_beginDraw( DrawCtx* XP_UNUSED(dctx) ) {return XP_TRUE;}
+static void and_draw_endDraw( DrawCtx* XP_UNUSED(dctx) ) {}
+
 static XP_Bool
 and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, 
                      XP_U16 cellWidth, XP_U16 cellHeight, 
@@ -613,6 +617,8 @@ makeDraw( MPFORMAL EnvThreadInfo* ti, jobject jdraw )
     }
 
 #define SET_PROC(nam) draw->vtable->m_draw_##nam = and_draw_##nam
+    SET_PROC(beginDraw);
+    SET_PROC(endDraw);
     SET_PROC(boardBegin);
     SET_PROC(scoreBegin);
 #ifdef XWFEATURE_SCOREONEPASS

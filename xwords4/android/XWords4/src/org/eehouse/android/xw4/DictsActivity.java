@@ -20,17 +20,7 @@
 
 package org.eehouse.android.xw4;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-
-import java.util.HashMap;
-
-import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictsActivity extends XWActivity {
 

@@ -20,33 +20,31 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class StudyListDelegate extends ListDelegateBase
     implements OnItemSelectedListener, SelectableItem,

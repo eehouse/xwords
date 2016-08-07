@@ -27,8 +27,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import junit.framework.Assert;
-
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameNamer extends LinearLayout {

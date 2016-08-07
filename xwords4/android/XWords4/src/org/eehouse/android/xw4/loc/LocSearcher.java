@@ -20,10 +20,11 @@
 
 package org.eehouse.android.xw4.loc;
 
-import java.util.ArrayList;
 import android.content.Context;
 
 import org.eehouse.android.xw4.DbgUtils;
+
+import java.util.ArrayList;
 
 /** This class provides filtering on the list of translations, first by
  * built-in filters like "recent menu", and then by a search string.  Either

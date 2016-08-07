@@ -20,9 +20,9 @@
 
 package org.eehouse.android.xw4;
 
-import java.util.HashMap;
-
 import junit.framework.Assert;
+
+import java.util.HashMap;
 
 // Implements read-locks and write-locks per game.  A read lock is
 // obtainable when other read locks are granted but not when a

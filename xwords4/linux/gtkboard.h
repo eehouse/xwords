@@ -45,25 +45,24 @@ typedef struct GtkDrawCtx {
 
 /*     GdkDrawable* pixmap; */
     GtkWidget* drawing_area;
+    cairo_surface_t* surface;
     struct GtkGameGlobals* globals;
 
 #ifdef USE_CAIRO
-    cairo_t* cr;
+    cairo_t* _cairo;
 #else
     GdkGC* drawGC;
 #endif
 
-    GdkColor black;
-    GdkColor white;
-    GdkColor grey;
-    GdkColor red;		/* for pending tiles */
-    GdkColor tileBack;	/* for pending tiles */
-    GdkColor cursor;
-    GdkColor bonusColors[4];
-    GdkColor playerColors[MAX_NUM_PLAYERS];
+    GdkRGBA black;
+    GdkRGBA white;
+    GdkRGBA grey;
+    GdkRGBA red;		/* for pending tiles */
+    GdkRGBA tileBack;	/* for pending tiles */
+    GdkRGBA cursor;
+    GdkRGBA bonusColors[4];
+    GdkRGBA playerColors[MAX_NUM_PLAYERS];
 
-    /* new for gtk 2.0 */
-    PangoContext* pangoContext;
 	GList* fontsPerSize;
 
     struct {

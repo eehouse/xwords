@@ -47,7 +47,7 @@ void initNoConnStorage( CommonGlobals* cGlobals );
 XP_Bool storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len,
                         const XP_UCHAR* relayID );
 void writeNoConnMsgs( CommonGlobals* cGlobals, int fd );
-
+XWStreamCtxt* make_simple_stream( CommonGlobals* cGlobals );
 
 #ifdef STREAM_VERS_BIGBOARD
 void setSquareBonuses( const CommonGlobals* cGlobals );

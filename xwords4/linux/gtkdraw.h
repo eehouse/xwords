@@ -26,5 +26,8 @@ DrawCtx* gtkDrawCtxtMake( GtkWidget *widget, GtkGameGlobals* globals );
 
 void draw_gtk_status( GtkDrawCtx* draw, char ch );
 void frame_active_rect( GtkDrawCtx* dctx, const XP_Rect* rect );
+void addSurface( GtkDrawCtx* dctx, int width, int height );
+void removeSurface( GtkDrawCtx* dctx );
+void getImage( GtkDrawCtx* dctx, XWStreamCtxt* stream );
 
 #endif

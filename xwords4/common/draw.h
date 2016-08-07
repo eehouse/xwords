@@ -116,6 +116,9 @@ typedef struct DrawCtxVTable {
     void DRAW_VTABLE_NAME(dictChanged)( DrawCtx* dctx, XP_S16 playerNum,
                                         const DictionaryCtxt* dict );
 
+    XP_Bool DRAW_VTABLE_NAME(beginDraw) ( DrawCtx* dctx );
+    void DRAW_VTABLE_NAME(endDraw) ( DrawCtx* dctx );
+
     XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, 
                                            const XP_Rect* rect, 
                                            XP_U16 hScale, XP_U16 vScale,
@@ -274,6 +277,8 @@ struct DrawCtx {
 
 #define draw_destroyCtxt(dc) CALL_DRAW_NAME0(destroyCtxt, dc)
 #define draw_dictChanged( dc, n, d ) CALL_DRAW_NAME2(dictChanged, (dc), (n), (d))
+#define draw_beginDraw( dc ) CALL_DRAW_NAME0(beginDraw, (dc))
+#define draw_endDraw( dc ) CALL_DRAW_NAME0(endDraw, (dc))
 #define draw_boardBegin( dc,r,h,v,f ) CALL_DRAW_NAME4(boardBegin, (dc),\
                                                       (r),(h),(v),(f))
 #define draw_objFinished( dc, t, r, d ) \

@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.app.Activity;
+
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public interface BoardHandler {

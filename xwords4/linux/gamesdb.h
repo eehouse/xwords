@@ -31,6 +31,7 @@ typedef struct _GameInfo {
     XP_UCHAR name[128];
     XP_UCHAR room[128];
     XP_UCHAR conn[128];
+    GdkPixbuf* snap;
     XP_U32 gameID;
     XP_S16 nMoves;
     XP_Bool gameOver;
@@ -65,6 +66,7 @@ void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 #define KEY_LDEVID "LDEVID"
 #define KEY_SMSPHONE "SMSPHONE"
 #define KEY_SMSPORT "SMSPORT"
+#define KEY_WIN_LOC "WIN_LOC"
 
 void db_store( sqlite3* dbp, const gchar* key, const gchar* value );
 XP_Bool db_fetch( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen );

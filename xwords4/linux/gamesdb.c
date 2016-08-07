@@ -19,7 +19,13 @@
  */
 
 #include "gamesdb.h"
+#include "gtkboard.h"
+#include "gtkdraw.h"
+#include "linuxutl.h"
 #include "main.h"
+
+#define SNAP_WIDTH 150
+#define SNAP_HEIGHT 150
 
 static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
                            int len );
@@ -42,6 +48,7 @@ openGamesDB( const char* dbName )
         "CREATE TABLE games ( "
         "rowid INTEGER PRIMARY KEY AUTOINCREMENT"
         ",game BLOB"
+        ",snap BLOB"
         ",inviteInfo BLOB"
         ",room VARCHAR(32)"
         ",connvia VARCHAR(32)"
@@ -73,12 +80,11 @@ closeGamesDB( sqlite3* pDb )
 }
 
 static sqlite3_int64
-writeBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
-                 const char* column )
+writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* pDb,
+                     sqlite3_int64 curRow, const char* column )
 {
+    XP_LOGF( "%s(col=%s)", __func__, column );
     int result;
-    /* size includes stream version as header */
-    XP_U16 len = stream_getSize( stream );
     char buf[256];
     char* query;
 
@@ -114,12 +120,10 @@ writeBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
     result = sqlite3_blob_open( pDb, "main", "games", column,
                                 curRow, 1 /*flags: writeable*/, &blob );
     assertPrintResult( pDb, result, SQLITE_OK );
-    XP_U16 strVersion = stream_getVersion( stream );
     XP_ASSERT( strVersion <= CUR_STREAM_VERS );
-    result = sqlite3_blob_write( blob, &strVersion, sizeof(strVersion), 0 );
+    result = sqlite3_blob_write( blob, &strVersion, sizeof(strVersion), 0/*offset*/ );
     assertPrintResult( pDb, result, SQLITE_OK );
-    const XP_U8* ptr = stream_getPtr( stream );
-    result = sqlite3_blob_write( blob, ptr, len, sizeof(strVersion) );
+    result = sqlite3_blob_write( blob, data, len, sizeof(strVersion) /* offset */ );
     assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_blob_close( blob );
     assertPrintResult( pDb, result, SQLITE_OK );
@@ -127,13 +131,24 @@ writeBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
         sqlite3_finalize( stmt );
     }
 
+    LOG_RETURNF( "%lld", curRow );
     return curRow;
+}
+
+static sqlite3_int64
+writeBlobColumnStream( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
+                       const char* column )
+{
+    XP_U16 strVersion = stream_getVersion( stream );
+    const XP_U8* data = stream_getPtr( stream );
+    gsize len = stream_getSize( stream );
+    return writeBlobColumnData( data, len, strVersion, pDb, curRow, column );
 }
 
 sqlite3_int64
 writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb )
 {
-    sqlite3_int64 newRow = writeBlobColumn( stream, pDb, -1, "game" );
+    sqlite3_int64 newRow = writeBlobColumnStream( stream, pDb, -1, "game" );
     return newRow;
 }
 
@@ -145,13 +160,36 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     sqlite3* pDb = cGlobals->pDb;
 
     XP_Bool newGame = -1 == selRow;
-    selRow = writeBlobColumn( stream, pDb, selRow, "game" );
+    selRow = writeBlobColumnStream( stream, pDb, selRow, "game" );
 
     if ( newGame ) {         /* new row; need to insert blob first */
         cGlobals->selRow = selRow;
     }
 
     (*cGlobals->onSave)( cGlobals->onSaveClosure, selRow, newGame );
+}
+
+static void
+addSnap( CommonGlobals* cGlobals )
+{
+    LOG_FUNC();
+
+    BoardCtxt* board = cGlobals->game.board;
+    GtkDrawCtx* dctx = (GtkDrawCtx*)board_getDraw( board );
+    if ( !!dctx ) {
+        addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
+        board_drawSnapshot( board, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
+
+        XWStreamCtxt* stream = make_simple_stream( cGlobals );
+        getImage( dctx, stream );
+        removeSurface( dctx );
+        sqlite3_int64 newRow = writeBlobColumnStream( stream, cGlobals->pDb,
+                                                      cGlobals->selRow, "snap" );
+        XP_ASSERT( cGlobals->selRow == newRow );
+        stream_destroy( stream );
+    }
+
+    LOG_RETURN_VOID();
 }
 
 void
@@ -222,6 +260,8 @@ summarize( CommonGlobals* cGlobals )
     }
     sqlite3_finalize( stmt );
     XP_USE( result );
+
+    addSnap( cGlobals );
 }
 
 GSList*
@@ -262,7 +302,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT room, ended, turn, nmoves, ntotal, nmissing, "
-        "seed, connvia, gameid, lastMoveTime "
+        "seed, connvia, gameid, lastMoveTime, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -284,8 +324,22 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->gameID = sqlite3_column_int( ppStmt, 8 );
         gib->lastMoveTime = sqlite3_column_int( ppStmt, 9 );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
+
+        /* Load the snapshot */
+        GdkPixbuf* snap = NULL;
+        const XP_U8* ptr = sqlite3_column_blob( ppStmt, 10 );
+        if ( !!ptr ) {
+            int size = sqlite3_column_bytes( ppStmt, 10 );
+            /* Skip the version that's written in */
+            ptr += sizeof(XP_U16); size -= sizeof(XP_U16);
+            GInputStream* istr = g_memory_input_stream_new_from_data( ptr, size, NULL );
+            snap = gdk_pixbuf_new_from_stream( istr, NULL, NULL );
+            g_object_unref( istr );
+        }
+        gib->snap = snap;
     }
     sqlite3_finalize( ppStmt );
+
     return success;
 }
 
@@ -354,7 +408,7 @@ loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 void
 saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 {
-    sqlite3_int64 row = writeBlobColumn( stream, pDb, rowid, "inviteInfo" );
+    sqlite3_int64 row = writeBlobColumnStream( stream, pDb, rowid, "inviteInfo" );
     assert( row == rowid );
 }
 

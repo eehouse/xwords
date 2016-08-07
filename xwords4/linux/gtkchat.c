@@ -27,7 +27,7 @@ gtkGetChatMessage( GtkGameGlobals* XP_UNUSED(globals) )
     gchar* result = NULL;
     GtkWidget* dialog = gtk_dialog_new_with_buttons( "message text", NULL, //GtkWindow *parent,
                                                      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                     GTK_STOCK_OK,
+                                                     "Ok",
                                                      GTK_RESPONSE_ACCEPT,
                                                      NULL );
 
