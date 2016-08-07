@@ -1544,29 +1544,28 @@ public class BoardDelegate extends DelegateBase
             }
         } else if ( nMissing > 0 ) {
             if ( m_summary.hasRematchInfo() ) {
-                tryRematchInvites( false );
+                skipDismiss = !tryRematchInvites( false );
+            } else if ( !m_haveInvited ) {
+                m_haveInvited = true;
+                m_room = room;
+                showDialog( DlgID.DLG_INVITE );
+                invalidateOptionsMenuIf();
+                skipDismiss = true;
             } else {
-                if ( !m_haveInvited ) {
-                    m_haveInvited = true;
-                    m_room = room;
-                    showDialog( DlgID.DLG_INVITE );
-                    invalidateOptionsMenuIf();
-                    skipDismiss = true;
+                toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
+                                              devOrder, room, nMissing );
+                if ( devOrder == 1 ) {
+                    naMsg = R.string.not_again_conndfirst;
+                    naKey = R.string.key_notagain_conndfirst;
                 } else {
-                    toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
-                                                  devOrder, room, nMissing );
-                    if ( devOrder == 1 ) {
-                        naMsg = R.string.not_again_conndfirst;
-                        naKey = R.string.key_notagain_conndfirst;
-                    } else {
-                        naMsg = R.string.not_again_conndmid;
-                        naKey = R.string.key_notagain_conndmid;
-                    }
+                    naMsg = R.string.not_again_conndmid;
+                    naKey = R.string.key_notagain_conndmid;
                 }
             }
         }
 
         if ( null != toastStr ) {
+            DbgUtils.logf( "handleConndMessage(): toastStr: %s", toastStr );
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
                 dlgButtonClicked( Action.SHOW_EXPL_ACTION,
@@ -2697,7 +2696,8 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void tryRematchInvites( boolean force )
+    // Return true if anything sent
+    private boolean tryRematchInvites( boolean force )
     {
         if ( XWApp.REMATCH_SUPPORTED ) {
             if ( !force ) {
@@ -2733,6 +2733,7 @@ public class BoardDelegate extends DelegateBase
                 showToast( R.string.rematch_sent_toast );
             }
         }
+        return force;
     }
 
     private void sendSMSInviteIf( String phone, NetLaunchInfo nli,
