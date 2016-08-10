@@ -939,6 +939,8 @@ public class GamesListDelegate extends ListDelegateBase
 
         CrashTrack.init( m_activity );
 
+        Utils.cancelNotification( m_activity, R.string.post_dualpane_title );
+
         m_selGames = new HashSet<Long>();
         m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
