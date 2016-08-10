@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -22,16 +22,17 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import java.lang.ref.WeakReference;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
-    private static ConfirmingCheckBoxPreference s_this = null;
+    private static WeakReference<ConfirmingCheckBoxPreference> s_this = null;
 
     public SMSCheckBoxPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
-        s_this = this;
+        s_this = new WeakReference<ConfirmingCheckBoxPreference>(this);
     }
 
     @Override
@@ -52,7 +53,10 @@ public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
     protected static void setChecked()
     {
         if ( null != s_this ) {
-            s_this.super_setChecked( true );
+            ConfirmingCheckBoxPreference self = s_this.get();
+            if ( null != self ) {
+                self.super_setChecked( true );
+            }
         }
     }
 }
