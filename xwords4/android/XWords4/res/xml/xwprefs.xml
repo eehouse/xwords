@@ -127,7 +127,7 @@
                         android:defaultValue="false"
                         />
     <CheckBoxPreference android:key="@string/key_enable_dualpane"
-                        android:title="@string/enable_dualpane_title"
+                        android:title="@string/enable_dualpane"
                         android:summary="@string/enable_dualpane_summary"
                         android:defaultValue="false"
                         />

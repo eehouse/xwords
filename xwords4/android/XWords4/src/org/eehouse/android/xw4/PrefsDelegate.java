@@ -58,6 +58,7 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_disable_nag,
         R.string.key_disable_nag_solo,
         R.string.key_disable_relay,
+        R.string.key_enable_dualpane,
     };
     private static Map<String, Integer> s_keysHash = null;
 
@@ -229,6 +230,9 @@ public class PrefsDelegate extends DelegateBase
                 break;
             case R.string.key_disable_relay:
                 RelayService.enabledChanged( m_activity );
+                break;
+            case R.string.key_enable_dualpane:
+                showOKOnlyDialog( R.string.after_restart );
                 break;
             default:
                 Assert.fail();

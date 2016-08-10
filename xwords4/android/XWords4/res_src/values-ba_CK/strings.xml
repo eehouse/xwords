@@ -2058,8 +2058,7 @@
     tahw\'s elbaliava.</string>
   <string name="force_tablet_title">Ecrof telbat tuoyal</string>
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
-  <string name="enable_dualpane_title">Elbane enaplaud</string>
-  <string name="enable_dualpane_summary">Edis-yb-edis ,sweiv yrev !latnemirepxe</string>
+  <string name="enable_dualpane_summary">Edis-yb-edis sweiv no ,stelbat yrev !latnemirepxe</string>
   <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">Rednimer: Ti\'s ruoy nrut</string>
   <!-- body of warning notification reminder message. First three
@@ -2309,9 +2308,11 @@
   \n\nEsaelp tel em wonk fi uoy ekil eht ,erutaef troper ,sehsarc ekam
   ,snoitseggus cte.!!</string>
   <string name="enable_dualpane">Elbane edis-yb-edis</string>
-  <string name="post_dualpane_title">Hcnualer retfa egnahc</string>
+  <string name="post_dualpane_title">Tratser Sdrowssorc</string>
   <string name="post_dualpane_on_body">Trats Sdrowssorc htiw edis-yb-edis !delbane</string>
   <string name="post_dualpane_off_body">Trats Sdrowssorc htiw edis-yb-edis delbasid</string>
   <string name="disable_dualpane">Elbasid edis-yb-edis</string>
   <string name="dualpane_restart">Gnitixe ppa…</string>
+  <string name="after_restart">Siht egnahc lliw ton ekat tceffe litnu
+  uoy tratser Sdrowssorc.</string>
 </resources>

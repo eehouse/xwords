@@ -2397,8 +2397,7 @@
 
     <string name="force_tablet_title">Force tablet layout</string>
     <string name="force_tablet_summary">Even if my screen is too small</string>
-    <string name="enable_dualpane_title">Enable dualpane</string>
-    <string name="enable_dualpane_summary">Side-by-side views, very experimental!</string>
+    <string name="enable_dualpane_summary">Side-by-side views on tablets, very experimental!</string>
 
     <!-- Nagging: title of notification reminder message -->
     <string name="nag_title">Reminder: It\'s your turn</string>
@@ -2700,10 +2699,12 @@
   \n\nPlease let me know if you like the feature, report crashes, make
   suggestions, etc.!!</string>
   <string name="enable_dualpane">Enable side-by-side</string>
-  <string name="post_dualpane_title">Relaunch after change</string>
+  <string name="post_dualpane_title">Restart Crosswords</string>
   <string name="post_dualpane_on_body">Start Crosswords with side-by-side enabled!</string>
   <string name="post_dualpane_off_body">Start Crosswords with side-by-side disabled</string>
 
   <string name="disable_dualpane">Disable side-by-side</string>
   <string name="dualpane_restart">Exiting app…</string>
+  <string name="after_restart">This change will not take effect until
+  you restart Crosswords.</string>
 </resources>
