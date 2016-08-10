@@ -36,6 +36,7 @@ public class GameLock {
     private long m_rowid;
     private boolean m_isForWrite;
     private int m_lockCount;
+    private Thread m_ownerThread;
     private StackTraceElement[] m_lockTrace;
 
     static {
@@ -76,6 +77,9 @@ public class GameLock {
             if ( null == owner ) { // unowned
                 Assert.assertTrue( 0 == m_lockCount );
                 s_locks.put( m_rowid, this );
+                if ( BuildConfig.DEBUG ) {
+                    m_ownerThread = Thread.currentThread();
+                }
                 ++m_lockCount;
                 gotIt = true;
 
@@ -172,6 +176,10 @@ public class GameLock {
         // DbgUtils.logf( "GameLock.unlock(%s)", m_path );
         synchronized( s_locks ) {
             Assert.assertTrue( this == s_locks.get(m_rowid) );
+            // Need to get this working before can switch to using ReentrantLock
+            // if ( BuildConfig.DEBUG ) {
+            //     Assert.assertTrue( Thread.currentThread().equals(m_ownerThread) );
+            // }
             if ( 1 == m_lockCount ) {
                 s_locks.remove( m_rowid );
             } else {
