@@ -158,6 +158,7 @@ static GtkWidget*
 init_games_list( GtkAppGlobals* apg )
 {
     GtkWidget* list = gtk_tree_view_new();
+    apg->listWidget = list;
 
     addTextColumn( list, "Row", ROW_ITEM );
     addImageColumn( list, "Snap", ROW_THUMB );
@@ -516,7 +517,6 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_container_add( GTK_CONTAINER(swin), vbox );
     gtk_widget_show( vbox );
     GtkWidget* list = init_games_list( apg );
-    apg->listWidget = list;
     gtk_container_add( GTK_CONTAINER(vbox), list );
     
     gtk_widget_show( list );
