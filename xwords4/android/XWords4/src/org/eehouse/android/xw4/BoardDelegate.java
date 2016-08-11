@@ -2620,17 +2620,13 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematchIf()
     {
-        if ( doRematchIf( m_activity, this, m_rowid, m_summary, m_gi,
-                          m_jniGamePtr ) ) {
-            finish();
-        }
+        doRematchIf( m_activity, this, m_rowid, m_summary, m_gi, m_jniGamePtr );
     }
 
-    private static boolean doRematchIf( Activity activity, DelegateBase dlgt,
-                                        long rowid, GameSummary summary,
-                                        CurGameInfo gi, GamePtr jniGamePtr )
+    private static void doRematchIf( Activity activity, DelegateBase dlgt,
+                                     long rowid, GameSummary summary,
+                                     CurGameInfo gi, GamePtr jniGamePtr )
     {
-        boolean success = false;
         if ( XWApp.REMATCH_SUPPORTED ) {
             boolean doIt = true;
             String phone = null;
@@ -2672,11 +2668,9 @@ public class BoardDelegate extends DelegateBase
                                         phone, relayID, newName );
                 if ( null != intent ) {
                     activity.startActivity( intent );
-                    success = true;
                 }
             }
         }
-        return success;
     }
 
     public static void setupRematchFor( Activity activity, long rowID )
