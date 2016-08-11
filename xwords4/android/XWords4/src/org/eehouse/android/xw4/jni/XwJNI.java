@@ -43,7 +43,11 @@ public class XwJNI {
             retain();
         }
 
-        public int ptr() { Assert.assertTrue( 0 != m_ptr ); return m_ptr; }
+        public synchronized int ptr()
+        {
+            Assert.assertTrue( 0 != m_ptr );
+            return m_ptr;
+        }
 
         public synchronized GamePtr retain()
         {
@@ -62,7 +66,10 @@ public class XwJNI {
                             this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
                 if ( 0 != m_ptr ) {
-                    game_dispose( this );
+                    if ( !haveEnv( getJNI().m_ptr ) ) {
+                        Assert.fail();
+                    }
+                    game_dispose( this ); // will crash if haveEnv fails
                     m_ptr = 0;
                 }
             }
@@ -484,4 +491,6 @@ public class XwJNI {
     private static native int dict_iter_init( int jniState, byte[] dict,
                                               String name, String path,
                                               JNIUtils jniu );
+
+    private static native boolean haveEnv( int jniState );
 }

@@ -93,6 +93,7 @@ public class XWApp extends Application {
 
     // This is called on emulator only, but good for ensuring no memory leaks
     // by forcing JNI cleanup
+    @Override
     public void onTerminate()
     {
         DbgUtils.logf( "XwApp.onTerminate() called" );
