@@ -711,7 +711,7 @@ public class GamesListDelegate extends ListDelegateBase
                         self.m_adapter.invalName( self.m_rowid );
                     }
                 };
-            GameSummary summary = DBUtils.getSummary( m_activity, m_rowid );
+            GameSummary summary = GameUtils.getSummary( m_activity, m_rowid );
             int labelID = (summary.isMultiGame() && !summary.anyMissing())
                 ? R.string.rename_label_caveat : R.string.rename_label;
             dialog = buildNamerDlg( GameUtils.getName( m_activity, m_rowid ),
@@ -1748,7 +1748,8 @@ public class GamesListDelegate extends ListDelegateBase
                                  Action.NEW_FROM, selRowIDs[0] );
             break;
         case R.id.games_game_copy:
-            final GameSummary smry = DBUtils.getSummary( m_activity, selRowIDs[0] );
+            final GameSummary smry = GameUtils.getSummary( m_activity,
+                                                           selRowIDs[0] );
             if ( smry.inRelayGame() ) {
                 showOKOnlyDialog( R.string.no_copy_network );
             } else {
@@ -1782,7 +1783,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // DEBUG only
         case R.id.games_game_invites:
-            msg = DBUtils.getSummary( m_activity, selRowIDs[0] )
+            msg = GameUtils.getSummary( m_activity, selRowIDs[0] )
                 .conTypes.toString( m_activity );
             msg = getString( R.string.invites_net_fmt, msg );
 

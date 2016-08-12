@@ -116,27 +116,6 @@ public class DBUtils {
         public int[] m_counts;
     }
 
-    public static GameSummary getSummary( Context context, long rowid,
-                                          long maxMillis )
-    {
-        GameSummary result = null;
-        try {
-            GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
-            if ( null != lock ) {
-                result = getSummary( context, lock );
-                lock.unlock();
-            }
-        } catch ( GameLock.GameLockedException gle ) {
-            DbgUtils.loge( gle );
-        }
-        return result;
-    }
-
-    public static GameSummary getSummary( Context context, long rowid )
-    {
-        return getSummary( context, rowid, 0L );
-    }
-
     public static GameSummary getSummary( Context context,
                                           GameLock lock )
     {
@@ -1125,6 +1104,9 @@ public class DBUtils {
             lock.unlock();
         } else {
             DbgUtils.logf( "deleteGame: unable to lock rowid %d", rowid );
+            if ( BuildConfig.DEBUG ) {
+                Assert.fail();
+            }
         }
     }
 

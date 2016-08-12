@@ -213,6 +213,38 @@ public class GameUtils {
         return result;
     }
 
+    public static GameSummary getSummary( Context context, long rowid,
+                                          long maxMillis )
+    {
+        GameSummary result = null;
+        JNIThread thread = JNIThread.getRetained( rowid );
+        GameLock lock = null;
+        if ( null != thread ) {
+            lock = thread.getLock();
+        } else {
+            try {
+                lock = new GameLock( rowid, false ).lock( maxMillis );
+            } catch ( GameLock.GameLockedException gle ) {
+                DbgUtils.loge( gle );
+            }
+        }
+
+        if ( null != lock ) {
+            result = DBUtils.getSummary( context, lock );
+            if ( null == thread ) {
+                lock.unlock();
+            } else {
+                thread.release();
+            }
+        }
+        return result;
+    }
+
+    public static GameSummary getSummary( Context context, long rowid )
+    {
+        return getSummary( context, rowid, 0L );
+    }
+
     public static long dupeGame( Context context, long rowidIn )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;

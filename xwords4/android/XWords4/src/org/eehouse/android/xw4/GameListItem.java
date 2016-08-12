@@ -351,21 +351,7 @@ public class GameListItem extends LinearLayout
         @Override
         protected GameSummary doInBackground( Void... unused )
         {
-            GameSummary result = null;
-
-            JNIThread thread = JNIThread.getRetained( m_rowid );
-            if ( null != thread ) {
-                GameLock lock = thread.getLock();
-                if ( null != lock ) {
-                    result = DBUtils.getSummary( m_context, lock );
-                }
-                thread.release( false );
-            }
-
-            if ( null == result ) {
-                result = DBUtils.getSummary( m_context, m_rowid, SUMMARY_WAIT_MSECS );
-            }
-            return result;
+            return GameUtils.getSummary( m_context, m_rowid, SUMMARY_WAIT_MSECS );
         } // doInBackground
 
         @Override

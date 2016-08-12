@@ -233,7 +233,7 @@ public class JNIThread extends Thread {
     public GamePtr getGamePtr() { return m_jniGamePtr; }
     public CurGameInfo getGI() { return m_gi; }
     public GameSummary getSummary() { return m_summary; }
-    public GameLock getLock() { return m_lock; }
+    public GameLock getLock() { Assert.assertNotNull(m_lock); return m_lock; }
 
     private void waitToStop( boolean save )
     {
@@ -787,6 +787,7 @@ public class JNIThread extends Thread {
             result = s_instances.get( rowid );
             if ( null == result && makeNew ) {
                 result = new JNIThread( new GameLock( rowid, true ).lock() );
+                Assert.assertNotNull( result );
                 s_instances.put( rowid, result );
             }
             if ( null != result ) {

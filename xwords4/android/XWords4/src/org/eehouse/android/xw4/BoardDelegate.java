@@ -2592,7 +2592,7 @@ public class BoardDelegate extends DelegateBase
 
     public static boolean rematchSupported( Context context, long rowID )
     {
-        GameSummary summary = DBUtils.getSummary( context, rowID, 1 );
+        GameSummary summary = GameUtils.getSummary( context, rowID, 1 );
         return null != summary && rematchSupported( null, summary );
     }
 
