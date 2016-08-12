@@ -62,8 +62,8 @@ public class MainActivity extends XWActivity
     protected void onCreate( Bundle savedInstanceState )
     {
         m_dpEnabled = XWPrefs.dualpaneEnabled( this );
-        if ( BuildConfig.DEBUG ) {
-            Utils.showToast( this, "dualpane mode: " + m_dpEnabled );
+        if ( BuildConfig.DEBUG && m_dpEnabled ) {
+            Utils.showToast( this, "Side-by-side mode ENABLED" );
         }
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
