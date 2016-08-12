@@ -224,6 +224,8 @@ public class DelegateBase implements DlgClickNotify,
         findViewById( id ).setVisibility( visibility );
     }
 
+    protected void setTitle() {}
+
     protected void setTitle( String title )
     {
         m_activity.setTitle( title );

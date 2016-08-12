@@ -711,6 +711,12 @@ public class BoardDelegate extends DelegateBase
         m_view.orientationChanged();
     }
 
+    @Override
+    protected void setTitle()
+    {
+        setTitle( GameUtils.getName( m_activity, m_rowid ) );
+    }
+
     private void positionToolbar( boolean isPortrait )
     {
         if ( null != findViewById( R.id.tbar_parent_hor ) ) {
@@ -2111,7 +2117,7 @@ public class BoardDelegate extends DelegateBase
             handleViaThread( JNICmd.CMD_START );
 
             if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
-                setTitle( GameUtils.getName( m_activity, m_rowid ) );
+                setTitle();
             }
 
             positionToolbar( isPortrait() );

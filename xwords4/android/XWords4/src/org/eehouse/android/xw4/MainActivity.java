@@ -393,6 +393,21 @@ public class MainActivity extends XWActivity
             DbgUtils.logf( "pane %d: visible=%b", ii, visible );
             child.setVisibility( visible ? View.VISIBLE : View.GONE );
             setMenuVisibility( child, visible );
+            if ( visible ) {
+                trySetTitle( child );
+            }
+        }
+    }
+
+    private void trySetTitle( View view )
+    {
+        XWFragment frag = (XWFragment)
+            getSupportFragmentManager().findFragmentById( view.getId() );
+        if ( null != frag ) {
+            frag.setTitle();
+        } else {
+            DbgUtils.logdf( "trySetTitle(): no fragment for id %x",
+                            view.getId() );
         }
     }
 

@@ -1245,7 +1245,8 @@ public class GameConfigDelegate extends DelegateBase
         }
     }
 
-    private void setTitle()
+    @Override
+    protected void setTitle()
     {
         int strID;
         if ( null != m_conTypes && 0 < m_conTypes.size() ) {

@@ -154,6 +154,8 @@ public class XWFragment extends Fragment implements Delegator {
         Assert.fail();
     }
 
+    public void setTitle() { m_dlgt.setTitle(); }
+
     @Override
     public boolean inDPMode() {
         MainActivity main = (MainActivity)getActivity();
