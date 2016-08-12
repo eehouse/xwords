@@ -1286,7 +1286,7 @@ public class GameUtils {
                 int nSent = null == m_sink ? 0 : m_sink.numSent();
                 String msg =
                     LocUtils.getQuantityString( m_context,
-                                                R.plurals.resend_finished_fmt,
+                                                R.plurals.resent_msgs_fmt,
                                                 nSent, nSent );
                 DbgUtils.showf( m_context, msg );
             }

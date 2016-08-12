@@ -606,11 +606,7 @@
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
-  <string name="board_menu_game_resend">Dneser segassem</string>
-  <plurals name="resend_finished_fmt">
-    <item quantity="one">Dneser dehsinif; tnes eno egassem.</item>
-    <item quantity="other">Dneser dehsinif; tnes %1$d segassem.</item>
-  </plurals>
+  <string name="board_menu_game_resend">Dneser sevom</string>
   <!--       
        ############################################################
        # Board info/error dialog messages
@@ -1115,7 +1111,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s segassem</string>
+  <string name="chat_title_fmt">Tahc rof %1$s</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">Em:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -2273,8 +2269,8 @@
   <string name="enable_relay_toself_summary">oT( dia gnitset dna )gniggubed</string>
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
-    <item quantity="one">Eno egassem tnes</item>
-    <item quantity="other">%1$s segassem tnes</item>
+    <item quantity="one">Eno evom tnes</item>
+    <item quantity="other">%1$s sevom tnes</item>
   </plurals>
   <string name="invite_copied">Noitativni ydaer ot etsap</string>
   <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown

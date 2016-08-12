@@ -712,11 +712,7 @@
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
-    <string name="board_menu_game_resend">Resend messages</string>
-    <plurals name="resend_finished_fmt">
-      <item quantity="one">Resend finished; sent one message.</item>
-      <item quantity="other">Resend finished; sent %1$d messages.</item>
-    </plurals>
+    <string name="board_menu_game_resend">Resend moves</string>
 
     <!--       
        ############################################################
@@ -1290,7 +1286,7 @@
       -->
     <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-    <string name="chat_title_fmt">%1$s messages</string>
+    <string name="chat_title_fmt">Chat for %1$s</string>
     <!-- Prefix for local messages -->
     <string name="chat_local_id">Me:\u0020</string>
     <!-- Prefix for remote messages -->
@@ -2657,8 +2653,8 @@
 
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
-    <item quantity="one">One message sent</item>
-    <item quantity="other">%1$s messages sent</item>
+    <item quantity="one">One move sent</item>
+    <item quantity="other">%1$s moves sent</item>
   </plurals>
 
   <string name="invite_copied">Invitation ready to paste</string>

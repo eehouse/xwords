@@ -606,11 +606,7 @@
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
-  <string name="board_menu_game_resend">RESEND MESSAGES</string>
-  <plurals name="resend_finished_fmt">
-    <item quantity="one">RESEND FINISHED; SENT ONE MESSAGE.</item>
-    <item quantity="other">RESEND FINISHED; SENT %1$d MESSAGES.</item>
-  </plurals>
+  <string name="board_menu_game_resend">RESEND MOVES</string>
   <!--       
        ############################################################
        # Board info/error dialog messages
@@ -1115,7 +1111,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s MESSAGES</string>
+  <string name="chat_title_fmt">CHAT FOR %1$s</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">ME:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -2273,8 +2269,8 @@
   <string name="enable_relay_toself_summary">(TO AID TESTING AND DEBUGGING)</string>
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
-    <item quantity="one">ONE MESSAGE SENT</item>
-    <item quantity="other">%1$s MESSAGES SENT</item>
+    <item quantity="one">ONE MOVE SENT</item>
+    <item quantity="other">%1$s MOVES SENT</item>
   </plurals>
   <string name="invite_copied">INVITATION READY TO PASTE</string>
   <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown

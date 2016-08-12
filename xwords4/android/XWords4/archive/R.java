@@ -355,7 +355,7 @@ public final class R {
     public static final class plurals {
         /**   
          */
-        public static final int confirm_clear_sms_fmt=0x7f08000f;
+        public static final int confirm_clear_sms_fmt=0x7f08000e;
         /**  text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
@@ -384,23 +384,23 @@ toutes les informations de connexion.)</string>
 <string name="confirm_studylist_clear_fmt">Êtes-vous sûr de vouloir effacer
 les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</string>
          */
-        public static final int confirm_studylist_clear_fmt=0x7f080014;
+        public static final int confirm_studylist_clear_fmt=0x7f080013;
         /** <string name="group_name_fmt">%1$s (%2$d games)</string>
 <string name="group_name_fmt">%1$s (%2$d parties)</string>
          */
-        public static final int group_name_fmt=0x7f080013;
+        public static final int group_name_fmt=0x7f080012;
         /** <string name="groups_confirm_del_fmt">Are you sure you want to delete
     the %1$d selected group[s]?</string>
 <string name="groups_confirm_del_fmt">Êtes-vous sûr de vouloir effacer les
 %1$d groupes sélectionnés ?</string>
          */
-        public static final int groups_confirm_del_fmt=0x7f080011;
+        public static final int groups_confirm_del_fmt=0x7f080010;
         /** <string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
     also be deleted.)</string>
 <string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi
 effacées.)</string>
          */
-        public static final int groups_confirm_del_games_fmt=0x7f080012;
+        public static final int groups_confirm_del_games_fmt=0x7f080011;
         /**   
   
 <string name="invite_bt_desc_fmt">Please select the %1$d device[s]
@@ -410,7 +410,7 @@ effacées.)</string>
 vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
 voyez pas un périphérique que vous attendez.</string>
          */
-        public static final int invite_bt_desc_fmt=0x7f08000c;
+        public static final int invite_bt_desc_fmt=0x7f08000b;
         /**  If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
          up, then the most likely explanation is that none has been
@@ -437,7 +437,7 @@ fait ?</string>
         public static final int invite_msg_fmt=0x7f080004;
         /**   
          */
-        public static final int invite_relay_desc_fmt=0x7f08000e;
+        public static final int invite_relay_desc_fmt=0x7f08000d;
         public static final int invite_sent_fmt=0x7f080005;
         /**   
   
@@ -446,19 +446,19 @@ fait ?</string>
 <string name="invite_sms_desc_fmt">Vérifiez les %1$d numéros de téléphone
 que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>
          */
-        public static final int invite_sms_desc_fmt=0x7f08000d;
+        public static final int invite_sms_desc_fmt=0x7f08000c;
         /** <string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    
 <string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    
          */
-        public static final int lang_name_fmt=0x7f080017;
+        public static final int lang_name_fmt=0x7f080016;
         /** <string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>
 <string name="lmi_move_fmt">%1$s a joué %2$s pour %3$d points</string>
          */
-        public static final int lmi_move_fmt=0x7f08001b;
+        public static final int lmi_move_fmt=0x7f08001a;
         /** <string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>
 <string name="lmi_trade_fmt">%1$s a échangé %2$d jetons</string>
          */
-        public static final int lmi_trade_fmt=0x7f08001c;
+        public static final int lmi_trade_fmt=0x7f08001b;
         /**  Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... 
@@ -492,7 +492,7 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
         /** <string name="nag_days_fmt">%1$d day[s]</string>
 <string name="nag_days_fmt">%1$d jour[s]</string>
          */
-        public static final int nag_days_fmt=0x7f08001a;
+        public static final int nag_days_fmt=0x7f080019;
         /**  body of warning notification reminder message. First three
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
@@ -502,26 +502,26 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
 <string name="nag_hours_fmt">%1$d hour[s]</string>
 <string name="nag_hours_fmt">%1$d heure[s]</string>
          */
-        public static final int nag_hours_fmt=0x7f080019;
+        public static final int nag_hours_fmt=0x7f080018;
         /**  body of warning notification reminder message. First three
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." 
          */
-        public static final int nag_minutes_fmt=0x7f080018;
+        public static final int nag_minutes_fmt=0x7f080017;
         /** <string name="new_xlations_fmt">Installed %1$d new translations</string>
 <string name="new_xlations_fmt">%1$d nouvelles traductions installées</string>
          */
-        public static final int new_xlations_fmt=0x7f080016;
+        public static final int new_xlations_fmt=0x7f080015;
         /** XLATE-ME
 <string name="nplayers_fmt">%1$d player[s]</string>
 <string name="nplayers_fmt">%1$d joueur[s]</string>
          */
-        public static final int nplayers_fmt=0x7f08001d;
+        public static final int nplayers_fmt=0x7f08001c;
         /** <string name="paste_done_fmt">%1$d word[s] copied</string>
 <string name="paste_done_fmt">%1$d mots copiés</string>
          */
-        public static final int paste_done_fmt=0x7f080015;
+        public static final int paste_done_fmt=0x7f080014;
         /**  Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) 
  Text of dialog asking user to confirm a move that exchanges
@@ -531,14 +531,10 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
 <string name="query_trade_fmt">Êtes-vous sûr de vouloir échanger les %1$d
 jetons sélectionnés (%2$s) ?</string>
          */
-        public static final int query_trade_fmt=0x7f08000b;
-        /** <string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>
-<string name="resend_finished_fmt">Renvoi fini ; %1$d message[s] envoyé[s].</string>
-         */
-        public static final int resend_finished_fmt=0x7f080007;
+        public static final int query_trade_fmt=0x7f08000a;
         /**  Shown after "resend messages" menuitem chosen 
          */
-        public static final int resent_msgs_fmt=0x7f08001e;
+        public static final int resent_msgs_fmt=0x7f08001d;
         /**  Intro to the paragraph listing all of the tiles remaining 
  Intro to the paragraph lisiting all of the tiles remaining 
 <string name="strd_remains_expl_fmt">%1$d tiles left in pool and all
@@ -546,7 +542,7 @@ jetons sélectionnés (%2$s) ?</string>
 <string name="strd_remains_expl_fmt">%1$d jetons restants dans le sac et
 tous les chevalets :\n</string>
          */
-        public static final int strd_remains_expl_fmt=0x7f08000a;
+        public static final int strd_remains_expl_fmt=0x7f080009;
         /**  First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) 
  First line in the remaining tiles dialog (reached by tapping
@@ -554,7 +550,7 @@ tous les chevalets :\n</string>
 <string name="strd_remains_header_fmt">%1$d tiles left in pool.</string>
 <string name="strd_remains_header_fmt">%1$d jetons restants dans le sac.</string>
          */
-        public static final int strd_remains_header_fmt=0x7f080009;
+        public static final int strd_remains_header_fmt=0x7f080008;
         /**  Notifies user of a robot trade move 
  returned by util_getUserString 
  
@@ -571,8 +567,8 @@ tous les chevalets :\n</string>
 <string name="strd_robot_traded_fmt">a échangé %1$d jetons.</string>
  returned by util_getUserString 
          */
-        public static final int strd_robot_traded_fmt=0x7f080008;
-        public static final int warn_relay_games_fmt=0x7f080010;
+        public static final int strd_robot_traded_fmt=0x7f080007;
+        public static final int warn_relay_games_fmt=0x7f08000f;
     }
     public static final class string {
         /**  copyright info 
@@ -6245,6 +6241,8 @@ XLATE-ME
        ############################################################
       
  Notifies user of a normal robot move 
+<string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>
+<string name="resend_finished_fmt">Renvoi fini ; %1$d message[s] envoyé[s].</string>
        
        ############################################################
        # Board info/error dialog messages
