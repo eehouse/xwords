@@ -954,14 +954,15 @@ public class GameUtils {
         }
     }
 
-    public static boolean feedMessages( Context context, long rowid,
-                                        byte[][] msgs, CommsAddrRec ret,
-                                        MultiMsgSink sink, BackMoveResult bmr,
-                                        boolean[] isLocalOut )
+    public static boolean feedMessage( Context context, long rowid, byte[] msg,
+                                       CommsAddrRec ret, MultiMsgSink sink,
+                                       BackMoveResult bmr, boolean[] isLocalOut )
     {
+        DbgUtils.logf( "GameUtils.feedMessage()" );
+        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
-        if ( null != msgs ) {
+        if ( null != msg ) {
             // timed lock: If a game is opened by BoardActivity just
             // as we're trying to deliver this message to it it'll
             // have the lock and we'll never get it.  Better to drop
@@ -975,11 +976,8 @@ public class GameUtils {
                 if ( null != gamePtr ) {
                     XwJNI.comms_resendAll( gamePtr, false, false );
 
-                    for ( byte[] msg : msgs ) {
-                        Assert.assertNotNull( ret );
-                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
-                            || draw;
-                    }
+                    Assert.assertNotNull( ret );
+                    draw = XwJNI.game_receiveMessage( gamePtr, msg, ret );
                     XwJNI.comms_ackAny( gamePtr );
 
                     // update gi to reflect changes due to messages
@@ -1020,16 +1018,6 @@ public class GameUtils {
             }
         }
         return draw;
-    } // feedMessages
-
-    public static boolean feedMessage( Context context, long rowid, byte[] msg,
-                                       CommsAddrRec ret, MultiMsgSink sink,
-                                       BackMoveResult bmr, boolean[] isLocalOut )
-    {
-        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
-        byte[][] msgs = new byte[1][];
-        msgs[0] = msg;
-        return feedMessages( context, rowid, msgs, ret, sink, bmr, isLocalOut );
     }
 
     // This *must* involve a reset if the language is changing!!!
