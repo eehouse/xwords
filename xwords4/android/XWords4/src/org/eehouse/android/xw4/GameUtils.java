@@ -537,7 +537,7 @@ public class GameUtils {
                                           int gameID, String gameName,
                                           boolean isHost )
     {
-        long rowid = -1;
+        long rowid = DBUtils.ROWID_NOTFOUND;
 
         Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
@@ -608,7 +608,7 @@ public class GameUtils {
                                     int nPlayersT, int nPlayersH,
                                     int forceChannel, String gameName )
     {
-        long rowid = -1;
+        long rowid = DBUtils.ROWID_NOTFOUND;
         int[] langa = { lang };
         String[] dicta = { dict };
         boolean isHost = null == addr;
