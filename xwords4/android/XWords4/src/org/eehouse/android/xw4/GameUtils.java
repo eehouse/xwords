@@ -216,15 +216,28 @@ public class GameUtils {
     public static long dupeGame( Context context, long rowidIn )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
-        GameLock lockSrc = new GameLock( rowidIn, false ).lock( 300 );
+        GameLock lockSrc = null;
+
+        JNIThread thread = JNIThread.getRetained( rowidIn, false );
+        if ( null != thread ) {
+            lockSrc = thread.getLock();
+        } else {
+            lockSrc = new GameLock( rowidIn, false ).lock( 300 );
+        }
+
         if ( null != lockSrc ) {
             boolean juggle = CommonPrefs.getAutoJuggle( context );
             GameLock lockDest = resetGame( context, lockSrc, null, juggle );
             rowid = lockDest.getRowid();
             lockDest.unlock();
-            lockSrc.unlock();
+
+            if ( null != thread ) {
+                thread.release();
+            } else {
+                lockSrc.unlock();
+            }
         } else {
-            DbgUtils.logf( "dupeGame: unable to open rowid %d", rowidIn );
+            DbgUtils.logdf( "dupeGame: unable to open rowid %d", rowidIn );
         }
         return rowid;
     }

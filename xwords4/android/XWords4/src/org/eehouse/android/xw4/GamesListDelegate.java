@@ -1246,8 +1246,10 @@ public class GamesListDelegate extends ListDelegateBase
             case NEW_FROM:
                 long curID = (Long)params[0];
                 long newid = GameUtils.dupeGame( m_activity, curID );
-                m_selGames.add( newid );
-                reloadGame( newid );
+                if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                    m_selGames.add( newid );
+                    reloadGame( newid );
+                }
                 break;
 
             case SET_HIDE_NEWGAME_BUTTONS:
@@ -2130,7 +2132,9 @@ public class GamesListDelegate extends ListDelegateBase
             long newid;
             if ( null == btAddr && null == phone && null == relayID ) {
                 newid = GameUtils.dupeGame( m_activity, srcRowID );
-                DBUtils.setName( m_activity, newid, gameName );
+                if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                    DBUtils.setName( m_activity, newid, gameName );
+                }
             } else {
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
@@ -2352,7 +2356,9 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void launchGame( long rowid, boolean invited )
     {
-        if ( ! m_launchedGames.contains( rowid ) ) {
+        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+            DbgUtils.logdf( "launchGame(): dropping bad rowid" );
+        } else if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             if ( m_adapter.inExpandedGroup( rowid ) ) {
                 setSelGame( rowid );
