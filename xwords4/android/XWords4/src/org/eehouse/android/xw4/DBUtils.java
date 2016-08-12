@@ -354,21 +354,19 @@ public class DBUtils {
     public static void addRematchInfo( Context context, long rowid, String btAddr,
                                        String phone, String relayID )
     {
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            GameLock lock = new GameLock( rowid, true ).lock();
-            GameSummary summary = getSummary( context, lock );
-            if ( null != btAddr ) {
-                summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
-            }
-            if ( null != phone ) {
-                summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
-            }
-            if ( null != relayID ) {
-                summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
-            }
-            saveSummary( context, lock, summary );
-            lock.unlock();
+        GameLock lock = new GameLock( rowid, true ).lock();
+        GameSummary summary = getSummary( context, lock );
+        if ( null != btAddr ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
         }
+        if ( null != phone ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
+        }
+        if ( null != relayID ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+        }
+        saveSummary( context, lock, summary );
+        lock.unlock();
     }
 
     public static int countGamesUsingLang( Context context, int lang )

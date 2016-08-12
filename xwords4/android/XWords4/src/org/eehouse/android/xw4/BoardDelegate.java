@@ -2600,25 +2600,23 @@ public class BoardDelegate extends DelegateBase
                                              GameSummary summary )
     {
         boolean supported = false;
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            // standalone games are easy to rematch
-            supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
+        // standalone games are easy to rematch
+        supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
 
-            if ( !supported ) {
-                if ( 2 == summary.nPlayers ) {
-                    if ( !summary.anyMissing() ) {
-                        CommsConnTypeSet connTypes = summary.conTypes;
-                        supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
-                            || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                            || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
-                    }
-                } else if ( null != context ) {
-                    // show the button if people haven't dismissed the hint yet
-                    supported = ! XWPrefs
-                        .getPrefsBoolean( context,
-                                          R.string.key_na_rematch_two_only,
-                                          false );
+        if ( !supported ) {
+            if ( 2 == summary.nPlayers ) {
+                if ( !summary.anyMissing() ) {
+                    CommsConnTypeSet connTypes = summary.conTypes;
+                    supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
                 }
+            } else if ( null != context ) {
+                // show the button if people haven't dismissed the hint yet
+                supported = ! XWPrefs
+                    .getPrefsBoolean( context,
+                                      R.string.key_na_rematch_two_only,
+                                      false );
             }
         }
         return supported;
@@ -2633,48 +2631,46 @@ public class BoardDelegate extends DelegateBase
                                      long rowid, GameSummary summary,
                                      CurGameInfo gi, GamePtr jniGamePtr )
     {
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            boolean doIt = true;
-            String phone = null;
-            String btAddr = null;
-            String relayID = null;
-            if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
-                // nothing to do??
-            } else if ( 2 != gi.nPlayers ) {
-                Assert.assertNotNull( dlgt );
-                if ( null != dlgt ) {
-                    dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only,
-                                          R.string.key_na_rematch_two_only );
+        boolean doIt = true;
+        String phone = null;
+        String btAddr = null;
+        String relayID = null;
+        if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
+            // nothing to do??
+        } else if ( 2 != gi.nPlayers ) {
+            Assert.assertNotNull( dlgt );
+            if ( null != dlgt ) {
+                dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only,
+                                      R.string.key_na_rematch_two_only );
+            }
+            doIt = false;
+        } else {
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
+            for ( int ii = 0; ii < addrs.length; ++ii ) {
+                CommsAddrRec addr = addrs[ii];
+                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                    Assert.assertNull( btAddr );
+                    btAddr = addr.bt_btAddr;
                 }
-                doIt = false;
-            } else {
-                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
-                for ( int ii = 0; ii < addrs.length; ++ii ) {
-                    CommsAddrRec addr = addrs[ii];
-                    if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                        Assert.assertNull( btAddr );
-                        btAddr = addr.bt_btAddr;
-                    }
-                    if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-                        Assert.assertNull( phone );
-                        phone = addr.sms_phone;
-                    }
-                    if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                        Assert.assertNull( relayID );
-                        relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
-                    }
+                if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                    Assert.assertNull( phone );
+                    phone = addr.sms_phone;
+                }
+                if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                    Assert.assertNull( relayID );
+                    relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                 }
             }
+        }
 
-            if ( doIt ) {
-                CommsConnTypeSet connTypes = summary.conTypes;
-                String newName = summary.getRematchName();
-                Intent intent = GamesListDelegate
-                    .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
-                                        phone, relayID, newName );
-                if ( null != intent ) {
-                    activity.startActivity( intent );
-                }
+        if ( doIt ) {
+            CommsConnTypeSet connTypes = summary.conTypes;
+            String newName = summary.getRematchName();
+            Intent intent = GamesListDelegate
+                .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
+                                    phone, relayID, newName );
+            if ( null != intent ) {
+                activity.startActivity( intent );
             }
         }
     }
@@ -2699,39 +2695,37 @@ public class BoardDelegate extends DelegateBase
     // Return true if anything sent
     private boolean tryRematchInvites( boolean force )
     {
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            if ( !force ) {
-                SentInvitesInfo info = DBUtils.getInvitesFor( m_activity, m_rowid );
-                force = 0 == info.getMinPlayerCount();
+        if ( !force ) {
+            SentInvitesInfo info = DBUtils.getInvitesFor( m_activity, m_rowid );
+            force = 0 == info.getMinPlayerCount();
+        }
+
+        if ( force ) {
+            Assert.assertNotNull( m_summary );
+            Assert.assertNotNull( m_gi );
+            // only supports a single invite for now!
+            int numHere = 1;
+            int forceChannel = 1;
+            NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere,
+                                                   forceChannel );
+
+            String value;
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
+            if ( null != value ) {
+                sendSMSInviteIf( value, nli, true );
+            }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
+            if ( null != value ) {
+                BTService.inviteRemote( m_activity, value, nli );
+                recordInviteSent( InviteMeans.BLUETOOTH, value );
+            }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
+            if ( null != value ) {
+                RelayService.inviteRemote( m_activity, 0, value, nli );
+                recordInviteSent( InviteMeans.RELAY, value );
             }
 
-            if ( force ) {
-                Assert.assertNotNull( m_summary );
-                Assert.assertNotNull( m_gi );
-                // only supports a single invite for now!
-                int numHere = 1;
-                int forceChannel = 1;
-                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere,
-                                                       forceChannel );
-
-                String value;
-                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
-                if ( null != value ) {
-                    sendSMSInviteIf( value, nli, true );
-                }
-                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
-                if ( null != value ) {
-                    BTService.inviteRemote( m_activity, value, nli );
-                    recordInviteSent( InviteMeans.BLUETOOTH, value );
-                }
-                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
-                if ( null != value ) {
-                    RelayService.inviteRemote( m_activity, 0, value, nli );
-                    recordInviteSent( InviteMeans.RELAY, value );
-                }
-
-                showToast( R.string.rematch_sent_toast );
-            }
+            showToast( R.string.rematch_sent_toast );
         }
         return force;
     }

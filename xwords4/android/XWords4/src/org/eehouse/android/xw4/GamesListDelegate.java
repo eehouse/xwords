@@ -2108,8 +2108,7 @@ public class GamesListDelegate extends ListDelegateBase
     // used to connect.
     private void startRematch( Intent intent )
     {
-        if ( XWApp.REMATCH_SUPPORTED
-             && ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) ) {
+        if ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) {
             m_rematchIntent = intent;
             showDialog( DlgID.GAMES_LIST_NAME_REMATCH );
         }
@@ -2610,25 +2609,23 @@ public class GamesListDelegate extends ListDelegateBase
                                             String relayID, String newName )
     {
         Intent intent = null;
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            intent = makeSelfIntent( context );
-            intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
-            intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
-            intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
-            intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
-            intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
+        intent = makeSelfIntent( context );
+        intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+        intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
+        intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
+        intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
+        intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
-            if ( null != addrTypes ) {
-                intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
-                if ( null != btAddr ) {
-                    intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
-                }
-                if ( null != phone ) {
-                    intent.putExtra( REMATCH_PHONE_EXTRA, phone );
-                }
-                if ( null != relayID ) {
-                    intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
-                }
+        if ( null != addrTypes ) {
+            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
+            if ( null != btAddr ) {
+                intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
+            }
+            if ( null != phone ) {
+                intent.putExtra( REMATCH_PHONE_EXTRA, phone );
+            }
+            if ( null != relayID ) {
+                intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
             }
         }
         return intent;
