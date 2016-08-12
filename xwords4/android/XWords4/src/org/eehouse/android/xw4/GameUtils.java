@@ -150,7 +150,7 @@ public class GameUtils {
         } else {
             saveGame( context, gamePtr, gi, lockDest, true );
         }
-        summarizeAndClose( context, lockDest, gamePtr, gi );
+        summarizeAndRelease( context, lockDest, gamePtr, gi );
         DBUtils.saveThumbnail( context, lockDest, null );
 
         return lockDest;
@@ -188,10 +188,10 @@ public class GameUtils {
         return result;
     }
 
-    private static GameSummary summarizeAndClose( Context context,
-                                                  GameLock lock,
-                                                  GamePtr gamePtr,
-                                                  CurGameInfo gi )
+    private static GameSummary summarizeAndRelease( Context context,
+                                                    GameLock lock,
+                                                    GamePtr gamePtr,
+                                                    CurGameInfo gi )
     {
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
@@ -208,7 +208,7 @@ public class GameUtils {
         CurGameInfo gi = new CurGameInfo( context );
         GamePtr gamePtr = loadMakeGame( context, gi, lock );
         if ( null != gamePtr ) {
-            result = summarizeAndClose( context, lock, gamePtr, gi );
+            result = summarizeAndRelease( context, lock, gamePtr, gi );
         }
         return result;
     }
@@ -957,8 +957,8 @@ public class GameUtils {
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );
-                    GameSummary summary = summarizeAndClose( context, lock,
-                                                             gamePtr, gi );
+                    GameSummary summary = summarizeAndRelease( context, lock,
+                                                               gamePtr, gi );
                     if ( null != isLocalOut ) {
                         isLocalOut[0] = 0 <= summary.turn
                             && gi.players[summary.turn].isLocal;
@@ -1018,7 +1018,7 @@ public class GameUtils {
 
             saveGame( context, gamePtr, gi, lock, false );
 
-            summarizeAndClose( context, lock, gamePtr, gi );
+            summarizeAndRelease( context, lock, gamePtr, gi );
 
             lock.unlock();
         } else {
