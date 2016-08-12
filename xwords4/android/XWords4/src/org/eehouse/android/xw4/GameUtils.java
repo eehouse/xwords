@@ -130,10 +130,10 @@ public class GameUtils {
         }
         gamePtr.release();
 
-        gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get( context ),
-                                CommonPrefs.get( context ), dictNames,
-                                pairs.m_bytes,  pairs.m_paths, gi.langName() );
+        gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes, pairs.m_paths,
+                                 gi.langName(), (UtilCtxt)null,
+                                 JNIUtilsImpl.get( context ), (DrawCtx)null,
+                                 CommonPrefs.get( context ), (TransportProcs)null );
 
         if ( juggle ) {
             gi.juggle();
@@ -319,21 +319,20 @@ public class GameUtils {
                 DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable",
                                TextUtils.join( ",", dictNames ) );
             } else {
-                gamePtr = XwJNI.initJNI( rowid );
-
                 String langName = gi.langName();
-                boolean madeGame =
-                    XwJNI.game_makeFromStream( gamePtr, stream, gi,
-                                               dictNames, pairs.m_bytes,
-                                               pairs.m_paths, langName,
-                                               util, JNIUtilsImpl.get( context ),
-                                               CommonPrefs.get(context),
-                                               tp);
-                if ( !madeGame ) {
-                    XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context),
-                                            CommonPrefs.get(context), dictNames,
-                                            pairs.m_bytes, pairs.m_paths,
-                                            langName );
+                gamePtr = XwJNI.initFromStream( rowid, stream, gi, dictNames,
+                                                pairs.m_bytes, pairs.m_paths,
+                                                langName, util,
+                                                JNIUtilsImpl.get( context ),
+                                                null,
+                                                CommonPrefs.get(context),
+                                                tp );
+                if ( null == gamePtr ) {
+                    gamePtr = XwJNI.initNew( gi, dictNames,
+                                             pairs.m_bytes, pairs.m_paths,
+                                             langName, (UtilCtxt)null,
+                                             JNIUtilsImpl.get(context), null,
+                                             CommonPrefs.get(context), null );
                 }
             }
         }
@@ -1008,12 +1007,12 @@ public class GameUtils {
             DictUtils.DictPairs pairs = DictUtils.openDicts( context,
                                                              dictNames );
 
-            GamePtr gamePtr = XwJNI.initJNI( rowid );
-            XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames,
-                                       pairs.m_bytes, pairs.m_paths,
-                                       gi.langName(),
-                                       JNIUtilsImpl.get(context),
-                                       CommonPrefs.get( context ) );
+            GamePtr gamePtr =
+                XwJNI.initFromStream( rowid, stream, gi, dictNames,
+                                      pairs.m_bytes, pairs.m_paths,
+                                      gi.langName(), null,
+                                      JNIUtilsImpl.get(context), null,
+                                      CommonPrefs.get( context ), null );
             // second time required as game_makeFromStream can overwrite
             gi.replaceDicts( newDict );
 
@@ -1048,7 +1047,7 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         String langName = gi.langName();
-        GamePtr gamePtr = XwJNI.initJNI( lock.getRowid() );
+        GamePtr gamePtr = null;
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
 
@@ -1057,19 +1056,21 @@ public class GameUtils {
         } else {
             byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
-            madeGame = XwJNI.game_makeFromStream( gamePtr, stream,
-                                                  new CurGameInfo(context),
-                                                  dictNames, pairs.m_bytes,
-                                                  pairs.m_paths, langName,
-                                                  JNIUtilsImpl.get(context),
-                                                  cp );
+            gamePtr = XwJNI.initFromStream( lock.getRowid(), stream,
+                                            new CurGameInfo(context),
+                                            dictNames, pairs.m_bytes,
+                                            pairs.m_paths, langName,
+                                            null, JNIUtilsImpl.get(context),
+                                            null, cp, null );
+            madeGame = null != gamePtr;
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, dictNames, pairs.m_bytes,
-                                    pairs.m_paths, langName, util,
-                                    JNIUtilsImpl.get(context), (DrawCtx)null,
-                                    cp, sink );
+            Assert.assertNull( gamePtr );
+            gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes,
+                                     pairs.m_paths, langName, util,
+                                     JNIUtilsImpl.get(context), (DrawCtx)null,
+                                     cp, sink );
         }
 
         if ( null != car ) {

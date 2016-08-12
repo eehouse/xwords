@@ -40,7 +40,6 @@ public class XwJNI {
         private GamePtr( int ptr, long rowid ) {
             m_ptr = ptr;
             m_rowid = rowid;
-            retain();
         }
 
         public synchronized int ptr()
@@ -155,7 +154,7 @@ public class XwJNI {
     public static native String comms_getUUID();
 
     // Game methods
-    public static GamePtr initJNI( long rowid )
+    private static GamePtr initJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
         String tag = String.format( "%d", rowid );
@@ -164,9 +163,36 @@ public class XwJNI {
         return result;
     }
 
-    public static GamePtr initJNI()
+    public static synchronized GamePtr
+        initFromStream( long rowid, byte[] stream, CurGameInfo gi,
+                        String[] dictNames, byte[][] dictBytes,
+                        String[] dictPaths, String langName,
+                        UtilCtxt util, JNIUtils jniu, DrawCtx draw,
+                        CommonPrefs cp, TransportProcs procs )
+
     {
-        return initJNI( 0 );
+        GamePtr gamePtr = initJNI( rowid );
+        if ( game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
+                                  dictPaths, langName, util, jniu, draw,
+                                  cp, procs ) ) {
+            gamePtr.retain();
+        } else {
+            gamePtr = null;
+        }
+
+        return gamePtr;
+    }
+
+    public static synchronized GamePtr
+        initNew( CurGameInfo gi, String[] dictNames, byte[][] dictBytes,
+                 String[] dictPaths, String langName, UtilCtxt util,
+                 JNIUtils jniu, DrawCtx draw, CommonPrefs cp,
+                 TransportProcs procs )
+    {
+        GamePtr gamePtr = initJNI( 0 );
+        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths,
+                          langName, util, jniu, draw, cp, procs );
+        return gamePtr.retain();
     }
 
     // hack to allow cleanup of env owned by thread that doesn't open game
@@ -175,18 +201,18 @@ public class XwJNI {
         envDone( getJNI().m_ptr );
     }
 
-    public static native void game_makeNewGame( GamePtr gamePtr,
-                                                CurGameInfo gi,
-                                                String[] dictNames,
-                                                byte[][] dictBytes,
-                                                String[] dictPaths,
-                                                String langName,
-                                                UtilCtxt util,
-                                                JNIUtils jniu,
-                                                DrawCtx draw, CommonPrefs cp,
-                                                TransportProcs procs );
+    private static native void game_makeNewGame( GamePtr gamePtr,
+                                                 CurGameInfo gi,
+                                                 String[] dictNames,
+                                                 byte[][] dictBytes,
+                                                 String[] dictPaths,
+                                                 String langName,
+                                                 UtilCtxt util,
+                                                 JNIUtils jniu,
+                                                 DrawCtx draw, CommonPrefs cp,
+                                                 TransportProcs procs );
 
-    public static native boolean game_makeFromStream( GamePtr gamePtr,
+    private static native boolean game_makeFromStream( GamePtr gamePtr,
                                                       byte[] stream,
                                                       CurGameInfo gi,
                                                       String[] dictNames,
@@ -198,58 +224,6 @@ public class XwJNI {
                                                       DrawCtx draw,
                                                       CommonPrefs cp,
                                                       TransportProcs procs );
-
-    // leave out options params for when game won't be rendered or
-    // played
-    public static void game_makeNewGame( GamePtr gamePtr, CurGameInfo gi,
-                                         JNIUtils jniu, CommonPrefs cp,
-                                         String[] dictNames, byte[][] dictBytes,
-                                         String[] dictPaths, String langName ) {
-        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths, langName,
-                          (UtilCtxt)null, jniu, (DrawCtx)null, cp,
-                          (TransportProcs)null );
-    }
-
-    public static void game_makeNewGame( GamePtr gamePtr, CurGameInfo gi,
-                                         String[] dictNames, byte[][] dictBytes,
-                                         String[] dictPaths, String langName,
-                                         JNIUtils jniu, CommonPrefs cp,
-                                         TransportProcs procs ) {
-        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths, langName,
-                          (UtilCtxt)null, jniu, (DrawCtx)null, cp, procs );
-    }
-
-    public static boolean game_makeFromStream( GamePtr gamePtr,
-                                               byte[] stream,
-                                               CurGameInfo gi,
-                                               String[] dictNames,
-                                               byte[][] dictBytes,
-                                               String[] dictPaths,
-                                               String langName,
-                                               JNIUtils jniu,
-                                               CommonPrefs cp
-                                               ) {
-        return game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
-                                    dictPaths, langName, (UtilCtxt)null, jniu,
-                                    (DrawCtx)null, cp, (TransportProcs)null );
-    }
-
-    public static boolean game_makeFromStream( GamePtr gamePtr,
-                                               byte[] stream,
-                                               CurGameInfo gi,
-                                               String[] dictNames,
-                                               byte[][] dictBytes,
-                                               String[] dictPaths,
-                                               String langName,
-                                               UtilCtxt util,
-                                               JNIUtils jniu,
-                                               CommonPrefs cp,
-                                               TransportProcs procs
-                                               ) {
-        return game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
-                                    dictPaths, langName, util, jniu,
-                                    (DrawCtx)null, cp, procs );
-    }
 
     public static native boolean game_receiveMessage( GamePtr gamePtr,
                                                       byte[] stream,

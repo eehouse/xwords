@@ -28,6 +28,7 @@ import android.os.Message;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.CommsTransport;
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
@@ -176,9 +177,16 @@ public class JNIThread extends Thread {
 
         // If this isn't true then the queue has to be allowed to empty,
         // working on the old game state, before we can re-use any of this.
-        Assert.assertTrue( 0 == m_queue.size() );
-
-        m_jniGamePtr = XwJNI.initJNI( m_rowid );
+        if ( 0 < m_queue.size() ) {
+            if ( BuildConfig.DEBUG ) {
+                Iterator<QueueElem> iter = m_queue.iterator();
+                while ( iter.hasNext() ) {
+                    DbgUtils.logf( "removing %s from queue",
+                                   iter.next().m_cmd.toString() );
+                }
+            }
+            m_queue.clear();
+        }
 
         String[] dictNames = GameUtils.dictNames( context, m_lock );
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
@@ -200,18 +208,22 @@ public class JNIThread extends Thread {
 
         CommonPrefs cp = CommonPrefs.get( context );
         JNIUtils jniUtils = JNIUtilsImpl.get( context );
-        if ( null == stream ||
-             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream,
-                                          m_gi, dictNames,
-                                          pairs.m_bytes,
-                                          pairs.m_paths,
-                                          m_gi.langName(),
-                                          utils, jniUtils,
-                                          null, cp, m_xport ) ) {
-            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, dictNames,
-                                    pairs.m_bytes, pairs.m_paths,
-                                    m_gi.langName(), utils, jniUtils,
-                                    null, cp, m_xport );
+
+        // Assert.assertNull( m_jniGamePtr ); // fired!!
+        if ( null != m_jniGamePtr ) {
+            DbgUtils.logdf( "configure(): m_jniGamePtr not null; that ok?" );
+        }
+        m_jniGamePtr = null;
+        if ( null != stream ) {
+            m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi, dictNames,
+                                                 pairs.m_bytes, pairs.m_paths,
+                                                 m_gi.langName(), utils, jniUtils,
+                                                 null, cp, m_xport );
+        }
+        if ( null == m_jniGamePtr ) {
+            m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
+                                          pairs.m_paths, m_gi.langName(), utils,
+                                          jniUtils, null, cp, m_xport );
         }
 
         m_lastSavedState = Arrays.hashCode( stream );
