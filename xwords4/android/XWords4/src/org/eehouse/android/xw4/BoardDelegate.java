@@ -2677,18 +2677,33 @@ public class BoardDelegate extends DelegateBase
 
     public static void setupRematchFor( Activity activity, long rowID )
     {
-        GameLock lock = new GameLock( rowID, false );
-        if ( lock.tryLock() ) {
-            GameSummary summary = DBUtils.getSummary( activity, lock );
-            CurGameInfo gi = new CurGameInfo( activity );
-            GamePtr gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+        GamePtr gamePtr = null;
+        GameSummary summary = null;
+        CurGameInfo gi = null;
+        JNIThread thread = JNIThread.getRetained( rowID );
+        if ( null != thread ) {
+            gamePtr = thread.getGamePtr().retain();
+            summary = thread.getSummary();
+            gi = thread.getGI();
+        } else {
+            GameLock lock = new GameLock( rowID, false );
+            if ( lock.tryLock() ) {
+                summary = DBUtils.getSummary( activity, lock );
+                gi = new CurGameInfo( activity );
+                gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+                lock.unlock();
+            }
+        }
 
+        if ( null != gamePtr ) {
             doRematchIf( activity, null, rowID, summary, gi, gamePtr );
-
             gamePtr.release();
-            lock.unlock();
         } else {
             DbgUtils.logf( "setupRematchFor(): unable to lock game" );
+        }
+
+        if ( null != thread ) {
+            thread.release();
         }
     }
 
