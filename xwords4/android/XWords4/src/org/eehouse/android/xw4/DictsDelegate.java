@@ -552,9 +552,11 @@ public class DictsDelegate extends ListDelegateBase
         setTitleBar();
     }
 
+    @Override
     protected void onStop()
     {
         MountEventReceiver.unregister( this );
+        super.onStop();
     }
 
     public void onClick( View view )

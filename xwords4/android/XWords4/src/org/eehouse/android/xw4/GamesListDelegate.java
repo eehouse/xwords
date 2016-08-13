@@ -1004,6 +1004,7 @@ public class GamesListDelegate extends ListDelegateBase
         return true;            // handled it
     }
 
+    @Override
     protected void onStop()
     {
         // TelephonyManager mgr =
@@ -1012,7 +1013,7 @@ public class GamesListDelegate extends ListDelegateBase
         // m_phoneStateListener = null;
         long[] positions = m_adapter.getGroupPositions();
         XWPrefs.setGroupPositions( m_activity, positions );
-        // super.onStop();
+        super.onStop();
     }
 
     protected void onDestroy()

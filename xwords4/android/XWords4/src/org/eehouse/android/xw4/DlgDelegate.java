@@ -938,6 +938,24 @@ public class DlgDelegate {
         }
     }
 
+    protected static void closeAlerts( Activity activity, DelegateBase base )
+    {
+        DbgUtils.assertOnUIThread();
+        Iterator<DlgID> iter = s_pendings.keySet().iterator();
+        while ( iter.hasNext() ) {
+            DlgID dlgID = iter.next();
+            DelegateBase oneBase = s_pendings.get( dlgID ).get();
+            if ( null == oneBase ) {
+                iter.remove();  // no point in keeping it
+            } else if ( base.equals( oneBase ) ) {
+                DbgUtils.logdf( "removing alert %s for %s", dlgID.toString(),
+                                oneBase.toString() );
+                activity.removeDialog( dlgID.ordinal() );
+                iter.remove();  // no point in keeping this either
+            }
+        }
+    }
+
     private String getString( int id, Object... params )
     {
         return m_dlgt.getString( id, params );
