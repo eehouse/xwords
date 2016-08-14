@@ -1762,10 +1762,15 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
            change to. */
         if ( COMMS_RELAYSTATE_RECONNECTED < comms->rr.relayState ) {
             XP_ASSERT( 0 != comms->rr.connName[0] );
-            XP_ASSERT( COOKIE_ID_NONE != comms->rr.cookieID );
-            set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
+            // XP_ASSERT( COOKIE_ID_NONE != comms->rr.cookieID ); /* firing!! */
+            if ( COOKIE_ID_NONE == comms->rr.cookieID ) { /* firing!! */
+                XP_LOGF( "%s: cookieID still COOKIE_ID_NONE; dropping!",
+                         __func__ );
+            } else {
+                set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
             /* we will eventually want to tell the user which player's gone */
-            util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+                util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+            }
         }
         break;
 
