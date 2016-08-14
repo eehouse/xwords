@@ -904,7 +904,7 @@ public class GameUtils {
     {
         Bundle extras = makeLaunchExtras( rowid, invited );
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new BoardFrag( delegator ), extras );
+            delegator.addFragment( BoardFrag.newInstance( delegator ), extras );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, BoardActivity.class );

@@ -1272,8 +1272,9 @@ public class GameConfigDelegate extends DelegateBase
         bundle.putBoolean( INTENT_FORRESULT_NEWGAME, newGame );
 
         if ( delegator.inDPMode() ) {
-            delegator.addFragmentForResult( new GameConfigFrag( delegator ),
-                                            bundle, requestCode );
+            delegator
+                .addFragmentForResult( GameConfigFrag.newInstance( delegator ),
+                                       bundle, requestCode );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, GameConfigActivity.class );

@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -34,15 +35,25 @@ import android.widget.ListView;
 
 import junit.framework.Assert;
 
-public class XWFragment extends Fragment implements Delegator {
+abstract class XWFragment extends Fragment implements Delegator {
+    private static final String PARENT_NAME = "PARENT_NAME";
 
     private DelegateBase m_dlgt;
-    private Delegator m_parent;
+    private String m_parentName;
     private boolean m_hasOptionsMenu = false;
 
-    public XWFragment( Delegator parent ) { m_parent = parent; }
+    public XWFragment setParentName( Delegator parent )
+    {
+        m_parentName = null == parent ? "<none>"
+            : parent.getClass().getSimpleName();
+        return this;
+    }
 
-    public Delegator getParent() { return m_parent; }
+    public String getParentName()
+    {
+        Assert.assertNotNull( m_parentName );
+        return m_parentName;
+    }
 
     protected void onCreate( DelegateBase dlgt, Bundle sis, boolean hasOptionsMenu )
     {
@@ -50,12 +61,34 @@ public class XWFragment extends Fragment implements Delegator {
         this.onCreate( dlgt, sis );
     }
 
+    @Override
+    public void onSaveInstanceState( Bundle outState )
+    {
+        super.onSaveInstanceState( outState );
+        Assert.assertNotNull( m_parentName );
+        outState.putString( PARENT_NAME, m_parentName );
+    }
+
     protected void onCreate( DelegateBase dlgt, Bundle sis )
     {
         DbgUtils.logdf( "%s.onCreate() called", this.getClass().getSimpleName() );
         super.onCreate( sis );
+        if ( null != sis ) {
+            m_parentName = sis.getString( PARENT_NAME );
+            Assert.assertNotNull( m_parentName );
+        }
         m_dlgt = dlgt;
     }
+
+    // This is supposed to be the first call we can use to start hooking stuff
+    // up.
+    // @Override
+    // public void onAttach( Activity activity )
+    // {
+    //     DbgUtils.logdf( "%s.onAttach() called",
+    //                     this.getClass().getSimpleName() );
+    //     super.onAttach( activity );
+    // }
 
     @Override
     public View onCreateView( LayoutInflater inflater, ViewGroup container,
@@ -159,7 +192,7 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public boolean inDPMode() {
         MainActivity main = (MainActivity)getActivity();
-        Assert.assertTrue( main.inDPMode() ); // otherwise should be somewhere else
+        Assert.assertTrue( !isAdded() || main.inDPMode() ); // otherwise should be somewhere else
         return true;
     }
 

@@ -24,7 +24,12 @@ import android.os.Bundle;
 
 public class StudyListFrag extends XWFragment {
 
-    public StudyListFrag( Delegator parent ) { super( parent ); }
+    public StudyListFrag() {}
+
+    public static XWFragment newInstance( Delegator parent )
+    {
+        return new StudyListFrag().setParentName( parent );
+    }
 
     @Override
     public void onCreate( Bundle sis )

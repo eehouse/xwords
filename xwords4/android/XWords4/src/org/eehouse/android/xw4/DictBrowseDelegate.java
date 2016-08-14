@@ -421,7 +421,8 @@ public class DictBrowseDelegate extends ListDelegateBase
     private static void launch( Delegator delegator, Bundle bundle )
     {
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new DictBrowseFrag( delegator ), bundle );
+            delegator.addFragment( DictBrowseFrag.newInstance( delegator ),
+                                   bundle );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, DictBrowseActivity.class );

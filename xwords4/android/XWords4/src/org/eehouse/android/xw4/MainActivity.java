@@ -80,7 +80,7 @@ public class MainActivity extends XWActivity
             if ( savedInstanceState == null ) {
                 // In case this activity was started with special instructions from an Intent,
                 // pass the Intent's extras to the fragment as arguments
-                addFragmentImpl( new GamesListFrag(null),
+                addFragmentImpl( GamesListFrag.newInstance(),
                                  getIntent().getExtras(), null );
             }
         }
@@ -244,7 +244,7 @@ public class MainActivity extends XWActivity
     @Override
     public void addFragment( XWFragment fragment, Bundle extras )
     {
-        addFragmentImpl( fragment, extras, fragment.getParent() );
+        addFragmentImpl( fragment, extras, fragment.getParentName() );
     }
 
     private class PendingResultCache {
@@ -270,7 +270,7 @@ public class MainActivity extends XWActivity
 
         fragment.setTargetFragment( registrant, requestCode.ordinal() );
 
-        addFragmentImpl( fragment, extras, fragment.getParent() );
+        addFragmentImpl( fragment, extras, fragment.getParentName() );
     }
 
     protected void setFragmentResult( XWFragment fragment, int resultCode,
@@ -423,13 +423,13 @@ public class MainActivity extends XWActivity
     }
 
     private void addFragmentImpl( Fragment fragment, Bundle bundle,
-                                  Delegator parent )
+                                  String parentName )
     {
         fragment.setArguments( bundle );
-        addFragmentImpl( fragment, parent );
+        addFragmentImpl( fragment, parentName );
     }
 
-    private void addFragmentImpl( Fragment fragment, Delegator parent )
+    private void addFragmentImpl( Fragment fragment, String parentName )
     {
         String newName = fragment.getClass().getSimpleName();
         boolean replace = false;
@@ -447,9 +447,8 @@ public class MainActivity extends XWActivity
             FragmentManager.BackStackEntry entry
                 = fm.getBackStackEntryAt( fragCount - 2 );
             String curName = entry.getName();
-            String delName = parent.getClass().getSimpleName();
-            // DbgUtils.logf( "comparing %s, %s", curName, delName );
-            replace = curName.equals( delName );
+            // DbgUtils.logf( "comparing %s, %s", curName, parentName );
+            replace = curName.equals( parentName );
         }
 
         if ( replace ) {
