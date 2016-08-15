@@ -126,7 +126,7 @@ public class MultiService {
 
     public static boolean isMissingDictBundle( Bundle args )
     {
-        result = args.getBoolean( FOR_MISSING_DICT, false );
+        boolean result = args.getBoolean( FOR_MISSING_DICT, false );
         return result;
     }
 
