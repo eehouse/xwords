@@ -46,6 +46,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -1033,7 +1034,7 @@ public class BoardDelegate extends DelegateBase
             case BUTTON_BROWSEALL_ACTION:
             case BUTTON_BROWSE_ACTION:
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
-                View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
+                View button = m_toolbar.getViewFor( Buttons.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
                      DictsDelegate.handleDictsPopup( getDelegator(), button,
                                                      curDict, m_gi.dictLang ) ){
@@ -2225,43 +2226,43 @@ public class BoardDelegate extends DelegateBase
     private void populateToolbar()
     {
         if ( null != m_toolbar ) {
-            m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
+            m_toolbar.setListener( Buttons.BUTTON_BROWSE_DICT,
                                    R.string.not_again_browseall,
                                    R.string.key_na_browseall,
                                    Action.BUTTON_BROWSEALL_ACTION );
-            m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
+            m_toolbar.setLongClickListener( Buttons.BUTTON_BROWSE_DICT,
                                             R.string.not_again_browse,
                                             R.string.key_na_browse,
                                             Action.BUTTON_BROWSE_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV,
+            m_toolbar.setListener( Buttons.BUTTON_HINT_PREV,
                                    R.string.not_again_hintprev,
                                    R.string.key_notagain_hintprev,
                                    Action.PREV_HINT_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
+            m_toolbar.setListener( Buttons.BUTTON_HINT_NEXT,
                                    R.string.not_again_hintnext,
                                    R.string.key_notagain_hintnext,
                                    Action.NEXT_HINT_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
+            m_toolbar.setListener( Buttons.BUTTON_JUGGLE,
                                    R.string.not_again_juggle,
                                    R.string.key_notagain_juggle,
                                    Action.JUGGLE_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_FLIP,
+            m_toolbar.setListener( Buttons.BUTTON_FLIP,
                                    R.string.not_again_flip,
                                    R.string.key_notagain_flip,
                                    Action.FLIP_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
+            m_toolbar.setListener( Buttons.BUTTON_ZOOM,
                                    R.string.not_again_zoom,
                                    R.string.key_notagain_zoom,
                                    Action.ZOOM_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_VALUES,
+            m_toolbar.setListener( Buttons.BUTTON_VALUES,
                                    R.string.not_again_values,
                                    R.string.key_na_values,
                                    Action.VALUES_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_UNDO,
+            m_toolbar.setListener( Buttons.BUTTON_UNDO,
                                    R.string.not_again_undo,
                                    R.string.key_notagain_undo,
                                    Action.UNDO_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_CHAT,
+            m_toolbar.setListener( Buttons.BUTTON_CHAT,
                                    R.string.not_again_chat,
                                    R.string.key_notagain_chat,
                                    Action.CHAT_ACTION );
@@ -2496,14 +2497,14 @@ public class BoardDelegate extends DelegateBase
     private void updateToolbar()
     {
         if ( null != m_toolbar ) {
-            m_toolbar.update( Toolbar.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
-            m_toolbar.update( Toolbar.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
-            m_toolbar.update( Toolbar.BUTTON_JUGGLE, m_gsi.canShuffle );
-            m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
-            m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
-            m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
-            m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.canChat );
-            m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT,
+            m_toolbar.update( Buttons.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
+            m_toolbar.update( Buttons.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
+            m_toolbar.update( Buttons.BUTTON_JUGGLE, m_gsi.canShuffle );
+            m_toolbar.update( Buttons.BUTTON_UNDO, m_gsi.canRedo );
+            m_toolbar.update( Buttons.BUTTON_HINT_PREV, m_gsi.canHint );
+            m_toolbar.update( Buttons.BUTTON_HINT_NEXT, m_gsi.canHint );
+            m_toolbar.update( Buttons.BUTTON_CHAT, m_gsi.canChat );
+            m_toolbar.update( Buttons.BUTTON_BROWSE_DICT,
                               null != m_gi.dictName( m_view.getCurPlayer() ) );
         }
     }

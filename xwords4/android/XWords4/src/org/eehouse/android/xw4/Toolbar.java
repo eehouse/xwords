@@ -34,35 +34,21 @@ import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Toolbar {
-    public static final int BUTTON_BROWSE_DICT = 0;
-    public static final int BUTTON_HINT_PREV = 1;
-    public static final int BUTTON_HINT_NEXT = 2;
-    public static final int BUTTON_FLIP = 3;
-    public static final int BUTTON_JUGGLE = 4;
-    public static final int BUTTON_ZOOM = 5;
-    public static final int BUTTON_UNDO = 6;
-    public static final int BUTTON_CHAT = 7;
-    public static final int BUTTON_VALUES = 8;
+    public enum Buttons {
+        BUTTON_BROWSE_DICT(R.id.dictlist_button),
+        BUTTON_HINT_PREV(R.id.prevhint_button),
+        BUTTON_HINT_NEXT(R.id.nexthint_button),
+        BUTTON_FLIP(R.id.flip_button),
+        BUTTON_JUGGLE(R.id.shuffle_button),
+        BUTTON_ZOOM(R.id.zoom_button),
+        BUTTON_UNDO(R.id.undo_button),
+        BUTTON_CHAT(R.id.chat_button),
+        BUTTON_VALUES(R.id.values_button)
+        ;
 
-    private static int[] s_buttonInfo = {
-        // BUTTON_BROWSE_DICT
-        R.id.dictlist_button,
-        // BUTTON_HINT_PREV
-        R.id.prevhint_button,
-        // BUTTON_HINT_NEXT
-        R.id.nexthint_button,
-        // BUTTON_FLIP
-        R.id.flip_button,
-        // BUTTON_JUGGLE
-        R.id.shuffle_button,
-        // BUTTON_ZOOM
-        R.id.zoom_button,
-        // BUTTON_UNDO
-        R.id.undo_button,
-        // BUTTON_CHAT
-        R.id.chat_button,
-        // BUTTON_VALUES
-        R.id.values_button,
+        private int m_id;
+        private Buttons(int id) { m_id = id; }
+        public int getResId() { return m_id; }
     };
 
     private Activity m_activity;
@@ -85,14 +71,12 @@ public class Toolbar {
         }
     }
 
-    public ImageButton getViewFor( int index )
+    public ImageButton getViewFor( Buttons index )
     {
-        int id = s_buttonInfo[index];
-        ImageButton button = (ImageButton)m_activity.findViewById( id );
-        return button;
+        return (ImageButton)m_activity.findViewById( index.getResId() );
     }
 
-    public void setListener( int index, final int msgID, final int prefsKey,
+    public void setListener( Buttons index, final int msgID, final int prefsKey,
                              final Action action )
     {
         View.OnClickListener listener = new View.OnClickListener() {
@@ -104,7 +88,7 @@ public class Toolbar {
         setListener( index, listener );
     }
 
-    public void setLongClickListener( int index, final int msgID,
+    public void setLongClickListener( Buttons index, final int msgID,
                                       final int prefsKey, final Action action )
     {
         View.OnLongClickListener listener = new View.OnLongClickListener() {
@@ -125,13 +109,12 @@ public class Toolbar {
         }
     }
 
-    public void update( int index, boolean enable )
+    public void update( Buttons index, boolean enable )
     {
-        int vis = enable ? View.VISIBLE : View.GONE;
-        int id = s_buttonInfo[index];
+        int id = index.getResId();
         ImageButton button = (ImageButton)m_activity.findViewById( id );
         if ( null != button ) {
-            button.setVisibility( vis );
+            button.setVisibility( enable ? View.VISIBLE : View.GONE );
         }
     }
 
@@ -157,7 +140,7 @@ public class Toolbar {
         m_layout.setVisibility( m_visible? View.VISIBLE : View.GONE );
     }
 
-    private void setListener( int index, View.OnClickListener listener )
+    private void setListener( Buttons index, View.OnClickListener listener )
     {
         ImageButton button = getViewFor( index );
         if ( null != button ) {
@@ -165,7 +148,7 @@ public class Toolbar {
         }
     }
 
-    private void setLongClickListener( int index,
+    private void setLongClickListener( Buttons index,
                                        View.OnLongClickListener listener )
     {
         ImageButton button = getViewFor( index );
