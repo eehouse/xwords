@@ -1350,7 +1350,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !cancelled ) {
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
                                                 DBUtils.ROWID_NOTFOUND );
-                GameUtils.launchGame( getDelegator(), rowID );
+                launchGame( rowID );
             }
             break;
         }

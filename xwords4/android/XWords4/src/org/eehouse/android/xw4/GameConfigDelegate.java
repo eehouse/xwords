@@ -791,7 +791,6 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( !m_haveClosed ) {
             m_haveClosed = true;
-            DbgUtils.logf( "GameConfigDelegate.finishAndLaunch()" );
             Intent intent = new Intent();
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
             setResult( Activity.RESULT_OK, intent );
