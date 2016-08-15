@@ -385,10 +385,10 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( String msg )
     {
-        showOKOnlyDialog( msg, Action.SKIP_CALLBACK );
+        showOKOnlyDialogThen( msg, Action.SKIP_CALLBACK );
     }
 
-    public void showOKOnlyDialog( String msg, Action action )
+    public void showOKOnlyDialogThen( String msg, Action action )
     {
         // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY, msg, action );
@@ -398,7 +398,7 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( int msgID )
     {
-        showOKOnlyDialog( getString( msgID ), Action.SKIP_CALLBACK );
+        showOKOnlyDialogThen( getString( msgID ), Action.SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
@@ -569,7 +569,7 @@ public class DlgDelegate {
             post( new Runnable() {
                     public void run() {
                         if ( asDlg ) {
-                            showOKOnlyDialog( fmsg, Action.SKIP_CALLBACK );
+                            showOKOnlyDialog( fmsg );
                         } else {
                             DbgUtils.showf( m_activity, fmsg );
                         }

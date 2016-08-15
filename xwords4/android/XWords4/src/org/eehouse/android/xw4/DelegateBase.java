@@ -548,7 +548,7 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void showOKOnlyDialogThen( String msg, Action action )
     {
-        m_dlgDelegate.showOKOnlyDialog( msg, action );
+        m_dlgDelegate.showOKOnlyDialogThen( msg, action );
     }
 
     protected void startProgress( int titleID, int msgID )
