@@ -1060,14 +1060,6 @@
     <string name="summary_sort_tiles">Sort racks whenever new tiles
       are added</string>
 
-    <!-- if this preference is checked, the hardware volume keys will
-         work to zoom the board in and out (and will not control
-         volume) This only applies when the Board screen is
-         frontmost. -->
-    <string name="ringer_zoom">Volume keys zoom</string>
-    <!-- explanation of the above -->
-    <string name="ringer_zoom_summary">Zoom board using volume keys</string>
-
     <!-- If this preference is checked, tapping on the scoreboard
          entry for any player reveals that player's tiles and any
          pending move (after asking for his password if one is set.)
@@ -1080,7 +1072,6 @@
     <!-- explanation of the above -->
     <string name="peek_other_summary">Tapping on scoreboard name shows
         that player\'s tiles</string>
-
     
     <!-- If this preference is checked the "crosshairs" (vertical and
          horzontal lines through the cell your finger is on that help

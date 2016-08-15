@@ -121,7 +121,6 @@ public class BoardDelegate extends DelegateBase
     private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
     private JNIUtils m_jniu;
-    private boolean m_volKeysZoom;
     private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
     private int m_invitesPending;
@@ -566,7 +565,6 @@ public class BoardDelegate extends DelegateBase
                 m_exchCancelButton.setOnClickListener( this );
             }
         }
-        m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
 
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
@@ -692,7 +690,6 @@ public class BoardDelegate extends DelegateBase
         if ( hasFocus ) {
             if ( m_firingPrefs ) {
                 m_firingPrefs = false;
-                m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
                 if ( null != m_jniThread ) {
                     handleViaThread( JNICmd.CMD_PREFS_CHANGE );
                 }
@@ -731,25 +728,13 @@ public class BoardDelegate extends DelegateBase
 
     protected boolean onKeyDown( int keyCode, KeyEvent event )
     {
-        boolean handled = false;
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
                 handleViaThread( JNICmd.CMD_KEYDOWN, xpKey );
-            } else {
-                switch( keyCode ) {
-                case KeyEvent.KEYCODE_VOLUME_DOWN:
-                case KeyEvent.KEYCODE_VOLUME_UP:
-                    if ( m_volKeysZoom ) {
-                        int zoomBy = KeyEvent.KEYCODE_VOLUME_DOWN == keyCode
-                            ? -2 : 2;
-                        handled = doZoom( zoomBy );
-                    }
-                    break;
-                }
             }
         }
-        return handled;
+        return false;
     }
 
     protected boolean onKeyUp( int keyCode, KeyEvent event )
