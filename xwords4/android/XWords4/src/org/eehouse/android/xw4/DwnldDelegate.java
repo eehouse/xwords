@@ -355,10 +355,7 @@ public class DwnldDelegate extends ListDelegateBase {
         if ( null != uri ) {
             ListenerData ld;
             synchronized( s_listeners ) {
-                ld = s_listeners.get( uri );
-                if ( null != ld ) {
-                    s_listeners.remove( uri );
-                }
+                ld = s_listeners.remove( uri );
             }
             if ( null != ld ) {
                 String name = ld.m_name;
