@@ -194,7 +194,7 @@
     <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
-    <string name="download_dicts">Download more…</string>
+    <string name="download_dicts">Download more languages…</string>
 
 
     <!-- One of the strings used in the right column of the list of

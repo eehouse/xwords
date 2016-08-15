@@ -171,7 +171,7 @@
   <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
-  <string name="download_dicts">DOWNLOAD MORE…</string>
+  <string name="download_dicts">DOWNLOAD MORE LANGUAGES…</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
