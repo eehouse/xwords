@@ -577,14 +577,14 @@ public class DictsDelegate extends ListDelegateBase
         if ( handled ) {
             clearSelections();
         } else {
-            Intent intent = new Intent();
-            if ( null != m_lastLang ) {
+            if ( null != m_lastLang && null != m_lastDict ) {
+                Intent intent = new Intent();
                 intent.putExtra( RESULT_LAST_LANG, m_lastLang );
-            }
-            if ( null != m_lastDict ) {
                 intent.putExtra( RESULT_LAST_DICT, m_lastDict );
+                setResult( Activity.RESULT_OK, intent );
+            } else {
+                setResult( Activity.RESULT_CANCELED );
             }
-            setResult( Activity.RESULT_OK, intent );
         }
         return handled;
     }
