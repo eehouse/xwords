@@ -34,67 +34,31 @@ public class DlgState implements Parcelable {
     public Action m_action = null;
     public ActionPair m_pair = null;
     public int m_prefsKey;
+    // These can't be serialized!!!!
     public Object[] m_params;
     public Runnable m_onNAChecked;
 
-    public DlgState( DlgID dlgID, String msg, Action action )
-    {
-        this( dlgID, msg, android.R.string.ok, action, 0 );
-    }
-
-    public DlgState( DlgID dlgID, String msg, Action action, int prefsKey )
-    {
-        this( dlgID, msg, android.R.string.ok, action, prefsKey );
-    }
-
-    public DlgState( DlgID dlgID, String msg, int prefsKey, Action action,
-                     ActionPair more, Object[] params )
-    {
-        this( dlgID, msg, android.R.string.ok, action, prefsKey );
-        m_params = params;
-        m_pair = more;
-    }
-
-    public DlgState( DlgID dlgID, String msg, int posButton,
-                     Action action, int prefsKey )
-    {
-        this( dlgID, msg, posButton, action, prefsKey, null );
-    }
-
-    public DlgState( DlgID dlgID, String msg, int posButton,
-                     Action action, int prefsKey, Object[] params )
-    {
-        this( dlgID, null, msg, posButton, android.R.string.cancel,
-              action, prefsKey, params );
-    }
-
-    public DlgState( DlgID dlgID, Runnable onNA, String msg, int posButton, int negButton,
-                     Action action, int prefsKey, Object[] params )
+    public DlgState( DlgID dlgID )
     {
         m_id = dlgID;
-        m_onNAChecked = onNA;
-        m_msg = msg;
-        m_posButton = posButton;
-        m_negButton = negButton;
-        m_action = action;
-        m_prefsKey = prefsKey;
-        m_params = params;
     }
 
-    public DlgState( DlgID dlgID, Action action )
-    {
-        this( dlgID, null, 0, action, 0 );
-    }
-
-    public DlgState( DlgID dlgID, Object[] params )
-    {
-        this( dlgID, null, 0, null, 0, params );
-    }
-
-    public DlgState( DlgID dlgID, Action action, Object... params )
-    {
-        this( dlgID, null, 0, action, 0, params );
-    }
+    public DlgState setMsg( String msg )
+    { m_msg = msg; return this; }
+    public DlgState setPrefsKey( int key )
+    { m_prefsKey = key; return this; }
+    public DlgState setAction( Action action )
+    { m_action = action; return this; }
+    public DlgState setParams( Object... params )
+    { m_params = params; return this; }
+    public DlgState setActionPair( ActionPair pair )
+    { m_pair = pair; return this; }
+    public DlgState setOnNA( Runnable na )
+    { m_onNAChecked = na; return this; }
+    public DlgState setPosButton( int id )
+    { m_posButton = id; return this; }
+    public DlgState setNegButton( int id )
+    { m_negButton = id; return this; }
 
     public int describeContents() {
         return 0;
@@ -111,19 +75,25 @@ public class DlgState implements Parcelable {
 
     public static final Parcelable.Creator<DlgState> CREATOR
         = new Parcelable.Creator<DlgState>() {
-        public DlgState createFromParcel(Parcel in) {
-            DlgID id = DlgID.values()[in.readInt()];
-            int posButton = in.readInt();
-            int negButton = in.readInt();
-            int tmp = in.readInt();
-            Action action = 0 > tmp ? null : Action.values()[tmp];
-            int prefsKey = in.readInt();
-            String msg = in.readString();
-            return new DlgState( id, null, msg, posButton, negButton, action, prefsKey, null );
-        }
+                public DlgState createFromParcel(Parcel in) {
+                    DlgID id = DlgID.values()[in.readInt()];
+                    int posButton = in.readInt();
+                    int negButton = in.readInt();
+                    int tmp = in.readInt();
+                    Action action = 0 > tmp ? null : Action.values()[tmp];
+                    int prefsKey = in.readInt();
+                    String msg = in.readString();
+                    DlgState state = new DlgState(id)
+                    .setMsg( msg )
+                    .setPosButton( posButton )
+                    .setNegButton( negButton )
+                    .setAction( action )
+                    .setPrefsKey( prefsKey );
+                    return state;
+                }
 
-        public DlgState[] newArray(int size) {
-            return new DlgState[size];
-        }
-    };
+                public DlgState[] newArray(int size) {
+                    return new DlgState[size];
+                }
+            };
 }

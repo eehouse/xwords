@@ -383,17 +383,18 @@ public class DlgDelegate {
         }
     }
 
-    public void showOKOnlyDialog( String msg )
-    {
-        showOKOnlyDialogThen( msg, Action.SKIP_CALLBACK );
-    }
-
     public void showOKOnlyDialogThen( String msg, Action action )
     {
         // Assert.assertNull( m_dlgStates );
-        DlgState state = new DlgState( DlgID.DIALOG_OKONLY, msg, action );
+        DlgState state = new DlgState( DlgID.DIALOG_OKONLY ).setMsg( msg )
+            .setAction(action);
         addState( state );
         showDialog( DlgID.DIALOG_OKONLY );
+    }
+
+    public void showOKOnlyDialog( String msg )
+    {
+        showOKOnlyDialogThen( msg, Action.SKIP_CALLBACK );
     }
 
     public void showOKOnlyDialog( int msgID )
@@ -416,7 +417,9 @@ public class DlgDelegate {
     // indicating whether enabling is now ok.
     public void showSMSEnableDialog( Action action, Object... params )
     {
-        DlgState state = new DlgState( DlgID.DIALOG_ENABLESMS, action, params );
+        DlgState state = new DlgState( DlgID.DIALOG_ENABLESMS )
+            .setAction( action )
+            .setParams( params );
         addState( state );
         showDialog( DlgID.DIALOG_ENABLESMS );
     }
@@ -439,9 +442,9 @@ public class DlgDelegate {
                     });
             }
         } else {
-            DlgState state =
-                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, prefsKey, action, more,
-                              params );
+            DlgState state = new DlgState( DlgID.DIALOG_NOTAGAIN )
+                .setMsg( msg).setPrefsKey( prefsKey ).setAction( action )
+                .setActionPair( more ).setParams( params );
             addState( state );
             showDialog( DlgID.DIALOG_NOTAGAIN );
         }
@@ -455,9 +458,12 @@ public class DlgDelegate {
             onNA = nakey;     // so the run() method will be called to set the key
         }
         if ( null == nakey || !nakey.isSet( m_activity ) ) {
-            DlgState state
-                = new DlgState( DlgID.CONFIRM_THEN, onNA, msg, posButton,
-                                negButton, action, 0, params );
+            DlgState state = new DlgState( DlgID.CONFIRM_THEN ).setOnNA(onNA)
+                .setMsg( msg )
+                .setPosButton( posButton )
+                .setNegButton( negButton )
+                .setAction( action )
+                .setParams( params );
             addState( state );
             showDialog( DlgID.CONFIRM_THEN );
         }
@@ -470,7 +476,9 @@ public class DlgDelegate {
              || XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0]
              || BTService.BTAvailable() ) {
-            DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action, info );
+            DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
+                .setAction( action )
+                .setParams( info );
             addState( state );
             showDialog( DlgID.INVITE_CHOICES_THEN );
         } else {
@@ -498,7 +506,8 @@ public class DlgDelegate {
     {
         if ( LookupAlert.needAlert( m_activity, words, lang, noStudy ) ) {
             Bundle params = LookupAlert.makeParams( words, lang, noStudy );
-            addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
+            addState( new DlgState( DlgID.LOOKUP )
+                      .setParams( new Object[]{params} ) );
             showDialog( DlgID.LOOKUP );
         } else {
             LookupAlert.launchWordLookup( m_activity, words[0], lang );
