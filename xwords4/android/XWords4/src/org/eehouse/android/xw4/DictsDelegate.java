@@ -507,24 +507,23 @@ public class DictsDelegate extends ListDelegateBase
 
         mkListAdapter();
 
-        Intent intent = getIntent();
-        if ( null != intent ) {
-            if ( MultiService.isMissingDictIntent( intent ) ) {
+        Bundle args = getArguments();
+        if ( null != args ) {
+            if ( MultiService.isMissingDictBundle( args ) ) {
                 showDialog( DlgID.DICT_OR_DECLINE );
             } else {
-                boolean showRemote = intent.getBooleanExtra( DICT_SHOWREMOTE,
-                                                             false );
+                boolean showRemote = args.getBoolean( DICT_SHOWREMOTE, false );
                 if ( showRemote ) {
                     m_quickFetchMode = true;
                     m_showRemote = true;
                     m_checkbox.setVisibility( View.GONE );
 
-                    int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
+                    int lang = args.getInt( DICT_LANG_EXTRA, 0 );
                     if ( 0 < lang ) {
                         m_filterLang = DictLangCache.getLangNames( m_activity )[lang];
                         m_closedLangs.remove( m_filterLang );
                     }
-                    String name = intent.getStringExtra( DICT_NAME_EXTRA );
+                    String name = args.getString( DICT_NAME_EXTRA );
                     if ( null == name ) {
                         new FetchListTask( m_activity ).execute();
                     } else {
@@ -533,7 +532,7 @@ public class DictsDelegate extends ListDelegateBase
                     }
                 }
 
-                downloadNewDict( intent );
+                downloadNewDict( args );
             }
         }
 
@@ -686,14 +685,14 @@ public class DictsDelegate extends ListDelegateBase
         return result;
     }
 
-    private void downloadNewDict( Intent intent )
+    private void downloadNewDict( Bundle args )
     {
-        int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
+        int loci = args.getInt( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
             String name =
-                intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_NAME );
+                args.getString( UpdateCheckReceiver.NEW_DICT_NAME );
             String url =
-                intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
+                args.getString( UpdateCheckReceiver.NEW_DICT_URL );
             Uri uri = Uri.parse( url );
             DwnldDelegate.downloadDictInBack( m_activity, uri, name, null );
             finish();
@@ -1032,31 +1031,15 @@ public class DictsDelegate extends ListDelegateBase
         // return mkDownloadIntent( context, dict_url );
     }
 
-    public static void downloadForResult( Activity activity, RequestCode requestCode,
-                                          int lang, String name )
-    {
-        Intent intent = new Intent( activity, DictsActivity.class );
-        intent.putExtra( DICT_SHOWREMOTE, true );
-        if ( lang > 0 ) {
-            intent.putExtra( DICT_LANG_EXTRA, lang );
-        }
-        if ( null != name ) {
-            Assert.assertTrue( lang != 0 );
-            intent.putExtra( DICT_NAME_EXTRA, name );
-        }
-
-        activity.startActivityForResult( intent, requestCode.ordinal() );
-    }
-
-    public static void downloadForResult( Activity activity, RequestCode requestCode,
+    public static void downloadForResult( Delegator delegator, RequestCode requestCode,
                                           int lang )
     {
-        downloadForResult( activity, requestCode, lang, null );
+        downloadForResult( delegator, requestCode, lang, null );
     }
 
-    public static void downloadForResult( Activity activity, RequestCode requestCode )
+    public static void downloadForResult( Delegator delegator, RequestCode requestCode )
     {
-        downloadForResult( activity, requestCode, 0, null );
+        downloadForResult( delegator, requestCode, 0, null );
     }
 
     public static void downloadDefaultDict( Context context, String lc,
@@ -1460,6 +1443,30 @@ public class DictsDelegate extends ListDelegateBase
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, DictsActivity.class );
             activity.startActivity( intent );
+        }
+    }
+
+    public static void downloadForResult( Delegator delegator,
+                                          RequestCode requestCode,
+                                          int lang, String name )
+    {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean( DICT_SHOWREMOTE, true );
+        if ( lang > 0 ) {
+            bundle.putInt( DICT_LANG_EXTRA, lang );
+        }
+        if ( null != name ) {
+            Assert.assertTrue( lang != 0 );
+            bundle.putString( DICT_NAME_EXTRA, name );
+        }
+        if ( delegator.inDPMode() ) {
+            delegator.addFragmentForResult( DictsFrag.newInstance( delegator ),
+                                            bundle, requestCode );
+        } else {
+            Activity activity = delegator.getActivity();
+            Intent intent = new Intent( activity, DictsActivity.class );
+            intent.putExtras( bundle );
+            activity.startActivityForResult( intent, requestCode.ordinal() );
         }
     }
 }

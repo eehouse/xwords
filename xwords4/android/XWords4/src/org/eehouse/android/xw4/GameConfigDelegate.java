@@ -911,7 +911,7 @@ public class GameConfigDelegate extends DelegateBase
                             (String)parentView.getItemAtPosition( position );
 
                         if ( chosen.equals( m_browseText ) ) {
-                            DictsDelegate.downloadForResult( m_activity,
+                            DictsDelegate.downloadForResult( getDelegator(),
                                                              RequestCode.REQUEST_DICT,
                                                              m_gi.dictLang );
                         }
@@ -945,7 +945,7 @@ public class GameConfigDelegate extends DelegateBase
                             String chosen =
                                 (String)parentView.getItemAtPosition( position );
                             if ( chosen.equals( m_browseText ) ) {
-                                DictsDelegate.downloadForResult( m_activity,
+                                DictsDelegate.downloadForResult( getDelegator(),
                                                                  RequestCode
                                                                  .REQUEST_LANG_GC );
                             } else {

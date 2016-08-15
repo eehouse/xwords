@@ -623,7 +623,7 @@ public class GamesListDelegate extends ListDelegateBase
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
                             DictsDelegate
-                                .downloadForResult( self.m_activity,
+                                .downloadForResult( getDelegator(),
                                                     RequestCode
                                                     .REQUEST_LANG_GL,
                                                     self.m_missingDictLang );
