@@ -54,8 +54,8 @@ import org.eehouse.android.xw4.DlgDelegate.NAKey;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.jni.CommonPrefs;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
@@ -963,10 +963,12 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !XWPrefs.getPrefsBoolean( m_activity,
                                            R.string.key_enable_dualpane, false )
                  && XWPrefs.getIsTablet( m_activity ) ) {
-                showConfirmThen( new NAKey(R.string.key_notagain_dualpane),
-                                 R.string.invite_dualpane,
-                                 R.string.enable_dualpane,
-                                 Action.ENABLE_DUALPANE );
+
+                makeConfirmThenBuilder(R.string.invite_dualpane)
+                    .setNAKey(R.string.key_notagain_dualpane)
+                    .setPosButton(R.string.enable_dualpane)
+                    .setAction(Action.ENABLE_DUALPANE)
+                    .show();
             }
         }
 

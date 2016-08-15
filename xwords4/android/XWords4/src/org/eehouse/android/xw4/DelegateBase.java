@@ -43,6 +43,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -575,6 +576,14 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_dlgDelegate.showConfirmThen( null, onNA, msg, posButton, negButton,
                                        action, params );
+    }
+
+    public ConfirmThenBuilder makeConfirmThenBuilder( String msg ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( msg );
+    }
+
+    public ConfirmThenBuilder makeConfirmThenBuilder( int msgId ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( msgId );
     }
 
     protected boolean post( Runnable runnable )

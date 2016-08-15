@@ -152,6 +152,64 @@ public class DlgDelegate {
         }
     }
 
+    public class ConfirmThenBuilder {
+        private String m_msgString;
+        private NAKey m_nakey;
+        private Runnable m_onNA;
+        private int m_posButton;
+        private int m_negButton = android.R.string.cancel;
+        private Action m_action;
+        private Object[] m_params;
+
+        public ConfirmThenBuilder( String msg ) { m_msgString = msg; }
+        public ConfirmThenBuilder( int msgId ) { this( getString(msgId) ); }
+
+        public ConfirmThenBuilder setNAKey( int keyId ) {
+            m_nakey = new NAKey( keyId );
+            return this;
+        }
+
+        public ConfirmThenBuilder setPosButton( int id )
+        {
+            m_posButton = id;
+            return this;
+        }
+
+        public ConfirmThenBuilder setNegButton( int id )
+        {
+            m_negButton = id;
+            return this;
+        }
+
+        public ConfirmThenBuilder setParams( Object... params )
+        {
+            m_params = params;
+            return this;
+        }
+
+        public ConfirmThenBuilder setAction( Action action )
+        {
+            m_action = action;
+            return this;
+        }
+
+        public void show()
+        {
+            Assert.assertNotNull( m_msgString );
+            Assert.assertNotNull( m_action );
+            Assert.assertTrue( 0 != m_posButton );
+            showConfirmThen( m_nakey, m_onNA, m_msgString, m_posButton,
+                             m_negButton, m_action, m_params );
+        }
+    }
+
+    public ConfirmThenBuilder makeConfirmThenBuilder( String msg ) {
+        return new ConfirmThenBuilder( msg );
+    }
+    public ConfirmThenBuilder makeConfirmThenBuilder( int msgId ) {
+        return new ConfirmThenBuilder( msgId );
+    }
+
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
     public static final int NFC_BTN = AlertDialog.BUTTON_NEUTRAL;
     public static final int DISMISS_BUTTON = 0;
