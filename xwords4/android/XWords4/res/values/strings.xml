@@ -1638,11 +1638,6 @@
          Board screen -->
     <string name="not_again_flip">This button flips the board across a
       diagonal axis.</string>
-    <!-- Shown when you tap the zoom (+/-) button on the toolbar of
-         the main Board screen -->
-    <string name="not_again_zoom">This button toggles the board
-      between zoomed and regular size. Drag it when it is zoomed to
-      see parts that are hidden.</string>
     <!-- Shown when you tap the undo/redo button on the toolbar of the
          main Board screen -->
     <string name="not_again_undo">This button undos or redoes the

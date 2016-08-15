@@ -1405,11 +1405,6 @@
          Board screen -->
   <string name="not_again_flip">THIS BUTTON FLIPS THE BOARD ACROSS A
       DIAGONAL AXIS.</string>
-  <!-- Shown when you tap the zoom (+/-) button on the toolbar of
-         the main Board screen -->
-  <string name="not_again_zoom">THIS BUTTON TOGGLES THE BOARD
-      BETWEEN ZOOMED AND REGULAR SIZE. DRAG IT WHEN IT IS ZOOMED TO
-      SEE PARTS THAT ARE HIDDEN.</string>
   <!-- Shown when you tap the undo/redo button on the toolbar of the
          main Board screen -->
   <string name="not_again_undo">THIS BUTTON UNDOS OR REDOES THE

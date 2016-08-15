@@ -40,7 +40,6 @@ public class Toolbar {
         BUTTON_HINT_NEXT(R.id.nexthint_button),
         BUTTON_FLIP(R.id.flip_button),
         BUTTON_JUGGLE(R.id.shuffle_button),
-        BUTTON_ZOOM(R.id.zoom_button),
         BUTTON_UNDO(R.id.undo_button),
         BUTTON_CHAT(R.id.chat_button),
         BUTTON_VALUES(R.id.values_button)

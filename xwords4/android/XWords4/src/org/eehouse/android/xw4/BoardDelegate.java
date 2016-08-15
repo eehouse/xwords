@@ -897,9 +897,6 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_flip:
             cmd = JNICmd.CMD_FLIP;
             break;
-        case R.id.board_menu_zoom:
-            cmd = JNICmd.CMD_TOGGLEZOOM;
-            break;
         case R.id.board_menu_chat:
             startChatActivity();
             break;
@@ -1053,9 +1050,6 @@ public class BoardDelegate extends DelegateBase
                 break;
             case FLIP_ACTION:
                 cmd = JNICmd.CMD_FLIP;
-                break;
-            case ZOOM_ACTION:
-                cmd = JNICmd.CMD_TOGGLEZOOM;
                 break;
             case UNDO_ACTION:
                 cmd = JNICmd.CMD_UNDO_CUR;
@@ -2250,10 +2244,6 @@ public class BoardDelegate extends DelegateBase
                                    R.string.not_again_flip,
                                    R.string.key_notagain_flip,
                                    Action.FLIP_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_ZOOM,
-                                   R.string.not_again_zoom,
-                                   R.string.key_notagain_zoom,
-                                   Action.ZOOM_ACTION );
             m_toolbar.setListener( Buttons.BUTTON_VALUES,
                                    R.string.not_again_values,
                                    R.string.key_na_values,

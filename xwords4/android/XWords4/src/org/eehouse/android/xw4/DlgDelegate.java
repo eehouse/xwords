@@ -81,7 +81,6 @@ public class DlgDelegate {
         NEXT_HINT_ACTION,
         JUGGLE_ACTION,
         FLIP_ACTION,
-        ZOOM_ACTION,
         UNDO_ACTION,
         CHAT_ACTION,
         START_TRADE_ACTION,

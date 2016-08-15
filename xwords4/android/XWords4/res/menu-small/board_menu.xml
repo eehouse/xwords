@@ -56,9 +56,6 @@
         android:title="@string/board_menu_undo_last"
         />
 
-  <item android:id="@+id/board_menu_zoom"
-        android:title="@string/menu_zoom"
-        />
   <item android:id="@+id/board_menu_chat"
         android:title="@string/menu_chat"
         />
