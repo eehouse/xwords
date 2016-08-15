@@ -38,8 +38,8 @@
     </style>
 
     <style name="toolbar_button">
-      <item name="android:layout_width">58dp</item>
-      <item name="android:layout_height">48dp</item>
+      <item name="android:layout_width">@dimen/tb_button_width</item>
+      <item name="android:layout_height">@dimen/tb_button_height</item>
       <item name="android:layout_weight">1</item>
     </style>
 
