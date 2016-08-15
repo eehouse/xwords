@@ -45,6 +45,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
+import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -472,37 +473,26 @@ public class DelegateBase implements DlgClickNotify,
         Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
     }
 
-    protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Action action, Object... params )
+    public NotAgainBuilder
+        makeNotAgainBuilder( String msg, int key, Action action )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action, null, params );
+        return m_dlgDelegate.makeNotAgainBuilder( msg, key, action );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
+    public NotAgainBuilder
+        makeNotAgainBuilder( int msgId, int key, Action action )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action );
+        return m_dlgDelegate.makeNotAgainBuilder( msgId, key, action );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
-                                     ActionPair more )
+    public NotAgainBuilder makeNotAgainBuilder( String msg, int key )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action, more );
+        return m_dlgDelegate.makeNotAgainBuilder( msg, key );
     }
 
-    protected void showNotAgainDlgThen( String msg, int prefsKey,
-                                        Action action )
+    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msg, prefsKey, action, null, null );
-    }
-
-    protected void showNotAgainDlg( int msgID, int prefsKey )
-    {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey );
-    }
-
-    protected void showNotAgainDlgThen( int msgID, int prefsKey )
-    {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey );
+        return m_dlgDelegate.makeNotAgainBuilder( msgId, key );
     }
 
     // It sucks that these must be duplicated here and XWActivity

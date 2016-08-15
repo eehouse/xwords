@@ -97,7 +97,8 @@ public class Toolbar {
     {
         View.OnClickListener listener = new View.OnClickListener() {
                 public void onClick( View view ) {
-                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
+                    m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
+                        .show();
                 }
             };
         setListener( index, listener );
@@ -108,7 +109,8 @@ public class Toolbar {
     {
         View.OnLongClickListener listener = new View.OnLongClickListener() {
                 public boolean onLongClick( View view ) {
-                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
+                    m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
+                        .show();
                     return true;
                 }
             };

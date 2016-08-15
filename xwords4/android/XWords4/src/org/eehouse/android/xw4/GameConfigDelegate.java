@@ -510,9 +510,11 @@ public class GameConfigDelegate extends DelegateBase
              && !XWPrefs.getPublicRoomsEnabled( m_activity ) ) {
             ActionPair pair = new ActionPair( Action.SET_ENABLE_PUBLIC,
                                               R.string.enable_pubroom_title );
-            showNotAgainDlgThen( R.string.not_again_enablepublic,
+            makeNotAgainBuilder( R.string.not_again_enablepublic,
                                  R.string.key_notagain_enablepublic,
-                                 Action.SKIP_CALLBACK, pair );
+                                 Action.SKIP_CALLBACK )
+                .setActionPair(pair)
+                .show();
         }
     } // init
 
@@ -741,9 +743,10 @@ public class GameConfigDelegate extends DelegateBase
         } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
         } else if ( m_gameLockedCheck == view ) {
-            showNotAgainDlgThen( R.string.not_again_unlock,
+            makeNotAgainBuilder( R.string.not_again_unlock,
                                  R.string.key_notagain_unlock,
-                                 Action.LOCKED_CHANGE_ACTION );
+                                 Action.LOCKED_CHANGE_ACTION )
+                .show();
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_changeConnButton == view ) {

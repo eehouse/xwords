@@ -151,9 +151,8 @@ public class ConnViaViewLayout extends LinearLayout {
                 Assert.fail();
                 break;
             }
-            m_dlgDlgt.showNotAgainDlgThen( msgID, keyID,
-                                           DlgDelegate.Action.SKIP_CALLBACK );
-
+            m_dlgDlgt.makeNotAgainBuilder( msgID, keyID )
+                .show();
         }
     }
 }

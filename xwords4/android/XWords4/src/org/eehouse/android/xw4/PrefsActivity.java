@@ -29,6 +29,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
+import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class PrefsActivity extends PreferenceActivity
@@ -109,10 +110,14 @@ public class PrefsActivity extends PreferenceActivity
         m_dlgt.showOKOnlyDialog( msg );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     Action action )
+    public NotAgainBuilder makeNotAgainBuilder(int msgId, int key, Action action)
     {
-        m_dlgt.showNotAgainDlgThen( msgID, prefsKey, action );
+        return m_dlgt.makeNotAgainBuilder( msgId, key, action );
+    }
+
+    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key )
+    {
+        return m_dlgt.makeNotAgainBuilder( msgId, key );
     }
 
     public ConfirmThenBuilder makeConfirmThenBuilder(String msg, Action action)

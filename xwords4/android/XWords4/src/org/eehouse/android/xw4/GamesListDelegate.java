@@ -1144,9 +1144,11 @@ public class GamesListDelegate extends ListDelegateBase
         if ( clicked instanceof GameListItem ) {
             long rowid = ((GameListItem)clicked).getRowID();
             if ( ! m_launchedGames.contains( rowid ) ) {
-                showNotAgainDlgThen( R.string.not_again_newselect,
+                makeNotAgainBuilder( R.string.not_again_newselect,
                                      R.string.key_notagain_newselect,
-                                     Action.OPEN_GAME, rowid, summary );
+                                     Action.OPEN_GAME )
+                    .setParams( rowid, summary )
+                    .show();
             }
         }
     }
@@ -1358,9 +1360,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean handled = 0 < m_selGames.size() || 0 < m_selGroupIDs.size();
         if ( handled ) {
-            showNotAgainDlgThen( R.string.not_again_backclears,
+            makeNotAgainBuilder( R.string.not_again_backclears,
                                  R.string.key_notagain_backclears,
-                                 Action.CLEAR_SELS );
+                                 Action.CLEAR_SELS )
+                .show();
         }
         return handled;
     }
@@ -1512,9 +1515,10 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_checkmoves:
-            showNotAgainDlgThen( R.string.not_again_sync,
+            makeNotAgainBuilder( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 Action.SYNC_MENU );
+                                 Action.SYNC_MENU )
+                .show();
             break;
 
         case R.id.games_menu_checkupdates:
@@ -1747,9 +1751,11 @@ public class GamesListDelegate extends ListDelegateBase
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
-            showNotAgainDlgThen( R.string.not_again_newfrom,
+            makeNotAgainBuilder( R.string.not_again_newfrom,
                                  R.string.key_notagain_newfrom,
-                                 Action.NEW_FROM, selRowIDs[0] );
+                                 Action.NEW_FROM )
+                .setParams(selRowIDs[0])
+                .show();
             break;
         case R.id.games_game_copy:
             final GameSummary smry = GameUtils.getSummary( m_activity,
@@ -1898,9 +1904,11 @@ public class GamesListDelegate extends ListDelegateBase
         } else {
             ActionPair pair = new ActionPair( Action.SET_HIDE_NEWGAME_BUTTONS,
                                               R.string.set_pref );
-            showNotAgainDlgThen( R.string.not_again_hidenewgamebuttons,
+            makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
                                  R.string.key_notagain_hidenewgamebuttons,
-                                 Action.NEW_GAME_PRESSED, pair );
+                                 Action.NEW_GAME_PRESSED )
+                .setParams(pair)
+                .show();
         }
     }
 

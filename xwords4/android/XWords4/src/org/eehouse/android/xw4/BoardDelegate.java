@@ -296,10 +296,10 @@ public class BoardDelegate extends DelegateBase
                                 public void onClick( DialogInterface dialog,
                                                      int whichButton ) {
                                     curThis().
-                                        showNotAgainDlgThen( R.string.not_again_lookup,
-                                                             R.string.
-                                                             key_na_lookup,
-                                                             Action.LOOKUP_ACTION );
+                                        makeNotAgainBuilder( R.string.not_again_lookup,
+                                                             R.string.key_na_lookup,
+                                                             Action.LOOKUP_ACTION )
+                                        .show();
                                 }
                             };
                         ab.setNegativeButton( buttonTxt, lstnr );
@@ -863,9 +863,10 @@ public class BoardDelegate extends DelegateBase
             int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr,
                                                         m_view.getCurPlayer() );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
-                showNotAgainDlgThen( R.string.not_again_done,
+                makeNotAgainBuilder( R.string.not_again_done,
                                      R.string.key_notagain_done,
-                                     Action.COMMIT_ACTION );
+                                     Action.COMMIT_ACTION )
+                    .show();
             } else {
                 dlgButtonClicked( Action.COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
             }
@@ -909,8 +910,9 @@ public class BoardDelegate extends DelegateBase
             int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
                 : R.string.not_again_trading_buttons;
             msg += getString( strID );
-            showNotAgainDlgThen( msg, R.string.key_notagain_trading,
-                                 Action.START_TRADE_ACTION );
+            makeNotAgainBuilder( msg, R.string.key_notagain_trading,
+                                 Action.START_TRADE_ACTION )
+                .show();
             break;
 
         case R.id.board_menu_tray:
@@ -961,9 +963,10 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.gamel_menu_checkmoves:
-            showNotAgainDlgThen( R.string.not_again_sync,
+            makeNotAgainBuilder( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 Action.SYNC_ACTION );
+                                 Action.SYNC_ACTION )
+                .show();
             break;
 
         case R.id.board_menu_file_prefs:
@@ -1580,7 +1583,8 @@ public class BoardDelegate extends DelegateBase
                 dlgButtonClicked( Action.SHOW_EXPL_ACTION,
                                   AlertDialog.BUTTON_POSITIVE, null );
             } else {
-                showNotAgainDlgThen( naMsg, naKey, Action.SHOW_EXPL_ACTION );
+                makeNotAgainBuilder( naMsg, naKey, Action.SHOW_EXPL_ACTION )
+                    .show();
             }
         }
 
@@ -1761,8 +1765,9 @@ public class BoardDelegate extends DelegateBase
                 m_nMissing = 0;
                 post( new Runnable() {
                         public void run() {
-                            showNotAgainDlg( R.string.not_again_turnchanged,
-                                             R.string.key_notagain_turnchanged );
+                            makeNotAgainBuilder( R.string.not_again_turnchanged,
+                                                 R.string.key_notagain_turnchanged )
+                                .show();
                         }
                     } );
                 handleViaThread( JNICmd.CMD_ZOOM, -8 );
@@ -2645,8 +2650,9 @@ public class BoardDelegate extends DelegateBase
         } else if ( 2 != gi.nPlayers ) {
             Assert.assertNotNull( dlgt );
             if ( null != dlgt ) {
-                dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only,
-                                      R.string.key_na_rematch_two_only );
+                dlgt.makeNotAgainBuilder( R.string.not_again_rematch_two_only,
+                                          R.string.key_na_rematch_two_only )
+                    .show();
             }
             doIt = false;
         } else {

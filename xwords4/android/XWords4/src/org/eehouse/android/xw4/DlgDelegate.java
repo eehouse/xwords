@@ -152,53 +152,44 @@ public class DlgDelegate {
         }
     }
 
-    public class ConfirmThenBuilder {
-        private String m_msgString;
-        private NAKey m_nakey;
-        private Runnable m_onNA;
-        private int m_posButton = android.R.string.ok;
-        private int m_negButton = android.R.string.cancel;
-        private Action m_action;
-        private Object[] m_params;
+    public abstract class DlgDelegateBuilder {
+        protected String m_msgString;
+        protected NAKey m_nakey;
+        protected Runnable m_onNA;
+        protected int m_posButton = android.R.string.ok;
+        protected int m_negButton = android.R.string.cancel;
+        protected Action m_action;
+        protected Object[] m_params;
 
-        public ConfirmThenBuilder( String msg, Action action )
-        {
-            m_msgString = msg;
-            m_action = action;
-        }
-        public ConfirmThenBuilder( int msgId, Action action )
-        {
-            this( getString(msgId), action );
-        }
+        public DlgDelegateBuilder( String msg, Action action )
+        { m_msgString = msg; m_action = action; }
 
-        public ConfirmThenBuilder setNAKey( int keyId ) {
-            m_nakey = new NAKey( keyId );
-            return this;
-        }
+        public DlgDelegateBuilder( int msgId, Action action )
+        { this( getString(msgId), action );}
 
-        public ConfirmThenBuilder setOnNA( Runnable proc ) {
-            m_onNA = proc;
-            return this;
-        }
+        public DlgDelegateBuilder setNAKey( int keyId )
+        {  m_nakey = new NAKey( keyId ); return this; }
 
-        public ConfirmThenBuilder setPosButton( int id )
-        {
-            m_posButton = id;
-            return this;
-        }
+        public DlgDelegateBuilder setOnNA( Runnable proc )
+        { m_onNA = proc; return this; }
 
-        public ConfirmThenBuilder setNegButton( int id )
-        {
-            m_negButton = id;
-            return this;
-        }
+        public DlgDelegateBuilder setPosButton( int id )
+        { m_posButton = id; return this; }
 
-        public ConfirmThenBuilder setParams( Object... params )
-        {
-            m_params = params;
-            return this;
-        }
+        public DlgDelegateBuilder setNegButton( int id )
+        { m_negButton = id; return this; }
 
+        public DlgDelegateBuilder setParams( Object... params )
+        { m_params = params; return this; }
+
+        abstract void show();
+    }
+
+    public class ConfirmThenBuilder extends DlgDelegateBuilder {
+        public ConfirmThenBuilder(String msg, Action action) {super(msg, action);}
+        public ConfirmThenBuilder(int msgId, Action action) {super(msgId, action);}
+
+        @Override
         public void show()
         {
             showConfirmThen( m_nakey, m_onNA, m_msgString, m_posButton,
@@ -206,11 +197,63 @@ public class DlgDelegate {
         }
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action ) {
+    public class NotAgainBuilder extends DlgDelegateBuilder {
+        private int m_prefsKey;
+        private ActionPair m_actionPair;
+
+        public NotAgainBuilder(String msg, int key, Action action)
+        { super(msg, action); m_prefsKey = key; }
+
+        public NotAgainBuilder(int msgId, int key, Action action)
+        { super(msgId, action); m_prefsKey = key; }
+
+        public NotAgainBuilder( String msg, int key )
+        { super( msg, Action.SKIP_CALLBACK ); m_prefsKey = key; }
+
+        public NotAgainBuilder( int msgId, int key )
+        { super( msgId, Action.SKIP_CALLBACK ); m_prefsKey = key; }
+
+        public NotAgainBuilder setActionPair( ActionPair pr )
+        { m_actionPair = pr; return this; }
+
+        @Override
+        public void show()
+        {
+            showNotAgainDlgThen( m_msgString, m_prefsKey,
+                                 m_action, m_actionPair,
+                                 m_params );
+        }
+    }
+
+    public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action )
+    {
         return new ConfirmThenBuilder( msg, action );
     }
-    public ConfirmThenBuilder makeConfirmThenBuilder(int msgId, Action action) {
+
+    public ConfirmThenBuilder makeConfirmThenBuilder(int msgId, Action action)
+    {
         return new ConfirmThenBuilder( msgId, action );
+    }
+
+    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key,
+                                                Action action )
+    {
+        return new NotAgainBuilder( msgId, key, action );
+    }
+
+    public NotAgainBuilder makeNotAgainBuilder( String msg, int key,
+                                                Action action )
+    {
+        return new NotAgainBuilder( msg, key, action );
+    }
+
+    public NotAgainBuilder makeNotAgainBuilder( String msg, int key )
+    {
+        return new NotAgainBuilder( msg, key );
+    }
+
+    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key ) {
+        return new NotAgainBuilder( msgId, key );
     }
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
@@ -232,7 +275,9 @@ public class DlgDelegate {
     public interface HasDlgDelegate {
         void showOKOnlyDialog( int msgID );
         void showOKOnlyDialog( String msg );
-        void showNotAgainDlgThen( int msgID, int prefsKey, Action action );
+        NotAgainBuilder makeNotAgainBuilder( int msgID, int prefsKey,
+                                             Action action );
+        NotAgainBuilder makeNotAgainBuilder( int msgID, int prefsKey );
     }
 
     private static Map<DlgID, WeakReference<DelegateBase>> s_pendings
@@ -376,9 +421,9 @@ public class DlgDelegate {
         showDialog( DlgID.DIALOG_ENABLESMS );
     }
 
-    public void showNotAgainDlgThen( String msg, int prefsKey,
-                                     final Action action, ActionPair more,
-                                     final Object[] params )
+    private void showNotAgainDlgThen( String msg, int prefsKey,
+                                      final Action action, ActionPair more,
+                                      final Object[] params )
     {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
             // If it's set, do the action without bothering with the
@@ -400,34 +445,6 @@ public class DlgDelegate {
             addState( state );
             showDialog( DlgID.DIALOG_NOTAGAIN );
         }
-    }
-
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
-                                     ActionPair more, Object[] params )
-    {
-        showNotAgainDlgThen( getString( msgID ), prefsKey, action, more,
-                             params );
-    }
-
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
-    {
-        showNotAgainDlgThen( msgID, prefsKey, action, null, null );
-    }
-
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
-                                     ActionPair more )
-    {
-        showNotAgainDlgThen( msgID, prefsKey, action, more, null );
-    }
-
-    public void showNotAgainDlgThen( int msgID, int prefsKey )
-    {
-        showNotAgainDlgThen( msgID, prefsKey, Action.SKIP_CALLBACK );
-    }
-
-    private void showNotAgainDlgThen( String msg, int prefsKey )
-    {
-        showNotAgainDlgThen( msg, prefsKey, Action.SKIP_CALLBACK, null, null );
     }
 
     private void showConfirmThen( NAKey nakey, Runnable onNA, String msg, int posButton,
@@ -718,7 +735,8 @@ public class DlgDelegate {
                         String msg =
                             getString( R.string.not_again_clip_expl_fmt,
                                        getString(R.string.slmenu_copy_sel) );
-                        showNotAgainDlgThen( msg, R.string.key_na_clip_expl );
+                        new NotAgainBuilder( msg, R.string.key_na_clip_expl )
+                            .show();
                         break;
                     case SMS:
                         if ( ! XWPrefs.getSMSEnabled( m_activity ) ) {

@@ -118,9 +118,10 @@ public class StudyListDelegate extends ListDelegateBase
         boolean handled = true;
         switch ( item.getItemId() ) {
         case R.id.slmenu_copy_sel:
-            showNotAgainDlgThen( R.string.not_again_studycopy,
+            makeNotAgainBuilder( R.string.not_again_studycopy,
                                  R.string.key_na_studycopy,
-                                 Action.SL_COPY_ACTION );
+                                 Action.SL_COPY_ACTION )
+                .show();
             break;
         case R.id.slmenu_clear_sel:
             String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt,
