@@ -655,7 +655,7 @@ XLATE-ME
 <string name="advanced_summary">You should never need these...</string>
          */
         public static final int advanced_summary=0x7f050300;
-        public static final int after_restart=0x7f050354;
+        public static final int after_restart=0x7f050355;
         /**   
   
 <string name="alert_empty_dict_fmt">The wordlist %1$s contains only
@@ -2280,7 +2280,7 @@ XLATE-ME
          will use is substituted in for "%s". 
          */
         public static final int dicts_list_prompt_fmt=0x7f0500df;
-        public static final int disable_dualpane=0x7f050352;
+        public static final int disable_dualpane=0x7f050353;
         public static final int disable_nag_solo_title=0x7f0502fd;
         /** <string name="disable_nag_summary">Do not notify me no matter
     how long it\'s been my turn</string>
@@ -2328,7 +2328,8 @@ XLATE-ME
     has already been used to create a game.</string>
          */
         public static final int dropped_dupe=0x7f050282;
-        public static final int dualpane_restart=0x7f050353;
+        public static final int dualpane_exit_now=0x7f05034e;
+        public static final int dualpane_restart=0x7f050354;
         /**  Shown in the main screen when you launch Crosswords from an
          invitation (received in email or messaging app, say) and
          there's already a game running that matches that invitation.
@@ -2393,7 +2394,7 @@ XLATE-ME
   
          */
         public static final int empty_sms_inviter=0x7f05021c;
-        public static final int enable_dualpane=0x7f05034e;
+        public static final int enable_dualpane=0x7f05034f;
         public static final int enable_dualpane_summary=0x7f0502ce;
         /** XLATE-ME
 <string name="enable_dupes_summary">Accept invitations more than once</string>
@@ -5377,9 +5378,9 @@ XLATE-ME
          non-networked games 
          */
         public static final int players_label_standalone=0x7f0500b9;
-        public static final int post_dualpane_off_body=0x7f050351;
-        public static final int post_dualpane_on_body=0x7f050350;
-        public static final int post_dualpane_title=0x7f05034f;
+        public static final int post_dualpane_off_body=0x7f050352;
+        public static final int post_dualpane_on_body=0x7f050351;
+        public static final int post_dualpane_title=0x7f050350;
         /** <string name="pref_group_l10n_summary">Prefs related to in-app localization</string>
          */
         public static final int pref_group_l10n_summary=0x7f05032d;

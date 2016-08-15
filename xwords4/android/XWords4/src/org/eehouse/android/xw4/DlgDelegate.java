@@ -69,6 +69,7 @@ public class DlgDelegate {
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,
         ENABLE_DUALPANE,
+        ENABLE_DUALPANE_EXIT,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

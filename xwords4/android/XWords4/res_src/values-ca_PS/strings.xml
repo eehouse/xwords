@@ -2303,6 +2303,9 @@
 
   \n\nPLEASE LET ME KNOW IF YOU LIKE THE FEATURE, REPORT CRASHES, MAKE
   SUGGESTIONS, ETC.!!</string>
+  <string name="dualpane_exit_now">CROSSWORDS WILL NOW EXIT SO THE
+  CHANGE CAN TAKE EFFECT. YOU CAN USE THE NOTIFICATION IT POSTS TO
+  RESTART.</string>
   <string name="enable_dualpane">ENABLE SIDE-BY-SIDE</string>
   <string name="post_dualpane_title">RESTART CROSSWORDS</string>
   <string name="post_dualpane_on_body">START CROSSWORDS WITH SIDE-BY-SIDE ENABLED!</string>

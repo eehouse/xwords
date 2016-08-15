@@ -2694,6 +2694,11 @@
 
   \n\nPlease let me know if you like the feature, report crashes, make
   suggestions, etc.!!</string>
+
+  <string name="dualpane_exit_now">Crosswords will now exit so the
+  change can take effect. You can use the notification it posts to
+  restart.</string>
+
   <string name="enable_dualpane">Enable side-by-side</string>
   <string name="post_dualpane_title">Restart Crosswords</string>
   <string name="post_dualpane_on_body">Start Crosswords with side-by-side enabled!</string>

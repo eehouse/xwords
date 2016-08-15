@@ -1279,7 +1279,9 @@ public class GamesListDelegate extends ListDelegateBase
                 doOpenGame( params );
                 break;
             case ENABLE_DUALPANE:
-                setDualpaneAndFinish( true );
+                makeOkOnlyBuilder( R.string.dualpane_exit_now)
+                    .setAction( Action.ENABLE_DUALPANE_EXIT )
+                    .show();
                 break;
             case CLEAR_SELS:
                 clearSelections();
@@ -1320,6 +1322,12 @@ public class GamesListDelegate extends ListDelegateBase
             if ( Action.NEW_GAME_DFLT_NAME == action ) {
                 m_newGameParams = params;
                 makeThenLaunchOrConfigure();
+            }
+        } else if ( DlgDelegate.DISMISS_BUTTON == which ) {
+            switch( action ) {
+            case ENABLE_DUALPANE_EXIT:
+                setDualpaneAndFinish( true );
+                break;
             }
         }
     }
