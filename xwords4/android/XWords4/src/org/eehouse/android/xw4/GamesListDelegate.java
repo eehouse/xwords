@@ -1535,7 +1535,7 @@ public class GamesListDelegate extends ListDelegateBase
             try {
                 startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( str ) ) );
             } catch ( android.content.ActivityNotFoundException anf ) {
-                showOKOnlyDialog( R.string.no_market );
+                makeOkOnlyBuilder( R.string.no_market ).show();
             }
             break;
 
@@ -1761,7 +1761,7 @@ public class GamesListDelegate extends ListDelegateBase
             final GameSummary smry = GameUtils.getSummary( m_activity,
                                                            selRowIDs[0] );
             if ( smry.inRelayGame() ) {
-                showOKOnlyDialog( R.string.no_copy_network );
+                makeOkOnlyBuilder( R.string.no_copy_network ).show();
             } else {
                 dropSels = true;    // will select the new game instead
                 post( new Runnable() {
@@ -1802,7 +1802,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( null != info ) {
                 msg += "\n\n" + info.getAsText( m_activity );
             }
-            showOKOnlyDialog( msg );
+            makeOkOnlyBuilder( msg ).show();
             break;
 
         default:
@@ -1828,7 +1828,7 @@ public class GamesListDelegate extends ListDelegateBase
                 if ( m_selGroupIDs.contains( dftGroup ) ) {
                     msg = getString( R.string.cannot_delete_default_group_fmt,
                                      m_adapter.groupName( dftGroup ) );
-                    showOKOnlyDialog( msg );
+                    makeOkOnlyBuilder( msg ).show();
                 } else {
                     Assert.assertTrue( 0 < groupIDs.length );
                     msg = getQuantityString( R.plurals.groups_confirm_del_fmt,
@@ -2084,7 +2084,7 @@ public class GamesListDelegate extends ListDelegateBase
                 .setParams( nli )
                 .show();
         } else {
-            showOKOnlyDialog( R.string.dropped_dupe );
+            makeOkOnlyBuilder( R.string.dropped_dupe ).show();
         }
     } // startNewNetGame
 
@@ -2167,7 +2167,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String msg = intent.getStringExtra( ALERT_MSG );
         if ( null != msg ) {
-            showOKOnlyDialog( msg );
+            makeOkOnlyBuilder( msg ).show();
         }
     }
 
@@ -2236,11 +2236,6 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
         }
-    }
-
-    private void showGotDictForLang( String lang )
-    {
-        showOKOnlyDialog( String.format( "got dict for %s", lang ) );
     }
 
     private void updateField()

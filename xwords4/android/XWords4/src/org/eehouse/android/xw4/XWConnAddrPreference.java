@@ -101,7 +101,9 @@ public class XWConnAddrPreference extends DialogPreference {
                           new ConnViaViewLayout.SetEmptyWarner() {
                               public void typeSetEmpty() {
                                   PrefsActivity activity = (PrefsActivity)m_context;
-                                  activity.showOKOnlyDialog( R.string.warn_no_comms );
+                                  activity
+                                      .makeOkOnlyBuilder( R.string.warn_no_comms )
+                                      .show();
                               }
                           }, activity );
     }

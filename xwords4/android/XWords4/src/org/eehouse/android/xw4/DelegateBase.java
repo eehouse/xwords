@@ -46,6 +46,7 @@ import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
+import org.eehouse.android.xw4.DlgDelegate.OkOnlyBuilder;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -501,16 +502,6 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showAboutDialog();
     }
 
-    public void showOKOnlyDialog( int msgID )
-    {
-        m_dlgDelegate.showOKOnlyDialog( msgID );
-    }
-
-    public void showOKOnlyDialog( String msg )
-    {
-        m_dlgDelegate.showOKOnlyDialog( msg );
-    }
-
     public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action ) {
         return m_dlgDelegate.makeConfirmThenBuilder( msg, action );
     }
@@ -546,9 +537,14 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showInviteChoicesThen( action, info );
     }
 
-    protected void showOKOnlyDialogThen( String msg, Action action )
+    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
     {
-        m_dlgDelegate.showOKOnlyDialogThen( msg, action );
+        return m_dlgDelegate.makeOkOnlyBuilder( msgId );
+    }
+
+    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
+    {
+        return m_dlgDelegate.makeOkOnlyBuilder( msg );
     }
 
     protected void startProgress( int titleID, int msgID )
@@ -640,7 +636,7 @@ public class DelegateBase implements DlgClickNotify,
             final String msg = getString( fmtId, (String)args[0] );
             runOnUiThread( new Runnable() {
                     public void run() {
-                        showOKOnlyDialog( msg );
+                        makeOkOnlyBuilder( msg ).show();
                     }
                 });
         }

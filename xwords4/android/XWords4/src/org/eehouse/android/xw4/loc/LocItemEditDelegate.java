@@ -161,7 +161,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
             ok = m_keyFmts.equals( getFmtSet( cs.toString(), null ) );
 
             if ( !ok ) {
-                showOKOnlyDialog( R.string.loc_fmts_mismatch );
+                makeOkOnlyBuilder( R.string.loc_fmts_mismatch ).show();
             }
         }
         return ok;

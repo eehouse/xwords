@@ -372,7 +372,7 @@ public class StudyListDelegate extends ListDelegateBase
         }
 
         if ( null != msg ) {
-            dlg.showOKOnlyDialog( msg );
+            dlg.makeOkOnlyBuilder( msg ).show();
         }
     }
 

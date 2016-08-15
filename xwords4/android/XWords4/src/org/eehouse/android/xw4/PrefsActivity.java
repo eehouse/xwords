@@ -30,6 +30,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
+import org.eehouse.android.xw4.DlgDelegate.OkOnlyBuilder;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class PrefsActivity extends PreferenceActivity
@@ -100,14 +101,14 @@ public class PrefsActivity extends PreferenceActivity
         m_dlgt.prepareDialog( DlgID.values()[id], dialog );
     }
 
-    public void showOKOnlyDialog( int msgID )
+    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
     {
-        m_dlgt.showOKOnlyDialog( msgID );
+        return m_dlgt.makeOkOnlyBuilder( msgId );
     }
 
-    public void showOKOnlyDialog( String msg )
+    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
     {
-        m_dlgt.showOKOnlyDialog( msg );
+        return m_dlgt.makeOkOnlyBuilder( msg );
     }
 
     public NotAgainBuilder makeNotAgainBuilder(int msgId, int key, Action action)

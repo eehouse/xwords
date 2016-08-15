@@ -185,6 +185,20 @@ public class DlgDelegate {
         abstract void show();
     }
 
+    public class OkOnlyBuilder extends DlgDelegateBuilder {
+
+        public OkOnlyBuilder(String msg) { super( msg, Action.SKIP_CALLBACK ); }
+        public OkOnlyBuilder(int msgId) { super( msgId, Action.SKIP_CALLBACK ); }
+        public OkOnlyBuilder setAction( Action action )
+        { m_action = action; return this; }
+
+        @Override
+        public void show()
+        {
+            showOKOnlyDialogThen( m_msgString, m_action );
+        }
+    }
+
     public class ConfirmThenBuilder extends DlgDelegateBuilder {
         public ConfirmThenBuilder(String msg, Action action) {super(msg, action);}
         public ConfirmThenBuilder(int msgId, Action action) {super(msgId, action);}
@@ -223,6 +237,15 @@ public class DlgDelegate {
                                  m_action, m_actionPair,
                                  m_params );
         }
+    }
+
+    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
+    {
+        return new OkOnlyBuilder( msg );
+    }
+    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
+    {
+        return new OkOnlyBuilder( msgId );
     }
 
     public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action )
@@ -273,8 +296,8 @@ public class DlgDelegate {
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
     }
     public interface HasDlgDelegate {
-        void showOKOnlyDialog( int msgID );
-        void showOKOnlyDialog( String msg );
+        OkOnlyBuilder makeOkOnlyBuilder( int msgID );
+        OkOnlyBuilder makeOkOnlyBuilder( String msg );
         NotAgainBuilder makeNotAgainBuilder( int msgID, int prefsKey,
                                              Action action );
         NotAgainBuilder makeNotAgainBuilder( int msgID, int prefsKey );
@@ -383,23 +406,13 @@ public class DlgDelegate {
         }
     }
 
-    public void showOKOnlyDialogThen( String msg, Action action )
+    private void showOKOnlyDialogThen( String msg, Action action )
     {
         // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY ).setMsg( msg )
             .setAction(action);
         addState( state );
         showDialog( DlgID.DIALOG_OKONLY );
-    }
-
-    public void showOKOnlyDialog( String msg )
-    {
-        showOKOnlyDialogThen( msg, Action.SKIP_CALLBACK );
-    }
-
-    public void showOKOnlyDialog( int msgID )
-    {
-        showOKOnlyDialogThen( getString( msgID ), Action.SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
@@ -495,7 +508,7 @@ public class DlgDelegate {
     public void doSyncMenuitem()
     {
         if ( null == DBUtils.getRelayIDs( m_activity, null ) ) {
-            showOKOnlyDialog( R.string.no_games_to_refresh );
+            makeOkOnlyBuilder( R.string.no_games_to_refresh ).show();
         } else {
             RelayService.timerFired( m_activity );
             Utils.showToast( m_activity, R.string.msgs_progress );
@@ -578,7 +591,7 @@ public class DlgDelegate {
             post( new Runnable() {
                     public void run() {
                         if ( asDlg ) {
-                            showOKOnlyDialog( fmsg );
+                            makeOkOnlyBuilder( fmsg ).show();
                         } else {
                             DbgUtils.showf( m_activity, fmsg );
                         }

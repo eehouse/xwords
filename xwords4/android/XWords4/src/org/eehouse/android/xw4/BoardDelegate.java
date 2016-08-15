@@ -413,8 +413,9 @@ public class BoardDelegate extends DelegateBase
                         public void onClick( DialogInterface dialog,
                                              int item ) {
                             BoardDelegate self = curThis();
-                            self.showOKOnlyDialog( self.m_sentInfo
-                                                   .getAsText( self.m_activity ) );
+                            String msg = self.m_sentInfo
+                                .getAsText( self.m_activity );
+                            self.makeOkOnlyBuilder( msg ).show();
                         }
                     };
 
@@ -926,7 +927,7 @@ public class BoardDelegate extends DelegateBase
             break;
         case R.id.board_menu_game_invites:
             SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
-            showOKOnlyDialog( sentInfo.getAsText( m_activity ) );
+            makeOkOnlyBuilder( sentInfo.getAsText( m_activity ) ).show();
             break;
         case R.id.board_menu_undo_current:
             cmd = JNICmd.CMD_UNDO_CUR;
@@ -1119,7 +1120,7 @@ public class BoardDelegate extends DelegateBase
                 } else if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
                     showDialog( DlgID.ENABLE_NFC );
                 } else {
-                    showOKOnlyDialog( R.string.nfc_just_tap );
+                    makeOkOnlyBuilder( R.string.nfc_just_tap ).show();
                 }
                 break;
             case BLUETOOTH:
@@ -1211,7 +1212,7 @@ public class BoardDelegate extends DelegateBase
                 getString( R.string.err_dup_invite_fmt, (String)args[0] );
             post( new Runnable() {
                     public void run() {
-                        showOKOnlyDialog( msg );
+                        makeOkOnlyBuilder( msg ).show();
                     }
                 } );
             break;

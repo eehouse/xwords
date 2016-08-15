@@ -232,7 +232,7 @@ public class PrefsDelegate extends DelegateBase
                 RelayService.enabledChanged( m_activity );
                 break;
             case R.string.key_enable_dualpane:
-                showOKOnlyDialog( R.string.after_restart );
+                makeOkOnlyBuilder( R.string.after_restart ).show();
                 break;
             default:
                 Assert.fail();

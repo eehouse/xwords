@@ -1238,7 +1238,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && 0 == m_car.ip_relay_invite.length() ) {
-            showOKOnlyDialog( R.string.no_empty_rooms );
+            makeOkOnlyBuilder( R.string.no_empty_rooms ).show();
         } else {
             saveAndClose( forceNew );
         }

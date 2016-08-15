@@ -1322,7 +1322,7 @@ public class DictsDelegate extends ListDelegateBase
                         .show();
                 }
             } else {
-                showOKOnlyDialog( R.string.remote_no_net );
+                makeOkOnlyBuilder( R.string.remote_no_net ).show();
                 m_checkbox.setChecked( false );
             }
             stopProgress();
