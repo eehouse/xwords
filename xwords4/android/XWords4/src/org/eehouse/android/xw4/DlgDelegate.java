@@ -156,16 +156,28 @@ public class DlgDelegate {
         private String m_msgString;
         private NAKey m_nakey;
         private Runnable m_onNA;
-        private int m_posButton;
+        private int m_posButton = android.R.string.ok;
         private int m_negButton = android.R.string.cancel;
         private Action m_action;
         private Object[] m_params;
 
-        public ConfirmThenBuilder( String msg ) { m_msgString = msg; }
-        public ConfirmThenBuilder( int msgId ) { this( getString(msgId) ); }
+        public ConfirmThenBuilder( String msg, Action action )
+        {
+            m_msgString = msg;
+            m_action = action;
+        }
+        public ConfirmThenBuilder( int msgId, Action action )
+        {
+            this( getString(msgId), action );
+        }
 
         public ConfirmThenBuilder setNAKey( int keyId ) {
             m_nakey = new NAKey( keyId );
+            return this;
+        }
+
+        public ConfirmThenBuilder setOnNA( Runnable proc ) {
+            m_onNA = proc;
             return this;
         }
 
@@ -187,27 +199,18 @@ public class DlgDelegate {
             return this;
         }
 
-        public ConfirmThenBuilder setAction( Action action )
-        {
-            m_action = action;
-            return this;
-        }
-
         public void show()
         {
-            Assert.assertNotNull( m_msgString );
-            Assert.assertNotNull( m_action );
-            Assert.assertTrue( 0 != m_posButton );
             showConfirmThen( m_nakey, m_onNA, m_msgString, m_posButton,
                              m_negButton, m_action, m_params );
         }
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder( String msg ) {
-        return new ConfirmThenBuilder( msg );
+    public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action ) {
+        return new ConfirmThenBuilder( msg, action );
     }
-    public ConfirmThenBuilder makeConfirmThenBuilder( int msgId ) {
-        return new ConfirmThenBuilder( msgId );
+    public ConfirmThenBuilder makeConfirmThenBuilder(int msgId, Action action) {
+        return new ConfirmThenBuilder( msgId, action );
     }
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
@@ -427,65 +430,8 @@ public class DlgDelegate {
         showNotAgainDlgThen( msg, prefsKey, Action.SKIP_CALLBACK, null, null );
     }
 
-    public void showConfirmThen( String msg, Action action )
-    {
-        showConfirmThen( null, msg, android.R.string.ok, action, null );
-    }
-
-    public void showConfirmThen( int msgID, Action action )
-    {
-        showConfirmThen( null, getString( msgID ), android.R.string.ok, action, null );
-    }
-
-    public void showConfirmThen( Runnable onNA, String msg, Action action, Object[] params )
-    {
-        showConfirmThen( onNA, msg, android.R.string.ok, action, params );
-    }
-
-    public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action )
-    {
-        showConfirmThen( onNA, msg, posButton, action, null );
-    }
-
-    public void showConfirmThen( int msg, int posButton, int negButton, Action action )
-    {
-        showConfirmThen( null, null, getString(msg), posButton, negButton, action, null );
-    }
-
-    public void showConfirmThen( String msg, int posButton, int negButton, Action action )
-    {
-        showConfirmThen( null, null, msg, posButton, negButton, action, null );
-    }
-
-    public void showConfirmThen( int msg, int posButton, int negButton, Action action,
-                                 Object... params )
-    {
-        showConfirmThen( null, null, getString(msg), posButton, negButton, action, params );
-    }
-
-    public void showConfirmThen( int msg, int posButton, Action action,
-                                 Object[] params )
-    {
-        showConfirmThen( null, null, getString(msg), posButton, android.R.string.cancel,
-                         action, params );
-    }
-
-    public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action,
-                                 Object[] params )
-    {
-        showConfirmThen( null, onNA, msg, posButton, android.R.string.cancel, action,
-                         params );
-    }
-
-    public void showConfirmThen( NAKey nakey, int msgId, int posButtonId,
-                                 Action action )
-    {
-        showConfirmThen( nakey, null, getString(msgId), posButtonId,
-                         android.R.string.cancel, action, null );
-    }
-    
-    public void showConfirmThen( NAKey nakey, Runnable onNA, String msg, int posButton,
-                                 int negButton, Action action, Object[] params )
+    private void showConfirmThen( NAKey nakey, Runnable onNA, String msg, int posButton,
+                                  int negButton, Action action, Object[] params )
     {
         if ( null != nakey ) {
             Assert.assertNull( onNA );
@@ -776,10 +722,11 @@ public class DlgDelegate {
                         break;
                     case SMS:
                         if ( ! XWPrefs.getSMSEnabled( m_activity ) ) {
-                            showConfirmThen( R.string.warn_sms_disabled,
-                                             R.string.button_enable_sms,
-                                             R.string.button_later,
-                                             Action.ENABLE_SMS_ASK );
+                            new ConfirmThenBuilder( R.string.warn_sms_disabled,
+                                                    Action.ENABLE_SMS_ASK )
+                                .setPosButton( R.string.button_enable_sms )
+                                .setNegButton( R.string.button_later )
+                                .show();
                         }
                         break;
                     }

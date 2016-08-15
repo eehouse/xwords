@@ -930,7 +930,8 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_UNDO_CUR;
             break;
         case R.id.board_menu_undo_last:
-            showConfirmThen( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION );
+            makeConfirmThenBuilder( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION )
+                .show();
             break;
 
             // small devices only
@@ -1110,7 +1111,8 @@ public class BoardDelegate extends DelegateBase
             switch( means ) {
             case NFC:
                 if ( XWPrefs.getNFCToSelfEnabled( m_activity ) ) {
-                    showConfirmThen( R.string.nfc_to_self, Action.NFC_TO_SELF );
+                    makeConfirmThenBuilder( R.string.nfc_to_self, Action.NFC_TO_SELF )
+                        .show();
                 } else if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
                     showDialog( DlgID.ENABLE_NFC );
                 } else {
@@ -1412,9 +1414,10 @@ public class BoardDelegate extends DelegateBase
 
     private void askNoAddrsDelete()
     {
-        showConfirmThen( R.string.connstat_net_noaddr,
-                         R.string.list_item_delete,
-                         Action.DELETE_AND_EXIT );
+        makeConfirmThenBuilder( R.string.connstat_net_noaddr,
+                                Action.DELETE_AND_EXIT )
+            .setPosButton( R.string.list_item_delete )
+            .show();
     }
 
     private void askDropRelay()
@@ -1426,7 +1429,7 @@ public class BoardDelegate extends DelegateBase
         if ( m_connTypes.contains(CommsConnType.COMMS_CONN_SMS) ) {
             msg += " " + getString( R.string.confirm_drop_relay_sms );
         }
-        showConfirmThen( msg, Action.DROP_RELAY_ACTION );
+        makeConfirmThenBuilder( msg, Action.DROP_RELAY_ACTION ).show();
     }
 
     private void dropRelayAndRestart() {
@@ -2395,10 +2398,11 @@ public class BoardDelegate extends DelegateBase
     {
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
-                showConfirmThen( R.string.warn_sms_disabled,
-                                 R.string.button_enable_sms,
-                                 R.string.button_later,
-                                 Action.ENABLE_SMS_ASK );
+                makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                        Action.ENABLE_SMS_ASK )
+                    .setPosButton( R.string.button_enable_sms )
+                    .setNegButton( R.string.button_later )
+                    .show();
             }
         }
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
@@ -2406,9 +2410,10 @@ public class BoardDelegate extends DelegateBase
                 m_dropOnDismiss = false;
                 String msg = getString( R.string.warn_relay_disabled )
                     + "\n\n" + getString( R.string.warn_relay_remove );
-                showConfirmThen( msg, R.string.button_enable_relay,
-                                 R.string.newgame_drop_relay,
-                                 Action.ENABLE_RELAY_DO_OR );
+                makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO_OR )
+                    .setPosButton( R.string.button_enable_relay )
+                    .setNegButton( R.string.newgame_drop_relay )
+                    .show();
             }
         }
     }
@@ -2752,10 +2757,12 @@ public class BoardDelegate extends DelegateBase
             SMSService.inviteRemote( m_activity, phone, nli );
             recordInviteSent( InviteMeans.SMS, phone );
         } else if ( askOk ) {
-            showConfirmThen( R.string.warn_sms_disabled,
-                             R.string.button_enable_sms,
-                             R.string.button_later,
-                             Action.ENABLE_SMS_ASK, nli, phone );
+            makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                    Action.ENABLE_SMS_ASK )
+                .setPosButton( R.string.button_enable_sms )
+                .setNegButton( R.string.button_later )
+                .setParams( nli, phone )
+                .show();
         }
     }
 

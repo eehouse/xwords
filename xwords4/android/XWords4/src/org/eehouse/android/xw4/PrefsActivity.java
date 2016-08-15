@@ -28,6 +28,7 @@ import android.preference.PreferenceActivity;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class PrefsActivity extends PreferenceActivity
@@ -109,21 +110,19 @@ public class PrefsActivity extends PreferenceActivity
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     DlgDelegate.Action action )
+                                     Action action )
     {
         m_dlgt.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
-    protected void showConfirmThen( int msg, int posButton, int negButton,
-                                    Action action )
+    public ConfirmThenBuilder makeConfirmThenBuilder(String msg, Action action)
     {
-        m_dlgt.showConfirmThen( msg, posButton, negButton, action );
+        return m_dlgt.makeConfirmThenBuilder( msg, action );
     }
 
-    protected void showConfirmThen( String msg, int posButton, int negButton,
-                                    Action action )
+    public ConfirmThenBuilder makeConfirmThenBuilder(int msgID, Action action)
     {
-        m_dlgt.showConfirmThen( msg, posButton, negButton, action );
+        return m_dlgt.makeConfirmThenBuilder( msgID, action );
     }
 
     protected void showSMSEnableDialog( Action action )

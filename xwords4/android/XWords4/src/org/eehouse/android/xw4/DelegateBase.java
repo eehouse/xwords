@@ -521,69 +521,12 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showOKOnlyDialog( msg );
     }
 
-    protected void showConfirmThen( String msg, Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( null, msg, action, params );
+    public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( msg, action );
     }
 
-    protected void showConfirmThen( Runnable onNA, String msg, int posButton,
-                                    Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( onNA, msg, posButton, action, params );
-    }
-
-    protected void showConfirmThen( String msg, int posButton, Action action,
-                                    Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( null, msg, posButton, action, params );
-    }
-
-    protected void showConfirmThen( int msg, int posButton, int negButton, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
-    }
-
-    protected void showConfirmThen( String msg, int posButton, int negButton, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
-    }
-
-    protected void showConfirmThen( int msg, int posButton, int negButton,
-                                    Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action, params );
-    }
-
-    protected void showConfirmThen( int msg, int posButton, Action action,
-                                    Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, action, params );
-    }
-
-    public void showConfirmThen( DlgDelegate.NAKey nakey, int msgId,
-                                 int posButtonId, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( nakey, msgId, posButtonId, action );
-    }
-
-    protected void showConfirmThen( int msgID, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( msgID, action );
-    }
-
-    public void showConfirmThen( Runnable onNA, String msg, int posButton,
-                                 int negButton, Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( null, onNA, msg, posButton, negButton,
-                                       action, params );
-    }
-
-    public ConfirmThenBuilder makeConfirmThenBuilder( String msg ) {
-        return m_dlgDelegate.makeConfirmThenBuilder( msg );
-    }
-
-    public ConfirmThenBuilder makeConfirmThenBuilder( int msgId ) {
-        return m_dlgDelegate.makeConfirmThenBuilder( msgId );
+    public ConfirmThenBuilder makeConfirmThenBuilder( int msgId, Action action ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( msgId, action );
     }
 
     protected boolean post( Runnable runnable )

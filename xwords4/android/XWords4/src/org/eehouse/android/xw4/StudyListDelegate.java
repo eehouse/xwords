@@ -125,7 +125,7 @@ public class StudyListDelegate extends ListDelegateBase
         case R.id.slmenu_clear_sel:
             String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt,
                                             m_checkeds.size(), m_checkeds.size() );
-            showConfirmThen( msg, Action.SL_CLEAR_ACTION );
+            makeConfirmThenBuilder( msg, Action.SL_CLEAR_ACTION ).show();
             break;
 
         case R.id.slmenu_select_all:

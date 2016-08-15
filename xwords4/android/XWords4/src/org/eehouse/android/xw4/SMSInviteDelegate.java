@@ -151,9 +151,10 @@ public class SMSInviteDelegate extends InviteDelegate {
                             PhoneRec rec = new PhoneRec( number );
                             self.m_pendingNumber = number;
                             self.m_pendingName = null;
-                            self.showConfirmThen( R.string.warn_unlimited,
-                                                  R.string.button_yes,
-                                                  Action.POST_WARNING_ACTION );
+                            self.makeConfirmThenBuilder( R.string.warn_unlimited,
+                                                         Action.POST_WARNING_ACTION )
+                                .setPosButton( R.string.button_yes )
+                                .show();
                         }
                     };
                 dialog = makeAlertBuilder()
@@ -181,7 +182,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         int count = countChecks();
         String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
                                         count, count );
-        showConfirmThen( msg, Action.CLEAR_ACTION );
+        makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
     }
 
     protected void listSelected( String[][] devsP, int[][] countsP )
@@ -246,9 +247,10 @@ public class SMSInviteDelegate extends InviteDelegate {
             break;
         case DlgDelegate.DISMISS_BUTTON:
             if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-                showConfirmThen( R.string.warn_unlimited,
-                                 R.string.button_yes,
-                                 Action.POST_WARNING_ACTION );
+                makeConfirmThenBuilder( R.string.warn_unlimited,
+                                        Action.POST_WARNING_ACTION )
+                    .setPosButton( R.string.button_yes )
+                    .show();
             }
             break;
         }
@@ -295,15 +297,17 @@ public class SMSInviteDelegate extends InviteDelegate {
                 m_pendingName = name;
                 m_pendingNumber = number;
                 if ( Phone.TYPE_MOBILE == type ) {
-                    showConfirmThen( R.string.warn_unlimited,
-                                     R.string.button_yes,
-                                     Action.POST_WARNING_ACTION );
+                    makeConfirmThenBuilder( R.string.warn_unlimited,
+                                            Action.POST_WARNING_ACTION )
+                        .setPosButton( R.string.button_yes )
+                        .show();
                 } else {
                     m_immobileConfirmed = false;
                     String msg = getString( R.string.warn_nomobile_fmt,
                                             number, name );
-                    showConfirmThen( msg, R.string.button_yes,
-                                     Action.USE_IMMOBILE_ACTION );
+                    makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION )
+                        .setPosButton( R.string.button_yes )
+                        .show();
                 }
             }
         }

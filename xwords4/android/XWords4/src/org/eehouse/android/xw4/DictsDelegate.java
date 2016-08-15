@@ -839,8 +839,10 @@ public class DictsDelegate extends ListDelegateBase
             }
         }
 
-        showConfirmThen( msg, R.string.button_delete, Action.DELETE_DICT_ACTION,
-                         (Object)items );
+        makeConfirmThenBuilder( msg, Action.DELETE_DICT_ACTION )
+            .setPosButton( R.string.button_delete )
+            .setParams( (Object)items )
+            .show();
     } // deleteSelected
 
     //////////////////////////////////////////////////////////////////////
@@ -1312,10 +1314,11 @@ public class DictsDelegate extends ListDelegateBase
                     String[] names = m_needUpdates.keySet()
                         .toArray(new String[m_needUpdates.size()]);
                     String joined = TextUtils.join( ", ", names );
-                    showConfirmThen( getString( R.string.update_dicts_fmt,
-                                                joined ),
-                                     R.string.button_download,
-                                     Action.UPDATE_DICTS_ACTION );
+                    makeConfirmThenBuilder( getString( R.string.update_dicts_fmt,
+                                                       joined ),
+                                            Action.UPDATE_DICTS_ACTION )
+                        .setPosButton( R.string.button_download )
+                        .show();
                 }
             } else {
                 showOKOnlyDialog( R.string.remote_no_net );

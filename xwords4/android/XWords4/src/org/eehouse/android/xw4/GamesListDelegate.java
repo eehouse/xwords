@@ -964,10 +964,9 @@ public class GamesListDelegate extends ListDelegateBase
                                            R.string.key_enable_dualpane, false )
                  && XWPrefs.getIsTablet( m_activity ) ) {
 
-                makeConfirmThenBuilder(R.string.invite_dualpane)
+                makeConfirmThenBuilder(R.string.invite_dualpane, Action.ENABLE_DUALPANE)
                     .setNAKey(R.string.key_notagain_dualpane)
                     .setPosButton(R.string.enable_dualpane)
-                    .setAction(Action.ENABLE_DUALPANE)
                     .show();
             }
         }
@@ -1725,8 +1724,10 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_game_delete:
             String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
                                             selRowIDs.length, selRowIDs.length );
-            showConfirmThen( msg, R.string.button_delete,
-                             Action.DELETE_GAMES, selRowIDs );
+            makeConfirmThenBuilder( msg, Action.DELETE_GAMES )
+                .setPosButton( R.string.button_delete )
+                .setParams( selRowIDs )
+                .show();
             break;
 
         case R.id.games_game_rematch:
@@ -1835,7 +1836,9 @@ public class GamesListDelegate extends ListDelegateBase
                         msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
                                                   nGames, nGames );
                     }
-                    showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
+                    makeConfirmThenBuilder( msg, Action.DELETE_GROUPS )
+                        .setParams( groupIDs )
+                        .show();
                 }
                 break;
             case R.id.games_group_default:
@@ -2069,7 +2072,9 @@ public class GamesListDelegate extends ListDelegateBase
             String msg = getString( R.string.dup_game_query_fmt,
                                     create.toString() );
             m_netLaunchInfo = nli;
-            showConfirmThen( msg, Action.NEW_NET_GAME, nli );
+            makeConfirmThenBuilder( msg, Action.NEW_NET_GAME )
+                .setParams( nli )
+                .show();
         } else {
             showOKOnlyDialog( R.string.dropped_dupe );
         }
@@ -2205,10 +2210,11 @@ public class GamesListDelegate extends ListDelegateBase
                                         String msg =
                                             getString( R.string.confirm_get_locdict_fmt,
                                                        xlateLang( lang ) );
-                                        showConfirmThen( onNA, msg, R.string
-                                                         .button_download,
-                                                         Action.DWNLD_LOC_DICT,
-                                                         lang, name );
+                                        makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
+                                            .setPosButton( R.string.button_download )
+                                            .setOnNA( onNA )
+                                            .setParams( lang, name )
+                                            .show();
                                     }
                                 }
                             };
@@ -2455,8 +2461,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String msg = getQuantityString( R.plurals.confirm_reset_fmt,
                                         rowIDs.length, rowIDs.length );
-        showConfirmThen( msg, R.string.button_reset, Action.RESET_GAMES,
-                         rowIDs );
+        makeConfirmThenBuilder( msg, Action.RESET_GAMES )
+            .setPosButton(R.string.button_reset)
+            .setParams( rowIDs )
+            .show();
     }
 
     private void mkListAdapter()
@@ -2505,9 +2513,11 @@ public class GamesListDelegate extends ListDelegateBase
                                                   true );
                         }
                     };
-                showConfirmThen( onChecked, msg, android.R.string.ok,
-                                 R.string.button_later, Action.NEW_GAME_DFLT_NAME,
-                                 edit, doConfigure );
+                makeConfirmThenBuilder( msg, Action.NEW_GAME_DFLT_NAME )
+                    .setOnNA( onChecked )
+                    .setNegButton( R.string.button_later )
+                    .setParams( edit, doConfigure )
+                    .show();
             }
         }
         return asking;

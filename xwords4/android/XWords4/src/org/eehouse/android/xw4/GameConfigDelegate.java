@@ -346,23 +346,26 @@ public class GameConfigDelegate extends DelegateBase
                                  public void warnDisabled( CommsConnType typ ) {
                                      switch( typ ) {
                                      case COMMS_CONN_SMS:
-                                         showConfirmThen( R.string.warn_sms_disabled,
-                                                          R.string.button_enable_sms,
-                                                          R.string.button_later,
-                                                          Action.ENABLE_SMS_ASK );
+                                         makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                                                 Action.ENABLE_SMS_ASK )
+                                             .setPosButton( R.string.button_enable_sms )
+                                             .setNegButton( R.string.button_later )
+                                             .show();
                                          break;
                                      case COMMS_CONN_BT:
-                                         showConfirmThen( R.string.warn_bt_disabled,
-                                                          R.string.button_enable_bt,
-                                                          R.string.button_later,
-                                                          Action.ENABLE_BT_DO );
+                                         makeConfirmThenBuilder( R.string.warn_bt_disabled,
+                                                                 Action.ENABLE_BT_DO )
+                                             .setPosButton( R.string.button_enable_bt )
+                                             .setNegButton( R.string.button_later )
+                                             .show();
                                          break;
                                      case COMMS_CONN_RELAY:
                                          String msg = getString( R.string.warn_relay_disabled )
                                              + "\n\n" + getString( R.string.warn_relay_later );
-                                         showConfirmThen( msg, R.string.button_enable_relay,
-                                                          R.string.button_later,
-                                                          Action.ENABLE_RELAY_DO );
+                                         makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO )
+                                             .setPosButton( R.string.button_enable_relay )
+                                             .setNegButton( R.string.button_later )
+                                             .show();
                                          break;
                                      default:
                                          Assert.fail();
@@ -753,10 +756,11 @@ public class GameConfigDelegate extends DelegateBase
             saveChanges();
 
             if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
-                showConfirmThen( R.string.config_no_connvia,
-                                 R.string.button_discard,
-                                 R.string.button_edit,
-                                 Action.DELETE_AND_EXIT );
+                makeConfirmThenBuilder( R.string.config_no_connvia,
+                                        Action.DELETE_AND_EXIT )
+                    .setPosButton( R.string.button_discard )
+                    .setNegButton( R.string.button_edit )
+                    .show();
             } else if ( m_isNewGame || !m_gameStarted ) {
                 saveAndClose( true );
             } else if ( m_giOrig.changesMatter(m_gi)
