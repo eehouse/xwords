@@ -703,10 +703,8 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void orientationChanged()
     {
-        boolean isPortrait = isPortrait();
-        DbgUtils.logdf( "BoardDelegate.orientationChanged(isPortrait=%b)",
-                        isPortrait );
-        positionToolbar( isPortrait );
+        DbgUtils.logdf( "BoardDelegate.orientationChanged()" );
+        initToolbar();
         m_view.orientationChanged();
     }
 
@@ -716,13 +714,13 @@ public class BoardDelegate extends DelegateBase
         setTitle( GameUtils.getName( m_activity, m_rowid ) );
     }
 
-    private void positionToolbar( boolean isPortrait )
+    private void initToolbar()
     {
+        // Wait until we're attached....
         if ( null != findViewById( R.id.tbar_parent_hor ) ) {
             if ( null == m_toolbar ) {
                 m_toolbar = new Toolbar( m_activity, this );
             }
-            m_toolbar.setIsPortrait( isPortrait );
         }
     }
 
@@ -1016,7 +1014,7 @@ public class BoardDelegate extends DelegateBase
             case BUTTON_BROWSEALL_ACTION:
             case BUTTON_BROWSE_ACTION:
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
-                View button = m_toolbar.getViewFor( Buttons.BUTTON_BROWSE_DICT );
+                View button = m_toolbar.getButtonFor( Buttons.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
                      DictsDelegate.handleDictsPopup( getDelegator(), button,
                                                      curDict, m_gi.dictLang ) ){
@@ -2109,7 +2107,7 @@ public class BoardDelegate extends DelegateBase
                 setTitle();
             }
 
-            positionToolbar( isPortrait() );
+            initToolbar();
             populateToolbar();
             adjustTradeVisibility();
 

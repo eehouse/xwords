@@ -107,7 +107,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 } else if ( XwJNI.board_containsPt( m_jniGamePtr, xx, yy ) ) {
                     handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
                 } else {
-                    DbgUtils.logdf( "onTouchEvent(): in white space" );
+                    DbgUtils.logdf( "BoardView.onTouchEvent(): in white space" );
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -150,15 +150,15 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     @Override
     protected void onMeasure( int widthMeasureSpec, int heightMeasureSpec )
     {
-        // DbgUtils.logf( "onMeasure(width: %s, height: %s)",
+        // DbgUtils.logf( "BoardView.onMeasure(width: %s, height: %s)",
         //                MeasureSpec.toString( widthMeasureSpec ),
         //                MeasureSpec.toString( heightMeasureSpec ) );
 
         if ( null != m_dims ) {
-            if ( m_boardDlgt.isPortrait() != (m_dims.height > m_dims.width) ) {
+            if ( BoardContainer.getIsPortrait() != (m_dims.height > m_dims.width) ) {
                 // square possible; will break above!
                 Assert.assertTrue( m_dims.height != m_dims.width );
-                DbgUtils.logdf( "onMeasure: discarding m_dims" );
+                DbgUtils.logdf( "BoardView.onMeasure: discarding m_dims" );
                 if ( ++m_dimsTossCount < 4 ) {
                     m_dims = null;
                     m_layoutWidth = m_layoutHeight = 0;
@@ -276,7 +276,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             m_layoutHeight = height;
             layoutDone = true;
         }
-        DbgUtils.logdf( "layoutBoardOnce()=>%b", layoutDone );
+        DbgUtils.logdf( "BoardView.layoutBoardOnce()=>%b", layoutDone );
         return layoutDone;
     } // layoutBoardOnce
 
@@ -339,7 +339,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     public void dimsChanged( BoardDims dims )
     {
-        DbgUtils.logdf( "dimsChanged(%s)", dims.toString() );
+        DbgUtils.logdf( "BoardView.dimsChanged(%s)", dims.toString() );
         m_dims = dims;
         m_parent.runOnUiThread( new Runnable() {
                 public void run()

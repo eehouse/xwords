@@ -277,8 +277,8 @@ public final class R {
         public static final int smart_robot=0x7f0c0044;
         public static final int state=0x7f0c0051;
         public static final int summary=0x7f0c0064;
-        public static final int tbar_parent_hor=0x7f0c0007;
-        public static final int tbar_parent_vert=0x7f0c0008;
+        public static final int tbar_parent_hor=0x7f0c0008;
+        public static final int tbar_parent_vert=0x7f0c0007;
         public static final int text_item=0x7f0c0056;
         public static final int text_item2=0x7f0c0057;
         public static final int thumbnail=0x7f0c004e;

@@ -295,30 +295,6 @@ public class DelegateBase implements DlgClickNotify,
         }
     }
 
-    protected boolean isPortrait()
-    {
-        Point size = getContainerSize();
-        boolean result = size.x < size.y;
-        DbgUtils.logdf( "%s.isPortrait() => %b",
-                        getClass().getSimpleName(), result );
-        return result;
-    }
-
-    private Point getContainerSize()
-    {
-        Point result = null;
-        if ( m_activity instanceof MainActivity ) {
-            result = ((MainActivity)m_activity).getFragmentSize();
-        } else {
-            Rect rect = new Rect();
-            m_rootView.getWindowVisibleDisplayFrame( rect );
-            result = new Point( rect.width(), rect.height() );
-        }
-        DbgUtils.logdf( "%s.getContainerSize(): width => %d, height => %d",
-                        getClass().getSimpleName(), result.x, result.y );
-        return result;
-    }
-
     private void runIfVisible()
     {
         if ( isVisible() ) {

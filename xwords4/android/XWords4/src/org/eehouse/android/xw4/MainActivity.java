@@ -218,21 +218,6 @@ public class MainActivity extends XWActivity
         return handled;
     }
 
-    protected Point getFragmentSize()
-    {
-        Rect rect = new Rect();
-        m_root.getWindowVisibleDisplayFrame( rect );
-        int width = rect.width();
-        int height = rect.height();
-        if ( null != m_isPortrait && m_isPortrait && height < width ) {
-            int tmp = width;
-            width = height;
-            height = tmp;
-        }
-        return new Point( width / Math.min( m_maxPanes, m_root.getChildCount() ),
-                          height );
-    }
-
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////

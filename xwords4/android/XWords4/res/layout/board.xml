@@ -1,58 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/board_root"
-              android:orientation="horizontal"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
-              >
-  <LinearLayout android:orientation="vertical"
-				android:layout_width="wrap_content" 
-				android:layout_height="fill_parent"
-				android:layout_weight="1"
-				>
-	<org.eehouse.android.xw4.BoardView
-		android:id="@+id/board_view"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_weight="1"
-		android:focusable="true"
-		android:clickable="true"
-		android:longClickable="true"
-		android:drawSelectorOnTop="false"
-		android:layout_gravity="center_horizontal"
-		android:background="@android:color/transparent"
-		/>
+<!-- BoardContainer is a custom layout that among other things assumes
+     four children. Change the number of children and an assert will fire.
+     -->
 
-	<LinearLayout android:id="@+id/exchange_buttons"
-                  android:orientation="horizontal"
-                  android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  android:visibility="gone"
-                  >
-      <Button android:id="@+id/exchange_commit"
-              android:text="@string/button_trade_commit" 
-              style="@style/evenly_spaced_horizontal"
-              />
-      <Button android:id="@+id/exchange_cancel"
-              android:text="@string/button_trade_cancel" 
-              style="@style/evenly_spaced_horizontal"
-              />
-	</LinearLayout>
+<org.eehouse.android.xw4.BoardContainer
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/board_root"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+  <org.eehouse.android.xw4.BoardView
+	  android:id="@+id/board_view"
+	  android:layout_width="wrap_content"
+	  android:layout_height="wrap_content"
+	  android:layout_weight="1"
+	  android:focusable="true"
+	  android:clickable="true"
+	  android:longClickable="true"
+	  android:drawSelectorOnTop="false"
+	  android:layout_gravity="center_horizontal"
+	  android:background="@android:color/transparent"
+	  />
 
-	<!-- toolbar goes inside me -->
-	<HorizontalScrollView android:id="@+id/tbar_parent_hor"
-						  android:orientation="horizontal"
-                          android:layout_width="wrap_content"
-                          android:layout_height="wrap_content"
-                          android:layout_gravity="center_horizontal"
-                          />     
+  <LinearLayout android:id="@+id/exchange_buttons"
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                >
+    <Button android:id="@+id/exchange_commit"
+            android:text="@string/button_trade_commit"
+            style="@style/evenly_spaced_horizontal"
+            />
+    <Button android:id="@+id/exchange_cancel"
+            android:text="@string/button_trade_cancel"
+            style="@style/evenly_spaced_horizontal"
+            />
   </LinearLayout>
 
-  <!-- toolbar goes inside me -->
+  <!-- toolbar goes inside one of these -->
   <ScrollView android:id="@+id/tbar_parent_vert"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_gravity="center_vertical"
-              />     
-</LinearLayout>
+              android:visibility="gone"
+              />
+  <HorizontalScrollView android:id="@+id/tbar_parent_hor"
+						android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        />
+
+</org.eehouse.android.xw4.BoardContainer>
