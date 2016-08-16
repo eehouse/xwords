@@ -183,6 +183,7 @@ XP_Bool board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y,
                              XP_Bool* handled );
 XP_Bool board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y );
+XP_Bool board_containsPt( const BoardCtxt* board, XP_U16 xx, XP_U16 yy );
 #endif
 
 #ifdef KEY_SUPPORT

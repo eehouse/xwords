@@ -257,7 +257,7 @@ XP_S16 pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y,
 void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer, XP_Bool canPeek );
 void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
              XP_U16* fCol, XP_U16* fRow );
-XP_Bool pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, 
+XP_Bool pointOnSomething( const BoardCtxt* board, XP_U16 xx, XP_U16 yy,
                           BoardObjectType* wp );
 XP_Bool coordToCell( const BoardCtxt* board, XP_S16 xx, XP_S16 yy, 
                      XP_U16* colP, XP_U16* rowP );

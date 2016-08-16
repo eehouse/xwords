@@ -1119,6 +1119,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getActiveRect
 }
 #endif
 
+#ifdef POINTER_SUPPORT
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenDown
 (JNIEnv *env, jclass C, GamePtrType gamePtr, jint xx, jint yy, jbooleanArray barray )
@@ -1152,6 +1153,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenUp
     XWJNI_END();
     return result;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1containsPt
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint xx, jint yy )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_containsPt( state->game.board, xx, yy );
+    XWJNI_END();
+    return result;
+}
+#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1juggleTray

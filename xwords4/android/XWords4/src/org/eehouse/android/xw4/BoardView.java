@@ -102,12 +102,17 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             switch ( action ) {
             case MotionEvent.ACTION_DOWN:
                 m_lastSpacing = MULTI_INACTIVE;
-                if ( !ConnStatusHandler.handleDown( xx, yy ) ) {
+                if ( ConnStatusHandler.handleDown( xx, yy ) ) {
+                    // do nothing
+                } else if ( XwJNI.board_containsPt( m_jniGamePtr, xx, yy ) ) {
                     handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
+                } else {
+                    DbgUtils.logdf( "onTouchEvent(): in white space" );
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
                 if ( ConnStatusHandler.handleMove( xx, yy ) ) {
+                    // do nothing
                 } else if ( MULTI_INACTIVE == m_lastSpacing ) {
                     handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
                 } else {

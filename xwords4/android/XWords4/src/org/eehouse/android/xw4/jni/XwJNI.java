@@ -289,6 +289,8 @@ public class XwJNI {
                                                       int xx, int yy );
     public static native boolean board_handlePenUp( GamePtr gamePtr,
                                                     int xx, int yy );
+    public static native boolean board_containsPt( GamePtr gamePtr,
+                                                   int xx, int yy );
 
     public static native boolean board_juggleTray( GamePtr gamePtr );
     public static native int board_getTrayVisState( GamePtr gamePtr );
