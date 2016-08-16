@@ -68,25 +68,15 @@ public class BoardContainer extends ViewGroup {
             setForPortrait( width, height );
         }
 
-        int childState = 0;
-
         for ( int ii = 0; ii < childCount; ii++ ) {
             final View child = getChildAt( ii );
             if ( GONE != child.getVisibility() ) {
                 // Measure the child.
                 measureChild( child, widthMeasureSpec, heightMeasureSpec );
-
-                childState =
-                    combineMeasuredStates( childState, child.getMeasuredState() );
             }
         }
 
-        int maxHeight = getSuggestedMinimumHeight();
-        int maxWidth = getSuggestedMinimumWidth();
-
-        setMeasuredDimension( resolveSizeAndState(maxWidth, widthMeasureSpec, childState),
-                              resolveSizeAndState(maxHeight, heightMeasureSpec,
-                                                  childState << MEASURED_HEIGHT_STATE_SHIFT) );
+        setMeasuredDimension( width, height );
     }
 
     // In portrait mode, board gets BD_PCT of the vertical space. Otherwise it
