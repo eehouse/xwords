@@ -194,7 +194,7 @@
     <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
-    <string name="download_dicts">Download more…</string>
+    <string name="download_dicts">Download more languages…</string>
 
 
     <!-- One of the strings used in the right column of the list of
@@ -712,11 +712,7 @@
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
-    <string name="board_menu_game_resend">Resend messages</string>
-    <plurals name="resend_finished_fmt">
-      <item quantity="one">Resend finished; sent one message.</item>
-      <item quantity="other">Resend finished; sent %1$d messages.</item>
-    </plurals>
+    <string name="board_menu_game_resend">Resend moves</string>
 
     <!--       
        ############################################################
@@ -1064,14 +1060,6 @@
     <string name="summary_sort_tiles">Sort racks whenever new tiles
       are added</string>
 
-    <!-- if this preference is checked, the hardware volume keys will
-         work to zoom the board in and out (and will not control
-         volume) This only applies when the Board screen is
-         frontmost. -->
-    <string name="ringer_zoom">Volume keys zoom</string>
-    <!-- explanation of the above -->
-    <string name="ringer_zoom_summary">Zoom board using volume keys</string>
-
     <!-- If this preference is checked, tapping on the scoreboard
          entry for any player reveals that player's tiles and any
          pending move (after asking for his password if one is set.)
@@ -1084,7 +1072,6 @@
     <!-- explanation of the above -->
     <string name="peek_other_summary">Tapping on scoreboard name shows
         that player\'s tiles</string>
-
     
     <!-- If this preference is checked the "crosshairs" (vertical and
          horzontal lines through the cell your finger is on that help
@@ -1290,7 +1277,7 @@
       -->
     <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-    <string name="chat_title_fmt">%1$s messages</string>
+    <string name="chat_title_fmt">Chat for %1$s</string>
     <!-- Prefix for local messages -->
     <string name="chat_local_id">Me:\u0020</string>
     <!-- Prefix for remote messages -->
@@ -1642,11 +1629,6 @@
          Board screen -->
     <string name="not_again_flip">This button flips the board across a
       diagonal axis.</string>
-    <!-- Shown when you tap the zoom (+/-) button on the toolbar of
-         the main Board screen -->
-    <string name="not_again_zoom">This button toggles the board
-      between zoomed and regular size. Drag it when it is zoomed to
-      see parts that are hidden.</string>
     <!-- Shown when you tap the undo/redo button on the toolbar of the
          main Board screen -->
     <string name="not_again_undo">This button undos or redoes the
@@ -2397,8 +2379,7 @@
 
     <string name="force_tablet_title">Force tablet layout</string>
     <string name="force_tablet_summary">Even if my screen is too small</string>
-    <string name="enable_dualpane_title">Enable dualpane</string>
-    <string name="enable_dualpane_summary">Side-by-side views, very experimental!</string>
+    <string name="enable_dualpane_summary">Side-by-side views on tablets, very experimental!</string>
 
     <!-- Nagging: title of notification reminder message -->
     <string name="nag_title">Reminder: It\'s your turn</string>
@@ -2658,8 +2639,8 @@
 
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
-    <item quantity="one">One message sent</item>
-    <item quantity="other">%1$s messages sent</item>
+    <item quantity="one">One move sent</item>
+    <item quantity="other">%1$s moves sent</item>
   </plurals>
 
   <string name="invite_copied">Invitation ready to paste</string>
@@ -2699,11 +2680,18 @@
 
   \n\nPlease let me know if you like the feature, report crashes, make
   suggestions, etc.!!</string>
+
+  <string name="dualpane_exit_now">Crosswords will now exit so the
+  change can take effect. You can use the notification it posts to
+  restart.</string>
+
   <string name="enable_dualpane">Enable side-by-side</string>
-  <string name="post_dualpane_title">Relaunch after change</string>
+  <string name="post_dualpane_title">Restart Crosswords</string>
   <string name="post_dualpane_on_body">Start Crosswords with side-by-side enabled!</string>
   <string name="post_dualpane_off_body">Start Crosswords with side-by-side disabled</string>
 
   <string name="disable_dualpane">Disable side-by-side</string>
   <string name="dualpane_restart">Exiting app…</string>
+  <string name="after_restart">This change will not take effect until
+  you restart Crosswords.</string>
 </resources>

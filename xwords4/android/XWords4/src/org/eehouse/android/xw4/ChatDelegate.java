@@ -211,7 +211,8 @@ public class ChatDelegate extends DelegateBase {
         switch ( item.getItemId() ) {
         case R.id.chat_menu_clear:
             if ( handled ) {
-                showConfirmThen( R.string.confirm_clear_chat, Action.CLEAR_ACTION );
+                makeConfirmThenBuilder( R.string.confirm_clear_chat, Action.CLEAR_ACTION )
+                    .show();
             }
             break;
         case R.id.chat_menu_send:
@@ -264,7 +265,7 @@ public class ChatDelegate extends DelegateBase {
         bundle.putBooleanArray( INTENT_KEY_LOCS, locs );
 
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new ChatFrag( delegator ), bundle );
+            delegator.addFragment( ChatFrag.newInstance( delegator ), bundle );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, ChatActivity.class );

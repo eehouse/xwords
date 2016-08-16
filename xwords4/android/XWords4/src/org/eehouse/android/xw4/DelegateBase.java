@@ -43,7 +43,10 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
+import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
+import org.eehouse.android.xw4.DlgDelegate.OkOnlyBuilder;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -92,7 +95,6 @@ public class DelegateBase implements DlgClickNotify,
     protected void onCreateContextMenu( ContextMenu menu, View view,
                                         ContextMenuInfo menuInfo ) {}
     protected boolean onContextItemSelected( MenuItem item ) { return false; }
-    protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean handleBackPressed() { return false; }
@@ -140,6 +142,15 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_isVisible = false;
         XWService.setListener( null );
+    }
+
+    protected void onStop()
+    {
+        // Alerts disappear on their own if not in dualpane mode
+        if ( m_activity instanceof MainActivity
+             && ((MainActivity)m_activity).inDPMode() ) {
+            DlgDelegate.closeAlerts( m_activity, this );
+        }
     }
 
     protected DelegateBase curThis()
@@ -224,6 +235,8 @@ public class DelegateBase implements DlgClickNotify,
         findViewById( id ).setVisibility( visibility );
     }
 
+    protected void setTitle() {}
+
     protected void setTitle( String title )
     {
         m_activity.setTitle( title );
@@ -280,30 +293,6 @@ public class DelegateBase implements DlgClickNotify,
         if ( !handled ) {
             m_activity.finish();
         }
-    }
-
-    protected boolean isPortrait()
-    {
-        Point size = getContainerSize();
-        boolean result = size.x < size.y;
-        DbgUtils.logdf( "%s.isPortrait() => %b",
-                        getClass().getSimpleName(), result );
-        return result;
-    }
-
-    private Point getContainerSize()
-    {
-        Point result = null;
-        if ( m_activity instanceof MainActivity ) {
-            result = ((MainActivity)m_activity).getFragmentSize();
-        } else {
-            Rect rect = new Rect();
-            m_rootView.getWindowVisibleDisplayFrame( rect );
-            result = new Point( rect.width(), rect.height() );
-        }
-        DbgUtils.logdf( "%s.getContainerSize(): width => %d, height => %d",
-                        getClass().getSimpleName(), result.x, result.y );
-        return result;
     }
 
     private void runIfVisible()
@@ -461,37 +450,26 @@ public class DelegateBase implements DlgClickNotify,
         Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
     }
 
-    protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Action action, Object... params )
+    public NotAgainBuilder
+        makeNotAgainBuilder( String msg, int key, Action action )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action, null, params );
+        return m_dlgDelegate.makeNotAgainBuilder( msg, key, action );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
+    public NotAgainBuilder
+        makeNotAgainBuilder( int msgId, int key, Action action )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action );
+        return m_dlgDelegate.makeNotAgainBuilder( msgId, key, action );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
-                                     ActionPair more )
+    public NotAgainBuilder makeNotAgainBuilder( String msg, int key )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action, more );
+        return m_dlgDelegate.makeNotAgainBuilder( msg, key );
     }
 
-    protected void showNotAgainDlgThen( String msg, int prefsKey,
-                                        Action action )
+    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key )
     {
-        m_dlgDelegate.showNotAgainDlgThen( msg, prefsKey, action, null, null );
-    }
-
-    protected void showNotAgainDlg( int msgID, int prefsKey )
-    {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey );
-    }
-
-    protected void showNotAgainDlgThen( int msgID, int prefsKey )
-    {
-        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey );
+        return m_dlgDelegate.makeNotAgainBuilder( msgId, key );
     }
 
     // It sucks that these must be duplicated here and XWActivity
@@ -500,71 +478,12 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showAboutDialog();
     }
 
-    public void showOKOnlyDialog( int msgID )
-    {
-        m_dlgDelegate.showOKOnlyDialog( msgID );
+    public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( msg, action );
     }
 
-    public void showOKOnlyDialog( String msg )
-    {
-        m_dlgDelegate.showOKOnlyDialog( msg );
-    }
-
-    protected void showConfirmThen( String msg, Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( null, msg, action, params );
-    }
-
-    protected void showConfirmThen( Runnable onNA, String msg, int posButton,
-                                    Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( onNA, msg, posButton, action, params );
-    }
-
-    protected void showConfirmThen( String msg, int posButton, Action action,
-                                    Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( null, msg, posButton, action, params );
-    }
-
-    protected void showConfirmThen( int msg, int posButton, int negButton, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
-    }
-
-    protected void showConfirmThen( String msg, int posButton, int negButton, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
-    }
-
-    protected void showConfirmThen( int msg, int posButton, int negButton,
-                                    Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action, params );
-    }
-
-    protected void showConfirmThen( int msg, int posButton, Action action,
-                                    Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( msg, posButton, action, params );
-    }
-
-    public void showConfirmThen( DlgDelegate.NAKey nakey, int msgId,
-                                 int posButtonId, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( nakey, msgId, posButtonId, action );
-    }
-
-    protected void showConfirmThen( int msgID, Action action )
-    {
-        m_dlgDelegate.showConfirmThen( msgID, action );
-    }
-
-    public void showConfirmThen( Runnable onNA, String msg, int posButton,
-                                 int negButton, Action action, Object... params )
-    {
-        m_dlgDelegate.showConfirmThen( null, onNA, msg, posButton, negButton,
-                                       action, params );
+    public ConfirmThenBuilder makeConfirmThenBuilder( int msgId, Action action ) {
+        return m_dlgDelegate.makeConfirmThenBuilder( msgId, action );
     }
 
     protected boolean post( Runnable runnable )
@@ -594,9 +513,14 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showInviteChoicesThen( action, info );
     }
 
-    protected void showOKOnlyDialogThen( String msg, Action action )
+    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
     {
-        m_dlgDelegate.showOKOnlyDialog( msg, action );
+        return m_dlgDelegate.makeOkOnlyBuilder( msgId );
+    }
+
+    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
+    {
+        return m_dlgDelegate.makeOkOnlyBuilder( msg );
     }
 
     protected void startProgress( int titleID, int msgID )
@@ -688,7 +612,7 @@ public class DelegateBase implements DlgClickNotify,
             final String msg = getString( fmtId, (String)args[0] );
             runOnUiThread( new Runnable() {
                     public void run() {
-                        showOKOnlyDialog( msg );
+                        makeOkOnlyBuilder( msg ).show();
                     }
                 });
         }

@@ -24,8 +24,13 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -33,119 +38,155 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class Toolbar {
-    public static final int BUTTON_BROWSE_DICT = 0;
-    public static final int BUTTON_HINT_PREV = 1;
-    public static final int BUTTON_HINT_NEXT = 2;
-    public static final int BUTTON_FLIP = 3;
-    public static final int BUTTON_JUGGLE = 4;
-    public static final int BUTTON_ZOOM = 5;
-    public static final int BUTTON_UNDO = 6;
-    public static final int BUTTON_CHAT = 7;
-    public static final int BUTTON_VALUES = 8;
+public class Toolbar implements BoardContainer.SizeChangeListener {
+    public enum Buttons {
+        BUTTON_BROWSE_DICT(R.id.dictlist_button),
+        BUTTON_HINT_PREV(R.id.prevhint_button),
+        BUTTON_HINT_NEXT(R.id.nexthint_button),
+        BUTTON_FLIP(R.id.flip_button),
+        BUTTON_JUGGLE(R.id.shuffle_button),
+        BUTTON_UNDO(R.id.undo_button),
+        BUTTON_CHAT(R.id.chat_button),
+        BUTTON_VALUES(R.id.values_button)
+        ;
 
-    private static int[] s_buttonInfo = {
-        // BUTTON_BROWSE_DICT
-        R.id.dictlist_button,
-        // BUTTON_HINT_PREV
-        R.id.prevhint_button,
-        // BUTTON_HINT_NEXT
-        R.id.nexthint_button,
-        // BUTTON_FLIP
-        R.id.flip_button,
-        // BUTTON_JUGGLE
-        R.id.shuffle_button,
-        // BUTTON_ZOOM
-        R.id.zoom_button,
-        // BUTTON_UNDO
-        R.id.undo_button,
-        // BUTTON_CHAT
-        R.id.chat_button,
-        // BUTTON_VALUES
-        R.id.values_button,
+        private int m_id;
+        private Buttons(int id) { m_id = id; }
+        public int getResId() { return m_id; }
     };
 
     private Activity m_activity;
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
     private LinearLayout m_layout;
     private boolean m_visible;
-    private Boolean m_isPortrait;
+    private ScrollView m_scrollVert;
+    private HorizontalScrollView m_scrollHor;
+    private Map<Buttons, Object> m_onClickListeners;
+    private Map<Buttons, Object> m_onLongClickListeners;
 
     public Toolbar( Activity activity, HasDlgDelegate dlgDlgt )
     {
         m_activity = activity;
         m_dlgDlgt = dlgDlgt;
+        m_scrollVert =
+            (ScrollView)activity.findViewById( R.id.tbar_parent_vert );
+        Assert.assertNotNull( m_scrollVert );
+        m_scrollHor =
+            (HorizontalScrollView)activity.findViewById( R.id.tbar_parent_hor );
+        Assert.assertNotNull( m_scrollHor );
+        BoardContainer.registerSizeChangeListener( this );
     }
 
     public void setVisible( boolean visible )
     {
         if ( m_visible != visible ) {
             m_visible = visible;
-            doShowHide();
+            doShowHide( null );
         }
     }
 
-    public ImageButton getViewFor( int index )
+    public ImageButton getButtonFor( Buttons index )
     {
-        int id = s_buttonInfo[index];
-        ImageButton button = (ImageButton)m_activity.findViewById( id );
-        return button;
+        return (ImageButton)m_activity.findViewById( index.getResId() );
     }
 
-    public void setListener( int index, final int msgID, final int prefsKey,
-                             final Action action )
+    public void setListener( Buttons index, final int msgID,
+                             final int prefsKey, final Action action )
     {
-        View.OnClickListener listener = new View.OnClickListener() {
+        if ( null == m_onClickListeners ) {
+            m_onClickListeners = new HashMap<Buttons, Object>();
+        }
+        m_onClickListeners.put( index, new View.OnClickListener() {
+                @Override
                 public void onClick( View view ) {
-                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
+                    DbgUtils.logf( "Toolbar.setListener(): click on %s with action %s",
+                                   view.toString(), action.toString() );
+                    m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
+                        .show();
                 }
-            };
-        setListener( index, listener );
+            } );
     }
 
-    public void setLongClickListener( int index, final int msgID,
-                                      final int prefsKey, final Action action )
+    public void setLongClickListener( Buttons index, final int msgID,
+                                         final int prefsKey, final Action action )
     {
-        View.OnLongClickListener listener = new View.OnLongClickListener() {
+        if ( null == m_onLongClickListeners ) {
+            m_onLongClickListeners = new HashMap<Buttons, Object>();
+        }
+        m_onLongClickListeners.put( index, new View.OnLongClickListener() {
                 public boolean onLongClick( View view ) {
-                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
+                    m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
+                        .show();
                     return true;
                 }
-            };
-        setLongClickListener( index, listener );
+            } );
     }
 
-    protected void setIsPortrait( boolean isPortrait )
+    public void update( Buttons index, boolean enable )
     {
-        if ( null == m_isPortrait || m_isPortrait != isPortrait ) {
-            m_isPortrait = isPortrait;
-            doShowHide();
-        }
-    }
-
-    public void update( int index, boolean enable )
-    {
-        int vis = enable ? View.VISIBLE : View.GONE;
-        int id = s_buttonInfo[index];
+        int id = index.getResId();
         ImageButton button = (ImageButton)m_activity.findViewById( id );
         if ( null != button ) {
-            button.setVisibility( vis );
+            button.setVisibility( enable ? View.VISIBLE : View.GONE );
         }
     }
 
-    private void doShowHide()
+    // SizeChangeListener
+    public void sizeChanged( int width, int height, boolean isPortrait )
     {
-        Assert.assertTrue( null != m_isPortrait );
+        DbgUtils.logf( "Toolbar.sizeChanged(isPortrait=%b)", isPortrait );
+        tryAddListeners( m_onClickListeners );
+        tryAddListeners( m_onLongClickListeners );
+        doShowHide( new Boolean(isPortrait) );
+    }
+
+    private void tryAddListeners( Map<Buttons, Object> map )
+    {
+        Iterator<Buttons> iter = map.keySet().iterator();
+        while ( iter.hasNext() ) {
+            Buttons key = iter.next();
+            Object listener = map.get( key );
+            if ( setListener( key, listener ) ) {
+                iter.remove();
+            }
+        }
+    }
+
+    private boolean setListener( Buttons index, Object listener )
+    {
+        ImageButton button = getButtonFor( index );
+        boolean success = null != button;
+        if ( success ) {
+            if ( listener instanceof View.OnClickListener ) {
+                button.setOnClickListener( (View.OnClickListener)listener );
+            } else if ( listener instanceof View.OnLongClickListener ) {
+                button.setOnLongClickListener( (View.OnLongClickListener)listener );
+            } else {
+                Assert.fail();
+            }
+        }
+        return success;
+    }
+
+    private void doShowHide( Boolean shouldBePortrait )
+    {
+        // BoardContainer owns which scroller we'll use, and signals its
+        // choice by setting their visibility. We use the one that's visible.
+        boolean isPortrait = View.GONE != m_scrollHor.getVisibility();
+        DbgUtils.logf( "Toolbar.doShowHide(): isPortrait: %b", isPortrait );
+        Assert.assertTrue( null == shouldBePortrait
+                           || shouldBePortrait.equals(isPortrait) );
+
         if ( null == m_layout ) {
             m_layout = (LinearLayout)LocUtils.inflate( m_activity, R.layout.toolbar );
         } else {
             ((ViewGroup)m_layout.getParent()).removeView( m_layout );
         }
-        m_layout.setOrientation( m_isPortrait ?
+        m_layout.setOrientation( isPortrait ?
                                  LinearLayout.HORIZONTAL : LinearLayout.VERTICAL );
 
-        int id = m_isPortrait ? R.id.tbar_parent_hor : R.id.tbar_parent_vert;
-        ViewGroup scroller = (ViewGroup)m_activity.findViewById( id );
+        ViewGroup scroller = isPortrait ? m_scrollHor : m_scrollVert;
+        Assert.assertNotNull( scroller );
         if ( null != scroller ) {
             // Google's had reports of a crash adding second view
             scroller.removeAllViews();
@@ -153,22 +194,5 @@ public class Toolbar {
         }
 
         m_layout.setVisibility( m_visible? View.VISIBLE : View.GONE );
-    }
-
-    private void setListener( int index, View.OnClickListener listener )
-    {
-        ImageButton button = getViewFor( index );
-        if ( null != button ) {
-            button.setOnClickListener( listener );
-        }
-    }
-
-    private void setLongClickListener( int index,
-                                       View.OnLongClickListener listener )
-    {
-        ImageButton button = getViewFor( index );
-        if ( null != button ) {
-            button.setOnLongClickListener( listener );
-        }
     }
 }

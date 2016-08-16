@@ -193,7 +193,8 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     protected void clearSelected()
     {
-        showConfirmThen( R.string.confirm_clear_relay, Action.CLEAR_ACTION );
+        makeConfirmThenBuilder( R.string.confirm_clear_relay, Action.CLEAR_ACTION )
+            .show();
     }
 
     protected void listSelected( String[][] devsP, int[][] countsP )
@@ -254,9 +255,10 @@ public class RelayInviteDelegate extends InviteDelegate {
             break;
         case DlgDelegate.DISMISS_BUTTON:
             if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-                showConfirmThen( R.string.warn_unlimited,
-                                 R.string.button_yes,
-                                 Action.POST_WARNING_ACTION );
+                makeConfirmThenBuilder( R.string.warn_unlimited,
+                                        Action.POST_WARNING_ACTION )
+                    .setPosButton( R.string.button_yes )
+                    .show();
             }
             break;
         }

@@ -63,16 +63,21 @@ public class XWConnAddrPreference extends DialogPreference {
                               public void warnDisabled( CommsConnType typ ) {
                                   switch( typ ) {
                                   case COMMS_CONN_SMS:
-                                      activity.showConfirmThen( R.string.warn_sms_disabled,
-                                                                R.string.button_enable_sms,
-                                                                R.string.button_later,
-                                                                Action.ENABLE_SMS_ASK );
+                                      activity
+                                          .makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                                                   Action.ENABLE_SMS_ASK )
+                                          .setPosButton( R.string.button_enable_sms )
+                                          .setNegButton( R.string.button_later )
+                                          .show();
                                       break;
                                   case COMMS_CONN_BT:
-                                      activity.showConfirmThen( R.string.warn_bt_disabled,
-                                                                R.string.button_enable_bt,
-                                                                R.string.button_later,
-                                                                Action.ENABLE_BT_DO );
+                                      activity
+                                          .makeConfirmThenBuilder( R.string.warn_bt_disabled,
+                                                                   Action.ENABLE_BT_DO )
+                                          .setPosButton( R.string.button_enable_bt )
+                                          .setNegButton( R.string.button_later )
+                                          .show();
+                                      break;
                                   case COMMS_CONN_RELAY:
                                       String msg = LocUtils
                                           .getString( m_context, R.string
@@ -80,9 +85,12 @@ public class XWConnAddrPreference extends DialogPreference {
                                       msg += "\n\n" + LocUtils
                                           .getString( m_context,
                                                       R.string.warn_relay_later );
-                                      activity.showConfirmThen( msg, R.string.button_enable_relay,
-                                                                R.string.button_later,
-                                                                Action.ENABLE_RELAY_DO );
+                                      activity
+                                          .makeConfirmThenBuilder( msg, Action
+                                                                   .ENABLE_RELAY_DO )
+                                          .setPosButton( R.string.button_enable_relay )
+                                          .setNegButton( R.string.button_later )
+                                          .show();
                                       break;
                                   default:
                                       Assert.fail();
@@ -93,7 +101,9 @@ public class XWConnAddrPreference extends DialogPreference {
                           new ConnViaViewLayout.SetEmptyWarner() {
                               public void typeSetEmpty() {
                                   PrefsActivity activity = (PrefsActivity)m_context;
-                                  activity.showOKOnlyDialog( R.string.warn_no_comms );
+                                  activity
+                                      .makeOkOnlyBuilder( R.string.warn_no_comms )
+                                      .show();
                               }
                           }, activity );
     }

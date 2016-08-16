@@ -195,7 +195,7 @@ public class DictBrowseDelegate extends ListDelegateBase
                 // be -- then use an empty list elem and disable
                 // search/minmax stuff.
                 String msg = getString( R.string.alert_empty_dict_fmt, name );
-                showOKOnlyDialogThen( msg, Action.FINISH_ACTION );
+                makeOkOnlyBuilder(msg).setAction(Action.FINISH_ACTION).show();
             } else {
                 figureMinMax( m_browseState.m_counts );
                 if ( newState ) {
@@ -421,7 +421,8 @@ public class DictBrowseDelegate extends ListDelegateBase
     private static void launch( Delegator delegator, Bundle bundle )
     {
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new DictBrowseFrag( delegator ), bundle );
+            delegator.addFragment( DictBrowseFrag.newInstance( delegator ),
+                                   bundle );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, DictBrowseActivity.class );

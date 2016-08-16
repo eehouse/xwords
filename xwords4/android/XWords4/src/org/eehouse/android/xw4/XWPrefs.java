@@ -126,11 +126,6 @@ public class XWPrefs {
         return getPrefsString( context, R.string.key_dict_host );
     }
 
-    public static boolean getVolKeysZoom( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_ringer_zoom, false );
-    }
-
     public static boolean getSquareTiles( Context context )
     {
         return getPrefsBoolean( context, R.string.key_square_tiles, false );

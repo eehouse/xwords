@@ -54,8 +54,8 @@ import org.eehouse.android.xw4.DlgDelegate.NAKey;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.jni.CommonPrefs;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
@@ -623,7 +623,7 @@ public class GamesListDelegate extends ListDelegateBase
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
                             DictsDelegate
-                                .downloadForResult( self.m_activity,
+                                .downloadForResult( getDelegator(),
                                                     RequestCode
                                                     .REQUEST_LANG_GL,
                                                     self.m_missingDictLang );
@@ -711,7 +711,7 @@ public class GamesListDelegate extends ListDelegateBase
                         self.m_adapter.invalName( self.m_rowid );
                     }
                 };
-            GameSummary summary = DBUtils.getSummary( m_activity, m_rowid );
+            GameSummary summary = GameUtils.getSummary( m_activity, m_rowid );
             int labelID = (summary.isMultiGame() && !summary.anyMissing())
                 ? R.string.rename_label_caveat : R.string.rename_label;
             dialog = buildNamerDlg( GameUtils.getName( m_activity, m_rowid ),
@@ -939,6 +939,8 @@ public class GamesListDelegate extends ListDelegateBase
 
         CrashTrack.init( m_activity );
 
+        Utils.cancelNotification( m_activity, R.string.post_dualpane_title );
+
         m_selGames = new HashSet<Long>();
         m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
@@ -961,10 +963,11 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !XWPrefs.getPrefsBoolean( m_activity,
                                            R.string.key_enable_dualpane, false )
                  && XWPrefs.getIsTablet( m_activity ) ) {
-                showConfirmThen( new NAKey(R.string.key_notagain_dualpane),
-                                 R.string.invite_dualpane,
-                                 R.string.enable_dualpane,
-                                 Action.ENABLE_DUALPANE );
+
+                makeConfirmThenBuilder(R.string.invite_dualpane, Action.ENABLE_DUALPANE)
+                    .setNAKey(R.string.key_notagain_dualpane)
+                    .setPosButton(R.string.enable_dualpane)
+                    .show();
             }
         }
 
@@ -1002,6 +1005,7 @@ public class GamesListDelegate extends ListDelegateBase
         return true;            // handled it
     }
 
+    @Override
     protected void onStop()
     {
         // TelephonyManager mgr =
@@ -1010,7 +1014,7 @@ public class GamesListDelegate extends ListDelegateBase
         // m_phoneStateListener = null;
         long[] positions = m_adapter.getGroupPositions();
         XWPrefs.setGroupPositions( m_activity, positions );
-        // super.onStop();
+        super.onStop();
     }
 
     protected void onDestroy()
@@ -1140,9 +1144,11 @@ public class GamesListDelegate extends ListDelegateBase
         if ( clicked instanceof GameListItem ) {
             long rowid = ((GameListItem)clicked).getRowID();
             if ( ! m_launchedGames.contains( rowid ) ) {
-                showNotAgainDlgThen( R.string.not_again_newselect,
+                makeNotAgainBuilder( R.string.not_again_newselect,
                                      R.string.key_notagain_newselect,
-                                     Action.OPEN_GAME, rowid, summary );
+                                     Action.OPEN_GAME )
+                    .setParams( rowid, summary )
+                    .show();
             }
         }
     }
@@ -1244,8 +1250,10 @@ public class GamesListDelegate extends ListDelegateBase
             case NEW_FROM:
                 long curID = (Long)params[0];
                 long newid = GameUtils.dupeGame( m_activity, curID );
-                m_selGames.add( newid );
-                reloadGame( newid );
+                if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                    m_selGames.add( newid );
+                    reloadGame( newid );
+                }
                 break;
 
             case SET_HIDE_NEWGAME_BUTTONS:
@@ -1271,7 +1279,9 @@ public class GamesListDelegate extends ListDelegateBase
                 doOpenGame( params );
                 break;
             case ENABLE_DUALPANE:
-                setDualpaneAndFinish( true );
+                makeOkOnlyBuilder( R.string.dualpane_exit_now)
+                    .setAction( Action.ENABLE_DUALPANE_EXIT )
+                    .show();
                 break;
             case CLEAR_SELS:
                 clearSelections();
@@ -1313,6 +1323,12 @@ public class GamesListDelegate extends ListDelegateBase
                 m_newGameParams = params;
                 makeThenLaunchOrConfigure();
             }
+        } else if ( DlgDelegate.DISMISS_BUTTON == which ) {
+            switch( action ) {
+            case ENABLE_DUALPANE_EXIT:
+                setDualpaneAndFinish( true );
+                break;
+            }
         }
     }
 
@@ -1334,7 +1350,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !cancelled ) {
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
                                                 DBUtils.ROWID_NOTFOUND );
-                GameUtils.launchGame( getDelegator(), rowID );
+                launchGame( rowID );
             }
             break;
         }
@@ -1352,9 +1368,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean handled = 0 < m_selGames.size() || 0 < m_selGroupIDs.size();
         if ( handled ) {
-            showNotAgainDlgThen( R.string.not_again_backclears,
+            makeNotAgainBuilder( R.string.not_again_backclears,
                                  R.string.key_notagain_backclears,
-                                 Action.CLEAR_SELS );
+                                 Action.CLEAR_SELS )
+                .show();
         }
         return handled;
     }
@@ -1506,9 +1523,10 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_checkmoves:
-            showNotAgainDlgThen( R.string.not_again_sync,
+            makeNotAgainBuilder( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 Action.SYNC_MENU );
+                                 Action.SYNC_MENU )
+                .show();
             break;
 
         case R.id.games_menu_checkupdates:
@@ -1525,7 +1543,7 @@ public class GamesListDelegate extends ListDelegateBase
             try {
                 startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( str ) ) );
             } catch ( android.content.ActivityNotFoundException anf ) {
-                showOKOnlyDialog( R.string.no_market );
+                makeOkOnlyBuilder( R.string.no_market ).show();
             }
             break;
 
@@ -1718,8 +1736,10 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_game_delete:
             String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt,
                                             selRowIDs.length, selRowIDs.length );
-            showConfirmThen( msg, R.string.button_delete,
-                             Action.DELETE_GAMES, selRowIDs );
+            makeConfirmThenBuilder( msg, Action.DELETE_GAMES )
+                .setPosButton( R.string.button_delete )
+                .setParams( selRowIDs )
+                .show();
             break;
 
         case R.id.games_game_rematch:
@@ -1739,14 +1759,17 @@ public class GamesListDelegate extends ListDelegateBase
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
-            showNotAgainDlgThen( R.string.not_again_newfrom,
+            makeNotAgainBuilder( R.string.not_again_newfrom,
                                  R.string.key_notagain_newfrom,
-                                 Action.NEW_FROM, selRowIDs[0] );
+                                 Action.NEW_FROM )
+                .setParams(selRowIDs[0])
+                .show();
             break;
         case R.id.games_game_copy:
-            final GameSummary smry = DBUtils.getSummary( m_activity, selRowIDs[0] );
+            final GameSummary smry = GameUtils.getSummary( m_activity,
+                                                           selRowIDs[0] );
             if ( smry.inRelayGame() ) {
-                showOKOnlyDialog( R.string.no_copy_network );
+                makeOkOnlyBuilder( R.string.no_copy_network ).show();
             } else {
                 dropSels = true;    // will select the new game instead
                 post( new Runnable() {
@@ -1778,7 +1801,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // DEBUG only
         case R.id.games_game_invites:
-            msg = DBUtils.getSummary( m_activity, selRowIDs[0] )
+            msg = GameUtils.getSummary( m_activity, selRowIDs[0] )
                 .conTypes.toString( m_activity );
             msg = getString( R.string.invites_net_fmt, msg );
 
@@ -1787,7 +1810,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( null != info ) {
                 msg += "\n\n" + info.getAsText( m_activity );
             }
-            showOKOnlyDialog( msg );
+            makeOkOnlyBuilder( msg ).show();
             break;
 
         default:
@@ -1813,7 +1836,7 @@ public class GamesListDelegate extends ListDelegateBase
                 if ( m_selGroupIDs.contains( dftGroup ) ) {
                     msg = getString( R.string.cannot_delete_default_group_fmt,
                                      m_adapter.groupName( dftGroup ) );
-                    showOKOnlyDialog( msg );
+                    makeOkOnlyBuilder( msg ).show();
                 } else {
                     Assert.assertTrue( 0 < groupIDs.length );
                     msg = getQuantityString( R.plurals.groups_confirm_del_fmt,
@@ -1827,7 +1850,9 @@ public class GamesListDelegate extends ListDelegateBase
                         msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
                                                   nGames, nGames );
                     }
-                    showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
+                    makeConfirmThenBuilder( msg, Action.DELETE_GROUPS )
+                        .setParams( groupIDs )
+                        .show();
                 }
                 break;
             case R.id.games_group_default:
@@ -1887,9 +1912,11 @@ public class GamesListDelegate extends ListDelegateBase
         } else {
             ActionPair pair = new ActionPair( Action.SET_HIDE_NEWGAME_BUTTONS,
                                               R.string.set_pref );
-            showNotAgainDlgThen( R.string.not_again_hidenewgamebuttons,
+            makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
                                  R.string.key_notagain_hidenewgamebuttons,
-                                 Action.NEW_GAME_PRESSED, pair );
+                                 Action.NEW_GAME_PRESSED )
+                .setParams(pair)
+                .show();
         }
     }
 
@@ -2061,9 +2088,11 @@ public class GamesListDelegate extends ListDelegateBase
             String msg = getString( R.string.dup_game_query_fmt,
                                     create.toString() );
             m_netLaunchInfo = nli;
-            showConfirmThen( msg, Action.NEW_NET_GAME, nli );
+            makeConfirmThenBuilder( msg, Action.NEW_NET_GAME )
+                .setParams( nli )
+                .show();
         } else {
-            showOKOnlyDialog( R.string.dropped_dupe );
+            makeOkOnlyBuilder( R.string.dropped_dupe ).show();
         }
     } // startNewNetGame
 
@@ -2103,8 +2132,7 @@ public class GamesListDelegate extends ListDelegateBase
     // used to connect.
     private void startRematch( Intent intent )
     {
-        if ( XWApp.REMATCH_SUPPORTED
-             && ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) ) {
+        if ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) {
             m_rematchIntent = intent;
             showDialog( DlgID.GAMES_LIST_NAME_REMATCH );
         }
@@ -2128,7 +2156,9 @@ public class GamesListDelegate extends ListDelegateBase
             long newid;
             if ( null == btAddr && null == phone && null == relayID ) {
                 newid = GameUtils.dupeGame( m_activity, srcRowID );
-                DBUtils.setName( m_activity, newid, gameName );
+                if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                    DBUtils.setName( m_activity, newid, gameName );
+                }
             } else {
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
@@ -2145,7 +2175,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String msg = intent.getStringExtra( ALERT_MSG );
         if ( null != msg ) {
-            showOKOnlyDialog( msg );
+            makeOkOnlyBuilder( msg ).show();
         }
     }
 
@@ -2196,10 +2226,11 @@ public class GamesListDelegate extends ListDelegateBase
                                         String msg =
                                             getString( R.string.confirm_get_locdict_fmt,
                                                        xlateLang( lang ) );
-                                        showConfirmThen( onNA, msg, R.string
-                                                         .button_download,
-                                                         Action.DWNLD_LOC_DICT,
-                                                         lang, name );
+                                        makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
+                                            .setPosButton( R.string.button_download )
+                                            .setOnNA( onNA )
+                                            .setParams( lang, name )
+                                            .show();
                                     }
                                 }
                             };
@@ -2213,11 +2244,6 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
         }
-    }
-
-    private void showGotDictForLang( String lang )
-    {
-        showOKOnlyDialog( String.format( "got dict for %s", lang ) );
     }
 
     private void updateField()
@@ -2350,7 +2376,9 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void launchGame( long rowid, boolean invited )
     {
-        if ( ! m_launchedGames.contains( rowid ) ) {
+        if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+            DbgUtils.logdf( "launchGame(): dropping bad rowid" );
+        } else if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             if ( m_adapter.inExpandedGroup( rowid ) ) {
                 setSelGame( rowid );
@@ -2444,8 +2472,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String msg = getQuantityString( R.plurals.confirm_reset_fmt,
                                         rowIDs.length, rowIDs.length );
-        showConfirmThen( msg, R.string.button_reset, Action.RESET_GAMES,
-                         rowIDs );
+        makeConfirmThenBuilder( msg, Action.RESET_GAMES )
+            .setPosButton(R.string.button_reset)
+            .setParams( rowIDs )
+            .show();
     }
 
     private void mkListAdapter()
@@ -2494,9 +2524,11 @@ public class GamesListDelegate extends ListDelegateBase
                                                   true );
                         }
                     };
-                showConfirmThen( onChecked, msg, android.R.string.ok,
-                                 R.string.button_later, Action.NEW_GAME_DFLT_NAME,
-                                 edit, doConfigure );
+                makeConfirmThenBuilder( msg, Action.NEW_GAME_DFLT_NAME )
+                    .setOnNA( onChecked )
+                    .setNegButton( R.string.button_later )
+                    .setParams( edit, doConfigure )
+                    .show();
             }
         }
         return asking;
@@ -2601,25 +2633,23 @@ public class GamesListDelegate extends ListDelegateBase
                                             String relayID, String newName )
     {
         Intent intent = null;
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            intent = makeSelfIntent( context );
-            intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
-            intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
-            intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
-            intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
-            intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
+        intent = makeSelfIntent( context );
+        intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+        intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
+        intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
+        intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
+        intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
-            if ( null != addrTypes ) {
-                intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
-                if ( null != btAddr ) {
-                    intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
-                }
-                if ( null != phone ) {
-                    intent.putExtra( REMATCH_PHONE_EXTRA, phone );
-                }
-                if ( null != relayID ) {
-                    intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
-                }
+        if ( null != addrTypes ) {
+            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
+            if ( null != btAddr ) {
+                intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
+            }
+            if ( null != phone ) {
+                intent.putExtra( REMATCH_PHONE_EXTRA, phone );
+            }
+            if ( null != relayID ) {
+                intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
             }
         }
         return intent;

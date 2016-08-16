@@ -46,6 +46,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -120,7 +121,6 @@ public class BoardDelegate extends DelegateBase
     private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
     private JNIUtils m_jniu;
-    private boolean m_volKeysZoom;
     private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
     private int m_invitesPending;
@@ -296,10 +296,10 @@ public class BoardDelegate extends DelegateBase
                                 public void onClick( DialogInterface dialog,
                                                      int whichButton ) {
                                     curThis().
-                                        showNotAgainDlgThen( R.string.not_again_lookup,
-                                                             R.string.
-                                                             key_na_lookup,
-                                                             Action.LOOKUP_ACTION );
+                                        makeNotAgainBuilder( R.string.not_again_lookup,
+                                                             R.string.key_na_lookup,
+                                                             Action.LOOKUP_ACTION )
+                                        .show();
                                 }
                             };
                         ab.setNegativeButton( buttonTxt, lstnr );
@@ -413,8 +413,9 @@ public class BoardDelegate extends DelegateBase
                         public void onClick( DialogInterface dialog,
                                              int item ) {
                             BoardDelegate self = curThis();
-                            self.showOKOnlyDialog( self.m_sentInfo
-                                                   .getAsText( self.m_activity ) );
+                            String msg = self.m_sentInfo
+                                .getAsText( self.m_activity );
+                            self.makeOkOnlyBuilder( msg ).show();
                         }
                     };
 
@@ -564,7 +565,6 @@ public class BoardDelegate extends DelegateBase
                 m_exchCancelButton.setOnClickListener( this );
             }
         }
-        m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
 
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
@@ -690,7 +690,6 @@ public class BoardDelegate extends DelegateBase
         if ( hasFocus ) {
             if ( m_firingPrefs ) {
                 m_firingPrefs = false;
-                m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
                 if ( null != m_jniThread ) {
                     handleViaThread( JNICmd.CMD_PREFS_CHANGE );
                 }
@@ -704,44 +703,36 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void orientationChanged()
     {
-        boolean isPortrait = isPortrait();
-        DbgUtils.logdf( "BoardDelegate.orientationChanged(isPortrait=%b)",
-                        isPortrait );
-        positionToolbar( isPortrait );
+        DbgUtils.logdf( "BoardDelegate.orientationChanged()" );
+        initToolbar();
         m_view.orientationChanged();
     }
 
-    private void positionToolbar( boolean isPortrait )
+    @Override
+    protected void setTitle()
     {
+        setTitle( GameUtils.getName( m_activity, m_rowid ) );
+    }
+
+    private void initToolbar()
+    {
+        // Wait until we're attached....
         if ( null != findViewById( R.id.tbar_parent_hor ) ) {
             if ( null == m_toolbar ) {
                 m_toolbar = new Toolbar( m_activity, this );
             }
-            m_toolbar.setIsPortrait( isPortrait );
         }
     }
 
     protected boolean onKeyDown( int keyCode, KeyEvent event )
     {
-        boolean handled = false;
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
                 handleViaThread( JNICmd.CMD_KEYDOWN, xpKey );
-            } else {
-                switch( keyCode ) {
-                case KeyEvent.KEYCODE_VOLUME_DOWN:
-                case KeyEvent.KEYCODE_VOLUME_UP:
-                    if ( m_volKeysZoom ) {
-                        int zoomBy = KeyEvent.KEYCODE_VOLUME_DOWN == keyCode
-                            ? -2 : 2;
-                        handled = doZoom( zoomBy );
-                    }
-                    break;
-                }
             }
         }
-        return handled;
+        return false;
     }
 
     protected boolean onKeyUp( int keyCode, KeyEvent event )
@@ -857,9 +848,10 @@ public class BoardDelegate extends DelegateBase
             int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr,
                                                         m_view.getCurPlayer() );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
-                showNotAgainDlgThen( R.string.not_again_done,
+                makeNotAgainBuilder( R.string.not_again_done,
                                      R.string.key_notagain_done,
-                                     Action.COMMIT_ACTION );
+                                     Action.COMMIT_ACTION )
+                    .show();
             } else {
                 dlgButtonClicked( Action.COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
             }
@@ -888,9 +880,6 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_flip:
             cmd = JNICmd.CMD_FLIP;
             break;
-        case R.id.board_menu_zoom:
-            cmd = JNICmd.CMD_TOGGLEZOOM;
-            break;
         case R.id.board_menu_chat:
             startChatActivity();
             break;
@@ -903,8 +892,9 @@ public class BoardDelegate extends DelegateBase
             int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
                 : R.string.not_again_trading_buttons;
             msg += getString( strID );
-            showNotAgainDlgThen( msg, R.string.key_notagain_trading,
-                                 Action.START_TRADE_ACTION );
+            makeNotAgainBuilder( msg, R.string.key_notagain_trading,
+                                 Action.START_TRADE_ACTION )
+                .show();
             break;
 
         case R.id.board_menu_tray:
@@ -918,13 +908,14 @@ public class BoardDelegate extends DelegateBase
             break;
         case R.id.board_menu_game_invites:
             SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
-            showOKOnlyDialog( sentInfo.getAsText( m_activity ) );
+            makeOkOnlyBuilder( sentInfo.getAsText( m_activity ) ).show();
             break;
         case R.id.board_menu_undo_current:
             cmd = JNICmd.CMD_UNDO_CUR;
             break;
         case R.id.board_menu_undo_last:
-            showConfirmThen( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION );
+            makeConfirmThenBuilder( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION )
+                .show();
             break;
 
             // small devices only
@@ -954,9 +945,10 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.gamel_menu_checkmoves:
-            showNotAgainDlgThen( R.string.not_again_sync,
+            makeNotAgainBuilder( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 Action.SYNC_ACTION );
+                                 Action.SYNC_ACTION )
+                .show();
             break;
 
         case R.id.board_menu_file_prefs:
@@ -1022,7 +1014,7 @@ public class BoardDelegate extends DelegateBase
             case BUTTON_BROWSEALL_ACTION:
             case BUTTON_BROWSE_ACTION:
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
-                View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
+                View button = m_toolbar.getButtonFor( Buttons.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
                      DictsDelegate.handleDictsPopup( getDelegator(), button,
                                                      curDict, m_gi.dictLang ) ){
@@ -1041,9 +1033,6 @@ public class BoardDelegate extends DelegateBase
                 break;
             case FLIP_ACTION:
                 cmd = JNICmd.CMD_FLIP;
-                break;
-            case ZOOM_ACTION:
-                cmd = JNICmd.CMD_TOGGLEZOOM;
                 break;
             case UNDO_ACTION:
                 cmd = JNICmd.CMD_UNDO_CUR;
@@ -1104,11 +1093,12 @@ public class BoardDelegate extends DelegateBase
             switch( means ) {
             case NFC:
                 if ( XWPrefs.getNFCToSelfEnabled( m_activity ) ) {
-                    showConfirmThen( R.string.nfc_to_self, Action.NFC_TO_SELF );
+                    makeConfirmThenBuilder( R.string.nfc_to_self, Action.NFC_TO_SELF )
+                        .show();
                 } else if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
                     showDialog( DlgID.ENABLE_NFC );
                 } else {
-                    showOKOnlyDialog( R.string.nfc_just_tap );
+                    makeOkOnlyBuilder( R.string.nfc_just_tap ).show();
                 }
                 break;
             case BLUETOOTH:
@@ -1200,7 +1190,7 @@ public class BoardDelegate extends DelegateBase
                 getString( R.string.err_dup_invite_fmt, (String)args[0] );
             post( new Runnable() {
                     public void run() {
-                        showOKOnlyDialog( msg );
+                        makeOkOnlyBuilder( msg ).show();
                     }
                 } );
             break;
@@ -1406,9 +1396,10 @@ public class BoardDelegate extends DelegateBase
 
     private void askNoAddrsDelete()
     {
-        showConfirmThen( R.string.connstat_net_noaddr,
-                         R.string.list_item_delete,
-                         Action.DELETE_AND_EXIT );
+        makeConfirmThenBuilder( R.string.connstat_net_noaddr,
+                                Action.DELETE_AND_EXIT )
+            .setPosButton( R.string.list_item_delete )
+            .show();
     }
 
     private void askDropRelay()
@@ -1420,7 +1411,7 @@ public class BoardDelegate extends DelegateBase
         if ( m_connTypes.contains(CommsConnType.COMMS_CONN_SMS) ) {
             msg += " " + getString( R.string.confirm_drop_relay_sms );
         }
-        showConfirmThen( msg, Action.DROP_RELAY_ACTION );
+        makeConfirmThenBuilder( msg, Action.DROP_RELAY_ACTION ).show();
     }
 
     private void dropRelayAndRestart() {
@@ -1571,7 +1562,8 @@ public class BoardDelegate extends DelegateBase
                 dlgButtonClicked( Action.SHOW_EXPL_ACTION,
                                   AlertDialog.BUTTON_POSITIVE, null );
             } else {
-                showNotAgainDlgThen( naMsg, naKey, Action.SHOW_EXPL_ACTION );
+                makeNotAgainBuilder( naMsg, naKey, Action.SHOW_EXPL_ACTION )
+                    .show();
             }
         }
 
@@ -1752,8 +1744,9 @@ public class BoardDelegate extends DelegateBase
                 m_nMissing = 0;
                 post( new Runnable() {
                         public void run() {
-                            showNotAgainDlg( R.string.not_again_turnchanged,
-                                             R.string.key_notagain_turnchanged );
+                            makeNotAgainBuilder( R.string.not_again_turnchanged,
+                                                 R.string.key_notagain_turnchanged )
+                                .show();
                         }
                     } );
                 handleViaThread( JNICmd.CMD_ZOOM, -8 );
@@ -2111,10 +2104,10 @@ public class BoardDelegate extends DelegateBase
             handleViaThread( JNICmd.CMD_START );
 
             if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
-                setTitle( GameUtils.getName( m_activity, m_rowid ) );
+                setTitle();
             }
 
-            positionToolbar( isPortrait() );
+            initToolbar();
             populateToolbar();
             adjustTradeVisibility();
 
@@ -2210,43 +2203,39 @@ public class BoardDelegate extends DelegateBase
     private void populateToolbar()
     {
         if ( null != m_toolbar ) {
-            m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
+            m_toolbar.setListener( Buttons.BUTTON_BROWSE_DICT,
                                    R.string.not_again_browseall,
                                    R.string.key_na_browseall,
                                    Action.BUTTON_BROWSEALL_ACTION );
-            m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
+            m_toolbar.setLongClickListener( Buttons.BUTTON_BROWSE_DICT,
                                             R.string.not_again_browse,
                                             R.string.key_na_browse,
                                             Action.BUTTON_BROWSE_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV,
+            m_toolbar.setListener( Buttons.BUTTON_HINT_PREV,
                                    R.string.not_again_hintprev,
                                    R.string.key_notagain_hintprev,
                                    Action.PREV_HINT_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
+            m_toolbar.setListener( Buttons.BUTTON_HINT_NEXT,
                                    R.string.not_again_hintnext,
                                    R.string.key_notagain_hintnext,
                                    Action.NEXT_HINT_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
+            m_toolbar.setListener( Buttons.BUTTON_JUGGLE,
                                    R.string.not_again_juggle,
                                    R.string.key_notagain_juggle,
                                    Action.JUGGLE_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_FLIP,
+            m_toolbar.setListener( Buttons.BUTTON_FLIP,
                                    R.string.not_again_flip,
                                    R.string.key_notagain_flip,
                                    Action.FLIP_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
-                                   R.string.not_again_zoom,
-                                   R.string.key_notagain_zoom,
-                                   Action.ZOOM_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_VALUES,
+            m_toolbar.setListener( Buttons.BUTTON_VALUES,
                                    R.string.not_again_values,
                                    R.string.key_na_values,
                                    Action.VALUES_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_UNDO,
+            m_toolbar.setListener( Buttons.BUTTON_UNDO,
                                    R.string.not_again_undo,
                                    R.string.key_notagain_undo,
                                    Action.UNDO_ACTION );
-            m_toolbar.setListener( Toolbar.BUTTON_CHAT,
+            m_toolbar.setListener( Buttons.BUTTON_CHAT,
                                    R.string.not_again_chat,
                                    R.string.key_notagain_chat,
                                    Action.CHAT_ACTION );
@@ -2389,10 +2378,11 @@ public class BoardDelegate extends DelegateBase
     {
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
-                showConfirmThen( R.string.warn_sms_disabled,
-                                 R.string.button_enable_sms,
-                                 R.string.button_later,
-                                 Action.ENABLE_SMS_ASK );
+                makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                        Action.ENABLE_SMS_ASK )
+                    .setPosButton( R.string.button_enable_sms )
+                    .setNegButton( R.string.button_later )
+                    .show();
             }
         }
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
@@ -2400,9 +2390,10 @@ public class BoardDelegate extends DelegateBase
                 m_dropOnDismiss = false;
                 String msg = getString( R.string.warn_relay_disabled )
                     + "\n\n" + getString( R.string.warn_relay_remove );
-                showConfirmThen( msg, R.string.button_enable_relay,
-                                 R.string.newgame_drop_relay,
-                                 Action.ENABLE_RELAY_DO_OR );
+                makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO_OR )
+                    .setPosButton( R.string.button_enable_relay )
+                    .setNegButton( R.string.newgame_drop_relay )
+                    .show();
             }
         }
     }
@@ -2479,14 +2470,14 @@ public class BoardDelegate extends DelegateBase
     private void updateToolbar()
     {
         if ( null != m_toolbar ) {
-            m_toolbar.update( Toolbar.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
-            m_toolbar.update( Toolbar.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
-            m_toolbar.update( Toolbar.BUTTON_JUGGLE, m_gsi.canShuffle );
-            m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
-            m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
-            m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
-            m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.canChat );
-            m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT,
+            m_toolbar.update( Buttons.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
+            m_toolbar.update( Buttons.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
+            m_toolbar.update( Buttons.BUTTON_JUGGLE, m_gsi.canShuffle );
+            m_toolbar.update( Buttons.BUTTON_UNDO, m_gsi.canRedo );
+            m_toolbar.update( Buttons.BUTTON_HINT_PREV, m_gsi.canHint );
+            m_toolbar.update( Buttons.BUTTON_HINT_NEXT, m_gsi.canHint );
+            m_toolbar.update( Buttons.BUTTON_CHAT, m_gsi.canChat );
+            m_toolbar.update( Buttons.BUTTON_BROWSE_DICT,
                               null != m_gi.dictName( m_view.getCurPlayer() ) );
         }
     }
@@ -2586,7 +2577,7 @@ public class BoardDelegate extends DelegateBase
 
     public static boolean rematchSupported( Context context, long rowID )
     {
-        GameSummary summary = DBUtils.getSummary( context, rowID, 1 );
+        GameSummary summary = GameUtils.getSummary( context, rowID, 1 );
         return null != summary && rematchSupported( null, summary );
     }
 
@@ -2594,25 +2585,23 @@ public class BoardDelegate extends DelegateBase
                                              GameSummary summary )
     {
         boolean supported = false;
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            // standalone games are easy to rematch
-            supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
+        // standalone games are easy to rematch
+        supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
 
-            if ( !supported ) {
-                if ( 2 == summary.nPlayers ) {
-                    if ( !summary.anyMissing() ) {
-                        CommsConnTypeSet connTypes = summary.conTypes;
-                        supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
-                            || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                            || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
-                    }
-                } else if ( null != context ) {
-                    // show the button if people haven't dismissed the hint yet
-                    supported = ! XWPrefs
-                        .getPrefsBoolean( context,
-                                          R.string.key_na_rematch_two_only,
-                                          false );
+        if ( !supported ) {
+            if ( 2 == summary.nPlayers ) {
+                if ( !summary.anyMissing() ) {
+                    CommsConnTypeSet connTypes = summary.conTypes;
+                    supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
                 }
+            } else if ( null != context ) {
+                // show the button if people haven't dismissed the hint yet
+                supported = ! XWPrefs
+                    .getPrefsBoolean( context,
+                                      R.string.key_na_rematch_two_only,
+                                      false );
             }
         }
         return supported;
@@ -2620,118 +2609,124 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematchIf()
     {
-        if ( doRematchIf( m_activity, this, m_rowid, m_summary, m_gi,
-                          m_jniGamePtr ) ) {
-            finish();
-        }
+        doRematchIf( m_activity, this, m_rowid, m_summary, m_gi, m_jniGamePtr );
     }
 
-    private static boolean doRematchIf( Activity activity, DelegateBase dlgt,
-                                        long rowid, GameSummary summary,
-                                        CurGameInfo gi, GamePtr jniGamePtr )
+    private static void doRematchIf( Activity activity, DelegateBase dlgt,
+                                     long rowid, GameSummary summary,
+                                     CurGameInfo gi, GamePtr jniGamePtr )
     {
-        boolean success = false;
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            boolean doIt = true;
-            String phone = null;
-            String btAddr = null;
-            String relayID = null;
-            if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
-                // nothing to do??
-            } else if ( 2 != gi.nPlayers ) {
-                Assert.assertNotNull( dlgt );
-                if ( null != dlgt ) {
-                    dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only,
-                                          R.string.key_na_rematch_two_only );
-                }
-                doIt = false;
-            } else {
-                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
-                for ( int ii = 0; ii < addrs.length; ++ii ) {
-                    CommsAddrRec addr = addrs[ii];
-                    if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                        Assert.assertNull( btAddr );
-                        btAddr = addr.bt_btAddr;
-                    }
-                    if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-                        Assert.assertNull( phone );
-                        phone = addr.sms_phone;
-                    }
-                    if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                        Assert.assertNull( relayID );
-                        relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
-                    }
-                }
+        boolean doIt = true;
+        String phone = null;
+        String btAddr = null;
+        String relayID = null;
+        if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
+            // nothing to do??
+        } else if ( 2 != gi.nPlayers ) {
+            Assert.assertNotNull( dlgt );
+            if ( null != dlgt ) {
+                dlgt.makeNotAgainBuilder( R.string.not_again_rematch_two_only,
+                                          R.string.key_na_rematch_two_only )
+                    .show();
             }
-
-            if ( doIt ) {
-                CommsConnTypeSet connTypes = summary.conTypes;
-                String newName = summary.getRematchName();
-                Intent intent = GamesListDelegate
-                    .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
-                                        phone, relayID, newName );
-                if ( null != intent ) {
-                    activity.startActivity( intent );
-                    success = true;
+            doIt = false;
+        } else {
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
+            for ( int ii = 0; ii < addrs.length; ++ii ) {
+                CommsAddrRec addr = addrs[ii];
+                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                    Assert.assertNull( btAddr );
+                    btAddr = addr.bt_btAddr;
+                }
+                if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                    Assert.assertNull( phone );
+                    phone = addr.sms_phone;
+                }
+                if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                    Assert.assertNull( relayID );
+                    relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                 }
             }
         }
-        return success;
+
+        if ( doIt ) {
+            CommsConnTypeSet connTypes = summary.conTypes;
+            String newName = summary.getRematchName();
+            Intent intent = GamesListDelegate
+                .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
+                                    phone, relayID, newName );
+            if ( null != intent ) {
+                activity.startActivity( intent );
+            }
+        }
     }
 
     public static void setupRematchFor( Activity activity, long rowID )
     {
-        GameLock lock = new GameLock( rowID, false );
-        if ( lock.tryLock() ) {
-            GameSummary summary = DBUtils.getSummary( activity, lock );
-            CurGameInfo gi = new CurGameInfo( activity );
-            GamePtr gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+        GamePtr gamePtr = null;
+        GameSummary summary = null;
+        CurGameInfo gi = null;
+        JNIThread thread = JNIThread.getRetained( rowID );
+        if ( null != thread ) {
+            gamePtr = thread.getGamePtr().retain();
+            summary = thread.getSummary();
+            gi = thread.getGI();
+        } else {
+            GameLock lock = new GameLock( rowID, false );
+            if ( lock.tryLock() ) {
+                summary = DBUtils.getSummary( activity, lock );
+                gi = new CurGameInfo( activity );
+                gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+                lock.unlock();
+            }
+        }
 
+        if ( null != gamePtr ) {
             doRematchIf( activity, null, rowID, summary, gi, gamePtr );
-
             gamePtr.release();
-            lock.unlock();
         } else {
             DbgUtils.logf( "setupRematchFor(): unable to lock game" );
+        }
+
+        if ( null != thread ) {
+            thread.release();
         }
     }
 
     // Return true if anything sent
     private boolean tryRematchInvites( boolean force )
     {
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            if ( !force ) {
-                SentInvitesInfo info = DBUtils.getInvitesFor( m_activity, m_rowid );
-                force = 0 == info.getMinPlayerCount();
+        if ( !force ) {
+            SentInvitesInfo info = DBUtils.getInvitesFor( m_activity, m_rowid );
+            force = 0 == info.getMinPlayerCount();
+        }
+
+        if ( force ) {
+            Assert.assertNotNull( m_summary );
+            Assert.assertNotNull( m_gi );
+            // only supports a single invite for now!
+            int numHere = 1;
+            int forceChannel = 1;
+            NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere,
+                                                   forceChannel );
+
+            String value;
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
+            if ( null != value ) {
+                sendSMSInviteIf( value, nli, true );
+            }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
+            if ( null != value ) {
+                BTService.inviteRemote( m_activity, value, nli );
+                recordInviteSent( InviteMeans.BLUETOOTH, value );
+            }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
+            if ( null != value ) {
+                RelayService.inviteRemote( m_activity, 0, value, nli );
+                recordInviteSent( InviteMeans.RELAY, value );
             }
 
-            if ( force ) {
-                Assert.assertNotNull( m_summary );
-                Assert.assertNotNull( m_gi );
-                // only supports a single invite for now!
-                int numHere = 1;
-                int forceChannel = 1;
-                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere,
-                                                       forceChannel );
-
-                String value;
-                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
-                if ( null != value ) {
-                    sendSMSInviteIf( value, nli, true );
-                }
-                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
-                if ( null != value ) {
-                    BTService.inviteRemote( m_activity, value, nli );
-                    recordInviteSent( InviteMeans.BLUETOOTH, value );
-                }
-                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
-                if ( null != value ) {
-                    RelayService.inviteRemote( m_activity, 0, value, nli );
-                    recordInviteSent( InviteMeans.RELAY, value );
-                }
-
-                showToast( R.string.rematch_sent_toast );
-            }
+            showToast( R.string.rematch_sent_toast );
         }
         return force;
     }
@@ -2743,10 +2738,12 @@ public class BoardDelegate extends DelegateBase
             SMSService.inviteRemote( m_activity, phone, nli );
             recordInviteSent( InviteMeans.SMS, phone );
         } else if ( askOk ) {
-            showConfirmThen( R.string.warn_sms_disabled,
-                             R.string.button_enable_sms,
-                             R.string.button_later,
-                             Action.ENABLE_SMS_ASK, nli, phone );
+            makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                    Action.ENABLE_SMS_ASK )
+                .setPosButton( R.string.button_enable_sms )
+                .setNegButton( R.string.button_later )
+                .setParams( nli, phone )
+                .show();
         }
     }
 

@@ -132,8 +132,10 @@ public class BTInviteDelegate extends InviteDelegate {
         if ( 0 < count ) {
             BTService.scan( m_activity );
         } else {
-            showConfirmThen( R.string.bt_no_devs, R.string.button_go_settings,
-                             Action.OPEN_BT_PREFS_ACTION );
+            makeConfirmThenBuilder( R.string.bt_no_devs,
+                                    Action.OPEN_BT_PREFS_ACTION )
+                .setPosButton( R.string.button_go_settings )
+                .show();
         }
     }
 

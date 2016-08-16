@@ -68,8 +68,9 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         TextView view = (TextView)findViewById( R.id.english_view );
         m_keyFmts = getFmtSet( key, view );
         if ( 0 < m_keyFmts.size() ) {
-            showNotAgainDlg( R.string.not_again_fmt_expl,
-                             R.string.key_na_fmt_expl );
+            makeNotAgainBuilder( R.string.not_again_fmt_expl,
+                                 R.string.key_na_fmt_expl )
+                .show();
         }
 
         view = (TextView)findViewById( R.id.xlated_view_blessed );
@@ -160,7 +161,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
             ok = m_keyFmts.equals( getFmtSet( cs.toString(), null ) );
 
             if ( !ok ) {
-                showOKOnlyDialog( R.string.loc_fmts_mismatch );
+                makeOkOnlyBuilder( R.string.loc_fmts_mismatch ).show();
             }
         }
         return ok;

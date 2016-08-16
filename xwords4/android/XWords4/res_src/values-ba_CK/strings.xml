@@ -171,7 +171,7 @@
   <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
-  <string name="download_dicts">Daolnwod erom…</string>
+  <string name="download_dicts">Daolnwod erom segaugnal…</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
@@ -606,11 +606,7 @@
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
-  <string name="board_menu_game_resend">Dneser segassem</string>
-  <plurals name="resend_finished_fmt">
-    <item quantity="one">Dneser dehsinif; tnes eno egassem.</item>
-    <item quantity="other">Dneser dehsinif; tnes %1$d segassem.</item>
-  </plurals>
+  <string name="board_menu_game_resend">Dneser sevom</string>
   <!--       
        ############################################################
        # Board info/error dialog messages
@@ -915,13 +911,6 @@
   <!-- explanation of the above -->
   <string name="summary_sort_tiles">Tros skcar revenehw wen selit
       era dedda</string>
-  <!-- if this preference is checked, the hardware volume keys will
-         work to zoom the board in and out (and will not control
-         volume) This only applies when the Board screen is
-         frontmost. -->
-  <string name="ringer_zoom">Emulov syek mooz</string>
-  <!-- explanation of the above -->
-  <string name="ringer_zoom_summary">Mooz draob gnisu emulov syek</string>
   <!-- If this preference is checked, tapping on the scoreboard
          entry for any player reveals that player's tiles and any
          pending move (after asking for his password if one is set.)
@@ -1115,7 +1104,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s segassem</string>
+  <string name="chat_title_fmt">Tahc rof %1$s</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">Em:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -1409,11 +1398,6 @@
          Board screen -->
   <string name="not_again_flip">Siht nottub spilf eht draob ssorca a
       lanogaid sixa.</string>
-  <!-- Shown when you tap the zoom (+/-) button on the toolbar of
-         the main Board screen -->
-  <string name="not_again_zoom">Siht nottub selggot eht draob
-      neewteb demooz dna raluger ezis. Gard ti nehw ti si demooz ot
-      ees strap taht era neddih.</string>
   <!-- Shown when you tap the undo/redo button on the toolbar of the
          main Board screen -->
   <string name="not_again_undo">Siht nottub sodnu ro seoder eht
@@ -2058,8 +2042,7 @@
     tahw\'s elbaliava.</string>
   <string name="force_tablet_title">Ecrof telbat tuoyal</string>
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
-  <string name="enable_dualpane_title">Elbane enaplaud</string>
-  <string name="enable_dualpane_summary">Edis-yb-edis ,sweiv yrev !latnemirepxe</string>
+  <string name="enable_dualpane_summary">Edis-yb-edis sweiv no ,stelbat yrev !latnemirepxe</string>
   <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">Rednimer: Ti\'s ruoy nrut</string>
   <!-- body of warning notification reminder message. First three
@@ -2274,8 +2257,8 @@
   <string name="enable_relay_toself_summary">oT( dia gnitset dna )gniggubed</string>
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
-    <item quantity="one">Eno egassem tnes</item>
-    <item quantity="other">%1$s segassem tnes</item>
+    <item quantity="one">Eno evom tnes</item>
+    <item quantity="other">%1$s sevom tnes</item>
   </plurals>
   <string name="invite_copied">Noitativni ydaer ot etsap</string>
   <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
@@ -2308,10 +2291,15 @@
 
   \n\nEsaelp tel em wonk fi uoy ekil eht ,erutaef troper ,sehsarc ekam
   ,snoitseggus cte.!!</string>
+  <string name="dualpane_exit_now">Sdrowssorc lliw won tixe os eht
+  egnahc nac ekat tceffe. Uoy nac esu eht noitacifiton ti stsop ot
+  tratser.</string>
   <string name="enable_dualpane">Elbane edis-yb-edis</string>
-  <string name="post_dualpane_title">Hcnualer retfa egnahc</string>
+  <string name="post_dualpane_title">Tratser Sdrowssorc</string>
   <string name="post_dualpane_on_body">Trats Sdrowssorc htiw edis-yb-edis !delbane</string>
   <string name="post_dualpane_off_body">Trats Sdrowssorc htiw edis-yb-edis delbasid</string>
   <string name="disable_dualpane">Elbasid edis-yb-edis</string>
   <string name="dualpane_restart">Gnitixe ppa…</string>
+  <string name="after_restart">Siht egnahc lliw ton ekat tceffe litnu
+  uoy tratser Sdrowssorc.</string>
 </resources>

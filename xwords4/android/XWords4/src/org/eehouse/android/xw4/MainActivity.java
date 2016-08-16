@@ -62,8 +62,8 @@ public class MainActivity extends XWActivity
     protected void onCreate( Bundle savedInstanceState )
     {
         m_dpEnabled = XWPrefs.dualpaneEnabled( this );
-        if ( BuildConfig.DEBUG ) {
-            Utils.showToast( this, "dualpane mode: " + m_dpEnabled );
+        if ( BuildConfig.DEBUG && m_dpEnabled ) {
+            Utils.showToast( this, "Side-by-side mode ENABLED" );
         }
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
@@ -80,7 +80,7 @@ public class MainActivity extends XWActivity
             if ( savedInstanceState == null ) {
                 // In case this activity was started with special instructions from an Intent,
                 // pass the Intent's extras to the fragment as arguments
-                addFragmentImpl( new GamesListFrag(null),
+                addFragmentImpl( GamesListFrag.newInstance(),
                                  getIntent().getExtras(), null );
             }
         }
@@ -218,21 +218,6 @@ public class MainActivity extends XWActivity
         return handled;
     }
 
-    protected Point getFragmentSize()
-    {
-        Rect rect = new Rect();
-        m_root.getWindowVisibleDisplayFrame( rect );
-        int width = rect.width();
-        int height = rect.height();
-        if ( null != m_isPortrait && m_isPortrait && height < width ) {
-            int tmp = width;
-            width = height;
-            height = tmp;
-        }
-        return new Point( width / Math.min( m_maxPanes, m_root.getChildCount() ),
-                          height );
-    }
-
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////
@@ -244,7 +229,7 @@ public class MainActivity extends XWActivity
     @Override
     public void addFragment( XWFragment fragment, Bundle extras )
     {
-        addFragmentImpl( fragment, extras, fragment.getParent() );
+        addFragmentImpl( fragment, extras, fragment.getParentName() );
     }
 
     private class PendingResultCache {
@@ -270,7 +255,7 @@ public class MainActivity extends XWActivity
 
         fragment.setTargetFragment( registrant, requestCode.ordinal() );
 
-        addFragmentImpl( fragment, extras, fragment.getParent() );
+        addFragmentImpl( fragment, extras, fragment.getParentName() );
     }
 
     protected void setFragmentResult( XWFragment fragment, int resultCode,
@@ -393,6 +378,21 @@ public class MainActivity extends XWActivity
             DbgUtils.logf( "pane %d: visible=%b", ii, visible );
             child.setVisibility( visible ? View.VISIBLE : View.GONE );
             setMenuVisibility( child, visible );
+            if ( visible ) {
+                trySetTitle( child );
+            }
+        }
+    }
+
+    private void trySetTitle( View view )
+    {
+        XWFragment frag = (XWFragment)
+            getSupportFragmentManager().findFragmentById( view.getId() );
+        if ( null != frag ) {
+            frag.setTitle();
+        } else {
+            DbgUtils.logdf( "trySetTitle(): no fragment for id %x",
+                            view.getId() );
         }
     }
 
@@ -408,13 +408,13 @@ public class MainActivity extends XWActivity
     }
 
     private void addFragmentImpl( Fragment fragment, Bundle bundle,
-                                  Delegator parent )
+                                  String parentName )
     {
         fragment.setArguments( bundle );
-        addFragmentImpl( fragment, parent );
+        addFragmentImpl( fragment, parentName );
     }
 
-    private void addFragmentImpl( Fragment fragment, Delegator parent )
+    private void addFragmentImpl( Fragment fragment, String parentName )
     {
         String newName = fragment.getClass().getSimpleName();
         boolean replace = false;
@@ -432,9 +432,8 @@ public class MainActivity extends XWActivity
             FragmentManager.BackStackEntry entry
                 = fm.getBackStackEntryAt( fragCount - 2 );
             String curName = entry.getName();
-            String delName = parent.getClass().getSimpleName();
-            // DbgUtils.logf( "comparing %s, %s", curName, delName );
-            replace = curName.equals( delName );
+            // DbgUtils.logf( "comparing %s, %s", curName, parentName );
+            replace = curName.equals( parentName );
         }
 
         if ( replace ) {

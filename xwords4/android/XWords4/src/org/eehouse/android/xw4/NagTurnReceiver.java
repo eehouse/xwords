@@ -81,8 +81,8 @@ public class NagTurnReceiver extends BroadcastReceiver {
                     boolean lastWarning = 0 == info.m_nextNag;
 
                     long rowid = info.m_rowid;
-                    GameSummary summary = DBUtils.getSummary( context, rowid,
-                                                              10 );
+                    GameSummary summary = GameUtils.getSummary( context, rowid,
+                                                                10 );
                     String prevPlayer = null == summary
                         ? LocUtils.getString(context, R.string.prev_player)
                         : summary.getPrevPlayer();

@@ -28,6 +28,7 @@ import android.os.Message;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.CommsTransport;
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
@@ -78,7 +79,6 @@ public class JNIThread extends Thread {
             CMD_UNDO_CUR,
             CMD_UNDO_LAST,
             CMD_ZOOM,
-            CMD_TOGGLEZOOM,
             CMD_PREV_HINT,
             CMD_NEXT_HINT,
             CMD_VALUES,
@@ -176,9 +176,16 @@ public class JNIThread extends Thread {
 
         // If this isn't true then the queue has to be allowed to empty,
         // working on the old game state, before we can re-use any of this.
-        Assert.assertTrue( 0 == m_queue.size() );
-
-        m_jniGamePtr = XwJNI.initJNI( m_rowid );
+        if ( 0 < m_queue.size() ) {
+            if ( BuildConfig.DEBUG ) {
+                Iterator<QueueElem> iter = m_queue.iterator();
+                while ( iter.hasNext() ) {
+                    DbgUtils.logf( "removing %s from queue",
+                                   iter.next().m_cmd.toString() );
+                }
+            }
+            m_queue.clear();
+        }
 
         String[] dictNames = GameUtils.dictNames( context, m_lock );
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
@@ -200,18 +207,22 @@ public class JNIThread extends Thread {
 
         CommonPrefs cp = CommonPrefs.get( context );
         JNIUtils jniUtils = JNIUtilsImpl.get( context );
-        if ( null == stream ||
-             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream,
-                                          m_gi, dictNames,
-                                          pairs.m_bytes,
-                                          pairs.m_paths,
-                                          m_gi.langName(),
-                                          utils, jniUtils,
-                                          null, cp, m_xport ) ) {
-            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, dictNames,
-                                    pairs.m_bytes, pairs.m_paths,
-                                    m_gi.langName(), utils, jniUtils,
-                                    null, cp, m_xport );
+
+        // Assert.assertNull( m_jniGamePtr ); // fired!!
+        if ( null != m_jniGamePtr ) {
+            DbgUtils.logdf( "configure(): m_jniGamePtr not null; that ok?" );
+        }
+        m_jniGamePtr = null;
+        if ( null != stream ) {
+            m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi, dictNames,
+                                                 pairs.m_bytes, pairs.m_paths,
+                                                 m_gi.langName(), utils, jniUtils,
+                                                 null, cp, m_xport );
+        }
+        if ( null == m_jniGamePtr ) {
+            m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
+                                          pairs.m_paths, m_gi.langName(), utils,
+                                          jniUtils, null, cp, m_xport );
         }
 
         m_lastSavedState = Arrays.hashCode( stream );
@@ -221,7 +232,7 @@ public class JNIThread extends Thread {
     public GamePtr getGamePtr() { return m_jniGamePtr; }
     public CurGameInfo getGI() { return m_gi; }
     public GameSummary getSummary() { return m_summary; }
-    public GameLock getLock() { return m_lock; }
+    public GameLock getLock() { Assert.assertNotNull(m_lock); return m_lock; }
 
     private void waitToStop( boolean save )
     {
@@ -569,16 +580,6 @@ public class JNIThread extends Thread {
                 }
                 break;
 
-            case CMD_TOGGLEZOOM:
-                XwJNI.board_zoom( m_jniGamePtr, 0 , barr );
-                int zoomBy = 0;
-                if ( barr[1] ) { // always go out if possible
-                    zoomBy = -5;
-                } else if ( barr[0] ) {
-                    zoomBy = 5;
-                }
-                draw = XwJNI.board_zoom( m_jniGamePtr, zoomBy, barr );
-                break;
             case CMD_ZOOM:
                 draw = XwJNI.board_zoom( m_jniGamePtr,
                                          ((Integer)args[0]).intValue(),
@@ -775,6 +776,7 @@ public class JNIThread extends Thread {
             result = s_instances.get( rowid );
             if ( null == result && makeNew ) {
                 result = new JNIThread( new GameLock( rowid, true ).lock() );
+                Assert.assertNotNull( result );
                 s_instances.put( rowid, result );
             }
             if ( null != result ) {

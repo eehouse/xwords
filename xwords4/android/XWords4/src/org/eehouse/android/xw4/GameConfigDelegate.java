@@ -346,23 +346,26 @@ public class GameConfigDelegate extends DelegateBase
                                  public void warnDisabled( CommsConnType typ ) {
                                      switch( typ ) {
                                      case COMMS_CONN_SMS:
-                                         showConfirmThen( R.string.warn_sms_disabled,
-                                                          R.string.button_enable_sms,
-                                                          R.string.button_later,
-                                                          Action.ENABLE_SMS_ASK );
+                                         makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                                                 Action.ENABLE_SMS_ASK )
+                                             .setPosButton( R.string.button_enable_sms )
+                                             .setNegButton( R.string.button_later )
+                                             .show();
                                          break;
                                      case COMMS_CONN_BT:
-                                         showConfirmThen( R.string.warn_bt_disabled,
-                                                          R.string.button_enable_bt,
-                                                          R.string.button_later,
-                                                          Action.ENABLE_BT_DO );
+                                         makeConfirmThenBuilder( R.string.warn_bt_disabled,
+                                                                 Action.ENABLE_BT_DO )
+                                             .setPosButton( R.string.button_enable_bt )
+                                             .setNegButton( R.string.button_later )
+                                             .show();
                                          break;
                                      case COMMS_CONN_RELAY:
                                          String msg = getString( R.string.warn_relay_disabled )
                                              + "\n\n" + getString( R.string.warn_relay_later );
-                                         showConfirmThen( msg, R.string.button_enable_relay,
-                                                          R.string.button_later,
-                                                          Action.ENABLE_RELAY_DO );
+                                         makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO )
+                                             .setPosButton( R.string.button_enable_relay )
+                                             .setNegButton( R.string.button_later )
+                                             .show();
                                          break;
                                      default:
                                          Assert.fail();
@@ -507,9 +510,11 @@ public class GameConfigDelegate extends DelegateBase
              && !XWPrefs.getPublicRoomsEnabled( m_activity ) ) {
             ActionPair pair = new ActionPair( Action.SET_ENABLE_PUBLIC,
                                               R.string.enable_pubroom_title );
-            showNotAgainDlgThen( R.string.not_again_enablepublic,
+            makeNotAgainBuilder( R.string.not_again_enablepublic,
                                  R.string.key_notagain_enablepublic,
-                                 Action.SKIP_CALLBACK, pair );
+                                 Action.SKIP_CALLBACK )
+                .setActionPair(pair)
+                .show();
         }
     } // init
 
@@ -738,9 +743,10 @@ public class GameConfigDelegate extends DelegateBase
         } else if ( m_joinPublicCheck == view ) {
             adjustConnectStuff();
         } else if ( m_gameLockedCheck == view ) {
-            showNotAgainDlgThen( R.string.not_again_unlock,
+            makeNotAgainBuilder( R.string.not_again_unlock,
                                  R.string.key_notagain_unlock,
-                                 Action.LOCKED_CHANGE_ACTION );
+                                 Action.LOCKED_CHANGE_ACTION )
+                .show();
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_changeConnButton == view ) {
@@ -753,10 +759,11 @@ public class GameConfigDelegate extends DelegateBase
             saveChanges();
 
             if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
-                showConfirmThen( R.string.config_no_connvia,
-                                 R.string.button_discard,
-                                 R.string.button_edit,
-                                 Action.DELETE_AND_EXIT );
+                makeConfirmThenBuilder( R.string.config_no_connvia,
+                                        Action.DELETE_AND_EXIT )
+                    .setPosButton( R.string.button_discard )
+                    .setNegButton( R.string.button_edit )
+                    .show();
             } else if ( m_isNewGame || !m_gameStarted ) {
                 saveAndClose( true );
             } else if ( m_giOrig.changesMatter(m_gi)
@@ -784,7 +791,6 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( !m_haveClosed ) {
             m_haveClosed = true;
-            DbgUtils.logf( "GameConfigDelegate.finishAndLaunch()" );
             Intent intent = new Intent();
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
             setResult( Activity.RESULT_OK, intent );
@@ -911,7 +917,7 @@ public class GameConfigDelegate extends DelegateBase
                             (String)parentView.getItemAtPosition( position );
 
                         if ( chosen.equals( m_browseText ) ) {
-                            DictsDelegate.downloadForResult( m_activity,
+                            DictsDelegate.downloadForResult( getDelegator(),
                                                              RequestCode.REQUEST_DICT,
                                                              m_gi.dictLang );
                         }
@@ -945,7 +951,7 @@ public class GameConfigDelegate extends DelegateBase
                             String chosen =
                                 (String)parentView.getItemAtPosition( position );
                             if ( chosen.equals( m_browseText ) ) {
-                                DictsDelegate.downloadForResult( m_activity,
+                                DictsDelegate.downloadForResult( getDelegator(),
                                                                  RequestCode
                                                                  .REQUEST_LANG_GC );
                             } else {
@@ -1231,7 +1237,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && 0 == m_car.ip_relay_invite.length() ) {
-            showOKOnlyDialog( R.string.no_empty_rooms );
+            makeOkOnlyBuilder( R.string.no_empty_rooms ).show();
         } else {
             saveAndClose( forceNew );
         }
@@ -1245,7 +1251,8 @@ public class GameConfigDelegate extends DelegateBase
         }
     }
 
-    private void setTitle()
+    @Override
+    protected void setTitle()
     {
         int strID;
         if ( null != m_conTypes && 0 < m_conTypes.size() ) {
@@ -1271,8 +1278,9 @@ public class GameConfigDelegate extends DelegateBase
         bundle.putBoolean( INTENT_FORRESULT_NEWGAME, newGame );
 
         if ( delegator.inDPMode() ) {
-            delegator.addFragmentForResult( new GameConfigFrag( delegator ),
-                                            bundle, requestCode );
+            delegator
+                .addFragmentForResult( GameConfigFrag.newInstance( delegator ),
+                                       bundle, requestCode );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, GameConfigActivity.class );

@@ -449,19 +449,17 @@ public class GameSummary {
     public boolean hasRematchInfo()
     {
         boolean found = false;
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            String[] keys = { EXTRA_REMATCH_BTADDR,
-                              EXTRA_REMATCH_PHONE,
-                              EXTRA_REMATCH_RELAY,
-            };
-            for ( String key : keys ) {
-                found = null != getStringExtra( key );
-                if ( found ) {
-                    break;
-                }
+        String[] keys = { EXTRA_REMATCH_BTADDR,
+                          EXTRA_REMATCH_PHONE,
+                          EXTRA_REMATCH_RELAY,
+        };
+        for ( String key : keys ) {
+            found = null != getStringExtra( key );
+            if ( found ) {
+                break;
             }
-            // DbgUtils.logf( "hasRematchInfo() => %b", found );
         }
+        // DbgUtils.logf( "hasRematchInfo() => %b", found );
         return found;
     }
 

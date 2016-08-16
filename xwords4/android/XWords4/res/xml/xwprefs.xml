@@ -127,7 +127,7 @@
                         android:defaultValue="false"
                         />
     <CheckBoxPreference android:key="@string/key_enable_dualpane"
-                        android:title="@string/enable_dualpane_title"
+                        android:title="@string/enable_dualpane"
                         android:summary="@string/enable_dualpane_summary"
                         android:defaultValue="false"
                         />
@@ -272,11 +272,6 @@
                         android:title="@string/title_studyon"
                         android:summary="@string/summary_studyon"
                         android:defaultValue="true"
-                        />
-    <CheckBoxPreference android:key="@string/key_ringer_zoom"
-                        android:title="@string/ringer_zoom"
-                        android:summary="@string/ringer_zoom_summary"
-                        android:defaultValue="false"
                         />
     <CheckBoxPreference android:key="@string/key_hide_crosshairs"
                         android:title="@string/hide_crosshairs"

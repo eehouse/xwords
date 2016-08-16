@@ -28,6 +28,9 @@ import android.preference.PreferenceActivity;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
+import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
+import org.eehouse.android.xw4.DlgDelegate.OkOnlyBuilder;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class PrefsActivity extends PreferenceActivity
@@ -98,32 +101,34 @@ public class PrefsActivity extends PreferenceActivity
         m_dlgt.prepareDialog( DlgID.values()[id], dialog );
     }
 
-    public void showOKOnlyDialog( int msgID )
+    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
     {
-        m_dlgt.showOKOnlyDialog( msgID );
+        return m_dlgt.makeOkOnlyBuilder( msgId );
     }
 
-    public void showOKOnlyDialog( String msg )
+    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
     {
-        m_dlgt.showOKOnlyDialog( msg );
+        return m_dlgt.makeOkOnlyBuilder( msg );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     DlgDelegate.Action action )
+    public NotAgainBuilder makeNotAgainBuilder(int msgId, int key, Action action)
     {
-        m_dlgt.showNotAgainDlgThen( msgID, prefsKey, action );
+        return m_dlgt.makeNotAgainBuilder( msgId, key, action );
     }
 
-    protected void showConfirmThen( int msg, int posButton, int negButton,
-                                    Action action )
+    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key )
     {
-        m_dlgt.showConfirmThen( msg, posButton, negButton, action );
+        return m_dlgt.makeNotAgainBuilder( msgId, key );
     }
 
-    protected void showConfirmThen( String msg, int posButton, int negButton,
-                                    Action action )
+    public ConfirmThenBuilder makeConfirmThenBuilder(String msg, Action action)
     {
-        m_dlgt.showConfirmThen( msg, posButton, negButton, action );
+        return m_dlgt.makeConfirmThenBuilder( msg, action );
+    }
+
+    public ConfirmThenBuilder makeConfirmThenBuilder(int msgID, Action action)
+    {
+        return m_dlgt.makeConfirmThenBuilder( msgID, action );
     }
 
     protected void showSMSEnableDialog( Action action )

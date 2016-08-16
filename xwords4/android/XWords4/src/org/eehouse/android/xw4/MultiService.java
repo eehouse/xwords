@@ -24,6 +24,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.os.Bundle;
 
 import junit.framework.Assert;
 
@@ -53,6 +54,7 @@ public class MultiService {
     };
 
     private static final String ACTION_FETCH_DICT = "_afd";
+    private static final String FOR_MISSING_DICT = "_fmd";
 
     private MultiEventListener m_li;
 
@@ -118,14 +120,22 @@ public class MultiService {
         intent.putExtra( DICT, nli.dict );
         intent.putExtra( OWNER, owner.ordinal() );
         intent.putExtra( NLI_DATA, nli.toString() );
+        intent.putExtra( FOR_MISSING_DICT, true );
         return intent;
+    }
+
+    public static boolean isMissingDictBundle( Bundle args )
+    {
+        boolean result = args.getBoolean( FOR_MISSING_DICT, false );
+        return result;
     }
 
     public static boolean isMissingDictIntent( Intent intent )
     {
         String action = intent.getAction();
-        boolean result = null != action && action.equals( ACTION_FETCH_DICT );
-        // DbgUtils.logf( "isMissingDictIntent() => %b", result );
+        boolean result = null != action && action.equals( ACTION_FETCH_DICT )
+            && isMissingDictBundle( intent.getExtras() );
+        // DbgUtils.logf( "isMissingDictIntent(%s) => %b", intent.toString(), result );
         return result;
     }
 

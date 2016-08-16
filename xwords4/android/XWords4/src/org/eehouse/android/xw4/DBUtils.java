@@ -116,27 +116,6 @@ public class DBUtils {
         public int[] m_counts;
     }
 
-    public static GameSummary getSummary( Context context, long rowid,
-                                          long maxMillis )
-    {
-        GameSummary result = null;
-        try {
-            GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
-            if ( null != lock ) {
-                result = getSummary( context, lock );
-                lock.unlock();
-            }
-        } catch ( GameLock.GameLockedException gle ) {
-            DbgUtils.loge( gle );
-        }
-        return result;
-    }
-
-    public static GameSummary getSummary( Context context, long rowid )
-    {
-        return getSummary( context, rowid, 0L );
-    }
-
     public static GameSummary getSummary( Context context,
                                           GameLock lock )
     {
@@ -375,21 +354,19 @@ public class DBUtils {
     public static void addRematchInfo( Context context, long rowid, String btAddr,
                                        String phone, String relayID )
     {
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            GameLock lock = new GameLock( rowid, true ).lock();
-            GameSummary summary = getSummary( context, lock );
-            if ( null != btAddr ) {
-                summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
-            }
-            if ( null != phone ) {
-                summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
-            }
-            if ( null != relayID ) {
-                summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
-            }
-            saveSummary( context, lock, summary );
-            lock.unlock();
+        GameLock lock = new GameLock( rowid, true ).lock();
+        GameSummary summary = getSummary( context, lock );
+        if ( null != btAddr ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
         }
+        if ( null != phone ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
+        }
+        if ( null != relayID ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+        }
+        saveSummary( context, lock, summary );
+        lock.unlock();
     }
 
     public static int countGamesUsingLang( Context context, int lang )
@@ -1125,6 +1102,9 @@ public class DBUtils {
             lock.unlock();
         } else {
             DbgUtils.logf( "deleteGame: unable to lock rowid %d", rowid );
+            if ( BuildConfig.DEBUG ) {
+                Assert.fail();
+            }
         }
     }
 

@@ -130,10 +130,10 @@ public class GameUtils {
         }
         gamePtr.release();
 
-        gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get( context ),
-                                CommonPrefs.get( context ), dictNames,
-                                pairs.m_bytes,  pairs.m_paths, gi.langName() );
+        gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes, pairs.m_paths,
+                                 gi.langName(), (UtilCtxt)null,
+                                 JNIUtilsImpl.get( context ), (DrawCtx)null,
+                                 CommonPrefs.get( context ), (TransportProcs)null );
 
         if ( juggle ) {
             gi.juggle();
@@ -150,7 +150,7 @@ public class GameUtils {
         } else {
             saveGame( context, gamePtr, gi, lockDest, true );
         }
-        summarizeAndClose( context, lockDest, gamePtr, gi );
+        summarizeAndRelease( context, lockDest, gamePtr, gi );
         DBUtils.saveThumbnail( context, lockDest, null );
 
         return lockDest;
@@ -188,10 +188,10 @@ public class GameUtils {
         return result;
     }
 
-    private static GameSummary summarizeAndClose( Context context,
-                                                  GameLock lock,
-                                                  GamePtr gamePtr,
-                                                  CurGameInfo gi )
+    private static GameSummary summarizeAndRelease( Context context,
+                                                    GameLock lock,
+                                                    GamePtr gamePtr,
+                                                    CurGameInfo gi )
     {
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
@@ -208,23 +208,68 @@ public class GameUtils {
         CurGameInfo gi = new CurGameInfo( context );
         GamePtr gamePtr = loadMakeGame( context, gi, lock );
         if ( null != gamePtr ) {
-            result = summarizeAndClose( context, lock, gamePtr, gi );
+            result = summarizeAndRelease( context, lock, gamePtr, gi );
         }
         return result;
+    }
+
+    public static GameSummary getSummary( Context context, long rowid,
+                                          long maxMillis )
+    {
+        GameSummary result = null;
+        JNIThread thread = JNIThread.getRetained( rowid );
+        GameLock lock = null;
+        if ( null != thread ) {
+            lock = thread.getLock();
+        } else {
+            try {
+                lock = new GameLock( rowid, false ).lock( maxMillis );
+            } catch ( GameLock.GameLockedException gle ) {
+                DbgUtils.loge( gle );
+            }
+        }
+
+        if ( null != lock ) {
+            result = DBUtils.getSummary( context, lock );
+            if ( null == thread ) {
+                lock.unlock();
+            } else {
+                thread.release();
+            }
+        }
+        return result;
+    }
+
+    public static GameSummary getSummary( Context context, long rowid )
+    {
+        return getSummary( context, rowid, 0L );
     }
 
     public static long dupeGame( Context context, long rowidIn )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
-        GameLock lockSrc = new GameLock( rowidIn, false ).lock( 300 );
+        GameLock lockSrc = null;
+
+        JNIThread thread = JNIThread.getRetained( rowidIn, false );
+        if ( null != thread ) {
+            lockSrc = thread.getLock();
+        } else {
+            lockSrc = new GameLock( rowidIn, false ).lock( 300 );
+        }
+
         if ( null != lockSrc ) {
             boolean juggle = CommonPrefs.getAutoJuggle( context );
             GameLock lockDest = resetGame( context, lockSrc, null, juggle );
             rowid = lockDest.getRowid();
             lockDest.unlock();
-            lockSrc.unlock();
+
+            if ( null != thread ) {
+                thread.release();
+            } else {
+                lockSrc.unlock();
+            }
         } else {
-            DbgUtils.logf( "dupeGame: unable to open rowid %d", rowidIn );
+            DbgUtils.logdf( "dupeGame: unable to open rowid %d", rowidIn );
         }
         return rowid;
     }
@@ -319,21 +364,20 @@ public class GameUtils {
                 DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable",
                                TextUtils.join( ",", dictNames ) );
             } else {
-                gamePtr = XwJNI.initJNI( rowid );
-
                 String langName = gi.langName();
-                boolean madeGame =
-                    XwJNI.game_makeFromStream( gamePtr, stream, gi,
-                                               dictNames, pairs.m_bytes,
-                                               pairs.m_paths, langName,
-                                               util, JNIUtilsImpl.get( context ),
-                                               CommonPrefs.get(context),
-                                               tp);
-                if ( !madeGame ) {
-                    XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context),
-                                            CommonPrefs.get(context), dictNames,
-                                            pairs.m_bytes, pairs.m_paths,
-                                            langName );
+                gamePtr = XwJNI.initFromStream( rowid, stream, gi, dictNames,
+                                                pairs.m_bytes, pairs.m_paths,
+                                                langName, util,
+                                                JNIUtilsImpl.get( context ),
+                                                null,
+                                                CommonPrefs.get(context),
+                                                tp );
+                if ( null == gamePtr ) {
+                    gamePtr = XwJNI.initNew( gi, dictNames,
+                                             pairs.m_bytes, pairs.m_paths,
+                                             langName, (UtilCtxt)null,
+                                             JNIUtilsImpl.get(context), null,
+                                             CommonPrefs.get(context), null );
                 }
             }
         }
@@ -537,7 +581,7 @@ public class GameUtils {
                                           int gameID, String gameName,
                                           boolean isHost )
     {
-        long rowid = -1;
+        long rowid = DBUtils.ROWID_NOTFOUND;
 
         Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
@@ -608,7 +652,7 @@ public class GameUtils {
                                     int nPlayersT, int nPlayersH,
                                     int forceChannel, String gameName )
     {
-        long rowid = -1;
+        long rowid = DBUtils.ROWID_NOTFOUND;
         int[] langa = { lang };
         String[] dicta = { dict };
         boolean isHost = null == addr;
@@ -860,7 +904,7 @@ public class GameUtils {
     {
         Bundle extras = makeLaunchExtras( rowid, invited );
         if ( delegator.inDPMode() ) {
-            delegator.addFragment( new BoardFrag( delegator ), extras );
+            delegator.addFragment( BoardFrag.newInstance( delegator ), extras );
         } else {
             Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, BoardActivity.class );
@@ -910,14 +954,15 @@ public class GameUtils {
         }
     }
 
-    public static boolean feedMessages( Context context, long rowid,
-                                        byte[][] msgs, CommsAddrRec ret,
-                                        MultiMsgSink sink, BackMoveResult bmr,
-                                        boolean[] isLocalOut )
+    public static boolean feedMessage( Context context, long rowid, byte[] msg,
+                                       CommsAddrRec ret, MultiMsgSink sink,
+                                       BackMoveResult bmr, boolean[] isLocalOut )
     {
+        DbgUtils.logf( "GameUtils.feedMessage()" );
+        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
-        if ( null != msgs ) {
+        if ( null != msg ) {
             // timed lock: If a game is opened by BoardActivity just
             // as we're trying to deliver this message to it it'll
             // have the lock and we'll never get it.  Better to drop
@@ -931,11 +976,8 @@ public class GameUtils {
                 if ( null != gamePtr ) {
                     XwJNI.comms_resendAll( gamePtr, false, false );
 
-                    for ( byte[] msg : msgs ) {
-                        Assert.assertNotNull( ret );
-                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
-                            || draw;
-                    }
+                    Assert.assertNotNull( ret );
+                    draw = XwJNI.game_receiveMessage( gamePtr, msg, ret );
                     XwJNI.comms_ackAny( gamePtr );
 
                     // update gi to reflect changes due to messages
@@ -958,8 +1000,8 @@ public class GameUtils {
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );
-                    GameSummary summary = summarizeAndClose( context, lock,
-                                                             gamePtr, gi );
+                    GameSummary summary = summarizeAndRelease( context, lock,
+                                                               gamePtr, gi );
                     if ( null != isLocalOut ) {
                         isLocalOut[0] = 0 <= summary.turn
                             && gi.players[summary.turn].isLocal;
@@ -976,16 +1018,6 @@ public class GameUtils {
             }
         }
         return draw;
-    } // feedMessages
-
-    public static boolean feedMessage( Context context, long rowid, byte[] msg,
-                                       CommsAddrRec ret, MultiMsgSink sink,
-                                       BackMoveResult bmr, boolean[] isLocalOut )
-    {
-        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
-        byte[][] msgs = new byte[1][];
-        msgs[0] = msg;
-        return feedMessages( context, rowid, msgs, ret, sink, bmr, isLocalOut );
     }
 
     // This *must* involve a reset if the language is changing!!!
@@ -1008,18 +1040,18 @@ public class GameUtils {
             DictUtils.DictPairs pairs = DictUtils.openDicts( context,
                                                              dictNames );
 
-            GamePtr gamePtr = XwJNI.initJNI( rowid );
-            XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames,
-                                       pairs.m_bytes, pairs.m_paths,
-                                       gi.langName(),
-                                       JNIUtilsImpl.get(context),
-                                       CommonPrefs.get( context ) );
+            GamePtr gamePtr =
+                XwJNI.initFromStream( rowid, stream, gi, dictNames,
+                                      pairs.m_bytes, pairs.m_paths,
+                                      gi.langName(), null,
+                                      JNIUtilsImpl.get(context), null,
+                                      CommonPrefs.get( context ), null );
             // second time required as game_makeFromStream can overwrite
             gi.replaceDicts( newDict );
 
             saveGame( context, gamePtr, gi, lock, false );
 
-            summarizeAndClose( context, lock, gamePtr, gi );
+            summarizeAndRelease( context, lock, gamePtr, gi );
 
             lock.unlock();
         } else {
@@ -1048,7 +1080,7 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         String langName = gi.langName();
-        GamePtr gamePtr = XwJNI.initJNI( lock.getRowid() );
+        GamePtr gamePtr = null;
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
 
@@ -1057,19 +1089,21 @@ public class GameUtils {
         } else {
             byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
-            madeGame = XwJNI.game_makeFromStream( gamePtr, stream,
-                                                  new CurGameInfo(context),
-                                                  dictNames, pairs.m_bytes,
-                                                  pairs.m_paths, langName,
-                                                  JNIUtilsImpl.get(context),
-                                                  cp );
+            gamePtr = XwJNI.initFromStream( lock.getRowid(), stream,
+                                            new CurGameInfo(context),
+                                            dictNames, pairs.m_bytes,
+                                            pairs.m_paths, langName,
+                                            null, JNIUtilsImpl.get(context),
+                                            null, cp, null );
+            madeGame = null != gamePtr;
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, dictNames, pairs.m_bytes,
-                                    pairs.m_paths, langName, util,
-                                    JNIUtilsImpl.get(context), (DrawCtx)null,
-                                    cp, sink );
+            Assert.assertNull( gamePtr );
+            gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes,
+                                     pairs.m_paths, langName, util,
+                                     JNIUtilsImpl.get(context), (DrawCtx)null,
+                                     cp, sink );
         }
 
         if ( null != car ) {
@@ -1272,7 +1306,7 @@ public class GameUtils {
                 int nSent = null == m_sink ? 0 : m_sink.numSent();
                 String msg =
                     LocUtils.getQuantityString( m_context,
-                                                R.plurals.resend_finished_fmt,
+                                                R.plurals.resent_msgs_fmt,
                                                 nSent, nSent );
                 DbgUtils.showf( m_context, msg );
             }

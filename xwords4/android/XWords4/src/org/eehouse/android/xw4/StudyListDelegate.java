@@ -118,14 +118,15 @@ public class StudyListDelegate extends ListDelegateBase
         boolean handled = true;
         switch ( item.getItemId() ) {
         case R.id.slmenu_copy_sel:
-            showNotAgainDlgThen( R.string.not_again_studycopy,
+            makeNotAgainBuilder( R.string.not_again_studycopy,
                                  R.string.key_na_studycopy,
-                                 Action.SL_COPY_ACTION );
+                                 Action.SL_COPY_ACTION )
+                .show();
             break;
         case R.id.slmenu_clear_sel:
             String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt,
                                             m_checkeds.size(), m_checkeds.size() );
-            showConfirmThen( msg, Action.SL_CLEAR_ACTION );
+            makeConfirmThenBuilder( msg, Action.SL_CLEAR_ACTION ).show();
             break;
 
         case R.id.slmenu_select_all:
@@ -361,7 +362,8 @@ public class StudyListDelegate extends ListDelegateBase
             }
 
             if ( delegator.inDPMode() ) {
-                delegator.addFragment( new StudyListFrag( delegator ), bundle );
+                delegator.addFragment( StudyListFrag.newInstance( delegator ),
+                                       bundle );
             } else {
                 Intent intent = new Intent( activity, StudyListActivity.class );
                 intent.putExtras( bundle );
@@ -370,7 +372,7 @@ public class StudyListDelegate extends ListDelegateBase
         }
 
         if ( null != msg ) {
-            dlg.showOKOnlyDialog( msg );
+            dlg.makeOkOnlyBuilder( msg ).show();
         }
     }
 

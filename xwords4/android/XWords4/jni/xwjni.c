@@ -191,8 +191,8 @@ map_destroy( EnvThreadInfo* ti )
     pthread_mutex_destroy( &ti->mtxThreads );
 }
 
-JNIEnv*
-envForMe( EnvThreadInfo* ti, const char* caller )
+static JNIEnv*
+prvEnvForMe( EnvThreadInfo* ti )
 {
     JNIEnv* result = NULL;
     pthread_t self = pthread_self();
@@ -204,7 +204,15 @@ envForMe( EnvThreadInfo* ti, const char* caller )
         }
     }
     pthread_mutex_unlock( &ti->mtxThreads );
+    return result;
+}
+
+JNIEnv*
+envForMe( EnvThreadInfo* ti, const char* caller )
+{
+    JNIEnv* result = prvEnvForMe( ti );
     if( !result ) {
+        pthread_t self = pthread_self();
         XP_LOGF( "no env for %s (thread %x)", caller, (int)self );
         XP_ASSERT(0);
     }
@@ -1111,6 +1119,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getActiveRect
 }
 #endif
 
+#ifdef POINTER_SUPPORT
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenDown
 (JNIEnv *env, jclass C, GamePtrType gamePtr, jint xx, jint yy, jbooleanArray barray )
@@ -1144,6 +1153,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenUp
     XWJNI_END();
     return result;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1containsPt
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint xx, jint yy )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_containsPt( state->game.board, xx, yy );
+    XWJNI_END();
+    return result;
+}
+#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1juggleTray
@@ -1945,6 +1966,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
     }
     XWJNI_END();
 #endif
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_haveEnv
+( JNIEnv* env, jclass C, jint jniGlobalPtr )
+{
+    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    jboolean result = NULL != prvEnvForMe(&state->ti);
     return result;
 }
 

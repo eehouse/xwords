@@ -2378,7 +2378,8 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool
-pointOnSomething( BoardCtxt* board, XP_U16 xx, XP_U16 yy, BoardObjectType* wp )
+pointOnSomething( const BoardCtxt* board, XP_U16 xx, XP_U16 yy,
+                  BoardObjectType* wp )
 {
     XP_Bool result = XP_TRUE;
 
@@ -2950,6 +2951,14 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     return handlePenUpInternal( board, x, y, XP_TRUE );
 }
+
+XP_Bool
+board_containsPt( const BoardCtxt* board, XP_U16 xx, XP_U16 yy )
+{
+    BoardObjectType wp;
+    return pointOnSomething( board, xx, yy, &wp );
+}
+
 #endif /* #ifdef POINTER_SUPPORT */
 
 #ifdef KEYBOARD_NAV

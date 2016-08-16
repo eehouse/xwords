@@ -24,7 +24,12 @@ import android.os.Bundle;
 
 public class BoardFrag extends XWFragment {
 
-    public BoardFrag( Delegator parent ) { super( parent ); }
+    public BoardFrag() {}
+
+    public static XWFragment newInstance( Delegator parent )
+    {
+        return new BoardFrag().setParentName( parent );
+    }
 
     @Override
     public void onCreate( Bundle sis )
