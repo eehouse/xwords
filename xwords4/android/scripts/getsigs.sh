@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e -u
 
 DIR=""
 NODE=""
+CLASSPATH=${CLASSPATH:-""}
 
 usage() {
     [ $# -gt 0 ] && echo "Error: $1"
@@ -11,6 +12,11 @@ usage() {
     echo "            # e.g. XWords4 or XWords4-dbg and xw4 or xw4_dbg"
     exit 1
 }
+
+# Make sure android.jar is on CLASSPATH
+if [ "${CLASSPATH/android.jar/}" = "$CLASSPATH" ]; then
+	usage "android.jar not on CLASSPATH"
+fi
 
 while [ $# -gt 1 ]; do
     case $1 in
