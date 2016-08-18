@@ -35,8 +35,8 @@ public class BoardContainer extends ViewGroup {
     // If the ratio of height/width exceeds this, use portrait layout
     private static final int PORTRAIT_THRESHHOLD = 105;
 
-    private static final int BOARD_PCT_HOR = 90;
-    private static final int BOARD_PCT_VERT = 85;
+    private static final int BOARD_PCT_VERT = 90;
+    private static final int BOARD_PCT_HOR = 85;
 
     private static final int BOARD_INDX = 0;
     private static final int EXCH_INDX = 1;
@@ -157,8 +157,8 @@ public class BoardContainer extends ViewGroup {
     private Rect[] figureBounds( int left, int top, int width, int height )
     {
         int boardHeight = ( haveTradeBar() || s_isPortrait)
-            ? height * BOARD_PCT_HOR / 100 : height;
-        int boardWidth = s_isPortrait ? width : width * BOARD_PCT_VERT / 100;
+            ? height * (BOARD_PCT_VERT) / 100 : height;
+        int boardWidth = s_isPortrait ? width : (width * BOARD_PCT_HOR) / 100;
 
         // board
         Rect boardBounds = new Rect( left, top, left + boardWidth,
