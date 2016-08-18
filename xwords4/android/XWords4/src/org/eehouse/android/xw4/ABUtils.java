@@ -69,7 +69,9 @@ public class ABUtils {
 
     public static boolean haveActionBar()
     {
-        return null != s_safeInval;
+        boolean result = null != s_safeInval;
+        // DbgUtils.logf( "haveActionBar() => %b", result );
+        return result;
     }
 
     // http://stackoverflow.com/questions/10929579/how-to-check-if-android-phone-has-hardware-menu-button-in-android-2-1:

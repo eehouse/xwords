@@ -81,7 +81,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     {
         if ( m_visible != visible ) {
             m_visible = visible;
-            doShowHide( null );
+            doShowHide();
         }
     }
 
@@ -134,10 +134,9 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     // SizeChangeListener
     public void sizeChanged( int width, int height, boolean isPortrait )
     {
-        DbgUtils.logf( "Toolbar.sizeChanged(isPortrait=%b)", isPortrait );
         tryAddListeners( m_onClickListeners );
         tryAddListeners( m_onLongClickListeners );
-        doShowHide( new Boolean(isPortrait) );
+        doShowHide();
     }
 
     private void tryAddListeners( Map<Buttons, Object> map )
@@ -168,14 +167,10 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
         return success;
     }
 
-    private void doShowHide( Boolean shouldBePortrait )
+    private void doShowHide()
     {
-        // BoardContainer owns which scroller we'll use, and signals its
-        // choice by setting their visibility. We use the one that's visible.
-        boolean isPortrait = View.GONE != m_scrollHor.getVisibility();
-        DbgUtils.logf( "Toolbar.doShowHide(): isPortrait: %b", isPortrait );
-        Assert.assertTrue( null == shouldBePortrait
-                           || shouldBePortrait.equals(isPortrait) );
+        boolean isPortrait = BoardContainer.getIsPortrait();
+        DbgUtils.logdf( "Toolbar.doShowHide(): isPortrait: %b", isPortrait );
 
         if ( null == m_layout ) {
             m_layout = (LinearLayout)LocUtils.inflate( m_activity, R.layout.toolbar );
@@ -186,13 +181,12 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
                                  LinearLayout.HORIZONTAL : LinearLayout.VERTICAL );
 
         ViewGroup scroller = isPortrait ? m_scrollHor : m_scrollVert;
-        Assert.assertNotNull( scroller );
         if ( null != scroller ) {
             // Google's had reports of a crash adding second view
             scroller.removeAllViews();
             scroller.addView( m_layout );
-        }
 
-        m_layout.setVisibility( m_visible? View.VISIBLE : View.GONE );
+            scroller.setVisibility( m_visible? View.VISIBLE : View.GONE );
+        }
     }
 }
