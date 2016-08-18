@@ -127,7 +127,7 @@ public final class R {
         public static final int button_rescan=0x7f0c000a;
         public static final int button_study=0x7f0c0065;
         public static final int change_connection=0x7f0c003f;
-        public static final int chat_button=0x7f0c0084;
+        public static final int chat_button=0x7f0c0081;
         public static final int chat_edit=0x7f0c0011;
         public static final int chat_history=0x7f0c0010;
         public static final int chat_menu_clear=0x7f0c00a5;
@@ -148,7 +148,7 @@ public final class R {
         public static final int details=0x7f0c0076;
         public static final int dict_label=0x7f0c006d;
         public static final int dict_spinner=0x7f0c0031;
-        public static final int dictlist_button=0x7f0c0083;
+        public static final int dictlist_button=0x7f0c0084;
         public static final int dicts_delete=0x7f0c00a8;
         public static final int dicts_deselect_all=0x7f0c00a7;
         public static final int dicts_download=0x7f0c00a6;
@@ -268,7 +268,7 @@ public final class R {
         public static final int seek_green=0x7f0c0019;
         public static final int seek_red=0x7f0c0017;
         public static final int show_remote=0x7f0c0021;
-        public static final int shuffle_button=0x7f0c0081;
+        public static final int shuffle_button=0x7f0c0082;
         public static final int slmenu_clear_sel=0x7f0c00d1;
         public static final int slmenu_copy_sel=0x7f0c00d0;
         public static final int slmenu_deselect_all=0x7f0c00cf;
@@ -285,7 +285,7 @@ public final class R {
         public static final int timer_minutes_edit=0x7f0c0043;
         public static final int timer_set=0x7f0c0042;
         public static final int toolbar=0x7f0c007e;
-        public static final int undo_button=0x7f0c0082;
+        public static final int undo_button=0x7f0c0083;
         public static final int use_timer=0x7f0c0041;
         public static final int values_button=0x7f0c0085;
         public static final int version_string=0x7f0c0000;
