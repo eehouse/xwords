@@ -989,6 +989,7 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             } );
 
+        updateField();
     } // init
 
     @Override
