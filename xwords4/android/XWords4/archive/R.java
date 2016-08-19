@@ -2010,6 +2010,7 @@ XLATE-ME
         /** <string name="data_gsm_only">SMS Data is only available on GSM phones.</string>
          */
         public static final int data_gsm_only=0x7f05029b;
+        public static final int db_enabled_toast=0x7f050351;
         /**  <string name="db_store_done">SD card write complete.</string> 
          */
         public static final int db_store_done=0x7f05032d;
