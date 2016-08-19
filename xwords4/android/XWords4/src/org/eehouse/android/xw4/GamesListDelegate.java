@@ -954,19 +954,14 @@ public class GamesListDelegate extends ListDelegateBase
                     FirstRunDialog.show( m_activity );
                 }
                 s_firstShown = true;
-            }
-
-        }
-
-        // Combine with above when "true" removed
-        if ( true || isUpgrade ) {
-            if ( !XWPrefs.getPrefsBoolean( m_activity,
-                                           R.string.key_enable_dualpane, false )
-                 && XWPrefs.getIsTablet( m_activity ) ) {
-
+            } else if ( !XWPrefs.getPrefsBoolean( m_activity,
+                                                  R.string.key_enable_dualpane,
+                                                  false )
+                        && XWPrefs.getIsTablet( m_activity ) ) {
                 makeConfirmThenBuilder(R.string.invite_dualpane, Action.ENABLE_DUALPANE)
                     .setNAKey(R.string.key_notagain_dualpane)
                     .setPosButton(R.string.enable_dualpane)
+                    .setNegButton(R.string.button_later)
                     .show();
             }
         }
