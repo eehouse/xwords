@@ -47,6 +47,9 @@ public class BoardContainer extends ViewGroup {
     private static int s_width = 0;
     private static int s_height = 0;
 
+    private Rect m_boardBounds;
+    private Rect m_toolsBounds;
+
     interface SizeChangeListener {
         void sizeChanged( int width, int height, boolean isPortrait );
     }
@@ -74,23 +77,30 @@ public class BoardContainer extends ViewGroup {
         if ( 0 != width || 0 != height ) {
             setForPortrait( width, height );
 
-            Rect[] rects = figureBounds( 0, 0, width, height );
+            figureBounds( 0, 0, width, height );
 
-            // Measure the board
-            measureChild( BOARD_INDX, rects[0] );
-
+            // Measure any toolbar first so we can take extra space for the
+            // board
             int childCount = getChildCount();
             if ( 1 < childCount ) {
                 Assert.assertTrue( 4 == childCount );
 
+                // Measure the toolbar
+                measureChild( s_isPortrait ? HBAR_INDX : VBAR_INDX, m_toolsBounds );
+                adjustBounds();
+                View child = getChildAt( s_isPortrait ? HBAR_INDX : VBAR_INDX );
+                DbgUtils.logf( "measured %s; passed ht: %d; got back ht: %d",
+                               child.toString(), m_toolsBounds.height(),
+                               child.getMeasuredHeight() );
+
                 if ( haveTradeBar() ) {
                     // Measure the exchange buttons bar
-                    measureChild( EXCH_INDX, rects[1] );
+                    measureChild( EXCH_INDX, m_toolsBounds );
                 }
-
-                // Measure the toolbar
-                measureChild( s_isPortrait ? HBAR_INDX : VBAR_INDX, rects[1] );
             }
+
+            // Measure the board
+            measureChild( BOARD_INDX, m_boardBounds );
         }
         setMeasuredDimension( width, height );
     }
@@ -101,26 +111,20 @@ public class BoardContainer extends ViewGroup {
     protected void onLayout( boolean changed, int left, int top,
                              int right, int bottom)
     {
-        Rect[] rects = figureBounds( left, top, right, bottom );
+        // If this isn't true, need to refigure the rects
+        // Assert.assertTrue( 0 == left && 0 == top );
 
         // layout the board
-        BoardView board = (BoardView)getChildAt( BOARD_INDX );
-        layoutChild( board, rects[0] );
+        layoutChild( BOARD_INDX, m_boardBounds );
 
         if ( 1 < getChildCount() ) {
-
             // The trade bar
             if ( haveTradeBar() ) {
-                LinearLayout exchButtons = (LinearLayout)getChildAt( EXCH_INDX );
-                Assert.assertTrue( exchButtons.getId() == R.id.exchange_buttons );
-                layoutChild( exchButtons, rects[1] );
+                layoutChild( EXCH_INDX, m_toolsBounds );
             }
 
             // Now one of the toolbars
-            View scrollView = getChildAt( s_isPortrait ? HBAR_INDX : VBAR_INDX );
-            if ( GONE != scrollView.getVisibility() ) {
-                layoutChild( scrollView, rects[1] );
-            }
+            layoutChild( s_isPortrait ? HBAR_INDX : VBAR_INDX, m_toolsBounds );
         }
     }
 
@@ -134,9 +138,12 @@ public class BoardContainer extends ViewGroup {
         measureChild( view, childWidthSpec, childHeightSpec );
     }
 
-    private void layoutChild( View child, Rect rect )
+    private void layoutChild( int index, Rect rect )
     {
-        child.layout( rect.left, rect.top, rect.right, rect.bottom );
+        View child = getChildAt( index );
+        if ( GONE != child.getVisibility() ) {
+            child.layout( rect.left, rect.top, rect.right, rect.bottom );
+        }
     }
 
     private void setForPortrait( final int width, final int height )
@@ -154,14 +161,14 @@ public class BoardContainer extends ViewGroup {
         }
     }
 
-    private Rect[] figureBounds( int left, int top, int width, int height )
+    private void figureBounds( int left, int top, int width, int height )
     {
         int boardHeight = ( haveTradeBar() || s_isPortrait)
             ? height * (BOARD_PCT_VERT) / 100 : height;
         int boardWidth = s_isPortrait ? width : (width * BOARD_PCT_HOR) / 100;
 
         // board
-        Rect boardBounds = new Rect( left, top, left + boardWidth,
+        m_boardBounds = new Rect( left, top, left + boardWidth,
                                      top + boardHeight );
         // DbgUtils.logf( "BoardContainer: boardBounds: %s", boardBounds.toString() );
         // toolbar
@@ -172,9 +179,24 @@ public class BoardContainer extends ViewGroup {
             left += boardWidth;
             width -= boardWidth;
         }
-        Rect toolsBounds = new Rect( left, top, left + width, top + height );
-        // DbgUtils.logf( "BoardContainer: toolsBounds: %s", toolsBounds.toString() );
-        return new Rect[] { boardBounds, toolsBounds };
+        m_toolsBounds = new Rect( left, top, left + width, top + height );
+    }
+
+    private void adjustBounds()
+    {
+        if ( s_isPortrait ) {
+            int curHeight = m_toolsBounds.height();
+            int newHeight = getChildAt( HBAR_INDX ).getMeasuredHeight();
+            int diff = curHeight - newHeight;
+            m_boardBounds.bottom += diff;
+            m_toolsBounds.top += diff;
+        } else {
+            int curWidth = m_toolsBounds.width();
+            int newWidth = getChildAt( VBAR_INDX ).getMeasuredWidth();
+            int diff = curWidth - newWidth;
+            m_boardBounds.right += diff;
+            m_toolsBounds.left += diff;
+        }
     }
 
     private boolean haveTradeBar()
