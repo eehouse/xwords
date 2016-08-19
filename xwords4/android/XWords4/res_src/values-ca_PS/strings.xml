@@ -2302,4 +2302,5 @@
   <string name="dualpane_restart">EXITING APP…</string>
   <string name="after_restart">THIS CHANGE WILL NOT TAKE EFFECT UNTIL
   YOU RESTART CROSSWORDS.</string>
+  <string name="db_enabled_toast">SIDE-BY-SIDE MODE ENABLED</string>
 </resources>

@@ -160,7 +160,9 @@ public class DelegateBase implements DlgClickNotify,
         if ( null != ref ) {
             result = ref.get();
         }
-        // DbgUtils.logdf( "%s.curThis() => " + result, this.toString() );
+        if ( this != result ) {
+            DbgUtils.logdf( "%s.curThis() => " + result, this.toString() );
+        }
         return result;
     }
 

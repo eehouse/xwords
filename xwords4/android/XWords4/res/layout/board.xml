@@ -11,6 +11,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
+
   <org.eehouse.android.xw4.BoardView
 	  android:id="@+id/board_view"
 	  android:layout_width="wrap_content"
@@ -40,7 +41,7 @@
             />
   </LinearLayout>
 
-  <!-- toolbar goes inside one of these -->
+  <!-- Toolbar goes inside one of these. One will always be GONE. -->
   <ScrollView android:id="@+id/tbar_parent_vert"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
@@ -48,7 +49,6 @@
               android:visibility="gone"
               />
   <HorizontalScrollView android:id="@+id/tbar_parent_hor"
-						android:orientation="horizontal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"

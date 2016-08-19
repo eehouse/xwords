@@ -65,12 +65,12 @@ public class FirstRunDialog {
         view.getSettings().setJavaScriptEnabled( true ); // for surveymonkey
         view.loadUrl("file:///android_asset/changes.html");
 
-        AlertDialog dialog = LocUtils.makeAlertBuilder( context )
+        LocUtils.makeAlertBuilder( context )
             .setIcon(android.R.drawable.ic_menu_info_details)
             .setTitle( R.string.changes_title )
             .setView( view )
             .setPositiveButton( android.R.string.ok, null)
-            .create();
-        dialog.show();
+            .create()
+            .show();
     }
 }

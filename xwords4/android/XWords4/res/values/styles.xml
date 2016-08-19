@@ -38,9 +38,10 @@
     </style>
 
     <style name="toolbar_button">
-      <item name="android:layout_width">@dimen/tb_button_width</item>
-      <item name="android:layout_height">@dimen/tb_button_height</item>
+      <item name="android:layout_width">match_parent</item>
+      <item name="android:layout_height">match_parent</item>
       <item name="android:layout_weight">1</item>
+      <item name="android:scaleType">fitCenter</item>
     </style>
 
     <style name="about_items">

@@ -568,6 +568,11 @@ public class LocUtils {
             }
             if ( null == lang ) {
                 lang = Locale.getDefault().getLanguage();
+                // sometimes I get "en-us" in this case, i.e. the locale's
+                // there too. Strip it.
+                if ( lang.contains( "-" ) ) {
+                    lang = TextUtils.split(lang, "-")[0];
+                }
             }
             s_curLang = lang;
         }
