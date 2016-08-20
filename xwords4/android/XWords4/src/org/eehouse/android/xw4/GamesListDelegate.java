@@ -1170,7 +1170,7 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
         invalidateOptionsMenuIf();
-        setTitleBar();
+        setTitle();
         // mkListAdapter();
     }
 
@@ -1694,7 +1694,7 @@ public class GamesListDelegate extends ListDelegateBase
                 m_selGames.remove( row );
             }
             invalidateOptionsMenuIf();
-            setTitleBar();
+            setTitle();
         }
     }
 
@@ -1916,7 +1916,8 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void setTitleBar()
+    @Override
+    protected void setTitle()
     {
         int fmt = 0;
         int nSels = m_selGames.size();
@@ -1929,11 +1930,7 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
 
-        if ( 0 == fmt ) {
-            setTitle( m_origTitle );
-        } else {
-            setTitle( getString( fmt, nSels ) );
-        }
+        setTitle( 0 == fmt ? m_origTitle : getString( fmt, nSels ) );
     }
 
     private boolean checkWarnNoDict( NetLaunchInfo nli )
@@ -2285,7 +2282,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_selGames.remove( rowid );
         }
         invalidateOptionsMenuIf();
-        setTitleBar();
+        setTitle();
 
         NetUtils.informOfDeaths( m_activity );
     }
@@ -2308,7 +2305,7 @@ public class GamesListDelegate extends ListDelegateBase
         m_adapter.setSelected( rowid, true );
 
         invalidateOptionsMenuIf();
-        setTitleBar();
+        setTitle();
     }
 
     private void clearSelections()
@@ -2322,7 +2319,7 @@ public class GamesListDelegate extends ListDelegateBase
         inval = clearSelectedGroups() || inval;
         if ( updateStuff && inval ) {
             invalidateOptionsMenuIf();
-            setTitleBar();
+            setTitle();
         }
     }
 
