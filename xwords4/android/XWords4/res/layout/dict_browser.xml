@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
               android:paddingLeft="8dp"
@@ -13,11 +12,15 @@
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
             android:visibility="gone"
+            android:layout_alignParentTop="true"
             />
 
-  <LinearLayout android:orientation="horizontal"
+  <LinearLayout android:id="@+id/search"
+                android:orientation="horizontal"
                 android:layout_width="fill_parent" 
                 android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:layout_below="@id/desc"
                 >
     <EditText android:id="@+id/word_edit" 
               android:layout_width="wrap_content"
@@ -36,16 +39,12 @@
             />
   </LinearLayout>
 
-  <ListView android:id="@id/android:list"
-            android:layout_width="fill_parent" 
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:drawSelectorOnTop="false"
-            />
-
-  <LinearLayout android:orientation="horizontal"
+  <LinearLayout android:id="@+id/sizes"
+                android:orientation="horizontal"
                 android:layout_width="fill_parent" 
                 android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:layout_alignParentBottom="true"
                 >
     <TextView android:layout_height="wrap_content"
               android:layout_width="wrap_content"
@@ -69,4 +68,13 @@
              />
   </LinearLayout>
 
-</LinearLayout>
+  <!-- This goes in the middle but gets listed here because stuff it's
+       relative to must be defined first. -->
+  <FrameLayout android:id="@+id/list_container"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:layout_below="@id/search"
+               android:layout_above="@id/sizes"
+               android:layout_weight="1"
+               />
+</RelativeLayout>
