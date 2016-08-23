@@ -958,7 +958,6 @@ public class GameUtils {
                                        CommsAddrRec ret, MultiMsgSink sink,
                                        BackMoveResult bmr, boolean[] isLocalOut )
     {
-        DbgUtils.logf( "GameUtils.feedMessage()" );
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );

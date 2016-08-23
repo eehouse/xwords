@@ -403,11 +403,6 @@ public class GamesListDelegate extends ListDelegateBase
             List<Object> alist = new ArrayList<Object>();
             long[] rows = DBUtils.getGroupGames( m_activity, groupID );
             for ( long row : rows ) {
-                if ( false && BuildConfig.DEBUG ) {
-                    GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
-                    bmr.m_lmi = new LastMoveInfo();
-                    GameUtils.postMoveNotification( m_activity, row, bmr, false );
-                }
                 alist.add( new GameRec( row ) );
             }
             // DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );
@@ -990,9 +985,6 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected boolean handleNewIntent( Intent intent )
     {
-        DbgUtils.logf( "GamesListDelegate.handleNewIntent(%s)",
-                       intent.toString() );
-
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
@@ -1660,6 +1652,7 @@ public class GamesListDelegate extends ListDelegateBase
                                   final boolean success )
     {
         runWhenActive( new Runnable() {
+                @Override
                 public void run() {
                     boolean madeGame = false;
                     if ( success ) {
