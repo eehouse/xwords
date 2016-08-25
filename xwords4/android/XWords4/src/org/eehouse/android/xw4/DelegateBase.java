@@ -124,11 +124,12 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onStart()
     {
-        if ( s_instances.containsKey(getClass()) ) {
+        Class clazz = getClass();
+        if ( s_instances.containsKey( clazz ) ) {
             DbgUtils.logdf( "%s.onStart(): replacing curThis", 
-                            getClass().getSimpleName() );
+                            clazz.getSimpleName() );
         }
-        s_instances.put( getClass(), new WeakReference<DelegateBase>(this) );
+        s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
     }
 
     protected void onResume()
