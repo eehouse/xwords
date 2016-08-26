@@ -792,7 +792,7 @@ board_canShuffle( const BoardCtxt* board )
 XP_Bool
 board_canHideRack( const BoardCtxt* board )
 {
-    XP_Bool result = 0 <= server_getCurrentTurn( board->server )
+    XP_Bool result = 0 <= server_getCurrentTurn( board->server, NULL )
         && (board->boardObscuresTray || !board->gameOver);
     return result;
 }
@@ -988,7 +988,7 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
     if ( !isLegal ) {
         BadWordInfo bwi = {0};
         BoardCtxt* board = (BoardCtxt*)closure;
-        XP_S16 turn = server_getCurrentTurn( board->server );
+        XP_S16 turn = server_getCurrentTurn( board->server, NULL );
 
         bwi.nWords = 1;
         bwi.words[0] = word;
@@ -1019,7 +1019,7 @@ XP_Bool
 board_commitTurn( BoardCtxt* board ) 
 {
     XP_Bool result = XP_FALSE;
-    const XP_S16 turn = server_getCurrentTurn( board->server );
+    const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
     PerTurnInfo* pti = board->pti + turn;
 
     if ( board->gameOver || turn < 0 ) {
@@ -1110,15 +1110,15 @@ static void
 selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
                   XP_Bool canPeek )
 {
-    XP_S16 curTurn = server_getCurrentTurn(board->server);
+    XP_Bool isLocal;
+    XP_S16 curTurn = server_getCurrentTurn( board->server, &isLocal );
     if ( !board->gameOver && curTurn < 0 ) {
         /* game not started yet; do nothing */
     } else if ( board->selPlayer == newPlayer ) {
         if ( reveal ) {
             checkRevealTray( board );
         }
-    } else if ( canPeek || ((newPlayer == curTurn)
-                            && LP_IS_LOCAL( &board->gi->players[newPlayer]))) {
+    } else if ( canPeek || ((newPlayer == curTurn) && isLocal)) {
         PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
@@ -1318,7 +1318,7 @@ timerFiredForTimer( BoardCtxt* board )
 {
     board->timerPending = XP_FALSE;
     if ( !board->gameOver ) {
-        XP_S16 turn = server_getCurrentTurn( board->server );
+        XP_S16 turn = server_getCurrentTurn( board->server, NULL );
 
         if ( turn >= 0 ) {
             ++board->gi->players[turn].secondsUsed;
@@ -1365,7 +1365,8 @@ board_pushTimerSave( BoardCtxt* board )
         if ( board->timerSaveCount++ == 0 ) {
             board->timerStoppedTime = util_getCurSeconds( board->util );
 #ifdef DEBUG
-            board->timerStoppedTurn = server_getCurrentTurn( board->server );
+            board->timerStoppedTurn = server_getCurrentTurn( board->server,
+                                                             NULL );
 #endif
         }
     }
@@ -1380,7 +1381,7 @@ board_popTimerSave( BoardCtxt* board )
            between calls to board_pushTimerSave and this call, as can happen on
            franklin.  So that's not an error. */
         if ( board->timerSaveCount > 0 ) {
-            XP_S16 turn = server_getCurrentTurn( board->server );
+            XP_S16 turn = server_getCurrentTurn( board->server, NULL );
 
             XP_ASSERT( board->timerStoppedTurn == turn );
 
@@ -1769,7 +1770,7 @@ chooseBestSelPlayer( BoardCtxt* board )
         return board->selPlayer;
     } else {
 
-        XP_S16 curTurn = server_getCurrentTurn( server );
+        XP_S16 curTurn = server_getCurrentTurn( server, NULL );
 
         if ( curTurn >= 0 ) {
             XP_U16 nPlayers = board->gi->nPlayers;
@@ -2001,7 +2002,7 @@ static XP_Bool
 preflight( BoardCtxt* board, XP_Bool reveal )
 {
     return !board->gameOver
-        && server_getCurrentTurn(board->server) >= 0
+        && server_getCurrentTurn(board->server, NULL) >= 0
         && ( !reveal || checkRevealTray( board ) )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
@@ -2581,7 +2582,7 @@ askRevealTray( BoardCtxt* board )
 
     if ( board->gameOver ) {
         revealed = XP_TRUE;
-    } else if ( server_getCurrentTurn( board->server ) < 0 ) {
+    } else if ( server_getCurrentTurn( board->server, NULL ) < 0 ) {
         revealed = XP_FALSE;
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( !lp->isLocal ) {

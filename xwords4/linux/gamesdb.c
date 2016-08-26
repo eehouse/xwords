@@ -197,7 +197,7 @@ summarize( CommonGlobals* cGlobals )
 {
     XP_S16 nMoves = model_getNMoves( cGlobals->game.model );
     XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
-    XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
+    XP_S16 turn = server_getCurrentTurn( cGlobals->game.server, NULL );
     XP_U32 lastMoveTime = server_getLastMoveTime( cGlobals->game.server );
     XP_U16 seed = 0;
     XP_S16 nMissing = 0;
