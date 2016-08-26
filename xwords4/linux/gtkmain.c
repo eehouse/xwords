@@ -483,14 +483,18 @@ setWindowTitle( GtkAppGlobals* apg )
 static void
 trySetWinConfig( GtkAppGlobals* apg )
 {
+    int xx = 20;                /* defaults */
+    int yy = 20;
+    int width = 600;
+    int height = 400;
+
     gchar buf[64];
     if ( db_fetch( apg->params->pDb, KEY_WIN_LOC, buf, sizeof(buf)) ) {
-        int xx, yy, width, height;
         sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
-
-        gtk_window_resize( GTK_WINDOW(apg->window), width, height );
-        gtk_window_move (GTK_WINDOW(apg->window), xx, yy );
     }
+
+    gtk_window_resize( GTK_WINDOW(apg->window), width, height );
+    gtk_window_move (GTK_WINDOW(apg->window), xx, yy );
 }
 
 static void
