@@ -53,6 +53,8 @@ public class MainActivity extends XWActivity
     private int m_maxPanes;
     private int m_nextID = 0x00FFFFFF;
     private Boolean m_isPortrait;
+    private boolean m_safeToCommit;
+    private Runnable m_runWhenSafe;
 
     // for tracking launchForResult callback recipients
     private Map<RequestCode, WeakReference<DelegateBase>> m_pendingCodes
@@ -84,7 +86,23 @@ public class MainActivity extends XWActivity
                                  getIntent().getExtras(), null );
             }
         }
+
+        setSafeToRun();
     } // onCreate
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState )
+    {
+        super.onSaveInstanceState( outState );
+        m_safeToCommit = false;
+    }
+
+    @Override
+    protected void onPostResume()
+    {
+        setSafeToRun();
+        super.onPostResume();
+    }
 
     // called when we're brought to the front (probably as a result of
     // notification)
@@ -414,8 +432,26 @@ public class MainActivity extends XWActivity
         addFragmentImpl( fragment, parentName );
     }
 
-    private void addFragmentImpl( Fragment fragment, String parentName )
+    private void addFragmentImpl( final Fragment fragment,
+                                  final String parentName )
     {
+        if ( m_safeToCommit ) {
+            safeAddFragment( fragment, parentName );
+        } else {
+            Assert.assertNull( m_runWhenSafe );
+            m_runWhenSafe = new Runnable() {
+                    @Override
+                    public void run() {
+                        safeAddFragment( fragment, parentName );
+                    }
+                };
+            DbgUtils.showf( this, "Putting off fragment construction" );
+        }
+    }
+
+    private void safeAddFragment( Fragment fragment, String parentName )
+    {
+        Assert.assertTrue( m_safeToCommit );
         String newName = fragment.getClass().getSimpleName();
         boolean replace = false;
         FragmentManager fm = getSupportFragmentManager();
@@ -474,5 +510,14 @@ public class MainActivity extends XWActivity
         // again. If I need executePendingTransactions() I'm doing something
         // else wrong.
         // fm.executePendingTransactions();
+    }
+
+    private void setSafeToRun()
+    {
+        m_safeToCommit = true;
+        if ( null != m_runWhenSafe ) {
+            m_runWhenSafe.run();
+            m_runWhenSafe = null;
+        }
     }
 }
