@@ -445,7 +445,9 @@ public class MainActivity extends XWActivity
                         safeAddFragment( fragment, parentName );
                     }
                 };
-            DbgUtils.showf( this, "Putting off fragment construction" );
+            if ( BuildConfig.DEBUG ) {
+                DbgUtils.showf( this, "Putting off fragment construction" );
+            }
         }
     }
 
