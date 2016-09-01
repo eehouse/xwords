@@ -1106,6 +1106,11 @@ public class GamesListDelegate extends ListDelegateBase
                             mkListAdapter();
                         } else {
                             reloadGame( rowid );
+                            if ( m_adapter.inExpandedGroup( rowid ) ) {
+                                long groupID = DBUtils.getGroupForGame( m_activity, rowid );
+                                m_adapter.setExpanded( groupID, false );
+                                m_adapter.setExpanded( groupID, true );
+                            }
                         }
                         break;
                     case GAME_CREATED:
