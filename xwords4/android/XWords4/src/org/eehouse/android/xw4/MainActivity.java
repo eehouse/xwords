@@ -142,6 +142,36 @@ public class MainActivity extends XWActivity
         super.onConfigurationChanged( newConfig );
     }
 
+    /* Sometimes I'm getting crashes because views don't have fragments
+     * associated yet. I suspect that's because adding them's been postponed
+     * via the m_runWhenSafe mechanism. So: postpone handling intents too.
+     *
+     * This postponing thing won't scale, and makes me suspect there's
+     * something I'm doing wrong w.r.t. fragments. Should be revisited. In
+     * this particular case there might be a better way to get to the Delegate
+     * on which I need to call handleNewIntent().
+     */
+    protected boolean dispatchNewIntent( final Intent intent )
+    {
+        boolean handled;
+        if ( 0 == m_runWhenSafe.size() ) {
+            handled = dispatchNewIntentImpl( intent );
+        } else {
+            m_runWhenSafe.add( new Runnable() {
+                    @Override
+                    public void run() {
+                        dispatchNewIntentImpl( intent );
+                    }
+                } );
+            if ( BuildConfig.DEBUG ) {
+                DbgUtils.showf( this, "Putting off handling intent; %d waiting",
+                                m_runWhenSafe.size() );
+            }
+            handled = true;
+        }
+        return handled;
+    }
+
     /**
      * Run down the list of fragments until one handles the intent. If no
      * visible one does, pop hidden ones into view until one of them
@@ -149,7 +179,7 @@ public class MainActivity extends XWActivity
      * nothing handles the intent, but at least now all are handled by
      * GamesList anyway.
      */
-    protected boolean dispatchNewIntent( Intent intent )
+    private boolean dispatchNewIntentImpl( Intent intent )
     {
         boolean handled = false;
         FragmentManager fm = getSupportFragmentManager();
@@ -172,6 +202,10 @@ public class MainActivity extends XWActivity
             int hiddenCount = Math.max( 0, childCount - m_maxPanes );
             for ( int ii = hiddenCount; ii >= 0; --ii ) {
                 View child = m_root.getChildAt( ii );
+                if ( null == child ) {
+                    DbgUtils.logf( "no child at index %d", ii );
+                    continue;
+                }
                 Fragment frag = fm.findFragmentById( child.getId() );
                 // DbgUtils.logf( "left-most case (child %d): %s", hiddenCount,
                 //                frag.getClass().getSimpleName() );
