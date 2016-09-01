@@ -37,6 +37,7 @@ import android.widget.LinearLayout;
 import junit.framework.Assert;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public class MainActivity extends XWActivity
     private int m_nextID = 0x00FFFFFF;
     private Boolean m_isPortrait;
     private boolean m_safeToCommit;
-    private Runnable m_runWhenSafe;
+    private ArrayList<Runnable> m_runWhenSafe = new ArrayList<Runnable>();
 
     // for tracking launchForResult callback recipients
     private Map<RequestCode, WeakReference<DelegateBase>> m_pendingCodes
@@ -438,15 +439,15 @@ public class MainActivity extends XWActivity
         if ( m_safeToCommit ) {
             safeAddFragment( fragment, parentName );
         } else {
-            Assert.assertNull( m_runWhenSafe );
-            m_runWhenSafe = new Runnable() {
+            m_runWhenSafe.add( new Runnable() {
                     @Override
                     public void run() {
                         safeAddFragment( fragment, parentName );
                     }
-                };
+                } );
             if ( BuildConfig.DEBUG ) {
-                DbgUtils.showf( this, "Putting off fragment construction" );
+                DbgUtils.showf( this, "Putting off fragment construction; %d waiting",
+                                m_runWhenSafe.size() );
             }
         }
     }
@@ -517,9 +518,9 @@ public class MainActivity extends XWActivity
     private void setSafeToRun()
     {
         m_safeToCommit = true;
-        if ( null != m_runWhenSafe ) {
-            m_runWhenSafe.run();
-            m_runWhenSafe = null;
+        for ( Runnable proc : m_runWhenSafe ) {
+            proc.run();
         }
+        m_runWhenSafe.clear();
     }
 }
