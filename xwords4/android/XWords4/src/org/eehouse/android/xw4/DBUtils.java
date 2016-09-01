@@ -125,7 +125,7 @@ public class DBUtils {
                              DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
                              DBHelper.MISSINGPLYRS,
                              DBHelper.GAME_OVER, DBHelper.PLAYERS,
-                             DBHelper.TURN, DBHelper.GIFLAGS,
+                             DBHelper.TURN, DBHelper.TURN_LOCAL, DBHelper.GIFLAGS,
                              DBHelper.CONTYPE, DBHelper.SERVERROLE,
                              DBHelper.ROOMNAME, DBHelper.RELAYID,
                              /*DBHelper.SMSPHONE,*/ DBHelper.SEED,
@@ -159,6 +159,8 @@ public class DBUtils {
                 summary.turn =
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.TURN));
+                summary.turnIsLocal = 0 != cursor.getInt(cursor.
+                                                         getColumnIndex(DBHelper.TURN_LOCAL));
                 summary.
                     setGiFlags( cursor.getInt(cursor.
                                               getColumnIndex(DBHelper.GIFLAGS))
@@ -269,6 +271,7 @@ public class DBUtils {
             values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
             values.put( DBHelper.MISSINGPLYRS, summary.missingPlayers );
             values.put( DBHelper.TURN, summary.turn );
+            values.put( DBHelper.TURN_LOCAL, summary.turnIsLocal? 1 : 0 );
             values.put( DBHelper.GIFLAGS, summary.giflags() );
             values.put( DBHelper.PLAYERS,
                         summary.summarizePlayers() );

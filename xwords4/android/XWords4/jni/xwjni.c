@@ -1664,7 +1664,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     XP_Bool isLocal;
     setInt( env, jsummary, "turn", 
             server_getCurrentTurn( state->game.server, &isLocal ) );
-    // setBool( env, jsummary, "turnIsLocal", isLocal );
+    setBool( env, jsummary, "turnIsLocal", isLocal );
     setInt( env, jsummary, "lastMoveTime", 
             server_getLastMoveTime(state->game.server) );
     
