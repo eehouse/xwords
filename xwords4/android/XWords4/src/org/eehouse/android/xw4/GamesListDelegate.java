@@ -400,8 +400,8 @@ public class GamesListDelegate extends ListDelegateBase
 
         private List<Object> makeChildren( long groupID )
         {
-            List<Object> alist = new ArrayList<Object>();
             long[] rows = DBUtils.getGroupGames( m_activity, groupID );
+            List<Object> alist = new ArrayList<Object>( rows.length );
             for ( long row : rows ) {
                 alist.add( new GameRec( row ) );
             }
