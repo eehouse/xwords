@@ -169,56 +169,53 @@ public class MainActivity extends XWActivity
         return handled;
     }
 
+    private void popIntoView( XWFragment newTopFrag )
+    {
+        FragmentManager fm = getSupportFragmentManager();
+        for ( ; ; ) {
+            int top = m_root.getChildCount() - 1;
+            if ( top < 0 ) {
+                break;
+            }
+            View child = m_root.getChildAt( top );
+            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            if ( frag == newTopFrag ) {
+                break;
+            }
+            String name = frag.getClass().getSimpleName();
+            DbgUtils.logdf( "MainActivity.popIntoView(): popping %d: %s", top, name );
+            fm.popBackStackImmediate();
+            DbgUtils.logdf( "MainActivity.popIntoView(): DONE popping %s",
+                            name );
+        }
+    }
+
     /**
-     * Run down the list of fragments until one handles the intent. If no
-     * visible one does, pop hidden ones into view until one of them
-     * does. Yes, this will take us back to GamesList being visible even if
-     * nothing handles the intent, but at least now all are handled by
-     * GamesList anyway.
+     * Run down the list of fragments until one can handle the intent. If
+     * necessary, pop fragments above it until it comes into view. Then send
+     * it the event.
      */
     private boolean dispatchNewIntentImpl( Intent intent )
     {
         boolean handled = false;
         FragmentManager fm = getSupportFragmentManager();
 
-        // First try non-left-most fragments, if any. Once we've eliminated
-        // them we can just iterate on the leftmost fragment.
-        int nNonLeft = m_maxPanes - 1;
-        // include paged-to-left invisible views
-        int viewCount = m_root.getChildCount();
-        for ( int ii = nNonLeft; !handled && 0 < ii; --ii ) {
-            View child = m_root.getChildAt( viewCount - ii );
-            Fragment frag = fm.findFragmentById( child.getId() );
-            handled = ((XWFragment)frag).getDelegate().handleNewIntent( intent );
-        }
-
-        while ( !handled ) {
-            // Now iterate on the leftmost, popping if necessary to page new
-            // ones into place
-            int childCount = m_root.getChildCount();
-            int hiddenCount = Math.max( 0, childCount - m_maxPanes );
-            for ( int ii = hiddenCount; ii >= 0; --ii ) {
-                View child = m_root.getChildAt( ii );
-                if ( null == child ) {
-                    DbgUtils.logf( "no child at index %d", ii );
-                    continue;
-                }
-                Fragment frag = fm.findFragmentById( child.getId() );
-                // DbgUtils.logf( "left-most case (child %d): %s", hiddenCount,
-                //                frag.getClass().getSimpleName() );
-                handled = ((XWFragment)frag).getDelegate()
-                    .handleNewIntent( intent );
-
+        for ( int ii = m_root.getChildCount() - 1; !handled && ii >= 0; --ii ) {
+            View child = m_root.getChildAt( ii );
+            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            if ( null != frag ) {
+                handled = frag.getDelegate().canHandleNewIntent( intent );
                 if ( handled ) {
-                    break;
-                } else if ( ii > 0 ) {
-                    DbgUtils.logf( "popping %s",
-                                   frag.getClass().getSimpleName() );
-                    fm.popBackStackImmediate(); // callback removes view
+                    popIntoView( frag );
+                    frag.getDelegate().handleNewIntent( intent );
                 }
             }
         }
 
+        if ( BuildConfig.DEBUG && !handled ) {
+            DbgUtils.showf( this, "dropping intent %s", intent.toString() );
+            DbgUtils.logdf( "dropping intent %s", intent.toString() );
+        }
         return handled;
     }
 

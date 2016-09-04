@@ -983,14 +983,19 @@ public class GamesListDelegate extends ListDelegateBase
     } // init
 
     @Override
-    protected boolean handleNewIntent( Intent intent )
+    protected boolean canHandleNewIntent( Intent intent )
+    {
+        return true;
+    }
+
+    @Override
+    protected void handleNewIntent( Intent intent )
     {
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
-        return true;            // handled it
     }
 
     @Override
