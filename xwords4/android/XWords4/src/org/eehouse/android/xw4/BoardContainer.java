@@ -77,7 +77,9 @@ public class BoardContainer extends ViewGroup {
         if ( 0 != width || 0 != height ) {
             setForPortrait( width, height );
 
-            figureBounds( 0, 0, width, height );
+            // Add a margin of half a percent of the lesser of width,height
+            int padding = (Math.min( width, height ) * 5) / 1000;
+            figureBounds( padding, padding, width-(padding*2), height-(padding*2) );
 
             // Measure any toolbar first so we can take extra space for the
             // board
