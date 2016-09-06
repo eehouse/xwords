@@ -209,6 +209,9 @@ public class MainActivity extends XWActivity
                     popIntoView( frag );
                     frag.getDelegate().handleNewIntent( intent );
                 }
+            } else {
+                DbgUtils.logdf( "no fragment for child %s indx %d",
+                                child.getClass().getSimpleName(), ii );
             }
         }
 
@@ -364,9 +367,12 @@ public class MainActivity extends XWActivity
 
     private XWFragment getTopFragment()
     {
+        XWFragment frag = null;
         View child = m_root.getChildAt( m_root.getChildCount() - 1 );
-        XWFragment frag = (XWFragment)getSupportFragmentManager()
-            .findFragmentById( child.getId() );
+        if ( null != child ) {
+            frag = (XWFragment)getSupportFragmentManager()
+                .findFragmentById( child.getId() );
+        }
         return frag;
     }
 

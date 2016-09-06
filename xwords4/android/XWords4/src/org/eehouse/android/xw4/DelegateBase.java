@@ -570,11 +570,16 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean isVisible() { return m_isVisible; }
 
-    protected boolean canHandleNewIntent( Intent intent ) { return false; }
+    protected boolean canHandleNewIntent( Intent intent )
+    {
+        DbgUtils.logdf( "%s.canHandleNewIntent() => false",
+                        getClass().getSimpleName(), intent.toString() );
+        return false;
+    }
 
     protected void handleNewIntent( Intent intent ) {
-        DbgUtils.logf( "%s.handleNewIntent(%s): not handling",
-                       getClass().getSimpleName(), intent.toString() );
+        DbgUtils.logdf( "%s.handleNewIntent(%s): not handling",
+                        getClass().getSimpleName(), intent.toString() );
     }
 
     protected void runWhenActive( Runnable proc )
