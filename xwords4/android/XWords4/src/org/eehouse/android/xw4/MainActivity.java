@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -56,6 +56,7 @@ public class MainActivity extends XWActivity
     private Boolean m_isPortrait;
     private boolean m_safeToCommit;
     private ArrayList<Runnable> m_runWhenSafe = new ArrayList<Runnable>();
+    private Intent m_newIntent; // work in progress...
 
     // for tracking launchForResult callback recipients
     private Map<RequestCode, WeakReference<DelegateBase>> m_pendingCodes
@@ -151,7 +152,7 @@ public class MainActivity extends XWActivity
     protected boolean dispatchNewIntent( final Intent intent )
     {
         boolean handled;
-        if ( 0 == m_runWhenSafe.size() ) {
+        if ( m_safeToCommit ) {
             handled = dispatchNewIntentImpl( intent );
         } else {
             m_runWhenSafe.add( new Runnable() {
@@ -216,8 +217,11 @@ public class MainActivity extends XWActivity
         }
 
         if ( BuildConfig.DEBUG && !handled ) {
-            DbgUtils.showf( this, "dropping intent %s", intent.toString() );
+            // DbgUtils.showf( this, "dropping intent %s", intent.toString() );
             DbgUtils.logdf( "dropping intent %s", intent.toString() );
+            // DbgUtils.printStack();
+            // setIntent( intent ); -- look at handling this in onPostResume()?
+            m_newIntent = intent;
         }
         return handled;
     }
