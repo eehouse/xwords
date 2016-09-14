@@ -253,7 +253,7 @@ endif
 # provides an all: target
 include ../common/rules.mk
 
-REQUIRED_DEBS = gcc libgtk2.0-dev \
+REQUIRED_DEBS = gcc libgtk-3-dev \
 		libbluetooth-dev \
 		libncurses5-dev \
 		libncursesw5-dev \
