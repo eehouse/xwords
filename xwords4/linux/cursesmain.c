@@ -1532,7 +1532,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 
     BoardDims dims;
     board_figureLayout( board, cGlobals->gi, 
-                        0, 0, width, height,
+                        0, 0, width, height, 100,
                         150, 200, /* percents */
                         width*75/100, 2, 1, 
                         XP_FALSE, &dims );

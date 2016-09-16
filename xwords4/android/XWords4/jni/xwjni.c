@@ -1008,7 +1008,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
 
     BoardDims dims;
     board_figureLayout( state->game.board, gi, left, top, width, height, 
-                        scorePct, trayPct, scoreWidth,
+                        115, scorePct, trayPct, scoreWidth,
                         fontWidth, fontHt, squareTiles,
                         ((!!jdims) ? &dims : NULL) );
 

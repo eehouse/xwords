@@ -719,13 +719,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     BoardDims dims;
     board_figureLayout( board, cGlobals->gi, 
                         GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
-#if 1
-                        150, 200, 
-#else
-                        0, 0,
-#endif
-                        bdWidth-25, 16, 16, 
-                        XP_FALSE, &dims );
+                        110, 150, 200, bdWidth-25, 16, 16, XP_FALSE, &dims );
     board_applyLayout( board, &dims );
 
 #else

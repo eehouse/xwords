@@ -101,9 +101,9 @@ typedef struct _BoardDims {
 
 void board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, XP_U16 bLeft,
                          XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
-                         XP_U16 scorePct, XP_U16 trayPct, XP_U16 scoreWidth,
-                         XP_U16 fontWidth, XP_U16 fontHt, XP_Bool squareTiles, 
-                         /* out */ BoardDims* dimsp );
+                         XP_U16 colPctMax, XP_U16 scorePct, XP_U16 trayPct,
+                         XP_U16 scoreWidth, XP_U16 fontWidth, XP_U16 fontHt,
+                         XP_Bool squareTiles, /* out */ BoardDims* dimsp );
 void board_applyLayout( BoardCtxt* board, const BoardDims* dims );
 
 #endif
