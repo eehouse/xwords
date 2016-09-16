@@ -1914,7 +1914,7 @@ public class GamesListDelegate extends ListDelegateBase
             makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
                                  R.string.key_notagain_hidenewgamebuttons,
                                  Action.NEW_GAME_PRESSED )
-                .setParams(pair)
+                .setActionPair( pair )
                 .show();
         }
     }
