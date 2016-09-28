@@ -71,7 +71,7 @@ abstract class XWFragment extends Fragment implements Delegator {
 
     protected void onCreate( DelegateBase dlgt, Bundle sis )
     {
-        DbgUtils.logdf( "%s.onCreate() called", this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onCreate() called" );
         super.onCreate( sis );
         if ( null != sis ) {
             m_parentName = sis.getString( PARENT_NAME );
@@ -94,15 +94,14 @@ abstract class XWFragment extends Fragment implements Delegator {
     public View onCreateView( LayoutInflater inflater, ViewGroup container,
                               Bundle savedInstanceState )
     {
-        DbgUtils.logdf( "%s.onCreateView() called", this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onCreateView() called" );
         return m_dlgt.inflateView( inflater, container );
     }
 
     @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
-        DbgUtils.logdf( "%s.onActivityCreated() called",
-                        this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onActivityCreated() called" );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
         if ( m_hasOptionsMenu ) {
@@ -113,8 +112,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onPause()
     {
-        DbgUtils.logdf( "%s.onPause() called",
-                        this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onPause() called" );
         m_dlgt.onPause();
         super.onPause();
     }
@@ -122,8 +120,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onResume()
     {
-        DbgUtils.logdf( "%s.onResume() called",
-                        this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onResume() called" );
         super.onResume();
         m_dlgt.onResume();
     }
@@ -131,8 +128,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onStart()
     {
-        DbgUtils.logdf( "%s.onStart() called",
-                        this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onStart() called" );
         super.onStart();
         m_dlgt.onStart();
     }
@@ -140,8 +136,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onStop()
     {
-        DbgUtils.logdf( "%s.onStop() called",
-                        this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onStop() called" );
         m_dlgt.onStop();
         super.onStop();
     }
@@ -149,8 +144,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onDestroy()
     {
-        DbgUtils.logdf( "%s.onDestroy() called",
-                        this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onDestroy() called" );
         m_dlgt.onDestroy();
         super.onDestroy();
     }
@@ -158,8 +152,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onActivityResult( int requestCode, int resultCode, Intent data )
     {
-        DbgUtils.logdf( "%s.onActivityResult() called",
-                        this.getClass().getSimpleName() );
+        DbgUtils.logd( getClass(), "onActivityResult() called" );
         m_dlgt.onActivityResult( RequestCode.values()[requestCode], 
                                  resultCode, data );
     }

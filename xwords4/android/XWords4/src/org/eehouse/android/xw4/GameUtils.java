@@ -269,7 +269,8 @@ public class GameUtils {
                 lockSrc.unlock();
             }
         } else {
-            DbgUtils.logdf( "dupeGame: unable to open rowid %d", rowidIn );
+            DbgUtils.logd( GameUtils.class, "dupeGame: unable to open rowid %d",
+                           rowidIn );
         }
         return rowid;
     }
@@ -443,8 +444,8 @@ public class GameUtils {
             long oldest = s_sendTimes[s_sendTimes.length - 1];
             long age = now - oldest;
             force = RESEND_INTERVAL_SECS < age;
-            DbgUtils.logdf( "resendAllIf(): based on last send age of %d sec, doit = %b",
-                            age, force );
+            DbgUtils.logd( GameUtils.class, "resendAllIf(): based on last send age of %d sec, doit = %b",
+                           age, force );
         }
 
         if ( force ) {
@@ -523,7 +524,7 @@ public class GameUtils {
     public static long makeNewMultiGame( Context context, NetLaunchInfo nli,
                                          MultiMsgSink sink, UtilCtxt util )
     {
-        DbgUtils.logdf( "makeNewMultiGame(nli=%s)", nli.toString() );
+        DbgUtils.logd( GameUtils.class, "makeNewMultiGame(nli=%s)", nli.toString() );
         CommsAddrRec addr = nli.makeAddrRec( context );
 
         return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC,
@@ -1176,8 +1177,8 @@ public class GameUtils {
                 Utils.postNotification( context, intent, title, msg, (int)rowid );
             }
         } else {
-            DbgUtils.logdf( "postMoveNotification(): posting nothing for lack"
-                            + " of brm" );
+            DbgUtils.logd( GameUtils.class, "postMoveNotification(): posting nothing for lack"
+                           + " of brm" );
         }
     }
 
@@ -1283,11 +1284,11 @@ public class GameUtils {
                         int nSent = XwJNI.comms_resendAll( gamePtr, true,
                                                            m_filter, false );
                         gamePtr.release();
-                        DbgUtils.logdf( "ResendTask.doInBackground(): sent %d "
-                                        + "messages for rowid %d", nSent, rowid );
+                        DbgUtils.logd( getClass(), "ResendTask.doInBackground(): sent %d "
+                                       + "messages for rowid %d", nSent, rowid );
                     } else {
-                        DbgUtils.logdf( "ResendTask.doInBackground(): loadMakeGame()"
-                                        + " failed for rowid %d", rowid );
+                        DbgUtils.logd( getClass(), "ResendTask.doInBackground(): loadMakeGame()"
+                                       + " failed for rowid %d", rowid );
                     }
                     lock.unlock();
                 } else {

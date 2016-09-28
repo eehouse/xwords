@@ -603,8 +603,8 @@ public class SMSService extends XWService {
                                + " dropping", proto, senderPhone );
                 sendResult( MultiEvent.BAD_PROTO_SMS, senderPhone );
             } else if ( gotPort != myPort ) {
-                DbgUtils.logdf( "SMSService.disAssemble(): received on port %d"
-                                + " but expected %d", gotPort, myPort );
+                DbgUtils.logd( getClass(), "disAssemble(): received on port %d"
+                               + " but expected %d", gotPort, myPort );
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
                 byte[] rest = new byte[dis.available()];

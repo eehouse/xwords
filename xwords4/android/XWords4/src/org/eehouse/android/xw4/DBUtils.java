@@ -1195,15 +1195,15 @@ public class DBUtils {
         HistoryPair[] result = null;
         String oldHistory = getChatHistoryStr( context, rowid );
         if ( null != oldHistory ) {
-            DbgUtils.logdf( "convertChatString(): got string: %s", oldHistory );
+            DbgUtils.logd( DBUtils.class, "convertChatString(): got string: %s", oldHistory );
 
             ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
             ArrayList<HistoryPair> pairs = new ArrayList<HistoryPair>();
             String localPrefix = LocUtils.getString( context, R.string.chat_local_id );
             String rmtPrefix = LocUtils.getString( context, R.string.chat_other_id );
-            DbgUtils.logdf( "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix );
+            DbgUtils.logd( DBUtils.class, "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix );
             String[] msgs = oldHistory.split( "\n" );
-            DbgUtils.logdf( "convertChatString(): split into %d", msgs.length );
+            DbgUtils.logd( DBUtils.class, "convertChatString(): split into %d", msgs.length );
             int localPlayerIndx = -1;
             int remotePlayerIndx = -1;
             for ( int ii = playersLocal.length - 1; ii >= 0; --ii ) {
@@ -1214,24 +1214,24 @@ public class DBUtils {
                 }
             }
             for ( String msg : msgs ) {
-                DbgUtils.logdf( "convertChatString(): msg: %s", msg );
+                DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s", msg );
                 int indx = -1;
                 String prefix = null;
                 if ( msg.startsWith( localPrefix ) ) {
-                    DbgUtils.logdf( "convertChatString(): msg: %s starts with %s", msg, localPrefix );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s starts with %s", msg, localPrefix );
                     prefix = localPrefix;
                     indx = localPlayerIndx;
                 } else if ( msg.startsWith( rmtPrefix ) ) {
-                    DbgUtils.logdf( "convertChatString(): msg: %s starts with %s", msg, rmtPrefix );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s starts with %s", msg, rmtPrefix );
                     prefix = rmtPrefix;
                     indx = remotePlayerIndx;
                 } else {
-                    DbgUtils.logdf( "convertChatString(): msg: %s starts with neither", msg );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s starts with neither", msg );
                 }
                 if ( -1 != indx ) {
-                    DbgUtils.logdf( "convertChatString(): removing substring %s; was: %s", prefix, msg );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): removing substring %s; was: %s", prefix, msg );
                     msg = msg.substring( prefix.length(), msg.length() );
-                    DbgUtils.logdf( "convertChatString(): removED substring; now %s", msg );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): removED substring; now %s", msg );
                     valuess.add( cvForChat( rowid, msg, indx ) );
 
                     HistoryPair pair = new HistoryPair(msg, indx );
@@ -1301,8 +1301,8 @@ public class DBUtils {
             startAndEndOut[1] = Math.min( result.length(),
                                           Integer.parseInt( parts[1] ) );
         }
-        DbgUtils.logdf( "getCurChat(): => %s [%d,%d]", result,
-                        startAndEndOut[0], startAndEndOut[1] );
+        DbgUtils.logd( DBUtils.class, "getCurChat(): => %s [%d,%d]", result,
+                       startAndEndOut[0], startAndEndOut[1] );
         return result;
     }
 

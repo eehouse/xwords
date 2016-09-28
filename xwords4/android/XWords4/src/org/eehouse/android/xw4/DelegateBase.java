@@ -126,8 +126,7 @@ public class DelegateBase implements DlgClickNotify,
     {
         Class clazz = getClass();
         if ( s_instances.containsKey( clazz ) ) {
-            DbgUtils.logdf( "%s.onStart(): replacing curThis", 
-                            clazz.getSimpleName() );
+            DbgUtils.logd( getClass(), "onStart(): replacing curThis" );
         }
         s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
     }
@@ -162,7 +161,7 @@ public class DelegateBase implements DlgClickNotify,
             result = ref.get();
         }
         if ( this != result ) {
-            DbgUtils.logdf( "%s.curThis() => " + result, this.toString() );
+            DbgUtils.logd( getClass(), "%s.curThis() => " + result, this.toString() );
         }
         return result;
     }
@@ -572,14 +571,13 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean canHandleNewIntent( Intent intent )
     {
-        DbgUtils.logdf( "%s.canHandleNewIntent() => false",
-                        getClass().getSimpleName(), intent.toString() );
+        DbgUtils.logd( getClass(), "canHandleNewIntent() => false" );
         return false;
     }
 
     protected void handleNewIntent( Intent intent ) {
-        DbgUtils.logdf( "%s.handleNewIntent(%s): not handling",
-                        getClass().getSimpleName(), intent.toString() );
+        DbgUtils.logd( getClass(), "handleNewIntent(%s): not handling",
+                       intent.toString() );
     }
 
     protected void runWhenActive( Runnable proc )
@@ -612,8 +610,8 @@ public class DelegateBase implements DlgClickNotify,
             m_dlgDelegate.eventOccurred( event, args );
             break;
         default:
-            DbgUtils.logdf( "DelegateBase.eventOccurred(event=%s) (DROPPED)",
-                            event.toString() );
+            DbgUtils.logd( getClass(), "eventOccurred(event=%s) (DROPPED)",
+                           event.toString() );
             break;
         }
 

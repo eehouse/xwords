@@ -703,7 +703,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void orientationChanged()
     {
-        DbgUtils.logdf( "BoardDelegate.orientationChanged()" );
+        DbgUtils.logd( getClass(), "BoardDelegate.orientationChanged()" );
         initToolbar();
         m_view.orientationChanged();
     }
@@ -976,7 +976,8 @@ public class BoardDelegate extends DelegateBase
     {
         boolean handled = false;
         boolean positive = AlertDialog.BUTTON_POSITIVE == which;
-        DbgUtils.logdf("BoardDelegate.dlgButtonClicked(%s, %b)", action.toString(), positive );
+        DbgUtils.logd( getClass(), "BoardDelegate.dlgButtonClicked(%s, %b)",
+                       action.toString(), positive );
 
         if ( Action.ENABLE_RELAY_DO_OR == action ) {
             handled = true;

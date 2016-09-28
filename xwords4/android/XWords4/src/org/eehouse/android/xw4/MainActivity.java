@@ -126,9 +126,9 @@ public class MainActivity extends XWActivity
                            isPortrait );
             m_isPortrait = isPortrait;
             if ( isPortrait != (rect.width() <= rect.height()) ) {
-                DbgUtils.logdf( "FragActivity.onConfigurationChanged(): isPortrait:"
-                                + " %b; width: %d; height: %d",
-                                isPortrait, rect.width(), rect.height() );
+                DbgUtils.logd( getClass(), "onConfigurationChanged(): isPortrait:"
+                               + " %b; width: %d; height: %d",
+                               isPortrait, rect.width(), rect.height() );
             }
             int maxPanes = isPortrait? 1 : MAX_PANES_LANDSCAPE;
             if ( m_maxPanes != maxPanes ) {
@@ -184,10 +184,10 @@ public class MainActivity extends XWActivity
                 break;
             }
             String name = frag.getClass().getSimpleName();
-            DbgUtils.logdf( "MainActivity.popIntoView(): popping %d: %s", top, name );
+            DbgUtils.logd( getClass(), "popIntoView(): popping %d: %s", top, name );
             fm.popBackStackImmediate();
-            DbgUtils.logdf( "MainActivity.popIntoView(): DONE popping %s",
-                            name );
+            DbgUtils.logd( getClass(), "popIntoView(): DONE popping %s",
+                           name );
         }
     }
 
@@ -211,14 +211,14 @@ public class MainActivity extends XWActivity
                     frag.getDelegate().handleNewIntent( intent );
                 }
             } else {
-                DbgUtils.logdf( "no fragment for child %s indx %d",
+                DbgUtils.logd( getClass(), "no fragment for child %s indx %d",
                                 child.getClass().getSimpleName(), ii );
             }
         }
 
         if ( BuildConfig.DEBUG && !handled ) {
             // DbgUtils.showf( this, "dropping intent %s", intent.toString() );
-            DbgUtils.logdf( "dropping intent %s", intent.toString() );
+            DbgUtils.logd( getClass(), "dropping intent %s", intent.toString() );
             // DbgUtils.printStack();
             // setIntent( intent ); -- look at handling this in onPostResume()?
             m_newIntent = intent;
@@ -245,8 +245,8 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.onActivityResult( requestCode.ordinal(), resultCode, data );
         } else {
-            DbgUtils.logdf( "dispatchOnActivityResult(): can't dispatch %s", 
-                            requestCode.toString() );
+            DbgUtils.logd( getClass(), "dispatchOnActivityResult(): can't dispatch %s",
+                           requestCode.toString() );
         }
     }
 
@@ -448,7 +448,7 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.setTitle();
         } else {
-            DbgUtils.logdf( "trySetTitle(): no fragment for id %x",
+            DbgUtils.logd( getClass(), "trySetTitle(): no fragment for id %x",
                             view.getId() );
         }
     }

@@ -176,7 +176,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
-                DbgUtils.logdf( "current update: %s", params.toString() );
+                DbgUtils.logd( UpdateCheckReceiver.class, "current update: %s",
+                               params.toString() );
                 new UpdateQueryTask( context, params, fromUI, pm,
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {

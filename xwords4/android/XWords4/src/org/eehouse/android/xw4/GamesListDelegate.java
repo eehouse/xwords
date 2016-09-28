@@ -274,7 +274,7 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
             if ( -1 == posn ) {
-                DbgUtils.logf( "getGroupPosition: group %d not found", groupID );
+                DbgUtils.logd( getClass(), "getGroupPosition: group %d not found", groupID );
             }
             return posn;
         }
@@ -336,7 +336,7 @@ public class GamesListDelegate extends ListDelegateBase
             boolean changed = false;
             int newID = fieldToID( newField );
             if ( -1 == newID ) {
-                DbgUtils.logf( "GameListAdapter.setField(): unable to match"
+                DbgUtils.logd( getClass(), "setField(): unable to match"
                                + " fieldName %s", newField );
             } else if ( m_fieldID != newID ) {
                 m_fieldID = newID;
@@ -432,7 +432,7 @@ public class GamesListDelegate extends ListDelegateBase
         private ArrayList<Object> removeRange( ArrayList<Object> list,
                                                int start, int len )
         {
-            DbgUtils.logf( "removeRange(start=%d, len=%d)", start, len );
+            DbgUtils.logd( getClass(), "removeRange(start=%d, len=%d)", start, len );
             ArrayList<Object> result = new ArrayList<Object>(len);
             for ( int ii = 0; ii < len; ++ii ) {
                 result.add( list.remove( start ) );
@@ -1338,7 +1338,7 @@ public class GamesListDelegate extends ListDelegateBase
         switch ( requestCode ) {
         case REQUEST_LANG_GL:
             if ( !cancelled ) {
-                DbgUtils.logf( "lang need met" );
+                DbgUtils.logd( getClass(), "lang need met" );
                 if ( checkWarnNoDict( m_missingDictRowId ) ) {
                     launchGameIf();
                 }
@@ -1467,7 +1467,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             Assert.assertTrue( m_menuPrepared );
         } else {
-            DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
+            DbgUtils.logd( getClass(), "onPrepareOptionsMenu: incomplete so bailing" );
         }
         return m_menuPrepared;
     } // onPrepareOptionsMenu
@@ -1592,7 +1592,7 @@ public class GamesListDelegate extends ListDelegateBase
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
-        DbgUtils.logf( "onCreateContextMenu(t=%s)",
+        DbgUtils.logd( getClass(), "onCreateContextMenu(t=%s)",
                        targetView.getClass().getSimpleName() );
         if ( targetView instanceof GameListItem ) {
             item = (GameListItem)targetView;
@@ -2373,7 +2373,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void launchGame( long rowid, boolean invited )
     {
         if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-            DbgUtils.logdf( "launchGame(): dropping bad rowid" );
+            DbgUtils.logd( getClass(), "launchGame(): dropping bad rowid" );
         } else if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             if ( m_adapter.inExpandedGroup( rowid ) ) {

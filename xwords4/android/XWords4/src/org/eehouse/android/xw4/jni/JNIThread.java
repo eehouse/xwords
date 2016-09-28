@@ -210,7 +210,7 @@ public class JNIThread extends Thread {
 
         // Assert.assertNull( m_jniGamePtr ); // fired!!
         if ( null != m_jniGamePtr ) {
-            DbgUtils.logdf( "configure(): m_jniGamePtr not null; that ok?" );
+            DbgUtils.logd( getClass(), "configure(): m_jniGamePtr not null; that ok?" );
         }
         m_jniGamePtr = null;
         if ( null != stream ) {
@@ -366,7 +366,7 @@ public class JNIThread extends Thread {
         // PENDING: once certain this is true, stop saving the full array and
         // instead save the hash. Also, update it after each save.
         if ( hashesEqual ) {
-            DbgUtils.logdf( "JNIThread.save_jni(): no change in game; can skip saving" );
+            DbgUtils.logd( getClass(), "save_jni(): no change in game; can skip saving" );
         } else {
             // Don't need this!!!! this only runs on the run() thread
             synchronized( this ) {

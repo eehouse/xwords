@@ -93,7 +93,7 @@ public class NetStateCache {
         }
 
         boolean result = s_netAvail || s_onSDKSim;
-        DbgUtils.logdf( "netAvail() => %b", result );
+        DbgUtils.logd( NetStateCache.class, "netAvail() => %b", result );
         return result;
     }
 
@@ -193,8 +193,7 @@ public class NetStateCache {
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
-                DbgUtils.logdf( "NetStateCache.PvtBroadcastReceiver.onReceive(state=%s)",
-                                state.toString() );
+                DbgUtils.logd( getClass(), "onReceive(state=%s)", state.toString() );
 
                 boolean netAvail;
                 switch ( state ) {
@@ -215,9 +214,8 @@ public class NetStateCache {
                     s_netAvail = netAvail; // keep current in case we're asked
                     notifyStateChanged( context );
                 } else {
-                    DbgUtils.logdf( "NetStateCache.PvtBroadcastReceiver.onReceive:"
-                                    + " no change; doing nothing; s_netAvail=%b",
-                                    s_netAvail );
+                    DbgUtils.logd( getClass(), "onReceive: no change; "
+                                   + "doing nothing; s_netAvail=%b", s_netAvail );
                 }
             }
         }

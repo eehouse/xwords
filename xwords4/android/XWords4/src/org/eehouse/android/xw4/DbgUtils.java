@@ -38,6 +38,8 @@ public class DbgUtils {
     private static final String TAG = BuildConstants.DBG_TAG;
     private static boolean s_doLog = BuildConfig.DEBUG;
 
+    private enum LogType { ERROR, DEBUG };
+
     private static Time s_time = new Time();
 
     public static void logEnable( boolean enable )
@@ -89,13 +91,23 @@ public class DbgUtils {
         }
     } // logf
 
-    public static void logdf( String format, Object... args )
+    private static void callLog( LogType lt, Class claz, String fmt, Object... args )
     {
-        if ( s_doLog && BuildConfig.DEBUG ) {
-            Formatter formatter = new Formatter();
-            logf( formatter.format( format, args ).toString() );
+        if ( s_doLog ) {
+            String tag = claz.getSimpleName();
+            String msg = new Formatter().format( fmt, args ).toString();
+            switch( lt ) {
+            case DEBUG:
+                Log.d( tag, msg );
+                break;
+            }
         }
-    } // logdf
+    }
+
+    public static void logd( Class claz, String fmt, Object... args )
+    {
+        callLog( LogType.DEBUG, claz, fmt, args );
+    }
 
     public static void showf( Context context, String format, Object... args )
     {
