@@ -384,7 +384,7 @@ public class SMSService extends XWService {
 
             send( SMS_CMD.INVITE, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -398,7 +398,7 @@ public class SMSService extends XWService {
 
             send( SMS_CMD.ACK, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -413,7 +413,7 @@ public class SMSService extends XWService {
                 send( SMS_CMD.DEATH, bas.toByteArray(), phone );
                 s_sentDied.add( gameID );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
     }
@@ -431,7 +431,7 @@ public class SMSService extends XWService {
                 nSent = bytes.length;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
         return nSent;
     }
@@ -532,7 +532,7 @@ public class SMSService extends XWService {
                 break;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -613,7 +613,7 @@ public class SMSService extends XWService {
                 success = true;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         } catch ( ArrayIndexOutOfBoundsException oob ) {
             // enum this older code doesn't know about; drop it
             DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
@@ -678,7 +678,7 @@ public class SMSService extends XWService {
                 } catch ( NullPointerException npe ) {
                     Assert.fail();      // shouldn't be trying to do this!!!
                 } catch ( Exception ee ) {
-                    DbgUtils.loge( ee );
+                    DbgUtils.logex( ee );
                 }
             }
         } else {

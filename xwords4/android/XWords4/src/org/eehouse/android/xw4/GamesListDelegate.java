@@ -2419,7 +2419,7 @@ public class GamesListDelegate extends ListDelegateBase
                     launchGame( rowid );
                 }
             } catch ( GameLock.GameLockedException gle ) {
-                DbgUtils.loge( gle );
+                DbgUtils.logex( gle );
                 finish();
             }
         }

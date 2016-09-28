@@ -109,7 +109,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
                 }
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
         DbgUtils.logf( "doInBackground() returning" );
         return names.toArray( new String[names.size()] );

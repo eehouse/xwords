@@ -413,7 +413,7 @@ public class LocUtils {
                     .put( k_LOCALE, locale )
                     .put( k_XLATEVERS, version );
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
         return result;
@@ -463,7 +463,7 @@ public class LocUtils {
                 s_xlationsBlessed = null;
                 loadXlations( context );
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
         return nAdded;

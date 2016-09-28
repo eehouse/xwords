@@ -531,7 +531,7 @@ public class RelayService extends XWService
             try {
                 Thread.sleep( 20 );
             } catch( java.lang.InterruptedException ie ) {
-                DbgUtils.loge( ie );
+                DbgUtils.logex( ie );
             }
         }
     }
@@ -588,10 +588,10 @@ public class RelayService extends XWService
                 DbgUtils.logd( getClass(), "connectSocket(%s:%d): m_UDPSocket"
                                 + " now %H", host, port, m_UDPSocket );
             } catch( java.net.SocketException se ) {
-                DbgUtils.loge( se );
+                DbgUtils.logex( se );
                 Assert.fail();
             } catch( java.net.UnknownHostException uhe ) {
-                DbgUtils.loge( uhe );
+                DbgUtils.logex( uhe );
             }
         } else {
             Assert.assertTrue( m_UDPSocket.isConnected() );
@@ -634,7 +634,7 @@ public class RelayService extends XWService
                                 resetExitTimer();
                                 ConnStatusHandler.showSuccessOut();
                             } catch ( java.net.SocketException se ) {
-                                DbgUtils.loge( se );
+                                DbgUtils.logex( se );
                                 DbgUtils.logf( "Restarting threads to force"
                                                + " new socket" );
                                 m_handler.post( new Runnable() {
@@ -643,7 +643,7 @@ public class RelayService extends XWService
                                         }
                                     } );
                             } catch ( java.io.IOException ioe ) {
-                                DbgUtils.loge( ioe );
+                                DbgUtils.logex( ioe );
                             } catch ( NullPointerException npe ) {
                                 DbgUtils.logf( "network problem; dropping packet" );
                             }
@@ -668,7 +668,7 @@ public class RelayService extends XWService
                 m_UDPWriteThread.join();
                 DbgUtils.logd( getClass(), "SUCCESSFULLY joined m_UDPWriteThread" );
             } catch( java.lang.InterruptedException ie ) {
-                DbgUtils.loge( ie );
+                DbgUtils.logex( ie );
             }
             m_UDPWriteThread = null;
             m_queue.clear();
@@ -678,7 +678,7 @@ public class RelayService extends XWService
             try {
                 m_UDPReadThread.join();
             } catch( java.lang.InterruptedException ie ) {
-                DbgUtils.loge( ie );
+                DbgUtils.logex( ie );
             }
             m_UDPReadThread = null;
             m_UDPSocket = null;
@@ -777,7 +777,7 @@ public class RelayService extends XWService
                 }
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -850,7 +850,7 @@ public class RelayService extends XWService
                 postPacket( bas, XWRelayReg.XWPDEV_REG );
                 s_regStartTime = now;
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
     }
@@ -874,7 +874,7 @@ public class RelayService extends XWService
                 postPacket( bas, reg );
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -898,7 +898,7 @@ public class RelayService extends XWService
             out.write( msg, 0, msg.length );
             postPacket( bas, XWRelayReg.XWPDEV_MSG );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -914,7 +914,7 @@ public class RelayService extends XWService
             out.write( msg, 0, msg.length );
             postPacket( bas, XWRelayReg.XWPDEV_MSGNOCONN );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -948,7 +948,7 @@ public class RelayService extends XWService
             out.write( nliData, 0, nliData.length );
             postPacket( bas, XWRelayReg.XWPDEV_INVITE );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
     }
 
@@ -961,7 +961,7 @@ public class RelayService extends XWService
                 un2vli( header.m_packetID, out );
                 postPacket( bas, XWRelayReg.XWPDEV_ACK );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
     }
@@ -1135,7 +1135,7 @@ public class RelayService extends XWService
                     socket.close();
                 }
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
             return null;
         } // doInBackground
@@ -1416,7 +1416,7 @@ public class RelayService extends XWService
                 out.writeByte( m_cmd.ordinal() );
                 m_header = bas.toByteArray();
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
 

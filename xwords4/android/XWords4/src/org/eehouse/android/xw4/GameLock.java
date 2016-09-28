@@ -147,7 +147,7 @@ public class GameLock {
                 Thread.sleep( SLEEP_TIME ); // milliseconds
                 sleptTime += SLEEP_TIME;
             } catch( InterruptedException ie ) {
-                DbgUtils.loge( ie );
+                DbgUtils.logex( ie );
                 break;
             }
 

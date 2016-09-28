@@ -121,7 +121,7 @@ public class DbgUtils {
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
-    public static void loge( Exception exception )
+    public static void logex( Exception exception )
     {
         logf( "Exception: %s", exception.toString() );
         printStack( exception.getStackTrace() );

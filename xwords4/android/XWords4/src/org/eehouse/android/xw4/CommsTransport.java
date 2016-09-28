@@ -94,7 +94,7 @@ public class CommsTransport implements TransportProcs,
 
                     closeSocket();
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                    DbgUtils.logex( ioe );
                 } catch ( UnresolvedAddressException uae ) {
                     DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
                                    m_useHost, m_relayAddr.ip_relay_port,
@@ -132,7 +132,7 @@ public class CommsTransport implements TransportProcs,
                                                           m_relayAddr.ip_relay_port );
                                     m_socketChannel.connect( isa );
                                 } catch ( java.io.IOException ioe ) {
-                                    DbgUtils.loge( ioe );
+                                    DbgUtils.logex( ioe );
                                     failed = true;
                                     break outer_loop;
                                 }
@@ -156,7 +156,7 @@ public class CommsTransport implements TransportProcs,
                         DbgUtils.logf( "exiting: %s", ioe.toString() );
                         DbgUtils.logf( ioe.toString() );
                     } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
-                        DbgUtils.loge( ncp );
+                        DbgUtils.logex( ncp );
                         closeSocket();
                         break;
                     }
@@ -204,7 +204,7 @@ public class CommsTransport implements TransportProcs,
                             break outer_loop;
                         } catch ( java.nio.channels.
                                   NoConnectionPendingException ncp ) {
-                            DbgUtils.loge( ncp );
+                            DbgUtils.logex( ncp );
                             break outer_loop;
                         }
                     }
@@ -341,7 +341,7 @@ public class CommsTransport implements TransportProcs,
                 try {
                     m_thread.join(100);   // wait up to 1/10 second
                 } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.loge( ie );
+                    DbgUtils.logex( ie );
                 }
                 m_thread = null;
             }

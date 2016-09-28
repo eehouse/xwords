@@ -1050,7 +1050,7 @@ public class BTService extends XWService {
         try {
             m_listener.join( 100 );
         } catch ( InterruptedException ie ) {
-            DbgUtils.loge( ie );
+            DbgUtils.logex( ie );
         }
         m_listener = null;
     }
@@ -1061,7 +1061,7 @@ public class BTService extends XWService {
         try {
             m_sender.join( 100 );
         } catch ( InterruptedException ie ) {
-            DbgUtils.loge( ie );
+            DbgUtils.logex( ie );
         }
         m_sender = null;
     }
@@ -1144,7 +1144,7 @@ public class BTService extends XWService {
 
     private void logIOE( IOException ioe )
     {
-        DbgUtils.loge( ioe );
+        DbgUtils.logex( ioe );
         ++s_errCount;
         // if ( 0 == s_errCount % 10 ) {
             sendResult( MultiEvent.BT_ERR_COUNT, s_errCount );
@@ -1187,7 +1187,7 @@ public class BTService extends XWService {
                     try {
                         socket.close();
                     } catch( IOException ioe ) {
-                        DbgUtils.loge( ioe );
+                        DbgUtils.logex( ioe );
                     }
                 }
             } );

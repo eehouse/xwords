@@ -2274,12 +2274,12 @@ public class BoardDelegate extends DelegateBase
                 try {
                     m_forResultWait.acquire();
                 } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.loge( ie );
+                    DbgUtils.logex( ie );
                     if ( DlgID.NONE != m_blockingDlgID ) {
                         try {
                             dismissDialog( m_blockingDlgID );
                         } catch ( java.lang.IllegalArgumentException iae ) {
-                            DbgUtils.loge( iae );
+                            DbgUtils.logex( iae );
                         }
                     }
                 }
@@ -2453,7 +2453,7 @@ public class BoardDelegate extends DelegateBase
                         RelayService.inviteRemote( m_activity, destDevID,
                                                    null, nli );
                     } catch (NumberFormatException nfi) {
-                        DbgUtils.loge( nfi );
+                        DbgUtils.logex( nfi );
                     }
                     break;
                 }

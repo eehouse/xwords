@@ -532,7 +532,7 @@ public class RelayInviteDelegate extends InviteDelegate {
                 }
 
             } catch ( org.json.JSONException je ) {
-                DbgUtils.loge( je );
+                DbgUtils.logex( je );
             }
 
             stopProgress();

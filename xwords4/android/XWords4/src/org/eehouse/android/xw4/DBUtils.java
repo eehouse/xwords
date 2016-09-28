@@ -951,7 +951,7 @@ public class DBUtils {
                 long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
                                                  "", values );
             } catch ( Exception ex ) {
-                DbgUtils.loge( ex );
+                DbgUtils.logex( ex );
             }
             db.close();
         }
@@ -1884,13 +1884,13 @@ public class DBUtils {
             channelSrc.transferTo( 0, channelSrc.size(), channelDest );
             success = true;
         } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         } finally {
             try {
                 channelSrc.close();
                 channelDest.close();
             } catch( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
         return success;
@@ -2248,7 +2248,7 @@ public class DBUtils {
                         try {
                             updateStmt.execute();
                         } catch ( Exception ex ) {
-                            DbgUtils.loge( ex );
+                            DbgUtils.logex( ex );
                             Assert.fail();
                         }
                     }
@@ -2506,7 +2506,7 @@ public class DBUtils {
                 invalGroupsCache();
             }
         } catch( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.loge( fnfe );
+            DbgUtils.logex( fnfe );
         }
     }
 

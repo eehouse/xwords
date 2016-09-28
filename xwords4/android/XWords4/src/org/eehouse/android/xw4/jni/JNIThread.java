@@ -249,7 +249,7 @@ public class JNIThread extends Thread {
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
-            DbgUtils.loge( ie );
+            DbgUtils.logex( ie );
         }
         m_lock.unlock();
     }

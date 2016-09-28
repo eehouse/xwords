@@ -192,9 +192,9 @@ public class DictUtils {
                 fis.close();
                 loc = DictLoc.INTERNAL;
             } catch ( java.io.FileNotFoundException fnf ) {
-                // DbgUtils.loge( fnf );
+                // DbgUtils.logex( fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
 
@@ -263,7 +263,7 @@ public class DictUtils {
 
             success = DBUtils.copyFileStream( fos, fis );
         } catch ( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.loge( fnfe );
+            DbgUtils.logex( fnfe );
         }
         return success;
     } // copyDict
@@ -362,9 +362,9 @@ public class DictUtils {
                 fis.close();
                 DbgUtils.logf( "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
-                // DbgUtils.loge( fnf );
+                // DbgUtils.logex( fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
 
@@ -477,9 +477,9 @@ public class DictUtils {
                     invalDictList();
                 }
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.loge( fnf );
+                DbgUtils.logex( fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
                 tmpFile.delete();
             }
         }
@@ -564,7 +564,7 @@ public class DictUtils {
             AssetManager am = context.getAssets();
             return am.list("");
         } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
             return new String[0];
         }
     }

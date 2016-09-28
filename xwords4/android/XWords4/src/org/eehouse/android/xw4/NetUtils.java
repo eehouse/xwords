@@ -71,9 +71,9 @@ public class NetUtils {
             socket.setSoTimeout( timeoutMillis );
 
         } catch ( java.net.UnknownHostException uhe ) {
-            DbgUtils.loge( uhe );
+            DbgUtils.logex( uhe );
         } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
         return socket;
     }
@@ -128,7 +128,7 @@ public class NetUtils {
                         DBUtils.clearObits( m_context, m_obits );
                     }
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                    DbgUtils.logex( ioe );
                 }
             }
         }
@@ -198,7 +198,7 @@ public class NetUtils {
             }
 
         } catch( Exception npe ) {
-            DbgUtils.loge( npe );
+            DbgUtils.logex( npe );
         }
         return msgs;
     } // queryRelay
@@ -224,10 +224,10 @@ public class NetUtils {
             result = (HttpURLConnection)new URL(url).openConnection();
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );
-            DbgUtils.loge( mue );
+            DbgUtils.logex( mue );
         } catch ( java.io.IOException ioe ) {
             Assert.assertNull( result );
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         }
         return result;
     }
@@ -275,9 +275,9 @@ public class NetUtils {
                     DbgUtils.logf( "runConn: responseCode: %d", responseCode );
                 }
             } catch ( java.net.ProtocolException pe ) {
-                DbgUtils.loge( pe );
+                DbgUtils.logex( pe );
             } catch( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
 
@@ -298,7 +298,7 @@ public class NetUtils {
             }
             result = TextUtils.join( "&", pairs );
         } catch ( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.loge( uee );
+            DbgUtils.logex( uee );
         }
 
         return result;

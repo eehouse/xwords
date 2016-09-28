@@ -423,7 +423,7 @@ public class DelegateBase implements DlgClickNotify,
         try {
             m_activity.dismissDialog( dlgID.ordinal() );
         } catch ( Exception ex ) {
-            // DbgUtils.loge( ex );
+            // DbgUtils.logex( ex );
         }
     }
 

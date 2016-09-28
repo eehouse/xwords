@@ -288,7 +288,7 @@ public class LookupAlert extends LinearLayout
             try {
                 context.startActivity( intent );
             } catch ( android.content.ActivityNotFoundException anfe ) {
-                DbgUtils.loge( anfe );
+                DbgUtils.logex( anfe );
             }
         }
     } // lookupWord

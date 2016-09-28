@@ -118,7 +118,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         try {
             versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
         } catch ( PackageManager.NameNotFoundException nnfe ) {
-            DbgUtils.loge( nnfe );
+            DbgUtils.logex( nnfe );
             versionCode = 0;
         }
 
@@ -142,7 +142,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
 
@@ -157,7 +157,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_DICTS, dictParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
 
@@ -167,7 +167,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try {
                 params.put( k_XLATEINFO, xlationUpdate );
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
 
@@ -181,7 +181,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 new UpdateQueryTask( context, params, fromUI, pm,
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
     }
@@ -224,7 +224,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             params.put( k_MD5SUM, sum );
             params.put( k_INDEX, index );
         } catch( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
+            DbgUtils.logex( jse );
         }
         return params;
     }
@@ -364,11 +364,11 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                     }
                 }
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
                 DbgUtils.logf( "sent: \"%s\"", params.toString() );
                 DbgUtils.logf( "received: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
-                DbgUtils.loge( nnfe );
+                DbgUtils.logex( nnfe );
             }
 
             if ( !gotOne && m_fromUI ) {

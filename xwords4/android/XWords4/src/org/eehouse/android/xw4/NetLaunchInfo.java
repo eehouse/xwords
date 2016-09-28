@@ -335,7 +335,7 @@ public class NetLaunchInfo {
             result = obj.toString();
 
         } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
+            DbgUtils.logex( jse );
         }
         // DbgUtils.logf( "makeLaunchJSON() => %s", result );
         return result;
@@ -419,7 +419,7 @@ public class NetLaunchInfo {
             }
 
         } catch ( JSONException jse ) {
-            DbgUtils.loge( jse );
+            DbgUtils.logex( jse );
         }
 
         removeUnsupported( supported );
