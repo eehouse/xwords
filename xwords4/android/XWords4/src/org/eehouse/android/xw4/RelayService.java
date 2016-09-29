@@ -139,7 +139,7 @@ public class RelayService extends XWService
     public static void gcmConfirmed( Context context, boolean confirmed )
     {
         if ( s_gcmWorking != confirmed ) {
-            DbgUtils.logf( "RelayService.gcmConfirmed(): changing "
+            DbgUtils.logi( RelayService.class, "gcmConfirmed(): changing "
                            + "s_gcmWorking to %b", confirmed );
             s_gcmWorking = confirmed;
         }
@@ -176,7 +176,7 @@ public class RelayService extends XWService
 
     public static void startService( Context context )
     {
-        DbgUtils.logf( "RelayService.startService()" );
+        DbgUtils.logi( RelayService.class, "startService()" );
         Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
         context.startService( intent );
     }
@@ -223,7 +223,7 @@ public class RelayService extends XWService
             context.startService( intent );
             result = msg.length;
         } else {
-            DbgUtils.logf( "RelayService.sendPacket: network down" );
+            DbgUtils.logw( RelayService.class, "sendPacket: network down" );
         }
         return result;
     }
@@ -310,7 +310,7 @@ public class RelayService extends XWService
                 .putExtra( BINBUFFER, msg );
             context.startService( intent );
         } else {
-            DbgUtils.logf( "RelayService.postData(): Dropping message for "
+            DbgUtils.logw( RelayService.class, "postData(): Dropping message for "
                            + "rowid %d: not on device", rowid );
         }
     }
@@ -445,7 +445,7 @@ public class RelayService extends XWService
                     break;
                 case TIMER_FIRED:
                     if ( !NetStateCache.netAvail( this ) ) {
-                        DbgUtils.logf( "not connecting: no network" );
+                        DbgUtils.logw( getClass(), "not connecting: no network" );
                     } else if ( startFetchThreadIf() ) {
                         // do nothing
                     } else if ( registerWithRelayIfNot() ) {
@@ -527,7 +527,7 @@ public class RelayService extends XWService
     private void stopFetchThreadIf()
     {
         while ( null != m_fetchThread ) {
-            DbgUtils.logf( "2: m_fetchThread NOT NULL; WHAT TO DO???" );
+            DbgUtils.logw( getClass(), "2: m_fetchThread NOT NULL; WHAT TO DO???" );
             try {
                 Thread.sleep( 20 );
             } catch( java.lang.InterruptedException ie ) {
@@ -546,7 +546,7 @@ public class RelayService extends XWService
                             connectSocket(); // block until this is done
                             startWriteThread();
 
-                            DbgUtils.logf( "RelayService:read thread running" );
+                            DbgUtils.logi( getClass(), "read thread running" );
                             byte[] buf = new byte[1024];
                             for ( ; ; ) {
                                 DatagramPacket packet =
@@ -561,16 +561,16 @@ public class RelayService extends XWService
                                     break;
                                 }
                             }
-                            DbgUtils.logf( "RelayService:read thread exiting" );
+                            DbgUtils.logi( getClass(), "read thread exiting" );
                         }
                     }, getClass().getName() );
                 m_UDPReadThread.start();
             } else {
-                DbgUtils.logf( "m_UDPReadThread not null and assumed to "
+                DbgUtils.logi( getClass(), "m_UDPReadThread not null and assumed to "
                                + "be running" );
             }
         } else {
-            DbgUtils.logf( "RelayService.startUDPThreadsIfNot(): UDP disabled" );
+            DbgUtils.logi( getClass(), "startUDPThreadsIfNot(): UDP disabled" );
         }
     } // startUDPThreadsIfNot
 
@@ -595,7 +595,7 @@ public class RelayService extends XWService
             }
         } else {
             Assert.assertTrue( m_UDPSocket.isConnected() );
-            DbgUtils.logf( "m_UDPSocket not null" );
+            DbgUtils.logi( getClass(), "m_UDPSocket not null" );
         }
     }
 
@@ -604,19 +604,18 @@ public class RelayService extends XWService
         if ( null == m_UDPWriteThread ) {
             m_UDPWriteThread = new Thread( null, new Runnable() {
                     public void run() {
-                        DbgUtils.logf( "RelayService: write thread starting" );
+                        DbgUtils.logi( getClass(), "write thread starting" );
                         for ( ; ; ) {
                             PacketData outData;
                             try {
                                 outData = m_queue.take();
                             } catch ( InterruptedException ie ) {
-                                DbgUtils.logf( "RelayService; write thread "
-                                               + "killed" );
+                                DbgUtils.logw( getClass(), "write thread killed" );
                                 break;
                             }
                             if ( null == outData
                                  || 0 == outData.getLength() ) {
-                                DbgUtils.logf( "stopping write thread" );
+                                DbgUtils.logi( getClass(), "stopping write thread" );
                                 break;
                             }
 
@@ -635,7 +634,7 @@ public class RelayService extends XWService
                                 ConnStatusHandler.showSuccessOut();
                             } catch ( java.net.SocketException se ) {
                                 DbgUtils.logex( se );
-                                DbgUtils.logf( "Restarting threads to force"
+                                DbgUtils.logi( getClass(), "Restarting threads to force"
                                                + " new socket" );
                                 m_handler.post( new Runnable() {
                                         public void run() {
@@ -645,15 +644,15 @@ public class RelayService extends XWService
                             } catch ( java.io.IOException ioe ) {
                                 DbgUtils.logex( ioe );
                             } catch ( NullPointerException npe ) {
-                                DbgUtils.logf( "network problem; dropping packet" );
+                                DbgUtils.logw( getClass(), "network problem; dropping packet" );
                             }
                         }
-                        DbgUtils.logf( "RelayService: write thread exiting" );
+                        DbgUtils.logi( getClass(), "write thread exiting" );
                     }
                 }, getClass().getName() );
             m_UDPWriteThread.start();
         } else {
-            DbgUtils.logf( "m_UDPWriteThread not null and assumed to "
+            DbgUtils.logi( getClass(), "m_UDPWriteThread not null and assumed to "
                            + "be running" );
         }
     }
@@ -700,7 +699,7 @@ public class RelayService extends XWService
                 switch ( header.m_cmd ) {
                 case XWPDEV_UNAVAIL:
                     int unavail = dis.readInt();
-                    DbgUtils.logf( "relay unvailable for another %d seconds",
+                    DbgUtils.logi( getClass(), "relay unvailable for another %d seconds",
                                    unavail );
                     String str = getVLIString( dis );
                     sendResult( MultiEvent.RELAY_ALERT, str );
@@ -714,7 +713,7 @@ public class RelayService extends XWService
                     break;
                 case XWPDEV_BADREG:
                     str = getVLIString( dis );
-                    DbgUtils.logf( "bad relayID \"%s\" reported", str );
+                    DbgUtils.logi( getClass(), "bad relayID \"%s\" reported", str );
                     DevID.clearRelayDevID( this );
                     s_registered = false;
                     registerWithRelay();
@@ -772,7 +771,7 @@ public class RelayService extends XWService
                 //     DbgUtils.logf( "RelayService: got invite: %s", nliData );
                 //     break;
                 default:
-                    DbgUtils.logf( "RelayService.gotPacket(): Unhandled cmd" );
+                    DbgUtils.logw( getClass(), "gotPacket(): Unhandled cmd" );
                     break;
                 }
             }
@@ -817,7 +816,7 @@ public class RelayService extends XWService
         long now = Utils.getCurSeconds();
         long interval = now - s_regStartTime;
         if ( interval < REG_WAIT_INTERVAL ) {
-            DbgUtils.logf( "registerWithRelay: skipping because only %d "
+            DbgUtils.logi( getClass(), "registerWithRelay: skipping because only %d "
                            + "seconds since last start", interval );
         } else {
             String relayID = DevID.getRelayDevID( this );
@@ -980,7 +979,7 @@ public class RelayService extends XWService
             XWRelayReg cmd = XWRelayReg.values()[ordinal];
             result = new PacketHeader( cmd, packetID );
         } else {
-            DbgUtils.logf( "bad proto: %d", proto );
+            DbgUtils.logw( getClass(), "bad proto: %d", proto );
         }
         return result;
     }
@@ -1105,7 +1104,7 @@ public class RelayService extends XWService
                     if ( msgLen + thisLen > MAX_BUF ) {
                         // Need to deal with this case by sending multiple
                         // packets.  It WILL happen.
-                        DbgUtils.logf( "dropping send for lack of space; FIX ME!!" );
+                        DbgUtils.logw( getClass(), "dropping send for lack of space; FIX ME!!" );
                         Assert.fail();
                         break;
                     }
@@ -1147,7 +1146,7 @@ public class RelayService extends XWService
         if ( null != msgHash ) {
             new AsyncSender( context, msgHash ).execute();
         } else {
-            DbgUtils.logf( "sendToRelay: null msgs" );
+            DbgUtils.logw( RelayService.class, "sendToRelay: null msgs" );
         }
     } // sendToRelay
 
@@ -1211,7 +1210,7 @@ public class RelayService extends XWService
             if ( s_packetsSent.contains( packetID ) ) {
                 s_packetsSent.remove( packetID );
             } else {
-                DbgUtils.logf( "Weird: got ack %d but never sent", packetID );
+                DbgUtils.logw( RelayService.class, "Weird: got ack %d but never sent", packetID );
             }
             DbgUtils.logd( RelayService.class, "noteAck(): Got ack for %d; "
                            + "there are %d unacked packets",
@@ -1279,7 +1278,7 @@ public class RelayService extends XWService
         for ( int count = 0; !done; ++count ) {
             nRead = is.read( buf );
             if ( 1 != nRead ) {
-                DbgUtils.logf( "vli2un: unable to read from stream" );
+                DbgUtils.logw( RelayService.class, "vli2un: unable to read from stream" );
                 break;
             }
             int byt = buf[0];

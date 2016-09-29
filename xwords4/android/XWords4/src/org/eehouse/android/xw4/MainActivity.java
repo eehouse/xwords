@@ -122,7 +122,7 @@ public class MainActivity extends XWActivity
 
             boolean isPortrait
                 = Configuration.ORIENTATION_PORTRAIT == newConfig.orientation;
-            DbgUtils.logf( "MainActivity.onConfigurationChanged(isPortrait=%b)",
+            DbgUtils.logi( getClass(), "onConfigurationChanged(isPortrait=%b)",
                            isPortrait );
             m_isPortrait = isPortrait;
             if ( isPortrait != (rect.width() <= rect.height()) ) {
@@ -337,14 +337,14 @@ public class MainActivity extends XWActivity
     {
         // make sure the right-most are visible
         int fragCount = getSupportFragmentManager().getBackStackEntryCount();
-        DbgUtils.logf( "MainActivity.onBackStackChanged(); count now %d", fragCount );
+        DbgUtils.logi( getClass(), "onBackStackChanged(); count now %d", fragCount );
         if ( 0 == fragCount ) {
             finish();
         } else {
             if ( fragCount == m_root.getChildCount() - 1 ) {
                 View child = m_root.getChildAt( fragCount );
                 if ( LOG_IDS ) {
-                    DbgUtils.logf( "onBackStackChanged(): removing view with id %x",
+                    DbgUtils.logi( getClass(), "onBackStackChanged(): removing view with id %x",
                                    child.getId() );
                 }
                 m_root.removeView( child );
@@ -355,7 +355,7 @@ public class MainActivity extends XWActivity
             if ( null != m_pendingResult ) {
                 Fragment target = m_pendingResult.getTarget();
                 if ( null != target ) {
-                    DbgUtils.logf( "onBackStackChanged(): calling onActivityResult()" );
+                    DbgUtils.logi( getClass(),"onBackStackChanged(): calling onActivityResult()" );
                     target.onActivityResult( m_pendingResult.m_request,
                                              m_pendingResult.m_result,
                                              m_pendingResult.m_data );
@@ -404,7 +404,7 @@ public class MainActivity extends XWActivity
             int id = frame.getId();
             Fragment frag = fm.findFragmentById( id );
             if ( null == frag ) {
-                DbgUtils.logf( "tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
+                DbgUtils.logw( getClass(),"tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
             } else if ( frag instanceof XWFragment ) {
                 ((XWFragment)frag).getDelegate().orientationChanged();
             }
@@ -432,7 +432,7 @@ public class MainActivity extends XWActivity
         for ( int ii = 0; ii < nPanes; ++ii ) {
             View child = m_root.getChildAt( ii );
             boolean visible = ii >= nPanes - m_maxPanes;
-            DbgUtils.logf( "pane %d: visible=%b", ii, visible );
+            DbgUtils.logi( getClass(), "pane %d: visible=%b", ii, visible );
             child.setVisibility( visible ? View.VISIBLE : View.GONE );
             setMenuVisibility( child, visible );
             if ( visible ) {
@@ -498,7 +498,7 @@ public class MainActivity extends XWActivity
         FragmentManager fm = getSupportFragmentManager();
         int fragCount = fm.getBackStackEntryCount();
         int containerCount = m_root.getChildCount();
-        DbgUtils.logf( "fragCount: %d; containerCount: %d", fragCount, containerCount );
+        DbgUtils.logi( getClass(), "fragCount: %d; containerCount: %d", fragCount, containerCount );
         // Assert.assertTrue( fragCount == containerCount );
 
         // Replace IF we're adding something of the same class at right OR if
@@ -528,7 +528,7 @@ public class MainActivity extends XWActivity
         int id = --m_nextID;
         cont.setId( id );
         if ( LOG_IDS ) {
-            DbgUtils.logf( "assigning id %x to view with name %s", id, newName );
+            DbgUtils.logi( getClass(), "assigning id %x to view with name %s", id, newName );
         }
         m_root.addView( cont, replace ? containerCount - 1 : containerCount );
 
@@ -539,7 +539,7 @@ public class MainActivity extends XWActivity
 
             setMenuVisibility( child, false );
 
-            DbgUtils.logf( "hiding %dth container", indx );
+            DbgUtils.logi( getClass(), "hiding %dth container", indx );
         }
 
         fm.beginTransaction()

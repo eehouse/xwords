@@ -546,7 +546,7 @@ public class ConnStatusHandler {
                 && NetStateCache.netAvail( context );
             break;
         default:
-            DbgUtils.logf( "ConnStatusHandler:connTypeEnabled: %s not handled",
+            DbgUtils.logw( ConnStatusHandler.class, "connTypeEnabled: %s not handled",
                            connType.toString() );
             break;
         }

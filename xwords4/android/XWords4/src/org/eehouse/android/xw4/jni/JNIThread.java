@@ -180,7 +180,7 @@ public class JNIThread extends Thread {
             if ( BuildConfig.DEBUG ) {
                 Iterator<QueueElem> iter = m_queue.iterator();
                 while ( iter.hasNext() ) {
-                    DbgUtils.logf( "removing %s from queue",
+                    DbgUtils.logi( getClass(), "removing %s from queue",
                                    iter.next().m_cmd.toString() );
                 }
             }
@@ -421,7 +421,7 @@ public class JNIThread extends Thread {
             try {
                 elem = m_queue.take();
             } catch ( InterruptedException ie ) {
-                DbgUtils.logf( "interrupted; killing thread" );
+                DbgUtils.logw( getClass(), "interrupted; killing thread" );
                 break;
             }
             boolean draw = false;
@@ -667,7 +667,7 @@ public class JNIThread extends Thread {
             case CMD_NONE:      // ignored
                 break;
             default:
-                DbgUtils.logf( "dropping cmd: %s", elem.m_cmd.toString() );
+                DbgUtils.logw( getClass(), "dropping cmd: %s", elem.m_cmd.toString() );
                 Assert.fail();
             }
 
@@ -685,7 +685,7 @@ public class JNIThread extends Thread {
             XwJNI.comms_stop( m_jniGamePtr );
             save_jni();
         } else {
-            DbgUtils.logf( "JNIThread.run(): exiting without saving" );
+            DbgUtils.logw( getClass(), "run(): exiting without saving" );
         }
         m_jniGamePtr.release();
         m_jniGamePtr = null;
@@ -712,7 +712,7 @@ public class JNIThread extends Thread {
     {
         m_queue.add( new QueueElem( cmd, true, args ) );
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
-            DbgUtils.logf( "WARNING: adding %s to stopped thread!!!",
+            DbgUtils.logw( getClass(), "adding %s to stopped thread!!!",
                            cmd.toString() );
             DbgUtils.printStack();
         }
@@ -731,7 +731,7 @@ public class JNIThread extends Thread {
     private void retain_sync()
     {
         ++m_refCount;
-        DbgUtils.logf( "JNIThread.retain_sync(rowid=%d): m_refCount: %d",
+        DbgUtils.logi( getClass(), "retain_sync(rowid=%d): m_refCount: %d",
                        m_rowid, m_refCount );
     }
 
@@ -754,7 +754,7 @@ public class JNIThread extends Thread {
                 stop = true;
             }
         }
-        DbgUtils.logf( "JNIThread.release(rowid=%d): m_refCount: %d",
+        DbgUtils.logi( getClass(), "release(rowid=%d): m_refCount: %d",
                        m_rowid, m_refCount );
 
         if ( stop ) {

@@ -129,7 +129,7 @@ public class ChatDelegate extends DelegateBase {
         super.onResume();
         m_jniThreadRef = JNIThread.getRetained( m_rowid );
         if ( null == m_jniThreadRef ) {
-            DbgUtils.logf( "ChatDelegate.onResume(): m_jniThreadRef null; exiting" );
+            DbgUtils.logw( getClass(), "onResume(): m_jniThreadRef null; exiting" );
             finish();
         } else {
             s_visibleThis = this;

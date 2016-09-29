@@ -107,7 +107,7 @@ public class DevID {
 
     public static void clearRelayDevID( Context context )
     {
-        DbgUtils.logf( "DevID.clearRelayDevID()" );
+        DbgUtils.logi( DevID.class, "clearRelayDevID()" );
         DBUtils.setStringFor( context, DEVID_KEY, "" );
         // DbgUtils.printStack();
     }

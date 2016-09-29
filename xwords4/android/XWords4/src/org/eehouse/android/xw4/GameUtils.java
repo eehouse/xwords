@@ -72,8 +72,7 @@ public class GameUtils {
 
     public static class NoSuchGameException extends RuntimeException {
         public NoSuchGameException() {
-            super();            // superfluous
-            DbgUtils.logf( "creating NoSuchGameException");
+            DbgUtils.logi( getClass(), "NoSuchGameException()");
         }
     }
 
@@ -168,7 +167,7 @@ public class GameUtils {
             Utils.cancelNotification( context, (int)rowidIn );
             success = true;
         } else {
-            DbgUtils.logf( "resetGame: unable to open rowid %d", rowidIn );
+            DbgUtils.logw( GameUtils.class, "resetGame: unable to open rowid %d", rowidIn );
         }
         return success;
     }
@@ -293,7 +292,7 @@ public class GameUtils {
             lock.unlock();
             success = true;
         } else {
-            DbgUtils.logf( "deleteGame: unable to delete rowid %d", rowid );
+            DbgUtils.logw( GameUtils.class, "deleteGame: unable to delete rowid %d", rowid );
             success = false;
         }
         return success;
@@ -356,13 +355,13 @@ public class GameUtils {
         GamePtr gamePtr = null;
 
         if ( null == stream ) {
-            DbgUtils.logf( "loadMakeGame: no saved game!");
+            DbgUtils.logw( GameUtils.class, "loadMakeGame: no saved game!");
         } else {
             XwJNI.gi_from_stream( gi, stream );
             String[] dictNames = gi.dictNames();
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
             if ( pairs.anyMissing( dictNames ) ) {
-                DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable",
+                DbgUtils.logw( GameUtils.class, "loadMakeGame() failing: dicts %s unavailable",
                                TextUtils.join( ",", dictNames ) );
             } else {
                 String langName = gi.langName();
@@ -854,7 +853,7 @@ public class GameUtils {
             }
             allHere = 0 == missingSet.size();
         } else {
-            DbgUtils.logf( "gameDictsHere: game has no dicts!" );
+            DbgUtils.logw( GameUtils.class, "gameDictsHere: game has no dicts!" );
         }
         if ( null != missingNames ) {
             missingNames[0] =
@@ -1055,7 +1054,7 @@ public class GameUtils {
 
             lock.unlock();
         } else {
-            DbgUtils.logf( "replaceDicts: unable to open rowid %d", rowid );
+            DbgUtils.logw( GameUtils.class, "replaceDicts: unable to open rowid %d", rowid );
         }
         return success;
     } // replaceDicts
@@ -1141,7 +1140,7 @@ public class GameUtils {
         do {
             rint = Utils.nextRandomInt();
         } while ( 0 == rint );
-        DbgUtils.logf( "newGameID()=>%X (%d)", rint, rint );
+        DbgUtils.logi( GameUtils.class, "newGameID()=>%X (%d)", rint, rint );
         return rint;
     }
 
@@ -1292,7 +1291,8 @@ public class GameUtils {
                     }
                     lock.unlock();
                 } else {
-                    DbgUtils.logf( "ResendTask.doInBackground: unable to unlock %d",
+                    DbgUtils.logw( ResendTask.class,
+                                   "ResendTask.doInBackground: unable to unlock %d",
                                    rowid );
                 }
             }

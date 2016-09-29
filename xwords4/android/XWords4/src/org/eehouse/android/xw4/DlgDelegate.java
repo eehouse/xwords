@@ -582,7 +582,7 @@ public class DlgDelegate {
             break;
 
         default:
-            DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
+            DbgUtils.loge( getClass(), "eventOccurred: unhandled event %s", event.toString() );
         }
 
         if ( null != msg ) {

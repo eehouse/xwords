@@ -129,7 +129,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                     GCMRegistrar.register( app, BuildConstants.GCM_SENDER_ID );
                 }
             } catch ( UnsupportedOperationException uoe ) {
-                DbgUtils.logf( "Device can't do GCM." );
+                DbgUtils.logw( GCMIntentService.class, "Device can't do GCM." );
             } catch ( Exception whatever ) {
                 // funky devices could do anything
                 DbgUtils.logex( whatever );

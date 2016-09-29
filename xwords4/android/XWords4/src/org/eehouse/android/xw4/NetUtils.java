@@ -192,7 +192,7 @@ public class NetUtils {
                 }
                 if ( 0 != dis.available() ) {
                     msgs = null;
-                    DbgUtils.logf( "format error: bytes left over in stream" );
+                    DbgUtils.loge( NetUtils.class, "format error: bytes left over in stream" );
                 }
                 socket.close();
             }
@@ -272,7 +272,7 @@ public class NetUtils {
                     }
                     result = new String( bas.toByteArray() );
                 } else {
-                    DbgUtils.logf( "runConn: responseCode: %d", responseCode );
+                    DbgUtils.logw( NetUtils.class, "runConn: responseCode: %d", responseCode );
                 }
             } catch ( java.net.ProtocolException pe ) {
                 DbgUtils.logex( pe );

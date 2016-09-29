@@ -83,7 +83,7 @@ public class NetStateCache {
 
                 boolean netAvail = getIsConnected( context );
                 if ( netAvail ) {
-                    DbgUtils.logf( "netAvail(): second-guessing successful!!!" );
+                    DbgUtils.logi( NetStateCache.class, "netAvail(): second-guessing successful!!!" );
                     s_netAvail = true;
                     if ( null != s_receiver ) {
                         s_receiver.notifyStateChanged( context );
@@ -123,7 +123,7 @@ public class NetStateCache {
         if ( null != ni && ni.isConnectedOrConnecting() ) {
             result = true;
         }
-        DbgUtils.logf( "NetStateCache.getConnected() => %b", result );
+        DbgUtils.logi( NetStateCache.class, "NetStateCache.getConnected() => %b", result );
         return result;
     }
 
@@ -164,7 +164,7 @@ public class NetStateCache {
             boolean connectedReal = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
             if ( connectedReal != connectedCached ) {
-                DbgUtils.logf( "NetStateCache(): connected: cached: %b; actual: %b",
+                DbgUtils.logw( NetStateCache.class, "connected: cached: %b; actual: %b",
                                connectedCached, connectedReal );
             }
         }
@@ -239,7 +239,7 @@ public class NetStateCache {
                             Assert.assertTrue( mLastStateSent != s_netAvail );
                             mLastStateSent = s_netAvail;
 
-                            DbgUtils.logf( "NetStateCache.notifyStateChanged(%b)",
+                            DbgUtils.logi( getClass(), "notifyStateChanged(%b)",
                                            s_netAvail );
 
                             synchronized( s_ifs ) {

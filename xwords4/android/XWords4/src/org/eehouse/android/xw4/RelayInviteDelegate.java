@@ -503,12 +503,12 @@ public class RelayInviteDelegate extends InviteDelegate {
                 JSONObject params = new JSONObject();
                 params.put( "relayIDs", ids );
                 params.put( "me", DevID.getRelayDevIDInt( m_activity ) );
-                DbgUtils.logf( "sending to server: %s", params.toString() );
+                DbgUtils.logi( getClass(), "sending to server: %s", params.toString() );
 
                 HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "opponentIDsFor" );
                 if ( null != conn ) {
                     String str = NetUtils.runConn( conn, params );
-                    DbgUtils.logf( "got json from server: %s", str );
+                    DbgUtils.logi( getClass(), "got json from server: %s", str );
                     reply = new JSONObject( str );
                 }
 
@@ -542,7 +542,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         @Override protected void onPostExecute( Set<String> devIDs )
         {
             if ( null == devIDs ) {
-                DbgUtils.logf( "onPostExecute: no results from server?" );
+                DbgUtils.logw( getClass(), "onPostExecute: no results from server?" );
             } else {
                 m_devIDRecs = new ArrayList<DevIDRec>(devIDs.size());
                 Iterator<String> iter = devIDs.iterator();

@@ -259,7 +259,8 @@ public class DBHelper extends SQLiteOpenHelper {
     @SuppressWarnings("fallthrough")
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
     {
-        DbgUtils.logf( false, "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
+        DbgUtils.logi( getClass(), false, "onUpgrade: old: %d; new: %d",
+                       oldVersion, newVersion );
 
         boolean madeSumTable = false;
         switch( oldVersion ) {

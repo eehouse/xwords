@@ -118,8 +118,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
-        DbgUtils.logf( "%s.onActivityResult(): subclass responsibility!!!", 
-                       getClass().getSimpleName() );
+        DbgUtils.logi( getClass(), "onActivityResult(): subclass responsibility!!!" );
     }
 
     protected void onStart()
@@ -595,7 +594,7 @@ public class DelegateBase implements DlgClickNotify,
         switch( event ) {
         case BT_ERR_COUNT:
             int count = (Integer)args[0];
-            DbgUtils.logf( "Bluetooth error count: %d", count );
+            DbgUtils.logi( getClass(), "Bluetooth error count: %d", count );
             break;
         case BAD_PROTO_BT:
             fmtId = R.string.bt_bad_proto_fmt;
@@ -672,7 +671,7 @@ public class DelegateBase implements DlgClickNotify,
                 Assert.fail();
                 break;
             }
-            DbgUtils.logf( "DelegateBase.dlgButtonClicked(action=%s button=%s): UNHANDLED",
+            DbgUtils.logi( getClass(), "dlgButtonClicked(action=%s button=%s): UNHANDLED",
                            action.toString(), buttonName );
         }
     }

@@ -99,7 +99,7 @@ public class MultiMsgSink implements TransportProcs {
             Assert.fail();
             break;
         }
-        DbgUtils.logf( "MultiMsgSink.transportSend(): sent %d via %s",
+        DbgUtils.logi( getClass(), "transportSend(): sent %d via %s",
                        nSent, typ.toString() );
         if ( 0 < nSent ) {
             DbgUtils.logd( getClass(), "transportSend: adding %s", msgNo );

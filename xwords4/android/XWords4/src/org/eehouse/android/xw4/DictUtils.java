@@ -360,7 +360,7 @@ public class DictUtils {
                 bytes = new byte[len];
                 fis.read( bytes, 0, len );
                 fis.close();
-                DbgUtils.logf( "Successfully loaded %s", name );
+                DbgUtils.logi( DictUtils.class, "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
                 // DbgUtils.logex( fnf );
             } catch ( java.io.IOException ioe ) {
@@ -589,7 +589,7 @@ public class DictUtils {
                 if ( !result.exists() ) {
                     result.mkdirs();
                     if ( !result.exists() ) {
-                        DbgUtils.logf( "unable to create sd dir %s", packdir );
+                        DbgUtils.logw( DictUtils.class, "unable to create sd dir %s", packdir );
                         result = null;
                     }
                 }

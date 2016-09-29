@@ -455,7 +455,7 @@ public class GameListItem extends LinearLayout
                         try {
                             elem = s_queue.take();
                         } catch ( InterruptedException ie ) {
-                            DbgUtils.logf( "interrupted; killing "
+                            DbgUtils.logw( getClass(), "interrupted; killing "
                                            + "s_thumbThread" );
                             break;
                         }

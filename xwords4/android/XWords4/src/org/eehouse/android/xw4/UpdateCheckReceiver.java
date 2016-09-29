@@ -365,8 +365,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.logex( jse );
-                DbgUtils.logf( "sent: \"%s\"", params.toString() );
-                DbgUtils.logf( "received: \"%s\"", jstr );
+                DbgUtils.logw( getClass(), "sent: \"%s\"", params.toString() );
+                DbgUtils.logw( getClass(), "received: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.logex( nnfe );
             }

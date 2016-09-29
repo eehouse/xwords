@@ -787,7 +787,7 @@ public class DBUtils {
             db.close();
         }
         if ( null != result && 1 < result.length ) {
-            DbgUtils.logf( "getRowIDsFor(%x)=>length %d array", gameID,
+            DbgUtils.logi( DBUtils.class, "getRowIDsFor(%x)=>length %d array", gameID,
                            result.length );
         }
         return result;
@@ -835,7 +835,7 @@ public class DBUtils {
                 int gameID = cursor.getInt( col );
                 col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
                 String devs = cursor.getString( col );
-                DbgUtils.logf( "gameid %d has remote[s] %s", gameID, devs );
+                DbgUtils.logi( DBUtils.class, "gameid %d has remote[s] %s", gameID, devs );
 
                 if ( null != devs && 0 < devs.length() ) {
                     for ( String dev : TextUtils.split( devs, "\n" ) ) {
@@ -1086,7 +1086,7 @@ public class DBUtils {
                     result = cursor.getBlob( cursor
                                              .getColumnIndex(DBHelper.SNAPSHOT));
                 } else {
-                    DbgUtils.logf( "DBUtils.loadGame: none for rowid=%d",
+                    DbgUtils.loge( DBUtils.class, "loadGame: none for rowid=%d",
                                    rowid );
                 }
                 cursor.close();
@@ -1104,7 +1104,7 @@ public class DBUtils {
             deleteGame( context, lock );
             lock.unlock();
         } else {
-            DbgUtils.logf( "deleteGame: unable to lock rowid %d", rowid );
+            DbgUtils.loge( DBUtils.class, "deleteGame: unable to lock rowid %d", rowid );
             if ( BuildConfig.DEBUG ) {
                 Assert.fail();
             }
@@ -1823,7 +1823,7 @@ public class DBUtils {
         ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
         valuess.add( cvForChat( rowid, msg, fromPlayer ) );
         appendChatHistory( context, valuess );
-        DbgUtils.logf( "appendChatHistory: inserted \"%s\" from player %d",
+        DbgUtils.logi( DBUtils.class, "appendChatHistory: inserted \"%s\" from player %d",
                        msg, fromPlayer );
     } // appendChatHistory
 
@@ -2475,7 +2475,7 @@ public class DBUtils {
                         String.format( "not rowid in (select rowid from %s order by TIMESTAMP desc limit %d)",
                                        DBHelper.TABLE_NAME_LOGS, LOGLIMIT );
                     int nGone = db.delete( DBHelper.TABLE_NAME_LOGS, where, null );
-                    DbgUtils.logf( false, "appendLog(): deleted %d rows", nGone );
+                    DbgUtils.logi( DBUtils.class, false, "appendLog(): deleted %d rows", nGone );
                 }
                 db.close();
             }
@@ -2550,7 +2550,7 @@ public class DBUtils {
             int result = updateRowImpl( db, table, rowid, values );
             db.close();
             if ( 0 == result ) {
-                DbgUtils.logf( "updateRow failed" );
+                DbgUtils.logw( DBUtils.class, "updateRow failed" );
             }
         }
     }

@@ -140,7 +140,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 m_lastSpacing = MULTI_INACTIVE;
                 break;
             default:
-                DbgUtils.logf( "onTouchEvent: unknown action: %d", action );
+                DbgUtils.logw( getClass(), "onTouchEvent: unknown action: %d", action );
                 break;
             }
         }
@@ -405,7 +405,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private void handle( JNIThread.JNICmd cmd, Object... args )
     {
         if ( null == m_jniThread ) {
-            DbgUtils.logf( "BoardView: not calling handle(%s)", cmd.toString() );
+            DbgUtils.logw( getClass(), "not calling handle(%s)", cmd.toString() );
             DbgUtils.printStack();
         } else {
             m_jniThread.handle( cmd, args );
