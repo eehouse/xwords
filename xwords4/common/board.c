@@ -835,7 +835,7 @@ board_canHint( const BoardCtxt* board )
 }
 
 void
-board_sendChat( const BoardCtxt* board, const XP_UCHAR const* msg )
+board_sendChat( const BoardCtxt* board, const XP_UCHAR* msg )
 {
     server_sendChat( board->server, msg, board->selPlayer );
 }

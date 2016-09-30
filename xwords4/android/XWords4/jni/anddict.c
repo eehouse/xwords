@@ -104,13 +104,13 @@ andCountSpecials( AndDictionaryCtxt* ctxt )
 
 static XP_Bool
 andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
-               const XP_U8 const* end, XP_Bitmap* result )
+               const XP_U8* end, XP_Bitmap* result )
 {
     XP_Bool success = XP_TRUE;
     XP_U8 const* ptr = *ptrp;
+    jobject bitmap = NULL;
     CHECK_PTR( ptr, 1, end );
     XP_U8 nCols = *ptr++;
-    jobject bitmap = NULL;
     if ( nCols > 0 ) {
         CHECK_PTR( ptr, 1, end );
         XP_U8 nRows = *ptr++;
@@ -157,7 +157,7 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
 
 static XP_Bool
 andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
-                    const XP_U8 const* end )
+                    const XP_U8* end )
 {
     XP_Bool success = XP_TRUE;
     XP_U16 nSpecials = andCountSpecials( ctxt );
@@ -305,7 +305,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
 {
     XP_Bool success = XP_TRUE;
     XP_ASSERT( !!ptr );
-    const XP_U8 const* end = ptr + dictLength;
+    const XP_U8* end = ptr + dictLength;
     XP_U32 offset;
     XP_U16 nFaces, numFaceBytes = 0;
     XP_U16 flags;

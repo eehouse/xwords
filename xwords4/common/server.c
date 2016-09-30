@@ -636,7 +636,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
 #ifdef XWFEATURE_CHAT
 static void
-sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg,
+sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR* msg,
             XP_S8 from )
 {
     if ( comms_canChat( server->vol.comms ) ) {
@@ -652,7 +652,7 @@ sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg,
 
 static void
 sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, 
-                         const XP_UCHAR const* msg, XP_S8 from )
+                         const XP_UCHAR* msg, XP_S8 from )
 {
     XP_U16 devIndex;
     for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
@@ -663,7 +663,7 @@ sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip,
 }
 
 void
-server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg, XP_S16 from )
+server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from )
 {
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         sendChatTo( server, SERVER_DEVICE, msg, from );

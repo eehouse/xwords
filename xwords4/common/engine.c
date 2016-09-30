@@ -514,9 +514,8 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                     engine->searchHorizontal = XP_FALSE;
                 }
             } /* forever */
-        outer:
-            result = result; /* c++ wants a statement after the label */
         }
+    outer:
         /* Search is finished.  Choose (or just return) the best move found. */
         if ( engine->returnNOW ) {
             result = XP_FALSE;
