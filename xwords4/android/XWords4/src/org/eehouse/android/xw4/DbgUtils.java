@@ -63,6 +63,18 @@ public class DbgUtils {
             case DEBUG:
                 Log.d( tag, msg );
                 break;
+            case WARN:
+                Log.w( tag, msg );
+                break;
+            case INFO:
+                Log.i( tag, msg );
+                break;
+            case ERROR:
+                Log.e( tag, msg );
+                break;
+            default:
+                Assert.fail();
+                break;
             }
         }
     }
