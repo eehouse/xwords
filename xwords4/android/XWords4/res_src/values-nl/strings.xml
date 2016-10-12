@@ -5,8 +5,10 @@
   <string name="str_game_name_fmt">%1$s (%2$s)</string>
   <string name="robot_name_fmt">%1$s (robot)</string>
   <string name="missing_player">(nog niet hier...)</string>
-  <string name="summary_relay_conf_fmt">Ingesteld voor kamer \"%1$s\"</string>
-  <string name="summary_relay_wait_fmt">Wachtend op spelers in kamer \"%1$s\"</string>
+  <string name="summary_relay_conf_fmt">Ingesteld voor kamer
+ \"%1$s\"</string>
+  <string name="summary_relay_wait_fmt">Wachtend op spelers in kamer
+ \"%1$s\"</string>
   <string name="summary_relay_conn_fmt">Spel bezig in kamer \"%1$s\"</string>
   <string name="summary_relay_gameover_fmt">Spel voorbij is kamer \"%1$s\"</string>
   <string name="gameOver">Spel voorbij</string>
@@ -19,8 +21,10 @@
   <string name="gamel_menu_dicts">Woordenlijsten…</string>
   <string name="menu_prefs">Instellingen…</string>
   <string name="gamel_menu_checkmoves">Zoek naar nieuwe zetten</string>
-  <string name="msgs_progress">Zoeken naar nieuwe zetten…</string>
-  <string name="no_games_to_refresh">Geen spellen gevonden die via de relay verbinden.</string>
+  <string name="msgs_progress">Zoeken naar nieuwe zetten
+ etc…</string>
+  <string name="no_games_to_refresh">Geen spellen gevonden die via
+ de relay verbinden.</string>
   <string name="board_menu_file_about">Over Crosswords…</string>
   <string name="game_item_menu_title_fmt">\"%1$s\" acties:</string>
   <string name="list_item_config">Spelinstellingen…</string>
@@ -864,4 +868,35 @@
   <string name="not_again_dfltname_fmt">Je gebruikt de standaard speler naam \"%1$s\". Wil je dit aanpassen met je eigen naam voordat je dit spel aan maakt?</string>
 
   <string name="no_invites">Dit spel heeft geen uitnodigingen verstuurd</string>
+<string name="enable_dualpane_summary">Zij aan zij beeld op tablets, heel experimentaal!</string>
+
+    <string name="invite_dualpane">Het lijkt erop dat je een
+ tablet gebruikt. Wil je de experimentele nieuwe
+ functie gebruiken waarbij je twee panel (bijv. bord en chat)
+ zij aan zij kan bekijken als het apparaat horizontaal is?
+
+ 
+
+Je kan deze functie later uitgeschakelen onder de nieuwe \"Schakel
+ zij aan zij\" menu item. Of via App Installingen.
+
+ 
+
+Laat het me weten als je deze nieuwe functie fijn vind, crashen ziet of
+ suggesties hebt, etc.!!</string>
+
+  <string name="dualpane_exit_now">Crosswords zal nu stoppen zo dat
+ de verandering effect kan hebben. Je kan de notificatie gebruiken om te
+ herstarten.</string>
+
+  <string name="enable_dualpane">Schakel zij aan zij in</string>
+  <string name="post_dualpane_title">Herstart Crosswords</string>
+  <string name="post_dualpane_on_body">Start Crosswords met zij aan zij ingeschakeld!</string>
+  <string name="post_dualpane_off_body">Start Crosswords met zij aan zij uitgeschakeld</string>
+
+  <string name="disable_dualpane">Schakel zij aan zijn uit</string>
+  <string name="dualpane_restart">App sluiten…</string>
+  <string name="after_restart">Deze verandering zal geen effect hebben totdat
+ je Crosswords herstart.</string>
+  <string name="db_enabled_toast">Zij aan zij mode INGESCHAKELD</string>
 </resources>
