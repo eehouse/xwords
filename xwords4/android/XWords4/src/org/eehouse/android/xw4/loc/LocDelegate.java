@@ -80,7 +80,7 @@ public class LocDelegate extends ListDelegateBase
     protected void onWindowFocusChanged( boolean hasFocus )
     {
         if ( hasFocus && null != m_lastItem ) {
-            DbgUtils.logf( "updating LocListItem instance %H", m_lastItem );
+            DbgUtils.logi( getClass(), "updating LocListItem instance %H", m_lastItem );
             m_lastItem.update();
             m_lastItem = null;
         }

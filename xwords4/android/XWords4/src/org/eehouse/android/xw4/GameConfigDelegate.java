@@ -229,7 +229,7 @@ public class GameConfigDelegate extends DelegateBase
                                 self.showToast( R.string.forced_consistent );
                                 self.loadPlayersList();
                             } else {
-                                DbgUtils.logf( "GameConfigDelegate.onDismiss(): "
+                                DbgUtils.logw( getClass(), "onDismiss(): "
                                                + "no visible self" );
                             }
                         }
@@ -774,14 +774,13 @@ public class GameConfigDelegate extends DelegateBase
             }
 
         } else {
-            DbgUtils.logf( "unknown v: " + view.toString() );
+            DbgUtils.logw( getClass(), "unknown v: " + view.toString() );
         }
     } // onClick
 
     private void saveAndClose( boolean forceNew )
     {
-        DbgUtils.logf( "GameConfigDelegate.saveAndClose(forceNew=%b)",
-                       forceNew );
+        DbgUtils.logi( getClass(), "saveAndClose(forceNew=%b)", forceNew );
         applyChanges( forceNew );
 
         finishAndLaunch();
@@ -1031,7 +1030,7 @@ public class GameConfigDelegate extends DelegateBase
             setting = 2;
             break;
         default:
-            DbgUtils.logf( "setSmartnessSpinner got %d from getRobotSmartness()",
+            DbgUtils.logw( getClass(), "setSmartnessSpinner got %d from getRobotSmartness()",
                            m_gi.getRobotSmartness() );
             Assert.fail();
         }
@@ -1073,7 +1072,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void adjustPlayersLabel()
     {
-        DbgUtils.logf( "adjustPlayersLabel()" );
+        DbgUtils.logi( getClass(), "adjustPlayersLabel()" );
         String label;
         if ( localOnlyGame() ) {
             label = getString( R.string.players_label_standalone );

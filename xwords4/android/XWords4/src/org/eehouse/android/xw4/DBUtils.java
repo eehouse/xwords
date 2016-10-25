@@ -787,7 +787,7 @@ public class DBUtils {
             db.close();
         }
         if ( null != result && 1 < result.length ) {
-            DbgUtils.logf( "getRowIDsFor(%x)=>length %d array", gameID,
+            DbgUtils.logi( DBUtils.class, "getRowIDsFor(%x)=>length %d array", gameID,
                            result.length );
         }
         return result;
@@ -835,7 +835,7 @@ public class DBUtils {
                 int gameID = cursor.getInt( col );
                 col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
                 String devs = cursor.getString( col );
-                DbgUtils.logf( "gameid %d has remote[s] %s", gameID, devs );
+                DbgUtils.logi( DBUtils.class, "gameid %d has remote[s] %s", gameID, devs );
 
                 if ( null != devs && 0 < devs.length() ) {
                     for ( String dev : TextUtils.split( devs, "\n" ) ) {
@@ -951,7 +951,7 @@ public class DBUtils {
                 long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
                                                  "", values );
             } catch ( Exception ex ) {
-                DbgUtils.loge( ex );
+                DbgUtils.logex( ex );
             }
             db.close();
         }
@@ -1086,7 +1086,7 @@ public class DBUtils {
                     result = cursor.getBlob( cursor
                                              .getColumnIndex(DBHelper.SNAPSHOT));
                 } else {
-                    DbgUtils.logf( "DBUtils.loadGame: none for rowid=%d",
+                    DbgUtils.loge( DBUtils.class, "loadGame: none for rowid=%d",
                                    rowid );
                 }
                 cursor.close();
@@ -1104,7 +1104,7 @@ public class DBUtils {
             deleteGame( context, lock );
             lock.unlock();
         } else {
-            DbgUtils.logf( "deleteGame: unable to lock rowid %d", rowid );
+            DbgUtils.loge( DBUtils.class, "deleteGame: unable to lock rowid %d", rowid );
             if ( BuildConfig.DEBUG ) {
                 Assert.fail();
             }
@@ -1195,15 +1195,15 @@ public class DBUtils {
         HistoryPair[] result = null;
         String oldHistory = getChatHistoryStr( context, rowid );
         if ( null != oldHistory ) {
-            DbgUtils.logdf( "convertChatString(): got string: %s", oldHistory );
+            DbgUtils.logd( DBUtils.class, "convertChatString(): got string: %s", oldHistory );
 
             ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
             ArrayList<HistoryPair> pairs = new ArrayList<HistoryPair>();
             String localPrefix = LocUtils.getString( context, R.string.chat_local_id );
             String rmtPrefix = LocUtils.getString( context, R.string.chat_other_id );
-            DbgUtils.logdf( "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix );
+            DbgUtils.logd( DBUtils.class, "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix );
             String[] msgs = oldHistory.split( "\n" );
-            DbgUtils.logdf( "convertChatString(): split into %d", msgs.length );
+            DbgUtils.logd( DBUtils.class, "convertChatString(): split into %d", msgs.length );
             int localPlayerIndx = -1;
             int remotePlayerIndx = -1;
             for ( int ii = playersLocal.length - 1; ii >= 0; --ii ) {
@@ -1214,24 +1214,24 @@ public class DBUtils {
                 }
             }
             for ( String msg : msgs ) {
-                DbgUtils.logdf( "convertChatString(): msg: %s", msg );
+                DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s", msg );
                 int indx = -1;
                 String prefix = null;
                 if ( msg.startsWith( localPrefix ) ) {
-                    DbgUtils.logdf( "convertChatString(): msg: %s starts with %s", msg, localPrefix );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s starts with %s", msg, localPrefix );
                     prefix = localPrefix;
                     indx = localPlayerIndx;
                 } else if ( msg.startsWith( rmtPrefix ) ) {
-                    DbgUtils.logdf( "convertChatString(): msg: %s starts with %s", msg, rmtPrefix );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s starts with %s", msg, rmtPrefix );
                     prefix = rmtPrefix;
                     indx = remotePlayerIndx;
                 } else {
-                    DbgUtils.logdf( "convertChatString(): msg: %s starts with neither", msg );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): msg: %s starts with neither", msg );
                 }
                 if ( -1 != indx ) {
-                    DbgUtils.logdf( "convertChatString(): removing substring %s; was: %s", prefix, msg );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): removing substring %s; was: %s", prefix, msg );
                     msg = msg.substring( prefix.length(), msg.length() );
-                    DbgUtils.logdf( "convertChatString(): removED substring; now %s", msg );
+                    DbgUtils.logd( DBUtils.class, "convertChatString(): removED substring; now %s", msg );
                     valuess.add( cvForChat( rowid, msg, indx ) );
 
                     HistoryPair pair = new HistoryPair(msg, indx );
@@ -1301,8 +1301,8 @@ public class DBUtils {
             startAndEndOut[1] = Math.min( result.length(),
                                           Integer.parseInt( parts[1] ) );
         }
-        DbgUtils.logdf( "getCurChat(): => %s [%d,%d]", result,
-                        startAndEndOut[0], startAndEndOut[1] );
+        DbgUtils.logd( DBUtils.class, "getCurChat(): => %s [%d,%d]", result,
+                       startAndEndOut[0], startAndEndOut[1] );
         return result;
     }
 
@@ -1823,7 +1823,7 @@ public class DBUtils {
         ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
         valuess.add( cvForChat( rowid, msg, fromPlayer ) );
         appendChatHistory( context, valuess );
-        DbgUtils.logf( "appendChatHistory: inserted \"%s\" from player %d",
+        DbgUtils.logi( DBUtils.class, "appendChatHistory: inserted \"%s\" from player %d",
                        msg, fromPlayer );
     } // appendChatHistory
 
@@ -1884,13 +1884,13 @@ public class DBUtils {
             channelSrc.transferTo( 0, channelSrc.size(), channelDest );
             success = true;
         } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+            DbgUtils.logex( ioe );
         } finally {
             try {
                 channelSrc.close();
                 channelDest.close();
             } catch( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+                DbgUtils.logex( ioe );
             }
         }
         return success;
@@ -2248,7 +2248,7 @@ public class DBUtils {
                         try {
                             updateStmt.execute();
                         } catch ( Exception ex ) {
-                            DbgUtils.loge( ex );
+                            DbgUtils.logex( ex );
                             Assert.fail();
                         }
                     }
@@ -2475,7 +2475,7 @@ public class DBUtils {
                         String.format( "not rowid in (select rowid from %s order by TIMESTAMP desc limit %d)",
                                        DBHelper.TABLE_NAME_LOGS, LOGLIMIT );
                     int nGone = db.delete( DBHelper.TABLE_NAME_LOGS, where, null );
-                    DbgUtils.logf( false, "appendLog(): deleted %d rows", nGone );
+                    DbgUtils.logi( DBUtils.class, false, "appendLog(): deleted %d rows", nGone );
                 }
                 db.close();
             }
@@ -2506,7 +2506,7 @@ public class DBUtils {
                 invalGroupsCache();
             }
         } catch( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.loge( fnfe );
+            DbgUtils.logex( fnfe );
         }
     }
 
@@ -2550,7 +2550,7 @@ public class DBUtils {
             int result = updateRowImpl( db, table, rowid, values );
             db.close();
             if ( 0 == result ) {
-                DbgUtils.logf( "updateRow failed" );
+                DbgUtils.logw( DBUtils.class, "updateRow failed" );
             }
         }
     }

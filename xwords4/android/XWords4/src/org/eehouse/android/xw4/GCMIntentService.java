@@ -39,13 +39,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onError( Context context, String error )
     {
-        DbgUtils.logdf("GCMIntentService.onError(%s)", error );
+        DbgUtils.logd( getClass(), "onError(%s)", error );
     }
 
     @Override
     protected void onRegistered( Context context, String regId )
     {
-        DbgUtils.logdf( "GCMIntentService.onRegistered(%s)", regId );
+        DbgUtils.logd( getClass(), "onRegistered(%s)", regId );
         DevID.setGCMDevID( context, regId );
         notifyRelayService( context, true );
     }
@@ -53,7 +53,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onUnregistered( Context context, String regId )
     {
-        DbgUtils.logdf( "GCMIntentService.onUnregistered(%s)", regId );
+        DbgUtils.logd( getClass(), "onUnregistered(%s)", regId );
         DevID.clearGCMDevID( context );
         RelayService.devIDChanged();
         notifyRelayService( context, false );
@@ -62,13 +62,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onMessage( Context context, Intent intent )
     {
-        DbgUtils.logdf( "GCMIntentService.onMessage()" );
+        DbgUtils.logd( getClass(), "onMessage()" );
         notifyRelayService( context, true );
 
         String value;
         boolean ignoreIt = XWApp.GCM_IGNORED;
         if ( ignoreIt ) {
-            DbgUtils.logdf( "received GCM but ignoring it" );
+            DbgUtils.logd( getClass(), "received GCM but ignoring it" );
         } else {
             value = intent.getStringExtra( "checkUpdates" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
@@ -95,7 +95,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                         RelayService.processGameMsgs( context, connname, strs64 );
                     }
                 } catch (org.json.JSONException jse ) {
-                    DbgUtils.loge( jse );
+                    DbgUtils.logex( jse );
                 }
             }
 
@@ -129,10 +129,10 @@ public class GCMIntentService extends GCMBaseIntentService {
                     GCMRegistrar.register( app, BuildConstants.GCM_SENDER_ID );
                 }
             } catch ( UnsupportedOperationException uoe ) {
-                DbgUtils.logf( "Device can't do GCM." );
+                DbgUtils.logw( GCMIntentService.class, "Device can't do GCM." );
             } catch ( Exception whatever ) {
                 // funky devices could do anything
-                DbgUtils.loge( whatever );
+                DbgUtils.logex( whatever );
             }
         }
     }

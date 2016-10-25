@@ -424,9 +424,9 @@ public class GameSummary {
             }
             m_extras = asObj.toString();
         } catch( org.json.JSONException ex ) {
-            DbgUtils.loge( ex );
+            DbgUtils.logex( ex );
         }
-        DbgUtils.logf( "putStringExtra(%s,%s) => %s", key, value, m_extras );
+        DbgUtils.logi( getClass(), "putStringExtra(%s,%s) => %s", key, value, m_extras );
     }
 
     public String getStringExtra( String key )
@@ -440,10 +440,10 @@ public class GameSummary {
                     result = null;
                 }
             } catch( org.json.JSONException ex ) {
-                DbgUtils.loge( ex );
+                DbgUtils.logex( ex );
             }
         }
-        DbgUtils.logf( "getStringExtra(%s) => %s", key, result );
+        DbgUtils.logi( getClass(), "getStringExtra(%s) => %s", key, result );
         return result;
     }
 

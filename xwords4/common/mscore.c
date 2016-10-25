@@ -784,11 +784,15 @@ wordScoreFormatterAddTile( WordScoreFormatter* fmtr, Tile tile,
     }
 
     fullBufPtr = fmtr->fullBuf + fmtr->bufLen;
-    fmtr->bufLen += 
-        XP_SNPRINTF( fullBufPtr, 
-                     (XP_U16)(sizeof(fmtr->fullBuf) - fmtr->bufLen),
-                     (XP_UCHAR*)(tileMultiplier > 1?"%s(%dx%d)":"%s%d"), 
-                     prefix, tileScore, tileMultiplier );
+    XP_U16 len = sizeof(fmtr->fullBuf) - fmtr->bufLen;
+    if ( tileMultiplier > 1 ) {
+        fmtr->bufLen += XP_SNPRINTF( fullBufPtr, len,
+                                     "%s(%dx%d)", prefix, tileScore,
+                                     tileMultiplier );
+    } else {
+        fmtr->bufLen += XP_SNPRINTF( fullBufPtr, len,
+                                     "%s%d", prefix, tileScore );
+    }
     
     XP_ASSERT( XP_STRLEN(fmtr->fullBuf)  == fmtr->bufLen );
     XP_ASSERT( fmtr->bufLen  < sizeof(fmtr->fullBuf) );

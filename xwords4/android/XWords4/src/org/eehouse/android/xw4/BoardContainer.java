@@ -91,7 +91,7 @@ public class BoardContainer extends ViewGroup {
                 measureChild( s_isPortrait ? HBAR_INDX : VBAR_INDX, m_toolsBounds );
                 adjustBounds();
                 View child = getChildAt( s_isPortrait ? HBAR_INDX : VBAR_INDX );
-                DbgUtils.logf( "measured %s; passed ht: %d; got back ht: %d",
+                DbgUtils.logi( getClass(), "measured %s; passed ht: %d; got back ht: %d",
                                child.toString(), m_toolsBounds.height(),
                                child.getMeasuredHeight() );
 

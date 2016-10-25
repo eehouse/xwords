@@ -208,7 +208,7 @@ public class UtilCtxtImpl implements UtilCtxt {
             break;
 
         default:
-            DbgUtils.logf( "no such stringCode: %d", stringCode );
+            DbgUtils.logw( getClass(), "no such stringCode: %d", stringCode );
         }
 
         String result = (0 == id) ? "" : LocUtils.getString( m_context, id );

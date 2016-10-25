@@ -133,7 +133,7 @@ public class LocSearcher {
         } else {
             Pair[] usePairs = null != m_lastTerm && term.contains(m_lastTerm)
                 ? m_matchingPairs : m_filteredPairs;
-            DbgUtils.logf( "start: searching %d pairs", usePairs.length );
+            DbgUtils.logi( getClass(), "start: searching %d pairs", usePairs.length );
             ArrayList<Pair> matches = new ArrayList<Pair>();
             for ( Pair pair : usePairs ) {
                 if ( pair.matches( term ) ) {

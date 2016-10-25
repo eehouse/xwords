@@ -164,7 +164,7 @@ public class CurGameInfo {
                 ;
             jsonData = obj.toString();
         } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
+            DbgUtils.logex( jse );
         }
 
         return jsonData;
@@ -182,7 +182,7 @@ public class CurGameInfo {
                 int tmp = obj.optInt( PHONIES, phoniesAction.ordinal() );
                 phoniesAction = XWPhoniesChoice.values()[tmp];
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
     }

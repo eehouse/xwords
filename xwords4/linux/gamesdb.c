@@ -171,7 +171,7 @@ writeToDB( XWStreamCtxt* stream, void* closure )
 }
 
 static void
-addSnap( CommonGlobals* cGlobals )
+addSnapshot( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
 
@@ -184,9 +184,8 @@ addSnap( CommonGlobals* cGlobals )
         XWStreamCtxt* stream = make_simple_stream( cGlobals );
         getImage( dctx, stream );
         removeSurface( dctx );
-        sqlite3_int64 newRow = writeBlobColumnStream( stream, cGlobals->pDb,
-                                                      cGlobals->selRow, "snap" );
-        XP_ASSERT( cGlobals->selRow == newRow );
+        writeBlobColumnStream( stream, cGlobals->pDb, cGlobals->selRow, "snap" );
+        // XP_ASSERT( cGlobals->selRow == newRow );
         stream_destroy( stream );
     }
 
@@ -264,7 +263,7 @@ summarize( CommonGlobals* cGlobals )
     sqlite3_finalize( stmt );
     XP_USE( result );
 
-    addSnap( cGlobals );
+    addSnapshot( cGlobals );
 }
 
 GSList*

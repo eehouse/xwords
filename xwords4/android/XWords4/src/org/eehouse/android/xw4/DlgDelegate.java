@@ -582,7 +582,7 @@ public class DlgDelegate {
             break;
 
         default:
-            DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
+            DbgUtils.loge( getClass(), "eventOccurred: unhandled event %s", event.toString() );
         }
 
         if ( null != msg ) {
@@ -994,8 +994,8 @@ public class DlgDelegate {
             if ( null == oneBase ) {
                 iter.remove();  // no point in keeping it
             } else if ( base.equals( oneBase ) ) {
-                DbgUtils.logdf( "removing alert %s for %s", dlgID.toString(),
-                                oneBase.toString() );
+                DbgUtils.logd( DlgDelegate.class, "removing alert %s for %s", dlgID.toString(),
+                               oneBase.toString() );
                 activity.removeDialog( dlgID.ordinal() );
                 iter.remove();  // no point in keeping this either
             }
