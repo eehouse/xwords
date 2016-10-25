@@ -2695,7 +2695,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     g_signal_connect( globals->adjustment, "value_changed",
                       G_CALLBACK(scroll_value_changed), globals );
     gtk_widget_show( vscrollbar );
-    gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, TRUE, TRUE, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, FALSE, FALSE, 0 );
 
     gtk_box_pack_start( GTK_BOX (hbox), 
                         makeVerticalBar( globals, window ), 

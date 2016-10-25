@@ -2694,5 +2694,4 @@
   <string name="dualpane_restart">Exiting app…</string>
   <string name="after_restart">This change will not take effect until
   you restart Crosswords.</string>
-  <string name="db_enabled_toast">Side-by-side mode ENABLED</string>
 </resources>

@@ -965,9 +965,11 @@ public class DlgDelegate {
         Dialog result = null;
         DlgID dlgID = DlgID.values()[id];
         WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
-        DelegateBase dlgt = ref.get();
-        if ( null != dlgt ) {
-            result = dlgt.onCreateDialog( id );
+        if ( null != ref ) {
+            DelegateBase dlgt = ref.get();
+            if ( null != dlgt ) {
+                result = dlgt.onCreateDialog( id );
+            }
         }
         return result;
     }

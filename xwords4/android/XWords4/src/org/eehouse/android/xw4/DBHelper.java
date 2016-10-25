@@ -46,12 +46,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_CHAT = "chat";
     public static final String TABLE_NAME_LOGS = "logs";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 27;
+    private static final int DB_VERSION = 28;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
     public static final String NUM_MOVES = "NUM_MOVES";
     public static final String TURN = "TURN";
+    public static final String TURN_LOCAL = "TURN_LOCAL";
     public static final String GIFLAGS = "GIFLAGS";
 
     public static final String PLAYERS = "PLAYERS";
@@ -126,6 +127,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ GAME_NAME,    "TEXT" }
         ,{ NUM_MOVES,   "INTEGER" }
         ,{ TURN,        "INTEGER" }
+        ,{ TURN_LOCAL,  "INTEGER" }
         ,{ GIFLAGS,     "INTEGER" }
         ,{ NUM_PLAYERS, "INTEGER" }
         ,{ MISSINGPLYRS,"INTEGER" }
@@ -322,6 +324,10 @@ public class DBHelper extends SQLiteOpenHelper {
             createChatsTable( db );
         case 26:
             createLogsTable( db );
+        case 27:
+            if ( !madeSumTable ) {
+                addSumColumn( db, TURN_LOCAL );
+            }
 
             break;
         default:

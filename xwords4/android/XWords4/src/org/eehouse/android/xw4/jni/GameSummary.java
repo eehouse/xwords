@@ -50,9 +50,10 @@ public class GameSummary {
     public static final int MSG_FLAGS_GAMEOVER = 4;
     public static final int MSG_FLAGS_ALL = 7;
 
-    public int lastMoveTime;
+    public int lastMoveTime;  // set by jni's server.c on move receipt
     public int nMoves;
     public int turn;
+    public boolean turnIsLocal;
     public int nPlayers;
     public int missingPlayers;
     public int[] scores;

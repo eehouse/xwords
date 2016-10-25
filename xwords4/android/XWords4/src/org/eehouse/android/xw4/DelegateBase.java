@@ -124,11 +124,12 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onStart()
     {
-        if ( s_instances.containsKey(getClass()) ) {
+        Class clazz = getClass();
+        if ( s_instances.containsKey( clazz ) ) {
             DbgUtils.logdf( "%s.onStart(): replacing curThis", 
-                            getClass().getSimpleName() );
+                            clazz.getSimpleName() );
         }
-        s_instances.put( getClass(), new WeakReference<DelegateBase>(this) );
+        s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
     }
 
     protected void onResume()
@@ -569,10 +570,16 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean isVisible() { return m_isVisible; }
 
-    protected boolean handleNewIntent( Intent intent ) {
-        DbgUtils.logf( "%s.handleNewIntent(%s): not handling",
-                       getClass().getSimpleName(), intent.toString() );
-        return false;           // not handled
+    protected boolean canHandleNewIntent( Intent intent )
+    {
+        DbgUtils.logdf( "%s.canHandleNewIntent() => false",
+                        getClass().getSimpleName(), intent.toString() );
+        return false;
+    }
+
+    protected void handleNewIntent( Intent intent ) {
+        DbgUtils.logdf( "%s.handleNewIntent(%s): not handling",
+                        getClass().getSimpleName(), intent.toString() );
     }
 
     protected void runWhenActive( Runnable proc )

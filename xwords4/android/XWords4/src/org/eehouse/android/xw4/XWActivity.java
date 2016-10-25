@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014-2016 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -83,6 +84,16 @@ public class XWActivity extends FragmentActivity implements Delegator {
         }
         super.onResume();
         m_dlgt.onResume();
+    }
+
+    @Override
+    protected void onPostResume()
+    {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onPostResume(this=%H)",
+                           getClass().getSimpleName(), this );
+        }
+        super.onPostResume();
     }
 
     @Override

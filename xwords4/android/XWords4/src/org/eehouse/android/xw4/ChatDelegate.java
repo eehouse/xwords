@@ -67,7 +67,6 @@ public class ChatDelegate extends DelegateBase {
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        DbgUtils.logf( "ChatDelegate.init()" );
         m_edit = (EditText)findViewById( R.id.chat_edit );
         m_edit.addTextChangedListener( new TextWatcher() {
                 public void afterTextChanged( Editable s ) {

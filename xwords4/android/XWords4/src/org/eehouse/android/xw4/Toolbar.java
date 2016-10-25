@@ -163,7 +163,6 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     private void doShowHide()
     {
         boolean isPortrait = BoardContainer.getIsPortrait();
-        DbgUtils.logdf( "Toolbar.doShowHide(): isPortrait: %b", isPortrait );
 
         if ( null == m_layout ) {
             m_layout = (LinearLayout)LocUtils.inflate( m_activity, R.layout.toolbar );

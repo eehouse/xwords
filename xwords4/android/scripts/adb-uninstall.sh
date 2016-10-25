@@ -8,12 +8,12 @@ declare -A PACKAGES=()
 declare -A SERIALS=()
 INDEX=''
 DRYRUN=''
-ALL=''
+ALL_DEVS=''
 AAPT=''
 
 usage() {
 	[ $# -gt 0 ] && echo "ERROR: $1"
-    echo "usage: $0 [--dry-run] [--help] "
+    echo "usage: $0 [--dry-run] [--help] [--all-devs]"
 	echo "    [--apk <path/to/apk>]  # default is to use package names of all known apks"
 	echo "    [--pkg-name tld.whatever.more] # explicit package name"
 	echo "    [--serial <serial>]    # default is to use all attached devices"
@@ -65,6 +65,9 @@ while [ $# -ge 1 ]; do
 		--dry-run)
 			DRYRUN=1
 			;;
+		--all-devs)
+			ALL_DEVS=1
+			;;
 		--help)
 			usage
 			;;
@@ -88,6 +91,12 @@ if [ 0 = "${#SERIALS[*]}" ]; then
 	for DEV in $(adb devices | grep '\sdevice$' | awk '{print $1}'); do
 		SERIALS[$DEV]=1
 	done
+
+	if [ 0 = "${#SERIALS[*]}" ]; then
+		usage "no devices found"
+	elif [ 1 -lt "${#SERIALS[*]}" -a -z "$ALL_DEVS" ]; then
+		 usage "More than one device found. Be specific, or use --all-devs"
+	fi
 fi
 
 for PACKAGE in "${!PACKAGES[@]}"; do

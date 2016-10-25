@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@ import android.widget.LinearLayout;
 import junit.framework.Assert;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +55,8 @@ public class MainActivity extends XWActivity
     private int m_nextID = 0x00FFFFFF;
     private Boolean m_isPortrait;
     private boolean m_safeToCommit;
-    private Runnable m_runWhenSafe;
+    private ArrayList<Runnable> m_runWhenSafe = new ArrayList<Runnable>();
+    private Intent m_newIntent; // work in progress...
 
     // for tracking launchForResult callback recipients
     private Map<RequestCode, WeakReference<DelegateBase>> m_pendingCodes
@@ -64,9 +66,6 @@ public class MainActivity extends XWActivity
     protected void onCreate( Bundle savedInstanceState )
     {
         m_dpEnabled = XWPrefs.dualpaneEnabled( this );
-        if ( m_dpEnabled ) {
-            Utils.showToast( this, R.string.db_enabled_toast );
-        }
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
             : new GamesListDelegate( this, savedInstanceState );
@@ -141,52 +140,89 @@ public class MainActivity extends XWActivity
         super.onConfigurationChanged( newConfig );
     }
 
-    /**
-     * Run down the list of fragments until one handles the intent. If no
-     * visible one does, pop hidden ones into view until one of them
-     * does. Yes, this will take us back to GamesList being visible even if
-     * nothing handles the intent, but at least now all are handled by
-     * GamesList anyway.
+    /* Sometimes I'm getting crashes because views don't have fragments
+     * associated yet. I suspect that's because adding them's been postponed
+     * via the m_runWhenSafe mechanism. So: postpone handling intents too.
+     *
+     * This postponing thing won't scale, and makes me suspect there's
+     * something I'm doing wrong w.r.t. fragments. Should be revisited. In
+     * this particular case there might be a better way to get to the Delegate
+     * on which I need to call handleNewIntent().
      */
-    protected boolean dispatchNewIntent( Intent intent )
+    protected boolean dispatchNewIntent( final Intent intent )
+    {
+        boolean handled;
+        if ( m_safeToCommit ) {
+            handled = dispatchNewIntentImpl( intent );
+        } else {
+            m_runWhenSafe.add( new Runnable() {
+                    @Override
+                    public void run() {
+                        dispatchNewIntentImpl( intent );
+                    }
+                } );
+            if ( BuildConfig.DEBUG ) {
+                DbgUtils.showf( this, "Putting off handling intent; %d waiting",
+                                m_runWhenSafe.size() );
+            }
+            handled = true;
+        }
+        return handled;
+    }
+
+    private void popIntoView( XWFragment newTopFrag )
+    {
+        FragmentManager fm = getSupportFragmentManager();
+        for ( ; ; ) {
+            int top = m_root.getChildCount() - 1;
+            if ( top < 0 ) {
+                break;
+            }
+            View child = m_root.getChildAt( top );
+            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            if ( frag == newTopFrag ) {
+                break;
+            }
+            String name = frag.getClass().getSimpleName();
+            DbgUtils.logdf( "MainActivity.popIntoView(): popping %d: %s", top, name );
+            fm.popBackStackImmediate();
+            DbgUtils.logdf( "MainActivity.popIntoView(): DONE popping %s",
+                            name );
+        }
+    }
+
+    /**
+     * Run down the list of fragments until one can handle the intent. If
+     * necessary, pop fragments above it until it comes into view. Then send
+     * it the event.
+     */
+    private boolean dispatchNewIntentImpl( Intent intent )
     {
         boolean handled = false;
         FragmentManager fm = getSupportFragmentManager();
 
-        // First try non-left-most fragments, if any. Once we've eliminated
-        // them we can just iterate on the leftmost fragment.
-        int nNonLeft = m_maxPanes - 1;
-        // include paged-to-left invisible views
-        int viewCount = m_root.getChildCount();
-        for ( int ii = nNonLeft; !handled && 0 < ii; --ii ) {
-            View child = m_root.getChildAt( viewCount - ii );
-            Fragment frag = fm.findFragmentById( child.getId() );
-            handled = ((XWFragment)frag).getDelegate().handleNewIntent( intent );
-        }
-
-        while ( !handled ) {
-            // Now iterate on the leftmost, popping if necessary to page new
-            // ones into place
-            int childCount = m_root.getChildCount();
-            int hiddenCount = Math.max( 0, childCount - m_maxPanes );
-            for ( int ii = hiddenCount; ii >= 0; --ii ) {
-                View child = m_root.getChildAt( ii );
-                Fragment frag = fm.findFragmentById( child.getId() );
-                // DbgUtils.logf( "left-most case (child %d): %s", hiddenCount,
-                //                frag.getClass().getSimpleName() );
-                handled = ((XWFragment)frag).getDelegate()
-                    .handleNewIntent( intent );
-
+        for ( int ii = m_root.getChildCount() - 1; !handled && ii >= 0; --ii ) {
+            View child = m_root.getChildAt( ii );
+            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            if ( null != frag ) {
+                handled = frag.getDelegate().canHandleNewIntent( intent );
                 if ( handled ) {
-                    break;
-                } else if ( ii > 0 ) {
-                    DbgUtils.logf( "popping %s",
-                                   frag.getClass().getSimpleName() );
-                    fm.popBackStackImmediate(); // callback removes view
+                    popIntoView( frag );
+                    frag.getDelegate().handleNewIntent( intent );
                 }
+            } else {
+                DbgUtils.logdf( "no fragment for child %s indx %d",
+                                child.getClass().getSimpleName(), ii );
             }
         }
 
+        if ( BuildConfig.DEBUG && !handled ) {
+            // DbgUtils.showf( this, "dropping intent %s", intent.toString() );
+            DbgUtils.logdf( "dropping intent %s", intent.toString() );
+            // DbgUtils.printStack();
+            // setIntent( intent ); -- look at handling this in onPostResume()?
+            m_newIntent = intent;
+        }
         return handled;
     }
 
@@ -335,9 +371,12 @@ public class MainActivity extends XWActivity
 
     private XWFragment getTopFragment()
     {
+        XWFragment frag = null;
         View child = m_root.getChildAt( m_root.getChildCount() - 1 );
-        XWFragment frag = (XWFragment)getSupportFragmentManager()
-            .findFragmentById( child.getId() );
+        if ( null != child ) {
+            frag = (XWFragment)getSupportFragmentManager()
+                .findFragmentById( child.getId() );
+        }
         return frag;
     }
 
@@ -438,15 +477,15 @@ public class MainActivity extends XWActivity
         if ( m_safeToCommit ) {
             safeAddFragment( fragment, parentName );
         } else {
-            Assert.assertNull( m_runWhenSafe );
-            m_runWhenSafe = new Runnable() {
+            m_runWhenSafe.add( new Runnable() {
                     @Override
                     public void run() {
                         safeAddFragment( fragment, parentName );
                     }
-                };
+                } );
             if ( BuildConfig.DEBUG ) {
-                DbgUtils.showf( this, "Putting off fragment construction" );
+                DbgUtils.showf( this, "Putting off fragment construction; %d waiting",
+                                m_runWhenSafe.size() );
             }
         }
     }
@@ -517,9 +556,9 @@ public class MainActivity extends XWActivity
     private void setSafeToRun()
     {
         m_safeToCommit = true;
-        if ( null != m_runWhenSafe ) {
-            m_runWhenSafe.run();
-            m_runWhenSafe = null;
+        for ( Runnable proc : m_runWhenSafe ) {
+            proc.run();
         }
+        m_runWhenSafe.clear();
     }
 }

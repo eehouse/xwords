@@ -2435,9 +2435,13 @@ server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles )
 } /* server_commitTrade */
 
 XP_S16
-server_getCurrentTurn( ServerCtxt* server )
+server_getCurrentTurn( ServerCtxt* server, XP_Bool* isLocal )
 {
-    return server->nv.currentTurn;
+    XP_S16 turn = server->nv.currentTurn;
+    if ( NULL != isLocal && turn >= 0 ) {
+        *isLocal =  server->vol.gi->players[turn].isLocal;
+    }
+    return turn;
 } /* server_getCurrentTurn */
 
 XP_Bool

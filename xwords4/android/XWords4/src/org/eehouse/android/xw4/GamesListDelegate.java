@@ -400,14 +400,9 @@ public class GamesListDelegate extends ListDelegateBase
 
         private List<Object> makeChildren( long groupID )
         {
-            List<Object> alist = new ArrayList<Object>();
             long[] rows = DBUtils.getGroupGames( m_activity, groupID );
+            List<Object> alist = new ArrayList<Object>( rows.length );
             for ( long row : rows ) {
-                if ( false && BuildConfig.DEBUG ) {
-                    GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
-                    bmr.m_lmi = new LastMoveInfo();
-                    GameUtils.postMoveNotification( m_activity, row, bmr, false );
-                }
                 alist.add( new GameRec( row ) );
             }
             // DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );
@@ -988,17 +983,19 @@ public class GamesListDelegate extends ListDelegateBase
     } // init
 
     @Override
-    protected boolean handleNewIntent( Intent intent )
+    protected boolean canHandleNewIntent( Intent intent )
     {
-        DbgUtils.logf( "GamesListDelegate.handleNewIntent(%s)",
-                       intent.toString() );
+        return true;
+    }
 
+    @Override
+    protected void handleNewIntent( Intent intent )
+    {
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
-        return true;            // handled it
     }
 
     @Override
@@ -1114,6 +1111,11 @@ public class GamesListDelegate extends ListDelegateBase
                             mkListAdapter();
                         } else {
                             reloadGame( rowid );
+                            if ( m_adapter.inExpandedGroup( rowid ) ) {
+                                long groupID = DBUtils.getGroupForGame( m_activity, rowid );
+                                m_adapter.setExpanded( groupID, false );
+                                m_adapter.setExpanded( groupID, true );
+                            }
                         }
                         break;
                     case GAME_CREATED:
@@ -1660,6 +1662,7 @@ public class GamesListDelegate extends ListDelegateBase
                                   final boolean success )
     {
         runWhenActive( new Runnable() {
+                @Override
                 public void run() {
                     boolean madeGame = false;
                     if ( success ) {
