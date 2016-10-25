@@ -568,7 +568,7 @@ public class BoardDelegate extends DelegateBase
 
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
-        DbgUtils.logf( "BoardActivity: opening rowid %d", m_rowid );
+        DbgUtils.logf( "BoardDelegate.init(): opening rowid %d", m_rowid );
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
