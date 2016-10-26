@@ -25,12 +25,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.SectionIndexer;
 import android.widget.Spinner;
@@ -44,7 +45,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.Arrays;
 
-public class DictBrowseDelegate extends ListDelegateBase
+public class DictBrowseDelegate extends DelegateBase
     implements View.OnClickListener, OnItemSelectedListener {
 
     private static final String DICT_NAME = "DICT_NAME";
@@ -62,6 +63,7 @@ public class DictBrowseDelegate extends ListDelegateBase
     private DBUtils.DictBrowseState m_browseState;
     private int m_minAvail;
     private int m_maxAvail;
+    private ListView m_list;
 
 
 // - Steps to reproduce the problem:
@@ -213,10 +215,7 @@ public class DictBrowseDelegate extends ListDelegateBase
 
                 setUpSpinners();
 
-                setListAdapter( new DictListAdapter() );
-                getListView().setFastScrollEnabled( true );
-                getListView().setSelectionFromTop( m_browseState.m_pos,
-                                                              m_browseState.m_top );
+                initList();
             }
         }
     } // init
@@ -224,9 +223,8 @@ public class DictBrowseDelegate extends ListDelegateBase
     protected void onPause()
     {
         if ( null != m_browseState ) { // already saved?
-            ListView list = getListView();
-            m_browseState.m_pos = list.getFirstVisiblePosition();
-            View view = list.getChildAt( 0 );
+            m_browseState.m_pos = m_list.getFirstVisiblePosition();
+            View view = m_list.getChildAt( 0 );
             m_browseState.m_top = (view == null) ? 0 : view.getTop();
             m_browseState.m_prefix = getFindText();
             DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
@@ -260,7 +258,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         try {
             super.finalize();
         } catch ( java.lang.Throwable err ){
-            DbgUtils.logf( "%s", err.toString() );
+            DbgUtils.logi( getClass(), "%s", err.toString() );
         }
     }
 
@@ -334,7 +332,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         if ( null != text && 0 < text.length() ) {
             int pos = XwJNI.dict_iter_getStartsWith( m_dictClosure, text );
             if ( 0 <= pos ) {
-                getListView().setSelection( pos );
+                m_list.setSelection( pos );
             } else {
                 DbgUtils.showf( m_activity, R.string.dict_browse_nowords_fmt,
                                 m_name, text );
@@ -358,11 +356,8 @@ public class DictBrowseDelegate extends ListDelegateBase
             m_browseState.m_maxShown = max;
             m_browseState.m_prefix = getFindText();
             DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
-            m_browseState = null;
 
-            finish(); // pop fragment stack before adding new (only it doesn't work)
-
-            launch( getDelegator(), getArguments() );
+            initList();
         }
     }
 
@@ -418,6 +413,19 @@ public class DictBrowseDelegate extends ListDelegateBase
         m_maxSpinner.setOnItemSelectedListener( this );
     }
 
+    private void initList()
+    {
+        FrameLayout parent = (FrameLayout)findViewById(R.id.list_container);
+        parent.removeAllViews();
+
+        m_list = (ListView)inflate( R.layout.dict_browser_list );
+        m_list.setAdapter( new DictListAdapter() );
+        m_list.setFastScrollEnabled( true );
+        m_list.setSelectionFromTop( m_browseState.m_pos, m_browseState.m_top );
+
+        parent.addView( m_list );
+    }
+
     private static void launch( Delegator delegator, Bundle bundle )
     {
         if ( delegator.inDPMode() ) {
@@ -445,7 +453,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         DictUtils.DictLoc loc
             = DictUtils.getDictLoc( delegator.getActivity(), name );
         if ( null == loc ) {
-            DbgUtils.logf( "DictBrowseDelegate.launch(): DictLoc null; try again?" );
+            DbgUtils.logw( DictBrowseDelegate.class, "launch(): DictLoc null; try again?" );
         } else {
             launch( delegator, name, loc );
         }

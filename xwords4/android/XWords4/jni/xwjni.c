@@ -1008,7 +1008,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
 
     BoardDims dims;
     board_figureLayout( state->game.board, gi, left, top, width, height, 
-                        scorePct, trayPct, scoreWidth,
+                        115, scorePct, trayPct, scoreWidth,
                         fontWidth, fontHt, squareTiles,
                         ((!!jdims) ? &dims : NULL) );
 
@@ -1661,8 +1661,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     setInt( env, jsummary, "nMoves", nMoves );
     XP_Bool gameOver = server_getGameIsOver( state->game.server );
     setBool( env, jsummary, "gameOver", gameOver );
+    XP_Bool isLocal = XP_FALSE;
     setInt( env, jsummary, "turn", 
-            server_getCurrentTurn( state->game.server ) );
+            server_getCurrentTurn( state->game.server, &isLocal ) );
+    setBool( env, jsummary, "turnIsLocal", isLocal );
     setInt( env, jsummary, "lastMoveTime", 
             server_getLastMoveTime(state->game.server) );
     

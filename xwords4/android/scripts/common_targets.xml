@@ -9,9 +9,9 @@
           <arg value="./local.properties" />
         </exec>
 
-        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null" 
+        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null"
 	          failonerror="true" >
-            <arg value="${build.target}"/>
+          <arg value="--with-clang"/>
         </exec>
     </target>
 
@@ -23,8 +23,8 @@
         </exec>
 
         <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null"
-              failonerror="true">
-            <arg value="${build.target}"/>
+	          failonerror="true" >
+          <arg value="--with-clang"/>
         </exec>
 
         <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">

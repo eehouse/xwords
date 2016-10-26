@@ -59,8 +59,6 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
     private LinearLayout m_layout;
     private boolean m_visible;
-    private ScrollView m_scrollVert;
-    private HorizontalScrollView m_scrollHor;
     private Map<Buttons, Object> m_onClickListeners;
     private Map<Buttons, Object> m_onLongClickListeners;
 
@@ -68,12 +66,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     {
         m_activity = activity;
         m_dlgDlgt = dlgDlgt;
-        m_scrollVert =
-            (ScrollView)activity.findViewById( R.id.tbar_parent_vert );
-        Assert.assertNotNull( m_scrollVert );
-        m_scrollHor =
-            (HorizontalScrollView)activity.findViewById( R.id.tbar_parent_hor );
-        Assert.assertNotNull( m_scrollHor );
+
         BoardContainer.registerSizeChangeListener( this );
     }
 
@@ -99,7 +92,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
         m_onClickListeners.put( index, new View.OnClickListener() {
                 @Override
                 public void onClick( View view ) {
-                    DbgUtils.logf( "Toolbar.setListener(): click on %s with action %s",
+                    DbgUtils.logi( getClass(), "setListener(): click on %s with action %s",
                                    view.toString(), action.toString() );
                     m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
                         .show();
@@ -170,7 +163,6 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     private void doShowHide()
     {
         boolean isPortrait = BoardContainer.getIsPortrait();
-        DbgUtils.logdf( "Toolbar.doShowHide(): isPortrait: %b", isPortrait );
 
         if ( null == m_layout ) {
             m_layout = (LinearLayout)LocUtils.inflate( m_activity, R.layout.toolbar );
@@ -180,7 +172,8 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
         m_layout.setOrientation( isPortrait ?
                                  LinearLayout.HORIZONTAL : LinearLayout.VERTICAL );
 
-        ViewGroup scroller = isPortrait ? m_scrollHor : m_scrollVert;
+        int scrollerId = isPortrait ? R.id.tbar_parent_hor : R.id.tbar_parent_vert;
+        ViewGroup scroller = (ViewGroup)m_activity.findViewById( scrollerId );
         if ( null != scroller ) {
             // Google's had reports of a crash adding second view
             scroller.removeAllViews();

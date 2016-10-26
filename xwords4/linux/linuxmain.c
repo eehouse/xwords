@@ -359,6 +359,10 @@ saveGame( CommonGlobals* cGlobals )
         }
 
         if ( doSave ) {
+            if ( !!cGlobals->pDb ) {
+                summarize( cGlobals );
+            }
+
             XWStreamCtxt* outStream;
             MemStreamCloseCallback onClose = !!cGlobals->pDb?
                 writeToDB : writeToFile;
@@ -377,9 +381,6 @@ saveGame( CommonGlobals* cGlobals )
             game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
             XP_LOGF( "%s: saved", __func__ );
 
-            if ( !!cGlobals->pDb ) {
-                summarize( cGlobals );
-            }
         } else {
             XP_LOGF( "%s: simulating save failure", __func__ );
         }

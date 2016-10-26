@@ -407,7 +407,7 @@ board_drawSnapshot( const BoardCtxt* curBoard, DrawCtx* dctx,
     board_setDraw( newBoard, dctx ); /* so draw_dictChanged() will get called */
     XP_U16 fontWidth = width / curBoard->gi->boardSize;
     board_figureLayout( newBoard, curBoard->gi, 0, 0, width, height,
-                        0, 0, 0, fontWidth, width, XP_FALSE, NULL );
+                        100, 0, 0, 0, fontWidth, width, XP_FALSE, NULL );
 
     newBoard->showColors = curBoard->showColors;
     newBoard->showGrid = curBoard->showGrid;
@@ -447,10 +447,11 @@ printDims( const BoardDims* dimsp )
 
 void
 board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
-                    XP_U16 bLeft, XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
-                    XP_U16 scorePct, XP_U16 trayPct, XP_U16 scoreWidth,
-                    XP_U16 fontWidth, XP_U16 fontHt, XP_Bool squareTiles, 
-                    BoardDims* dimsp )
+                    XP_U16 bLeft, XP_U16 bTop,
+                    const XP_U16 bWidth, const XP_U16 bHeight,
+                    XP_U16 colPctMax, XP_U16 scorePct, XP_U16 trayPct,
+                    XP_U16 scoreWidth, XP_U16 fontWidth, XP_U16 fontHt,
+                    XP_Bool squareTiles, BoardDims* dimsp )
 {
     BoardDims ldims;
     XP_MEMSET( &ldims, 0, sizeof(ldims) );
@@ -461,14 +462,13 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     XP_U16 scoreHt;
     XP_U16 wantHt;
     XP_U16 nToScroll;
-    XP_Bool firstPass;
 
     ldims.left = bLeft;
     ldims.top = bTop;
     ldims.width = bWidth;
 
     ldims.boardWidth = bWidth;
-    for ( firstPass = XP_TRUE; ; ) {
+    for ( XP_Bool firstPass = XP_TRUE; ; ) {
         XP_U16 cellSize = ldims.boardWidth / nCells;
         if ( cellSize > maxCellSize ) {
             cellSize = maxCellSize;
@@ -559,6 +559,15 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
         }
         break;
     }
+
+#ifdef XWFEATURE_WIDER_COLS
+    ldims.boardWidth = (ldims.boardWidth * colPctMax) / 100;
+    if ( ldims.boardWidth > bWidth ) {
+        ldims.boardWidth = bWidth;
+    }
+#else
+    XP_USE(colPctMax);
+#endif
 
     printDims( &ldims );
 
@@ -792,7 +801,7 @@ board_canShuffle( const BoardCtxt* board )
 XP_Bool
 board_canHideRack( const BoardCtxt* board )
 {
-    XP_Bool result = 0 <= server_getCurrentTurn( board->server )
+    XP_Bool result = 0 <= server_getCurrentTurn( board->server, NULL )
         && (board->boardObscuresTray || !board->gameOver);
     return result;
 }
@@ -826,7 +835,7 @@ board_canHint( const BoardCtxt* board )
 }
 
 void
-board_sendChat( const BoardCtxt* board, const XP_UCHAR const* msg )
+board_sendChat( const BoardCtxt* board, const XP_UCHAR* msg )
 {
     server_sendChat( board->server, msg, board->selPlayer );
 }
@@ -988,7 +997,7 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
     if ( !isLegal ) {
         BadWordInfo bwi = {0};
         BoardCtxt* board = (BoardCtxt*)closure;
-        XP_S16 turn = server_getCurrentTurn( board->server );
+        XP_S16 turn = server_getCurrentTurn( board->server, NULL );
 
         bwi.nWords = 1;
         bwi.words[0] = word;
@@ -1019,7 +1028,7 @@ XP_Bool
 board_commitTurn( BoardCtxt* board ) 
 {
     XP_Bool result = XP_FALSE;
-    const XP_S16 turn = server_getCurrentTurn( board->server );
+    const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
     PerTurnInfo* pti = board->pti + turn;
 
     if ( board->gameOver || turn < 0 ) {
@@ -1110,15 +1119,15 @@ static void
 selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
                   XP_Bool canPeek )
 {
-    XP_S16 curTurn = server_getCurrentTurn(board->server);
+    XP_Bool isLocal;
+    XP_S16 curTurn = server_getCurrentTurn( board->server, &isLocal );
     if ( !board->gameOver && curTurn < 0 ) {
         /* game not started yet; do nothing */
     } else if ( board->selPlayer == newPlayer ) {
         if ( reveal ) {
             checkRevealTray( board );
         }
-    } else if ( canPeek || ((newPlayer == curTurn)
-                            && LP_IS_LOCAL( &board->gi->players[newPlayer]))) {
+    } else if ( canPeek || ((newPlayer == curTurn) && isLocal)) {
         PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
@@ -1318,7 +1327,7 @@ timerFiredForTimer( BoardCtxt* board )
 {
     board->timerPending = XP_FALSE;
     if ( !board->gameOver ) {
-        XP_S16 turn = server_getCurrentTurn( board->server );
+        XP_S16 turn = server_getCurrentTurn( board->server, NULL );
 
         if ( turn >= 0 ) {
             ++board->gi->players[turn].secondsUsed;
@@ -1365,7 +1374,8 @@ board_pushTimerSave( BoardCtxt* board )
         if ( board->timerSaveCount++ == 0 ) {
             board->timerStoppedTime = util_getCurSeconds( board->util );
 #ifdef DEBUG
-            board->timerStoppedTurn = server_getCurrentTurn( board->server );
+            board->timerStoppedTurn = server_getCurrentTurn( board->server,
+                                                             NULL );
 #endif
         }
     }
@@ -1380,7 +1390,7 @@ board_popTimerSave( BoardCtxt* board )
            between calls to board_pushTimerSave and this call, as can happen on
            franklin.  So that's not an error. */
         if ( board->timerSaveCount > 0 ) {
-            XP_S16 turn = server_getCurrentTurn( board->server );
+            XP_S16 turn = server_getCurrentTurn( board->server, NULL );
 
             XP_ASSERT( board->timerStoppedTurn == turn );
 
@@ -1769,7 +1779,7 @@ chooseBestSelPlayer( BoardCtxt* board )
         return board->selPlayer;
     } else {
 
-        XP_S16 curTurn = server_getCurrentTurn( server );
+        XP_S16 curTurn = server_getCurrentTurn( server, NULL );
 
         if ( curTurn >= 0 ) {
             XP_U16 nPlayers = board->gi->nPlayers;
@@ -2001,7 +2011,7 @@ static XP_Bool
 preflight( BoardCtxt* board, XP_Bool reveal )
 {
     return !board->gameOver
-        && server_getCurrentTurn(board->server) >= 0
+        && server_getCurrentTurn(board->server, NULL) >= 0
         && ( !reveal || checkRevealTray( board ) )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
@@ -2163,37 +2173,46 @@ figureDims( XP_U16* edges, XP_U16 len, XP_U16 nVisible,
 } /* figureDims */
 
 static XP_U16
-figureHScale( BoardCtxt* board )
+figureScale( BoardCtxt* board, XP_U16 count, XP_U16 dimension, ScrollData* sd )
 {
-    XP_U16 nCols, nVisCols, scale, spares;
-    XP_U16 maxOffset;
-    ScrollData* hsd;
+    XP_U16 nVis = count - board->zoomCount;
+    XP_U16 scale = dimension / nVis;
+    XP_U16 spares = dimension % nVis;
 
+    XP_U16 maxOffset = count - nVis;
+    if ( sd->offset > maxOffset ) {
+        sd->offset = maxOffset;
+    }
+
+    sd->lastVisible = count - board->zoomCount + sd->offset - 1;
+
+    if ( figureDims( sd->dims, VSIZE(sd->dims), nVis,
+                     scale, spares ) ) {
+        board_invalAll( board );
+    }
+    return scale;
+}
+
+static void
+figureScales( BoardCtxt* board, XP_U16* scaleHP, XP_U16* scaleVP )
+{
     while ( !canZoomIn( board, board->zoomCount ) ) {
         XP_ASSERT( board->zoomCount >= 1 );
         --board->zoomCount;
     }
 
-    nCols = model_numCols( board->model );
-    nVisCols = nCols - board->zoomCount;
-    scale = board->boardBounds.width / nVisCols;
-    spares = board->boardBounds.width % nVisCols;
+    /* Horizontal scale */
+    *scaleHP = figureScale( board, model_numCols( board->model ),
+                            board->boardBounds.width, &board->sd[SCROLL_H] );
 
-    maxOffset = nCols - nVisCols;
-    hsd = &board->sd[SCROLL_H];
-    if ( hsd->offset > maxOffset ) {
-        hsd->offset = maxOffset;
-    }
-
-    hsd->lastVisible = nCols - board->zoomCount + hsd->offset - 1;
-
-    if ( figureDims( hsd->dims, VSIZE(hsd->dims), nVisCols, 
-                     scale, spares ) ) {
-        board_invalAll( board );
-    }
-
-    return scale;
-} /* figureHScale */
+#ifdef XWFEATURE_WIDER_COLS
+    *scaleVP = figureScale( board, model_numCols( board->model ),
+                            board->boardBounds.height,
+                            &board->sd[SCROLL_V] );
+#else
+    *scaleVP = *scaleHP;
+#endif
+} /* figureScales */
 
 static void
 figureBoardRect( BoardCtxt* board )
@@ -2202,13 +2221,14 @@ figureBoardRect( BoardCtxt* board )
         XP_Rect boardBounds = board->boardBounds;
         XP_U16 nVisible;
         XP_U16 nRows = model_numRows( board->model );
-        XP_U16 boardScale = figureHScale( board );
         ScrollData* hsd = &board->sd[SCROLL_H];
         ScrollData* vsd = &board->sd[SCROLL_V];
+        XP_U16 boardHScale, boardVScale;
+        figureScales( board, &boardHScale, &boardVScale );
 
-        if ( boardScale != hsd->scale ) {
+        if ( boardHScale != hsd->scale ) {
             board_invalAll( board );
-            hsd->scale = boardScale;
+            hsd->scale = boardHScale;
         }
 
         /* Figure height of board.  Max height is with all rows visible and
@@ -2216,7 +2236,7 @@ figureBoardRect( BoardCtxt* board )
            if it's visible, or the bottom of the board as set in board_setPos.
            So we check those two possibilities. */
 
-        XP_U16 maxHeight, wantHeight = nRows * boardScale;
+        XP_U16 maxHeight, wantHeight = nRows * boardVScale;
         XP_Bool trayHidden = board->trayVisState == TRAY_HIDDEN;
         if ( trayHidden ) {
             maxHeight = board->heightAsSet;
@@ -2236,10 +2256,10 @@ figureBoardRect( BoardCtxt* board )
             XP_S16 maxYOffset;
             /* Need to hide rows etc. */
             boardBounds.height = maxHeight;
-            vsd->scale = boardScale;
+            vsd->scale = boardVScale;
 
-            nVisible = maxHeight / boardScale;
-            extra = maxHeight % boardScale;
+            nVisible = maxHeight / boardVScale;
+            extra = maxHeight % boardVScale;
 
             maxYOffset = nRows - nVisible;
             if ( vsd->offset > maxYOffset ) {
@@ -2336,16 +2356,18 @@ getCellRect( const BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
     XP_Bool onBoard = col >= hsd->offset && row >= vsd->offset
         && col <= hsd->lastVisible && row <= vsd->lastVisible;
 
-    rect->left = board->boardBounds.left;
+    XP_U16 left = board->boardBounds.left;
     for ( cur = hsd->offset; cur < col; ++cur ) {
-        rect->left += hsd->dims[cur];
+        left += hsd->dims[cur];
     }
+    rect->left = left;
     rect->width = hsd->dims[col];
 
-    rect->top = board->boardBounds.top;
+    XP_U16 top = board->boardBounds.top;
     for ( cur = vsd->offset; cur < row; ++cur ) {
-        rect->top += vsd->dims[cur];
+        top += vsd->dims[cur];
     }
+    rect->top = top;
     rect->height = vsd->dims[row];
 
     return onBoard;
@@ -2581,7 +2603,7 @@ askRevealTray( BoardCtxt* board )
 
     if ( board->gameOver ) {
         revealed = XP_TRUE;
-    } else if ( server_getCurrentTurn( board->server ) < 0 ) {
+    } else if ( server_getCurrentTurn( board->server, NULL ) < 0 ) {
         revealed = XP_FALSE;
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( !lp->isLocal ) {

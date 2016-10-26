@@ -140,7 +140,7 @@ public class Utils {
         try {
             Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
         } catch ( java.lang.RuntimeException re ) {
-            DbgUtils.loge( re );
+            DbgUtils.logex( re );
         }
     }
 
@@ -431,7 +431,7 @@ public class Utils {
                     .versionCode;
                 s_appVersion = new Integer( version );
             } catch ( Exception e ) {
-                DbgUtils.loge( e );
+                DbgUtils.logex( e );
             }
         }
         return null == s_appVersion? 0 : s_appVersion;

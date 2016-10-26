@@ -636,7 +636,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
 #ifdef XWFEATURE_CHAT
 static void
-sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg,
+sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR* msg,
             XP_S8 from )
 {
     if ( comms_canChat( server->vol.comms ) ) {
@@ -652,7 +652,7 @@ sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg,
 
 static void
 sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, 
-                         const XP_UCHAR const* msg, XP_S8 from )
+                         const XP_UCHAR* msg, XP_S8 from )
 {
     XP_U16 devIndex;
     for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
@@ -663,7 +663,7 @@ sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip,
 }
 
 void
-server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg, XP_S16 from )
+server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from )
 {
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         sendChatTo( server, SERVER_DEVICE, msg, from );
@@ -2435,9 +2435,13 @@ server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles )
 } /* server_commitTrade */
 
 XP_S16
-server_getCurrentTurn( ServerCtxt* server )
+server_getCurrentTurn( ServerCtxt* server, XP_Bool* isLocal )
 {
-    return server->nv.currentTurn;
+    XP_S16 turn = server->nv.currentTurn;
+    if ( NULL != isLocal && turn >= 0 ) {
+        *isLocal =  server->vol.gi->players[turn].isLocal;
+    }
+    return turn;
 } /* server_getCurrentTurn */
 
 XP_Bool

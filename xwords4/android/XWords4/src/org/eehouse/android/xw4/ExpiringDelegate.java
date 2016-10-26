@@ -91,8 +91,8 @@ public class ExpiringDelegate {
                 }
             }
 
-            DbgUtils.logdf( "ExpUpdater: ref had %d refs, now has %d expiringdelegate views",
-                            sizeBefore, dlgts.size() );
+            DbgUtils.logd( getClass(), "ref had %d refs, now has %d expiringdelegate views",
+                           sizeBefore, dlgts.size() );
 
             for ( ExpiringDelegate dlgt : dlgts ) {
                 dlgt.timerFired();
@@ -120,7 +120,7 @@ public class ExpiringDelegate {
         private void setHandler( Handler handler )
         {
             if ( handler != m_handler ) {
-                DbgUtils.logdf( "handler changing from %H to %H",
+                DbgUtils.logd( getClass(), "handler changing from %H to %H",
                                m_handler, handler );
                 m_handler = handler;
                 reschedule();

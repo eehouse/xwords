@@ -1,6 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -76,8 +76,8 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM,
-       CONN_ITEM, OVER_ITEM, TURN_ITEM, NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM,
-       LASTTURN_ITEM, N_ITEMS };
+       CONN_ITEM, OVER_ITEM, TURN_ITEM, LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
+       MISSING_ITEM, LASTTURN_ITEM, N_ITEMS };
 
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
@@ -169,6 +169,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Conn. via", CONN_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
+    addTextColumn( list, "Local", LOCAL_ITEM );
     addTextColumn( list, "NMoves", NMOVES_ITEM );
     addTextColumn( list, "NTotal", NTOTAL_ITEM );
     addTextColumn( list, "NMissing", MISSING_ITEM );
@@ -184,10 +185,11 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_STRING,  /* CONN_ITEM */
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
+                                              G_TYPE_STRING,  /* LOCAL_ITEM */
                                               G_TYPE_INT,     /* NMOVES_ITEM */
                                               G_TYPE_INT,     /* NTOTAL_ITEM */
                                               G_TYPE_INT,     /* MISSING_ITEM */
-                                              G_TYPE_INT      /* LASTTURN_ITEM */
+                                              G_TYPE_STRING  /* LASTTURN_ITEM */
                                               );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
@@ -224,6 +226,11 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
             }
         }
     }
+    gchar* localString = 0 <= gib->turn ? gib->turnLocal ? "YES"
+        : "NO" : "";
+
+    GTimeVal timeval = { tv_sec: gib->lastMoveTime, tv_usec: 0 };
+    gchar* timeStr = g_time_val_to_iso8601( &timeval );
     gtk_list_store_set( store, &iter, 
                         ROW_ITEM, rowid,
                         ROW_THUMB, gib->snap,
@@ -232,13 +239,15 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         GAMEID_ITEM, gib->gameID,
                         SEED_ITEM, gib->seed,
                         CONN_ITEM, gib->conn,
-                        OVER_ITEM, gib->gameOver,
                         TURN_ITEM, gib->turn,
+                        OVER_ITEM, gib->gameOver,
+                        LOCAL_ITEM, localString,
                         NMOVES_ITEM, gib->nMoves,
                         NTOTAL_ITEM, gib->nTotal,
                         MISSING_ITEM, gib->nMissing,
-                        LASTTURN_ITEM, gib->lastMoveTime,
+                        LASTTURN_ITEM, timeStr,
                         -1 );
+    g_free( timeStr );
     XP_LOGF( "DONE adding" );
 }
 
@@ -483,14 +492,18 @@ setWindowTitle( GtkAppGlobals* apg )
 static void
 trySetWinConfig( GtkAppGlobals* apg )
 {
+    int xx = 20;                /* defaults */
+    int yy = 20;
+    int width = 600;
+    int height = 400;
+
     gchar buf[64];
     if ( db_fetch( apg->params->pDb, KEY_WIN_LOC, buf, sizeof(buf)) ) {
-        int xx, yy, width, height;
         sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
-
-        gtk_window_resize( GTK_WINDOW(apg->window), width, height );
-        gtk_window_move (GTK_WINDOW(apg->window), xx, yy );
     }
+
+    gtk_window_resize( GTK_WINDOW(apg->window), width, height );
+    gtk_window_move (GTK_WINDOW(apg->window), xx, yy );
 }
 
 static void

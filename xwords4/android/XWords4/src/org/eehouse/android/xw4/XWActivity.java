@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014-2016 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -42,8 +43,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onCreate(this=%H)",
-                           getClass().getSimpleName(), this );
+            DbgUtils.logi( getClass(), "onCreate(this=%H)", this );
         }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
@@ -67,8 +67,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onPause()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onPause(this=%H)",
-                           getClass().getSimpleName(), this );
+            DbgUtils.logi( getClass(), "onPause(this=%H)", this );
         }
         m_dlgt.onPause();
         super.onPause();
@@ -78,19 +77,26 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onResume(this=%H)",
-                           getClass().getSimpleName(), this );
+            DbgUtils.logi( getClass(), "onResume(this=%H)", this );
         }
         super.onResume();
         m_dlgt.onResume();
     }
 
     @Override
+    protected void onPostResume()
+    {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logi( getClass(), "onPostResume(this=%H)", this );
+        }
+        super.onPostResume();
+    }
+
+    @Override
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStart(this=%H)",
-                           getClass().getSimpleName(), this );
+            DbgUtils.logi( getClass(), "%s.onStart(this=%H)", this );
         }
         super.onStart();
         m_dlgt.onStart();
@@ -100,8 +106,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStop(this=%H)",
-                           getClass().getSimpleName(), this );
+            DbgUtils.logi( getClass(), "%s.onStop(this=%H)", this );
         }
         m_dlgt.onStop();
         super.onStop();
@@ -111,8 +116,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onDestroy()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onDestroy(this=%H)",
-                           getClass().getSimpleName(), this );
+            DbgUtils.logi( getClass(), "onDestroy(this=%H)", this );
         }
         m_dlgt.onDestroy();
         super.onDestroy();

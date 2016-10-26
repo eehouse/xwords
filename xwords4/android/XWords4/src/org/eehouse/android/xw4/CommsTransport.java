@@ -94,9 +94,9 @@ public class CommsTransport implements TransportProcs,
 
                     closeSocket();
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                    DbgUtils.logex( ioe );
                 } catch ( UnresolvedAddressException uae ) {
-                    DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
+                    DbgUtils.logw( getClass(), "bad address: name: %s; port: %s; exception: %s",
                                    m_useHost, m_relayAddr.ip_relay_port,
                                    uae.toString() );
                 }
@@ -124,7 +124,7 @@ public class CommsTransport implements TransportProcs,
                                 try {
                                     m_socketChannel = SocketChannel.open();
                                     m_socketChannel.configureBlocking( false );
-                                    DbgUtils.logf( "connecting to %s:%d",
+                                    DbgUtils.logi( getClass(), "connecting to %s:%d",
                                                    m_useHost,
                                                    m_relayAddr.ip_relay_port );
                                     InetSocketAddress isa = new
@@ -132,7 +132,7 @@ public class CommsTransport implements TransportProcs,
                                                           m_relayAddr.ip_relay_port );
                                     m_socketChannel.connect( isa );
                                 } catch ( java.io.IOException ioe ) {
-                                    DbgUtils.loge( ioe );
+                                    DbgUtils.logex( ioe );
                                     failed = true;
                                     break outer_loop;
                                 }
@@ -149,14 +149,14 @@ public class CommsTransport implements TransportProcs,
                         // we get this when relay goes down.  Need to notify!
                         failed = true;
                         closeSocket();
-                        DbgUtils.logf( "exiting: %s", cce.toString() );
+                        DbgUtils.logw( getClass(), "exiting: %s", cce.toString() );
                         break;          // don't try again
                     } catch ( java.io.IOException ioe ) {
                         closeSocket();
-                        DbgUtils.logf( "exiting: %s", ioe.toString() );
-                        DbgUtils.logf( ioe.toString() );
+                        DbgUtils.logw( getClass(), "exiting: %s", ioe.toString() );
+                        DbgUtils.logw( getClass(), ioe.toString() );
                     } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
-                        DbgUtils.loge( ncp );
+                        DbgUtils.logex( ncp );
                         closeSocket();
                         break;
                     }
@@ -198,13 +198,13 @@ public class CommsTransport implements TransportProcs,
                                 }
                             }
                         } catch ( java.io.IOException ioe ) {
-                            DbgUtils.logf( "%s: cancelling key", ioe.toString() );
+                            DbgUtils.logw( getClass(), "%s: cancelling key", ioe.toString() );
                             key.cancel();
                             failed = true;
                             break outer_loop;
                         } catch ( java.nio.channels.
                                   NoConnectionPendingException ncp ) {
-                            DbgUtils.loge( ncp );
+                            DbgUtils.logex( ncp );
                             break outer_loop;
                         }
                     }
@@ -260,7 +260,7 @@ public class CommsTransport implements TransportProcs,
             try {
                 m_socketChannel.close();
             } catch ( Exception e ) {
-                DbgUtils.logf( "closing socket: %s", e.toString() );
+                DbgUtils.logw( getClass(), "closing socket: %s", e.toString() );
             }
             m_socketChannel = null;
         }
@@ -341,7 +341,7 @@ public class CommsTransport implements TransportProcs,
                 try {
                     m_thread.join(100);   // wait up to 1/10 second
                 } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.loge( ie );
+                    DbgUtils.logex( ie );
                 }
                 m_thread = null;
             }
@@ -355,8 +355,8 @@ public class CommsTransport implements TransportProcs,
     public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                               CommsConnType conType, int gameID )
     {
-        DbgUtils.logdf( "CommsTransport.transportSend(len=%d, typ=%s)",
-                        buf.length, conType.toString() );
+        DbgUtils.logd( getClass(), "transportSend(len=%d, typ=%s)",
+                       buf.length, conType.toString() );
         int nSent = -1;
         Assert.assertNotNull( addr );
         Assert.assertTrue( addr.contains( conType ) );
@@ -384,13 +384,13 @@ public class CommsTransport implements TransportProcs,
         // Keep this while debugging why the resend_all that gets
         // fired on reconnect doesn't unstall a game but a manual
         // resend does.
-        DbgUtils.logdf( "transportSend(%d)=>%d", buf.length, nSent );
+        DbgUtils.logd( getClass(), "transportSend(%d)=>%d", buf.length, nSent );
         return nSent;
     }
 
     public void relayStatus( CommsRelayState newState )
     {
-        DbgUtils.logf( "relayStatus called; state=%s", newState.toString() );
+        DbgUtils.logi( getClass(), "relayStatus called; state=%s", newState.toString() );
 
         switch( newState ) {
         case COMMS_RELAYSTATE_UNCONNECTED:

@@ -582,7 +582,7 @@ public class DlgDelegate {
             break;
 
         default:
-            DbgUtils.logf( "eventOccurred: unhandled event %s", event.toString() );
+            DbgUtils.loge( getClass(), "eventOccurred: unhandled event %s", event.toString() );
         }
 
         if ( null != msg ) {
@@ -621,21 +621,21 @@ public class DlgDelegate {
             xlator.setVisibility( View.GONE );
         }
 
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
-        builder.setIcon( R.drawable.icon48x48 );
-        builder.setTitle( R.string.app_name );
-        builder.setView( view );
-        builder.setNegativeButton( R.string.changes_button,
-                                   new OnClickListener() {
-                                       @Override
-                                       public void onClick( DialogInterface dlg,
-                                                            int which )
-                                       {
-                                           FirstRunDialog.show( m_activity );
-                                       }
-                                   } );
-        builder.setPositiveButton( android.R.string.ok, null );
-        return builder.create();
+        return LocUtils.makeAlertBuilder( m_activity )
+            .setIcon( R.drawable.icon48x48 )
+            .setTitle( R.string.app_name )
+            .setView( view )
+            .setNegativeButton( R.string.changes_button,
+                                new OnClickListener() {
+                                    @Override
+                                    public void onClick( DialogInterface dlg,
+                                                         int which )
+                                    {
+                                        FirstRunDialog.show( m_activity );
+                                    }
+                                } )
+            .setPositiveButton( android.R.string.ok, null )
+            .create();
     }
 
     private Dialog createLookupDialog()
@@ -647,11 +647,11 @@ public class DlgDelegate {
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
     {
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
-        builder.setTitle( R.string.info_title );
-        builder.setMessage( state.m_msg );
-        builder.setPositiveButton( android.R.string.ok, null );
-        Dialog dialog = builder.create();
+        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
+            .setTitle( R.string.info_title )
+            .setMessage( state.m_msg )
+            .setPositiveButton( android.R.string.ok, null )
+            .create();
         dialog = setCallbackDismissListener( dialog, state, dlgID );
 
         return dialog;
@@ -701,9 +701,8 @@ public class DlgDelegate {
             .setView( naView )
             .setPositiveButton( state.m_posButton, lstnr )
             .setNegativeButton( state.m_negButton, lstnr );
-        Dialog dialog = builder.create();
 
-        return setCallbackDismissListener( dialog, state, dlgID );
+        return setCallbackDismissListener( builder.create(), state, dlgID );
     }
 
     private Dialog createInviteChoicesDialog( final DlgState state, DlgID dlgID )
@@ -809,11 +808,11 @@ public class DlgDelegate {
 
     private Dialog createDictGoneDialog()
     {
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
-        builder.setTitle( R.string.no_dict_title );
-        builder.setMessage( R.string.no_dict_finish );
-        builder.setPositiveButton( R.string.button_close_game, null );
-        Dialog dialog = builder.create();
+        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
+            .setTitle( R.string.no_dict_title )
+            .setMessage( R.string.no_dict_finish )
+            .setPositiveButton( R.string.button_close_game, null )
+            .create();
 
         dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
                 public void onDismiss( DialogInterface di ) {
@@ -966,9 +965,11 @@ public class DlgDelegate {
         Dialog result = null;
         DlgID dlgID = DlgID.values()[id];
         WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
-        DelegateBase dlgt = ref.get();
-        if ( null != dlgt ) {
-            result = dlgt.onCreateDialog( id );
+        if ( null != ref ) {
+            DelegateBase dlgt = ref.get();
+            if ( null != dlgt ) {
+                result = dlgt.onCreateDialog( id );
+            }
         }
         return result;
     }
@@ -993,8 +994,8 @@ public class DlgDelegate {
             if ( null == oneBase ) {
                 iter.remove();  // no point in keeping it
             } else if ( base.equals( oneBase ) ) {
-                DbgUtils.logdf( "removing alert %s for %s", dlgID.toString(),
-                                oneBase.toString() );
+                DbgUtils.logd( DlgDelegate.class, "removing alert %s for %s", dlgID.toString(),
+                               oneBase.toString() );
                 activity.removeDialog( dlgID.ordinal() );
                 iter.remove();  // no point in keeping this either
             }

@@ -176,7 +176,7 @@ drawScoreBoard( BoardCtxt* board )
         XP_ASSERT( nPlayers <= MAX_NUM_PLAYERS );
         if ( nPlayers > 0 ) {
             ModelCtxt* model = board->model;
-            XP_S16 curTurn = server_getCurrentTurn( board->server );
+            XP_S16 curTurn = server_getCurrentTurn( board->server, NULL );
             XP_U16 selPlayer = board->selPlayer;
             XP_S16 nTilesInPool = server_countTilesInPool( board->server );
             XP_Rect scoreRect = board->scoreBdBounds;

@@ -1382,6 +1382,14 @@ curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc),
     /* } */
 } /* curses_util_yOffsetChange */
 
+#ifdef XWFEATURE_TURNCHANGENOTIFY
+static void
+curses_util_turnChanged( XW_UtilCtxt* XP_UNUSED(uc), XP_S16 newTurn )
+{
+    XP_LOGF( "%s(turn=%d)", __func__, newTurn );
+}
+#endif
+
 static XP_Bool
 curses_util_warnIllegalWord( XW_UtilCtxt* XP_UNUSED(uc), 
                              BadWordInfo* XP_UNUSED(bwi), 
@@ -1453,6 +1461,9 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_getVTManager = curses_util_getVTManager;
     util->vtable->m_util_askPassword = curses_util_askPassword;
     util->vtable->m_util_yOffsetChange = curses_util_yOffsetChange;
+#ifdef XWFEATURE_TURNCHANGENOTIFY
+    util->vtable->m_util_turnChanged = curses_util_turnChanged;
+#endif
     util->vtable->m_util_warnIllegalWord = curses_util_warnIllegalWord;
     util->vtable->m_util_remSelected = curses_util_remSelected;
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -1532,7 +1543,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 
     BoardDims dims;
     board_figureLayout( board, cGlobals->gi, 
-                        0, 0, width, height,
+                        0, 0, width, height, 100,
                         150, 200, /* percents */
                         width*75/100, 2, 1, 
                         XP_FALSE, &dims );

@@ -306,7 +306,7 @@ public class LocUtils {
                                             int quantity )
     {
         if ( XWApp.LOCUTILS_ENABLED ) {
-            DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
+            DbgUtils.logw( LocUtils.class, "getQuantityString(%d): punting on locutils stuff for"
                            + " now. FIXME", quantity );
         }
         String result = context.getResources().getQuantityString( id, quantity );
@@ -317,7 +317,7 @@ public class LocUtils {
                                             int quantity, Object... params )
     {
         if ( XWApp.LOCUTILS_ENABLED ) {
-            DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
+            DbgUtils.logw( LocUtils.class, "getQuantityString(%d): punting on locutils stuff for"
                            + " now. FIXME", quantity );
         }
         String result = context.getResources()
@@ -413,7 +413,7 @@ public class LocUtils {
                     .put( k_LOCALE, locale )
                     .put( k_XLATEVERS, version );
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
         return result;
@@ -439,7 +439,7 @@ public class LocUtils {
                     String locale = entry.getString( k_LOCALE );
                     String newVersion = entry.getString( k_NEW );
                     JSONArray pairs = entry.getJSONArray( k_PAIRS );
-                    DbgUtils.logf( "addXlations: locale %s: got pairs of len %d,"
+                    DbgUtils.logi( LocUtils.class, "addXlations: locale %s: got pairs of len %d,"
                                    + " version %s", locale,
                                    pairs.length(), newVersion );
 
@@ -463,7 +463,7 @@ public class LocUtils {
                 s_xlationsBlessed = null;
                 loadXlations( context );
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
+                DbgUtils.logex( jse );
             }
         }
         return nAdded;
@@ -598,7 +598,7 @@ public class LocUtils {
                 DBUtils.getXlations( context, getCurLocale( context ) );
             s_xlationsLocal = (Map<String,String>)asObjs[0];
             s_xlationsBlessed = (Map<String,String>)asObjs[1];
-            DbgUtils.logf( "loadXlations: got %d local strings, %d blessed strings",
+            DbgUtils.logi( LocUtils.class, "loadXlations: got %d local strings, %d blessed strings",
                            s_xlationsLocal.size(),
                            s_xlationsBlessed.size() );
         }
@@ -761,7 +761,7 @@ public class LocUtils {
         String locale = getCurLocale( context );
         String msg = String.format( "Dropping bad translations for %s", locale );
         Utils.showToast( context, msg );
-        DbgUtils.logf( msg );
+        DbgUtils.logw( LocUtils.class, msg );
 
         DBUtils.dropXLations( context, locale );
         DBUtils.setStringFor( context, localeKey(locale), "" );

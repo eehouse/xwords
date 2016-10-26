@@ -38,7 +38,7 @@ public class MountEventReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        DbgUtils.logf( "MountEventReceiver.onReceive(%s)", intent.getAction() );
+        DbgUtils.logi( getClass(), "onReceive(%s)", intent.getAction() );
         synchronized( s_procs ) {
             do {
                 if ( s_procs.isEmpty() ) {

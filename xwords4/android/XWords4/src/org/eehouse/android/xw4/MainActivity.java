@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@ import android.widget.LinearLayout;
 import junit.framework.Assert;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +54,9 @@ public class MainActivity extends XWActivity
     private int m_maxPanes;
     private int m_nextID = 0x00FFFFFF;
     private Boolean m_isPortrait;
+    private boolean m_safeToCommit;
+    private ArrayList<Runnable> m_runWhenSafe = new ArrayList<Runnable>();
+    private Intent m_newIntent; // work in progress...
 
     // for tracking launchForResult callback recipients
     private Map<RequestCode, WeakReference<DelegateBase>> m_pendingCodes
@@ -62,9 +66,6 @@ public class MainActivity extends XWActivity
     protected void onCreate( Bundle savedInstanceState )
     {
         m_dpEnabled = XWPrefs.dualpaneEnabled( this );
-        if ( m_dpEnabled ) {
-            Utils.showToast( this, R.string.db_enabled_toast );
-        }
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
             : new GamesListDelegate( this, savedInstanceState );
@@ -84,7 +85,23 @@ public class MainActivity extends XWActivity
                                  getIntent().getExtras(), null );
             }
         }
+
+        setSafeToRun();
     } // onCreate
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState )
+    {
+        super.onSaveInstanceState( outState );
+        m_safeToCommit = false;
+    }
+
+    @Override
+    protected void onPostResume()
+    {
+        setSafeToRun();
+        super.onPostResume();
+    }
 
     // called when we're brought to the front (probably as a result of
     // notification)
@@ -105,13 +122,13 @@ public class MainActivity extends XWActivity
 
             boolean isPortrait
                 = Configuration.ORIENTATION_PORTRAIT == newConfig.orientation;
-            DbgUtils.logf( "MainActivity.onConfigurationChanged(isPortrait=%b)",
+            DbgUtils.logi( getClass(), "onConfigurationChanged(isPortrait=%b)",
                            isPortrait );
             m_isPortrait = isPortrait;
             if ( isPortrait != (rect.width() <= rect.height()) ) {
-                DbgUtils.logdf( "FragActivity.onConfigurationChanged(): isPortrait:"
-                                + " %b; width: %d; height: %d",
-                                isPortrait, rect.width(), rect.height() );
+                DbgUtils.logd( getClass(), "onConfigurationChanged(): isPortrait:"
+                               + " %b; width: %d; height: %d",
+                               isPortrait, rect.width(), rect.height() );
             }
             int maxPanes = isPortrait? 1 : MAX_PANES_LANDSCAPE;
             if ( m_maxPanes != maxPanes ) {
@@ -123,52 +140,89 @@ public class MainActivity extends XWActivity
         super.onConfigurationChanged( newConfig );
     }
 
-    /**
-     * Run down the list of fragments until one handles the intent. If no
-     * visible one does, pop hidden ones into view until one of them
-     * does. Yes, this will take us back to GamesList being visible even if
-     * nothing handles the intent, but at least now all are handled by
-     * GamesList anyway.
+    /* Sometimes I'm getting crashes because views don't have fragments
+     * associated yet. I suspect that's because adding them's been postponed
+     * via the m_runWhenSafe mechanism. So: postpone handling intents too.
+     *
+     * This postponing thing won't scale, and makes me suspect there's
+     * something I'm doing wrong w.r.t. fragments. Should be revisited. In
+     * this particular case there might be a better way to get to the Delegate
+     * on which I need to call handleNewIntent().
      */
-    protected boolean dispatchNewIntent( Intent intent )
+    protected boolean dispatchNewIntent( final Intent intent )
+    {
+        boolean handled;
+        if ( m_safeToCommit ) {
+            handled = dispatchNewIntentImpl( intent );
+        } else {
+            m_runWhenSafe.add( new Runnable() {
+                    @Override
+                    public void run() {
+                        dispatchNewIntentImpl( intent );
+                    }
+                } );
+            if ( BuildConfig.DEBUG ) {
+                DbgUtils.showf( this, "Putting off handling intent; %d waiting",
+                                m_runWhenSafe.size() );
+            }
+            handled = true;
+        }
+        return handled;
+    }
+
+    private void popIntoView( XWFragment newTopFrag )
+    {
+        FragmentManager fm = getSupportFragmentManager();
+        for ( ; ; ) {
+            int top = m_root.getChildCount() - 1;
+            if ( top < 0 ) {
+                break;
+            }
+            View child = m_root.getChildAt( top );
+            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            if ( frag == newTopFrag ) {
+                break;
+            }
+            String name = frag.getClass().getSimpleName();
+            DbgUtils.logd( getClass(), "popIntoView(): popping %d: %s", top, name );
+            fm.popBackStackImmediate();
+            DbgUtils.logd( getClass(), "popIntoView(): DONE popping %s",
+                           name );
+        }
+    }
+
+    /**
+     * Run down the list of fragments until one can handle the intent. If
+     * necessary, pop fragments above it until it comes into view. Then send
+     * it the event.
+     */
+    private boolean dispatchNewIntentImpl( Intent intent )
     {
         boolean handled = false;
         FragmentManager fm = getSupportFragmentManager();
 
-        // First try non-left-most fragments, if any. Once we've eliminated
-        // them we can just iterate on the leftmost fragment.
-        int nNonLeft = m_maxPanes - 1;
-        // include paged-to-left invisible views
-        int viewCount = m_root.getChildCount();
-        for ( int ii = nNonLeft; !handled && 0 < ii; --ii ) {
-            View child = m_root.getChildAt( viewCount - ii );
-            Fragment frag = fm.findFragmentById( child.getId() );
-            handled = ((XWFragment)frag).getDelegate().handleNewIntent( intent );
-        }
-
-        while ( !handled ) {
-            // Now iterate on the leftmost, popping if necessary to page new
-            // ones into place
-            int childCount = m_root.getChildCount();
-            int hiddenCount = Math.max( 0, childCount - m_maxPanes );
-            for ( int ii = hiddenCount; ii >= 0; --ii ) {
-                View child = m_root.getChildAt( ii );
-                Fragment frag = fm.findFragmentById( child.getId() );
-                // DbgUtils.logf( "left-most case (child %d): %s", hiddenCount,
-                //                frag.getClass().getSimpleName() );
-                handled = ((XWFragment)frag).getDelegate()
-                    .handleNewIntent( intent );
-
+        for ( int ii = m_root.getChildCount() - 1; !handled && ii >= 0; --ii ) {
+            View child = m_root.getChildAt( ii );
+            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            if ( null != frag ) {
+                handled = frag.getDelegate().canHandleNewIntent( intent );
                 if ( handled ) {
-                    break;
-                } else if ( ii > 0 ) {
-                    DbgUtils.logf( "popping %s",
-                                   frag.getClass().getSimpleName() );
-                    fm.popBackStackImmediate(); // callback removes view
+                    popIntoView( frag );
+                    frag.getDelegate().handleNewIntent( intent );
                 }
+            } else {
+                DbgUtils.logd( getClass(), "no fragment for child %s indx %d",
+                                child.getClass().getSimpleName(), ii );
             }
         }
 
+        if ( BuildConfig.DEBUG && !handled ) {
+            // DbgUtils.showf( this, "dropping intent %s", intent.toString() );
+            DbgUtils.logd( getClass(), "dropping intent %s", intent.toString() );
+            // DbgUtils.printStack();
+            // setIntent( intent ); -- look at handling this in onPostResume()?
+            m_newIntent = intent;
+        }
         return handled;
     }
 
@@ -191,8 +245,8 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.onActivityResult( requestCode.ordinal(), resultCode, data );
         } else {
-            DbgUtils.logdf( "dispatchOnActivityResult(): can't dispatch %s", 
-                            requestCode.toString() );
+            DbgUtils.logd( getClass(), "dispatchOnActivityResult(): can't dispatch %s",
+                           requestCode.toString() );
         }
     }
 
@@ -283,14 +337,14 @@ public class MainActivity extends XWActivity
     {
         // make sure the right-most are visible
         int fragCount = getSupportFragmentManager().getBackStackEntryCount();
-        DbgUtils.logf( "MainActivity.onBackStackChanged(); count now %d", fragCount );
+        DbgUtils.logi( getClass(), "onBackStackChanged(); count now %d", fragCount );
         if ( 0 == fragCount ) {
             finish();
         } else {
             if ( fragCount == m_root.getChildCount() - 1 ) {
                 View child = m_root.getChildAt( fragCount );
                 if ( LOG_IDS ) {
-                    DbgUtils.logf( "onBackStackChanged(): removing view with id %x",
+                    DbgUtils.logi( getClass(), "onBackStackChanged(): removing view with id %x",
                                    child.getId() );
                 }
                 m_root.removeView( child );
@@ -301,7 +355,7 @@ public class MainActivity extends XWActivity
             if ( null != m_pendingResult ) {
                 Fragment target = m_pendingResult.getTarget();
                 if ( null != target ) {
-                    DbgUtils.logf( "onBackStackChanged(): calling onActivityResult()" );
+                    DbgUtils.logi( getClass(),"onBackStackChanged(): calling onActivityResult()" );
                     target.onActivityResult( m_pendingResult.m_request,
                                              m_pendingResult.m_result,
                                              m_pendingResult.m_data );
@@ -317,9 +371,12 @@ public class MainActivity extends XWActivity
 
     private XWFragment getTopFragment()
     {
+        XWFragment frag = null;
         View child = m_root.getChildAt( m_root.getChildCount() - 1 );
-        XWFragment frag = (XWFragment)getSupportFragmentManager()
-            .findFragmentById( child.getId() );
+        if ( null != child ) {
+            frag = (XWFragment)getSupportFragmentManager()
+                .findFragmentById( child.getId() );
+        }
         return frag;
     }
 
@@ -347,7 +404,7 @@ public class MainActivity extends XWActivity
             int id = frame.getId();
             Fragment frag = fm.findFragmentById( id );
             if ( null == frag ) {
-                DbgUtils.logf( "tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
+                DbgUtils.logw( getClass(),"tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
             } else if ( frag instanceof XWFragment ) {
                 ((XWFragment)frag).getDelegate().orientationChanged();
             }
@@ -375,7 +432,7 @@ public class MainActivity extends XWActivity
         for ( int ii = 0; ii < nPanes; ++ii ) {
             View child = m_root.getChildAt( ii );
             boolean visible = ii >= nPanes - m_maxPanes;
-            DbgUtils.logf( "pane %d: visible=%b", ii, visible );
+            DbgUtils.logi( getClass(), "pane %d: visible=%b", ii, visible );
             child.setVisibility( visible ? View.VISIBLE : View.GONE );
             setMenuVisibility( child, visible );
             if ( visible ) {
@@ -391,7 +448,7 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.setTitle();
         } else {
-            DbgUtils.logdf( "trySetTitle(): no fragment for id %x",
+            DbgUtils.logd( getClass(), "trySetTitle(): no fragment for id %x",
                             view.getId() );
         }
     }
@@ -414,14 +471,34 @@ public class MainActivity extends XWActivity
         addFragmentImpl( fragment, parentName );
     }
 
-    private void addFragmentImpl( Fragment fragment, String parentName )
+    private void addFragmentImpl( final Fragment fragment,
+                                  final String parentName )
     {
+        if ( m_safeToCommit ) {
+            safeAddFragment( fragment, parentName );
+        } else {
+            m_runWhenSafe.add( new Runnable() {
+                    @Override
+                    public void run() {
+                        safeAddFragment( fragment, parentName );
+                    }
+                } );
+            if ( BuildConfig.DEBUG ) {
+                DbgUtils.showf( this, "Putting off fragment construction; %d waiting",
+                                m_runWhenSafe.size() );
+            }
+        }
+    }
+
+    private void safeAddFragment( Fragment fragment, String parentName )
+    {
+        Assert.assertTrue( m_safeToCommit );
         String newName = fragment.getClass().getSimpleName();
         boolean replace = false;
         FragmentManager fm = getSupportFragmentManager();
         int fragCount = fm.getBackStackEntryCount();
         int containerCount = m_root.getChildCount();
-        DbgUtils.logf( "fragCount: %d; containerCount: %d", fragCount, containerCount );
+        DbgUtils.logi( getClass(), "fragCount: %d; containerCount: %d", fragCount, containerCount );
         // Assert.assertTrue( fragCount == containerCount );
 
         // Replace IF we're adding something of the same class at right OR if
@@ -451,7 +528,7 @@ public class MainActivity extends XWActivity
         int id = --m_nextID;
         cont.setId( id );
         if ( LOG_IDS ) {
-            DbgUtils.logf( "assigning id %x to view with name %s", id, newName );
+            DbgUtils.logi( getClass(), "assigning id %x to view with name %s", id, newName );
         }
         m_root.addView( cont, replace ? containerCount - 1 : containerCount );
 
@@ -462,7 +539,7 @@ public class MainActivity extends XWActivity
 
             setMenuVisibility( child, false );
 
-            DbgUtils.logf( "hiding %dth container", indx );
+            DbgUtils.logi( getClass(), "hiding %dth container", indx );
         }
 
         fm.beginTransaction()
@@ -474,5 +551,14 @@ public class MainActivity extends XWActivity
         // again. If I need executePendingTransactions() I'm doing something
         // else wrong.
         // fm.executePendingTransactions();
+    }
+
+    private void setSafeToRun()
+    {
+        m_safeToCommit = true;
+        for ( Runnable proc : m_runWhenSafe ) {
+            proc.run();
+        }
+        m_runWhenSafe.clear();
     }
 }

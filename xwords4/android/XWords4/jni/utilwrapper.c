@@ -502,7 +502,7 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #ifdef XWFEATURE_CHAT
 static void
-and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg, XP_S16 from )
+and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* msg, XP_S16 from )
 {
     UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;ILjava/lang/String;)V" );
     jstring jname = NULL;

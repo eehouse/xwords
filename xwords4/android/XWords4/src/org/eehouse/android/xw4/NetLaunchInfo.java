@@ -199,7 +199,7 @@ public class NetLaunchInfo {
                 }
                 calcValid();
             } catch ( Exception e ) {
-                DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
+                DbgUtils.loge( getClass(), "unable to parse \"%s\"", data.toString() );
             }
         }
         calcValid();
@@ -277,7 +277,7 @@ public class NetLaunchInfo {
         int result = gameID;
         if ( 0 == result ) {
             Assert.assertNotNull( inviteID );
-            DbgUtils.logf( "gameID(): looking at inviteID: %s", inviteID );
+            DbgUtils.logi( getClass(), "gameID(): looking at inviteID: %s", inviteID );
             result = Integer.parseInt( inviteID, 16 );
             // DbgUtils.logf( "gameID(): gameID -1 so substituting %d", result );
             gameID = result;
@@ -335,7 +335,7 @@ public class NetLaunchInfo {
             result = obj.toString();
 
         } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
+            DbgUtils.logex( jse );
         }
         // DbgUtils.logf( "makeLaunchJSON() => %s", result );
         return result;
@@ -419,7 +419,7 @@ public class NetLaunchInfo {
             }
 
         } catch ( JSONException jse ) {
-            DbgUtils.loge( jse );
+            DbgUtils.logex( jse );
         }
 
         removeUnsupported( supported );
@@ -469,7 +469,7 @@ public class NetLaunchInfo {
         Uri result = ub.build();
 
         if ( BuildConfig.DEBUG ) { // Test...
-            DbgUtils.logf( "testing %s...", result.toString() );
+            DbgUtils.logi( getClass(), "testing %s...", result.toString() );
             NetLaunchInfo instance = new NetLaunchInfo( context, result );
             Assert.assertTrue( instance.isValid() );
         }
@@ -492,7 +492,7 @@ public class NetLaunchInfo {
             btAddress = got[1];
             m_addrs.add( CommsConnType.COMMS_CONN_BT );
         } else {
-            DbgUtils.logf( "addBTInfo(): no BT info available" );
+            DbgUtils.logw( getClass(), "addBTInfo(): no BT info available" );
         }
     }
 

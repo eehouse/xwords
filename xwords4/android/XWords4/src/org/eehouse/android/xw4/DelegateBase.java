@@ -118,17 +118,16 @@ public class DelegateBase implements DlgClickNotify,
     protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
-        DbgUtils.logf( "%s.onActivityResult(): subclass responsibility!!!", 
-                       getClass().getSimpleName() );
+        DbgUtils.logi( getClass(), "onActivityResult(): subclass responsibility!!!" );
     }
 
     protected void onStart()
     {
-        if ( s_instances.containsKey(getClass()) ) {
-            DbgUtils.logdf( "%s.onStart(): replacing curThis", 
-                            getClass().getSimpleName() );
+        Class clazz = getClass();
+        if ( s_instances.containsKey( clazz ) ) {
+            DbgUtils.logd( getClass(), "onStart(): replacing curThis" );
         }
-        s_instances.put( getClass(), new WeakReference<DelegateBase>(this) );
+        s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
     }
 
     protected void onResume()
@@ -161,7 +160,7 @@ public class DelegateBase implements DlgClickNotify,
             result = ref.get();
         }
         if ( this != result ) {
-            DbgUtils.logdf( "%s.curThis() => " + result, this.toString() );
+            DbgUtils.logd( getClass(), "%s.curThis() => " + result, this.toString() );
         }
         return result;
     }
@@ -423,7 +422,7 @@ public class DelegateBase implements DlgClickNotify,
         try {
             m_activity.dismissDialog( dlgID.ordinal() );
         } catch ( Exception ex ) {
-            // DbgUtils.loge( ex );
+            // DbgUtils.logex( ex );
         }
     }
 
@@ -569,10 +568,15 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean isVisible() { return m_isVisible; }
 
-    protected boolean handleNewIntent( Intent intent ) {
-        DbgUtils.logf( "%s.handleNewIntent(%s): not handling",
-                       getClass().getSimpleName(), intent.toString() );
-        return false;           // not handled
+    protected boolean canHandleNewIntent( Intent intent )
+    {
+        DbgUtils.logd( getClass(), "canHandleNewIntent() => false" );
+        return false;
+    }
+
+    protected void handleNewIntent( Intent intent ) {
+        DbgUtils.logd( getClass(), "handleNewIntent(%s): not handling",
+                       intent.toString() );
     }
 
     protected void runWhenActive( Runnable proc )
@@ -590,7 +594,7 @@ public class DelegateBase implements DlgClickNotify,
         switch( event ) {
         case BT_ERR_COUNT:
             int count = (Integer)args[0];
-            DbgUtils.logf( "Bluetooth error count: %d", count );
+            DbgUtils.logi( getClass(), "Bluetooth error count: %d", count );
             break;
         case BAD_PROTO_BT:
             fmtId = R.string.bt_bad_proto_fmt;
@@ -605,8 +609,8 @@ public class DelegateBase implements DlgClickNotify,
             m_dlgDelegate.eventOccurred( event, args );
             break;
         default:
-            DbgUtils.logdf( "DelegateBase.eventOccurred(event=%s) (DROPPED)",
-                            event.toString() );
+            DbgUtils.logd( getClass(), "eventOccurred(event=%s) (DROPPED)",
+                           event.toString() );
             break;
         }
 
@@ -667,7 +671,7 @@ public class DelegateBase implements DlgClickNotify,
                 Assert.fail();
                 break;
             }
-            DbgUtils.logf( "DelegateBase.dlgButtonClicked(action=%s button=%s): UNHANDLED",
+            DbgUtils.logi( getClass(), "dlgButtonClicked(action=%s button=%s): UNHANDLED",
                            action.toString(), buttonName );
         }
     }

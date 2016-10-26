@@ -51,8 +51,8 @@ public class XwJNI {
         public synchronized GamePtr retain()
         {
             ++m_refCount;
-            DbgUtils.logdf( "GamePtr.retain(this=%H, rowid=%d): refCount now %d",
-                            this, m_rowid, m_refCount );
+            DbgUtils.logd( getClass(), "retain(this=%H, rowid=%d): refCount now %d",
+                           this, m_rowid, m_refCount );
             return this;
         }
 
@@ -61,8 +61,8 @@ public class XwJNI {
         public synchronized void release()
         {
             --m_refCount;
-            DbgUtils.logdf( "GamePtr.release(this=%H, rowid=%d): refCount now %d",
-                            this, m_rowid, m_refCount );
+            DbgUtils.logd( getClass(), "release(this=%H, rowid=%d): refCount now %d",
+                           this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
                 if ( 0 != m_ptr ) {
                     if ( !haveEnv( getJNI().m_ptr ) ) {

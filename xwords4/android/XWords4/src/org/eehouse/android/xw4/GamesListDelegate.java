@@ -274,7 +274,7 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
             if ( -1 == posn ) {
-                DbgUtils.logf( "getGroupPosition: group %d not found", groupID );
+                DbgUtils.logd( getClass(), "getGroupPosition: group %d not found", groupID );
             }
             return posn;
         }
@@ -336,7 +336,7 @@ public class GamesListDelegate extends ListDelegateBase
             boolean changed = false;
             int newID = fieldToID( newField );
             if ( -1 == newID ) {
-                DbgUtils.logf( "GameListAdapter.setField(): unable to match"
+                DbgUtils.logd( getClass(), "setField(): unable to match"
                                + " fieldName %s", newField );
             } else if ( m_fieldID != newID ) {
                 m_fieldID = newID;
@@ -400,14 +400,9 @@ public class GamesListDelegate extends ListDelegateBase
 
         private List<Object> makeChildren( long groupID )
         {
-            List<Object> alist = new ArrayList<Object>();
             long[] rows = DBUtils.getGroupGames( m_activity, groupID );
+            List<Object> alist = new ArrayList<Object>( rows.length );
             for ( long row : rows ) {
-                if ( false && BuildConfig.DEBUG ) {
-                    GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
-                    bmr.m_lmi = new LastMoveInfo();
-                    GameUtils.postMoveNotification( m_activity, row, bmr, false );
-                }
                 alist.add( new GameRec( row ) );
             }
             // DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );
@@ -437,7 +432,7 @@ public class GamesListDelegate extends ListDelegateBase
         private ArrayList<Object> removeRange( ArrayList<Object> list,
                                                int start, int len )
         {
-            DbgUtils.logf( "removeRange(start=%d, len=%d)", start, len );
+            DbgUtils.logd( getClass(), "removeRange(start=%d, len=%d)", start, len );
             ArrayList<Object> result = new ArrayList<Object>(len);
             for ( int ii = 0; ii < len; ++ii ) {
                 result.add( list.remove( start ) );
@@ -988,17 +983,19 @@ public class GamesListDelegate extends ListDelegateBase
     } // init
 
     @Override
-    protected boolean handleNewIntent( Intent intent )
+    protected boolean canHandleNewIntent( Intent intent )
     {
-        DbgUtils.logf( "GamesListDelegate.handleNewIntent(%s)",
-                       intent.toString() );
+        return true;
+    }
 
+    @Override
+    protected void handleNewIntent( Intent intent )
+    {
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
-        return true;            // handled it
     }
 
     @Override
@@ -1114,6 +1111,11 @@ public class GamesListDelegate extends ListDelegateBase
                             mkListAdapter();
                         } else {
                             reloadGame( rowid );
+                            if ( m_adapter.inExpandedGroup( rowid ) ) {
+                                long groupID = DBUtils.getGroupForGame( m_activity, rowid );
+                                m_adapter.setExpanded( groupID, false );
+                                m_adapter.setExpanded( groupID, true );
+                            }
                         }
                         break;
                     case GAME_CREATED:
@@ -1170,7 +1172,7 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
         invalidateOptionsMenuIf();
-        setTitleBar();
+        setTitle();
         // mkListAdapter();
     }
 
@@ -1336,7 +1338,7 @@ public class GamesListDelegate extends ListDelegateBase
         switch ( requestCode ) {
         case REQUEST_LANG_GL:
             if ( !cancelled ) {
-                DbgUtils.logf( "lang need met" );
+                DbgUtils.logd( getClass(), "lang need met" );
                 if ( checkWarnNoDict( m_missingDictRowId ) ) {
                     launchGameIf();
                 }
@@ -1465,7 +1467,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             Assert.assertTrue( m_menuPrepared );
         } else {
-            DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
+            DbgUtils.logd( getClass(), "onPrepareOptionsMenu: incomplete so bailing" );
         }
         return m_menuPrepared;
     } // onPrepareOptionsMenu
@@ -1590,7 +1592,7 @@ public class GamesListDelegate extends ListDelegateBase
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
-        DbgUtils.logf( "onCreateContextMenu(t=%s)",
+        DbgUtils.logd( getClass(), "onCreateContextMenu(t=%s)",
                        targetView.getClass().getSimpleName() );
         if ( targetView instanceof GameListItem ) {
             item = (GameListItem)targetView;
@@ -1660,6 +1662,7 @@ public class GamesListDelegate extends ListDelegateBase
                                   final boolean success )
     {
         runWhenActive( new Runnable() {
+                @Override
                 public void run() {
                     boolean madeGame = false;
                     if ( success ) {
@@ -1694,7 +1697,7 @@ public class GamesListDelegate extends ListDelegateBase
                 m_selGames.remove( row );
             }
             invalidateOptionsMenuIf();
-            setTitleBar();
+            setTitle();
         }
     }
 
@@ -1911,12 +1914,13 @@ public class GamesListDelegate extends ListDelegateBase
             makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
                                  R.string.key_notagain_hidenewgamebuttons,
                                  Action.NEW_GAME_PRESSED )
-                .setParams(pair)
+                .setActionPair( pair )
                 .show();
         }
     }
 
-    private void setTitleBar()
+    @Override
+    protected void setTitle()
     {
         int fmt = 0;
         int nSels = m_selGames.size();
@@ -1929,11 +1933,7 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
 
-        if ( 0 == fmt ) {
-            setTitle( m_origTitle );
-        } else {
-            setTitle( getString( fmt, nSels ) );
-        }
+        setTitle( 0 == fmt ? m_origTitle : getString( fmt, nSels ) );
     }
 
     private boolean checkWarnNoDict( NetLaunchInfo nli )
@@ -2285,7 +2285,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_selGames.remove( rowid );
         }
         invalidateOptionsMenuIf();
-        setTitleBar();
+        setTitle();
 
         NetUtils.informOfDeaths( m_activity );
     }
@@ -2308,7 +2308,7 @@ public class GamesListDelegate extends ListDelegateBase
         m_adapter.setSelected( rowid, true );
 
         invalidateOptionsMenuIf();
-        setTitleBar();
+        setTitle();
     }
 
     private void clearSelections()
@@ -2322,7 +2322,7 @@ public class GamesListDelegate extends ListDelegateBase
         inval = clearSelectedGroups() || inval;
         if ( updateStuff && inval ) {
             invalidateOptionsMenuIf();
-            setTitleBar();
+            setTitle();
         }
     }
 
@@ -2373,7 +2373,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void launchGame( long rowid, boolean invited )
     {
         if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-            DbgUtils.logdf( "launchGame(): dropping bad rowid" );
+            DbgUtils.logd( getClass(), "launchGame(): dropping bad rowid" );
         } else if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             if ( m_adapter.inExpandedGroup( rowid ) ) {
@@ -2419,7 +2419,7 @@ public class GamesListDelegate extends ListDelegateBase
                     launchGame( rowid );
                 }
             } catch ( GameLock.GameLockedException gle ) {
-                DbgUtils.loge( gle );
+                DbgUtils.logex( gle );
                 finish();
             }
         }

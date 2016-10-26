@@ -177,7 +177,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
                             al.add(value);
                         }
                     } catch ( Exception ex ) {
-                        DbgUtils.loge(ex);
+                        DbgUtils.logex(ex);
                     }
                 }
                 if ( 0 < al.size() ) {

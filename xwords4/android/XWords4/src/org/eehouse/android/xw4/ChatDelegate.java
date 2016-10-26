@@ -67,7 +67,6 @@ public class ChatDelegate extends DelegateBase {
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        DbgUtils.logf( "ChatDelegate.init()" );
         m_edit = (EditText)findViewById( R.id.chat_edit );
         m_edit.addTextChangedListener( new TextWatcher() {
                 public void afterTextChanged( Editable s ) {
@@ -130,7 +129,7 @@ public class ChatDelegate extends DelegateBase {
         super.onResume();
         m_jniThreadRef = JNIThread.getRetained( m_rowid );
         if ( null == m_jniThreadRef ) {
-            DbgUtils.logf( "ChatDelegate.onResume(): m_jniThreadRef null; exiting" );
+            DbgUtils.logw( getClass(), "onResume(): m_jniThreadRef null; exiting" );
             finish();
         } else {
             s_visibleThis = this;

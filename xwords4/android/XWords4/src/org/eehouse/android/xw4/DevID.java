@@ -84,18 +84,18 @@ public class DevID {
                 s_relayDevID = asStr;
             }
         }
-        DbgUtils.logdf( "DevID.getRelayDevID() => %s", s_relayDevID );
+        DbgUtils.logd( DevID.class, "getRelayDevID() => %s", s_relayDevID );
         return s_relayDevID;
     }
 
     public static void setRelayDevID( Context context, String devID )
     {
-        DbgUtils.logdf( "DevID.setRelayDevID()" );
+        DbgUtils.logd( DevID.class, "setRelayDevID()" );
         if ( BuildConfig.DEBUG ) {
             String oldID = getRelayDevID( context );
             if ( null != oldID && 0 < oldID.length()
                  && ! devID.equals( oldID ) ) {
-                DbgUtils.logdf( "devID changing!!!: %s => %s", oldID, devID );
+                DbgUtils.logd( DevID.class, "devID changing!!!: %s => %s", oldID, devID );
             }
         }
         DBUtils.setStringFor( context, DEVID_KEY, devID );
@@ -107,7 +107,7 @@ public class DevID {
 
     public static void clearRelayDevID( Context context )
     {
-        DbgUtils.logf( "DevID.clearRelayDevID()" );
+        DbgUtils.logi( DevID.class, "clearRelayDevID()" );
         DBUtils.setStringFor( context, DEVID_KEY, "" );
         // DbgUtils.printStack();
     }

@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2000-2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@ typedef struct _GameInfo {
     XP_U32 gameID;
     XP_S16 nMoves;
     XP_Bool gameOver;
+    XP_Bool turnLocal;
     XP_S16 turn;
     XP_U16 nTotal;
     XP_S16 nMissing;

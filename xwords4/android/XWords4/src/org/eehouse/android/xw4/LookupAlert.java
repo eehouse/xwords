@@ -277,7 +277,7 @@ public class LookupAlert extends LinearLayout
     private static void lookupWord( Context context, String word, String fmt )
     {
         if ( false ) {
-            DbgUtils.logf( "skipping lookupWord(%s)", word );
+            DbgUtils.logw( LookupAlert.class, "skipping lookupWord(%s)", word );
         } else {
             String langCode = s_langCodes[s_lang];
             String dict_url = String.format( fmt, langCode, word );
@@ -288,7 +288,7 @@ public class LookupAlert extends LinearLayout
             try {
                 context.startActivity( intent );
             } catch ( android.content.ActivityNotFoundException anfe ) {
-                DbgUtils.loge( anfe );
+                DbgUtils.logex( anfe );
             }
         }
     } // lookupWord

@@ -38,6 +38,8 @@ public class DbgUtils {
     private static final String TAG = BuildConstants.DBG_TAG;
     private static boolean s_doLog = BuildConfig.DEBUG;
 
+    private enum LogType { ERROR, WARN, DEBUG, INFO };
+
     private static Time s_time = new Time();
 
     public static void logEnable( boolean enable )
@@ -52,50 +54,43 @@ public class DbgUtils {
         logEnable( on );
     }
 
-    public static void logf( String msg )
-    {
-        logf( true, msg );
-    }
-
-    public static void logf( boolean persist, String msg )
+    private static void callLog( LogType lt, Class claz, String fmt, Object... args )
     {
         if ( s_doLog ) {
-            String time = "";
-            // No need for timestamp on marshmallow, as the OS provides it
-            if ( true /*Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1*/ ) {
-                s_time.setToNow();
-                time = s_time.format("[%H:%M:%S]-");
-            }
-            long id = Thread.currentThread().getId();
-            msg = time + id + "-" + msg;
-            Log.d( TAG, msg );
-
-            if ( persist && BuildConfig.DEBUG ) {
-                DBUtils.appendLog( TAG, msg );
+            String tag = claz.getSimpleName();
+            String msg = new Formatter().format( fmt, args ).toString();
+            switch( lt ) {
+            case DEBUG:
+                Log.d( tag, msg );
+                break;
             }
         }
-    } // logf
-
-    public static void logf( String format, Object... args )
-    {
-        logf( true, format, args );
     }
 
-    public static void logf( boolean persist, String format, Object... args )
+    public static void logd( Class claz, String fmt, Object... args )
     {
-        if ( s_doLog ) {
-            Formatter formatter = new Formatter();
-            logf( persist, formatter.format( format, args ).toString() );
-        }
-    } // logf
+        callLog( LogType.DEBUG, claz, fmt, args );
+    }
 
-    public static void logdf( String format, Object... args )
+    public static void loge( Class claz, String fmt, Object... args )
     {
-        if ( s_doLog && BuildConfig.DEBUG ) {
-            Formatter formatter = new Formatter();
-            logf( formatter.format( format, args ).toString() );
-        }
-    } // logdf
+        callLog( LogType.ERROR, claz, fmt, args );
+    }
+
+    public static void logi( Class claz, String fmt, Object... args )
+    {
+        logi( claz, true, fmt, args );
+    }
+
+    public static void logi( Class claz, boolean persist, String fmt, Object... args )
+    {
+        callLog( LogType.INFO, claz, fmt, args );
+    }
+
+    public static void logw( Class claz, String fmt, Object... args )
+    {
+        callLog( LogType.WARN, claz, fmt, args );
+    }
 
     public static void showf( Context context, String format, Object... args )
     {
@@ -109,9 +104,9 @@ public class DbgUtils {
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
-    public static void loge( Exception exception )
+    public static void logex( Exception exception )
     {
-        logf( "Exception: %s", exception.toString() );
+        logw( DbgUtils.class, "Exception: %s", exception.toString() );
         printStack( exception.getStackTrace() );
     }
 
@@ -125,7 +120,7 @@ public class DbgUtils {
         if ( s_doLog && null != trace ) {
             // 2: skip printStack etc.
             for ( int ii = 2; ii < trace.length; ++ii ) {
-                DbgUtils.logf( "ste %d: %s", ii, trace[ii].toString() );
+                DbgUtils.logi( DbgUtils.class, "ste %d: %s", ii, trace[ii].toString() );
             }
         }
     }
@@ -157,7 +152,7 @@ public class DbgUtils {
     {
         if ( s_doLog ) {
             String dump = DatabaseUtils.dumpCursorToString( cursor );
-            logf( "cursor: %s", dump );
+            logi( DbgUtils.class, "cursor: %s", dump );
         }
     }
 

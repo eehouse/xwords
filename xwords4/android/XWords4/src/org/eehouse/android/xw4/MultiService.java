@@ -189,7 +189,7 @@ public class MultiService {
             if ( downloaded ) {
                 int ordinal = intent.getIntExtra( OWNER, -1 );
                 if ( -1 == ordinal ) {
-                    DbgUtils.logf( "unexpected OWNER" );
+                    DbgUtils.logw( DBUtils.class, "unexpected OWNER" );
                 } else {
                     DictFetchOwner owner = DictFetchOwner.values()[ordinal];
                     switch ( owner ) {

@@ -719,13 +719,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     BoardDims dims;
     board_figureLayout( board, cGlobals->gi, 
                         GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
-#if 1
-                        150, 200, 
-#else
-                        0, 0,
-#endif
-                        bdWidth-25, 16, 16, 
-                        XP_FALSE, &dims );
+                        110, 150, 200, bdWidth-25, 16, 16, XP_FALSE, &dims );
     board_applyLayout( board, &dims );
 
 #else
@@ -1770,6 +1764,15 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
     }
 } /* gtk_util_yOffsetChange */
 
+#ifdef XWFEATURE_TURNCHANGENOTIFY
+static void
+gtk_util_turnChanged( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(newTurn) )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    saveGame( &globals->cGlobals );
+}
+#endif
+
 static void
 gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
 {
@@ -2402,6 +2405,9 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_askPassword = gtk_util_askPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;
+#ifdef XWFEATURE_TURNCHANGENOTIFY
+    util->vtable->m_util_turnChanged = gtk_util_turnChanged;
+#endif
     util->vtable->m_util_informMove = gtk_util_informMove;
     util->vtable->m_util_informUndo = gtk_util_informUndo;
     util->vtable->m_util_notifyGameOver = gtk_util_notifyGameOver;
@@ -2695,7 +2701,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     g_signal_connect( globals->adjustment, "value_changed",
                       G_CALLBACK(scroll_value_changed), globals );
     gtk_widget_show( vscrollbar );
-    gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, TRUE, TRUE, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, FALSE, FALSE, 0 );
 
     gtk_box_pack_start( GTK_BOX (hbox), 
                         makeVerticalBar( globals, window ), 

@@ -296,7 +296,7 @@ public class CommsAddrRec {
                         || ip_relay_port != other.ip_relay_port;
                 break;
             default:
-                DbgUtils.logf( "changesMatter: not handling case: %s",
+                DbgUtils.logw( getClass(), "changesMatter: not handling case: %s",
                                conType.toString() );
                 break;
             }

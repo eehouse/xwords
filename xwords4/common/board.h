@@ -101,9 +101,9 @@ typedef struct _BoardDims {
 
 void board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, XP_U16 bLeft,
                          XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
-                         XP_U16 scorePct, XP_U16 trayPct, XP_U16 scoreWidth,
-                         XP_U16 fontWidth, XP_U16 fontHt, XP_Bool squareTiles, 
-                         /* out */ BoardDims* dimsp );
+                         XP_U16 colPctMax, XP_U16 scorePct, XP_U16 trayPct,
+                         XP_U16 scoreWidth, XP_U16 fontWidth, XP_U16 fontHt,
+                         XP_Bool squareTiles, /* out */ BoardDims* dimsp );
 void board_applyLayout( BoardCtxt* board, const BoardDims* dims );
 
 #endif
@@ -133,7 +133,7 @@ XP_Bool board_canHideRack( const BoardCtxt* board );
 XP_Bool board_canTrade( BoardCtxt* board );
 XP_Bool board_canTogglePending( const BoardCtxt* board );
 XP_Bool board_canHint( const BoardCtxt* board );
-void board_sendChat( const BoardCtxt* board, const XP_UCHAR const* msg );
+void board_sendChat( const BoardCtxt* board, const XP_UCHAR* msg );
 
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );

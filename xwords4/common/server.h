@@ -94,7 +94,7 @@ XP_U16 server_secondsUsedBy( ServerCtxt* server, XP_U16 playerNum );
 XP_Bool server_handleUndo( ServerCtxt* server, XP_U16 limit );
 
 /* signed because negative number means nobody's turn yet */
-XP_S16 server_getCurrentTurn( ServerCtxt* server );
+XP_S16 server_getCurrentTurn( ServerCtxt* server, XP_Bool* isLocal );
 XP_Bool server_getGameIsOver( ServerCtxt* server );
 /* return bitvector marking players still not arrived in networked game */
 XP_U16 server_getMissingPlayers( const ServerCtxt* server );
@@ -122,8 +122,7 @@ XP_Bool server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream );
 #endif
 
 #ifdef XWFEATURE_CHAT
-void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg, 
-                      XP_S16 from );
+void server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from );
 #endif
 
 void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,

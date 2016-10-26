@@ -50,9 +50,10 @@ public class GameSummary {
     public static final int MSG_FLAGS_GAMEOVER = 4;
     public static final int MSG_FLAGS_ALL = 7;
 
-    public int lastMoveTime;
+    public int lastMoveTime;  // set by jni's server.c on move receipt
     public int nMoves;
     public int turn;
+    public boolean turnIsLocal;
     public int nPlayers;
     public int missingPlayers;
     public int[] scores;
@@ -423,9 +424,9 @@ public class GameSummary {
             }
             m_extras = asObj.toString();
         } catch( org.json.JSONException ex ) {
-            DbgUtils.loge( ex );
+            DbgUtils.logex( ex );
         }
-        DbgUtils.logf( "putStringExtra(%s,%s) => %s", key, value, m_extras );
+        DbgUtils.logi( getClass(), "putStringExtra(%s,%s) => %s", key, value, m_extras );
     }
 
     public String getStringExtra( String key )
@@ -439,10 +440,10 @@ public class GameSummary {
                     result = null;
                 }
             } catch( org.json.JSONException ex ) {
-                DbgUtils.loge( ex );
+                DbgUtils.logex( ex );
             }
         }
-        DbgUtils.logf( "getStringExtra(%s) => %s", key, result );
+        DbgUtils.logi( getClass(), "getStringExtra(%s) => %s", key, result );
         return result;
     }
 
