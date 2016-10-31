@@ -226,7 +226,7 @@ public class Utils {
 
         Notification notification = new NotificationCompat.Builder( context )
             .setContentIntent( pi )
-            .setSmallIcon( R.drawable.icon48x48 ) // CHANGE ME!!!
+            .setSmallIcon( R.drawable.notify )
             //.setTicker(body)
             //.setWhen(time)
             .setAutoCancel( true )
