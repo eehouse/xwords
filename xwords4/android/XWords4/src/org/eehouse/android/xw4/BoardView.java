@@ -27,7 +27,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.FloatMath;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -383,7 +382,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         } else {
             float xx = event.getX( 0 ) - event.getX( 1 );
             float yy = event.getY( 0 ) - event.getY( 1 );
-            result = (int)FloatMath.sqrt( (xx * xx) + (yy * yy) );
+            result = (int)Math.sqrt( (xx * xx) + (yy * yy) );
         }
         return result;
     }

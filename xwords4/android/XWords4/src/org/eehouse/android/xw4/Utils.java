@@ -33,12 +33,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+
 import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -213,19 +216,24 @@ public class Utils {
             : PendingIntent.getActivity( context, Utils.nextRandomInt(), intent,
                                          PendingIntent.FLAG_ONE_SHOT );
 
-        Notification notification =
-            new Notification( R.drawable.icon48x48, title,
-                              System.currentTimeMillis() );
-
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        int defaults = Notification.FLAG_AUTO_CANCEL;
         if ( CommonPrefs.getSoundNotify( context ) ) {
-            notification.defaults |= Notification.DEFAULT_SOUND;
+            defaults |= Notification.DEFAULT_SOUND;
         }
         if ( CommonPrefs.getVibrateNotify( context ) ) {
-            notification.defaults |= Notification.DEFAULT_VIBRATE;
+            defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        notification.setLatestEventInfo( context, title, body, pi );
+        Notification notification = new NotificationCompat.Builder( context )
+            .setContentIntent( pi )
+            .setSmallIcon( R.drawable.icon48x48 ) // CHANGE ME!!!
+            //.setTicker(body)
+            //.setWhen(time)
+            .setAutoCancel( true )
+            .setDefaults( defaults )
+            .setContentTitle( title )
+            .setContentText( body )
+            .build();
 
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
