@@ -120,7 +120,7 @@ public class DbgUtils {
         if ( s_doLog && null != trace ) {
             // 2: skip printStack etc.
             for ( int ii = 2; ii < trace.length; ++ii ) {
-                DbgUtils.logi( DbgUtils.class, "ste %d: %s", ii, trace[ii].toString() );
+                DbgUtils.logd( DbgUtils.class, "ste %d: %s", ii, trace[ii].toString() );
             }
         }
     }
