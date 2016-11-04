@@ -20,37 +20,42 @@
 
 package org.eehouse.android.xw4;
 
-import android.net.wifi.p2p.WifiP2pDevice;
+import java.net.InetAddress;
 import android.app.Activity;
+import android.net.NetworkInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
-import android.net.wifi.p2p.WifiP2pManager;
-import android.net.wifi.p2p.nsd.WifiP2pUpnpServiceInfo;
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.WifiP2pManager.DnsSdServiceResponseListener;
 import android.net.wifi.p2p.WifiP2pManager.DnsSdTxtRecordListener;
+import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
+import android.net.wifi.p2p.nsd.WifiP2pUpnpServiceInfo;
 import android.os.Looper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
-
 
 import junit.framework.Assert;
 
 public class WifiDirectService {
     private static final String SERVICE_NAME = "_xwords";
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
-    private static final boolean WIFI_DIRECT_ENABLED = false;
-    
+    private static final boolean WIFI_DIRECT_ENABLED = true;
+
+    private static Context sContext;
     private static Channel sChannel;
     private static ChannelListener sListener;
-    private static ActionListener sActionListener;
     private static IntentFilter sIntentFilter;
     private static WFDBroadcastReceiver sReceiver;
     private static boolean sDiscoveryStarted;
@@ -61,7 +66,7 @@ public class WifiDirectService {
         if ( WIFI_DIRECT_ENABLED ) {
             initListeners( activity );
             activity.registerReceiver( sReceiver, sIntentFilter);
-            DbgUtils.logd( WifiDirectService.class, "registerReceivers() done" );
+            DbgUtils.logd( WifiDirectService.class, "activityResumed() done" );
             startDiscovery( activity );
         }
     }
@@ -70,12 +75,13 @@ public class WifiDirectService {
     {
         if ( WIFI_DIRECT_ENABLED ) {
             activity.unregisterReceiver( sReceiver );
-            DbgUtils.logd( WifiDirectService.class, "unregisterReceivers() done" );
+            DbgUtils.logd( WifiDirectService.class, "activityPaused() done" );
         }
     }
 
     private static void initListeners( Context context )
     {
+        sContext = context;
         if ( WIFI_DIRECT_ENABLED ) {
             if ( null == sListener ) {
                 sListener = new ChannelListener() {
@@ -85,15 +91,6 @@ public class WifiDirectService {
                         }
                     };
                 
-                sActionListener = new ActionListener() {
-                        public void onFailure(int reason) {
-                            DbgUtils.logd( WifiDirectService.class, "onFailure(%d)", reason);
-                        }
-                        public void onSuccess() {
-                            // DbgUtils.logd( WifiDirectService.class, "onSuccess()" );
-                        }
-                    };
-
                 sIntentFilter = new IntentFilter();
                 sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
                 sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -125,13 +122,13 @@ public class WifiDirectService {
             //     .newInstance(XWApp.getAppUUID().toString(),
             //                  "device", new ArrayList<String>());
 
-            mgr.addLocalService( sChannel, service, sActionListener );
+            mgr.addLocalService( sChannel, service, new WDAL("addLocalService") );
 
             setDiscoveryListeners( mgr );
 
             WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-            mgr.addServiceRequest( sChannel, serviceRequest, sActionListener );
-            mgr.discoverServices( sChannel, sActionListener );
+            mgr.addServiceRequest( sChannel, serviceRequest, new WDAL("addServiceRequest") );
+            mgr.discoverServices( sChannel, new WDAL("discoverServices") );
             
             // mgr.discoverPeers( sChannel, sActionListener );
             DbgUtils.logd( WifiDirectService.class, "called discoverServices" );
@@ -152,6 +149,7 @@ public class WifiDirectService {
                             DbgUtils.logd( getClass(), "onBonjourServiceAvailable "
                                            + instanceName + " with name "
                                            + srcDevice.deviceName );
+                            tryConnect( srcDevice );
                         }
                     }
                 };
@@ -166,6 +164,20 @@ public class WifiDirectService {
                 };
             mgr.setDnsSdResponseListeners( sChannel, srl, trl );
         }
+    }
+
+    private static void tryConnect( WifiP2pDevice device )
+    {
+        DbgUtils.logd( WifiDirectService.class, "trying to connect to %s",
+                       device.toString() );
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.deviceAddress;
+        config.wps.setup = WpsInfo.PBC;
+
+        WifiP2pManager mgr = (WifiP2pManager)sContext
+            .getSystemService(Context.WIFI_P2P_SERVICE);
+
+        mgr.connect( sChannel, config, new WDAL("connect") );
     }
 
     private static class WFDBroadcastReceiver extends BroadcastReceiver {
@@ -190,12 +202,87 @@ public class WifiDirectService {
                     DbgUtils.logd( getClass(), "WifiP2PEnabled: %b", sEnabled );
                 } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
                     // Call WifiP2pManager.requestPeers() to get a list of current peers
+                    mManager.requestPeers( mChannel, new PLL() );
                 } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
-                    // Respond to new connection or disconnections
+                    // Assert.fail();
+                    NetworkInfo networkInfo = (NetworkInfo)intent
+                        .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+                    if ( networkInfo.isConnected() ) {
+                        DbgUtils.logd( getClass(), "network %s connected",
+                                       networkInfo.toString() );
+                        mManager.requestConnectionInfo(mChannel, new CIL());
+                    } else {
+                        DbgUtils.logd( getClass(), "network %s NOT connected",
+                                       networkInfo.toString() );
+                    }
                 } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
                     // Respond to this device's wifi state changing
                 }
             }
+        }
+    }
+
+    private static class WDAL implements ActionListener {
+        private String mStr;
+        public WDAL(String msg) { mStr = msg; }
+
+        @Override
+        public void onSuccess() {
+            DbgUtils.logd( getClass(), "onSuccess(): %s", mStr );
+        }
+        @Override
+        public void onFailure(int reason) {
+            DbgUtils.logd( getClass(), "onFailure(%d): %s", reason, mStr);
+        }
+    }
+
+    private static class CIL implements WifiP2pManager.ConnectionInfoListener {
+        public void onConnectionInfoAvailable( final WifiP2pInfo info ) {
+
+            // InetAddress from WifiP2pInfo struct.
+            InetAddress groupOwnerAddress = info.groupOwnerAddress;
+            String hostAddress = groupOwnerAddress.getHostAddress();
+            DbgUtils.logd( getClass(), "onConnectionInfoAvailable(%s); addr: %s",
+                           info.toString(), hostAddress );
+
+            // After the group negotiation, we can determine the group owner.
+            if (info.groupFormed && info.isGroupOwner) {
+                DbgUtils.logd( getClass(), "am group owner" );
+                // Do whatever tasks are specific to the group owner.
+                // One common case is creating a server thread and accepting
+                // incoming connections.
+            } else if (info.groupFormed) {
+                DbgUtils.logd( getClass(), "am NOT group owner" );
+                // The other device acts as the client. In this case,
+                // you'll want to create a client thread that connects to the group
+                // owner.
+            } else {
+                Assert.fail();
+            }
+        }
+    }
+
+    private static class PLL implements WifiP2pManager.PeerListListener {
+        @Override
+        public void onPeersAvailable(WifiP2pDeviceList peerList) {
+            DbgUtils.logd( getClass(), "got list of %d peers",
+                           peerList.getDeviceList().size() );
+
+            for ( WifiP2pDevice device : peerList.getDeviceList() ) {
+                // tryConnect( device );
+            }
+            // Out with the old, in with the new.
+            // peers.clear();
+            // peers.addAll(peerList.getDeviceList());
+
+            // // If an AdapterView is backed by this data, notify it
+            // // of the change.  For instance, if you have a ListView of available
+            // // peers, trigger an update.
+            // ((WiFiPeerListAdapter) getListAdapter()).notifyDataSetChanged();
+            // if (peers.size() == 0) {
+            //     Log.d(WiFiDirectActivity.TAG, "No devices found");
+            //     return;
+            // }
         }
     }
 }
