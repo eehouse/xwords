@@ -20,18 +20,17 @@
 
 package org.eehouse.android.xw4;
 
-import java.net.InetAddress;
 import android.app.Activity;
-import android.net.NetworkInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.NetworkInfo;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
@@ -42,9 +41,17 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.net.wifi.p2p.nsd.WifiP2pUpnpServiceInfo;
 import android.os.Looper;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import junit.framework.Assert;
 
@@ -52,6 +59,7 @@ public class WifiDirectService {
     private static final String SERVICE_NAME = "_xwords";
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
     private static final boolean WIFI_DIRECT_ENABLED = true;
+    private static final int USE_PORT = 5432;
 
     private static Context sContext;
     private static Channel sChannel;
@@ -60,10 +68,18 @@ public class WifiDirectService {
     private static WFDBroadcastReceiver sReceiver;
     private static boolean sDiscoveryStarted;
     private static boolean sEnabled;
+    private static boolean sAmServer;
+    private static Thread sAcceptThread;
+    private static ServerSocket sServerSock;
+    private static BiDiSockWrap.Iface sIface;
+    private static BiDiSockWrap sSocketWrap;
+    private static Set<String> sPendingDevs = new HashSet<String>();
+    public static Activity sActivity;
     
     public static void activityResumed( Activity activity )
     {
         if ( WIFI_DIRECT_ENABLED ) {
+            sActivity = activity;
             initListeners( activity );
             activity.registerReceiver( sReceiver, sIntentFilter);
             DbgUtils.logd( WifiDirectService.class, "activityResumed() done" );
@@ -74,6 +90,7 @@ public class WifiDirectService {
     public static void activityPaused( Activity activity )
     {
         if ( WIFI_DIRECT_ENABLED ) {
+            sActivity = null;
             activity.unregisterReceiver( sReceiver );
             DbgUtils.logd( WifiDirectService.class, "activityPaused() done" );
         }
@@ -84,6 +101,25 @@ public class WifiDirectService {
         sContext = context;
         if ( WIFI_DIRECT_ENABLED ) {
             if ( null == sListener ) {
+                sIface = new BiDiSockWrap.Iface() {
+                        public void gotPacket( BiDiSockWrap socket, byte[] bytes )
+                        {
+                            DbgUtils.logd( WifiDirectService.class, "got packet!!!" );
+                            processPacket( socket, bytes );
+                        }
+
+                        public void connectStateChanged( BiDiSockWrap wrap, boolean nowConnected )
+                        {
+                            if ( nowConnected ) {
+                                try {
+                                    wrap.send( new JSONObject().put( "cmd", "ping" ) );
+                                } catch ( JSONException jse ) {
+                                    DbgUtils.logex( jse );
+                                }
+                            }
+                        }
+                    };
+
                 sListener = new ChannelListener() {
                         @Override
                         public void onChannelDisconnected() {
@@ -131,7 +167,7 @@ public class WifiDirectService {
             mgr.discoverServices( sChannel, new WDAL("discoverServices") );
             
             // mgr.discoverPeers( sChannel, sActionListener );
-            DbgUtils.logd( WifiDirectService.class, "called discoverServices" );
+            DbgUtils.logd( WifiDirectService.class, "called mgr.discoverServices" );
             sDiscoveryStarted = true;
         }
     }
@@ -168,16 +204,100 @@ public class WifiDirectService {
 
     private static void tryConnect( WifiP2pDevice device )
     {
-        DbgUtils.logd( WifiDirectService.class, "trying to connect to %s",
-                       device.toString() );
-        WifiP2pConfig config = new WifiP2pConfig();
-        config.deviceAddress = device.deviceAddress;
-        config.wps.setup = WpsInfo.PBC;
+        final String macAddress = device.deviceAddress;
+        if ( ! sPendingDevs.contains( macAddress ) ) {
+            DbgUtils.logd( WifiDirectService.class, "trying to connect to %s",
+                           device.toString() );
+            WifiP2pConfig config = new WifiP2pConfig();
+            config.deviceAddress = device.deviceAddress;
+            config.wps.setup = WpsInfo.PBC;
 
-        WifiP2pManager mgr = (WifiP2pManager)sContext
-            .getSystemService(Context.WIFI_P2P_SERVICE);
+            WifiP2pManager mgr = (WifiP2pManager)sContext
+                .getSystemService(Context.WIFI_P2P_SERVICE);
 
-        mgr.connect( sChannel, config, new WDAL("connect") );
+            mgr.connect( sChannel, config, new ActionListener() {
+                            @Override
+                            public void onSuccess() {
+                                DbgUtils.logd( getClass(), "onSuccess(): %s", "connect_xx" );
+                                sPendingDevs.add( macAddress );
+                            }
+                    @Override
+                    public void onFailure(int reason) {
+                        DbgUtils.logd( getClass(), "onFailure(%d): %s", reason, "connect_xx");
+                    }
+                } );
+        } else {
+            DbgUtils.logd( WifiDirectService.class, "already connected to %s",
+                           macAddress );
+        }
+    }
+
+    private static void connectToOwner( InetAddress addr )
+    {
+        DbgUtils.logd( WifiDirectService.class, "connectToOwner(%s)", addr.toString() );
+        sSocketWrap = new BiDiSockWrap( addr, USE_PORT, sIface ).connect();
+    }
+
+    private static void processPacket( BiDiSockWrap wrap, byte[] bytes )
+    {
+        String asStr = new String(bytes);
+        DbgUtils.logd( WifiDirectService.class, "got string: %s", asStr );
+        try {
+            JSONObject asObj = new JSONObject( asStr );
+            DbgUtils.logd( WifiDirectService.class, "got json: %s", asObj.toString() );
+            final String cmd = asObj.optString( "cmd", "" );
+            sActivity.runOnUiThread( new Runnable() {
+                    public void run() {
+                        DbgUtils.showf( sActivity, "got cmd: %s", cmd );
+                    }
+                } );
+            if ( cmd.equals( "ping" ) ) {
+                try {
+                    wrap.send( new JSONObject().put( "cmd", "pong" ) );
+                } catch ( JSONException jse ) {
+                    DbgUtils.logex( jse );
+                }
+            }
+        } catch ( JSONException jse ) {
+            DbgUtils.logex( jse );
+        }
+    }
+    
+    private static void startAcceptThread()
+    {
+        sAmServer = true;
+        sAcceptThread = new Thread( new Runnable() {
+                public void run() {
+                    try {
+                        sServerSock = new ServerSocket( USE_PORT );
+                        while ( sAmServer ) {
+                            DbgUtils.logd( WifiDirectService.class, "calling accept()" );
+                            Socket socket = sServerSock.accept();
+                            DbgUtils.logd( WifiDirectService.class, "accept() returned!!" );
+                            sSocketWrap = new BiDiSockWrap( socket, sIface );
+                        }
+                    } catch ( IOException ioe ) {
+                        sAmServer = false;
+                        DbgUtils.logex( ioe );
+                    }
+                }
+            } );
+        sAcceptThread.start();
+    }
+
+    private static void stopAcceptThread()
+    {
+        if ( null != sAcceptThread ) {
+            if ( null != sServerSock ) {
+                try {
+                    sServerSock.close();
+                } catch ( IOException ioe ) {
+                    DbgUtils.logex( ioe );
+                }
+                sServerSock = null;
+            }
+            sAcceptThread = null;
+        }
     }
 
     private static class WFDBroadcastReceiver extends BroadcastReceiver {
@@ -246,16 +366,17 @@ public class WifiDirectService {
                            info.toString(), hostAddress );
 
             // After the group negotiation, we can determine the group owner.
-            if (info.groupFormed && info.isGroupOwner) {
-                DbgUtils.logd( getClass(), "am group owner" );
-                // Do whatever tasks are specific to the group owner.
-                // One common case is creating a server thread and accepting
-                // incoming connections.
-            } else if (info.groupFormed) {
-                DbgUtils.logd( getClass(), "am NOT group owner" );
-                // The other device acts as the client. In this case,
-                // you'll want to create a client thread that connects to the group
-                // owner.
+            if (info.groupFormed ) {
+                if ( info.isGroupOwner ) {
+                    DbgUtils.logd( getClass(), "am group owner" );
+                    startAcceptThread();
+                } else {
+                    DbgUtils.logd( getClass(), "am NOT group owner" );
+                    connectToOwner( info.groupOwnerAddress );
+                    // The other device acts as the client. In this case,
+                    // you'll want to create a client thread that connects to the group
+                    // owner.
+                }
             } else {
                 Assert.fail();
             }
@@ -264,12 +385,13 @@ public class WifiDirectService {
 
     private static class PLL implements WifiP2pManager.PeerListListener {
         @Override
-        public void onPeersAvailable(WifiP2pDeviceList peerList) {
+        public void onPeersAvailable( WifiP2pDeviceList peerList ) {
             DbgUtils.logd( getClass(), "got list of %d peers",
                            peerList.getDeviceList().size() );
 
             for ( WifiP2pDevice device : peerList.getDeviceList() ) {
-                // tryConnect( device );
+                // DbgUtils.logd( getClass(), "not connecting to: %s", device.toString() );
+                tryConnect( device );
             }
             // Out with the old, in with the new.
             // peers.clear();

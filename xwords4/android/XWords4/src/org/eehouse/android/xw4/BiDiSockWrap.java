@@ -22,45 +22,92 @@ package org.eehouse.android.xw4;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.json.JSONObject;
+
 import junit.framework.Assert;
 
 public class BiDiSockWrap {
     interface Iface {
-        void gotPacket( BiDiSockWrap socket, byte[] bytes );
-        void onSocketClosed( BiDiSockWrap socket );
+        void gotPacket( BiDiSockWrap wrap, byte[] bytes );
+        void connectStateChanged( BiDiSockWrap wrap, boolean nowConnected );
     }
+
     private Socket mSocket;
     private Iface mIface;
     private LinkedBlockingQueue<byte[]> mQueue;
     private Thread mReadThread;
     private Thread mWriteThread;
     private boolean mRunThreads;
+    private boolean mActive;
+    private InetAddress mAddress;
+    private int mPort;
 
     // For sockets that came from accept() on a ServerSocket
     public BiDiSockWrap( Socket socket, Iface iface )
     {
-        init( socket, iface );
+        mIface = iface;
+        init( socket );
     }
 
-    // For creating sockets that will connect to a remote ServerSocket
-    public BiDiSockWrap( String address, int port, Iface iface )
+    // For creating sockets that will connect to a remote ServerSocket. Must
+    // call connect() afterwards.
+    public BiDiSockWrap( InetAddress address, int port, Iface iface )
     {
-        Socket socket = null;
-        try {
-            socket = new Socket( address, port );
-        } catch ( java.net.UnknownHostException uhe ) {
-            Assert.fail();
-        } catch ( IOException uhe ) {
-            Assert.fail();
-        }
-        if ( null != socket ) {
-            init( socket, iface );
-        }
+        mIface = iface;
+        mAddress = address;
+        mPort = port;
+    }
+
+    public BiDiSockWrap connect()
+    {
+        mActive = true;
+        new Thread( new Runnable() {
+                public void run() {
+                    long waitMillis = 1000;
+                    while ( mActive ) {
+                        try {
+                            Thread.sleep( waitMillis );
+                            DbgUtils.logd( getClass(), "trying to connect..." );
+                            Socket socket = new Socket( mAddress, mPort );
+                            DbgUtils.logd( getClass(), "connected!!!" );
+                            init( socket );
+                            mIface.connectStateChanged( BiDiSockWrap.this, true );
+                            break;
+                        } catch ( java.net.UnknownHostException uhe ) {
+                            DbgUtils.logex( uhe );
+                        } catch ( IOException ioe ) {
+                            DbgUtils.logex( ioe );
+                        } catch ( InterruptedException ie ) {
+                            DbgUtils.logex( ie );
+                        }
+                        waitMillis = Math.min( waitMillis * 2, 1000 * 60 );
+                    }
+                }
+            } ).start();
+
+        return this;
     }
 
     public Socket getSocket() { return mSocket; }
+
+    public boolean isConnected() { return null != getSocket(); }
+
+    public void send( String packet )
+    {
+        try {
+            send( packet.getBytes( "UTF-8" ) );
+        } catch ( java.io.UnsupportedEncodingException uee ) {
+            DbgUtils.logex( uee );
+        }
+    }
+
+    public void send( JSONObject obj )
+    {
+        send( obj.toString() );
+    }
 
     public void send( byte[] packet )
     {
@@ -68,10 +115,9 @@ public class BiDiSockWrap {
         mQueue.add(packet);
     }
 
-    private void init( Socket socket, Iface iface )
+    private void init( Socket socket )
     {
         mSocket = socket;
-        mIface = iface;
         mQueue = new LinkedBlockingQueue<byte[]>();
         startThreads();
     }
@@ -79,13 +125,14 @@ public class BiDiSockWrap {
     private void closeSocket()
     {
         mRunThreads = false;
+        mActive = false;
         try {
             mSocket.close();
         } catch ( IOException ioe ) {
             DbgUtils.logex( ioe );
         }
-        mIface.onSocketClosed( this );
-        send( new byte[0] );
+        mIface.connectStateChanged( this, false );
+        send( (byte[])null );
     }
 
     private void startThreads()
@@ -99,9 +146,10 @@ public class BiDiSockWrap {
                             = new DataOutputStream( mSocket.getOutputStream() );
                         while ( mRunThreads ) {
                             byte[] packet = mQueue.take();
-                            DbgUtils.logd( getClass(), "write thread got packet of len %d",
+                            DbgUtils.logd( BiDiSockWrap.class,
+                                           "write thread got packet of len %d",
                                            packet.length );
-                            if ( null == packet ) {
+                            if ( null == packet || 0 == packet.length ) {
                                 closeSocket();
                                 break;
                             }
@@ -126,11 +174,13 @@ public class BiDiSockWrap {
                             = new DataInputStream( mSocket.getInputStream() );
                         while ( mRunThreads ) {
                             short len = inStream.readShort();
+                            DbgUtils.logd( BiDiSockWrap.class, "got len: %d", len );
                             byte[] packet = new byte[len];
                             inStream.read( packet );
+                            mIface.gotPacket( BiDiSockWrap.this, packet );
                         }
                     } catch( IOException ioe ) {
-                        Assert.fail();
+                        DbgUtils.logex( ioe );
                     }
                 }
             } );
