@@ -1,7 +1,7 @@
 /* -*- compile-command: "make -j3"; -*- */
 
 /* 
- * Copyright 2005 - 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1165,7 +1165,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial,
         // Write an empty string if the client passed the ID to us, or the id
         // if it's new to the client.
         char idbuf[MAX_DEVID_LEN + 1];
-        if ( !!ID_TYPE_RELAY < evt->u.con.devID->m_devIDType ) { 
+        if ( ID_TYPE_RELAY < evt->u.con.devID->m_devIDType ) {
             len = snprintf( idbuf, sizeof(idbuf), "%.8X", *devID );
             assert( len < sizeof(idbuf) );
         } else {
