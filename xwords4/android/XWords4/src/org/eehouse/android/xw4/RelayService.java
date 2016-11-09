@@ -95,6 +95,9 @@ public class RelayService extends XWService
     private static boolean s_registered = false;
     private static CommsAddrRec s_addr =
         new CommsAddrRec( CommsConnType.COMMS_CONN_RELAY );
+    private static int s_curBackoff;
+    private static long s_curNextTimer;
+    static { resetBackoffTimer(); }
 
     private Thread m_fetchThread = null;
     private Thread m_UDPReadThread = null;
@@ -687,6 +690,7 @@ public class RelayService extends XWService
     // MIGHT BE Running on reader thread
     private void gotPacket( byte[] data, boolean skipAck )
     {
+        boolean resetBackoff = false;
         ByteArrayInputStream bis = new ByteArrayInputStream( data );
         DataInputStream dis = new DataInputStream( bis );
         try {
@@ -744,12 +748,14 @@ public class RelayService extends XWService
                                               lastGamePacketReceived );
                         m_lastGamePacketReceived = lastGamePacketReceived;
                     }
+                    resetBackoff = true;
                     break;
                 case XWPDEV_UPGRADE:
                     intent = getIntentTo( this, MsgCmds.UPGRADE );
                     startService( intent );
                     break;
                 case XWPDEV_GOTINVITE:
+                    resetBackoff = true;
                     intent = getIntentTo( this, MsgCmds.GOT_INVITE );
                     int srcDevID = dis.readInt();
                     short len = dis.readShort();
@@ -777,6 +783,10 @@ public class RelayService extends XWService
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logex( ioe );
+        }
+
+        if ( resetBackoff ) {
+            resetBackoffTimer();
         }
     }
 
@@ -1221,7 +1231,6 @@ public class RelayService extends XWService
     // Called from any thread
     private void resetExitTimer()
     {
-        // DbgUtils.logf( "RelayService.resetExitTimer()" );
         m_handler.removeCallbacks( m_onInactivity );
 
         // UDP socket's no good as a return address after several
@@ -1306,6 +1315,9 @@ public class RelayService extends XWService
 
     private void setMaxIntervalSeconds( int maxIntervalSeconds )
     {
+        DbgUtils.logd( getClass(), "IGNORED: setMaxIntervalSeconds(%d); "
+                       + "using -1 instead", maxIntervalSeconds );
+        maxIntervalSeconds = -1;
         if ( m_maxIntervalSeconds != maxIntervalSeconds ) {
             m_maxIntervalSeconds = maxIntervalSeconds;
             XWPrefs.setPrefsInt( this, R.string.key_udp_interval,
@@ -1316,10 +1328,17 @@ public class RelayService extends XWService
     private int getMaxIntervalSeconds()
     {
         if ( 0 == m_maxIntervalSeconds ) {
-            m_maxIntervalSeconds =
-                XWPrefs.getPrefsInt( this, R.string.key_udp_interval, 60 );
+            m_maxIntervalSeconds = -1;
+            // XWPrefs.getPrefsInt( this, R.string.key_udp_interval, 60 );
         }
-        return m_maxIntervalSeconds;
+
+        int result = m_maxIntervalSeconds;
+        if ( -1 == result ) {
+            result = figureBackoffSeconds();
+        }
+
+        DbgUtils.logd( getClass(), "getMaxIntervalSeconds() => %d", result );
+        return result;
     }
 
     private byte[][][] expandMsgsArray( Intent intent )
@@ -1361,6 +1380,34 @@ public class RelayService extends XWService
         }
         DbgUtils.logd( getClass(), "shouldMaintainConnection=>%b", result );
         return result;
+    }
+
+    private static void resetBackoffTimer()
+    {
+        synchronized( RelayService.class ) {
+            s_curBackoff = 0;
+            s_curNextTimer = Utils.getCurSeconds();
+        }
+    }
+
+    private int figureBackoffSeconds() {
+        // DbgUtils.printStack();
+        long diff;
+        synchronized ( RelayService.class ) {
+            long now = Utils.getCurSeconds();
+            if ( s_curNextTimer <= now ) {
+                if ( 0 == s_curBackoff ) {
+                    s_curBackoff = 15;
+                }
+                s_curBackoff = Math.min( 2 * s_curBackoff, 60*60 );
+                s_curNextTimer += s_curBackoff;
+            }
+
+            diff = s_curNextTimer - now;
+        }
+        Assert.assertTrue( diff < Integer.MAX_VALUE );
+        DbgUtils.logd( getClass(), "figureBackoffSeconds() => %d", diff );
+        return (int)diff;
     }
 
     private class PacketHeader {
