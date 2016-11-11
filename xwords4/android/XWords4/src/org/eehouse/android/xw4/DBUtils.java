@@ -414,6 +414,34 @@ public class DBUtils {
         return result;
     }
 
+    public static int countOpenGamesUsingRelay( Context context )
+    {
+        int result = 0;
+        String[] columns = { DBHelper.CONTYPE };
+        String selection = String.format( "%s = 0", DBHelper.GAME_OVER );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns,
+                                      selection, null, null, null, null );
+            int indx = cursor.getColumnIndex( DBHelper.CONTYPE );
+            while ( cursor.moveToNext() ) {
+                CommsConnTypeSet typs = new CommsConnTypeSet( cursor.getInt(indx) );
+                if ( typs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                    ++result;
+                }
+            }
+
+
+            cursor.close();
+            db.close();
+        }
+
+        // DbgUtils.logd( DBUtils.class, "countOpenGamesUsingRelay() => %d", result );
+        return result;
+    }
+
     public static class SentInvitesInfo {
         public long m_rowid;
         private ArrayList<InviteMeans> m_means;

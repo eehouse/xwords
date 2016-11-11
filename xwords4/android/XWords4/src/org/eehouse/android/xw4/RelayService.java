@@ -1392,22 +1392,26 @@ public class RelayService extends XWService
 
     private int figureBackoffSeconds() {
         // DbgUtils.printStack();
-        long diff;
-        synchronized ( RelayService.class ) {
-            long now = Utils.getCurSeconds();
-            if ( s_curNextTimer <= now ) {
-                if ( 0 == s_curBackoff ) {
-                    s_curBackoff = 15;
+        int result = 60 * 60;   // default if no games
+        if ( 0 < DBUtils.countOpenGamesUsingRelay( this ) ) {
+            long diff;
+            synchronized ( RelayService.class ) {
+                long now = Utils.getCurSeconds();
+                if ( s_curNextTimer <= now ) {
+                    if ( 0 == s_curBackoff ) {
+                        s_curBackoff = 15;
+                    }
+                    s_curBackoff = Math.min( 2 * s_curBackoff, result );
+                    s_curNextTimer += s_curBackoff;
                 }
-                s_curBackoff = Math.min( 2 * s_curBackoff, 60*60 );
-                s_curNextTimer += s_curBackoff;
-            }
 
-            diff = s_curNextTimer - now;
+                diff = s_curNextTimer - now;
+            }
+            Assert.assertTrue( diff < Integer.MAX_VALUE );
+            DbgUtils.logd( getClass(), "figureBackoffSeconds() => %d", diff );
+            result =  (int)diff;
         }
-        Assert.assertTrue( diff < Integer.MAX_VALUE );
-        DbgUtils.logd( getClass(), "figureBackoffSeconds() => %d", diff );
-        return (int)diff;
+        return result;
     }
 
     private class PacketHeader {
