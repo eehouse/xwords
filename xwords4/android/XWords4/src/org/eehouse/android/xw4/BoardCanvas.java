@@ -345,11 +345,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public boolean boardBegin( Rect rect, int cellWidth, int cellHeight )
-    {
-        return true;
-    }
-
     public boolean drawCell( final Rect rect, String text, int tile, int value,
                              int owner, int bonus, int hintAtts,
                              final int flags )

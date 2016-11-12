@@ -353,17 +353,11 @@ static XP_Bool and_draw_beginDraw( DrawCtx* XP_UNUSED(dctx) ) {return XP_TRUE;}
 static void and_draw_endDraw( DrawCtx* XP_UNUSED(dctx) ) {}
 
 static XP_Bool
-and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, 
-                     XP_U16 cellWidth, XP_U16 cellHeight, 
+and_draw_boardBegin( DrawCtx* XP_UNUSED(dctx), const XP_Rect* XP_UNUSED(rect),
+                     XP_U16 XP_UNUSED(cellWidth), XP_U16 XP_UNUSED(cellHeight),
                      DrawFocusState XP_UNUSED(dfs) )
 {
-    DRAW_CBK_HEADER( "boardBegin", "(Landroid/graphics/Rect;II)Z" );
-
-    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-
-    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                                 jrect, cellWidth, cellHeight );
-    return result;
+    return XP_TRUE;
 }
 
 static XP_Bool 
