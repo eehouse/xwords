@@ -55,7 +55,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     private Activity m_activity;
     private Context m_context;
-    private Bitmap m_bitmap;
     private JNIThread m_jniThread;
     private Paint m_fillPaint;
     private Paint m_strokePaint;
@@ -141,7 +140,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         super( bitmap );
         m_context = context;
         m_activity = activity;
-        m_bitmap = bitmap;
         m_jniThread = jniThread;
         m_dict = new DictWrapper();
 
@@ -345,9 +343,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public boolean drawCell( final Rect rect, String text, int tile, int value,
-                             int owner, int bonus, int hintAtts,
-                             final int flags )
+    public boolean drawCell( Rect rect, String text, int tile, int value,
+                             int owner, int bonus, int hintAtts, int flags )
     {
         boolean canDraw = figureFontDims();
         if ( canDraw ) {
