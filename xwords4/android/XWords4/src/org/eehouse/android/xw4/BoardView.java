@@ -26,6 +26,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.view.MotionEvent;
@@ -45,6 +46,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     private static final float MIN_FONT_DIPS = 10.0f;
     private static final int MULTI_INACTIVE = -1;
+    private static final int VERSION_CODES_N = 24; // until we're building on SDK 24...
 
     private static boolean s_isFirstDraw;
     private static int s_curGameID;
@@ -203,7 +205,12 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     {
         synchronized( this ) {
             if ( layoutBoardOnce() && m_measuredFromDims ) {
-                canvas.drawBitmap( s_bitmap, 0, 0, new Paint() );
+                Bitmap bitmap = s_bitmap;
+                if ( Build.VERSION.SDK_INT >= VERSION_CODES_N ) {
+                    bitmap = Bitmap.createBitmap(bitmap);
+                }
+                canvas.drawBitmap( bitmap, 0, 0, new Paint() );
+
                 ConnStatusHandler.draw( m_context, canvas, getResources(),
                                         m_connTypes, m_isSolo );
             } else {
