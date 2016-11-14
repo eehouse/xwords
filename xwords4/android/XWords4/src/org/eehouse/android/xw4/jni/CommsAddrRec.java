@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.BTService;
+import org.eehouse.android.xw4.WifiDirectService;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
@@ -46,7 +47,8 @@ public class CommsAddrRec {
         COMMS_CONN_IP_DIRECT,
         COMMS_CONN_RELAY,
         COMMS_CONN_BT,
-        COMMS_CONN_SMS;
+        COMMS_CONN_SMS,
+        COMMS_CONN_P2P;
 
         public String longName( Context context )
         {
@@ -58,6 +60,8 @@ public class CommsAddrRec {
                 id = R.string.invite_choice_bt; break;
             case COMMS_CONN_SMS:
                 id = R.string.connstat_sms; break;
+            case COMMS_CONN_P2P:
+                id = R.string.invite_choice_p2p; break;
             }
 
             return ( 0 == id ) ? toString() : LocUtils.getString( context, id );
@@ -113,6 +117,9 @@ public class CommsAddrRec {
                 }
                 if ( Utils.isGSMPhone( context ) ) {
                     supported.add( CommsConnType.COMMS_CONN_SMS );
+                }
+                if ( WifiDirectService.supported() ) {
+                    supported.add( CommsConnType.COMMS_CONN_P2P );
                 }
                 s_supported = supported;
             }
@@ -189,6 +196,9 @@ public class CommsAddrRec {
     public String sms_phone;
     public int sms_port;                // SMS port, if they still use those
 
+    // wifi-direct
+    public String p2p_addr;
+
     public CommsAddrRec( CommsConnType cTyp )
     {
         this();
@@ -258,6 +268,11 @@ public class CommsAddrRec {
     {
         sms_phone = phone;
         sms_port = 1;           // so don't assert in comms....
+    }
+
+    public void setP2PParams( String macAddress )
+    {
+        p2p_addr = macAddress;
     }
 
     public void populate( Context context, CommsConnTypeSet newTypes )
@@ -340,6 +355,9 @@ public class CommsAddrRec {
             SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
             sms_phone = pi.number;
             sms_port = 3;   // fix comms already...
+            break;
+        case COMMS_CONN_P2P:
+            p2p_addr = WifiDirectService.getMyMacAddress( context );
             break;
         default:
             Assert.fail();

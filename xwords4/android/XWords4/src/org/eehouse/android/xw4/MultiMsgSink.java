@@ -72,6 +72,12 @@ public class MultiMsgSink implements TransportProcs {
         return SMSService.sendPacket( m_context, addr.sms_phone, gameID, buf );
     }
 
+    public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
+    {
+        return WifiDirectService
+            .sendPacket( m_context, addr.p2p_addr, gameID, buf );
+    }
+
     public int numSent()
     {
         return m_sentSet.size();
@@ -94,6 +100,9 @@ public class MultiMsgSink implements TransportProcs {
             break;
         case COMMS_CONN_SMS:
             nSent = sendViaSMS( buf, gameID, addr );
+            break;
+        case COMMS_CONN_P2P:
+            nSent = sendViaP2P( buf, gameID, addr );
             break;
         default:
             Assert.fail();

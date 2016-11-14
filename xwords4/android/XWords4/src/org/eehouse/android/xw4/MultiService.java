@@ -45,6 +45,7 @@ public class MultiService {
     private static final String OWNER = "OWNER";
     public static final String BT_NAME = "BT_NAME";
     public static final String BT_ADDRESS = "BT_ADDRESS";
+    public static final String P2P_MAC_ADDRESS = "P2P_MAC_ADDRESS";
     private static final String NLI_DATA = "nli";
 
     public enum DictFetchOwner { _NONE,

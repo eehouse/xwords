@@ -673,6 +673,9 @@ public class BoardDelegate extends DelegateBase
             case RELAY_INVITE_RESULT:
                 missingMeans = InviteMeans.RELAY;
                 break;
+            case P2P_INVITE_RESULT:
+                missingMeans = InviteMeans.WIFIDIRECT;
+                break;
             }
 
             if ( null != missingMeans ) {
@@ -1333,6 +1336,9 @@ public class BoardDelegate extends DelegateBase
                     break;
                 case COMMS_CONN_SMS:
                     nli.addSMSInfo( m_activity );
+                    break;
+                case COMMS_CONN_P2P:
+                    nli.addP2PInfo( m_activity );
                     break;
                 default:
                     DbgUtils.logw( getClass(), "Not doing NFC join for conn type %s",
@@ -2160,6 +2166,7 @@ public class BoardDelegate extends DelegateBase
                 break;
             case COMMS_CONN_RELAY:
             case COMMS_CONN_SMS:
+            case COMMS_CONN_P2P:
                 break;
             default:
                 DbgUtils.logw( getClass(), "tickle: unexpected type %s",
@@ -2595,7 +2602,8 @@ public class BoardDelegate extends DelegateBase
                     CommsConnTypeSet connTypes = summary.conTypes;
                     supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                        || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+                        || connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_P2P );
                 }
             } else if ( null != context ) {
                 // show the button if people haven't dismissed the hint yet

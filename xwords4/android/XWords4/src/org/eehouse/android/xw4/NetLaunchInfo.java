@@ -56,6 +56,7 @@ public class NetLaunchInfo {
     private static final String GID_KEY = "gid";
     private static final String FORCECHANNEL_KEY = "fc";
     private static final String NAME_KEY = "nm";
+    private static final String P2P_MAC_KEY = "p2";
 
     protected String gameName;
     protected String dict;
@@ -66,6 +67,7 @@ public class NetLaunchInfo {
     protected String room;      // relay
     protected String btName;
     protected String btAddress;
+    protected String p2pMacAddress;
     // SMS
     protected String phone;
     protected boolean isGSM;
@@ -102,6 +104,7 @@ public class NetLaunchInfo {
         gameID = bundle.getInt( MultiService.GAMEID );
         btName = bundle.getString( MultiService.BT_NAME );
         btAddress = bundle.getString( MultiService.BT_ADDRESS );
+        p2pMacAddress = bundle.getString( MultiService.P2P_MAC_ADDRESS );
 
         m_addrs = new CommsConnTypeSet( bundle.getInt( ADDRS_KEY ) );
     }
@@ -172,6 +175,10 @@ public class NetLaunchInfo {
                                 osVers = Integer.decode( val );
                             }
                             doAdd = !hasAddrs && null != phone;
+                            break;
+                        case COMMS_CONN_P2P:
+                            p2pMacAddress = data.getQueryParameter( P2P_MAC_KEY );
+                            doAdd = !hasAddrs && null != p2pMacAddress;
                             break;
                         default:
                             doAdd = false;
@@ -245,6 +252,9 @@ public class NetLaunchInfo {
             case COMMS_CONN_SMS:
                 addSMSInfo( summary.getContext() );
                 break;
+            case COMMS_CONN_P2P:
+                addP2PInfo( summary.getContext() );
+                break;
             default:
                 Assert.fail();
                 break;
@@ -298,6 +308,7 @@ public class NetLaunchInfo {
         bundle.putInt( MultiService.GAMEID, gameID() );
         bundle.putString( MultiService.BT_NAME, btName );
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
+        bundle.putString( MultiService.P2P_MAC_ADDRESS, p2pMacAddress );
         bundle.putInt( MultiService.FORCECHANNEL, forceChannel );
 
         int flags = m_addrs.toInt();
@@ -332,6 +343,9 @@ public class NetLaunchInfo {
                     .put( GSM_KEY, isGSM )
                     .put( OSVERS_KEY, osVers );
             }
+            if ( m_addrs.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                obj.put( P2P_MAC_KEY, p2pMacAddress );
+            }
             result = obj.toString();
 
         } catch ( org.json.JSONException jse ) {
@@ -357,6 +371,9 @@ public class NetLaunchInfo {
                 break;
             case COMMS_CONN_SMS:
                 result.setSMSParams( phone );
+                break;
+            case COMMS_CONN_P2P:
+                result.setP2PParams( p2pMacAddress );
                 break;
             default:
                 Assert.fail();
@@ -408,6 +425,10 @@ public class NetLaunchInfo {
                     isGSM = json.optBoolean( GSM_KEY, false );
                     osVers = json.optInt( OSVERS_KEY, 0 );
                     doAdd = !hasAddrs && !phone.isEmpty();
+                    break;
+                case COMMS_CONN_P2P:
+                    p2pMacAddress = json.optString( P2P_MAC_KEY );
+                    doAdd = !hasAddrs && null != p2pMacAddress;
                     break;
                 default:
                     doAdd = false;
@@ -466,6 +487,9 @@ public class NetLaunchInfo {
             appendInt( ub, GSM_KEY, (isGSM? 1 : 0) );
             appendInt( ub, OSVERS_KEY, osVers );
         }
+        if ( m_addrs.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+            ub.appendQueryParameter( P2P_MAC_KEY, p2pMacAddress );
+        }
         Uri result = ub.build();
 
         if ( BuildConfig.DEBUG ) { // Test...
@@ -505,6 +529,12 @@ public class NetLaunchInfo {
         osVers = Integer.valueOf( android.os.Build.VERSION.SDK );
 
         m_addrs.add( CommsConnType.COMMS_CONN_SMS );
+    }
+
+    public void addP2PInfo( Context context )
+    {
+        p2pMacAddress = WifiDirectService.getMyMacAddress( context );
+        m_addrs.add( CommsConnType.COMMS_CONN_P2P );
     }
 
     public boolean isValid()

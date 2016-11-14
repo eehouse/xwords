@@ -56,6 +56,7 @@ import org.json.JSONObject;
 import junit.framework.Assert;
 
 public class WifiDirectService {
+    private static final String MAC_ADDR_KEY = "p2p_mac_addr";
     private static final String SERVICE_NAME = "_xwords";
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
     private static boolean WIFI_DIRECT_ENABLED = true;
@@ -75,6 +76,28 @@ public class WifiDirectService {
     private static BiDiSockWrap sSocketWrap;
     private static Set<String> sPendingDevs = new HashSet<String>();
     public static Activity sActivity;
+
+    public static boolean supported()
+    {
+        return WIFI_DIRECT_ENABLED;
+    }
+
+    public static String getMyMacAddress( Context context )
+    {
+        String result = null;
+        if ( WIFI_DIRECT_ENABLED ) {
+            result = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
+        }
+        return result;
+    }
+
+    public static int sendPacket( Context context, String macAddr, int gameID,
+                                  byte[] buf )
+    {
+        DbgUtils.logd( WifiDirectService.class, "sendPacket(): have %d bytes for %s",
+                       buf.length, macAddr );
+        return -1;
+    }
     
     public static void activityResumed( Activity activity )
     {
@@ -92,7 +115,13 @@ public class WifiDirectService {
     {
         if ( WIFI_DIRECT_ENABLED ) {
             sActivity = null;
-            activity.unregisterReceiver( sReceiver );
+            Assert.assertNotNull( sReceiver );
+            // No idea why I'm seeing this exception...
+            try {
+                activity.unregisterReceiver( sReceiver );
+            } catch ( IllegalArgumentException iae ) {
+                DbgUtils.logex( iae );
+            }
             DbgUtils.logd( WifiDirectService.class, "activityPaused() done" );
         }
     }
@@ -346,6 +375,17 @@ public class WifiDirectService {
                     }
                 } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
                     // Respond to this device's wifi state changing
+                    WifiP2pDevice device = (WifiP2pDevice) intent
+                        .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+                    String deviceAddress = device.deviceAddress;
+
+                    DbgUtils.logd(getClass(), "Got my MAC Address: %s",
+                                  deviceAddress );
+                    String stored = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
+                    Assert.assertTrue( null == stored || stored.equals(deviceAddress) );
+                    if ( null == stored ) {
+                        DBUtils.setStringFor( context, MAC_ADDR_KEY, deviceAddress );
+                    }
                 }
             }
         }

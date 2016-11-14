@@ -119,6 +119,9 @@ public class ConnViaViewLayout extends LinearLayout {
         case COMMS_CONN_RELAY:
             enabled = RelayService.relayEnabled( context );
             break;
+        case COMMS_CONN_P2P:
+            enabled = WifiDirectService.supported();
+            break;
         default:
             Assert.fail();
             break;
@@ -146,6 +149,10 @@ public class ConnViaViewLayout extends LinearLayout {
             case COMMS_CONN_BT:
                 msgID = R.string.not_again_comms_bt;
                 keyID = R.string.key_na_comms_bt;
+                break;
+            case COMMS_CONN_P2P:
+                msgID = R.string.not_again_comms_p2p;
+                keyID = R.string.key_na_comms_p2p;
                 break;
             default:
                 Assert.fail();

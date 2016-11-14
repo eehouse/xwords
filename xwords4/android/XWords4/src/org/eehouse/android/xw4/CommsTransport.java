@@ -448,6 +448,10 @@ public class CommsTransport implements TransportProcs,
         case COMMS_CONN_BT:
             nSent = BTService.enqueueFor( context, buf, addr, gameID );
             break;
+        case COMMS_CONN_P2P:
+            nSent = WifiDirectService
+                .sendPacket( context, addr.p2p_addr, gameID, buf );
+            break;
         default:
             Assert.fail();
             break;

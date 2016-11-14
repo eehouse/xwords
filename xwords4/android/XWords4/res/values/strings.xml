@@ -1205,6 +1205,7 @@
 	<string name="invite_choice_bt">Bluetooth</string>
 	<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
 	<string name="invite_choice_relay">Internet/Relay</string>
+    <string name="invite_choice_p2p">Wifi Direct</string>
 	<string name="invite_choice_title">Inviting players: How?</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
     <!--    via email?</string> -->
@@ -2626,6 +2627,9 @@
 
   <string name="not_again_comms_bt">Use Bluetooth to play against a
   nearby device that\'s \"paired\" with yours.</string>
+
+  <string name="not_again_comms_p2p">Use WiFi Direct to play against a
+  nearby WiFi Direct-capable device.</string>
 
   <string name="str_no_hint_found">Cannot find any moves</string>
 
