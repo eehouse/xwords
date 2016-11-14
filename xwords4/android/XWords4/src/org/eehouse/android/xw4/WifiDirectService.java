@@ -58,7 +58,7 @@ import junit.framework.Assert;
 public class WifiDirectService {
     private static final String SERVICE_NAME = "_xwords";
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
-    private static final boolean WIFI_DIRECT_ENABLED = true;
+    private static boolean WIFI_DIRECT_ENABLED = true;
     private static final int USE_PORT = 5432;
 
     private static Context sContext;
@@ -80,10 +80,11 @@ public class WifiDirectService {
     {
         if ( WIFI_DIRECT_ENABLED ) {
             sActivity = activity;
-            initListeners( activity );
-            activity.registerReceiver( sReceiver, sIntentFilter);
-            DbgUtils.logd( WifiDirectService.class, "activityResumed() done" );
-            startDiscovery( activity );
+            if ( initListeners( activity ) ) {
+                activity.registerReceiver( sReceiver, sIntentFilter);
+                DbgUtils.logd( WifiDirectService.class, "activityResumed() done" );
+                startDiscovery( activity );
+            }
         }
     }
 
@@ -96,52 +97,60 @@ public class WifiDirectService {
         }
     }
 
-    private static void initListeners( Context context )
+    private static boolean initListeners( Context context )
     {
+        boolean succeeded = false;
         sContext = context;
         if ( WIFI_DIRECT_ENABLED ) {
             if ( null == sListener ) {
-                sIface = new BiDiSockWrap.Iface() {
-                        public void gotPacket( BiDiSockWrap socket, byte[] bytes )
-                        {
-                            DbgUtils.logd( WifiDirectService.class, "got packet!!!" );
-                            processPacket( socket, bytes );
-                        }
+                try {
+                    WifiP2pManager mgr = (WifiP2pManager)context
+                        .getSystemService(Context.WIFI_P2P_SERVICE);
+                    sChannel = mgr.initialize( context, Looper.getMainLooper(),
+                                               sListener );
+                    Assert.assertNotNull( sChannel );
 
-                        public void connectStateChanged( BiDiSockWrap wrap, boolean nowConnected )
-                        {
-                            if ( nowConnected ) {
-                                try {
-                                    wrap.send( new JSONObject().put( "cmd", "ping" ) );
-                                } catch ( JSONException jse ) {
-                                    DbgUtils.logex( jse );
+                    sIface = new BiDiSockWrap.Iface() {
+                            public void gotPacket( BiDiSockWrap socket, byte[] bytes )
+                            {
+                                DbgUtils.logd( WifiDirectService.class, "got packet!!!" );
+                                processPacket( socket, bytes );
+                            }
+
+                            public void connectStateChanged( BiDiSockWrap wrap, boolean nowConnected )
+                            {
+                                if ( nowConnected ) {
+                                    try {
+                                        wrap.send( new JSONObject().put( "cmd", "ping" ) );
+                                    } catch ( JSONException jse ) {
+                                        DbgUtils.logex( jse );
+                                    }
                                 }
                             }
-                        }
-                    };
+                        };
 
-                sListener = new ChannelListener() {
-                        @Override
-                        public void onChannelDisconnected() {
-                            DbgUtils.logd( WifiDirectService.class, "onChannelDisconnected()");
-                        }
-                    };
-                
-                sIntentFilter = new IntentFilter();
-                sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-                sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-                sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-                sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+                    sListener = new ChannelListener() {
+                            @Override
+                            public void onChannelDisconnected() {
+                                DbgUtils.logd( WifiDirectService.class, "onChannelDisconnected()");
+                            }
+                        };
 
-                WifiP2pManager mgr = (WifiP2pManager)context
-                    .getSystemService(Context.WIFI_P2P_SERVICE);
-                sChannel = mgr.initialize( context, Looper.getMainLooper(),
-                                           sListener );
-                Assert.assertNotNull( sChannel );
+                    sIntentFilter = new IntentFilter();
+                    sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+                    sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+                    sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+                    sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-                sReceiver = new WFDBroadcastReceiver( mgr, sChannel );
+                    sReceiver = new WFDBroadcastReceiver( mgr, sChannel );
+                    succeeded = true;
+                } catch ( SecurityException se ) {
+                    DbgUtils.logd( WifiDirectService.class, "disabling wifi; no permissions" );
+                    WIFI_DIRECT_ENABLED = false;
+                }
             }
         }
+        return succeeded;
     }
 
     private static void startDiscovery( Context context )
