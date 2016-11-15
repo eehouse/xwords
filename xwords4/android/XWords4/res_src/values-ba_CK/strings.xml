@@ -1039,6 +1039,7 @@
   <string name="invite_choice_bt">Htooteulb</string>
   <string name="invite_choice_nfc">CFN (\"Diordna gnimaeb\")</string>
   <string name="invite_choice_relay">Yaler/tenRetni</string>
+  <string name="invite_choice_p2p">Ifiw Tcerid</string>
   <string name="invite_choice_title">Gnitivni sreyalp: ?woh</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
@@ -2248,6 +2249,8 @@
   i.e. yreve reirrac ni eht dlrow tpecxe Nozirev dna Tnirps.</string>
   <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
   ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
+  <string name="not_again_comms_p2p">Esu IfIw Tcerid ot yalp tsniaga a
+  ybraen IfIw Elbapac-tcerid ecived.</string>
   <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
   <string name="not_again_rematch_two_only">Hctamer si detimil ot
   nosrep-owt ,semag ta tsael rof ,won esuaceb ti\'s redrah htiw erom

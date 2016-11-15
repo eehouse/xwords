@@ -73,8 +73,10 @@ public class WifiDirectService {
     private static Thread sAcceptThread;
     private static ServerSocket sServerSock;
     private static BiDiSockWrap.Iface sIface;
-    private static BiDiSockWrap sSocketWrap;
-    private static Set<String> sPendingDevs = new HashSet<String>();
+    private static Map<String, BiDiSockWrap> sSocketWrapMap
+        = new HashMap<String, BiDiSockWrap>();
+    private static Map<String, Long> sPendingDevs = new HashMap<String, Long>();
+    private static String sMacAddress;
     public static Activity sActivity;
 
     public static boolean supported()
@@ -84,18 +86,27 @@ public class WifiDirectService {
 
     public static String getMyMacAddress( Context context )
     {
-        String result = null;
         if ( WIFI_DIRECT_ENABLED ) {
-            result = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
+            if ( null == sMacAddress && null != context ) {
+                sMacAddress = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
+            }
         }
-        return result;
+        DbgUtils.logd( WifiDirectService.class, "getMyMacAddress() => %s",
+                       sMacAddress );
+        // Assert.assertNotNull(sMacAddress);
+        return sMacAddress;
     }
+
+    private static String getMyMacAddress() { return getMyMacAddress(null); }
 
     public static int sendPacket( Context context, String macAddr, int gameID,
                                   byte[] buf )
     {
         DbgUtils.logd( WifiDirectService.class, "sendPacket(): have %d bytes for %s",
                        buf.length, macAddr );
+        BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
+        DbgUtils.logd( WifiDirectService.class, "sendPacket(): I %s have a socket for it",
+                       (null == wrap ? "DO NOT" : "DO!!" ) );
         return -1;
     }
     
@@ -104,7 +115,7 @@ public class WifiDirectService {
         if ( WIFI_DIRECT_ENABLED ) {
             sActivity = activity;
             if ( initListeners( activity ) ) {
-                activity.registerReceiver( sReceiver, sIntentFilter);
+                activity.registerReceiver( sReceiver, sIntentFilter );
                 DbgUtils.logd( WifiDirectService.class, "activityResumed() done" );
                 startDiscovery( activity );
             }
@@ -123,16 +134,25 @@ public class WifiDirectService {
                 DbgUtils.logex( iae );
             }
             DbgUtils.logd( WifiDirectService.class, "activityPaused() done" );
+
+            sDiscoveryStarted = false;
         }
     }
 
-    private static boolean initListeners( Context context )
+    private static boolean initListeners( final Context context )
     {
         boolean succeeded = false;
         sContext = context;
         if ( WIFI_DIRECT_ENABLED ) {
             if ( null == sListener ) {
                 try {
+                    sListener = new ChannelListener() {
+                            @Override
+                            public void onChannelDisconnected() {
+                                DbgUtils.logd( WifiDirectService.class, "onChannelDisconnected()");
+                            }
+                        };
+
                     WifiP2pManager mgr = (WifiP2pManager)context
                         .getSystemService(Context.WIFI_P2P_SERVICE);
                     sChannel = mgr.initialize( context, Looper.getMainLooper(),
@@ -142,7 +162,8 @@ public class WifiDirectService {
                     sIface = new BiDiSockWrap.Iface() {
                             public void gotPacket( BiDiSockWrap socket, byte[] bytes )
                             {
-                                DbgUtils.logd( WifiDirectService.class, "got packet!!!" );
+                                DbgUtils.logd( WifiDirectService.class,
+                                               "wrapper got packet!!!" );
                                 processPacket( socket, bytes );
                             }
 
@@ -150,18 +171,13 @@ public class WifiDirectService {
                             {
                                 if ( nowConnected ) {
                                     try {
-                                        wrap.send( new JSONObject().put( "cmd", "ping" ) );
+                                        wrap.send( new JSONObject()
+                                                   .put( "cmd", "ping" )
+                                                   .put( "myMac", getMyMacAddress( context ) ) );
                                     } catch ( JSONException jse ) {
                                         DbgUtils.logex( jse );
                                     }
                                 }
-                            }
-                        };
-
-                    sListener = new ChannelListener() {
-                            @Override
-                            public void onChannelDisconnected() {
-                                DbgUtils.logd( WifiDirectService.class, "onChannelDisconnected()");
                             }
                         };
 
@@ -177,6 +193,8 @@ public class WifiDirectService {
                     DbgUtils.logd( WifiDirectService.class, "disabling wifi; no permissions" );
                     WIFI_DIRECT_ENABLED = false;
                 }
+            } else {
+                succeeded = true;
             }
         }
         return succeeded;
@@ -237,13 +255,38 @@ public class WifiDirectService {
                     }
                 };
             mgr.setDnsSdResponseListeners( sChannel, srl, trl );
+            DbgUtils.logd( WifiDirectService.class, "setDiscoveryListeners done" );
         }
+    }
+
+    private static boolean connectPending( String macAddress )
+    {
+        boolean result = false;
+        if ( sPendingDevs.containsKey( macAddress ) ) {
+            long when = sPendingDevs.get( macAddress );
+            long now = Utils.getCurSeconds();
+            result = 5 >= now - when;
+        }
+        DbgUtils.logd( WifiDirectService.class, "connectPending(%s)=>%b",
+                       macAddress, result );
+        return result;
+    }
+
+    private static void notePending( String macAddress )
+    {
+        sPendingDevs.put( macAddress, Utils.getCurSeconds() );
     }
 
     private static void tryConnect( WifiP2pDevice device )
     {
         final String macAddress = device.deviceAddress;
-        if ( ! sPendingDevs.contains( macAddress ) ) {
+        if ( sSocketWrapMap.containsKey(macAddress)
+             && sSocketWrapMap.get(macAddress).isConnected() ) {
+            DbgUtils.logd( WifiDirectService.class, "tryConnect(%s): already connected",
+                           macAddress );
+        } else if ( connectPending( macAddress ) ) {
+        } else {
+            // sSocketWrapMap.put( macAddress, null );
             DbgUtils.logd( WifiDirectService.class, "trying to connect to %s",
                            device.toString() );
             WifiP2pConfig config = new WifiP2pConfig();
@@ -257,23 +300,34 @@ public class WifiDirectService {
                             @Override
                             public void onSuccess() {
                                 DbgUtils.logd( getClass(), "onSuccess(): %s", "connect_xx" );
-                                sPendingDevs.add( macAddress );
+                                notePending( macAddress );
                             }
                     @Override
                     public void onFailure(int reason) {
                         DbgUtils.logd( getClass(), "onFailure(%d): %s", reason, "connect_xx");
                     }
                 } );
-        } else {
-            DbgUtils.logd( WifiDirectService.class, "already connected to %s",
-                           macAddress );
         }
     }
 
     private static void connectToOwner( InetAddress addr )
     {
+        BiDiSockWrap wrap = new BiDiSockWrap( addr, USE_PORT, sIface );
         DbgUtils.logd( WifiDirectService.class, "connectToOwner(%s)", addr.toString() );
-        sSocketWrap = new BiDiSockWrap( addr, USE_PORT, sIface ).connect();
+        wrap.connect();
+    }
+
+    private static void storeByAddress( BiDiSockWrap wrap, JSONObject packet )
+    {
+        String macAddress = packet.optString( "myMac", null );
+        // Assert.assertNotNull( macAddress );
+        if ( null != macAddress ) {
+            Assert.assertNull( sSocketWrapMap.get( macAddress ) );
+            sSocketWrapMap.put( macAddress, wrap );
+            DbgUtils.logd( WifiDirectService.class,
+                           "processPacket(); storing wrap for %s",
+                           macAddress );
+        }
     }
 
     private static void processPacket( BiDiSockWrap wrap, byte[] bytes )
@@ -290,11 +344,16 @@ public class WifiDirectService {
                     }
                 } );
             if ( cmd.equals( "ping" ) ) {
+                storeByAddress( wrap, asObj );
                 try {
-                    wrap.send( new JSONObject().put( "cmd", "pong" ) );
+                    wrap.send( new JSONObject()
+                               .put( "cmd", "pong" )
+                               .put( "myMac", getMyMacAddress() ) );
                 } catch ( JSONException jse ) {
                     DbgUtils.logex( jse );
                 }
+            } else if ( cmd.equals( "pong" ) ) {
+                storeByAddress( wrap, asObj );
             }
         } catch ( JSONException jse ) {
             DbgUtils.logex( jse );
@@ -312,7 +371,7 @@ public class WifiDirectService {
                             DbgUtils.logd( WifiDirectService.class, "calling accept()" );
                             Socket socket = sServerSock.accept();
                             DbgUtils.logd( WifiDirectService.class, "accept() returned!!" );
-                            sSocketWrap = new BiDiSockWrap( socket, sIface );
+                            new BiDiSockWrap( socket, sIface );
                         }
                     } catch ( IOException ioe ) {
                         sAmServer = false;
@@ -359,7 +418,6 @@ public class WifiDirectService {
                     sEnabled = state == WifiP2pManager.WIFI_P2P_STATE_ENABLED;
                     DbgUtils.logd( getClass(), "WifiP2PEnabled: %b", sEnabled );
                 } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-                    // Call WifiP2pManager.requestPeers() to get a list of current peers
                     mManager.requestPeers( mChannel, new PLL() );
                 } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
                     // Assert.fail();
@@ -377,14 +435,15 @@ public class WifiDirectService {
                     // Respond to this device's wifi state changing
                     WifiP2pDevice device = (WifiP2pDevice) intent
                         .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-                    String deviceAddress = device.deviceAddress;
+                    sMacAddress = device.deviceAddress;
+                    String deviceName = device.deviceName;
 
-                    DbgUtils.logd(getClass(), "Got my MAC Address: %s",
-                                  deviceAddress );
+                    DbgUtils.logd( getClass(), "Got my MAC Address: %s and name: %s",
+                                   sMacAddress, deviceName );
                     String stored = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
-                    Assert.assertTrue( null == stored || stored.equals(deviceAddress) );
+                    Assert.assertTrue( null == stored || stored.equals(sMacAddress) );
                     if ( null == stored ) {
-                        DBUtils.setStringFor( context, MAC_ADDR_KEY, deviceAddress );
+                        DBUtils.setStringFor( context, MAC_ADDR_KEY, sMacAddress );
                     }
                 }
             }

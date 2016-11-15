@@ -1039,6 +1039,7 @@
   <string name="invite_choice_bt">BLUETOOTH</string>
   <string name="invite_choice_nfc">NFC (\"ANDROID BEAMING\")</string>
   <string name="invite_choice_relay">INTERNET/RELAY</string>
+  <string name="invite_choice_p2p">WIFI DIRECT</string>
   <string name="invite_choice_title">INVITING PLAYERS: HOW?</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
@@ -2248,6 +2249,8 @@
   I.E. EVERY CARRIER IN THE WORLD EXCEPT VERIZON AND SPRINT.</string>
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
+  <string name="not_again_comms_p2p">USE WIFI DIRECT TO PLAY AGAINST A
+  NEARBY WIFI DIRECT-CAPABLE DEVICE.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
   <string name="not_again_rematch_two_only">REMATCH IS LIMITED TO
   TWO-PERSON GAMES, AT LEAST FOR NOW, BECAUSE IT\'S HARDER WITH MORE
