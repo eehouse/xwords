@@ -120,7 +120,7 @@ public class ConnViaViewLayout extends LinearLayout {
             enabled = RelayService.relayEnabled( context );
             break;
         case COMMS_CONN_P2P:
-            enabled = WifiDirectService.supported();
+            enabled = WiDirService.supported();
             break;
         default:
             Assert.fail();

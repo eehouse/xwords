@@ -26,7 +26,7 @@ import android.text.TextUtils;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.BTService;
-import org.eehouse.android.xw4.WifiDirectService;
+import org.eehouse.android.xw4.WiDirService;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
@@ -118,7 +118,7 @@ public class CommsAddrRec {
                 if ( Utils.isGSMPhone( context ) ) {
                     supported.add( CommsConnType.COMMS_CONN_SMS );
                 }
-                if ( WifiDirectService.supported() ) {
+                if ( WiDirService.supported() ) {
                     supported.add( CommsConnType.COMMS_CONN_P2P );
                 }
                 s_supported = supported;
@@ -358,7 +358,7 @@ public class CommsAddrRec {
             sms_port = 3;   // fix comms already...
             break;
         case COMMS_CONN_P2P:
-            p2p_addr = WifiDirectService.getMyMacAddress( context );
+            p2p_addr = WiDirService.getMyMacAddress( context );
             break;
         default:
             Assert.fail();

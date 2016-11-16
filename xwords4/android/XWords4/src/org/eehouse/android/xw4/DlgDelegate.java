@@ -488,7 +488,7 @@ public class DlgDelegate {
         if ( (XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS( m_activity ))
              || XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0]
-             || WifiDirectService.supported()
+             || WiDirService.supported()
              || BTService.BTAvailable() ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
                 .setAction( action )
@@ -736,7 +736,7 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_relay ) );
             means.add( DlgClickNotify.InviteMeans.RELAY );
         }
-        // if ( WifiDirectService.supported() ) {
+        // if ( WiDirService.supported() ) {
         //     items.add( getString( R.string.invite_choice_p2p ) );
         //     means.add( DlgClickNotify.InviteMeans.WIFIDIRECT );
         // }

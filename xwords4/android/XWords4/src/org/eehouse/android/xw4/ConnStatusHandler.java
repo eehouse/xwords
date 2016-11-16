@@ -546,7 +546,7 @@ public class ConnStatusHandler {
                 && NetStateCache.netAvail( context );
             break;
         case COMMS_CONN_P2P:
-            result = WifiDirectService.connecting();
+            result = WiDirService.connecting();
             break;
         default:
             DbgUtils.logw( ConnStatusHandler.class, "connTypeEnabled: %s not handled",

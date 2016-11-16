@@ -449,7 +449,7 @@ public class CommsTransport implements TransportProcs,
             nSent = BTService.enqueueFor( context, buf, addr, gameID );
             break;
         case COMMS_CONN_P2P:
-            nSent = WifiDirectService
+            nSent = WiDirService
                 .sendPacket( context, addr.p2p_addr, gameID, buf );
             break;
         default:

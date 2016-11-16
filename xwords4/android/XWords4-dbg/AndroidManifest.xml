@@ -197,7 +197,7 @@
 
     <service android:name="RelayService"/>
     <service android:name="BTService"/>
-    <service android:name="WifiDirectService"/>
+    <service android:name="WiDirService"/>
     <service android:name="SMSService"/>
 
     <receiver android:name=".MountEventReceiver">

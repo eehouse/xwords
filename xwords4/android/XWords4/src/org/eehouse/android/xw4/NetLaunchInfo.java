@@ -533,7 +533,7 @@ public class NetLaunchInfo {
 
     public void addP2PInfo( Context context )
     {
-        p2pMacAddress = WifiDirectService.getMyMacAddress( context );
+        p2pMacAddress = WiDirService.getMyMacAddress( context );
         m_addrs.add( CommsConnType.COMMS_CONN_P2P );
     }
 

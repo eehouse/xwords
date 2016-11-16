@@ -74,7 +74,7 @@ public class MultiMsgSink implements TransportProcs {
 
     public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
     {
-        return WifiDirectService
+        return WiDirService
             .sendPacket( m_context, addr.p2p_addr, gameID, buf );
     }
 

@@ -73,7 +73,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
         }
         m_dlgt.onPause();
         super.onPause();
-        WifiDirectService.activityPaused( this );
+        WiDirService.activityPaused( this );
     }
 
     @Override
@@ -83,7 +83,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
             DbgUtils.logi( getClass(), "onResume(this=%H)", this );
         }
         super.onResume();
-        WifiDirectService.activityResumed( this );
+        WiDirService.activityResumed( this );
         m_dlgt.onResume();
     }
 

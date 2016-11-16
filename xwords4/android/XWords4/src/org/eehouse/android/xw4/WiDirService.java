@@ -60,7 +60,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 import junit.framework.Assert;
 
-public class WifiDirectService extends XWService {
+public class WiDirService extends XWService {
     private static final String MAC_ADDR_KEY = "p2p_mac_addr";
     private static final String SERVICE_NAME = "srvc_" + BuildConstants.VARIANT;
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
@@ -161,7 +161,7 @@ public class WifiDirectService extends XWService {
                 sMacAddress = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
             }
         }
-        DbgUtils.logd( WifiDirectService.class, "getMyMacAddress() => %s",
+        DbgUtils.logd( WiDirService.class, "getMyMacAddress() => %s",
                        sMacAddress );
         // Assert.assertNotNull(sMacAddress);
         return sMacAddress;
@@ -187,7 +187,7 @@ public class WifiDirectService extends XWService {
                 DbgUtils.logex( jse );
             }
         } else {
-            DbgUtils.logd( WifiDirectService.class, "no socket for packet for %s",
+            DbgUtils.logd( WiDirService.class, "no socket for packet for %s",
                            macAddr );
         }
         return nSent;
@@ -198,7 +198,7 @@ public class WifiDirectService extends XWService {
         if ( WIFI_DIRECT_ENABLED ) {
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
-                DbgUtils.logd( WifiDirectService.class, "activityResumed() done" );
+                DbgUtils.logd( WiDirService.class, "activityResumed() done" );
                 startDiscovery( activity );
             }
         }
@@ -214,7 +214,7 @@ public class WifiDirectService extends XWService {
             } catch ( IllegalArgumentException iae ) {
                 DbgUtils.logex( iae );
             }
-            DbgUtils.logd( WifiDirectService.class, "activityPaused() done" );
+            DbgUtils.logd( WiDirService.class, "activityPaused() done" );
 
             // Examples seem to kick discovery off once and that's it
             // sDiscoveryStarted = false;
@@ -230,7 +230,7 @@ public class WifiDirectService extends XWService {
                     sListener = new ChannelListener() {
                             @Override
                             public void onChannelDisconnected() {
-                                DbgUtils.logd( WifiDirectService.class, "onChannelDisconnected()");
+                                DbgUtils.logd( WiDirService.class, "onChannelDisconnected()");
                             }
                         };
 
@@ -243,7 +243,7 @@ public class WifiDirectService extends XWService {
                     sIface = new BiDiSockWrap.Iface() {
                             public void gotPacket( BiDiSockWrap socket, byte[] bytes )
                             {
-                                DbgUtils.logd( WifiDirectService.class,
+                                DbgUtils.logd( WiDirService.class,
                                                "wrapper got packet!!!" );
                                 processPacket( socket, bytes );
                             }
@@ -271,7 +271,7 @@ public class WifiDirectService extends XWService {
                     sReceiver = new WFDBroadcastReceiver( mgr, sChannel );
                     succeeded = true;
                 } catch ( SecurityException se ) {
-                    DbgUtils.logd( WifiDirectService.class, "disabling wifi; no permissions" );
+                    DbgUtils.logd( WiDirService.class, "disabling wifi; no permissions" );
                     WIFI_DIRECT_ENABLED = false;
                 }
             } else {
@@ -304,7 +304,7 @@ public class WifiDirectService extends XWService {
             mgr.discoverServices( sChannel, new WDAL("discoverServices") );
             
             // mgr.discoverPeers( sChannel, sActionListener );
-            DbgUtils.logd( WifiDirectService.class, "called mgr.discoverServices" );
+            DbgUtils.logd( WiDirService.class, "called mgr.discoverServices" );
             sDiscoveryStarted = true;
         }
     }
@@ -336,7 +336,7 @@ public class WifiDirectService extends XWService {
                     }
                 };
             mgr.setDnsSdResponseListeners( sChannel, srl, trl );
-            DbgUtils.logd( WifiDirectService.class, "setDiscoveryListeners done" );
+            DbgUtils.logd( WiDirService.class, "setDiscoveryListeners done" );
         }
     }
 
@@ -348,7 +348,7 @@ public class WifiDirectService extends XWService {
             long now = Utils.getCurSeconds();
             result = 3 >= now - when;
         }
-        DbgUtils.logd( WifiDirectService.class, "connectPending(%s)=>%b",
+        DbgUtils.logd( WiDirService.class, "connectPending(%s)=>%b",
                        macAddress, result );
         return result;
     }
@@ -363,12 +363,12 @@ public class WifiDirectService extends XWService {
         final String macAddress = device.deviceAddress;
         if ( sSocketWrapMap.containsKey(macAddress)
              && sSocketWrapMap.get(macAddress).isConnected() ) {
-            DbgUtils.logd( WifiDirectService.class, "tryConnect(%s): already connected",
+            DbgUtils.logd( WiDirService.class, "tryConnect(%s): already connected",
                            macAddress );
         } else if ( connectPending( macAddress ) ) {
             // Do nothing
         } else {
-            DbgUtils.logd( WifiDirectService.class, "trying to connect to %s",
+            DbgUtils.logd( WiDirService.class, "trying to connect to %s",
                            device.toString() );
             WifiP2pConfig config = new WifiP2pConfig();
             config.deviceAddress = device.deviceAddress;
@@ -401,7 +401,7 @@ public class WifiDirectService extends XWService {
     private static void connectToOwner( InetAddress addr )
     {
         BiDiSockWrap wrap = new BiDiSockWrap( addr, USE_PORT, sIface );
-        DbgUtils.logd( WifiDirectService.class, "connectToOwner(%s)", addr.toString() );
+        DbgUtils.logd( WiDirService.class, "connectToOwner(%s)", addr.toString() );
         wrap.connect();
     }
 
@@ -414,7 +414,7 @@ public class WifiDirectService extends XWService {
             // Assert.assertNull( sSocketWrapMap.get( macAddress ) );
             wrap.setMacAddress( macAddress );
             sSocketWrapMap.put( macAddress, wrap );
-            DbgUtils.logd( WifiDirectService.class,
+            DbgUtils.logd( WiDirService.class,
                            "storeByAddress(); storing wrap for %s",
                            macAddress );
         }
@@ -436,10 +436,10 @@ public class WifiDirectService extends XWService {
     private static void processPacket( BiDiSockWrap wrap, byte[] bytes )
     {
         String asStr = new String(bytes);
-        DbgUtils.logd( WifiDirectService.class, "got string: %s", asStr );
+        DbgUtils.logd( WiDirService.class, "got string: %s", asStr );
         try {
             JSONObject asObj = new JSONObject( asStr );
-            DbgUtils.logd( WifiDirectService.class, "got json: %s", asObj.toString() );
+            DbgUtils.logd( WiDirService.class, "got json: %s", asObj.toString() );
             final String cmd = asObj.optString( KEY_CMD, "" );
             if ( cmd.equals( CMD_PING ) ) {
                 storeByAddress( wrap, asObj );
@@ -478,9 +478,9 @@ public class WifiDirectService extends XWService {
                     try {
                         sServerSock = new ServerSocket( USE_PORT );
                         while ( sAmServer ) {
-                            DbgUtils.logd( WifiDirectService.class, "calling accept()" );
+                            DbgUtils.logd( WiDirService.class, "calling accept()" );
                             Socket socket = sServerSock.accept();
-                            DbgUtils.logd( WifiDirectService.class, "accept() returned!!" );
+                            DbgUtils.logd( WiDirService.class, "accept() returned!!" );
                             new BiDiSockWrap( socket, sIface );
                         }
                     } catch ( IOException ioe ) {
@@ -510,7 +510,7 @@ public class WifiDirectService extends XWService {
     private static Intent getIntentTo( P2PAction cmd )
     {
         Context context = XWApp.getContext();
-        Intent intent = new Intent( context, WifiDirectService.class );
+        Intent intent = new Intent( context, WiDirService.class );
         intent.putExtra( KEY_CMD, cmd.ordinal() );
         return intent;
     }
@@ -640,12 +640,12 @@ public class WifiDirectService extends XWService {
 
     private class P2pMsgSink extends MultiMsgSink {
 
-        public P2pMsgSink() { super( WifiDirectService.this ); }
+        public P2pMsgSink() { super( WiDirService.this ); }
 
         // @Override
         // public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
         // {
-        //     return WifiDirectService
+        //     return WiDirService
         //         .sendPacket( m_context, addr.p2p_addr, gameID, buf );
         // }
     }
