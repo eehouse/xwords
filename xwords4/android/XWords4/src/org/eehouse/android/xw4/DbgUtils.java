@@ -118,8 +118,8 @@ public class DbgUtils {
     public static void printStack( StackTraceElement[] trace )
     {
         if ( s_doLog && null != trace ) {
-            // 2: skip printStack etc.
-            for ( int ii = 2; ii < trace.length; ++ii ) {
+            // 1: skip printStack etc.
+            for ( int ii = 1; ii < trace.length; ++ii ) {
                 DbgUtils.logd( DbgUtils.class, "ste %d: %s", ii, trace[ii].toString() );
             }
         }

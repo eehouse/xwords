@@ -545,6 +545,9 @@ public class ConnStatusHandler {
             result = RelayService.relayEnabled( context )
                 && NetStateCache.netAvail( context );
             break;
+        case COMMS_CONN_P2P:
+            result = WifiDirectService.connecting();
+            break;
         default:
             DbgUtils.logw( ConnStatusHandler.class, "connTypeEnabled: %s not handled",
                            connType.toString() );

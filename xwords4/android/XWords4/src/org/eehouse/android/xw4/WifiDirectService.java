@@ -118,6 +118,7 @@ public class WifiDirectService extends XWService {
                 switch ( cmd ) {
                 case GOT_MSG:
                     handleGotMessage( intent );
+                    updateStatusIn( true );
                     break;
                 }
             }
@@ -129,9 +130,27 @@ public class WifiDirectService extends XWService {
         return result;
     }
 
+    private void updateStatusOut( boolean success )
+    {
+        ConnStatusHandler
+            .updateStatusOut( this, null, CommsConnType.COMMS_CONN_P2P, success );
+    }
+
+    private void updateStatusIn( boolean success )
+    {
+        ConnStatusHandler
+            .updateStatusIn( this, null, CommsConnType.COMMS_CONN_P2P, success );
+    }
+
     public static boolean supported()
     {
         return WIFI_DIRECT_ENABLED;
+    }
+
+    public static boolean connecting() {
+        return supported()
+            && 0 < sSocketWrapMap.size()
+            && sSocketWrapMap.values().iterator().next().isConnected();
     }
 
     public static String getMyMacAddress( Context context )
@@ -382,7 +401,8 @@ public class WifiDirectService extends XWService {
         String macAddress = packet.optString( KEY_MAC, null );
         // Assert.assertNotNull( macAddress );
         if ( null != macAddress ) {
-            Assert.assertNull( sSocketWrapMap.get( macAddress ) );
+            // this has fired. Sockets close and re-open?
+            // Assert.assertNull( sSocketWrapMap.get( macAddress ) );
             wrap.setMacAddress( macAddress );
             sSocketWrapMap.put( macAddress, wrap );
             DbgUtils.logd( WifiDirectService.class,
