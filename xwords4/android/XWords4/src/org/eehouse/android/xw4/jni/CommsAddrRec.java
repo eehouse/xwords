@@ -270,9 +270,10 @@ public class CommsAddrRec {
         sms_port = 1;           // so don't assert in comms....
     }
 
-    public void setP2PParams( String macAddress )
+    public CommsAddrRec setP2PParams( String macAddress )
     {
         p2p_addr = macAddress;
+        return this;
     }
 
     public void populate( Context context, CommsConnTypeSet newTypes )

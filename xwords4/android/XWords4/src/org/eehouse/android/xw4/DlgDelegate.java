@@ -290,7 +290,7 @@ public class DlgDelegate {
         // These are stored in the INVITES table. Don't change order
         // gratuitously
         public static enum InviteMeans {
-            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
+            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, // WIFIDIRECT,
         };
         void dlgButtonClicked( Action action, int button, Object[] params );
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
@@ -736,10 +736,10 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_relay ) );
             means.add( DlgClickNotify.InviteMeans.RELAY );
         }
-        if ( WifiDirectService.supported() ) {
-            items.add( getString( R.string.invite_choice_p2p ) );
-            means.add( DlgClickNotify.InviteMeans.WIFIDIRECT );
-        }
+        // if ( WifiDirectService.supported() ) {
+        //     items.add( getString( R.string.invite_choice_p2p ) );
+        //     means.add( DlgClickNotify.InviteMeans.WIFIDIRECT );
+        // }
         items.add( getString( R.string.slmenu_copy_sel ) );
         means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
 

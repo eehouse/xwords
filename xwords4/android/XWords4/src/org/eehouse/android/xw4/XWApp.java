@@ -30,6 +30,8 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 public class XWApp extends Application {
 
     public static final boolean BTSUPPORTED = true;
@@ -60,6 +62,7 @@ public class XWApp extends Application {
     public void onCreate()
     {
         s_context = this;
+        Assert.assertTrue( s_context == s_context.getApplicationContext() );
         super.onCreate();
 
         // This one line should always get logged even if logging is
@@ -122,5 +125,9 @@ public class XWApp extends Application {
         return s_onEmulator;
     }
 
-    public static Context getContext() { return s_context; }
+    public static Context getContext()
+    {
+        Assert.assertNotNull( s_context );
+        return s_context;
+    }
 }

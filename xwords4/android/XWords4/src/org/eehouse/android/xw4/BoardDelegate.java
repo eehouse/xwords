@@ -673,9 +673,9 @@ public class BoardDelegate extends DelegateBase
             case RELAY_INVITE_RESULT:
                 missingMeans = InviteMeans.RELAY;
                 break;
-            case P2P_INVITE_RESULT:
-                missingMeans = InviteMeans.WIFIDIRECT;
-                break;
+            // case P2P_INVITE_RESULT:
+            //     missingMeans = InviteMeans.WIFIDIRECT;
+            //     break;
             }
 
             if ( null != missingMeans ) {

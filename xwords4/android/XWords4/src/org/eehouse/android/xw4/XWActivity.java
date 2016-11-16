@@ -48,6 +48,8 @@ public class XWActivity extends FragmentActivity implements Delegator {
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
 
+        Assert.assertTrue( getApplicationContext() == XWApp.getContext() );
+
         int layoutID = m_dlgt.getLayoutID();
         if ( 0 < layoutID ) {
             m_dlgt.setContentView( layoutID );

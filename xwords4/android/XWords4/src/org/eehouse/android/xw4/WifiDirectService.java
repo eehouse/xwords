@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Service;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -53,16 +54,33 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.XwJNI;
+
 import junit.framework.Assert;
 
-public class WifiDirectService {
+public class WifiDirectService extends XWService {
     private static final String MAC_ADDR_KEY = "p2p_mac_addr";
     private static final String SERVICE_NAME = "_xwords";
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
     private static boolean WIFI_DIRECT_ENABLED = true;
     private static final int USE_PORT = 5432;
 
-    private static Context sContext;
+    private enum P2PAction { _NONE,
+                             GOT_MSG,
+    }
+
+    private static final String KEY_CMD = "cmd";
+    private static final String KEY_GAMEID = "gmid";
+    private static final String KEY_DATA = "data";
+    private static final String KEY_MAC = "myMac";
+    private static final String KEY_RETADDR = "raddr";
+
+    private static final String CMD_PING = "ping";
+    private static final String CMD_PONG = "pong";
+    private static final String CMD_MSG = "msg";
+
     private static Channel sChannel;
     private static ChannelListener sListener;
     private static IntentFilter sIntentFilter;
@@ -77,7 +95,39 @@ public class WifiDirectService {
         = new HashMap<String, BiDiSockWrap>();
     private static Map<String, Long> sPendingDevs = new HashMap<String, Long>();
     private static String sMacAddress;
-    public static Activity sActivity;
+
+    private P2pMsgSink m_sink;
+
+    @Override
+    public void onCreate()
+    {
+        m_sink = new P2pMsgSink();
+    }
+
+    @Override
+    public int onStartCommand( Intent intent, int flags, int startId )
+    {
+        int result;
+
+        if ( WIFI_DIRECT_ENABLED ) {
+            result = Service.START_STICKY;
+
+            int ordinal = intent.getIntExtra( KEY_CMD, -1 );
+            if ( -1 != ordinal ) {
+                P2PAction cmd = P2PAction.values()[ordinal];
+                switch ( cmd ) {
+                case GOT_MSG:
+                    handleGotMessage( intent );
+                    break;
+                }
+            }
+        } else {
+            result = Service.START_NOT_STICKY;
+            stopSelf( startId );
+        }
+
+        return result;
+    }
 
     public static boolean supported()
     {
@@ -102,18 +152,30 @@ public class WifiDirectService {
     public static int sendPacket( Context context, String macAddr, int gameID,
                                   byte[] buf )
     {
-        DbgUtils.logd( WifiDirectService.class, "sendPacket(): have %d bytes for %s",
-                       buf.length, macAddr );
+        int nSent = -1;
         BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
-        DbgUtils.logd( WifiDirectService.class, "sendPacket(): I %s have a socket for it",
-                       (null == wrap ? "DO NOT" : "DO!!" ) );
-        return -1;
+        if ( null != wrap ) {
+            try {
+                JSONObject packet = new JSONObject()
+                    .put( KEY_CMD, CMD_MSG )
+                    .put( KEY_DATA, XwJNI.base64Encode( buf ) )
+                    .put( KEY_GAMEID, gameID )
+                    ;
+                wrap.send( packet );
+                nSent = buf.length;
+            } catch ( JSONException jse ) {
+                DbgUtils.logex( jse );
+            }
+        } else {
+            DbgUtils.logd( WifiDirectService.class, "no socket for packet for %s",
+                           macAddr );
+        }
+        return nSent;
     }
     
     public static void activityResumed( Activity activity )
     {
         if ( WIFI_DIRECT_ENABLED ) {
-            sActivity = activity;
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
                 DbgUtils.logd( WifiDirectService.class, "activityResumed() done" );
@@ -125,7 +187,6 @@ public class WifiDirectService {
     public static void activityPaused( Activity activity )
     {
         if ( WIFI_DIRECT_ENABLED ) {
-            sActivity = null;
             Assert.assertNotNull( sReceiver );
             // No idea why I'm seeing this exception...
             try {
@@ -142,7 +203,6 @@ public class WifiDirectService {
     private static boolean initListeners( final Context context )
     {
         boolean succeeded = false;
-        sContext = context;
         if ( WIFI_DIRECT_ENABLED ) {
             if ( null == sListener ) {
                 try {
@@ -172,8 +232,8 @@ public class WifiDirectService {
                                 if ( nowConnected ) {
                                     try {
                                         wrap.send( new JSONObject()
-                                                   .put( "cmd", "ping" )
-                                                   .put( "myMac", getMyMacAddress( context ) ) );
+                                                   .put( KEY_CMD, CMD_PING )
+                                                   .put( KEY_MAC, getMyMacAddress( context ) ) );
                                     } catch ( JSONException jse ) {
                                         DbgUtils.logex( jse );
                                     }
@@ -285,15 +345,15 @@ public class WifiDirectService {
             DbgUtils.logd( WifiDirectService.class, "tryConnect(%s): already connected",
                            macAddress );
         } else if ( connectPending( macAddress ) ) {
+            // Do nothing
         } else {
-            // sSocketWrapMap.put( macAddress, null );
             DbgUtils.logd( WifiDirectService.class, "trying to connect to %s",
                            device.toString() );
             WifiP2pConfig config = new WifiP2pConfig();
             config.deviceAddress = device.deviceAddress;
             config.wps.setup = WpsInfo.PBC;
 
-            WifiP2pManager mgr = (WifiP2pManager)sContext
+            WifiP2pManager mgr = (WifiP2pManager)XWApp.getContext()
                 .getSystemService(Context.WIFI_P2P_SERVICE);
 
             mgr.connect( sChannel, config, new ActionListener() {
@@ -319,15 +379,29 @@ public class WifiDirectService {
 
     private static void storeByAddress( BiDiSockWrap wrap, JSONObject packet )
     {
-        String macAddress = packet.optString( "myMac", null );
+        String macAddress = packet.optString( KEY_MAC, null );
         // Assert.assertNotNull( macAddress );
         if ( null != macAddress ) {
             Assert.assertNull( sSocketWrapMap.get( macAddress ) );
+            wrap.setMacAddress( macAddress );
             sSocketWrapMap.put( macAddress, wrap );
             DbgUtils.logd( WifiDirectService.class,
-                           "processPacket(); storing wrap for %s",
+                           "storeByAddress(); storing wrap for %s",
                            macAddress );
         }
+    }
+
+    private void handleGotMessage( Intent intent )
+    {
+        DbgUtils.logd( getClass(), "processPacket(%s)", intent.toString() );
+        int gameID = intent.getIntExtra( KEY_GAMEID, 0 );
+        byte[] data = XwJNI.base64Decode( intent.getStringExtra( KEY_DATA ) );
+        String macAddress = intent.getStringExtra( KEY_RETADDR );
+
+        CommsAddrRec addr = new CommsAddrRec( CommsConnType.COMMS_CONN_P2P )
+            .setP2PParams( macAddress );
+
+        ReceiveResult rslt = receiveMessage( this, gameID, m_sink, data, addr );
     }
 
     private static void processPacket( BiDiSockWrap wrap, byte[] bytes )
@@ -337,23 +411,30 @@ public class WifiDirectService {
         try {
             JSONObject asObj = new JSONObject( asStr );
             DbgUtils.logd( WifiDirectService.class, "got json: %s", asObj.toString() );
-            final String cmd = asObj.optString( "cmd", "" );
-            sActivity.runOnUiThread( new Runnable() {
-                    public void run() {
-                        DbgUtils.showf( sActivity, "got cmd: %s", cmd );
-                    }
-                } );
-            if ( cmd.equals( "ping" ) ) {
+            final String cmd = asObj.optString( KEY_CMD, "" );
+            if ( cmd.equals( CMD_PING ) ) {
                 storeByAddress( wrap, asObj );
                 try {
                     wrap.send( new JSONObject()
-                               .put( "cmd", "pong" )
-                               .put( "myMac", getMyMacAddress() ) );
+                               .put( KEY_CMD, CMD_PONG )
+                               .put( KEY_MAC, getMyMacAddress() ) );
                 } catch ( JSONException jse ) {
                     DbgUtils.logex( jse );
                 }
-            } else if ( cmd.equals( "pong" ) ) {
+            } else if ( cmd.equals( CMD_PONG ) ) {
                 storeByAddress( wrap, asObj );
+            } else if ( cmd.equals( CMD_MSG ) ) {
+                // byte[] data = XwJNI.base64Decode( asObj.optString( KEY_DATA, null ) );
+                int gameID = asObj.optInt( KEY_GAMEID, 0 );
+                if ( 0 != gameID ) {
+                    Intent intent = getIntentTo( P2PAction.GOT_MSG );
+                    intent.putExtra( KEY_GAMEID, gameID );
+                    intent.putExtra( KEY_DATA, asObj.optString( KEY_DATA, null ) );
+                    intent.putExtra( KEY_RETADDR, wrap.getMacAddress() );
+                    XWApp.getContext().startService( intent );
+                } else {
+                    Assert.fail(); // don't ship with this!!!
+                }
             }
         } catch ( JSONException jse ) {
             DbgUtils.logex( jse );
@@ -395,6 +476,23 @@ public class WifiDirectService {
             }
             sAcceptThread = null;
         }
+    }
+
+    private static Intent getIntentTo( P2PAction cmd )
+    {
+        Context context = XWApp.getContext();
+        Intent intent = null;
+        if ( null != context ) {
+            intent = new Intent( context, WifiDirectService.class );
+            intent.putExtra( KEY_CMD, cmd.ordinal() );
+        } else {
+            // This basically means we can't receive P2P messages when in the
+            // background, which is silly. They're coming in on sockets. Do I
+            // need a socket to have a context associated with it?
+            DbgUtils.logd( WifiDirectService.class,
+                           "getIntentTo(): contenxt null" );
+        }
+        return intent;
     }
 
     private static class WFDBroadcastReceiver extends BroadcastReceiver {
@@ -514,5 +612,17 @@ public class WifiDirectService {
             //     return;
             // }
         }
+    }
+
+    private class P2pMsgSink extends MultiMsgSink {
+
+        public P2pMsgSink() { super( WifiDirectService.this ); }
+
+        // @Override
+        // public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
+        // {
+        //     return WifiDirectService
+        //         .sendPacket( m_context, addr.p2p_addr, gameID, buf );
+        // }
     }
 }

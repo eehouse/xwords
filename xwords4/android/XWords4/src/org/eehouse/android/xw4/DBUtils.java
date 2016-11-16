@@ -2481,10 +2481,7 @@ public class DBUtils {
 
     public static void appendLog( String tag, String msg )
     {
-        Context context = XWApp.getContext();
-        if ( null != context ) {
-            appendLog( context, msg );
-        }
+        appendLog( XWApp.getContext(), msg );
     }
 
     private static void appendLog( Context context, String msg )
