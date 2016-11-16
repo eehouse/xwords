@@ -92,6 +92,11 @@ public class DbgUtils {
         callLog( LogType.WARN, claz, fmt, args );
     }
 
+    public static void showf( String format, Object... args )
+    {
+        showf( XWApp.getContext(), format, args );
+    }
+
     public static void showf( Context context, String format, Object... args )
     {
         Formatter formatter = new Formatter();

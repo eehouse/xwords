@@ -62,7 +62,7 @@ import junit.framework.Assert;
 
 public class WifiDirectService extends XWService {
     private static final String MAC_ADDR_KEY = "p2p_mac_addr";
-    private static final String SERVICE_NAME = "_xwords";
+    private static final String SERVICE_NAME = "srvc_" + BuildConstants.VARIANT;
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
     private static boolean WIFI_DIRECT_ENABLED = true;
     private static final int USE_PORT = 5432;
@@ -95,6 +95,7 @@ public class WifiDirectService extends XWService {
         = new HashMap<String, BiDiSockWrap>();
     private static Map<String, Long> sPendingDevs = new HashMap<String, Long>();
     private static String sMacAddress;
+    private static WifiP2pDnsSdServiceRequest sServiceRequest;
 
     private P2pMsgSink m_sink;
 
@@ -109,7 +110,7 @@ public class WifiDirectService extends XWService {
     {
         int result;
 
-        if ( WIFI_DIRECT_ENABLED ) {
+        if ( WIFI_DIRECT_ENABLED && null != intent ) {
             result = Service.START_STICKY;
 
             int ordinal = intent.getIntExtra( KEY_CMD, -1 );
@@ -215,7 +216,8 @@ public class WifiDirectService extends XWService {
             }
             DbgUtils.logd( WifiDirectService.class, "activityPaused() done" );
 
-            sDiscoveryStarted = false;
+            // Examples seem to kick discovery off once and that's it
+            // sDiscoveryStarted = false;
         }
     }
 
@@ -297,8 +299,8 @@ public class WifiDirectService extends XWService {
 
             setDiscoveryListeners( mgr );
 
-            WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-            mgr.addServiceRequest( sChannel, serviceRequest, new WDAL("addServiceRequest") );
+            sServiceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+            mgr.addServiceRequest( sChannel, sServiceRequest, new WDAL("addServiceRequest") );
             mgr.discoverServices( sChannel, new WDAL("discoverServices") );
             
             // mgr.discoverPeers( sChannel, sActionListener );
@@ -344,7 +346,7 @@ public class WifiDirectService extends XWService {
         if ( sPendingDevs.containsKey( macAddress ) ) {
             long when = sPendingDevs.get( macAddress );
             long now = Utils.getCurSeconds();
-            result = 5 >= now - when;
+            result = 3 >= now - when;
         }
         DbgUtils.logd( WifiDirectService.class, "connectPending(%s)=>%b",
                        macAddress, result );
@@ -374,6 +376,13 @@ public class WifiDirectService extends XWService {
 
             WifiP2pManager mgr = (WifiP2pManager)XWApp.getContext()
                 .getSystemService(Context.WIFI_P2P_SERVICE);
+
+
+            if ( null != sServiceRequest ) {
+                mgr.removeServiceRequest( sChannel, sServiceRequest,
+                                          new WDAL("removeServiceRequest") );
+                sServiceRequest = null;
+            }
 
             mgr.connect( sChannel, config, new ActionListener() {
                             @Override
@@ -501,17 +510,8 @@ public class WifiDirectService extends XWService {
     private static Intent getIntentTo( P2PAction cmd )
     {
         Context context = XWApp.getContext();
-        Intent intent = null;
-        if ( null != context ) {
-            intent = new Intent( context, WifiDirectService.class );
-            intent.putExtra( KEY_CMD, cmd.ordinal() );
-        } else {
-            // This basically means we can't receive P2P messages when in the
-            // background, which is silly. They're coming in on sockets. Do I
-            // need a socket to have a context associated with it?
-            DbgUtils.logd( WifiDirectService.class,
-                           "getIntentTo(): contenxt null" );
-        }
+        Intent intent = new Intent( context, WifiDirectService.class );
+        intent.putExtra( KEY_CMD, cmd.ordinal() );
         return intent;
     }
 
@@ -594,10 +594,14 @@ public class WifiDirectService extends XWService {
             // After the group negotiation, we can determine the group owner.
             if (info.groupFormed ) {
                 if ( info.isGroupOwner ) {
+                    DbgUtils.showf( "Joining %s WiFi P2p group as owner",
+                                    BuildConstants.VARIANT );
                     DbgUtils.logd( getClass(), "am group owner" );
                     startAcceptThread();
                 } else {
                     DbgUtils.logd( getClass(), "am NOT group owner" );
+                    DbgUtils.showf( "Joining %s WiFi P2p group as guest",
+                                    BuildConstants.VARIANT );
                     connectToOwner( info.groupOwnerAddress );
                     // The other device acts as the client. In this case,
                     // you'll want to create a client thread that connects to the group
