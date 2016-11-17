@@ -171,8 +171,8 @@ public class WiDirService extends XWService {
 
     public static String formatNetStateInfo()
     {
-        return String.format( "mac: %s; role: %s",
-                              getMyMacAddress(),
+        return String.format( "name: %s; mac: %s; role: %s",
+                              sDeviceName, getMyMacAddress(),
                               sAmServer ? "group owner" : "guest" );
     }
 
