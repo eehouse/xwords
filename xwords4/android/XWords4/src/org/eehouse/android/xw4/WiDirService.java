@@ -20,8 +20,8 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Service;
 import android.app.Activity;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -41,7 +41,9 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.net.wifi.p2p.nsd.WifiP2pUpnpServiceInfo;
+import android.os.Handler;
 import android.os.Looper;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -65,7 +67,7 @@ public class WiDirService extends XWService {
     private static final String SERVICE_NAME = "srvc_" + BuildConstants.VARIANT;
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
     private static boolean WIFI_DIRECT_ENABLED = true;
-    private static final int USE_PORT = 5432;
+    private static final int OWNER_PORT = 5432;
 
     private enum P2PAction { _NONE,
                              GOT_MSG,
@@ -95,7 +97,7 @@ public class WiDirService extends XWService {
         = new HashMap<String, BiDiSockWrap>();
     private static Map<String, Long> sPendingDevs = new HashMap<String, Long>();
     private static String sMacAddress;
-    private static WifiP2pDnsSdServiceRequest sServiceRequest;
+    private static String sDeviceName;
 
     private P2pMsgSink m_sink;
 
@@ -167,6 +169,13 @@ public class WiDirService extends XWService {
         return sMacAddress;
     }
 
+    public static String formatNetStateInfo()
+    {
+        return String.format( "mac: %s; role: %s",
+                              getMyMacAddress(),
+                              sAmServer ? "group owner" : "guest" );
+    }
+
     private static String getMyMacAddress() { return getMyMacAddress(null); }
 
     public static int sendPacket( Context context, String macAddr, int gameID,
@@ -199,7 +208,7 @@ public class WiDirService extends XWService {
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
                 DbgUtils.logd( WiDirService.class, "activityResumed() done" );
-                startDiscovery( activity );
+                startDiscovery();
             }
         }
     }
@@ -234,8 +243,7 @@ public class WiDirService extends XWService {
                             }
                         };
 
-                    WifiP2pManager mgr = (WifiP2pManager)context
-                        .getSystemService(Context.WIFI_P2P_SERVICE);
+                    WifiP2pManager mgr = getMgr();
                     sChannel = mgr.initialize( context, Looper.getMainLooper(),
                                                sListener );
                     Assert.assertNotNull( sChannel );
@@ -281,32 +289,124 @@ public class WiDirService extends XWService {
         return succeeded;
     }
 
-    private static void startDiscovery( Context context )
+    // See: http://stackoverflow.com/questions/26300889/wifi-p2p-service-discovery-works-intermittently
+    private static void startDiscovery()
     {
+        DbgUtils.logd( WiDirService.class, "startDiscovery()" );
         if ( WIFI_DIRECT_ENABLED && ! sDiscoveryStarted ) {
-            WifiP2pManager mgr = (WifiP2pManager)context
-                .getSystemService(Context.WIFI_P2P_SERVICE);
-
-            Map<String, String> record = new HashMap<String, String>();
-            record.put("AVAILABLE", "visible");
-            WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo
-                .newInstance( SERVICE_NAME, SERVICE_REG_TYPE, record );
-            // WifiP2pUpnpServiceInfo info = WifiP2pUpnpServiceInfo
-            //     .newInstance(XWApp.getAppUUID().toString(),
-            //                  "device", new ArrayList<String>());
-
-            mgr.addLocalService( sChannel, service, new WDAL("addLocalService") );
-
-            setDiscoveryListeners( mgr );
-
-            sServiceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-            mgr.addServiceRequest( sChannel, sServiceRequest, new WDAL("addServiceRequest") );
-            mgr.discoverServices( sChannel, new WDAL("discoverServices") );
-            
-            // mgr.discoverPeers( sChannel, sActionListener );
-            DbgUtils.logd( WiDirService.class, "called mgr.discoverServices" );
-            sDiscoveryStarted = true;
+            // Map<String, String> record = new HashMap<String, String>();
+            // record.put( "AVAILABLE", "visible" );
+            // record.put( "PORT", "" + OWNER_PORT );
+            // WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo
+            //     .newInstance( SERVICE_NAME, SERVICE_REG_TYPE, record );
+            getMgr().clearLocalServices( sChannel, new ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        addLocalService();
+                    }
+                    @Override
+                    public void onFailure(int code) {
+                        // I've only seen this fail when wifi's off
+                        tryAgain( "clearLocalServices", code );
+                    }
+                } );
         }
+    }
+
+    private static void addLocalService()
+    {
+        DbgUtils.logd( WiDirService.class, "addLocalService()" );
+        Map<String, String> record = new HashMap<String, String>();
+        record.put( "AVAILABLE", "visible");
+        record.put( "PORT", "" + OWNER_PORT );
+        record.put( "NAME", sDeviceName );
+        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo
+            .newInstance( SERVICE_NAME, SERVICE_REG_TYPE, record );
+
+        final WifiP2pManager mgr = getMgr();
+        mgr.addLocalService( sChannel, service, new ActionListener() {
+                @Override
+                public void onSuccess() {
+                    setDiscoveryListeners( mgr );
+                    clearServiceRequests();
+                }
+                @Override
+                public void onFailure(int code) { Assert.fail(); }
+            } );
+    }
+
+    private static void clearServiceRequests()
+    {
+        DbgUtils.logd( WiDirService.class, "clearServiceRequests()" );
+        WifiP2pManager mgr = getMgr();
+        setDiscoveryListeners( mgr );
+        mgr.clearServiceRequests( sChannel, new ActionListener() {
+                @Override
+                public void onSuccess() {
+                    addServiceRequest();
+                }
+                @Override
+                public void onFailure(int code) { Assert.fail(); }
+            } );
+    }
+
+    private static void addServiceRequest()
+    {
+        DbgUtils.logd( WiDirService.class, "addServiceRequest()" );
+        getMgr().addServiceRequest(sChannel, WifiP2pDnsSdServiceRequest.newInstance(),
+                              new ActionListener() {
+                                  @Override
+                                  public void onSuccess() {
+                                      discoverPeers();
+                                  }
+                                  @Override
+                                  public void onFailure(int code) { Assert.fail(); }
+                              } );
+    }
+
+    private static void discoverPeers()
+    {
+        DbgUtils.logd( WiDirService.class, "discoverPeers()" );
+        getMgr().discoverPeers( sChannel, new ActionListener() {
+                @Override
+                public void onSuccess() {
+                    discoverServices();
+                }
+                @Override
+                public void onFailure(int code) { Assert.fail(); }
+            } );
+    }
+
+    private static void discoverServices()
+    {
+        DbgUtils.logd( WiDirService.class, "discoverServices()" );
+        getMgr().discoverServices( sChannel, new ActionListener() {
+                @Override
+                public void onSuccess() {
+                    DbgUtils.logd( WiDirService.class, "discoverServices succeeded!!!");
+                    sDiscoveryStarted = true;
+                }
+                @Override
+                public void onFailure(int code) { Assert.fail(); }
+            } );
+    }
+
+    private static void tryAgain( String proc, int code )
+    {
+        DbgUtils.logd( WiDirService.class, "proc %s failed with code %d",
+                       proc, code );
+        new Handler().postDelayed( new Runnable() {
+                @Override
+                public void run() {
+                    startDiscovery();
+                }
+            }, 10 * 1000 );     // PENDING: do a backoff here
+    }
+
+    private static WifiP2pManager getMgr()
+    {
+        Context context = XWApp.getContext();
+        return (WifiP2pManager)context.getSystemService(Context.WIFI_P2P_SERVICE);
     }
 
     private static void setDiscoveryListeners( WifiP2pManager mgr )
@@ -326,13 +426,16 @@ public class WiDirService extends XWService {
                         }
                     }
                 };
+
             DnsSdTxtRecordListener trl = new DnsSdTxtRecordListener() {
+                    // This doesn't seen to be getting called
                     @Override
                     public void onDnsSdTxtRecordAvailable( String domainName,
                                                            Map<String, String> map,
                                                            WifiP2pDevice device ) {
-                        DbgUtils.logd( getClass(), device.deviceName + " is "
-                                       + map.get("AVAILABLE"));
+                        DbgUtils.logd( getClass(),
+                                       "onDnsSdTxtRecordAvailable(avail: %s, port: %s; name: %s)",
+                                       map.get("AVAILABLE"), map.get("PORT"), map.get("NAME"));
                     }
                 };
             mgr.setDnsSdResponseListeners( sChannel, srl, trl );
@@ -374,22 +477,12 @@ public class WiDirService extends XWService {
             config.deviceAddress = device.deviceAddress;
             config.wps.setup = WpsInfo.PBC;
 
-            WifiP2pManager mgr = (WifiP2pManager)XWApp.getContext()
-                .getSystemService(Context.WIFI_P2P_SERVICE);
-
-
-            if ( null != sServiceRequest ) {
-                mgr.removeServiceRequest( sChannel, sServiceRequest,
-                                          new WDAL("removeServiceRequest") );
-                sServiceRequest = null;
-            }
-
-            mgr.connect( sChannel, config, new ActionListener() {
-                            @Override
-                            public void onSuccess() {
-                                DbgUtils.logd( getClass(), "onSuccess(): %s", "connect_xx" );
-                                notePending( macAddress );
-                            }
+            getMgr().connect( sChannel, config, new ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        DbgUtils.logd( getClass(), "onSuccess(): %s", "connect_xx" );
+                        notePending( macAddress );
+                    }
                     @Override
                     public void onFailure(int reason) {
                         DbgUtils.logd( getClass(), "onFailure(%d): %s", reason, "connect_xx");
@@ -400,7 +493,7 @@ public class WiDirService extends XWService {
 
     private static void connectToOwner( InetAddress addr )
     {
-        BiDiSockWrap wrap = new BiDiSockWrap( addr, USE_PORT, sIface );
+        BiDiSockWrap wrap = new BiDiSockWrap( addr, OWNER_PORT, sIface );
         DbgUtils.logd( WiDirService.class, "connectToOwner(%s)", addr.toString() );
         wrap.connect();
     }
@@ -476,7 +569,7 @@ public class WiDirService extends XWService {
         sAcceptThread = new Thread( new Runnable() {
                 public void run() {
                     try {
-                        sServerSock = new ServerSocket( USE_PORT );
+                        sServerSock = new ServerSocket( OWNER_PORT );
                         while ( sAmServer ) {
                             DbgUtils.logd( WiDirService.class, "calling accept()" );
                             Socket socket = sServerSock.accept();
@@ -554,10 +647,10 @@ public class WiDirService extends XWService {
                     WifiP2pDevice device = (WifiP2pDevice) intent
                         .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
                     sMacAddress = device.deviceAddress;
-                    String deviceName = device.deviceName;
-
+                    sDeviceName = device.deviceName;
                     DbgUtils.logd( getClass(), "Got my MAC Address: %s and name: %s",
-                                   sMacAddress, deviceName );
+                                   sMacAddress, sDeviceName );
+
                     String stored = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
                     Assert.assertTrue( null == stored || stored.equals(sMacAddress) );
                     if ( null == stored ) {
@@ -594,14 +687,13 @@ public class WiDirService extends XWService {
             // After the group negotiation, we can determine the group owner.
             if (info.groupFormed ) {
                 if ( info.isGroupOwner ) {
-                    DbgUtils.showf( "Joining %s WiFi P2p group as owner",
-                                    BuildConstants.VARIANT );
+                    DbgUtils.showf( "Joining %s WiFi P2p group as owner", SERVICE_NAME );
                     DbgUtils.logd( getClass(), "am group owner" );
                     startAcceptThread();
                 } else {
                     DbgUtils.logd( getClass(), "am NOT group owner" );
-                    DbgUtils.showf( "Joining %s WiFi P2p group as guest",
-                                    BuildConstants.VARIANT );
+                    DbgUtils.showf( "Joining %s WiFi P2p group as guest", SERVICE_NAME );
+                    stopAcceptThread();
                     connectToOwner( info.groupOwnerAddress );
                     // The other device acts as the client. In this case,
                     // you'll want to create a client thread that connects to the group

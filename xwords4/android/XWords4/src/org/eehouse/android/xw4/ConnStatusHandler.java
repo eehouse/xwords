@@ -568,7 +568,7 @@ public class ConnStatusHandler {
                 result = String.format( "(DevID: %d) ", DevID.getRelayDevIDInt(context) );
                 break;
             case COMMS_CONN_P2P:
-                result = "WiDirService.formatNetStateInfo()";
+                result = WiDirService.formatNetStateInfo();
                 break;
             default:
                 break;
