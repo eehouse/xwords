@@ -188,12 +188,7 @@ public class ConnStatusHandler {
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
-                    String did = "";
-                    if ( BuildConfig.DEBUG
-                         && CommsConnType.COMMS_CONN_RELAY == typ ) {
-                        did = String.format( "(DevID: %d) ",
-                                             DevID.getRelayDevIDInt(context) );
-                    }
+                    String did = addDebugInfo( context, typ );
                     sb.append( String.format( "\n\n*** %s %s***\n",
                                               typ.longName( context ), did ) );
                     SuccessRecord record = recordFor( typ, false );
@@ -561,6 +556,24 @@ public class ConnStatusHandler {
         boolean result =
             0 != Settings.System.getInt( context.getContentResolver(),
                                          Settings.System.AIRPLANE_MODE_ON, 0 );
+        return result;
+    }
+
+    private static String addDebugInfo( Context context, CommsConnType typ )
+    {
+        String result = "";
+        if ( BuildConfig.DEBUG ) {
+            switch ( typ ) {
+            case COMMS_CONN_RELAY:
+                result = String.format( "(DevID: %d) ", DevID.getRelayDevIDInt(context) );
+                break;
+            case COMMS_CONN_P2P:
+                result = "WiDirService.formatNetStateInfo()";
+                break;
+            default:
+                break;
+            }
+        }
         return result;
     }
 }
