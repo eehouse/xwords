@@ -43,7 +43,6 @@ public class BiDiSockWrap {
     private boolean mRunThreads;
     private boolean mActive;
     private InetAddress mAddress;
-    private String mMacAddress; // of the remove device
     private int mPort;
 
     // For sockets that came from accept() on a ServerSocket
@@ -60,16 +59,6 @@ public class BiDiSockWrap {
         mIface = iface;
         mAddress = address;
         mPort = port;
-    }
-
-    public void setMacAddress( String addr )
-    {
-        mMacAddress = addr;
-    }
-
-    public String getMacAddress()
-    {
-        Assert.assertNotNull( mMacAddress ); return mMacAddress;
     }
 
     public BiDiSockWrap connect()

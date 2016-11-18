@@ -31,12 +31,14 @@ import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
 import android.net.wifi.p2p.WifiP2pManager.DnsSdServiceResponseListener;
 import android.net.wifi.p2p.WifiP2pManager.DnsSdTxtRecordListener;
+import android.net.wifi.p2p.WifiP2pManager.GroupInfoListener;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
@@ -53,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,6 +66,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import junit.framework.Assert;
 
 public class WiDirService extends XWService {
+    private static final Class CLAZZ = WiDirService.class;
     private static final String MAC_ADDR_KEY = "p2p_mac_addr";
     private static final String SERVICE_NAME = "srvc_" + BuildConstants.VARIANT;
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
@@ -74,9 +78,13 @@ public class WiDirService extends XWService {
     }
 
     private static final String KEY_CMD = "cmd";
+    private static final String KEY_SRC = "src";
+    private static final String KEY_DEST = "dest";
+
     private static final String KEY_GAMEID = "gmid";
     private static final String KEY_DATA = "data";
     private static final String KEY_MAC = "myMac";
+    private static final String KEY_NAME = "name";
     private static final String KEY_RETADDR = "raddr";
 
     private static final String CMD_PING = "ping";
@@ -86,10 +94,13 @@ public class WiDirService extends XWService {
     private static Channel sChannel;
     private static ChannelListener sListener;
     private static IntentFilter sIntentFilter;
+    private static GroupInfoListener sGroupListener;
     private static WFDBroadcastReceiver sReceiver;
     private static boolean sDiscoveryStarted;
     private static boolean sEnabled;
+    // These two kinda overlap...
     private static boolean sAmServer;
+    private static boolean sAmGroupOwner;
     private static Thread sAcceptThread;
     private static ServerSocket sServerSock;
     private static BiDiSockWrap.Iface sIface;
@@ -163,7 +174,7 @@ public class WiDirService extends XWService {
                 sMacAddress = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
             }
         }
-        DbgUtils.logd( WiDirService.class, "getMyMacAddress() => %s",
+        DbgUtils.logd( CLAZZ, "getMyMacAddress() => %s",
                        sMacAddress );
         // Assert.assertNotNull(sMacAddress);
         return sMacAddress;
@@ -182,22 +193,34 @@ public class WiDirService extends XWService {
                                   byte[] buf )
     {
         int nSent = -1;
+        boolean forwarding = false;
         BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
+
+        // See if we need to forward through group owner instead
+        if ( null == wrap && !sAmGroupOwner && 1 == sSocketWrapMap.size() ) {
+            DbgUtils.logd( CLAZZ, "forwarding to %s through group owner", macAddr );
+            wrap = sSocketWrapMap.values().iterator().next();
+            forwarding = true;
+        }
+
         if ( null != wrap ) {
             try {
                 JSONObject packet = new JSONObject()
                     .put( KEY_CMD, CMD_MSG )
+                    .put( KEY_SRC, getMyMacAddress() )
                     .put( KEY_DATA, XwJNI.base64Encode( buf ) )
                     .put( KEY_GAMEID, gameID )
                     ;
+                if ( forwarding ) {
+                    packet.put( KEY_DEST, macAddr );
+                }
                 wrap.send( packet );
                 nSent = buf.length;
             } catch ( JSONException jse ) {
                 DbgUtils.logex( jse );
             }
         } else {
-            DbgUtils.logd( WiDirService.class, "no socket for packet for %s",
-                           macAddr );
+            DbgUtils.logd( CLAZZ, "no socket for packet for %s", macAddr );
         }
         return nSent;
     }
@@ -207,7 +230,7 @@ public class WiDirService extends XWService {
         if ( WIFI_DIRECT_ENABLED ) {
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
-                DbgUtils.logd( WiDirService.class, "activityResumed() done" );
+                DbgUtils.logd( CLAZZ, "activityResumed() done" );
                 startDiscovery();
             }
         }
@@ -223,7 +246,7 @@ public class WiDirService extends XWService {
             } catch ( IllegalArgumentException iae ) {
                 DbgUtils.logex( iae );
             }
-            DbgUtils.logd( WiDirService.class, "activityPaused() done" );
+            DbgUtils.logd( CLAZZ, "activityPaused() done" );
 
             // Examples seem to kick discovery off once and that's it
             // sDiscoveryStarted = false;
@@ -239,7 +262,7 @@ public class WiDirService extends XWService {
                     sListener = new ChannelListener() {
                             @Override
                             public void onChannelDisconnected() {
-                                DbgUtils.logd( WiDirService.class, "onChannelDisconnected()");
+                                DbgUtils.logd( CLAZZ, "onChannelDisconnected()");
                             }
                         };
 
@@ -251,8 +274,7 @@ public class WiDirService extends XWService {
                     sIface = new BiDiSockWrap.Iface() {
                             public void gotPacket( BiDiSockWrap socket, byte[] bytes )
                             {
-                                DbgUtils.logd( WiDirService.class,
-                                               "wrapper got packet!!!" );
+                                DbgUtils.logd( CLAZZ, "wrapper got packet!!!" );
                                 processPacket( socket, bytes );
                             }
 
@@ -262,11 +284,46 @@ public class WiDirService extends XWService {
                                     try {
                                         wrap.send( new JSONObject()
                                                    .put( KEY_CMD, CMD_PING )
+                                                   .put( KEY_NAME, sDeviceName )
                                                    .put( KEY_MAC, getMyMacAddress( context ) ) );
                                     } catch ( JSONException jse ) {
                                         DbgUtils.logex( jse );
                                     }
                                 }
+                            }
+                        };
+
+                    sGroupListener = new GroupInfoListener() {
+                            public void onGroupInfoAvailable( WifiP2pGroup group ) {
+                                if ( null == group ) {
+                                    DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(null)!" );
+                                } else {
+                                    DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(owner: %b)!",
+                                                   group.isGroupOwner() );
+                                    Assert.assertTrue( sAmGroupOwner == group.isGroupOwner() );
+                                    if ( sAmGroupOwner ) {
+                                        Collection<WifiP2pDevice> devs = group.getClientList();
+                                        for ( WifiP2pDevice dev : devs ) {
+                                            String macAddr = dev.deviceAddress;
+                                            // DbgUtils.logd( CLAZZ, "group member: %s/%s",
+                                            //                dev.deviceAddress,
+                                            //                dev.deviceName );
+                                            BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
+                                            if ( null == wrap ) {
+                                                DbgUtils.logd( CLAZZ, "no socket for %s", macAddr );
+                                            } else {
+                                                DbgUtils.logd( CLAZZ, "socket for %s connected: %b",
+                                                               macAddr, wrap.isConnected() );
+                                            }
+                                        }
+                                    }
+                                }
+                                new Handler().postDelayed( new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            getMgr().requestGroupInfo( sChannel, sGroupListener );
+                                        }
+                                    }, 10 * 1000 );
                             }
                         };
 
@@ -279,7 +336,7 @@ public class WiDirService extends XWService {
                     sReceiver = new WFDBroadcastReceiver( mgr, sChannel );
                     succeeded = true;
                 } catch ( SecurityException se ) {
-                    DbgUtils.logd( WiDirService.class, "disabling wifi; no permissions" );
+                    DbgUtils.logd( CLAZZ, "disabling wifi; no permissions" );
                     WIFI_DIRECT_ENABLED = false;
                 }
             } else {
@@ -292,7 +349,7 @@ public class WiDirService extends XWService {
     // See: http://stackoverflow.com/questions/26300889/wifi-p2p-service-discovery-works-intermittently
     private static void startDiscovery()
     {
-        DbgUtils.logd( WiDirService.class, "startDiscovery()" );
+        DbgUtils.logd( CLAZZ, "startDiscovery()" );
         if ( WIFI_DIRECT_ENABLED && ! sDiscoveryStarted ) {
             // Map<String, String> record = new HashMap<String, String>();
             // record.put( "AVAILABLE", "visible" );
@@ -315,7 +372,7 @@ public class WiDirService extends XWService {
 
     private static void addLocalService()
     {
-        DbgUtils.logd( WiDirService.class, "addLocalService()" );
+        DbgUtils.logd( CLAZZ, "addLocalService()" );
         Map<String, String> record = new HashMap<String, String>();
         record.put( "AVAILABLE", "visible");
         record.put( "PORT", "" + OWNER_PORT );
@@ -337,7 +394,7 @@ public class WiDirService extends XWService {
 
     private static void clearServiceRequests()
     {
-        DbgUtils.logd( WiDirService.class, "clearServiceRequests()" );
+        DbgUtils.logd( CLAZZ, "clearServiceRequests()" );
         WifiP2pManager mgr = getMgr();
         setDiscoveryListeners( mgr );
         mgr.clearServiceRequests( sChannel, new ActionListener() {
@@ -352,7 +409,7 @@ public class WiDirService extends XWService {
 
     private static void addServiceRequest()
     {
-        DbgUtils.logd( WiDirService.class, "addServiceRequest()" );
+        DbgUtils.logd( CLAZZ, "addServiceRequest()" );
         getMgr().addServiceRequest(sChannel, WifiP2pDnsSdServiceRequest.newInstance(),
                               new ActionListener() {
                                   @Override
@@ -366,7 +423,7 @@ public class WiDirService extends XWService {
 
     private static void discoverPeers()
     {
-        DbgUtils.logd( WiDirService.class, "discoverPeers()" );
+        DbgUtils.logd( CLAZZ, "discoverPeers()" );
         getMgr().discoverPeers( sChannel, new ActionListener() {
                 @Override
                 public void onSuccess() {
@@ -379,11 +436,11 @@ public class WiDirService extends XWService {
 
     private static void discoverServices()
     {
-        DbgUtils.logd( WiDirService.class, "discoverServices()" );
+        DbgUtils.logd( CLAZZ, "discoverServices()" );
         getMgr().discoverServices( sChannel, new ActionListener() {
                 @Override
                 public void onSuccess() {
-                    DbgUtils.logd( WiDirService.class, "discoverServices succeeded!!!");
+                    DbgUtils.logd( CLAZZ, "discoverServices succeeded!!!");
                     sDiscoveryStarted = true;
                 }
                 @Override
@@ -393,7 +450,7 @@ public class WiDirService extends XWService {
 
     private static void tryAgain( String proc, int code )
     {
-        DbgUtils.logd( WiDirService.class, "proc %s failed with code %d",
+        DbgUtils.logd( CLAZZ, "proc %s failed with code %d",
                        proc, code );
         new Handler().postDelayed( new Runnable() {
                 @Override
@@ -419,7 +476,7 @@ public class WiDirService extends XWService {
                                                         WifiP2pDevice srcDevice) {
                         // Service has been discovered. My app?
                         if ( instanceName.equalsIgnoreCase( SERVICE_NAME ) ) {
-                            DbgUtils.logd( getClass(), "onBonjourServiceAvailable "
+                            DbgUtils.logd( CLAZZ, "onBonjourServiceAvailable "
                                            + instanceName + " with name "
                                            + srcDevice.deviceName );
                             tryConnect( srcDevice );
@@ -433,13 +490,13 @@ public class WiDirService extends XWService {
                     public void onDnsSdTxtRecordAvailable( String domainName,
                                                            Map<String, String> map,
                                                            WifiP2pDevice device ) {
-                        DbgUtils.logd( getClass(),
+                        DbgUtils.logd( CLAZZ,
                                        "onDnsSdTxtRecordAvailable(avail: %s, port: %s; name: %s)",
                                        map.get("AVAILABLE"), map.get("PORT"), map.get("NAME"));
                     }
                 };
             mgr.setDnsSdResponseListeners( sChannel, srl, trl );
-            DbgUtils.logd( WiDirService.class, "setDiscoveryListeners done" );
+            DbgUtils.logd( CLAZZ, "setDiscoveryListeners done" );
         }
     }
 
@@ -451,7 +508,7 @@ public class WiDirService extends XWService {
             long now = Utils.getCurSeconds();
             result = 3 >= now - when;
         }
-        DbgUtils.logd( WiDirService.class, "connectPending(%s)=>%b",
+        DbgUtils.logd( CLAZZ, "connectPending(%s)=>%b",
                        macAddress, result );
         return result;
     }
@@ -466,12 +523,12 @@ public class WiDirService extends XWService {
         final String macAddress = device.deviceAddress;
         if ( sSocketWrapMap.containsKey(macAddress)
              && sSocketWrapMap.get(macAddress).isConnected() ) {
-            DbgUtils.logd( WiDirService.class, "tryConnect(%s): already connected",
+            DbgUtils.logd( CLAZZ, "tryConnect(%s): already connected",
                            macAddress );
         } else if ( connectPending( macAddress ) ) {
             // Do nothing
         } else {
-            DbgUtils.logd( WiDirService.class, "trying to connect to %s",
+            DbgUtils.logd( CLAZZ, "trying to connect to %s",
                            device.toString() );
             WifiP2pConfig config = new WifiP2pConfig();
             config.deviceAddress = device.deviceAddress;
@@ -480,12 +537,12 @@ public class WiDirService extends XWService {
             getMgr().connect( sChannel, config, new ActionListener() {
                     @Override
                     public void onSuccess() {
-                        DbgUtils.logd( getClass(), "onSuccess(): %s", "connect_xx" );
+                        DbgUtils.logd( CLAZZ, "onSuccess(): %s", "connect_xx" );
                         notePending( macAddress );
                     }
                     @Override
                     public void onFailure(int reason) {
-                        DbgUtils.logd( getClass(), "onFailure(%d): %s", reason, "connect_xx");
+                        DbgUtils.logd( CLAZZ, "onFailure(%d): %s", reason, "connect_xx");
                     }
                 } );
         }
@@ -494,7 +551,7 @@ public class WiDirService extends XWService {
     private static void connectToOwner( InetAddress addr )
     {
         BiDiSockWrap wrap = new BiDiSockWrap( addr, OWNER_PORT, sIface );
-        DbgUtils.logd( WiDirService.class, "connectToOwner(%s)", addr.toString() );
+        DbgUtils.logd( CLAZZ, "connectToOwner(%s)", addr.toString() );
         wrap.connect();
     }
 
@@ -504,10 +561,8 @@ public class WiDirService extends XWService {
         // Assert.assertNotNull( macAddress );
         if ( null != macAddress ) {
             // this has fired. Sockets close and re-open?
-            // Assert.assertNull( sSocketWrapMap.get( macAddress ) );
-            wrap.setMacAddress( macAddress );
             sSocketWrapMap.put( macAddress, wrap );
-            DbgUtils.logd( WiDirService.class,
+            DbgUtils.logd( CLAZZ,
                            "storeByAddress(); storing wrap for %s",
                            macAddress );
         }
@@ -515,7 +570,7 @@ public class WiDirService extends XWService {
 
     private void handleGotMessage( Intent intent )
     {
-        DbgUtils.logd( getClass(), "processPacket(%s)", intent.toString() );
+        DbgUtils.logd( CLAZZ, "handleGotMessage(%s)", intent.toString() );
         int gameID = intent.getIntExtra( KEY_GAMEID, 0 );
         byte[] data = XwJNI.base64Decode( intent.getStringExtra( KEY_DATA ) );
         String macAddress = intent.getStringExtra( KEY_RETADDR );
@@ -529,10 +584,10 @@ public class WiDirService extends XWService {
     private static void processPacket( BiDiSockWrap wrap, byte[] bytes )
     {
         String asStr = new String(bytes);
-        DbgUtils.logd( WiDirService.class, "got string: %s", asStr );
+        DbgUtils.logd( CLAZZ, "got string: %s", asStr );
         try {
             JSONObject asObj = new JSONObject( asStr );
-            DbgUtils.logd( WiDirService.class, "got json: %s", asObj.toString() );
+            DbgUtils.logd( CLAZZ, "got json: %s", asObj.toString() );
             final String cmd = asObj.optString( KEY_CMD, "" );
             if ( cmd.equals( CMD_PING ) ) {
                 storeByAddress( wrap, asObj );
@@ -547,19 +602,42 @@ public class WiDirService extends XWService {
                 storeByAddress( wrap, asObj );
             } else if ( cmd.equals( CMD_MSG ) ) {
                 // byte[] data = XwJNI.base64Decode( asObj.optString( KEY_DATA, null ) );
-                int gameID = asObj.optInt( KEY_GAMEID, 0 );
-                if ( 0 != gameID ) {
-                    Intent intent = getIntentTo( P2PAction.GOT_MSG );
-                    intent.putExtra( KEY_GAMEID, gameID );
-                    intent.putExtra( KEY_DATA, asObj.optString( KEY_DATA, null ) );
-                    intent.putExtra( KEY_RETADDR, wrap.getMacAddress() );
-                    XWApp.getContext().startService( intent );
+
+                // Is it for me?
+                String destAddr = asObj.optString( KEY_DEST );
+                if ( 0 < destAddr.length() ) {
+                    Assert.assertFalse( destAddr.equals( sMacAddress ) );
+                    forwardPacket( bytes, destAddr );
                 } else {
-                    Assert.fail(); // don't ship with this!!!
+                    int gameID = asObj.optInt( KEY_GAMEID, 0 );
+                    if ( 0 != gameID ) {
+                        Intent intent = getIntentTo( P2PAction.GOT_MSG );
+                        intent.putExtra( KEY_GAMEID, gameID );
+                        intent.putExtra( KEY_DATA, asObj.getString( KEY_DATA ) );
+                        intent.putExtra( KEY_RETADDR, asObj.getString( KEY_SRC ) );
+                        XWApp.getContext().startService( intent );
+                    } else {
+                        Assert.fail(); // don't ship with this!!!
+                    }
                 }
             }
         } catch ( JSONException jse ) {
             DbgUtils.logex( jse );
+        }
+    }
+
+    private static void forwardPacket( byte[] bytes, String destAddr )
+    {
+        DbgUtils.logd( CLAZZ, "forwardPacket(mac=%s)", destAddr );
+        if ( sAmGroupOwner ) {
+            BiDiSockWrap wrap = sSocketWrapMap.get( destAddr );
+            if ( null != wrap && wrap.isConnected() ) {
+                wrap.send( bytes );
+            } else {
+                DbgUtils.loge( CLAZZ, "no working socket for %s", destAddr );
+            }
+        } else {
+            DbgUtils.loge( CLAZZ, "can't forward; not group owner (any more?)" );
         }
     }
     
@@ -571,9 +649,9 @@ public class WiDirService extends XWService {
                     try {
                         sServerSock = new ServerSocket( OWNER_PORT );
                         while ( sAmServer ) {
-                            DbgUtils.logd( WiDirService.class, "calling accept()" );
+                            DbgUtils.logd( CLAZZ, "calling accept()" );
                             Socket socket = sServerSock.accept();
-                            DbgUtils.logd( WiDirService.class, "accept() returned!!" );
+                            DbgUtils.logd( CLAZZ, "accept() returned!!" );
                             new BiDiSockWrap( socket, sIface );
                         }
                     } catch ( IOException ioe ) {
@@ -622,12 +700,12 @@ public class WiDirService extends XWService {
         public void onReceive( Context context, Intent intent ) {
             if ( WIFI_DIRECT_ENABLED ) {
                 String action = intent.getAction();
-                DbgUtils.logd( getClass(), "got intent: " + intent.toString() );
+                DbgUtils.logd( CLAZZ, "got intent: " + intent.toString() );
 
                 if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
                     int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
                     sEnabled = state == WifiP2pManager.WIFI_P2P_STATE_ENABLED;
-                    DbgUtils.logd( getClass(), "WifiP2PEnabled: %b", sEnabled );
+                    DbgUtils.logd( CLAZZ, "WifiP2PEnabled: %b", sEnabled );
                 } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
                     mManager.requestPeers( mChannel, new PLL() );
                 } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
@@ -635,11 +713,12 @@ public class WiDirService extends XWService {
                     NetworkInfo networkInfo = (NetworkInfo)intent
                         .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
                     if ( networkInfo.isConnected() ) {
-                        DbgUtils.logd( getClass(), "network %s connected",
+                        DbgUtils.logd( CLAZZ, "network %s connected",
                                        networkInfo.toString() );
                         mManager.requestConnectionInfo(mChannel, new CIL());
                     } else {
-                        DbgUtils.logd( getClass(), "network %s NOT connected",
+                        // here
+                        DbgUtils.logd( CLAZZ, "network %s NOT connected",
                                        networkInfo.toString() );
                     }
                 } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
@@ -648,7 +727,7 @@ public class WiDirService extends XWService {
                         .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
                     sMacAddress = device.deviceAddress;
                     sDeviceName = device.deviceName;
-                    DbgUtils.logd( getClass(), "Got my MAC Address: %s and name: %s",
+                    DbgUtils.logd( CLAZZ, "Got my MAC Address: %s and name: %s",
                                    sMacAddress, sDeviceName );
 
                     String stored = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
@@ -667,11 +746,11 @@ public class WiDirService extends XWService {
 
         @Override
         public void onSuccess() {
-            DbgUtils.logd( getClass(), "onSuccess(): %s", mStr );
+            DbgUtils.logd( CLAZZ, "onSuccess(): %s", mStr );
         }
         @Override
         public void onFailure(int reason) {
-            DbgUtils.logd( getClass(), "onFailure(%d): %s", reason, mStr);
+            DbgUtils.logd( CLAZZ, "onFailure(%d): %s", reason, mStr);
         }
     }
 
@@ -681,17 +760,18 @@ public class WiDirService extends XWService {
             // InetAddress from WifiP2pInfo struct.
             InetAddress groupOwnerAddress = info.groupOwnerAddress;
             String hostAddress = groupOwnerAddress.getHostAddress();
-            DbgUtils.logd( getClass(), "onConnectionInfoAvailable(%s); addr: %s",
+            DbgUtils.logd( CLAZZ, "onConnectionInfoAvailable(%s); addr: %s",
                            info.toString(), hostAddress );
 
             // After the group negotiation, we can determine the group owner.
             if (info.groupFormed ) {
+                sAmGroupOwner = info.isGroupOwner;
                 if ( info.isGroupOwner ) {
                     DbgUtils.showf( "Joining %s WiFi P2p group as owner", SERVICE_NAME );
-                    DbgUtils.logd( getClass(), "am group owner" );
+                    DbgUtils.logd( CLAZZ, "am group owner" );
                     startAcceptThread();
                 } else {
-                    DbgUtils.logd( getClass(), "am NOT group owner" );
+                    DbgUtils.logd( CLAZZ, "am NOT group owner" );
                     DbgUtils.showf( "Joining %s WiFi P2p group as guest", SERVICE_NAME );
                     stopAcceptThread();
                     connectToOwner( info.groupOwnerAddress );
@@ -699,6 +779,7 @@ public class WiDirService extends XWService {
                     // you'll want to create a client thread that connects to the group
                     // owner.
                 }
+                getMgr().requestGroupInfo( sChannel, sGroupListener );
             } else {
                 Assert.fail();
             }
@@ -708,11 +789,11 @@ public class WiDirService extends XWService {
     private static class PLL implements WifiP2pManager.PeerListListener {
         @Override
         public void onPeersAvailable( WifiP2pDeviceList peerList ) {
-            DbgUtils.logd( getClass(), "got list of %d peers",
+            DbgUtils.logd( CLAZZ, "got list of %d peers",
                            peerList.getDeviceList().size() );
 
             for ( WifiP2pDevice device : peerList.getDeviceList() ) {
-                // DbgUtils.logd( getClass(), "not connecting to: %s", device.toString() );
+                // DbgUtils.logd( CLAZZ, "not connecting to: %s", device.toString() );
                 tryConnect( device );
             }
             // Out with the old, in with the new.
