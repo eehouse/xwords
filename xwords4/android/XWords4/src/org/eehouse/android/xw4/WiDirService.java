@@ -192,9 +192,10 @@ public class WiDirService extends XWService {
 
     public static String formatNetStateInfo()
     {
-        return String.format( "name: %s; mac: %s; role: %s",
+        return String.format( "name: %s; mac: %s; role: %s; nThreads: %d",
                               sDeviceName, getMyMacAddress(),
-                              sAmServer ? "group owner" : "guest" );
+                              sAmServer ? "owner" : "guest",
+                              Thread.activeCount() );
     }
 
     private static String getMyMacAddress() { return getMyMacAddress(null); }
@@ -232,6 +233,7 @@ public class WiDirService extends XWService {
     public static int sendPacket( Context context, String macAddr, int gameID,
                                   byte[] buf )
     {
+        DbgUtils.logd( CLAZZ, "sendPacket(len=%d,addr=%s)", buf.length, macAddr );
         int nSent = -1;
 
         boolean[] forwarding = { false };
@@ -314,6 +316,7 @@ public class WiDirService extends XWService {
 
                             public void connectStateChanged( BiDiSockWrap wrap, boolean nowConnected )
                             {
+                                DbgUtils.logd( CLAZZ, "connectStateChanged(con=%b)", nowConnected );
                                 if ( nowConnected ) {
                                     try {
                                         wrap.send( new JSONObject()
@@ -322,6 +325,15 @@ public class WiDirService extends XWService {
                                                    .put( KEY_MAC, getMyMacAddress( context ) ) );
                                     } catch ( JSONException jse ) {
                                         DbgUtils.logex( jse );
+                                    }
+                                } else {
+                                    int sizeBefore = sSocketWrapMap.size();
+                                    sSocketWrapMap.values().remove( wrap );
+                                    DbgUtils.logd( CLAZZ, "removed wrap; had %d, now have %d",
+                                                   sizeBefore, sSocketWrapMap.size() );
+                                    if ( 0 == sSocketWrapMap.size() ) {
+                                        updateStatusIn( false );
+                                        updateStatusOut( false );
                                     }
                                 }
                             }
@@ -357,6 +369,7 @@ public class WiDirService extends XWService {
                                             }
                                         }
                                     }
+                                    DbgUtils.logd( CLAZZ, "thread count: %d", Thread.activeCount() );
                                     new Handler().postDelayed( new Runnable() {
                                             @Override
                                             public void run() {
@@ -470,7 +483,9 @@ public class WiDirService extends XWService {
                     discoverServices();
                 }
                 @Override
-                public void onFailure(int code) { Assert.fail(); }
+                public void onFailure(int code) {
+                    tryAgain( "discoverPeers", code );
+                }
             } );
     }
 
@@ -788,6 +803,9 @@ public class WiDirService extends XWService {
             forwarding[0] = true;
         }
 
+        if ( null == wrap ) {
+            updateStatusOut( false );
+        }
         return wrap;
     }
 

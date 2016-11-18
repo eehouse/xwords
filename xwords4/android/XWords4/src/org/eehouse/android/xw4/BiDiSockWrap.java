@@ -133,7 +133,7 @@ public class BiDiSockWrap {
             DbgUtils.logex( ioe );
         }
         mIface.connectStateChanged( this, false );
-        mQueue.add(null);
+        mQueue.add( new byte[0] );
     }
 
     private void startThreads()
@@ -150,7 +150,8 @@ public class BiDiSockWrap {
                             DbgUtils.logd( BiDiSockWrap.class,
                                            "write thread got packet of len %d",
                                            packet.length );
-                            if ( null == packet || 0 == packet.length ) {
+                            Assert.assertNotNull( packet );
+                            if ( 0 == packet.length ) {
                                 closeSocket();
                                 break;
                             }
