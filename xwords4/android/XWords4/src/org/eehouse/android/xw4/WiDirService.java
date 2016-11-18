@@ -59,9 +59,11 @@ import java.util.Collection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
 
@@ -75,10 +77,12 @@ public class WiDirService extends XWService {
 
     private enum P2PAction { _NONE,
                              GOT_MSG,
+                             GOT_INVITE,
     }
 
     private static final String KEY_CMD = "cmd";
     private static final String KEY_SRC = "src";
+    private static final String KEY_NLI = "nli";
     private static final String KEY_DEST = "dest";
 
     private static final String KEY_GAMEID = "gmid";
@@ -133,6 +137,9 @@ public class WiDirService extends XWService {
                 case GOT_MSG:
                     handleGotMessage( intent );
                     updateStatusIn( true );
+                    break;
+                case GOT_INVITE:
+                    handleGotInvite( intent );
                     break;
                 }
             }
@@ -191,19 +198,43 @@ public class WiDirService extends XWService {
 
     private static String getMyMacAddress() { return getMyMacAddress(null); }
 
+    public static void inviteRemote( Context context, String macAddr,
+                                     NetLaunchInfo nli )
+    {
+        String nliString = nli.toString();
+        DbgUtils.logd( CLAZZ, "inviteRemote(%s)", nliString );
+        // String nliData = intent.getStringExtra( KEY_DATA );
+        // String macAddr = intent.getStringExtra( KEY_DEST );
+
+        boolean[] forwarding = { false };
+        BiDiSockWrap wrap = getForSend( macAddr, forwarding );
+
+        if ( null == wrap ) {
+            DbgUtils.loge( CLAZZ, "inviteRemote: no socket for %s", macAddr );
+        } else {
+            try {
+                JSONObject packet = new JSONObject()
+                    .put( KEY_CMD, CMD_INVITE )
+                    .put( KEY_SRC, getMyMacAddress() )
+                    .put( KEY_NLI, nliString )
+                    ;
+                if ( forwarding[0] ) {
+                    packet.put( KEY_DEST, macAddr );
+                }
+                wrap.send( packet );
+            } catch ( JSONException jse ) {
+                DbgUtils.logex( jse );
+            }
+        }
+    }
+
     public static int sendPacket( Context context, String macAddr, int gameID,
                                   byte[] buf )
     {
         int nSent = -1;
-        boolean forwarding = false;
-        BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
 
-        // See if we need to forward through group owner instead
-        if ( null == wrap && !sAmGroupOwner && 1 == sSocketWrapMap.size() ) {
-            DbgUtils.logd( CLAZZ, "forwarding to %s through group owner", macAddr );
-            wrap = sSocketWrapMap.values().iterator().next();
-            forwarding = true;
-        }
+        boolean[] forwarding = { false };
+        BiDiSockWrap wrap = getForSend( macAddr, forwarding );
 
         if ( null != wrap ) {
             try {
@@ -213,7 +244,7 @@ public class WiDirService extends XWService {
                     .put( KEY_DATA, XwJNI.base64Encode( buf ) )
                     .put( KEY_GAMEID, gameID )
                     ;
-                if ( forwarding ) {
+                if ( forwarding[0] ) {
                     packet.put( KEY_DEST, macAddr );
                 }
                 wrap.send( packet );
@@ -587,6 +618,45 @@ public class WiDirService extends XWService {
         ReceiveResult rslt = receiveMessage( this, gameID, m_sink, data, addr );
     }
 
+    private void handleGotInvite( Intent intent )
+    {
+        DbgUtils.logd( CLAZZ, "handleGotInvite()" );
+        String nliData = intent.getStringExtra( KEY_NLI );
+        NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
+        String returnMac = intent.getStringExtra( KEY_SRC );
+        if ( checkNotDupe( nli ) ) {
+            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+                makeGame( nli, returnMac );
+            } else {
+                Intent dictIntent = MultiService
+                    .makeMissingDictIntent( this, nli,
+                                            DictFetchOwner.OWNER_P2P );
+                MultiService.postMissingDictNotification( this, dictIntent,
+                                                          nli.gameID() );
+            }
+        }
+    }
+
+    private void makeGame( NetLaunchInfo nli, String senderMac )
+    {
+        long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
+        if ( null == rowids || 0 == rowids.length ) {
+            CommsAddrRec addr = nli.makeAddrRec( this );
+            long rowid = GameUtils.makeNewMultiGame( this, nli,
+                                                     m_sink,
+                                                     getUtilCtxt() );
+            if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+                if ( null != nli.gameName && 0 < nli.gameName.length() ) {
+                    DBUtils.setName( this, rowid, nli.gameName );
+                }
+                String body = LocUtils.getString( this, R.string.new_bt_body_fmt,
+                                                  senderMac );
+                GameUtils.postInvitedNotification( this, nli.gameID(), body,
+                                                   rowid );
+            }
+        }
+    }
+
     private static void processPacket( BiDiSockWrap wrap, byte[] bytes )
     {
         String asStr = new String(bytes);
@@ -606,15 +676,15 @@ public class WiDirService extends XWService {
                 }
             } else if ( cmd.equals( CMD_PONG ) ) {
                 storeByAddress( wrap, asObj );
+            } else if ( cmd.equals( CMD_INVITE ) ) {
+                if ( ! forwardedPacket( asObj, bytes ) ) {
+                    Intent intent = getIntentTo( P2PAction.GOT_INVITE );
+                    intent.putExtra( KEY_NLI, asObj.getString( KEY_NLI ) );
+                    intent.putExtra( KEY_SRC, asObj.getString( KEY_SRC ) );
+                    XWApp.getContext().startService( intent );
+                }
             } else if ( cmd.equals( CMD_MSG ) ) {
-                // byte[] data = XwJNI.base64Decode( asObj.optString( KEY_DATA, null ) );
-
-                // Is it for me?
-                String destAddr = asObj.optString( KEY_DEST );
-                if ( 0 < destAddr.length() ) {
-                    Assert.assertFalse( destAddr.equals( sMacAddress ) );
-                    forwardPacket( bytes, destAddr );
-                } else {
+                if ( ! forwardedPacket( asObj, bytes ) ) {
                     int gameID = asObj.optInt( KEY_GAMEID, 0 );
                     if ( 0 != gameID ) {
                         Intent intent = getIntentTo( P2PAction.GOT_MSG );
@@ -630,6 +700,18 @@ public class WiDirService extends XWService {
         } catch ( JSONException jse ) {
             DbgUtils.logex( jse );
         }
+    }
+
+    private static boolean forwardedPacket( JSONObject asObj, byte[] bytes )
+    {
+        boolean forwarded = false;
+        String destAddr = asObj.optString( KEY_DEST );
+        if ( 0 < destAddr.length() ) {
+            Assert.assertFalse( destAddr.equals( sMacAddress ) );
+            forwardPacket( bytes, destAddr );
+            forwarded = true;
+        }
+        return forwarded;
     }
 
     private static void forwardPacket( byte[] bytes, String destAddr )
@@ -690,6 +772,20 @@ public class WiDirService extends XWService {
         Intent intent = new Intent( context, WiDirService.class );
         intent.putExtra( KEY_CMD, cmd.ordinal() );
         return intent;
+    }
+
+    private static BiDiSockWrap getForSend( String macAddr, boolean[] forwarding )
+    {
+        BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
+
+        // See if we need to forward through group owner instead
+        if ( null == wrap && !sAmGroupOwner && 1 == sSocketWrapMap.size() ) {
+            DbgUtils.logd( CLAZZ, "forwarding to %s through group owner", macAddr );
+            wrap = sSocketWrapMap.values().iterator().next();
+            forwarding[0] = true;
+        }
+
+        return wrap;
     }
 
     private static class WFDBroadcastReceiver extends BroadcastReceiver {

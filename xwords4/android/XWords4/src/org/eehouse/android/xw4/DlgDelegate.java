@@ -290,7 +290,7 @@ public class DlgDelegate {
         // These are stored in the INVITES table. Don't change order
         // gratuitously
         public static enum InviteMeans {
-            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, // WIFIDIRECT,
+            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
         };
         void dlgButtonClicked( Action action, int button, Object[] params );
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );

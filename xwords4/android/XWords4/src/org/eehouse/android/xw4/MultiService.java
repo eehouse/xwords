@@ -52,6 +52,7 @@ public class MultiService {
                                  OWNER_SMS,
                                  OWNER_RELAY,
                                  OWNER_BT,
+                                 OWNER_P2P,
     };
 
     private static final String ACTION_FETCH_DICT = "_afd";

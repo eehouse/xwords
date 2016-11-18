@@ -133,7 +133,7 @@ public class BiDiSockWrap {
             DbgUtils.logex( ioe );
         }
         mIface.connectStateChanged( this, false );
-        send( (byte[])null );
+        mQueue.add(null);
     }
 
     private void startThreads()
@@ -160,7 +160,8 @@ public class BiDiSockWrap {
                             mIface.onWriteSuccess( BiDiSockWrap.this );
                         }
                     } catch ( IOException ioe ) {
-                        Assert.fail();
+                        DbgUtils.logex( ioe );
+                        closeSocket();
                     } catch ( InterruptedException ie ) {
                         Assert.fail();
                     }
@@ -183,6 +184,7 @@ public class BiDiSockWrap {
                         }
                     } catch( IOException ioe ) {
                         DbgUtils.logex( ioe );
+                        closeSocket();
                     }
                 }
             } );

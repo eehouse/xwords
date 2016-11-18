@@ -94,7 +94,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
     private static final String REMATCH_RELAYID_EXTRA = "rm_relayid";
-
+    private static final String REMATCH_P2PADDR_EXTRA = "rm_p2pma";
 
     private static final String ALERT_MSG = "alert_msg";
 
@@ -2143,6 +2143,7 @@ public class GamesListDelegate extends ListDelegateBase
             String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
             String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
             String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
+            String p2pMacAddress = intent.getStringExtra( REMATCH_P2PADDR_EXTRA );
             String dict = intent.getStringExtra( REMATCH_DICT_EXTRA );
             int lang = intent.getIntExtra( REMATCH_LANG_EXTRA, -1 );
             String json = intent.getStringExtra( REMATCH_PREFS_EXTRA );
@@ -2150,7 +2151,8 @@ public class GamesListDelegate extends ListDelegateBase
             CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
             long newid;
-            if ( null == btAddr && null == phone && null == relayID ) {
+            if ( null == btAddr && null == phone && null == relayID
+                 && null == p2pMacAddress ) {
                 newid = GameUtils.dupeGame( m_activity, srcRowID );
                 if ( DBUtils.ROWID_NOTFOUND != newid ) {
                     DBUtils.setName( m_activity, newid, gameName );
@@ -2160,7 +2162,7 @@ public class GamesListDelegate extends ListDelegateBase
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
-                                        relayID );
+                                        relayID, p2pMacAddress );
             }
             launchGame( newid );
         }
@@ -2626,7 +2628,8 @@ public class GamesListDelegate extends ListDelegateBase
                                             CurGameInfo gi,
                                             CommsConnTypeSet addrTypes,
                                             String btAddr, String phone,
-                                            String relayID, String newName )
+                                            String relayID, String p2pMacAddress,
+                                            String newName )
     {
         Intent intent = null;
         intent = makeSelfIntent( context );
@@ -2646,6 +2649,9 @@ public class GamesListDelegate extends ListDelegateBase
             }
             if ( null != relayID ) {
                 intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
+            }
+            if ( null != p2pMacAddress ) {
+                intent.putExtra( REMATCH_P2PADDR_EXTRA, p2pMacAddress );
             }
         }
         return intent;

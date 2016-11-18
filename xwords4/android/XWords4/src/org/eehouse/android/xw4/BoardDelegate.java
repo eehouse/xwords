@@ -2629,6 +2629,7 @@ public class BoardDelegate extends DelegateBase
         String phone = null;
         String btAddr = null;
         String relayID = null;
+        String p2pMacAddress = null;
         if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
             // nothing to do??
         } else if ( 2 != gi.nPlayers ) {
@@ -2655,6 +2656,10 @@ public class BoardDelegate extends DelegateBase
                     Assert.assertNull( relayID );
                     relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                 }
+                if ( addr.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                    Assert.assertNull( p2pMacAddress );
+                    p2pMacAddress = addr.p2p_addr;
+                }
             }
         }
 
@@ -2663,7 +2668,7 @@ public class BoardDelegate extends DelegateBase
             String newName = summary.getRematchName();
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
-                                    phone, relayID, newName );
+                                    phone, relayID, p2pMacAddress, newName );
             if ( null != intent ) {
                 activity.startActivity( intent );
             }
@@ -2733,6 +2738,11 @@ public class BoardDelegate extends DelegateBase
             if ( null != value ) {
                 RelayService.inviteRemote( m_activity, 0, value, nli );
                 recordInviteSent( InviteMeans.RELAY, value );
+            }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_P2P );
+            if ( null != value ) {
+                WiDirService.inviteRemote( m_activity, value, nli );
+                recordInviteSent( InviteMeans.WIFIDIRECT, value );
             }
 
             showToast( R.string.rematch_sent_toast );

@@ -355,7 +355,7 @@ public class DBUtils {
     } // saveSummary
 
     public static void addRematchInfo( Context context, long rowid, String btAddr,
-                                       String phone, String relayID )
+                                       String phone, String relayID, String p2pAddr )
     {
         GameLock lock = new GameLock( rowid, true ).lock();
         GameSummary summary = getSummary( context, lock );
@@ -367,6 +367,9 @@ public class DBUtils {
         }
         if ( null != relayID ) {
             summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+        }
+        if ( null != p2pAddr ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr );
         }
         saveSummary( context, lock, summary );
         lock.unlock();
