@@ -94,6 +94,7 @@ public class WiDirService extends XWService {
     private static final String CMD_PING = "ping";
     private static final String CMD_PONG = "pong";
     private static final String CMD_MSG = "msg";
+    private static final String CMD_INVITE = "invite";
 
     private static Channel sChannel;
     private static ChannelListener sListener;
@@ -330,39 +331,41 @@ public class WiDirService extends XWService {
                             }
                         };
 
-                    sGroupListener = new GroupInfoListener() {
-                            public void onGroupInfoAvailable( WifiP2pGroup group ) {
-                                if ( null == group ) {
-                                    DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(null)!" );
-                                } else {
-                                    DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(owner: %b)!",
-                                                   group.isGroupOwner() );
-                                    Assert.assertTrue( sAmGroupOwner == group.isGroupOwner() );
-                                    if ( sAmGroupOwner ) {
-                                        Collection<WifiP2pDevice> devs = group.getClientList();
-                                        for ( WifiP2pDevice dev : devs ) {
-                                            String macAddr = dev.deviceAddress;
-                                            // DbgUtils.logd( CLAZZ, "group member: %s/%s",
-                                            //                dev.deviceAddress,
-                                            //                dev.deviceName );
-                                            BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
-                                            if ( null == wrap ) {
-                                                DbgUtils.logd( CLAZZ, "no socket for %s", macAddr );
-                                            } else {
-                                                DbgUtils.logd( CLAZZ, "socket for %s connected: %b",
-                                                               macAddr, wrap.isConnected() );
+                    if ( BuildConfig.DEBUG ) {
+                        sGroupListener = new GroupInfoListener() {
+                                public void onGroupInfoAvailable( WifiP2pGroup group ) {
+                                    if ( null == group ) {
+                                        DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(null)!" );
+                                    } else {
+                                        DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(owner: %b)!",
+                                                       group.isGroupOwner() );
+                                        Assert.assertTrue( sAmGroupOwner == group.isGroupOwner() );
+                                        if ( sAmGroupOwner ) {
+                                            Collection<WifiP2pDevice> devs = group.getClientList();
+                                            for ( WifiP2pDevice dev : devs ) {
+                                                String macAddr = dev.deviceAddress;
+                                                // DbgUtils.logd( CLAZZ, "group member: %s/%s",
+                                                //                dev.deviceAddress,
+                                                //                dev.deviceName );
+                                                BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
+                                                if ( null == wrap ) {
+                                                    DbgUtils.logd( CLAZZ, "no socket for %s", macAddr );
+                                                } else {
+                                                    DbgUtils.logd( CLAZZ, "socket for %s connected: %b",
+                                                                   macAddr, wrap.isConnected() );
+                                                }
                                             }
                                         }
                                     }
+                                    new Handler().postDelayed( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                getMgr().requestGroupInfo( sChannel, sGroupListener );
+                                            }
+                                        }, 60 * 1000 );
                                 }
-                                new Handler().postDelayed( new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            getMgr().requestGroupInfo( sChannel, sGroupListener );
-                                        }
-                                    }, 10 * 1000 );
-                            }
-                        };
+                            };
+                    }
 
                     sIntentFilter = new IntentFilter();
                     sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -881,7 +884,9 @@ public class WiDirService extends XWService {
                     // you'll want to create a client thread that connects to the group
                     // owner.
                 }
-                getMgr().requestGroupInfo( sChannel, sGroupListener );
+                if ( BuildConfig.DEBUG ) {
+                    getMgr().requestGroupInfo( sChannel, sGroupListener );
+                }
             } else {
                 Assert.fail();
             }
