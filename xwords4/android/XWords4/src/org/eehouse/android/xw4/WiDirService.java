@@ -144,16 +144,18 @@ public class WiDirService extends XWService {
         return result;
     }
 
-    private void updateStatusOut( boolean success )
+    private static void updateStatusOut( boolean success )
     {
         ConnStatusHandler
-            .updateStatusOut( this, null, CommsConnType.COMMS_CONN_P2P, success );
+            .updateStatusOut( XWApp.getContext(), null,
+                              CommsConnType.COMMS_CONN_P2P, success );
     }
 
-    private void updateStatusIn( boolean success )
+    private static void updateStatusIn( boolean success )
     {
         ConnStatusHandler
-            .updateStatusIn( this, null, CommsConnType.COMMS_CONN_P2P, success );
+            .updateStatusIn( XWApp.getContext(), null,
+                             CommsConnType.COMMS_CONN_P2P, success );
     }
 
     public static boolean supported()
@@ -290,6 +292,10 @@ public class WiDirService extends XWService {
                                         DbgUtils.logex( jse );
                                     }
                                 }
+                            }
+
+                            public void onWriteSuccess( BiDiSockWrap wrap ) {
+                                updateStatusOut( true );
                             }
                         };
 

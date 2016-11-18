@@ -32,6 +32,7 @@ import junit.framework.Assert;
 public class BiDiSockWrap {
     interface Iface {
         void gotPacket( BiDiSockWrap wrap, byte[] bytes );
+        void onWriteSuccess( BiDiSockWrap wrap );
         void connectStateChanged( BiDiSockWrap wrap, boolean nowConnected );
     }
 
@@ -156,6 +157,7 @@ public class BiDiSockWrap {
 
                             outStream.writeShort( packet.length );
                             outStream.write( packet, 0, packet.length );
+                            mIface.onWriteSuccess( BiDiSockWrap.this );
                         }
                     } catch ( IOException ioe ) {
                         Assert.fail();
