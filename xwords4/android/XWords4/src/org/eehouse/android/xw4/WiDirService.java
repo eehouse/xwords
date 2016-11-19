@@ -752,6 +752,7 @@ public class WiDirService extends XWService {
         sAmServer = true;
         sAcceptThread = new Thread( new Runnable() {
                 public void run() {
+                    DbgUtils.logd( CLAZZ, "accept thread starting" );
                     try {
                         sServerSock = new ServerSocket( OWNER_PORT );
                         while ( sAmServer ) {
@@ -764,6 +765,7 @@ public class WiDirService extends XWService {
                         sAmServer = false;
                         DbgUtils.logex( ioe );
                     }
+                    DbgUtils.logd( CLAZZ, "accept thread exiting" );
                 }
             } );
         sAcceptThread.start();

@@ -142,6 +142,7 @@ public class BiDiSockWrap {
         mWriteThread = new Thread( new Runnable() {
                 @Override
                 public void run() {
+                    DbgUtils.logd( getClass(), "write thread starting" );
                     try {
                         DataOutputStream outStream
                             = new DataOutputStream( mSocket.getOutputStream() );
@@ -166,6 +167,7 @@ public class BiDiSockWrap {
                     } catch ( InterruptedException ie ) {
                         Assert.fail();
                     }
+                    DbgUtils.logd( getClass(), "write thread exiting" );
                 }
             } );
         mWriteThread.start();
@@ -173,6 +175,7 @@ public class BiDiSockWrap {
         mReadThread = new Thread( new Runnable() {
                 @Override
                 public void run() {
+                    DbgUtils.logd( getClass(), "read thread starting" );
                     try {
                         DataInputStream inStream
                             = new DataInputStream( mSocket.getInputStream() );
@@ -187,6 +190,7 @@ public class BiDiSockWrap {
                         DbgUtils.logex( ioe );
                         closeSocket();
                     }
+                    DbgUtils.logd( getClass(), "read thread exiting" );
                 }
             } );
         mReadThread.start();
