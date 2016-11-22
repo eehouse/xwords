@@ -673,9 +673,9 @@ public class BoardDelegate extends DelegateBase
             case RELAY_INVITE_RESULT:
                 missingMeans = InviteMeans.RELAY;
                 break;
-            // case P2P_INVITE_RESULT:
-            //     missingMeans = InviteMeans.WIFIDIRECT;
-            //     break;
+            case P2P_INVITE_RESULT:
+                missingMeans = InviteMeans.WIFIDIRECT;
+                break;
             }
 
             if ( null != missingMeans ) {
@@ -1116,6 +1116,11 @@ public class BoardDelegate extends DelegateBase
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_nMissing,
                                                      RequestCode.RELAY_INVITE_RESULT );
+                break;
+            case WIFIDIRECT:
+                WiDirInviteDelegate.launchForResult( m_activity,
+                                                     m_nMissing,
+                                                     RequestCode.P2P_INVITE_RESULT );
                 break;
             case EMAIL:
             case CLIPBOARD:
@@ -2461,6 +2466,9 @@ public class BoardDelegate extends DelegateBase
                     } catch (NumberFormatException nfi) {
                         DbgUtils.logex( nfi );
                     }
+                    break;
+                case WIFIDIRECT:
+                    WiDirService.inviteRemote( m_activity, dev, nli );
                     break;
                 }
 

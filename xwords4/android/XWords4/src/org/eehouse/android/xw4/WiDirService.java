@@ -51,11 +51,13 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collection;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -87,8 +89,9 @@ public class WiDirService extends XWService {
 
     private static final String KEY_GAMEID = "gmid";
     private static final String KEY_DATA = "data";
-    private static final String KEY_MAC = "myMac";
+    private static final String KEY_MAC = "mac";
     private static final String KEY_NAME = "name";
+    private static final String KEY_MAP = "map";
     private static final String KEY_RETADDR = "raddr";
 
     private static final String CMD_PING = "ping";
@@ -111,11 +114,18 @@ public class WiDirService extends XWService {
     private static BiDiSockWrap.Iface sIface;
     private static Map<String, BiDiSockWrap> sSocketWrapMap
         = new HashMap<String, BiDiSockWrap>();
+    private static Map<String, String> sUserMap = new HashMap<String, String>();
     private static Map<String, Long> sPendingDevs = new HashMap<String, Long>();
     private static String sMacAddress;
     private static String sDeviceName;
+    private static Set<DevSetListener> s_devListeners
+        = new HashSet<DevSetListener>();
 
     private P2pMsgSink m_sink;
+
+    public interface DevSetListener {
+        void setChanged( Map<String, String> macToName );
+    }
 
     @Override
     public void onCreate()
@@ -192,21 +202,36 @@ public class WiDirService extends XWService {
 
     public static String formatNetStateInfo()
     {
-        return String.format( "name: %s; mac: %s; role: %s; nThreads: %d",
-                              sDeviceName, getMyMacAddress(),
-                              sAmServer ? "owner" : "guest",
+        String map = mapToString( copyUserMap() );
+        return String.format( "map: %s role: %s; nThreads: %d",
+                              map, sAmServer ? "owner" : "guest",
                               Thread.activeCount() );
     }
 
     private static String getMyMacAddress() { return getMyMacAddress(null); }
 
+    public static void registerDevSetListener( DevSetListener dsl )
+    {
+        synchronized( s_devListeners ) {
+            s_devListeners.add( dsl );
+        }
+        updateListeners();
+    }
+
+    public static void unregisterDevSetListener( DevSetListener dsl )
+    {
+        synchronized( s_devListeners ) {
+            s_devListeners.remove( dsl );
+        }
+    }
+
     public static void inviteRemote( Context context, String macAddr,
                                      NetLaunchInfo nli )
     {
+        DbgUtils.logd( CLAZZ, "inviteRemote(%s)", macAddr );
+        Assert.assertNotNull( macAddr );
         String nliString = nli.toString();
         DbgUtils.logd( CLAZZ, "inviteRemote(%s)", nliString );
-        // String nliData = intent.getStringExtra( KEY_DATA );
-        // String macAddr = intent.getStringExtra( KEY_DEST );
 
         boolean[] forwarding = { false };
         BiDiSockWrap wrap = getForSend( macAddr, forwarding );
@@ -256,7 +281,7 @@ public class WiDirService extends XWService {
                 DbgUtils.logex( jse );
             }
         } else {
-            DbgUtils.logd( CLAZZ, "no socket for packet for %s", macAddr );
+            DbgUtils.logd( CLAZZ, "sendPacket: no socket for %s", macAddr );
         }
         return nSent;
     }
@@ -343,25 +368,25 @@ public class WiDirService extends XWService {
                             }
                         };
 
-                    if ( BuildConfig.DEBUG ) {
-                        sGroupListener = new GroupInfoListener() {
-                                public void onGroupInfoAvailable( WifiP2pGroup group ) {
-                                    if ( null == group ) {
-                                        DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(null)!" );
-                                    } else {
-                                        DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(owner: %b)!",
-                                                       group.isGroupOwner() );
-                                        Assert.assertTrue( sAmGroupOwner == group.isGroupOwner() );
-                                        if ( sAmGroupOwner ) {
-                                            Collection<WifiP2pDevice> devs = group.getClientList();
+                    sGroupListener = new GroupInfoListener() {
+                            public void onGroupInfoAvailable( WifiP2pGroup group ) {
+                                if ( null == group ) {
+                                    DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(null)!" );
+                                } else {
+                                    DbgUtils.logd( CLAZZ, "onGroupInfoAvailable(owner: %b)!",
+                                                   group.isGroupOwner() );
+                                    Assert.assertTrue( sAmGroupOwner == group.isGroupOwner() );
+                                    if ( sAmGroupOwner ) {
+                                        Collection<WifiP2pDevice> devs = group.getClientList();
+                                        synchronized( sUserMap ) {
                                             for ( WifiP2pDevice dev : devs ) {
                                                 String macAddr = dev.deviceAddress;
-                                                // DbgUtils.logd( CLAZZ, "group member: %s/%s",
-                                                //                dev.deviceAddress,
-                                                //                dev.deviceName );
+                                                sUserMap.put( macAddr, dev.deviceName );
                                                 BiDiSockWrap wrap = sSocketWrapMap.get( macAddr );
                                                 if ( null == wrap ) {
-                                                    DbgUtils.logd( CLAZZ, "no socket for %s", macAddr );
+                                                    DbgUtils.logd( CLAZZ,
+                                                                   "groupListener: no socket for %s",
+                                                                   macAddr );
                                                 } else {
                                                     DbgUtils.logd( CLAZZ, "socket for %s connected: %b",
                                                                    macAddr, wrap.isConnected() );
@@ -369,16 +394,16 @@ public class WiDirService extends XWService {
                                             }
                                         }
                                     }
-                                    DbgUtils.logd( CLAZZ, "thread count: %d", Thread.activeCount() );
-                                    new Handler().postDelayed( new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                getMgr().requestGroupInfo( sChannel, sGroupListener );
-                                            }
-                                        }, 60 * 1000 );
                                 }
-                            };
-                    }
+                                DbgUtils.logd( CLAZZ, "thread count: %d", Thread.activeCount() );
+                                new Handler().postDelayed( new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            getMgr().requestGroupInfo( sChannel, sGroupListener );
+                                        }
+                                    }, 60 * 1000 );
+                            }
+                        };
 
                     sIntentFilter = new IntentFilter();
                     sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -686,14 +711,17 @@ public class WiDirService extends XWService {
             if ( cmd.equals( CMD_PING ) ) {
                 storeByAddress( wrap, asObj );
                 try {
-                    wrap.send( new JSONObject()
-                               .put( KEY_CMD, CMD_PONG )
-                               .put( KEY_MAC, getMyMacAddress() ) );
+                    JSONObject packet = new JSONObject()
+                        .put( KEY_CMD, CMD_PONG )
+                        .put( KEY_MAC, getMyMacAddress() );
+                    addMappings( packet );
+                    wrap.send( packet );
                 } catch ( JSONException jse ) {
                     DbgUtils.logex( jse );
                 }
             } else if ( cmd.equals( CMD_PONG ) ) {
                 storeByAddress( wrap, asObj );
+                readMappings( asObj );
             } else if ( cmd.equals( CMD_INVITE ) ) {
                 if ( ! forwardedPacket( asObj, bytes ) ) {
                     Intent intent = getIntentTo( P2PAction.GOT_INVITE );
@@ -718,6 +746,86 @@ public class WiDirService extends XWService {
         } catch ( JSONException jse ) {
             DbgUtils.logex( jse );
         }
+    }
+
+    private static void addMappings( JSONObject packet )
+    {
+        synchronized( sUserMap ) {
+            try {
+                JSONArray array = new JSONArray();
+                for ( String mac : sUserMap.keySet() ) {
+                    JSONObject map = new JSONObject()
+                        .put( KEY_MAC, mac )
+                        .put( KEY_NAME, sUserMap.get(mac) );
+                    array.put( map );
+                }
+                packet.put( KEY_MAP, array );
+            } catch ( JSONException ex ) {
+                DbgUtils.logex( ex );
+            }
+        }
+    }
+
+    private static void readMappings( JSONObject asObj )
+    {
+        synchronized( sUserMap ) {
+            try {
+                JSONArray array = asObj.getJSONArray( KEY_MAP );
+                for ( int ii = 0; ii < array.length(); ++ii ) {
+                    JSONObject map = array.getJSONObject( ii );
+                    String name = map.getString( KEY_NAME );
+                    String mac = map.getString( KEY_MAC );
+                    sUserMap.put( mac, name );
+                }
+            } catch ( JSONException ex ) {
+                DbgUtils.logex( ex );
+            }
+        }
+        updateListeners();
+    }
+
+    private static void updateListeners()
+    {
+        DevSetListener[] listeners = null;
+        synchronized( s_devListeners ) {
+            if ( 0 < s_devListeners.size() ) {
+                listeners = new DevSetListener[s_devListeners.size()];
+                Iterator<DevSetListener> iter = s_devListeners.iterator();
+                for ( int ii = 0; ii < listeners.length; ++ii ) {
+                    listeners[ii] = iter.next();
+                }
+            }
+        }
+
+        if ( null != listeners ) {
+            Map<String, String> macToName = copyUserMap();
+            macToName.remove( getMyMacAddress() );
+
+            for ( DevSetListener listener : listeners ) {
+                listener.setChanged( macToName );
+            }
+        }
+    }
+
+    private static Map<String, String> copyUserMap()
+    {
+        Map<String, String> macToName;
+        synchronized ( sUserMap ) {
+            macToName = new HashMap<String, String>(sUserMap);
+        }
+        return macToName;
+    }
+
+    private static String mapToString( Map<String, String> macToName )
+    {
+        String result = "";
+        Iterator<String> iter = macToName.keySet().iterator();
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            String mac = iter.next();
+            result += String.format( "%d: %s=>%s; ", ii, mac,
+                                     macToName.get( mac ) );
+        }
+        return result;
     }
 
     private static boolean forwardedPacket( JSONObject asObj, byte[] bytes )
@@ -852,6 +960,9 @@ public class WiDirService extends XWService {
                         .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
                     sMacAddress = device.deviceAddress;
                     sDeviceName = device.deviceName;
+                    synchronized( sUserMap ) {
+                        sUserMap.put( sMacAddress, sDeviceName );
+                    }
                     DbgUtils.logd( CLAZZ, "Got my MAC Address: %s and name: %s",
                                    sMacAddress, sDeviceName );
 
@@ -904,9 +1015,7 @@ public class WiDirService extends XWService {
                     // you'll want to create a client thread that connects to the group
                     // owner.
                 }
-                if ( BuildConfig.DEBUG ) {
-                    getMgr().requestGroupInfo( sChannel, sGroupListener );
-                }
+                getMgr().requestGroupInfo( sChannel, sGroupListener );
             } else {
                 Assert.fail();
             }

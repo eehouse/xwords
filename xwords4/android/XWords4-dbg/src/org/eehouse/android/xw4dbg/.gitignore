@@ -142,3 +142,5 @@ DualpaneDelegate.java
 BoardContainer.java
 BiDiSockWrap.java
 WiDirService.java
+WiDirInviteActivity.java
+WiDirInviteDelegate.java

@@ -727,19 +727,19 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_bt ) );
             means.add( DlgClickNotify.InviteMeans.BLUETOOTH );
         }
+        if ( XWApp.RELAYINVITE_SUPPORTED ) {
+            items.add( getString( R.string.invite_choice_relay ) );
+            means.add( DlgClickNotify.InviteMeans.RELAY );
+        }
+        if ( WiDirService.supported() ) {
+            items.add( getString( R.string.invite_choice_p2p ) );
+            means.add( DlgClickNotify.InviteMeans.WIFIDIRECT );
+        }
         if ( XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0] ) {
             items.add( getString( R.string.invite_choice_nfc ) );
             means.add( DlgClickNotify.InviteMeans.NFC );
         }
-        if ( XWApp.RELAYINVITE_SUPPORTED ) {
-            items.add( getString( R.string.invite_choice_relay ) );
-            means.add( DlgClickNotify.InviteMeans.RELAY );
-        }
-        // if ( WiDirService.supported() ) {
-        //     items.add( getString( R.string.invite_choice_p2p ) );
-        //     means.add( DlgClickNotify.InviteMeans.WIFIDIRECT );
-        // }
         items.add( getString( R.string.slmenu_copy_sel ) );
         means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
 

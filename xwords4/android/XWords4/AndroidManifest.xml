@@ -92,6 +92,10 @@
 			  android:label="@string/relay_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
+    <activity android:name="WiDirInviteActivity"
+			  android:label="@string/p2p_invite_title"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
 
     <activity android:name="GameConfigActivity"
               android:screenOrientation="sensor"

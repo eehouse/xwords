@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2015 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,29 +20,16 @@
 
 package org.eehouse.android.xw4;
 
-// Just make sure all calls to startActivityForResult are using unique codes.
+import android.os.Bundle;
 
-public enum RequestCode {
-    __UNUSED,
+public class WiDirInviteActivity extends InviteActivity {
 
-    // BoardDelegate
-    BT_INVITE_RESULT,
-    SMS_INVITE_RESULT,
-    RELAY_INVITE_RESULT,
-    P2P_INVITE_RESULT,
+    private WiDirInviteDelegate m_dlgt;
 
-    // PermUtils
-    PERM_REQUEST,
-
-    // GameConfig
-    REQUEST_LANG_GC,
-    REQUEST_DICT,
-
-    // Games list
-    REQUEST_LANG_GL,
-    CONFIG_GAME,
-
-    // SMSInviteDelegate
-    GET_CONTACT,
+    @Override
+    protected void onCreate( Bundle savedInstanceState )
+    {
+        m_dlgt = new WiDirInviteDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
+    }
 }
-
