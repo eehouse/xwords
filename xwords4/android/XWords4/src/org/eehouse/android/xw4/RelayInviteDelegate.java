@@ -191,7 +191,8 @@ public class RelayInviteDelegate extends InviteDelegate {
         // startActivityForResult( intent, GET_CONTACT );
     }
 
-    protected void clearSelected()
+    @Override
+    protected void clearSelected( Integer[] selected )
     {
         makeConfirmThenBuilder( R.string.confirm_clear_relay, Action.CLEAR_ACTION )
             .show();
@@ -233,7 +234,7 @@ public class RelayInviteDelegate extends InviteDelegate {
                     nPlayers += rec.m_nPlayers;
                 }
             }
-            m_okButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
+            m_inviteButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
             m_clearButton.setEnabled( 0 < nDevs );
         }
     }

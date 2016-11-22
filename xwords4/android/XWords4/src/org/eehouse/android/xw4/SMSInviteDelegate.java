@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -56,7 +56,6 @@ public class SMSInviteDelegate extends InviteDelegate {
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<PhoneRec> m_phoneRecs;
-    private SMSPhonesAdapter m_adapter;
     private ImageButton m_addButton;
     private String m_pendingName;
     private String m_pendingNumber;
@@ -104,10 +103,12 @@ public class SMSInviteDelegate extends InviteDelegate {
         rebuildList( true );
     }
 
+    @Override
     protected void onSaveInstanceState( Bundle outState )
     {
         outState.putString( SAVE_NAME, m_pendingName );
         outState.putString( SAVE_NUMBER, m_pendingNumber );
+        super.onSaveInstanceState( outState );
     }
 
     private void getBundledData( Bundle bundle )
@@ -177,9 +178,10 @@ public class SMSInviteDelegate extends InviteDelegate {
         startActivityForResult( intent, RequestCode.GET_CONTACT );
     }
 
-    protected void clearSelected()
+    @Override
+    protected void clearSelected( Integer[] checked )
     {
-        int count = countChecks();
+        int count = checked.length;
         String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
                                         count, count );
         makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
@@ -187,7 +189,8 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void listSelected( String[][] devsP, int[][] countsP )
     {
-        int count = m_adapter.getCount();
+        XWListAdapter adapter = getAdapter();
+        int count = adapter.getCount();
         String[] result = new String[countChecks()];
         int[] counts = new int[result.length];
 
@@ -197,7 +200,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             PhoneRec rec = iter.next();
             if ( rec.m_isChecked ) {
                 counts[index] = rec.m_nPlayers;
-                result[index] = ((SMSListItem)m_adapter.getItem(ii)).getNumber();
+                result[index] = ((SMSListItem)adapter.getItem(ii)).getNumber();
                 index++;
             }
         }
@@ -221,7 +224,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                     nPlayers += rec.m_nPlayers;
                 }
             }
-            m_okButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
+            m_inviteButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
             m_clearButton.setEnabled( 0 < nDevs );
         }
     }
@@ -320,14 +323,15 @@ public class SMSInviteDelegate extends InviteDelegate {
                     return rec1.m_name.compareTo(rec2.m_name);
                 }
             });
-        m_adapter = new SMSPhonesAdapter();
-        setListAdapter( m_adapter );
-        if ( checkIfAll && m_phoneRecs.size() <= m_nMissing ) {
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                iter.next().m_isChecked = true;
-            }
+        String[] phones = new String[m_phoneRecs.size()];
+        String[] names = new String[m_phoneRecs.size()];
+        for ( int ii = 0; ii < m_phoneRecs.size(); ++ii ) {
+            PhoneRec rec = m_phoneRecs.get( ii );
+            phones[ii] = rec.m_phone;
+            names[ii] = rec.m_name;
         }
+
+        updateListAdapter( R.layout.smsinviter_item, phones, names, true );
         tryEnable();
     }
 
@@ -371,7 +375,8 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     private void clearSelectedImpl()
     {
-        int count = m_adapter.getCount();
+        XWListAdapter adapter = getAdapter();
+        int count = adapter.getCount();
         for ( int ii = count - 1; ii >= 0; --ii ) {
             if ( m_phoneRecs.get( ii ).m_isChecked ) {
                 m_phoneRecs.remove( ii );
@@ -407,76 +412,6 @@ public class SMSInviteDelegate extends InviteDelegate {
                 }
             }
             m_name = name;
-        }
-    }
-
-    private class SMSPhonesAdapter extends XWListAdapter {
-        private SMSListItem[] m_items;
-
-        public SMSPhonesAdapter()
-        {
-            super( m_phoneRecs.size() );
-            m_items = new SMSListItem[m_phoneRecs.size()];
-        }
-
-        public Object getItem( final int position )
-        {
-            // For some reason I can't cache items to be returned.
-            // Checking/unchecking breaks for some but not all items,
-            // with some relation to whether they were scrolled into
-            // view.  So build them anew each time (but still cache
-            // for by-index access.)
-
-            SMSListItem item =
-                (SMSListItem)inflate( R.layout.smsinviter_item );
-            item.setChecked( m_phoneRecs.get(position).m_isChecked );
-
-            CompoundButton.OnCheckedChangeListener lstnr =
-                new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton bv,
-                                                  boolean isChecked ) {
-                        m_phoneRecs.get(position).m_isChecked = isChecked;
-                        tryEnable();
-                    }
-                };
-            item.setOnCheckedChangeListener( lstnr );
-            final PhoneRec rec = m_phoneRecs.get( position );
-            item.setContents( rec.m_name, rec.m_phone );
-            m_items[position] = item;
-
-            // Set up spinner
-            Assert.assertTrue( 1 == rec.m_nPlayers );
-            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
-                Spinner spinner = (Spinner)
-                    item.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>( m_activity, android.R.layout
-                                              .simple_spinner_item );
-                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
-                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
-                    adapter.add( str );
-                }
-                spinner.setAdapter( adapter );
-                spinner.setVisibility( View.VISIBLE );
-                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent,
-                                                    View view, int pos,
-                                                    long id )
-                        {
-                            rec.m_nPlayers = 1 + pos;
-                            tryEnable();
-                        }
-
-                        public void onNothingSelected( AdapterView<?> parent ) {}
-                    } );
-            }
-
-            return item;
-        }
-
-        public View getView( final int position, View convertView,
-                             ViewGroup parent ) {
-            return (View)getItem( position );
         }
     }
 }

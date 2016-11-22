@@ -123,7 +123,6 @@ public class BoardDelegate extends DelegateBase
     private JNIUtils m_jniu;
     private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
-    private int m_invitesPending;
     private boolean m_gameOver = false;
 
     // call startActivityForResult synchronously
@@ -659,7 +658,8 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
+    protected void onActivityResult( RequestCode requestCode, int resultCode,
+                                     Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             InviteMeans missingMeans = null;
@@ -2422,7 +2422,6 @@ public class BoardDelegate extends DelegateBase
         } else if ( null != m_missingDevs ) {
             Assert.assertNotNull( m_missingMeans );
             String gameName = GameUtils.getName( m_activity, m_rowid );
-            m_invitesPending = m_missingDevs.length;
             for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
                 String dev = m_missingDevs[ii];
                 int nPlayers = m_missingCounts[ii];
