@@ -19,15 +19,15 @@
 
 package org.eehouse.android.xw4;
 
-import android.widget.ArrayAdapter;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.content.Intent;
-import java.util.Map;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import java.util.Iterator;
-
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -59,6 +59,8 @@ public class WiDirInviteDelegate extends InviteDelegate
                                  m_nMissing, msg );
         msg += "\n\n" + getString( R.string.invite_p2p_desc_extra );
         super.init( R.id.button_invite, R.id.invite_desc, msg );
+        findViewById( R.id.button_rescan ).setVisibility( View.GONE );
+        findViewById( R.id.button_clear ).setVisibility( View.GONE );
     }
 
     @Override
