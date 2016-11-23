@@ -117,7 +117,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String SENDER = "SENDER";
     public static final String MESSAGE = "MESSAGE";
-    public static final String TAG = "TAG";
+    // TAG is a thing in Android; don't wear it out
+    public static final String TAGG = "TAG";
 
     private Context m_context;
 
@@ -224,7 +225,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String[][] s_logsSchema = {
         { TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" },
         { MESSAGE, "TEXT" },
-        { TAG, "TEXT" },
+        { TAGG, "TEXT" },
     };
 
     public DBHelper( Context context )
