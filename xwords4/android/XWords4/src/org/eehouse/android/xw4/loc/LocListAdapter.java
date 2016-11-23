@@ -28,6 +28,7 @@ import android.widget.ListView;
 import org.eehouse.android.xw4.XWListAdapter;
 
 public class LocListAdapter extends XWListAdapter {
+    private static final String TAG = LocListAdapter.class.getSimpleName();
 
     private Context m_context;
     private ListView m_listView;

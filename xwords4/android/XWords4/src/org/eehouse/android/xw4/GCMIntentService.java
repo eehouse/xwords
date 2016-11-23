@@ -30,6 +30,7 @@ import com.google.android.gcm.GCMRegistrar;
 import org.json.JSONArray;
 
 public class GCMIntentService extends GCMBaseIntentService {
+    private static final String TAG = GCMIntentService.class.getSimpleName();
 
     public GCMIntentService()
     {

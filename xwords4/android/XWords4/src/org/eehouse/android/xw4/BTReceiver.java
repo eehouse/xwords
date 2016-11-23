@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 
 public class BTReceiver extends BroadcastReceiver {
+    private static final String TAG = BTReceiver.class.getSimpleName();
 
     @Override
     public void onReceive( Context context, Intent intent )

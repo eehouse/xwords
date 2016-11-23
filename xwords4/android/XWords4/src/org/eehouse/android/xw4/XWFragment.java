@@ -153,7 +153,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     public void onActivityResult( int requestCode, int resultCode, Intent data )
     {
         DbgUtils.logd( getClass(), "onActivityResult() called" );
-        m_dlgt.onActivityResult( RequestCode.values()[requestCode], 
+        m_dlgt.onActivityResult( RequestCode.values()[requestCode],
                                  resultCode, data );
     }
 

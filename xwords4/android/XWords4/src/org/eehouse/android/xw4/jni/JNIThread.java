@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class JNIThread extends Thread {
+    private static final String TAG = JNIThread.class.getSimpleName();
 
     public enum JNICmd { CMD_NONE,
             // CMD_RUN,

@@ -34,6 +34,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
+    private static final String TAG = RefreshNamesTask.class.getSimpleName();
 
     public interface NoNameFound {
         public void NoNameFound();

@@ -30,6 +30,7 @@ import android.widget.TextView;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameNamer extends LinearLayout {
+    private static final String TAG = GameNamer.class.getSimpleName();
 
     private Context m_context;
 

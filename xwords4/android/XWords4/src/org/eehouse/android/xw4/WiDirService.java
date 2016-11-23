@@ -70,6 +70,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import junit.framework.Assert;
 
 public class WiDirService extends XWService {
+    private static final String TAG = WiDirService.class.getSimpleName();
     private static final Class CLAZZ = WiDirService.class;
     private static final String MAC_ADDR_KEY = "p2p_mac_addr";
     private static final String SERVICE_NAME = "srvc_" + BuildConstants.VARIANT;
@@ -298,7 +299,7 @@ public class WiDirService extends XWService {
         }
         return nSent;
     }
-    
+
     public static void activityResumed( Activity activity )
     {
         if ( WIFI_DIRECT_ENABLED ) {
@@ -854,7 +855,7 @@ public class WiDirService extends XWService {
             DbgUtils.loge( CLAZZ, "can't forward; not group owner (any more?)" );
         }
     }
-    
+
     private static void startAcceptThread()
     {
         sAmServer = true;

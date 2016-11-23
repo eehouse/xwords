@@ -37,6 +37,7 @@ import android.widget.ListView;
 import junit.framework.Assert;
 
 public class XWActivity extends FragmentActivity implements Delegator {
+    private static final String TAG = XWActivity.class.getSimpleName();
 
     private DelegateBase m_dlgt;
 

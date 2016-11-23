@@ -33,6 +33,7 @@ import java.util.UUID;
 import junit.framework.Assert;
 
 public class XWApp extends Application {
+    private static final String TAG = XWApp.class.getSimpleName();
 
     public static final boolean BTSUPPORTED = true;
     public static final boolean SMSSUPPORTED = true;

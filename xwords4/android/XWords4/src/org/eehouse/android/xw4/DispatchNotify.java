@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 public class DispatchNotify extends Activity {
+    private static final String TAG = DispatchNotify.class.getSimpleName();
 
     @Override
     protected void onCreate( Bundle savedInstanceState )

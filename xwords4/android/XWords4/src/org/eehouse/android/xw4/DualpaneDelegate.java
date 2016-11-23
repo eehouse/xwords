@@ -30,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 public class DualpaneDelegate extends DelegateBase {
+    private static final String TAG = DualpaneDelegate.class.getSimpleName();
     private Activity m_activity;
 
     public DualpaneDelegate( Delegator delegator, Bundle sis )
@@ -80,7 +81,7 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    protected void onCreateContextMenu( ContextMenu menu, View view, 
+    protected void onCreateContextMenu( ContextMenu menu, View view,
                                         ContextMenuInfo menuInfo )
     {
         MainActivity main = (MainActivity)m_activity;

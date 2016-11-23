@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class MultiMsgSink implements TransportProcs {
+    private static final String TAG = MultiMsgSink.class.getSimpleName();
     private long m_rowid;
     private Context m_context;
     // Use set to count so message sent over both BT and Relay is counted only

@@ -25,6 +25,7 @@ import android.os.Bundle;
 import org.eehouse.android.xw4.XWActivity;
 
 public class LocItemEditActivity extends XWActivity {
+    private static final String TAG = LocItemEditActivity.class.getSimpleName();
 
     private LocItemEditDelegate m_dlgt;
 

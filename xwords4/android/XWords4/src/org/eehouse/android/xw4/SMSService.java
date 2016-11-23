@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class SMSService extends XWService {
+    private static final String TAG = SMSService.class.getSimpleName();
 
     private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network

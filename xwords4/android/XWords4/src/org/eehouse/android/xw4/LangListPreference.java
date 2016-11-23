@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class LangListPreference extends XWListPreference {
+    private static final String TAG = LangListPreference.class.getSimpleName();
     private Context m_context;
 
     public LangListPreference( Context context, AttributeSet attrs )

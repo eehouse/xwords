@@ -33,6 +33,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class UtilCtxtImpl implements UtilCtxt {
+    private static final String TAG = UtilCtxtImpl.class.getSimpleName();
     private Context m_context;
 
     private UtilCtxtImpl() {}   // force subclasses to pass context

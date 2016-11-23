@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 public class NagTurnReceiver extends BroadcastReceiver {
+    private static final String TAG = NagTurnReceiver.class.getSimpleName();
 
     private static final long INTERVAL_MILLIS = 1000 * 30; // every half minute for now
     private static final long[] NAG_INTERVAL_SECONDS = {// 2*60, // two minutes (for testing)

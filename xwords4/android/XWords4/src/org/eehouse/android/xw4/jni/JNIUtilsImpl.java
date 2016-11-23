@@ -34,6 +34,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 
 public class JNIUtilsImpl implements JNIUtils {
+    private static final String TAG = JNIUtilsImpl.class.getSimpleName();
 
     private static final char SYNONYM_DELIM = ' ';
 

@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
+    private static final String TAG = BTInviteDelegate.class.getSimpleName();
 
     private Activity m_activity;
 

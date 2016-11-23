@@ -385,7 +385,7 @@ public class DictsDelegate extends ListDelegateBase
                             if ( fromLoc == toLoc ) {
                                 DbgUtils.logw( getClass(), "not moving %s: same loc", name );
                             } else if ( DictUtils.moveDict( self.m_activity,
-                                                            name, fromLoc, 
+                                                            name, fromLoc,
                                                             toLoc ) ) {
                                 selItem.setComment( self.m_locNames[toLoc.ordinal()] );
                                 selItem.setCached( toLoc );

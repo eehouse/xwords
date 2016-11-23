@@ -27,6 +27,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 
 public class XWSumListPreference extends XWListPreference {
+    private static final String TAG = XWSumListPreference.class.getSimpleName();
 
     private static final int[] s_ADDROWS = {
         R.string.game_summary_field_npackets,

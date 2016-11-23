@@ -51,6 +51,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 public class SMSInviteDelegate extends InviteDelegate {
+    private static final String TAG = SMSInviteDelegate.class.getSimpleName();
 
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";

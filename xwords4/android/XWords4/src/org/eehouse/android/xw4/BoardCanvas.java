@@ -43,6 +43,7 @@ import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class BoardCanvas extends Canvas implements DrawCtx {
+    private static final String TAG = BoardCanvas.class.getSimpleName();
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int FRAME_GREY = 0xFF101010;

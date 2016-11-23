@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class MountEventReceiver extends BroadcastReceiver {
+    private static final String TAG = MountEventReceiver.class.getSimpleName();
 
     public interface SDCardNotifiee {
         void cardMounted( boolean nowMounted );

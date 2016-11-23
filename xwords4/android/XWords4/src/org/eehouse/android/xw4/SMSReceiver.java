@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 
 public class SMSReceiver extends BroadcastReceiver {
+    private static final String TAG = SMSReceiver.class.getSimpleName();
 
     @Override
     public void onReceive( Context context, Intent intent )

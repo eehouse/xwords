@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWThumbListPreference extends XWListPreference {
+    private static final String TAG = XWThumbListPreference.class.getSimpleName();
     private Context m_context;
 
     public XWThumbListPreference( Context context, AttributeSet attrs )

@@ -43,6 +43,7 @@ import org.eehouse.android.xw4.jni.SyncedDraw;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class BoardView extends View implements BoardHandler, SyncedDraw {
+    private static final String TAG = BoardView.class.getSimpleName();
 
     private static final float MIN_FONT_DIPS = 10.0f;
     private static final int MULTI_INACTIVE = -1;

@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class RelayInviteDelegate extends InviteDelegate {
+    private static final String TAG = RelayInviteDelegate.class.getSimpleName();
 
     // private static final int GET_CONTACT = 1;
     private static final String SAVE_NAME = "SAVE_NAME";

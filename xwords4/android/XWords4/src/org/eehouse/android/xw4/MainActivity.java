@@ -237,7 +237,7 @@ public class MainActivity extends XWActivity
         return handled;
     }
 
-    protected void dispatchOnActivityResult( RequestCode requestCode, 
+    protected void dispatchOnActivityResult( RequestCode requestCode,
                                              int resultCode, Intent data )
     {
         XWFragment frag = getTopFragment();

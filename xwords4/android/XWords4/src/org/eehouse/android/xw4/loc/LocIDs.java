@@ -27,6 +27,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import java.util.HashMap;
 
 public class LocIDs extends LocIDsData {
+    private static final String TAG = LocIDs.class.getSimpleName();
     private static String[] s_keys;
     private static HashMap<String, Integer> S_MAP = null;
 

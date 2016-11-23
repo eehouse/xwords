@@ -2039,7 +2039,7 @@ public class BoardDelegate extends DelegateBase
             m_handler = new Handler();
             m_blockingDlgID = DlgID.NONE;
 
-            m_jniThreadRef.configure( m_activity, m_view, m_utils, this, 
+            m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
                                       makeJNIHandler() );
             m_jniGamePtr = m_jniThreadRef.getGamePtr();
             Assert.assertNotNull( m_jniGamePtr );

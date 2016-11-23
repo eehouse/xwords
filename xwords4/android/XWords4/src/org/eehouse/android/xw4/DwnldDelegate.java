@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DwnldDelegate extends ListDelegateBase {
+    private static final String TAG = DwnldDelegate.class.getSimpleName();
 
     // URIs coming in in intents
     private static final String APK_EXTRA = "APK";

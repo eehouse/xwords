@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class StudyListActivity extends XWActivity {
+    private static final String TAG = StudyListActivity.class.getSimpleName();
 
     @Override
     protected void onCreate( Bundle savedInstanceState )

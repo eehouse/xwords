@@ -39,6 +39,7 @@ import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Toolbar implements BoardContainer.SizeChangeListener {
+    private static final String TAG = Toolbar.class.getSimpleName();
     public enum Buttons {
         BUTTON_BROWSE_DICT(R.id.dictlist_button),
         BUTTON_HINT_PREV(R.id.prevhint_button),

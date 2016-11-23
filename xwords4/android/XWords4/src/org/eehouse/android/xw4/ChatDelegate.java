@@ -43,6 +43,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.JNIThread;
 
 public class ChatDelegate extends DelegateBase {
+    private static final String TAG = ChatDelegate.class.getSimpleName();
 
     private static final String INTENT_KEY_PLAYER = "intent_key_player";
     private static final String INTENT_KEY_NAMES = "intent_key_names";

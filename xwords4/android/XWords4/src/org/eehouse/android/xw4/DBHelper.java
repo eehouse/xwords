@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class DBHelper extends SQLiteOpenHelper {
+    private static final String TAG = DBHelper.class.getSimpleName();
 
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";

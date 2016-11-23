@@ -39,6 +39,7 @@ import java.io.File;
 import java.net.HttpURLConnection;
 
 public class UpdateCheckReceiver extends BroadcastReceiver {
+    private static final String TAG = UpdateCheckReceiver.class.getSimpleName();
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
