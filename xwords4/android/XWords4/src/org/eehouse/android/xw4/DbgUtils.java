@@ -54,7 +54,8 @@ public class DbgUtils {
         logEnable( on );
     }
 
-    private static void callLog( LogType lt, Class claz, String fmt, Object... args )
+    private static void callLog( LogType lt, Class claz, String fmt,
+                                 Object... args )
     {
         if ( s_doLog ) {
             String tag = claz.getSimpleName();
@@ -67,9 +68,18 @@ public class DbgUtils {
         }
     }
 
+    public static void logd( String tag, String fmt, Object... args ) {
+        Assert.fail();
+    }
+
     public static void logd( Class claz, String fmt, Object... args )
     {
         callLog( LogType.DEBUG, claz, fmt, args );
+    }
+
+    public static void loge( String tag, String fmt, Object... args )
+    {
+        Assert.fail();
     }
 
     public static void loge( Class claz, String fmt, Object... args )
@@ -77,14 +87,29 @@ public class DbgUtils {
         callLog( LogType.ERROR, claz, fmt, args );
     }
 
+    public static void logi( String tag, String fmt, Object... args )
+    {
+        Assert.fail();
+    }
+
     public static void logi( Class claz, String fmt, Object... args )
     {
         logi( claz, true, fmt, args );
     }
 
+    public static void logi( String tag, boolean persist, String fmt, Object... args )
+    {
+        Assert.fail();
+    }
+
     public static void logi( Class claz, boolean persist, String fmt, Object... args )
     {
         callLog( LogType.INFO, claz, fmt, args );
+    }
+
+    public static void logw( String tag, String fmt, Object... args )
+    {
+        Assert.fail();
     }
 
     public static void logw( Class claz, String fmt, Object... args )
