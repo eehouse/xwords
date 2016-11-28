@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 public class NetLaunchInfo {
+    private static final String TAG = NetLaunchInfo.class.getSimpleName();
     private static final String ADDRS_KEY = "ad";
     private static final String PHONE_KEY = "phn";
     private static final String GSM_KEY = "gsm";
@@ -206,7 +207,7 @@ public class NetLaunchInfo {
                 }
                 calcValid();
             } catch ( Exception e ) {
-                DbgUtils.loge( getClass(), "unable to parse \"%s\"", data.toString() );
+                DbgUtils.loge( TAG, "unable to parse \"%s\"", data.toString() );
             }
         }
         calcValid();
@@ -287,7 +288,7 @@ public class NetLaunchInfo {
         int result = gameID;
         if ( 0 == result ) {
             Assert.assertNotNull( inviteID );
-            DbgUtils.logi( getClass(), "gameID(): looking at inviteID: %s", inviteID );
+            DbgUtils.logi( TAG, "gameID(): looking at inviteID: %s", inviteID );
             result = Integer.parseInt( inviteID, 16 );
             // DbgUtils.logf( "gameID(): gameID -1 so substituting %d", result );
             gameID = result;
@@ -493,7 +494,7 @@ public class NetLaunchInfo {
         Uri result = ub.build();
 
         if ( BuildConfig.DEBUG ) { // Test...
-            DbgUtils.logi( getClass(), "testing %s...", result.toString() );
+            DbgUtils.logi( TAG, "testing %s...", result.toString() );
             NetLaunchInfo instance = new NetLaunchInfo( context, result );
             Assert.assertTrue( instance.isValid() );
         }
@@ -516,7 +517,7 @@ public class NetLaunchInfo {
             btAddress = got[1];
             m_addrs.add( CommsConnType.COMMS_CONN_BT );
         } else {
-            DbgUtils.logw( getClass(), "addBTInfo(): no BT info available" );
+            DbgUtils.logw( TAG, "addBTInfo(): no BT info available" );
         }
     }
 

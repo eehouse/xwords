@@ -65,6 +65,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LocUtils {
+    private static final String TAG = LocUtils.class.getSimpleName();
     public static final String CONTEXT_NAME = "CONTEXT_NAME";
     protected static final String RES_FORMAT = "%[\\d]\\$[ds]";
     private static final int FMT_LEN = 4;
@@ -306,7 +307,7 @@ public class LocUtils {
                                             int quantity )
     {
         if ( XWApp.LOCUTILS_ENABLED ) {
-            DbgUtils.logw( LocUtils.class, "getQuantityString(%d): punting on locutils stuff for"
+            DbgUtils.logw( TAG, "getQuantityString(%d): punting on locutils stuff for"
                            + " now. FIXME", quantity );
         }
         String result = context.getResources().getQuantityString( id, quantity );
@@ -317,7 +318,7 @@ public class LocUtils {
                                             int quantity, Object... params )
     {
         if ( XWApp.LOCUTILS_ENABLED ) {
-            DbgUtils.logw( LocUtils.class, "getQuantityString(%d): punting on locutils stuff for"
+            DbgUtils.logw( TAG, "getQuantityString(%d): punting on locutils stuff for"
                            + " now. FIXME", quantity );
         }
         String result = context.getResources()
@@ -439,7 +440,7 @@ public class LocUtils {
                     String locale = entry.getString( k_LOCALE );
                     String newVersion = entry.getString( k_NEW );
                     JSONArray pairs = entry.getJSONArray( k_PAIRS );
-                    DbgUtils.logi( LocUtils.class, "addXlations: locale %s: got pairs of len %d,"
+                    DbgUtils.logi( TAG, "addXlations: locale %s: got pairs of len %d,"
                                    + " version %s", locale,
                                    pairs.length(), newVersion );
 
@@ -598,7 +599,7 @@ public class LocUtils {
                 DBUtils.getXlations( context, getCurLocale( context ) );
             s_xlationsLocal = (Map<String,String>)asObjs[0];
             s_xlationsBlessed = (Map<String,String>)asObjs[1];
-            DbgUtils.logi( LocUtils.class, "loadXlations: got %d local strings, %d blessed strings",
+            DbgUtils.logi( TAG, "loadXlations: got %d local strings, %d blessed strings",
                            s_xlationsLocal.size(),
                            s_xlationsBlessed.size() );
         }
@@ -761,7 +762,7 @@ public class LocUtils {
         String locale = getCurLocale( context );
         String msg = String.format( "Dropping bad translations for %s", locale );
         Utils.showToast( context, msg );
-        DbgUtils.logw( LocUtils.class, msg );
+        DbgUtils.logw( TAG, msg );
 
         DBUtils.dropXLations( context, locale );
         DBUtils.setStringFor( context, localeKey(locale), "" );

@@ -35,7 +35,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import java.util.Formatter;
 
 public class DbgUtils {
-    private static final String TAG = BuildConstants.DBG_TAG;
+    private static final String TAG = DbgUtils.class.getSimpleName();
     private static boolean s_doLog = BuildConfig.DEBUG;
 
     private enum LogType { ERROR, WARN, DEBUG, INFO };
@@ -54,11 +54,10 @@ public class DbgUtils {
         logEnable( on );
     }
 
-    private static void callLog( LogType lt, Class claz, String fmt,
+    private static void callLog( LogType lt, String tag, String fmt,
                                  Object... args )
     {
         if ( s_doLog ) {
-            String tag = claz.getSimpleName();
             String msg = new Formatter().format( fmt, args ).toString();
             switch( lt ) {
             case DEBUG:
@@ -69,52 +68,28 @@ public class DbgUtils {
     }
 
     public static void logd( String tag, String fmt, Object... args ) {
-        Assert.fail();
-    }
-
-    public static void logd( Class claz, String fmt, Object... args )
-    {
-        callLog( LogType.DEBUG, claz, fmt, args );
+        callLog( LogType.DEBUG, tag, fmt, args );
     }
 
     public static void loge( String tag, String fmt, Object... args )
     {
-        Assert.fail();
-    }
-
-    public static void loge( Class claz, String fmt, Object... args )
-    {
-        callLog( LogType.ERROR, claz, fmt, args );
+        callLog( LogType.ERROR, tag, fmt, args );
     }
 
     public static void logi( String tag, String fmt, Object... args )
     {
-        Assert.fail();
+        logi( tag, true, fmt, args );
     }
 
-    public static void logi( Class claz, String fmt, Object... args )
+    public static void logi( String tag, boolean persist, String fmt,
+                             Object... args )
     {
-        logi( claz, true, fmt, args );
-    }
-
-    public static void logi( String tag, boolean persist, String fmt, Object... args )
-    {
-        Assert.fail();
-    }
-
-    public static void logi( Class claz, boolean persist, String fmt, Object... args )
-    {
-        callLog( LogType.INFO, claz, fmt, args );
+        callLog( LogType.INFO, tag, fmt, args );
     }
 
     public static void logw( String tag, String fmt, Object... args )
     {
-        Assert.fail();
-    }
-
-    public static void logw( Class claz, String fmt, Object... args )
-    {
-        callLog( LogType.WARN, claz, fmt, args );
+        callLog( LogType.WARN, tag, fmt, args );
     }
 
     public static void showf( String format, Object... args )
@@ -136,7 +111,7 @@ public class DbgUtils {
 
     public static void logex( Exception exception )
     {
-        logw( DbgUtils.class, "Exception: %s", exception.toString() );
+        logw( TAG, "Exception: %s", exception.toString() );
         printStack( exception.getStackTrace() );
     }
 
@@ -150,7 +125,7 @@ public class DbgUtils {
         if ( s_doLog && null != trace ) {
             // 1: skip printStack etc.
             for ( int ii = 1; ii < trace.length; ++ii ) {
-                DbgUtils.logd( DbgUtils.class, "ste %d: %s", ii, trace[ii].toString() );
+                DbgUtils.logd( TAG, "ste %d: %s", ii, trace[ii].toString() );
             }
         }
     }
@@ -182,7 +157,7 @@ public class DbgUtils {
     {
         if ( s_doLog ) {
             String dump = DatabaseUtils.dumpCursorToString( cursor );
-            logi( DbgUtils.class, "cursor: %s", dump );
+            logi( TAG, "cursor: %s", dump );
         }
     }
 

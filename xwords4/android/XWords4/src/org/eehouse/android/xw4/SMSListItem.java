@@ -67,4 +67,3 @@ public class SMSListItem extends LinearLayout  {
         return cb.isChecked();
     }
 }
-

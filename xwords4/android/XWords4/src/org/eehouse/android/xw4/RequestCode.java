@@ -44,4 +44,3 @@ public enum RequestCode {
     // SMSInviteDelegate
     GET_CONTACT,
 }
-

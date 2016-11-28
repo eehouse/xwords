@@ -177,7 +177,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
-                DbgUtils.logd( UpdateCheckReceiver.class, "current update: %s",
+                DbgUtils.logd( TAG, "current update: %s",
                                params.toString() );
                 new UpdateQueryTask( context, params, fromUI, pm,
                                      packageName, dals ).execute();
@@ -366,8 +366,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.logex( jse );
-                DbgUtils.logw( getClass(), "sent: \"%s\"", params.toString() );
-                DbgUtils.logw( getClass(), "received: \"%s\"", jstr );
+                DbgUtils.logw( TAG, "sent: \"%s\"", params.toString() );
+                DbgUtils.logw( TAG, "received: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.logex( nnfe );
             }

@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 class XWService extends Service {
+    private static final String TAG = XWService.class.getSimpleName();
     public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
 
     protected static MultiService s_srcMgr = null;
@@ -64,7 +65,7 @@ class XWService extends Service {
         if ( null != s_srcMgr ) {
             s_srcMgr.sendResult( event, args );
         } else {
-            DbgUtils.logd( getClass(), "sendResult(): dropping %s event", event.toString() );
+            DbgUtils.logd( TAG, "sendResult(): dropping %s event", event.toString() );
         }
     }
 
@@ -80,7 +81,7 @@ class XWService extends Service {
                 s_seen.add( inviteID );
             }
         }
-        DbgUtils.logd( getClass(), "checkNotDupe(%s) => %b", inviteID, !isDupe );
+        DbgUtils.logd( TAG, "checkNotDupe(%s) => %b", inviteID, !isDupe );
         return !isDupe;
     }
 

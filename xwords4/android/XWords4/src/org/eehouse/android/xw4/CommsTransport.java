@@ -43,6 +43,7 @@ import java.util.Vector;
 
 public class CommsTransport implements TransportProcs,
                                        NetStateCache.StateChangedIf {
+    private static final String TAG = CommsTransport.class.getSimpleName();
     private Selector m_selector;
     private SocketChannel m_socketChannel;
     private CommsAddrRec m_relayAddr;
@@ -96,7 +97,7 @@ public class CommsTransport implements TransportProcs,
                 } catch ( java.io.IOException ioe ) {
                     DbgUtils.logex( ioe );
                 } catch ( UnresolvedAddressException uae ) {
-                    DbgUtils.logw( getClass(), "bad address: name: %s; port: %s; exception: %s",
+                    DbgUtils.logw( TAG, "bad address: name: %s; port: %s; exception: %s",
                                    m_useHost, m_relayAddr.ip_relay_port,
                                    uae.toString() );
                 }
@@ -124,7 +125,7 @@ public class CommsTransport implements TransportProcs,
                                 try {
                                     m_socketChannel = SocketChannel.open();
                                     m_socketChannel.configureBlocking( false );
-                                    DbgUtils.logi( getClass(), "connecting to %s:%d",
+                                    DbgUtils.logi( TAG, "connecting to %s:%d",
                                                    m_useHost,
                                                    m_relayAddr.ip_relay_port );
                                     InetSocketAddress isa = new
@@ -149,12 +150,12 @@ public class CommsTransport implements TransportProcs,
                         // we get this when relay goes down.  Need to notify!
                         failed = true;
                         closeSocket();
-                        DbgUtils.logw( getClass(), "exiting: %s", cce.toString() );
+                        DbgUtils.logw( TAG, "exiting: %s", cce.toString() );
                         break;          // don't try again
                     } catch ( java.io.IOException ioe ) {
                         closeSocket();
-                        DbgUtils.logw( getClass(), "exiting: %s", ioe.toString() );
-                        DbgUtils.logw( getClass(), ioe.toString() );
+                        DbgUtils.logw( TAG, "exiting: %s", ioe.toString() );
+                        DbgUtils.logw( TAG, ioe.toString() );
                     } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
                         DbgUtils.logex( ncp );
                         closeSocket();
@@ -198,7 +199,7 @@ public class CommsTransport implements TransportProcs,
                                 }
                             }
                         } catch ( java.io.IOException ioe ) {
-                            DbgUtils.logw( getClass(), "%s: cancelling key", ioe.toString() );
+                            DbgUtils.logw( TAG, "%s: cancelling key", ioe.toString() );
                             key.cancel();
                             failed = true;
                             break outer_loop;
@@ -260,7 +261,7 @@ public class CommsTransport implements TransportProcs,
             try {
                 m_socketChannel.close();
             } catch ( Exception e ) {
-                DbgUtils.logw( getClass(), "closing socket: %s", e.toString() );
+                DbgUtils.logw( TAG, "closing socket: %s", e.toString() );
             }
             m_socketChannel = null;
         }
@@ -355,7 +356,7 @@ public class CommsTransport implements TransportProcs,
     public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                               CommsConnType conType, int gameID )
     {
-        DbgUtils.logd( getClass(), "transportSend(len=%d, typ=%s)",
+        DbgUtils.logd( TAG, "transportSend(len=%d, typ=%s)",
                        buf.length, conType.toString() );
         int nSent = -1;
         Assert.assertNotNull( addr );
@@ -384,13 +385,13 @@ public class CommsTransport implements TransportProcs,
         // Keep this while debugging why the resend_all that gets
         // fired on reconnect doesn't unstall a game but a manual
         // resend does.
-        DbgUtils.logd( getClass(), "transportSend(%d)=>%d", buf.length, nSent );
+        DbgUtils.logd( TAG, "transportSend(%d)=>%d", buf.length, nSent );
         return nSent;
     }
 
     public void relayStatus( CommsRelayState newState )
     {
-        DbgUtils.logi( getClass(), "relayStatus called; state=%s", newState.toString() );
+        DbgUtils.logi( TAG, "relayStatus called; state=%s", newState.toString() );
 
         switch( newState ) {
         case COMMS_RELAYSTATE_UNCONNECTED:

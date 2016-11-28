@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class ConnStatusHandler {
+    private static final String TAG = ConnStatusHandler.class.getSimpleName();
 
     public interface ConnStatusCBacks {
         public void invalidateParent();
@@ -544,7 +545,7 @@ public class ConnStatusHandler {
             result = WiDirService.connecting();
             break;
         default:
-            DbgUtils.logw( ConnStatusHandler.class, "connTypeEnabled: %s not handled",
+            DbgUtils.logw( TAG, "connTypeEnabled: %s not handled",
                            connType.toString() );
             break;
         }

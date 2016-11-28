@@ -38,6 +38,7 @@ import org.eehouse.android.xw4.R;
 public class LocDelegate extends ListDelegateBase
     implements View.OnClickListener,
                OnItemSelectedListener {
+    private static final String TAG = LocDelegate.class.getSimpleName();
 
     private Activity m_activity;
     private LocListAdapter m_adapter;
@@ -80,7 +81,7 @@ public class LocDelegate extends ListDelegateBase
     protected void onWindowFocusChanged( boolean hasFocus )
     {
         if ( hasFocus && null != m_lastItem ) {
-            DbgUtils.logi( getClass(), "updating LocListItem instance %H", m_lastItem );
+            DbgUtils.logi( TAG, "updating LocListItem instance %H", m_lastItem );
             m_lastItem.update();
             m_lastItem = null;
         }

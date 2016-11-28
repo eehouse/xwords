@@ -181,7 +181,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         DbgUtils.assertOnUIThread();
         if ( null == jniThread ) {
         } else if ( ! jniThread.equals( m_jniThread ) ) {
-            DbgUtils.logw( getClass(), "changing threads" );
+            DbgUtils.logw( TAG, "changing threads" );
         }
         m_jniThread = jniThread;
     }

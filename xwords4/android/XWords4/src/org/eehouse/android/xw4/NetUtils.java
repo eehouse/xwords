@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.net.SocketFactory;
 
 public class NetUtils {
+    private static final String TAG = NetUtils.class.getSimpleName();
 
     public static final String k_PARAMS = "params";
     public static final byte PROTOCOL_VERSION = 0;
@@ -192,7 +193,7 @@ public class NetUtils {
                 }
                 if ( 0 != dis.available() ) {
                     msgs = null;
-                    DbgUtils.loge( NetUtils.class, "format error: bytes left over in stream" );
+                    DbgUtils.loge( TAG, "format error: bytes left over in stream" );
                 }
                 socket.close();
             }
@@ -272,7 +273,7 @@ public class NetUtils {
                     }
                     result = new String( bas.toByteArray() );
                 } else {
-                    DbgUtils.logw( NetUtils.class, "runConn: responseCode: %d", responseCode );
+                    DbgUtils.logw( TAG, "runConn: responseCode: %d", responseCode );
                 }
             } catch ( java.net.ProtocolException pe ) {
                 DbgUtils.logex( pe );

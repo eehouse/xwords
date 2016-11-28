@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NetStateCache {
+    private static final String TAG = NetStateCache.class.getSimpleName();
     private static final long WAIT_STABLE_MILLIS = 2 * 1000;
 
     public interface StateChangedIf {
@@ -83,7 +84,7 @@ public class NetStateCache {
 
                 boolean netAvail = getIsConnected( context );
                 if ( netAvail ) {
-                    DbgUtils.logi( NetStateCache.class, "netAvail(): second-guessing successful!!!" );
+                    DbgUtils.logi( TAG, "netAvail(): second-guessing successful!!!" );
                     s_netAvail = true;
                     if ( null != s_receiver ) {
                         s_receiver.notifyStateChanged( context );
@@ -93,7 +94,7 @@ public class NetStateCache {
         }
 
         boolean result = s_netAvail || s_onSDKSim;
-        DbgUtils.logd( NetStateCache.class, "netAvail() => %b", result );
+        DbgUtils.logd( TAG, "netAvail() => %b", result );
         return result;
     }
 
@@ -123,7 +124,7 @@ public class NetStateCache {
         if ( null != ni && ni.isConnectedOrConnecting() ) {
             result = true;
         }
-        DbgUtils.logi( NetStateCache.class, "NetStateCache.getConnected() => %b", result );
+        DbgUtils.logi( TAG, "NetStateCache.getConnected() => %b", result );
         return result;
     }
 
@@ -164,7 +165,7 @@ public class NetStateCache {
             boolean connectedReal = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
             if ( connectedReal != connectedCached ) {
-                DbgUtils.logw( NetStateCache.class, "connected: cached: %b; actual: %b",
+                DbgUtils.logw( TAG, "connected: cached: %b; actual: %b",
                                connectedCached, connectedReal );
             }
         }
@@ -193,7 +194,7 @@ public class NetStateCache {
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
-                DbgUtils.logd( getClass(), "onReceive(state=%s)", state.toString() );
+                DbgUtils.logd( TAG, "onReceive(state=%s)", state.toString() );
 
                 boolean netAvail;
                 switch ( state ) {
@@ -214,7 +215,7 @@ public class NetStateCache {
                     s_netAvail = netAvail; // keep current in case we're asked
                     notifyStateChanged( context );
                 } else {
-                    DbgUtils.logd( getClass(), "onReceive: no change; "
+                    DbgUtils.logd( TAG, "onReceive: no change; "
                                    + "doing nothing; s_netAvail=%b", s_netAvail );
                 }
             }
@@ -239,7 +240,7 @@ public class NetStateCache {
                             Assert.assertTrue( mLastStateSent != s_netAvail );
                             mLastStateSent = s_netAvail;
 
-                            DbgUtils.logi( getClass(), "notifyStateChanged(%b)",
+                            DbgUtils.logi( TAG, "notifyStateChanged(%b)",
                                            s_netAvail );
 
                             synchronized( s_ifs ) {

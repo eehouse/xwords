@@ -69,7 +69,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
     protected String[] doInBackground( Void...unused )
     {
         ArrayList<String> names = new ArrayList<String>();
-        DbgUtils.logi( getClass(), "doInBackground()" );
+        DbgUtils.logi( TAG, "doInBackground()" );
 
         try {
             Socket socket = NetUtils.makeProxySocket( m_context, 15000 );
@@ -89,7 +89,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
                     new DataInputStream(socket.getInputStream());
                 short len = dis.readShort();
                 short nRooms = dis.readShort();
-                DbgUtils.logi( getClass(), "doInBackground(): got %d rooms", nRooms );
+                DbgUtils.logi( TAG, "doInBackground(): got %d rooms", nRooms );
 
                 // Can't figure out how to read a null-terminated string
                 // from DataInputStream so parse it myself.
@@ -103,7 +103,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
                         ++index;
                     }
                     String name = new String( bytes, lastIndex, index - lastIndex );
-                    DbgUtils.logi( getClass(), "got public room name: %s", name );
+                    DbgUtils.logi( TAG, "got public room name: %s", name );
                     int indx = name.lastIndexOf( "/" );
                     indx = name.lastIndexOf( "/", indx-1 );
                     names.add( name.substring(0, indx ) );
@@ -112,7 +112,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
         } catch ( java.io.IOException ioe ) {
             DbgUtils.logex( ioe );
         }
-        DbgUtils.logi( getClass(), "doInBackground() returning" );
+        DbgUtils.logi( TAG, "doInBackground() returning" );
         return names.toArray( new String[names.size()] );
     }
 
@@ -123,7 +123,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
     @Override
      protected void onPostExecute( String[] result )
      {
-         DbgUtils.logi( getClass(), "onPostExecute()" );
+         DbgUtils.logi( TAG, "onPostExecute()" );
          ArrayAdapter<String> adapter =
              new ArrayAdapter<String>( m_context,
                                        android.R.layout.simple_spinner_item,
@@ -138,6 +138,6 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
              m_nnf.NoNameFound();
          }
 
-         DbgUtils.logi( getClass(), "onPostExecute() done" );
+         DbgUtils.logi( TAG, "onPostExecute() done" );
      }
 }

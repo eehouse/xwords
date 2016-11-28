@@ -198,7 +198,7 @@ public class SMSService extends XWService {
         Intent intent = getIntentTo( context, SMSAction.INVITE );
         intent.putExtra( PHONE, phone );
         String asString = nli.toString();
-        DbgUtils.logw( SMSService.class, "inviteRemote(%s, '%s')", phone, asString );
+        DbgUtils.logw( TAG, "inviteRemote(%s, '%s')", phone, asString );
         intent.putExtra( GAMEDATA_STR, asString );
         context.startService( intent );
     }
@@ -215,7 +215,7 @@ public class SMSService extends XWService {
             context.startService( intent );
             nSent = binmsg.length;
         } else {
-            DbgUtils.logi( SMSService.class, "sendPacket: dropping because SMS disabled" );
+            DbgUtils.logi( TAG, "sendPacket: dropping because SMS disabled" );
         }
         return nSent;
     }
@@ -252,7 +252,7 @@ public class SMSService extends XWService {
                 if ( hashRead == hashCode ) {
                     result = tmp;
                 } else {
-                    DbgUtils.logw( SMSService.class, "fromPublicFmt: hash code mismatch" );
+                    DbgUtils.logw( TAG, "fromPublicFmt: hash code mismatch" );
                 }
             } catch( Exception e ) {
             }
@@ -376,7 +376,7 @@ public class SMSService extends XWService {
 
     private void inviteRemote( String phone, String nliData )
     {
-        DbgUtils.logi( getClass(), "inviteRemote()" );
+        DbgUtils.logi( TAG, "inviteRemote()" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream dos = new DataOutputStream( bas );
         try {
@@ -483,7 +483,7 @@ public class SMSService extends XWService {
                 start = end;
             }
         } else {
-            DbgUtils.logw( getClass(), "breakAndEncode(): msg count %d too large; dropping",
+            DbgUtils.logw( TAG, "breakAndEncode(): msg count %d too large; dropping",
                            count );
         }
         return result;
@@ -491,7 +491,7 @@ public class SMSService extends XWService {
 
     private void receive( SMS_CMD cmd, byte[] data, String phone )
     {
-        DbgUtils.logi( getClass(), "receive(cmd=%s)", cmd.toString() );
+        DbgUtils.logi( TAG, "receive(cmd=%s)", cmd.toString() );
         DataInputStream dis =
             new DataInputStream( new ByteArrayInputStream(data) );
         try {
@@ -510,7 +510,7 @@ public class SMSService extends XWService {
                                                                   nli.gameID() );
                     }
                 } else {
-                    DbgUtils.logw( getClass(), "invalid nli from: %s", nliData );
+                    DbgUtils.logw( TAG, "invalid nli from: %s", nliData );
                 }
                 break;
             case DATA:
@@ -529,7 +529,7 @@ public class SMSService extends XWService {
                                      gameID );
                 break;
             default:
-                DbgUtils.logw( getClass(), "unexpected cmd %s", cmd.toString() );
+                DbgUtils.logw( TAG, "unexpected cmd %s", cmd.toString() );
                 break;
             }
         } catch ( java.io.IOException ioe ) {
@@ -548,7 +548,7 @@ public class SMSService extends XWService {
         if ( tryAssemble( senderPhone, id, index, count, rest ) ) {
             sendResult( MultiEvent.SMS_RECEIVE_OK );
         } else {
-            DbgUtils.logw( getClass(), "SMSService: receiveBuffer(): bogus message from"
+            DbgUtils.logw( TAG, "SMSService: receiveBuffer(): bogus message from"
                            + " phone %s", senderPhone );
         }
     }
@@ -600,11 +600,11 @@ public class SMSService extends XWService {
                 gotPort = dis.readShort();
             }
             if ( SMS_PROTO_VERSION < proto ) {
-                DbgUtils.logw( getClass(), "SMSService.disAssemble: bad proto %d from %s;"
+                DbgUtils.logw( TAG, "SMSService.disAssemble: bad proto %d from %s;"
                                + " dropping", proto, senderPhone );
                 sendResult( MultiEvent.BAD_PROTO_SMS, senderPhone );
             } else if ( gotPort != myPort ) {
-                DbgUtils.logd( getClass(), "disAssemble(): received on port %d"
+                DbgUtils.logd( TAG, "disAssemble(): received on port %d"
                                + " but expected %d", gotPort, myPort );
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
@@ -617,7 +617,7 @@ public class SMSService extends XWService {
             DbgUtils.logex( ioe );
         } catch ( ArrayIndexOutOfBoundsException oob ) {
             // enum this older code doesn't know about; drop it
-            DbgUtils.logw( getClass(), "disAssemble: dropping message with too-new enum" );
+            DbgUtils.logw( TAG, "disAssemble: dropping message with too-new enum" );
         }
         return success;
     }
@@ -670,12 +670,12 @@ public class SMSService extends XWService {
                     for ( byte[] fragment : fragments ) {
                         mgr.sendDataMessage( phone, null, nbsPort, fragment, sent,
                                              delivery );
-                        DbgUtils.logi( getClass(), "sendBuffers(): sent %d byte fragment",
+                        DbgUtils.logi( TAG, "sendBuffers(): sent %d byte fragment",
                                        fragment.length );
                     }
                     success = true;
                 } catch ( IllegalArgumentException iae ) {
-                    DbgUtils.logw( getClass(), "sendBuffers(%s): %s", phone, iae.toString() );
+                    DbgUtils.logw( TAG, "sendBuffers(%s): %s", phone, iae.toString() );
                 } catch ( NullPointerException npe ) {
                     Assert.fail();      // shouldn't be trying to do this!!!
                 } catch ( Exception ee ) {
@@ -683,7 +683,7 @@ public class SMSService extends XWService {
                 }
             }
         } else {
-            DbgUtils.logi( getClass(), "dropping because SMS disabled" );
+            DbgUtils.logi( TAG, "dropping because SMS disabled" );
         }
 
         if ( showToasts( this ) && success && (0 == (s_nSent % 5)) ) {
@@ -721,7 +721,7 @@ public class SMSService extends XWService {
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
                         DbgUtils.showf( SMSService.this, "NO SERVICE!!!" );
                     default:
-                        DbgUtils.logw( getClass(), "FAILURE!!!" );
+                        DbgUtils.logw( TAG, "FAILURE!!!" );
                         sendResult( MultiEvent.SMS_SEND_FAILED );
                         break;
                     }
@@ -734,7 +734,7 @@ public class SMSService extends XWService {
                 public void onReceive( Context context, Intent intent )
                 {
                     if ( Activity.RESULT_OK != getResultCode() ) {
-                        DbgUtils.logw( getClass(), "SMS delivery result: FAILURE" );
+                        DbgUtils.logw( TAG, "SMS delivery result: FAILURE" );
                     }
                 }
             };
@@ -754,7 +754,7 @@ public class SMSService extends XWService {
                 }
             }
         }
-        DbgUtils.logi( SMSService.class, "matchKeyIf(%s) => %s", phone, result );
+        DbgUtils.logi( TAG, "matchKeyIf(%s) => %s", phone, result );
         return result;
     }
 

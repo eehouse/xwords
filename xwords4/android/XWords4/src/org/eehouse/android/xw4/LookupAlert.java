@@ -46,6 +46,7 @@ import java.util.ArrayList;
 public class LookupAlert extends LinearLayout
     implements View.OnClickListener, Dialog.OnKeyListener,
                AdapterView.OnItemClickListener {
+    private static final String TAG = LookupAlert.class.getSimpleName();
 
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
@@ -277,7 +278,7 @@ public class LookupAlert extends LinearLayout
     private static void lookupWord( Context context, String word, String fmt )
     {
         if ( false ) {
-            DbgUtils.logw( LookupAlert.class, "skipping lookupWord(%s)", word );
+            DbgUtils.logw( TAG, "skipping lookupWord(%s)", word );
         } else {
             String langCode = s_langCodes[s_lang];
             String dict_url = String.format( fmt, langCode, word );

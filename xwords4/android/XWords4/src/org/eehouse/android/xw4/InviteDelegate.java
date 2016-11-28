@@ -46,6 +46,7 @@ import junit.framework.Assert;
 abstract class InviteDelegate extends ListDelegateBase
     implements View.OnClickListener,
                ViewGroup.OnHierarchyChangeListener {
+    private static final String TAG = InviteDelegate.class.getSimpleName();
 
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
@@ -180,7 +181,7 @@ abstract class InviteDelegate extends ListDelegateBase
                 counts[ii] = m_counts.get( addr );
             }
         }
-        DbgUtils.logd( getClass(), "listSelected() adding %s",
+        DbgUtils.logd( TAG, "listSelected() adding %s",
                        checked.toString() );
         devsP[0] = checked;
     }
@@ -214,7 +215,7 @@ abstract class InviteDelegate extends ListDelegateBase
 
     protected void onItemChecked( int index, boolean checked )
     {
-        DbgUtils.logd( getClass(), "onItemChecked(%d, %b)", index, checked );
+        DbgUtils.logd( TAG, "onItemChecked(%d, %b)", index, checked );
         if ( checked ) {
             m_checked.add( index );
         } else {

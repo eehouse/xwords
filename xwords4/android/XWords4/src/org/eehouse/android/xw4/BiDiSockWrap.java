@@ -30,6 +30,7 @@ import org.json.JSONObject;
 import junit.framework.Assert;
 
 public class BiDiSockWrap {
+    private static final String TAG = BiDiSockWrap.class.getSimpleName();
     interface Iface {
         void gotPacket( BiDiSockWrap wrap, byte[] bytes );
         void onWriteSuccess( BiDiSockWrap wrap );
@@ -71,9 +72,9 @@ public class BiDiSockWrap {
                     while ( mActive ) {
                         try {
                             Thread.sleep( waitMillis );
-                            DbgUtils.logd( getClass(), "trying to connect..." );
+                            DbgUtils.logd( TAG, "trying to connect..." );
                             Socket socket = new Socket( mAddress, mPort );
-                            DbgUtils.logd( getClass(), "connected!!!" );
+                            DbgUtils.logd( TAG, "connected!!!" );
                             init( socket );
                             mIface.connectStateChanged( BiDiSockWrap.this, true );
                             break;
@@ -142,13 +143,13 @@ public class BiDiSockWrap {
         mWriteThread = new Thread( new Runnable() {
                 @Override
                 public void run() {
-                    DbgUtils.logd( getClass(), "write thread starting" );
+                    DbgUtils.logd( TAG, "write thread starting" );
                     try {
                         DataOutputStream outStream
                             = new DataOutputStream( mSocket.getOutputStream() );
                         while ( mRunThreads ) {
                             byte[] packet = mQueue.take();
-                            DbgUtils.logd( BiDiSockWrap.class,
+                            DbgUtils.logd( TAG,
                                            "write thread got packet of len %d",
                                            packet.length );
                             Assert.assertNotNull( packet );
@@ -167,7 +168,7 @@ public class BiDiSockWrap {
                     } catch ( InterruptedException ie ) {
                         Assert.fail();
                     }
-                    DbgUtils.logd( getClass(), "write thread exiting" );
+                    DbgUtils.logd( TAG, "write thread exiting" );
                 }
             } );
         mWriteThread.start();
@@ -175,13 +176,13 @@ public class BiDiSockWrap {
         mReadThread = new Thread( new Runnable() {
                 @Override
                 public void run() {
-                    DbgUtils.logd( getClass(), "read thread starting" );
+                    DbgUtils.logd( TAG, "read thread starting" );
                     try {
                         DataInputStream inStream
                             = new DataInputStream( mSocket.getInputStream() );
                         while ( mRunThreads ) {
                             short len = inStream.readShort();
-                            DbgUtils.logd( BiDiSockWrap.class, "got len: %d", len );
+                            DbgUtils.logd( TAG, "got len: %d", len );
                             byte[] packet = new byte[len];
                             inStream.read( packet );
                             mIface.gotPacket( BiDiSockWrap.this, packet );
@@ -190,10 +191,9 @@ public class BiDiSockWrap {
                         DbgUtils.logex( ioe );
                         closeSocket();
                     }
-                    DbgUtils.logd( getClass(), "read thread exiting" );
+                    DbgUtils.logd( TAG, "read thread exiting" );
                 }
             } );
         mReadThread.start();
     }
 }
-

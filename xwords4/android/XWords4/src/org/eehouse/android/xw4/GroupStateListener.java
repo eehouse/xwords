@@ -23,4 +23,3 @@ package org.eehouse.android.xw4;
 public interface GroupStateListener {
     void onGroupExpandedChanged( Object groupObj, boolean expanded );
 }
-

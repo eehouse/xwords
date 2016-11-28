@@ -71,7 +71,7 @@ public class JNIUtilsImpl implements JNIUtils {
         try {
             isr = new InputStreamReader( bais, isUTF8? "UTF8" : "ISO8859_1" );
         } catch( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logi( getClass(), "splitFaces: %s", uee.toString() );
+            DbgUtils.logi( TAG, "splitFaces: %s", uee.toString() );
             isr = new InputStreamReader( bais );
         }
 
@@ -85,7 +85,7 @@ public class JNIUtilsImpl implements JNIUtils {
             try {
                 chr = isr.read();
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logw( getClass(), ioe.toString() );
+                DbgUtils.logw( TAG, ioe.toString() );
             }
             if ( -1 == chr ) {
                 addFace( faces, face );

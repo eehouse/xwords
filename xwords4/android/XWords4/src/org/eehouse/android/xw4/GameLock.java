@@ -28,6 +28,7 @@ import java.util.HashMap;
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
 public class GameLock {
+    private static final String TAG = GameLock.class.getSimpleName();
     private static final boolean DEBUG_LOCKS = false;
     private static final boolean THROW_ON_LOCKED = true;
     private static final int SLEEP_TIME = 100;
@@ -55,7 +56,7 @@ public class GameLock {
         m_isForWrite = isForWrite;
         m_lockCount = 0;
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logi( getClass(), "GameLock(rowid:%d,isForWrite:%b)=>"
+            DbgUtils.logi( TAG, "GameLock(rowid:%d,isForWrite:%b)=>"
                            + "this: %H", rowid, isForWrite, this );
             DbgUtils.printStack();
         }
@@ -91,19 +92,19 @@ public class GameLock {
                 }
             } else if ( this == owner && ! m_isForWrite ) {
                 if ( DEBUG_LOCKS ) {
-                    DbgUtils.logi( getClass(), "tryLock(): incrementing lock count" );
+                    DbgUtils.logi( TAG, "tryLock(): incrementing lock count" );
                 }
                 Assert.assertTrue( 0 == m_lockCount );
                 ++m_lockCount;
                 gotIt = true;
                 owner = null;
             } else if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( getClass(), "tryLock(): rowid %d already held by lock %H",
+                DbgUtils.logi( TAG, "tryLock(): rowid %d already held by lock %H",
                                m_rowid, owner );
             }
         }
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logi( getClass(), "tryLock %H (rowid=%d) => %b",
+            DbgUtils.logi( TAG, "tryLock %H (rowid=%d) => %b",
                            this, m_rowid, gotIt );
         }
         return owner;
@@ -124,7 +125,7 @@ public class GameLock {
         long sleptTime = 0;
 
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logi( getClass(), "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid,
+            DbgUtils.logi( TAG, "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid,
                            maxMillis );
         }
 
@@ -135,11 +136,11 @@ public class GameLock {
                 break;
             }
             if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( getClass(), "lock() %H failed; sleeping", this );
+                DbgUtils.logi( TAG, "lock() %H failed; sleeping", this );
                 if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= ASSERT_TIME ) {
-                    DbgUtils.logi( getClass(), "lock %H seeking stack:", curOwner );
+                    DbgUtils.logi( TAG, "lock %H seeking stack:", curOwner );
                     DbgUtils.printStack( curOwner.m_lockTrace );
-                    DbgUtils.logi( getClass(), "lock %H seeking stack:", this );
+                    DbgUtils.logi( TAG, "lock %H seeking stack:", this );
                     DbgUtils.printStack();
                 }
             }
@@ -152,7 +153,7 @@ public class GameLock {
             }
 
             if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( getClass(), "lock() %H awake; "
+                DbgUtils.logi( TAG, "lock() %H awake; "
                                + "sleptTime now %d millis", this, sleptTime );
             }
 
@@ -162,7 +163,7 @@ public class GameLock {
                 throw new GameLockedException();
             } else if ( sleptTime >= ASSERT_TIME ) {
                 if ( DEBUG_LOCKS ) {
-                    DbgUtils.logi( getClass(), "lock %H overlocked", this );
+                    DbgUtils.logi( TAG, "lock %H overlocked", this );
                 }
                 Assert.fail();
             }
@@ -188,7 +189,7 @@ public class GameLock {
             --m_lockCount;
 
             if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( getClass(), "unlock: this: %H (rowid:%d) unlocked",
+                DbgUtils.logi( TAG, "unlock: this: %H (rowid:%d) unlocked",
                                this, m_rowid );
             }
         }
@@ -204,7 +205,7 @@ public class GameLock {
     {
         boolean result = m_isForWrite && 1 == m_lockCount;
         if ( !result ) {
-            DbgUtils.logw( getClass(), "canWrite(): %H, returning false", this );
+            DbgUtils.logw( TAG, "canWrite(): %H, returning false", this );
         }
         return result;
     }

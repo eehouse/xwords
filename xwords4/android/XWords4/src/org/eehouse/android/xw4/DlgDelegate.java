@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class DlgDelegate {
+    private static final String TAG = DlgDelegate.class.getSimpleName();
 
     public static enum Action {
         SKIP_CALLBACK,
@@ -583,7 +584,7 @@ public class DlgDelegate {
             break;
 
         default:
-            DbgUtils.loge( getClass(), "eventOccurred: unhandled event %s", event.toString() );
+            DbgUtils.loge( TAG, "eventOccurred: unhandled event %s", event.toString() );
         }
 
         if ( null != msg ) {
@@ -999,7 +1000,7 @@ public class DlgDelegate {
             if ( null == oneBase ) {
                 iter.remove();  // no point in keeping it
             } else if ( base.equals( oneBase ) ) {
-                DbgUtils.logd( DlgDelegate.class, "removing alert %s for %s", dlgID.toString(),
+                DbgUtils.logd( TAG, "removing alert %s for %s", dlgID.toString(),
                                oneBase.toString() );
                 activity.removeDialog( dlgID.ordinal() );
                 iter.remove();  // no point in keeping this either

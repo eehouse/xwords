@@ -2707,7 +2707,7 @@ public class BoardDelegate extends DelegateBase
             doRematchIf( activity, null, rowID, summary, gi, gamePtr );
             gamePtr.release();
         } else {
-            DbgUtils.logw( BoardDelegate.class, "setupRematchFor(): unable to lock game" );
+            DbgUtils.logw( TAG, "setupRematchFor(): unable to lock game" );
         }
 
         if ( null != thread ) {

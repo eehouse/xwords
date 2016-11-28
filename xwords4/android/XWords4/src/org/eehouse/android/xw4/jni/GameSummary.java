@@ -40,6 +40,7 @@ import org.json.JSONObject;
  * in CurGameInfo
  */
 public class GameSummary {
+    private static final String TAG = GameSummary.class.getSimpleName();
     public static final String EXTRA_REMATCH_BTADDR = "rm_btaddr";
     public static final String EXTRA_REMATCH_PHONE = "rm_phone";
     public static final String EXTRA_REMATCH_RELAY = "rm_relay";
@@ -427,7 +428,7 @@ public class GameSummary {
         } catch( org.json.JSONException ex ) {
             DbgUtils.logex( ex );
         }
-        DbgUtils.logi( getClass(), "putStringExtra(%s,%s) => %s", key, value, m_extras );
+        DbgUtils.logi( TAG, "putStringExtra(%s,%s) => %s", key, value, m_extras );
     }
 
     public String getStringExtra( String key )
@@ -444,7 +445,7 @@ public class GameSummary {
                 DbgUtils.logex( ex );
             }
         }
-        DbgUtils.logi( getClass(), "getStringExtra(%s) => %s", key, result );
+        DbgUtils.logi( TAG, "getStringExtra(%s) => %s", key, result );
         return result;
     }
 
@@ -462,7 +463,7 @@ public class GameSummary {
                 break;
             }
         }
-        // DbgUtils.logd( getClass(), "hasRematchInfo() => %b", found );
+        // DbgUtils.logd( TAG, "hasRematchInfo() => %b", found );
         return found;
     }
 

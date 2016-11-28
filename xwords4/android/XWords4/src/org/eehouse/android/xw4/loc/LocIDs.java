@@ -36,7 +36,7 @@ public class LocIDs extends LocIDsData {
         int result = LocIDsData.NOT_FOUND;
         if ( null != key && getS_MAP(context).containsKey( key ) ) {
             // Assert.assertNotNull( LocIDsData.S_MAP );
-            DbgUtils.logw( LocIDs.class, "calling get with key %s", key );
+            DbgUtils.logw( TAG, "calling get with key %s", key );
             result = getS_MAP( context ).get( key ); // NPE
         }
         return result;

@@ -31,6 +31,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class MultiService {
+    private static final String TAG = MultiService.class.getSimpleName();
 
     public static final String FORCECHANNEL = "FC";
     public static final String LANG = "LANG";
@@ -191,7 +192,7 @@ public class MultiService {
             if ( downloaded ) {
                 int ordinal = intent.getIntExtra( OWNER, -1 );
                 if ( -1 == ordinal ) {
-                    DbgUtils.logw( DBUtils.class, "unexpected OWNER" );
+                    DbgUtils.logw( TAG, "unexpected OWNER" );
                 } else {
                     DictFetchOwner owner = DictFetchOwner.values()[ordinal];
                     switch ( owner ) {

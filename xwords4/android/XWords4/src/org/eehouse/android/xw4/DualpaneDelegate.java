@@ -61,7 +61,7 @@ public class DualpaneDelegate extends DelegateBase {
     {
         MainActivity main = (MainActivity)m_activity;
         main.dispatchNewIntent( intent );
-        DbgUtils.logi( getClass(), "handleNewIntent()" );
+        DbgUtils.logi( TAG, "handleNewIntent()" );
     }
 
     @Override
@@ -69,7 +69,7 @@ public class DualpaneDelegate extends DelegateBase {
     {
         MainActivity main = (MainActivity)m_activity;
         boolean handled = main.dispatchBackPressed();
-        DbgUtils.logi( getClass(), "handleBackPressed() => %b", handled );
+        DbgUtils.logi( TAG, "handleBackPressed() => %b", handled );
         return handled;
     }
 

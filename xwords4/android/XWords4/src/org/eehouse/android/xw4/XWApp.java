@@ -69,7 +69,7 @@ public class XWApp extends Application {
         // This one line should always get logged even if logging is
         // off -- because logging is on by default until logEnable is
         // called.
-        DbgUtils.logi( getClass(), "onCreate(); git_rev=%s",
+        DbgUtils.logi( TAG, "onCreate(); git_rev=%s",
                        getString( R.string.git_rev ) );
         DbgUtils.logEnable( this );
 
@@ -100,7 +100,7 @@ public class XWApp extends Application {
     @Override
     public void onTerminate()
     {
-        DbgUtils.logi( getClass(), "onTerminate() called" );
+        DbgUtils.logi( TAG, "onTerminate() called" );
         XwJNI.cleanGlobals();
         super.onTerminate();
     }

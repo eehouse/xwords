@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class CommsAddrRec {
+    private static final String TAG = CommsAddrRec.class.getSimpleName();
 
     public enum CommsConnType {
         _COMMS_CONN_NONE,
@@ -312,7 +313,7 @@ public class CommsAddrRec {
                         || ip_relay_port != other.ip_relay_port;
                 break;
             default:
-                DbgUtils.logw( getClass(), "changesMatter: not handling case: %s",
+                DbgUtils.logw( TAG, "changesMatter: not handling case: %s",
                                conType.toString() );
                 break;
             }

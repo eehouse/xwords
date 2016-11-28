@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DictUtils {
+    private static final String TAG = DictUtils.class.getSimpleName();
 
     public interface DownProgListener {
         void progressMade( int nBytes );
@@ -360,7 +361,7 @@ public class DictUtils {
                 bytes = new byte[len];
                 fis.read( bytes, 0, len );
                 fis.close();
-                DbgUtils.logi( DictUtils.class, "Successfully loaded %s", name );
+                DbgUtils.logi( TAG, "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
                 // DbgUtils.logex( fnf );
             } catch ( java.io.IOException ioe ) {
@@ -589,7 +590,7 @@ public class DictUtils {
                 if ( !result.exists() ) {
                     result.mkdirs();
                     if ( !result.exists() ) {
-                        DbgUtils.logw( DictUtils.class, "unable to create sd dir %s", packdir );
+                        DbgUtils.logw( TAG, "unable to create sd dir %s", packdir );
                         result = null;
                     }
                 }
