@@ -97,7 +97,7 @@ public class BiDiSockWrap {
 
     public boolean isConnected() { return null != getSocket(); }
 
-    public void send( String packet )
+    private void send( String packet )
     {
         try {
             send( packet.getBytes( "UTF-8" ) );
@@ -114,7 +114,8 @@ public class BiDiSockWrap {
     public void send( byte[] packet )
     {
         Assert.assertNotNull( packet );
-        mQueue.add(packet);
+        Assert.assertTrue( packet.length > 0 );
+        mQueue.add( packet );
     }
 
     private void init( Socket socket )
@@ -126,6 +127,7 @@ public class BiDiSockWrap {
 
     private void closeSocket()
     {
+        DbgUtils.logd( TAG, "closeSocket()" );
         mRunThreads = false;
         mActive = false;
         try {

@@ -179,6 +179,7 @@ public class WiDirService extends XWService {
 
     public static void init( Context context )
     {
+        DbgUtils.logd( TAG, "init()" );
         ChannelListener listener = new ChannelListener() {
                 @Override
                 public void onChannelDisconnected() {
@@ -344,9 +345,11 @@ public class WiDirService extends XWService {
                                 processPacket( socket, bytes );
                             }
 
-                            public void connectStateChanged( BiDiSockWrap wrap, boolean nowConnected )
+                            public void connectStateChanged( BiDiSockWrap wrap,
+                                                             boolean nowConnected )
                             {
-                                DbgUtils.logd( TAG, "connectStateChanged(con=%b)", nowConnected );
+                                DbgUtils.logd( TAG, "connectStateChanged(connected=%b)",
+                                               nowConnected );
                                 if ( nowConnected ) {
                                     try {
                                         wrap.send( new JSONObject()
@@ -872,7 +875,7 @@ public class WiDirService extends XWService {
                         }
                     } catch ( IOException ioe ) {
                         sAmServer = false;
-                        DbgUtils.logex( ioe );
+                        DbgUtils.loge( TAG, ioe.toString() );
                     }
                     DbgUtils.logd( TAG, "accept thread exiting" );
                 }
@@ -882,6 +885,7 @@ public class WiDirService extends XWService {
 
     private static void stopAcceptThread()
     {
+        DbgUtils.logd( TAG, "stopAcceptThread()" );
         if ( null != sAcceptThread ) {
             if ( null != sServerSock ) {
                 try {
