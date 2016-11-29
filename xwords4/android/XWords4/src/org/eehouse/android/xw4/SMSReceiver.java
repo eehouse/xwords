@@ -48,7 +48,7 @@ public class SMSReceiver extends BroadcastReceiver {
                             byte[] body = sms.getUserData();
                             SMSService.handleFrom( context, body, phone );
                         } catch ( NullPointerException npe ) {
-                            DbgUtils.loge( npe );
+                            DbgUtils.logex( npe );
                         }
                     }
                 }
