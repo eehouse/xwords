@@ -642,9 +642,14 @@ public class DlgDelegate {
 
     private Dialog createLookupDialog()
     {
+        Dialog result = null;
         DlgState state = findForID( DlgID.LOOKUP );
-        Bundle bundle = (Bundle)state.m_params[0];
-        return LookupAlert.makeDialog( m_activity, bundle );
+        // state is null per a play store crash report.
+        if ( null != state ) {
+            Bundle bundle = (Bundle)state.m_params[0];
+            result = LookupAlert.makeDialog( m_activity, bundle );
+        }
+        return result;
     }
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )

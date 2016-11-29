@@ -43,9 +43,13 @@ public class SMSReceiver extends BroadcastReceiver {
                 for ( int ii = 0; ii < pdus.length; ++ii ) {
                     SmsMessage sms = SmsMessage.createFromPdu((byte[])pdus[ii]);
                     if ( null != sms ) {
-                        String phone = sms.getOriginatingAddress();
-                        byte[] body = sms.getUserData();
-                        SMSService.handleFrom( context, body, phone );
+                        try {
+                            String phone = sms.getOriginatingAddress();
+                            byte[] body = sms.getUserData();
+                            SMSService.handleFrom( context, body, phone );
+                        } catch ( NullPointerException npe ) {
+                            DbgUtils.loge( npe );
+                        }
                     }
                 }
             }
