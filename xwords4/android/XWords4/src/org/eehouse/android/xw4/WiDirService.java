@@ -372,6 +372,7 @@ public class WiDirService extends XWService {
                             }
 
                             public void onWriteSuccess( BiDiSockWrap wrap ) {
+                                DbgUtils.logd( TAG, "onWriteSuccess()" );
                                 updateStatusOut( true );
                             }
                         };
@@ -606,7 +607,10 @@ public class WiDirService extends XWService {
     private static void tryConnect( WifiP2pDevice device )
     {
         final String macAddress = device.deviceAddress;
-        if ( sSocketWrapMap.containsKey(macAddress)
+        if ( sAmGroupOwner ) {
+            DbgUtils.logd( TAG, "tryConnect(%s): dropping because group owner",
+                           macAddress );
+        } else if ( sSocketWrapMap.containsKey(macAddress)
              && sSocketWrapMap.get(macAddress).isConnected() ) {
             DbgUtils.logd( TAG, "tryConnect(%s): already connected",
                            macAddress );
@@ -865,17 +869,19 @@ public class WiDirService extends XWService {
         sAcceptThread = new Thread( new Runnable() {
                 public void run() {
                     DbgUtils.logd( TAG, "accept thread starting" );
+                    boolean done = false;
                     try {
                         sServerSock = new ServerSocket( OWNER_PORT );
-                        while ( sAmServer ) {
+                        while ( !done ) {
                             DbgUtils.logd( TAG, "calling accept()" );
                             Socket socket = sServerSock.accept();
                             DbgUtils.logd( TAG, "accept() returned!!" );
                             new BiDiSockWrap( socket, sIface );
                         }
                     } catch ( IOException ioe ) {
-                        sAmServer = false;
                         DbgUtils.loge( TAG, ioe.toString() );
+                        sAmServer = false;
+                        done = true;
                     }
                     DbgUtils.logd( TAG, "accept thread exiting" );
                 }
