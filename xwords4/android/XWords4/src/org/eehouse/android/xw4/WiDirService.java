@@ -101,7 +101,7 @@ public class WiDirService extends XWService {
     private static final String CMD_INVITE = "invite";
 
     private static Channel sChannel;
-    private static ServiceDiscover s_discoverer;
+    private static ServiceDiscoverer s_discoverer;
     private static IntentFilter sIntentFilter;
     private static GroupInfoListener sGroupListener;
     private static WFDBroadcastReceiver sReceiver;
@@ -188,7 +188,7 @@ public class WiDirService extends XWService {
             };
         sChannel = getMgr().initialize( context, Looper.getMainLooper(),
                                         listener );
-        s_discoverer = new ServiceDiscover( sChannel );
+        s_discoverer = new ServiceDiscoverer( sChannel );
     }
 
     public static boolean supported()
@@ -218,8 +218,8 @@ public class WiDirService extends XWService {
     public static String formatNetStateInfo()
     {
         String map = mapToString( copyUserMap() );
-        return String.format( "map: %s role: %s; nThreads: %d",
-                              map, sAmServer ? "owner" : "guest",
+        return String.format( "role: %s; map: %s nThreads: %d",
+                              sAmGroupOwner ? "owner" : "guest", map,
                               Thread.activeCount() );
     }
 
@@ -434,14 +434,16 @@ public class WiDirService extends XWService {
     }
 
     // See: http://stackoverflow.com/questions/26300889/wifi-p2p-service-discovery-works-intermittently
-    private static class ServiceDiscover implements Runnable, ActionListener {
+    private static class ServiceDiscoverer implements Runnable, ActionListener {
         private State m_curState = State.START;
         private Channel m_channel;
         private Handler m_handler;
         private WifiP2pManager m_mgr;
+        private int[] m_failures;
 
         enum State {
             START,
+            CLEAR_SERVICES,
             SERVICES_CLEARED,
             SERVICES_ADDED,
             REQUESTS_CLEARED,
@@ -450,7 +452,7 @@ public class WiDirService extends XWService {
             DONE,
         }
 
-        public ServiceDiscover( Channel channel )
+        public ServiceDiscoverer( Channel channel )
         {
             m_mgr = getMgr();
             m_channel = sChannel;
@@ -475,9 +477,10 @@ public class WiDirService extends XWService {
         }
 
         @Override
-        public void onFailure(int code) {
-            DbgUtils.logd( TAG, "onFailure(): state %s failed",
-                           m_curState.toString() );
+        public void onFailure( int code ) {
+            DbgUtils.logd( TAG, "onFailure(%d): state %s failed (count=%d)",
+                           code, m_curState.toString(),
+                           ++m_failures[m_curState.ordinal()] );
             switch ( code ) {
             case WifiP2pManager.ERROR:
                 m_curState = State.START;
@@ -496,6 +499,11 @@ public class WiDirService extends XWService {
         public void run() {
             switch( m_curState ) {
             case START:
+                m_failures = new int[State.values().length];
+                onSuccess();    // move to next state
+                break;
+
+            case CLEAR_SERVICES:
                 m_mgr.clearLocalServices( m_channel, this );
                 break;
 
