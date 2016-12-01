@@ -75,7 +75,7 @@ public class WiDirService extends XWService {
     private static final String MAC_ADDR_KEY = "p2p_mac_addr";
     private static final String SERVICE_NAME = "srvc_" + BuildConstants.VARIANT;
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
-    private static boolean WIFI_DIRECT_ENABLED = true;
+    private static final boolean WIFI_DIRECT_ENABLED = true;
     private static final int OWNER_PORT = 5432;
 
     private enum P2PAction { _NONE,
@@ -342,6 +342,7 @@ public class WiDirService extends XWService {
                             public void gotPacket( BiDiSockWrap socket, byte[] bytes )
                             {
                                 DbgUtils.logd( TAG, "wrapper got packet!!!" );
+                                updateStatusIn( true );
                                 processPacket( socket, bytes );
                             }
 
@@ -424,7 +425,7 @@ public class WiDirService extends XWService {
                     succeeded = true;
                 } catch ( SecurityException se ) {
                     DbgUtils.logd( TAG, "disabling wifi; no permissions" );
-                    WIFI_DIRECT_ENABLED = false;
+                    sEnabled = false;
                 }
             } else {
                 succeeded = true;
