@@ -111,6 +111,11 @@ public class BiDiSockWrap {
         send( obj.toString() );
     }
 
+    public void send( XWPacket packet )
+    {
+        send( packet.toString() );
+    }
+
     public void send( byte[] packet )
     {
         Assert.assertNotNull( packet );

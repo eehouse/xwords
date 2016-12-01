@@ -62,6 +62,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -81,6 +82,7 @@ public class WiDirService extends XWService {
     private enum P2PAction { _NONE,
                              GOT_MSG,
                              GOT_INVITE,
+                             GAME_GONE,
     }
 
     private static final String KEY_CMD = "cmd";
@@ -94,11 +96,6 @@ public class WiDirService extends XWService {
     private static final String KEY_NAME = "name";
     private static final String KEY_MAP = "map";
     private static final String KEY_RETADDR = "raddr";
-
-    private static final String CMD_PING = "ping";
-    private static final String CMD_PONG = "pong";
-    private static final String CMD_MSG = "msg";
-    private static final String CMD_INVITE = "invite";
 
     private static Channel sChannel;
     private static ServiceDiscoverer s_discoverer;
@@ -152,6 +149,9 @@ public class WiDirService extends XWService {
                     break;
                 case GOT_INVITE:
                     handleGotInvite( intent );
+                    break;
+                case GAME_GONE:
+                    handleGameGone( intent );
                     break;
                 }
             }
@@ -254,19 +254,14 @@ public class WiDirService extends XWService {
         if ( null == wrap ) {
             DbgUtils.loge( TAG, "inviteRemote: no socket for %s", macAddr );
         } else {
-            try {
-                JSONObject packet = new JSONObject()
-                    .put( KEY_CMD, CMD_INVITE )
-                    .put( KEY_SRC, getMyMacAddress() )
-                    .put( KEY_NLI, nliString )
-                    ;
-                if ( forwarding[0] ) {
-                    packet.put( KEY_DEST, macAddr );
-                }
-                wrap.send( packet );
-            } catch ( JSONException jse ) {
-                DbgUtils.logex( jse );
+            XWPacket packet = new XWPacket( XWPacket.CMD.INVITE )
+                .put( KEY_SRC, getMyMacAddress() )
+                .put( KEY_NLI, nliString )
+                ;
+            if ( forwarding[0] ) {
+                packet.put( KEY_DEST, macAddr );
             }
+            wrap.send( packet );
         }
     }
 
@@ -280,21 +275,16 @@ public class WiDirService extends XWService {
         BiDiSockWrap wrap = getForSend( macAddr, forwarding );
 
         if ( null != wrap ) {
-            try {
-                JSONObject packet = new JSONObject()
-                    .put( KEY_CMD, CMD_MSG )
-                    .put( KEY_SRC, getMyMacAddress() )
-                    .put( KEY_DATA, XwJNI.base64Encode( buf ) )
-                    .put( KEY_GAMEID, gameID )
-                    ;
-                if ( forwarding[0] ) {
-                    packet.put( KEY_DEST, macAddr );
-                }
-                wrap.send( packet );
-                nSent = buf.length;
-            } catch ( JSONException jse ) {
-                DbgUtils.logex( jse );
+            XWPacket packet = new XWPacket( XWPacket.CMD.MSG )
+                .put( KEY_SRC, getMyMacAddress() )
+                .put( KEY_DATA, XwJNI.base64Encode( buf ) )
+                .put( KEY_GAMEID, gameID )
+                ;
+            if ( forwarding[0] ) {
+                packet.put( KEY_DEST, macAddr );
             }
+            wrap.send( packet );
+            nSent = buf.length;
         } else {
             DbgUtils.logd( TAG, "sendPacket: no socket for %s", macAddr );
         }
@@ -352,14 +342,9 @@ public class WiDirService extends XWService {
                                 DbgUtils.logd( TAG, "connectStateChanged(connected=%b)",
                                                nowConnected );
                                 if ( nowConnected ) {
-                                    try {
-                                        wrap.send( new JSONObject()
-                                                   .put( KEY_CMD, CMD_PING )
+                                        wrap.send( new XWPacket( XWPacket.CMD.PING )
                                                    .put( KEY_NAME, sDeviceName )
                                                    .put( KEY_MAC, getMyMacAddress( context ) ) );
-                                    } catch ( JSONException jse ) {
-                                        DbgUtils.logex( jse );
-                                    }
                                 } else {
                                     int sizeBefore = sSocketWrapMap.size();
                                     sSocketWrapMap.values().remove( wrap );
@@ -652,9 +637,9 @@ public class WiDirService extends XWService {
         wrap.connect();
     }
 
-    private static void storeByAddress( BiDiSockWrap wrap, JSONObject packet )
+    private static void storeByAddress( BiDiSockWrap wrap, XWPacket packet )
     {
-        String macAddress = packet.optString( KEY_MAC, null );
+        String macAddress = packet.getString( KEY_MAC );
         // Assert.assertNotNull( macAddress );
         if ( null != macAddress ) {
             // this has fired. Sockets close and re-open?
@@ -676,6 +661,9 @@ public class WiDirService extends XWService {
             .setP2PParams( macAddress );
 
         ReceiveResult rslt = receiveMessage( this, gameID, m_sink, data, addr );
+        if ( ReceiveResult.GAME_GONE == rslt ) {
+            sendNoGame( null, macAddress, gameID );
+        }
     }
 
     private void handleGotInvite( Intent intent )
@@ -695,6 +683,12 @@ public class WiDirService extends XWService {
                                                           nli.gameID() );
             }
         }
+    }
+
+    private void handleGameGone( Intent intent )
+    {
+        int gameID = intent.getIntExtra( KEY_GAMEID, 0 );
+        sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
     }
 
     private void makeGame( NetLaunchInfo nli, String senderMac )
@@ -719,53 +713,81 @@ public class WiDirService extends XWService {
 
     private static void processPacket( BiDiSockWrap wrap, byte[] bytes )
     {
+        Context context = XWApp.getContext();
+        Intent intent = null;
         String asStr = new String(bytes);
         DbgUtils.logd( TAG, "got string: %s", asStr );
-        try {
-            JSONObject asObj = new JSONObject( asStr );
-            DbgUtils.logd( TAG, "got json: %s", asObj.toString() );
-            final String cmd = asObj.optString( KEY_CMD, "" );
-            if ( cmd.equals( CMD_PING ) ) {
-                storeByAddress( wrap, asObj );
-                try {
-                    JSONObject packet = new JSONObject()
-                        .put( KEY_CMD, CMD_PONG )
-                        .put( KEY_MAC, getMyMacAddress() );
-                    addMappings( packet );
-                    wrap.send( packet );
-                } catch ( JSONException jse ) {
-                    DbgUtils.logex( jse );
-                }
-            } else if ( cmd.equals( CMD_PONG ) ) {
-                storeByAddress( wrap, asObj );
-                readMappings( asObj );
-            } else if ( cmd.equals( CMD_INVITE ) ) {
-                if ( ! forwardedPacket( asObj, bytes ) ) {
-                    Intent intent = getIntentTo( P2PAction.GOT_INVITE );
-                    intent.putExtra( KEY_NLI, asObj.getString( KEY_NLI ) );
-                    intent.putExtra( KEY_SRC, asObj.getString( KEY_SRC ) );
-                    XWApp.getContext().startService( intent );
-                }
-            } else if ( cmd.equals( CMD_MSG ) ) {
-                if ( ! forwardedPacket( asObj, bytes ) ) {
-                    int gameID = asObj.optInt( KEY_GAMEID, 0 );
-                    if ( 0 != gameID ) {
-                        Intent intent = getIntentTo( P2PAction.GOT_MSG );
+        XWPacket packet = new XWPacket( asStr );
+        // JSONObject asObj = new JSONObject( asStr );
+        DbgUtils.logd( TAG, "got packet: %s", packet.toString() );
+        final XWPacket.CMD cmd = packet.getCommand();
+        switch ( cmd ) {
+        case PING:
+            storeByAddress( wrap, packet );
+            XWPacket reply = new XWPacket( XWPacket.CMD.PONG )
+                .put( KEY_MAC, getMyMacAddress() );
+            addMappings( reply );
+            wrap.send( reply );
+            break;
+        case PONG:
+            storeByAddress( wrap, packet );
+            readMappings( packet );
+            break;
+        case INVITE:
+            if ( ! forwardedPacket( packet, bytes ) ) {
+                intent = getIntentTo( P2PAction.GOT_INVITE );
+                intent.putExtra( KEY_NLI, packet.getString( KEY_NLI ) );
+                intent.putExtra( KEY_SRC, packet.getString( KEY_SRC ) );
+            }
+            break;
+        case MSG:
+            if ( ! forwardedPacket( packet, bytes ) ) {
+                int gameID = packet.getInt( KEY_GAMEID, 0 );
+                if ( 0 != gameID ) {
+                    if ( DBUtils.haveGame( context, gameID ) ) {
+                        intent = getIntentTo( P2PAction.GOT_MSG );
                         intent.putExtra( KEY_GAMEID, gameID );
-                        intent.putExtra( KEY_DATA, asObj.getString( KEY_DATA ) );
-                        intent.putExtra( KEY_RETADDR, asObj.getString( KEY_SRC ) );
-                        XWApp.getContext().startService( intent );
+                        intent.putExtra( KEY_DATA, packet.getString( KEY_DATA ) );
+                        intent.putExtra( KEY_RETADDR, packet.getString( KEY_SRC ) );
                     } else {
-                        Assert.fail(); // don't ship with this!!!
+                        sendNoGame( wrap, null, gameID );
                     }
                 }
             }
-        } catch ( JSONException jse ) {
-            DbgUtils.logex( jse );
+            break;
+        case NOGAME:
+            if ( ! forwardedPacket( packet, bytes ) ) {
+                int gameID = packet.getInt( KEY_GAMEID, 0 );
+                intent = getIntentTo( P2PAction.GAME_GONE );
+                intent.putExtra( KEY_GAMEID, gameID );
+            }
+            break;
+        }
+
+        if ( null != intent ) {
+            context.startService( intent );
         }
     }
 
-    private static void addMappings( JSONObject packet )
+    private static void sendNoGame( BiDiSockWrap wrap, String macAddress,
+                                    int gameID )
+    {
+        boolean[] forwarding = { false };
+        if ( null == wrap ) {
+            wrap = getForSend( macAddress, forwarding );
+        }
+
+        if ( null != wrap ) {
+            XWPacket packet = new XWPacket( XWPacket.CMD.NOGAME )
+                .put( KEY_GAMEID, gameID );
+            if ( forwarding[0] ) {
+                packet.put( KEY_DEST, macAddress );
+            }
+            wrap.send( packet );
+        }
+    }
+
+    private static void addMappings( XWPacket packet )
     {
         synchronized( sUserMap ) {
             try {
@@ -783,11 +805,11 @@ public class WiDirService extends XWService {
         }
     }
 
-    private static void readMappings( JSONObject asObj )
+    private static void readMappings( XWPacket packet )
     {
         synchronized( sUserMap ) {
             try {
-                JSONArray array = asObj.getJSONArray( KEY_MAP );
+                JSONArray array = packet.getJSONArray( KEY_MAP );
                 for ( int ii = 0; ii < array.length(); ++ii ) {
                     JSONObject map = array.getJSONObject( ii );
                     String name = map.getString( KEY_NAME );
@@ -845,11 +867,11 @@ public class WiDirService extends XWService {
         return result;
     }
 
-    private static boolean forwardedPacket( JSONObject asObj, byte[] bytes )
+    private static boolean forwardedPacket( XWPacket packet, byte[] bytes )
     {
         boolean forwarded = false;
-        String destAddr = asObj.optString( KEY_DEST );
-        if ( 0 < destAddr.length() ) {
+        String destAddr = packet.getString( KEY_DEST );
+        if ( null != destAddr && 0 < destAddr.length() ) {
             Assert.assertFalse( destAddr.equals( sMacAddress ) );
             forwardPacket( bytes, destAddr );
             forwarded = true;
