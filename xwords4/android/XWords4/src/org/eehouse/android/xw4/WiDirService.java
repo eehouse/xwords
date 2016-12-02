@@ -319,6 +319,14 @@ public class WiDirService extends XWService {
         }
     }
 
+    public static void gameDied( Context context, int gameID )
+    {
+        Iterator<BiDiSockWrap> iter = sSocketWrapMap.values().iterator();
+        while ( iter.hasNext() ) {
+            sendNoGame( iter.next(), null, gameID );
+        }
+    }
+
     private static boolean initListeners( final Context context )
     {
         boolean succeeded = false;

@@ -1210,6 +1210,9 @@ public class GameUtils {
                     }
                 }
                 break;
+            case COMMS_CONN_P2P:
+                WiDirService.gameDied( context, summary.gameID );
+                break;
             }
         }
     }
