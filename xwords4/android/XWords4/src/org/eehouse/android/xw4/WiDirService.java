@@ -186,9 +186,13 @@ public class WiDirService extends XWService {
                     DbgUtils.logd( TAG, "onChannelDisconnected()");
                 }
             };
-        sChannel = getMgr().initialize( context, Looper.getMainLooper(),
-                                        listener );
-        s_discoverer = new ServiceDiscoverer( sChannel );
+        try {
+            sChannel = getMgr().initialize( context, Looper.getMainLooper(),
+                                            listener );
+            s_discoverer = new ServiceDiscoverer( sChannel );
+        } catch ( SecurityException se ) {
+            sEnabled = false;
+        }
     }
 
     public static boolean supported()
@@ -293,7 +297,7 @@ public class WiDirService extends XWService {
 
     public static void activityResumed( Activity activity )
     {
-        if ( WIFI_DIRECT_ENABLED ) {
+        if ( WIFI_DIRECT_ENABLED && sEnabled ) {
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
                 DbgUtils.logd( TAG, "activityResumed() done" );
@@ -304,7 +308,7 @@ public class WiDirService extends XWService {
 
     public static void activityPaused( Activity activity )
     {
-        if ( WIFI_DIRECT_ENABLED ) {
+        if ( WIFI_DIRECT_ENABLED && sEnabled ) {
             Assert.assertNotNull( sReceiver );
             // No idea why I'm seeing this exception...
             try {
