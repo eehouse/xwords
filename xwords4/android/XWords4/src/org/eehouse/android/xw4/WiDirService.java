@@ -104,6 +104,7 @@ public class WiDirService extends XWService {
     private static WFDBroadcastReceiver sReceiver;
     private static boolean sDiscoveryStarted;
     private static boolean sEnabled;
+    private static boolean sHavePermission;
     // These two kinda overlap...
     private static boolean sAmServer;
     private static boolean sAmGroupOwner;
@@ -190,8 +191,9 @@ public class WiDirService extends XWService {
             sChannel = getMgr().initialize( context, Looper.getMainLooper(),
                                             listener );
             s_discoverer = new ServiceDiscoverer( sChannel );
+            sHavePermission = true;
         } catch ( SecurityException se ) {
-            sEnabled = false;
+            sHavePermission = false;
         }
     }
 
@@ -297,7 +299,7 @@ public class WiDirService extends XWService {
 
     public static void activityResumed( Activity activity )
     {
-        if ( WIFI_DIRECT_ENABLED && sEnabled ) {
+        if ( WIFI_DIRECT_ENABLED && sHavePermission ) {
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
                 DbgUtils.logd( TAG, "activityResumed() done" );
@@ -308,7 +310,7 @@ public class WiDirService extends XWService {
 
     public static void activityPaused( Activity activity )
     {
-        if ( WIFI_DIRECT_ENABLED && sEnabled ) {
+        if ( WIFI_DIRECT_ENABLED && sHavePermission ) {
             Assert.assertNotNull( sReceiver );
             // No idea why I'm seeing this exception...
             try {
@@ -323,8 +325,11 @@ public class WiDirService extends XWService {
         }
     }
 
-    public static void gameDied( Context context, int gameID )
+    public static void gameDied( String macAddr, int gameID )
     {
+        // FIX ME when can test; probably just this:
+        // sendNoGame( null, macAddr, gameID );
+
         Iterator<BiDiSockWrap> iter = sSocketWrapMap.values().iterator();
         while ( iter.hasNext() ) {
             sendNoGame( iter.next(), null, gameID );
@@ -441,11 +446,11 @@ public class WiDirService extends XWService {
 
         enum State {
             START,
-            CLEAR_SERVICES,
-            SERVICES_CLEARED,
-            SERVICES_ADDED,
-            REQUESTS_CLEARED,
-            REQUESTS_ADDED,
+            CLEAR_LOCAL_SERVICES,
+            ADD_LOCAL_SERVICES,
+            CLEAR_SERVICES_REQUESTS,
+            ADD_SERVICE_REQUEST,
+            DISCOVER_PEERS,
             PEER_DISCOVERY_STARTED,
             DONE,
         }
@@ -476,9 +481,9 @@ public class WiDirService extends XWService {
 
         @Override
         public void onFailure( int code ) {
+            int count = ++m_failures[m_curState.ordinal()];
             DbgUtils.logd( TAG, "onFailure(%d): state %s failed (count=%d)",
-                           code, m_curState.toString(),
-                           ++m_failures[m_curState.ordinal()] );
+                           code, m_curState.toString(), count );
             switch ( code ) {
             case WifiP2pManager.ERROR:
                 m_curState = State.START;
@@ -488,6 +493,10 @@ public class WiDirService extends XWService {
                 Assert.fail();
                 break;
             case WifiP2pManager.BUSY:
+                if ( 8 < count ) {
+                    DbgUtils.logd( TAG, "too many errors; restarting machine" );
+                    m_curState = State.START;
+                }
                 schedule( 10 );
                 break;
             }
@@ -501,11 +510,11 @@ public class WiDirService extends XWService {
                 onSuccess();    // move to next state
                 break;
 
-            case CLEAR_SERVICES:
+            case CLEAR_LOCAL_SERVICES:
                 m_mgr.clearLocalServices( m_channel, this );
                 break;
 
-            case SERVICES_CLEARED:
+            case ADD_LOCAL_SERVICES:
                 Map<String, String> record = new HashMap<String, String>();
                 record.put( "AVAILABLE", "visible");
                 record.put( "PORT", "" + OWNER_PORT );
@@ -517,18 +526,18 @@ public class WiDirService extends XWService {
                 m_mgr.addLocalService( m_channel, service, this );
                 break;
 
-            case SERVICES_ADDED:
+            case CLEAR_SERVICES_REQUESTS:
                 setDiscoveryListeners( m_mgr );
                 m_mgr.clearServiceRequests( m_channel, this );
                 break;
 
-            case REQUESTS_CLEARED:
+            case ADD_SERVICE_REQUEST:
                 m_mgr.addServiceRequest( m_channel,
                                          WifiP2pDnsSdServiceRequest.newInstance(),
                                          this );
                 break;
 
-            case REQUESTS_ADDED:
+            case DISCOVER_PEERS:
                 m_mgr.discoverPeers( m_channel, this );
                 break;
 

@@ -308,10 +308,11 @@ public class BTService extends XWService {
         return nSent;
     }
 
-    public static void gameDied( Context context, int gameID )
+    public static void gameDied( Context context, String btAddr, int gameID )
     {
         Intent intent = getIntentTo( context, BTAction.REMOVE );
         intent.putExtra( GAMEID_KEY, gameID );
+        intent.putExtra( ADDR_KEY, btAddr );
         context.startService( intent );
     }
 
@@ -417,6 +418,8 @@ public class BTService extends XWService {
                     break;
                 case REMOVE:
                     gameID = intent.getIntExtra( GAMEID_KEY, -1 );
+                    btAddr = intent.getStringExtra( ADDR_KEY );
+                    m_sender.add( new BTQueueElem( BTCmd.MESG_GAMEGONE, btAddr, gameID ) );
                     break;
                 default:
                     Assert.fail();

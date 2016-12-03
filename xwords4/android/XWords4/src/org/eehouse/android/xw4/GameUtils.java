@@ -329,6 +329,11 @@ public class GameUtils {
         return LocUtils.getString( context, R.string.game_fmt, count );
     }
 
+    public static GamePtr loadMakeGame( Context context, GameLock lock )
+    {
+        return loadMakeGame( context, new CurGameInfo( context ), lock );
+    }
+    
     public static GamePtr loadMakeGame( Context context, CurGameInfo gi,
                                         TransportProcs tp, GameLock lock )
     {
@@ -336,7 +341,7 @@ public class GameUtils {
     }
 
     public static GamePtr loadMakeGame( Context context, CurGameInfo gi,
-                                    GameLock lock )
+                                        GameLock lock )
     {
         return loadMakeGame( context, gi, null, null, lock );
     }
@@ -1194,26 +1199,32 @@ public class GameUtils {
                                   boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
-        for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
-              iter.hasNext(); ) {
-            switch( iter.next() ) {
-            case COMMS_CONN_RELAY:
-                tellRelayDied( context, summary, informNow );
-                break;
-            case COMMS_CONN_BT:
-                BTService.gameDied( context, summary.gameID );
-                break;
-            case COMMS_CONN_SMS:
-                if ( null != summary.remoteDevs ) {
-                    for ( String dev : summary.remoteDevs ) {
-                        SMSService.gameDied( context, summary.gameID, dev );
+        int gameID = summary.gameID;
+
+        GamePtr gamePtr = loadMakeGame( context, lock );
+        if ( null != gamePtr ) {
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
+            for ( CommsAddrRec addr : addrs ) {
+                CommsConnTypeSet conTypes = addr.conTypes;
+                for ( CommsConnType typ : conTypes ) {
+                    switch ( typ ) {
+                    case COMMS_CONN_RELAY:
+                        tellRelayDied( context, summary, informNow );
+                        break;
+                    case COMMS_CONN_BT:
+                        BTService.gameDied( context, addr.bt_btAddr, gameID );
+                        break;
+                    case COMMS_CONN_SMS:
+                        SMSService.gameDied( context, gameID, addr.sms_phone );
+                        break;
+                    case COMMS_CONN_P2P:
+                        WiDirService.gameDied( addr.p2p_addr, gameID );
+                        break;
                     }
                 }
-                break;
-            case COMMS_CONN_P2P:
-                WiDirService.gameDied( context, summary.gameID );
-                break;
             }
+            
+            gamePtr.release();
         }
     }
 
