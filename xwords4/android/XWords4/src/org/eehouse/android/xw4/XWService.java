@@ -60,12 +60,13 @@ class XWService extends Service {
         s_srcMgr.setListener( li );
     }
 
-    protected void sendResult( MultiEvent event, Object ... args )
+    protected void postEvent( MultiEvent event, Object ... args )
     {
         if ( null != s_srcMgr ) {
-            s_srcMgr.sendResult( event, args );
+            s_srcMgr.postEvent( event, args );
         } else {
-            DbgUtils.logd( TAG, "sendResult(): dropping %s event", event.toString() );
+            DbgUtils.logd( TAG, "postEvent(): dropping %s event",
+                           event.toString() );
         }
     }
 

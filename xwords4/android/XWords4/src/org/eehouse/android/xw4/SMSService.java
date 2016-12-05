@@ -521,11 +521,11 @@ public class SMSService extends XWService {
                 break;
             case DEATH:
                 gameID = dis.readInt();
-                sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
+                postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
                 break;
             case ACK:
                 gameID = dis.readInt();
-                sendResult( MultiEvent.NEWGAME_SUCCESS,
+                postEvent( MultiEvent.NEWGAME_SUCCESS,
                                      gameID );
                 break;
             default:
@@ -546,7 +546,7 @@ public class SMSService extends XWService {
         byte[] rest = new byte[buffer.length - 4];
         System.arraycopy( buffer, 4, rest, 0, rest.length );
         if ( tryAssemble( senderPhone, id, index, count, rest ) ) {
-            sendResult( MultiEvent.SMS_RECEIVE_OK );
+            postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
             DbgUtils.logw( TAG, "SMSService: receiveBuffer(): bogus message from"
                            + " phone %s", senderPhone );
@@ -602,7 +602,7 @@ public class SMSService extends XWService {
             if ( SMS_PROTO_VERSION < proto ) {
                 DbgUtils.logw( TAG, "SMSService.disAssemble: bad proto %d from %s;"
                                + " dropping", proto, senderPhone );
-                sendResult( MultiEvent.BAD_PROTO_SMS, senderPhone );
+                postEvent( MultiEvent.BAD_PROTO_SMS, senderPhone );
             } else if ( gotPort != myPort ) {
                 DbgUtils.logd( TAG, "disAssemble(): received on port %d"
                                + " but expected %d", gotPort, myPort );
@@ -712,17 +712,17 @@ public class SMSService extends XWService {
                 {
                     switch ( getResultCode() ) {
                     case Activity.RESULT_OK:
-                        sendResult( MultiEvent.SMS_SEND_OK );
+                        postEvent( MultiEvent.SMS_SEND_OK );
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
                         DbgUtils.showf( SMSService.this, "NO RADIO!!!" );
-                        sendResult( MultiEvent.SMS_SEND_FAILED_NORADIO );
+                        postEvent( MultiEvent.SMS_SEND_FAILED_NORADIO );
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
                         DbgUtils.showf( SMSService.this, "NO SERVICE!!!" );
                     default:
                         DbgUtils.logw( TAG, "FAILURE!!!" );
-                        sendResult( MultiEvent.SMS_SEND_FAILED );
+                        postEvent( MultiEvent.SMS_SEND_FAILED );
                         break;
                     }
                 }

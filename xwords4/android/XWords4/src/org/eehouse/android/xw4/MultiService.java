@@ -59,6 +59,7 @@ public class MultiService {
     private static final String ACTION_FETCH_DICT = "_afd";
     private static final String FOR_MISSING_DICT = "_fmd";
 
+    // Shouldn't this be a Set?
     private MultiEventListener m_li;
 
     // these do not currently pass between devices so they can change.
@@ -105,7 +106,7 @@ public class MultiService {
         }
     }
 
-    public void sendResult( MultiEvent event, Object ... args )
+    public void postEvent( MultiEvent event, Object ... args )
     {
         synchronized( this ) {
             if ( null != m_li ) {

@@ -403,7 +403,7 @@ public class BTService extends XWService {
                     boolean cameOn = intent.getBooleanExtra( RADIO_KEY, false );
                     MultiEvent evt = cameOn? MultiEvent.BT_ENABLED
                         : MultiEvent.BT_DISABLED;
-                    sendResult( evt );
+                    postEvent( evt );
                     if ( cameOn ) {
                         GameUtils.resendAllIf( this, CommsConnType.COMMS_CONN_BT,
                                                false );
@@ -594,7 +594,7 @@ public class BTService extends XWService {
                     }
                     break;
                 case MESG_GAMEGONE:
-                    sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
+                    postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
                     result = BTCmd.MESG_ACCPT;
                     break;
                 default:
@@ -765,7 +765,7 @@ public class BTService extends XWService {
                 if ( sendPing( dev, 0 ) ) { // did we get a reply?
                     addAddr( dev );
                     if ( null != event ) {
-                        sendResult( event, dev.getName() );
+                        postEvent( event, dev.getName() );
                     }
                 }
             }
@@ -794,7 +794,7 @@ public class BTService extends XWService {
                         } else {
                             gotReply = BTCmd.PONG == reply;
                             if ( gotReply && is.readBoolean() ) {
-                                sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
+                                postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
                             }
                         }
 
@@ -847,20 +847,20 @@ public class BTService extends XWService {
                     }
 
                     if ( null == reply ) {
-                        sendResult( MultiEvent.APP_NOT_FOUND_BT, dev.getName() );
+                        postEvent( MultiEvent.APP_NOT_FOUND_BT, dev.getName() );
                     } else {
                         switch ( reply ) {
                         case BAD_PROTO:
                             sendBadProto( socket );
                             break;
                         case INVITE_ACCPT:
-                            sendResult( MultiEvent.NEWGAME_SUCCESS, elem.m_gameID );
+                            postEvent( MultiEvent.NEWGAME_SUCCESS, elem.m_gameID );
                             break;
                         case INVITE_DUPID:
-                            sendResult( MultiEvent.NEWGAME_DUP_REJECTED, dev.getName() );
+                            postEvent( MultiEvent.NEWGAME_DUP_REJECTED, dev.getName() );
                             break;
                         default:
-                            sendResult( MultiEvent.NEWGAME_FAILURE, elem.m_gameID );
+                            postEvent( MultiEvent.NEWGAME_FAILURE, elem.m_gameID );
                             break;
                         }
                     }
@@ -943,10 +943,10 @@ public class BTService extends XWService {
 
             if ( null != evt ) {
                 String btName = nameForAddr( m_adapter, elem.m_btAddr );
-                sendResult( evt, elem.m_gameID, 0, btName );
+                postEvent( evt, elem.m_gameID, 0, btName );
                 if ( ! success ) {
                     int failCount = elem.incrFailCount();
-                    sendResult( MultiEvent.MESSAGE_RESEND, btName,
+                    postEvent( MultiEvent.MESSAGE_RESEND, btName,
                                 RESEND_TIMEOUT, failCount );
                 }
             }
@@ -966,7 +966,7 @@ public class BTService extends XWService {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
                         String btName = nameForAddr( m_adapter, elem.m_btAddr );
-                        sendResult( MultiEvent.MESSAGE_FAILOUT, btName );
+                        postEvent( MultiEvent.MESSAGE_FAILOUT, btName );
                         iter.remove();
                     }
                 }
@@ -1037,7 +1037,7 @@ public class BTService extends XWService {
         for ( int ii = 0; ii < size; ++ii ) {
             btNames[ii] = nameForAddr( m_adapter, btAddrs[ii] );
         }
-        sendResult( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
+        postEvent( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
     }
 
     private void initAddrs()
@@ -1147,7 +1147,7 @@ public class BTService extends XWService {
                 GameUtils.postInvitedNotification( this, nli.gameID(), body,
                                                    rowid );
 
-                sendResult( MultiEvent.BT_GAME_CREATED, rowid );
+                postEvent( MultiEvent.BT_GAME_CREATED, rowid );
             }
         } else {
             result = BTCmd.INVITE_DUPID;
@@ -1182,13 +1182,13 @@ public class BTService extends XWService {
         DbgUtils.logex( ioe );
         ++s_errCount;
         // if ( 0 == s_errCount % 10 ) {
-            sendResult( MultiEvent.BT_ERR_COUNT, s_errCount );
+            postEvent( MultiEvent.BT_ERR_COUNT, s_errCount );
             // }
     }
 
     private void sendBadProto( BluetoothSocket socket )
     {
-        sendResult( MultiEvent.BAD_PROTO_BT, socket.getRemoteDevice().getName() );
+        postEvent( MultiEvent.BAD_PROTO_BT, socket.getRemoteDevice().getName() );
     }
 
     private void updateStatusOut( boolean success )

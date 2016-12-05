@@ -709,7 +709,7 @@ public class WiDirService extends XWService {
     private void handleGameGone( Intent intent )
     {
         int gameID = intent.getIntExtra( KEY_GAMEID, 0 );
-        sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
+        postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
     }
 
     private void makeGame( NetLaunchInfo nli, String senderMac )

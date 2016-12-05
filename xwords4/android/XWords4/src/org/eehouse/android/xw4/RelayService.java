@@ -707,7 +707,7 @@ public class RelayService extends XWService
                     DbgUtils.logi( TAG, "relay unvailable for another %d seconds",
                                    unavail );
                     String str = getVLIString( dis );
-                    sendResult( MultiEvent.RELAY_ALERT, str );
+                    postEvent( MultiEvent.RELAY_ALERT, str );
                     break;
                 case XWPDEV_ALERT:
                     str = getVLIString( dis );
