@@ -465,7 +465,11 @@ public class BTService extends XWService {
                             receiveInvitation( proto, inStream, socket );
                             break;
                         case MESG_SEND:
-                            receiveMessage( inStream, socket );
+                            receiveMessage( cmd, inStream, socket );
+                            break;
+
+                        case MESG_GAMEGONE:
+                            receiveMessage( cmd, inStream, socket );
                             break;
 
                         default:
@@ -561,35 +565,48 @@ public class BTService extends XWService {
             socket.close();
         } // receiveInvitation
 
-        private void receiveMessage( DataInputStream dis, BluetoothSocket socket )
+        private void receiveMessage( BTCmd cmd, DataInputStream dis, BluetoothSocket socket )
         {
             try {
+                BTCmd result = null;
                 int gameID = dis.readInt();
-                short len = dis.readShort();
-                byte[] buffer = new byte[len];
-                int nRead = dis.read( buffer, 0, len );
-                if ( nRead == len ) {
-                    BluetoothDevice host = socket.getRemoteDevice();
-                    addAddr( host );
+                switch ( cmd ) {
+                case MESG_SEND:
+                    short len = dis.readShort();
+                    byte[] buffer = new byte[len];
+                    int nRead = dis.read( buffer, 0, len );
+                    if ( nRead == len ) {
+                        BluetoothDevice host = socket.getRemoteDevice();
+                        addAddr( host );
 
-                    CommsAddrRec addr = new CommsAddrRec( host.getName(),
-                                                          host.getAddress() );
-                    ReceiveResult rslt
-                        = BTService.this.receiveMessage( BTService.this, gameID,
-                                                         m_btMsgSink, buffer, addr );
+                        CommsAddrRec addr = new CommsAddrRec( host.getName(),
+                                                              host.getAddress() );
+                        ReceiveResult rslt
+                            = BTService.this.receiveMessage( BTService.this,
+                                                             gameID, m_btMsgSink,
+                                                             buffer, addr );
 
-                    BTCmd result = rslt == ReceiveResult.GAME_GONE ?
-                        BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
-
-                    DataOutputStream os =
-                        new DataOutputStream( socket.getOutputStream() );
-                    os.writeByte( result.ordinal() );
-                    os.flush();
-                    socket.close();
-                } else {
-                    DbgUtils.loge( TAG, "receiveMessages: read only %d of %d bytes",
-                                   nRead, len );
+                        result = rslt == ReceiveResult.GAME_GONE ?
+                            BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
+                    } else {
+                        DbgUtils.loge( TAG, "receiveMessage(): read only "
+                                       + "%d of %d bytes", nRead, len );
+                    }
+                    break;
+                case MESG_GAMEGONE:
+                    sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
+                    result = BTCmd.MESG_ACCPT;
+                    break;
+                default:
+                    result = BTCmd.BAD_PROTO;
+                    break;
                 }
+
+                DataOutputStream os =
+                    new DataOutputStream( socket.getOutputStream() );
+                os.writeByte( result.ordinal() );
+                os.flush();
+                socket.close();
             } catch ( IOException ioe ) {
                 logIOE( ioe );
             }
@@ -716,12 +733,17 @@ public class BTService extends XWService {
                         break;
                     case MESG_SEND:
                         boolean success = doAnyResends( elem.m_btAddr )
-                            && sendMsg( elem );
+                            && sendElem( elem );
                         if ( !success ) {
                             addToResends( elem );
                         }
                         updateStatusOut( success );
                         break;
+
+                    case MESG_GAMEGONE:
+                        sendElem( elem );
+                        break;
+
                     default:
                         Assert.fail();
                         break;
@@ -850,7 +872,7 @@ public class BTService extends XWService {
             }
         } // sendInvite
 
-        private boolean sendMsg( BTQueueElem elem )
+        private boolean sendElem( BTQueueElem elem )
         {
             boolean success = false;
             // synchronized( m_deadGames ) {
@@ -859,7 +881,7 @@ public class BTService extends XWService {
             MultiEvent evt;
             if ( success ) {
                 evt = MultiEvent.MESSAGE_DROPPED;
-                DbgUtils.logw( TAG, "sendMsg: dropping message %s because game %X dead",
+                DbgUtils.logw( TAG, "sendElem: dropping message %s because game %X dead",
                                elem.m_cmd, elem.m_gameID );
             } else {
                 evt = MultiEvent.MESSAGE_REFUSED;
@@ -872,13 +894,22 @@ public class BTService extends XWService {
                         createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                     if ( null != socket ) {
                         DataOutputStream outStream =
-                            connect( socket, BTCmd.MESG_SEND );
+                            connect( socket, elem.m_cmd );
                         if ( null != outStream ) {
                             outStream.writeInt( elem.m_gameID );
 
-                            short len = (short)elem.m_msg.length;
-                            outStream.writeShort( len );
-                            outStream.write( elem.m_msg, 0, elem.m_msg.length );
+                            switch ( elem.m_cmd ) {
+                            case MESG_SEND:
+                                short len = (short)elem.m_msg.length;
+                                outStream.writeShort( len );
+                                outStream.write( elem.m_msg, 0, elem.m_msg.length );
+                                break;
+                            case MESG_GAMEGONE:
+                                // gameID's all we need
+                                break;
+                            default:
+                                Assert.fail();
+                            }
 
                             outStream.flush();
                             Thread killer = killSocketIn( socket );
@@ -920,7 +951,7 @@ public class BTService extends XWService {
                 }
             }
             return success;
-        } // sendMsg
+        } // sendElem
 
         private boolean doAnyResends( LinkedList<BTQueueElem> resends )
         {
@@ -930,7 +961,7 @@ public class BTService extends XWService {
                 ListIterator<BTQueueElem> iter = resends.listIterator();
                 while ( iter.hasNext() && success ) {
                     BTQueueElem elem = iter.next();
-                    success = sendMsg( elem );
+                    success = sendElem( elem );
                     if ( success ) {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
