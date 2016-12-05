@@ -1199,32 +1199,34 @@ public class GameUtils {
                                   boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
-        int gameID = summary.gameID;
+        if ( DeviceRole.SERVER_STANDALONE != summary.serverRole ) {
+            int gameID = summary.gameID;
 
-        GamePtr gamePtr = loadMakeGame( context, lock );
-        if ( null != gamePtr ) {
-            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
-            for ( CommsAddrRec addr : addrs ) {
-                CommsConnTypeSet conTypes = addr.conTypes;
-                for ( CommsConnType typ : conTypes ) {
-                    switch ( typ ) {
-                    case COMMS_CONN_RELAY:
-                        tellRelayDied( context, summary, informNow );
-                        break;
-                    case COMMS_CONN_BT:
-                        BTService.gameDied( context, addr.bt_btAddr, gameID );
-                        break;
-                    case COMMS_CONN_SMS:
-                        SMSService.gameDied( context, gameID, addr.sms_phone );
-                        break;
-                    case COMMS_CONN_P2P:
-                        WiDirService.gameDied( addr.p2p_addr, gameID );
-                        break;
+            GamePtr gamePtr = loadMakeGame( context, lock );
+            if ( null != gamePtr ) {
+                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
+                for ( CommsAddrRec addr : addrs ) {
+                    CommsConnTypeSet conTypes = addr.conTypes;
+                    for ( CommsConnType typ : conTypes ) {
+                        switch ( typ ) {
+                        case COMMS_CONN_RELAY:
+                            tellRelayDied( context, summary, informNow );
+                            break;
+                        case COMMS_CONN_BT:
+                            BTService.gameDied( context, addr.bt_btAddr, gameID );
+                            break;
+                        case COMMS_CONN_SMS:
+                            SMSService.gameDied( context, gameID, addr.sms_phone );
+                            break;
+                        case COMMS_CONN_P2P:
+                            WiDirService.gameDied( addr.p2p_addr, gameID );
+                            break;
+                        }
                     }
                 }
-            }
             
-            gamePtr.release();
+                gamePtr.release();
+            }
         }
     }
 
