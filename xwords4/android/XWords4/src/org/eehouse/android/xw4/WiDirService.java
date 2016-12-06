@@ -462,6 +462,12 @@ public class WiDirService extends XWService {
             m_handler = new Handler();
         }
 
+        public void restart()
+        {
+            m_curState = State.START;
+            schedule( 0 );
+        }
+
         private void schedule( int waitSeconds )
         {
             DbgUtils.logd( TAG, "scheduling %s in %d seconds",
@@ -482,24 +488,32 @@ public class WiDirService extends XWService {
         @Override
         public void onFailure( int code ) {
             int count = ++m_failures[m_curState.ordinal()];
-            DbgUtils.logd( TAG, "onFailure(%d): state %s failed (count=%d)",
-                           code, m_curState.toString(), count );
+            String codeStr = null;
             switch ( code ) {
             case WifiP2pManager.ERROR:
                 m_curState = State.START;
                 schedule( 10 );
+                codeStr = "ERROR";
                 break;
             case WifiP2pManager.P2P_UNSUPPORTED:
                 Assert.fail();
+                codeStr = "UNSUPPORTED";
                 break;
             case WifiP2pManager.BUSY:
-                if ( 8 < count ) {
+                if ( ! sEnabled ) {
+                    DbgUtils.logd( TAG, "onFailure(): no wifi,"
+                                   + " so stopping machine" );
+                    break;
+                } else if ( 8 < count ) {
                     DbgUtils.logd( TAG, "too many errors; restarting machine" );
                     m_curState = State.START;
                 }
                 schedule( 10 );
+                codeStr = "BUSY";
                 break;
             }
+            DbgUtils.logd( TAG, "onFailure(%s): state %s failed (count=%d)",
+                           codeStr, m_curState.toString(), count );
         }
 
         @Override
@@ -546,11 +560,12 @@ public class WiDirService extends XWService {
                 break;
 
             case DONE:
-                m_curState = State.values()[0]; // restart
+                m_curState = State.START;
                 schedule( /*5 * */ 60 );
                 break;
 
-            default: Assert.fail();
+            default:
+                Assert.fail();
             }
         }
     }
@@ -558,7 +573,9 @@ public class WiDirService extends XWService {
     // See: http://stackoverflow.com/questions/26300889/wifi-p2p-service-discovery-works-intermittently
     private static void startDiscovery()
     {
-        s_discoverer.run();
+        if ( null != s_discoverer ) {
+            s_discoverer.restart();
+        }
     }
 
     private static WifiP2pManager getMgr()
@@ -1004,6 +1021,9 @@ public class WiDirService extends XWService {
                     int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
                     sEnabled = state == WifiP2pManager.WIFI_P2P_STATE_ENABLED;
                     DbgUtils.logd( TAG, "WifiP2PEnabled: %b", sEnabled );
+                    if ( sEnabled ) {
+                        startDiscovery();
+                    }
                 } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
                     mManager.requestPeers( mChannel, this );
                 } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
