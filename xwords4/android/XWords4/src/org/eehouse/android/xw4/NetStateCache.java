@@ -42,7 +42,7 @@ public class NetStateCache {
     private static final long WAIT_STABLE_MILLIS = 2 * 1000;
 
     public interface StateChangedIf {
-        public void netAvail( boolean nowAvailable );
+        public void onNetAvail( boolean nowAvailable );
     }
 
     private static AtomicBoolean s_haveReceiver = new AtomicBoolean( false );
@@ -221,7 +221,7 @@ public class NetStateCache {
             }
         }
 
-        public void notifyStateChanged( final Context context )
+        private void notifyStateChanged( final Context context )
         {
             // We want to wait for WAIT_STABLE_MILLIS of inactivity
             // before informing listeners.  So each time there's a
@@ -246,7 +246,7 @@ public class NetStateCache {
                             synchronized( s_ifs ) {
                                 Iterator<StateChangedIf> iter = s_ifs.iterator();
                                 while ( iter.hasNext() ) {
-                                    iter.next().netAvail( s_netAvail );
+                                    iter.next().onNetAvail( s_netAvail );
                                 }
                             }
 

@@ -490,7 +490,7 @@ public class RelayService extends XWService
     }
 
     // NetStateCache.StateChangedIf interface
-    public void netAvail( boolean nowAvailable )
+    public void onNetAvail( boolean nowAvailable )
     {
         startService( this ); // bad name: will *stop* threads too
     }

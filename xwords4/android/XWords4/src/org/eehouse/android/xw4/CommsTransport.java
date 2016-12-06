@@ -229,7 +229,7 @@ public class CommsTransport implements TransportProcs,
     //////////////////////////////////////////////////////////////////////
     // NetStateCache.StateChangedIf interface
     //////////////////////////////////////////////////////////////////////
-    public void netAvail( boolean nowAvailable )
+    public void onNetAvail( boolean nowAvailable )
     {
         if ( !nowAvailable ) {
             waitToStopImpl();
