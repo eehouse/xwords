@@ -685,6 +685,10 @@ public class WiDirService extends XWService {
             DbgUtils.logd( TAG,
                            "storeByAddress(); storing wrap for %s",
                            macAddress );
+
+            GameUtils.resendAllIf( XWApp.getContext(),
+                                   CommsConnType.COMMS_CONN_P2P,
+                                   false );
         }
     }
 
