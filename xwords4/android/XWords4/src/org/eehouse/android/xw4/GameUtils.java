@@ -1308,9 +1308,16 @@ public class GameUtils {
                     }
                     lock.unlock();
                 } else {
-                    DbgUtils.logw( TAG,
-                                   "ResendTask.doInBackground: unable to unlock %d",
-                                   rowid );
+                    JNIThread jniThread = JNIThread.getRetained( rowid, false );
+                    if ( null != jniThread ) {
+                        jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false,
+                                          false, false );
+                        jniThread.release();
+                    } else {
+                        DbgUtils.logw( TAG,
+                                       "ResendTask.doInBackground: unable to unlock %d",
+                                       rowid );
+                    }
                 }
             }
             return null;
