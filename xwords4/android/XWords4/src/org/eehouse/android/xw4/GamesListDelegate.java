@@ -504,8 +504,9 @@ public class GamesListDelegate extends ListDelegateBase
                 R.string.game_summary_field_rowid,
                 R.string.game_summary_field_gameid,
                 R.string.game_summary_field_npackets,
+                R.string.title_addrs_pref,
             };
-            int result = -1;
+            int result = ids[0]; // need a default in case set changes
             for ( int id : ids ) {
                 if ( LocUtils.getString( m_activity, id ).equals( fieldName )){
                     result = id;
@@ -1802,7 +1803,7 @@ public class GamesListDelegate extends ListDelegateBase
             // DEBUG only
         case R.id.games_game_invites:
             msg = GameUtils.getSummary( m_activity, selRowIDs[0] )
-                .conTypes.toString( m_activity );
+                .conTypes.toString( m_activity, true );
             msg = getString( R.string.invites_net_fmt, msg );
 
             SentInvitesInfo info = DBUtils.getInvitesFor( m_activity,

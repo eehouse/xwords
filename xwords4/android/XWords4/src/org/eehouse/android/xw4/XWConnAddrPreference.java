@@ -50,7 +50,7 @@ public class XWConnAddrPreference extends DialogPreference {
         setNegativeButtonText( LocUtils.getString( context, android.R.string.cancel ) );
 
         CommsConnTypeSet curSet = XWPrefs.getAddrTypes( context );
-        setSummary( curSet.toString( context ) );
+        setSummary( curSet.toString( context, true ) );
     }
 
     @Override
@@ -115,7 +115,7 @@ public class XWConnAddrPreference extends DialogPreference {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             CommsConnTypeSet curSet = m_view.getTypes();
             XWPrefs.setAddrTypes( m_context, curSet );
-            setSummary( curSet.toString( m_context ) );
+            setSummary( curSet.toString( m_context, true ) );
         }
         super.onClick( dialog, which );
     }

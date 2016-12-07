@@ -187,7 +187,7 @@ public class ConnStatusHandler {
             synchronized( s_lockObj ) {
                 sb.append( LocUtils.getString( context,
                                                R.string.connstat_net_fmt,
-                                               connTypes.toString( context )));
+                                               connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
                     String did = addDebugInfo( context, typ );
                     sb.append( String.format( "\n\n*** %s %s***\n",

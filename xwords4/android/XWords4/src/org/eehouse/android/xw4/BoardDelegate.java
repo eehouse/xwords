@@ -471,7 +471,7 @@ public class BoardDelegate extends DelegateBase
                     without.remove( CommsConnType.COMMS_CONN_RELAY );
                     message += "\n\n"
                         + getString( R.string.drop_relay_warning_fmt,
-                                     without.toString( m_activity ) );
+                                     without.toString( m_activity, true ) );
                     buttonTxt = R.string.newgame_drop_relay;
                 }
             } else {

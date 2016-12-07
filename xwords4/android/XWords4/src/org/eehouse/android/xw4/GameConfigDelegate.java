@@ -1296,7 +1296,7 @@ public class GameConfigDelegate extends DelegateBase
             m_connLabel.setVisibility( View.GONE );
             m_changeConnButton.setVisibility( View.GONE );
         } else {
-            String connString = m_conTypes.toString( m_activity );
+            String connString = m_conTypes.toString( m_activity, true );
             m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
         }
     }

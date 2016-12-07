@@ -67,6 +67,12 @@ public class CommsAddrRec {
 
             return ( 0 == id ) ? toString() : LocUtils.getString( context, id );
         }
+
+        public String shortName()
+        {
+            String[] parts = TextUtils.split( toString(), "_" );
+            return parts[parts.length - 1];
+        }
     };
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
@@ -157,7 +163,7 @@ public class CommsAddrRec {
             return result;
         }
 
-        public String toString( Context context )
+        public String toString( Context context, boolean longVersion )
         {
             String result;
             CommsConnType[] types = getTypes();
@@ -166,9 +172,11 @@ public class CommsAddrRec {
             } else {
                 String[] strs = new String[types.length];
                 for ( int ii = 0; ii < types.length; ++ii ) {
-                    strs[ii] = types[ii].longName( context );
+                    CommsConnType typ = types[ii];
+                    strs[ii] = longVersion? typ.longName( context ) : typ.shortName();
                 }
-                result = TextUtils.join( " + ", strs );
+                String sep = longVersion ? " + " : ",";
+                result = TextUtils.join( sep, strs );
             }
             return result;
         }

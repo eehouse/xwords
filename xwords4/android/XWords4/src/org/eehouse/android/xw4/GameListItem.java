@@ -260,6 +260,9 @@ public class GameListItem extends LinearLayout
             case R.string.game_summary_field_state:
                 value = state;
                 break;
+            case R.string.title_addrs_pref:
+                value = m_summary.conTypes.toString( m_context, false );
+                break;
             }
 
             String name = GameUtils.getName( m_context, m_rowid );
