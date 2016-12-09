@@ -148,7 +148,7 @@ public class JNIUtilsImpl implements JNIUtils {
             }
             digest = md.digest();
         } catch ( java.security.NoSuchAlgorithmException nsae ) {
-            DbgUtils.logex( nsae );
+            DbgUtils.logex( TAG, nsae );
         }
         return Utils.digestToString( digest );
     }

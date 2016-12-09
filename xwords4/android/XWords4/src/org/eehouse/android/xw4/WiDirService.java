@@ -317,7 +317,7 @@ public class WiDirService extends XWService {
             try {
                 activity.unregisterReceiver( sReceiver );
             } catch ( IllegalArgumentException iae ) {
-                DbgUtils.logex( iae );
+                DbgUtils.logex( TAG, iae );
             }
             DbgUtils.logd( TAG, "activityPaused() done" );
 
@@ -844,7 +844,7 @@ public class WiDirService extends XWService {
                 }
                 packet.put( KEY_MAP, array );
             } catch ( JSONException ex ) {
-                DbgUtils.logex( ex );
+                DbgUtils.logex( TAG, ex );
             }
         }
     }
@@ -861,7 +861,7 @@ public class WiDirService extends XWService {
                     sUserMap.put( mac, name );
                 }
             } catch ( JSONException ex ) {
-                DbgUtils.logex( ex );
+                DbgUtils.logex( TAG, ex );
             }
         }
         updateListeners();
@@ -972,7 +972,7 @@ public class WiDirService extends XWService {
                 try {
                     sServerSock.close();
                 } catch ( IOException ioe ) {
-                    DbgUtils.logex( ioe );
+                    DbgUtils.logex( TAG, ioe );
                 }
                 sServerSock = null;
             }

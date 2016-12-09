@@ -414,7 +414,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     {
         if ( null == m_jniThread ) {
             DbgUtils.logw( TAG, "not calling handle(%s)", cmd.toString() );
-            DbgUtils.printStack();
+            DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );
         }

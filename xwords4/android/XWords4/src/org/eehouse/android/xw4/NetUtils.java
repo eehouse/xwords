@@ -72,9 +72,9 @@ public class NetUtils {
             socket.setSoTimeout( timeoutMillis );
 
         } catch ( java.net.UnknownHostException uhe ) {
-            DbgUtils.logex( uhe );
+            DbgUtils.logex( TAG, uhe );
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         }
         return socket;
     }
@@ -129,7 +129,7 @@ public class NetUtils {
                         DBUtils.clearObits( m_context, m_obits );
                     }
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logex( ioe );
+                    DbgUtils.logex( TAG, ioe );
                 }
             }
         }
@@ -199,7 +199,7 @@ public class NetUtils {
             }
 
         } catch( Exception npe ) {
-            DbgUtils.logex( npe );
+            DbgUtils.logex( TAG, npe );
         }
         return msgs;
     } // queryRelay
@@ -225,10 +225,10 @@ public class NetUtils {
             result = (HttpURLConnection)new URL(url).openConnection();
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );
-            DbgUtils.logex( mue );
+            DbgUtils.logex( TAG, mue );
         } catch ( java.io.IOException ioe ) {
             Assert.assertNull( result );
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         }
         return result;
     }
@@ -276,9 +276,9 @@ public class NetUtils {
                     DbgUtils.logw( TAG, "runConn: responseCode: %d", responseCode );
                 }
             } catch ( java.net.ProtocolException pe ) {
-                DbgUtils.logex( pe );
+                DbgUtils.logex( TAG, pe );
             } catch( java.io.IOException ioe ) {
-                DbgUtils.logex( ioe );
+                DbgUtils.logex( TAG, ioe );
             }
         }
 
@@ -299,7 +299,7 @@ public class NetUtils {
             }
             result = TextUtils.join( "&", pairs );
         } catch ( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logex( uee );
+            DbgUtils.logex( TAG, uee );
         }
 
         return result;

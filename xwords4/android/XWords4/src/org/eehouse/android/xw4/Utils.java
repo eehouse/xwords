@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Utils {
+    private static final String TAG = Utils.class.getSimpleName();
     public static final int TURN_COLOR = 0x7F00FF00;
 
     private static final String DB_PATH = "XW_GAMES";
@@ -140,7 +141,7 @@ public class Utils {
         try {
             Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
         } catch ( java.lang.RuntimeException re ) {
-            DbgUtils.logex( re );
+            DbgUtils.logex( TAG, re );
         }
     }
 
@@ -431,7 +432,7 @@ public class Utils {
                     .versionCode;
                 s_appVersion = new Integer( version );
             } catch ( Exception e ) {
-                DbgUtils.logex( e );
+                DbgUtils.logex( TAG, e );
             }
         }
         return null == s_appVersion? 0 : s_appVersion;

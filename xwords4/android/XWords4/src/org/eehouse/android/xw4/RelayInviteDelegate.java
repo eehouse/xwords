@@ -534,7 +534,7 @@ public class RelayInviteDelegate extends InviteDelegate {
                 }
 
             } catch ( org.json.JSONException je ) {
-                DbgUtils.logex( je );
+                DbgUtils.logex( TAG, je );
             }
 
             stopProgress();

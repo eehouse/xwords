@@ -138,11 +138,11 @@ public class DwnldDelegate extends ListDelegateBase {
                 }
                 is.close();
             } catch ( java.net.URISyntaxException use ) {
-                DbgUtils.logex( use );
+                DbgUtils.logex( TAG, use );
             } catch ( java.net.MalformedURLException mue ) {
-                DbgUtils.logex( mue );
+                DbgUtils.logex( TAG, mue );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( ioe );
+                DbgUtils.logex( TAG, ioe );
             }
             return null;
         }
@@ -218,9 +218,9 @@ public class DwnldDelegate extends ListDelegateBase {
                 fos.close();
                 success = !cancelled;
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.logex( fnf );
+                DbgUtils.logex( TAG, fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( ioe );
+                DbgUtils.logex( TAG, ioe );
             }
 
             if ( !success ) {

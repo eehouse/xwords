@@ -250,7 +250,7 @@ public class JNIThread extends Thread {
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
-            DbgUtils.logex( ie );
+            DbgUtils.logex( TAG, ie );
         }
         m_lock.unlock();
     }
@@ -715,7 +715,7 @@ public class JNIThread extends Thread {
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
             DbgUtils.logw( TAG, "adding %s to stopped thread!!!",
                            cmd.toString() );
-            DbgUtils.printStack();
+            DbgUtils.printStack( TAG );
         }
     }
 

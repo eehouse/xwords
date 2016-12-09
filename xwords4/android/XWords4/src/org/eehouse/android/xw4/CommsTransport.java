@@ -95,7 +95,7 @@ public class CommsTransport implements TransportProcs,
 
                     closeSocket();
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logex( ioe );
+                    DbgUtils.logex( TAG, ioe );
                 } catch ( UnresolvedAddressException uae ) {
                     DbgUtils.logw( TAG, "bad address: name: %s; port: %s; exception: %s",
                                    m_useHost, m_relayAddr.ip_relay_port,
@@ -133,7 +133,7 @@ public class CommsTransport implements TransportProcs,
                                                           m_relayAddr.ip_relay_port );
                                     m_socketChannel.connect( isa );
                                 } catch ( java.io.IOException ioe ) {
-                                    DbgUtils.logex( ioe );
+                                    DbgUtils.logex( TAG, ioe );
                                     failed = true;
                                     break outer_loop;
                                 }
@@ -157,7 +157,7 @@ public class CommsTransport implements TransportProcs,
                         DbgUtils.logw( TAG, "exiting: %s", ioe.toString() );
                         DbgUtils.logw( TAG, ioe.toString() );
                     } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
-                        DbgUtils.logex( ncp );
+                        DbgUtils.logex( TAG, ncp );
                         closeSocket();
                         break;
                     }
@@ -205,7 +205,7 @@ public class CommsTransport implements TransportProcs,
                             break outer_loop;
                         } catch ( java.nio.channels.
                                   NoConnectionPendingException ncp ) {
-                            DbgUtils.logex( ncp );
+                            DbgUtils.logex( TAG, ncp );
                             break outer_loop;
                         }
                     }
@@ -342,7 +342,7 @@ public class CommsTransport implements TransportProcs,
                 try {
                     m_thread.join(100);   // wait up to 1/10 second
                 } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.logex( ie );
+                    DbgUtils.logex( TAG, ie );
                 }
                 m_thread = null;
             }

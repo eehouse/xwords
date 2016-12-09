@@ -289,7 +289,7 @@ public class LookupAlert extends LinearLayout
             try {
                 context.startActivity( intent );
             } catch ( android.content.ActivityNotFoundException anfe ) {
-                DbgUtils.logex( anfe );
+                DbgUtils.logex( TAG, anfe );
             }
         }
     } // lookupWord

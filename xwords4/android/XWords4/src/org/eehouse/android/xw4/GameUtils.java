@@ -225,7 +225,7 @@ public class GameUtils {
             try {
                 lock = new GameLock( rowid, false ).lock( maxMillis );
             } catch ( GameLock.GameLockedException gle ) {
-                DbgUtils.logex( gle );
+                DbgUtils.logex( TAG, gle );
             }
         }
 
@@ -1254,7 +1254,7 @@ public class GameUtils {
                 fos.close();
                 result = file;
             } catch ( Exception ex ) {
-                DbgUtils.logex( ex );
+                DbgUtils.logex( TAG, ex );
             }
         }
         return result;

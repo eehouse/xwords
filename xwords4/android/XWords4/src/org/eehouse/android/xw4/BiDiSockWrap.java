@@ -79,11 +79,11 @@ public class BiDiSockWrap {
                             mIface.connectStateChanged( BiDiSockWrap.this, true );
                             break;
                         } catch ( java.net.UnknownHostException uhe ) {
-                            DbgUtils.logex( uhe );
+                            DbgUtils.logex( TAG, uhe );
                         } catch ( IOException ioe ) {
-                            DbgUtils.logex( ioe );
+                            DbgUtils.logex( TAG, ioe );
                         } catch ( InterruptedException ie ) {
-                            DbgUtils.logex( ie );
+                            DbgUtils.logex( TAG, ie );
                         }
                         waitMillis = Math.min( waitMillis * 2, 1000 * 60 );
                     }
@@ -102,7 +102,7 @@ public class BiDiSockWrap {
         try {
             send( packet.getBytes( "UTF-8" ) );
         } catch ( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logex( uee );
+            DbgUtils.logex( TAG, uee );
         }
     }
 
@@ -138,7 +138,7 @@ public class BiDiSockWrap {
         try {
             mSocket.close();
         } catch ( IOException ioe ) {
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         }
         mIface.connectStateChanged( this, false );
         mQueue.add( new byte[0] );
@@ -170,7 +170,7 @@ public class BiDiSockWrap {
                             mIface.onWriteSuccess( BiDiSockWrap.this );
                         }
                     } catch ( IOException ioe ) {
-                        DbgUtils.logex( ioe );
+                        DbgUtils.logex( TAG, ioe );
                         closeSocket();
                     } catch ( InterruptedException ie ) {
                         Assert.fail();
@@ -195,7 +195,7 @@ public class BiDiSockWrap {
                             mIface.gotPacket( BiDiSockWrap.this, packet );
                         }
                     } catch( IOException ioe ) {
-                        DbgUtils.logex( ioe );
+                        DbgUtils.logex( TAG, ioe );
                         closeSocket();
                     }
                     DbgUtils.logd( TAG, "read thread exiting" );

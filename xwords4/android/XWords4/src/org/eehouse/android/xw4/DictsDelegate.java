@@ -1243,7 +1243,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
 
                     } catch ( JSONException ex ) {
-                        DbgUtils.logex( ex );
+                        DbgUtils.logex( TAG, ex );
                         theOne = null;
                     }
                 }
@@ -1423,7 +1423,7 @@ public class DictsDelegate extends ListDelegateBase
 
                     success = true;
                 } catch ( JSONException ex ) {
-                    DbgUtils.logex( ex );
+                    DbgUtils.logex( TAG, ex );
                 }
             }
 

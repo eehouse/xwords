@@ -121,10 +121,10 @@ public class DbgUtils {
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
-    public static void logex( Exception exception )
+    public static void logex( String tag, Exception exception )
     {
         logw( TAG, "Exception: %s", exception.toString() );
-        printStack( exception.getStackTrace() );
+        printStack( tag, exception.getStackTrace() );
     }
 
     public static void assertOnUIThread()
@@ -132,20 +132,20 @@ public class DbgUtils {
         Assert.assertTrue( Looper.getMainLooper().equals(Looper.myLooper()) );
     }
 
-    public static void printStack( StackTraceElement[] trace )
+    public static void printStack( String tag, StackTraceElement[] trace )
     {
         if ( s_doLog && null != trace ) {
             // 1: skip printStack etc.
             for ( int ii = 1; ii < trace.length; ++ii ) {
-                DbgUtils.logd( TAG, "ste %d: %s", ii, trace[ii].toString() );
+                DbgUtils.logd( tag, "ste %d: %s", ii, trace[ii].toString() );
             }
         }
     }
 
-    public static void printStack()
+    public static void printStack( String tag )
     {
         if ( s_doLog ) {
-            printStack( Thread.currentThread().getStackTrace() );
+            printStack( tag, Thread.currentThread().getStackTrace() );
         }
     }
 

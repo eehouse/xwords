@@ -96,7 +96,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                         RelayService.processGameMsgs( context, connname, strs64 );
                     }
                 } catch (org.json.JSONException jse ) {
-                    DbgUtils.logex( jse );
+                    DbgUtils.logex( TAG, jse );
                 }
             }
 
@@ -133,7 +133,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                 DbgUtils.logw( TAG, "Device can't do GCM." );
             } catch ( Exception whatever ) {
                 // funky devices could do anything
-                DbgUtils.logex( whatever );
+                DbgUtils.logex( TAG, whatever );
             }
         }
     }

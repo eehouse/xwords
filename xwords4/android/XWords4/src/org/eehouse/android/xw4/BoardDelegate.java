@@ -2287,12 +2287,12 @@ public class BoardDelegate extends DelegateBase
                 try {
                     m_forResultWait.acquire();
                 } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.logex( ie );
+                    DbgUtils.logex( TAG, ie );
                     if ( DlgID.NONE != m_blockingDlgID ) {
                         try {
                             dismissDialog( m_blockingDlgID );
                         } catch ( java.lang.IllegalArgumentException iae ) {
-                            DbgUtils.logex( iae );
+                            DbgUtils.logex( TAG, iae );
                         }
                     }
                 }
@@ -2465,7 +2465,7 @@ public class BoardDelegate extends DelegateBase
                         RelayService.inviteRemote( m_activity, destDevID,
                                                    null, nli );
                     } catch (NumberFormatException nfi) {
-                        DbgUtils.logex( nfi );
+                        DbgUtils.logex( TAG, nfi );
                     }
                     break;
                 case WIFIDIRECT:
@@ -2550,7 +2550,7 @@ public class BoardDelegate extends DelegateBase
             m_handler.post( runnable );
         } else {
             DbgUtils.logw( TAG, "post(): dropping b/c handler null" );
-            DbgUtils.printStack();
+            DbgUtils.printStack( TAG );
         }
         return canPost;
     }
@@ -2795,7 +2795,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( null == m_jniThread ) {
             DbgUtils.logw( TAG, "not calling handle(%s)", cmd.toString() );
-            DbgUtils.printStack();
+            DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );
         }

@@ -385,7 +385,7 @@ public class SMSService extends XWService {
 
             send( SMS_CMD.INVITE, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         }
     }
 
@@ -399,7 +399,7 @@ public class SMSService extends XWService {
 
             send( SMS_CMD.ACK, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         }
     }
 
@@ -414,7 +414,7 @@ public class SMSService extends XWService {
                 send( SMS_CMD.DEATH, bas.toByteArray(), phone );
                 s_sentDied.add( gameID );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( ioe );
+                DbgUtils.logex( TAG, ioe );
             }
         }
     }
@@ -432,7 +432,7 @@ public class SMSService extends XWService {
                 nSent = bytes.length;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         }
         return nSent;
     }
@@ -533,7 +533,7 @@ public class SMSService extends XWService {
                 break;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         }
     }
 
@@ -614,7 +614,7 @@ public class SMSService extends XWService {
                 success = true;
             }
         } catch ( java.io.IOException ioe ) {
-            DbgUtils.logex( ioe );
+            DbgUtils.logex( TAG, ioe );
         } catch ( ArrayIndexOutOfBoundsException oob ) {
             // enum this older code doesn't know about; drop it
             DbgUtils.logw( TAG, "disAssemble: dropping message with too-new enum" );
@@ -679,7 +679,7 @@ public class SMSService extends XWService {
                 } catch ( NullPointerException npe ) {
                     Assert.fail();      // shouldn't be trying to do this!!!
                 } catch ( Exception ee ) {
-                    DbgUtils.logex( ee );
+                    DbgUtils.logex( TAG, ee );
                 }
             }
         } else {

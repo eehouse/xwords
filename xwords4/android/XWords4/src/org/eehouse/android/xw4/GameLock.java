@@ -58,7 +58,7 @@ public class GameLock {
         if ( DEBUG_LOCKS ) {
             DbgUtils.logi( TAG, "GameLock(rowid:%d,isForWrite:%b)=>"
                            + "this: %H", rowid, isForWrite, this );
-            DbgUtils.printStack();
+            DbgUtils.printStack( TAG );
         }
     }
 
@@ -139,16 +139,16 @@ public class GameLock {
                 DbgUtils.logi( TAG, "lock() %H failed; sleeping", this );
                 if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= ASSERT_TIME ) {
                     DbgUtils.logi( TAG, "lock %H seeking stack:", curOwner );
-                    DbgUtils.printStack( curOwner.m_lockTrace );
+                    DbgUtils.printStack( TAG, curOwner.m_lockTrace );
                     DbgUtils.logi( TAG, "lock %H seeking stack:", this );
-                    DbgUtils.printStack();
+                    DbgUtils.printStack( TAG );
                 }
             }
             try {
                 Thread.sleep( SLEEP_TIME ); // milliseconds
                 sleptTime += SLEEP_TIME;
             } catch( InterruptedException ie ) {
-                DbgUtils.logex( ie );
+                DbgUtils.logex( TAG, ie );
                 break;
             }
 
