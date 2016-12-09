@@ -102,7 +102,8 @@ public class WiDirService extends XWService {
     private static IntentFilter sIntentFilter;
     private static GroupInfoListener sGroupListener;
     private static WFDBroadcastReceiver sReceiver;
-    private static boolean sDiscoveryStarted;
+    // private static boolean sDiscoveryStarted;
+    private static boolean sDiscoveryRunning; // set via broadcast
     private static boolean sEnabled;
     private static boolean sHavePermission;
     // These two kinda overlap...
@@ -422,6 +423,7 @@ public class WiDirService extends XWService {
                     sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
                     sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
                     sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+                    sIntentFilter.addAction(WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION);
 
                     sReceiver = new WFDBroadcastReceiver( mgr, sChannel );
                     succeeded = true;
@@ -1060,6 +1062,13 @@ public class WiDirService extends XWService {
                     if ( null == stored ) {
                         DBUtils.setStringFor( context, MAC_ADDR_KEY, sMacAddress );
                     }
+                } else if (WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION.equals(action)) {
+                    int running = intent
+                        .getIntExtra( WifiP2pManager.EXTRA_DISCOVERY_STATE, -1 );
+                    Assert.assertTrue( running == 2 || running == 1 ); // remove soon
+                    sDiscoveryRunning = 2 == running;
+                    DbgUtils.logd( TAG, "discovery changed: running: %b",
+                                   sDiscoveryRunning );
                 }
             }
         }

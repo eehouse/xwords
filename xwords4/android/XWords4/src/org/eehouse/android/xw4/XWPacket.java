@@ -26,6 +26,9 @@ import org.json.JSONArray;
 public class XWPacket {
     private static final String TAG = XWPacket.class.getSimpleName();
     private static final String KEY_CMD = "cmd";
+
+    // This can't change after ship!!!!
+    private static final boolean CMDS_AS_STRINGS = true;
     
     private JSONObject m_obj;
 
@@ -40,7 +43,11 @@ public class XWPacket {
     public XWPacket( CMD cmd ) {
         try {
             m_obj = new JSONObject();
-            m_obj.put( KEY_CMD, cmd.ordinal() );
+            if ( CMDS_AS_STRINGS ) {
+                m_obj.put( KEY_CMD, cmd.toString() );
+            } else {
+                m_obj.put( KEY_CMD, cmd.ordinal() );
+            }
         } catch ( JSONException ex ) {
             DbgUtils.logd( TAG, ex.toString() );
         }
@@ -57,8 +64,20 @@ public class XWPacket {
 
     public CMD getCommand()
     {
-        int cmd = m_obj.optInt( KEY_CMD, -1 ); // let's blow up :-)
-        return CMD.values()[cmd];
+        CMD cmd = null;
+        if ( CMDS_AS_STRINGS ) {
+            String str = m_obj.optString( KEY_CMD );
+            for ( CMD one : CMD.values() ) {
+                if ( one.toString().equals(str)) {
+                    cmd = one;
+                    break;
+                }
+            }
+        } else {
+            int ord = m_obj.optInt( KEY_CMD, -1 ); // let's blow up :-)
+            cmd = CMD.values()[ord];
+        }
+        return cmd;
     }
 
     public XWPacket put( String key, String value )
