@@ -107,8 +107,12 @@ public class Utils {
 
     public static boolean isGSMPhone( Context context )
     {
-        SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
-        return info.isPhone && info.isGSM;
+        boolean result = false;
+        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
+            SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
+            result = info.isPhone && info.isGSM;
+        }
+        return result;
     }
 
     // Does the device have ability to send SMS -- e.g. is it a phone and not

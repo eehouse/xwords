@@ -103,6 +103,14 @@ public class Perms23 {
         // }
     }
 
+    public static boolean havePermission( Perm perm )
+    {
+        String permString = perm.getString();
+        boolean result = PackageManager.PERMISSION_GRANTED
+            == ContextCompat.checkSelfPermission( XWApp.getContext(), permString );
+        DbgUtils.logd( TAG, "havePermission(%s) => %b", perm.toString(), result );
+        return result;
+    }
 
     private static class CbckRecord {
         public PermCbck cbck;
