@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class RelayInviteActivity extends InviteActivity {
+    private static final String TAG = RelayInviteActivity.class.getSimpleName();
     private RelayInviteDelegate m_dlgt;
 
     @Override

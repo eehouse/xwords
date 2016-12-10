@@ -403,7 +403,7 @@
          when user attempts to play word not in the wordlist. -->
     <string name="phonies_disallow">Disallow phonies</string>
 
-    <!-- Shown when using the the Game configure screen to configure a
+    <!-- Shown when using the Game configure screen to configure a
          networked game and you try to make all players local. -->
     <string name="str_reg_server_sans_remote">At least one player must
          be marked \"Remote\" for a game started as Host.</string>
@@ -975,7 +975,7 @@
     <string name="prefs_colors_summary">Edit colors used on the board</string>
 
     <!-- The remaining strings (down to the color edit dialog below)
-         are showns as the names of editable colors and as the the
+         are showns as the names of editable colors and as the
          title of the color editor that comes up when the name is
          tapped. -->
     <!-- (color for) double-letter bonus squares on the board -->
@@ -1205,6 +1205,7 @@
 	<string name="invite_choice_bt">Bluetooth</string>
 	<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
 	<string name="invite_choice_relay">Internet/Relay</string>
+    <string name="invite_choice_p2p">Wifi Direct</string>
 	<string name="invite_choice_title">Inviting players: How?</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
     <!--    via email?</string> -->
@@ -1920,6 +1921,7 @@
     <!-- Title of phone number picker during invitation to a game via SMS -->
 	<string name="sms_invite_title">SMS Invitation</string>
 	<string name="relay_invite_title">Relay Invitation</string>
+    <string name="p2p_invite_title">WiFi Direct Invitation</string>
 
     <!--  -->
     <string name="game_btname_title">Bluetooth game name</string>
@@ -1956,6 +1958,20 @@
       to your new game, then tap \"%2$s\".</item>
     </plurals>
     <!--  -->
+    <plurals name="invite_p2p_desc_fmt">
+      <item quantity="one">Please select the name of the
+      WiFiDirect device you want to invite to your new game, then tap
+      \"%2$s\".</item>
+      <item quantity="other">Please select the %1$d WiFiDirect device names you
+      want to invite to your new game, then tap \"%2$s\".</item>
+    </plurals>
+
+    <string name="invite_p2p_desc_extra">Only devices that are
+    currently available are shown. If a nearby device isn\'t showing
+    up please make sure that WiFi is turned on, that Crosswords is
+    installed, and that play via WiFi Direct is enabled.</string>
+
+    <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
     <!--  -->
     <string name="warn_nomobile_fmt">The number %1$s for %2$s is not
@@ -1964,6 +1980,11 @@
     <string name="empty_sms_inviter">This phone list is empty. Use the
     \"Import contact\" button to add people you want to invite, the +
     button to enter numbers directly.</string>
+
+    <!-- Shows in WiFiDirect Invite dialog when no known peers -->
+    <string name="empty_p2p_inviter">There are currently no devices
+    reachable via WiFiDirect that have Crosswords installed.</string>
+
     <!--  -->
     <string name="empty_relay_inviter">This list of devices is
     empty. Use the \"Scan games\" button to scan your old games
@@ -2626,6 +2647,9 @@
 
   <string name="not_again_comms_bt">Use Bluetooth to play against a
   nearby device that\'s \"paired\" with yours.</string>
+
+  <string name="not_again_comms_p2p">Use WiFi Direct to play against a
+  nearby WiFi Direct-capable device.</string>
 
   <string name="str_no_hint_found">Cannot find any moves</string>
 

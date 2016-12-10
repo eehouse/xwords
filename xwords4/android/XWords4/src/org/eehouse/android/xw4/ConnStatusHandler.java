@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class ConnStatusHandler {
+    private static final String TAG = ConnStatusHandler.class.getSimpleName();
 
     public interface ConnStatusCBacks {
         public void invalidateParent();
@@ -186,14 +187,9 @@ public class ConnStatusHandler {
             synchronized( s_lockObj ) {
                 sb.append( LocUtils.getString( context,
                                                R.string.connstat_net_fmt,
-                                               connTypes.toString( context )));
+                                               connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
-                    String did = "";
-                    if ( BuildConfig.DEBUG
-                         && CommsConnType.COMMS_CONN_RELAY == typ ) {
-                        did = String.format( "(DevID: %d) ",
-                                             DevID.getRelayDevIDInt(context) );
-                    }
+                    String did = addDebugInfo( context, typ );
                     sb.append( String.format( "\n\n*** %s %s***\n",
                                               typ.longName( context ), did ) );
                     SuccessRecord record = recordFor( typ, false );
@@ -391,7 +387,7 @@ public class ConnStatusHandler {
                 // } catch ( java.lang.ClassNotFoundException cnfe ) {
                 //     DbgUtils.logf( "loadState: %s", cnfe.toString() );
                 } catch ( Exception ex ) {
-                    DbgUtils.logex( ex );
+                    DbgUtils.logex( TAG, ex );
                 }
             }
         }
@@ -510,7 +506,7 @@ public class ConnStatusHandler {
                 XWPrefs.setPrefsString( context, R.string.key_connstat_data,
                                         as64 );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( ioe );
+                DbgUtils.logex( TAG, ioe );
             }
             s_needsSave = false;
         }
@@ -545,8 +541,11 @@ public class ConnStatusHandler {
             result = RelayService.relayEnabled( context )
                 && NetStateCache.netAvail( context );
             break;
+        case COMMS_CONN_P2P:
+            result = WiDirService.connecting();
+            break;
         default:
-            DbgUtils.logw( ConnStatusHandler.class, "connTypeEnabled: %s not handled",
+            DbgUtils.logw( TAG, "connTypeEnabled: %s not handled",
                            connType.toString() );
             break;
         }
@@ -558,6 +557,24 @@ public class ConnStatusHandler {
         boolean result =
             0 != Settings.System.getInt( context.getContentResolver(),
                                          Settings.System.AIRPLANE_MODE_ON, 0 );
+        return result;
+    }
+
+    private static String addDebugInfo( Context context, CommsConnType typ )
+    {
+        String result = "";
+        if ( BuildConfig.DEBUG ) {
+            switch ( typ ) {
+            case COMMS_CONN_RELAY:
+                result = String.format( "(DevID: %d) ", DevID.getRelayDevIDInt(context) );
+                break;
+            case COMMS_CONN_P2P:
+                result = WiDirService.formatNetStateInfo();
+                break;
+            default:
+                break;
+            }
+        }
         return result;
     }
 }

@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 
 public class SMSReceiver extends BroadcastReceiver {
+    private static final String TAG = SMSReceiver.class.getSimpleName();
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -42,9 +43,13 @@ public class SMSReceiver extends BroadcastReceiver {
                 for ( int ii = 0; ii < pdus.length; ++ii ) {
                     SmsMessage sms = SmsMessage.createFromPdu((byte[])pdus[ii]);
                     if ( null != sms ) {
-                        String phone = sms.getOriginatingAddress();
-                        byte[] body = sms.getUserData();
-                        SMSService.handleFrom( context, body, phone );
+                        try {
+                            String phone = sms.getOriginatingAddress();
+                            byte[] body = sms.getUserData();
+                            SMSService.handleFrom( context, body, phone );
+                        } catch ( NullPointerException npe ) {
+                            DbgUtils.logex( TAG, npe );
+                        }
                     }
                 }
             }

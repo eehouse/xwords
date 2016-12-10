@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,17 +22,15 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-public class DictsActivity extends XWActivity {
-    private static final String TAG = DictsActivity.class.getSimpleName();
+public class WiDirInviteActivity extends InviteActivity {
+    private static final String TAG = WiDirInviteActivity.class.getSimpleName();
 
-    // I can't provide a subclass of MenuItem to hold DictAndLoc, so
-    // settle for a hash on the side.
-    private DictsDelegate m_dlgt;
+    private WiDirInviteDelegate m_dlgt;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        m_dlgt = new DictsDelegate( this, savedInstanceState );
+        m_dlgt = new WiDirInviteDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
-    } // onCreate
+    }
 }

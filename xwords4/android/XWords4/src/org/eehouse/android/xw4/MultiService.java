@@ -31,6 +31,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class MultiService {
+    private static final String TAG = MultiService.class.getSimpleName();
 
     public static final String FORCECHANNEL = "FC";
     public static final String LANG = "LANG";
@@ -45,17 +46,20 @@ public class MultiService {
     private static final String OWNER = "OWNER";
     public static final String BT_NAME = "BT_NAME";
     public static final String BT_ADDRESS = "BT_ADDRESS";
+    public static final String P2P_MAC_ADDRESS = "P2P_MAC_ADDRESS";
     private static final String NLI_DATA = "nli";
 
     public enum DictFetchOwner { _NONE,
                                  OWNER_SMS,
                                  OWNER_RELAY,
                                  OWNER_BT,
+                                 OWNER_P2P,
     };
 
     private static final String ACTION_FETCH_DICT = "_afd";
     private static final String FOR_MISSING_DICT = "_fmd";
 
+    // Shouldn't this be a Set?
     private MultiEventListener m_li;
 
     // these do not currently pass between devices so they can change.
@@ -102,7 +106,7 @@ public class MultiService {
         }
     }
 
-    public void sendResult( MultiEvent event, Object ... args )
+    public void postEvent( MultiEvent event, Object ... args )
     {
         synchronized( this ) {
             if ( null != m_li ) {
@@ -189,7 +193,7 @@ public class MultiService {
             if ( downloaded ) {
                 int ordinal = intent.getIntExtra( OWNER, -1 );
                 if ( -1 == ordinal ) {
-                    DbgUtils.logw( DBUtils.class, "unexpected OWNER" );
+                    DbgUtils.logw( TAG, "unexpected OWNER" );
                 } else {
                     DictFetchOwner owner = DictFetchOwner.values()[ordinal];
                     switch ( owner ) {

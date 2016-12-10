@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class DBHelper extends SQLiteOpenHelper {
+    private static final String TAG = DBHelper.class.getSimpleName();
 
     public static final String TABLE_NAME_SUM = "summaries";
     public static final String TABLE_NAME_OBITS = "obits";
@@ -117,7 +118,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String SENDER = "SENDER";
     public static final String MESSAGE = "MESSAGE";
-    public static final String TAG = "TAG";
+    // TAG is a thing in Android; don't wear it out
+    public static final String TAGG = "TAG";
 
     private Context m_context;
 
@@ -224,7 +226,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String[][] s_logsSchema = {
         { TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" },
         { MESSAGE, "TEXT" },
-        { TAG, "TEXT" },
+        { TAGG, "TEXT" },
     };
 
     public DBHelper( Context context )
@@ -259,7 +261,7 @@ public class DBHelper extends SQLiteOpenHelper {
     @SuppressWarnings("fallthrough")
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
     {
-        DbgUtils.logi( getClass(), false, "onUpgrade: old: %d; new: %d",
+        DbgUtils.logi( TAG, false, "onUpgrade: old: %d; new: %d",
                        oldVersion, newVersion );
 
         boolean madeSumTable = false;

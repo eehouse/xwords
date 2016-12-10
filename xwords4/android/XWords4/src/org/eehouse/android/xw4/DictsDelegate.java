@@ -72,6 +72,7 @@ public class DictsDelegate extends ListDelegateBase
                SelectableItem, MountEventReceiver.SDCardNotifiee,
                DlgDelegate.DlgClickNotify, GroupStateListener,
                DownloadFinishedListener, XWListItem.ExpandedListener {
+    private static final String TAG = DictsDelegate.class.getSimpleName();
 
     protected static final String DICT_SHOWREMOTE = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
@@ -329,7 +330,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
                     }
                 } else {
-                    DbgUtils.logw( getClass(), "No remote info for lang %s", langName );
+                    DbgUtils.logw( TAG, "No remote info for lang %s", langName );
                 }
             }
 
@@ -383,9 +384,9 @@ public class DictsDelegate extends ListDelegateBase
                             DictLoc fromLoc = (DictLoc)selItem.getCached();
                             String name = selItem.getText();
                             if ( fromLoc == toLoc ) {
-                                DbgUtils.logw( getClass(), "not moving %s: same loc", name );
+                                DbgUtils.logw( TAG, "not moving %s: same loc", name );
                             } else if ( DictUtils.moveDict( self.m_activity,
-                                                            name, fromLoc, 
+                                                            name, fromLoc,
                                                             toLoc ) ) {
                                 selItem.setComment( self.m_locNames[toLoc.ordinal()] );
                                 selItem.setCached( toLoc );
@@ -393,7 +394,7 @@ public class DictsDelegate extends ListDelegateBase
                                 DBUtils.dictsMoveInfo( self.m_activity, name,
                                                        fromLoc, toLoc );
                             } else {
-                                DbgUtils.logw( getClass(), "moveDict(%s) failed", name );
+                                DbgUtils.logw( TAG, "moveDict(%s) failed", name );
                             }
                         }
                     }
@@ -851,7 +852,7 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     public void cardMounted( boolean nowMounted )
     {
-        DbgUtils.logi( getClass(), "cardMounted(%b)", nowMounted );
+        DbgUtils.logi( TAG, "cardMounted(%b)", nowMounted );
         // post so other SDCardNotifiee implementations get a chance
         // to process first: avoid race conditions
         post( new Runnable() {
@@ -986,7 +987,7 @@ public class DictsDelegate extends ListDelegateBase
                 Assert.fail();
             }
         }
-        DbgUtils.logi( getClass(), "countSelDicts() => {loc: %d; remote: %d}",
+        DbgUtils.logi( TAG, "countSelDicts() => {loc: %d; remote: %d}",
                        results[SEL_LOCAL], results[SEL_REMOTE] );
         return results;
     }
@@ -1149,7 +1150,7 @@ public class DictsDelegate extends ListDelegateBase
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
-        DbgUtils.logi( getClass(), "itemClicked not implemented" );
+        DbgUtils.logi( TAG, "itemClicked not implemented" );
     }
 
     public void itemToggled( SelectableItem.LongClickHandler toggled,
@@ -1242,7 +1243,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
 
                     } catch ( JSONException ex ) {
-                        DbgUtils.logex( ex );
+                        DbgUtils.logex( TAG, ex );
                         theOne = null;
                     }
                 }
@@ -1340,7 +1341,7 @@ public class DictsDelegate extends ListDelegateBase
                     new HashSet<String>( Arrays.asList( m_langs ) );
 
                 // DictLangCache hits the DB hundreds of times below. Fix!
-                DbgUtils.logw( getClass(), "Fix me I'm stupid" );
+                DbgUtils.logw( TAG, "Fix me I'm stupid" );
                 try {
                     // DbgUtils.logf( "data: %s", jsonData );
                     JSONObject obj = new JSONObject( jsonData );
@@ -1422,7 +1423,7 @@ public class DictsDelegate extends ListDelegateBase
 
                     success = true;
                 } catch ( JSONException ex ) {
-                    DbgUtils.logex( ex );
+                    DbgUtils.logex( TAG, ex );
                 }
             }
 

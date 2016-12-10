@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class RelayInviteDelegate extends InviteDelegate {
+    private static final String TAG = RelayInviteDelegate.class.getSimpleName();
 
     // private static final int GET_CONTACT = 1;
     private static final String SAVE_NAME = "SAVE_NAME";
@@ -191,7 +192,8 @@ public class RelayInviteDelegate extends InviteDelegate {
         // startActivityForResult( intent, GET_CONTACT );
     }
 
-    protected void clearSelected()
+    @Override
+    protected void clearSelected( Integer[] selected )
     {
         makeConfirmThenBuilder( R.string.confirm_clear_relay, Action.CLEAR_ACTION )
             .show();
@@ -233,7 +235,7 @@ public class RelayInviteDelegate extends InviteDelegate {
                     nPlayers += rec.m_nPlayers;
                 }
             }
-            m_okButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
+            m_inviteButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
             m_clearButton.setEnabled( 0 < nDevs );
         }
     }
@@ -503,12 +505,12 @@ public class RelayInviteDelegate extends InviteDelegate {
                 JSONObject params = new JSONObject();
                 params.put( "relayIDs", ids );
                 params.put( "me", DevID.getRelayDevIDInt( m_activity ) );
-                DbgUtils.logi( getClass(), "sending to server: %s", params.toString() );
+                DbgUtils.logi( TAG, "sending to server: %s", params.toString() );
 
                 HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "opponentIDsFor" );
                 if ( null != conn ) {
                     String str = NetUtils.runConn( conn, params );
-                    DbgUtils.logi( getClass(), "got json from server: %s", str );
+                    DbgUtils.logi( TAG, "got json from server: %s", str );
                     reply = new JSONObject( str );
                 }
 
@@ -532,7 +534,7 @@ public class RelayInviteDelegate extends InviteDelegate {
                 }
 
             } catch ( org.json.JSONException je ) {
-                DbgUtils.logex( je );
+                DbgUtils.logex( TAG, je );
             }
 
             stopProgress();
@@ -542,7 +544,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         @Override protected void onPostExecute( Set<String> devIDs )
         {
             if ( null == devIDs ) {
-                DbgUtils.logw( getClass(), "onPostExecute: no results from server?" );
+                DbgUtils.logw( TAG, "onPostExecute: no results from server?" );
             } else {
                 m_devIDRecs = new ArrayList<DevIDRec>(devIDs.size());
                 Iterator<String> iter = devIDs.iterator();

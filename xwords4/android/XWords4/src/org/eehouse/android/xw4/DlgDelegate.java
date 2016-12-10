@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class DlgDelegate {
+    private static final String TAG = DlgDelegate.class.getSimpleName();
 
     public static enum Action {
         SKIP_CALLBACK,
@@ -290,7 +291,7 @@ public class DlgDelegate {
         // These are stored in the INVITES table. Don't change order
         // gratuitously
         public static enum InviteMeans {
-            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY,
+            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
         };
         void dlgButtonClicked( Action action, int button, Object[] params );
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
@@ -488,6 +489,7 @@ public class DlgDelegate {
         if ( (XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS( m_activity ))
              || XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0]
+             || WiDirService.supported()
              || BTService.BTAvailable() ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
                 .setAction( action )
@@ -582,7 +584,7 @@ public class DlgDelegate {
             break;
 
         default:
-            DbgUtils.loge( getClass(), "eventOccurred: unhandled event %s", event.toString() );
+            DbgUtils.loge( TAG, "eventOccurred: unhandled event %s", event.toString() );
         }
 
         if ( null != msg ) {
@@ -640,9 +642,14 @@ public class DlgDelegate {
 
     private Dialog createLookupDialog()
     {
+        Dialog result = null;
         DlgState state = findForID( DlgID.LOOKUP );
-        Bundle bundle = (Bundle)state.m_params[0];
-        return LookupAlert.makeDialog( m_activity, bundle );
+        // state is null per a play store crash report.
+        if ( null != state ) {
+            Bundle bundle = (Bundle)state.m_params[0];
+            result = LookupAlert.makeDialog( m_activity, bundle );
+        }
+        return result;
     }
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
@@ -726,14 +733,18 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_bt ) );
             means.add( DlgClickNotify.InviteMeans.BLUETOOTH );
         }
+        if ( XWApp.RELAYINVITE_SUPPORTED ) {
+            items.add( getString( R.string.invite_choice_relay ) );
+            means.add( DlgClickNotify.InviteMeans.RELAY );
+        }
+        if ( WiDirService.supported() ) {
+            items.add( getString( R.string.invite_choice_p2p ) );
+            means.add( DlgClickNotify.InviteMeans.WIFIDIRECT );
+        }
         if ( XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0] ) {
             items.add( getString( R.string.invite_choice_nfc ) );
             means.add( DlgClickNotify.InviteMeans.NFC );
-        }
-        if ( XWApp.RELAYINVITE_SUPPORTED ) {
-            items.add( getString( R.string.invite_choice_relay ) );
-            means.add( DlgClickNotify.InviteMeans.RELAY );
         }
         items.add( getString( R.string.slmenu_copy_sel ) );
         means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
@@ -994,7 +1005,7 @@ public class DlgDelegate {
             if ( null == oneBase ) {
                 iter.remove();  // no point in keeping it
             } else if ( base.equals( oneBase ) ) {
-                DbgUtils.logd( DlgDelegate.class, "removing alert %s for %s", dlgID.toString(),
+                DbgUtils.logd( TAG, "removing alert %s for %s", dlgID.toString(),
                                oneBase.toString() );
                 activity.removeDialog( dlgID.ordinal() );
                 iter.remove();  // no point in keeping this either

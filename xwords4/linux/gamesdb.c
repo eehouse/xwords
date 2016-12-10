@@ -263,7 +263,9 @@ summarize( CommonGlobals* cGlobals )
     sqlite3_finalize( stmt );
     XP_USE( result );
 
-    addSnapshot( cGlobals );
+    if ( !cGlobals->params->useCurses ) {
+        addSnapshot( cGlobals );
+    }
 }
 
 GSList*

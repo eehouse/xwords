@@ -25,13 +25,14 @@ import android.content.Context;
 import android.content.Intent;
 
 public class OnBootReceiver extends BroadcastReceiver {
+    private static final String TAG = OnBootReceiver.class.getSimpleName();
 
     @Override
     public void onReceive( Context context, Intent intent )
     {
         if ( null != intent && null != intent.getAction()
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            DbgUtils.logd( getClass(), "got ACTION_BOOT_COMPLETED" );
+            DbgUtils.logd( TAG, "got ACTION_BOOT_COMPLETED" );
             startTimers( context );
         }
     }

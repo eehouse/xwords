@@ -89,6 +89,12 @@ static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
 # define figureHintAtts(b,c,r) HINT_BORDER_NONE
 #endif
 
+// #define LOG_CELL_DRAW
+#ifdef LOG_CELL_DRAW
+static XP_UCHAR* formatFlags(XP_UCHAR* buf, XP_U16 len, CellFlags flags);
+#else
+# define formatFlags(buf, siz, flags) ""
+#endif
 
 #ifdef POINTER_SUPPORT
 static void drawDragTileIf( BoardCtxt* board );
@@ -362,7 +368,7 @@ drawBoard( BoardCtxt* board )
 } /* drawBoard */
 
 static XP_Bool
-drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
+drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlanks )
 {
     XP_Bool success = XP_TRUE;
     XP_Rect cellRect;
@@ -463,6 +469,11 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             success = draw_drawCell( board->draw, &cellRect, textP, bptr,
                                      tile, value, owner, bonus, hintAtts, 
                                      flags );
+#ifdef LOG_CELL_DRAW
+            XP_UCHAR buf[64];
+            XP_LOGF( "%s(col=%d, row=%d, flags=%s)=>%s", __func__, col, row,
+                     formatFlags(buf, VSIZE(buf), flags), success?"true":"false" );
+#endif
             break;
         }
     }
@@ -635,6 +646,38 @@ board_draw( BoardCtxt* board )
     }
     return !board->needsDrawing && 0 == board->trayInvalBits;
 } /* board_draw */
+
+#ifdef LOG_CELL_DRAW
+static XP_UCHAR* formatFlags( XP_UCHAR* buf, XP_U16 len, CellFlags flags )
+{
+    XP_U16 used = XP_SNPRINTF( buf, len, "0x%x ", flags );
+    for ( CellFlags flag = 1; flag < CELL_ALL; flag <<= 1 ) {
+        XP_UCHAR* str = NULL;
+        if ( 0 != (flag & flags) ) {
+            switch (flag) {
+            case CELL_ISBLANK: str = "BLNK"; break;
+            case CELL_HIGHLIGHT: str = "HLIT"; break;
+            case CELL_ISEMPTY: str = "MPTY"; break;
+            case CELL_ISCURSOR: str = "CURS"; break;
+            case CELL_VALHIDDEN: str = "HIDN"; break;
+            case CELL_DRAGSRC:
+            case CELL_DRAGCUR:
+            case CELL_CROSSVERT:
+            case CELL_CROSSHOR:
+            case CELL_ISSTAR:
+            default:
+                break;
+            }
+        }
+
+        if ( NULL != str ) {
+            used += XP_SNPRINTF( buf + used, len - used, "%s;", str );
+        }
+    }
+    return buf;
+}
+#endif
+
 
 #ifdef CPLUS
 }

@@ -13,10 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>Crosswords 4.4.112 release</h2>
+  <h2>Crosswords 4.4.114 release</h2>
 
-  <p>This release fixes a crash introduced by the previous release
-  that occurred on some devices when creating new games.</p>
+  <p>This release fixes a drawing problem on Android Nougat version
+  only.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,7 +26,11 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Fix crash attempting to configure new network games</li>
+      <li>Fix (or work around) board drawing weirdness introduced with
+          Nougat. It showed most often when using the hint
+          feature.</li>
+      <li>Fix a couple of crashes reported via the Play Store --
+          thanks!</li>
   </ul>
 
   <p>(The full changelog 
@@ -34,6 +38,7 @@
 
   <h3>Next up</h3>
   <ul>
+      <li>Support WiFi Direct (currently working sporadically)</li>
       <li>Take advantage of Marshmallow's new permissions model (where
       the app only asks for permission, e.g. to send SMS, when it
       needs it.)

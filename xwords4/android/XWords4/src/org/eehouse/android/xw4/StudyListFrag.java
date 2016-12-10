@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class StudyListFrag extends XWFragment {
+    private static final String TAG = StudyListFrag.class.getSimpleName();
 
     public StudyListFrag() {}
 

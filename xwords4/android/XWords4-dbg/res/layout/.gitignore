@@ -25,8 +25,6 @@ prefs_w_buttons.xml
 relay_game_config.xml
 rename_game.xml
 select_dialog_item.xml
-btinviter_item.xml
-btinviter.xml
 confirm_sms.xml
 game_list_group.xml
 smsinviter_item.xml
@@ -49,3 +47,5 @@ fragact.xml
 main.xml
 dualcontainer.xml
 dict_browser_list.xml
+inviter_item.xml
+inviter.xml

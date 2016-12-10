@@ -30,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 public class DualpaneDelegate extends DelegateBase {
+    private static final String TAG = DualpaneDelegate.class.getSimpleName();
     private Activity m_activity;
 
     public DualpaneDelegate( Delegator delegator, Bundle sis )
@@ -60,7 +61,7 @@ public class DualpaneDelegate extends DelegateBase {
     {
         MainActivity main = (MainActivity)m_activity;
         main.dispatchNewIntent( intent );
-        DbgUtils.logi( getClass(), "handleNewIntent()" );
+        DbgUtils.logi( TAG, "handleNewIntent()" );
     }
 
     @Override
@@ -68,7 +69,7 @@ public class DualpaneDelegate extends DelegateBase {
     {
         MainActivity main = (MainActivity)m_activity;
         boolean handled = main.dispatchBackPressed();
-        DbgUtils.logi( getClass(), "handleBackPressed() => %b", handled );
+        DbgUtils.logi( TAG, "handleBackPressed() => %b", handled );
         return handled;
     }
 
@@ -80,7 +81,7 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    protected void onCreateContextMenu( ContextMenu menu, View view, 
+    protected void onCreateContextMenu( ContextMenu menu, View view,
                                         ContextMenuInfo menuInfo )
     {
         MainActivity main = (MainActivity)m_activity;

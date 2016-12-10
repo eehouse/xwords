@@ -32,6 +32,7 @@ import android.graphics.Rect;
 import junit.framework.Assert;
 
 public class BoardContainer extends ViewGroup {
+    private static final String TAG = BoardContainer.class.getSimpleName();
     // If the ratio of height/width exceeds this, use portrait layout
     private static final int PORTRAIT_THRESHHOLD = 105;
 
@@ -54,7 +55,7 @@ public class BoardContainer extends ViewGroup {
         void sizeChanged( int width, int height, boolean isPortrait );
     }
     private static WeakReference<SizeChangeListener> s_scl;
-    
+
     public static void registerSizeChangeListener(SizeChangeListener scl)
     {
         s_scl = new WeakReference<SizeChangeListener>(scl);
@@ -62,7 +63,7 @@ public class BoardContainer extends ViewGroup {
     }
 
     public static boolean getIsPortrait() { return s_isPortrait; }
-    
+
     public BoardContainer( Context context, AttributeSet as ) {
         super( context, as );
         s_height = s_width = 0;
@@ -91,7 +92,7 @@ public class BoardContainer extends ViewGroup {
                 measureChild( s_isPortrait ? HBAR_INDX : VBAR_INDX, m_toolsBounds );
                 adjustBounds();
                 View child = getChildAt( s_isPortrait ? HBAR_INDX : VBAR_INDX );
-                DbgUtils.logi( getClass(), "measured %s; passed ht: %d; got back ht: %d",
+                DbgUtils.logi( TAG, "measured %s; passed ht: %d; got back ht: %d",
                                child.toString(), m_toolsBounds.height(),
                                child.getMeasuredHeight() );
 
@@ -158,7 +159,7 @@ public class BoardContainer extends ViewGroup {
                 .setVisibility( s_isPortrait ? VISIBLE : GONE );
             findViewById( R.id.tbar_parent_vert )
                 .setVisibility( s_isPortrait ? GONE : VISIBLE );
-     
+
             callSCL();
         }
     }

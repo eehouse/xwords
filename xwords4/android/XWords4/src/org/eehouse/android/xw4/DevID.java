@@ -34,6 +34,7 @@ import android.content.Context;
 import com.google.android.gcm.GCMRegistrar;
 
 public class DevID {
+    private static final String TAG = DevID.class.getSimpleName();
 
     private static final String DEVID_KEY = "DevID.devid_key";
     private static final String DEVID_ACK_KEY = "key_relay_regid_ackd";
@@ -84,18 +85,18 @@ public class DevID {
                 s_relayDevID = asStr;
             }
         }
-        DbgUtils.logd( DevID.class, "getRelayDevID() => %s", s_relayDevID );
+        DbgUtils.logd( TAG, "getRelayDevID() => %s", s_relayDevID );
         return s_relayDevID;
     }
 
     public static void setRelayDevID( Context context, String devID )
     {
-        DbgUtils.logd( DevID.class, "setRelayDevID()" );
+        DbgUtils.logd( TAG, "setRelayDevID()" );
         if ( BuildConfig.DEBUG ) {
             String oldID = getRelayDevID( context );
             if ( null != oldID && 0 < oldID.length()
                  && ! devID.equals( oldID ) ) {
-                DbgUtils.logd( DevID.class, "devID changing!!!: %s => %s", oldID, devID );
+                DbgUtils.logd( TAG, "devID changing!!!: %s => %s", oldID, devID );
             }
         }
         DBUtils.setStringFor( context, DEVID_KEY, devID );
@@ -107,7 +108,7 @@ public class DevID {
 
     public static void clearRelayDevID( Context context )
     {
-        DbgUtils.logi( DevID.class, "clearRelayDevID()" );
+        DbgUtils.logi( TAG, "clearRelayDevID()" );
         DBUtils.setStringFor( context, DEVID_KEY, "" );
         // DbgUtils.printStack();
     }

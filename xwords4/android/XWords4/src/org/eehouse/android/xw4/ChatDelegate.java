@@ -43,6 +43,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.JNIThread;
 
 public class ChatDelegate extends DelegateBase {
+    private static final String TAG = ChatDelegate.class.getSimpleName();
 
     private static final String INTENT_KEY_PLAYER = "intent_key_player";
     private static final String INTENT_KEY_NAMES = "intent_key_names";
@@ -129,7 +130,7 @@ public class ChatDelegate extends DelegateBase {
         super.onResume();
         m_jniThreadRef = JNIThread.getRetained( m_rowid );
         if ( null == m_jniThreadRef ) {
-            DbgUtils.logw( getClass(), "onResume(): m_jniThreadRef null; exiting" );
+            DbgUtils.logw( TAG, "onResume(): m_jniThreadRef null; exiting" );
             finish();
         } else {
             s_visibleThis = this;

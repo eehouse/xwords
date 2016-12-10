@@ -74,6 +74,7 @@ public class GamesListDelegate extends ListDelegateBase
                DBUtils.DBChangeListener, SelectableItem,
                DownloadFinishedListener, DlgDelegate.HasDlgDelegate,
                GroupStateListener {
+    private static final String TAG = GamesListDelegate.class.getSimpleName();
 
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
@@ -94,7 +95,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
     private static final String REMATCH_RELAYID_EXTRA = "rm_relayid";
-
+    private static final String REMATCH_P2PADDR_EXTRA = "rm_p2pma";
 
     private static final String ALERT_MSG = "alert_msg";
 
@@ -274,7 +275,7 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
             if ( -1 == posn ) {
-                DbgUtils.logd( getClass(), "getGroupPosition: group %d not found", groupID );
+                DbgUtils.logd( TAG, "getGroupPosition: group %d not found", groupID );
             }
             return posn;
         }
@@ -336,7 +337,7 @@ public class GamesListDelegate extends ListDelegateBase
             boolean changed = false;
             int newID = fieldToID( newField );
             if ( -1 == newID ) {
-                DbgUtils.logd( getClass(), "setField(): unable to match"
+                DbgUtils.logd( TAG, "setField(): unable to match"
                                + " fieldName %s", newField );
             } else if ( m_fieldID != newID ) {
                 m_fieldID = newID;
@@ -432,7 +433,7 @@ public class GamesListDelegate extends ListDelegateBase
         private ArrayList<Object> removeRange( ArrayList<Object> list,
                                                int start, int len )
         {
-            DbgUtils.logd( getClass(), "removeRange(start=%d, len=%d)", start, len );
+            DbgUtils.logd( TAG, "removeRange(start=%d, len=%d)", start, len );
             ArrayList<Object> result = new ArrayList<Object>(len);
             for ( int ii = 0; ii < len; ++ii ) {
                 result.add( list.remove( start ) );
@@ -503,8 +504,9 @@ public class GamesListDelegate extends ListDelegateBase
                 R.string.game_summary_field_rowid,
                 R.string.game_summary_field_gameid,
                 R.string.game_summary_field_npackets,
+                R.string.title_addrs_pref,
             };
-            int result = -1;
+            int result = ids[0]; // need a default in case set changes
             for ( int id : ids ) {
                 if ( LocUtils.getString( m_activity, id ).equals( fieldName )){
                     result = id;
@@ -1338,7 +1340,7 @@ public class GamesListDelegate extends ListDelegateBase
         switch ( requestCode ) {
         case REQUEST_LANG_GL:
             if ( !cancelled ) {
-                DbgUtils.logd( getClass(), "lang need met" );
+                DbgUtils.logd( TAG, "lang need met" );
                 if ( checkWarnNoDict( m_missingDictRowId ) ) {
                     launchGameIf();
                 }
@@ -1467,7 +1469,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             Assert.assertTrue( m_menuPrepared );
         } else {
-            DbgUtils.logd( getClass(), "onPrepareOptionsMenu: incomplete so bailing" );
+            DbgUtils.logd( TAG, "onPrepareOptionsMenu: incomplete so bailing" );
         }
         return m_menuPrepared;
     } // onPrepareOptionsMenu
@@ -1592,7 +1594,7 @@ public class GamesListDelegate extends ListDelegateBase
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
-        DbgUtils.logd( getClass(), "onCreateContextMenu(t=%s)",
+        DbgUtils.logd( TAG, "onCreateContextMenu(t=%s)",
                        targetView.getClass().getSimpleName() );
         if ( targetView instanceof GameListItem ) {
             item = (GameListItem)targetView;
@@ -1801,7 +1803,7 @@ public class GamesListDelegate extends ListDelegateBase
             // DEBUG only
         case R.id.games_game_invites:
             msg = GameUtils.getSummary( m_activity, selRowIDs[0] )
-                .conTypes.toString( m_activity );
+                .conTypes.toString( m_activity, true );
             msg = getString( R.string.invites_net_fmt, msg );
 
             SentInvitesInfo info = DBUtils.getInvitesFor( m_activity,
@@ -2143,6 +2145,7 @@ public class GamesListDelegate extends ListDelegateBase
             String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
             String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
             String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
+            String p2pMacAddress = intent.getStringExtra( REMATCH_P2PADDR_EXTRA );
             String dict = intent.getStringExtra( REMATCH_DICT_EXTRA );
             int lang = intent.getIntExtra( REMATCH_LANG_EXTRA, -1 );
             String json = intent.getStringExtra( REMATCH_PREFS_EXTRA );
@@ -2150,7 +2153,8 @@ public class GamesListDelegate extends ListDelegateBase
             CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
             long newid;
-            if ( null == btAddr && null == phone && null == relayID ) {
+            if ( null == btAddr && null == phone && null == relayID
+                 && null == p2pMacAddress ) {
                 newid = GameUtils.dupeGame( m_activity, srcRowID );
                 if ( DBUtils.ROWID_NOTFOUND != newid ) {
                     DBUtils.setName( m_activity, newid, gameName );
@@ -2160,7 +2164,7 @@ public class GamesListDelegate extends ListDelegateBase
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
-                                        relayID );
+                                        relayID, p2pMacAddress );
             }
             launchGame( newid );
         }
@@ -2373,7 +2377,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void launchGame( long rowid, boolean invited )
     {
         if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-            DbgUtils.logd( getClass(), "launchGame(): dropping bad rowid" );
+            DbgUtils.logd( TAG, "launchGame(): dropping bad rowid" );
         } else if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             if ( m_adapter.inExpandedGroup( rowid ) ) {
@@ -2419,7 +2423,7 @@ public class GamesListDelegate extends ListDelegateBase
                     launchGame( rowid );
                 }
             } catch ( GameLock.GameLockedException gle ) {
-                DbgUtils.logex( gle );
+                DbgUtils.logex( TAG, gle );
                 finish();
             }
         }
@@ -2626,7 +2630,8 @@ public class GamesListDelegate extends ListDelegateBase
                                             CurGameInfo gi,
                                             CommsConnTypeSet addrTypes,
                                             String btAddr, String phone,
-                                            String relayID, String newName )
+                                            String relayID, String p2pMacAddress,
+                                            String newName )
     {
         Intent intent = null;
         intent = makeSelfIntent( context );
@@ -2646,6 +2651,9 @@ public class GamesListDelegate extends ListDelegateBase
             }
             if ( null != relayID ) {
                 intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
+            }
+            if ( null != p2pMacAddress ) {
+                intent.putExtra( REMATCH_P2PADDR_EXTRA, p2pMacAddress );
             }
         }
         return intent;

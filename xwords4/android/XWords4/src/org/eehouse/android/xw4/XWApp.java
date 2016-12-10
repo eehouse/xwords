@@ -30,7 +30,10 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 public class XWApp extends Application {
+    private static final String TAG = XWApp.class.getSimpleName();
 
     public static final boolean BTSUPPORTED = true;
     public static final boolean SMSSUPPORTED = true;
@@ -60,12 +63,13 @@ public class XWApp extends Application {
     public void onCreate()
     {
         s_context = this;
+        Assert.assertTrue( s_context == s_context.getApplicationContext() );
         super.onCreate();
 
         // This one line should always get logged even if logging is
         // off -- because logging is on by default until logEnable is
         // called.
-        DbgUtils.logi( getClass(), "onCreate(); git_rev=%s",
+        DbgUtils.logi( TAG, "onCreate(); git_rev=%s",
                        getString( R.string.git_rev ) );
         DbgUtils.logEnable( this );
 
@@ -88,6 +92,7 @@ public class XWApp extends Application {
         BTService.startService( this );
         RelayService.startService( this );
         GCMIntentService.init( this );
+        WiDirService.init( this );
     }
 
     // This is called on emulator only, but good for ensuring no memory leaks
@@ -95,7 +100,7 @@ public class XWApp extends Application {
     @Override
     public void onTerminate()
     {
-        DbgUtils.logi( getClass(), "onTerminate() called" );
+        DbgUtils.logi( TAG, "onTerminate() called" );
         XwJNI.cleanGlobals();
         super.onTerminate();
     }
@@ -122,5 +127,9 @@ public class XWApp extends Application {
         return s_onEmulator;
     }
 
-    public static Context getContext() { return s_context; }
+    public static Context getContext()
+    {
+        Assert.assertNotNull( s_context );
+        return s_context;
+    }
 }

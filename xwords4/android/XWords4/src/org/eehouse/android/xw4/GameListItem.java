@@ -46,6 +46,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class GameListItem extends LinearLayout
     implements View.OnClickListener, SelectableItem.LongClickHandler {
+    private static final String TAG = GameListItem.class.getSimpleName();
 
     private static final int SUMMARY_WAIT_MSECS = 1000;
 
@@ -259,6 +260,9 @@ public class GameListItem extends LinearLayout
             case R.string.game_summary_field_state:
                 value = state;
                 break;
+            case R.string.title_addrs_pref:
+                value = m_summary.conTypes.toString( m_context, false );
+                break;
             }
 
             String name = GameUtils.getName( m_context, m_rowid );
@@ -455,7 +459,7 @@ public class GameListItem extends LinearLayout
                         try {
                             elem = s_queue.take();
                         } catch ( InterruptedException ie ) {
-                            DbgUtils.logw( getClass(), "interrupted; killing "
+                            DbgUtils.logw( TAG, "interrupted; killing "
                                            + "s_thumbThread" );
                             break;
                         }

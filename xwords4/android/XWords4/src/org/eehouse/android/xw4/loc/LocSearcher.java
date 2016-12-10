@@ -33,6 +33,7 @@ import java.util.ArrayList;
  */
 
 public class LocSearcher {
+    private static final String TAG = LocSearcher.class.getSimpleName();
 
     private String m_contextName;
 
@@ -133,7 +134,7 @@ public class LocSearcher {
         } else {
             Pair[] usePairs = null != m_lastTerm && term.contains(m_lastTerm)
                 ? m_matchingPairs : m_filteredPairs;
-            DbgUtils.logi( getClass(), "start: searching %d pairs", usePairs.length );
+            DbgUtils.logi( TAG, "start: searching %d pairs", usePairs.length );
             ArrayList<Pair> matches = new ArrayList<Pair>();
             for ( Pair pair : usePairs ) {
                 if ( pair.matches( term ) ) {

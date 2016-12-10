@@ -36,7 +36,8 @@ import java.util.HashSet;
 import java.util.Random;
 
 public class CurGameInfo {
-
+    private static final String TAG = CurGameInfo.class.getSimpleName();
+    
     public static final int MAX_NUM_PLAYERS = 4;
 
     private static final String BOARD_SIZE = "BOARD_SIZE";
@@ -164,7 +165,7 @@ public class CurGameInfo {
                 ;
             jsonData = obj.toString();
         } catch ( org.json.JSONException jse ) {
-            DbgUtils.logex( jse );
+            DbgUtils.logex( TAG, jse );
         }
 
         return jsonData;
@@ -182,7 +183,7 @@ public class CurGameInfo {
                 int tmp = obj.optInt( PHONIES, phoniesAction.ordinal() );
                 phoniesAction = XWPhoniesChoice.values()[tmp];
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.logex( jse );
+                DbgUtils.logex( TAG, jse );
             }
         }
     }

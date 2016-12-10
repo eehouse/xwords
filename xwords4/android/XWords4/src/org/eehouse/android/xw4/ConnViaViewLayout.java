@@ -34,6 +34,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConnViaViewLayout extends LinearLayout {
+    private static final String TAG = ConnViaViewLayout.class.getSimpleName();
     private CommsConnTypeSet m_curSet;
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
 
@@ -80,7 +81,7 @@ public class ConnViaViewLayout extends LinearLayout {
 
         for ( CommsConnType typ : supported.getTypes() ) {
             LinearLayout item = (LinearLayout)
-                LocUtils.inflate( context, R.layout.btinviter_item );
+                LocUtils.inflate( context, R.layout.inviter_item );
             CheckBox box = (CheckBox)item.findViewById( R.id.inviter_check );
             box.setText( typ.longName( context ) );
             box.setChecked( m_curSet.contains( typ ) );
@@ -119,6 +120,9 @@ public class ConnViaViewLayout extends LinearLayout {
         case COMMS_CONN_RELAY:
             enabled = RelayService.relayEnabled( context );
             break;
+        case COMMS_CONN_P2P:
+            enabled = WiDirService.supported();
+            break;
         default:
             Assert.fail();
             break;
@@ -146,6 +150,10 @@ public class ConnViaViewLayout extends LinearLayout {
             case COMMS_CONN_BT:
                 msgID = R.string.not_again_comms_bt;
                 keyID = R.string.key_na_comms_bt;
+                break;
+            case COMMS_CONN_P2P:
+                msgID = R.string.not_again_comms_p2p;
+                keyID = R.string.key_na_comms_p2p;
                 break;
             default:
                 Assert.fail();

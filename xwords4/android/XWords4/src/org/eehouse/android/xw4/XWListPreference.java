@@ -27,6 +27,7 @@ import android.util.AttributeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWListPreference extends ListPreference {
+    private static final String TAG = XWListPreference.class.getSimpleName();
     protected Context m_context;
 
     public XWListPreference( Context context, AttributeSet attrs )

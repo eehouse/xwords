@@ -1693,19 +1693,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                 setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
             }
                 break;
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_SMS
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_SMS || defined XWFEATURE_P2P
             case COMMS_CONN_BT:
+            case COMMS_CONN_P2P:
             case COMMS_CONN_SMS: {
-                XP_Bool isBT = COMMS_CONN_BT == typ;
                 CommsAddrRec addrs[MAX_NUM_PLAYERS];
                 XP_U16 count = VSIZE(addrs);
                 comms_getAddrs( comms, addrs, &count );
             
                 const XP_UCHAR* addrps[count];
                 for ( int ii = 0; ii < count; ++ii ) {
-                    addrps[ii] = isBT ? (XP_UCHAR*)&addrs[ii].u.bt.btAddr : 
-                        (XP_UCHAR*)&addrs[ii].u.sms.phone;
-                    XP_LOGF( "%s: adding btaddr/phone %s", __func__, addrps[ii] );
+                    switch ( typ ) {
+                    case COMMS_CONN_BT: addrps[ii] = (XP_UCHAR*)&addrs[ii].u.bt.btAddr; break;
+                    case COMMS_CONN_P2P: addrps[ii] = (XP_UCHAR*)&addrs[ii].u.p2p.mac_addr; break;
+                    case COMMS_CONN_SMS: addrps[ii] = (XP_UCHAR*)&addrs[ii].u.sms.phone; break;
+                    default: XP_ASSERT(0); break;
+                    }
+                    XP_LOGF( "%s: adding btaddr/phone/mac %s", __func__, addrps[ii] );
                 }
                 jobjectArray jaddrs = makeStringArray( env, count, addrps );
                 setObject( env, jsummary, "remoteDevs", "[Ljava/lang/String;", 

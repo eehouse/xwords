@@ -47,6 +47,7 @@ import java.util.Arrays;
 
 public class DictBrowseDelegate extends DelegateBase
     implements View.OnClickListener, OnItemSelectedListener {
+    private static final String TAG = DictBrowseDelegate.class.getSimpleName();
 
     private static final String DICT_NAME = "DICT_NAME";
     private static final String DICT_LOC = "DICT_LOC";
@@ -258,7 +259,7 @@ public class DictBrowseDelegate extends DelegateBase
         try {
             super.finalize();
         } catch ( java.lang.Throwable err ){
-            DbgUtils.logi( getClass(), "%s", err.toString() );
+            DbgUtils.logi( TAG, "%s", err.toString() );
         }
     }
 
@@ -453,7 +454,7 @@ public class DictBrowseDelegate extends DelegateBase
         DictUtils.DictLoc loc
             = DictUtils.getDictLoc( delegator.getActivity(), name );
         if ( null == loc ) {
-            DbgUtils.logw( DictBrowseDelegate.class, "launch(): DictLoc null; try again?" );
+            DbgUtils.logw( TAG, "launch(): DictLoc null; try again?" );
         } else {
             launch( delegator, name, loc );
         }

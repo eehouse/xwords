@@ -43,6 +43,7 @@ import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class BoardCanvas extends Canvas implements DrawCtx {
+    private static final String TAG = BoardCanvas.class.getSimpleName();
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int FRAME_GREY = 0xFF101010;
@@ -55,7 +56,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     private Activity m_activity;
     private Context m_context;
-    private Bitmap m_bitmap;
     private JNIThread m_jniThread;
     private Paint m_fillPaint;
     private Paint m_strokePaint;
@@ -141,7 +141,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         super( bitmap );
         m_context = context;
         m_activity = activity;
-        m_bitmap = bitmap;
         m_jniThread = jniThread;
         m_dict = new DictWrapper();
 
@@ -182,7 +181,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         DbgUtils.assertOnUIThread();
         if ( null == jniThread ) {
         } else if ( ! jniThread.equals( m_jniThread ) ) {
-            DbgUtils.logw( getClass(), "changing threads" );
+            DbgUtils.logw( TAG, "changing threads" );
         }
         m_jniThread = jniThread;
     }
@@ -345,14 +344,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public boolean boardBegin( Rect rect, int cellWidth, int cellHeight )
-    {
-        return true;
-    }
-
-    public boolean drawCell( final Rect rect, String text, int tile, int value,
-                             int owner, int bonus, int hintAtts,
-                             final int flags )
+    public boolean drawCell( Rect rect, String text, int tile, int value,
+                             int owner, int bonus, int hintAtts, int flags )
     {
         boolean canDraw = figureFontDims();
         if ( canDraw ) {

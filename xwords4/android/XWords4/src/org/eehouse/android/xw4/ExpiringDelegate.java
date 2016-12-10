@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class ExpiringDelegate {
+    private static final String TAG = ExpiringDelegate.class.getSimpleName();
 
     private static final long INTERVAL_SECS = 3 * 24 * 60 * 60;
     // private static final long INTERVAL_SECS = 60 * 10;   // for testing
@@ -91,7 +92,7 @@ public class ExpiringDelegate {
                 }
             }
 
-            DbgUtils.logd( getClass(), "ref had %d refs, now has %d expiringdelegate views",
+            DbgUtils.logd( TAG, "ref had %d refs, now has %d expiringdelegate views",
                            sizeBefore, dlgts.size() );
 
             for ( ExpiringDelegate dlgt : dlgts ) {
@@ -120,7 +121,7 @@ public class ExpiringDelegate {
         private void setHandler( Handler handler )
         {
             if ( handler != m_handler ) {
-                DbgUtils.logd( getClass(), "handler changing from %H to %H",
+                DbgUtils.logd( TAG, "handler changing from %H to %H",
                                m_handler, handler );
                 m_handler = handler;
                 reschedule();

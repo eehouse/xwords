@@ -27,13 +27,14 @@ import android.content.Context;
 import android.content.Intent;
 
 public class BTReceiver extends BroadcastReceiver {
+    private static final String TAG = BTReceiver.class.getSimpleName();
 
     @Override
     public void onReceive( Context context, Intent intent )
     {
         if ( XWApp.BTSUPPORTED ) {
             String action = intent.getAction();
-            DbgUtils.logd( getClass(), "BTReceiver.onReceive(action=%s, intent=%s)",
+            DbgUtils.logd( TAG, "BTReceiver.onReceive(action=%s, intent=%s)",
                            action, intent.toString() );
 
             if ( action.equals( BluetoothDevice.ACTION_ACL_CONNECTED ) ) {

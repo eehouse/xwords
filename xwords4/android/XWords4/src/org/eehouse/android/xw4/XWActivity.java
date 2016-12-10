@@ -37,16 +37,19 @@ import android.widget.ListView;
 import junit.framework.Assert;
 
 public class XWActivity extends FragmentActivity implements Delegator {
+    private static final String TAG = XWActivity.class.getSimpleName();
 
     private DelegateBase m_dlgt;
 
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( getClass(), "onCreate(this=%H)", this );
+            DbgUtils.logi( TAG, "onCreate(this=%H)", this );
         }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
+
+        Assert.assertTrue( getApplicationContext() == XWApp.getContext() );
 
         int layoutID = m_dlgt.getLayoutID();
         if ( 0 < layoutID ) {
@@ -67,19 +70,21 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onPause()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( getClass(), "onPause(this=%H)", this );
+            DbgUtils.logi( TAG, "onPause(this=%H)", this );
         }
         m_dlgt.onPause();
         super.onPause();
+        WiDirService.activityPaused( this );
     }
 
     @Override
     protected void onResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( getClass(), "onResume(this=%H)", this );
+            DbgUtils.logi( TAG, "onResume(this=%H)", this );
         }
         super.onResume();
+        WiDirService.activityResumed( this );
         m_dlgt.onResume();
     }
 
@@ -87,7 +92,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onPostResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( getClass(), "onPostResume(this=%H)", this );
+            DbgUtils.logi( TAG, "onPostResume(this=%H)", this );
         }
         super.onPostResume();
     }
@@ -96,7 +101,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( getClass(), "%s.onStart(this=%H)", this );
+            DbgUtils.logi( TAG, "%s.onStart(this=%H)", this );
         }
         super.onStart();
         m_dlgt.onStart();
@@ -106,7 +111,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( getClass(), "%s.onStop(this=%H)", this );
+            DbgUtils.logi( TAG, "%s.onStop(this=%H)", this );
         }
         m_dlgt.onStop();
         super.onStop();
@@ -116,7 +121,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     protected void onDestroy()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( getClass(), "onDestroy(this=%H)", this );
+            DbgUtils.logi( TAG, "onDestroy(this=%H)", this );
         }
         m_dlgt.onDestroy();
         super.onDestroy();

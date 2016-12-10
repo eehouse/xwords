@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class SMSListItem extends LinearLayout  {
+    private static final String TAG = SMSListItem.class.getSimpleName();
 
     public SMSListItem( Context cx, AttributeSet as )
     {
@@ -66,4 +67,3 @@ public class SMSListItem extends LinearLayout  {
         return cb.isChecked();
     }
 }
-

@@ -140,3 +140,8 @@ MainActivity.java
 DictsFrag.java
 DualpaneDelegate.java
 BoardContainer.java
+BiDiSockWrap.java
+WiDirService.java
+WiDirInviteActivity.java
+WiDirInviteDelegate.java
+XWPacket.java

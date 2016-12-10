@@ -342,7 +342,7 @@
   <!-- Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. -->
   <string name="phonies_disallow">DISALLOW PHONIES</string>
-  <!-- Shown when using the the Game configure screen to configure a
+  <!-- Shown when using the Game configure screen to configure a
          networked game and you try to make all players local. -->
   <string name="str_reg_server_sans_remote">AT LEAST ONE PLAYER MUST
          BE MARKED \"REMOTE\" FOR A GAME STARTED AS HOST.</string>
@@ -839,7 +839,7 @@
   <!-- clarification of the above -->
   <string name="prefs_colors_summary">EDIT COLORS USED ON THE BOARD</string>
   <!-- The remaining strings (down to the color edit dialog below)
-         are showns as the names of editable colors and as the the
+         are showns as the names of editable colors and as the
          title of the color editor that comes up when the name is
          tapped. -->
   <!-- (color for) double-letter bonus squares on the board -->
@@ -1039,6 +1039,7 @@
   <string name="invite_choice_bt">BLUETOOTH</string>
   <string name="invite_choice_nfc">NFC (\"ANDROID BEAMING\")</string>
   <string name="invite_choice_relay">INTERNET/RELAY</string>
+  <string name="invite_choice_p2p">WIFI DIRECT</string>
   <string name="invite_choice_title">INVITING PLAYERS: HOW?</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
@@ -1656,6 +1657,7 @@
   <!-- Title of phone number picker during invitation to a game via SMS -->
   <string name="sms_invite_title">SMS INVITATION</string>
   <string name="relay_invite_title">RELAY INVITATION</string>
+  <string name="p2p_invite_title">WIFI DIRECT INVITATION</string>
   <!--  -->
   <string name="game_btname_title">BLUETOOTH GAME NAME</string>
   <!--  -->
@@ -1691,6 +1693,18 @@
       TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
   </plurals>
   <!--  -->
+  <plurals name="invite_p2p_desc_fmt">
+    <item quantity="one">PLEASE SELECT THE NAME OF THE
+      WIFIDIRECT DEVICE YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP
+      \"%2$s\".</item>
+    <item quantity="other">PLEASE SELECT THE %1$d WIFIDIRECT DEVICE NAMES YOU
+      WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+  </plurals>
+  <string name="invite_p2p_desc_extra">ONLY DEVICES THAT ARE
+    CURRENTLY AVAILABLE ARE SHOWN. IF A NEARBY DEVICE ISN\'T SHOWING
+    UP PLEASE MAKE SURE THAT WIFI IS TURNED ON, THAT CROSSWORDS IS
+    INSTALLED, AND THAT PLAY VIA WIFI DIRECT IS ENABLED.</string>
+  <!--  -->
   <string name="manual_owner_name">(NOT IN CONTACTS)</string>
   <!--  -->
   <string name="warn_nomobile_fmt">THE NUMBER %1$s FOR %2$s IS NOT
@@ -1699,6 +1713,9 @@
   <string name="empty_sms_inviter">THIS PHONE LIST IS EMPTY. USE THE
     \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO INVITE, THE +
     BUTTON TO ENTER NUMBERS DIRECTLY.</string>
+  <!-- Shows in WiFiDirect Invite dialog when no known peers -->
+  <string name="empty_p2p_inviter">THERE ARE CURRENTLY NO DEVICES
+    REACHABLE VIA WIFIDIRECT THAT HAVE CROSSWORDS INSTALLED.</string>
   <!--  -->
   <string name="empty_relay_inviter">THIS LIST OF DEVICES IS
     EMPTY. USE THE \"SCAN GAMES\" BUTTON TO SCAN YOUR OLD GAMES
@@ -2248,6 +2265,8 @@
   I.E. EVERY CARRIER IN THE WORLD EXCEPT VERIZON AND SPRINT.</string>
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
+  <string name="not_again_comms_p2p">USE WIFI DIRECT TO PLAY AGAINST A
+  NEARBY WIFI DIRECT-CAPABLE DEVICE.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
   <string name="not_again_rematch_two_only">REMATCH IS LIMITED TO
   TWO-PERSON GAMES, AT LEAST FOR NOW, BECAUSE IT\'S HARDER WITH MORE
