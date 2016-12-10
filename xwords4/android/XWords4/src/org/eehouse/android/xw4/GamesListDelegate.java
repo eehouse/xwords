@@ -1566,8 +1566,17 @@ public class GamesListDelegate extends ListDelegateBase
             changeContent = true;
             break;
         case R.id.games_menu_storedb:
-            DBUtils.saveDB( m_activity );
-            showToast( R.string.db_store_done );
+            Perms23.doWithPermission( m_activity, Perms23.Perm.STORAGE,
+                                      new Perms23.PermCbck() {
+                                          public void onPermissionResult( Perms23.Perm perm,
+                                                                          boolean granted )
+                                          {
+                                              if ( granted ) {
+                                                  DBUtils.saveDB( m_activity );
+                                                  showToast( R.string.db_store_done );
+                                              }
+                                          }
+                                      } );
             break;
 
         default:

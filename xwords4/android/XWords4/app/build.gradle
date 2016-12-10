@@ -11,15 +11,16 @@ apply plugin: 'com.android.application'
 
 dependencies {
     compile files('../libs/gcm.jar')
-    compile files('../libs/android-support-v13.jar')
+    // compile files('../libs/android-support-v13.jar')
+    compile 'com.android.support:support-v4:23.0.0'
 }
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
     defaultConfig {
         minSdkVersion 7
-        targetSdkVersion 19
+        targetSdkVersion 23
     }
 
     // Rename all output artifacts to include version information
