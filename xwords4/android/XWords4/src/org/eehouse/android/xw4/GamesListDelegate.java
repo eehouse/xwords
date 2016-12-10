@@ -1482,7 +1482,6 @@ public class GamesListDelegate extends ListDelegateBase
         String msg;
         int itemID = item.getItemId();
         boolean handled = true;
-        boolean changeContent = false;
         int groupPos = getSelGroupPos();
         long groupID = DBUtils.GROUPID_UNSPEC;
         if ( 0 <= groupPos ) {
@@ -1560,10 +1559,19 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_loaddb:
-            DBUtils.loadDB( m_activity );
-            XWPrefs.clearGroupPositions( m_activity );
-            mkListAdapter();
-            changeContent = true;
+            Perms23.doWithPermission( m_activity, Perms23.Perm.STORAGE,
+                                      new Perms23.PermCbck() {
+                                          public void onPermissionResult( Perms23.Perm perm,
+                                                                          boolean granted )
+                                          {
+                                              Assert.assertTrue( Perms23.Perm.STORAGE == perm );
+                                              if ( granted ) {
+                                                  DBUtils.loadDB( m_activity );
+                                                  XWPrefs.clearGroupPositions( m_activity );
+                                                  mkListAdapter();
+                                              }
+                                          }
+                                      } );
             break;
         case R.id.games_menu_storedb:
             Perms23.doWithPermission( m_activity, Perms23.Perm.STORAGE,
@@ -1571,6 +1579,7 @@ public class GamesListDelegate extends ListDelegateBase
                                           public void onPermissionResult( Perms23.Perm perm,
                                                                           boolean granted )
                                           {
+                                              Assert.assertTrue( Perms23.Perm.STORAGE == perm );
                                               if ( granted ) {
                                                   DBUtils.saveDB( m_activity );
                                                   showToast( R.string.db_store_done );
@@ -1582,10 +1591,6 @@ public class GamesListDelegate extends ListDelegateBase
         default:
             handled = handleSelGamesItem( itemID, selRowIDs )
                 || handleSelGroupsItem( itemID, getSelGroupIDs() );
-        }
-
-        if ( changeContent ) {
-            mkListAdapter();
         }
 
         return handled;// || super.onOptionsItemSelected( item );
