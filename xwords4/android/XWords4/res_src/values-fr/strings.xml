@@ -194,7 +194,7 @@ toutes les informations de connexion.)</item>
     <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
-    <string name="download_dicts">En télécharger d\'autres…</string>
+    <string name="download_dicts">Télécharger d\'autres langues…</string>
 
 
     <!-- One of the strings used in the right column of the list of
@@ -371,7 +371,7 @@ des parties à %1$d joueurs en %2$s.</string>
     <!--<string name="no_name_found_fmt">No public rooms found for
       %1$d-player games in %2$s. Try refreshing or creating your
       own.</string>-->
-    <string name="no_name_found_fmt">Aucun salon public trouvé pour des parties à %1$d dans %2$s. Essayez de rafraîchir ou de créer le votre.</string>
+    <string name="no_name_found_fmt">Aucun salon public trouvé pour des parties à %1$d joueurs dans %2$s. Essayez de rafraîchir ou de créer le votre.</string>
 
     <!-- text of separator marking out other-setting area of the dialog -->
     <!--<string name="settings_label">Other settings</string>-->
@@ -609,7 +609,7 @@ fait ?</item>
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
         other device also has Android Beaming and is nearby.)</string>-->
-    <string name="invite_if_nfc">(ou toucher pour inviter -- si un autre appareil a aussi Android Beam et est proche.)</string>
+    <string name="invite_if_nfc">Ou toucher pour inviter -- si un autre appareil a aussi Android Beam et est proche.</string>
 
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -684,7 +684,7 @@ nom. Renommer le vôtre ou réessayer plus tard.</string>
     <!--<string name="msg_dev_deleted">This game has been deleted on
       another device. You will not be able to play any
       further.</string>-->
-    <string name="msg_dev_deleted">Cette partie a été effacée sur un autre appareil. Vous pourrez plus la jouer.</string>
+    <string name="msg_dev_deleted">Cette partie a été effacée sur un autre appareil. Vous ne pourrez plus la jouer.</string>
 
     <!-- Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is
@@ -775,7 +775,7 @@ coup ?</string>
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
     <!--<string name="board_menu_game_resend">Resend messages</string>-->
-    <string name="board_menu_game_resend">Renvoyer les messages</string>
+    <string name="board_menu_game_resend">Renvoyer les coups</string>
     <!--<string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>-->
     <!--<string name="resend_finished_fmt">Renvoi fini ; %1$d message[s] envoyé[s].</string>-->
     <plurals name="resend_finished_fmt">
@@ -1085,7 +1085,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
     <!-- clarification of above -->
     <!--<string name="show_arrow_summary">Tapped rack tiles land on this
         arrow when it is visible</string>-->
-    <string name="show_arrow_summary">Les jetons du chevalet touchés se mettent sur cette flèche quand elle est visible</string>
+    <string name="show_arrow_summary">Les jetons du chevalet touchés se calent sur cette flèche quand elle est visible</string>
 
     <!-- Checkbox that when set keeps the device screen from dimming
          if the board screen is what's displayed.  This is to allow
@@ -1467,7 +1467,7 @@ jetons sélectionnés (%2$s) ?</string>-->
     <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
     <!--<string name="chat_title_fmt">%1$s message history</string>-->
-    <string name="chat_title_fmt">Historique des messages de %1$s</string>
+    <string name="chat_title_fmt">Discussion pour %1$s</string>
     <!-- Prefix for local messages -->
     <!--<string name="chat_local_id">Me:\u0020</string>-->
     <string name="chat_local_id">Moi :\u0020</string>
@@ -3053,7 +3053,10 @@ vous doit faire une mise à jour avant de pouvoir continuer.</string>
     device. No moves will be sent via Bluetooth.\n\nYou can enable
     Bluetooth now, or later.
     </string>-->
-    <string name="warn_bt_disabled">"Le Bluetooth est actuellement éteint sur cet appareil. Aucun coup ne sera envoyé par Bluetooth.\n\nVous pouvez activer le Bluetooth maintenant, ou plus tard. "</string>
+    <string name="warn_bt_disabled">"Le Bluetooth est actuellement éteint sur cet appareil. Aucun coup ne sera envoyé par Bluetooth.
+
+Vous pouvez activer le Bluetooth maintenant, ou plus tard.
+ "</string>
     <!--XLATE-ME-->
     <!--<string name="button_enable_sms">Enable SMS</string>-->
     <string name="button_enable_sms">Activer les SMS</string>
@@ -3401,8 +3404,8 @@ pour la langue</string>
   <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
 
   <plurals name="resent_msgs_fmt">
-	<item quantity="one">Un message envoyé</item>
-	<item quantity="other">%1$s messages envoyés</item>
+	<item quantity="one">Un coup envoyé</item>
+	<item quantity="other">%1$s coups envoyés</item>
 </plurals>
 
   <string name="invite_choice_clip">Je choisirai</string>
@@ -3426,8 +3429,8 @@ pour la langue</string>
   <string name="get_relay_number">Saisissez l\'identifiant d\'appareil :</string>
   <plurals name="confirm_clear_sms_fmt">
 	<item quantity="one">Êtes-vous sûr de vouloir effacer le numéro de téléphone coché ?</item>
-	<item quantity="other">Êtes-vous sûr de vouloir effacer les %1$d numéros de téléphone cochés ?</item>
-  </plurals>
+	<item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d numéros de téléphone cochés ?</item>
+</plurals>
   <string name="disable_nag_solo_title">Désactiver les rappels de parties en solo</string>
 
   <string name="devid_title">Identifiant d\'appareil (sur le relai)</string>
@@ -3448,9 +3451,9 @@ pour la langue</string>
 
     <plurals name="invite_sent_fmt">
 	<item quantity="one">Vous avez déjà invité un joueur distant à cette partie. Nous attendons sa réponse. Utilisez le bouton réinviter si vous pensez que l\'invitation n\'est pas partie.</item>
-	<item quantity="other">Vous avez déjà envoyé %1$d invitations uniques pour cette partie. Nous attendons les réponses de %2$d des destinataires. Utilisez le bouton réinviter si vous pensez que les invitations ne sont pas parties.</item>
+	<item quantity="other">Vous avez déjà envoyé %1$d invitations pour cette partie. Nous attendons les réponses de %2$d des destinataires. Utilisez le bouton réinviter si vous pensez que les invitations ne sont pas parties.</item>
 </plurals>
-    <string name="invited_msg">Cette partie a été créée depuis une invitation que vous avez reçue. Dès qu\'elle pourra se connecter à l\'expéditeur et que les autres invités seront arrivés, le jeu commencera.</string>
+    <string name="invited_msg">Cette partie a été créée depuis une invitation que vous avez reçue. Dès qu\'elle pourra se connecter à l\'expéditeur et que les autres invités seront arrivés, la partie commencera.</string>
 
     <string name="newgame_invite_more">Plus d\'informations</string>
     <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
@@ -3484,4 +3487,48 @@ pour la langue</string>
 
     <string name="relay_behavior">Paramètres des parties par relai</string>
     <string name="relay_behavior_summary">"Paramètres des parties connectées à Internet "</string>
-    </resources>
+    <string name="disable_relay">"Désactiver le jeu par relai "</string>
+    <string name="disable_relay_summary">Désactiver toute communication par Internet</string>
+
+    <string name="warn_relay_disabled">"Le jeu par relai est pour l\'instant désactivé sur cet appareil. Aucun coup ne sera envoyé ou reçu par le relai. "</string>
+
+    <string name="warn_relay_later">Vous pouvez activer le jeu par relai maintenant, ou plus tard.</string>
+    <string name="warn_relay_remove">Vous pouvez activer le jeu par relai maintenant, ou le retirer de cette partie.</string>
+
+    <string name="warn_relay_havegames">Êtes-vous sûr de vouloir désactiver le jeu par relai ?</string>
+
+    <plurals name="warn_relay_games_fmt">
+	<item quantity="one">
+
+(Vous avez une partie l\'utilisant.)</item>
+	<item quantity="other">
+
+(Vous avez %1$d parties l\'utilisant.)</item>
+</plurals>
+
+    <string name="button_enable_relay">Activer le jeu par relai</string>
+    <string name="button_disable_relay">Désactiver le jeu par relai</string>
+    <string name="enable_dualpane_summary">Vues côte à côte sur les tablettes, très expérimental !</string>
+
+    <string name="invite_dualpane">Il semble que vous utilisiez un appareil de format tablette. Voulez-vous essayer une nouvelle fonctionnalité expérimentale qui vous permet de voir deux panneaux (par ex. le plateau et la discussion) côte à côte quand votre appareil est à l\'horizontal ?
+
+
+
+Vous pourrez désactiver cette fonctionnalité plus tard en utilisant la nouvelle entrée de menu \"Désactiver la vue côte à côte\". Ou dans les paramètres d\'application.
+
+
+
+Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les plantages, de faire des suggestions, etc. !!</string>
+
+  <string name="enable_dualpane">Activer la vue côte à côte</string>
+  <string name="post_dualpane_on_body">Lancer Crosswords avec la vue côte à côte activée !</string>
+  <string name="post_dualpane_off_body">Lancer Crosswords avec la vue côte à côte désactivée</string>
+
+  <string name="disable_dualpane">Désactiver la vue côte à côte</string>
+  <string name="db_enabled_toast">Mode vue côte à côte ACTIVÉ</string>
+<string name="dualpane_exit_now">Crosswords va maintenant se fermer pour que les changements s\'appliquent. Vous pouvez utiliser la notification qu\'il affiche pour le redémarrer.</string>
+
+  <string name="post_dualpane_title">Redémarrer Crosswords</string>
+  <string name="dualpane_restart">Fermeture de l\'application…</string>
+  <string name="after_restart">Ce changement ne s\'appliquera pas tant que vous n\'aurez pas relancé Crosswords.</string>
+  </resources>
