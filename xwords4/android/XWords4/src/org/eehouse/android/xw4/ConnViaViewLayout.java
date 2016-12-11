@@ -20,11 +20,12 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
 import junit.framework.Assert;
@@ -37,6 +38,7 @@ public class ConnViaViewLayout extends LinearLayout {
     private static final String TAG = ConnViaViewLayout.class.getSimpleName();
     private CommsConnTypeSet m_curSet;
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
+    private Activity m_activity;
 
     public interface CheckEnabledWarner {
         public void warnDisabled( CommsConnType typ );
@@ -51,6 +53,8 @@ public class ConnViaViewLayout extends LinearLayout {
     public ConnViaViewLayout( Context context, AttributeSet as ) {
         super( context, as );
     }
+
+    public void setActivity( Activity activity ) { m_activity = activity; }
 
     protected void configure( CommsConnTypeSet types,
                               CheckEnabledWarner cew,
@@ -72,6 +76,21 @@ public class ConnViaViewLayout extends LinearLayout {
     }
 
     private void addConnections()
+    {
+
+        // We need SMS and PHONE permission to check if we can support SMS. So
+        // ask for it here. When we get what we're getting, proceed to
+        // actually check for what's supported. Those methods will return
+        // false if they don't have the permission they need.
+        Perms23.doWithPermission( m_activity, Perms23.Perm.READ_PHONE_STATE,
+                                  new Perms23.PermCbck() {
+                                      public void onPermissionResult( Perms23.Perm perm, boolean granted ) {
+                                          addConnectionsPostPermCheck();
+                                      }
+                                  } );
+    }
+
+    private void addConnectionsPostPermCheck()
     {
         LinearLayout list = (LinearLayout)findViewById( R.id.conn_types );
         list.removeAllViews();  // in case being reused

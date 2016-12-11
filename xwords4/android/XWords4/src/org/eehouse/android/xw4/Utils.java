@@ -72,7 +72,7 @@ public class Utils {
 
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_firstVersion = null;
-    private static Boolean s_deviceSupportSMS = null;
+    // private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
     private static HashMap<String,String> s_phonesHash =
@@ -112,6 +112,7 @@ public class Utils {
             SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
             result = info.isPhone && info.isGSM;
         }
+        DbgUtils.logd( TAG, "isGSMPhone() => %b", result );
         return result;
     }
 
@@ -122,18 +123,19 @@ public class Utils {
     // that's not allowed except on GSM phones.)
     public static boolean deviceSupportsSMS( Context context )
     {
-        if ( null == s_deviceSupportSMS ) {
+        boolean result = false;
+        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
             TelephonyManager tm = (TelephonyManager)
                 context.getSystemService( Context.TELEPHONY_SERVICE );
-            boolean doesSMS = null != tm;
-            s_deviceSupportSMS = new Boolean( doesSMS );
+            result = null != tm;
         }
-        return s_deviceSupportSMS;
+        DbgUtils.logd( TAG, "deviceSupportsSMS() => %b", result );
+        return result;
     }
 
     public static void smsSupportChanged()
     {
-        s_deviceSupportSMS = null; // force to check again
+        // s_deviceSupportSMS = null; // force to check again
     }
 
     public static void notImpl( Context context )

@@ -288,6 +288,7 @@ public class GameConfigDelegate extends DelegateBase
                 LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
                 final ConnViaViewLayout items = (ConnViaViewLayout)
                     layout.findViewById( R.id.conn_types );
+                items.setActivity( m_activity );
                 final CheckBox cb = (CheckBox)layout
                     .findViewById(R.id.default_check);
                 cb.setVisibility( View.VISIBLE );

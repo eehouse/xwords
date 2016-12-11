@@ -77,7 +77,6 @@ public class CommsAddrRec {
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
         private static final int BIT_VECTOR_MASK = 0x8000;
-        private static CommsConnTypeSet s_supported;
 
         public CommsConnTypeSet() { this(BIT_VECTOR_MASK); }
 
@@ -116,21 +115,18 @@ public class CommsAddrRec {
 
         public static CommsConnTypeSet getSupported( Context context )
         {
-            if ( null == s_supported ) {
-                CommsConnTypeSet supported = new CommsConnTypeSet();
-                supported.add( CommsConnType.COMMS_CONN_RELAY );
-                if ( BTService.BTAvailable() ) {
-                    supported.add( CommsConnType.COMMS_CONN_BT );
-                }
-                if ( Utils.isGSMPhone( context ) ) {
-                    supported.add( CommsConnType.COMMS_CONN_SMS );
-                }
-                if ( WiDirService.supported() ) {
-                    supported.add( CommsConnType.COMMS_CONN_P2P );
-                }
-                s_supported = supported;
+            CommsConnTypeSet supported = new CommsConnTypeSet();
+            supported.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( BTService.BTAvailable() ) {
+                supported.add( CommsConnType.COMMS_CONN_BT );
             }
-            return s_supported;
+            if ( Utils.isGSMPhone( context ) ) {
+                supported.add( CommsConnType.COMMS_CONN_SMS );
+            }
+            if ( WiDirService.supported() ) {
+                supported.add( CommsConnType.COMMS_CONN_P2P );
+            }
+            return supported;
         }
 
         public static void removeUnsupported( Context context,
