@@ -73,7 +73,7 @@
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
          second).  -->
-    <string name="button_delete">Effacer</string>
+    <string name="button_delete">Supprimer</string>
     <!-- When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  -->
@@ -102,7 +102,7 @@
     <string name="gamel_menu_checkmoves">Vérifier les coups</string>
 
     <!-- Text of progress indicator shown while check is being conducted -->
-    <string name="msgs_progress">Vérification de coups, etc, sur le relai</string>
+    <string name="msgs_progress">Vérification de coups, etc., sur le relai</string>
 
     <!-- If you choose the above option and have no networked games
          you get this error message -->
@@ -130,7 +130,7 @@
     <string name="list_item_move">Déplacer vers le groupe…</string>
 
     <!-- pulls up dialog to delete the selected game -->
-    <string name="list_item_delete">Effacer la partie</string>
+    <string name="list_item_delete">Supprimer la partie</string>
     <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
@@ -160,12 +160,10 @@ obtenir une copie avec les mêmes paramètres.</string>
     <!--<string name="confirm_seldeletes_fmt">Êtes-vous sûr de vouloir effacer les
 %1$d parties sélectionnées ? Cette action ne peut pas être annulée.</string>-->
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir effacer la partie
-        sélectionnée ? Cette action ne peut pas être annulée.</item>
-        <item quantity="other">Êtes-vous sûr de vouloir effacer les
-        %1$d parties sélectionnées ? Cette action ne peut pas être
-        annulée.</item>
-    </plurals>
+	<item quantity="one">Êtes-vous sûr de vouloir effacer la partie
+ sélectionnée ? Cette action ne peut pas être annulée.</item>
+	<item quantity="other">"Êtes-vous sûr de vouloir supprimer les  %1$d parties sélectionnées ? Cette action ne peut pas être annulée."</item>
+</plurals>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
@@ -236,11 +234,10 @@ toutes les informations de connexion.)</item>
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. -->
     <plurals name="confirm_delete_dict_fmt">
-      <item quantity="one">Êtes-vous sûr de vouloir effacer la
-      liste de mots %1$s ?</item>
-      <item quantity="other">Êtes-vous sûr de vouloir effacer les
-      listes de mots %1$s ?</item>
-    </plurals>
+	<item quantity="one">Êtes-vous sûr de vouloir effacer la
+ liste de mots %1$s ?</item>
+	<item quantity="other">Êtes-vous sûr de vouloir supprimer les listes de mots %1$s ?</item>
+</plurals>
 
     <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
@@ -684,7 +681,7 @@ nom. Renommer le vôtre ou réessayer plus tard.</string>
     <!--<string name="msg_dev_deleted">This game has been deleted on
       another device. You will not be able to play any
       further.</string>-->
-    <string name="msg_dev_deleted">Cette partie a été effacée sur un autre appareil. Vous ne pourrez plus la jouer.</string>
+    <string name="msg_dev_deleted">Cette partie a été supprimée sur un autre appareil. Vous ne pourrez plus jouer.</string>
 
     <!-- Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is
@@ -1690,10 +1687,9 @@ en %2$s. Téléchargez-en une avant de commencer.</string>
       on an external card that is no longer available.)\n\nYou can
       download a replacement or substitute another %3$s
       wordlist.</string>-->
-    <string name="no_dict_subst_fmt">Impossible de charger la partie \"%1$s\"
-car la liste de mots %2$s n\'a pas été trouvée. (Elle a pu être effacée, ou
-stockée sur une carte mémoire externe qui n\'est plus disponible.)\n\nVous
-pouvez en télécharger une autre ou utiliser une autre liste de mots en %3$s.</string>
+    <string name="no_dict_subst_fmt">Impossible de charger la partie \"%1$s\" car la liste de mots %2$s n\'a pas été trouvée. (Elle a pu être supprimée, ou stockée sur une carte mémoire externe qui n\'est plus disponible.)
+
+Vous pouvez en télécharger une autre ou utiliser une autre liste de mots en %3$s.</string>
 
     <!-- Text of button displayed when downloading is an option -->
     <!--<string name="button_download">Download</string>-->
@@ -1901,17 +1897,13 @@ d\'action pour valider votre tour ou sortir du mode d\'échange.</string>
     <!--<string name="not_again_hintprev">This button shows all possible
       moves in ascending order (using tiles to the right of the rack
       divider.)</string>-->
-    <string name="not_again_hintprev">Ce bouton montre tous les coups possibles
-par ordre croissant (en utilisant les jetons à droite du séparateur du
-chevalet).</string>
+    <string name="not_again_hintprev">Ce bouton montre tous les coups possibles par ordre croissant (en utilisant les jetons à droite du séparateur du chevalet).</string>
     <!-- Shown when you tap the next hint button on the toolbar of the
          main Board screen -->
     <!--<string name="not_again_hintnext">This button shows all possible
       moves in descending order (using tiles to the right of the rack
       divider.)</string>-->
-    <string name="not_again_hintnext">Ce bouton montre tous les coups possibles
-par ordre décroissant (en utilisant les jetons à droite du séparateur du
-chevalet).</string>
+    <string name="not_again_hintnext">Ce bouton montre tous les coups possibles par ordre décroissant (en utilisant les jetons à droite du séparateur du chevalet).</string>
     <!-- Shown when you tap the juggle button on the toolbar of the
          main Board screen -->
     <!--<string name="not_again_juggle">This button randomly rearranges
@@ -1943,7 +1935,7 @@ courant.</string>
     <!--<string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
       until you delete the game that contains them.</string>-->
-    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre appareils pour cette partie. Les messages seront préservés jusqu\'à ce que effaciez la partie qui les contient.</string>
+    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre appareils pour cette partie. Les messages seront préservés jusqu\'à ce que supprimiez la partie qui les contient.</string>
     <!-- Shown when you tap the values button on the toolbar of the
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
@@ -2603,7 +2595,7 @@ mots ?</string>
     <string name="newgroup_label">Nommez votre nouveau groupe :</string>
 
     <!--<string name="list_group_delete">Delete group</string>-->
-    <string name="list_group_delete">Effacer le groupe</string>
+    <string name="list_group_delete">Supprimer le groupe</string>
     <!--<string name="list_group_rename">Rename</string>-->
     <string name="list_group_rename">Renommer</string>
     <!--<string name="list_group_default">Put new games here</string>-->
@@ -2623,21 +2615,21 @@ mots ?</string>
     <!--<string name="groups_confirm_del_fmt">Êtes-vous sûr de vouloir effacer les
 %1$d groupes sélectionnés ?</string>-->
     <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir effacer le
-groupe sélectionné ?</item>
-        <item quantity="other">Êtes-vous sûr de vouloir effacer les
-%1$d groupes sélectionnés ?</item>
-    </plurals>
+	<item quantity="one">Êtes-vous sûr de vouloir supprimer le groupe sélectionné ?</item>
+	<item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d groupes sélectionnés ?</item>
+</plurals>
     <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
     also be deleted.)</string>-->
     <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi
 effacées.)</string>-->
     <plurals name="groups_confirm_del_games_fmt">
-        <item quantity="one">\n\n(une partie sera aussi
-effacée.)</item>
-        <item quantity="other">\n\n(%1$d parties seront aussi
-effacées.)</item>
-    </plurals>
+	<item quantity="one">
+
+(une partie sera aussi supprimée.)</item>
+	<item quantity="other">
+
+(%1$d parties seront aussi supprimées.)</item>
+</plurals>
 
     <!--<string name="rename_group_label">Change the name of this group to:</string>-->
     <string name="rename_group_label">Changer le nom de ce groupe pour :</string>
@@ -2646,8 +2638,7 @@ effacées.)</item>
 
     <!--<string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
     cannot be deleted.</string>-->
-    <string name="cannot_delete_default_group_fmt">Le groupe pour les nouvelles
-parties, %1$s, ne peut pas être effacé.</string>
+    <string name="cannot_delete_default_group_fmt">Le groupe pour les nouvelles parties, %1$s, ne peut pas être supprimé.</string>
 
     <!--<string name="group_name_fmt">%1$s (%2$d games)</string>-->
     <!--<string name="group_name_fmt">%1$s (%2$d parties)</string>-->
@@ -2683,10 +2674,9 @@ parties, %1$s, ne peut pas être effacé.</string>
     can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
     \"Actionbar.\"</string>-->
-    <string name="not_again_newselect">Toucher une partie l\'ouvre.\n\nVous
-pouvez aussi toucher les icônes sur la gauche pour sélectionner ou
-désélectionner des parties, par exemples pour les effacer, en utilisant le menu
-ou la \"barre d\'action\".</string>
+    <string name="not_again_newselect">Toucher une partie l\'ouvre.
+
+Vous pouvez aussi toucher les icônes sur la gauche pour sélectionner ou désélectionner des parties, par exemples pour les supprimer, en utilisant le menu ou la \"barre d\'action\".</string>
 
     <!--<string name="not_again_backclears">The back button clears any
     selection instead of exiting. Hit it again to exit the
@@ -2745,17 +2735,20 @@ de mots à retenir</string>
     <!--<string name="slmenu_copy_sel">Copy to clipboard</string>-->
     <string name="slmenu_copy_sel">Copier dans le presse-papier</string>
     <!--<string name="slmenu_clear_sel">Delete selected</string>-->
-    <string name="slmenu_clear_sel">Effacer les mots sélectionnés</string>
+    <string name="slmenu_clear_sel">Supprimer les mots sélectionnés</string>
     <!--<string name="confirm_studylist_clear_fmt">Are you sure you want to
     delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>-->
     <!--<string name="confirm_studylist_clear_fmt">Êtes-vous sûr de vouloir effacer
 les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</string>-->
     <plurals name="confirm_studylist_clear_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir effacer
-le mot sélectionné ?\n\n(Cette action ne peut pas être annulée.)</item>
-        <item quantity="other">Êtes-vous sûr de vouloir effacer
-les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</item>
-    </plurals>
+	<item quantity="one">Êtes-vous sûr de vouloir effacer
+le mot sélectionné ?
+
+(Cette action ne peut pas être annulée.)</item>
+	<item quantity="other">Êtes-vous sûr de vouloir supprimer les %1$d mots sélectionnés ?
+
+(Cette action ne peut pas être annulée.)</item>
+</plurals>
     <!--<string name="paste_done_fmt">%1$d word[s] copied</string>-->
     <!--<string name="paste_done_fmt">%1$d mots copiés</string>-->
     <plurals name="paste_done_fmt">
@@ -2890,7 +2883,7 @@ les listes de mots depuis le serveur.</string>
     <string name="getinfo">Avoir des informations</string>
 
     <!--<string name="delete_dicts">Delete wordlist[s]</string>-->
-    <string name="delete_dicts">Effacer les listes de mots</string>
+    <string name="delete_dicts">Supprimer les listes de mots</string>
 
     <!--<string name="show_remote">Show downloadable</string>-->
     <string name="show_remote">Montrer les listes téléchargeables</string>
@@ -3413,7 +3406,9 @@ pour la langue</string>
   <string name="clip_label">Adresse de l\'invitation</string>
   <string name="not_again_clip_expl_fmt">L\'option \"%1$s\" copie une adresse d\'invitation dans le presse-papier. Collez-là dans l\'application de votre choix et envoyez-là à votre ami.</string>
 
-  <string name="confirm_clear_chat">Êtes-vous sûr de vouloir effacer tout l\'historique de discussion pour cette partie ?\n\n(Cette action ne peut pas être annulée.)</string>
+  <string name="confirm_clear_chat">Êtes-vous sûr de vouloir supprimer tout l\'historique de discussion pour cette partie ?
+
+(Cette action ne peut pas être annulée.)</string>
 
   <string name="invite_choice_relay">Internet/Relai</string>
   <string name="invite_notice_title">Nouvelle partie via une invitation</string>
