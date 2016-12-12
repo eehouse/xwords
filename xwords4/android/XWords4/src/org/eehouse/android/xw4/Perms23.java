@@ -24,15 +24,20 @@ import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
     
 public class Perms23 {
     private static final String TAG = Perms23.class.getSimpleName();
     
     public static enum Perm {
         READ_PHONE_STATE("android.permission.READ_PHONE_STATE"),
-        STORAGE("android.permission.WRITE_EXTERNAL_STORAGE")
+        STORAGE("android.permission.WRITE_EXTERNAL_STORAGE"),
+        SEND_SMS("android.permission.SEND_SMS"),
+        READ_CONTACTS("android.permission.READ_CONTACTS")
         ;
 
         private String m_str;
@@ -51,56 +56,77 @@ public class Perms23 {
     }
 
     public interface PermCbck {
-        void onPermissionResult( Perm perm, boolean granted );
+        void onPermissionResult( Map<Perm, Boolean> perms );
     }
 
+    public static class Builder {
+        private Set<Perm> m_perms = new HashSet<Perm>();
+
+        public Builder(Set<Perm> perms) {
+            m_perms.addAll( perms );
+        }
+
+        public Builder( Perm perm ) {
+            m_perms.add( perm );
+        }
+
+        public void asyncQuery( Activity activity, PermCbck cbck )
+        {
+            DbgUtils.logd( TAG, "asyncQuery()" );
+            boolean haveAll = true;
+            boolean shouldShow = false;
+
+            ArrayList<String> askStrings = new ArrayList<String>();
+            for ( Perm perm : m_perms ) {
+                String permStr = perm.getString();
+                boolean haveIt = PackageManager.PERMISSION_GRANTED
+                    == ContextCompat.checkSelfPermission( activity, permStr );
+
+                // For research: ask the OS if we should be printing a rationale
+                if ( BuildConfig.DEBUG && !haveIt ) {
+                    shouldShow = shouldShow || ActivityCompat
+                        .shouldShowRequestPermissionRationale( activity, permStr );
+                }
+
+                haveAll = haveAll && haveIt;
+                if ( !haveIt ) {
+                    askStrings.add( permStr );
+                }
+            }
+
+            if ( shouldShow ) {
+                DbgUtils.showf( "Should show rationale!!!" );
+            }
+
+            if ( haveAll ) {
+                Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
+                for ( Perm perm : m_perms ) {
+                    map.put( perm, true );
+                }
+                cbck.onPermissionResult( map );
+            } else {
+                String[] permsArray = askStrings.toArray( new String[askStrings.size()] );
+                int code = register( cbck );
+                ActivityCompat.requestPermissions( activity, permsArray, code );
+            }
+
+            DbgUtils.logd( TAG, "asyncQuery(%s) => %b", m_perms.toString(), haveAll );
+        }
+    }
+
+    private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();
     public static void gotPermissionResult( int code, String[] perms, int[] granteds )
     {
-        CbckRecord record = s_map.get( code );
+        Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
         for ( int ii = 0; ii < perms.length; ++ii ) {
             Perm perm = Perm.getFor( perms[ii] );
             boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
-            DbgUtils.logd( TAG, "calling %s.onPermissionResult(%s, %b)",
-                           record.cbck.getClass().getSimpleName(), perm.toString(),
-                           granted );
-            record.cbck.onPermissionResult( perm, granted );
+            result.put( perm, granted );
+            // DbgUtils.logd( TAG, "calling %s.onPermissionResult(%s, %b)",
+            //                record.cbck.getClass().getSimpleName(), perm.toString(),
+            //                granted );
         }
-    }
-
-    public static void doWithPermission( Activity activity, Perm perm, PermCbck cbck )
-    {
-        DbgUtils.logd( TAG, "doWithPermission()" );
-        String permStr = perm.getString();
-
-        if ( PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission( activity, permStr ) ) {
-            DbgUtils.logd( TAG, "doWithPermission(): already have it" );
-            cbck.onPermissionResult( perm, true );
-        } else {
-            // Should we show an explanation?
-            boolean shouldShow = ActivityCompat
-                .shouldShowRequestPermissionRationale( activity, permStr );
-            if ( shouldShow && BuildConfig.DEBUG ) {
-                DbgUtils.logd( TAG, "should show rationalle!!!" );
-            }
-            //  Show an explanation to the user *asynchronously* -- don't
-            //                 block // this thread waiting for the user's
-            //                 response! After the user // sees the
-            //                 explanation, try again to request the
-            //                 permission.
-
-            String[] perms = new String[]{ permStr };
-            int code = register( perms, cbck );
-            ActivityCompat.requestPermissions( activity, perms, code );
-        }
-        
-        // int check = ContextCompat.checkSelfPermission( activity, permStr );
-        // if ( PackageManager.PERMISSION_GRANTED == check ) {
-        //     if ( null != onSuccess ) {
-        //         onSuccess.run();
-        //     }
-        // } else {
-        //     Assert.assertTrue( PackageManager.PERMISSION_DENIED == check );
-        // }
+        s_map.get( code ).onPermissionResult( result );
     }
 
     public static boolean havePermission( Perm perm )
@@ -112,23 +138,12 @@ public class Perms23 {
         return result;
     }
 
-    private static class CbckRecord {
-        public PermCbck cbck;
-        public String[] perms;
-        public CbckRecord( String[] perms, PermCbck cbck ) {
-            this.perms = perms;
-            this.cbck = cbck;
-        }
-    }
-
     private static int s_nextRecord;
-    private static Map<Integer, CbckRecord> s_map = new HashMap<Integer, CbckRecord>();
-    private static int register( String[] perms, PermCbck cbck )
+    private static int register( PermCbck cbck )
     {
         DbgUtils.assertOnUIThread();
         int code = ++s_nextRecord;
-        CbckRecord record = new CbckRecord( perms, cbck );
-        s_map.put( code, record );
+        s_map.put( code, cbck );
         return code;
     }
 }

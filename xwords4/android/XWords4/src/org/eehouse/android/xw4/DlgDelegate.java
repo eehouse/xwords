@@ -71,6 +71,8 @@ public class DlgDelegate {
         NEW_GAME_DFLT_NAME,
         ENABLE_DUALPANE,
         ENABLE_DUALPANE_EXIT,
+        LAUNCH_PERMS_REMOVE,
+        LAUNCH_PERMS,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

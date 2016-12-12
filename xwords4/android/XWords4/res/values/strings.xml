@@ -2718,4 +2718,13 @@
   <string name="dualpane_restart">Exiting app…</string>
   <string name="after_restart">This change will not take effect until
   you restart Crosswords.</string>
+
+  <string name="not_again_missing_perms">This game is configured to
+  communicate in at least one way that requires a permission that has
+  not been granted. You can still open it, but it may not be able to
+  send or receive moves.\n\nYou can re-open it to be asked again. Or
+  you can remove the settings that require missing permissions.</string>
+
+  <string name="remove_connvia">Remove</string>
+
 </resources>

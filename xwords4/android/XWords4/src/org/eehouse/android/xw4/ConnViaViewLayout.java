@@ -28,6 +28,8 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
+import java.util.Map;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -82,12 +84,13 @@ public class ConnViaViewLayout extends LinearLayout {
         // ask for it here. When we get what we're getting, proceed to
         // actually check for what's supported. Those methods will return
         // false if they don't have the permission they need.
-        Perms23.doWithPermission( m_activity, Perms23.Perm.READ_PHONE_STATE,
-                                  new Perms23.PermCbck() {
-                                      public void onPermissionResult( Perms23.Perm perm, boolean granted ) {
-                                          addConnectionsPostPermCheck();
-                                      }
-                                  } );
+        new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE )
+            .asyncQuery( m_activity, new Perms23.PermCbck() {
+                    @Override
+                    public void onPermissionResult( Map<Perms23.Perm, Boolean> granted ) {
+                        addConnectionsPostPermCheck();
+                    }
+                } );
     }
 
     private void addConnectionsPostPermCheck()
