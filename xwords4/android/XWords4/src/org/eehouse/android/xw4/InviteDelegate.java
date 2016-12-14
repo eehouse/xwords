@@ -32,6 +32,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -48,6 +49,31 @@ abstract class InviteDelegate extends ListDelegateBase
                ViewGroup.OnHierarchyChangeListener {
     private static final String TAG = InviteDelegate.class.getSimpleName();
 
+    protected interface InviterItem {
+    }
+
+    protected static class TwoStringPair implements InviterItem {
+        public String str1;
+        public String str2;
+
+        public TwoStringPair( String str1, String str2 ) {
+            this.str1 = str1; this.str2 = str2;
+        }
+
+        public static TwoStringPair[] make( String[] names, String[] addrs )
+        {
+            TwoStringPair[] pairs = new TwoStringPair[names.length];
+            for ( int ii = 0; ii < pairs.length; ++ii ) {
+                pairs[ii] = new TwoStringPair( names[ii], addrs[ii] );
+            }
+            return pairs;
+        }
+    }
+
+    // Children implement ...
+    abstract void onChildAdded( View child, InviterItem item );
+    abstract void listSelected( InviterItem[] selected, String[] devsP, int[] countsP );
+
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
     protected static final String INTENT_KEY_NMISSING = "NMISSING";
@@ -60,51 +86,37 @@ abstract class InviteDelegate extends ListDelegateBase
     protected Button m_clearButton;
     private Activity m_activity;
     private ListView m_lv;
-    private View m_ev;
+    private TextView m_ev;
     private boolean m_showAddrs;
     private InviteItemsAdapter m_adapter;
-    protected Map<String, Integer> m_counts;
+    protected Map<InviterItem, Integer> m_counts;
     protected Set<Integer> m_checked;
     private boolean m_setChecked;
-    private LinearLayout[] m_items;
+    // private LinearLayout[] m_items;
 
-    public InviteDelegate( Delegator delegator, Bundle savedInstanceState,
-                           int layoutID )
+    public InviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, layoutID, R.menu.empty );
+        super( delegator, savedInstanceState, R.layout.inviter, R.menu.empty );
         m_activity = delegator.getActivity();
         Intent intent = getIntent();
         m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
         m_lastDev = intent.getStringExtra( INTENT_KEY_LASTDEV );
-        m_counts = new HashMap<String, Integer>();
+        m_counts = new HashMap<InviterItem, Integer>();
         m_checked = new HashSet<Integer>();
     }
 
-    protected void init( int button_invite, int desc_id, String descTxt )
+    protected void init( String descTxt, int emptyMsgId )
     {
-        init( button_invite, 0, 0, desc_id, descTxt );
-    }
-
-    protected void init( int button_invite, int button_rescan,
-                         int button_clear, int desc_id, String descTxt )
-    {
-        m_inviteButton = (Button)findViewById( button_invite );
+        m_inviteButton = (Button)findViewById( R.id.button_invite );
         m_inviteButton.setOnClickListener( this );
-        if ( 0 != button_rescan ) {
-            m_rescanButton = (Button)findViewById( button_rescan );
-            m_rescanButton.setOnClickListener( this );
-        }
-        if ( 0 != button_clear ) {
-            m_clearButton = (Button)findViewById( button_clear );
-            m_clearButton.setOnClickListener( this );
-        }
 
-        TextView descView = (TextView)findViewById( desc_id );
+        TextView descView = (TextView)findViewById( R.id.invite_desc );
         descView.setText( descTxt );
 
         m_lv = (ListView)findViewById( android.R.id.list );
-        m_ev = findViewById( android.R.id.empty );
-        if ( null != m_lv && null != m_ev ) {
+        m_ev = (TextView)findViewById( android.R.id.empty );
+        if ( null != m_lv && null != m_ev && 0 != emptyMsgId ) {
+            m_ev.setText( getString( emptyMsgId ) );
             m_lv.setOnHierarchyChangeListener( this );
             showEmptyIfEmpty();
         }
@@ -112,13 +124,39 @@ abstract class InviteDelegate extends ListDelegateBase
         tryEnable();
     }
 
-    protected void updateListAdapter( int itemId, String[] names, String[] addrs,
-                                      boolean showAddrs )
+    // Subclasses are meant to call this
+    protected void addButtonBar( int buttonBarId, int[] buttonBarItemIds )
     {
-        m_showAddrs = showAddrs;
-        m_adapter = new InviteItemsAdapter( itemId, names, addrs );
+        FrameLayout container = (FrameLayout)findViewById( R.id.button_bar );
+        ViewGroup bar = (ViewGroup)inflate( buttonBarId );
+        container.addView( bar );
+
+        View.OnClickListener listener = new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    onBarButtonClicked( view.getId() );
+                }
+            };
+
+        for ( int id : buttonBarItemIds ) {
+            bar.findViewById( id ).setOnClickListener( listener );
+        }
+    }
+
+    protected void updateListAdapter( int itemId, InviterItem[] items )
+    {
+        // m_items = items;
+        m_adapter = new InviteItemsAdapter( itemId, items );
         setListAdapter( m_adapter );
     }
+
+    protected void onBarButtonClicked( int id )
+    {
+        Assert.fail();          // subclass must implement
+    }
+
+    // Subclasses can do something here
+    protected void addToButtonBar( FrameLayout container ) {}
 
     ////////////////////////////////////////
     // View.OnClickListener
@@ -126,19 +164,29 @@ abstract class InviteDelegate extends ListDelegateBase
     public void onClick( View view )
     {
         if ( m_inviteButton == view ) {
+            int len = m_checked.size();
+            String[] devs = new String[len];
+            int[] counts = new int[len];
+
+            listSelected( getSelItems(), devs, counts );
+
             Intent intent = new Intent();
-            String[][] devs = new String[1][];
-            int[][] counts = new int[1][];
-            listSelected( devs, counts );
-            intent.putExtra( DEVS, devs[0] );
-            intent.putExtra( COUNTS, counts[0] );
+            intent.putExtra( DEVS, devs );
+            intent.putExtra( COUNTS, counts );
             setResult( Activity.RESULT_OK, intent );
             finish();
-        } else if ( m_rescanButton == view ) {
-            scan();
-        } else if ( m_clearButton == view ) {
-            clearSelected( makeCheckedArray() );
         }
+    }
+
+    private InviterItem[] getSelItems()
+    {
+        int ii = 0;
+        InviterItem[] result = new InviterItem[m_checked.size()];
+        InviterItem[] src = getAdapter().getItems();
+        for ( int checked : m_checked ) {
+            result[ii++] = src[checked];
+        }
+        return result;
     }
 
     ////////////////////////////////////////
@@ -159,60 +207,22 @@ abstract class InviteDelegate extends ListDelegateBase
                             ? View.VISIBLE : View.GONE );
     }
 
-    protected void listSelected( String[][] devsP, int[][] countsP )
-    {
-        int[] counts = null;
-        int len = m_checked.size();
-        Assert.assertTrue( 0 < len );
-
-        if ( null != countsP ) {
-            counts = new int[len];
-            countsP[0] = counts;
-        }
-
-        String[] checked = new String[len];
-        Iterator<Integer> iter = m_checked.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            int index = iter.next();
-            String addr = m_adapter.getAddrs()[index];
-            Assert.assertNotNull( addr ); // fired!!!
-            checked[ii] = addr;
-            if ( null != counts ) {
-                counts[ii] = m_counts.get( addr );
-            }
-        }
-        DbgUtils.logd( TAG, "listSelected() adding %s",
-                       checked.toString() );
-        devsP[0] = checked;
-    }
-
     protected void tryEnable()
     {
         int count = m_checked.size();
         m_inviteButton.setEnabled( count > 0 && count <= m_nMissing );
-        if ( null != m_clearButton ) {
-            m_clearButton.setEnabled( count > 0 );
-        }
+        // if ( null != m_clearButton ) {
+        //     m_clearButton.setEnabled( count > 0 );
+        // }
     }
 
-    protected void scan() {}
+    final Set<Integer> getChecked() { return m_checked; }
 
-    protected void clearSelected( Integer[] itemIndices )
-    {
-        for ( Iterator<Integer> iter = m_checked.iterator();
-              iter.hasNext(); ) {
-            int index = iter.next();
-            LinearLayout item = m_items[index];
-            CheckBox box = (CheckBox)item.findViewById( R.id.inviter_check );
-            if ( null != box ) {
-                box.setChecked( false );
-            }
-            m_checked.remove( iter );
-        }
-    }
+    protected void clearChecked() { m_checked.clear(); }
+
+    // protected void scan() {}
 
     // callbacks made by InviteItemsAdapter
-
     protected void onItemChecked( int index, boolean checked )
     {
         DbgUtils.logd( TAG, "onItemChecked(%d, %b)", index, checked );
@@ -234,35 +244,42 @@ abstract class InviteDelegate extends ListDelegateBase
     }
 
     private class InviteItemsAdapter extends XWListAdapter {
-        private String[] m_devAddrs;
-        private String[] m_devNames;
+        private InviterItem[] m_items;
         private int m_itemId;
 
-        public InviteItemsAdapter( int itemID, String[] names, String[] addrs )
+        public InviteItemsAdapter( int itemID, InviterItem[] items )
         {
-            super( null == addrs? 0 : addrs.length );
+            super( null == items? 0 : items.length );
             m_itemId = itemID;
-            m_devAddrs = addrs;
-            m_devNames = names;
-            m_items = new LinearLayout[getCount()];
+            m_items = items;
+            // m_items = new LinearLayout[getCount()];
         }
 
-        public String[] getAddrs() { return m_devAddrs; }
+        public InviterItem[] getItems() { return m_items; }
+
+        // public String[] getAddrs() { return m_devAddrs; }
 
         @Override
-        public Object getItem( int position ) { return m_devNames[position]; }
+        public Object getItem( int position ) { return m_items[position]; }
 
         @Override
         public View getView( final int position, View convertView,
                              ViewGroup parent )
         {
-            final String addr = m_devAddrs[position];
-            final LinearLayout layout = (LinearLayout)inflate( m_itemId );
+            final InviterItem item = m_items[position];
+            final LinearLayout layout = (LinearLayout)inflate( R.layout.inviter_item );
             CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            box.setText( m_devNames[position] );
-            box.setTag( addr );
+            // box.setText( m_devNames[position] );
+            // box.setTag( addr );
 
-            m_counts.put( addr, 1 );
+            // Give subclass a chance to install and populate its view
+            FrameLayout frame = (FrameLayout)layout.findViewById( R.id.frame );
+            Assert.assertNotNull( frame );
+            View child = inflate( m_itemId );
+            frame.addView( child );
+            onChildAdded( child, m_items[position] );
+
+            m_counts.put( item, 1 );
             if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     layout.findViewById(R.id.nperdev_spinner);
@@ -280,7 +297,7 @@ abstract class InviteDelegate extends ListDelegateBase
                                                     View view, int pos,
                                                     long id )
                         {
-                            m_counts.put( addr, 1 + pos );
+                            m_counts.put( item, 1 + pos );
                             tryEnable();
                         }
 
@@ -295,13 +312,13 @@ abstract class InviteDelegate extends ListDelegateBase
                         if ( !isChecked ) {
                             m_setChecked = false;
                         }
-                        // if ( isChecked ) {
-                        //     m_checked.add( position );
-                        // } else {
-                        //     m_checked.remove( position );
+                        if ( isChecked ) {
+                            m_checked.add( position );
+                        } else {
+                            m_checked.remove( position );
                         //     // User's now making changes; don't check new views
                         //     m_setChecked = false;
-                        // }
+                        }
                         onItemChecked( position, isChecked );
 
                         tryEnable();
@@ -311,15 +328,16 @@ abstract class InviteDelegate extends ListDelegateBase
 
             if ( m_setChecked || m_checked.contains( position ) ) {
                 box.setChecked( true );
-            } else if ( null != m_lastDev && m_lastDev.equals( addr ) ) {
+            } else if ( null != m_lastDev && m_lastDev.equals( item ) ) {
                 m_lastDev = null;
                 box.setChecked( true );
             }
-            m_items[position] = layout;
+            // m_items[position] = layout;
             return layout;
         }
 
         public String getAddr( CheckBox box ) { return (String)box.getTag(); }
         public String getName( CheckBox box ) { return box.getText().toString(); }
     }
+
 }

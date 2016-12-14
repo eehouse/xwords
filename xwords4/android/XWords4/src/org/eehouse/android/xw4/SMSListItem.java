@@ -43,11 +43,11 @@ public class SMSListItem extends LinearLayout  {
         tv.setText( number );
     }
 
-    public void setOnCheckedChangeListener( OnCheckedChangeListener lstnr )
-    {
-        CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
-        cb.setOnCheckedChangeListener( lstnr );
-    }
+    // public void setOnCheckedChangeListener( OnCheckedChangeListener lstnr )
+    // {
+    //     CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
+    //     cb.setOnCheckedChangeListener( lstnr );
+    // }
 
     public String getNumber()
     {
@@ -55,15 +55,15 @@ public class SMSListItem extends LinearLayout  {
         return tv.getText().toString();
     }
 
-    public void setChecked( boolean checked )
-    {
-        CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
-        cb.setChecked( checked );
-    }
+    // public void setChecked( boolean checked )
+    // {
+    //     CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
+    //     cb.setChecked( checked );
+    // }
 
-    public boolean isChecked()
-    {
-        CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
-        return cb.isChecked();
-    }
+    // public boolean isChecked()
+    // {
+    //     CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
+    //     return cb.isChecked();
+    // }
 }

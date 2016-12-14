@@ -28,17 +28,16 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract;
 import android.text.method.DialerKeyListener;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import junit.framework.Assert;
 
@@ -49,9 +48,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Set;
 
-public class SMSInviteDelegate extends InviteDelegate {
+public class SMSInviteDelegate extends InviteDelegate
+    implements View.OnClickListener {
     private static final String TAG = SMSInviteDelegate.class.getSimpleName();
+    private static int[] BUTTONIDS = {
+        R.id.button_add,
+        R.id.manual_add_button,
+        R.id.button_clear,
+    };
 
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
@@ -78,7 +84,7 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     public SMSInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.smsinviter );
+        super( delegator, savedInstanceState );
         m_activity = delegator.getActivity();
     }
 
@@ -87,18 +93,10 @@ public class SMSInviteDelegate extends InviteDelegate {
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear,
-                    R.id.invite_desc, msg );
+        super.init( msg, R.string.empty_sms_inviter );
+        addButtonBar( R.layout.sms_buttons, BUTTONIDS );
 
         getBundledData( savedInstanceState );
-
-        m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
-        m_addButton.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View view )
-                {
-                    showDialog( DlgID.GET_NUMBER );
-                }
-            } );
 
         getSavedState();
         rebuildList( true );
@@ -121,12 +119,33 @@ public class SMSInviteDelegate extends InviteDelegate {
     }
 
     @Override
+    protected void onBarButtonClicked( int id )
+    {
+        switch( id ) {
+        case R.id.button_add:
+            Intent intent = new Intent( Intent.ACTION_PICK,
+                                        ContactsContract.Contacts.CONTENT_URI );
+            intent.setType( Phone.CONTENT_TYPE );
+            startActivityForResult( intent, RequestCode.GET_CONTACT );
+            break;
+        case R.id.manual_add_button:
+            showDialog( DlgID.GET_NUMBER );
+            break;
+        case R.id.button_clear:
+            int count = getChecked().size();
+            String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
+                                            count, count );
+            makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+            break;
+        }
+    }
+
+    @Override
     protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
-        // super.onActivityResult( requestCode, resultCode, data );
         if ( Activity.RESULT_CANCELED != resultCode && data != null ) {
-            switch (requestCode) {
+            switch ( requestCode ) {
             case GET_CONTACT:
                 addPhoneNumbers( data );
                 break;
@@ -134,6 +153,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         }
     }
 
+    @Override
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
@@ -171,63 +191,24 @@ public class SMSInviteDelegate extends InviteDelegate {
         return dialog;
     }
 
-    protected void scan()
-    {
-        Intent intent = new Intent( Intent.ACTION_PICK,
-                                    ContactsContract.Contacts.CONTENT_URI );
-        intent.setType( Phone.CONTENT_TYPE );
-        startActivityForResult( intent, RequestCode.GET_CONTACT );
-    }
-
     @Override
-    protected void clearSelected( Integer[] checked )
+    protected void listSelected( InviterItem[] selected, String[] devs,
+                                 int[] counts )
     {
-        int count = checked.length;
-        String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
-                                        count, count );
-        makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
-    }
-
-    protected void listSelected( String[][] devsP, int[][] countsP )
-    {
-        XWListAdapter adapter = getAdapter();
-        int count = adapter.getCount();
-        String[] result = new String[countChecks()];
-        int[] counts = new int[result.length];
-
-        int index = 0;
-        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            PhoneRec rec = iter.next();
-            if ( rec.m_isChecked ) {
-                counts[index] = rec.m_nPlayers;
-                result[index] = ((SMSListItem)adapter.getItem(ii)).getNumber();
-                index++;
-            }
-        }
-        devsP[0] = result;
-        if ( null != countsP ) {
-            countsP[0] = counts;
+        for ( int ii = 0; ii < selected.length; ++ii ) {
+            PhoneRec rec = (PhoneRec)selected[ii];
+            counts[ii] = rec.m_nPlayers;
+            devs[ii] = rec.m_phone;
         }
     }
 
     @Override
-    protected void tryEnable()
+    protected void onChildAdded( View child, InviterItem data )
     {
-        if ( null != m_phoneRecs ) {
-            int nPlayers = 0;
-            int nDevs = 0;
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                PhoneRec rec = iter.next();
-                if ( rec.m_isChecked ) {
-                    ++nDevs;
-                    nPlayers += rec.m_nPlayers;
-                }
-            }
-            m_inviteButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
-            m_clearButton.setEnabled( 0 < nDevs );
-        }
+        SMSListItem item = (SMSListItem)child;
+        PhoneRec rec = (PhoneRec)data;
+        ((TextView)item.findViewById(R.id.name)).setText( rec.m_name );
+        ((TextView)item.findViewById(R.id.number)).setText( rec.m_phone );
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -324,15 +305,16 @@ public class SMSInviteDelegate extends InviteDelegate {
                     return rec1.m_name.compareTo(rec2.m_name);
                 }
             });
-        String[] phones = new String[m_phoneRecs.size()];
-        String[] names = new String[m_phoneRecs.size()];
-        for ( int ii = 0; ii < m_phoneRecs.size(); ++ii ) {
-            PhoneRec rec = m_phoneRecs.get( ii );
-            phones[ii] = rec.m_phone;
-            names[ii] = rec.m_name;
-        }
+        // String[] phones = new String[m_phoneRecs.size()];
+        // String[] names = new String[m_phoneRecs.size()];
+        // for ( int ii = 0; ii < m_phoneRecs.size(); ++ii ) {
+        //     PhoneRec rec = m_phoneRecs.get( ii );
+        //     phones[ii] = rec.m_phone;
+        //     names[ii] = rec.m_name;
+        // }
 
-        updateListAdapter( R.layout.smsinviter_item, phones, names, true );
+        updateListAdapter( R.layout.smsinviter_item,
+                           m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
         tryEnable();
     }
 
@@ -376,17 +358,17 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     private void clearSelectedImpl()
     {
-        XWListAdapter adapter = getAdapter();
-        int count = adapter.getCount();
-        for ( int ii = count - 1; ii >= 0; --ii ) {
-            if ( m_phoneRecs.get( ii ).m_isChecked ) {
+        Set<Integer> checked = getChecked();
+        for ( int ii = m_phoneRecs.size() - 1; ii >= 0; --ii ) {
+            if ( checked.contains( ii ) ) {
                 m_phoneRecs.remove( ii );
             }
         }
+        clearChecked();
         saveAndRebuild();
     }
 
-    private class PhoneRec {
+    private class PhoneRec implements InviterItem {
         public String m_phone;
         public String m_name;
         public boolean m_isChecked;
