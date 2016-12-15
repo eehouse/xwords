@@ -192,12 +192,10 @@ public class SMSInviteDelegate extends InviteDelegate
     }
 
     @Override
-    protected void listSelected( InviterItem[] selected, String[] devs,
-                                 int[] counts )
+    protected void listSelected( InviterItem[] selected, String[] devs )
     {
         for ( int ii = 0; ii < selected.length; ++ii ) {
             PhoneRec rec = (PhoneRec)selected[ii];
-            counts[ii] = rec.m_nPlayers;
             devs[ii] = rec.m_phone;
         }
     }
@@ -372,7 +370,6 @@ public class SMSInviteDelegate extends InviteDelegate
         public String m_phone;
         public String m_name;
         public boolean m_isChecked;
-        public int m_nPlayers;
         public PhoneRec( String name, String phone )
         {
             this( name, phone, false );
@@ -386,7 +383,6 @@ public class SMSInviteDelegate extends InviteDelegate
         {
             m_phone = phone;
             m_isChecked = checked;
-            m_nPlayers = 1;
 
             if ( null == name ) {
                 name = Utils.phoneToContact( m_activity, phone, false );

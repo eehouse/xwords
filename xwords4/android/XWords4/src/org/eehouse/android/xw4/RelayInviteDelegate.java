@@ -208,7 +208,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     }
 
     @Override
-    public void listSelected( InviterItem[] selected, String[] devsP, int[] countsP )
+    public void listSelected( InviterItem[] selected, String[] devsP )
     {
         Assert.fail();
     }

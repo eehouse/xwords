@@ -86,12 +86,10 @@ public class WiDirInviteDelegate extends InviteDelegate
     }
 
     @Override
-    protected void listSelected( InviterItem[] selected, String[] devs,
-                                 int[] counts )
+    protected void listSelected( InviterItem[] selected, String[] devs )
     {
         for ( int ii = 0; ii < selected.length; ++ii ) {
             TwoStringPair pair = (TwoStringPair)selected[ii];
-            counts[ii] = 1;// rec.m_nPlayers;
             devs[ii] = pair.str1;
         }
     }

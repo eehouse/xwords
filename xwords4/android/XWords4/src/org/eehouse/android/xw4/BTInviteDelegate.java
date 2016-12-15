@@ -142,11 +142,10 @@ public class BTInviteDelegate extends InviteDelegate {
     }
 
     @Override
-    protected void listSelected( InviterItem[] selected, String[] devs, int[] counts )
+    protected void listSelected( InviterItem[] selected, String[] devs )
     {
         for ( int ii = 0; ii < selected.length; ++ii ) {
             TwoStringPair rec = (TwoStringPair)selected[ii];
-            counts[ii] = 1; // rec.m_nPlayers;
             devs[ii] = rec.str1;
             DbgUtils.logd( TAG, "selecting address %s", devs[ii] );
         }

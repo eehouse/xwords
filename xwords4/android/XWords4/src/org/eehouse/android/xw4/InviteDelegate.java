@@ -72,7 +72,7 @@ abstract class InviteDelegate extends ListDelegateBase
 
     // Children implement ...
     abstract void onChildAdded( View child, InviterItem item );
-    abstract void listSelected( InviterItem[] selected, String[] devsP, int[] countsP );
+    abstract void listSelected( InviterItem[] selected, String[] devs );
 
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
@@ -166,9 +166,14 @@ abstract class InviteDelegate extends ListDelegateBase
         if ( m_inviteButton == view ) {
             int len = m_checked.size();
             String[] devs = new String[len];
-            int[] counts = new int[len];
 
-            listSelected( getSelItems(), devs, counts );
+            InviterItem[] items = getSelItems();
+            listSelected( items, devs );
+
+            int[] counts = new int[len];
+            for ( int ii = 0; ii < len; ++ii ) {
+                counts[ii] = m_counts.get( items[ii] );
+            }
 
             Intent intent = new Intent();
             intent.putExtra( DEVS, devs );
