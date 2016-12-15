@@ -115,13 +115,7 @@ public class BTInviteDelegate extends InviteDelegate {
                                                             (String[])(args[1]) );
                             }
 
-                            // m_setChecked = null != btDevNames
-                            //     && m_nMissing == btDevNames.length;
-                            updateListAdapter( R.layout.smsinviter_item, pairs );
-                            // m_adapter = new NameAddrDevsAdapter( BTInviteDelegate.this,
-                            //                                      btDevAddrs, btDevNames );
-                            // setListAdapter( m_adapter );
-                            m_checked.clear();
+                            updateListAdapter( pairs );
                             tryEnable();
                         }
                     }
@@ -135,10 +129,9 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        SMSListItem item = (SMSListItem)child; // change class name!
+        TwoStrsItem item = (TwoStrsItem)child; // change class name!
         TwoStringPair pair = (TwoStringPair)data;
-        ((TextView)item.findViewById(R.id.number)).setText( pair.str1 );
-        ((TextView)item.findViewById(R.id.name)).setText( pair.str2 );
+        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
     }
 
     @Override

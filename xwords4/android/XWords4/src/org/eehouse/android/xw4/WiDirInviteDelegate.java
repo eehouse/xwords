@@ -79,10 +79,8 @@ public class WiDirInviteDelegate extends InviteDelegate
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        SMSListItem item = (SMSListItem)child;
         TwoStringPair pair = (TwoStringPair)data;
-        ((TextView)item.findViewById(R.id.name)).setText( pair.str2 );
-        ((TextView)item.findViewById(R.id.number)).setText( pair.str1 );
+        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
     }
 
     @Override
@@ -120,6 +118,6 @@ public class WiDirInviteDelegate extends InviteDelegate
             // names[ii] = m_macsToName.get(mac);
         }
 
-        updateListAdapter( R.layout.smsinviter_item, pairs );
+        updateListAdapter( pairs );
     }
 }

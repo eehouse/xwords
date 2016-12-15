@@ -203,10 +203,8 @@ public class SMSInviteDelegate extends InviteDelegate
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        SMSListItem item = (SMSListItem)child;
         PhoneRec rec = (PhoneRec)data;
-        ((TextView)item.findViewById(R.id.name)).setText( rec.m_name );
-        ((TextView)item.findViewById(R.id.number)).setText( rec.m_phone );
+        ((TwoStrsItem)child).setStrings( rec.m_name, rec.m_phone );
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -311,8 +309,7 @@ public class SMSInviteDelegate extends InviteDelegate
         //     names[ii] = rec.m_name;
         // }
 
-        updateListAdapter( R.layout.smsinviter_item,
-                           m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
+        updateListAdapter( m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
         tryEnable();
     }
 

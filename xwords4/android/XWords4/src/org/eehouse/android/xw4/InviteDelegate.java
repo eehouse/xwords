@@ -143,6 +143,11 @@ abstract class InviteDelegate extends ListDelegateBase
         }
     }
 
+    protected void updateListAdapter( InviterItem[] items )
+    {
+        updateListAdapter( R.layout.two_strs_item, items );
+    }
+
     protected void updateListAdapter( int itemId, InviterItem[] items )
     {
         // m_items = items;
