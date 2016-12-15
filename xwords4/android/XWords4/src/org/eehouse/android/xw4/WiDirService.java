@@ -198,6 +198,11 @@ public class WiDirService extends XWService {
         }
     }
 
+    public static void reset( Context context )
+    {
+        // Put experimental stuff here that might help get a connection
+    }
+
     public static boolean supported()
     {
         return WIFI_DIRECT_ENABLED;
