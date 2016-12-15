@@ -26,6 +26,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -78,14 +79,21 @@ public class WiDirInviteDelegate extends InviteDelegate
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        Assert.fail();
+        SMSListItem item = (SMSListItem)child;
+        TwoStringPair pair = (TwoStringPair)data;
+        ((TextView)item.findViewById(R.id.name)).setText( pair.str2 );
+        ((TextView)item.findViewById(R.id.number)).setText( pair.str1 );
     }
 
     @Override
-    protected void listSelected( InviterItem[] selected, String[] devsP,
-                                 int[] countsP )
+    protected void listSelected( InviterItem[] selected, String[] devs,
+                                 int[] counts )
     {
-        Assert.fail();
+        for ( int ii = 0; ii < selected.length; ++ii ) {
+            TwoStringPair pair = (TwoStringPair)selected[ii];
+            counts[ii] = 1;// rec.m_nPlayers;
+            devs[ii] = pair.str1;
+        }
     }
 
     // DevSetListener interface
@@ -114,6 +122,6 @@ public class WiDirInviteDelegate extends InviteDelegate
             // names[ii] = m_macsToName.get(mac);
         }
 
-        updateListAdapter( R.layout.inviter_item, pairs );
+        updateListAdapter( R.layout.smsinviter_item, pairs );
     }
 }
