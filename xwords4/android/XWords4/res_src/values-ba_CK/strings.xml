@@ -1637,11 +1637,11 @@
   <string name="new_move_body">Eno ro erom sevom sah devirra</string>
   <!--  -->
   <plurals name="invite_bt_desc_fmt">
-    <item quantity="one">Esaelp tceles eht ecived
-      uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
+    <item quantity="one">Esaelp kcehc eht ecived
+      uoy tnaw ot edulcni ni siht emag.\n\nEsu eht \"%2$s\"
       nottub fi uoy nod\'t ees eht ecived uoy tcepxe.</item>
-    <item quantity="other">Esaelp tceles pu ot %1$d ]s[ecived
-      uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
+    <item quantity="other">Esaelp kcehc pu ot %1$d ]s[ecived
+      uoy tnaw ot edulcni ni siht emag.\n\nEsu eht \"%2$s\"
       nottub fi uoy nod\'t ees a ecived uoy tcepxe.</item>
   </plurals>
   <!--  -->
@@ -2266,7 +2266,7 @@
   <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
   ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
   <string name="not_again_comms_p2p">Esu IfIw Tcerid ot yalp tsniaga a
-  ybraen IfIw Elbapac-tcerid ecived.</string>
+  ybraen IfIw Elbapac-tcerid ecived htiw Sdrowssorc dellatsni.</string>
   <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
   <string name="not_again_rematch_two_only">Hctamer si detimil ot
   nosrep-owt ,semag ta tsael rof ,won esuaceb ti\'s redrah htiw erom

@@ -121,7 +121,6 @@ public class BTService extends XWService {
         int m_lang;
         String m_dict;
         int m_nPlayersT;
-        int m_nPlayersH;
         NetLaunchInfo m_nli;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
@@ -838,7 +837,7 @@ public class BTService extends XWService {
                             outStream.writeShort( nliData.length );
                             outStream.write( nliData, 0, nliData.length );
                         }
-                        DbgUtils.logi( TAG, "<eeh>sending invite for %d players", elem.m_nPlayersH );
+                        DbgUtils.logi( TAG, "<eeh>sending invite" );
                         outStream.flush();
 
                         DataInputStream inStream =

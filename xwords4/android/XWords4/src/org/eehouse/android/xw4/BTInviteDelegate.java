@@ -26,13 +26,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import junit.framework.Assert;
 
@@ -47,7 +48,9 @@ import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
     private static final String TAG = BTInviteDelegate.class.getSimpleName();
-
+    private static final int[] BUTTONIDS = { R.id.button_add,
+                                             R.id.button_clear,
+    };
     private Activity m_activity;
 
     public static void launchForResult( Activity activity, int nMissing,
@@ -68,7 +71,7 @@ public class BTInviteDelegate extends InviteDelegate {
 
     protected BTInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.inviter );
+        super( delegator, savedInstanceState );
         m_activity = delegator.getActivity();
     }
 
@@ -78,9 +81,22 @@ public class BTInviteDelegate extends InviteDelegate {
         String msg = getString( R.string.bt_pick_addall_button );
         msg = getQuantityString( R.plurals.invite_bt_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_rescan,
-                    R.id.button_clear, R.id.invite_desc, msg );
+        super.init( msg, 0 );
+        addButtonBar( R.layout.bt_buttons, BUTTONIDS );
         BTService.clearDevices( m_activity, null ); // will return names
+    }
+
+    @Override
+    protected void onBarButtonClicked( int id )
+    {
+        switch( id ) {
+        case R.id.button_add:
+            scan();
+            break;
+        case R.id.button_clear:
+            Utils.notImpl( m_activity );
+            break;
+        }
     }
 
     // MultiService.MultiEventListener interface
@@ -93,26 +109,13 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void run() {
                         synchronized( BTInviteDelegate.this ) {
 
-                            String[] btDevAddrs = null;
-                            String[] btDevNames = null;
+                            TwoStringPair[] pairs = null;
                             if ( 0 < args.length ) {
-                                btDevAddrs = (String[])(args[0]);
-                                btDevNames = (String[])(args[1]);
-                                if ( null != btDevNames
-                                     && 0 == btDevNames.length ) {
-                                    btDevNames = null;
-                                    btDevAddrs = null;
-                                }
+                                pairs = TwoStringPair.make( (String[])(args[0]),
+                                                            (String[])(args[1]) );
                             }
 
-                            // m_setChecked = null != btDevNames
-                            //     && m_nMissing == btDevNames.length;
-                            updateListAdapter( R.layout.inviter_item,
-                                               btDevNames, btDevAddrs, false );
-                            // m_adapter = new NameAddrDevsAdapter( BTInviteDelegate.this,
-                            //                                      btDevAddrs, btDevNames );
-                            // setListAdapter( m_adapter );
-                            m_checked.clear();
+                            updateListAdapter( pairs );
                             tryEnable();
                         }
                     }
@@ -123,7 +126,25 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
-    protected void scan()
+    @Override
+    protected void onChildAdded( View child, InviterItem data )
+    {
+        TwoStrsItem item = (TwoStrsItem)child; // change class name!
+        TwoStringPair pair = (TwoStringPair)data;
+        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
+    }
+
+    @Override
+    protected void listSelected( InviterItem[] selected, String[] devs )
+    {
+        for ( int ii = 0; ii < selected.length; ++ii ) {
+            TwoStringPair rec = (TwoStringPair)selected[ii];
+            devs[ii] = rec.str1;
+            DbgUtils.logd( TAG, "selecting address %s", devs[ii] );
+        }
+    }
+
+    private void scan()
     {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
@@ -136,15 +157,15 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
-    @Override
-    protected void clearSelected( Integer[] itemIndices )
-    {
-        String[][] selected = new String[1][];
-        listSelected( selected, null );
-        BTService.clearDevices( m_activity, selected[0] );
+    // @Override
+    // protected void clearSelected( Integer[] itemIndices )
+    // {
+    //     // String[][] selected = new String[1][];
+    //     // listSelected( selected, null );
+    //     // BTService.clearDevices( m_activity, selected[0] );
 
-        // super.clearSelected( itemIndices );
-    }
+    //     // super.clearSelected( itemIndices );
+    // }
 
     // DlgDelegate.DlgClickNotify interface
     @Override

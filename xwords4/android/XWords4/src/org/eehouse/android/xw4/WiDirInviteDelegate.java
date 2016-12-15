@@ -26,6 +26,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class WiDirInviteDelegate extends InviteDelegate
 
     public WiDirInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.inviter );
+        super( delegator, savedInstanceState );
         m_activity = delegator.getActivity();
     }
 
@@ -58,9 +59,7 @@ public class WiDirInviteDelegate extends InviteDelegate
         msg = getQuantityString( R.plurals.invite_p2p_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
         msg += "\n\n" + getString( R.string.invite_p2p_desc_extra );
-        super.init( R.id.button_invite, R.id.invite_desc, msg );
-        findViewById( R.id.button_rescan ).setVisibility( View.GONE );
-        findViewById( R.id.button_clear ).setVisibility( View.GONE );
+        super.init( msg, R.string.empty_p2p_inviter );
     }
 
     @Override
@@ -75,6 +74,22 @@ public class WiDirInviteDelegate extends InviteDelegate
     {
         super.onPause();
         WiDirService.unregisterDevSetListener( this );
+    }
+
+    @Override
+    protected void onChildAdded( View child, InviterItem data )
+    {
+        TwoStringPair pair = (TwoStringPair)data;
+        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
+    }
+
+    @Override
+    protected void listSelected( InviterItem[] selected, String[] devs )
+    {
+        for ( int ii = 0; ii < selected.length; ++ii ) {
+            TwoStringPair pair = (TwoStringPair)selected[ii];
+            devs[ii] = pair.str1;
+        }
     }
 
     // DevSetListener interface
@@ -92,15 +107,17 @@ public class WiDirInviteDelegate extends InviteDelegate
     private void rebuildList()
     {
         int count = m_macsToName.size();
-        String[] names = new String[count];
-        String[] addrs = new String[count];
+        TwoStringPair[] pairs = new TwoStringPair[count];
+        // String[] names = new String[count];
+        // String[] addrs = new String[count];
         Iterator<String> iter = m_macsToName.keySet().iterator();
         for ( int ii = 0; ii < count; ++ii ) {
             String mac = iter.next();
-            addrs[ii] = mac;
-            names[ii] = m_macsToName.get(mac);
+            pairs[ii] = new TwoStringPair(mac, m_macsToName.get(mac) );
+            // addrs[ii] = mac;
+            // names[ii] = m_macsToName.get(mac);
         }
 
-        updateListAdapter( R.layout.inviter_item, names, addrs, false );
+        updateListAdapter( pairs );
     }
 }

@@ -20,18 +20,21 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.DialogInterface;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.Spinner;
 
 import junit.framework.Assert;
@@ -51,12 +54,18 @@ import java.util.Set;
 public class RelayInviteDelegate extends InviteDelegate {
     private static final String TAG = RelayInviteDelegate.class.getSimpleName();
 
+    private static int[] BUTTONIDS = {
+        R.id.button_relay_add,
+        R.id.manual_add_button,
+        R.id.button_clear,
+    };
+
     // private static final int GET_CONTACT = 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<DevIDRec> m_devIDRecs;
-    private RelayDevsAdapter m_adapter;
+    // private RelayDevsAdapter m_adapter;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
@@ -70,7 +79,7 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     public RelayInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.relayinviter );
+        super( delegator, savedInstanceState );
         m_activity = delegator.getActivity();
     }
 
@@ -79,8 +88,8 @@ public class RelayInviteDelegate extends InviteDelegate {
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_relay_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear,
-                    R.id.invite_desc, msg );
+        super.init( msg, R.string.empty_relay_inviter );
+        addButtonBar( R.layout.relay_buttons, BUTTONIDS );
 
         // getBundledData( savedInstanceState );
 
@@ -109,6 +118,27 @@ public class RelayInviteDelegate extends InviteDelegate {
         getSavedState();
         rebuildList( true );
     }
+
+    @Override
+    protected void onBarButtonClicked( int id )
+    {
+        switch( id ) {
+        case R.id.button_relay_add:
+            Utils.notImpl( m_activity );
+            break;
+        case R.id.manual_add_button:
+            showDialog( DlgID.GET_NUMBER );
+            break;
+        case R.id.button_clear:
+            Utils.notImpl( m_activity );
+            // int count = getChecked().size();
+            // String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
+            //                                 count, count );
+            // makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+            break;
+        }
+    }
+
 
     // protected void onSaveInstanceState( Bundle outState )
     // {
@@ -171,74 +201,86 @@ public class RelayInviteDelegate extends InviteDelegate {
     //     return dialog;
     // }
 
+    @Override
+    protected void onChildAdded( View child, InviterItem data )
+    {
+        Assert.fail();
+    }
+
+    @Override
+    public void listSelected( InviterItem[] selected, String[] devsP )
+    {
+        Assert.fail();
+    }
+
     // We want to present user with list of previous opponents and devices. We
     // can easily get list of relayIDs. The relay, if reachable, can convert
     // that to a (likely shorter) list of devices. Then for each deviceID,
     // open the newest game with a relayID mapping to it and get the name of
     // the opponent?
 
-    protected void scan()
-    {
-        long[][] rowIDss = new long[1][];
-        String[] relayIDs = DBUtils.getRelayIDs( m_activity, rowIDss );
+    // protected void scan()
+    // {
+    //     long[][] rowIDss = new long[1][];
+    //     String[] relayIDs = DBUtils.getRelayIDs( m_activity, rowIDss );
 
-        if ( null != relayIDs && 0 < relayIDs.length ) {
-            new ListOpponentsTask( m_activity, relayIDs, rowIDss[0] ).execute();
-        }
+    //     if ( null != relayIDs && 0 < relayIDs.length ) {
+    //         new ListOpponentsTask( m_activity, relayIDs, rowIDss[0] ).execute();
+    //     }
 
-        // Intent intent = new Intent( Intent.ACTION_PICK,
-        //                             ContactsContract.Contacts.CONTENT_URI );
-        // intent.setType( Phone.CONTENT_TYPE );
-        // startActivityForResult( intent, GET_CONTACT );
-    }
+    //     // Intent intent = new Intent( Intent.ACTION_PICK,
+    //     //                             ContactsContract.Contacts.CONTENT_URI );
+    //     // intent.setType( Phone.CONTENT_TYPE );
+    //     // startActivityForResult( intent, GET_CONTACT );
+    // }
 
-    @Override
-    protected void clearSelected( Integer[] selected )
-    {
-        makeConfirmThenBuilder( R.string.confirm_clear_relay, Action.CLEAR_ACTION )
-            .show();
-    }
+    // @Override
+    // protected void clearSelected( Integer[] selected )
+    // {
+    //     makeConfirmThenBuilder( R.string.confirm_clear_relay, Action.CLEAR_ACTION )
+    //         .show();
+    // }
 
-    protected void listSelected( String[][] devsP, int[][] countsP )
-    {
-        int count = m_adapter.getCount();
-        String[] result = new String[countChecks()];
-        int[] counts = new int[result.length];
+    // protected void listSelected( String[][] devsP, int[][] countsP )
+    // {
+    //     // int count = m_adapter.getCount();
+    //     // String[] result = new String[countChecks()];
+    //     // int[] counts = new int[result.length];
 
-        int index = 0;
-        Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            DevIDRec rec = iter.next();
-            if ( rec.m_isChecked ) {
-                counts[index] = rec.m_nPlayers;
-                result[index] = ((SMSListItem)m_adapter.getItem(ii)).getNumber();
-                index++;
-            }
-        }
-        devsP[0] = result;
-        if ( null != countsP ) {
-            countsP[0] = counts;
-        }
-    }
+    //     // int index = 0;
+    //     // Iterator<DevIDRec> iter = m_devIDRecs.iterator();
+    //     // for ( int ii = 0; iter.hasNext(); ++ii ) {
+    //     //     DevIDRec rec = iter.next();
+    //     //     if ( rec.m_isChecked ) {
+    //     //         counts[index] = rec.m_nPlayers;
+    //     //         result[index] = ((SMSListItem)m_adapter.getItem(ii)).getNumber();
+    //     //         index++;
+    //     //     }
+    //     // }
+    //     // devsP[0] = result;
+    //     // if ( null != countsP ) {
+    //     //     countsP[0] = counts;
+    //     // }
+    // }
 
-    @Override
-    protected void tryEnable()
-    {
-        if ( null != m_devIDRecs ) {
-            int nPlayers = 0;
-            int nDevs = 0;
-            Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-            while ( iter.hasNext() ) {
-                DevIDRec rec = iter.next();
-                if ( rec.m_isChecked ) {
-                    ++nDevs;
-                    nPlayers += rec.m_nPlayers;
-                }
-            }
-            m_inviteButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
-            m_clearButton.setEnabled( 0 < nDevs );
-        }
-    }
+    // @Override
+    // protected void tryEnable()
+    // {
+        // if ( null != m_devIDRecs ) {
+        //     int nPlayers = 0;
+        //     int nDevs = 0;
+        //     Iterator<DevIDRec> iter = m_devIDRecs.iterator();
+        //     while ( iter.hasNext() ) {
+        //         DevIDRec rec = iter.next();
+        //         if ( rec.m_isChecked ) {
+        //             ++nDevs;
+        //             nPlayers += rec.m_nPlayers;
+        //         }
+        //     }
+        //     m_inviteButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
+        //     m_clearButton.setEnabled( 0 < nDevs );
+        // }
+    // }
 
     // DlgDelegate.DlgClickNotify interface
     @Override
@@ -266,19 +308,19 @@ public class RelayInviteDelegate extends InviteDelegate {
         }
     }
 
-    private int countChecks()
-    {
-        int count = 0;
-        if ( null != m_devIDRecs ) {
-            Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-            while ( iter.hasNext() ) {
-                if ( iter.next().m_isChecked ) {
-                    ++count;
-                }
-            }
-        }
-        return count;
-    }
+    // private int countChecks()
+    // {
+    //     int count = 0;
+    //     if ( null != m_devIDRecs ) {
+    //         Iterator<DevIDRec> iter = m_devIDRecs.iterator();
+    //         while ( iter.hasNext() ) {
+    //             if ( iter.next().m_isChecked ) {
+    //                 ++count;
+    //             }
+    //         }
+    //     }
+    //     return count;
+    // }
 
     // private void addPhoneNumbers( Intent intent )
     // {
@@ -323,20 +365,20 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     private void rebuildList( boolean checkIfAll )
     {
-        Collections.sort( m_devIDRecs, new Comparator<DevIDRec>() {
-                public int compare( DevIDRec rec1, DevIDRec rec2 ) {
-                    return rec1.m_opponent.compareTo(rec2.m_opponent);
-                }
-            });
-        m_adapter = new RelayDevsAdapter();
-        setListAdapter( m_adapter );
-        if ( checkIfAll && m_devIDRecs.size() <= m_nMissing ) {
-            Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-            while ( iter.hasNext() ) {
-                iter.next().m_isChecked = true;
-            }
-        }
-        tryEnable();
+        // Collections.sort( m_devIDRecs, new Comparator<DevIDRec>() {
+        //         public int compare( DevIDRec rec1, DevIDRec rec2 ) {
+        //             return rec1.m_opponent.compareTo(rec2.m_opponent);
+        //         }
+        //     });
+        // m_adapter = new RelayDevsAdapter();
+        // setListAdapter( m_adapter );
+        // if ( checkIfAll && m_devIDRecs.size() <= m_nMissing ) {
+        //     Iterator<DevIDRec> iter = m_devIDRecs.iterator();
+        //     while ( iter.hasNext() ) {
+        //         iter.next().m_isChecked = true;
+        //     }
+        // }
+        // tryEnable();
     }
 
     private void getSavedState()
@@ -363,122 +405,120 @@ public class RelayInviteDelegate extends InviteDelegate {
         rebuildList( false );
     }
 
-    private void addChecked( DevIDRec rec )
-    {
-        if ( m_nMissing <= countChecks() ) {
-            Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-            while ( iter.hasNext() ) {
-                iter.next().m_isChecked = false;
-            }
-        }
+    // private void addChecked( DevIDRec rec )
+    // {
+    //     if ( m_nMissing <= countChecks() ) {
+    //         Iterator<DevIDRec> iter = m_devIDRecs.iterator();
+    //         while ( iter.hasNext() ) {
+    //             iter.next().m_isChecked = false;
+    //         }
+    //     }
 
-        rec.m_isChecked = true;
-        m_devIDRecs.add( rec );
-    }
+    //     rec.m_isChecked = true;
+    //     m_devIDRecs.add( rec );
+    // }
 
     private void clearSelectedImpl()
     {
-        int count = m_adapter.getCount();
-        for ( int ii = count - 1; ii >= 0; --ii ) {
-            if ( m_devIDRecs.get( ii ).m_isChecked ) {
-                m_devIDRecs.remove( ii );
-            }
-        }
-        saveAndRebuild();
+        // int count = m_adapter.getCount();
+        // for ( int ii = count - 1; ii >= 0; --ii ) {
+        //     if ( m_devIDRecs.get( ii ).m_isChecked ) {
+        //         m_devIDRecs.remove( ii );
+        //     }
+        // }
+        // saveAndRebuild();
     }
 
-    private class DevIDRec {
+    private class DevIDRec implements InviterItem {
         public String m_devID;
         public String m_opponent;
-        public boolean m_isChecked;
         public int m_nPlayers;
-        public DevIDRec( String name, String devID )
-        {
-            this( name, devID, false );
-        }
+        // public DevIDRec( String name, String devID )
+        // {
+        //     this( name, devID, false );
+        // }
         // public DevIDRec( String devID )
         // {
         //     this( null, devID, false );
         // }
 
-        public DevIDRec( String opponent, String devID, boolean checked )
+        public DevIDRec( String opponent, String devID )
         {
             m_devID = devID;
-            m_isChecked = checked;
             m_nPlayers = 1;
             m_opponent = opponent;
         }
     }
 
-    private class RelayDevsAdapter extends XWListAdapter {
-        private SMSListItem[] m_items;
+    // private class RelayDevsAdapter extends XWListAdapter {
+    //     private SMSListItem[] m_items;
 
-        public RelayDevsAdapter()
-        {
-            super( m_devIDRecs.size() );
-            m_items = new SMSListItem[m_devIDRecs.size()];
-        }
+    //     public RelayDevsAdapter()
+    //     {
+    //         super( m_devIDRecs.size() );
+    //         m_items = new SMSListItem[m_devIDRecs.size()];
+    //     }
 
-        public Object getItem( final int position )
-        {
-            // For some reason I can't cache items to be returned.
-            // Checking/unchecking breaks for some but not all items,
-            // with some relation to whether they were scrolled into
-            // view.  So build them anew each time (but still cache
-            // for by-index access.)
+    //     public Object getItem( final int position )
+    //     {
+    //         // For some reason I can't cache items to be returned.
+    //         // Checking/unchecking breaks for some but not all items,
+    //         // with some relation to whether they were scrolled into
+    //         // view.  So build them anew each time (but still cache
+    //         // for by-index access.)
 
-            SMSListItem item =
-                (SMSListItem)inflate( R.layout.smsinviter_item );
-            item.setChecked( m_devIDRecs.get(position).m_isChecked );
+    //         SMSListItem item =
+    //             (SMSListItem)inflate( R.layout.smsinviter_item );
+    //         // item.setChecked( m_devIDRecs.get(position).m_isChecked );
 
-            CompoundButton.OnCheckedChangeListener lstnr =
-                new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton bv,
-                                                  boolean isChecked ) {
-                        m_devIDRecs.get(position).m_isChecked = isChecked;
-                        tryEnable();
-                    }
-                };
-            item.setOnCheckedChangeListener( lstnr );
-            final DevIDRec rec = m_devIDRecs.get( position );
-            item.setContents( rec.m_opponent, rec.m_devID );
-            m_items[position] = item;
+    //         CompoundButton.OnCheckedChangeListener lstnr =
+    //             new CompoundButton.OnCheckedChangeListener() {
+    //                 public void onCheckedChanged( CompoundButton bv,
+    //                                               boolean isChecked ) {
+    //                     m_devIDRecs.get(position).m_isChecked = isChecked;
+    //                     tryEnable();
+    //                 }
+    //             };
+    //         item.setOnCheckedChangeListener( lstnr );
+    //         final DevIDRec rec = m_devIDRecs.get( position );
+    //         item.setContents( rec.m_opponent, rec.m_devID );
+    //         m_items[position] = item;
 
-            // Set up spinner
-            Assert.assertTrue( 1 == rec.m_nPlayers );
-            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
-                Spinner spinner = (Spinner)
-                    item.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>( m_activity, android.R.layout
-                                              .simple_spinner_item );
-                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
-                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
-                    adapter.add( str );
-                }
-                spinner.setAdapter( adapter );
-                spinner.setVisibility( View.VISIBLE );
-                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent,
-                                                    View view, int pos,
-                                                    long id )
-                        {
-                            rec.m_nPlayers = 1 + pos;
-                            tryEnable();
-                        }
+    //         // Set up spinner
+    //         Assert.assertTrue( 1 == rec.m_nPlayers );
+    //         if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
+    //             Spinner spinner = (Spinner)
+    //                 item.findViewById(R.id.nperdev_spinner);
+    //             ArrayAdapter<String> adapter =
+    //                 new ArrayAdapter<String>( m_activity, android.R.layout
+    //                                           .simple_spinner_item );
+    //             for ( int ii = 1; ii <= m_nMissing; ++ii ) {
+    //                 String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
+    //                 adapter.add( str );
+    //             }
+    //             spinner.setAdapter( adapter );
+    //             spinner.setVisibility( View.VISIBLE );
+    //             spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
+    //                     public void onItemSelected( AdapterView<?> parent,
+    //                                                 View view, int pos,
+    //                                                 long id )
+    //                     {
+    //                         rec.m_nPlayers = 1 + pos;
+    //                         tryEnable();
+    //                     }
 
-                        public void onNothingSelected( AdapterView<?> parent ) {}
-                    } );
-            }
+    //                     public void onNothingSelected( AdapterView<?> parent ) {}
+    //                 } );
+    //         }
 
-            return item;
-        }
+    //         return item;
+    //     }
 
-        public View getView( final int position, View convertView,
-                             ViewGroup parent ) {
-            return (View)getItem( position );
-        }
-    }
+    //     public View getView( final int position, View convertView,
+    //                          ViewGroup parent ) {
+    //         return (View)getItem( position );
+    //     }
+    // }
 
     private class ListOpponentsTask extends AsyncTask<Void, Void, Set<String>> {
         private Context m_context;
@@ -554,10 +594,10 @@ public class RelayInviteDelegate extends InviteDelegate {
                     m_devIDRecs.add( rec );
                 }
 
-                m_adapter = new RelayDevsAdapter();
-                setListAdapter( m_adapter );
-                // m_checked.clear();
-                tryEnable();
+                // m_adapter = new RelayDevsAdapter();
+                // setListAdapter( m_adapter );
+                // // m_checked.clear();
+                // tryEnable();
             }
         }
 

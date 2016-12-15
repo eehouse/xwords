@@ -201,12 +201,19 @@ public class BoardDelegate extends DelegateBase
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
                 } else if ( DlgID.DLG_CONNSTAT == dlgID
                             && BuildConfig.DEBUG && null != m_connTypes
-                            && m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                            && (m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+                                || m_connTypes.contains( CommsConnType.COMMS_CONN_P2P )) ) {
+
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
                                 NetStateCache.reset( m_activity );
-                                RelayService.reset( m_activity );
+                                if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                                    RelayService.reset( m_activity );
+                                }
+                                if ( m_connTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                                    WiDirService.reset( m_activity );
+                                }
                             }
                         };
                     ab.setNegativeButton( R.string.button_reconnect, lstnr );

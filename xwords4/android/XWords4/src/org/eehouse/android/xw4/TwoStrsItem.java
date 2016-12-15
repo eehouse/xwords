@@ -27,43 +27,25 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class SMSListItem extends LinearLayout  {
-    private static final String TAG = SMSListItem.class.getSimpleName();
+public class TwoStrsItem extends LinearLayout  {
+    private static final String TAG = TwoStrsItem.class.getSimpleName();
 
-    public SMSListItem( Context cx, AttributeSet as )
+    public TwoStrsItem( Context cx, AttributeSet as )
     {
         super( cx, as );
     }
 
-    public void setContents( String name, String number )
+    public void setStrings( String str1, String str2 )
     {
-        TextView tv = (TextView)findViewById( R.id.name );
-        tv.setText( name );
-        tv = (TextView)findViewById( R.id.number );
-        tv.setText( number );
+        TextView tv = (TextView)findViewById( R.id.text1 );
+        tv.setText( str1 );
+        tv = (TextView)findViewById( R.id.text2 );
+        tv.setText( str2 );
     }
 
-    public void setOnCheckedChangeListener( OnCheckedChangeListener lstnr )
+    public String getStr1()
     {
-        CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
-        cb.setOnCheckedChangeListener( lstnr );
-    }
-
-    public String getNumber()
-    {
-        TextView tv = (TextView)findViewById( R.id.number );
+        TextView tv = (TextView)findViewById( R.id.text1 );
         return tv.getText().toString();
-    }
-
-    public void setChecked( boolean checked )
-    {
-        CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
-        cb.setChecked( checked );
-    }
-
-    public boolean isChecked()
-    {
-        CheckBox cb = (CheckBox)findViewById( R.id.checkbox );
-        return cb.isChecked();
     }
 }

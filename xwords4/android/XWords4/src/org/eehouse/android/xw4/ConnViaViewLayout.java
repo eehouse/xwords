@@ -102,12 +102,10 @@ public class ConnViaViewLayout extends LinearLayout {
         CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
 
         for ( CommsConnType typ : supported.getTypes() ) {
-            LinearLayout item = (LinearLayout)
-                LocUtils.inflate( context, R.layout.inviter_item );
-            CheckBox box = (CheckBox)item.findViewById( R.id.inviter_check );
+            CheckBox box = new CheckBox( context );
             box.setText( typ.longName( context ) );
             box.setChecked( m_curSet.contains( typ ) );
-            list.addView( item );
+            list.addView( box );
 
             final CommsConnType typf = typ;
             box.setOnCheckedChangeListener( new OnCheckedChangeListener() {

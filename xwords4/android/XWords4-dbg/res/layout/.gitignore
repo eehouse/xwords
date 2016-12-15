@@ -27,8 +27,6 @@ rename_game.xml
 select_dialog_item.xml
 confirm_sms.xml
 game_list_group.xml
-smsinviter_item.xml
-smsinviter.xml
 studylist.xml
 loc_list_item.xml
 loc_main.xml
@@ -49,3 +47,8 @@ dualcontainer.xml
 dict_browser_list.xml
 inviter_item.xml
 inviter.xml
+bt_buttons.xml
+relay_buttons.xml
+sms_buttons.xml
+inviter_item_frame.xml
+two_strs_item.xml
