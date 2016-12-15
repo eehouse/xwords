@@ -272,14 +272,12 @@ abstract class InviteDelegate extends ListDelegateBase
                              ViewGroup parent )
         {
             final InviterItem item = m_items[position];
-            final LinearLayout layout = (LinearLayout)inflate( R.layout.inviter_item );
+            final LinearLayout layout = (LinearLayout)
+                inflate( R.layout.inviter_item_frame );
             CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            // box.setText( m_devNames[position] );
-            // box.setTag( addr );
 
             // Give subclass a chance to install and populate its view
             FrameLayout frame = (FrameLayout)layout.findViewById( R.id.frame );
-            Assert.assertNotNull( frame );
             View child = inflate( m_itemId );
             frame.addView( child );
             onChildAdded( child, m_items[position] );
