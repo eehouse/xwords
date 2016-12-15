@@ -1637,11 +1637,11 @@
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
   <plurals name="invite_bt_desc_fmt">
-    <item quantity="one">PLEASE SELECT THE DEVICE
-      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+    <item quantity="one">PLEASE CHECK THE DEVICE
+      YOU WANT TO INCLUDE IN THIS GAME.\n\nUSE THE \"%2$s\"
       BUTTON IF YOU DON\'T SEE THE DEVICE YOU EXPECT.</item>
-    <item quantity="other">PLEASE SELECT UP TO %1$d DEVICE[S]
-      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+    <item quantity="other">PLEASE CHECK UP TO %1$d DEVICE[S]
+      YOU WANT TO INCLUDE IN THIS GAME.\n\nUSE THE \"%2$s\"
       BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</item>
   </plurals>
   <!--  -->
@@ -2266,7 +2266,7 @@
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
   <string name="not_again_comms_p2p">USE WIFI DIRECT TO PLAY AGAINST A
-  NEARBY WIFI DIRECT-CAPABLE DEVICE.</string>
+  NEARBY WIFI DIRECT-CAPABLE DEVICE WITH CROSSWORDS INSTALLED.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
   <string name="not_again_rematch_two_only">REMATCH IS LIMITED TO
   TWO-PERSON GAMES, AT LEAST FOR NOW, BECAUSE IT\'S HARDER WITH MORE

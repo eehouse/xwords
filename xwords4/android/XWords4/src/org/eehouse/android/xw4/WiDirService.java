@@ -1091,13 +1091,12 @@ public class WiDirService extends XWService {
             // After the group negotiation, we can determine the group owner.
             if (info.groupFormed ) {
                 sAmGroupOwner = info.isGroupOwner;
+                DbgUtils.logd( TAG, "am %sgroup owner", sAmGroupOwner ? "" : "NOT " );
+                DbgUtils.showf( "Joining WiFi P2p group as %s",
+                                sAmGroupOwner ? "owner" : "guest" );
                 if ( info.isGroupOwner ) {
-                    DbgUtils.showf( "Joining %s WiFi P2p group as owner", SERVICE_NAME );
-                    DbgUtils.logd( TAG, "am group owner" );
                     startAcceptThread();
                 } else {
-                    DbgUtils.logd( TAG, "am NOT group owner" );
-                    DbgUtils.showf( "Joining %s WiFi P2p group as guest", SERVICE_NAME );
                     stopAcceptThread();
                     connectToOwner( info.groupOwnerAddress );
                     // The other device acts as the client. In this case,
