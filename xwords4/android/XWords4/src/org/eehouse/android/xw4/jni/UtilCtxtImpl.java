@@ -301,7 +301,6 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     public boolean phoneNumbersSame( String num1, String num2 )
     {
-        Assert.assertTrue( XWApp.SMSSUPPORTED );
         boolean same = PhoneNumberUtils.compare( m_context, num1, num2 );
         return same;
     }

@@ -285,7 +285,7 @@ public class SMSService extends XWService {
     @Override
     public void onCreate()
     {
-        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( this ) ) {
+        if ( Utils.deviceSupportsSMS( this ) ) {
             registerReceivers();
         } else {
             stopSelf();
@@ -317,7 +317,7 @@ public class SMSService extends XWService {
     public int onStartCommand( Intent intent, int flags, int startId )
     {
         int result = Service.START_NOT_STICKY;
-        if ( XWApp.SMSSUPPORTED && null != intent ) {
+        if ( null != intent ) {
             int ordinal = intent.getIntExtra( CMD_STR, -1 );
             if ( -1 == ordinal ) {
                 // ???

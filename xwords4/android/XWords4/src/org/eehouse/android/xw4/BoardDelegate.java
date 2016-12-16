@@ -2433,7 +2433,7 @@ public class BoardDelegate extends DelegateBase
     private void warnIfNoTransport()
     {
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-            if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
+            if ( !XWPrefs.getSMSEnabled( m_activity ) ) {
                 makeConfirmThenBuilder( R.string.warn_sms_disabled,
                                         Action.ENABLE_SMS_ASK )
                     .setPosButton( R.string.button_enable_sms )

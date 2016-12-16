@@ -40,7 +40,7 @@ public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
-        if ( !XWApp.SMSSUPPORTED || !Utils.deviceSupportsSMS( getContext() ) ) {
+        if ( !Utils.deviceSupportsSMS( getContext() ) ) {
             setEnabled( false );
         }
     }
