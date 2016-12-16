@@ -2720,11 +2720,11 @@
   you restart Crosswords.</string>
 
   <string name="not_again_missing_perms">This game is configured to
-  communicate in at least one way that requires a permission that has
-  not been granted. You can still open it, but it may not be able to
-  send or receive moves.\n\nYou can re-open it to be asked again. Or
-  you can remove the settings that require missing permissions.</string>
+  communicate via SMS but Crosswords does not have permission to do
+  so. You can still open the game, but it may not be able to send or
+  receive moves.\n\nYou can re-open it to be asked for permission
+  again. Or you can remove the SMS communication setting.</string>
 
-  <string name="remove_connvia">Remove</string>
+  <string name="remove_sms">Remove SMS</string>
 
 </resources>

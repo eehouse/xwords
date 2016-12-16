@@ -1316,14 +1316,6 @@ public class GamesListDelegate extends ListDelegateBase
                 askDefaultName();
                 break;
 
-            case LAUNCH_PERMS_REMOVE:
-                Assert.fail();  // not implemented
-                break;
-            case LAUNCH_PERMS:
-                long rowid = (Long)params[0];
-                launchGameAfterPerms( rowid );
-                break;
-
             default:
                 Assert.fail();
             }
@@ -1571,7 +1563,8 @@ public class GamesListDelegate extends ListDelegateBase
             new Perms23.Builder( Perms23.Perm.STORAGE )
                 .asyncQuery( m_activity, new Perms23.PermCbck() {
                         @Override
-                        public void onPermissionResult( Map<Perms23.Perm, Boolean> granted )
+                        public void onPermissionResult( Map<Perms23.Perm,
+                                                        Boolean> granted )
                         {
                             Assert.assertTrue( granted.containsKey(Perms23.Perm.STORAGE) );
                             if ( granted.get(Perms23.Perm.STORAGE) ) {
@@ -2432,17 +2425,6 @@ public class GamesListDelegate extends ListDelegateBase
         tryNFCIntent( intent );
     }
 
-    private Set<Perms23.Perm> getPermsNeededFor( GameSummary summary )
-    {
-        // PENDING: do this for real
-        Set<Perms23.Perm> perms = new HashSet<Perms23.Perm>();
-        perms.add( Perms23.Perm.READ_PHONE_STATE );
-        perms.add( Perms23.Perm.STORAGE );
-        perms.add( Perms23.Perm.SEND_SMS );
-        perms.add( Perms23.Perm.READ_CONTACTS );
-        return perms;
-    }
-
     private void doOpenGame( Object[] params )
     {
         GameSummary summary = (GameSummary)params[1];
@@ -2452,54 +2434,14 @@ public class GamesListDelegate extends ListDelegateBase
              && summary.roomName.length() == 0 ) {
             Assert.fail();
         } else {
-            final Set<Perms23.Perm> perms = getPermsNeededFor( summary );
-            new Perms23.Builder( perms )
-                .asyncQuery( m_activity, new Perms23.PermCbck() {
-                        @Override
-                        public void onPermissionResult( Map<Perms23.Perm,
-                                                        Boolean> perms ) {
-                            // If we get here, we were missing some
-                            // permissions. The user may or may not have
-                            // granted them. We'll go ahead and launch the
-                            // game, but some stuff may fail (because we'll
-                            // check for permissions later, e.g. when sending
-                            // an SMS message, without allowing for asking
-                            // again.
-                            Set<Perms23.Perm> missing = new HashSet<Perms23.Perm>();
-                            for ( Iterator<Perms23.Perm> iter = perms.keySet().iterator();
-                                  iter.hasNext(); ) {
-                                Perms23.Perm perm = iter.next();
-                                boolean granted = perms.get( perm );
-                                if ( !granted ) {
-                                    missing.add( perm );
-                                }
-                            }
-                            if ( 0 == missing.size() ) {
-                                launchGameAfterPerms( rowid );
-                            } else {
-                                ActionPair pair = new ActionPair( Action.LAUNCH_PERMS_REMOVE,
-                                                                  R.string.remove_connvia );
-                                makeNotAgainBuilder( R.string.not_again_missing_perms,
-                                                     R.string.key_notagain_missing_perms,
-                                                     Action.LAUNCH_PERMS )
-                                    .setActionPair( pair )
-                                    .setParams( rowid, missing )
-                                    .show();
-                            }
-                        }
-                    } );
-        }
-    }
-
-    private void launchGameAfterPerms( long rowid )
-    {
-        try {
-            if ( checkWarnNoDict( rowid ) ) {
-                launchGame( rowid );
+            try {
+                if ( checkWarnNoDict( rowid ) ) {
+                    launchGame( rowid );
+                }
+            } catch ( GameLock.GameLockedException gle ) {
+                DbgUtils.logex( TAG, gle );
+                finish();
             }
-        } catch ( GameLock.GameLockedException gle ) {
-            DbgUtils.logex( TAG, gle );
-            finish();
         }
     }
 

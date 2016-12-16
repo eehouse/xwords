@@ -548,7 +548,8 @@ public class SMSService extends XWService {
         if ( tryAssemble( senderPhone, id, index, count, rest ) ) {
             postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
-            DbgUtils.logw( TAG, "SMSService: receiveBuffer(): bogus message from"
+            // Will see this when don't have SMS permission
+            DbgUtils.logw( TAG, "receiveBuffer(): bogus message from"
                            + " phone %s", senderPhone );
         }
     }
@@ -678,6 +679,9 @@ public class SMSService extends XWService {
                     DbgUtils.logw( TAG, "sendBuffers(%s): %s", phone, iae.toString() );
                 } catch ( NullPointerException npe ) {
                     Assert.fail();      // shouldn't be trying to do this!!!
+                } catch ( java.lang.SecurityException se ) {
+                    DbgUtils.logd( TAG, "caught SecurityException; "
+                                   + "no SEND_SMS permission?" );
                 } catch ( Exception ee ) {
                     DbgUtils.logex( TAG, ee );
                 }

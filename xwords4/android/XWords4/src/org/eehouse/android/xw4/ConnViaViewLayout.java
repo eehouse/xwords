@@ -87,7 +87,8 @@ public class ConnViaViewLayout extends LinearLayout {
         new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE )
             .asyncQuery( m_activity, new Perms23.PermCbck() {
                     @Override
-                    public void onPermissionResult( Map<Perms23.Perm, Boolean> granted ) {
+                    public void onPermissionResult( Map<Perms23.Perm,
+                                                    Boolean> granted ) {
                         addConnectionsPostPermCheck();
                     }
                 } );

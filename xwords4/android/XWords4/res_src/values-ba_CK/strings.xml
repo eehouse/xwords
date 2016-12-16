@@ -2322,9 +2322,9 @@
   <string name="after_restart">Siht egnahc lliw ton ekat tceffe litnu
   uoy tratser Sdrowssorc.</string>
   <string name="not_again_missing_perms">Siht emag si derugifnoc ot
-  etacinummoc ni ta tsael eno yaw taht seriuqer a noissimrep taht sah
-  ton neeb detnarg. Uoy nac llits nepo ,ti tub ti yam ton eb elba ot
-  dnes ro eviecer sevom.\n\nUoy nac nepo-er ti ot eb deksa niaga. Ro
-  uoy nac evomer eht sgnittes taht eriuqer gnissim snoissimrep.</string>
-  <string name="remove_connvia">Evomer</string>
+  etacinummoc aiv SMS tub Sdrowssorc seod ton evah noissimrep ot od
+  os. Uoy nac llits nepo eht ,emag tub ti yam ton eb elba ot dnes ro
+  eviecer sevom.\n\nUoy nac nepo-er ti ot eb deksa rof noissimrep
+  niaga. Ro uoy nac evomer eht SMS noitacinummoc gnittes.</string>
+  <string name="remove_sms">Evomer SMS</string>
 </resources>

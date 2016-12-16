@@ -71,8 +71,6 @@ public class DlgDelegate {
         NEW_GAME_DFLT_NAME,
         ENABLE_DUALPANE,
         ENABLE_DUALPANE_EXIT,
-        LAUNCH_PERMS_REMOVE,
-        LAUNCH_PERMS,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
@@ -94,6 +92,7 @@ public class DlgDelegate {
         BUTTON_BROWSEALL_ACTION,
         NFC_TO_SELF,
         DROP_RELAY_ACTION,
+        DROP_SMS_ACTION,
 
         // Dict Browser
         FINISH_ACTION,

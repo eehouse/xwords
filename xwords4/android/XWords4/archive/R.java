@@ -5822,7 +5822,7 @@ XLATE-ME
   
          */
         public static final int remote_undone=0x7f050226;
-        public static final int remove_connvia=0x7f050359;
+        public static final int remove_sms=0x7f050359;
         /** <string name="rename_group_label">Change the name of this group to:</string>
          */
         public static final int rename_group_label=0x7f050273;

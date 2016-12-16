@@ -42,28 +42,31 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.Map;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.jni.CommonPrefs;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.JNIThread.JNICmd;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.JNIUtils;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.TransportProcs;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
-import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -105,7 +108,7 @@ public class BoardDelegate extends DelegateBase
     private Button m_exchCommmitButton;
     private Button m_exchCancelButton;
     private SentInvitesInfo m_sentInfo;
-
+    private Perms23.PermCbck m_permCbck;
     private ArrayList<String> m_pendingChats;
 
     private String m_dlgBytes = null;
@@ -1066,8 +1069,12 @@ public class BoardDelegate extends DelegateBase
                 GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
                 break;
             case DROP_RELAY_ACTION:
-                dropRelayAndRestart();
+                dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
                 break;
+            case DROP_SMS_ACTION:
+                dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
+                break;
+
             case DELETE_AND_EXIT:
                 deleteAndClose();
                 break;
@@ -1434,10 +1441,11 @@ public class BoardDelegate extends DelegateBase
         makeConfirmThenBuilder( msg, Action.DROP_RELAY_ACTION ).show();
     }
 
-    private void dropRelayAndRestart() {
+    private void dropConViaAndRestart( CommsConnType typ )
+    {
         CommsAddrRec addr = new CommsAddrRec();
         XwJNI.comms_getAddr( m_jniGamePtr, addr );
-        addr.remove( CommsConnType.COMMS_CONN_RELAY );
+        addr.remove( typ );
         XwJNI.comms_setAddr( m_jniGamePtr, addr );
 
         finish();
@@ -2159,6 +2167,8 @@ public class BoardDelegate extends DelegateBase
 
             Utils.cancelNotification( m_activity, (int)m_rowid );
 
+            askPermissions();
+
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 warnIfNoTransport();
                 trySendChats();
@@ -2167,6 +2177,31 @@ public class BoardDelegate extends DelegateBase
             }
         }
     } // resumeGame
+
+    private void askPermissions()
+    {
+        if ( m_summary.conTypes.contains( CommsConnType.COMMS_CONN_SMS )
+             && null == m_permCbck ) { // already asked?
+            m_permCbck = new Perms23.PermCbck() {
+                    @Override
+                    public void onPermissionResult( Map<Perms23.Perm,
+                                                    Boolean> perms )
+                    {
+                        ActionPair pair = new ActionPair( Action.DROP_SMS_ACTION,
+                                                          R.string.remove_sms );
+
+                        if ( ! perms.get(Perms23.Perm.SEND_SMS) ) {
+                            makeNotAgainBuilder( R.string.not_again_missing_perms,
+                                                 R.string.key_notagain_missing_perms )
+                                .setActionPair( pair )
+                                .show();
+                        }
+                    }
+                };
+            new Perms23.Builder(Perms23.Perm.SEND_SMS)
+                .asyncQuery( m_activity, m_permCbck );
+        }
+    }
 
     private void tickle( boolean force )
     {

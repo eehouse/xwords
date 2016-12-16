@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import junit.framework.Assert;
     
 public class Perms23 {
     private static final String TAG = Perms23.class.getSimpleName();
@@ -68,6 +70,11 @@ public class Perms23 {
 
         public Builder( Perm perm ) {
             m_perms.add( perm );
+        }
+
+        public Builder add( Perm perm ) {
+            m_perms.add( perm );
+            return this;
         }
 
         public void asyncQuery( Activity activity, PermCbck cbck )
