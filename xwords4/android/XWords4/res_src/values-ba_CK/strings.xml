@@ -2326,5 +2326,11 @@
   os. Uoy nac llits nepo eht ,emag tub ti yam ton eb elba ot dnes ro
   eviecer sevom.\n\nUoy nac nepo-er ti ot eb deksa rof noissimrep
   niaga. Ro uoy nac evomer eht SMS noitacinummoc gnittes.</string>
+  <string name="phone_state_rationale">Sdrowssorc stnaw ot enimreted
+  rehtehw ruoy enohp nac dnes SMS \"atad\" segassem ot evig uoy eht
+  noitpo fo gniyalp taht yaw. Fi uoy nod\'t reve tnaw ot yalp aiv ,SMs
+  e.g. esuaceb uoy yap rof hcae egassem ro evah a Nozirev ,enohp ti\'s
+  efas ot yltnenamrep yned noissimrep.
+  </string>
   <string name="remove_sms">Evomer SMS</string>
 </resources>

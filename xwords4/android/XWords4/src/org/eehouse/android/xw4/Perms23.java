@@ -60,9 +60,13 @@ public class Perms23 {
     public interface PermCbck {
         void onPermissionResult( Map<Perm, Boolean> perms );
     }
+    public interface OnShowRationale {
+        void onShouldShowRationale( Set<Perms23.Perm> perms );
+    }
 
     public static class Builder {
         private Set<Perm> m_perms = new HashSet<Perm>();
+        private OnShowRationale m_onShow;
 
         public Builder(Set<Perm> perms) {
             m_perms.addAll( perms );
@@ -77,11 +81,18 @@ public class Perms23 {
             return this;
         }
 
+        public Builder setOnShowRationale( OnShowRationale onShow )
+        {
+            m_onShow = onShow;
+            return this;
+        }
+
         public void asyncQuery( Activity activity, PermCbck cbck )
         {
-            DbgUtils.logd( TAG, "asyncQuery()" );
+            DbgUtils.logd( TAG, "asyncQuery(%s)", m_perms.toString() );
             boolean haveAll = true;
             boolean shouldShow = false;
+            Set<Perm> needShow = new HashSet<Perm>();
 
             ArrayList<String> askStrings = new ArrayList<String>();
             for ( Perm perm : m_perms ) {
@@ -90,22 +101,22 @@ public class Perms23 {
                     == ContextCompat.checkSelfPermission( activity, permStr );
 
                 // For research: ask the OS if we should be printing a rationale
-                if ( BuildConfig.DEBUG && !haveIt ) {
-                    shouldShow = shouldShow || ActivityCompat
-                        .shouldShowRequestPermissionRationale( activity, permStr );
+                if ( !haveIt ) {
+                    askStrings.add( permStr );
+
+                    if ( ActivityCompat
+                         .shouldShowRequestPermissionRationale( activity,
+                                                                permStr ) ) {
+                        needShow.add( perm );
+                    }
                 }
 
                 haveAll = haveAll && haveIt;
-                if ( !haveIt ) {
-                    askStrings.add( permStr );
-                }
             }
 
-            if ( shouldShow ) {
-                DbgUtils.showf( "Should show rationale!!!" );
-            }
-
-            if ( haveAll ) {
+            if ( 0 < needShow.size() && null != m_onShow ) {
+                m_onShow.onShouldShowRationale( needShow );
+            } else if ( haveAll ) {
                 Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
                 for ( Perm perm : m_perms ) {
                     map.put( perm, true );
@@ -117,7 +128,7 @@ public class Perms23 {
                 ActivityCompat.requestPermissions( activity, permsArray, code );
             }
 
-            DbgUtils.logd( TAG, "asyncQuery(%s) => %b", m_perms.toString(), haveAll );
+            DbgUtils.logd( TAG, "asyncQuery(%s) DONE", m_perms.toString() );
         }
     }
 

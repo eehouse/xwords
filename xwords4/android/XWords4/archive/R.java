@@ -5058,6 +5058,7 @@ XLATE-ME
   
          */
         public static final int phone_label=0x7f050223;
+        public static final int phone_state_rationale=0x7f050359;
         /**  Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. 
  Don't warn, but simply force to skip turn (give 0 points)
@@ -5822,7 +5823,7 @@ XLATE-ME
   
          */
         public static final int remote_undone=0x7f050226;
-        public static final int remove_sms=0x7f050359;
+        public static final int remove_sms=0x7f05035a;
         /** <string name="rename_group_label">Change the name of this group to:</string>
          */
         public static final int rename_group_label=0x7f050273;

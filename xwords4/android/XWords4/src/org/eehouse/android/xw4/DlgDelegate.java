@@ -93,6 +93,7 @@ public class DlgDelegate {
         NFC_TO_SELF,
         DROP_RELAY_ACTION,
         DROP_SMS_ACTION,
+        RETRY_PHONE_STATE_ACTION,
 
         // Dict Browser
         FINISH_ACTION,

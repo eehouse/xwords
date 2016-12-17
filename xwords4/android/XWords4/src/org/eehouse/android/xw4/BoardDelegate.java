@@ -42,7 +42,12 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import junit.framework.Assert;
 
@@ -67,10 +72,6 @@ import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.Semaphore;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -405,8 +406,8 @@ public class BoardDelegate extends DelegateBase
                                 if ( self.m_summary.hasRematchInfo() ) {
                                     self.tryRematchInvites( true );
                                 } else {
-                                    self.showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION,
-                                                                self.m_sentInfo );
+                                    self.callInviteChoices( Action.LAUNCH_INVITE_ACTION,
+                                                            self.m_sentInfo, true );
                                 }
                             } else {
                                 self.askDropRelay();
@@ -714,6 +715,43 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    // Invitations need to check phone state to decide whether to offer SMS
+    // invitation. Complexity (showRationale) boolean is to prevent infinite
+    // loop of showing the rationale over and over. Android will always tell
+    // us to show the rationale, but if we've done it already we need to go
+    // straight to asking for the permission.
+    private void callInviteChoices( final Action action,
+                                    final DBUtils.SentInvitesInfo info,
+                                    boolean showRationale )
+    {
+        Perms23.Builder builder =
+            new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE );
+
+        if ( showRationale ) {
+            builder.setOnShowRationale( new Perms23.OnShowRationale() {
+                    @Override
+                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
+                    {
+                        makeOkOnlyBuilder( R.string.phone_state_rationale )
+                            .setAction( Action.RETRY_PHONE_STATE_ACTION )
+                            .setParams( action, info )
+                            .show();
+                    }
+                } );
+        }
+
+        builder.asyncQuery( m_activity, new Perms23.PermCbck() {
+                    @Override
+                    public void onPermissionResult( Map<Perms23.Perm,
+                                                    Boolean> perms )
+                    {
+                        // Do the work regardless of result; just won't have
+                        // SMS option
+                        showInviteChoicesThen( action, info );
+                    }
+                });
+    }
+
     @Override
     public void orientationChanged()
     {
@@ -1006,6 +1044,10 @@ public class BoardDelegate extends DelegateBase
                         }
                     }, 10 );
             }
+        } else if ( Action.RETRY_PHONE_STATE_ACTION == action ) {
+            Action stateAction = (Action)params[0];
+            DBUtils.SentInvitesInfo info = (DBUtils.SentInvitesInfo)params[1];
+            callInviteChoices( stateAction, info, false );
         } else if ( positive ) {
             handled = true;
             JNICmd cmd = JNICmd.CMD_NONE;
