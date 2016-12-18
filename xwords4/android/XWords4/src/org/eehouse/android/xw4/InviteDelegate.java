@@ -221,9 +221,6 @@ abstract class InviteDelegate extends ListDelegateBase
     {
         int count = m_checked.size();
         m_inviteButton.setEnabled( count > 0 && count <= m_nMissing );
-        // if ( null != m_clearButton ) {
-        //     m_clearButton.setEnabled( count > 0 );
-        // }
     }
 
     final Set<Integer> getChecked() { return m_checked; }

@@ -176,6 +176,7 @@ public class SMSInviteDelegate extends InviteDelegate
                             self.makeConfirmThenBuilder( R.string.warn_unlimited,
                                                          Action.POST_WARNING_ACTION )
                                 .setPosButton( R.string.button_yes )
+                                .setParams( number, null )
                                 .show();
                         }
                     };
@@ -221,7 +222,10 @@ public class SMSInviteDelegate extends InviteDelegate
                 m_immobileConfirmed = true;
                 break;
             case POST_WARNING_ACTION:
-                addChecked( new PhoneRec( m_pendingName, m_pendingNumber ) );
+                Assert.assertTrue( ((String)params[0]).equals(m_pendingNumber) );
+                Assert.assertTrue( params[1] == null
+                                   || ((String)params[1]).equals(m_pendingName) );
+                m_phoneRecs.add( new PhoneRec( m_pendingName, m_pendingNumber ) );
                 saveAndRebuild();
                 break;
             }
@@ -235,20 +239,6 @@ public class SMSInviteDelegate extends InviteDelegate
             }
             break;
         }
-    }
-
-    private int countChecks()
-    {
-        int count = 0;
-        if ( null != m_phoneRecs ) {
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                if ( iter.next().m_isChecked ) {
-                    ++count;
-                }
-            }
-        }
-        return count;
     }
 
     private void addPhoneNumbers( Intent intent )
@@ -281,6 +271,7 @@ public class SMSInviteDelegate extends InviteDelegate
                     makeConfirmThenBuilder( R.string.warn_unlimited,
                                             Action.POST_WARNING_ACTION )
                         .setPosButton( R.string.button_yes )
+                        .setParams( number, name )
                         .show();
                 } else {
                     m_immobileConfirmed = false;
@@ -319,8 +310,7 @@ public class SMSInviteDelegate extends InviteDelegate
 
         m_phoneRecs = new ArrayList<PhoneRec>(phones.length);
         for ( String phone : phones ) {
-            boolean matches = phone.equals( m_lastDev );
-            PhoneRec rec = new PhoneRec( null, phone, matches );
+            PhoneRec rec = new PhoneRec( null, phone );
             m_phoneRecs.add( rec );
         }
     }
@@ -338,19 +328,6 @@ public class SMSInviteDelegate extends InviteDelegate
         rebuildList( false );
     }
 
-    private void addChecked( PhoneRec rec )
-    {
-        if ( m_nMissing <= countChecks() ) {
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                iter.next().m_isChecked = false;
-            }
-        }
-
-        rec.m_isChecked = true;
-        m_phoneRecs.add( rec );
-    }
-
     private void clearSelectedImpl()
     {
         Set<Integer> checked = getChecked();
@@ -366,20 +343,15 @@ public class SMSInviteDelegate extends InviteDelegate
     private class PhoneRec implements InviterItem {
         public String m_phone;
         public String m_name;
-        public boolean m_isChecked;
-        public PhoneRec( String name, String phone )
-        {
-            this( name, phone, false );
-        }
+
         public PhoneRec( String phone )
         {
-            this( null, phone, false );
+            this( null, phone );
         }
 
-        private PhoneRec( String name, String phone, boolean checked )
+        private PhoneRec( String name, String phone )
         {
             m_phone = phone;
-            m_isChecked = checked;
 
             if ( null == name ) {
                 name = Utils.phoneToContact( m_activity, phone, false );
