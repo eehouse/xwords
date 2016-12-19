@@ -68,8 +68,6 @@ public class SMSInviteDelegate extends InviteDelegate
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private ImageButton m_addButton;
-    private String m_pendingName;
-    private String m_pendingNumber;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
@@ -100,28 +98,12 @@ public class SMSInviteDelegate extends InviteDelegate
         super.init( msg, R.string.empty_sms_inviter );
         addButtonBar( R.layout.sms_buttons, BUTTONIDS );
 
-        getBundledData( savedInstanceState );
+        // getBundledData( savedInstanceState );
 
         getSavedState();
         rebuildList( true );
 
         askContactsPermission( true );
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState )
-    {
-        outState.putString( SAVE_NAME, m_pendingName );
-        outState.putString( SAVE_NUMBER, m_pendingNumber );
-        super.onSaveInstanceState( outState );
-    }
-
-    private void getBundledData( Bundle bundle )
-    {
-        if ( null != bundle ) {
-            m_pendingName = bundle.getString( SAVE_NAME );
-            m_pendingNumber = bundle.getString( SAVE_NUMBER );
-        }
     }
 
     @Override
@@ -177,8 +159,6 @@ public class SMSInviteDelegate extends InviteDelegate
                             SMSInviteDelegate self = (SMSInviteDelegate)curThis();
                             String number = namerView.getName();
                             PhoneRec rec = new PhoneRec( number );
-                            self.m_pendingNumber = number;
-                            self.m_pendingName = null;
                             self.makeConfirmThenBuilder( R.string.warn_unlimited,
                                                          Action.POST_WARNING_ACTION )
                                 .setPosButton( R.string.button_yes )
@@ -235,10 +215,8 @@ public class SMSInviteDelegate extends InviteDelegate
         case POST_WARNING_ACTION:
             DbgUtils.printStack( TAG );
             if ( isPositive ) { // ???
-                Assert.assertTrue( ((String)params[0]).equals(m_pendingNumber) );
-                Assert.assertTrue( params[1] == null
-                                   || ((String)params[1]).equals(m_pendingName) );
-                m_phoneRecs.add( new PhoneRec( m_pendingName, m_pendingNumber ) );
+                m_phoneRecs.add( new PhoneRec( (String)params[1],
+                                               (String)params[0] ) );
                 saveAndRebuild();
             }
             break;
@@ -287,8 +265,6 @@ public class SMSInviteDelegate extends InviteDelegate
 
                 int type = cursor.getInt( cursor.
                                           getColumnIndex( Phone.TYPE ) );
-                m_pendingName = name;
-                m_pendingNumber = number;
                 if ( Phone.TYPE_MOBILE == type ) {
                     makeConfirmThenBuilder( R.string.warn_unlimited,
                                             Action.POST_WARNING_ACTION )
