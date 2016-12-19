@@ -87,6 +87,11 @@ public class Perms23 {
             return this;
         }
 
+        public void asyncQuery( Activity activity )
+        {
+            asyncQuery( activity, null );
+        }
+
         public void asyncQuery( Activity activity, PermCbck cbck )
         {
             DbgUtils.logd( TAG, "asyncQuery(%s)", m_perms.toString() );
@@ -117,11 +122,13 @@ public class Perms23 {
             if ( 0 < needShow.size() && null != m_onShow ) {
                 m_onShow.onShouldShowRationale( needShow );
             } else if ( haveAll ) {
-                Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
-                for ( Perm perm : m_perms ) {
-                    map.put( perm, true );
+                if ( null != cbck ) {
+                    Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
+                    for ( Perm perm : m_perms ) {
+                        map.put( perm, true );
+                    }
+                    cbck.onPermissionResult( map );
                 }
-                cbck.onPermissionResult( map );
             } else {
                 String[] permsArray = askStrings.toArray( new String[askStrings.size()] );
                 int code = register( cbck );
@@ -135,16 +142,19 @@ public class Perms23 {
     private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();
     public static void gotPermissionResult( int code, String[] perms, int[] granteds )
     {
-        Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
-        for ( int ii = 0; ii < perms.length; ++ii ) {
-            Perm perm = Perm.getFor( perms[ii] );
-            boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
-            result.put( perm, granted );
-            // DbgUtils.logd( TAG, "calling %s.onPermissionResult(%s, %b)",
-            //                record.cbck.getClass().getSimpleName(), perm.toString(),
-            //                granted );
+        PermCbck cbck = s_map.get( code );
+        if ( null != cbck ) {
+            Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
+            for ( int ii = 0; ii < perms.length; ++ii ) {
+                Perm perm = Perm.getFor( perms[ii] );
+                boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
+                result.put( perm, granted );
+                // DbgUtils.logd( TAG, "calling %s.onPermissionResult(%s, %b)",
+                //                record.cbck.getClass().getSimpleName(), perm.toString(),
+                //                granted );
+            }
+            cbck.onPermissionResult( result );
         }
-        s_map.get( code ).onPermissionResult( result );
     }
 
     public static boolean havePermission( Perm perm )

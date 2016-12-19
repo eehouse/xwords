@@ -112,6 +112,7 @@ public class DlgDelegate {
         CLEAR_ACTION,
         USE_IMMOBILE_ACTION,
         POST_WARNING_ACTION,
+        RETRY_CONTACTS_ACTION,
 
         // BT Invite
         OPEN_BT_PREFS_ACTION,

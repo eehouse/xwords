@@ -1705,8 +1705,6 @@
     UP PLEASE MAKE SURE THAT WIFI IS TURNED ON, THAT CROSSWORDS IS
     INSTALLED, AND THAT PLAY VIA WIFI DIRECT IS ENABLED.</string>
   <!--  -->
-  <string name="manual_owner_name">(NOT IN CONTACTS)</string>
-  <!--  -->
   <string name="warn_nomobile_fmt">THE NUMBER %1$s FOR %2$s IS NOT
     A \"MOBILE\" NUMBER. IMPORT ANYWAY?</string>
   <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
@@ -2332,5 +2330,11 @@
   E.G. BECAUSE YOU PAY FOR EACH MESSAGE OR HAVE A VERIZON PHONE, IT\'S
   SAFE TO PERMANENTLY DENY PERMISSION.
   </string>
+  <string name="contacts_rationale">CROSSWORDS WANT ACCESS TO YOUR
+  CONTACTS IN ORDER TO PUT A NAME TO PHONE NUMBERS THAT SEND YOU
+  INVITATIONS VIA SMS. YOU\'LL STILL BE ABLE TO RECEIVE INVITATIONS IF
+  YOU DON\'T GRANT THIS PERMISSION, BUT ONLY THE PHONE NUMBER OF THE
+  SENDER WILL BE DISPLAYED.</string>
   <string name="remove_sms">REMOVE SMS</string>
+  <string name="contact_not_found">NOT IN CONTACTS</string>
 </resources>

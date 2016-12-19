@@ -1705,8 +1705,6 @@
     pu esaelp ekam erus taht IfIw si denrut ,no taht Sdrowssorc si
     ,dellatsni dna taht yalp aiv IfIw Tcerid si delbane.</string>
   <!--  -->
-  <string name="manual_owner_name">tOn( ni )stcatnoc</string>
-  <!--  -->
   <string name="warn_nomobile_fmt">Eht rebmun %1$s rof %2$s si ton
     a \"elibom\" rebmun. Tropmi ?yawyna</string>
   <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
@@ -2332,5 +2330,11 @@
   e.g. esuaceb uoy yap rof hcae egassem ro evah a Nozirev ,enohp ti\'s
   efas ot yltnenamrep yned noissimrep.
   </string>
+  <string name="contacts_rationale">Sdrowssorc tnaw ssecca ot ruoy
+  stcatnoc ni redro ot tup a eman ot enohp srebmun taht dnes uoy
+  snoitativni aiv SMS. Uoy\'ll llits eb elba ot eviecer snoitativni fi
+  uoy nod\'t tnarg siht ,noissimrep tub ylno eht enohp rebmun fo eht
+  rednes lliw eb deyalpsid.</string>
   <string name="remove_sms">Evomer SMS</string>
+  <string name="contact_not_found">Ton ni Stcatnoc</string>
 </resources>

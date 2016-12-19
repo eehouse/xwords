@@ -48,7 +48,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+
+import org.json.JSONObject;
+import org.json.JSONException;
 
 public class SMSInviteDelegate extends InviteDelegate
     implements View.OnClickListener {
@@ -100,6 +104,8 @@ public class SMSInviteDelegate extends InviteDelegate
 
         getSavedState();
         rebuildList( true );
+
+        askContactsPermission( true );
     }
 
     @Override
@@ -210,32 +216,48 @@ public class SMSInviteDelegate extends InviteDelegate
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which,
+                                  final Object[] params )
     {
-        switch( which ) {
-        case AlertDialog.BUTTON_POSITIVE:
-            switch( action ) {
-            case CLEAR_ACTION:
+        boolean isPositive = AlertDialog.BUTTON_POSITIVE == which;
+        DbgUtils.logd( TAG, "dlgButtonClicked(%s,pos:%b)",
+                       action.toString(), isPositive );
+
+        switch ( action ) {
+        case RETRY_CONTACTS_ACTION:
+            askContactsPermission( false );
+            break;
+        case CLEAR_ACTION:
+            if ( isPositive) {
                 clearSelectedImpl();
-                break;
-            case USE_IMMOBILE_ACTION:
-                m_immobileConfirmed = true;
-                break;
-            case POST_WARNING_ACTION:
+            }
+            break;
+        case POST_WARNING_ACTION:
+            DbgUtils.printStack( TAG );
+            if ( isPositive ) { // ???
                 Assert.assertTrue( ((String)params[0]).equals(m_pendingNumber) );
                 Assert.assertTrue( params[1] == null
                                    || ((String)params[1]).equals(m_pendingName) );
                 m_phoneRecs.add( new PhoneRec( m_pendingName, m_pendingNumber ) );
                 saveAndRebuild();
-                break;
             }
             break;
-        case DlgDelegate.DISMISS_BUTTON:
-            if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-                makeConfirmThenBuilder( R.string.warn_unlimited,
-                                        Action.POST_WARNING_ACTION )
-                    .setPosButton( R.string.button_yes )
-                    .show();
+        case USE_IMMOBILE_ACTION:
+            if ( isPositive ) {
+                m_immobileConfirmed = true;
+            } else if ( m_immobileConfirmed ) {
+                // Putting up a new alert from inside another's handler
+                // confuses things. So post instead.
+                post( new Runnable() {
+                        @Override
+                        public void run() {
+                            makeConfirmThenBuilder( R.string.warn_unlimited,
+                                                    Action.POST_WARNING_ACTION )
+                                .setPosButton( R.string.button_yes )
+                                .setParams( params )
+                                .show();
+                        }
+                    } );
             }
             break;
         }
@@ -279,6 +301,7 @@ public class SMSInviteDelegate extends InviteDelegate
                                             number, name );
                     makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION )
                         .setPosButton( R.string.button_yes )
+                        .setParams( number, name )
                         .show();
                 }
             }
@@ -306,22 +329,28 @@ public class SMSInviteDelegate extends InviteDelegate
 
     private void getSavedState()
     {
-        String[] phones = XWPrefs.getSMSPhones( m_activity );
+        JSONObject phones = XWPrefs.getSMSPhones( m_activity );
 
-        m_phoneRecs = new ArrayList<PhoneRec>(phones.length);
-        for ( String phone : phones ) {
-            PhoneRec rec = new PhoneRec( null, phone );
+        m_phoneRecs = new ArrayList<PhoneRec>();
+        for ( Iterator<String> iter = phones.keys(); iter.hasNext(); ) {
+            String phone = iter.next();
+            String name = phones.optString( phone, null );
+            PhoneRec rec = new PhoneRec( name, phone );
             m_phoneRecs.add( rec );
         }
     }
 
     private void saveAndRebuild()
     {
-        String[] phones = new String[m_phoneRecs.size()];
+        JSONObject phones = new JSONObject();
         Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
+        while ( iter.hasNext() ) {
             PhoneRec rec = iter.next();
-            phones[ii] = rec.m_phone;
+            try {
+                phones.put( rec.m_phone, rec.m_name );
+            } catch ( JSONException ex ) {
+                DbgUtils.logex( TAG, ex );
+            }
         }
         XWPrefs.setSMSPhones( m_activity, phones );
 
@@ -340,6 +369,23 @@ public class SMSInviteDelegate extends InviteDelegate
         saveAndRebuild();
     }
 
+    private void askContactsPermission( boolean showRationale )
+    {
+        Perms23.Builder builder = new Perms23.Builder( Perms23.Perm.READ_CONTACTS );
+        if ( showRationale ) {
+            builder.setOnShowRationale( new Perms23.OnShowRationale() {
+                    @Override
+                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
+                    {
+                        makeOkOnlyBuilder( R.string.contacts_rationale )
+                            .setAction( Action.RETRY_CONTACTS_ACTION )
+                            .show();
+                    }
+                } );
+        }
+        builder.asyncQuery( m_activity );
+    }
+
     private class PhoneRec implements InviterItem {
         public String m_phone;
         public String m_name;
@@ -354,10 +400,7 @@ public class SMSInviteDelegate extends InviteDelegate
             m_phone = phone;
 
             if ( null == name ) {
-                name = Utils.phoneToContact( m_activity, phone, false );
-                if ( null == name ) {
-                    name = getString( R.string.manual_owner_name );
-                }
+                name = getString( R.string.contact_not_found );
             }
             m_name = name;
         }

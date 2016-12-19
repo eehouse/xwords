@@ -295,7 +295,8 @@ public class Utils {
                     cursor.close();
                     s_phonesHash.put( phone, name );
                 } catch ( Exception ex ) {
-                    name = "not found";
+                    // could just be lack of permsisions
+                    name = null;
                 }
             }
         }

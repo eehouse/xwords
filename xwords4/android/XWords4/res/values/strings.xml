@@ -1972,8 +1972,6 @@
     installed, and that play via WiFi Direct is enabled.</string>
 
     <!--  -->
-    <string name="manual_owner_name">(Not in contacts)</string>
-    <!--  -->
     <string name="warn_nomobile_fmt">The number %1$s for %2$s is not
     a \"mobile\" number. Import anyway?</string>
     <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
@@ -2732,6 +2730,13 @@
   safe to permanently deny permission.
   </string>
 
+  <string name="contacts_rationale">Crosswords want access to your
+  contacts in order to put a name to phone numbers that send you
+  invitations via SMS. You\'ll still be able to receive invitations if
+  you don\'t grant this permission, but only the phone number of the
+  sender will be displayed.</string>
+
   <string name="remove_sms">Remove SMS</string>
+  <string name="contact_not_found">Not in Contacts</string>
 
 </resources>
