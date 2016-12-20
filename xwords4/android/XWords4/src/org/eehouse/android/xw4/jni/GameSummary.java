@@ -140,15 +140,16 @@ public class GameSummary {
                                    playerNames() );
     }
 
-    public void setRemoteDevs( Context context, String asString )
+    public void setRemoteDevs( Context context, CommsConnType typ, String str )
     {
-        if ( null != asString ) {
-            remoteDevs = TextUtils.split( asString, "\n" );
+        if ( null != str && 0 < str.length() ) {
+            remoteDevs = TextUtils.split( str, "\n" );
 
             m_remotePhones = new String[remoteDevs.length];
             for ( int ii = 0; ii < remoteDevs.length; ++ii ) {
-                m_remotePhones[ii] =
-                    Utils.phoneToContact( context, remoteDevs[ii], true );
+                m_remotePhones[ii] = (typ == CommsConnType.COMMS_CONN_SMS)
+                    ? Utils.phoneToContact( context, remoteDevs[ii], true )
+                    : remoteDevs[ii];
             }
         }
     }

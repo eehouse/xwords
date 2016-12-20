@@ -220,7 +220,8 @@ public class DBUtils {
 
                     for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
                           iter.hasNext(); ) {
-                        switch ( iter.next() ) {
+                        CommsConnType typ = iter.next();
+                        switch ( typ ) {
                         case COMMS_CONN_RELAY:
                             col = cursor.getColumnIndex( DBHelper.ROOMNAME );
                             if ( col >= 0 ) {
@@ -235,7 +236,7 @@ public class DBUtils {
                         case COMMS_CONN_SMS:
                             col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
                             if ( col >= 0 ) {
-                                summary.setRemoteDevs( context,
+                                summary.setRemoteDevs( context, typ,
                                                        cursor.getString( col ) );
                             }
                             break;
