@@ -142,7 +142,7 @@ public class Perms23 {
     private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();
     public static void gotPermissionResult( int code, String[] perms, int[] granteds )
     {
-        PermCbck cbck = s_map.get( code );
+        PermCbck cbck = s_map.remove( code );
         if ( null != cbck ) {
             Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
             for ( int ii = 0; ii < perms.length; ++ii ) {
@@ -162,7 +162,6 @@ public class Perms23 {
         String permString = perm.getString();
         boolean result = PackageManager.PERMISSION_GRANTED
             == ContextCompat.checkSelfPermission( XWApp.getContext(), permString );
-        DbgUtils.logd( TAG, "havePermission(%s) => %b", perm.toString(), result );
         return result;
     }
 
