@@ -1884,7 +1884,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean force, jobject jFilter,
   jboolean thenAck )
 {
-    LOG_FUNC();
     jint result;
     XWJNI_START();
     CommsCtxt* comms = state->game.comms;
@@ -1898,7 +1897,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
 #endif
     }
     XWJNI_END();
-    LOG_RETURNF( "%d", result );
     return result;
 }
 

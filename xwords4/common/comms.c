@@ -1511,7 +1511,7 @@ comms_resendAll( CommsCtxt* comms, CommsConnType filter, XP_Bool force )
             comms->nextResend = now + comms->resendBackoff;
         }
     }
-    XP_LOGF( TAGFMT() "=>%d", TAGPRMS, count );
+    XP_LOGF( TAGFMT() "=> %d", TAGPRMS, count );
     return count;
 } /* comms_resendAll */
 
