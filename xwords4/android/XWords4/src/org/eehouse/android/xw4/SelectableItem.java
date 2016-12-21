@@ -35,4 +35,3 @@ public interface SelectableItem {
     public void itemToggled( LongClickHandler toggled, boolean selected );
     public boolean getSelected( LongClickHandler obj );
 }
-

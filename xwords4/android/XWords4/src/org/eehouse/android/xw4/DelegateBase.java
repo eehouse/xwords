@@ -58,6 +58,7 @@ import java.util.Map;
 public class DelegateBase implements DlgClickNotify,
                                      DlgDelegate.HasDlgDelegate,
                                      MultiService.MultiEventListener {
+    private static final String TAG = DelegateBase.class.getSimpleName();
 
     private DlgDelegate m_dlgDelegate;
     private Delegator m_delegator;
@@ -118,14 +119,14 @@ public class DelegateBase implements DlgClickNotify,
     protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
-        DbgUtils.logi( getClass(), "onActivityResult(): subclass responsibility!!!" );
+        DbgUtils.logi( TAG, "onActivityResult(): subclass responsibility!!!" );
     }
 
     protected void onStart()
     {
         Class clazz = getClass();
         if ( s_instances.containsKey( clazz ) ) {
-            DbgUtils.logd( getClass(), "onStart(): replacing curThis" );
+            DbgUtils.logd( TAG, "onStart(): replacing curThis" );
         }
         s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
     }
@@ -160,7 +161,7 @@ public class DelegateBase implements DlgClickNotify,
             result = ref.get();
         }
         if ( this != result ) {
-            DbgUtils.logd( getClass(), "%s.curThis() => " + result, this.toString() );
+            DbgUtils.logd( TAG, "%s.curThis() => " + result, this.toString() );
         }
         return result;
     }
@@ -570,12 +571,12 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean canHandleNewIntent( Intent intent )
     {
-        DbgUtils.logd( getClass(), "canHandleNewIntent() => false" );
+        DbgUtils.logd( TAG, "canHandleNewIntent() => false" );
         return false;
     }
 
     protected void handleNewIntent( Intent intent ) {
-        DbgUtils.logd( getClass(), "handleNewIntent(%s): not handling",
+        DbgUtils.logd( TAG, "handleNewIntent(%s): not handling",
                        intent.toString() );
     }
 
@@ -594,7 +595,7 @@ public class DelegateBase implements DlgClickNotify,
         switch( event ) {
         case BT_ERR_COUNT:
             int count = (Integer)args[0];
-            DbgUtils.logi( getClass(), "Bluetooth error count: %d", count );
+            DbgUtils.logi( TAG, "Bluetooth error count: %d", count );
             break;
         case BAD_PROTO_BT:
             fmtId = R.string.bt_bad_proto_fmt;
@@ -609,7 +610,7 @@ public class DelegateBase implements DlgClickNotify,
             m_dlgDelegate.eventOccurred( event, args );
             break;
         default:
-            DbgUtils.logd( getClass(), "eventOccurred(event=%s) (DROPPED)",
+            DbgUtils.logd( TAG, "eventOccurred(event=%s) (DROPPED)",
                            event.toString() );
             break;
         }
@@ -671,7 +672,7 @@ public class DelegateBase implements DlgClickNotify,
                 Assert.fail();
                 break;
             }
-            DbgUtils.logi( getClass(), "dlgButtonClicked(action=%s button=%s): UNHANDLED",
+            DbgUtils.logi( TAG, "dlgButtonClicked(action=%s button=%s): UNHANDLED",
                            action.toString(), buttonName );
         }
     }

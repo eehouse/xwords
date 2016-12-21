@@ -7,14 +7,21 @@
               >
 
   <CheckBox android:id="@+id/inviter_check"
-            style="@style/evenly_spaced_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             />
 
   <Spinner android:id="@+id/nperdev_spinner"
-           style="@style/evenly_spaced_horizontal"
            android:prompt="@string/nplayers_prompt"
            android:drawSelectorOnTop="true"
            android:visibility="gone"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
            />
+
+  <FrameLayout android:id="@+id/frame"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               />
 
 </LinearLayout>

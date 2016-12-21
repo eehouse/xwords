@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e -u -x
+set -e -u
 
 MANIFEST=AndroidManifest.xml
 # XWORDS=org.eehouse.android.xw4

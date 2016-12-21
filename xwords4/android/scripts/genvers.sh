@@ -8,10 +8,13 @@ VARIANT=""
 CLIENT_VERS_RELAY=""
 GCM_SENDER_ID=${GCM_SENDER_ID:-""}
 CRITTERCISM_APP_ID=${CRITTERCISM_APP_ID:-""}
+WIDIR_ENABLED=false
 
 usage() {
     echo "usage: $0 --variant <variant> --client-vers <relay_vers> \\"
 	echo "   [--vers-outfile path/to/versout.txt]"
+	echo "   [--widir-enabled true|false]"
+
     exit 1
 }
 
@@ -28,6 +31,10 @@ while [ $# -gt 0 ]; do
 			;;
 		--vers-outfile)
 			OUT_PATH=$2
+			shift
+			;;
+		--widir-enabled)
+			WIDIR_ENABLED=$2
 			shift
 			;;
 		*)
@@ -113,6 +120,7 @@ public class BuildConstants {
     public static final String VARIANT = "$VARIANT";
     public static final String GCM_SENDER_ID = "${GCM_SENDER_ID}";
     public static final String CRITTERCISM_APP_ID  = "${CRITTERCISM_APP_ID}";
+    public static final boolean WIDIR_ENABLED = ${WIDIR_ENABLED};
 }
 EOF
 

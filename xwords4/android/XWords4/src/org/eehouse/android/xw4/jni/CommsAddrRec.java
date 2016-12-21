@@ -26,6 +26,7 @@ import android.text.TextUtils;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.BTService;
+import org.eehouse.android.xw4.WiDirService;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
@@ -39,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class CommsAddrRec {
+    private static final String TAG = CommsAddrRec.class.getSimpleName();
 
     public enum CommsConnType {
         _COMMS_CONN_NONE,
@@ -46,7 +48,8 @@ public class CommsAddrRec {
         COMMS_CONN_IP_DIRECT,
         COMMS_CONN_RELAY,
         COMMS_CONN_BT,
-        COMMS_CONN_SMS;
+        COMMS_CONN_SMS,
+        COMMS_CONN_P2P;
 
         public String longName( Context context )
         {
@@ -58,15 +61,22 @@ public class CommsAddrRec {
                 id = R.string.invite_choice_bt; break;
             case COMMS_CONN_SMS:
                 id = R.string.connstat_sms; break;
+            case COMMS_CONN_P2P:
+                id = R.string.invite_choice_p2p; break;
             }
 
             return ( 0 == id ) ? toString() : LocUtils.getString( context, id );
+        }
+
+        public String shortName()
+        {
+            String[] parts = TextUtils.split( toString(), "_" );
+            return parts[parts.length - 1];
         }
     };
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
         private static final int BIT_VECTOR_MASK = 0x8000;
-        private static CommsConnTypeSet s_supported;
 
         public CommsConnTypeSet() { this(BIT_VECTOR_MASK); }
 
@@ -105,18 +115,18 @@ public class CommsAddrRec {
 
         public static CommsConnTypeSet getSupported( Context context )
         {
-            if ( null == s_supported ) {
-                CommsConnTypeSet supported = new CommsConnTypeSet();
-                supported.add( CommsConnType.COMMS_CONN_RELAY );
-                if ( BTService.BTAvailable() ) {
-                    supported.add( CommsConnType.COMMS_CONN_BT );
-                }
-                if ( Utils.isGSMPhone( context ) ) {
-                    supported.add( CommsConnType.COMMS_CONN_SMS );
-                }
-                s_supported = supported;
+            CommsConnTypeSet supported = new CommsConnTypeSet();
+            supported.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( BTService.BTAvailable() ) {
+                supported.add( CommsConnType.COMMS_CONN_BT );
             }
-            return s_supported;
+            if ( Utils.isGSMPhone( context ) ) {
+                supported.add( CommsConnType.COMMS_CONN_SMS );
+            }
+            if ( WiDirService.supported() ) {
+                supported.add( CommsConnType.COMMS_CONN_P2P );
+            }
+            return supported;
         }
 
         public static void removeUnsupported( Context context,
@@ -149,7 +159,7 @@ public class CommsAddrRec {
             return result;
         }
 
-        public String toString( Context context )
+        public String toString( Context context, boolean longVersion )
         {
             String result;
             CommsConnType[] types = getTypes();
@@ -158,9 +168,11 @@ public class CommsAddrRec {
             } else {
                 String[] strs = new String[types.length];
                 for ( int ii = 0; ii < types.length; ++ii ) {
-                    strs[ii] = types[ii].longName( context );
+                    CommsConnType typ = types[ii];
+                    strs[ii] = longVersion? typ.longName( context ) : typ.shortName();
                 }
-                result = TextUtils.join( " + ", strs );
+                String sep = longVersion ? " + " : ",";
+                result = TextUtils.join( sep, strs );
             }
             return result;
         }
@@ -188,6 +200,9 @@ public class CommsAddrRec {
     // sms case
     public String sms_phone;
     public int sms_port;                // SMS port, if they still use those
+
+    // wifi-direct
+    public String p2p_addr;
 
     public CommsAddrRec( CommsConnType cTyp )
     {
@@ -260,6 +275,12 @@ public class CommsAddrRec {
         sms_port = 1;           // so don't assert in comms....
     }
 
+    public CommsAddrRec setP2PParams( String macAddress )
+    {
+        p2p_addr = macAddress;
+        return this;
+    }
+
     public void populate( Context context, CommsConnTypeSet newTypes )
     {
         for ( CommsConnType typ : newTypes.getTypes() ) {
@@ -296,7 +317,7 @@ public class CommsAddrRec {
                         || ip_relay_port != other.ip_relay_port;
                 break;
             default:
-                DbgUtils.logw( getClass(), "changesMatter: not handling case: %s",
+                DbgUtils.logw( TAG, "changesMatter: not handling case: %s",
                                conType.toString() );
                 break;
             }
@@ -340,6 +361,9 @@ public class CommsAddrRec {
             SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
             sms_phone = pi.number;
             sms_port = 3;   // fix comms already...
+            break;
+        case COMMS_CONN_P2P:
+            p2p_addr = WiDirService.getMyMacAddress( context );
             break;
         default:
             Assert.fail();

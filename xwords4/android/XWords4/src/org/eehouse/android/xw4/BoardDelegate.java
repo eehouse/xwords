@@ -42,38 +42,43 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.jni.CommonPrefs;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.JNIThread.JNICmd;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.JNIUtils;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.TransportProcs;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
-import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.Semaphore;
+import org.eehouse.android.xw4.jni.XwJNI;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DwnldDelegate.DownloadFinishedListener,
                ConnStatusHandler.ConnStatusCBacks,
                NFCUtils.NFCActor {
+    private static final String TAG = BoardDelegate.class.getSimpleName();
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -104,7 +109,7 @@ public class BoardDelegate extends DelegateBase
     private Button m_exchCommmitButton;
     private Button m_exchCancelButton;
     private SentInvitesInfo m_sentInfo;
-
+    private Perms23.PermCbck m_permCbck;
     private ArrayList<String> m_pendingChats;
 
     private String m_dlgBytes = null;
@@ -123,7 +128,6 @@ public class BoardDelegate extends DelegateBase
     private JNIUtils m_jniu;
     private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
-    private int m_invitesPending;
     private boolean m_gameOver = false;
 
     // call startActivityForResult synchronously
@@ -201,12 +205,19 @@ public class BoardDelegate extends DelegateBase
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
                 } else if ( DlgID.DLG_CONNSTAT == dlgID
                             && BuildConfig.DEBUG && null != m_connTypes
-                            && m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                            && (m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+                                || m_connTypes.contains( CommsConnType.COMMS_CONN_P2P )) ) {
+
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
                                 NetStateCache.reset( m_activity );
-                                RelayService.reset( m_activity );
+                                if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                                    RelayService.reset( m_activity );
+                                }
+                                if ( m_connTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                                    WiDirService.reset( m_activity );
+                                }
                             }
                         };
                     ab.setNegativeButton( R.string.button_reconnect, lstnr );
@@ -395,8 +406,8 @@ public class BoardDelegate extends DelegateBase
                                 if ( self.m_summary.hasRematchInfo() ) {
                                     self.tryRematchInvites( true );
                                 } else {
-                                    self.showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION,
-                                                                self.m_sentInfo );
+                                    self.callInviteChoices( Action.LAUNCH_INVITE_ACTION,
+                                                            self.m_sentInfo, true );
                                 }
                             } else {
                                 self.askDropRelay();
@@ -471,7 +482,7 @@ public class BoardDelegate extends DelegateBase
                     without.remove( CommsConnType.COMMS_CONN_RELAY );
                     message += "\n\n"
                         + getString( R.string.drop_relay_warning_fmt,
-                                     without.toString( m_activity ) );
+                                     without.toString( m_activity, true ) );
                     buttonTxt = R.string.newgame_drop_relay;
                 }
             } else {
@@ -568,7 +579,7 @@ public class BoardDelegate extends DelegateBase
 
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
-        DbgUtils.logi( getClass(), "opening rowid %d", m_rowid );
+        DbgUtils.logi( TAG, "opening rowid %d", m_rowid );
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
@@ -659,7 +670,8 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
+    protected void onActivityResult( RequestCode requestCode, int resultCode,
+                                     Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             InviteMeans missingMeans = null;
@@ -672,6 +684,9 @@ public class BoardDelegate extends DelegateBase
                 break;
             case RELAY_INVITE_RESULT:
                 missingMeans = InviteMeans.RELAY;
+                break;
+            case P2P_INVITE_RESULT:
+                missingMeans = InviteMeans.WIFIDIRECT;
                 break;
             }
 
@@ -700,10 +715,47 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    // Invitations need to check phone state to decide whether to offer SMS
+    // invitation. Complexity (showRationale) boolean is to prevent infinite
+    // loop of showing the rationale over and over. Android will always tell
+    // us to show the rationale, but if we've done it already we need to go
+    // straight to asking for the permission.
+    private void callInviteChoices( final Action action,
+                                    final DBUtils.SentInvitesInfo info,
+                                    boolean showRationale )
+    {
+        Perms23.Builder builder =
+            new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE );
+
+        if ( showRationale ) {
+            builder.setOnShowRationale( new Perms23.OnShowRationale() {
+                    @Override
+                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
+                    {
+                        makeOkOnlyBuilder( R.string.phone_state_rationale )
+                            .setAction( Action.RETRY_PHONE_STATE_ACTION )
+                            .setParams( action, info )
+                            .show();
+                    }
+                } );
+        }
+
+        builder.asyncQuery( m_activity, new Perms23.PermCbck() {
+                    @Override
+                    public void onPermissionResult( Map<Perms23.Perm,
+                                                    Boolean> perms )
+                    {
+                        // Do the work regardless of result; just won't have
+                        // SMS option
+                        showInviteChoicesThen( action, info );
+                    }
+                });
+    }
+
     @Override
     public void orientationChanged()
     {
-        DbgUtils.logd( getClass(), "BoardDelegate.orientationChanged()" );
+        DbgUtils.logd( TAG, "BoardDelegate.orientationChanged()" );
         initToolbar();
         m_view.orientationChanged();
     }
@@ -957,7 +1009,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            DbgUtils.logw( getClass(), "menuitem %d not handled", id );
+            DbgUtils.logw( TAG, "menuitem %d not handled", id );
             handled = false;
         }
 
@@ -976,7 +1028,7 @@ public class BoardDelegate extends DelegateBase
     {
         boolean handled = false;
         boolean positive = AlertDialog.BUTTON_POSITIVE == which;
-        DbgUtils.logd( getClass(), "BoardDelegate.dlgButtonClicked(%s, %b)",
+        DbgUtils.logd( TAG, "BoardDelegate.dlgButtonClicked(%s, %b)",
                        action.toString(), positive );
 
         if ( Action.ENABLE_RELAY_DO_OR == action ) {
@@ -992,6 +1044,10 @@ public class BoardDelegate extends DelegateBase
                         }
                     }, 10 );
             }
+        } else if ( Action.RETRY_PHONE_STATE_ACTION == action ) {
+            Action stateAction = (Action)params[0];
+            DBUtils.SentInvitesInfo info = (DBUtils.SentInvitesInfo)params[1];
+            callInviteChoices( stateAction, info, false );
         } else if ( positive ) {
             handled = true;
             JNICmd cmd = JNICmd.CMD_NONE;
@@ -1055,8 +1111,12 @@ public class BoardDelegate extends DelegateBase
                 GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
                 break;
             case DROP_RELAY_ACTION:
-                dropRelayAndRestart();
+                dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
                 break;
+            case DROP_SMS_ACTION:
+                dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
+                break;
+
             case DELETE_AND_EXIT:
                 deleteAndClose();
                 break;
@@ -1113,6 +1173,11 @@ public class BoardDelegate extends DelegateBase
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_nMissing,
                                                      RequestCode.RELAY_INVITE_RESULT );
+                break;
+            case WIFIDIRECT:
+                WiDirInviteDelegate.launchForResult( m_activity,
+                                                     m_nMissing,
+                                                     RequestCode.P2P_INVITE_RESULT );
                 break;
             case EMAIL:
             case CLIPBOARD:
@@ -1180,7 +1245,7 @@ public class BoardDelegate extends DelegateBase
             // This can be BT or SMS.  In BT case there's a progress
             // thing going.  Not in SMS case.
         case NEWGAME_FAILURE:
-            DbgUtils.logw( getClass(), "failed to create game" );
+            DbgUtils.logw( TAG, "failed to create game" );
             break;
         case NEWGAME_DUP_REJECTED:
             if ( m_progressShown ) {
@@ -1334,8 +1399,11 @@ public class BoardDelegate extends DelegateBase
                 case COMMS_CONN_SMS:
                     nli.addSMSInfo( m_activity );
                     break;
+                case COMMS_CONN_P2P:
+                    nli.addP2PInfo( m_activity );
+                    break;
                 default:
-                    DbgUtils.logw( getClass(), "Not doing NFC join for conn type %s",
+                    DbgUtils.logw( TAG, "Not doing NFC join for conn type %s",
                                    typ.toString() );
                 }
             }
@@ -1415,10 +1483,11 @@ public class BoardDelegate extends DelegateBase
         makeConfirmThenBuilder( msg, Action.DROP_RELAY_ACTION ).show();
     }
 
-    private void dropRelayAndRestart() {
+    private void dropConViaAndRestart( CommsConnType typ )
+    {
         CommsAddrRec addr = new CommsAddrRec();
         XwJNI.comms_getAddr( m_jniGamePtr, addr );
-        addr.remove( CommsConnType.COMMS_CONN_RELAY );
+        addr.remove( typ );
         XwJNI.comms_setAddr( m_jniGamePtr, addr );
 
         finish();
@@ -1557,7 +1626,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( null != toastStr ) {
-            DbgUtils.logi( getClass(), "handleConndMessage(): toastStr: %s", toastStr );
+            DbgUtils.logi( TAG, "handleConndMessage(): toastStr: %s", toastStr );
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
                 dlgButtonClicked( Action.SHOW_EXPL_ACTION,
@@ -2028,7 +2097,7 @@ public class BoardDelegate extends DelegateBase
             m_handler = new Handler();
             m_blockingDlgID = DlgID.NONE;
 
-            m_jniThreadRef.configure( m_activity, m_view, m_utils, this, 
+            m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
                                       makeJNIHandler() );
             m_jniGamePtr = m_jniThreadRef.getGamePtr();
             Assert.assertNotNull( m_jniGamePtr );
@@ -2140,6 +2209,8 @@ public class BoardDelegate extends DelegateBase
 
             Utils.cancelNotification( m_activity, (int)m_rowid );
 
+            askPermissions();
+
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 warnIfNoTransport();
                 trySendChats();
@@ -2148,6 +2219,31 @@ public class BoardDelegate extends DelegateBase
             }
         }
     } // resumeGame
+
+    private void askPermissions()
+    {
+        if ( m_summary.conTypes.contains( CommsConnType.COMMS_CONN_SMS )
+             && null == m_permCbck ) { // already asked?
+            m_permCbck = new Perms23.PermCbck() {
+                    @Override
+                    public void onPermissionResult( Map<Perms23.Perm,
+                                                    Boolean> perms )
+                    {
+                        ActionPair pair = new ActionPair( Action.DROP_SMS_ACTION,
+                                                          R.string.remove_sms );
+
+                        if ( ! perms.get(Perms23.Perm.SEND_SMS) ) {
+                            makeNotAgainBuilder( R.string.not_again_missing_perms,
+                                                 R.string.key_notagain_missing_perms )
+                                .setActionPair( pair )
+                                .show();
+                        }
+                    }
+                };
+            new Perms23.Builder(Perms23.Perm.SEND_SMS)
+                .asyncQuery( m_activity, m_permCbck );
+        }
+    }
 
     private void tickle( boolean force )
     {
@@ -2160,9 +2256,10 @@ public class BoardDelegate extends DelegateBase
                 break;
             case COMMS_CONN_RELAY:
             case COMMS_CONN_SMS:
+            case COMMS_CONN_P2P:
                 break;
             default:
-                DbgUtils.logw( getClass(), "tickle: unexpected type %s",
+                DbgUtils.logw( TAG, "tickle: unexpected type %s",
                                typ.toString() );
                 Assert.fail();
             }
@@ -2258,7 +2355,7 @@ public class BoardDelegate extends DelegateBase
         int result = cancelResult;
         // this has been true; dunno why
         if ( DlgID.NONE != m_blockingDlgID ) {
-            DbgUtils.logw( getClass(), "waitBlockingDialog: dropping dlgID %d b/c %d set",
+            DbgUtils.logw( TAG, "waitBlockingDialog: dropping dlgID %d b/c %d set",
                            dlgID, m_blockingDlgID );
         } else {
             setBlockingThread();
@@ -2274,12 +2371,12 @@ public class BoardDelegate extends DelegateBase
                 try {
                     m_forResultWait.acquire();
                 } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.logex( ie );
+                    DbgUtils.logex( TAG, ie );
                     if ( DlgID.NONE != m_blockingDlgID ) {
                         try {
                             dismissDialog( m_blockingDlgID );
                         } catch ( java.lang.IllegalArgumentException iae ) {
-                            DbgUtils.logex( iae );
+                            DbgUtils.logex( TAG, iae );
                         }
                     }
                 }
@@ -2378,7 +2475,7 @@ public class BoardDelegate extends DelegateBase
     private void warnIfNoTransport()
     {
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-            if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
+            if ( !XWPrefs.getSMSEnabled( m_activity ) ) {
                 makeConfirmThenBuilder( R.string.warn_sms_disabled,
                                         Action.ENABLE_SMS_ASK )
                     .setPosButton( R.string.button_enable_sms )
@@ -2415,7 +2512,6 @@ public class BoardDelegate extends DelegateBase
         } else if ( null != m_missingDevs ) {
             Assert.assertNotNull( m_missingMeans );
             String gameName = GameUtils.getName( m_activity, m_rowid );
-            m_invitesPending = m_missingDevs.length;
             for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
                 String dev = m_missingDevs[ii];
                 int nPlayers = m_missingCounts[ii];
@@ -2453,8 +2549,11 @@ public class BoardDelegate extends DelegateBase
                         RelayService.inviteRemote( m_activity, destDevID,
                                                    null, nli );
                     } catch (NumberFormatException nfi) {
-                        DbgUtils.logex( nfi );
+                        DbgUtils.logex( TAG, nfi );
                     }
+                    break;
+                case WIFIDIRECT:
+                    WiDirService.inviteRemote( m_activity, dev, nli );
                     break;
                 }
 
@@ -2534,8 +2633,8 @@ public class BoardDelegate extends DelegateBase
         if ( canPost ) {
             m_handler.post( runnable );
         } else {
-            DbgUtils.logw( getClass(), "post(): dropping b/c handler null" );
-            DbgUtils.printStack();
+            DbgUtils.logw( TAG, "post(): dropping b/c handler null" );
+            DbgUtils.printStack( TAG );
         }
         return canPost;
     }
@@ -2545,7 +2644,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_handler ) {
             m_handler.postDelayed( runnable, when );
         } else {
-            DbgUtils.logw( getClass(), "postDelayed: dropping %d because handler null", when );
+            DbgUtils.logw( TAG, "postDelayed: dropping %d because handler null", when );
         }
     }
 
@@ -2554,7 +2653,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_handler ) {
             m_handler.removeCallbacks( which );
         } else {
-            DbgUtils.logw( getClass(), "removeCallbacks: dropping %h because handler null",
+            DbgUtils.logw( TAG, "removeCallbacks: dropping %h because handler null",
                            which );
         }
     }
@@ -2595,7 +2694,8 @@ public class BoardDelegate extends DelegateBase
                     CommsConnTypeSet connTypes = summary.conTypes;
                     supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                        || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+                        || connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_P2P );
                 }
             } else if ( null != context ) {
                 // show the button if people haven't dismissed the hint yet
@@ -2621,6 +2721,7 @@ public class BoardDelegate extends DelegateBase
         String phone = null;
         String btAddr = null;
         String relayID = null;
+        String p2pMacAddress = null;
         if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
             // nothing to do??
         } else if ( 2 != gi.nPlayers ) {
@@ -2647,6 +2748,10 @@ public class BoardDelegate extends DelegateBase
                     Assert.assertNull( relayID );
                     relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                 }
+                if ( addr.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                    Assert.assertNull( p2pMacAddress );
+                    p2pMacAddress = addr.p2p_addr;
+                }
             }
         }
 
@@ -2655,7 +2760,7 @@ public class BoardDelegate extends DelegateBase
             String newName = summary.getRematchName();
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
-                                    phone, relayID, newName );
+                                    phone, relayID, p2pMacAddress, newName );
             if ( null != intent ) {
                 activity.startActivity( intent );
             }
@@ -2686,7 +2791,7 @@ public class BoardDelegate extends DelegateBase
             doRematchIf( activity, null, rowID, summary, gi, gamePtr );
             gamePtr.release();
         } else {
-            DbgUtils.logw( BoardDelegate.class, "setupRematchFor(): unable to lock game" );
+            DbgUtils.logw( TAG, "setupRematchFor(): unable to lock game" );
         }
 
         if ( null != thread ) {
@@ -2726,6 +2831,11 @@ public class BoardDelegate extends DelegateBase
                 RelayService.inviteRemote( m_activity, 0, value, nli );
                 recordInviteSent( InviteMeans.RELAY, value );
             }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_P2P );
+            if ( null != value ) {
+                WiDirService.inviteRemote( m_activity, value, nli );
+                recordInviteSent( InviteMeans.WIFIDIRECT, value );
+            }
 
             showToast( R.string.rematch_sent_toast );
         }
@@ -2756,7 +2866,7 @@ public class BoardDelegate extends DelegateBase
             sendSMSInviteIf( (String)params[1], (NetLaunchInfo)params[0],
                              false );
         } else {
-            DbgUtils.logw( getClass(), "retrySMSInvites: tests failed" );
+            DbgUtils.logw( TAG, "retrySMSInvites: tests failed" );
         }
     }
 
@@ -2768,8 +2878,8 @@ public class BoardDelegate extends DelegateBase
     private void handleViaThread( JNICmd cmd, Object... args )
     {
         if ( null == m_jniThread ) {
-            DbgUtils.logw( getClass(), "not calling handle(%s)", cmd.toString() );
-            DbgUtils.printStack();
+            DbgUtils.logw( TAG, "not calling handle(%s)", cmd.toString() );
+            DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );
         }

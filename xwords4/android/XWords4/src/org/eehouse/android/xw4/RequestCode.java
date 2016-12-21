@@ -28,6 +28,7 @@ public enum RequestCode {
     BT_INVITE_RESULT,
     SMS_INVITE_RESULT,
     RELAY_INVITE_RESULT,
+    P2P_INVITE_RESULT,
 
     // PermUtils
     PERM_REQUEST,
@@ -43,4 +44,3 @@ public enum RequestCode {
     // SMSInviteDelegate
     GET_CONTACT,
 }
-

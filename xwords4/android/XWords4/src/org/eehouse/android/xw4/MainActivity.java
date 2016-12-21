@@ -43,6 +43,7 @@ import java.util.Map;
 
 public class MainActivity extends XWActivity
     implements FragmentManager.OnBackStackChangedListener {
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int MAX_PANES_LANDSCAPE = 2;
     private static final boolean LOG_IDS = true;
 
@@ -122,11 +123,11 @@ public class MainActivity extends XWActivity
 
             boolean isPortrait
                 = Configuration.ORIENTATION_PORTRAIT == newConfig.orientation;
-            DbgUtils.logi( getClass(), "onConfigurationChanged(isPortrait=%b)",
+            DbgUtils.logi( TAG, "onConfigurationChanged(isPortrait=%b)",
                            isPortrait );
             m_isPortrait = isPortrait;
             if ( isPortrait != (rect.width() <= rect.height()) ) {
-                DbgUtils.logd( getClass(), "onConfigurationChanged(): isPortrait:"
+                DbgUtils.logd( TAG, "onConfigurationChanged(): isPortrait:"
                                + " %b; width: %d; height: %d",
                                isPortrait, rect.width(), rect.height() );
             }
@@ -184,9 +185,9 @@ public class MainActivity extends XWActivity
                 break;
             }
             String name = frag.getClass().getSimpleName();
-            DbgUtils.logd( getClass(), "popIntoView(): popping %d: %s", top, name );
+            DbgUtils.logd( TAG, "popIntoView(): popping %d: %s", top, name );
             fm.popBackStackImmediate();
-            DbgUtils.logd( getClass(), "popIntoView(): DONE popping %s",
+            DbgUtils.logd( TAG, "popIntoView(): DONE popping %s",
                            name );
         }
     }
@@ -211,14 +212,14 @@ public class MainActivity extends XWActivity
                     frag.getDelegate().handleNewIntent( intent );
                 }
             } else {
-                DbgUtils.logd( getClass(), "no fragment for child %s indx %d",
+                DbgUtils.logd( TAG, "no fragment for child %s indx %d",
                                 child.getClass().getSimpleName(), ii );
             }
         }
 
         if ( BuildConfig.DEBUG && !handled ) {
             // DbgUtils.showf( this, "dropping intent %s", intent.toString() );
-            DbgUtils.logd( getClass(), "dropping intent %s", intent.toString() );
+            DbgUtils.logd( TAG, "dropping intent %s", intent.toString() );
             // DbgUtils.printStack();
             // setIntent( intent ); -- look at handling this in onPostResume()?
             m_newIntent = intent;
@@ -237,7 +238,7 @@ public class MainActivity extends XWActivity
         return handled;
     }
 
-    protected void dispatchOnActivityResult( RequestCode requestCode, 
+    protected void dispatchOnActivityResult( RequestCode requestCode,
                                              int resultCode, Intent data )
     {
         XWFragment frag = getTopFragment();
@@ -245,7 +246,7 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.onActivityResult( requestCode.ordinal(), resultCode, data );
         } else {
-            DbgUtils.logd( getClass(), "dispatchOnActivityResult(): can't dispatch %s",
+            DbgUtils.logd( TAG, "dispatchOnActivityResult(): can't dispatch %s",
                            requestCode.toString() );
         }
     }
@@ -337,14 +338,14 @@ public class MainActivity extends XWActivity
     {
         // make sure the right-most are visible
         int fragCount = getSupportFragmentManager().getBackStackEntryCount();
-        DbgUtils.logi( getClass(), "onBackStackChanged(); count now %d", fragCount );
+        DbgUtils.logi( TAG, "onBackStackChanged(); count now %d", fragCount );
         if ( 0 == fragCount ) {
             finish();
         } else {
             if ( fragCount == m_root.getChildCount() - 1 ) {
                 View child = m_root.getChildAt( fragCount );
                 if ( LOG_IDS ) {
-                    DbgUtils.logi( getClass(), "onBackStackChanged(): removing view with id %x",
+                    DbgUtils.logi( TAG, "onBackStackChanged(): removing view with id %x",
                                    child.getId() );
                 }
                 m_root.removeView( child );
@@ -355,7 +356,7 @@ public class MainActivity extends XWActivity
             if ( null != m_pendingResult ) {
                 Fragment target = m_pendingResult.getTarget();
                 if ( null != target ) {
-                    DbgUtils.logi( getClass(),"onBackStackChanged(): calling onActivityResult()" );
+                    DbgUtils.logi( TAG,"onBackStackChanged(): calling onActivityResult()" );
                     target.onActivityResult( m_pendingResult.m_request,
                                              m_pendingResult.m_result,
                                              m_pendingResult.m_data );
@@ -404,7 +405,7 @@ public class MainActivity extends XWActivity
             int id = frame.getId();
             Fragment frag = fm.findFragmentById( id );
             if ( null == frag ) {
-                DbgUtils.logw( getClass(),"tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
+                DbgUtils.logw( TAG,"tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
             } else if ( frag instanceof XWFragment ) {
                 ((XWFragment)frag).getDelegate().orientationChanged();
             }
@@ -432,7 +433,7 @@ public class MainActivity extends XWActivity
         for ( int ii = 0; ii < nPanes; ++ii ) {
             View child = m_root.getChildAt( ii );
             boolean visible = ii >= nPanes - m_maxPanes;
-            DbgUtils.logi( getClass(), "pane %d: visible=%b", ii, visible );
+            DbgUtils.logi( TAG, "pane %d: visible=%b", ii, visible );
             child.setVisibility( visible ? View.VISIBLE : View.GONE );
             setMenuVisibility( child, visible );
             if ( visible ) {
@@ -448,7 +449,7 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.setTitle();
         } else {
-            DbgUtils.logd( getClass(), "trySetTitle(): no fragment for id %x",
+            DbgUtils.logd( TAG, "trySetTitle(): no fragment for id %x",
                             view.getId() );
         }
     }
@@ -498,7 +499,7 @@ public class MainActivity extends XWActivity
         FragmentManager fm = getSupportFragmentManager();
         int fragCount = fm.getBackStackEntryCount();
         int containerCount = m_root.getChildCount();
-        DbgUtils.logi( getClass(), "fragCount: %d; containerCount: %d", fragCount, containerCount );
+        DbgUtils.logi( TAG, "fragCount: %d; containerCount: %d", fragCount, containerCount );
         // Assert.assertTrue( fragCount == containerCount );
 
         // Replace IF we're adding something of the same class at right OR if
@@ -528,7 +529,7 @@ public class MainActivity extends XWActivity
         int id = --m_nextID;
         cont.setId( id );
         if ( LOG_IDS ) {
-            DbgUtils.logi( getClass(), "assigning id %x to view with name %s", id, newName );
+            DbgUtils.logi( TAG, "assigning id %x to view with name %s", id, newName );
         }
         m_root.addView( cont, replace ? containerCount - 1 : containerCount );
 
@@ -539,7 +540,7 @@ public class MainActivity extends XWActivity
 
             setMenuVisibility( child, false );
 
-            DbgUtils.logi( getClass(), "hiding %dth container", indx );
+            DbgUtils.logi( TAG, "hiding %dth container", indx );
         }
 
         fm.beginTransaction()

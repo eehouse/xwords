@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class GameUtils {
+    private static final String TAG = GameUtils.class.getSimpleName();
 
     public static final String INVITED = "invited";
     public static final String INTENT_KEY_ROWID = "rowid";
@@ -72,7 +73,7 @@ public class GameUtils {
 
     public static class NoSuchGameException extends RuntimeException {
         public NoSuchGameException() {
-            DbgUtils.logi( getClass(), "NoSuchGameException()");
+            DbgUtils.logi( TAG, "NoSuchGameException()");
         }
     }
 
@@ -167,7 +168,7 @@ public class GameUtils {
             Utils.cancelNotification( context, (int)rowidIn );
             success = true;
         } else {
-            DbgUtils.logw( GameUtils.class, "resetGame: unable to open rowid %d", rowidIn );
+            DbgUtils.logw( TAG, "resetGame: unable to open rowid %d", rowidIn );
         }
         return success;
     }
@@ -224,7 +225,7 @@ public class GameUtils {
             try {
                 lock = new GameLock( rowid, false ).lock( maxMillis );
             } catch ( GameLock.GameLockedException gle ) {
-                DbgUtils.logex( gle );
+                DbgUtils.logex( TAG, gle );
             }
         }
 
@@ -268,7 +269,7 @@ public class GameUtils {
                 lockSrc.unlock();
             }
         } else {
-            DbgUtils.logd( GameUtils.class, "dupeGame: unable to open rowid %d",
+            DbgUtils.logd( TAG, "dupeGame: unable to open rowid %d",
                            rowidIn );
         }
         return rowid;
@@ -292,7 +293,7 @@ public class GameUtils {
             lock.unlock();
             success = true;
         } else {
-            DbgUtils.logw( GameUtils.class, "deleteGame: unable to delete rowid %d", rowid );
+            DbgUtils.logw( TAG, "deleteGame: unable to delete rowid %d", rowid );
             success = false;
         }
         return success;
@@ -328,6 +329,11 @@ public class GameUtils {
         return LocUtils.getString( context, R.string.game_fmt, count );
     }
 
+    public static GamePtr loadMakeGame( Context context, GameLock lock )
+    {
+        return loadMakeGame( context, new CurGameInfo( context ), lock );
+    }
+    
     public static GamePtr loadMakeGame( Context context, CurGameInfo gi,
                                         TransportProcs tp, GameLock lock )
     {
@@ -335,7 +341,7 @@ public class GameUtils {
     }
 
     public static GamePtr loadMakeGame( Context context, CurGameInfo gi,
-                                    GameLock lock )
+                                        GameLock lock )
     {
         return loadMakeGame( context, gi, null, null, lock );
     }
@@ -355,13 +361,13 @@ public class GameUtils {
         GamePtr gamePtr = null;
 
         if ( null == stream ) {
-            DbgUtils.logw( GameUtils.class, "loadMakeGame: no saved game!");
+            DbgUtils.logw( TAG, "loadMakeGame: no saved game!");
         } else {
             XwJNI.gi_from_stream( gi, stream );
             String[] dictNames = gi.dictNames();
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
             if ( pairs.anyMissing( dictNames ) ) {
-                DbgUtils.logw( GameUtils.class, "loadMakeGame() failing: dicts %s unavailable",
+                DbgUtils.logw( TAG, "loadMakeGame() failing: dicts %s unavailable",
                                TextUtils.join( ",", dictNames ) );
             } else {
                 String langName = gi.langName();
@@ -443,7 +449,7 @@ public class GameUtils {
             long oldest = s_sendTimes[s_sendTimes.length - 1];
             long age = now - oldest;
             force = RESEND_INTERVAL_SECS < age;
-            DbgUtils.logd( GameUtils.class, "resendAllIf(): based on last send age of %d sec, doit = %b",
+            DbgUtils.logd( TAG, "resendAllIf(): based on last send age of %d sec, doit = %b",
                            age, force );
         }
 
@@ -523,7 +529,7 @@ public class GameUtils {
     public static long makeNewMultiGame( Context context, NetLaunchInfo nli,
                                          MultiMsgSink sink, UtilCtxt util )
     {
-        DbgUtils.logd( GameUtils.class, "makeNewMultiGame(nli=%s)", nli.toString() );
+        DbgUtils.logd( TAG, "makeNewMultiGame(nli=%s)", nli.toString() );
         CommsAddrRec addr = nli.makeAddrRec( context );
 
         return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC,
@@ -853,7 +859,7 @@ public class GameUtils {
             }
             allHere = 0 == missingSet.size();
         } else {
-            DbgUtils.logw( GameUtils.class, "gameDictsHere: game has no dicts!" );
+            DbgUtils.logw( TAG, "gameDictsHere: game has no dicts!" );
         }
         if ( null != missingNames ) {
             missingNames[0] =
@@ -1054,7 +1060,7 @@ public class GameUtils {
 
             lock.unlock();
         } else {
-            DbgUtils.logw( GameUtils.class, "replaceDicts: unable to open rowid %d", rowid );
+            DbgUtils.logw( TAG, "replaceDicts: unable to open rowid %d", rowid );
         }
         return success;
     } // replaceDicts
@@ -1140,7 +1146,7 @@ public class GameUtils {
         do {
             rint = Utils.nextRandomInt();
         } while ( 0 == rint );
-        DbgUtils.logi( GameUtils.class, "newGameID()=>%X (%d)", rint, rint );
+        DbgUtils.logi( TAG, "newGameID()=>%X (%d)", rint, rint );
         return rint;
     }
 
@@ -1176,7 +1182,7 @@ public class GameUtils {
                 Utils.postNotification( context, intent, title, msg, (int)rowid );
             }
         } else {
-            DbgUtils.logd( GameUtils.class, "postMoveNotification(): posting nothing for lack"
+            DbgUtils.logd( TAG, "postMoveNotification(): posting nothing for lack"
                            + " of brm" );
         }
     }
@@ -1193,22 +1199,33 @@ public class GameUtils {
                                   boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
-        for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
-              iter.hasNext(); ) {
-            switch( iter.next() ) {
-            case COMMS_CONN_RELAY:
-                tellRelayDied( context, summary, informNow );
-                break;
-            case COMMS_CONN_BT:
-                BTService.gameDied( context, summary.gameID );
-                break;
-            case COMMS_CONN_SMS:
-                if ( null != summary.remoteDevs ) {
-                    for ( String dev : summary.remoteDevs ) {
-                        SMSService.gameDied( context, summary.gameID, dev );
+        if ( DeviceRole.SERVER_STANDALONE != summary.serverRole ) {
+            int gameID = summary.gameID;
+
+            GamePtr gamePtr = loadMakeGame( context, lock );
+            if ( null != gamePtr ) {
+                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
+                for ( CommsAddrRec addr : addrs ) {
+                    CommsConnTypeSet conTypes = addr.conTypes;
+                    for ( CommsConnType typ : conTypes ) {
+                        switch ( typ ) {
+                        case COMMS_CONN_RELAY:
+                            tellRelayDied( context, summary, informNow );
+                            break;
+                        case COMMS_CONN_BT:
+                            BTService.gameDied( context, addr.bt_btAddr, gameID );
+                            break;
+                        case COMMS_CONN_SMS:
+                            SMSService.gameDied( context, gameID, addr.sms_phone );
+                            break;
+                        case COMMS_CONN_P2P:
+                            WiDirService.gameDied( addr.p2p_addr, gameID );
+                            break;
+                        }
                     }
                 }
-                break;
+            
+                gamePtr.release();
             }
         }
     }
@@ -1237,7 +1254,7 @@ public class GameUtils {
                 fos.close();
                 result = file;
             } catch ( Exception ex ) {
-                DbgUtils.logex( ex );
+                DbgUtils.logex( TAG, ex );
             }
         }
         return result;
@@ -1283,17 +1300,24 @@ public class GameUtils {
                         int nSent = XwJNI.comms_resendAll( gamePtr, true,
                                                            m_filter, false );
                         gamePtr.release();
-                        DbgUtils.logd( getClass(), "ResendTask.doInBackground(): sent %d "
+                        DbgUtils.logd( TAG, "ResendTask.doInBackground(): sent %d "
                                        + "messages for rowid %d", nSent, rowid );
                     } else {
-                        DbgUtils.logd( getClass(), "ResendTask.doInBackground(): loadMakeGame()"
+                        DbgUtils.logd( TAG, "ResendTask.doInBackground(): loadMakeGame()"
                                        + " failed for rowid %d", rowid );
                     }
                     lock.unlock();
                 } else {
-                    DbgUtils.logw( ResendTask.class,
-                                   "ResendTask.doInBackground: unable to unlock %d",
-                                   rowid );
+                    JNIThread jniThread = JNIThread.getRetained( rowid, false );
+                    if ( null != jniThread ) {
+                        jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false,
+                                          false, false );
+                        jniThread.release();
+                    } else {
+                        DbgUtils.logw( TAG,
+                                       "ResendTask.doInBackground: unable to unlock %d",
+                                       rowid );
+                    }
                 }
             }
             return null;

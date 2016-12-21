@@ -33,12 +33,16 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+
 import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
+import android.support.v4.app.NotificationCompat;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,18 +51,23 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-import java.io.File;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-
 public class Utils {
+    private static final String TAG = Utils.class.getSimpleName();
     public static final int TURN_COLOR = 0x7F00FF00;
 
     private static final String DB_PATH = "XW_GAMES";
@@ -68,7 +77,7 @@ public class Utils {
 
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_firstVersion = null;
-    private static Boolean s_deviceSupportSMS = null;
+    // private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
     private static HashMap<String,String> s_phonesHash =
@@ -103,8 +112,13 @@ public class Utils {
 
     public static boolean isGSMPhone( Context context )
     {
-        SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
-        return info.isPhone && info.isGSM;
+        boolean result = false;
+        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
+            SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
+            result = info.isPhone && info.isGSM;
+        }
+        DbgUtils.logd( TAG, "isGSMPhone() => %b", result );
+        return result;
     }
 
     // Does the device have ability to send SMS -- e.g. is it a phone and not
@@ -114,18 +128,19 @@ public class Utils {
     // that's not allowed except on GSM phones.)
     public static boolean deviceSupportsSMS( Context context )
     {
-        if ( null == s_deviceSupportSMS ) {
+        boolean result = false;
+        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
             TelephonyManager tm = (TelephonyManager)
                 context.getSystemService( Context.TELEPHONY_SERVICE );
-            boolean doesSMS = null != tm;
-            s_deviceSupportSMS = new Boolean( doesSMS );
+            result = null != tm;
         }
-        return s_deviceSupportSMS;
+        DbgUtils.logd( TAG, "deviceSupportsSMS() => %b", result );
+        return result;
     }
 
     public static void smsSupportChanged()
     {
-        s_deviceSupportSMS = null; // force to check again
+        // s_deviceSupportSMS = null; // force to check again
     }
 
     public static void notImpl( Context context )
@@ -140,7 +155,7 @@ public class Utils {
         try {
             Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
         } catch ( java.lang.RuntimeException re ) {
-            DbgUtils.logex( re );
+            DbgUtils.logex( TAG, re );
         }
     }
 
@@ -213,19 +228,24 @@ public class Utils {
             : PendingIntent.getActivity( context, Utils.nextRandomInt(), intent,
                                          PendingIntent.FLAG_ONE_SHOT );
 
-        Notification notification =
-            new Notification( R.drawable.icon48x48, title,
-                              System.currentTimeMillis() );
-
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        int defaults = Notification.FLAG_AUTO_CANCEL;
         if ( CommonPrefs.getSoundNotify( context ) ) {
-            notification.defaults |= Notification.DEFAULT_SOUND;
+            defaults |= Notification.DEFAULT_SOUND;
         }
         if ( CommonPrefs.getVibrateNotify( context ) ) {
-            notification.defaults |= Notification.DEFAULT_VIBRATE;
+            defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        notification.setLatestEventInfo( context, title, body, pi );
+        Notification notification = new NotificationCompat.Builder( context )
+            .setContentIntent( pi )
+            .setSmallIcon( R.drawable.notify )
+            //.setTicker(body)
+            //.setWhen(time)
+            .setAutoCancel( true )
+            .setDefaults( defaults )
+            .setContentTitle( title )
+            .setContentText( body )
+            .build();
 
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
@@ -259,16 +279,15 @@ public class Utils {
         // I'm assuming that since context is passed this needn't
         // worry about synchronization -- will always be called from
         // UI thread.
-        String name;
+        String name = null;
         synchronized ( s_phonesHash ) {
             if ( s_phonesHash.containsKey( phone ) ) {
                 name = s_phonesHash.get( phone );
-            } else {
+            } else if ( Perms23.havePermission( Perms23.Perm.READ_CONTACTS ) ) {
                 try {
-                    name = null;
-                    ContentResolver contentResolver = context.getContentResolver();
-                    Cursor cursor =
-                        contentResolver
+                    ContentResolver contentResolver = context
+                        .getContentResolver();
+                    Cursor cursor = contentResolver
                         .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI,
                                                       Uri.encode( phone )),
                                 new String[] { PhoneLookup.DISPLAY_NAME },
@@ -280,7 +299,19 @@ public class Utils {
                     cursor.close();
                     s_phonesHash.put( phone, name );
                 } catch ( Exception ex ) {
-                    name = "not found";
+                    // could just be lack of permsisions
+                    name = null;
+                }
+            } else {
+                JSONObject phones = XWPrefs.getSMSPhones( context );
+                for ( Iterator<String> iter = phones.keys(); iter.hasNext(); ) {
+                    String key = iter.next();
+                    DbgUtils.logd( TAG, "comparing %s, %s", key, phone );
+                    if ( PhoneNumberUtils.compare( key, phone ) ) {
+                        name = phones.optString( key, phone );
+                        s_phonesHash.put( phone, name );
+                        break;
+                    }
                 }
             }
         }
@@ -431,7 +462,7 @@ public class Utils {
                     .versionCode;
                 s_appVersion = new Integer( version );
             } catch ( Exception e ) {
-                DbgUtils.logex( e );
+                DbgUtils.logex( TAG, e );
             }
         }
         return null == s_appVersion? 0 : s_appVersion;

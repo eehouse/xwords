@@ -61,7 +61,6 @@ RelayReceiver.java
 RelayService.java
 SMSCheckBoxPreference.java
 SMSInviteActivity.java
-SMSListItem.java
 SMSReceiver.java
 SMSService.java
 SelectableItem.java
@@ -140,3 +139,10 @@ MainActivity.java
 DictsFrag.java
 DualpaneDelegate.java
 BoardContainer.java
+BiDiSockWrap.java
+WiDirService.java
+WiDirInviteActivity.java
+WiDirInviteDelegate.java
+XWPacket.java
+TwoStrsItem.java
+Perms23.java

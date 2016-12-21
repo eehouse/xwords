@@ -34,6 +34,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 
 public class JNIUtilsImpl implements JNIUtils {
+    private static final String TAG = JNIUtilsImpl.class.getSimpleName();
 
     private static final char SYNONYM_DELIM = ' ';
 
@@ -70,7 +71,7 @@ public class JNIUtilsImpl implements JNIUtils {
         try {
             isr = new InputStreamReader( bais, isUTF8? "UTF8" : "ISO8859_1" );
         } catch( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logi( getClass(), "splitFaces: %s", uee.toString() );
+            DbgUtils.logi( TAG, "splitFaces: %s", uee.toString() );
             isr = new InputStreamReader( bais );
         }
 
@@ -84,7 +85,7 @@ public class JNIUtilsImpl implements JNIUtils {
             try {
                 chr = isr.read();
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logw( getClass(), ioe.toString() );
+                DbgUtils.logw( TAG, ioe.toString() );
             }
             if ( -1 == chr ) {
                 addFace( faces, face );
@@ -147,7 +148,7 @@ public class JNIUtilsImpl implements JNIUtils {
             }
             digest = md.digest();
         } catch ( java.security.NoSuchAlgorithmException nsae ) {
-            DbgUtils.logex( nsae );
+            DbgUtils.logex( TAG, nsae );
         }
         return Utils.digestToString( digest );
     }

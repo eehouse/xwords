@@ -490,6 +490,9 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
             setString( env, jaddr, "bt_hostName", addr->u.bt.hostName );
             setString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars );
             break;
+        case COMMS_CONN_P2P:
+            setString( env, jaddr, "p2p_addr", addr->u.p2p.mac_addr );
+            break;
         default:
             XP_ASSERT(0);
         }
@@ -576,6 +579,10 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
                        VSIZE(addr->u.bt.hostName) );
             getString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars,
                        VSIZE(addr->u.bt.btAddr.chars) );
+            break;
+        case COMMS_CONN_P2P:
+            getString( env, jaddr, "p2p_addr", addr->u.p2p.mac_addr,
+                       VSIZE(addr->u.p2p.mac_addr) );
             break;
         default:
             XP_ASSERT(0);

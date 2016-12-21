@@ -25,6 +25,7 @@ import android.preference.EditTextPreference;
 import android.util.AttributeSet;
 
 public class XWDevIDPreference extends EditTextPreference {
+    private static final String TAG = XWDevIDPreference.class.getSimpleName();
     private Context m_context;
 
     public XWDevIDPreference( Context context, AttributeSet attrs )

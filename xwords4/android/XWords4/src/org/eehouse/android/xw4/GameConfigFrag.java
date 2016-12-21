@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class GameConfigFrag extends XWFragment {
+    private static final String TAG = GameConfigFrag.class.getSimpleName();
 
     public GameConfigFrag() {}
 

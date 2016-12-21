@@ -35,7 +35,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import java.util.Formatter;
 
 public class DbgUtils {
-    private static final String TAG = BuildConstants.DBG_TAG;
+    private static final String TAG = DbgUtils.class.getSimpleName();
     private static boolean s_doLog = BuildConfig.DEBUG;
 
     private enum LogType { ERROR, WARN, DEBUG, INFO };
@@ -54,42 +54,59 @@ public class DbgUtils {
         logEnable( on );
     }
 
-    private static void callLog( LogType lt, Class claz, String fmt, Object... args )
+    private static void callLog( LogType lt, String tag, String fmt,
+                                 Object... args )
     {
         if ( s_doLog ) {
-            String tag = claz.getSimpleName();
             String msg = new Formatter().format( fmt, args ).toString();
             switch( lt ) {
             case DEBUG:
                 Log.d( tag, msg );
                 break;
+            case WARN:
+                Log.w( tag, msg );
+                break;
+            case INFO:
+                Log.i( tag, msg );
+                break;
+            case ERROR:
+                Log.e( tag, msg );
+                break;
+            default:
+                Assert.fail();
+                break;
             }
         }
     }
 
-    public static void logd( Class claz, String fmt, Object... args )
-    {
-        callLog( LogType.DEBUG, claz, fmt, args );
+    public static void logd( String tag, String fmt, Object... args ) {
+        callLog( LogType.DEBUG, tag, fmt, args );
     }
 
-    public static void loge( Class claz, String fmt, Object... args )
+    public static void loge( String tag, String fmt, Object... args )
     {
-        callLog( LogType.ERROR, claz, fmt, args );
+        callLog( LogType.ERROR, tag, fmt, args );
     }
 
-    public static void logi( Class claz, String fmt, Object... args )
+    public static void logi( String tag, String fmt, Object... args )
     {
-        logi( claz, true, fmt, args );
+        logi( tag, true, fmt, args );
     }
 
-    public static void logi( Class claz, boolean persist, String fmt, Object... args )
+    public static void logi( String tag, boolean persist, String fmt,
+                             Object... args )
     {
-        callLog( LogType.INFO, claz, fmt, args );
+        callLog( LogType.INFO, tag, fmt, args );
     }
 
-    public static void logw( Class claz, String fmt, Object... args )
+    public static void logw( String tag, String fmt, Object... args )
     {
-        callLog( LogType.WARN, claz, fmt, args );
+        callLog( LogType.WARN, tag, fmt, args );
+    }
+
+    public static void showf( String format, Object... args )
+    {
+        showf( XWApp.getContext(), format, args );
     }
 
     public static void showf( Context context, String format, Object... args )
@@ -104,10 +121,10 @@ public class DbgUtils {
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
-    public static void logex( Exception exception )
+    public static void logex( String tag, Exception exception )
     {
-        logw( DbgUtils.class, "Exception: %s", exception.toString() );
-        printStack( exception.getStackTrace() );
+        logw( TAG, "Exception: %s", exception.toString() );
+        printStack( tag, exception.getStackTrace() );
     }
 
     public static void assertOnUIThread()
@@ -115,20 +132,20 @@ public class DbgUtils {
         Assert.assertTrue( Looper.getMainLooper().equals(Looper.myLooper()) );
     }
 
-    public static void printStack( StackTraceElement[] trace )
+    public static void printStack( String tag, StackTraceElement[] trace )
     {
         if ( s_doLog && null != trace ) {
-            // 2: skip printStack etc.
-            for ( int ii = 2; ii < trace.length; ++ii ) {
-                DbgUtils.logi( DbgUtils.class, "ste %d: %s", ii, trace[ii].toString() );
+            // 1: skip printStack etc.
+            for ( int ii = 1; ii < trace.length; ++ii ) {
+                DbgUtils.logd( tag, "ste %d: %s", ii, trace[ii].toString() );
             }
         }
     }
 
-    public static void printStack()
+    public static void printStack( String tag )
     {
         if ( s_doLog ) {
-            printStack( Thread.currentThread().getStackTrace() );
+            printStack( tag, Thread.currentThread().getStackTrace() );
         }
     }
 
@@ -152,7 +169,7 @@ public class DbgUtils {
     {
         if ( s_doLog ) {
             String dump = DatabaseUtils.dumpCursorToString( cursor );
-            logi( DbgUtils.class, "cursor: %s", dump );
+            logi( TAG, "cursor: %s", dump );
         }
     }
 

@@ -65,6 +65,8 @@
           <arg value="${INITIAL_CLIENT_VERS}" />
           <arg value="--vers-outfile" />
           <arg value="./assets/gitvers.txt" />
+          <arg value="--widir-enabled" />
+          <arg value="${WIDIR_ENABLED}" />
         </exec>
     </target>
 

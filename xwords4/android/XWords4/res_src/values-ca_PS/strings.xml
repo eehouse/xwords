@@ -342,7 +342,7 @@
   <!-- Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. -->
   <string name="phonies_disallow">DISALLOW PHONIES</string>
-  <!-- Shown when using the the Game configure screen to configure a
+  <!-- Shown when using the Game configure screen to configure a
          networked game and you try to make all players local. -->
   <string name="str_reg_server_sans_remote">AT LEAST ONE PLAYER MUST
          BE MARKED \"REMOTE\" FOR A GAME STARTED AS HOST.</string>
@@ -839,7 +839,7 @@
   <!-- clarification of the above -->
   <string name="prefs_colors_summary">EDIT COLORS USED ON THE BOARD</string>
   <!-- The remaining strings (down to the color edit dialog below)
-         are showns as the names of editable colors and as the the
+         are showns as the names of editable colors and as the
          title of the color editor that comes up when the name is
          tapped. -->
   <!-- (color for) double-letter bonus squares on the board -->
@@ -1039,6 +1039,7 @@
   <string name="invite_choice_bt">BLUETOOTH</string>
   <string name="invite_choice_nfc">NFC (\"ANDROID BEAMING\")</string>
   <string name="invite_choice_relay">INTERNET/RELAY</string>
+  <string name="invite_choice_p2p">WIFI DIRECT</string>
   <string name="invite_choice_title">INVITING PLAYERS: HOW?</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
@@ -1636,11 +1637,11 @@
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
   <plurals name="invite_bt_desc_fmt">
-    <item quantity="one">PLEASE SELECT THE DEVICE
-      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+    <item quantity="one">PLEASE CHECK THE DEVICE
+      YOU WANT TO INCLUDE IN THIS GAME.\n\nUSE THE \"%2$s\"
       BUTTON IF YOU DON\'T SEE THE DEVICE YOU EXPECT.</item>
-    <item quantity="other">PLEASE SELECT UP TO %1$d DEVICE[S]
-      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+    <item quantity="other">PLEASE CHECK UP TO %1$d DEVICE[S]
+      YOU WANT TO INCLUDE IN THIS GAME.\n\nUSE THE \"%2$s\"
       BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</item>
   </plurals>
   <!--  -->
@@ -1656,6 +1657,7 @@
   <!-- Title of phone number picker during invitation to a game via SMS -->
   <string name="sms_invite_title">SMS INVITATION</string>
   <string name="relay_invite_title">RELAY INVITATION</string>
+  <string name="p2p_invite_title">WIFI DIRECT INVITATION</string>
   <!--  -->
   <string name="game_btname_title">BLUETOOTH GAME NAME</string>
   <!--  -->
@@ -1691,7 +1693,17 @@
       TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
   </plurals>
   <!--  -->
-  <string name="manual_owner_name">(NOT IN CONTACTS)</string>
+  <plurals name="invite_p2p_desc_fmt">
+    <item quantity="one">PLEASE SELECT THE NAME OF THE
+      WIFIDIRECT DEVICE YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP
+      \"%2$s\".</item>
+    <item quantity="other">PLEASE SELECT THE %1$d WIFIDIRECT DEVICE NAMES YOU
+      WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+  </plurals>
+  <string name="invite_p2p_desc_extra">ONLY DEVICES THAT ARE
+    CURRENTLY AVAILABLE ARE SHOWN. IF A NEARBY DEVICE ISN\'T SHOWING
+    UP PLEASE MAKE SURE THAT WIFI IS TURNED ON, THAT CROSSWORDS IS
+    INSTALLED, AND THAT PLAY VIA WIFI DIRECT IS ENABLED.</string>
   <!--  -->
   <string name="warn_nomobile_fmt">THE NUMBER %1$s FOR %2$s IS NOT
     A \"MOBILE\" NUMBER. IMPORT ANYWAY?</string>
@@ -1699,6 +1711,9 @@
   <string name="empty_sms_inviter">THIS PHONE LIST IS EMPTY. USE THE
     \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO INVITE, THE +
     BUTTON TO ENTER NUMBERS DIRECTLY.</string>
+  <!-- Shows in WiFiDirect Invite dialog when no known peers -->
+  <string name="empty_p2p_inviter">THERE ARE CURRENTLY NO DEVICES
+    REACHABLE VIA WIFIDIRECT THAT HAVE CROSSWORDS INSTALLED.</string>
   <!--  -->
   <string name="empty_relay_inviter">THIS LIST OF DEVICES IS
     EMPTY. USE THE \"SCAN GAMES\" BUTTON TO SCAN YOUR OLD GAMES
@@ -2248,6 +2263,8 @@
   I.E. EVERY CARRIER IN THE WORLD EXCEPT VERIZON AND SPRINT.</string>
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
+  <string name="not_again_comms_p2p">USE WIFI DIRECT TO PLAY AGAINST A
+  NEARBY WIFI DIRECT-CAPABLE DEVICE WITH CROSSWORDS INSTALLED.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
   <string name="not_again_rematch_two_only">REMATCH IS LIMITED TO
   TWO-PERSON GAMES, AT LEAST FOR NOW, BECAUSE IT\'S HARDER WITH MORE
@@ -2302,4 +2319,22 @@
   <string name="dualpane_restart">EXITING APP…</string>
   <string name="after_restart">THIS CHANGE WILL NOT TAKE EFFECT UNTIL
   YOU RESTART CROSSWORDS.</string>
+  <string name="not_again_missing_perms">THIS GAME IS CONFIGURED TO
+  COMMUNICATE VIA SMS BUT CROSSWORDS DOES NOT HAVE PERMISSION TO DO
+  SO. YOU CAN STILL OPEN THE GAME, BUT IT MAY NOT BE ABLE TO SEND OR
+  RECEIVE MOVES.\n\nYOU CAN RE-OPEN IT TO BE ASKED FOR PERMISSION
+  AGAIN. OR YOU CAN REMOVE THE SMS COMMUNICATION SETTING.</string>
+  <string name="phone_state_rationale">CROSSWORDS WANTS TO DETERMINE
+  WHETHER YOUR PHONE CAN SEND SMS \"DATA\" MESSAGES TO GIVE YOU THE
+  OPTION OF PLAYING THAT WAY. IF YOU DON\'T EVER WANT TO PLAY VIA SMS,
+  E.G. BECAUSE YOU PAY FOR EACH MESSAGE OR HAVE A VERIZON PHONE, IT\'S
+  SAFE TO PERMANENTLY DENY PERMISSION.
+  </string>
+  <string name="contacts_rationale">CROSSWORDS WANT ACCESS TO YOUR
+  CONTACTS IN ORDER TO PUT A NAME TO PHONE NUMBERS THAT SEND YOU
+  INVITATIONS VIA SMS. YOU\'LL STILL BE ABLE TO RECEIVE INVITATIONS IF
+  YOU DON\'T GRANT THIS PERMISSION, BUT ONLY THE PHONE NUMBER OF THE
+  SENDER WILL BE DISPLAYED.</string>
+  <string name="remove_sms">REMOVE SMS</string>
+  <string name="contact_not_found">NOT IN CONTACTS</string>
 </resources>

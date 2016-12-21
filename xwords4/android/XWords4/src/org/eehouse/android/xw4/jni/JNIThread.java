@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class JNIThread extends Thread {
+    private static final String TAG = JNIThread.class.getSimpleName();
 
     public enum JNICmd { CMD_NONE,
             // CMD_RUN,
@@ -180,7 +181,7 @@ public class JNIThread extends Thread {
             if ( BuildConfig.DEBUG ) {
                 Iterator<QueueElem> iter = m_queue.iterator();
                 while ( iter.hasNext() ) {
-                    DbgUtils.logi( getClass(), "removing %s from queue",
+                    DbgUtils.logi( TAG, "removing %s from queue",
                                    iter.next().m_cmd.toString() );
                 }
             }
@@ -210,7 +211,7 @@ public class JNIThread extends Thread {
 
         // Assert.assertNull( m_jniGamePtr ); // fired!!
         if ( null != m_jniGamePtr ) {
-            DbgUtils.logd( getClass(), "configure(): m_jniGamePtr not null; that ok?" );
+            DbgUtils.logd( TAG, "configure(): m_jniGamePtr not null; that ok?" );
         }
         m_jniGamePtr = null;
         if ( null != stream ) {
@@ -249,7 +250,7 @@ public class JNIThread extends Thread {
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
-            DbgUtils.logex( ie );
+            DbgUtils.logex( TAG, ie );
         }
         m_lock.unlock();
     }
@@ -366,7 +367,7 @@ public class JNIThread extends Thread {
         // PENDING: once certain this is true, stop saving the full array and
         // instead save the hash. Also, update it after each save.
         if ( hashesEqual ) {
-            DbgUtils.logd( getClass(), "save_jni(): no change in game; can skip saving" );
+            DbgUtils.logd( TAG, "save_jni(): no change in game; can skip saving" );
         } else {
             // Don't need this!!!! this only runs on the run() thread
             synchronized( this ) {
@@ -421,7 +422,7 @@ public class JNIThread extends Thread {
             try {
                 elem = m_queue.take();
             } catch ( InterruptedException ie ) {
-                DbgUtils.logw( getClass(), "interrupted; killing thread" );
+                DbgUtils.logw( TAG, "interrupted; killing thread" );
                 break;
             }
             boolean draw = false;
@@ -667,7 +668,7 @@ public class JNIThread extends Thread {
             case CMD_NONE:      // ignored
                 break;
             default:
-                DbgUtils.logw( getClass(), "dropping cmd: %s", elem.m_cmd.toString() );
+                DbgUtils.logw( TAG, "dropping cmd: %s", elem.m_cmd.toString() );
                 Assert.fail();
             }
 
@@ -685,7 +686,7 @@ public class JNIThread extends Thread {
             XwJNI.comms_stop( m_jniGamePtr );
             save_jni();
         } else {
-            DbgUtils.logw( getClass(), "run(): exiting without saving" );
+            DbgUtils.logw( TAG, "run(): exiting without saving" );
         }
         m_jniGamePtr.release();
         m_jniGamePtr = null;
@@ -712,9 +713,9 @@ public class JNIThread extends Thread {
     {
         m_queue.add( new QueueElem( cmd, true, args ) );
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
-            DbgUtils.logw( getClass(), "adding %s to stopped thread!!!",
+            DbgUtils.logw( TAG, "adding %s to stopped thread!!!",
                            cmd.toString() );
-            DbgUtils.printStack();
+            DbgUtils.printStack( TAG );
         }
     }
 
@@ -731,7 +732,7 @@ public class JNIThread extends Thread {
     private void retain_sync()
     {
         ++m_refCount;
-        DbgUtils.logi( getClass(), "retain_sync(rowid=%d): m_refCount: %d",
+        DbgUtils.logi( TAG, "retain_sync(rowid=%d): m_refCount: %d",
                        m_rowid, m_refCount );
     }
 
@@ -754,7 +755,7 @@ public class JNIThread extends Thread {
                 stop = true;
             }
         }
-        DbgUtils.logi( getClass(), "release(rowid=%d): m_refCount: %d",
+        DbgUtils.logi( TAG, "release(rowid=%d): m_refCount: %d",
                        m_rowid, m_refCount );
 
         if ( stop ) {

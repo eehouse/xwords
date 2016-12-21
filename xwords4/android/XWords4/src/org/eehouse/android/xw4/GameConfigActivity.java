@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class GameConfigActivity extends XWActivity {
+    private static final String TAG = GameConfigActivity.class.getSimpleName();
 
     @Override
     public void onCreate( Bundle savedInstanceState )

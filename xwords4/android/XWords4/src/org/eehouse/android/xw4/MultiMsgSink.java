@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class MultiMsgSink implements TransportProcs {
+    private static final String TAG = MultiMsgSink.class.getSimpleName();
     private long m_rowid;
     private Context m_context;
     // Use set to count so message sent over both BT and Relay is counted only
@@ -72,6 +73,12 @@ public class MultiMsgSink implements TransportProcs {
         return SMSService.sendPacket( m_context, addr.sms_phone, gameID, buf );
     }
 
+    public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
+    {
+        return WiDirService
+            .sendPacket( m_context, addr.p2p_addr, gameID, buf );
+    }
+
     public int numSent()
     {
         return m_sentSet.size();
@@ -95,14 +102,17 @@ public class MultiMsgSink implements TransportProcs {
         case COMMS_CONN_SMS:
             nSent = sendViaSMS( buf, gameID, addr );
             break;
+        case COMMS_CONN_P2P:
+            nSent = sendViaP2P( buf, gameID, addr );
+            break;
         default:
             Assert.fail();
             break;
         }
-        DbgUtils.logi( getClass(), "transportSend(): sent %d via %s",
+        DbgUtils.logi( TAG, "transportSend(): sent %d via %s",
                        nSent, typ.toString() );
         if ( 0 < nSent ) {
-            DbgUtils.logd( getClass(), "transportSend: adding %s", msgNo );
+            DbgUtils.logd( TAG, "transportSend: adding %s", msgNo );
             m_sentSet.add( msgNo );
         }
 
@@ -129,7 +139,7 @@ public class MultiMsgSink implements TransportProcs {
                                                    relayID, buf );
         boolean success = buf.length == nSent;
         if ( success ) {
-            DbgUtils.logd( getClass(), "relayNoConnProc: adding %s", msgNo );
+            DbgUtils.logd( TAG, "relayNoConnProc: adding %s", msgNo );
             m_sentSet.add( msgNo );
         }
         return success;

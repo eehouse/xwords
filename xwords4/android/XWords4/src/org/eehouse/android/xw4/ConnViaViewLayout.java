@@ -20,12 +20,15 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -34,8 +37,10 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConnViaViewLayout extends LinearLayout {
+    private static final String TAG = ConnViaViewLayout.class.getSimpleName();
     private CommsConnTypeSet m_curSet;
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
+    private Activity m_activity;
 
     public interface CheckEnabledWarner {
         public void warnDisabled( CommsConnType typ );
@@ -50,6 +55,8 @@ public class ConnViaViewLayout extends LinearLayout {
     public ConnViaViewLayout( Context context, AttributeSet as ) {
         super( context, as );
     }
+
+    public void setActivity( Activity activity ) { m_activity = activity; }
 
     protected void configure( CommsConnTypeSet types,
                               CheckEnabledWarner cew,
@@ -72,6 +79,23 @@ public class ConnViaViewLayout extends LinearLayout {
 
     private void addConnections()
     {
+
+        // We need SMS and PHONE permission to check if we can support SMS. So
+        // ask for it here. When we get what we're getting, proceed to
+        // actually check for what's supported. Those methods will return
+        // false if they don't have the permission they need.
+        new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE )
+            .asyncQuery( m_activity, new Perms23.PermCbck() {
+                    @Override
+                    public void onPermissionResult( Map<Perms23.Perm,
+                                                    Boolean> granted ) {
+                        addConnectionsPostPermCheck();
+                    }
+                } );
+    }
+
+    private void addConnectionsPostPermCheck()
+    {
         LinearLayout list = (LinearLayout)findViewById( R.id.conn_types );
         list.removeAllViews();  // in case being reused
 
@@ -79,12 +103,10 @@ public class ConnViaViewLayout extends LinearLayout {
         CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
 
         for ( CommsConnType typ : supported.getTypes() ) {
-            LinearLayout item = (LinearLayout)
-                LocUtils.inflate( context, R.layout.btinviter_item );
-            CheckBox box = (CheckBox)item.findViewById( R.id.inviter_check );
+            CheckBox box = new CheckBox( context );
             box.setText( typ.longName( context ) );
             box.setChecked( m_curSet.contains( typ ) );
-            list.addView( item );
+            list.addView( box );
 
             final CommsConnType typf = typ;
             box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
@@ -119,6 +141,9 @@ public class ConnViaViewLayout extends LinearLayout {
         case COMMS_CONN_RELAY:
             enabled = RelayService.relayEnabled( context );
             break;
+        case COMMS_CONN_P2P:
+            enabled = WiDirService.supported();
+            break;
         default:
             Assert.fail();
             break;
@@ -146,6 +171,10 @@ public class ConnViaViewLayout extends LinearLayout {
             case COMMS_CONN_BT:
                 msgID = R.string.not_again_comms_bt;
                 keyID = R.string.key_na_comms_bt;
+                break;
+            case COMMS_CONN_P2P:
+                msgID = R.string.not_again_comms_p2p;
+                keyID = R.string.key_na_comms_p2p;
                 break;
             default:
                 Assert.fail();

@@ -26,12 +26,16 @@ import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public class XWPrefs {
+    private static final String TAG = XWPrefs.class.getSimpleName();
 
     // No reason to put this in xml if they're private to this file!
     private static final String key_checked_upgrades = "key_checked_upgrades";
@@ -236,14 +240,39 @@ public class XWPrefs {
         return getPrefsStringArray( context, R.string.key_closed_langs );
     }
 
-    public static void setSMSPhones( Context context, String[] names )
+    public static void setSMSPhones( Context context, JSONObject phones )
     {
-        setPrefsStringArray( context, R.string.key_sms_phones, names );
+        setPrefsString( context, R.string.key_sms_phones, phones.toString() );
     }
 
-    public static String[] getSMSPhones( Context context )
+    public static JSONObject getSMSPhones( Context context )
     {
-        return getPrefsStringArray( context, R.string.key_sms_phones );
+        String asStr = getPrefsString( context, R.string.key_sms_phones );
+        JSONObject obj = null;
+
+        if ( null != asStr ) {
+            try {
+                obj = new JSONObject( asStr );
+            } catch ( JSONException ex ) {
+                obj = null;
+            }
+        }
+
+        if ( null == obj ) {
+            obj = new JSONObject();
+            if ( null != asStr ) {
+                String[] numbers = TextUtils.split( asStr, "\n" );
+                for ( String number : numbers ) {
+                    try {
+                    obj.put( number, (String)null );
+                    } catch ( JSONException ex ) {
+                        DbgUtils.logex( TAG, ex );
+                    }
+                }
+            }
+        }
+
+        return obj;
     }
 
     // Used by RelayInviteDelegate.java

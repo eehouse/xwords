@@ -27,6 +27,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayCheckBoxPreference extends ConfirmingCheckBoxPreference {
+    private static final String TAG = RelayCheckBoxPreference.class.getSimpleName();
     private static ConfirmingCheckBoxPreference s_this = null;
 
     public RelayCheckBoxPreference( Context context, AttributeSet attrs )

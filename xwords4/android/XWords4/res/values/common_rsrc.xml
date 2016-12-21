@@ -125,6 +125,7 @@
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_got_langdict">key_got_langdict</string>
+  <string name="key_notagain_missing_perms">key_notagain_missing_perms</string>
   <string name="key_xlations_locale">key_xlations_locale</string>
   <string name="key_xlations_enabled">key_xlations_enabled</string>
   <string name="key_invite_multi">key_invite_multi</string>
@@ -133,6 +134,7 @@
   <string name="key_notagain_dfltname">key_notagain_dfltname</string>
 
   <string name="key_na_comms_bt">key_na_comms_bt</string>
+  <string name="key_na_comms_p2p">key_na_comms_p2p</string>
   <string name="key_na_comms_sms">key_na_comms_sms</string>
   <string name="key_na_comms_relay">key_na_comms_relay</string>
 

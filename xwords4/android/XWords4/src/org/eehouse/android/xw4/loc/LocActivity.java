@@ -24,6 +24,7 @@ import android.os.Bundle;
 import org.eehouse.android.xw4.XWActivity;
 
 public class LocActivity extends XWActivity {
+    private static final String TAG = LocActivity.class.getSimpleName();
 
     private LocDelegate m_dlgt;
 

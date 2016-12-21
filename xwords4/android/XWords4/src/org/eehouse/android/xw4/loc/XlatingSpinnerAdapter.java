@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.SpinnerAdapter;
 
 public class XlatingSpinnerAdapter implements SpinnerAdapter {
+    private static final String TAG = XlatingSpinnerAdapter.class.getSimpleName();
 
     private SpinnerAdapter m_adapter;
     private Context m_context;

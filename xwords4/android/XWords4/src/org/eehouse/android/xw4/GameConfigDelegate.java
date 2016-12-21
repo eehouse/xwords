@@ -61,6 +61,7 @@ public class GameConfigDelegate extends DelegateBase
     implements View.OnClickListener
                ,XWListItem.DeleteCallback
                ,RefreshNamesTask.NoNameFound {
+    private static final String TAG = GameConfigDelegate.class.getSimpleName();
 
     private static final String INTENT_FORRESULT_NEWGAME = "newgame";
 
@@ -229,7 +230,7 @@ public class GameConfigDelegate extends DelegateBase
                                 self.showToast( R.string.forced_consistent );
                                 self.loadPlayersList();
                             } else {
-                                DbgUtils.logw( getClass(), "onDismiss(): "
+                                DbgUtils.logw( TAG, "onDismiss(): "
                                                + "no visible self" );
                             }
                         }
@@ -287,6 +288,7 @@ public class GameConfigDelegate extends DelegateBase
                 LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
                 final ConnViaViewLayout items = (ConnViaViewLayout)
                     layout.findViewById( R.id.conn_types );
+                items.setActivity( m_activity );
                 final CheckBox cb = (CheckBox)layout
                     .findViewById(R.id.default_check);
                 cb.setVisibility( View.VISIBLE );
@@ -774,13 +776,13 @@ public class GameConfigDelegate extends DelegateBase
             }
 
         } else {
-            DbgUtils.logw( getClass(), "unknown v: " + view.toString() );
+            DbgUtils.logw( TAG, "unknown v: " + view.toString() );
         }
     } // onClick
 
     private void saveAndClose( boolean forceNew )
     {
-        DbgUtils.logi( getClass(), "saveAndClose(forceNew=%b)", forceNew );
+        DbgUtils.logi( TAG, "saveAndClose(forceNew=%b)", forceNew );
         applyChanges( forceNew );
 
         finishAndLaunch();
@@ -1030,7 +1032,7 @@ public class GameConfigDelegate extends DelegateBase
             setting = 2;
             break;
         default:
-            DbgUtils.logw( getClass(), "setSmartnessSpinner got %d from getRobotSmartness()",
+            DbgUtils.logw( TAG, "setSmartnessSpinner got %d from getRobotSmartness()",
                            m_gi.getRobotSmartness() );
             Assert.fail();
         }
@@ -1072,7 +1074,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void adjustPlayersLabel()
     {
-        DbgUtils.logi( getClass(), "adjustPlayersLabel()" );
+        DbgUtils.logi( TAG, "adjustPlayersLabel()" );
         String label;
         if ( localOnlyGame() ) {
             label = getString( R.string.players_label_standalone );
@@ -1295,7 +1297,7 @@ public class GameConfigDelegate extends DelegateBase
             m_connLabel.setVisibility( View.GONE );
             m_changeConnButton.setVisibility( View.GONE );
         } else {
-            String connString = m_conTypes.toString( m_activity );
+            String connString = m_conTypes.toString( m_activity, true );
             m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
         }
     }

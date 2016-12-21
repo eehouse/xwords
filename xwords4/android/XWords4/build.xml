@@ -59,6 +59,7 @@
     <property name="VARIANT_NAME" value="xw4"/>
     <property name="APP_NAME" value="Crosswords"/>
     <property name="SKIP_LANGS" value="values-de"/>
+    <property name="WIDIR_ENABLED" value="false" />
 
     <target name="-pre-clean">
         <antcall target="my-pre-clean" />

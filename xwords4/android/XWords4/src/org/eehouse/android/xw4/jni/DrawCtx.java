@@ -56,7 +56,6 @@ public interface DrawCtx {
     //                         Rect[] playerRects );
 
     void drawTimer( Rect rect, int player, int secondsLeft );
-    boolean boardBegin( Rect rect, int cellWidth, int cellHeight );
 
     boolean drawCell( Rect rect, String text, int tile, int value,
                       int owner, int bonus, int hintAtts, int flags );

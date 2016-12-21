@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -28,17 +28,16 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract;
 import android.text.method.DialerKeyListener;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import junit.framework.Assert;
 
@@ -49,17 +48,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-public class SMSInviteDelegate extends InviteDelegate {
+import org.json.JSONObject;
+import org.json.JSONException;
+
+public class SMSInviteDelegate extends InviteDelegate
+    implements View.OnClickListener {
+    private static final String TAG = SMSInviteDelegate.class.getSimpleName();
+    private static int[] BUTTONIDS = {
+        R.id.button_add,
+        R.id.manual_add_button,
+        R.id.button_clear,
+    };
 
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<PhoneRec> m_phoneRecs;
-    private SMSPhonesAdapter m_adapter;
     private ImageButton m_addButton;
-    private String m_pendingName;
-    private String m_pendingNumber;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
@@ -78,7 +86,7 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     public SMSInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.smsinviter );
+        super( delegator, savedInstanceState );
         m_activity = delegator.getActivity();
     }
 
@@ -87,34 +95,36 @@ public class SMSInviteDelegate extends InviteDelegate {
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear,
-                    R.id.invite_desc, msg );
+        super.init( msg, R.string.empty_sms_inviter );
+        addButtonBar( R.layout.sms_buttons, BUTTONIDS );
 
-        getBundledData( savedInstanceState );
-
-        m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
-        m_addButton.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View view )
-                {
-                    showDialog( DlgID.GET_NUMBER );
-                }
-            } );
+        // getBundledData( savedInstanceState );
 
         getSavedState();
         rebuildList( true );
+
+        askContactsPermission( true );
     }
 
-    protected void onSaveInstanceState( Bundle outState )
+    @Override
+    protected void onBarButtonClicked( int id )
     {
-        outState.putString( SAVE_NAME, m_pendingName );
-        outState.putString( SAVE_NUMBER, m_pendingNumber );
-    }
-
-    private void getBundledData( Bundle bundle )
-    {
-        if ( null != bundle ) {
-            m_pendingName = bundle.getString( SAVE_NAME );
-            m_pendingNumber = bundle.getString( SAVE_NUMBER );
+        switch( id ) {
+        case R.id.button_add:
+            Intent intent = new Intent( Intent.ACTION_PICK,
+                                        ContactsContract.Contacts.CONTENT_URI );
+            intent.setType( Phone.CONTENT_TYPE );
+            startActivityForResult( intent, RequestCode.GET_CONTACT );
+            break;
+        case R.id.manual_add_button:
+            showDialog( DlgID.GET_NUMBER );
+            break;
+        case R.id.button_clear:
+            int count = getChecked().size();
+            String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
+                                            count, count );
+            makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+            break;
         }
     }
 
@@ -122,9 +132,8 @@ public class SMSInviteDelegate extends InviteDelegate {
     protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
-        // super.onActivityResult( requestCode, resultCode, data );
         if ( Activity.RESULT_CANCELED != resultCode && data != null ) {
-            switch (requestCode) {
+            switch ( requestCode ) {
             case GET_CONTACT:
                 addPhoneNumbers( data );
                 break;
@@ -132,6 +141,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         }
     }
 
+    @Override
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
@@ -149,11 +159,10 @@ public class SMSInviteDelegate extends InviteDelegate {
                             SMSInviteDelegate self = (SMSInviteDelegate)curThis();
                             String number = namerView.getName();
                             PhoneRec rec = new PhoneRec( number );
-                            self.m_pendingNumber = number;
-                            self.m_pendingName = null;
                             self.makeConfirmThenBuilder( R.string.warn_unlimited,
                                                          Action.POST_WARNING_ACTION )
                                 .setPosButton( R.string.button_yes )
+                                .setParams( number, null )
                                 .show();
                         }
                     };
@@ -169,105 +178,67 @@ public class SMSInviteDelegate extends InviteDelegate {
         return dialog;
     }
 
-    protected void scan()
+    @Override
+    protected void listSelected( InviterItem[] selected, String[] devs )
     {
-        Intent intent = new Intent( Intent.ACTION_PICK,
-                                    ContactsContract.Contacts.CONTENT_URI );
-        intent.setType( Phone.CONTENT_TYPE );
-        startActivityForResult( intent, RequestCode.GET_CONTACT );
-    }
-
-    protected void clearSelected()
-    {
-        int count = countChecks();
-        String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
-                                        count, count );
-        makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
-    }
-
-    protected void listSelected( String[][] devsP, int[][] countsP )
-    {
-        int count = m_adapter.getCount();
-        String[] result = new String[countChecks()];
-        int[] counts = new int[result.length];
-
-        int index = 0;
-        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            PhoneRec rec = iter.next();
-            if ( rec.m_isChecked ) {
-                counts[index] = rec.m_nPlayers;
-                result[index] = ((SMSListItem)m_adapter.getItem(ii)).getNumber();
-                index++;
-            }
-        }
-        devsP[0] = result;
-        if ( null != countsP ) {
-            countsP[0] = counts;
+        for ( int ii = 0; ii < selected.length; ++ii ) {
+            PhoneRec rec = (PhoneRec)selected[ii];
+            devs[ii] = rec.m_phone;
         }
     }
 
     @Override
-    protected void tryEnable()
+    protected void onChildAdded( View child, InviterItem data )
     {
-        if ( null != m_phoneRecs ) {
-            int nPlayers = 0;
-            int nDevs = 0;
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                PhoneRec rec = iter.next();
-                if ( rec.m_isChecked ) {
-                    ++nDevs;
-                    nPlayers += rec.m_nPlayers;
-                }
-            }
-            m_okButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
-            m_clearButton.setEnabled( 0 < nDevs );
-        }
+        PhoneRec rec = (PhoneRec)data;
+        ((TwoStrsItem)child).setStrings( rec.m_name, rec.m_phone );
     }
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which,
+                                  final Object[] params )
     {
-        switch( which ) {
-        case AlertDialog.BUTTON_POSITIVE:
-            switch( action ) {
-            case CLEAR_ACTION:
-                clearSelectedImpl();
-                break;
-            case USE_IMMOBILE_ACTION:
-                m_immobileConfirmed = true;
-                break;
-            case POST_WARNING_ACTION:
-                addChecked( new PhoneRec( m_pendingName, m_pendingNumber ) );
-                saveAndRebuild();
-                break;
-            }
-            break;
-        case DlgDelegate.DISMISS_BUTTON:
-            if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-                makeConfirmThenBuilder( R.string.warn_unlimited,
-                                        Action.POST_WARNING_ACTION )
-                    .setPosButton( R.string.button_yes )
-                    .show();
-            }
-            break;
-        }
-    }
+        boolean isPositive = AlertDialog.BUTTON_POSITIVE == which;
+        DbgUtils.logd( TAG, "dlgButtonClicked(%s,pos:%b)",
+                       action.toString(), isPositive );
 
-    private int countChecks()
-    {
-        int count = 0;
-        if ( null != m_phoneRecs ) {
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                if ( iter.next().m_isChecked ) {
-                    ++count;
-                }
+        switch ( action ) {
+        case RETRY_CONTACTS_ACTION:
+            askContactsPermission( false );
+            break;
+        case CLEAR_ACTION:
+            if ( isPositive) {
+                clearSelectedImpl();
             }
+            break;
+        case POST_WARNING_ACTION:
+            DbgUtils.printStack( TAG );
+            if ( isPositive ) { // ???
+                m_phoneRecs.add( new PhoneRec( (String)params[1],
+                                               (String)params[0] ) );
+                saveAndRebuild();
+            }
+            break;
+        case USE_IMMOBILE_ACTION:
+            if ( isPositive ) {
+                m_immobileConfirmed = true;
+            } else if ( m_immobileConfirmed ) {
+                // Putting up a new alert from inside another's handler
+                // confuses things. So post instead.
+                post( new Runnable() {
+                        @Override
+                        public void run() {
+                            makeConfirmThenBuilder( R.string.warn_unlimited,
+                                                    Action.POST_WARNING_ACTION )
+                                .setPosButton( R.string.button_yes )
+                                .setParams( params )
+                                .show();
+                        }
+                    } );
+            }
+            break;
         }
-        return count;
     }
 
     private void addPhoneNumbers( Intent intent )
@@ -294,12 +265,11 @@ public class SMSInviteDelegate extends InviteDelegate {
 
                 int type = cursor.getInt( cursor.
                                           getColumnIndex( Phone.TYPE ) );
-                m_pendingName = name;
-                m_pendingNumber = number;
                 if ( Phone.TYPE_MOBILE == type ) {
                     makeConfirmThenBuilder( R.string.warn_unlimited,
                                             Action.POST_WARNING_ACTION )
                         .setPosButton( R.string.button_yes )
+                        .setParams( number, name )
                         .show();
                 } else {
                     m_immobileConfirmed = false;
@@ -307,6 +277,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                                             number, name );
                     makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION )
                         .setPosButton( R.string.button_yes )
+                        .setParams( number, name )
                         .show();
                 }
             }
@@ -320,163 +291,94 @@ public class SMSInviteDelegate extends InviteDelegate {
                     return rec1.m_name.compareTo(rec2.m_name);
                 }
             });
-        m_adapter = new SMSPhonesAdapter();
-        setListAdapter( m_adapter );
-        if ( checkIfAll && m_phoneRecs.size() <= m_nMissing ) {
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                iter.next().m_isChecked = true;
-            }
-        }
+        // String[] phones = new String[m_phoneRecs.size()];
+        // String[] names = new String[m_phoneRecs.size()];
+        // for ( int ii = 0; ii < m_phoneRecs.size(); ++ii ) {
+        //     PhoneRec rec = m_phoneRecs.get( ii );
+        //     phones[ii] = rec.m_phone;
+        //     names[ii] = rec.m_name;
+        // }
+
+        updateListAdapter( m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
         tryEnable();
     }
 
     private void getSavedState()
     {
-        String[] phones = XWPrefs.getSMSPhones( m_activity );
+        JSONObject phones = XWPrefs.getSMSPhones( m_activity );
 
-        m_phoneRecs = new ArrayList<PhoneRec>(phones.length);
-        for ( String phone : phones ) {
-            boolean matches = phone.equals( m_lastDev );
-            PhoneRec rec = new PhoneRec( null, phone, matches );
+        m_phoneRecs = new ArrayList<PhoneRec>();
+        for ( Iterator<String> iter = phones.keys(); iter.hasNext(); ) {
+            String phone = iter.next();
+            String name = phones.optString( phone, null );
+            PhoneRec rec = new PhoneRec( name, phone );
             m_phoneRecs.add( rec );
         }
     }
 
     private void saveAndRebuild()
     {
-        String[] phones = new String[m_phoneRecs.size()];
+        JSONObject phones = new JSONObject();
         Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
+        while ( iter.hasNext() ) {
             PhoneRec rec = iter.next();
-            phones[ii] = rec.m_phone;
+            try {
+                phones.put( rec.m_phone, rec.m_name );
+            } catch ( JSONException ex ) {
+                DbgUtils.logex( TAG, ex );
+            }
         }
         XWPrefs.setSMSPhones( m_activity, phones );
 
         rebuildList( false );
     }
 
-    private void addChecked( PhoneRec rec )
-    {
-        if ( m_nMissing <= countChecks() ) {
-            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
-            while ( iter.hasNext() ) {
-                iter.next().m_isChecked = false;
-            }
-        }
-
-        rec.m_isChecked = true;
-        m_phoneRecs.add( rec );
-    }
-
     private void clearSelectedImpl()
     {
-        int count = m_adapter.getCount();
-        for ( int ii = count - 1; ii >= 0; --ii ) {
-            if ( m_phoneRecs.get( ii ).m_isChecked ) {
+        Set<Integer> checked = getChecked();
+        for ( int ii = m_phoneRecs.size() - 1; ii >= 0; --ii ) {
+            if ( checked.contains( ii ) ) {
                 m_phoneRecs.remove( ii );
             }
         }
+        clearChecked();
         saveAndRebuild();
     }
 
-    private class PhoneRec {
-        public String m_phone;
-        public String m_name;
-        public boolean m_isChecked;
-        public int m_nPlayers;
-        public PhoneRec( String name, String phone )
-        {
-            this( name, phone, false );
+    private void askContactsPermission( boolean showRationale )
+    {
+        Perms23.Builder builder = new Perms23.Builder( Perms23.Perm.READ_CONTACTS );
+        if ( showRationale ) {
+            builder.setOnShowRationale( new Perms23.OnShowRationale() {
+                    @Override
+                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
+                    {
+                        makeOkOnlyBuilder( R.string.contacts_rationale )
+                            .setAction( Action.RETRY_CONTACTS_ACTION )
+                            .show();
+                    }
+                } );
         }
-        public PhoneRec( String phone )
-        {
-            this( null, phone, false );
-        }
-
-        private PhoneRec( String name, String phone, boolean checked )
-        {
-            m_phone = phone;
-            m_isChecked = checked;
-            m_nPlayers = 1;
-
-            if ( null == name ) {
-                name = Utils.phoneToContact( m_activity, phone, false );
-                if ( null == name ) {
-                    name = getString( R.string.manual_owner_name );
-                }
-            }
-            m_name = name;
-        }
+        builder.asyncQuery( m_activity );
     }
 
-    private class SMSPhonesAdapter extends XWListAdapter {
-        private SMSListItem[] m_items;
+    private class PhoneRec implements InviterItem {
+        public String m_phone;
+        public String m_name;
 
-        public SMSPhonesAdapter()
+        public PhoneRec( String phone )
         {
-            super( m_phoneRecs.size() );
-            m_items = new SMSListItem[m_phoneRecs.size()];
+            this( null, phone );
         }
 
-        public Object getItem( final int position )
+        private PhoneRec( String name, String phone )
         {
-            // For some reason I can't cache items to be returned.
-            // Checking/unchecking breaks for some but not all items,
-            // with some relation to whether they were scrolled into
-            // view.  So build them anew each time (but still cache
-            // for by-index access.)
+            m_phone = phone;
 
-            SMSListItem item =
-                (SMSListItem)inflate( R.layout.smsinviter_item );
-            item.setChecked( m_phoneRecs.get(position).m_isChecked );
-
-            CompoundButton.OnCheckedChangeListener lstnr =
-                new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton bv,
-                                                  boolean isChecked ) {
-                        m_phoneRecs.get(position).m_isChecked = isChecked;
-                        tryEnable();
-                    }
-                };
-            item.setOnCheckedChangeListener( lstnr );
-            final PhoneRec rec = m_phoneRecs.get( position );
-            item.setContents( rec.m_name, rec.m_phone );
-            m_items[position] = item;
-
-            // Set up spinner
-            Assert.assertTrue( 1 == rec.m_nPlayers );
-            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
-                Spinner spinner = (Spinner)
-                    item.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>( m_activity, android.R.layout
-                                              .simple_spinner_item );
-                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
-                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
-                    adapter.add( str );
-                }
-                spinner.setAdapter( adapter );
-                spinner.setVisibility( View.VISIBLE );
-                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent,
-                                                    View view, int pos,
-                                                    long id )
-                        {
-                            rec.m_nPlayers = 1 + pos;
-                            tryEnable();
-                        }
-
-                        public void onNothingSelected( AdapterView<?> parent ) {}
-                    } );
+            if ( null == name ) {
+                name = getString( R.string.contact_not_found );
             }
-
-            return item;
-        }
-
-        public View getView( final int position, View convertView,
-                             ViewGroup parent ) {
-            return (View)getItem( position );
+            m_name = name;
         }
     }
 }

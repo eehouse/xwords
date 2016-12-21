@@ -597,6 +597,10 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
                               sizeof(addrP->u.sms.phone) );
         addrP->u.sms.port = stream_getU16( stream );
         break;
+    case COMMS_CONN_P2P:
+        stringFromStreamHere( stream, addrP->u.p2p.mac_addr,
+                              sizeof(addrP->u.p2p.mac_addr) );
+        break;
     default:
         /* shut up, compiler */
         break;
@@ -820,6 +824,9 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
     case COMMS_CONN_SMS:
         stringToStream( stream, addrP->u.sms.phone );
         stream_putU16( stream, addrP->u.sms.port );
+        break;
+    case COMMS_CONN_P2P:
+        stringToStream( stream, addrP->u.p2p.mac_addr );
         break;
     default:
         XP_ASSERT(0);
@@ -1504,7 +1511,7 @@ comms_resendAll( CommsCtxt* comms, CommsConnType filter, XP_Bool force )
             comms->nextResend = now + comms->resendBackoff;
         }
     }
-    XP_LOGF( TAGFMT() "=>%d", TAGPRMS, count );
+    XP_LOGF( TAGFMT() "=> %d", TAGPRMS, count );
     return count;
 } /* comms_resendAll */
 
@@ -1880,6 +1887,8 @@ preProcess( CommsCtxt* comms, const CommsAddrRec* useAddr,
     case COMMS_CONN_BT:
         break;    /* nothing to grab */
 #endif
+    case COMMS_CONN_P2P:
+        break;    /* nothing to grab?? */
     default:
         XP_ASSERT(0);
         break;
@@ -1939,6 +1948,7 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
                 }
                 break;
             case COMMS_CONN_IR:              /* no way to test */
+            case COMMS_CONN_P2P:              /* no way to test??? */
                 break;
             case COMMS_CONN_SMS:
 #ifdef XWFEATURE_SMS
@@ -2333,6 +2343,7 @@ comms_isConnected( const CommsCtxt* const comms )
             break;
         case COMMS_CONN_SMS:
         case COMMS_CONN_BT:
+        case COMMS_CONN_P2P:
             result = comms->connID != CONN_ID_NONE;
         default:
             break;
@@ -2473,6 +2484,7 @@ ConnType2Str( CommsConnType typ )
         CASESTR( COMMS_CONN_RELAY );
         CASESTR( COMMS_CONN_BT );
         CASESTR( COMMS_CONN_SMS );
+        CASESTR( COMMS_CONN_P2P );
         CASESTR( COMMS_CONN_NTYPES );
     default:
         XP_ASSERT(0);
@@ -2621,6 +2633,10 @@ logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
                 stream_catString( stream, "; addr: " );
                 stream_catString( stream, addr->u.bt.btAddr.chars );
                 break;
+            case COMMS_CONN_P2P:
+                stream_catString( stream, "mac addr: " );
+                stream_catString( stream, addr->u.p2p.mac_addr );
+                break;
             default:
                 XP_ASSERT(0);
             }
@@ -2687,6 +2703,12 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord * const rec,
                 dest = &rec->addr.u.sms;
                 src = &addr->u.sms;
                 siz = sizeof(rec->addr.u.sms);
+                break;
+            case COMMS_CONN_P2P:
+                XP_ASSERT( '\0' != addr->u.p2p.mac_addr[0] );
+                dest = &rec->addr.u.p2p;
+                src = &addr->u.p2p;
+                siz = sizeof(rec->addr.u.p2p);
                 break;
 #ifdef XWFEATURE_BLUETOOTH
             case COMMS_CONN_BT:

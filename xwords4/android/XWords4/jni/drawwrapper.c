@@ -45,11 +45,16 @@ typedef struct _AndDraw {
     MPSLOT
 } AndDraw;
 
+#define CHECKOUT_MARKER ((jobject)-1)
+
 static jobject
 makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
 {
     JNIEnv* env = ENVFORME( draw->ti );
     jobject robj = draw->jCache[indx];
+#ifdef DEBUG
+    XP_ASSERT( CHECKOUT_MARKER != robj );
+#endif
     int right = rect->left + rect->width;
     int bottom = rect->top + rect->height;
 
@@ -70,8 +75,22 @@ makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
         setInt( env, robj, "bottom", bottom );
     }
 
+#ifdef DEBUG
+    draw->jCache[indx] = CHECKOUT_MARKER;
+#endif
     return robj;
 } /* makeJRect */
+
+#ifdef DEBUG
+static void
+returnJRect( AndDraw* draw, int indx, jobject used )
+{
+    XP_ASSERT( CHECKOUT_MARKER == draw->jCache[indx] );
+    draw->jCache[indx] = used;
+}
+#else
+# define returnJRect( draw, indx, used )
+#endif
 
 #ifdef XWFEATURE_SCOREONEPASS
 static void
@@ -214,6 +233,7 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                         jrect, numPlayers, jscores, remCount );
 
+    returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jscores );
     return result;
 }
@@ -231,6 +251,7 @@ and_draw_drawRemText( DrawCtx* dctx, XP_S16 nTilesLeft,
     if ( result ) {
         readJRect( env, rect, jrect );
     }
+    returnJRect( draw, JCACHE_RECT0, jrect );
     return result;
 }
 
@@ -252,6 +273,7 @@ and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
         jobject jrect = (*env)->GetObjectArrayElement( env, jrects, ii );
         readJRect( env, &playerRects[ii], jrect );
     }
+    returnJRect( draw, JCACHE_RECT0, jrect );
 }
 
 #else
@@ -274,6 +296,7 @@ and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* rect,
         *width = getIntFromArray( env, widthArray, true );
         *height = getIntFromArray( env, heightArray, true );
     }
+    returnJRect( draw, JCACHE_RECT0, jrect );
     return result;
 } /* and_draw_measureRemText */
 
@@ -290,6 +313,8 @@ and_draw_drawRemText( DrawCtx* dctx, const XP_Rect* rInner,
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, 
                             nTilesLeft, focussed );
+    returnJRect( draw, JCACHE_RECT0, jrinner );
+    returnJRect( draw, JCACHE_RECT1, jrouter );
 }
 
 static void
@@ -310,6 +335,7 @@ and_draw_measureScoreText( DrawCtx* dctx,
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, jdsi,
                             widthArray, heightArray );
+    returnJRect( draw, JCACHE_RECT0, jrect );
 
     *width = getIntFromArray( env, widthArray, true );
     *height = getIntFromArray( env, heightArray, true );
@@ -330,6 +356,8 @@ and_draw_score_drawPlayer( DrawCtx* dctx, const XP_Rect* rInner,
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, gotPct, 
                             jdsi );
+    returnJRect( draw, JCACHE_RECT0, jrinner );
+    returnJRect( draw, JCACHE_RECT1, jrouter );
 } /* and_draw_score_drawPlayer */
 #endif
 
@@ -345,6 +373,7 @@ and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player,
         jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
         (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                                 jrect, player, secondsLeft );
+        returnJRect( draw, JCACHE_RECT0, jrect );
     }
 }
 
@@ -353,17 +382,11 @@ static XP_Bool and_draw_beginDraw( DrawCtx* XP_UNUSED(dctx) ) {return XP_TRUE;}
 static void and_draw_endDraw( DrawCtx* XP_UNUSED(dctx) ) {}
 
 static XP_Bool
-and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, 
-                     XP_U16 cellWidth, XP_U16 cellHeight, 
+and_draw_boardBegin( DrawCtx* XP_UNUSED(dctx), const XP_Rect* XP_UNUSED(rect),
+                     XP_U16 XP_UNUSED(cellWidth), XP_U16 XP_UNUSED(cellHeight),
                      DrawFocusState XP_UNUSED(dfs) )
 {
-    DRAW_CBK_HEADER( "boardBegin", "(Landroid/graphics/Rect;II)Z" );
-
-    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-
-    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                                 jrect, cellWidth, cellHeight );
-    return result;
+    return XP_TRUE;
 }
 
 static XP_Bool 
@@ -387,6 +410,7 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
                                                  jrect, jtext, tile, value,
                                                  owner, bonus, hintAtts, 
                                                  flags );
+    returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jtext );
 
     return result;
@@ -401,6 +425,7 @@ and_draw_drawBoardArrow(DrawCtx* dctx, const XP_Rect* rect, XWBonusType bonus,
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, bonus, vert, hintAtts, flags );
+    returnJRect( draw, JCACHE_RECT0, jrect );
 }
 
 static XP_Bool
@@ -422,6 +447,7 @@ and_draw_trayBegin( DrawCtx* dctx, const XP_Rect* rect, XP_U16 owner,
 
     jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                                  jrect, owner, score );
+    returnJRect( draw, JCACHE_RECT0, jrect );
     return result;
 }
 
@@ -440,7 +466,7 @@ and_draw_drawTile( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
 
     result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                         jrect, jtext, val, flags );
-
+    returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jtext );
     return result;
 }
@@ -462,7 +488,7 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect,
 
     result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                         jrect, jtext, val, owner, flags );
-
+    returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jtext );
     return result;
 }
@@ -474,7 +500,9 @@ and_draw_drawTileBack( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    return (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, flags );
+    XP_Bool result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, flags );
+    returnJRect( draw, JCACHE_RECT0, jrect );
+    return result;
 }
 
 static void
@@ -486,6 +514,7 @@ and_draw_drawTrayDivider( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, flags );
+    returnJRect( draw, JCACHE_RECT0, jrect );
 }
 
 static void
@@ -499,6 +528,7 @@ and_draw_score_pendingScore( DrawCtx* dctx, const XP_Rect* rect,
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, score, playerNum, curTurn, flags );
+    returnJRect( draw, JCACHE_RECT0, jrect );
 }
 
 static void
@@ -512,6 +542,7 @@ and_draw_objFinished( DrawCtx* dctx, BoardObjectType typ,
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             (jint)typ, jrect );
+    returnJRect( draw, JCACHE_RECT0, jrect );
 #endif
 }
 
@@ -588,7 +619,7 @@ and_draw_drawMiniWindow( DrawCtx* dctx, const XP_UCHAR* text,
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jstr, jrect );
-
+    returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jstr );
 }
 #endif

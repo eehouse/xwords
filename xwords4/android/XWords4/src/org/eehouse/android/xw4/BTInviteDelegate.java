@@ -26,13 +26,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import junit.framework.Assert;
 
@@ -46,12 +47,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
-
+    private static final String TAG = BTInviteDelegate.class.getSimpleName();
+    private static final int[] BUTTONIDS = { R.id.button_add,
+                                             R.id.button_clear,
+    };
     private Activity m_activity;
-    private Set<LinearLayout> m_checked;
-    private Map<String, Integer> m_counts;
-    private boolean m_setChecked;
-    private BTDevsAdapter m_adapter;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
@@ -71,22 +71,32 @@ public class BTInviteDelegate extends InviteDelegate {
 
     protected BTInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.layout.btinviter );
+        super( delegator, savedInstanceState );
         m_activity = delegator.getActivity();
     }
 
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        m_checked = new HashSet<LinearLayout>();
-        m_counts = new HashMap<String, Integer>();
-
         String msg = getString( R.string.bt_pick_addall_button );
         msg = getQuantityString( R.plurals.invite_bt_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( R.id.button_invite, R.id.button_rescan,
-                    R.id.button_clear, R.id.invite_desc, msg );
+        super.init( msg, 0 );
+        addButtonBar( R.layout.bt_buttons, BUTTONIDS );
         BTService.clearDevices( m_activity, null ); // will return names
+    }
+
+    @Override
+    protected void onBarButtonClicked( int id )
+    {
+        switch( id ) {
+        case R.id.button_add:
+            scan();
+            break;
+        case R.id.button_clear:
+            Utils.notImpl( m_activity );
+            break;
+        }
     }
 
     // MultiService.MultiEventListener interface
@@ -99,23 +109,13 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void run() {
                         synchronized( BTInviteDelegate.this ) {
 
-                            String[] btDevAddrs = null;
-                            String[] btDevNames = null;
+                            TwoStringPair[] pairs = null;
                             if ( 0 < args.length ) {
-                                btDevAddrs = (String[])(args[0]);
-                                btDevNames = (String[])(args[1]);
-                                if ( null != btDevNames
-                                     && 0 == btDevNames.length ) {
-                                    btDevNames = null;
-                                    btDevAddrs = null;
-                                }
+                                pairs = TwoStringPair.make( (String[])(args[0]),
+                                                            (String[])(args[1]) );
                             }
 
-                            m_setChecked = null != btDevNames
-                                && m_nMissing == btDevNames.length;
-                            m_adapter = new BTDevsAdapter( btDevAddrs, btDevNames );
-                            setListAdapter( m_adapter );
-                            m_checked.clear();
+                            updateListAdapter( pairs );
                             tryEnable();
                         }
                     }
@@ -126,7 +126,25 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
-    protected void scan()
+    @Override
+    protected void onChildAdded( View child, InviterItem data )
+    {
+        TwoStrsItem item = (TwoStrsItem)child; // change class name!
+        TwoStringPair pair = (TwoStringPair)data;
+        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
+    }
+
+    @Override
+    protected void listSelected( InviterItem[] selected, String[] devs )
+    {
+        for ( int ii = 0; ii < selected.length; ++ii ) {
+            TwoStringPair rec = (TwoStringPair)selected[ii];
+            devs[ii] = rec.str1;
+            DbgUtils.logd( TAG, "selecting address %s", devs[ii] );
+        }
+    }
+
+    private void scan()
     {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
@@ -139,127 +157,15 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
-    protected void clearSelected()
-    {
-        String[][] selected = new String[1][];
-        listSelected( selected, null );
-        BTService.clearDevices( m_activity, selected[0] );
-    }
+    // @Override
+    // protected void clearSelected( Integer[] itemIndices )
+    // {
+    //     // String[][] selected = new String[1][];
+    //     // listSelected( selected, null );
+    //     // BTService.clearDevices( m_activity, selected[0] );
 
-    protected void listSelected( String[][] devsP, int[][] countsP )
-    {
-        int size = m_checked.size();
-        int[] counts = null;
-        String[] devs = new String[size];
-        devsP[0] = devs;
-        if ( null != countsP ) {
-            counts = new int[size];
-            countsP[0] = counts;
-        }
-
-        int nxt = 0;
-        for ( Iterator<LinearLayout> iter = m_checked.iterator();
-              iter.hasNext(); ) {
-            LinearLayout layout = iter.next();
-            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            String btAddr = (String)box.getTag();
-            devs[nxt] = btAddr;
-            if ( null != counts ) {
-                counts[nxt] = m_counts.get( btAddr );
-            }
-            ++nxt;
-        }
-    }
-
-    protected void tryEnable()
-    {
-        String[][] devs = new String[1][];
-        int[][] counts = new int[1][];
-        listSelected( devs, counts );
-
-        m_clearButton.setEnabled( 0 < devs[0].length );
-
-        int count = 0;
-        for ( int one : counts[0] ) {
-            count += one;
-        }
-        m_okButton.setEnabled( 0 < count && count <= m_nMissing );
-    }
-
-    private class BTDevsAdapter extends XWListAdapter {
-        private String[] m_devAddrs;
-        private String[] m_devNames;
-
-        public BTDevsAdapter( String[] btAddrs, String[] btNames )
-        {
-            super( null == btAddrs? 0 : btAddrs.length );
-            m_devAddrs = btAddrs;
-            m_devNames = btNames;
-        }
-
-        public Object getItem( int position ) { return m_devNames[position]; }
-
-        public View getView( int position, View convertView, ViewGroup parent ) {
-            final String btAddr = m_devAddrs[position];
-            final LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
-            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            box.setText( m_devNames[position] );
-            box.setTag( btAddr );
-
-            m_counts.put( btAddr, 1 );
-            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
-                Spinner spinner = (Spinner)
-                    layout.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>( m_activity, android.R.layout
-                                              .simple_spinner_item );
-                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
-                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
-                    adapter.add( str );
-                }
-                spinner.setAdapter( adapter );
-                spinner.setVisibility( View.VISIBLE );
-                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent,
-                                                    View view, int pos,
-                                                    long id )
-                        {
-                            m_counts.put( btAddr, 1 + pos );
-                            tryEnable();
-                        }
-
-                        public void onNothingSelected( AdapterView<?> parent ) {}
-                    } );
-            }
-
-            CompoundButton.OnCheckedChangeListener listener =
-                new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton buttonView,
-                                                  boolean isChecked ) {
-                        if ( isChecked ) {
-                            m_checked.add( layout );
-                        } else {
-                            m_checked.remove( layout );
-                            // User's now making changes; don't check new views
-                            m_setChecked = false;
-                        }
-                        tryEnable();
-                    }
-                };
-            box.setOnCheckedChangeListener( listener );
-
-            if ( m_setChecked || m_checked.contains( layout ) ) {
-                box.setChecked( true );
-            } else if ( null != m_lastDev && m_lastDev.equals( btAddr ) ) {
-                m_lastDev = null;
-                box.setChecked( true );
-            }
-            return layout;
-        }
-
-        public String getBTAddr( CheckBox box ) { return (String)box.getTag(); }
-        public String getBTName( CheckBox box ) { return box.getText().toString(); }
-    }
+    //     // super.clearSelected( itemIndices );
+    // }
 
     // DlgDelegate.DlgClickNotify interface
     @Override

@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class BTInviteActivity extends InviteActivity {
+    private static final String TAG = BTInviteActivity.class.getSimpleName();
 
     @Override
     protected void onCreate( Bundle savedInstanceState )

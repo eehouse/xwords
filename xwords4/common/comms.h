@@ -41,6 +41,7 @@ typedef enum {
     ,COMMS_CONN_RELAY
     ,COMMS_CONN_BT
     ,COMMS_CONN_SMS
+    ,COMMS_CONN_P2P             /* a.k.a. Wifi direct */
 
     ,COMMS_CONN_NTYPES
 } CommsConnType;
@@ -77,6 +78,7 @@ typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
 
 #define MAX_HOSTNAME_LEN 63
 #define MAX_PHONE_LEN    31
+#define MAX_P2P_MAC_LEN 17
 
 typedef struct _CommsAddrRec {
     XP_U16 _conTypes;
@@ -108,6 +110,9 @@ typedef struct _CommsAddrRec {
             XP_UCHAR phone[MAX_PHONE_LEN + 1];
             XP_U16   port;
         } sms;
+        struct {
+            XP_UCHAR mac_addr[MAX_P2P_MAC_LEN + 1];
+        } p2p;
     } u;
 } CommsAddrRec;
 

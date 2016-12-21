@@ -31,6 +31,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 // Collection of native methods and a bit of state
 public class XwJNI {
+    private static final String TAG = XwJNI.class.getSimpleName();
 
     public static class GamePtr {
         private int m_ptr = 0;
@@ -51,7 +52,7 @@ public class XwJNI {
         public synchronized GamePtr retain()
         {
             ++m_refCount;
-            DbgUtils.logd( getClass(), "retain(this=%H, rowid=%d): refCount now %d",
+            DbgUtils.logd( TAG, "retain(this=%H, rowid=%d): refCount now %d",
                            this, m_rowid, m_refCount );
             return this;
         }
@@ -61,7 +62,7 @@ public class XwJNI {
         public synchronized void release()
         {
             --m_refCount;
-            DbgUtils.logd( getClass(), "release(this=%H, rowid=%d): refCount now %d",
+            DbgUtils.logd( TAG, "release(this=%H, rowid=%d): refCount now %d",
                            this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
                 if ( 0 != m_ptr ) {

@@ -27,6 +27,7 @@ import java.lang.ref.WeakReference;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
+    private static final String TAG = SMSCheckBoxPreference.class.getSimpleName();
     private static WeakReference<ConfirmingCheckBoxPreference> s_this = null;
 
     public SMSCheckBoxPreference( Context context, AttributeSet attrs )
@@ -39,7 +40,7 @@ public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
-        if ( !XWApp.SMSSUPPORTED || !Utils.deviceSupportsSMS( getContext() ) ) {
+        if ( !Utils.deviceSupportsSMS( getContext() ) ) {
             setEnabled( false );
         }
     }

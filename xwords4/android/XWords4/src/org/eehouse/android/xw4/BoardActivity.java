@@ -28,6 +28,7 @@ import android.view.Window;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class BoardActivity extends XWActivity {
+    private static final String TAG = BoardActivity.class.getSimpleName();
 
     private BoardDelegate m_dlgt;
 

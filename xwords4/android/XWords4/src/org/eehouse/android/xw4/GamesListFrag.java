@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class GamesListFrag extends XWFragment {
+    private static final String TAG = GamesListFrag.class.getSimpleName();
 
     public GamesListFrag() {}
 

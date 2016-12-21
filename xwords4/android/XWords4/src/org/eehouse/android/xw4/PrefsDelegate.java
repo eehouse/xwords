@@ -336,7 +336,7 @@ public class PrefsDelegate extends DelegateBase
 
     private void hideStuff()
     {
-        if ( !XWApp.SMSSUPPORTED || !Utils.isGSMPhone( m_activity ) ) {
+        if ( !Utils.isGSMPhone( m_activity ) ) {
             hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
         }
 

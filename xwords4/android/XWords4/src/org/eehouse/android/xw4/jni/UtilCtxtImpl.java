@@ -33,6 +33,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class UtilCtxtImpl implements UtilCtxt {
+    private static final String TAG = UtilCtxtImpl.class.getSimpleName();
     private Context m_context;
 
     private UtilCtxtImpl() {}   // force subclasses to pass context
@@ -208,7 +209,7 @@ public class UtilCtxtImpl implements UtilCtxt {
             break;
 
         default:
-            DbgUtils.logw( getClass(), "no such stringCode: %d", stringCode );
+            DbgUtils.logw( TAG, "no such stringCode: %d", stringCode );
         }
 
         String result = (0 == id) ? "" : LocUtils.getString( m_context, id );
@@ -300,7 +301,6 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     public boolean phoneNumbersSame( String num1, String num2 )
     {
-        Assert.assertTrue( XWApp.SMSSUPPORTED );
         boolean same = PhoneNumberUtils.compare( m_context, num1, num2 );
         return same;
     }

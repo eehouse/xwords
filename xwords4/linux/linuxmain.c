@@ -2022,7 +2022,6 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
 int
 main( int argc, char** argv )
 {
-    XP_Bool useCurses;
     int opt;
     int totalPlayerCount = 0;
     XP_Bool isServer = XP_FALSE;
@@ -2127,9 +2126,9 @@ main( int argc, char** argv )
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
 #if defined PLATFORM_GTK
-    useCurses = XP_FALSE;
+    mainParams.useCurses = XP_FALSE;
 #else  /* curses is the default if GTK isn't available */
-    useCurses = XP_TRUE;
+    mainParams.useCurses = XP_TRUE;
 #endif
 
     struct option* longopts = make_longopts();
@@ -2452,10 +2451,10 @@ main( int argc, char** argv )
 
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
         case CMD_GTK:
-            useCurses = XP_FALSE;
+            mainParams.useCurses = XP_FALSE;
             break;
         case CMD_CURSES:
-            useCurses = XP_TRUE;
+            mainParams.useCurses = XP_TRUE;
             break;
 #endif
 #if defined PLATFORM_GTK
@@ -2643,7 +2642,7 @@ main( int argc, char** argv )
         /*     gi_initPlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi, NULL ); */
         /* } */
 
-        if ( useCurses ) {
+        if ( mainParams.useCurses ) {
             if ( mainParams.needsNewGame ) {
                 /* curses doesn't have newgame dialog */
                 usage( argv[0], "game params required for curses version" );
