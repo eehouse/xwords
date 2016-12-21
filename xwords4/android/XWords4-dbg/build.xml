@@ -58,6 +58,7 @@
     <property name="INITIAL_CLIENT_VERS" value="8"/>
     <property name="VARIANT_NAME" value="xw4dbg"/>
     <property name="APP_NAME" value="CrossDbg"/>
+    <property name="WIDIR_ENABLED" value="true" />
 
     <target name="-pre-clean">
         <antcall target="my-pre-clean" />

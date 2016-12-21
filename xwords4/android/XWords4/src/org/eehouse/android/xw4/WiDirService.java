@@ -76,7 +76,6 @@ public class WiDirService extends XWService {
     private static final String MAC_ADDR_KEY = "p2p_mac_addr";
     private static final String SERVICE_NAME = "srvc_" + BuildConstants.VARIANT;
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
-    private static final boolean WIFI_DIRECT_ENABLED = true;
     private static final int OWNER_PORT = 5432;
 
     private enum P2PAction { _NONE,
@@ -138,7 +137,7 @@ public class WiDirService extends XWService {
     {
         int result;
 
-        if ( WIFI_DIRECT_ENABLED && null != intent ) {
+        if ( BuildConstants.WIDIR_ENABLED && null != intent ) {
             result = Service.START_STICKY;
 
             int ordinal = intent.getIntExtra( KEY_CMD, -1 );
@@ -205,7 +204,7 @@ public class WiDirService extends XWService {
 
     public static boolean supported()
     {
-        return WIFI_DIRECT_ENABLED;
+        return BuildConstants.WIDIR_ENABLED;
     }
 
     public static boolean connecting() {
@@ -216,7 +215,7 @@ public class WiDirService extends XWService {
 
     public static String getMyMacAddress( Context context )
     {
-        if ( WIFI_DIRECT_ENABLED ) {
+        if ( BuildConstants.WIDIR_ENABLED ) {
             if ( null == sMacAddress && null != context ) {
                 sMacAddress = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
             }
@@ -305,7 +304,7 @@ public class WiDirService extends XWService {
 
     public static void activityResumed( Activity activity )
     {
-        if ( WIFI_DIRECT_ENABLED && sHavePermission ) {
+        if ( BuildConstants.WIDIR_ENABLED && sHavePermission ) {
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
                 DbgUtils.logd( TAG, "activityResumed() done" );
@@ -316,7 +315,7 @@ public class WiDirService extends XWService {
 
     public static void activityPaused( Activity activity )
     {
-        if ( WIFI_DIRECT_ENABLED && sHavePermission ) {
+        if ( BuildConstants.WIDIR_ENABLED && sHavePermission ) {
             Assert.assertNotNull( sReceiver );
             // No idea why I'm seeing this exception...
             try {
@@ -345,7 +344,7 @@ public class WiDirService extends XWService {
     private static boolean initListeners( final Context context )
     {
         boolean succeeded = false;
-        if ( WIFI_DIRECT_ENABLED ) {
+        if ( BuildConstants.WIDIR_ENABLED ) {
             if ( null == sIface ) {
                 try {
                     WifiP2pManager mgr = getMgr();
@@ -593,7 +592,7 @@ public class WiDirService extends XWService {
 
     private static void setDiscoveryListeners( WifiP2pManager mgr )
     {
-        if ( WIFI_DIRECT_ENABLED ) {
+        if ( BuildConstants.WIDIR_ENABLED ) {
             DnsSdServiceResponseListener srl = new DnsSdServiceResponseListener() {
                     @Override
                     public void onDnsSdServiceAvailable(String instanceName,
@@ -1024,7 +1023,7 @@ public class WiDirService extends XWService {
 
         @Override
         public void onReceive( Context context, Intent intent ) {
-            if ( WIFI_DIRECT_ENABLED ) {
+            if ( BuildConstants.WIDIR_ENABLED ) {
                 String action = intent.getAction();
                 DbgUtils.logd( TAG, "got intent: " + intent.toString() );
 
