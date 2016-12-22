@@ -240,6 +240,7 @@ typedef struct _SourceData {
     void* procClosure;
 } SourceData;
 
+#ifdef PLATFORM_GTK
 typedef struct _GtkAppGlobals {
     GArray* selRows;
     LaunchParams* params;
@@ -253,5 +254,6 @@ typedef struct _GtkAppGlobals {
     /* save window position */
     GdkEventConfigure lastConfigure;
 } GtkAppGlobals;
+#endif
 
 #endif

@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef PLATFORM_GTK
+
 #ifndef _GTKDRAW_H_
 #define _GTKDRAW_H_
 
@@ -30,4 +32,5 @@ void addSurface( GtkDrawCtx* dctx, int width, int height );
 void removeSurface( GtkDrawCtx* dctx );
 void getImage( GtkDrawCtx* dctx, XWStreamCtxt* stream );
 
+#endif
 #endif
