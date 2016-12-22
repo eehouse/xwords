@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -93,7 +93,7 @@
   <string name="dicts_item_select">Estableix com a predeterminat</string>
   <string name="settings_label">Paràmetres de la partida</string>
   <string name="minutes_label">Minuts a la partida</string>
-  <string name="download_dicts">Baixa\'n més…</string>
+  <string name="download_dicts">Baixa més llengües…</string>
   <string name="confirm_save_title">Confirmeu els canvis</string>
   <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
   <string name="hints_allowed">Permet pistes</string>
@@ -182,8 +182,10 @@
 
     <string name="missing_player">(encara no és aquí...)</string>
 
-    <string name="summary_relay_conf_fmt">Configurat per a la salla «%1$s»</string>
-    <string name="summary_relay_wait_fmt">S\'està esperant els jugadors en la sala «%1$s»</string>
+    <string name="summary_relay_conf_fmt">Configurat per a la sala
+«%1$s»</string>
+    <string name="summary_relay_wait_fmt">S\'està esperant els jugadors en la sala
+«%1$s»</string>
     <string name="summary_relay_conn_fmt">Partida en joc a la sala «%1$s»</string>
     <string name="summary_relay_gameover_fmt">Partida finalitzada en la sala «%1$s»</string>
 
@@ -197,29 +199,44 @@
 
     <string name="gamel_menu_checkmoves">Comprova si hi ha jugades</string>
 
-    <string name="msgs_progress">S\'està comprovant el repetidor si hi ha jugades…</string>
+    <string name="msgs_progress">S\'està comprovant en el repetidor
+si hi ha jugades, …</string>
 
-    <string name="no_games_to_refresh">No s\'ha trobat cap partida que connecti via el repetidor.</string>
+    <string name="no_games_to_refresh">No s\'ha trobat cap partida
+que connecti via el repetidor.</string>
 
     <string name="game_item_menu_title_fmt">«%1$s» accions:</string>
 
     <string name="list_item_rename">Canvia el nom…</string>
     <string name="list_item_move">Mou al grup…</string>
 
-    <string name="no_copy_network">Les partides que ja estan connectades al repetidor no es poden copiar. Useu «Nova des de» per a una còpia preparada per a jugar amb la mateixa configuració.</string>
+    <string name="no_copy_network">Les partides que ja estan connectades
+ al repetidor no es poden copiar. Useu «Nova des de»
+ per a una còpia preparada per a jugar amb la mateixa configuració.</string>
       <string name="game_rename_title">Canvia de nom la partida</string>
     <string name="rename_label">Canvia el nom d\'aquesta partida a:</string>
-    <string name="rename_label_caveat">Canvia el nom d\'aquesta partida (només en aquest aparell) a:</string>
+    <string name="rename_label_caveat">Canvia el nom d\'aquesta partida
+ (només en aquest aparell) a:</string>
 
     <plurals name="confirm_seldeletes_fmt">
-	  <item quantity="one">Esteu segur de voler suprimir el joc seleccionat? Aquesta acció no es pot desfer.</item>
-	  <item quantity="other">Esteu segur de voler suprimir els %1$d jocs seleccionats? Aquesta acció no es pot desfer.</item>
-    </plurals>
+	<item quantity="one">Esteu segur de voler suprimir el joc seleccionat?
+ Aquesta acció no es pot desfer.</item>
+	<item quantity="other">Esteu segur de voler suprimir els %1$d jocs seleccionats?
+ Aquesta acció no es pot desfer.</item>
+</plurals>
 
     <plurals name="confirm_reset_fmt">
-	  <item quantity="one">Esteu segur de voler reinicialitzar el joc seleccionat?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
-	  <item quantity="other">Esteu segur de voler reinicialitzar els %1$d jocs seleccionats?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
-    </plurals>
+	<item quantity="one">Esteu segur de voler reinicialitzar
+ el joc seleccionat?
+
+(La reinicialització suprimeix totes les jugades
+ i qualsevol informació de connexió.)</item>
+	<item quantity="other">Esteu segur de voler reinicialitzar
+ els %1$d jocs seleccionats?
+
+(La reinicialització suprimeix totes les jugades
+ i qualsevol informació de connexió.)</item>
+</plurals>
 
     <string name="loc_builtin">Incorporat</string>
 
@@ -1041,4 +1058,16 @@
 
   <string name="confirm_clear_chat">Esteu segur de voler suprimir tot l\'historial de conversa d\'aquesta partida?\n\n(Aquesta acció no és pot desfer.)</string>
 
-</resources>
+<string name="summary_invites_out">Jugadors convidats</string>
+
+    <plurals name="invite_sent_fmt">
+	<item quantity="one">Ja heu convidat un jugador remot a
+aquesta partida. N\'estem esperant resposta.
+Useu el botó de tornar a convidar si penseu que
+ la invitació no ha arribat.</item>
+	<item quantity="other">Ja heu enviat $1$d invitacions a
+aquesta partida. N\'estem esperant resposta.
+de %2$d destinataris. Useu el botó de tornar a
+ convidar si penseu que les invitacions no ha arribat.</item>
+</plurals>
+    </resources>
