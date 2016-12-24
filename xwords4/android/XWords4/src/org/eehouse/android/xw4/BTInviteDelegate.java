@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -40,6 +40,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,6 +53,7 @@ public class BTInviteDelegate extends InviteDelegate {
                                              R.id.button_clear,
     };
     private Activity m_activity;
+    private TwoStringPair[] m_pairs;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
@@ -94,7 +96,8 @@ public class BTInviteDelegate extends InviteDelegate {
             scan();
             break;
         case R.id.button_clear:
-            Utils.notImpl( m_activity );
+            removeSelected();
+            clearChecked();
             break;
         }
     }
@@ -109,13 +112,13 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void run() {
                         synchronized( BTInviteDelegate.this ) {
 
-                            TwoStringPair[] pairs = null;
+                            m_pairs = null;
                             if ( 0 < args.length ) {
-                                pairs = TwoStringPair.make( (String[])(args[0]),
-                                                            (String[])(args[1]) );
+                                m_pairs = TwoStringPair.make( (String[])(args[0]),
+                                                              (String[])(args[1]) );
                             }
 
-                            updateListAdapter( pairs );
+                            updateListAdapter( m_pairs );
                             tryEnable();
                         }
                     }
@@ -131,7 +134,7 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         TwoStrsItem item = (TwoStrsItem)child; // change class name!
         TwoStringPair pair = (TwoStringPair)data;
-        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
+        ((TwoStrsItem)child).setStrings( pair.str2, null/*pair.str1*/ );
     }
 
     @Override
@@ -158,14 +161,17 @@ public class BTInviteDelegate extends InviteDelegate {
     }
 
     // @Override
-    // protected void clearSelected( Integer[] itemIndices )
-    // {
-    //     // String[][] selected = new String[1][];
-    //     // listSelected( selected, null );
-    //     // BTService.clearDevices( m_activity, selected[0] );
-
-    //     // super.clearSelected( itemIndices );
-    // }
+    private void removeSelected()
+    {
+        Set<InviterItem> checked = getChecked();
+        String[] devs = new String[checked.size()];
+        Iterator<InviterItem> iter = checked.iterator();
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            TwoStringPair pair = (TwoStringPair)iter.next();
+            devs[ii] = pair.str1;
+        }
+        BTService.clearDevices( m_activity, devs );
+    }
 
     // DlgDelegate.DlgClickNotify interface
     @Override

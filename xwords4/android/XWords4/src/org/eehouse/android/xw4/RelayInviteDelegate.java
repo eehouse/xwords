@@ -448,6 +448,12 @@ public class RelayInviteDelegate extends InviteDelegate {
             m_nPlayers = 1;
             m_opponent = opponent;
         }
+
+        public boolean equals( InviterItem item )
+        {
+            return item != null
+                && ((DevIDRec)item).m_devID == m_devID;
+        }
     }
 
     // private class RelayDevsAdapter extends XWListAdapter {

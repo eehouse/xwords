@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 import android.text.method.DialerKeyListener;
 import android.view.View;
 import android.widget.Button;
@@ -335,10 +336,11 @@ public class SMSInviteDelegate extends InviteDelegate
 
     private void clearSelectedImpl()
     {
-        Set<Integer> checked = getChecked();
-        for ( int ii = m_phoneRecs.size() - 1; ii >= 0; --ii ) {
-            if ( checked.contains( ii ) ) {
-                m_phoneRecs.remove( ii );
+        Set<InviterItem> checked = getChecked();
+        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
+        for ( ; iter.hasNext(); ) {
+            if ( checked.contains( iter.next() ) ) {
+                iter.remove();
             }
         }
         clearChecked();
@@ -369,6 +371,17 @@ public class SMSInviteDelegate extends InviteDelegate
         public PhoneRec( String phone )
         {
             this( null, phone );
+        }
+
+        public boolean equals( InviterItem item )
+        {
+            boolean result = false;
+            if ( null != item &&  item instanceof PhoneRec ) {
+                PhoneRec rec = (PhoneRec)item;
+                result = m_name.equals(rec.m_name)
+                    && PhoneNumberUtils.compare( m_phone, rec.m_phone );
+            }
+            return result;
         }
 
         private PhoneRec( String name, String phone )
