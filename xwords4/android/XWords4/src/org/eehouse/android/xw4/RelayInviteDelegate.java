@@ -207,12 +207,6 @@ public class RelayInviteDelegate extends InviteDelegate {
         Assert.fail();
     }
 
-    @Override
-    public void listSelected( InviterItem[] selected, String[] devsP )
-    {
-        Assert.fail();
-    }
-
     // We want to present user with list of previous opponents and devices. We
     // can easily get list of relayIDs. The relay, if reachable, can convert
     // that to a (likely shorter) list of devices. Then for each deviceID,
@@ -448,6 +442,8 @@ public class RelayInviteDelegate extends InviteDelegate {
             m_nPlayers = 1;
             m_opponent = opponent;
         }
+
+        public String getDev() { return m_devID; }
 
         public boolean equals( InviterItem item )
         {

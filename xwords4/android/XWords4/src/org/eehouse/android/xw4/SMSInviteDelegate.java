@@ -180,15 +180,6 @@ public class SMSInviteDelegate extends InviteDelegate
     }
 
     @Override
-    protected void listSelected( InviterItem[] selected, String[] devs )
-    {
-        for ( int ii = 0; ii < selected.length; ++ii ) {
-            PhoneRec rec = (PhoneRec)selected[ii];
-            devs[ii] = rec.m_phone;
-        }
-    }
-
-    @Override
     protected void onChildAdded( View child, InviterItem data )
     {
         PhoneRec rec = (PhoneRec)data;
@@ -372,6 +363,8 @@ public class SMSInviteDelegate extends InviteDelegate
         {
             this( null, phone );
         }
+
+        public String getDev() { return m_phone; }
 
         public boolean equals( InviterItem item )
         {

@@ -51,6 +51,7 @@ abstract class InviteDelegate extends ListDelegateBase
 
     protected interface InviterItem {
         boolean equals(InviterItem item);
+        String getDev();        // the string that identifies this item in results
     }
 
     protected static class TwoStringPair implements InviterItem {
@@ -70,6 +71,8 @@ abstract class InviteDelegate extends ListDelegateBase
             return pairs;
         }
 
+        public String getDev() { return str1; }
+
         public boolean equals( InviterItem item )
         {
             boolean result = false;
@@ -86,7 +89,6 @@ abstract class InviteDelegate extends ListDelegateBase
 
     // Children implement ...
     abstract void onChildAdded( View child, InviterItem item );
-    abstract void listSelected( InviterItem[] selected, String[] devs );
 
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
@@ -167,6 +169,13 @@ abstract class InviteDelegate extends ListDelegateBase
         updateChecked( items );
         m_adapter = new InviteItemsAdapter( itemId, items );
         setListAdapter( m_adapter );
+    }
+
+    protected void listSelected( InviterItem[] selected, String[] devs )
+    {
+        for ( int ii = 0; ii < selected.length; ++ii ) {
+            devs[ii] = selected[ii].getDev();
+        }
     }
 
     protected void onBarButtonClicked( int id )
@@ -362,11 +371,10 @@ abstract class InviteDelegate extends ListDelegateBase
 
             if ( m_setChecked || m_checked.contains( item ) ) {
                 box.setChecked( true );
-            } else if ( null != m_lastDev && m_lastDev.equals( item ) ) {
+            } else if ( null != m_lastDev && m_lastDev.equals(item.getDev()) ) {
                 m_lastDev = null;
                 box.setChecked( true );
             }
-            // m_items[position] = layout;
             return layout;
         }
 
