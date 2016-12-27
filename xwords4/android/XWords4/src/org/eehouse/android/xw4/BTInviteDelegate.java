@@ -25,26 +25,14 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.Button;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
@@ -135,6 +123,17 @@ public class BTInviteDelegate extends InviteDelegate {
         TwoStrsItem item = (TwoStrsItem)child; // change class name!
         TwoStringPair pair = (TwoStringPair)data;
         ((TwoStrsItem)child).setStrings( pair.str2, null/*pair.str1*/ );
+    }
+
+    @Override
+    protected void tryEnable()
+    {
+        super.tryEnable();
+
+        Button button = (Button)findViewById( R.id.button_clear );
+        if ( null != button ) { // may not be there yet
+            button.setEnabled( 0 < getChecked().size() );
+        }
     }
 
     private void scan()

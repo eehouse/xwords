@@ -34,11 +34,6 @@ import android.telephony.PhoneNumberUtils;
 import android.text.method.DialerKeyListener;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 import junit.framework.Assert;
 
@@ -49,14 +44,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
 import org.json.JSONException;
 
-public class SMSInviteDelegate extends InviteDelegate
-    implements View.OnClickListener {
+public class SMSInviteDelegate extends InviteDelegate {
     private static final String TAG = SMSInviteDelegate.class.getSimpleName();
     private static int[] BUTTONIDS = {
         R.id.button_add,
@@ -68,7 +61,6 @@ public class SMSInviteDelegate extends InviteDelegate
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<PhoneRec> m_phoneRecs;
-    private ImageButton m_addButton;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
@@ -186,6 +178,17 @@ public class SMSInviteDelegate extends InviteDelegate
         ((TwoStrsItem)child).setStrings( rec.m_name, rec.m_phone );
     }
 
+    @Override
+    protected void tryEnable()
+    {
+        super.tryEnable();
+
+        Button button = (Button)findViewById( R.id.button_clear );
+        if ( null != button ) { // may not be there yet
+            button.setEnabled( 0 < getChecked().size() );
+        }
+    }
+
     // DlgDelegate.DlgClickNotify interface
     @Override
     public void dlgButtonClicked( Action action, int which,
@@ -283,13 +286,6 @@ public class SMSInviteDelegate extends InviteDelegate
                     return rec1.m_name.compareTo(rec2.m_name);
                 }
             });
-        // String[] phones = new String[m_phoneRecs.size()];
-        // String[] names = new String[m_phoneRecs.size()];
-        // for ( int ii = 0; ii < m_phoneRecs.size(); ++ii ) {
-        //     PhoneRec rec = m_phoneRecs.get( ii );
-        //     phones[ii] = rec.m_phone;
-        //     names[ii] = rec.m_name;
-        // }
 
         updateListAdapter( m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
         tryEnable();
