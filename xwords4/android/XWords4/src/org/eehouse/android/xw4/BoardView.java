@@ -109,7 +109,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 } else if ( XwJNI.board_containsPt( m_jniGamePtr, xx, yy ) ) {
                     handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
                 } else {
-                    DbgUtils.logd( TAG, "BoardView.onTouchEvent(): in white space" );
+                    DbgUtils.logd( TAG, "onTouchEvent(): in white space" );
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -160,7 +160,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( BoardContainer.getIsPortrait() != (m_dims.height > m_dims.width) ) {
                 // square possible; will break above!
                 Assert.assertTrue( m_dims.height != m_dims.width );
-                DbgUtils.logd( TAG, "BoardView.onMeasure: discarding m_dims" );
+                DbgUtils.logd( TAG, "onMeasure: discarding m_dims" );
                 if ( ++m_dimsTossCount < 4 ) {
                     m_dims = null;
                     m_layoutWidth = m_layoutHeight = 0;
@@ -187,7 +187,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             width = minWidth;
         }
         setMeasuredDimension( width, height );
-        DbgUtils.logd( TAG, "BoardView.onMeasure: calling setMeasuredDimension( width=%d, height=%d )",
+        DbgUtils.logd( TAG, "onMeasure: calling setMeasuredDimension( width=%d, height=%d )",
                        width, height );
     }
 
@@ -214,7 +214,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 ConnStatusHandler.draw( m_context, canvas, getResources(),
                                         m_connTypes, m_isSolo );
             } else {
-                DbgUtils.logd( TAG, "BoardView.onDraw(): board not laid out yet" );
+                DbgUtils.logd( TAG, "onDraw(): board not laid out yet" );
             }
         }
     }
