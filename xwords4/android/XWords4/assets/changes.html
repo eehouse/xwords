@@ -13,10 +13,11 @@
 	</style>
   </head>
 <body>
-  <h2>Crosswords 4.4.114 release</h2>
+  <h2>Crosswords 4.4.115 release</h2>
 
-  <p>This release fixes a drawing problem on Android Nougat version
-  only.</p>
+  <p>This release uses the new permissions process introduced with
+      "Marshmallow": Crosswords only asks for permissions when they're
+      required.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,11 +27,12 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Fix (or work around) board drawing weirdness introduced with
-          Nougat. It showed most often when using the hint
-          feature.</li>
-      <li>Fix a couple of crashes reported via the Play Store --
-          thanks!</li>
+      <li>Request permissions when they're needed, e.g. ask to send
+      SMS messages when you choose to play a game that way.</li>
+      <li>Other permissions required are for access to Storage and to contacts.</li>
+      <li>Rework the invitations dialogs. (No new features, but please report any bugs!)</li>
+      <li>New two-color icon for notifications (required by the newer
+      Android that supports run-time permissions</li>
   </ul>
 
   <p>(The full changelog 
@@ -38,10 +40,8 @@
 
   <h3>Next up</h3>
   <ul>
-      <li>Support WiFi Direct (currently working sporadically)</li>
-      <li>Take advantage of Marshmallow's new permissions model (where
-      the app only asks for permission, e.g. to send SMS, when it
-      needs it.)
+      <li>Continue work to support WiFi Direct (currently working
+      sporadically)</li>
   </ul>
 
   <p>Please let me know
