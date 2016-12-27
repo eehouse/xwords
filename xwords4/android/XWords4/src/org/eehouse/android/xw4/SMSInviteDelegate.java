@@ -210,8 +210,11 @@ public class SMSInviteDelegate extends InviteDelegate {
         case POST_WARNING_ACTION:
             DbgUtils.printStack( TAG );
             if ( isPositive ) { // ???
-                m_phoneRecs.add( new PhoneRec( (String)params[1],
-                                               (String)params[0] ) );
+                PhoneRec rec = new PhoneRec( (String)params[1],
+                                             (String)params[0] );
+                m_phoneRecs.add( rec );
+                clearChecked();
+                onItemChecked( rec, true );
                 saveAndRebuild();
             }
             break;

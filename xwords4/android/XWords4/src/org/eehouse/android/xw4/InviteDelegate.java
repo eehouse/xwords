@@ -269,13 +269,9 @@ abstract class InviteDelegate extends ListDelegateBase
         }
     }
 
-    // protected void scan() {}
-
     // callbacks made by InviteItemsAdapter
-    protected void onItemChecked( int index, boolean checked )
+    protected void onItemChecked( InviterItem item, boolean checked )
     {
-        DbgUtils.logd( TAG, "onItemChecked(%d, %b)", index, checked );
-        InviterItem item = m_adapter.getItems()[index];
         if ( checked ) {
             m_checked.add( item );
         } else {
@@ -283,7 +279,7 @@ abstract class InviteDelegate extends ListDelegateBase
         }
     }
 
-    protected InviteItemsAdapter getAdapter()
+    private InviteItemsAdapter getAdapter()
     {
         return m_adapter;
     }
@@ -362,7 +358,7 @@ abstract class InviteDelegate extends ListDelegateBase
                         //     // User's now making changes; don't check new views
                         //     m_setChecked = false;
                         }
-                        onItemChecked( position, isChecked );
+                        onItemChecked( item, isChecked );
 
                         tryEnable();
                     }
