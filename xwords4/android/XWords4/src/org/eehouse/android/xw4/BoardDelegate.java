@@ -54,6 +54,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -725,12 +726,12 @@ public class BoardDelegate extends DelegateBase
                                     boolean showRationale )
     {
         Perms23.Builder builder =
-            new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE );
+            new Perms23.Builder( Perm.READ_PHONE_STATE );
 
         if ( showRationale ) {
             builder.setOnShowRationale( new Perms23.OnShowRationale() {
                     @Override
-                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
+                    public void onShouldShowRationale( Set<Perm> perms )
                     {
                         makeOkOnlyBuilder( R.string.phone_state_rationale )
                             .setAction( Action.RETRY_PHONE_STATE_ACTION )
@@ -742,7 +743,7 @@ public class BoardDelegate extends DelegateBase
 
         builder.asyncQuery( m_activity, new Perms23.PermCbck() {
                     @Override
-                    public void onPermissionResult( Map<Perms23.Perm,
+                    public void onPermissionResult( Map<Perm,
                                                     Boolean> perms )
                     {
                         // Do the work regardless of result; just won't have
@@ -2229,13 +2230,13 @@ public class BoardDelegate extends DelegateBase
              && null == m_permCbck ) { // already asked?
             m_permCbck = new Perms23.PermCbck() {
                     @Override
-                    public void onPermissionResult( Map<Perms23.Perm,
+                    public void onPermissionResult( Map<Perm,
                                                     Boolean> perms )
                     {
                         ActionPair pair = new ActionPair( Action.DROP_SMS_ACTION,
                                                           R.string.remove_sms );
 
-                        if ( ! perms.get(Perms23.Perm.SEND_SMS) ) {
+                        if ( ! perms.get(Perm.SEND_SMS) ) {
                             makeNotAgainBuilder( R.string.not_again_missing_perms,
                                                  R.string.key_notagain_missing_perms )
                                 .setActionPair( pair )
@@ -2243,7 +2244,7 @@ public class BoardDelegate extends DelegateBase
                         }
                     }
                 };
-            new Perms23.Builder(Perms23.Perm.SEND_SMS)
+            new Perms23.Builder(Perm.SEND_SMS)
                 .asyncQuery( m_activity, m_permCbck );
         }
     }

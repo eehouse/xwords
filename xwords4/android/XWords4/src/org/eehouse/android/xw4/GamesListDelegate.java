@@ -53,6 +53,7 @@ import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DlgDelegate.NAKey;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -1560,14 +1561,14 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_loaddb:
-            new Perms23.Builder( Perms23.Perm.STORAGE )
+            new Perms23.Builder( Perm.STORAGE )
                 .asyncQuery( m_activity, new Perms23.PermCbck() {
                         @Override
-                        public void onPermissionResult( Map<Perms23.Perm,
+                        public void onPermissionResult( Map<Perm,
                                                         Boolean> granted )
                         {
-                            Assert.assertTrue( granted.containsKey(Perms23.Perm.STORAGE) );
-                            if ( granted.get(Perms23.Perm.STORAGE) ) {
+                            Assert.assertTrue( granted.containsKey(Perm.STORAGE) );
+                            if ( granted.get(Perm.STORAGE) ) {
                                 DBUtils.loadDB( m_activity );
                                 XWPrefs.clearGroupPositions( m_activity );
                                 mkListAdapter();
@@ -1576,13 +1577,13 @@ public class GamesListDelegate extends ListDelegateBase
                     } );
             break;
         case R.id.games_menu_storedb:
-            new Perms23.Builder( Perms23.Perm.STORAGE )
+            new Perms23.Builder( Perm.STORAGE )
                 .asyncQuery( m_activity, new Perms23.PermCbck() {
                         @Override
-                        public void onPermissionResult( Map<Perms23.Perm, Boolean> granted )
+                        public void onPermissionResult( Map<Perm, Boolean> granted )
                         {
-                            Assert.assertTrue( granted.containsKey( Perms23.Perm.STORAGE ) );
-                            if ( granted.get( Perms23.Perm.STORAGE ) ) {
+                            Assert.assertTrue( granted.containsKey( Perm.STORAGE ) );
+                            if ( granted.get( Perm.STORAGE ) ) {
                                 DBUtils.saveDB( m_activity );
                                 showToast( R.string.db_store_done );
                             }

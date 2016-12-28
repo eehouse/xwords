@@ -39,6 +39,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.Perms23.Perm;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,9 +57,6 @@ public class SMSInviteDelegate extends InviteDelegate {
         R.id.manual_add_button,
         R.id.button_clear,
     };
-
-    private static final String SAVE_NAME = "SAVE_NAME";
-    private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private boolean m_immobileConfirmed;
@@ -90,8 +88,6 @@ public class SMSInviteDelegate extends InviteDelegate {
                                  m_nMissing, msg );
         super.init( msg, R.string.empty_sms_inviter );
         addButtonBar( R.layout.sms_buttons, BUTTONIDS );
-
-        // getBundledData( savedInstanceState );
 
         getSavedState();
         rebuildList( true );
@@ -339,11 +335,11 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     private void askContactsPermission( boolean showRationale )
     {
-        Perms23.Builder builder = new Perms23.Builder( Perms23.Perm.READ_CONTACTS );
+        Perms23.Builder builder = new Perms23.Builder( Perm.READ_CONTACTS );
         if ( showRationale ) {
             builder.setOnShowRationale( new Perms23.OnShowRationale() {
                     @Override
-                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
+                    public void onShouldShowRationale( Set<Perm> perms )
                     {
                         makeOkOnlyBuilder( R.string.contacts_rationale )
                             .setAction( Action.RETRY_CONTACTS_ACTION )

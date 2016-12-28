@@ -63,6 +63,7 @@ import java.util.Random;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -113,7 +114,7 @@ public class Utils {
     public static boolean isGSMPhone( Context context )
     {
         boolean result = false;
-        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
+        if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
             SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
             result = info.isPhone && info.isGSM;
         }
@@ -129,7 +130,7 @@ public class Utils {
     public static boolean deviceSupportsSMS( Context context )
     {
         boolean result = false;
-        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
+        if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
             TelephonyManager tm = (TelephonyManager)
                 context.getSystemService( Context.TELEPHONY_SERVICE );
             result = null != tm;
@@ -283,7 +284,7 @@ public class Utils {
         synchronized ( s_phonesHash ) {
             if ( s_phonesHash.containsKey( phone ) ) {
                 name = s_phonesHash.get( phone );
-            } else if ( Perms23.havePermission( Perms23.Perm.READ_CONTACTS ) ) {
+            } else if ( Perms23.havePermission( Perm.READ_CONTACTS ) ) {
                 try {
                     ContentResolver contentResolver = context
                         .getContentResolver();

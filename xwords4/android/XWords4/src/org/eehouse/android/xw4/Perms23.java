@@ -61,7 +61,7 @@ public class Perms23 {
         void onPermissionResult( Map<Perm, Boolean> perms );
     }
     public interface OnShowRationale {
-        void onShouldShowRationale( Set<Perms23.Perm> perms );
+        void onShouldShowRationale( Set<Perm> perms );
     }
 
     public static class Builder {
