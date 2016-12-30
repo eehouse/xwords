@@ -8,12 +8,14 @@ g_verbose = 0
 
 def usage(msg=''):
     print
-    if not '' == msg: print 'Error:', msg
-    print "usage:", sys.argv[0]
+    if msg: print 'Error:', msg
+    print "usage:", sys.argv[0], '[-c <??>]* [-l] [-h]'
     print "   Compares all files res/values-??/strings.xml with res/values/strings.xml"
     print "   and makes sure they're legal: same format strings, etc."
+    print "   -c options, if present, limit the check to what's specified"
+    print "   -l option lists available codes and exits"
+    print "   -h option prints this message"
     sys.exit(1)
-
 
 def associate( formats, name, fmt ):
     if name in formats:
@@ -43,13 +45,38 @@ def checkFormats( formats ):
         else:
             print 'WARNING: sets different for', name, curSet, testSet
 
+# Make sure that if there's a positional param of one type (%s or %d,
+# typically) in one set that the same positional in the other is of
+# the same type.
+g_specPat = re.compile('%(\d)\$[ds]')
+def asDict(set):
+    result = {}
+    for elem in set:
+        match = re.match( g_specPat, elem )
+        if match:
+            index = int(match.group(1))
+            result[index] = elem
+    return result
+
+def setIndicesAgree(set1, set2):
+    result = True
+    dict1 = asDict(set1)
+    dict2 = asDict(set2)
+    for index in dict1:
+        if index in dict2 and not dict1[index] == dict2[index]:
+            result = False
+            break
+    return result
+
 def checkLangFormats( engData, langData, lang ):
     for key in langData:
         if not key in engData:
             print 'WARNING: key', key, 'in', lang, 'but not in English'
-        elif not engData[key] == langData[key]:
-            print 'ERROR: set mismatch', key,  'from', lang, engData[key], 'vs', langData[key]
+        elif not setIndicesAgree(engData[key], langData[key] ):
+            print 'ERROR: illegal set mismatch', key,  'from', lang, engData[key], 'vs', langData[key]
             sys.exit(1)
+        elif not engData[key] == langData[key]:
+            print 'WARNING: set mismatch', key,  'from', lang, engData[key], 'vs', langData[key]
 
 def getForElem( data, pat, elem, name ):
     splits = re.split( pat, elem.text )
@@ -69,18 +96,49 @@ def getFormats( doc, pat, lang ):
         for elem in elem.findall('item'):
             quantity = elem.get('quantity')
             if not elem.text or 0 == len(elem.text):
-                print 'plurals', name, 'has empty quantity', quantity, \
+                print 'ERROR: plurals', name, 'has empty quantity', quantity, \
                     'in file', lang
                 sys.exit(1)
             else:
-                getForElem( result, pat, elem, name + '/' + quantity )
+                add = name + '/' + quantity
+                getForElem( result, pat, elem, add )
+    return result
+
+g_dirpat = re.compile( '.*values-(..)$' )
+def getCodes(wd):
+    result = []
+    path = wd + '/../XWords4/res_src'
+    for subdir, dirs, files in os.walk(path):
+        for file in [file for file in files if file == "strings.xml"]:
+            match = re.match(g_dirpat, subdir)
+            if match:
+                result.append( match.group(1) )
     return result
 
 def main():
-    if 1 < len(sys.argv): usage()
-    parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
-
     wd = os.path.dirname(sys.argv[0])
+    langCodes = []
+    allCodes = getCodes(wd)
+
+    pairs, rest = getopt.getopt(sys.argv[1:], "c:hl")
+    for option, value in pairs:
+        if option == '-c':
+            if value in allCodes:
+                langCodes.append(value)
+            else:
+                usage( "unexpected code: " + value + " not one of "
+                       + ', '.join(allCodes) )
+        elif option == '-h': usage()
+        elif option == '-l':
+            print 'Available codes:', ', '.join(allCodes)
+            sys.exit(0)
+        else:
+            usage()
+
+    # use the entire set if not specified
+    if not langCodes: langCodes = allCodes
+
+    parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
 
     # Load English
     path = wd + '/../XWords4/res/values/strings.xml'
@@ -89,14 +147,11 @@ def main():
     engFormats = getFormats( doc, pat, 'en' )
     checkFormats( engFormats )
 
-    path = wd + '/../XWords4/res_src'
-    for subdir, dirs, files in os.walk(path):
-        for file in [file for file in files if file == "strings.xml" \
-                     and not subdir.endswith('/values')]:
-            doc = etree.parse( subdir + '/' + file, parser )
-            forLang = getFormats( doc, pat, subdir )
-            checkLangFormats( engFormats, forLang, subdir )
-            sys.exit(0)
+    for code in langCodes:
+        file = wd + '/../XWords4/res_src/values-%s/strings.xml' % code
+        doc = etree.parse( file, parser )
+        forLang = getFormats( doc, pat, code )
+        checkLangFormats( engFormats, forLang, code )
 
 ##############################################################################
 if __name__ == '__main__':
