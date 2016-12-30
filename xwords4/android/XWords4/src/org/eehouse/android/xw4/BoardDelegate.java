@@ -2570,6 +2570,7 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    private boolean m_needsResize = false;
     private void updateToolbar()
     {
         if ( null != m_toolbar ) {
@@ -2582,6 +2583,14 @@ public class BoardDelegate extends DelegateBase
             m_toolbar.update( Buttons.BUTTON_CHAT, m_gsi.canChat );
             m_toolbar.update( Buttons.BUTTON_BROWSE_DICT,
                               null != m_gi.dictName( m_view.getCurPlayer() ) );
+
+            int count = m_toolbar.enabledCount();
+            if ( 0 == count ) {
+                m_needsResize = true;
+            } else if ( m_needsResize && 0 < count ) {
+                m_needsResize = false;
+                m_view.orientationChanged();
+            }
         }
     }
 
