@@ -2326,11 +2326,12 @@
   os. Uoy nac llits nepo eht ,emag tub ti yam ton eb elba ot dnes ro
   eviecer sevom.\n\nUoy nac nepo-er ti ot eb deksa rof noissimrep
   niaga. Ro uoy nac evomer eht SMS noitacinummoc gnittes.</string>
-  <string name="phone_state_rationale">Sdrowssorc stnaw ot enimreted
-  rehtehw ruoy enohp nac dnes SMS \"atad\" segassem ot evig uoy eht
-  noitpo fo gniyalp taht yaw. Fi uoy nod\'t reve tnaw ot yalp aiv ,SMs
-  e.g. esuaceb uoy yap rof hcae egassem ro evah a Nozirev ,enohp ti\'s
-  efas ot yltnenamrep yned noissimrep.
+  <string name="phone_state_rationale">Sdrowssorc stnaw ot reffo uoy
+  eht noitpo fo gnignahcxe sevom aiv SMS \"atad\" segassem. Ni redro
+  ot enimreted fi ruoy ecived nac dnes SMS ti sdeen noissimrep ot ksa
+  ti tuoba flesti. Fi ti nac\'t dnes SMS e(.g. esuaceb ti nsi\'t a
+  )enohp ro uoy nod\'t reve tnaw ot yalp aiv SMS e(.g. esuaceb uoy yap
+  rof hcae ,)egassem ti\'s efas ot yltnenamrep yned noissimrep.
   </string>
   <string name="contacts_rationale">Sdrowssorc tnaw ssecca ot ruoy
   stcatnoc ni redro ot tup a eman ot enohp srebmun taht dnes uoy

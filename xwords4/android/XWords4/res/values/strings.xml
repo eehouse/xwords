@@ -2725,11 +2725,12 @@
   receive moves.\n\nYou can re-open it to be asked for permission
   again. Or you can remove the SMS communication setting.</string>
 
-  <string name="phone_state_rationale">Crosswords wants to determine
-  whether your phone can send SMS \"data\" messages to give you the
-  option of playing that way. If you don\'t ever want to play via SMS,
-  e.g. because you pay for each message or have a Verizon phone, it\'s
-  safe to permanently deny permission.
+  <string name="phone_state_rationale">Crosswords wants to offer you
+  the option of exchanging moves via SMS \"data\" messages. In order
+  to determine if your device can send SMS it needs permission to ask
+  it about itself. If it can\'t send SMS (e.g. because it isn\'t a
+  phone) or you don\'t ever want to play via SMS (e.g. because you pay
+  for each message), it\'s safe to permanently deny permission.
   </string>
 
   <string name="contacts_rationale">Crosswords want access to your
