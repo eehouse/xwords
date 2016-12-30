@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -165,4 +165,12 @@
   <string name="game_fmt">Hra %1$d</string>
   <string name="player_fmt">Hráč %1$d</string>
   <string name="initial_player_minutes">Délka hry v minutách</string>
-</resources>
+<string name="button_new_group">Přidat skupinu</string>
+
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+
+    <string name="missing_player">(není tu ještě…)</string>
+
+    <string name="summary_relay_conf_fmt">Nastaveno pro místnost
+ \"%1$s\"</string>
+    </resources>

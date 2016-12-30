@@ -60,7 +60,7 @@
 </plurals>
 
     <string name="title_dicts_list">クロスワードの単語リスト</string>   
-    <string name="download_dicts">さらにダウンロード…</string>
+    <string name="download_dicts">追加の言語をダウンロード…</string>
 
 
     <string name="loc_builtin">内蔵</string>
@@ -240,7 +240,7 @@
     <string name="board_menu_game_final">最終スコア</string>
     <string name="board_menu_game_resign">辞める</string>
 
-    <string name="board_menu_game_resend">メッセージを再送信</string>
+    <string name="board_menu_game_resend">移動を再送信</string>
     <plurals name="resend_finished_fmt">
 	<item quantity="one">再送信が終了しました。%1$d メッセージを送信しました。</item>
 	<item quantity="other"/>
@@ -388,7 +388,7 @@
 
     
     <string name="hide_crosshairs">十字カーソルを無効にする</string>
-    <string name="hide_crosshairs_summary">ボードのどのマスをタッチしたかを視覚的に示しません</string>
+    <string name="hide_crosshairs_summary">ボードのどのマスをタッチしたかを表示しません</string>
 
     <string name="network_behavior">ネットワーク ゲームの設定</string>
     <string name="network_behavior_summary">ネットワーク ゲームに適用する設定</string>
@@ -445,7 +445,7 @@
 	<item quantity="other"/>
 </plurals>
 
-    <string name="chat_title_fmt">%1$s メッセージ</string>
+    <string name="chat_title_fmt">%1$s のチャット</string>
     <string name="chat_local_id">"私: "</string>
     <string name="chat_other_id">"私以外: "</string>
     <string name="chat_send">送信</string>
@@ -460,7 +460,8 @@
     <string name="network_advanced_title">高度</string>
     <string name="not_again_enablepublic">このリリースで、公開ルームは \"高度\" な機能として用意しました。これを使っていて元に戻したい場合、今すぐこれ有効にしてください。設定で再びオフにすることができます。</string>
 
-    <string name="no_empty_rooms">このゲームは部屋名を指定しないと接続できません。</string>
+    <string name="no_empty_rooms">このゲームはルーム名を指定しないと
+接続できません。</string>
 
 
 
@@ -1107,8 +1108,7 @@
   <string name="str_no_hint_found">移動は見つかりません</string>
 
   <plurals name="resent_msgs_fmt">
-	<item quantity="one">メッセージを 1 つ送信しました</item>
-	<item quantity="other"/>
+	<item quantity="other">移動を 1 つ送信しました</item>
 </plurals>
 
   <string name="confirm_clear_chat">このゲームのチャット履歴をすべて削除してもよろしいですか?\n\n(この操作を元に戻すことはできません。)</string>
@@ -1186,4 +1186,53 @@
     <string name="activity_button">シングル ペイン</string>
     <string name="fragment_button">デュアル ペイン</string>
 
-    </resources>
+    <string name="relay_behavior">リレー プレイ設定</string>
+    <string name="relay_behavior_summary">"インターネット接続したゲームに適用される設定 "</string>
+    <string name="disable_relay">"リレーを経由したプレイを無効にする "</string>
+    <string name="disable_relay_summary">すべてのインターネット通信を無効にします</string>
+
+    <string name="warn_relay_disabled">"このデバイスでリレー プレイは現在無効です。移動はリレーを介して送信も受信されません。 "</string>
+
+    <string name="warn_relay_later">今すぐ、または後でリレー プレイを有効にすることができます。</string>
+    <string name="warn_relay_remove">今すぐ、リレー プレイを有効にしたり、このゲームから削除できます。</string>
+
+    <string name="warn_relay_havegames">リレーを使用したプレイを無効にしてもよろしいですか?</string>
+
+    <plurals name="warn_relay_games_fmt">
+	<item quantity="one">\n\n(それを使用したゲームが 1 つあります。)</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="button_enable_relay">リレー プレイを有効にする</string>
+    <string name="button_disable_relay">リレー プレイを無効にする</string>
+    <string name="enable_dualpane_summary">タブレットでのサイド・バイ・サイド表示。非常に実験的です!</string>
+
+    <string name="invite_dualpane">タブレットサイズのデバイスで実行されているようです。
+お使いのデバイスが横向きのときに、(掲示板とチャットなど) 
+2 つのペインを左右に表示することができる、
+実験的な新機能を試してみたいですか?
+
+ 
+
+新しい「サイド・バイ・サイドを無効にする」のメニュー項目を使用して、
+後でこの機能を無効にすることができます。またはアプリの設定から。
+
+ 
+
+お好みの機能、クラッシュの報告、ご提案等について
+ご連絡ください!!</string>
+
+  <string name="dualpane_exit_now">変更を反映するために、クロスワードを終了します。
+再起動を知らせる通知を使用することができます。</string>
+
+  <string name="post_dualpane_title">クロスワードを再起動</string>
+  <string name="post_dualpane_off_body">サイド・バイ・サイドを無効にしてクロスワードを開始します</string>
+
+  <string name="disable_dualpane">サイド・バイ・サイドを無効にする</string>
+  <string name="dualpane_restart">アプリを終了しています…</string>
+  <string name="enable_dualpane">サイド・バイ・サイドを有効にする</string>
+  <string name="post_dualpane_on_body">サイド・バイ・サイドを有効にしてクロスワードを開始します!</string>
+  <string name="after_restart">クロスワードを再起動するまで、
+この変更は有効になりません。</string>
+  <string name="db_enabled_toast">サイド・バイ・サイド モードを有効にします</string>
+</resources>
