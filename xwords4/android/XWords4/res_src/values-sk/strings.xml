@@ -20,11 +20,6 @@
   <string name="list_item_copy">Kopírovať</string>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-  <string name="confirm_reset_fmt">XLATE ME: Are you sure you want to reset the %1$d
-    selected game[s]?\n\n(Resetting erases all moves and any connection
-    information.)</string>
-  <string name="confirm_seldeletes_fmt">XLATE ME: Are you sure you want to delete
-    the %1$d selected game[s]? This action cannot be undone.</string>
   <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
   <string name="rename_label">XLATE ME: Change the name of this game to:</string>
@@ -48,8 +43,6 @@
   <!-- title for popup list of langugages from which user picks -->
   <string name="title_langs_list">XLATE ME: Languages (based on installed
       wordlists)</string>
-  <!--  -->
-  <string name="title_gamebt_config_fmt">XLATE ME: %1$s settings (via Bluetooth)</string>
   <!-- alternate window title used when game is networked -->
   <string name="title_gamenet_config_fmt">XLATE ME: %1$s settings (networked)</string>
   <string name="title_prefs">Predvoľby Crosswords</string>
@@ -299,7 +292,6 @@
   <string name="board_menu_game_final">Celkové skóre</string>
   <string name="board_menu_game_resign">XLATE ME: Resign</string>
   <string name="board_menu_game_resend">Preposlať správy</string>
-  <string name="resend_finished_fmt">XLATE ME: Resend finished; sent %1$d message[s].</string>
   <string name="board_menu_file_about">O Crosswords</string>
   <!-- 
        ############################################################
@@ -311,7 +303,6 @@
          substituted in. -->
   <string name="game_item_menu_title_fmt">XLATE ME: \"%1$s\" actions:</string>
   <!-- returned by util_getUserString -->
-  <string name="strd_robot_traded_fmt">Robot v tomto ťahu vymenil %1$d kameňov.</string>
   <!--string name="str_robot_moved">Robot uskutočnil tento ťah:</string-->
   <string name="strs_values_header_fmt">%1$s počet/hodnota:\n</string>
   <string name="strd_remaining_tiles_add_fmt">+ %1$d [všetky zostávajúce kamene]</string>
@@ -328,10 +319,8 @@
     move:\u0020</string>
   <string name="strs_new_tiles_fmt">Nové kamene: %1$s</string>
   <string name="str_passed">Prešiel</string>
-  <string name="strsd_summaryscored_fmt">%1$s:%2$d</string>
   <!-- Used in formatting reports of trades (exchanges of tiles).
          Number of tiles traded is substituted for %1$d-->
-  <string name="strd_traded_fmt">XLATE ME: Exchanged %1$d tiles</string>
   <string name="str_lostturn">Ťah bol stratený</string>
   <string name="str_commit_confirm">Potvrdiť tento ťah?\n</string>
   <!-- Used to separate names of players when listing them on one
@@ -346,12 +335,8 @@
          is chosen. -->
   <string name="confirm_undo_last">XLATE ME: Are you sure you want to undo the
       last committed turn? (There is no redo option.)</string>
-  <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-  <string name="strd_remains_expl_fmt">XLATE ME: %1$d tiles left in pool and all
-    tray[s]:\n</string>
   <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-  <string name="strd_remains_header_fmt">XLATE ME: %1$d tiles left in pool.</string>
   <!-- error messages -->
   <string name="str_tiles_not_in_line">Kamene musia ležať v jednom rade.</string>
   <string name="str_no_empties_in_turn">Medzi kameňmi nesmie byť žiadne prázdne políčko.</string>
@@ -408,8 +393,6 @@
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. -->
-  <string name="msg_relay_waiting_fmt">XLATE ME: Device %1$d connected to relay in
-      room \"%2$s\". Waiting for %3$d player[s].</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -423,17 +406,6 @@
       remote players.  Be sure to address your invitation to
       that many people.)</string>
 
-  <!-- If a networked game is opened and is not complete, i.e. if it
-         is listed as expecting remote players who have not yet shown
-         up, then the most likely explanation is that none has been
-         invited.  (It's also possible that an invitation has been
-         sent, but I have no way of knowing that.) So every time I
-         open such a game I give the user a chance to issue an
-         invititation while trying to warn him not to send duplicates.
-         The number of players missing is substituted for "%1$d". -->
-  <string name="invite_msg_fmt">XLATE ME: This game is missing %1$d remote
-      player[s].  Would you like to invite someone to join -- assuming
-      you haven\'t already?</string>
   <!-- displayed when you long-tap a scoreboard entry and there's no
          most recent score to show -->
   <string name="no_moves_made">XLATE ME: (No moves yet)</string>
@@ -537,22 +509,10 @@
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is NOT the last in its language. The
          name of the language is substituted for %1$s. -->
-  <string name="confirm_deletemore_dict_fmt">XLATE ME: \u0020One game (at least)
-      is using it, but there is another %1$s wordlist installed that can
-      replace it.</string>
-  <!-- Additional text appended to text confirm_delete_dictf in the
-         wordlist delete confiration dialog in the case where the
-         wordlist to be deleted is the last in its language.  The name
-         of the language is substituted for %1$s. -->
-  <string name="confirm_deleteonly_dict_fmt">XLATE ME: %1$s is the only %2$s
-      wordlist installed. One or more games will be unopenable
-      without it.</string>
   <!-- text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. -->
-  <string name="confirm_delete_dict_fmt">XLATE ME: Are you sure you want to
-    delete the wordlist[s] %1$s?</string>
   <string name="settings_label">Nastavenie hry</string>
   <string name="minutes_label">Minút v hre</string>
   <!-- title of popup used to determine how words are handled that
@@ -668,8 +628,6 @@
          -->
   <!-- This is the heading above the list of steps.  The default
          language is substituted for %1$s. -->
-  <string name="relay_game_explain_fmt">XLATE ME: To start a basic networked two-player
-        game in %1$s:</string>
   <!--
        ############################################################
        # :Menus:
@@ -704,8 +662,6 @@
   <string name="chat_title_fmt">XLATE ME: %1$s message history</string>
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-  <string name="query_trade_fmt">XLATE ME: Are you sure you want to exchange the
-         selected tiles (%1$s)?</string>
   <string name="invite_chooser_sms">XLATE ME: sms</string>
   <string name="invite_chooser_email">XLATE ME: email</string>
   <!-- When I've created the invitation, in text or html, I ask
@@ -1041,9 +997,6 @@
   <string name="study_langpick">XLATE ME: Your words for:</string>
   <string name="studylist_title_fmt">XLATE ME: Studylist for %1$s</string>
   <string name="add_done_fmt">XLATE ME: %1$s added to list</string>
-  <string name="paste_done_fmt">XLATE ME: %1$d word[s] copied</string>
-  <string name="confirm_studylist_clear_fmt">XLATE ME: Are you sure you want to
-    delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>
   <string name="slmenu_clear_sel">XLATE ME: Delete</string>
   <string name="slmenu_copy_sel">XLATE ME: Copy to clipboard</string>
   <string name="gamel_menu_study">XLATE ME: Studylist…</string>
@@ -1094,17 +1047,12 @@
          game with the same players and parameters as the one that
          just ended. -->
   <string name="button_rematch">XLATE ME: Rematch</string>
-  <string name="group_name_fmt">XLATE ME: %1$s (%2$d games)</string>
   <string name="no_move_onegroup">XLATE ME: Moving is impossible until there
     is more than one group.</string>
   <string name="cannot_delete_default_group_fmt">XLATE ME: The group for new games, %1$s, 
     cannot be deleted.</string>
   <string name="game_name_group_title">XLATE ME: Name group</string>
   <string name="rename_group_label">XLATE ME: Change the name of this group to:</string>
-  <string name="groups_confirm_del_games_fmt">XLATE ME: \n\n(%1$d game[s] will
-    also be deleted.)</string>
-  <string name="groups_confirm_del_fmt">XLATE ME: Are you sure you want to delete
-    the %1$d selected group[s]?</string>
   <string name="group_new_games">XLATE ME: New games</string>
   <string name="group_cur_games">XLATE ME: My games</string>
   <string name="list_group_movedown">XLATE ME: Move down</string>
@@ -1255,10 +1203,6 @@
   <!--  -->
   <string name="manual_owner_name">XLATE ME: (Not in contacts)</string>
   <!--  -->
-  <string name="invite_sms_desc_fmt">XLATE ME: Please check the %1$d phone
-    number[s] you want to invite to your new game, then tap \"Invite
-    checked\".</string>
-  <!--  -->
   <string name="button_sms_add">XLATE ME: Import contact</string>
   <!--  -->
   <string name="new_smsmove_title">XLATE ME: New move via SMS</string>
@@ -1297,9 +1241,6 @@
   <string name="bt_resend_fmt">XLATE ME: Bluetooth send to %1$s failed; retry %3$d in
         %2$d seconds.</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">XLATE ME: Please select the %1$d device[s] you
-        want to include in this game.  Use the Rescan button if you
-        don\'t see a device you expect.</string>
   <!--  -->
   <string name="new_move_body">XLATE ME: One or more moves has arrived</string>
   <!--  -->
@@ -1447,7 +1388,6 @@
          different (but same-language wordlist) -->
   <string name="button_substdict">XLATE ME: Substitute</string>
   <string name="msg_ask_password_fmt">Heslo pre \"%1$s\":</string>
-  <string name="notify_body_fmt">XLATE ME: Activity in game \"%1$s\"</string>
   <!-- When a move is fetched from the relay a Notification is
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications

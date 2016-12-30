@@ -511,7 +511,7 @@
          only once per game. -->
   <plurals name="msg_relay_waiting_fmt">
     <item quantity="one">Ecived %1$d detcennoc ot yaler ni
-      moor \"%2$s\". Gnitiaw rof %3$d reyalp.</item>
+      moor \"%2$s\". Gnitiaw rof eno reyalp.</item>
     <item quantity="other">Ecived %1$d detcennoc ot yaler ni
       moor \"%2$s\". Gnitiaw rof %3$d sreyalp.</item>
   </plurals>

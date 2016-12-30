@@ -598,7 +598,7 @@
          only once per game. -->
     <plurals name="msg_relay_waiting_fmt">
       <item quantity="one">Device %1$d connected to relay in
-      room \"%2$s\". Waiting for %3$d player.</item>
+      room \"%2$s\". Waiting for one player.</item>
       <item quantity="other">Device %1$d connected to relay in
       room \"%2$s\". Waiting for %3$d players.</item>
     </plurals>

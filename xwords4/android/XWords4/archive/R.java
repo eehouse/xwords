@@ -566,19 +566,9 @@ tous les chevalets :\n</string>
         public static final int strd_remains_header_fmt=0x7f090008;
         /**  Notifies user of a robot trade move 
  returned by util_getUserString 
- 
-       ############################################################
-       # :Menus:
-       # Context menu for main games-list screen
-       ############################################################ 
-      
- title of contextual menu.  Name of the selected game is
-         substituted in. 
- returned by util_getUserString 
  Notifies user of a robot trade move 
 <string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>
 <string name="strd_robot_traded_fmt">a échangé %1$d jetons.</string>
- returned by util_getUserString 
          */
         public static final int strd_robot_traded_fmt=0x7f090007;
         public static final int warn_relay_games_fmt=0x7f090010;
@@ -4486,7 +4476,6 @@ XLATE-ME
   
   
   
-  
  New strings that need to be documented and found a home
          above. 
  text of button in About Crosswords dialog summoning above
@@ -5301,14 +5290,6 @@ XLATE-ME
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. 
- If a networked game is opened and is not complete, i.e. if it
-         is listed as expecting remote players who have not yet shown
-         up, then the most likely explanation is that none has been
-         invited.  (It's also possible that an invitation has been
-         sent, but I have no way of knowing that.) So every time I
-         open such a game I give the user a chance to issue an
-         invititation while trying to warn him not to send duplicates.
-         The number of players missing is substituted for "%1$d". 
  displayed when you long-tap a scoreboard entry and there's no
          most recent score to show 
  Bonus value hint that's displayed in gray text in the colored
@@ -5950,10 +5931,6 @@ XLATE-ME
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is NOT the last in its language. The
          name of the language is substituted for %1$s. 
- Additional text appended to text confirm_delete_dictf in the
-         wordlist delete confiration dialog in the case where the
-         wordlist to be deleted is the last in its language.  The name
-         of the language is substituted for %1$s. 
  text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
@@ -6303,7 +6280,6 @@ XLATE-ME
  error messages 
  text of dialog shown when the menu item board_menu_undo_last
          is chosen. 
- Intro to the paragraph lisiting all of the tiles remaining 
  First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) 
  error messages 
@@ -6419,10 +6395,20 @@ XLATE-ME
         /**  title for window you get when you select menu with text
          board_menu_game_counts 
 string name="str_robot_moved">El robot ha fet aquesta jugada:</string
+ 
+       ############################################################
+       # :Menus:
+       # Context menu for main games-list screen
+       ############################################################ 
+      
+ title of contextual menu.  Name of the selected game is
+         substituted in. 
+ returned by util_getUserString 
 string name="str_robot_moved">Robot uskutočnil tento ťah:</string
  title for window you get when you select menu with text
          board_menu_game_counts 
 <string name="strs_values_header_fmt">%1$s counts/values:\n</string>
+ returned by util_getUserString 
 string name="str_robot_moved">Robot provedl tento tah:</string
        
        ############################################################
@@ -6744,7 +6730,6 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
  text of checkbox at top of dialog allowing to unlock in-play
     game to make changes 
  title for popup list of langugages from which user picks 
-  
  alternate window title used when game is networked 
    
        ############################################################
