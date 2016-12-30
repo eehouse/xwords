@@ -1864,6 +1864,8 @@
     <string name="bt_pick_addall_button">Add all Paired</string>
       <!--  -->
     <string name="bt_pick_clear_button">Remove checked</string>
+    <!--  -->
+    <string name="bt_pair_settings">Pair More</string>
 
       <!--  -->
     <string name="invite_progress_title">Connecting...</string>

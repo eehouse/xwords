@@ -37,6 +37,7 @@ import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
     private static final int[] BUTTONIDS = { R.id.button_add,
+                                             R.id.button_settings,
                                              R.id.button_clear,
     };
     private Activity m_activity;
@@ -81,6 +82,9 @@ public class BTInviteDelegate extends InviteDelegate {
         switch( id ) {
         case R.id.button_add:
             scan();
+            break;
+        case R.id.button_settings:
+            BTService.openBTSettings( m_activity );
             break;
         case R.id.button_clear:
             removeSelected();

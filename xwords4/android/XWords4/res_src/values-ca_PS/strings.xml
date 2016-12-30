@@ -1607,6 +1607,8 @@
   <!--  -->
   <string name="bt_pick_clear_button">REMOVE CHECKED</string>
   <!--  -->
+  <string name="bt_pair_settings">PAIR MORE</string>
+  <!--  -->
   <string name="invite_progress_title">CONNECTING...</string>
   <string name="invite_progress_fmt">SENDING INVITATION TO CROSSWORDS ON %1$s</string>
   <!--  -->

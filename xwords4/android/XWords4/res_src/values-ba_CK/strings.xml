@@ -1607,6 +1607,8 @@
   <!--  -->
   <string name="bt_pick_clear_button">Evomer dekcehc</string>
   <!--  -->
+  <string name="bt_pair_settings">Riap Erom</string>
+  <!--  -->
   <string name="invite_progress_title">Gnitcennoc...</string>
   <string name="invite_progress_fmt">Gnidnes noitativni ot Sdrowssorc no %1$s</string>
   <!--  -->
