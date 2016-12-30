@@ -181,18 +181,20 @@ public class WiDirService extends XWService {
     public static void init( Context context )
     {
         DbgUtils.logd( TAG, "init()" );
-        ChannelListener listener = new ChannelListener() {
-                @Override
-                public void onChannelDisconnected() {
-                    DbgUtils.logd( TAG, "onChannelDisconnected()");
-                }
-            };
         try {
+            ChannelListener listener = new ChannelListener() {
+                    @Override
+                    public void onChannelDisconnected() {
+                        DbgUtils.logd( TAG, "onChannelDisconnected()");
+                    }
+                };
             sChannel = getMgr().initialize( context, Looper.getMainLooper(),
                                             listener );
             s_discoverer = new ServiceDiscoverer( sChannel );
             sHavePermission = true;
-        } catch ( SecurityException se ) {
+        } catch ( NoClassDefFoundError ndf ) { // old os version
+            sHavePermission = false;
+        } catch ( SecurityException se ) {               // perm not in manifest
             sHavePermission = false;
         }
     }
