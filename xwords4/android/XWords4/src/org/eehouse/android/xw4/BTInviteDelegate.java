@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
-    private static final String TAG = BTInviteDelegate.class.getSimpleName();
     private static final int[] BUTTONIDS = { R.id.button_add,
                                              R.id.button_clear,
     };
@@ -120,9 +119,10 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        TwoStrsItem item = (TwoStrsItem)child; // change class name!
+        TwoStrsItem item = (TwoStrsItem)child;
         TwoStringPair pair = (TwoStringPair)data;
-        ((TwoStrsItem)child).setStrings( pair.str2, null/*pair.str1*/ );
+        // null: we don't display mac address
+        ((TwoStrsItem)child).setStrings( pair.str2, null );
     }
 
     @Override

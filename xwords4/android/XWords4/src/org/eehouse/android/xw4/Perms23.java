@@ -105,7 +105,6 @@ public class Perms23 {
                 boolean haveIt = PackageManager.PERMISSION_GRANTED
                     == ContextCompat.checkSelfPermission( activity, permStr );
 
-                // For research: ask the OS if we should be printing a rationale
                 if ( !haveIt ) {
                     askStrings.add( permStr );
 
@@ -134,8 +133,6 @@ public class Perms23 {
                 int code = register( cbck );
                 ActivityCompat.requestPermissions( activity, permsArray, code );
             }
-
-            DbgUtils.logd( TAG, "asyncQuery(%s) DONE", m_perms.toString() );
         }
     }
 
@@ -165,6 +162,8 @@ public class Perms23 {
         return result;
     }
 
+    // This is probably overkill as the OS only allows one permission request
+    // at a time
     private static int s_nextRecord;
     private static int register( PermCbck cbck )
     {

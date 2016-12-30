@@ -26,7 +26,6 @@ import android.util.AttributeSet;
 import java.util.ArrayList;
 
 public class DictListPreference extends XWListPreference {
-    private static final String TAG = DictListPreference.class.getSimpleName();
 
     public DictListPreference( Context context, AttributeSet attrs )
     {

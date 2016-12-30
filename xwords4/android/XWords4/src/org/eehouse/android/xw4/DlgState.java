@@ -27,7 +27,6 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 
 public class DlgState implements Parcelable {
-    private static final String TAG = DlgState.class.getSimpleName();
     public DlgID m_id;
     public String m_msg;
     public int m_posButton;

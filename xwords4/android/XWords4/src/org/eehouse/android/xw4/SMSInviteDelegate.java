@@ -191,8 +191,6 @@ public class SMSInviteDelegate extends InviteDelegate {
                                   final Object[] params )
     {
         boolean isPositive = AlertDialog.BUTTON_POSITIVE == which;
-        DbgUtils.logd( TAG, "dlgButtonClicked(%s,pos:%b)",
-                       action.toString(), isPositive );
 
         switch ( action ) {
         case RETRY_CONTACTS_ACTION:
@@ -204,7 +202,6 @@ public class SMSInviteDelegate extends InviteDelegate {
             }
             break;
         case POST_WARNING_ACTION:
-            DbgUtils.printStack( TAG );
             if ( isPositive ) { // ???
                 PhoneRec rec = new PhoneRec( (String)params[1],
                                              (String)params[0] );
@@ -259,21 +256,20 @@ public class SMSInviteDelegate extends InviteDelegate {
 
                 int type = cursor.getInt( cursor.
                                           getColumnIndex( Phone.TYPE ) );
+
+                DlgDelegate.ConfirmThenBuilder builder;
                 if ( Phone.TYPE_MOBILE == type ) {
-                    makeConfirmThenBuilder( R.string.warn_unlimited,
-                                            Action.POST_WARNING_ACTION )
-                        .setPosButton( R.string.button_yes )
-                        .setParams( number, name )
-                        .show();
+                    builder = makeConfirmThenBuilder( R.string.warn_unlimited,
+                                                      Action.POST_WARNING_ACTION );
                 } else {
                     m_immobileConfirmed = false;
                     String msg = getString( R.string.warn_nomobile_fmt,
                                             number, name );
-                    makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION )
-                        .setPosButton( R.string.button_yes )
-                        .setParams( number, name )
-                        .show();
+                    builder = makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION );
                 }
+                builder.setPosButton( R.string.button_yes )
+                    .setParams( number, name )
+                    .show();
             }
         }
     } // addPhoneNumbers

@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class DictsFrag extends XWFragment {
-    private static final String TAG = DictsFrag.class.getSimpleName();
 
     public DictsFrag() {}
 

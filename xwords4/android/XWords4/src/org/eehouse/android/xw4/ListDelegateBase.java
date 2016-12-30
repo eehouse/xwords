@@ -26,7 +26,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 public class ListDelegateBase extends DelegateBase {
-    private static final String TAG = ListDelegateBase.class.getSimpleName();
 
     private Activity m_activity;
     private Delegator m_delegator;

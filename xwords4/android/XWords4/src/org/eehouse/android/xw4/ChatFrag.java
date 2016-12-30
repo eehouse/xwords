@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class ChatFrag extends XWFragment {
-    private static final String TAG = ChatFrag.class.getSimpleName();
 
     public ChatFrag() {}
 

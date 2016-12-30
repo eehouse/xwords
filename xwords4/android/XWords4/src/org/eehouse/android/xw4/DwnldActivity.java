@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.view.Window;
 
 public class DwnldActivity extends XWActivity {
-    private static final String TAG = DwnldActivity.class.getSimpleName();
 
     @Override
     protected void onCreate( Bundle savedInstanceState )

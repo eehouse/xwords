@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class DictsActivity extends XWActivity {
-    private static final String TAG = DictsActivity.class.getSimpleName();
 
     // I can't provide a subclass of MenuItem to hold DictAndLoc, so
     // settle for a hash on the side.

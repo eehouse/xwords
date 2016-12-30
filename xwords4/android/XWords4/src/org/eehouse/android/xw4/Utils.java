@@ -78,7 +78,6 @@ public class Utils {
 
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_firstVersion = null;
-    // private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
     private static HashMap<String,String> s_phonesHash =
@@ -137,11 +136,6 @@ public class Utils {
         }
         DbgUtils.logd( TAG, "deviceSupportsSMS() => %b", result );
         return result;
-    }
-
-    public static void smsSupportChanged()
-    {
-        // s_deviceSupportSMS = null; // force to check again
     }
 
     public static void notImpl( Context context )
@@ -307,7 +301,6 @@ public class Utils {
                 JSONObject phones = XWPrefs.getSMSPhones( context );
                 for ( Iterator<String> iter = phones.keys(); iter.hasNext(); ) {
                     String key = iter.next();
-                    DbgUtils.logd( TAG, "comparing %s, %s", key, phone );
                     if ( PhoneNumberUtils.compare( key, phone ) ) {
                         name = phones.optString( key, phone );
                         s_phonesHash.put( phone, name );

@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class WiDirInviteActivity extends InviteActivity {
-    private static final String TAG = WiDirInviteActivity.class.getSimpleName();
 
     private WiDirInviteDelegate m_dlgt;
 

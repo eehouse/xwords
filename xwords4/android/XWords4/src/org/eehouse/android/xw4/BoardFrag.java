@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class BoardFrag extends XWFragment {
-    private static final String TAG = BoardFrag.class.getSimpleName();
 
     public BoardFrag() {}
 

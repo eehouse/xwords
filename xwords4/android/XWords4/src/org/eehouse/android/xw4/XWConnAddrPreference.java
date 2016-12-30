@@ -35,7 +35,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWConnAddrPreference extends DialogPreference {
-    private static final String TAG = XWConnAddrPreference.class.getSimpleName();
 
     private Context m_context;
     private ConnViaViewLayout m_view;

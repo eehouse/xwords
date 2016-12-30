@@ -87,9 +87,6 @@ abstract class InviteDelegate extends ListDelegateBase
         }
     }
 
-    // Children implement ...
-    abstract void onChildAdded( View child, InviterItem item );
-
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
     protected static final String INTENT_KEY_NMISSING = "NMISSING";
@@ -98,17 +95,13 @@ abstract class InviteDelegate extends ListDelegateBase
     protected int m_nMissing;
     protected String m_lastDev;
     protected Button m_inviteButton;
-    protected Button m_rescanButton;
-    protected Button m_clearButton;
     private Activity m_activity;
     private ListView m_lv;
     private TextView m_ev;
-    private boolean m_showAddrs;
     private InviteItemsAdapter m_adapter;
     protected Map<InviterItem, Integer> m_counts;
     protected Set<InviterItem> m_checked;
     private boolean m_setChecked;
-    // private LinearLayout[] m_items;
 
     public InviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -139,6 +132,9 @@ abstract class InviteDelegate extends ListDelegateBase
 
         tryEnable();
     }
+
+    // Children implement ...
+    abstract void onChildAdded( View child, InviterItem item );
 
     // Subclasses are meant to call this
     protected void addButtonBar( int buttonBarId, int[] buttonBarItemIds )
@@ -215,7 +211,6 @@ abstract class InviteDelegate extends ListDelegateBase
     {
         int ii = 0;
         InviterItem[] result = new InviterItem[m_checked.size()];
-        InviterItem[] src = getAdapter().getItems();
         for ( InviterItem checked : m_checked ) {
             result[ii++] = checked;
         }
@@ -255,7 +250,6 @@ abstract class InviteDelegate extends ListDelegateBase
     {
         Set<InviterItem> old = new HashSet<InviterItem>();
         old.addAll( m_checked );
-        int oldSize = old.size();
         m_checked.clear();
 
         for ( Iterator<InviterItem> iter = old.iterator(); iter.hasNext(); ) {

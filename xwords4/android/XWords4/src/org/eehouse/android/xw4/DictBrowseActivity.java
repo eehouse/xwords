@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class DictBrowseActivity extends XWActivity {
-    private static final String TAG = DictBrowseActivity.class.getSimpleName();
 
     private DictBrowseDelegate m_dlgt;
 

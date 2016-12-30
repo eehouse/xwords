@@ -36,7 +36,6 @@ import android.widget.SeekBar;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class EditColorPreference extends DialogPreference {
-    private static final String TAG = EditColorPreference.class.getSimpleName();
 
     private Context m_context;
     private int m_curColor;

@@ -29,7 +29,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class TwoStrsItem extends LinearLayout  {
-    private static final String TAG = TwoStrsItem.class.getSimpleName();
 
     public TwoStrsItem( Context cx, AttributeSet as )
     {
