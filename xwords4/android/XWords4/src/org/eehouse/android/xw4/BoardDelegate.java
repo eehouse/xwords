@@ -712,6 +712,8 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
+            } else if ( 0 < m_nMissing ) {
+                showDialog( DlgID.DLG_INVITE );
             }
         }
     }
@@ -1032,10 +1034,7 @@ public class BoardDelegate extends DelegateBase
         DbgUtils.logd( TAG, "BoardDelegate.dlgButtonClicked(%s, %b)",
                        action.toString(), positive );
 
-        if ( Action.LAUNCH_INVITE_ACTION == action ) {
-            Assert.assertFalse( positive );
-            finish();
-        } else if ( Action.ENABLE_RELAY_DO_OR == action ) {
+        if ( Action.ENABLE_RELAY_DO_OR == action ) {
             handled = true;
             if ( positive ) {
                 RelayService.setEnabled( m_activity, true );

@@ -802,20 +802,13 @@ public class DlgDelegate {
                     }
                 }
             };
-        OnClickListener cancelClicked = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int view ) {
-                    m_clickCallback.dlgButtonClicked( state.m_action,
-                                                      AlertDialog.BUTTON_NEGATIVE,
-                                                      state.m_params );
-                }
-            };
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.invite_choice_title )
             .setSingleChoiceItems( items.toArray( new String[items.size()] ),
                                    sel[0], selChanged )
             .setPositiveButton( android.R.string.ok, okClicked )
-            .setNegativeButton( android.R.string.cancel, cancelClicked );
+            .setNegativeButton( android.R.string.cancel, null );
 
         return setCallbackDismissListener( builder.create(), state, dlgID );
     }
