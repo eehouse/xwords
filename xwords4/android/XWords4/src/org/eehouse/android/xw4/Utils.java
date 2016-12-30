@@ -132,7 +132,10 @@ public class Utils {
         if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
             TelephonyManager tm = (TelephonyManager)
                 context.getSystemService( Context.TELEPHONY_SERVICE );
-            result = null != tm;
+            if ( null != tm ) {
+                int type = tm.getPhoneType();
+                result = TelephonyManager.PHONE_TYPE_GSM == type;
+            }
         }
         DbgUtils.logd( TAG, "deviceSupportsSMS() => %b", result );
         return result;

@@ -2095,9 +2095,9 @@
   <string name="lmi_phony_fmt">%1$s tsol a nrut</string>
   <string name="lmi_tiles_fmt">Selit dengissa ot %1$s</string>
   <string name="bt_no_devs">Uoy yltnerruc evah on deriap Htooteulb
-	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
-	eno ro ?erom\n\nuOy( yam osla deen ot nepo ti no eht ecived uoy
-	tnaw ot riap htiw.)</string>
+	secived ro( Htooteulb si denrut )ffo. Dluow uoy ekil ot nepo eht
+	Diordna Sgnittes Lenap ot dda eno ro ?erom\n\nuOy( yam osla deen
+	ot nepo ti no eht ecived uoy tnaw ot riap htiw.)</string>
   <string name="app_not_found_fmt">Elbanu ot tcennoc aiv Htooteulb
 	ot Sdrowssorc no eht ecived %1$s.  Esaelp kcehc taht eht ecived si
 	nihtiw Htooteulb egnar dna taht Sdrowssorc si dellatsni no
