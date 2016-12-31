@@ -55,6 +55,7 @@ import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo;
@@ -83,6 +84,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
+    private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -92,6 +94,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_LANG_EXTRA = "rm_lang";
     private static final String REMATCH_PREFS_EXTRA = "rm_prefs";
     private static final String REMATCH_NEWNAME_EXTRA = "rm_nnm";
+    private static final String REMATCH_IS_SOLO = "rm_solo";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
@@ -591,7 +594,7 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean m_nextIsSolo;
     private Button[] m_newGameButtons;
     private boolean m_haveShownGetDict;
-    private Intent m_rematchIntent;
+    private Bundle m_rematchExtras;
     private Object[] m_newGameParams;
 
     public GamesListDelegate( Delegator delegator, Bundle sis )
@@ -868,7 +871,8 @@ public class GamesListDelegate extends ListDelegateBase
                         public void onClick( DialogInterface dlg, int item ) {
                             EditText edit = (EditText)((Dialog)dlg)
                                 .findViewById( R.id.edit );
-                            curThis().startRematchWithName( edit );
+                            String gameName = edit.getText().toString();
+                            curThis().startRematchWithName( gameName );
                         }
                     } )
                 .create();
@@ -913,15 +917,16 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case GAMES_LIST_NAME_REMATCH:
-            edit = (TextView)dialog.findViewById( R.id.edit );
-            edit.setText( m_rematchIntent
-                          .getStringExtra( REMATCH_NEWNAME_EXTRA ) );
-            boolean solo =
-                -1 == m_rematchIntent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
-            ad.setIcon( solo ? R.drawable.sologame__gen
-                        : R.drawable.multigame__gen );
-            ((TextView)dialog.findViewById( R.id.msg ))
-                .setVisibility( View.GONE );
+            if ( null != m_rematchExtras ) {
+                edit = (TextView)dialog.findViewById( R.id.edit );
+                edit.setText( m_rematchExtras
+                              .getString( REMATCH_NEWNAME_EXTRA ) );
+                boolean solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
+                ad.setIcon( solo ? R.drawable.sologame__gen
+                            : R.drawable.multigame__gen );
+                ((TextView)dialog.findViewById( R.id.msg ))
+                    .setVisibility( View.GONE );
+            }
             break;
         }
     }
@@ -1032,6 +1037,9 @@ public class GamesListDelegate extends ListDelegateBase
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
         }
+        if ( null != m_rematchExtras ) {
+            outState.putBundle( SAVE_REMATCHEXTRAS, m_rematchExtras );
+        }
     }
 
     private void getBundledData( Bundle bundle )
@@ -1043,6 +1051,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_netLaunchInfo = NetLaunchInfo.makeFrom( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
             m_nextIsSolo = bundle.getBoolean( SAVE_NEXTSOLO );
+            m_rematchExtras = bundle.getBundle( SAVE_REMATCHEXTRAS );
         }
     }
 
@@ -2148,25 +2157,24 @@ public class GamesListDelegate extends ListDelegateBase
     private void startRematch( Intent intent )
     {
         if ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) {
-            m_rematchIntent = intent;
+            m_rematchExtras = intent.getExtras();
             showDialog( DlgID.GAMES_LIST_NAME_REMATCH );
         }
     }
 
-    private void startRematchWithName( EditText edit )
+    private void startRematchWithName( String gameName )
     {
-        String gameName = edit.getText().toString();
         if ( null != gameName && 0 < gameName.length() ) {
-            Intent intent = m_rematchIntent;
-            long srcRowID = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
-            String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
-            String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
-            String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
-            String p2pMacAddress = intent.getStringExtra( REMATCH_P2PADDR_EXTRA );
-            String dict = intent.getStringExtra( REMATCH_DICT_EXTRA );
-            int lang = intent.getIntExtra( REMATCH_LANG_EXTRA, -1 );
-            String json = intent.getStringExtra( REMATCH_PREFS_EXTRA );
-            int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
+            Bundle extras = m_rematchExtras;
+            long srcRowID = extras.getLong( REMATCH_ROWID_EXTRA, -1 );
+            String btAddr = extras.getString( REMATCH_BTADDR_EXTRA );
+            String phone = extras.getString( REMATCH_PHONE_EXTRA );
+            String relayID = extras.getString( REMATCH_RELAYID_EXTRA );
+            String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
+            String dict = extras.getString( REMATCH_DICT_EXTRA );
+            int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
+            String json = extras.getString( REMATCH_PREFS_EXTRA );
+            int bits = extras.getInt( REMATCH_ADDRS_EXTRA, -1 );
             CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
             long newid;
@@ -2185,7 +2193,7 @@ public class GamesListDelegate extends ListDelegateBase
             }
             launchGame( newid );
         }
-        m_rematchIntent = null;
+        m_rematchExtras = null;
     }
 
     private void tryAlert( Intent intent )
@@ -2431,7 +2439,7 @@ public class GamesListDelegate extends ListDelegateBase
         GameSummary summary = (GameSummary)params[1];
         final long rowid = (Long)params[0];
 
-        if ( summary.conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY )
+        if ( summary.conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
             Assert.fail();
         } else {
@@ -2654,22 +2662,28 @@ public class GamesListDelegate extends ListDelegateBase
         intent = makeSelfIntent( context );
         intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
         intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
+        boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
+        intent.putExtra( REMATCH_IS_SOLO, isSolo );
         intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
         intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
         intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
         if ( null != addrTypes ) {
-            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
+            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
             if ( null != btAddr ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_BT ) );
                 intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
             }
             if ( null != phone ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_SMS ) );
                 intent.putExtra( REMATCH_PHONE_EXTRA, phone );
             }
             if ( null != relayID ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );
                 intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
             }
             if ( null != p2pMacAddress ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_P2P ) );
                 intent.putExtra( REMATCH_P2PADDR_EXTRA, p2pMacAddress );
             }
         }
