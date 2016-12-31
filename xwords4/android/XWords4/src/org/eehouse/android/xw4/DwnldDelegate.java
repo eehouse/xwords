@@ -46,6 +46,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eehouse.android.xw4.Perms23.Perm;
+
 public class DwnldDelegate extends ListDelegateBase {
     private static final String TAG = DwnldDelegate.class.getSimpleName();
 
@@ -106,10 +108,11 @@ public class DwnldDelegate extends ListDelegateBase {
                 item.findViewById( R.id.progress_bar );
         }
 
-        public void setLabel( String text )
+        public DownloadFilesTask setLabel( String text )
         {
             TextView tv = (TextView)m_listItem.findViewById( R.id.dwnld_message );
             tv.setText( text );
+            return this;
         }
 
         @Override
@@ -287,21 +290,39 @@ public class DwnldDelegate extends ListDelegateBase {
         if ( 0 == m_dfts.size() ) {
             finish();
         } else {
-            Assert.assertTrue( m_dfts.size() == uris.length );
-            mkListAdapter();
-
-            for ( int ii = 0; ii < uris.length; ++ii ) {
-                String showName = basename( uris[ii].getPath() );
-                showName = DictUtils.removeDictExtn( showName );
-                String msg =
-                    getString( R.string.downloading_dict_fmt, showName );
-
-                dft = m_dfts.get( ii );
-                dft.setLabel( msg );
-                dft.execute();
-            }
+            final Uri[] fUris = uris;
+            new Perms23.Builder( Perm.STORAGE )
+                .asyncQuery( m_activity, new Perms23.PermCbck() {
+                        @Override
+                        public void onPermissionResult( Map<Perm,
+                                                        Boolean> granted )
+                        {
+                            if ( granted.get(Perm.STORAGE) ) {
+                                doWithPermissions( fUris );
+                            } else {
+                                finish();
+                            }
+                        }
+                    } );
         }
-    } // init
+    }
+
+    private void doWithPermissions( Uri[] uris )
+    {
+        Assert.assertTrue( m_dfts.size() == uris.length );
+        mkListAdapter();
+
+        for ( int ii = 0; ii < uris.length; ++ii ) {
+            String showName = basename( uris[ii].getPath() );
+            showName = DictUtils.removeDictExtn( showName );
+            String msg =
+                getString( R.string.downloading_dict_fmt, showName );
+
+            m_dfts.get( ii )
+                .setLabel( msg )
+                .execute();
+        }
+    } // doWithPermissions
 
     @Override
     protected boolean handleBackPressed()
