@@ -504,7 +504,7 @@ public class WiDirService extends XWService {
                 codeStr = "ERROR";
                 break;
             case WifiP2pManager.P2P_UNSUPPORTED:
-                Assert.fail();
+                // Assert.fail();  // fires on emulator
                 codeStr = "UNSUPPORTED";
                 break;
             case WifiP2pManager.BUSY:
