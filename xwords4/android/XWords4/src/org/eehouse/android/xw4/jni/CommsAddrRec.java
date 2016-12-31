@@ -217,7 +217,8 @@ public class CommsAddrRec {
 
     public CommsAddrRec( CommsConnTypeSet types )
     {
-        conTypes = types;
+        this();
+        conTypes.addAll( types );
     }
 
     public CommsAddrRec( String host, int port )
@@ -359,8 +360,11 @@ public class CommsAddrRec {
             break;
         case COMMS_CONN_SMS:
             SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
-            sms_phone = pi.number;
-            sms_port = 3;   // fix comms already...
+            // Do we have phone permission? If not, shouldn't be set at all!
+            if ( null != pi ) {
+                sms_phone = pi.number;
+                sms_port = 3;   // fix comms already...
+            }
             break;
         case COMMS_CONN_P2P:
             p2p_addr = WiDirService.getMyMacAddress( context );

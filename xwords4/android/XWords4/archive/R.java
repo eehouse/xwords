@@ -1988,8 +1988,8 @@ XLATE-ME
   
          */
         public static final int connstat_unsucc=0x7f050237;
-        public static final int contact_not_found=0x7f05035c;
-        public static final int contacts_rationale=0x7f05035a;
+        public static final int contact_not_found=0x7f05035f;
+        public static final int contacts_rationale=0x7f05035d;
         /**  title of dialog brought up in response to the
          board_menu_game_counts menu.  The dialog lists all tiles in
          the language being used for the game together with how many
@@ -5046,6 +5046,13 @@ XLATE-ME
   
          */
         public static final int phone_label=0x7f050223;
+        public static final int phone_lookup_rationale=0x7f05035a;
+        /**  Case where SMS is the only way the game can communicate 
+         */
+        public static final int phone_lookup_rationale_drop=0x7f05035b;
+        /**  Case where SMS is NOT the only way the game can communicate 
+         */
+        public static final int phone_lookup_rationale_others=0x7f05035c;
         public static final int phone_state_rationale=0x7f050359;
         /**  Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. 
@@ -5803,7 +5810,7 @@ XLATE-ME
   
          */
         public static final int remote_undone=0x7f050226;
-        public static final int remove_sms=0x7f05035b;
+        public static final int remove_sms=0x7f05035e;
         /** <string name="rename_group_label">Change the name of this group to:</string>
          */
         public static final int rename_group_label=0x7f050273;
@@ -6011,7 +6018,7 @@ XLATE-ME
         /** <string name="sms_ready_text">Tap the receiving device now</string>
          */
         public static final int sms_ready_text=0x7f050288;
-        public static final int sms_send_failed=0x7f05035d;
+        public static final int sms_send_failed=0x7f050360;
         /** <string name="square_tiles">Square rack tiles</string>
          */
         public static final int square_tiles=0x7f050278;
@@ -6880,6 +6887,9 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          feature is not yet supported on Android.) 
          */
         public static final int title_tile_picker=0x7f0501b4;
+        /**  <string name="perms_rationale_title">Android Permissions</string> 
+         */
+        public static final int toast_no_permission=0x7f050361;
         /** <string name="update_dicts_fmt">Updates are available for one or more
     installed wordlists. Would you like to download the new
     version[s] of %1$s now?</string>

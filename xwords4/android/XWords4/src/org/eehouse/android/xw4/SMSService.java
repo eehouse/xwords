@@ -112,56 +112,62 @@ public class SMSService extends XWService {
         public String number;
         public boolean isGSM;
     }
-    private static SMSPhoneInfo s_phoneInfo;
 
+    private static SMSPhoneInfo s_phoneInfo;
     public static SMSPhoneInfo getPhoneInfo( Context context )
     {
         if ( null == s_phoneInfo ) {
-            String number = null;
-            boolean isGSM = false;
-            boolean isPhone = false;
-            TelephonyManager mgr = (TelephonyManager)
-                context.getSystemService(Context.TELEPHONY_SERVICE);
-            if ( null != mgr ) {
-                number = mgr.getLine1Number();
-                int type = mgr.getPhoneType();
-                isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
-                isPhone = true;
-            }
+            try {
+                String number = null;
+                boolean isGSM = false;
+                boolean isPhone = false;
+                TelephonyManager mgr = (TelephonyManager)
+                    context.getSystemService(Context.TELEPHONY_SERVICE);
+                if ( null != mgr ) {
+                    number = mgr.getLine1Number(); // needs permission
+                    int type = mgr.getPhoneType();
+                    isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
+                    isPhone = true;
+                }
 
-            String radio = XWPrefs.getPrefsString( context, R.string.key_force_radio );
-            int[] ids = { R.string.radio_name_real,
-                          R.string.radio_name_tablet,
-                          R.string.radio_name_gsm,
-                          R.string.radio_name_cdma,
-            };
+                String radio =
+                    XWPrefs.getPrefsString( context, R.string.key_force_radio );
+                int[] ids = { R.string.radio_name_real,
+                              R.string.radio_name_tablet,
+                              R.string.radio_name_gsm,
+                              R.string.radio_name_cdma,
+                };
 
-            int id = R.string.radio_name_real; // default so don't crash before set
-            for ( int ii = 0; ii < ids.length; ++ii ) {
-                if ( radio.equals(context.getString(ids[ii])) ) {
-                    id = ids[ii];
+                // default so don't crash before set
+                int id = R.string.radio_name_real;
+                for ( int ii = 0; ii < ids.length; ++ii ) {
+                    if ( radio.equals(context.getString(ids[ii])) ) {
+                        id = ids[ii];
+                        break;
+                    }
+                }
+
+                switch( id ) {
+                case R.string.radio_name_real:
+                    break;          // go with above
+                case R.string.radio_name_tablet:
+                    number = null;
+                    isPhone = false;
+                    break;
+                case R.string.radio_name_gsm:
+                case R.string.radio_name_cdma:
+                    isGSM = id == R.string.radio_name_gsm;
+                    if ( null == number ) {
+                        number = "000-000-0000";
+                    }
+                    isPhone = true;
                     break;
                 }
-            }
 
-            switch( id ) {
-            case R.string.radio_name_real:
-                break;          // go with above
-            case R.string.radio_name_tablet:
-                number = null;
-                isPhone = false;
-                break;
-            case R.string.radio_name_gsm:
-            case R.string.radio_name_cdma:
-                isGSM = id == R.string.radio_name_gsm;
-                if ( null == number ) {
-                    number = "000-000-0000";
-                }
-                isPhone = true;
-                break;
+                s_phoneInfo = new SMSPhoneInfo( isPhone, number, isGSM );
+            } catch ( SecurityException se ) {
+                DbgUtils.loge( TAG, "got SecurityException" );
             }
-
-            s_phoneInfo = new SMSPhoneInfo( isPhone, number, isGSM );
         }
         return s_phoneInfo;
     }
@@ -654,7 +660,8 @@ public class SMSService extends XWService {
             // Try send-to-self
             if ( XWPrefs.getSMSToSelfEnabled( this ) ) {
                 String myPhone = getPhoneInfo( this ).number;
-                if ( PhoneNumberUtils.compare( phone, myPhone ) ) {
+                if ( null != myPhone
+                     && PhoneNumberUtils.compare( phone, myPhone ) ) {
                     for ( byte[] fragment : fragments ) {
                         handleFrom( this, fragment, phone );
                     }

@@ -2727,11 +2727,23 @@
 
   <string name="phone_state_rationale">Crosswords wants to offer you
   the option of exchanging moves via SMS \"data\" messages. In order
-  to determine if your device can send SMS it needs permission to ask
-  it about itself. If it can\'t send SMS (e.g. because it isn\'t a
-  phone) or you don\'t ever want to play via SMS (e.g. because you pay
-  for each message), it\'s safe to permanently deny permission.
+  to determine if your device can send SMS Crosswords needs permission
+  to ask your device about itself. If it can\'t send SMS (e.g. because
+  it isn\'t a phone) or you don\'t ever want to play via SMS
+  (e.g. because you pay for each message), it\'s safe to permanently
+  deny permission.
   </string>
+
+  <string name="phone_lookup_rationale">Crosswords needs your phone
+  number to initialize a game played via SMS, and needs your
+  permission now in order to access it.</string>
+
+  <!-- Case where SMS is the only way the game can communicate -->
+  <string name="phone_lookup_rationale_drop">Rematching this SMS-only
+  game is not possible without this permission.</string>
+  <!-- Case where SMS is NOT the only way the game can communicate -->
+  <string name="phone_lookup_rationale_others">Without this permission
+  rematching will create a game that cannot not play via SMS.</string>
 
   <string name="contacts_rationale">Crosswords want access to your
   contacts in order to put a name to phone numbers that send you
@@ -2742,5 +2754,8 @@
   <string name="remove_sms">Remove SMS</string>
   <string name="contact_not_found">Not in Contacts</string>
   <string name="sms_send_failed">SMS send failed</string>
+
+  <!-- <string name="perms_rationale_title">Android Permissions</string> -->
+  <string name="toast_no_permission">Permission not granted</string>
 
 </resources>

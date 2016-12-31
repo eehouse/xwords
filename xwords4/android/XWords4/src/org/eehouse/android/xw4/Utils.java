@@ -115,7 +115,7 @@ public class Utils {
         boolean result = false;
         if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
             SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
-            result = info.isPhone && info.isGSM;
+            result = null != info && info.isPhone && info.isGSM;
         }
         DbgUtils.logd( TAG, "isGSMPhone() => %b", result );
         return result;

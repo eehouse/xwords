@@ -2328,11 +2328,21 @@
   AGAIN. OR YOU CAN REMOVE THE SMS COMMUNICATION SETTING.</string>
   <string name="phone_state_rationale">CROSSWORDS WANTS TO OFFER YOU
   THE OPTION OF EXCHANGING MOVES VIA SMS \"DATA\" MESSAGES. IN ORDER
-  TO DETERMINE IF YOUR DEVICE CAN SEND SMS IT NEEDS PERMISSION TO ASK
-  IT ABOUT ITSELF. IF IT CAN\'T SEND SMS (E.G. BECAUSE IT ISN\'T A
-  PHONE) OR YOU DON\'T EVER WANT TO PLAY VIA SMS (E.G. BECAUSE YOU PAY
-  FOR EACH MESSAGE), IT\'S SAFE TO PERMANENTLY DENY PERMISSION.
+  TO DETERMINE IF YOUR DEVICE CAN SEND SMS CROSSWORDS NEEDS PERMISSION
+  TO ASK YOUR DEVICE ABOUT ITSELF. IF IT CAN\'T SEND SMS (E.G. BECAUSE
+  IT ISN\'T A PHONE) OR YOU DON\'T EVER WANT TO PLAY VIA SMS
+  (E.G. BECAUSE YOU PAY FOR EACH MESSAGE), IT\'S SAFE TO PERMANENTLY
+  DENY PERMISSION.
   </string>
+  <string name="phone_lookup_rationale">CROSSWORDS NEEDS YOUR PHONE
+  NUMBER TO INITIALIZE A GAME PLAYED VIA SMS, AND NEEDS YOUR
+  PERMISSION NOW IN ORDER TO ACCESS IT.</string>
+  <!-- Case where SMS is the only way the game can communicate -->
+  <string name="phone_lookup_rationale_drop">REMATCHING THIS SMS-ONLY
+  GAME IS NOT POSSIBLE WITHOUT THIS PERMISSION.</string>
+  <!-- Case where SMS is NOT the only way the game can communicate -->
+  <string name="phone_lookup_rationale_others">WITHOUT THIS PERMISSION
+  REMATCHING WILL CREATE A GAME THAT CANNOT NOT PLAY VIA SMS.</string>
   <string name="contacts_rationale">CROSSWORDS WANT ACCESS TO YOUR
   CONTACTS IN ORDER TO PUT A NAME TO PHONE NUMBERS THAT SEND YOU
   INVITATIONS VIA SMS. YOU\'LL STILL BE ABLE TO RECEIVE INVITATIONS IF
@@ -2341,4 +2351,6 @@
   <string name="remove_sms">REMOVE SMS</string>
   <string name="contact_not_found">NOT IN CONTACTS</string>
   <string name="sms_send_failed">SMS SEND FAILED</string>
+  <!-- <string name="perms_rationale_title">Android Permissions</string> -->
+  <string name="toast_no_permission">PERMISSION NOT GRANTED</string>
 </resources>

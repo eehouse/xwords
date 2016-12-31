@@ -71,6 +71,7 @@ public class DlgDelegate {
         NEW_GAME_DFLT_NAME,
         ENABLE_DUALPANE,
         ENABLE_DUALPANE_EXIT,
+        RETRY_REMATCH,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

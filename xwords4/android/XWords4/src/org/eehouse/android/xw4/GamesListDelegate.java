@@ -872,7 +872,7 @@ public class GamesListDelegate extends ListDelegateBase
                             EditText edit = (EditText)((Dialog)dlg)
                                 .findViewById( R.id.edit );
                             String gameName = edit.getText().toString();
-                            curThis().startRematchWithName( gameName );
+                            curThis().startRematchWithName( gameName, true );
                         }
                     } )
                 .create();
@@ -1324,6 +1324,10 @@ public class GamesListDelegate extends ListDelegateBase
             case NEW_GAME_DFLT_NAME:
                 m_newGameParams = params;
                 askDefaultName();
+                break;
+
+            case RETRY_REMATCH:
+                startRematchWithName( (String)params[0], false );
                 break;
 
             default:
@@ -2162,29 +2166,76 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void startRematchWithName( String gameName )
+    private void startRematchWithName( final String gameName,
+                                       boolean showRationale )
     {
         if ( null != gameName && 0 < gameName.length() ) {
             Bundle extras = m_rematchExtras;
-            long srcRowID = extras.getLong( REMATCH_ROWID_EXTRA, -1 );
-            String btAddr = extras.getString( REMATCH_BTADDR_EXTRA );
-            String phone = extras.getString( REMATCH_PHONE_EXTRA );
-            String relayID = extras.getString( REMATCH_RELAYID_EXTRA );
-            String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
-            String dict = extras.getString( REMATCH_DICT_EXTRA );
-            int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
-            String json = extras.getString( REMATCH_PREFS_EXTRA );
             int bits = extras.getInt( REMATCH_ADDRS_EXTRA, -1 );
-            CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
+            final CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
+            boolean hasSMS = addrs.contains( CommsConnType.COMMS_CONN_SMS );
+            if ( !hasSMS || null != SMSService.getPhoneInfo( m_activity ) ) {
+                rematchWithNameAndPerm( gameName, addrs );
+            } else {
+                Perms23.Builder builder =
+                    new Perms23.Builder( Perm.READ_PHONE_STATE );
+                if ( showRationale ) {
+                    builder.setOnShowRationale( new Perms23.OnShowRationale() {
+                            public void onShouldShowRationale( Set<Perm> perms )
+                            {
+                                int id = (1 == addrs.size())
+                                    ? R.string.phone_lookup_rationale_drop
+                                    : R.string.phone_lookup_rationale_others;
+                                String msg = getString( R.string.phone_lookup_rationale )
+                                    + "\n\n" + getString( id );
+                                makeConfirmThenBuilder( msg, Action.RETRY_REMATCH )
+                                    // .setTitle( R.string.perms_rationale_title )
+                                    .setParams( gameName )
+                                    .show();
+                            }
+                        });
+                }
+                builder.asyncQuery( m_activity, new Perms23.PermCbck() {
+                        @Override
+                        public void onPermissionResult( Map<Perm,
+                                                        Boolean> granted )
+                        {
+                            if ( !granted.get( Perm.READ_PHONE_STATE ) ) {
+                                addrs.remove( CommsConnType.COMMS_CONN_SMS );
+                            }
+                            if ( 0 == addrs.size() ) {
+                                DbgUtils.showf( m_activity, R.string.toast_no_permission );
+                            } else {
+                                rematchWithNameAndPerm( gameName, addrs );
+                            }
+                        }
+                    } );
+            }
+        }
+    }
+
+    private void rematchWithNameAndPerm( String gameName, CommsConnTypeSet addrs )
+    {
+        if ( null != gameName && 0 < gameName.length() ) {
+            Bundle extras = m_rematchExtras;
+            long srcRowID = extras.getLong( REMATCH_ROWID_EXTRA, DBUtils.ROWID_NOTFOUND );
+            boolean solo = extras.getBoolean( REMATCH_IS_SOLO, true );
 
             long newid;
-            if ( null == btAddr && null == phone && null == relayID
-                 && null == p2pMacAddress ) {
+            if ( solo ) {
                 newid = GameUtils.dupeGame( m_activity, srcRowID );
                 if ( DBUtils.ROWID_NOTFOUND != newid ) {
                     DBUtils.setName( m_activity, newid, gameName );
                 }
             } else {
+                String btAddr = extras.getString( REMATCH_BTADDR_EXTRA );
+                String phone = extras.getString( REMATCH_PHONE_EXTRA );
+                String relayID = extras.getString( REMATCH_RELAYID_EXTRA );
+                String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
+                String dict = extras.getString( REMATCH_DICT_EXTRA );
+                int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
+                String json = extras.getString( REMATCH_PREFS_EXTRA );
+
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );

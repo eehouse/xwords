@@ -524,12 +524,14 @@ public class NetLaunchInfo {
     public void addSMSInfo( Context context )
     {
         SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
-        phone = pi.number;
-        isGSM = pi.isGSM;
+        if ( null != pi ) {
+            phone = pi.number;
+            isGSM = pi.isGSM;
 
-        osVers = Integer.valueOf( android.os.Build.VERSION.SDK );
+            osVers = Integer.valueOf( android.os.Build.VERSION.SDK );
 
-        m_addrs.add( CommsConnType.COMMS_CONN_SMS );
+            m_addrs.add( CommsConnType.COMMS_CONN_SMS );
+        }
     }
 
     public void addP2PInfo( Context context )
