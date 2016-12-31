@@ -1272,13 +1272,8 @@ public class BoardDelegate extends DelegateBase
             break;
         case SMS_SEND_FAILED:
         case SMS_SEND_FAILED_NORADIO:
-
-            // if ( null != m_jniThread ) {
-            //     boolean accepted =
-            //         MultiService.MultiEvent.SMS_RECEIVE_OK == event
-            //         || MultiService.MultiEvent.SMS_SEND_OK == event;
-            //     m_jniThread.handle( JNICmd.CMD_DRAW_SMS_STATUS, accepted );
-            // }
+        case SMS_SEND_FAILED_NOPERMISSION:
+            DbgUtils.showf( m_activity, R.string.sms_send_failed );
             break;
 
         default:

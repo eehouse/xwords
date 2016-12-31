@@ -6011,6 +6011,7 @@ XLATE-ME
         /** <string name="sms_ready_text">Tap the receiving device now</string>
          */
         public static final int sms_ready_text=0x7f050288;
+        public static final int sms_send_failed=0x7f05035d;
         /** <string name="square_tiles">Square rack tiles</string>
          */
         public static final int square_tiles=0x7f050278;

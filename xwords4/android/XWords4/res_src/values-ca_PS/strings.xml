@@ -2340,4 +2340,5 @@
   SENDER WILL BE DISPLAYED.</string>
   <string name="remove_sms">REMOVE SMS</string>
   <string name="contact_not_found">NOT IN CONTACTS</string>
+  <string name="sms_send_failed">SMS SEND FAILED</string>
 </resources>

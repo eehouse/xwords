@@ -2741,5 +2741,6 @@
 
   <string name="remove_sms">Remove SMS</string>
   <string name="contact_not_found">Not in Contacts</string>
+  <string name="sms_send_failed">SMS send failed</string>
 
 </resources>

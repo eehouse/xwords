@@ -680,8 +680,7 @@ public class SMSService extends XWService {
                 } catch ( NullPointerException npe ) {
                     Assert.fail();      // shouldn't be trying to do this!!!
                 } catch ( java.lang.SecurityException se ) {
-                    DbgUtils.logd( TAG, "caught SecurityException; "
-                                   + "no SEND_SMS permission?" );
+                    postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
                 } catch ( Exception ee ) {
                     DbgUtils.logex( TAG, ee );
                 }
@@ -719,11 +718,9 @@ public class SMSService extends XWService {
                         postEvent( MultiEvent.SMS_SEND_OK );
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        DbgUtils.showf( SMSService.this, "NO RADIO!!!" );
                         postEvent( MultiEvent.SMS_SEND_FAILED_NORADIO );
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        DbgUtils.showf( SMSService.this, "NO SERVICE!!!" );
                     default:
                         DbgUtils.logw( TAG, "FAILURE!!!" );
                         postEvent( MultiEvent.SMS_SEND_FAILED );
