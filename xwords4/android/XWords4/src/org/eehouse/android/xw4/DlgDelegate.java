@@ -165,6 +165,7 @@ public class DlgDelegate {
         protected int m_negButton = android.R.string.cancel;
         protected Action m_action;
         protected Object[] m_params;
+        protected int m_titleId = 0;
 
         public DlgDelegateBuilder( String msg, Action action )
         { m_msgString = msg; m_action = action; }
@@ -196,11 +197,13 @@ public class DlgDelegate {
         public OkOnlyBuilder(int msgId) { super( msgId, Action.SKIP_CALLBACK ); }
         public OkOnlyBuilder setAction( Action action )
         { m_action = action; return this; }
+        public OkOnlyBuilder setTitle( int titleId )
+        { m_titleId = titleId; return this; }
 
         @Override
         public void show()
         {
-            showOKOnlyDialogThen( m_msgString, m_action, m_params );
+            showOKOnlyDialogThen( m_msgString, m_action, m_params, m_titleId );
         }
     }
 
@@ -208,11 +211,14 @@ public class DlgDelegate {
         public ConfirmThenBuilder(String msg, Action action) {super(msg, action);}
         public ConfirmThenBuilder(int msgId, Action action) {super(msgId, action);}
 
+        public ConfirmThenBuilder setTitle( int titleId )
+        { m_titleId = titleId; return this; }
+
         @Override
         public void show()
         {
             showConfirmThen( m_nakey, m_onNA, m_msgString, m_posButton,
-                             m_negButton, m_action, m_params );
+                             m_negButton, m_action, m_titleId, m_params );
         }
     }
 
@@ -412,12 +418,13 @@ public class DlgDelegate {
     }
 
     private void showOKOnlyDialogThen( String msg, Action action,
-                                       Object[] params )
+                                       Object[] params, int titleId )
     {
         // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY )
             .setMsg( msg )
             .setParams( params )
+            .setTitle( titleId )
             .setAction(action);
         addState( state );
         showDialog( DlgID.DIALOG_OKONLY );
@@ -471,8 +478,9 @@ public class DlgDelegate {
         }
     }
 
-    private void showConfirmThen( NAKey nakey, Runnable onNA, String msg, int posButton,
-                                  int negButton, Action action, Object[] params )
+    private void showConfirmThen( NAKey nakey, Runnable onNA, String msg,
+                                  int posButton, int negButton, Action action,
+                                  int titleId, Object[] params )
     {
         if ( null != nakey ) {
             Assert.assertNull( onNA );
@@ -484,6 +492,7 @@ public class DlgDelegate {
                 .setPosButton( posButton )
                 .setNegButton( negButton )
                 .setAction( action )
+                .setTitle( titleId )
                 .setParams( params );
             addState( state );
             showDialog( DlgID.CONFIRM_THEN );
@@ -662,7 +671,7 @@ public class DlgDelegate {
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
     {
         Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.info_title )
+            .setTitle( state.m_titleId == 0 ? R.string.info_title : state.m_titleId )
             .setMessage( state.m_msg )
             .setPositiveButton( android.R.string.ok, null )
             .create();
@@ -711,7 +720,7 @@ public class DlgDelegate {
         OnClickListener lstnr = mkCallbackClickListener( state, naView );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.query_title )
+            .setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )
             .setView( naView )
             .setPositiveButton( state.m_posButton, lstnr )
             .setNegativeButton( state.m_negButton, lstnr );

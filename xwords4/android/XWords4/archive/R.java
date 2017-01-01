@@ -5040,6 +5040,7 @@ XLATE-ME
  explanation of the above 
          */
         public static final int peek_other_summary=0x7f05015d;
+        public static final int perms_rationale_title=0x7f050361;
         /**   
   
 <string name="phone_label">Connected number[s]:</string>
@@ -6887,9 +6888,7 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          feature is not yet supported on Android.) 
          */
         public static final int title_tile_picker=0x7f0501b4;
-        /**  <string name="perms_rationale_title">Android Permissions</string> 
-         */
-        public static final int toast_no_permission=0x7f050361;
+        public static final int toast_no_permission=0x7f050362;
         /** <string name="update_dicts_fmt">Updates are available for one or more
     installed wordlists. Would you like to download the new
     version[s] of %1$s now?</string>

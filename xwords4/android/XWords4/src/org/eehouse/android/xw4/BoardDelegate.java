@@ -736,6 +736,7 @@ public class BoardDelegate extends DelegateBase
                     public void onShouldShowRationale( Set<Perm> perms )
                     {
                         makeOkOnlyBuilder( R.string.phone_state_rationale )
+                            .setTitle( R.string.perms_rationale_title )
                             .setAction( Action.RETRY_PHONE_STATE_ACTION )
                             .setParams( action, info )
                             .show();

@@ -2189,7 +2189,7 @@ public class GamesListDelegate extends ListDelegateBase
                                 String msg = getString( R.string.phone_lookup_rationale )
                                     + "\n\n" + getString( id );
                                 makeConfirmThenBuilder( msg, Action.RETRY_REMATCH )
-                                    // .setTitle( R.string.perms_rationale_title )
+                                    .setTitle( R.string.perms_rationale_title )
                                     .setParams( gameName )
                                     .show();
                             }

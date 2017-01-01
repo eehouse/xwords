@@ -338,6 +338,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                     public void onShouldShowRationale( Set<Perm> perms )
                     {
                         makeOkOnlyBuilder( R.string.contacts_rationale )
+                            .setTitle( R.string.perms_rationale_title )
                             .setAction( Action.RETRY_CONTACTS_ACTION )
                             .show();
                     }

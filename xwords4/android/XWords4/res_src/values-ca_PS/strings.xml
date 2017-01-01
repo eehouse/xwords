@@ -2334,9 +2334,8 @@
   (E.G. BECAUSE YOU PAY FOR EACH MESSAGE), IT\'S SAFE TO PERMANENTLY
   DENY PERMISSION.
   </string>
-  <string name="phone_lookup_rationale">CROSSWORDS NEEDS YOUR PHONE
-  NUMBER TO INITIALIZE A GAME PLAYED VIA SMS, AND NEEDS YOUR
-  PERMISSION NOW IN ORDER TO ACCESS IT.</string>
+  <string name="phone_lookup_rationale">TO REMATCH A GAME USING SMS
+  CROSSWORDS NEEDS PERMISSION TO ACCESS YOUR PHONE NUMBER.</string>
   <!-- Case where SMS is the only way the game can communicate -->
   <string name="phone_lookup_rationale_drop">REMATCHING THIS SMS-ONLY
   GAME IS NOT POSSIBLE WITHOUT THIS PERMISSION.</string>
@@ -2351,6 +2350,6 @@
   <string name="remove_sms">REMOVE SMS</string>
   <string name="contact_not_found">NOT IN CONTACTS</string>
   <string name="sms_send_failed">SMS SEND FAILED</string>
-  <!-- <string name="perms_rationale_title">Android Permissions</string> -->
+  <string name="perms_rationale_title">ANDROID PERMISSIONS</string>
   <string name="toast_no_permission">PERMISSION NOT GRANTED</string>
 </resources>

@@ -2734,9 +2734,8 @@
   deny permission.
   </string>
 
-  <string name="phone_lookup_rationale">Crosswords needs your phone
-  number to initialize a game played via SMS, and needs your
-  permission now in order to access it.</string>
+  <string name="phone_lookup_rationale">To rematch a game using SMS
+  Crosswords needs permission to access your phone number.</string>
 
   <!-- Case where SMS is the only way the game can communicate -->
   <string name="phone_lookup_rationale_drop">Rematching this SMS-only
@@ -2755,7 +2754,7 @@
   <string name="contact_not_found">Not in Contacts</string>
   <string name="sms_send_failed">SMS send failed</string>
 
-  <!-- <string name="perms_rationale_title">Android Permissions</string> -->
+  <string name="perms_rationale_title">Android Permissions</string>
   <string name="toast_no_permission">Permission not granted</string>
 
 </resources>

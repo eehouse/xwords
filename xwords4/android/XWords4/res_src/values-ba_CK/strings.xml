@@ -2334,9 +2334,8 @@
   e(.g. esuaceb uoy yap rof hcae ,)egassem ti\'s efas ot yltnenamrep
   yned noissimrep.
   </string>
-  <string name="phone_lookup_rationale">Sdrowssorc sdeen ruoy enohp
-  rebmun ot ezilaitini a emag deyalp aiv ,SMs dna sdeen ruoy
-  noissimrep won ni redro ot ssecca ti.</string>
+  <string name="phone_lookup_rationale">Ot hctamer a emag gnisu SMS
+  Sdrowssorc sdeen noissimrep ot ssecca ruoy enohp rebmun.</string>
   <!-- Case where SMS is the only way the game can communicate -->
   <string name="phone_lookup_rationale_drop">Gnihctamer siht YLNo-sms
   emag si ton elbissop tuohtiw siht noissimrep.</string>
@@ -2351,6 +2350,6 @@
   <string name="remove_sms">Evomer SMS</string>
   <string name="contact_not_found">Ton ni Stcatnoc</string>
   <string name="sms_send_failed">SMS dnes deliaf</string>
-  <!-- <string name="perms_rationale_title">Android Permissions</string> -->
+  <string name="perms_rationale_title">Diordna Snoissimrep</string>
   <string name="toast_no_permission">Noissimrep ton detnarg</string>
 </resources>

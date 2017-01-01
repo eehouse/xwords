@@ -37,6 +37,7 @@ public class DlgState implements Parcelable {
     // These can't be serialized!!!!
     public Object[] m_params;
     public Runnable m_onNAChecked;
+    public int m_titleId;
 
     public DlgState( DlgID dlgID )
     {
@@ -59,6 +60,8 @@ public class DlgState implements Parcelable {
     { m_posButton = id; return this; }
     public DlgState setNegButton( int id )
     { m_negButton = id; return this; }
+    public DlgState setTitle( int id )
+    { m_titleId = id; return this; }
 
     public int describeContents() {
         return 0;
@@ -70,6 +73,7 @@ public class DlgState implements Parcelable {
         out.writeInt( m_negButton );
         out.writeInt( null == m_action ? -1 : m_action.ordinal() );
         out.writeInt( m_prefsKey );
+        out.writeInt( m_titleId );
         out.writeString( m_msg );
     }
 
@@ -82,6 +86,7 @@ public class DlgState implements Parcelable {
                     int tmp = in.readInt();
                     Action action = 0 > tmp ? null : Action.values()[tmp];
                     int prefsKey = in.readInt();
+                    int titleId = in.readInt();
                     String msg = in.readString();
                     DlgState state = new DlgState(id)
                     .setMsg( msg )
