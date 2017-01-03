@@ -131,6 +131,11 @@ public class DictUtils {
         // changes?
     }
 
+    public static boolean needsStoragePermission( DictLoc loc )
+    {
+        return DictLoc.DOWNLOAD == loc;
+    }
+
     private static void tryDir( Context context, File dir, boolean strict,
                                 DictLoc loc, ArrayList<DictAndLoc> al )
     {

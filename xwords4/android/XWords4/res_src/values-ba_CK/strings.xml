@@ -1508,7 +1508,7 @@
   <string name="about_vers_fmt">Sdrowssorc rof ,diordna Noisrev %1$s,
         ver %2$s, tliub no %3$s.</string>
   <!-- copyright info -->
-  <string name="about_copyright">Thgirypoc )C( 6102-8991 yb Cire
+  <string name="about_copyright">Thgirypoc )C( 7102-8991 yb Cire
         Esuoh. Siht nepo/eerf ecruos erawtfos si desaeler rednu eht UNG Cilbup
         Esnecil.</string>
   <!-- Another paragraph in the about dialog -->
@@ -2326,6 +2326,9 @@
   os. Uoy nac llits nepo eht ,emag tub ti yam ton eb elba ot dnes ro
   eviecer sevom.\n\nUoy nac nepo-er ti ot eb deksa rof noissimrep
   niaga. Ro uoy nac evomer eht SMS noitacinummoc gnittes.</string>
+  <string name="download_rationale">Sdrowssorc sdeen ssecca ot
+  yraropmet egarots ot peek tahw uoy\'er tuoba ot daolnwod.
+  </string>
   <string name="phone_state_rationale">Sdrowssorc stnaw ot reffo uoy
   eht noitpo fo gnignahcxe sevom aiv SMS \"atad\" segassem. Ni redro
   ot enimreted fi ruoy ecived nac dnes SMS Sdrowssorc sdeen noissimrep
@@ -2347,6 +2350,8 @@
   snoitativni aiv SMS. Uoy\'ll llits eb elba ot eviecer snoitativni fi
   uoy nod\'t tnarg siht ,noissimrep tub ylno eht enohp rebmun fo eht
   rednes lliw eb deyalpsid.</string>
+  <string name="move_dict_rationale">Gnirots a tsildrow ni eht
+  Sdaolnwod aera seriuqer noissimrep.</string>
   <string name="remove_sms">Evomer SMS</string>
   <string name="contact_not_found">Ton ni Stcatnoc</string>
   <string name="sms_send_failed">SMS dnes deliaf</string>

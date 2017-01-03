@@ -2725,6 +2725,10 @@
   receive moves.\n\nYou can re-open it to be asked for permission
   again. Or you can remove the SMS communication setting.</string>
 
+  <string name="download_rationale">Crosswords needs access to
+  temporary storage to keep what you\'re about to download.
+  </string>
+
   <string name="phone_state_rationale">Crosswords wants to offer you
   the option of exchanging moves via SMS \"data\" messages. In order
   to determine if your device can send SMS Crosswords needs permission
@@ -2749,6 +2753,9 @@
   invitations via SMS. You\'ll still be able to receive invitations if
   you don\'t grant this permission, but only the phone number of the
   sender will be displayed.</string>
+
+  <string name="move_dict_rationale">Storing a wordlist in the
+  Downloads area requires permission.</string>
 
   <string name="remove_sms">Remove SMS</string>
   <string name="contact_not_found">Not in Contacts</string>

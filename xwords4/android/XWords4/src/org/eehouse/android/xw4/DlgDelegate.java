@@ -100,6 +100,7 @@ public class DlgDelegate {
         FINISH_ACTION,
         DELETE_DICT_ACTION,
         UPDATE_DICTS_ACTION,
+        MOVE_CONFIRMED,
 
         // Game configs
         LOCKED_CHANGE_ACTION,
@@ -122,6 +123,9 @@ public class DlgDelegate {
         SL_CLEAR_ACTION,
         SL_COPY_ACTION,
 
+        // DwnldDelegate
+        STORAGE_CONFIRMED,
+
         // clasify me
         ENABLE_SMS_ASK,
         ENABLE_SMS_DO,
@@ -129,6 +133,7 @@ public class DlgDelegate {
         ENABLE_RELAY_DO,
         ENABLE_RELAY_DO_OR,
         DISABLE_RELAY_DO,
+        PERMS_QUERY,
     }
 
     public static class ActionPair {

@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -45,7 +46,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.Perms23.Perm;
 
 public class DwnldDelegate extends ListDelegateBase {
@@ -114,6 +117,8 @@ public class DwnldDelegate extends ListDelegateBase {
             tv.setText( text );
             return this;
         }
+
+        private boolean forApp() { return m_isApp; }
 
         @Override
         protected Void doInBackground( Void... unused )
@@ -289,21 +294,11 @@ public class DwnldDelegate extends ListDelegateBase {
 
         if ( 0 == m_dfts.size() ) {
             finish();
+        } else if ( !anyNeedsStorage() ) {
+            doWithPermissions( uris );
         } else {
-            final Uri[] fUris = uris;
-            new Perms23.Builder( Perm.STORAGE )
-                .asyncQuery( m_activity, new Perms23.PermCbck() {
-                        @Override
-                        public void onPermissionResult( Map<Perm,
-                                                        Boolean> granted )
-                        {
-                            if ( granted.get(Perm.STORAGE) ) {
-                                doWithPermissions( fUris );
-                            } else {
-                                finish();
-                            }
-                        }
-                    } );
+            Perms23.tryGetPerms( this, Perm.STORAGE, R.string.download_rationale,
+                                 Action.STORAGE_CONFIRMED, this, (Object)uris );
         }
     }
 
@@ -324,6 +319,20 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     } // doWithPermissions
 
+    private boolean anyNeedsStorage()
+    {
+        boolean result = false;
+        DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( m_activity );
+
+        for ( DownloadFilesTask task : m_dfts ) {
+            if ( task.forApp() || DictUtils.DictLoc.DOWNLOAD == loc ) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
     @Override
     protected boolean handleBackPressed()
     {
@@ -334,6 +343,20 @@ public class DwnldDelegate extends ListDelegateBase {
             dft.cancel( true );
         }
         return super.handleBackPressed();
+    }
+
+    @Override
+    public void dlgButtonClicked( Action action, int which, Object[] params )
+    {
+        if ( Action.STORAGE_CONFIRMED == action ) {
+            if ( AlertDialog.BUTTON_POSITIVE == which ) {
+                doWithPermissions( (Uri[])params[0] );
+            } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
+                finish();
+            }
+        } else {
+            super.dlgButtonClicked( action, which, params );
+        }
     }
 
     private void mkListAdapter()

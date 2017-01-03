@@ -88,6 +88,8 @@ public class DelegateBase implements DlgClickNotify,
         LocUtils.xlateTitle( m_activity );
     }
 
+    public Activity getActivity() { return m_activity; }
+
     // Does nothing unless overridden. These belong in an interface.
     protected void init( Bundle savedInstanceState ) { Assert.fail(); }
     protected void onSaveInstanceState( Bundle outState ) {}
@@ -631,7 +633,10 @@ public class DelegateBase implements DlgClickNotify,
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
         boolean handled = false;
-        if ( AlertDialog.BUTTON_POSITIVE == button ) {
+        if ( Action.PERMS_QUERY == action ) {
+            Perms23.onGotPermsAction( button, params );
+            handled = true;
+        } else if ( AlertDialog.BUTTON_POSITIVE == button ) {
             switch( action ) {
             case ENABLE_SMS_ASK:
                 showSMSEnableDialog( Action.ENABLE_SMS_DO, params );

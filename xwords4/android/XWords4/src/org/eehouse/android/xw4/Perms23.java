@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -29,6 +30,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 
 import junit.framework.Assert;
     
@@ -118,9 +122,7 @@ public class Perms23 {
                 haveAll = haveAll && haveIt;
             }
 
-            if ( 0 < needShow.size() && null != m_onShow ) {
-                m_onShow.onShouldShowRationale( needShow );
-            } else if ( haveAll ) {
+            if ( haveAll ) {
                 if ( null != cbck ) {
                     Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
                     for ( Perm perm : m_perms ) {
@@ -128,17 +130,108 @@ public class Perms23 {
                     }
                     cbck.onPermissionResult( map );
                 }
+            } else if ( 0 < needShow.size() && null != m_onShow ) {
+                // DbgUtils.logd( TAG, "calling onShouldShowRationale()" );
+                m_onShow.onShouldShowRationale( needShow );
             } else {
                 String[] permsArray = askStrings.toArray( new String[askStrings.size()] );
                 int code = register( cbck );
+                // DbgUtils.logd( TAG, "calling requestPermissions on %s",
+                //                activity.getClass().getSimpleName() );
                 ActivityCompat.requestPermissions( activity, permsArray, code );
             }
         }
     }
 
+    private static class QueryInfo {
+        private Action m_action;
+        private Perm m_perm;
+        private DelegateBase m_delegate;
+        private DlgClickNotify m_cbck;
+        private int m_rationaleId;
+        private Object[] m_params;
+
+        public QueryInfo( DelegateBase delegate, Action action,
+                          Perm perm, int rationaleId,
+                          DlgClickNotify cbck, Object[] params ) {
+            m_delegate = delegate;
+            m_action = action;
+            m_perm = perm;
+            m_rationaleId = rationaleId;
+            m_cbck = cbck;
+            m_params = params;
+        }
+
+        private void doIt( boolean showRationale )
+        {
+            Builder builder = new Builder( m_perm );
+            if ( showRationale && 0 != m_rationaleId ) {
+                builder.setOnShowRationale( new OnShowRationale() {
+                        public void onShouldShowRationale( Set<Perm> perms ) {
+                            m_delegate.makeConfirmThenBuilder( m_rationaleId,
+                                                               Action.PERMS_QUERY )
+                                .setTitle( R.string.perms_rationale_title )
+                                .setParams( QueryInfo.this )
+                                .show();
+                        }
+                    } );
+            }
+            builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
+                    public void onPermissionResult( Map<Perm, Boolean> perms ) {
+                        int button = perms.get( m_perm )
+                            ? AlertDialog.BUTTON_POSITIVE
+                            : AlertDialog.BUTTON_NEGATIVE;
+                        // DbgUtils.logd( TAG, "doIt() calling dlgButtonClicked(%s)",
+                        //                m_action.toString() );
+                        m_cbck.dlgButtonClicked( m_action, button, m_params );
+                    }
+                } );
+        }
+
+        // Post this in case we're called from inside dialog dismiss
+        // code. Better to unwind the stack...
+        private void handleButton( final int button )
+        {
+            m_delegate.post( new Runnable() {
+                    public void run() {
+                        if ( AlertDialog.BUTTON_POSITIVE == button ) {
+                            doIt( false );
+                        } else if ( AlertDialog.BUTTON_NEGATIVE == button ) {
+                            // DbgUtils.logd( TAG, "handleButton calling dlgButtonClicked(%s)",
+                            //                m_action.toString() );
+                            m_cbck.dlgButtonClicked( m_action,
+                                                     AlertDialog.BUTTON_NEGATIVE,
+                                                     m_params );
+                        }
+                    }
+                } );
+        }
+    }
+
+    /**
+     * Request permissions, giving rationale once, then call with action and
+     * either positive or negative, the former if permission granted.
+     */
+    public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
+                                    final Action action, final DlgClickNotify cbck,
+                                    Object... params )
+    {
+        // DbgUtils.logd( TAG, "tryGetPerms(%s)", perm.toString() );
+        new QueryInfo( delegate, action, perm, rationaleId, cbck, params )
+            .doIt( true );
+    }
+
+    public static void onGotPermsAction( int button, Object[] params )
+    {
+        // DbgUtils.logd( TAG, "onGotPermsAction(button=%d)", button );
+        QueryInfo info = (QueryInfo)params[0];
+        info.handleButton( button );
+    }
+
     private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();
     public static void gotPermissionResult( int code, String[] perms, int[] granteds )
     {
+        // DbgUtils.logd( TAG, "gotPermissionResult(%s)", perms.toString() );
         PermCbck cbck = s_map.remove( code );
         if ( null != cbck ) {
             Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
@@ -164,7 +257,7 @@ public class Perms23 {
 
     // This is probably overkill as the OS only allows one permission request
     // at a time
-    private static int s_nextRecord;
+    private static int s_nextRecord = 0;
     private static int register( PermCbck cbck )
     {
         DbgUtils.assertOnUIThread();
