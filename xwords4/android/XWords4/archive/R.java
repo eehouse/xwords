@@ -1988,8 +1988,8 @@ XLATE-ME
   
          */
         public static final int connstat_unsucc=0x7f050237;
-        public static final int contact_not_found=0x7f050361;
-        public static final int contacts_rationale=0x7f05035e;
+        public static final int contact_not_found=0x7f050362;
+        public static final int contacts_rationale=0x7f05035f;
         /**  title of dialog brought up in response to the
          board_menu_game_counts menu.  The dialog lists all tiles in
          the language being used for the game together with how many
@@ -2288,6 +2288,7 @@ XLATE-ME
          will use is substituted in for "%s". 
          */
         public static final int dicts_list_prompt_fmt=0x7f0500df;
+        public static final int dicts_storage_rationale=0x7f05035a;
         public static final int disable_dualpane=0x7f050355;
         public static final int disable_nag_solo_title=0x7f0502fe;
         /** <string name="disable_nag_summary">Do not notify me no matter
@@ -3831,7 +3832,7 @@ XLATE-ME
          depending on the current location of the wordlist.)
          */
         public static final int move_dict_fmt=0x7f0500b2;
-        public static final int move_dict_rationale=0x7f05035f;
+        public static final int move_dict_rationale=0x7f050360;
         /**  
        ############################################################
        # :Dialogs:
@@ -5042,21 +5043,21 @@ XLATE-ME
  explanation of the above 
          */
         public static final int peek_other_summary=0x7f05015d;
-        public static final int perms_rationale_title=0x7f050363;
+        public static final int perms_rationale_title=0x7f050364;
         /**   
   
 <string name="phone_label">Connected number[s]:</string>
   
          */
         public static final int phone_label=0x7f050223;
-        public static final int phone_lookup_rationale=0x7f05035b;
+        public static final int phone_lookup_rationale=0x7f05035c;
         /**  Case where SMS is the only way the game can communicate 
          */
-        public static final int phone_lookup_rationale_drop=0x7f05035c;
+        public static final int phone_lookup_rationale_drop=0x7f05035d;
         /**  Case where SMS is NOT the only way the game can communicate 
          */
-        public static final int phone_lookup_rationale_others=0x7f05035d;
-        public static final int phone_state_rationale=0x7f05035a;
+        public static final int phone_lookup_rationale_others=0x7f05035e;
+        public static final int phone_state_rationale=0x7f05035b;
         /**  Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. 
  Don't warn, but simply force to skip turn (give 0 points)
@@ -5813,7 +5814,7 @@ XLATE-ME
   
          */
         public static final int remote_undone=0x7f050226;
-        public static final int remove_sms=0x7f050360;
+        public static final int remove_sms=0x7f050361;
         /** <string name="rename_group_label">Change the name of this group to:</string>
          */
         public static final int rename_group_label=0x7f050273;
@@ -6021,7 +6022,7 @@ XLATE-ME
         /** <string name="sms_ready_text">Tap the receiving device now</string>
          */
         public static final int sms_ready_text=0x7f050288;
-        public static final int sms_send_failed=0x7f050362;
+        public static final int sms_send_failed=0x7f050363;
         /** <string name="square_tiles">Square rack tiles</string>
          */
         public static final int square_tiles=0x7f050278;
@@ -6890,7 +6891,7 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          feature is not yet supported on Android.) 
          */
         public static final int title_tile_picker=0x7f0501b4;
-        public static final int toast_no_permission=0x7f050364;
+        public static final int toast_no_permission=0x7f050365;
         /** <string name="update_dicts_fmt">Updates are available for one or more
     installed wordlists. Would you like to download the new
     version[s] of %1$s now?</string>

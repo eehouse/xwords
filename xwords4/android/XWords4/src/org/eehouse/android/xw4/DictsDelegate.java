@@ -534,6 +534,9 @@ public class DictsDelegate extends ListDelegateBase
 
         makeNotAgainBuilder( R.string.not_again_dicts, R.string.key_na_dicts )
             .show();
+
+        tryGetPerms( Perm.STORAGE, R.string.dicts_storage_rationale,
+                     Action.STORAGE_CONFIRMED );
     } // init
 
     @Override
@@ -654,8 +657,8 @@ public class DictsDelegate extends ListDelegateBase
     private void moveDicts( XWListItem[] selItems, DictLoc toLoc )
     {
         if ( DictUtils.needsStoragePermission( toLoc ) ) {
-            Perms23.tryGetPerms( this, Perm.STORAGE, R.string.move_dict_rationale,
-                                 Action.MOVE_CONFIRMED, this, selItems, toLoc );
+            tryGetPerms( Perm.STORAGE, R.string.move_dict_rationale,
+                         Action.MOVE_CONFIRMED, selItems, toLoc );
         } else {
             moveDictsWithPermission( selItems, toLoc );
         }
@@ -933,6 +936,11 @@ public class DictsDelegate extends ListDelegateBase
         case MOVE_CONFIRMED:
             if ( positive ) {
                 moveDictsWithPermission( params );
+            }
+            break;
+        case STORAGE_CONFIRMED:
+            if ( positive ) {
+                mkListAdapter();
             }
             break;
         default:

@@ -2329,6 +2329,13 @@
   <string name="download_rationale">Sdrowssorc sdeen ssecca ot
   yraropmet egarots ot peek tahw uoy\'er tuoba ot daolnwod.
   </string>
+  <string name="dicts_storage_rationale">
+    Sdrowssorc nac erots dna daer stsildrow ni ruoy ecived\'s
+    Sdaolnwod aera tub ti sdeen noissimrep ot ssecca meht
+    ereht.\n\nUoy nac ylefas yned siht noissimrep fi uoy lliw reven
+    daolnwod stsildrow tpecxe morf edisni Sdrowssorc dna evah ton
+    ylsuoiverp derots yna ereht.
+  </string>
   <string name="phone_state_rationale">Sdrowssorc stnaw ot reffo uoy
   eht noitpo fo gnignahcxe sevom aiv SMS \"atad\" segassem. Ni redro
   ot enimreted fi ruoy ecived nac dnes SMS Sdrowssorc sdeen noissimrep

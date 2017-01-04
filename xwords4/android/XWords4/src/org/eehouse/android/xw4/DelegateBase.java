@@ -105,6 +105,12 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void requestWindowFeature( int feature ) {}
 
+    protected void tryGetPerms( Perms23.Perm perm, int rationale,
+                                Action action, Object... params )
+    {
+        Perms23.tryGetPerms( this, perm, rationale, action, this, params );
+    }
+
     // Fragments only
     protected View inflateView( LayoutInflater inflater, ViewGroup container )
     {
@@ -653,6 +659,7 @@ public class DelegateBase implements DlgClickNotify,
                 handled = true;
                 break;
             default:
+                DbgUtils.logd( TAG, "unhandled action %s", action.toString() );
                 Assert.fail();
                 break;
             }

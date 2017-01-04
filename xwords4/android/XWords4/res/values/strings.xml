@@ -2729,6 +2729,14 @@
   temporary storage to keep what you\'re about to download.
   </string>
 
+  <string name="dicts_storage_rationale">
+    Crosswords can store and read wordlists in your device\'s
+    Downloads area but it needs permission to access them
+    there.\n\nYou can safely deny this permission if you will never
+    download wordlists except from inside Crosswords and have not
+    previously stored any there.
+  </string>
+
   <string name="phone_state_rationale">Crosswords wants to offer you
   the option of exchanging moves via SMS \"data\" messages. In order
   to determine if your device can send SMS Crosswords needs permission
