@@ -375,6 +375,12 @@ public class DictsDelegate extends ListDelegateBase
                         Button btn =
                             dlg.getButton( AlertDialog.BUTTON_POSITIVE );
                         btn.setEnabled( true );
+
+                        // Ask for STORAGE (but do nothing if not granted)
+                        if ( DictLoc.DOWNLOAD == itemToRealLoc( item ) ) {
+                            new Perms23.Builder( Perm.STORAGE )
+                                .asyncQuery( m_activity );
+                        }
                     }
                 };
 
