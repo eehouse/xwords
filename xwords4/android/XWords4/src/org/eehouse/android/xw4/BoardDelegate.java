@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -2091,24 +2091,33 @@ public class BoardDelegate extends DelegateBase
 
     private void doResume( boolean isStart )
     {
+        boolean success = true;
         boolean firstStart = null == m_handler;
         if ( firstStart ) {
             m_handler = new Handler();
             m_blockingDlgID = DlgID.NONE;
 
-            m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
-                                      makeJNIHandler() );
-            m_jniGamePtr = m_jniThreadRef.getGamePtr();
-            Assert.assertNotNull( m_jniGamePtr );
+            success = m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
+                                                makeJNIHandler() );
+            if ( success ) {
+                m_jniGamePtr = m_jniThreadRef.getGamePtr();
+                Assert.assertNotNull( m_jniGamePtr );
+            }
         }
 
-        try {
-            resumeGame( isStart );
-            if ( !isStart ) {
-                setKeepScreenOn();
-                ConnStatusHandler.setHandler( this );
+        if ( success ) {
+            try {
+                resumeGame( isStart );
+                if ( !isStart ) {
+                    setKeepScreenOn();
+                    ConnStatusHandler.setHandler( this );
+                }
+            } catch ( GameUtils.NoSuchGameException nsge ) {
+                success = false;
             }
-        } catch ( GameUtils.NoSuchGameException nsge ) {
+
+        }
+        if ( !success ) {
             finish();
         }
     }
