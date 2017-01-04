@@ -151,9 +151,17 @@ public class DictUtils {
         }
     }
 
+    private static Boolean s_hadStorage = null;
     public static DictAndLoc[] dictList( Context context )
     {
-        if ( null == s_dictListCache ) {
+        // Note: if STORAGE permission is changed the set being returned here
+        // will change. Might want to check for that and invalidate this list
+        // if it's changed.
+        boolean haveStorage = Perms23.havePermission( Perms23.Perm.STORAGE );
+        boolean permsChanged = null == s_hadStorage
+            || haveStorage != s_hadStorage;
+
+        if ( permsChanged || null == s_dictListCache ) {
             ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
 
             for ( String file : getAssets( context ) ) {
@@ -176,6 +184,7 @@ public class DictUtils {
 
             s_dictListCache =
                 al.toArray( new DictUtils.DictAndLoc[al.size()] );
+            s_hadStorage = new Boolean( haveStorage );
         }
         return s_dictListCache;
     }
