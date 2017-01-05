@@ -297,8 +297,8 @@ public class DwnldDelegate extends ListDelegateBase {
         } else if ( !anyNeedsStorage() ) {
             doWithPermissions( uris );
         } else {
-            Perms23.tryGetPerms( this, Perm.STORAGE, R.string.download_rationale,
-                                 Action.STORAGE_CONFIRMED, this, (Object)uris );
+            tryGetPerms( Perm.STORAGE, R.string.download_rationale,
+                         Action.STORAGE_CONFIRMED, (Object)uris );
         }
     }
 
