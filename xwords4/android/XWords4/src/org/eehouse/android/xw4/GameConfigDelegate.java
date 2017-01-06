@@ -684,48 +684,42 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    public void dlgButtonClicked( Action action, int button, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        boolean callSuper = false;
         Assert.assertTrue( curThis() == this );
-
-        if ( AlertDialog.BUTTON_POSITIVE == button ) {
-            switch( action ) {
-            case LOCKED_CHANGE_ACTION:
-                handleLockedChange();
-                break;
-            case SMS_CONFIG_ACTION:
-                Utils.launchSettings( m_activity );
-                break;
-            case DELETE_AND_EXIT:
-                if ( m_isNewGame ) {
-                    deleteGame();
-                }
-                closeNoSave();
-                break;
-            case SET_ENABLE_PUBLIC:
-                XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_pubroom,
-                                         true );
-                setupRelayStuffIf( true );
-                break;
-            default:
-                callSuper = true;
+        switch( action ) {
+        case LOCKED_CHANGE_ACTION:
+            handleLockedChange();
+            break;
+        case SMS_CONFIG_ACTION:
+            Utils.launchSettings( m_activity );
+            break;
+        case DELETE_AND_EXIT:
+            if ( m_isNewGame ) {
+                deleteGame();
             }
-        } else if ( AlertDialog.BUTTON_NEGATIVE == button ) {
-            switch ( action ) {
-            case DELETE_AND_EXIT:
-                showDialog( DlgID.CHANGE_CONN );
-                break;
-            default:
-                callSuper = true;
-                break;
-            }
-        } else {
-            callSuper = true;
+            closeNoSave();
+            break;
+        case SET_ENABLE_PUBLIC:
+            XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_pubroom,
+                                     true );
+            setupRelayStuffIf( true );
+            break;
+        default:
+            super.onPosButton( action, params );
         }
+    }
 
-        if ( callSuper ) {
-            super.dlgButtonClicked( action, button, params );
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case DELETE_AND_EXIT:
+            showDialog( DlgID.CHANGE_CONN );
+            break;
+        default:
+            super.onNegButton( action, params );
+            break;
         }
     }
 

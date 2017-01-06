@@ -901,50 +901,41 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    @Override
+    public void onPosButton( Action action, Object[] params )
     {
-        DbgUtils.logd( TAG, "dlgButtonClicked(%s)", action.toString() );
-        boolean positive = DialogInterface.BUTTON_POSITIVE == which;
         switch( action ) {
         case DELETE_DICT_ACTION:
-            if ( positive ) {
-                XWListItem[] items = (XWListItem[])params[0];
-                for ( XWListItem item : items ) {
-                    String name = item.getText();
-                    DictLoc loc = (DictLoc)item.getCached();
-                    deleteDict( name, loc );
-                }
-                clearSelections();
-                mkListAdapter();
+            XWListItem[] items = (XWListItem[])params[0];
+            for ( XWListItem item : items ) {
+                String name = item.getText();
+                DictLoc loc = (DictLoc)item.getCached();
+                deleteDict( name, loc );
             }
+            clearSelections();
+            mkListAdapter();
             break;
         case UPDATE_DICTS_ACTION:
-            if ( positive ) {
-                Uri[] uris = new Uri[m_needUpdates.size()];
-                String[] names = new String[uris.length];
-                int count = 0;
-                for ( Iterator<String> iter = m_needUpdates.keySet().iterator();
-                      iter.hasNext();  ) {
-                    String name = iter.next();
-                    names[count] = name;
-                    uris[count] = m_needUpdates.get( name );
-                    ++count;
-                }
-                DwnldDelegate.downloadDictsInBack( m_activity, uris, names, this );
+            Uri[] uris = new Uri[m_needUpdates.size()];
+            String[] names = new String[uris.length];
+            int count = 0;
+            for ( Iterator<String> iter = m_needUpdates.keySet().iterator();
+                  iter.hasNext();  ) {
+                String name = iter.next();
+                names[count] = name;
+                uris[count] = m_needUpdates.get( name );
+                ++count;
             }
+            DwnldDelegate.downloadDictsInBack( m_activity, uris, names, this );
             break;
         case MOVE_CONFIRMED:
-            if ( positive ) {
-                moveDictsWithPermission( params );
-            }
+            moveDictsWithPermission( params );
             break;
         case STORAGE_CONFIRMED:
-            if ( positive ) {
-                mkListAdapter();
-            }
+            mkListAdapter();
             break;
         default:
-            super.dlgButtonClicked( action, which, params );
+            super.onPosButton( action, params );
         }
     }
 

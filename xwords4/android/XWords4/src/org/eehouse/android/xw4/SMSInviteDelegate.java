@@ -187,34 +187,37 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( Action action, int which,
-                                  final Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        boolean isPositive = AlertDialog.BUTTON_POSITIVE == which;
-
         switch ( action ) {
         case RETRY_CONTACTS_ACTION:
             askContactsPermission( false );
             break;
         case CLEAR_ACTION:
-            if ( isPositive) {
-                clearSelectedImpl();
-            }
-            break;
-        case POST_WARNING_ACTION:
-            if ( isPositive ) { // ???
-                PhoneRec rec = new PhoneRec( (String)params[1],
-                                             (String)params[0] );
-                m_phoneRecs.add( rec );
-                clearChecked();
-                onItemChecked( rec, true );
-                saveAndRebuild();
-            }
+            clearSelectedImpl();
             break;
         case USE_IMMOBILE_ACTION:
-            if ( isPositive ) {
-                m_immobileConfirmed = true;
-            } else if ( m_immobileConfirmed ) {
+            m_immobileConfirmed = true;
+            break;
+        case POST_WARNING_ACTION:
+            PhoneRec rec = new PhoneRec( (String)params[1],
+                                         (String)params[0] );
+            m_phoneRecs.add( rec );
+            clearChecked();
+            onItemChecked( rec, true );
+            saveAndRebuild();
+            break;
+        default:
+            super.onPosButton( action, params );
+        }
+    }
+
+    @Override
+    public void onNegButton( Action action, final Object[] params )
+    {
+        switch ( action ) {
+        case USE_IMMOBILE_ACTION:
+            if ( m_immobileConfirmed ) {
                 // Putting up a new alert from inside another's handler
                 // confuses things. So post instead.
                 post( new Runnable() {
@@ -229,6 +232,8 @@ public class SMSInviteDelegate extends InviteDelegate {
                     } );
             }
             break;
+        default:
+            super.onNegButton( action, params );
         }
     }
 

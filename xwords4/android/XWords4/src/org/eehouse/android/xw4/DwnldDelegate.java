@@ -346,16 +346,26 @@ public class DwnldDelegate extends ListDelegateBase {
     }
 
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        if ( Action.STORAGE_CONFIRMED == action ) {
-            if ( AlertDialog.BUTTON_POSITIVE == which ) {
-                doWithPermissions( (Uri[])params[0] );
-            } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
-                finish();
-            }
-        } else {
-            super.dlgButtonClicked( action, which, params );
+        switch ( action ) {
+        case STORAGE_CONFIRMED:
+            doWithPermissions( (Uri[])params[0] );
+            break;
+        default:
+            super.onPosButton( action, params );
+        }
+    }
+
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case STORAGE_CONFIRMED:
+            finish();
+            break;
+        default:
+            super.onPosButton( action, params );
         }
     }
 

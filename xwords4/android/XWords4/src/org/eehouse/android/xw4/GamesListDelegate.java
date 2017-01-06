@@ -1234,116 +1234,125 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    @Override
+    public void onPosButton( Action action, Object[] params )
     {
-        if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            switch( action ) {
-            case NEW_NET_GAME:
-                m_netLaunchInfo = (NetLaunchInfo)params[0];
-                if ( checkWarnNoDict( m_netLaunchInfo ) ) {
-                    makeNewNetGameIf();
-                }
-                break;
-            case RESET_GAMES:
-                long[] rowids = (long[])params[0];
-                boolean changed = false;
-                for ( long rowid : rowids ) {
-                    changed = GameUtils.resetGame( m_activity, rowid ) || changed;
-                }
-                if ( changed ) {
-                    mkListAdapter(); // required because position may change
-                }
-                break;
-            case SYNC_MENU:
-                doSyncMenuitem();
-                break;
-            case NEW_FROM:
-                long curID = (Long)params[0];
-                long newid = GameUtils.dupeGame( m_activity, curID );
-                if ( DBUtils.ROWID_NOTFOUND != newid ) {
-                    m_selGames.add( newid );
-                    reloadGame( newid );
-                }
-                break;
+        switch( action ) {
+        case NEW_NET_GAME:
+            m_netLaunchInfo = (NetLaunchInfo)params[0];
+            if ( checkWarnNoDict( m_netLaunchInfo ) ) {
+                makeNewNetGameIf();
+            }
+            break;
+        case RESET_GAMES:
+            long[] rowids = (long[])params[0];
+            boolean changed = false;
+            for ( long rowid : rowids ) {
+                changed = GameUtils.resetGame( m_activity, rowid ) || changed;
+            }
+            if ( changed ) {
+                mkListAdapter(); // required because position may change
+            }
+            break;
+        case SYNC_MENU:
+            doSyncMenuitem();
+            break;
+        case NEW_FROM:
+            long curID = (Long)params[0];
+            long newid = GameUtils.dupeGame( m_activity, curID );
+            if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                m_selGames.add( newid );
+                reloadGame( newid );
+            }
+            break;
 
-            case SET_HIDE_NEWGAME_BUTTONS:
-                XWPrefs.setHideNewgameButtons(m_activity, true);
-                setupButtons();
-                // FALLTHRU
-            case NEW_GAME_PRESSED:
-                handleNewGame( m_nextIsSolo );
-                break;
+        case SET_HIDE_NEWGAME_BUTTONS:
+            XWPrefs.setHideNewgameButtons(m_activity, true);
+            setupButtons();
+            // FALLTHRU
+        case NEW_GAME_PRESSED:
+            handleNewGame( m_nextIsSolo );
+            break;
 
-            case DELETE_GROUPS:
-                long[] groupIDs = (long[])params[0];
-                for ( long groupID : groupIDs ) {
-                    GameUtils.deleteGroup( m_activity, groupID );
-                }
-                clearSelections();
-                mkListAdapter();
-                break;
-            case DELETE_GAMES:
-                deleteGames( (long[])params[0] );
-                break;
-            case OPEN_GAME:
-                doOpenGame( params );
-                break;
-            case ENABLE_DUALPANE:
-                makeOkOnlyBuilder( R.string.dualpane_exit_now)
-                    .setAction( Action.ENABLE_DUALPANE_EXIT )
-                    .show();
-                break;
-            case CLEAR_SELS:
-                clearSelections();
-                break;
-            case DWNLD_LOC_DICT:
-                String lang = (String)params[0];
-                String name = (String)params[1];
-                DownloadFinishedListener lstnr = new DownloadFinishedListener() {
-                        public void downloadFinished( String lang, String name, boolean success )
-                        {
-                            if ( success ) {
-                                XWPrefs.setPrefsString( m_activity,
-                                                        R.string.key_default_language,
-                                                        lang );
-                                name = DictUtils.removeDictExtn( name );
-                                int[] ids = { R.string.key_default_dict,
-                                              R.string.key_default_robodict };
-                                for ( int id : ids ) {
-                                    XWPrefs.setPrefsString( m_activity, id, name );
-                                }
-
-                                XWPrefs.setPrefsBoolean( m_activity,
-                                                         R.string.key_got_langdict,
-                                                         true );
+        case DELETE_GROUPS:
+            long[] groupIDs = (long[])params[0];
+            for ( long groupID : groupIDs ) {
+                GameUtils.deleteGroup( m_activity, groupID );
+            }
+            clearSelections();
+            mkListAdapter();
+            break;
+        case DELETE_GAMES:
+            deleteGames( (long[])params[0] );
+            break;
+        case OPEN_GAME:
+            doOpenGame( params );
+            break;
+        case ENABLE_DUALPANE:
+            makeOkOnlyBuilder( R.string.dualpane_exit_now)
+                .setAction( Action.ENABLE_DUALPANE_EXIT )
+                .show();
+            break;
+        case CLEAR_SELS:
+            clearSelections();
+            break;
+        case DWNLD_LOC_DICT:
+            String lang = (String)params[0];
+            String name = (String)params[1];
+            DownloadFinishedListener lstnr = new DownloadFinishedListener() {
+                    public void downloadFinished( String lang, String name, boolean success )
+                    {
+                        if ( success ) {
+                            XWPrefs.setPrefsString( m_activity,
+                                                    R.string.key_default_language,
+                                                    lang );
+                            name = DictUtils.removeDictExtn( name );
+                            int[] ids = { R.string.key_default_dict,
+                                          R.string.key_default_robodict };
+                            for ( int id : ids ) {
+                                XWPrefs.setPrefsString( m_activity, id, name );
                             }
+
+                            XWPrefs.setPrefsBoolean( m_activity,
+                                                     R.string.key_got_langdict,
+                                                     true );
                         }
-                    };
-                DwnldDelegate.downloadDictInBack( m_activity, lang, name, lstnr );
-                break;
-            case NEW_GAME_DFLT_NAME:
-                m_newGameParams = params;
-                askDefaultName();
-                break;
+                    }
+                };
+            DwnldDelegate.downloadDictInBack( m_activity, lang, name, lstnr );
+            break;
+        case NEW_GAME_DFLT_NAME:
+            m_newGameParams = params;
+            askDefaultName();
+            break;
 
-            case RETRY_REMATCH:
-                startRematchWithName( (String)params[0], false );
-                break;
+        case RETRY_REMATCH:
+            startRematchWithName( (String)params[0], false );
+            break;
 
-            default:
-                Assert.fail();
-            }
-        } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
-            if ( Action.NEW_GAME_DFLT_NAME == action ) {
-                m_newGameParams = params;
-                makeThenLaunchOrConfigure();
-            }
-        } else if ( DlgDelegate.DISMISS_BUTTON == which ) {
-            switch( action ) {
-            case ENABLE_DUALPANE_EXIT:
-                setDualpaneAndFinish( true );
-                break;
-            }
+        default:
+            Assert.fail();
+        }
+    }
+
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        if ( Action.NEW_GAME_DFLT_NAME == action ) {
+            m_newGameParams = params;
+            makeThenLaunchOrConfigure();
+        }
+    }
+
+    @Override
+    public void onDismissed( Action action, Object[] params )
+    {
+        switch( action ) {
+        case ENABLE_DUALPANE_EXIT:
+            setDualpaneAndFinish( true );
+            break;
+        default:
+            super.onDismissed( action, params );
         }
     }
 

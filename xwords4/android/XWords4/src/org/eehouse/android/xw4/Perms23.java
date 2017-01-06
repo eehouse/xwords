@@ -178,30 +178,25 @@ public class Perms23 {
             }
             builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
                     public void onPermissionResult( Map<Perm, Boolean> perms ) {
-                        int button = perms.get( m_perm )
-                            ? AlertDialog.BUTTON_POSITIVE
-                            : AlertDialog.BUTTON_NEGATIVE;
-                        // DbgUtils.logd( TAG, "doIt() calling dlgButtonClicked(%s)",
-                        //                m_action.toString() );
-                        m_cbck.dlgButtonClicked( m_action, button, m_params );
+                        if ( perms.get( m_perm ) ) {
+                            m_cbck.onPosButton( m_action, m_params );
+                        } else {
+                            m_cbck.onNegButton( m_action, m_params );
+                        }
                     }
                 } );
         }
 
         // Post this in case we're called from inside dialog dismiss
         // code. Better to unwind the stack...
-        private void handleButton( final int button )
+        private void handleButton( final boolean positive )
         {
             m_delegate.post( new Runnable() {
                     public void run() {
-                        if ( AlertDialog.BUTTON_POSITIVE == button ) {
+                        if ( positive ) {
                             doIt( false );
-                        } else if ( AlertDialog.BUTTON_NEGATIVE == button ) {
-                            // DbgUtils.logd( TAG, "handleButton calling dlgButtonClicked(%s)",
-                            //                m_action.toString() );
-                            m_cbck.dlgButtonClicked( m_action,
-                                                     AlertDialog.BUTTON_NEGATIVE,
-                                                     m_params );
+                        } else {
+                            m_cbck.onNegButton( m_action, m_params );
                         }
                     }
                 } );
@@ -221,11 +216,11 @@ public class Perms23 {
             .doIt( true );
     }
 
-    public static void onGotPermsAction( int button, Object[] params )
+    public static void onGotPermsAction( boolean positive, Object[] params )
     {
         // DbgUtils.logd( TAG, "onGotPermsAction(button=%d)", button );
         QueryInfo info = (QueryInfo)params[0];
-        info.handleButton( button );
+        info.handleButton( positive );
     }
 
     private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();

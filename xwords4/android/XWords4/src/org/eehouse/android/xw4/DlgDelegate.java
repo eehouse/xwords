@@ -308,7 +308,10 @@ public class DlgDelegate {
         public static enum InviteMeans {
             SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
         };
-        void dlgButtonClicked( Action action, int button, Object[] params );
+        void onPosButton( Action action, Object[] params );
+        void onNegButton( Action action, Object[] params );
+        void onDismissed( Action action, Object[] params );
+
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
     }
     public interface HasDlgDelegate {
@@ -446,7 +449,7 @@ public class DlgDelegate {
     }
 
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
-    // calls dlgButtonClicked with the action and in params a Boolean
+    // calls onPosButton/onNegButton with the action and in params a Boolean
     // indicating whether enabling is now ok.
     public void showSMSEnableDialog( Action action, Object... params )
     {
@@ -468,9 +471,7 @@ public class DlgDelegate {
                 post( new Runnable() {
                         public void run() {
                             m_clickCallback
-                                .dlgButtonClicked( action,
-                                                   AlertDialog.BUTTON_POSITIVE,
-                                                   params );
+                                .onPosButton( action, params );
                         }
                     });
             }
@@ -702,10 +703,7 @@ public class DlgDelegate {
             OnClickListener lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         checkNotAgainCheck( state, naView );
-                        m_clickCallback.
-                            dlgButtonClicked( more.action,
-                                              AlertDialog.BUTTON_POSITIVE,
-                                              more.params );
+                        m_clickCallback.onPosButton( more.action, more.params );
                     }
                 };
             builder.setNegativeButton( more.buttonStr, lstnr );
@@ -866,9 +864,7 @@ public class DlgDelegate {
                         layout.findViewById( R.id.confirm_sms_reasons );
                     boolean enabled = 0 < reasons.getSelectedItemPosition();
                     Assert.assertTrue( enabled );
-                    m_clickCallback.dlgButtonClicked( state.m_action,
-                                                      AlertDialog.BUTTON_POSITIVE,
-                                                      state.m_params );
+                    m_clickCallback.onPosButton( state.m_action, state.m_params );
                 }
             };
 
@@ -917,9 +913,21 @@ public class DlgDelegate {
                     checkNotAgainCheck( state, naView );
 
                     if ( Action.SKIP_CALLBACK != state.m_action ) {
-                        m_clickCallback.dlgButtonClicked( state.m_action,
-                                                          button,
-                                                          state.m_params );
+                        switch ( button ) {
+                        case AlertDialog.BUTTON_POSITIVE:
+                            m_clickCallback.onPosButton( state.m_action,
+                                                         state.m_params );
+                            break;
+                        case AlertDialog.BUTTON_NEGATIVE:
+                            m_clickCallback.onNegButton( state.m_action,
+                                                         state.m_params );
+                            break;
+                        default:
+                            DbgUtils.loge( TAG, "unexpected button %d",
+                                           button );
+                            // ignore on release builds
+                            Assert.assertFalse( BuildConfig.DEBUG );
+                        }
                     }
                 }
             };
@@ -948,9 +956,8 @@ public class DlgDelegate {
                     public void onDismiss( DialogInterface di ) {
                         dropState( state );
                         if ( Action.SKIP_CALLBACK != state.m_action ) {
-                            m_clickCallback.dlgButtonClicked( state.m_action,
-                                                              DISMISS_BUTTON,
-                                                              state.m_params );
+                            m_clickCallback.onDismissed( state.m_action,
+                                                         state.m_params );
                         }
                         m_activity.removeDialog( id );
                     }
