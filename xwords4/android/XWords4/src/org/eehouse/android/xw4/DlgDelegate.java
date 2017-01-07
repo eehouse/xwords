@@ -94,7 +94,6 @@ public class DlgDelegate {
         DROP_RELAY_ACTION,
         DROP_SMS_ACTION,
         INVITE_SMS,
-        RETRY_PHONE_STATE_ACTION,
 
         // Dict Browser
         FINISH_ACTION,

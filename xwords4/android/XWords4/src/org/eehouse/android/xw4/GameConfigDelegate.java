@@ -789,7 +789,7 @@ public class GameConfigDelegate extends DelegateBase
                                  R.string.phone_state_rationale,
                                  Action.ASKED_PHONE_STATE, this );
         } else {
-            onPosButton( Action.ASKED_PHONE_STATE, null );
+            showDialog( DlgID.CHANGE_CONN );
         }
     }
 

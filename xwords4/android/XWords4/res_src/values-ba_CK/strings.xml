@@ -1768,7 +1768,8 @@
   <string name="connstat_net_noaddr">Siht dekrowten emag sah on yaw
     ot tcennoc dna tonnac eb deyalp.\n\ntI( saw ylbaborp detaerc morf
     na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc taht ruoy
-    ecived stroppus.)</string>
+    ecived ,stroppus ro uoy yam evah yltnecer devomer sti tsal yaw fo
+    gnitcennoc.)</string>
   <!--  -->
   <string name="connstat_net_fmt">Krowten sutats rof emag detcennoc aiv
     %1$s:</string>
@@ -2339,13 +2340,14 @@
     daolnwod stsildrow tpecxe morf edisni Sdrowssorc dna evah ton
     ylsuoiverp derots yna ereht.
   </string>
-  <string name="phone_state_rationale">Emos senohp nac egnahcxe SMS
-  \"atad\" segassem. Sdrowssorc dluow ekil ot reffo uoy siht noitpo
-  tub sdeen ot ksa ruoy ecived tuoba flesti tsrif ot( nrael fi ti\'s a
-  enohp dna fi os tahw epyt.)\n\nFi ruoy ecived nac\'t dnes SMS
-  e(.g. esuaceb ti nsi\'t a )enohp ro uoy nod\'t reve tnaw ot yalp aiv
-  SMS e(.g. esuaceb uoy yap rof hcae ,)egassem ti\'s efas ot
-  yltnenamrep yned noissimrep.
+  <string name="phone_state_rationale">
+    Emos senohp nac egnahcxe SMS \"atad\" segassem. Sdrowssorc dluow
+    ekil ot reffo uoy siht noitpo tub sdeen ot ksa ruoy ecived tuoba
+    flesti tsrif ot( nrael fi ti\'s a enohp dna fi os tahw
+    epyt.)\n\nFi ruoy ecived nac\'t dnes atad SMS e(.g. esuaceb ti
+    nsi\'t a )enohp ro uoy nod\'t reve tnaw ot yalp aiv SMS
+    e(.g. esuaceb uoy yap rof hcae ,)egassem ti\'s efas ot yltnenamrep
+    yned noissimrep.
   </string>
   <string name="phone_lookup_rationale">
     Ot hctamer a emag taht sesu SMS Sdrowssorc sdeen noissimrep ot
@@ -2356,7 +2358,8 @@
   emag si ton elbissop tuohtiw siht noissimrep.</string>
   <!-- Case where SMS is NOT the only way the game can communicate -->
   <string name="phone_lookup_rationale_others">Tuohtiw siht noissimrep
-  gnihctamer lliw etaerc a emag taht tonnac ton yalp aiv SMS.</string>
+  gnihctamer lliw eunitnoc tub lliw etaerc a emag taht tonnac ton yalp
+  aiv SMS.</string>
   <string name="contacts_rationale">
     Sdrowssorc tnaw ssecca ot ruoy stcatnoc ni redro ot tup a eman ot
     enohp srebmun taht dnes uoy snoitativni aiv SMS. Uoy\'ll llits eb

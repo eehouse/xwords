@@ -407,8 +407,7 @@ public class BoardDelegate extends DelegateBase
                                 if ( self.m_summary.hasRematchInfo() ) {
                                     self.tryRematchInvites( true );
                                 } else {
-                                    self.callInviteChoices( Action.LAUNCH_INVITE_ACTION,
-                                                            self.m_sentInfo, true );
+                                    self.callInviteChoices( self.m_sentInfo );
                                 }
                             } else {
                                 self.askDropRelay();
@@ -723,37 +722,17 @@ public class BoardDelegate extends DelegateBase
     // loop of showing the rationale over and over. Android will always tell
     // us to show the rationale, but if we've done it already we need to go
     // straight to asking for the permission.
-    private void callInviteChoices( final Action action,
-                                    final DBUtils.SentInvitesInfo info,
-                                    boolean showRationale )
+    private void callInviteChoices( final SentInvitesInfo info )
     {
-        Perms23.Builder builder =
-            new Perms23.Builder( Perm.READ_PHONE_STATE );
+        Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE,
+                             R.string.phone_state_rationale,
+                             Action.ASKED_PHONE_STATE, this, info );
+    }
 
-        if ( showRationale ) {
-            builder.setOnShowRationale( new Perms23.OnShowRationale() {
-                    @Override
-                    public void onShouldShowRationale( Set<Perm> perms )
-                    {
-                        makeOkOnlyBuilder( R.string.phone_state_rationale )
-                            .setTitle( R.string.perms_rationale_title )
-                            .setAction( Action.RETRY_PHONE_STATE_ACTION )
-                            .setParams( action, info )
-                            .show();
-                    }
-                } );
-        }
-
-        builder.asyncQuery( m_activity, new Perms23.PermCbck() {
-                    @Override
-                    public void onPermissionResult( Map<Perm,
-                                                    Boolean> perms )
-                    {
-                        // Do the work regardless of result; just won't have
-                        // SMS option
-                        showInviteChoicesThen( action, info );
-                    }
-                });
+    private void showInviteChoicesThen( Object[] params )
+    {
+        SentInvitesInfo info = (SentInvitesInfo)params[0];
+        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, info );
     }
 
     @Override
@@ -1035,12 +1014,6 @@ public class BoardDelegate extends DelegateBase
         case ENABLE_RELAY_DO_OR:
             RelayService.setEnabled( m_activity, true );
             break;
-        case RETRY_PHONE_STATE_ACTION:
-            Action stateAction = (Action)params[0];
-            SentInvitesInfo info = (SentInvitesInfo)params[1];
-            callInviteChoices( stateAction, info, false );
-            break;
-
         case UNDO_LAST_ACTION:
             cmd = JNICmd.CMD_UNDO_LAST;
             break;
@@ -1110,9 +1083,13 @@ public class BoardDelegate extends DelegateBase
 
         case INVITE_SMS:
             int nMissing = (Integer)params[0];
-            info = (SentInvitesInfo)params[1];
+            SentInvitesInfo info = (SentInvitesInfo)params[1];
             SMSInviteDelegate.launchForResult( m_activity, nMissing, info,
                                                RequestCode.SMS_INVITE_RESULT );
+            break;
+
+        case ASKED_PHONE_STATE:
+            showInviteChoicesThen( params );
             break;
 
         case ENABLE_SMS_DO:
@@ -1143,6 +1120,9 @@ public class BoardDelegate extends DelegateBase
             break;
         case DELETE_AND_EXIT:
             finish();
+            break;
+        case ASKED_PHONE_STATE:
+            showInviteChoicesThen( params );
             break;
         default:
             super.onNegButton( action, params );

@@ -2047,7 +2047,8 @@
     <string name="connstat_net_noaddr">This networked game has no way
     to connect and cannot be played.\n\n(It was probably created from
     an invitation that didn\'t specify any way of connecting that your
-    device supports.)</string>
+    device supports, or you may have recently removed its last way of
+    connecting.)</string>
     <!--  -->
     <string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>
@@ -2741,13 +2742,14 @@
     previously stored any there.
   </string>
 
-  <string name="phone_state_rationale">Some phones can exchange SMS
-  \"data\" messages. Crosswords would like to offer you this option
-  but needs to ask your device about itself first (to learn if it\'s a
-  phone and if so what type.)\n\nIf your device can\'t send SMS
-  (e.g. because it isn\'t a phone) or you don\'t ever want to play via
-  SMS (e.g. because you pay for each message), it\'s safe to
-  permanently deny permission.
+  <string name="phone_state_rationale">
+    Some phones can exchange SMS \"data\" messages. Crosswords would
+    like to offer you this option but needs to ask your device about
+    itself first (to learn if it\'s a phone and if so what
+    type.)\n\nIf your device can\'t send data SMS (e.g. because it
+    isn\'t a phone) or you don\'t ever want to play via SMS
+    (e.g. because you pay for each message), it\'s safe to permanently
+    deny permission.
   </string>
 
   <string name="phone_lookup_rationale">
