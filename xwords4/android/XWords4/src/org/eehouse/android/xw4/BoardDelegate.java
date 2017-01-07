@@ -1133,6 +1133,9 @@ public class BoardDelegate extends DelegateBase
         case ENABLE_RELAY_DO_OR:
             m_dropOnDismiss = true;
             break;
+        case DELETE_AND_EXIT:
+            finish();
+            break;
         default:
             super.onNegButton( action, params );
         }
@@ -1150,6 +1153,9 @@ public class BoardDelegate extends DelegateBase
                         }
                     }, 10 );
             }
+            break;
+        case DELETE_AND_EXIT:
+            finish();
             break;
         }
     }
@@ -1472,6 +1478,7 @@ public class BoardDelegate extends DelegateBase
         makeConfirmThenBuilder( R.string.connstat_net_noaddr,
                                 Action.DELETE_AND_EXIT )
             .setPosButton( R.string.list_item_delete )
+            .setNegButton( R.string.button_close_game )
             .show();
     }
 
