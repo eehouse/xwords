@@ -43,15 +43,18 @@
     <string name="list_item_copy">Kopieren</string>
     <string name="game_rename_title">Partie umbenennen</string>
     <string name="rename_label">Name dieser Partie ändern in:</string>
-    <string name="rename_label_caveat">Name dieser Partie ändern in (nur auf diesem Gerät):</string>
+    <string name="rename_label_caveat">Name dieser Partie ändern in
+(nur auf diesem Gerät):</string>
 
     <plurals name="confirm_seldeletes_fmt">
-	<item quantity="one">Wollen Sie die ausgewählte Partie löschen? Es gibt kein Rückgängig.</item>
-	<item quantity="other">Wollen Sie die %1$d ausgewählten Partien löschen? Es gibt kein Rückgängig.</item>
+	<item quantity="one">Möchten Sie das ausgewählte Spiel wirklich löschen?
+Diese Aktion kann nicht rückgängig gemacht werden.</item>
+	<item quantity="other">Möchten Sie die %1$d ausgewählten Spiele wirklich löschen?
+Diese Aktion kann nicht rückgängig gemacht werden.</item>
 </plurals>
 
     <string name="title_dicts_list">Crosswords-Wörterlisten</string>   
-    <string name="download_dicts">Weitere herunterladen…</string>
+    <string name="download_dicts">Weitere Sprachen herunterladen…</string>
 
 
     <string name="loc_builtin">Vorinstalliert</string>
@@ -63,8 +66,10 @@
     <string name="dicts_item_select">Als Standard festlegen</string>
 
     <plurals name="confirm_delete_dict_fmt">
-	<item quantity="one">Wollen Sie die Wörterliste „%1$s“ löschen?</item>
-	<item quantity="other">Wollen Sie die Wörterlisten „%1$s“ löschen?</item>
+	<item quantity="one">Möchten Sie die Wörterliste
+„%1$s“ löschen?</item>
+	<item quantity="other">Wollen Sie die Wörterlisten
+„%1$s“ löschen?</item>
 </plurals>
 
     <string name="button_default_human">Mensch</string>
