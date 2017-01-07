@@ -2347,19 +2347,22 @@
   SMS e(.g. esuaceb uoy yap rof hcae ,)egassem ti\'s efas ot
   yltnenamrep yned noissimrep.
   </string>
-  <string name="phone_lookup_rationale">Ot hctamer a emag gnisu SMS
-  Sdrowssorc sdeen noissimrep ot ssecca ruoy enohp rebmun.</string>
+  <string name="phone_lookup_rationale">
+    Ot hctamer a emag taht sesu SMS Sdrowssorc sdeen noissimrep ot
+    ssecca ruoy enohp rebmun.
+  </string>
   <!-- Case where SMS is the only way the game can communicate -->
   <string name="phone_lookup_rationale_drop">Gnihctamer siht YLNo-sms
   emag si ton elbissop tuohtiw siht noissimrep.</string>
   <!-- Case where SMS is NOT the only way the game can communicate -->
   <string name="phone_lookup_rationale_others">Tuohtiw siht noissimrep
   gnihctamer lliw etaerc a emag taht tonnac ton yalp aiv SMS.</string>
-  <string name="contacts_rationale">Sdrowssorc tnaw ssecca ot ruoy
-  stcatnoc ni redro ot tup a eman ot enohp srebmun taht dnes uoy
-  snoitativni aiv SMS. Uoy\'ll llits eb elba ot eviecer snoitativni fi
-  uoy nod\'t tnarg siht ,noissimrep tub ylno eht enohp rebmun fo eht
-  rednes lliw eb deyalpsid.</string>
+  <string name="contacts_rationale">
+    Sdrowssorc tnaw ssecca ot ruoy stcatnoc ni redro ot tup a eman ot
+    enohp srebmun taht dnes uoy snoitativni aiv SMS. Uoy\'ll llits eb
+    elba ot eviecer snoitativni fi uoy nod\'t tnarg siht ,noissimrep
+    tub ylno eht enohp rebmun fo eht rednes lliw eb deyalpsid.
+  </string>
   <string name="move_dict_rationale">Gnirots a tsildrow ni eht
   Sdaolnwod aera seriuqer noissimrep.</string>
   <string name="remove_sms">Evomer SMS</string>

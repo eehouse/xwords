@@ -21,6 +21,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -33,6 +34,7 @@ import java.util.Set;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
     
@@ -148,16 +150,16 @@ public class Perms23 {
         private Perm m_perm;
         private DelegateBase m_delegate;
         private DlgClickNotify m_cbck;
-        private int m_rationaleId;
+        private String m_rationaleMsg;
         private Object[] m_params;
 
         public QueryInfo( DelegateBase delegate, Action action,
-                          Perm perm, int rationaleId,
+                          Perm perm, String msg,
                           DlgClickNotify cbck, Object[] params ) {
             m_delegate = delegate;
             m_action = action;
             m_perm = perm;
-            m_rationaleId = rationaleId;
+            m_rationaleMsg = msg;
             m_cbck = cbck;
             m_params = params;
         }
@@ -165,10 +167,10 @@ public class Perms23 {
         private void doIt( boolean showRationale )
         {
             Builder builder = new Builder( m_perm );
-            if ( showRationale && 0 != m_rationaleId ) {
+            if ( showRationale && null != m_rationaleMsg ) {
                 builder.setOnShowRationale( new OnShowRationale() {
                         public void onShouldShowRationale( Set<Perm> perms ) {
-                            m_delegate.makeConfirmThenBuilder( m_rationaleId,
+                            m_delegate.makeConfirmThenBuilder( m_rationaleMsg,
                                                                Action.PERMS_QUERY )
                                 .setTitle( R.string.perms_rationale_title )
                                 .setPosButton( R.string.button_ask_again )
@@ -216,7 +218,17 @@ public class Perms23 {
                                     Object... params )
     {
         // DbgUtils.logd( TAG, "tryGetPerms(%s)", perm.toString() );
-        new QueryInfo( delegate, action, perm, rationaleId, cbck, params )
+        Context context = XWApp.getContext();
+        String msg = LocUtils.getString( context, rationaleId );
+        tryGetPerms( delegate, perm, msg, action, cbck, params );
+    }
+
+    public static void tryGetPerms( DelegateBase delegate, Perm perm,
+                                    String rationaleMsg, final Action action,
+                                    final DlgClickNotify cbck, Object... params )
+    {
+        // DbgUtils.logd( TAG, "tryGetPerms(%s)", perm.toString() );
+        new QueryInfo( delegate, action, perm, rationaleMsg, cbck, params )
             .doIt( true );
     }
 

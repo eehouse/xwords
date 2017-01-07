@@ -1326,21 +1326,30 @@ public class GamesListDelegate extends ListDelegateBase
             askDefaultName();
             break;
 
-        case RETRY_REMATCH:
-            startRematchWithName( (String)params[0], false );
+        case ASKED_PHONE_STATE:
+            rematchWithNameAndPerm( true, params );
             break;
 
         default:
-            Assert.fail();
+            super.onPosButton( action, params );
         }
     }
 
     @Override
     public void onNegButton( Action action, Object[] params )
     {
-        if ( Action.NEW_GAME_DFLT_NAME == action ) {
+        switch ( action ) {
+        case NEW_GAME_DFLT_NAME:
             m_newGameParams = params;
             makeThenLaunchOrConfigure();
+            break;
+
+        case ASKED_PHONE_STATE:
+            rematchWithNameAndPerm( false, params );
+            break;
+
+        default:
+            super.onNegButton( action, params );
         }
     }
 
@@ -2186,40 +2195,27 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !hasSMS || null != SMSService.getPhoneInfo( m_activity ) ) {
                 rematchWithNameAndPerm( gameName, addrs );
             } else {
-                Perms23.Builder builder =
-                    new Perms23.Builder( Perm.READ_PHONE_STATE );
-                if ( showRationale ) {
-                    builder.setOnShowRationale( new Perms23.OnShowRationale() {
-                            public void onShouldShowRationale( Set<Perm> perms )
-                            {
-                                int id = (1 == addrs.size())
-                                    ? R.string.phone_lookup_rationale_drop
-                                    : R.string.phone_lookup_rationale_others;
-                                String msg = getString( R.string.phone_lookup_rationale )
-                                    + "\n\n" + getString( id );
-                                makeConfirmThenBuilder( msg, Action.RETRY_REMATCH )
-                                    .setTitle( R.string.perms_rationale_title )
-                                    .setParams( gameName )
-                                    .show();
-                            }
-                        });
-                }
-                builder.asyncQuery( m_activity, new Perms23.PermCbck() {
-                        @Override
-                        public void onPermissionResult( Map<Perm,
-                                                        Boolean> granted )
-                        {
-                            if ( !granted.get( Perm.READ_PHONE_STATE ) ) {
-                                addrs.remove( CommsConnType.COMMS_CONN_SMS );
-                            }
-                            if ( 0 == addrs.size() ) {
-                                DbgUtils.showf( m_activity, R.string.toast_no_permission );
-                            } else {
-                                rematchWithNameAndPerm( gameName, addrs );
-                            }
-                        }
-                    } );
+                int id = (1 == addrs.size())
+                    ? R.string.phone_lookup_rationale_drop
+                    : R.string.phone_lookup_rationale_others;
+                String msg = getString( R.string.phone_lookup_rationale )
+                    + "\n\n" + getString( id );
+                Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE, msg,
+                                     Action.ASKED_PHONE_STATE, this,
+                                     gameName, addrs );
             }
+        }
+    }
+
+    private void rematchWithNameAndPerm( boolean granted, Object[] params )
+    {
+        CommsConnTypeSet addrs = (CommsConnTypeSet)params[1];
+        if ( !granted ) {
+            addrs.remove( CommsConnType.COMMS_CONN_SMS );
+            m_rematchExtras.remove( REMATCH_PHONE_EXTRA );
+        }
+        if ( 0 < addrs.size() ) {
+            rematchWithNameAndPerm( (String)params[0], addrs );
         }
     }
 
