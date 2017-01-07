@@ -171,6 +171,8 @@ public class Perms23 {
                             m_delegate.makeConfirmThenBuilder( m_rationaleId,
                                                                Action.PERMS_QUERY )
                                 .setTitle( R.string.perms_rationale_title )
+                                .setPosButton( R.string.button_ask_again )
+                                .setNegButton( R.string.button_skip )
                                 .setParams( QueryInfo.this )
                                 .show();
                         }
@@ -255,6 +257,7 @@ public class Perms23 {
     private static int s_nextRecord = 0;
     private static int register( PermCbck cbck )
     {
+        Assert.assertTrue( !BuildConfig.DEBUG || 0 == s_map.size() );
         DbgUtils.assertOnUIThread();
         int code = ++s_nextRecord;
         s_map.put( code, cbck );

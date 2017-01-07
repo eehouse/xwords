@@ -2321,13 +2321,16 @@
   <string name="dualpane_restart">EXITING APP…</string>
   <string name="after_restart">THIS CHANGE WILL NOT TAKE EFFECT UNTIL
   YOU RESTART CROSSWORDS.</string>
-  <string name="not_again_missing_perms">THIS GAME IS CONFIGURED TO
+  <string name="missing_perms">THIS GAME IS CONFIGURED TO
   COMMUNICATE VIA SMS BUT CROSSWORDS DOES NOT HAVE PERMISSION TO DO
   SO. YOU CAN STILL OPEN THE GAME, BUT IT MAY NOT BE ABLE TO SEND OR
   RECEIVE MOVES.\n\nYOU CAN RE-OPEN IT TO BE ASKED FOR PERMISSION
   AGAIN. OR YOU CAN REMOVE THE SMS COMMUNICATION SETTING.</string>
   <string name="download_rationale">CROSSWORDS NEEDS ACCESS TO
   TEMPORARY STORAGE TO KEEP WHAT YOU\'RE ABOUT TO DOWNLOAD.
+  </string>
+  <string name="sms_invite_rationale">
+    CROSSWORDS NEEDS PERMISSION TO SEND AN INVITATION VIA SMS.
   </string>
   <string name="dicts_storage_rationale">
     CROSSWORDS CAN STORE AND READ WORDLISTS IN YOUR DEVICE\'S
@@ -2360,8 +2363,15 @@
   <string name="move_dict_rationale">STORING A WORDLIST IN THE
   DOWNLOADS AREA REQUIRES PERMISSION.</string>
   <string name="remove_sms">REMOVE SMS</string>
+  <!-- In the permissions rationale explanation, means go ahead and
+       have the OS ask for permission -->
+  <string name="button_ask_again">ASK AGAIN</string>
   <string name="contact_not_found">NOT IN CONTACTS</string>
+  <!-- Displayed as a toast -->
   <string name="sms_send_failed">SMS SEND FAILED</string>
+  <!-- In the permissions rationale explanation, means don't have the
+       OS ask for permission: user is denying it implicitly -->
+  <string name="button_skip">SKIP</string>
   <string name="perms_rationale_title">ANDROID PERMISSIONS</string>
   <string name="toast_no_permission">PERMISSION NOT GRANTED</string>
 </resources>

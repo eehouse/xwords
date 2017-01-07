@@ -2719,7 +2719,7 @@
   <string name="after_restart">This change will not take effect until
   you restart Crosswords.</string>
 
-  <string name="not_again_missing_perms">This game is configured to
+  <string name="missing_perms">This game is configured to
   communicate via SMS but Crosswords does not have permission to do
   so. You can still open the game, but it may not be able to send or
   receive moves.\n\nYou can re-open it to be asked for permission
@@ -2727,6 +2727,10 @@
 
   <string name="download_rationale">Crosswords needs access to
   temporary storage to keep what you\'re about to download.
+  </string>
+
+  <string name="sms_invite_rationale">
+    Crosswords needs permission to send an invitation via SMS.
   </string>
 
   <string name="dicts_storage_rationale">
@@ -2766,8 +2770,15 @@
   Downloads area requires permission.</string>
 
   <string name="remove_sms">Remove SMS</string>
+  <!-- In the permissions rationale explanation, means go ahead and
+       have the OS ask for permission -->
+  <string name="button_ask_again">Ask again</string>
   <string name="contact_not_found">Not in Contacts</string>
+  <!-- Displayed as a toast -->
   <string name="sms_send_failed">SMS send failed</string>
+  <!-- In the permissions rationale explanation, means don't have the
+       OS ask for permission: user is denying it implicitly -->
+  <string name="button_skip">Skip</string>
 
   <string name="perms_rationale_title">Android Permissions</string>
   <string name="toast_no_permission">Permission not granted</string>

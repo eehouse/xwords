@@ -1037,7 +1037,7 @@ public class BoardDelegate extends DelegateBase
             break;
         case RETRY_PHONE_STATE_ACTION:
             Action stateAction = (Action)params[0];
-            DBUtils.SentInvitesInfo info = (DBUtils.SentInvitesInfo)params[1];
+            SentInvitesInfo info = (SentInvitesInfo)params[1];
             callInviteChoices( stateAction, info, false );
             break;
 
@@ -1102,12 +1102,17 @@ public class BoardDelegate extends DelegateBase
         case DROP_RELAY_ACTION:
             dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
             break;
-        case DROP_SMS_ACTION:
-            dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
-            break;
-
         case DELETE_AND_EXIT:
             deleteAndClose();
+            break;
+        case DROP_SMS_ACTION:   // do nothing; work done in onNegButton case
+            break;
+
+        case INVITE_SMS:
+            int nMissing = (Integer)params[0];
+            info = (SentInvitesInfo)params[1];
+            SMSInviteDelegate.launchForResult( m_activity, nMissing, info,
+                                               RequestCode.SMS_INVITE_RESULT );
             break;
 
         case ENABLE_SMS_DO:
@@ -1132,6 +1137,9 @@ public class BoardDelegate extends DelegateBase
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
             m_dropOnDismiss = true;
+            break;
+        case DROP_SMS_ACTION:
+            dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
             break;
         case DELETE_AND_EXIT:
             finish();
@@ -1182,8 +1190,8 @@ public class BoardDelegate extends DelegateBase
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS:
-                SMSInviteDelegate.launchForResult( m_activity, m_nMissing, info,
-                                                   RequestCode.SMS_INVITE_RESULT );
+                Perms23.tryGetPerms( this, Perm.SEND_SMS, R.string.sms_invite_rationale,
+                                     Action.INVITE_SMS, this, m_nMissing, info );
                 break;
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_nMissing,
@@ -2245,16 +2253,11 @@ public class BoardDelegate extends DelegateBase
              && null == m_permCbck ) { // already asked?
             m_permCbck = new Perms23.PermCbck() {
                     @Override
-                    public void onPermissionResult( Map<Perm,
-                                                    Boolean> perms )
-                    {
-                        ActionPair pair = new ActionPair( Action.DROP_SMS_ACTION,
-                                                          R.string.remove_sms );
-
+                    public void onPermissionResult( Map<Perm, Boolean> perms ) {
                         if ( ! perms.get(Perm.SEND_SMS) ) {
-                            makeNotAgainBuilder( R.string.not_again_missing_perms,
-                                                 R.string.key_notagain_missing_perms )
-                                .setActionPair( pair )
+                            makeConfirmThenBuilder( R.string.missing_perms,
+                                                    Action.DROP_SMS_ACTION )
+                                .setNegButton(R.string.remove_sms)
                                 .show();
                         }
                     }

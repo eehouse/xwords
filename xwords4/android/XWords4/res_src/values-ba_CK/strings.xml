@@ -2321,13 +2321,16 @@
   <string name="dualpane_restart">Gnitixe ppa…</string>
   <string name="after_restart">Siht egnahc lliw ton ekat tceffe litnu
   uoy tratser Sdrowssorc.</string>
-  <string name="not_again_missing_perms">Siht emag si derugifnoc ot
+  <string name="missing_perms">Siht emag si derugifnoc ot
   etacinummoc aiv SMS tub Sdrowssorc seod ton evah noissimrep ot od
   os. Uoy nac llits nepo eht ,emag tub ti yam ton eb elba ot dnes ro
   eviecer sevom.\n\nUoy nac nepo-er ti ot eb deksa rof noissimrep
   niaga. Ro uoy nac evomer eht SMS noitacinummoc gnittes.</string>
   <string name="download_rationale">Sdrowssorc sdeen ssecca ot
   yraropmet egarots ot peek tahw uoy\'er tuoba ot daolnwod.
+  </string>
+  <string name="sms_invite_rationale">
+    Sdrowssorc sdeen noissimrep ot dnes na noitativni aiv SMS.
   </string>
   <string name="dicts_storage_rationale">
     Sdrowssorc nac erots dna daer stsildrow ni ruoy ecived\'s
@@ -2360,8 +2363,15 @@
   <string name="move_dict_rationale">Gnirots a tsildrow ni eht
   Sdaolnwod aera seriuqer noissimrep.</string>
   <string name="remove_sms">Evomer SMS</string>
+  <!-- In the permissions rationale explanation, means go ahead and
+       have the OS ask for permission -->
+  <string name="button_ask_again">Ksa niaga</string>
   <string name="contact_not_found">Ton ni Stcatnoc</string>
+  <!-- Displayed as a toast -->
   <string name="sms_send_failed">SMS dnes deliaf</string>
+  <!-- In the permissions rationale explanation, means don't have the
+       OS ask for permission: user is denying it implicitly -->
+  <string name="button_skip">Piks</string>
   <string name="perms_rationale_title">Diordna Snoissimrep</string>
   <string name="toast_no_permission">Noissimrep ton detnarg</string>
 </resources>
