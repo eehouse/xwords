@@ -1330,6 +1330,18 @@ public class GamesListDelegate extends ListDelegateBase
             rematchWithNameAndPerm( true, params );
             break;
 
+        case STORAGE_CONFIRMED:
+            int id = (Integer)params[0];
+            if ( R.id.games_menu_loaddb == id ) {
+                DBUtils.loadDB( m_activity );
+                XWPrefs.clearGroupPositions( m_activity );
+                mkListAdapter();
+            } else if ( R.id.games_menu_storedb == id ) {
+                DBUtils.saveDB( m_activity );
+                showToast( R.string.db_store_done );
+            }
+            break;
+
         default:
             super.onPosButton( action, params );
         }
@@ -1592,34 +1604,10 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_loaddb:
-            new Perms23.Builder( Perm.STORAGE )
-                .asyncQuery( m_activity, new Perms23.PermCbck() {
-                        @Override
-                        public void onPermissionResult( Map<Perm,
-                                                        Boolean> granted )
-                        {
-                            Assert.assertTrue( granted.containsKey(Perm.STORAGE) );
-                            if ( granted.get(Perm.STORAGE) ) {
-                                DBUtils.loadDB( m_activity );
-                                XWPrefs.clearGroupPositions( m_activity );
-                                mkListAdapter();
-                            }
-                        }
-                    } );
-            break;
         case R.id.games_menu_storedb:
-            new Perms23.Builder( Perm.STORAGE )
-                .asyncQuery( m_activity, new Perms23.PermCbck() {
-                        @Override
-                        public void onPermissionResult( Map<Perm, Boolean> granted )
-                        {
-                            Assert.assertTrue( granted.containsKey( Perm.STORAGE ) );
-                            if ( granted.get( Perm.STORAGE ) ) {
-                                DBUtils.saveDB( m_activity );
-                                showToast( R.string.db_store_done );
-                            }
-                        }
-                    } );
+            Perms23.tryGetPerms( this, Perm.STORAGE,
+                                 null, Action.STORAGE_CONFIRMED,
+                                 this, itemID );
             break;
 
         default:

@@ -121,7 +121,7 @@ public class DlgDelegate {
         SL_CLEAR_ACTION,
         SL_COPY_ACTION,
 
-        // DwnldDelegate
+        // DwnldDelegate && GamesListDelegate
         STORAGE_CONFIRMED,
 
         // clasify me
