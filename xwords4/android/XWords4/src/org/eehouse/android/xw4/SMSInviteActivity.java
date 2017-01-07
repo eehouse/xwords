@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class SMSInviteActivity extends InviteActivity {
-    private static final String TAG = SMSInviteActivity.class.getSimpleName();
 
     private SMSInviteDelegate m_dlgt;
 

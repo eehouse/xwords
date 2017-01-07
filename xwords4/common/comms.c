@@ -2759,13 +2759,15 @@ countAddrRecs( const CommsCtxt* comms )
 XP_Bool
 addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
 {
-    return types_iter( addr->_conTypes, typp, state );
+    XP_Bool result = types_iter( addr->_conTypes, typp, state );
+    return result;
 }
 
 XP_Bool
 types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state )
 {
     CommsConnType typ = *state;
+    XP_ASSERT( typ < COMMS_CONN_NTYPES );
     while ( ++typ < COMMS_CONN_NTYPES ) {
         *state = typ;
         XP_U16 mask = 1 << (typ - 1);
@@ -2834,16 +2836,14 @@ addr_rmType( CommsAddrRec* addr, CommsConnType type )
     addr->_conTypes &= ~(1 << (type - 1));
 }
 
-/* Set of NONE is ok, but for anything else it's illegal to be adding a second
-   bit.  Use addr_addType() for that. */
+/* Overwrites anything that might already be there. Use addr_addType() to add
+   to the set */
 void
 addr_setType( CommsAddrRec* addr, CommsConnType type )
 {
     XP_LOGF( "%s(%p, %s)", __func__, addr, ConnType2Str(type) );
     XP_U16 flags = 0;
     if ( COMMS_CONN_NONE != type ) {
-        XP_ASSERT( COMMS_CONN_NONE == addr_getType( addr ) ||
-                   type == addr_getType( addr ) );
         flags = 1 << (type - 1);
     }
     addr->_conTypes = flags;

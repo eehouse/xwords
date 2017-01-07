@@ -44,7 +44,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
-    private static final String TAG = LocItemEditDelegate.class.getSimpleName();
 
     private static final String KEY = "KEY";
     private Activity m_activity;

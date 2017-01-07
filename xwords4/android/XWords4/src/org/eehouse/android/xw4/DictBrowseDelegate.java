@@ -300,9 +300,9 @@ public class DictBrowseDelegate extends DelegateBase
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        Assert.assertTrue( Action.FINISH_ACTION == action );
+        Assert.assertTrue( !BuildConfig.DEBUG || Action.FINISH_ACTION==action );
         finish();
     }
 

@@ -170,6 +170,7 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     (*cGlobals->onSave)( cGlobals->onSaveClosure, selRow, newGame );
 }
 
+#ifdef PLATFORM_GTK
 static void
 addSnapshot( CommonGlobals* cGlobals )
 {
@@ -191,6 +192,9 @@ addSnapshot( CommonGlobals* cGlobals )
 
     LOG_RETURN_VOID();
 }
+#else
+# define addSnapshot( cGlobals )
+#endif
 
 void
 summarize( CommonGlobals* cGlobals )
@@ -330,6 +334,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->lastMoveTime = sqlite3_column_int( ppStmt, 10 );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
 
+#ifdef PLATFORM_GTK
         /* Load the snapshot */
         GdkPixbuf* snap = NULL;
         const XP_U8* ptr = sqlite3_column_blob( ppStmt, 11 );
@@ -342,6 +347,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
             g_object_unref( istr );
         }
         gib->snap = snap;
+#endif
     }
     sqlite3_finalize( ppStmt );
 

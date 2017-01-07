@@ -93,12 +93,13 @@ public class DlgDelegate {
         NFC_TO_SELF,
         DROP_RELAY_ACTION,
         DROP_SMS_ACTION,
-        RETRY_PHONE_STATE_ACTION,
+        INVITE_SMS,
 
         // Dict Browser
         FINISH_ACTION,
         DELETE_DICT_ACTION,
         UPDATE_DICTS_ACTION,
+        MOVE_CONFIRMED,
 
         // Game configs
         LOCKED_CHANGE_ACTION,
@@ -112,7 +113,6 @@ public class DlgDelegate {
         CLEAR_ACTION,
         USE_IMMOBILE_ACTION,
         POST_WARNING_ACTION,
-        RETRY_CONTACTS_ACTION,
 
         // BT Invite
         OPEN_BT_PREFS_ACTION,
@@ -121,6 +121,9 @@ public class DlgDelegate {
         SL_CLEAR_ACTION,
         SL_COPY_ACTION,
 
+        // DwnldDelegate && GamesListDelegate
+        STORAGE_CONFIRMED,
+
         // clasify me
         ENABLE_SMS_ASK,
         ENABLE_SMS_DO,
@@ -128,6 +131,8 @@ public class DlgDelegate {
         ENABLE_RELAY_DO,
         ENABLE_RELAY_DO_OR,
         DISABLE_RELAY_DO,
+        ASKED_PHONE_STATE,
+        PERMS_QUERY,
     }
 
     public static class ActionPair {
@@ -164,6 +169,7 @@ public class DlgDelegate {
         protected int m_negButton = android.R.string.cancel;
         protected Action m_action;
         protected Object[] m_params;
+        protected int m_titleId = 0;
 
         public DlgDelegateBuilder( String msg, Action action )
         { m_msgString = msg; m_action = action; }
@@ -195,11 +201,13 @@ public class DlgDelegate {
         public OkOnlyBuilder(int msgId) { super( msgId, Action.SKIP_CALLBACK ); }
         public OkOnlyBuilder setAction( Action action )
         { m_action = action; return this; }
+        public OkOnlyBuilder setTitle( int titleId )
+        { m_titleId = titleId; return this; }
 
         @Override
         public void show()
         {
-            showOKOnlyDialogThen( m_msgString, m_action, m_params );
+            showOKOnlyDialogThen( m_msgString, m_action, m_params, m_titleId );
         }
     }
 
@@ -207,11 +215,14 @@ public class DlgDelegate {
         public ConfirmThenBuilder(String msg, Action action) {super(msg, action);}
         public ConfirmThenBuilder(int msgId, Action action) {super(msgId, action);}
 
+        public ConfirmThenBuilder setTitle( int titleId )
+        { m_titleId = titleId; return this; }
+
         @Override
         public void show()
         {
             showConfirmThen( m_nakey, m_onNA, m_msgString, m_posButton,
-                             m_negButton, m_action, m_params );
+                             m_negButton, m_action, m_titleId, m_params );
         }
     }
 
@@ -296,7 +307,10 @@ public class DlgDelegate {
         public static enum InviteMeans {
             SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
         };
-        void dlgButtonClicked( Action action, int button, Object[] params );
+        void onPosButton( Action action, Object[] params );
+        void onNegButton( Action action, Object[] params );
+        void onDismissed( Action action, Object[] params );
+
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
     }
     public interface HasDlgDelegate {
@@ -411,12 +425,13 @@ public class DlgDelegate {
     }
 
     private void showOKOnlyDialogThen( String msg, Action action,
-                                       Object[] params )
+                                       Object[] params, int titleId )
     {
         // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY )
             .setMsg( msg )
             .setParams( params )
+            .setTitle( titleId )
             .setAction(action);
         addState( state );
         showDialog( DlgID.DIALOG_OKONLY );
@@ -433,7 +448,7 @@ public class DlgDelegate {
     }
 
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
-    // calls dlgButtonClicked with the action and in params a Boolean
+    // calls onPosButton/onNegButton with the action and in params a Boolean
     // indicating whether enabling is now ok.
     public void showSMSEnableDialog( Action action, Object... params )
     {
@@ -455,9 +470,7 @@ public class DlgDelegate {
                 post( new Runnable() {
                         public void run() {
                             m_clickCallback
-                                .dlgButtonClicked( action,
-                                                   AlertDialog.BUTTON_POSITIVE,
-                                                   params );
+                                .onPosButton( action, params );
                         }
                     });
             }
@@ -470,8 +483,9 @@ public class DlgDelegate {
         }
     }
 
-    private void showConfirmThen( NAKey nakey, Runnable onNA, String msg, int posButton,
-                                  int negButton, Action action, Object[] params )
+    private void showConfirmThen( NAKey nakey, Runnable onNA, String msg,
+                                  int posButton, int negButton, Action action,
+                                  int titleId, Object[] params )
     {
         if ( null != nakey ) {
             Assert.assertNull( onNA );
@@ -483,6 +497,7 @@ public class DlgDelegate {
                 .setPosButton( posButton )
                 .setNegButton( negButton )
                 .setAction( action )
+                .setTitle( titleId )
                 .setParams( params );
             addState( state );
             showDialog( DlgID.CONFIRM_THEN );
@@ -661,7 +676,7 @@ public class DlgDelegate {
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
     {
         Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.info_title )
+            .setTitle( state.m_titleId == 0 ? R.string.info_title : state.m_titleId )
             .setMessage( state.m_msg )
             .setPositiveButton( android.R.string.ok, null )
             .create();
@@ -687,10 +702,7 @@ public class DlgDelegate {
             OnClickListener lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         checkNotAgainCheck( state, naView );
-                        m_clickCallback.
-                            dlgButtonClicked( more.action,
-                                              AlertDialog.BUTTON_POSITIVE,
-                                              more.params );
+                        m_clickCallback.onPosButton( more.action, more.params );
                     }
                 };
             builder.setNegativeButton( more.buttonStr, lstnr );
@@ -710,7 +722,7 @@ public class DlgDelegate {
         OnClickListener lstnr = mkCallbackClickListener( state, naView );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.query_title )
+            .setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )
             .setView( naView )
             .setPositiveButton( state.m_posButton, lstnr )
             .setNegativeButton( state.m_negButton, lstnr );
@@ -851,9 +863,7 @@ public class DlgDelegate {
                         layout.findViewById( R.id.confirm_sms_reasons );
                     boolean enabled = 0 < reasons.getSelectedItemPosition();
                     Assert.assertTrue( enabled );
-                    m_clickCallback.dlgButtonClicked( state.m_action,
-                                                      AlertDialog.BUTTON_POSITIVE,
-                                                      state.m_params );
+                    m_clickCallback.onPosButton( state.m_action, state.m_params );
                 }
             };
 
@@ -902,9 +912,21 @@ public class DlgDelegate {
                     checkNotAgainCheck( state, naView );
 
                     if ( Action.SKIP_CALLBACK != state.m_action ) {
-                        m_clickCallback.dlgButtonClicked( state.m_action,
-                                                          button,
-                                                          state.m_params );
+                        switch ( button ) {
+                        case AlertDialog.BUTTON_POSITIVE:
+                            m_clickCallback.onPosButton( state.m_action,
+                                                         state.m_params );
+                            break;
+                        case AlertDialog.BUTTON_NEGATIVE:
+                            m_clickCallback.onNegButton( state.m_action,
+                                                         state.m_params );
+                            break;
+                        default:
+                            DbgUtils.loge( TAG, "unexpected button %d",
+                                           button );
+                            // ignore on release builds
+                            Assert.assertFalse( BuildConfig.DEBUG );
+                        }
                     }
                 }
             };
@@ -933,9 +955,8 @@ public class DlgDelegate {
                     public void onDismiss( DialogInterface di ) {
                         dropState( state );
                         if ( Action.SKIP_CALLBACK != state.m_action ) {
-                            m_clickCallback.dlgButtonClicked( state.m_action,
-                                                              DISMISS_BUTTON,
-                                                              state.m_params );
+                            m_clickCallback.onDismissed( state.m_action,
+                                                         state.m_params );
                         }
                         m_activity.removeDialog( id );
                     }

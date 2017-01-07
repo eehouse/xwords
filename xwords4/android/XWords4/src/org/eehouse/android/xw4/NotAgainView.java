@@ -28,7 +28,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class NotAgainView extends ScrollView {
-    private static final String TAG = NotAgainView.class.getSimpleName();
 
     public NotAgainView( Context cx, AttributeSet as ) {
         super( cx, as );

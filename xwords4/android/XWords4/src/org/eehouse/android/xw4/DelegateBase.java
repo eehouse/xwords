@@ -88,6 +88,8 @@ public class DelegateBase implements DlgClickNotify,
         LocUtils.xlateTitle( m_activity );
     }
 
+    public Activity getActivity() { return m_activity; }
+
     // Does nothing unless overridden. These belong in an interface.
     protected void init( Bundle savedInstanceState ) { Assert.fail(); }
     protected void onSaveInstanceState( Bundle outState ) {}
@@ -102,6 +104,12 @@ public class DelegateBase implements DlgClickNotify,
     public void orientationChanged() {}
 
     protected void requestWindowFeature( int feature ) {}
+
+    protected void tryGetPerms( Perms23.Perm perm, int rationale,
+                                Action action, Object... params )
+    {
+        Perms23.tryGetPerms( this, perm, rationale, action, this, params );
+    }
 
     // Fragments only
     protected View inflateView( LayoutInflater inflater, ViewGroup container )
@@ -628,53 +636,51 @@ public class DelegateBase implements DlgClickNotify,
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    public void dlgButtonClicked( Action action, int button, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        boolean handled = false;
-        if ( AlertDialog.BUTTON_POSITIVE == button ) {
-            switch( action ) {
-            case ENABLE_SMS_ASK:
-                showSMSEnableDialog( Action.ENABLE_SMS_DO, params );
-                handled = true;
-                break;
-            case ENABLE_SMS_DO:
-                XWPrefs.setSMSEnabled( m_activity, true );
-                break;
-            case ENABLE_BT_DO:
-                BTService.enable();
-                break;
-            case ENABLE_RELAY_DO:
-                RelayService.setEnabled( m_activity, true );
-                handled = true;
-                break;
-            default:
-                Assert.fail();
-                break;
-            }
+        DbgUtils.logd( TAG, "%s.posButtonClicked(%s)", getClass().getSimpleName(),
+                       action.toString() );
+        switch( action ) {
+        case ENABLE_SMS_ASK:
+            showSMSEnableDialog( Action.ENABLE_SMS_DO, params );
+            break;
+        case ENABLE_SMS_DO:
+            XWPrefs.setSMSEnabled( m_activity, true );
+            break;
+        case ENABLE_BT_DO:
+            BTService.enable();
+            break;
+        case ENABLE_RELAY_DO:
+            RelayService.setEnabled( m_activity, true );
+            break;
+        case PERMS_QUERY:
+            Perms23.onGotPermsAction( true, params );
+            break;
+        default:
+            DbgUtils.logd( TAG, "unhandled action %s", action.toString() );
+            Assert.assertTrue( !BuildConfig.DEBUG );
+            break;
         }
+    }
 
-        if ( !handled && BuildConfig.DEBUG ) {
-            String buttonName = null;
-            switch( button ) {
-            case AlertDialog.BUTTON_POSITIVE:
-                buttonName = "positive";
-                break;
-            case AlertDialog.BUTTON_NEGATIVE:
-                buttonName = "negative";
-                break;
-            case AlertDialog.BUTTON_NEUTRAL:
-                buttonName = "neutral";
-                break;
-            case DlgDelegate.DISMISS_BUTTON:
-                buttonName = "dismiss";
-                break;
-            default:
-                Assert.fail();
-                break;
-            }
-            DbgUtils.logi( TAG, "dlgButtonClicked(action=%s button=%s): UNHANDLED",
-                           action.toString(), buttonName );
+    public void onNegButton( Action action, Object[] params )
+    {
+        // DbgUtils.logd( TAG, "%s.negButtonClicked(%s)", getClass().getSimpleName(),
+        //                action.toString() );
+        switch ( action ) {
+        case PERMS_QUERY:
+            Perms23.onGotPermsAction( false, params );
+            break;
+        default:
+            DbgUtils.logd( TAG, "onNegButton: unhandled action %s", action.toString() );
+            break;
         }
+    }
+
+    public void onDismissed( Action action, Object[] params )
+    {
+        DbgUtils.logd( TAG, "%s.dlgDismissed(%s)", getClass().getSimpleName(),
+                       action.toString() );
     }
 
     public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object[] params )

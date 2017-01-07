@@ -153,33 +153,31 @@ public class StudyListDelegate extends ListDelegateBase
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            switch ( action ) {
-            case SL_CLEAR_ACTION:
-                String[] selWords = getSelWords();
-                if ( selWords.length == m_words.length ) {
-                    selWords = null; // all: easier on DB :-)
-                }
-                DBUtils.studyListClear( m_activity, m_langCodes[m_langPosition],
-                                        selWords );
-                initOrFinish( null );
-                break;
-            case SL_COPY_ACTION:
-                selWords = getSelWords();
-                ClipboardManager clipboard = (ClipboardManager)
-                    getSystemService( Context.CLIPBOARD_SERVICE );
-                clipboard.setText( TextUtils.join( "\n", selWords ) );
-
-                String msg = getQuantityString( R.plurals.paste_done_fmt,
-                                                selWords.length, selWords.length );
-                showToast( msg );
-                break;
-            default:
-                Assert.fail();
-                break;
+        switch ( action ) {
+        case SL_CLEAR_ACTION:
+            String[] selWords = getSelWords();
+            if ( selWords.length == m_words.length ) {
+                selWords = null; // all: easier on DB :-)
             }
+            DBUtils.studyListClear( m_activity, m_langCodes[m_langPosition],
+                                    selWords );
+            initOrFinish( null );
+            break;
+        case SL_COPY_ACTION:
+            selWords = getSelWords();
+            ClipboardManager clipboard = (ClipboardManager)
+                getSystemService( Context.CLIPBOARD_SERVICE );
+            clipboard.setText( TextUtils.join( "\n", selWords ) );
+
+            String msg = getQuantityString( R.plurals.paste_done_fmt,
+                                            selWords.length, selWords.length );
+            showToast( msg );
+            break;
+        default:
+            Assert.fail();
+            break;
         }
     }
 

@@ -684,48 +684,50 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    public void dlgButtonClicked( Action action, int button, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        boolean callSuper = false;
         Assert.assertTrue( curThis() == this );
+        switch( action ) {
+        case LOCKED_CHANGE_ACTION:
+            handleLockedChange();
+            break;
+        case SMS_CONFIG_ACTION:
+            Utils.launchSettings( m_activity );
+            break;
+        case DELETE_AND_EXIT:
+            if ( m_isNewGame ) {
+                deleteGame();
+            }
+            closeNoSave();
+            break;
+        case SET_ENABLE_PUBLIC:
+            XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_pubroom,
+                                     true );
+            setupRelayStuffIf( true );
+            break;
 
-        if ( AlertDialog.BUTTON_POSITIVE == button ) {
-            switch( action ) {
-            case LOCKED_CHANGE_ACTION:
-                handleLockedChange();
-                break;
-            case SMS_CONFIG_ACTION:
-                Utils.launchSettings( m_activity );
-                break;
-            case DELETE_AND_EXIT:
-                if ( m_isNewGame ) {
-                    deleteGame();
-                }
-                closeNoSave();
-                break;
-            case SET_ENABLE_PUBLIC:
-                XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_pubroom,
-                                         true );
-                setupRelayStuffIf( true );
-                break;
-            default:
-                callSuper = true;
-            }
-        } else if ( AlertDialog.BUTTON_NEGATIVE == button ) {
-            switch ( action ) {
-            case DELETE_AND_EXIT:
-                showDialog( DlgID.CHANGE_CONN );
-                break;
-            default:
-                callSuper = true;
-                break;
-            }
-        } else {
-            callSuper = true;
+        case ASKED_PHONE_STATE:
+            showDialog( DlgID.CHANGE_CONN );
+            break;
+
+        default:
+            super.onPosButton( action, params );
         }
+    }
 
-        if ( callSuper ) {
-            super.dlgButtonClicked( action, button, params );
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case DELETE_AND_EXIT:
+            showConnAfterCheck();
+            break;
+        case ASKED_PHONE_STATE:
+            showDialog( DlgID.CHANGE_CONN );
+            break;
+        default:
+            super.onNegButton( action, params );
+            break;
         }
     }
 
@@ -752,7 +754,7 @@ public class GameConfigDelegate extends DelegateBase
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_changeConnButton == view ) {
-            showDialog( DlgID.CHANGE_CONN );
+            showConnAfterCheck();
         } else if ( m_playButton == view ) {
             // Launch BoardActivity for m_name, but ONLY IF user
             // confirms any changes required.  So we either launch
@@ -779,6 +781,17 @@ public class GameConfigDelegate extends DelegateBase
             DbgUtils.logw( TAG, "unknown v: " + view.toString() );
         }
     } // onClick
+
+    private void showConnAfterCheck()
+    {
+        if ( null == SMSService.getPhoneInfo( m_activity ) ) {
+            Perms23.tryGetPerms( this, Perms23.Perm.READ_PHONE_STATE,
+                                 R.string.phone_state_rationale,
+                                 Action.ASKED_PHONE_STATE, this );
+        } else {
+            showDialog( DlgID.CHANGE_CONN );
+        }
+    }
 
     private void saveAndClose( boolean forceNew )
     {

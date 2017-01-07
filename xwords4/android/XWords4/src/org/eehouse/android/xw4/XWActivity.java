@@ -131,6 +131,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
     public void onRequestPermissionsResult(int requestCode, String perms[], int[] rslts )
     {
         Perms23.gotPermissionResult( requestCode, perms, rslts );
+        super.onRequestPermissionsResult( requestCode, perms, rslts );
     }
 
     @Override

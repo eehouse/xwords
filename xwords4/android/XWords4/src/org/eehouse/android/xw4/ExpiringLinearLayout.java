@@ -26,7 +26,6 @@ import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
 public class ExpiringLinearLayout extends LinearLayout {
-    private static final String TAG = ExpiringLinearLayout.class.getSimpleName();
     private ExpiringDelegate m_delegate;
 
     public ExpiringLinearLayout( Context context, AttributeSet as ) {

@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -166,10 +166,10 @@ public class JNIThread extends Thread {
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
 
-    public JNIThread configure( Context context, SyncedDraw drawer,
-                                UtilCtxtImpl utils,
-                                TransportProcs.TPMsgHandler xportHandler,
-                                Handler handler )
+    public boolean configure( Context context, SyncedDraw drawer,
+                              UtilCtxtImpl utils,
+                              TransportProcs.TPMsgHandler xportHandler,
+                              Handler handler )
     {
         m_context = context;
         m_drawer = drawer;
@@ -190,44 +190,46 @@ public class JNIThread extends Thread {
 
         String[] dictNames = GameUtils.dictNames( context, m_lock );
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
-        Assert.assertFalse( pairs.anyMissing( dictNames ) ); // PENDING
+        boolean success = !pairs.anyMissing( dictNames );
 
-        byte[] stream = GameUtils.savedGame( context, m_lock );
-        Assert.assertNotNull( stream );
-        m_gi = new CurGameInfo( context );
-        m_gi.setName( DBUtils.getName( context, m_rowid ) );
-        XwJNI.gi_from_stream( m_gi, stream );
+        if ( success ) {
+            byte[] stream = GameUtils.savedGame( context, m_lock );
+            Assert.assertNotNull( stream );
+            m_gi = new CurGameInfo( context );
+            m_gi.setName( DBUtils.getName( context, m_rowid ) );
+            XwJNI.gi_from_stream( m_gi, stream );
 
-        m_summary = DBUtils.getSummary( context, m_lock );
+            m_summary = DBUtils.getSummary( context, m_lock );
 
-        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-            m_xport = new CommsTransport( context, xportHandler, m_rowid,
-                                          m_gi.serverRole );
-            m_xport.setReceiver( this );
+            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                m_xport = new CommsTransport( context, xportHandler, m_rowid,
+                                              m_gi.serverRole );
+                m_xport.setReceiver( this );
+            }
+
+            CommonPrefs cp = CommonPrefs.get( context );
+            JNIUtils jniUtils = JNIUtilsImpl.get( context );
+
+            // Assert.assertNull( m_jniGamePtr ); // fired!!
+            if ( null != m_jniGamePtr ) {
+                DbgUtils.logd( TAG, "configure(): m_jniGamePtr not null; that ok?" );
+            }
+            m_jniGamePtr = null;
+            if ( null != stream ) {
+                m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi, dictNames,
+                                                     pairs.m_bytes, pairs.m_paths,
+                                                     m_gi.langName(), utils, jniUtils,
+                                                     null, cp, m_xport );
+            }
+            if ( null == m_jniGamePtr ) {
+                m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
+                                              pairs.m_paths, m_gi.langName(), utils,
+                                              jniUtils, null, cp, m_xport );
+            }
+            Assert.assertNotNull( m_jniGamePtr );
+            m_lastSavedState = Arrays.hashCode( stream );
         }
-
-        CommonPrefs cp = CommonPrefs.get( context );
-        JNIUtils jniUtils = JNIUtilsImpl.get( context );
-
-        // Assert.assertNull( m_jniGamePtr ); // fired!!
-        if ( null != m_jniGamePtr ) {
-            DbgUtils.logd( TAG, "configure(): m_jniGamePtr not null; that ok?" );
-        }
-        m_jniGamePtr = null;
-        if ( null != stream ) {
-            m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi, dictNames,
-                                                 pairs.m_bytes, pairs.m_paths,
-                                                 m_gi.langName(), utils, jniUtils,
-                                                 null, cp, m_xport );
-        }
-        if ( null == m_jniGamePtr ) {
-            m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
-                                          pairs.m_paths, m_gi.langName(), utils,
-                                          jniUtils, null, cp, m_xport );
-        }
-
-        m_lastSavedState = Arrays.hashCode( stream );
-        return this;
+        return success;
     }
 
     public GamePtr getGamePtr() { return m_jniGamePtr; }
@@ -682,14 +684,16 @@ public class JNIThread extends Thread {
             }
         } // for
 
-        if ( m_saveOnStop ) {
-            XwJNI.comms_stop( m_jniGamePtr );
-            save_jni();
-        } else {
-            DbgUtils.logw( TAG, "run(): exiting without saving" );
+        if ( null != m_jniGamePtr ) {
+            if ( m_saveOnStop ) {
+                XwJNI.comms_stop( m_jniGamePtr );
+                save_jni();
+            } else {
+                DbgUtils.logw( TAG, "run(): exiting without saving" );
+            }
+            m_jniGamePtr.release();
+            m_jniGamePtr = null;
         }
-        m_jniGamePtr.release();
-        m_jniGamePtr = null;
     } // run
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
@@ -732,7 +736,7 @@ public class JNIThread extends Thread {
     private void retain_sync()
     {
         ++m_refCount;
-        DbgUtils.logi( TAG, "retain_sync(rowid=%d): m_refCount: %d",
+        DbgUtils.logi( TAG, "retain_sync(rowid=%d): m_refCount raised to %d",
                        m_rowid, m_refCount );
     }
 
@@ -755,7 +759,7 @@ public class JNIThread extends Thread {
                 stop = true;
             }
         }
-        DbgUtils.logi( TAG, "release(rowid=%d): m_refCount: %d",
+        DbgUtils.logi( TAG, "release(rowid=%d): m_refCount dropped to %d",
                        m_rowid, m_refCount );
 
         if ( stop ) {

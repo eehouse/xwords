@@ -28,9 +28,12 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -62,6 +65,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     private boolean m_visible;
     private Map<Buttons, Object> m_onClickListeners;
     private Map<Buttons, Object> m_onLongClickListeners;
+    private Set<Buttons> m_enabled = new HashSet<Buttons>();
 
     public Toolbar( Activity activity, HasDlgDelegate dlgDlgt )
     {
@@ -123,7 +127,15 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
         if ( null != button ) {
             button.setVisibility( enable ? View.VISIBLE : View.GONE );
         }
+
+        if ( enable ) {
+            m_enabled.add( index );
+        } else {
+            m_enabled.remove( index );
+        }
     }
+
+    protected int enabledCount() { return m_enabled.size(); }
 
     // SizeChangeListener
     public void sizeChanged( int width, int height, boolean isPortrait )

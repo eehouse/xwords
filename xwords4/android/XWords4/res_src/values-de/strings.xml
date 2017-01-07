@@ -123,10 +123,10 @@ Diese Aktion kann nicht rückgängig gemacht werden.</item>
     <string name="no_games_to_refresh">Keine Spiele gefunden, die über die Zwischenstation verbunden sind.</string>
 
     <string name="no_copy_network">Spiele, die bereits über die Zwischenstation verbunden sind, können nicht kopiert werden. Wählen Sie „Neu aus“, um eine spielbereite Kopie mit den komplett gleichen Einstellungen zu bekommen.</string>
-      <string name="invit_expl_relay_fmt">Die Einladung wurde von der Zwischenstation zu einem anderen Gerät auf %s weitergeleitet</string>
+      <string name="invit_expl_relay_fmt">Die Einladung wurde von der Zwischenstation zu einem anderen Gerät auf %1$s weitergeleitet</string>
     <plurals name="msg_relay_waiting_fmt">
-	<item quantity="one">Gerät %d verbunden mit Zwischenstation in Raum „%s“. Warten auf einen Spieler.</item>
-	<item quantity="other">Gerät %d verbunden mit Zwischenstation in Raum „%s“. Warten auf %d Spieler.</item>
+	<item quantity="one">Gerät %1$d verbunden mit Zwischenstation in Raum „%2$s“. Warten auf einen Spieler.</item>
+	<item quantity="other">Gerät %1$d verbunden mit Zwischenstation in Raum „%2$s“. Warten auf %3$d Spieler.</item>
 </plurals>
 
     <string name="msg_lost_other">Die Zwischenstation hat den Kontakt zu einem anderen Gerät in diesem Spiel verloren.</string>
@@ -139,7 +139,7 @@ Diese Aktion kann nicht rückgängig gemacht werden.</item>
 	<string name="list_item_new_from">Kopie anlegen</string>
     <plurals name="confirm_reset_fmt">
 	<item quantity="one">Möchten Sie das ausgewählte Spiel wirklich zurücksetzen?\n\n(Dabei gehen alle Züge und alle Verbindungsinformationen verloren.)</item>
-	<item quantity="other">Möchten Sie die %d ausgewählten Spiele wirklich zurücksetzen?\n\n(Dabei gehen alle Züge und alle Verbindungsinformationen verloren.)</item>
+	<item quantity="other">Möchten Sie die %1$d ausgewählten Spiele wirklich zurücksetzen?\n\n(Dabei gehen alle Züge und alle Verbindungsinformationen verloren.)</item>
 </plurals>
 
     </resources>

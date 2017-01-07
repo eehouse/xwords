@@ -32,7 +32,6 @@ import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CommonPrefs extends XWPrefs {
-    private static final String TAG = CommonPrefs.class.getSimpleName();
     public static final int COLOR_TILE_BACK = 0;
     public static final int COLOR_NOTILE = 1;
     public static final int COLOR_FOCUS = 2;

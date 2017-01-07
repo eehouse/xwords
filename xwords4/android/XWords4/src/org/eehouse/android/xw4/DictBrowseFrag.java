@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class DictBrowseFrag extends XWFragment {
-    private static final String TAG = DictBrowseFrag.class.getSimpleName();
 
     public DictBrowseFrag() {}
 

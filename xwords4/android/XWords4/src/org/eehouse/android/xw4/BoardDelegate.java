@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -54,6 +54,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.Toolbar.Buttons;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -406,8 +407,7 @@ public class BoardDelegate extends DelegateBase
                                 if ( self.m_summary.hasRematchInfo() ) {
                                     self.tryRematchInvites( true );
                                 } else {
-                                    self.callInviteChoices( Action.LAUNCH_INVITE_ACTION,
-                                                            self.m_sentInfo, true );
+                                    self.callInviteChoices( self.m_sentInfo );
                                 }
                             } else {
                                 self.askDropRelay();
@@ -711,6 +711,8 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
+            } else if ( 0 < m_nMissing ) {
+                showDialog( DlgID.DLG_INVITE );
             }
         }
     }
@@ -720,36 +722,17 @@ public class BoardDelegate extends DelegateBase
     // loop of showing the rationale over and over. Android will always tell
     // us to show the rationale, but if we've done it already we need to go
     // straight to asking for the permission.
-    private void callInviteChoices( final Action action,
-                                    final DBUtils.SentInvitesInfo info,
-                                    boolean showRationale )
+    private void callInviteChoices( final SentInvitesInfo info )
     {
-        Perms23.Builder builder =
-            new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE );
+        Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE,
+                             R.string.phone_state_rationale,
+                             Action.ASKED_PHONE_STATE, this, info );
+    }
 
-        if ( showRationale ) {
-            builder.setOnShowRationale( new Perms23.OnShowRationale() {
-                    @Override
-                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
-                    {
-                        makeOkOnlyBuilder( R.string.phone_state_rationale )
-                            .setAction( Action.RETRY_PHONE_STATE_ACTION )
-                            .setParams( action, info )
-                            .show();
-                    }
-                } );
-        }
-
-        builder.asyncQuery( m_activity, new Perms23.PermCbck() {
-                    @Override
-                    public void onPermissionResult( Map<Perms23.Perm,
-                                                    Boolean> perms )
-                    {
-                        // Do the work regardless of result; just won't have
-                        // SMS option
-                        showInviteChoicesThen( action, info );
-                    }
-                });
+    private void showInviteChoicesThen( Object[] params )
+    {
+        SentInvitesInfo info = (SentInvitesInfo)params[0];
+        showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION, info );
     }
 
     @Override
@@ -905,7 +888,7 @@ public class BoardDelegate extends DelegateBase
                                      Action.COMMIT_ACTION )
                     .show();
             } else {
-                dlgButtonClicked( Action.COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
+                onPosButton( Action.COMMIT_ACTION, null );
             }
             break;
 
@@ -1022,128 +1005,148 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
-    @Override
-    public void dlgButtonClicked( Action action, int which,
-                                  final Object[] params )
-    {
-        boolean handled = false;
-        boolean positive = AlertDialog.BUTTON_POSITIVE == which;
-        DbgUtils.logd( TAG, "BoardDelegate.dlgButtonClicked(%s, %b)",
-                       action.toString(), positive );
 
-        if ( Action.ENABLE_RELAY_DO_OR == action ) {
-            handled = true;
-            if ( positive ) {
-                RelayService.setEnabled( m_activity, true );
-            } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
-                m_dropOnDismiss = true;
-            } else if ( DlgDelegate.DISMISS_BUTTON == which && m_dropOnDismiss ) {
+    @Override
+    public void onPosButton( Action action, final Object[] params )
+    {
+        JNICmd cmd = JNICmd.CMD_NONE;
+        switch ( action ) {
+        case ENABLE_RELAY_DO_OR:
+            RelayService.setEnabled( m_activity, true );
+            break;
+        case UNDO_LAST_ACTION:
+            cmd = JNICmd.CMD_UNDO_LAST;
+            break;
+        case SYNC_ACTION:
+            doSyncMenuitem();
+            break;
+        case SMS_CONFIG_ACTION:
+            Utils.launchSettings( m_activity );
+            break;
+        case COMMIT_ACTION:
+            cmd = JNICmd.CMD_COMMIT;
+            break;
+        case SHOW_EXPL_ACTION:
+            showToast( m_toastStr );
+            m_toastStr = null;
+            break;
+        case BUTTON_BROWSEALL_ACTION:
+        case BUTTON_BROWSE_ACTION:
+            String curDict = m_gi.dictName( m_view.getCurPlayer() );
+            View button = m_toolbar.getButtonFor( Buttons.BUTTON_BROWSE_DICT );
+            if ( Action.BUTTON_BROWSEALL_ACTION == action &&
+                 DictsDelegate.handleDictsPopup( getDelegator(), button,
+                                                 curDict, m_gi.dictLang ) ){
+                break;
+            }
+            DictBrowseDelegate.launch( getDelegator(), curDict );
+            break;
+        case PREV_HINT_ACTION:
+            cmd = JNICmd.CMD_PREV_HINT;
+            break;
+        case NEXT_HINT_ACTION:
+            cmd = JNICmd.CMD_NEXT_HINT;
+            break;
+        case JUGGLE_ACTION:
+            cmd = JNICmd.CMD_JUGGLE;
+            break;
+        case FLIP_ACTION:
+            cmd = JNICmd.CMD_FLIP;
+            break;
+        case UNDO_ACTION:
+            cmd = JNICmd.CMD_UNDO_CUR;
+            break;
+        case VALUES_ACTION:
+            cmd = JNICmd.CMD_VALUES;
+            break;
+        case CHAT_ACTION:
+            startChatActivity();
+            break;
+        case START_TRADE_ACTION:
+            showToast( R.string.entering_trade );
+            cmd = JNICmd.CMD_TRADE;
+            break;
+        case LOOKUP_ACTION:
+            launchLookup( m_words, m_gi.dictLang );
+            break;
+        case NFC_TO_SELF:
+            GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
+            break;
+        case DROP_RELAY_ACTION:
+            dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
+            break;
+        case DELETE_AND_EXIT:
+            deleteAndClose();
+            break;
+        case DROP_SMS_ACTION:   // do nothing; work done in onNegButton case
+            break;
+
+        case INVITE_SMS:
+            int nMissing = (Integer)params[0];
+            SentInvitesInfo info = (SentInvitesInfo)params[1];
+            SMSInviteDelegate.launchForResult( m_activity, nMissing, info,
+                                               RequestCode.SMS_INVITE_RESULT );
+            break;
+
+        case ASKED_PHONE_STATE:
+            showInviteChoicesThen( params );
+            break;
+
+        case ENABLE_SMS_DO:
+            post( new Runnable() {
+                    public void run() {
+                        retrySMSInvites( params );
+                    }
+                } );
+            // FALLTHRU: so super gets called, before
+        default:
+            super.onPosButton( action, params );
+        }
+
+        if ( JNICmd.CMD_NONE != cmd ) {
+            handleViaThread( cmd );
+        }
+    }
+
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case ENABLE_RELAY_DO_OR:
+            m_dropOnDismiss = true;
+            break;
+        case DROP_SMS_ACTION:
+            dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
+            break;
+        case DELETE_AND_EXIT:
+            finish();
+            break;
+        case ASKED_PHONE_STATE:
+            showInviteChoicesThen( params );
+            break;
+        default:
+            super.onNegButton( action, params );
+        }
+    }
+
+    @Override
+    public void onDismissed( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case ENABLE_RELAY_DO_OR:
+            if ( m_dropOnDismiss ) {
                 postDelayed( new Runnable() {
                         public void run() {
                             askDropRelay();
                         }
                     }, 10 );
             }
-        } else if ( Action.RETRY_PHONE_STATE_ACTION == action ) {
-            Action stateAction = (Action)params[0];
-            DBUtils.SentInvitesInfo info = (DBUtils.SentInvitesInfo)params[1];
-            callInviteChoices( stateAction, info, false );
-        } else if ( positive ) {
-            handled = true;
-            JNICmd cmd = JNICmd.CMD_NONE;
-            switch ( action ) {
-            case UNDO_LAST_ACTION:
-                cmd = JNICmd.CMD_UNDO_LAST;
-                break;
-            case SYNC_ACTION:
-                doSyncMenuitem();
-                break;
-            case SMS_CONFIG_ACTION:
-                Utils.launchSettings( m_activity );
-                break;
-            case COMMIT_ACTION:
-                cmd = JNICmd.CMD_COMMIT;
-                break;
-            case SHOW_EXPL_ACTION:
-                showToast( m_toastStr );
-                m_toastStr = null;
-                break;
-            case BUTTON_BROWSEALL_ACTION:
-            case BUTTON_BROWSE_ACTION:
-                String curDict = m_gi.dictName( m_view.getCurPlayer() );
-                View button = m_toolbar.getButtonFor( Buttons.BUTTON_BROWSE_DICT );
-                if ( Action.BUTTON_BROWSEALL_ACTION == action &&
-                     DictsDelegate.handleDictsPopup( getDelegator(), button,
-                                                     curDict, m_gi.dictLang ) ){
-                    break;
-                }
-                DictBrowseDelegate.launch( getDelegator(), curDict );
-                break;
-            case PREV_HINT_ACTION:
-                cmd = JNICmd.CMD_PREV_HINT;
-                break;
-            case NEXT_HINT_ACTION:
-                cmd = JNICmd.CMD_NEXT_HINT;
-                break;
-            case JUGGLE_ACTION:
-                cmd = JNICmd.CMD_JUGGLE;
-                break;
-            case FLIP_ACTION:
-                cmd = JNICmd.CMD_FLIP;
-                break;
-            case UNDO_ACTION:
-                cmd = JNICmd.CMD_UNDO_CUR;
-                break;
-            case VALUES_ACTION:
-                cmd = JNICmd.CMD_VALUES;
-                break;
-            case CHAT_ACTION:
-                startChatActivity();
-                break;
-            case START_TRADE_ACTION:
-                showToast( R.string.entering_trade );
-                cmd = JNICmd.CMD_TRADE;
-                break;
-            case LOOKUP_ACTION:
-                launchLookup( m_words, m_gi.dictLang );
-                break;
-            case NFC_TO_SELF:
-                GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
-                break;
-            case DROP_RELAY_ACTION:
-                dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
-                break;
-            case DROP_SMS_ACTION:
-                dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
-                break;
-
-            case DELETE_AND_EXIT:
-                deleteAndClose();
-                break;
-
-            case ENABLE_SMS_DO:
-                handled = false; // so super gets called, before
-                                 // retrySMSInvites
-                post( new Runnable() {
-                        public void run() {
-                            retrySMSInvites( params );
-                        }
-                    } );
-                break;
-
-            default:
-                handled = false;
-            }
-
-            if ( JNICmd.CMD_NONE != cmd ) {
-                handleViaThread( cmd );
-            }
+            break;
+        case DELETE_AND_EXIT:
+            finish();
+            break;
         }
-
-        if ( !handled ) {
-            super.dlgButtonClicked( action, which, params );
-        }
-    } // dlgButtonClicked
+    }
 
     public void inviteChoiceMade( Action action, InviteMeans means,
                                   Object[] params )
@@ -1167,8 +1170,8 @@ public class BoardDelegate extends DelegateBase
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS:
-                SMSInviteDelegate.launchForResult( m_activity, m_nMissing, info,
-                                                   RequestCode.SMS_INVITE_RESULT );
+                Perms23.tryGetPerms( this, Perm.SEND_SMS, R.string.sms_invite_rationale,
+                                     Action.INVITE_SMS, this, m_nMissing, info );
                 break;
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_nMissing,
@@ -1269,13 +1272,8 @@ public class BoardDelegate extends DelegateBase
             break;
         case SMS_SEND_FAILED:
         case SMS_SEND_FAILED_NORADIO:
-
-            // if ( null != m_jniThread ) {
-            //     boolean accepted =
-            //         MultiService.MultiEvent.SMS_RECEIVE_OK == event
-            //         || MultiService.MultiEvent.SMS_SEND_OK == event;
-            //     m_jniThread.handle( JNICmd.CMD_DRAW_SMS_STATUS, accepted );
-            // }
+        case SMS_SEND_FAILED_NOPERMISSION:
+            DbgUtils.showf( m_activity, R.string.sms_send_failed );
             break;
 
         default:
@@ -1468,6 +1466,7 @@ public class BoardDelegate extends DelegateBase
         makeConfirmThenBuilder( R.string.connstat_net_noaddr,
                                 Action.DELETE_AND_EXIT )
             .setPosButton( R.string.list_item_delete )
+            .setNegButton( R.string.button_close_game )
             .show();
     }
 
@@ -1629,8 +1628,7 @@ public class BoardDelegate extends DelegateBase
             DbgUtils.logi( TAG, "handleConndMessage(): toastStr: %s", toastStr );
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
-                dlgButtonClicked( Action.SHOW_EXPL_ACTION,
-                                  AlertDialog.BUTTON_POSITIVE, null );
+                onPosButton( Action.SHOW_EXPL_ACTION, null );
             } else {
                 makeNotAgainBuilder( naMsg, naKey, Action.SHOW_EXPL_ACTION )
                     .show();
@@ -2092,24 +2090,33 @@ public class BoardDelegate extends DelegateBase
 
     private void doResume( boolean isStart )
     {
+        boolean success = true;
         boolean firstStart = null == m_handler;
         if ( firstStart ) {
             m_handler = new Handler();
             m_blockingDlgID = DlgID.NONE;
 
-            m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
-                                      makeJNIHandler() );
-            m_jniGamePtr = m_jniThreadRef.getGamePtr();
-            Assert.assertNotNull( m_jniGamePtr );
+            success = m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
+                                                makeJNIHandler() );
+            if ( success ) {
+                m_jniGamePtr = m_jniThreadRef.getGamePtr();
+                Assert.assertNotNull( m_jniGamePtr );
+            }
         }
 
-        try {
-            resumeGame( isStart );
-            if ( !isStart ) {
-                setKeepScreenOn();
-                ConnStatusHandler.setHandler( this );
+        if ( success ) {
+            try {
+                resumeGame( isStart );
+                if ( !isStart ) {
+                    setKeepScreenOn();
+                    ConnStatusHandler.setHandler( this );
+                }
+            } catch ( GameUtils.NoSuchGameException nsge ) {
+                success = false;
             }
-        } catch ( GameUtils.NoSuchGameException nsge ) {
+
+        }
+        if ( !success ) {
             finish();
         }
     }
@@ -2226,21 +2233,16 @@ public class BoardDelegate extends DelegateBase
              && null == m_permCbck ) { // already asked?
             m_permCbck = new Perms23.PermCbck() {
                     @Override
-                    public void onPermissionResult( Map<Perms23.Perm,
-                                                    Boolean> perms )
-                    {
-                        ActionPair pair = new ActionPair( Action.DROP_SMS_ACTION,
-                                                          R.string.remove_sms );
-
-                        if ( ! perms.get(Perms23.Perm.SEND_SMS) ) {
-                            makeNotAgainBuilder( R.string.not_again_missing_perms,
-                                                 R.string.key_notagain_missing_perms )
-                                .setActionPair( pair )
+                    public void onPermissionResult( Map<Perm, Boolean> perms ) {
+                        if ( ! perms.get(Perm.SEND_SMS) ) {
+                            makeConfirmThenBuilder( R.string.missing_perms,
+                                                    Action.DROP_SMS_ACTION )
+                                .setNegButton(R.string.remove_sms)
                                 .show();
                         }
                     }
                 };
-            new Perms23.Builder(Perms23.Perm.SEND_SMS)
+            new Perms23.Builder(Perm.SEND_SMS)
                 .asyncQuery( m_activity, m_permCbck );
         }
     }
@@ -2567,6 +2569,7 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    private boolean m_needsResize = false;
     private void updateToolbar()
     {
         if ( null != m_toolbar ) {
@@ -2579,6 +2582,14 @@ public class BoardDelegate extends DelegateBase
             m_toolbar.update( Buttons.BUTTON_CHAT, m_gsi.canChat );
             m_toolbar.update( Buttons.BUTTON_BROWSE_DICT,
                               null != m_gi.dictName( m_view.getCurPlayer() ) );
+
+            int count = m_toolbar.enabledCount();
+            if ( 0 == count ) {
+                m_needsResize = true;
+            } else if ( m_needsResize && 0 < count ) {
+                m_needsResize = false;
+                m_view.orientationChanged();
+            }
         }
     }
 

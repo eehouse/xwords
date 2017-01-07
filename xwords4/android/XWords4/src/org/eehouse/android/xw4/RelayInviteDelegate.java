@@ -207,12 +207,6 @@ public class RelayInviteDelegate extends InviteDelegate {
         Assert.fail();
     }
 
-    @Override
-    public void listSelected( InviterItem[] selected, String[] devsP )
-    {
-        Assert.fail();
-    }
-
     // We want to present user with list of previous opponents and devices. We
     // can easily get list of relayIDs. The relay, if reachable, can convert
     // that to a (likely shorter) list of devices. Then for each deviceID,
@@ -284,27 +278,29 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        switch( which ) {
-        case AlertDialog.BUTTON_POSITIVE:
-            switch( action ) {
-            case CLEAR_ACTION:
-                clearSelectedImpl();
-                break;
-            case USE_IMMOBILE_ACTION:
-                m_immobileConfirmed = true;
-                break;
-            }
+        switch( action ) {
+        case CLEAR_ACTION:
+            clearSelectedImpl();
             break;
-        case DlgDelegate.DISMISS_BUTTON:
-            if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-                makeConfirmThenBuilder( R.string.warn_unlimited,
-                                        Action.POST_WARNING_ACTION )
-                    .setPosButton( R.string.button_yes )
-                    .show();
-            }
+        case USE_IMMOBILE_ACTION:
+            m_immobileConfirmed = true;
             break;
+        default:
+            super.onPosButton( action, params );
+            break;
+        }
+    }
+
+    @Override
+    public void onDismissed( Action action, Object[] params )
+    {
+        if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
+            makeConfirmThenBuilder( R.string.warn_unlimited,
+                                    Action.POST_WARNING_ACTION )
+                .setPosButton( R.string.button_yes )
+                .show();
         }
     }
 
@@ -447,6 +443,14 @@ public class RelayInviteDelegate extends InviteDelegate {
             m_devID = devID;
             m_nPlayers = 1;
             m_opponent = opponent;
+        }
+
+        public String getDev() { return m_devID; }
+
+        public boolean equals( InviterItem item )
+        {
+            return item != null
+                && ((DevIDRec)item).m_devID == m_devID;
         }
     }
 

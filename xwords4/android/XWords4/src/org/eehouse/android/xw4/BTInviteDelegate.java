@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -25,33 +25,23 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.Button;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
-    private static final String TAG = BTInviteDelegate.class.getSimpleName();
     private static final int[] BUTTONIDS = { R.id.button_add,
+                                             R.id.button_settings,
                                              R.id.button_clear,
     };
     private Activity m_activity;
+    private TwoStringPair[] m_pairs;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
@@ -93,8 +83,12 @@ public class BTInviteDelegate extends InviteDelegate {
         case R.id.button_add:
             scan();
             break;
+        case R.id.button_settings:
+            BTService.openBTSettings( m_activity );
+            break;
         case R.id.button_clear:
-            Utils.notImpl( m_activity );
+            removeSelected();
+            clearChecked();
             break;
         }
     }
@@ -109,13 +103,13 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void run() {
                         synchronized( BTInviteDelegate.this ) {
 
-                            TwoStringPair[] pairs = null;
+                            m_pairs = null;
                             if ( 0 < args.length ) {
-                                pairs = TwoStringPair.make( (String[])(args[0]),
-                                                            (String[])(args[1]) );
+                                m_pairs = TwoStringPair.make( (String[])(args[0]),
+                                                              (String[])(args[1]) );
                             }
 
-                            updateListAdapter( pairs );
+                            updateListAdapter( m_pairs );
                             tryEnable();
                         }
                     }
@@ -129,18 +123,20 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        TwoStrsItem item = (TwoStrsItem)child; // change class name!
+        TwoStrsItem item = (TwoStrsItem)child;
         TwoStringPair pair = (TwoStringPair)data;
-        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
+        // null: we don't display mac address
+        ((TwoStrsItem)child).setStrings( pair.str2, null );
     }
 
     @Override
-    protected void listSelected( InviterItem[] selected, String[] devs )
+    protected void tryEnable()
     {
-        for ( int ii = 0; ii < selected.length; ++ii ) {
-            TwoStringPair rec = (TwoStringPair)selected[ii];
-            devs[ii] = rec.str1;
-            DbgUtils.logd( TAG, "selecting address %s", devs[ii] );
+        super.tryEnable();
+
+        Button button = (Button)findViewById( R.id.button_clear );
+        if ( null != button ) { // may not be there yet
+            button.setEnabled( 0 < getChecked().size() );
         }
     }
 
@@ -158,27 +154,28 @@ public class BTInviteDelegate extends InviteDelegate {
     }
 
     // @Override
-    // protected void clearSelected( Integer[] itemIndices )
-    // {
-    //     // String[][] selected = new String[1][];
-    //     // listSelected( selected, null );
-    //     // BTService.clearDevices( m_activity, selected[0] );
-
-    //     // super.clearSelected( itemIndices );
-    // }
+    private void removeSelected()
+    {
+        Set<InviterItem> checked = getChecked();
+        String[] devs = new String[checked.size()];
+        Iterator<InviterItem> iter = checked.iterator();
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            TwoStringPair pair = (TwoStringPair)iter.next();
+            devs[ii] = pair.str1;
+        }
+        BTService.clearDevices( m_activity, devs );
+    }
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
         switch( action ) {
         case OPEN_BT_PREFS_ACTION:
-            if ( AlertDialog.BUTTON_POSITIVE == which ) {
-                BTService.openBTSettings( m_activity );
-            }
+            BTService.openBTSettings( m_activity );
             break;
         default:
-            super.dlgButtonClicked( action, which, params );
+            super.onPosButton( action, params );
         }
     }
 }

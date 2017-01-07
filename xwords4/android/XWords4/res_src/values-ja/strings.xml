@@ -24,8 +24,7 @@
     <string name="gamel_menu_checkmoves">移動のチェック</string>
 
     <plurals name="moves_fmt">
-	<item quantity="one">%1$d 移動をプレイしました</item>
-	<item quantity="other"/>
+	<item quantity="other">%1$d 移動をプレイしました</item>
 </plurals>
 
     <string name="msgs_progress">リレーの動きなどをチェック中…</string>
@@ -50,13 +49,11 @@
     <string name="rename_label_caveat">(このデバイス上でのみ) このゲームの名前を変更します:</string>
 
     <plurals name="confirm_seldeletes_fmt">
-	<item quantity="one">選択したゲーム %1$d を削除してもよろしいですか? この操作は元に戻せません。</item>
-	<item quantity="other"/>
+	<item quantity="other">選択したゲーム %1$d を削除してもよろしいですか? この操作は元に戻せません。</item>
 </plurals>
 
     <plurals name="confirm_reset_fmt">
-	<item quantity="one">選択したゲーム %1$d をリセットしますか?\n\n(リセットすると、すべての動きと接続情報を消去します。)</item>
-	<item quantity="other"/>
+	<item quantity="other">選択したゲーム %1$d をリセットしますか?\n\n(リセットすると、すべての動きと接続情報を消去します。)</item>
 </plurals>
 
     <string name="title_dicts_list">クロスワードの単語リスト</string>   
@@ -72,8 +69,7 @@
     <string name="dicts_item_select">デフォルトにする</string>
 
     <plurals name="confirm_delete_dict_fmt">
-	<item quantity="one">単語リスト %1$s を削除してもよろしいですか?</item>
-	<item quantity="other"/>
+	<item quantity="other">単語リスト %1$s を削除してもよろしいですか?</item>
 </plurals>
 
     <string name="confirm_deleteonly_dicts_fmt">%1$s を削除すると、%2$s 単語リストを除き残りません。1 つまたは複数のゲームが開けなくなります。(代わりのリストをダウンロードするまで)</string>
@@ -187,8 +183,7 @@
     <string name="no_moves_made">(まだ動きはありません)</string>
 
     <plurals name="invite_msg_fmt">
-	<item quantity="one">このゲームは %1$d リモート プレイヤーを待っています。まだであれば - 参加するユーザーを招待しますか?</item>
-	<item quantity="other"/>
+	<item quantity="other">このゲームは %1$d リモート プレイヤーを待っています。まだであれば - 参加するユーザーを招待しますか?</item>
 </plurals>
 
     <string name="invite_if_nfc">またはタップして招待します -- 他のデバイスにも Android ビームがあり、近くにいる場合。</string>
@@ -242,15 +237,13 @@
 
     <string name="board_menu_game_resend">移動を再送信</string>
     <plurals name="resend_finished_fmt">
-	<item quantity="one">再送信が終了しました。%1$d メッセージを送信しました。</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">再送信が終了しました。%1$d メッセージを送信しました。</item>
+    </plurals>
 
     <string name="str_robot_moved_fmt">"ロボット %1$s がこの移動を行いました: "</string>
     <plurals name="strd_robot_traded_fmt">
-	<item quantity="one">タイルを 1 つ交換しました。</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">タイルを %1$d つ交換しました。</item>
+    </plurals>
     <string name="strs_values_header_fmt">%1$s カウント/値:\n</string>
     <string name="strd_remaining_tiles_add_fmt">+ %1$d [すべての残りのタイル]</string>
     <string name="strd_unused_tiles_sub_fmt">- %1$d [未使用タイル]</string>
@@ -275,9 +268,8 @@
 	<item quantity="other">%1$d のタイルがプールに残っています。</item>
 </plurals>
     <plurals name="strd_remains_expl_fmt">
-	<item quantity="one">%1$d のタイルがプールとすべてのトレイに残っています:\n</item>
-	<item quantity="other"/>
-</plurals>
+	<item quantity="other">%1$d のタイルがプールとすべてのトレイに残っています:\n</item>
+    </plurals>
 
     <string name="confirm_undo_last">最後に反映した順番を元に戻してもよろしいですか? (やり直しのオプションはありません)</string>
 
@@ -441,9 +433,9 @@
     <string name="invite_chooser_sms">sms</string>
 
     <plurals name="query_trade_fmt">
-	<item quantity="one">選択したタイル (%2$s) を交換してもよろしいですか?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">選択したタイル (%2$s) を交換してもよろしいですか?</item>
+	  <item quantity="other">選択した%1$dつのタイル (%2$s) を交換してもよろしいですか?</item>
+    </plurals>
 
     <string name="chat_title_fmt">%1$s のチャット</string>
     <string name="chat_local_id">"私: "</string>
@@ -655,7 +647,8 @@
       <string name="new_btmove_title">Bluetooth 経由で招待</string>
     <string name="new_move_body">1 つ以上の移動が届きました</string>
     <plurals name="invite_bt_desc_fmt">
-	<item quantity="other">このゲームに追加するデバイスを選択してください。期待したデバイスが表示されない場合は、\"%2$s\" ボタンを使用してください。</item>
+	<item quantity="one">このゲームに追加するデバイスを選択してください。期待したデバイスが表示されない場合は、\"%2$s\" ボタンを使用してください。</item>
+	<item quantity="other">このゲームに追加する%1$dつのデバイスを選択してください。期待したデバイスが表示されない場合は、\"%2$s\" ボタンを使用してください。</item>
 </plurals>
     <string name="bt_resend_fmt">%1$s への Bluetooth 送信に失敗しました。 %2$d 秒で再試行します。</string>
     <string name="bt_fail_fmt">%1$s への Bluetooth 送信に何度も失敗しています。もう一度やり直すにはゲームを再度開いてください。</string>
@@ -674,17 +667,16 @@
     <string name="new_name_body_fmt">%1$s からプレイに招待されました</string>
     <string name="button_sms_add">連絡先をインポート</string>
     <plurals name="invite_sms_desc_fmt">
-	<item quantity="one">新しいゲームに招待する電話番号を確認して、\"%2$s\" をタップしてください。</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">新しいゲームに招待する電話番号を確認して、\"%2$s\" をタップしてください。</item>
+	  <item quantity="other">新しいゲームに招待する%1$dつの電話番号を確認して、\"%2$s\" をタップしてください。</item>
+    </plurals>
     <string name="manual_owner_name">(連絡先になし)</string>
     <string name="warn_nomobile_fmt">%2$s の番号 %1$s は \"携帯\" 番号ではありません。インポートしますか?</string>
     <string name="empty_sms_inviter">この電話番号のリストは空です。招待する人を追加するには \"連絡先をインポート\" ボタンを使用するか、+ ボタンで直接番号を入力します。</string>
     <string name="get_sms_number">電話番号を入力してください:</string>
     <plurals name="confirm_clear_fmt">
-	<item quantity="one">チェックした電話番号を削除してもよろしいですか?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">チェックした電話番号を削除してもよろしいですか?</item>
+    </plurals>
     <string name="connect_label_sms">接続 (SMS/テキスト経由)</string>
     <string name="phone_label">接続数:</string>
     <string name="summary_conn_sms_fmt">%1$s とゲームのプレイ中</string>
@@ -789,13 +781,11 @@
     <string name="group_new_games">新しいゲーム</string>
 
     <plurals name="groups_confirm_del_fmt">
-	<item quantity="one">選択したグループを削除してもよろしいですか?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">選択したグループを削除してもよろしいですか?</item>
+    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
-	<item quantity="one">\n\n(1 つのゲームも削除されます)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">\n\n(%1$d つのゲームも削除されます)</item>
+    </plurals>
 
     <string name="rename_group_label">このグループの名前を次のように変更します:</string>
     <string name="game_name_group_title">グループに名前をつける</string>
@@ -803,9 +793,8 @@
     <string name="cannot_delete_default_group_fmt">新しいゲームのグループ %1$s は削除できません。</string>
 
     <plurals name="group_name_fmt">
-	<item quantity="one">%1$s (%2$d ゲーム)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$s (%2$d ゲーム)</item>
+    </plurals>
 
     <string name="button_rematch">再戦</string>
 
@@ -848,13 +837,12 @@
     <string name="slmenu_copy_sel">クリップボードにコピー</string>
     <string name="slmenu_clear_sel">選択した項目を削除</string>
     <plurals name="confirm_studylist_clear_fmt">
-	<item quantity="one">選択した単語を削除してもよろしいですか?\n\n(この操作は元に戻すことができません。)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">選択した単語を削除してもよろしいですか?\n\n(この操作は元に戻すことができません。)</item>
+    </plurals>
     <plurals name="paste_done_fmt">
-	<item quantity="one">単語を 1 つコピーしました</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">単語を 1 つコピーしました</item>
+      <item quantity="other">単語を %1$d つコピーしました</item>
+    </plurals>
     <string name="add_done_fmt">%1$s を %2$s 学習リストに追加しました</string>
     <string name="studylist_title_fmt">%1$s の学習リスト</string>
 
@@ -876,9 +864,8 @@
     <string name="loc_lang_local">%1$s (あなた)</string>
 
     <plurals name="new_xlations_fmt">
-	<item quantity="one">新しい翻訳を 1 つインストールしました</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">新しい翻訳を %1$d つインストールしました</item>
+    </plurals>
 
     <string name="xlations_enabled_title">ローカルの翻訳を有効にする</string>
     <string name="xlations_enabled_summary">各画面のメニューにオプションを追加します</string>
@@ -934,9 +921,8 @@
     <string name="note_none">(なし)</string>
     <string name="dict_on_server">詳細はタップしてください</string>
     <plurals name="lang_name_fmt">
-	<item quantity="one">%1$s (%2$d 単語リスト)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$s (%2$d 単語リスト)</item>
+    </plurals>
 
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d 語)</string>
 
@@ -949,30 +935,26 @@
 
     <string name="nag_title">リマインダー: あなたの番です</string>
     <plurals name="nag_minutes_fmt">
-	<item quantity="one">%1$d 分</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$d 分</item>
+    </plurals>
     <plurals name="nag_hours_fmt">
-	<item quantity="one">%1$d 時間</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$d 時間</item>
+    </plurals>
     <plurals name="nag_days_fmt">
-	<item quantity="one">%1$d 日</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$d 日</item>
+    </plurals>
     <string name="nag_body_fmt">%1$s は %2$s より前に移動しました。</string>
     <string name="nag_warn_last_fmt">最新の警告: %1$s</string>
     <string name="prev_player">対戦相手</string>
 
     <string name="lmi_pass_fmt">%1$s パスしました (0 ポイント)</string>
     <plurals name="lmi_move_fmt">
-	<item quantity="one">%1$s は %2$s プレイして %3$d ポイント</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$s は %2$s プレイして %3$d ポイント</item>
+    </plurals>
     <plurals name="lmi_trade_fmt">
-	<item quantity="one">%1$s はタイルを 1 つ取引しました</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$s はタイルを 1 つ取引しました</item>
+	  <item quantity="other">%1$s はタイルを %2$d つ取引しました</item>
+    </plurals>
     <string name="lmi_phony_fmt">%1$s 順番を失いました</string>
     <string name="lmi_tiles_fmt">タイルが %1$s に割り当てられました</string>
 
@@ -990,9 +972,8 @@
     <string name="use_defaults">デフォルトを使用する</string>
 
     <plurals name="nplayers_fmt">
-	<item quantity="one">1 プレイヤー</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$d つの プレイヤー</item>
+    </plurals>
     <string name="err_dup_invite_fmt">重複した招待を拒否: デバイス \"%1$s\" は既にこのゲームへの招待を受け入れています。</string>
 
     <string name="network_advanced_summary">経験豊富なプレイヤー向け</string>
@@ -1124,15 +1105,14 @@
 
     <string name="button_relay_add">ゲームをスキャン</string>
     <plurals name="invite_relay_desc_fmt">
-	<item quantity="one">あなたの新しいゲームに招待するデバイスをチェックして、\"%2$s\" をタップしてください。</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">あなたの新しいゲームに招待するデバイスをチェックして、\"%2$s\" をタップしてください。</item>
+	  <item quantity="other">あなたの新しいゲームに招待する%1$dのデバイスをチェックして、\"%2$s\" をタップしてください。</item>
+    </plurals>
     <string name="empty_relay_inviter">このデバイスのリストは空です。\"ゲームをスキャン\" ボタンを使用すると、相手のあなたの古いゲームをスキャンします。デバイス ID を直接入力するには \"+\" ボタンを使用します。</string>
     <string name="get_relay_number">デバイス ID を入力します:</string>
     <plurals name="confirm_clear_sms_fmt">
-	<item quantity="one">チェックした電話番号を削除してもよろしいですか?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">チェックした電話番号を削除してもよろしいですか?</item>
+    </plurals>
     <string name="confirm_clear_relay">チェックしたデバイスを削除してもよろしいですか?</string>
     <string name="rematch_name_fmt">再戦: %1$s</string>
 
@@ -1155,12 +1135,11 @@
   <string name="list_item_deselect">選択解除</string>
 
   <string name="not_again_dfltname_fmt">デフォルト プレイヤー名 \"%1$s\" を使用しています。ゲームを作成する前に、独自の名前でパーソナル化しますか?</string>
-<string name="summary_invites_out">プレイヤーを招待しました</string>
+  <string name="summary_invites_out">プレイヤーを招待しました</string>
 
-    <plurals name="invite_sent_fmt">
-	<item quantity="one">すでにこのゲームにリモート プレイヤーを招待しています。私たちは彼/彼女が対応するのを待っています。招待状が送られていないと思う場合は、再招待ボタンを使用してください。</item>
-	<item quantity="other"/>
-</plurals>
+  <plurals name="invite_sent_fmt">
+    <item quantity="other">すでにこのゲームにリモート プレイヤーを招待しています。私たちは彼/彼女が対応するのを待っています。招待状が送られていないと思う場合は、再招待ボタンを使用してください。</item>
+  </plurals>
     <string name="invited_msg">このゲームは、あなたが受け取った招待状から作成されました。送信者に接続して、他の参加者が到着すると、すぐにプレイが開始されます。</string>
 
     <string name="invit_expl_sms_fmt">%2$s の電話番号 %1$s に SMS 経由で招待を送信しました</string>
@@ -1199,9 +1178,8 @@
     <string name="warn_relay_havegames">リレーを使用したプレイを無効にしてもよろしいですか?</string>
 
     <plurals name="warn_relay_games_fmt">
-	<item quantity="one">\n\n(それを使用したゲームが 1 つあります。)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">\n\n(それを使用したゲームが %1$d つあります。)</item>
+    </plurals>
 
     <string name="button_enable_relay">リレー プレイを有効にする</string>
     <string name="button_disable_relay">リレー プレイを無効にする</string>

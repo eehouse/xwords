@@ -226,19 +226,17 @@ public class ChatDelegate extends DelegateBase {
     }
 
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
         switch ( action ) {
         case CLEAR_ACTION:
-            if ( AlertDialog.BUTTON_POSITIVE == which ) {
-                DBUtils.clearChatHistory( m_activity, m_rowid );
-                TableLayout layout =
-                    (TableLayout)findViewById( R.id.chat_history );
-                layout.removeAllViews();
-            }
+            DBUtils.clearChatHistory( m_activity, m_rowid );
+            TableLayout layout =
+                (TableLayout)findViewById( R.id.chat_history );
+            layout.removeAllViews();
             break;
         default:
-            super.dlgButtonClicked( action, which, params );
+            super.onPosButton( action, params );
         }
     }
 

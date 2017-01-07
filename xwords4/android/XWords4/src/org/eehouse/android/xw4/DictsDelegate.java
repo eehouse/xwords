@@ -52,8 +52,10 @@ import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -373,6 +375,12 @@ public class DictsDelegate extends ListDelegateBase
                         Button btn =
                             dlg.getButton( AlertDialog.BUTTON_POSITIVE );
                         btn.setEnabled( true );
+
+                        // Ask for STORAGE (but do nothing if not granted)
+                        if ( DictLoc.DOWNLOAD == itemToRealLoc( item ) ) {
+                            new Perms23.Builder( Perm.STORAGE )
+                                .asyncQuery( m_activity );
+                        }
                     }
                 };
 
@@ -380,23 +388,8 @@ public class DictsDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         DictsDelegate self = curThis();
                         DictLoc toLoc = self.itemToRealLoc( moveTo[0] );
-                        for ( XWListItem selItem : selItems ) {
-                            DictLoc fromLoc = (DictLoc)selItem.getCached();
-                            String name = selItem.getText();
-                            if ( fromLoc == toLoc ) {
-                                DbgUtils.logw( TAG, "not moving %s: same loc", name );
-                            } else if ( DictUtils.moveDict( self.m_activity,
-                                                            name, fromLoc,
-                                                            toLoc ) ) {
-                                selItem.setComment( self.m_locNames[toLoc.ordinal()] );
-                                selItem.setCached( toLoc );
-                                selItem.invalidate();
-                                DBUtils.dictsMoveInfo( self.m_activity, name,
-                                                       fromLoc, toLoc );
-                            } else {
-                                DbgUtils.logw( TAG, "moveDict(%s) failed", name );
-                            }
-                        }
+                        Assert.assertTrue( self == DictsDelegate.this );
+                        moveDicts( selItems, toLoc );
                     }
                 };
 
@@ -541,6 +534,9 @@ public class DictsDelegate extends ListDelegateBase
 
         makeNotAgainBuilder( R.string.not_again_dicts, R.string.key_na_dicts )
             .show();
+
+        tryGetPerms( Perm.STORAGE, R.string.dicts_storage_rationale,
+                     Action.STORAGE_CONFIRMED );
     } // init
 
     @Override
@@ -656,6 +652,46 @@ public class DictsDelegate extends ListDelegateBase
         }
 
         return handled;
+    }
+
+    private void moveDicts( XWListItem[] selItems, DictLoc toLoc )
+    {
+        if ( DictUtils.needsStoragePermission( toLoc ) ) {
+            tryGetPerms( Perm.STORAGE, R.string.move_dict_rationale,
+                         Action.MOVE_CONFIRMED, selItems, toLoc );
+        } else {
+            moveDictsWithPermission( selItems, toLoc );
+        }
+    }
+
+    private void moveDictsWithPermission( Object[] params )
+    {
+        XWListItem[] selItems = (XWListItem[])params[0];
+        DictLoc toLoc = (DictLoc)params[1];
+        moveDictsWithPermission( selItems, toLoc );
+    }
+
+    private void moveDictsWithPermission( XWListItem[] selItems, DictLoc toLoc )
+    {
+        for ( XWListItem selItem : selItems ) {
+            DictLoc fromLoc = (DictLoc)selItem.getCached();
+            String name = selItem.getText();
+            if ( fromLoc == toLoc ) {
+                DbgUtils.logw( TAG, "not moving %s: same loc", name );
+            } else if ( DictUtils.moveDict( m_activity,
+                                            name, fromLoc,
+                                            toLoc ) ) {
+                selItem.setComment( m_locNames[toLoc.ordinal()] );
+                selItem.setCached( toLoc );
+                selItem.invalidate();
+                DBUtils.dictsMoveInfo( m_activity, name,
+                                       fromLoc, toLoc );
+            } else {
+                DbgUtils.showf( m_activity, R.string.toast_no_permission );
+                DbgUtils.logw( TAG, "moveDict(%s) failed", name );
+            }
+        }
+
     }
 
     private void switchShowingRemote( boolean showRemote )
@@ -865,36 +901,41 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    @Override
+    public void onPosButton( Action action, Object[] params )
     {
-        if ( DialogInterface.BUTTON_POSITIVE == which ) {
-            switch( action ) {
-            case DELETE_DICT_ACTION:
-                XWListItem[] items = (XWListItem[])params[0];
-                for ( XWListItem item : items ) {
-                    String name = item.getText();
-                    DictLoc loc = (DictLoc)item.getCached();
-                    deleteDict( name, loc );
-                }
-                clearSelections();
-                mkListAdapter();
-                break;
-            case UPDATE_DICTS_ACTION:
-                Uri[] uris = new Uri[m_needUpdates.size()];
-                String[] names = new String[uris.length];
-                int count = 0;
-                for ( Iterator<String> iter = m_needUpdates.keySet().iterator();
-                      iter.hasNext();  ) {
-                    String name = iter.next();
-                    names[count] = name;
-                    uris[count] = m_needUpdates.get( name );
-                    ++count;
-                }
-                DwnldDelegate.downloadDictsInBack( m_activity, uris, names, this );
-                break;
-            default:
-                Assert.fail();
+        switch( action ) {
+        case DELETE_DICT_ACTION:
+            XWListItem[] items = (XWListItem[])params[0];
+            for ( XWListItem item : items ) {
+                String name = item.getText();
+                DictLoc loc = (DictLoc)item.getCached();
+                deleteDict( name, loc );
             }
+            clearSelections();
+            mkListAdapter();
+            break;
+        case UPDATE_DICTS_ACTION:
+            Uri[] uris = new Uri[m_needUpdates.size()];
+            String[] names = new String[uris.length];
+            int count = 0;
+            for ( Iterator<String> iter = m_needUpdates.keySet().iterator();
+                  iter.hasNext();  ) {
+                String name = iter.next();
+                names[count] = name;
+                uris[count] = m_needUpdates.get( name );
+                ++count;
+            }
+            DwnldDelegate.downloadDictsInBack( m_activity, uris, names, this );
+            break;
+        case MOVE_CONFIRMED:
+            moveDictsWithPermission( params );
+            break;
+        case STORAGE_CONFIRMED:
+            mkListAdapter();
+            break;
+        default:
+            super.onPosButton( action, params );
         }
     }
 

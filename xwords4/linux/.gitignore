@@ -1,5 +1,6 @@
 /core.*
 obj_linux_memdbg
+obj_linux_memdbg_curses
 *.xwg
 obj_linux_rel
 log_*_*.txt

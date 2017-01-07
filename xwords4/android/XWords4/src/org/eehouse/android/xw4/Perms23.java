@@ -20,6 +20,8 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -29,6 +31,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
     
@@ -61,7 +67,7 @@ public class Perms23 {
         void onPermissionResult( Map<Perm, Boolean> perms );
     }
     public interface OnShowRationale {
-        void onShouldShowRationale( Set<Perms23.Perm> perms );
+        void onShouldShowRationale( Set<Perm> perms );
     }
 
     public static class Builder {
@@ -105,11 +111,10 @@ public class Perms23 {
                 boolean haveIt = PackageManager.PERMISSION_GRANTED
                     == ContextCompat.checkSelfPermission( activity, permStr );
 
-                // For research: ask the OS if we should be printing a rationale
                 if ( !haveIt ) {
                     askStrings.add( permStr );
 
-                    if ( ActivityCompat
+                    if ( null != m_onShow && ActivityCompat
                          .shouldShowRequestPermissionRationale( activity,
                                                                 permStr ) ) {
                         needShow.add( perm );
@@ -119,9 +124,7 @@ public class Perms23 {
                 haveAll = haveAll && haveIt;
             }
 
-            if ( 0 < needShow.size() && null != m_onShow ) {
-                m_onShow.onShouldShowRationale( needShow );
-            } else if ( haveAll ) {
+            if ( haveAll ) {
                 if ( null != cbck ) {
                     Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
                     for ( Perm perm : m_perms ) {
@@ -129,19 +132,117 @@ public class Perms23 {
                     }
                     cbck.onPermissionResult( map );
                 }
+            } else if ( 0 < needShow.size() && null != m_onShow ) {
+                // DbgUtils.logd( TAG, "calling onShouldShowRationale()" );
+                m_onShow.onShouldShowRationale( needShow );
             } else {
                 String[] permsArray = askStrings.toArray( new String[askStrings.size()] );
                 int code = register( cbck );
+                // DbgUtils.logd( TAG, "calling requestPermissions on %s",
+                //                activity.getClass().getSimpleName() );
                 ActivityCompat.requestPermissions( activity, permsArray, code );
             }
-
-            DbgUtils.logd( TAG, "asyncQuery(%s) DONE", m_perms.toString() );
         }
+    }
+
+    private static class QueryInfo {
+        private Action m_action;
+        private Perm m_perm;
+        private DelegateBase m_delegate;
+        private DlgClickNotify m_cbck;
+        private String m_rationaleMsg;
+        private Object[] m_params;
+
+        public QueryInfo( DelegateBase delegate, Action action,
+                          Perm perm, String msg,
+                          DlgClickNotify cbck, Object[] params ) {
+            m_delegate = delegate;
+            m_action = action;
+            m_perm = perm;
+            m_rationaleMsg = msg;
+            m_cbck = cbck;
+            m_params = params;
+        }
+
+        private void doIt( boolean showRationale )
+        {
+            Builder builder = new Builder( m_perm );
+            if ( showRationale && null != m_rationaleMsg ) {
+                builder.setOnShowRationale( new OnShowRationale() {
+                        public void onShouldShowRationale( Set<Perm> perms ) {
+                            m_delegate.makeConfirmThenBuilder( m_rationaleMsg,
+                                                               Action.PERMS_QUERY )
+                                .setTitle( R.string.perms_rationale_title )
+                                .setPosButton( R.string.button_ask_again )
+                                .setNegButton( R.string.button_skip )
+                                .setParams( QueryInfo.this )
+                                .show();
+                        }
+                    } );
+            }
+            builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
+                    public void onPermissionResult( Map<Perm, Boolean> perms ) {
+                        if ( Action.SKIP_CALLBACK != m_action ) {
+                            if ( perms.get( m_perm ) ) {
+                                m_cbck.onPosButton( m_action, m_params );
+                            } else {
+                                m_cbck.onNegButton( m_action, m_params );
+                            }
+                        }
+                    }
+                } );
+        }
+
+        // Post this in case we're called from inside dialog dismiss
+        // code. Better to unwind the stack...
+        private void handleButton( final boolean positive )
+        {
+            m_delegate.post( new Runnable() {
+                    public void run() {
+                        if ( positive ) {
+                            doIt( false );
+                        } else {
+                            m_cbck.onNegButton( m_action, m_params );
+                        }
+                    }
+                } );
+        }
+    }
+
+    /**
+     * Request permissions, giving rationale once, then call with action and
+     * either positive or negative, the former if permission granted.
+     */
+    public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
+                                    final Action action, final DlgClickNotify cbck,
+                                    Object... params )
+    {
+        // DbgUtils.logd( TAG, "tryGetPerms(%s)", perm.toString() );
+        Context context = XWApp.getContext();
+        String msg = LocUtils.getString( context, rationaleId );
+        tryGetPerms( delegate, perm, msg, action, cbck, params );
+    }
+
+    public static void tryGetPerms( DelegateBase delegate, Perm perm,
+                                    String rationaleMsg, final Action action,
+                                    final DlgClickNotify cbck, Object... params )
+    {
+        // DbgUtils.logd( TAG, "tryGetPerms(%s)", perm.toString() );
+        new QueryInfo( delegate, action, perm, rationaleMsg, cbck, params )
+            .doIt( true );
+    }
+
+    public static void onGotPermsAction( boolean positive, Object[] params )
+    {
+        // DbgUtils.logd( TAG, "onGotPermsAction(button=%d)", button );
+        QueryInfo info = (QueryInfo)params[0];
+        info.handleButton( positive );
     }
 
     private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();
     public static void gotPermissionResult( int code, String[] perms, int[] granteds )
     {
+        // DbgUtils.logd( TAG, "gotPermissionResult(%s)", perms.toString() );
         PermCbck cbck = s_map.remove( code );
         if ( null != cbck ) {
             Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
@@ -165,9 +266,12 @@ public class Perms23 {
         return result;
     }
 
-    private static int s_nextRecord;
+    // This is probably overkill as the OS only allows one permission request
+    // at a time
+    private static int s_nextRecord = 0;
     private static int register( PermCbck cbck )
     {
+        Assert.assertTrue( !BuildConfig.DEBUG || 0 == s_map.size() );
         DbgUtils.assertOnUIThread();
         int code = ++s_nextRecord;
         s_map.put( code, cbck );

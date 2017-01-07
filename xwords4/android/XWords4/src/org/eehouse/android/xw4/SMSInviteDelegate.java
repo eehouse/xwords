@@ -30,32 +30,27 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 import android.text.method.DialerKeyListener;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.Perms23.Perm;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
 import org.json.JSONException;
 
-public class SMSInviteDelegate extends InviteDelegate
-    implements View.OnClickListener {
+public class SMSInviteDelegate extends InviteDelegate {
     private static final String TAG = SMSInviteDelegate.class.getSimpleName();
     private static int[] BUTTONIDS = {
         R.id.button_add,
@@ -63,11 +58,7 @@ public class SMSInviteDelegate extends InviteDelegate
         R.id.button_clear,
     };
 
-    private static final String SAVE_NAME = "SAVE_NAME";
-    private static final String SAVE_NUMBER = "SAVE_NUMBER";
-
     private ArrayList<PhoneRec> m_phoneRecs;
-    private ImageButton m_addButton;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
@@ -98,12 +89,10 @@ public class SMSInviteDelegate extends InviteDelegate
         super.init( msg, R.string.empty_sms_inviter );
         addButtonBar( R.layout.sms_buttons, BUTTONIDS );
 
-        // getBundledData( savedInstanceState );
-
         getSavedState();
         rebuildList( true );
 
-        askContactsPermission( true );
+        askContactsPermission();
     }
 
     @Override
@@ -179,51 +168,53 @@ public class SMSInviteDelegate extends InviteDelegate
     }
 
     @Override
-    protected void listSelected( InviterItem[] selected, String[] devs )
-    {
-        for ( int ii = 0; ii < selected.length; ++ii ) {
-            PhoneRec rec = (PhoneRec)selected[ii];
-            devs[ii] = rec.m_phone;
-        }
-    }
-
-    @Override
     protected void onChildAdded( View child, InviterItem data )
     {
         PhoneRec rec = (PhoneRec)data;
         ((TwoStrsItem)child).setStrings( rec.m_name, rec.m_phone );
     }
 
+    @Override
+    protected void tryEnable()
+    {
+        super.tryEnable();
+
+        Button button = (Button)findViewById( R.id.button_clear );
+        if ( null != button ) { // may not be there yet
+            button.setEnabled( 0 < getChecked().size() );
+        }
+    }
+
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( Action action, int which,
-                                  final Object[] params )
+    public void onPosButton( Action action, Object[] params )
     {
-        boolean isPositive = AlertDialog.BUTTON_POSITIVE == which;
-        DbgUtils.logd( TAG, "dlgButtonClicked(%s,pos:%b)",
-                       action.toString(), isPositive );
-
         switch ( action ) {
-        case RETRY_CONTACTS_ACTION:
-            askContactsPermission( false );
-            break;
         case CLEAR_ACTION:
-            if ( isPositive) {
-                clearSelectedImpl();
-            }
-            break;
-        case POST_WARNING_ACTION:
-            DbgUtils.printStack( TAG );
-            if ( isPositive ) { // ???
-                m_phoneRecs.add( new PhoneRec( (String)params[1],
-                                               (String)params[0] ) );
-                saveAndRebuild();
-            }
+            clearSelectedImpl();
             break;
         case USE_IMMOBILE_ACTION:
-            if ( isPositive ) {
-                m_immobileConfirmed = true;
-            } else if ( m_immobileConfirmed ) {
+            m_immobileConfirmed = true;
+            break;
+        case POST_WARNING_ACTION:
+            PhoneRec rec = new PhoneRec( (String)params[1],
+                                         (String)params[0] );
+            m_phoneRecs.add( rec );
+            clearChecked();
+            onItemChecked( rec, true );
+            saveAndRebuild();
+            break;
+        default:
+            super.onPosButton( action, params );
+        }
+    }
+
+    @Override
+    public void onNegButton( Action action, final Object[] params )
+    {
+        switch ( action ) {
+        case USE_IMMOBILE_ACTION:
+            if ( m_immobileConfirmed ) {
                 // Putting up a new alert from inside another's handler
                 // confuses things. So post instead.
                 post( new Runnable() {
@@ -238,6 +229,8 @@ public class SMSInviteDelegate extends InviteDelegate
                     } );
             }
             break;
+        default:
+            super.onNegButton( action, params );
         }
     }
 
@@ -265,21 +258,20 @@ public class SMSInviteDelegate extends InviteDelegate
 
                 int type = cursor.getInt( cursor.
                                           getColumnIndex( Phone.TYPE ) );
+
+                DlgDelegate.ConfirmThenBuilder builder;
                 if ( Phone.TYPE_MOBILE == type ) {
-                    makeConfirmThenBuilder( R.string.warn_unlimited,
-                                            Action.POST_WARNING_ACTION )
-                        .setPosButton( R.string.button_yes )
-                        .setParams( number, name )
-                        .show();
+                    builder = makeConfirmThenBuilder( R.string.warn_unlimited,
+                                                      Action.POST_WARNING_ACTION );
                 } else {
                     m_immobileConfirmed = false;
                     String msg = getString( R.string.warn_nomobile_fmt,
                                             number, name );
-                    makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION )
-                        .setPosButton( R.string.button_yes )
-                        .setParams( number, name )
-                        .show();
+                    builder = makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION );
                 }
+                builder.setPosButton( R.string.button_yes )
+                    .setParams( number, name )
+                    .show();
             }
         }
     } // addPhoneNumbers
@@ -291,13 +283,6 @@ public class SMSInviteDelegate extends InviteDelegate
                     return rec1.m_name.compareTo(rec2.m_name);
                 }
             });
-        // String[] phones = new String[m_phoneRecs.size()];
-        // String[] names = new String[m_phoneRecs.size()];
-        // for ( int ii = 0; ii < m_phoneRecs.size(); ++ii ) {
-        //     PhoneRec rec = m_phoneRecs.get( ii );
-        //     phones[ii] = rec.m_phone;
-        //     names[ii] = rec.m_name;
-        // }
 
         updateListAdapter( m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
         tryEnable();
@@ -335,31 +320,24 @@ public class SMSInviteDelegate extends InviteDelegate
 
     private void clearSelectedImpl()
     {
-        Set<Integer> checked = getChecked();
-        for ( int ii = m_phoneRecs.size() - 1; ii >= 0; --ii ) {
-            if ( checked.contains( ii ) ) {
-                m_phoneRecs.remove( ii );
+        Set<InviterItem> checked = getChecked();
+        Iterator<PhoneRec> iter = m_phoneRecs.iterator();
+        for ( ; iter.hasNext(); ) {
+            if ( checked.contains( iter.next() ) ) {
+                iter.remove();
             }
         }
         clearChecked();
         saveAndRebuild();
     }
 
-    private void askContactsPermission( boolean showRationale )
+    private void askContactsPermission()
     {
-        Perms23.Builder builder = new Perms23.Builder( Perms23.Perm.READ_CONTACTS );
-        if ( showRationale ) {
-            builder.setOnShowRationale( new Perms23.OnShowRationale() {
-                    @Override
-                    public void onShouldShowRationale( Set<Perms23.Perm> perms )
-                    {
-                        makeOkOnlyBuilder( R.string.contacts_rationale )
-                            .setAction( Action.RETRY_CONTACTS_ACTION )
-                            .show();
-                    }
-                } );
-        }
-        builder.asyncQuery( m_activity );
+        // We want to ask, and to give the rationale, but behave the same
+        // regardless of the answers given. So SKIP_CALLBACK.
+        Perms23.tryGetPerms( this, Perm.READ_CONTACTS,
+                             R.string.contacts_rationale,
+                             Action.SKIP_CALLBACK, this );
     }
 
     private class PhoneRec implements InviterItem {
@@ -369,6 +347,19 @@ public class SMSInviteDelegate extends InviteDelegate
         public PhoneRec( String phone )
         {
             this( null, phone );
+        }
+
+        public String getDev() { return m_phone; }
+
+        public boolean equals( InviterItem item )
+        {
+            boolean result = false;
+            if ( null != item &&  item instanceof PhoneRec ) {
+                PhoneRec rec = (PhoneRec)item;
+                result = m_name.equals(rec.m_name)
+                    && PhoneNumberUtils.compare( m_phone, rec.m_phone );
+            }
+            return result;
         }
 
         private PhoneRec( String name, String phone )

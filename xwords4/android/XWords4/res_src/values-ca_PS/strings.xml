@@ -511,7 +511,7 @@
          only once per game. -->
   <plurals name="msg_relay_waiting_fmt">
     <item quantity="one">DEVICE %1$d CONNECTED TO RELAY IN
-      ROOM \"%2$s\". WAITING FOR %3$d PLAYER.</item>
+      ROOM \"%2$s\". WAITING FOR ONE PLAYER.</item>
     <item quantity="other">DEVICE %1$d CONNECTED TO RELAY IN
       ROOM \"%2$s\". WAITING FOR %3$d PLAYERS.</item>
   </plurals>
@@ -1508,7 +1508,7 @@
   <string name="about_vers_fmt">CROSSWORDS FOR ANDROID, VERSION %1$s,
         REV %2$s, BUILT ON %3$s.</string>
   <!-- copyright info -->
-  <string name="about_copyright">COPYRIGHT (C) 1998-2016 BY ERIC
+  <string name="about_copyright">COPYRIGHT (C) 1998-2017 BY ERIC
         HOUSE. THIS FREE/OPEN SOURCE SOFTWARE IS RELEASED UNDER THE GNU PUBLIC
         LICENSE.</string>
   <!-- Another paragraph in the about dialog -->
@@ -1606,6 +1606,8 @@
   <string name="bt_pick_addall_button">ADD ALL PAIRED</string>
   <!--  -->
   <string name="bt_pick_clear_button">REMOVE CHECKED</string>
+  <!--  -->
+  <string name="bt_pair_settings">PAIR MORE</string>
   <!--  -->
   <string name="invite_progress_title">CONNECTING...</string>
   <string name="invite_progress_fmt">SENDING INVITATION TO CROSSWORDS ON %1$s</string>
@@ -1764,9 +1766,10 @@
   <string name="game_list_tmp">BUILDING GAME SUMMARY…</string>
   <string name="summary_busy">SUMMARY UNAVAILABLE</string>
   <string name="connstat_net_noaddr">THIS NETWORKED GAME HAS NO WAY
-    TO CONNECT AND WILL NEVER BE PLAYABLE.\n\n(IT WAS PROBABLY CREATED
-    FROM AN INVITATION THAT DIDN\'T SPECIFY ANY WAY OF CONNECTING
-    THAT YOUR DEVICE SUPPORTS.)</string>
+    TO CONNECT AND CANNOT BE PLAYED.\n\n(IT WAS PROBABLY CREATED FROM
+    AN INVITATION THAT DIDN\'T SPECIFY ANY WAY OF CONNECTING THAT YOUR
+    DEVICE SUPPORTS, OR YOU MAY HAVE RECENTLY REMOVED ITS LAST WAY OF
+    CONNECTING.)</string>
   <!--  -->
   <string name="connstat_net_fmt">NETWORK STATUS FOR GAME CONNECTED VIA
     %1$s:</string>
@@ -2093,9 +2096,9 @@
   <string name="lmi_phony_fmt">%1$s LOST A TURN</string>
   <string name="lmi_tiles_fmt">TILES ASSIGNED TO %1$s</string>
   <string name="bt_no_devs">YOU CURRENTLY HAVE NO PAIRED BLUETOOTH
-	DEVICES. WOULD YOU LIKE TO OPEN THE ANDROID SETTINGS PANEL TO ADD
-	ONE OR MORE?\n\n(YOU MAY ALSO NEED TO OPEN IT ON THE DEVICE YOU
-	WANT TO PAIR WITH.)</string>
+	DEVICES (OR BLUETOOTH IS TURNED OFF). WOULD YOU LIKE TO OPEN THE
+	ANDROID SETTINGS PANEL TO ADD ONE OR MORE?\n\n(YOU MAY ALSO NEED
+	TO OPEN IT ON THE DEVICE YOU WANT TO PAIR WITH.)</string>
   <string name="app_not_found_fmt">UNABLE TO CONNECT VIA BLUETOOTH
 	TO CROSSWORDS ON THE DEVICE %1$s.  PLEASE CHECK THAT THE DEVICE IS
 	WITHIN BLUETOOTH RANGE AND THAT CROSSWORDS IS INSTALLED ON
@@ -2319,22 +2322,62 @@
   <string name="dualpane_restart">EXITING APP…</string>
   <string name="after_restart">THIS CHANGE WILL NOT TAKE EFFECT UNTIL
   YOU RESTART CROSSWORDS.</string>
-  <string name="not_again_missing_perms">THIS GAME IS CONFIGURED TO
+  <string name="missing_perms">THIS GAME IS CONFIGURED TO
   COMMUNICATE VIA SMS BUT CROSSWORDS DOES NOT HAVE PERMISSION TO DO
   SO. YOU CAN STILL OPEN THE GAME, BUT IT MAY NOT BE ABLE TO SEND OR
   RECEIVE MOVES.\n\nYOU CAN RE-OPEN IT TO BE ASKED FOR PERMISSION
   AGAIN. OR YOU CAN REMOVE THE SMS COMMUNICATION SETTING.</string>
-  <string name="phone_state_rationale">CROSSWORDS WANTS TO DETERMINE
-  WHETHER YOUR PHONE CAN SEND SMS \"DATA\" MESSAGES TO GIVE YOU THE
-  OPTION OF PLAYING THAT WAY. IF YOU DON\'T EVER WANT TO PLAY VIA SMS,
-  E.G. BECAUSE YOU PAY FOR EACH MESSAGE OR HAVE A VERIZON PHONE, IT\'S
-  SAFE TO PERMANENTLY DENY PERMISSION.
+  <string name="download_rationale">CROSSWORDS NEEDS ACCESS TO
+  TEMPORARY STORAGE TO KEEP WHAT YOU\'RE ABOUT TO DOWNLOAD.
   </string>
-  <string name="contacts_rationale">CROSSWORDS WANT ACCESS TO YOUR
-  CONTACTS IN ORDER TO PUT A NAME TO PHONE NUMBERS THAT SEND YOU
-  INVITATIONS VIA SMS. YOU\'LL STILL BE ABLE TO RECEIVE INVITATIONS IF
-  YOU DON\'T GRANT THIS PERMISSION, BUT ONLY THE PHONE NUMBER OF THE
-  SENDER WILL BE DISPLAYED.</string>
+  <string name="sms_invite_rationale">
+    CROSSWORDS NEEDS PERMISSION TO SEND AN INVITATION VIA SMS.
+  </string>
+  <string name="dicts_storage_rationale">
+    CROSSWORDS CAN STORE AND READ WORDLISTS IN YOUR DEVICE\'S
+    DOWNLOADS AREA BUT IT NEEDS PERMISSION TO ACCESS THEM
+    THERE.\n\nYOU CAN SAFELY DENY THIS PERMISSION IF YOU WILL NEVER
+    DOWNLOAD WORDLISTS EXCEPT FROM INSIDE CROSSWORDS AND HAVE NOT
+    PREVIOUSLY STORED ANY THERE.
+  </string>
+  <string name="phone_state_rationale">
+    SOME PHONES CAN EXCHANGE SMS \"DATA\" MESSAGES. CROSSWORDS WOULD
+    LIKE TO OFFER YOU THIS OPTION BUT NEEDS TO ASK YOUR DEVICE ABOUT
+    ITSELF FIRST (TO LEARN IF IT\'S A PHONE AND IF SO WHAT
+    TYPE.)\n\nIF YOUR DEVICE CAN\'T SEND DATA SMS (E.G. BECAUSE IT
+    ISN\'T A PHONE) OR YOU DON\'T EVER WANT TO PLAY VIA SMS
+    (E.G. BECAUSE YOU PAY FOR EACH MESSAGE), IT\'S SAFE TO PERMANENTLY
+    DENY PERMISSION.
+  </string>
+  <string name="phone_lookup_rationale">
+    TO REMATCH A GAME THAT USES SMS CROSSWORDS NEEDS PERMISSION TO
+    ACCESS YOUR PHONE NUMBER.
+  </string>
+  <!-- Case where SMS is the only way the game can communicate -->
+  <string name="phone_lookup_rationale_drop">REMATCHING THIS SMS-ONLY
+  GAME IS NOT POSSIBLE WITHOUT THIS PERMISSION.</string>
+  <!-- Case where SMS is NOT the only way the game can communicate -->
+  <string name="phone_lookup_rationale_others">WITHOUT THIS PERMISSION
+  REMATCHING WILL CONTINUE BUT WILL CREATE A GAME THAT CANNOT NOT PLAY
+  VIA SMS.</string>
+  <string name="contacts_rationale">
+    CROSSWORDS WANT ACCESS TO YOUR CONTACTS IN ORDER TO PUT A NAME TO
+    PHONE NUMBERS THAT SEND YOU INVITATIONS VIA SMS. YOU\'LL STILL BE
+    ABLE TO RECEIVE INVITATIONS IF YOU DON\'T GRANT THIS PERMISSION,
+    BUT ONLY THE PHONE NUMBER OF THE SENDER WILL BE DISPLAYED.
+  </string>
+  <string name="move_dict_rationale">STORING A WORDLIST IN THE
+  DOWNLOADS AREA REQUIRES PERMISSION.</string>
   <string name="remove_sms">REMOVE SMS</string>
+  <!-- In the permissions rationale explanation, means go ahead and
+       have the OS ask for permission -->
+  <string name="button_ask_again">ASK AGAIN</string>
   <string name="contact_not_found">NOT IN CONTACTS</string>
+  <!-- Displayed as a toast -->
+  <string name="sms_send_failed">SMS SEND FAILED</string>
+  <!-- In the permissions rationale explanation, means don't have the
+       OS ask for permission: user is denying it implicitly -->
+  <string name="button_skip">SKIP</string>
+  <string name="perms_rationale_title">ANDROID PERMISSIONS</string>
+  <string name="toast_no_permission">PERMISSION NOT GRANTED</string>
 </resources>

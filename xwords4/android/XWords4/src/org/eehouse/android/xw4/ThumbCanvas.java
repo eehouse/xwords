@@ -27,7 +27,6 @@ import android.graphics.Rect;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class ThumbCanvas extends BoardCanvas {
-    private static final String TAG = ThumbCanvas.class.getSimpleName();
 
     public ThumbCanvas( Context context, Bitmap bitmap )
     {

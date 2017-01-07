@@ -511,7 +511,7 @@
          only once per game. -->
   <plurals name="msg_relay_waiting_fmt">
     <item quantity="one">Ecived %1$d detcennoc ot yaler ni
-      moor \"%2$s\". Gnitiaw rof %3$d reyalp.</item>
+      moor \"%2$s\". Gnitiaw rof eno reyalp.</item>
     <item quantity="other">Ecived %1$d detcennoc ot yaler ni
       moor \"%2$s\". Gnitiaw rof %3$d sreyalp.</item>
   </plurals>
@@ -1508,7 +1508,7 @@
   <string name="about_vers_fmt">Sdrowssorc rof ,diordna Noisrev %1$s,
         ver %2$s, tliub no %3$s.</string>
   <!-- copyright info -->
-  <string name="about_copyright">Thgirypoc )C( 6102-8991 yb Cire
+  <string name="about_copyright">Thgirypoc )C( 7102-8991 yb Cire
         Esuoh. Siht nepo/eerf ecruos erawtfos si desaeler rednu eht UNG Cilbup
         Esnecil.</string>
   <!-- Another paragraph in the about dialog -->
@@ -1606,6 +1606,8 @@
   <string name="bt_pick_addall_button">Dda lla Deriap</string>
   <!--  -->
   <string name="bt_pick_clear_button">Evomer dekcehc</string>
+  <!--  -->
+  <string name="bt_pair_settings">Riap Erom</string>
   <!--  -->
   <string name="invite_progress_title">Gnitcennoc...</string>
   <string name="invite_progress_fmt">Gnidnes noitativni ot Sdrowssorc no %1$s</string>
@@ -1764,9 +1766,10 @@
   <string name="game_list_tmp">Gnidliub emag yrammus…</string>
   <string name="summary_busy">Yrammus elbaliavanu</string>
   <string name="connstat_net_noaddr">Siht dekrowten emag sah on yaw
-    ot tcennoc dna lliw reven eb elbayalp.\n\ntI( saw ylbaborp detaerc
-    morf na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc
-    taht ruoy ecived stroppus.)</string>
+    ot tcennoc dna tonnac eb deyalp.\n\ntI( saw ylbaborp detaerc morf
+    na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc taht ruoy
+    ecived ,stroppus ro uoy yam evah yltnecer devomer sti tsal yaw fo
+    gnitcennoc.)</string>
   <!--  -->
   <string name="connstat_net_fmt">Krowten sutats rof emag detcennoc aiv
     %1$s:</string>
@@ -2093,9 +2096,9 @@
   <string name="lmi_phony_fmt">%1$s tsol a nrut</string>
   <string name="lmi_tiles_fmt">Selit dengissa ot %1$s</string>
   <string name="bt_no_devs">Uoy yltnerruc evah on deriap Htooteulb
-	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
-	eno ro ?erom\n\nuOy( yam osla deen ot nepo ti no eht ecived uoy
-	tnaw ot riap htiw.)</string>
+	secived ro( Htooteulb si denrut )ffo. Dluow uoy ekil ot nepo eht
+	Diordna Sgnittes Lenap ot dda eno ro ?erom\n\nuOy( yam osla deen
+	ot nepo ti no eht ecived uoy tnaw ot riap htiw.)</string>
   <string name="app_not_found_fmt">Elbanu ot tcennoc aiv Htooteulb
 	ot Sdrowssorc no eht ecived %1$s.  Esaelp kcehc taht eht ecived si
 	nihtiw Htooteulb egnar dna taht Sdrowssorc si dellatsni no
@@ -2319,22 +2322,62 @@
   <string name="dualpane_restart">Gnitixe ppa…</string>
   <string name="after_restart">Siht egnahc lliw ton ekat tceffe litnu
   uoy tratser Sdrowssorc.</string>
-  <string name="not_again_missing_perms">Siht emag si derugifnoc ot
+  <string name="missing_perms">Siht emag si derugifnoc ot
   etacinummoc aiv SMS tub Sdrowssorc seod ton evah noissimrep ot od
   os. Uoy nac llits nepo eht ,emag tub ti yam ton eb elba ot dnes ro
   eviecer sevom.\n\nUoy nac nepo-er ti ot eb deksa rof noissimrep
   niaga. Ro uoy nac evomer eht SMS noitacinummoc gnittes.</string>
-  <string name="phone_state_rationale">Sdrowssorc stnaw ot enimreted
-  rehtehw ruoy enohp nac dnes SMS \"atad\" segassem ot evig uoy eht
-  noitpo fo gniyalp taht yaw. Fi uoy nod\'t reve tnaw ot yalp aiv ,SMs
-  e.g. esuaceb uoy yap rof hcae egassem ro evah a Nozirev ,enohp ti\'s
-  efas ot yltnenamrep yned noissimrep.
+  <string name="download_rationale">Sdrowssorc sdeen ssecca ot
+  yraropmet egarots ot peek tahw uoy\'er tuoba ot daolnwod.
   </string>
-  <string name="contacts_rationale">Sdrowssorc tnaw ssecca ot ruoy
-  stcatnoc ni redro ot tup a eman ot enohp srebmun taht dnes uoy
-  snoitativni aiv SMS. Uoy\'ll llits eb elba ot eviecer snoitativni fi
-  uoy nod\'t tnarg siht ,noissimrep tub ylno eht enohp rebmun fo eht
-  rednes lliw eb deyalpsid.</string>
+  <string name="sms_invite_rationale">
+    Sdrowssorc sdeen noissimrep ot dnes na noitativni aiv SMS.
+  </string>
+  <string name="dicts_storage_rationale">
+    Sdrowssorc nac erots dna daer stsildrow ni ruoy ecived\'s
+    Sdaolnwod aera tub ti sdeen noissimrep ot ssecca meht
+    ereht.\n\nUoy nac ylefas yned siht noissimrep fi uoy lliw reven
+    daolnwod stsildrow tpecxe morf edisni Sdrowssorc dna evah ton
+    ylsuoiverp derots yna ereht.
+  </string>
+  <string name="phone_state_rationale">
+    Emos senohp nac egnahcxe SMS \"atad\" segassem. Sdrowssorc dluow
+    ekil ot reffo uoy siht noitpo tub sdeen ot ksa ruoy ecived tuoba
+    flesti tsrif ot( nrael fi ti\'s a enohp dna fi os tahw
+    epyt.)\n\nFi ruoy ecived nac\'t dnes atad SMS e(.g. esuaceb ti
+    nsi\'t a )enohp ro uoy nod\'t reve tnaw ot yalp aiv SMS
+    e(.g. esuaceb uoy yap rof hcae ,)egassem ti\'s efas ot yltnenamrep
+    yned noissimrep.
+  </string>
+  <string name="phone_lookup_rationale">
+    Ot hctamer a emag taht sesu SMS Sdrowssorc sdeen noissimrep ot
+    ssecca ruoy enohp rebmun.
+  </string>
+  <!-- Case where SMS is the only way the game can communicate -->
+  <string name="phone_lookup_rationale_drop">Gnihctamer siht YLNo-sms
+  emag si ton elbissop tuohtiw siht noissimrep.</string>
+  <!-- Case where SMS is NOT the only way the game can communicate -->
+  <string name="phone_lookup_rationale_others">Tuohtiw siht noissimrep
+  gnihctamer lliw eunitnoc tub lliw etaerc a emag taht tonnac ton yalp
+  aiv SMS.</string>
+  <string name="contacts_rationale">
+    Sdrowssorc tnaw ssecca ot ruoy stcatnoc ni redro ot tup a eman ot
+    enohp srebmun taht dnes uoy snoitativni aiv SMS. Uoy\'ll llits eb
+    elba ot eviecer snoitativni fi uoy nod\'t tnarg siht ,noissimrep
+    tub ylno eht enohp rebmun fo eht rednes lliw eb deyalpsid.
+  </string>
+  <string name="move_dict_rationale">Gnirots a tsildrow ni eht
+  Sdaolnwod aera seriuqer noissimrep.</string>
   <string name="remove_sms">Evomer SMS</string>
+  <!-- In the permissions rationale explanation, means go ahead and
+       have the OS ask for permission -->
+  <string name="button_ask_again">Ksa niaga</string>
   <string name="contact_not_found">Ton ni Stcatnoc</string>
+  <!-- Displayed as a toast -->
+  <string name="sms_send_failed">SMS dnes deliaf</string>
+  <!-- In the permissions rationale explanation, means don't have the
+       OS ask for permission: user is denying it implicitly -->
+  <string name="button_skip">Piks</string>
+  <string name="perms_rationale_title">Diordna Snoissimrep</string>
+  <string name="toast_no_permission">Noissimrep ton detnarg</string>
 </resources>

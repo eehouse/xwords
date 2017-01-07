@@ -31,7 +31,9 @@ typedef struct _GameInfo {
     XP_UCHAR name[128];
     XP_UCHAR room[128];
     XP_UCHAR conn[128];
+#ifdef PLATFORM_GTK
     GdkPixbuf* snap;
+#endif
     XP_U32 gameID;
     XP_S16 nMoves;
     XP_Bool gameOver;

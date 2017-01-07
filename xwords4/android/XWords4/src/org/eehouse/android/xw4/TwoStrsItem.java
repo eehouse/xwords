@@ -22,13 +22,13 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class TwoStrsItem extends LinearLayout  {
-    private static final String TAG = TwoStrsItem.class.getSimpleName();
 
     public TwoStrsItem( Context cx, AttributeSet as )
     {
@@ -39,8 +39,13 @@ public class TwoStrsItem extends LinearLayout  {
     {
         TextView tv = (TextView)findViewById( R.id.text1 );
         tv.setText( str1 );
+
         tv = (TextView)findViewById( R.id.text2 );
-        tv.setText( str2 );
+        if ( null == str2 ) {
+            tv.setVisibility( View.GONE );
+        } else {
+            tv.setText( str2 );
+        }
     }
 
     public String getStr1()

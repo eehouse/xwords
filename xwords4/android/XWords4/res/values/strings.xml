@@ -598,7 +598,7 @@
          only once per game. -->
     <plurals name="msg_relay_waiting_fmt">
       <item quantity="one">Device %1$d connected to relay in
-      room \"%2$s\". Waiting for %3$d player.</item>
+      room \"%2$s\". Waiting for one player.</item>
       <item quantity="other">Device %1$d connected to relay in
       room \"%2$s\". Waiting for %3$d players.</item>
     </plurals>
@@ -1750,7 +1750,7 @@
     <string name="about_vers_fmt">Crosswords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>
     <!-- copyright info -->
-    <string name="about_copyright">Copyright (C) 1998-2016 by Eric
+    <string name="about_copyright">Copyright (C) 1998-2017 by Eric
         House. This free/open source software is released under the GNU Public
         License.</string>
 
@@ -1864,6 +1864,8 @@
     <string name="bt_pick_addall_button">Add all Paired</string>
       <!--  -->
     <string name="bt_pick_clear_button">Remove checked</string>
+    <!--  -->
+    <string name="bt_pair_settings">Pair More</string>
 
       <!--  -->
     <string name="invite_progress_title">Connecting...</string>
@@ -2043,9 +2045,10 @@
     <string name="summary_busy">Summary unavailable</string>
 
     <string name="connstat_net_noaddr">This networked game has no way
-    to connect and will never be playable.\n\n(It was probably created
-    from an invitation that didn\'t specify any way of connecting
-    that your device supports.)</string>
+    to connect and cannot be played.\n\n(It was probably created from
+    an invitation that didn\'t specify any way of connecting that your
+    device supports, or you may have recently removed its last way of
+    connecting.)</string>
     <!--  -->
     <string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>
@@ -2437,9 +2440,9 @@
     <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
 
 	<string name="bt_no_devs">You currently have no paired Bluetooth
-	devices. Would you like to open the Android Settings Panel to add
-	one or more?\n\n(You may also need to open it on the device you
-	want to pair with.)</string>
+	devices (or Bluetooth is turned off). Would you like to open the
+	Android Settings Panel to add one or more?\n\n(You may also need
+	to open it on the device you want to pair with.)</string>
 	<string name="app_not_found_fmt">Unable to connect via Bluetooth
 	to Crosswords on the device %1$s.  Please check that the device is
 	within Bluetooth range and that Crosswords is installed on
@@ -2717,26 +2720,73 @@
   <string name="after_restart">This change will not take effect until
   you restart Crosswords.</string>
 
-  <string name="not_again_missing_perms">This game is configured to
+  <string name="missing_perms">This game is configured to
   communicate via SMS but Crosswords does not have permission to do
   so. You can still open the game, but it may not be able to send or
   receive moves.\n\nYou can re-open it to be asked for permission
   again. Or you can remove the SMS communication setting.</string>
 
-  <string name="phone_state_rationale">Crosswords wants to determine
-  whether your phone can send SMS \"data\" messages to give you the
-  option of playing that way. If you don\'t ever want to play via SMS,
-  e.g. because you pay for each message or have a Verizon phone, it\'s
-  safe to permanently deny permission.
+  <string name="download_rationale">Crosswords needs access to
+  temporary storage to keep what you\'re about to download.
   </string>
 
-  <string name="contacts_rationale">Crosswords want access to your
-  contacts in order to put a name to phone numbers that send you
-  invitations via SMS. You\'ll still be able to receive invitations if
-  you don\'t grant this permission, but only the phone number of the
-  sender will be displayed.</string>
+  <string name="sms_invite_rationale">
+    Crosswords needs permission to send an invitation via SMS.
+  </string>
+
+  <string name="dicts_storage_rationale">
+    Crosswords can store and read wordlists in your device\'s
+    Downloads area but it needs permission to access them
+    there.\n\nYou can safely deny this permission if you will never
+    download wordlists except from inside Crosswords and have not
+    previously stored any there.
+  </string>
+
+  <string name="phone_state_rationale">
+    Some phones can exchange SMS \"data\" messages. Crosswords would
+    like to offer you this option but needs to ask your device about
+    itself first (to learn if it\'s a phone and if so what
+    type.)\n\nIf your device can\'t send data SMS (e.g. because it
+    isn\'t a phone) or you don\'t ever want to play via SMS
+    (e.g. because you pay for each message), it\'s safe to permanently
+    deny permission.
+  </string>
+
+  <string name="phone_lookup_rationale">
+    To rematch a game that uses SMS Crosswords needs permission to
+    access your phone number.
+  </string>
+
+  <!-- Case where SMS is the only way the game can communicate -->
+  <string name="phone_lookup_rationale_drop">Rematching this SMS-only
+  game is not possible without this permission.</string>
+  <!-- Case where SMS is NOT the only way the game can communicate -->
+  <string name="phone_lookup_rationale_others">Without this permission
+  rematching will continue but will create a game that cannot not play
+  via SMS.</string>
+
+  <string name="contacts_rationale">
+    Crosswords want access to your contacts in order to put a name to
+    phone numbers that send you invitations via SMS. You\'ll still be
+    able to receive invitations if you don\'t grant this permission,
+    but only the phone number of the sender will be displayed.
+  </string>
+
+  <string name="move_dict_rationale">Storing a wordlist in the
+  Downloads area requires permission.</string>
 
   <string name="remove_sms">Remove SMS</string>
+  <!-- In the permissions rationale explanation, means go ahead and
+       have the OS ask for permission -->
+  <string name="button_ask_again">Ask again</string>
   <string name="contact_not_found">Not in Contacts</string>
+  <!-- Displayed as a toast -->
+  <string name="sms_send_failed">SMS send failed</string>
+  <!-- In the permissions rationale explanation, means don't have the
+       OS ask for permission: user is denying it implicitly -->
+  <string name="button_skip">Skip</string>
+
+  <string name="perms_rationale_title">Android Permissions</string>
+  <string name="toast_no_permission">Permission not granted</string>
 
 </resources>

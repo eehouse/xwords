@@ -13,8 +13,8 @@
   <string name="summary_relay_gameover_fmt">Spel voorbij is kamer \"%1$s\"</string>
   <string name="gameOver">Spel voorbij</string>
   <plurals name="moves_fmt">
-    <item quantity="one">%1$s zet gespeeld</item>
-    <item quantity="other">%1$s zetten gespeeld</item>
+    <item quantity="one">%1$d zet gespeeld</item>
+    <item quantity="other">%1$d zetten gespeeld</item>
   </plurals>
   <string name="button_delete">Verwijder</string>
   <string name="button_reset">Reset</string>
@@ -812,9 +812,9 @@
 
     <string name="button_relay_add">Scan spellen</string>
     <plurals name="invite_relay_desc_fmt">
-	<item quantity="one">Selecteer het apparaat dat je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
-	<item quantity="other">Selecteer de %1$s apparaten die je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
-</plurals>
+	  <item quantity="one">Selecteer het apparaat dat je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
+	  <item quantity="other">Selecteer de %1$d apparaten die je uit wilt nodigen voor jouw nieuwe spel en druk op \"%2$s\".</item>
+    </plurals>
     <string name="empty_relay_inviter">De lijst van apparaten is leeg. Gebruik de \"Scan spellen\" knop om oude spellen te doorzoeken voor tegenstanders. Gebruik de \"+\" knop om een apparaat ID direct in te voeren.</string>
     <string name="get_relay_number">Voer apparaat ID in:</string>
     <plurals name="confirm_clear_sms_fmt">

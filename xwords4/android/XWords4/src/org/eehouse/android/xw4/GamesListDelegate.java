@@ -53,7 +53,9 @@ import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DlgDelegate.NAKey;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo;
@@ -82,6 +84,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
+    private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -91,6 +94,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_LANG_EXTRA = "rm_lang";
     private static final String REMATCH_PREFS_EXTRA = "rm_prefs";
     private static final String REMATCH_NEWNAME_EXTRA = "rm_nnm";
+    private static final String REMATCH_IS_SOLO = "rm_solo";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
@@ -590,7 +594,7 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean m_nextIsSolo;
     private Button[] m_newGameButtons;
     private boolean m_haveShownGetDict;
-    private Intent m_rematchIntent;
+    private Bundle m_rematchExtras;
     private Object[] m_newGameParams;
 
     public GamesListDelegate( Delegator delegator, Bundle sis )
@@ -867,7 +871,8 @@ public class GamesListDelegate extends ListDelegateBase
                         public void onClick( DialogInterface dlg, int item ) {
                             EditText edit = (EditText)((Dialog)dlg)
                                 .findViewById( R.id.edit );
-                            curThis().startRematchWithName( edit );
+                            String gameName = edit.getText().toString();
+                            curThis().startRematchWithName( gameName, true );
                         }
                     } )
                 .create();
@@ -912,15 +917,16 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case GAMES_LIST_NAME_REMATCH:
-            edit = (TextView)dialog.findViewById( R.id.edit );
-            edit.setText( m_rematchIntent
-                          .getStringExtra( REMATCH_NEWNAME_EXTRA ) );
-            boolean solo =
-                -1 == m_rematchIntent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
-            ad.setIcon( solo ? R.drawable.sologame__gen
-                        : R.drawable.multigame__gen );
-            ((TextView)dialog.findViewById( R.id.msg ))
-                .setVisibility( View.GONE );
+            if ( null != m_rematchExtras ) {
+                edit = (TextView)dialog.findViewById( R.id.edit );
+                edit.setText( m_rematchExtras
+                              .getString( REMATCH_NEWNAME_EXTRA ) );
+                boolean solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
+                ad.setIcon( solo ? R.drawable.sologame__gen
+                            : R.drawable.multigame__gen );
+                ((TextView)dialog.findViewById( R.id.msg ))
+                    .setVisibility( View.GONE );
+            }
             break;
         }
     }
@@ -1031,6 +1037,9 @@ public class GamesListDelegate extends ListDelegateBase
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
         }
+        if ( null != m_rematchExtras ) {
+            outState.putBundle( SAVE_REMATCHEXTRAS, m_rematchExtras );
+        }
     }
 
     private void getBundledData( Bundle bundle )
@@ -1042,6 +1051,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_netLaunchInfo = NetLaunchInfo.makeFrom( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
             m_nextIsSolo = bundle.getBoolean( SAVE_NEXTSOLO );
+            m_rematchExtras = bundle.getBundle( SAVE_REMATCHEXTRAS );
         }
     }
 
@@ -1224,112 +1234,146 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    @Override
+    public void onPosButton( Action action, Object[] params )
     {
-        if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            switch( action ) {
-            case NEW_NET_GAME:
-                m_netLaunchInfo = (NetLaunchInfo)params[0];
-                if ( checkWarnNoDict( m_netLaunchInfo ) ) {
-                    makeNewNetGameIf();
-                }
-                break;
-            case RESET_GAMES:
-                long[] rowids = (long[])params[0];
-                boolean changed = false;
-                for ( long rowid : rowids ) {
-                    changed = GameUtils.resetGame( m_activity, rowid ) || changed;
-                }
-                if ( changed ) {
-                    mkListAdapter(); // required because position may change
-                }
-                break;
-            case SYNC_MENU:
-                doSyncMenuitem();
-                break;
-            case NEW_FROM:
-                long curID = (Long)params[0];
-                long newid = GameUtils.dupeGame( m_activity, curID );
-                if ( DBUtils.ROWID_NOTFOUND != newid ) {
-                    m_selGames.add( newid );
-                    reloadGame( newid );
-                }
-                break;
+        switch( action ) {
+        case NEW_NET_GAME:
+            m_netLaunchInfo = (NetLaunchInfo)params[0];
+            if ( checkWarnNoDict( m_netLaunchInfo ) ) {
+                makeNewNetGameIf();
+            }
+            break;
+        case RESET_GAMES:
+            long[] rowids = (long[])params[0];
+            boolean changed = false;
+            for ( long rowid : rowids ) {
+                changed = GameUtils.resetGame( m_activity, rowid ) || changed;
+            }
+            if ( changed ) {
+                mkListAdapter(); // required because position may change
+            }
+            break;
+        case SYNC_MENU:
+            doSyncMenuitem();
+            break;
+        case NEW_FROM:
+            long curID = (Long)params[0];
+            long newid = GameUtils.dupeGame( m_activity, curID );
+            if ( DBUtils.ROWID_NOTFOUND != newid ) {
+                m_selGames.add( newid );
+                reloadGame( newid );
+            }
+            break;
 
-            case SET_HIDE_NEWGAME_BUTTONS:
-                XWPrefs.setHideNewgameButtons(m_activity, true);
-                setupButtons();
-                // FALLTHRU
-            case NEW_GAME_PRESSED:
-                handleNewGame( m_nextIsSolo );
-                break;
+        case SET_HIDE_NEWGAME_BUTTONS:
+            XWPrefs.setHideNewgameButtons(m_activity, true);
+            setupButtons();
+            // FALLTHRU
+        case NEW_GAME_PRESSED:
+            handleNewGame( m_nextIsSolo );
+            break;
 
-            case DELETE_GROUPS:
-                long[] groupIDs = (long[])params[0];
-                for ( long groupID : groupIDs ) {
-                    GameUtils.deleteGroup( m_activity, groupID );
-                }
-                clearSelections();
-                mkListAdapter();
-                break;
-            case DELETE_GAMES:
-                deleteGames( (long[])params[0] );
-                break;
-            case OPEN_GAME:
-                doOpenGame( params );
-                break;
-            case ENABLE_DUALPANE:
-                makeOkOnlyBuilder( R.string.dualpane_exit_now)
-                    .setAction( Action.ENABLE_DUALPANE_EXIT )
-                    .show();
-                break;
-            case CLEAR_SELS:
-                clearSelections();
-                break;
-            case DWNLD_LOC_DICT:
-                String lang = (String)params[0];
-                String name = (String)params[1];
-                DownloadFinishedListener lstnr = new DownloadFinishedListener() {
-                        public void downloadFinished( String lang, String name, boolean success )
-                        {
-                            if ( success ) {
-                                XWPrefs.setPrefsString( m_activity,
-                                                        R.string.key_default_language,
-                                                        lang );
-                                name = DictUtils.removeDictExtn( name );
-                                int[] ids = { R.string.key_default_dict,
-                                              R.string.key_default_robodict };
-                                for ( int id : ids ) {
-                                    XWPrefs.setPrefsString( m_activity, id, name );
-                                }
-
-                                XWPrefs.setPrefsBoolean( m_activity,
-                                                         R.string.key_got_langdict,
-                                                         true );
+        case DELETE_GROUPS:
+            long[] groupIDs = (long[])params[0];
+            for ( long groupID : groupIDs ) {
+                GameUtils.deleteGroup( m_activity, groupID );
+            }
+            clearSelections();
+            mkListAdapter();
+            break;
+        case DELETE_GAMES:
+            deleteGames( (long[])params[0] );
+            break;
+        case OPEN_GAME:
+            doOpenGame( params );
+            break;
+        case ENABLE_DUALPANE:
+            makeOkOnlyBuilder( R.string.dualpane_exit_now)
+                .setAction( Action.ENABLE_DUALPANE_EXIT )
+                .show();
+            break;
+        case CLEAR_SELS:
+            clearSelections();
+            break;
+        case DWNLD_LOC_DICT:
+            String lang = (String)params[0];
+            String name = (String)params[1];
+            DownloadFinishedListener lstnr = new DownloadFinishedListener() {
+                    public void downloadFinished( String lang, String name, boolean success )
+                    {
+                        if ( success ) {
+                            XWPrefs.setPrefsString( m_activity,
+                                                    R.string.key_default_language,
+                                                    lang );
+                            name = DictUtils.removeDictExtn( name );
+                            int[] ids = { R.string.key_default_dict,
+                                          R.string.key_default_robodict };
+                            for ( int id : ids ) {
+                                XWPrefs.setPrefsString( m_activity, id, name );
                             }
-                        }
-                    };
-                DwnldDelegate.downloadDictInBack( m_activity, lang, name, lstnr );
-                break;
-            case NEW_GAME_DFLT_NAME:
-                m_newGameParams = params;
-                askDefaultName();
-                break;
 
-            default:
-                Assert.fail();
+                            XWPrefs.setPrefsBoolean( m_activity,
+                                                     R.string.key_got_langdict,
+                                                     true );
+                        }
+                    }
+                };
+            DwnldDelegate.downloadDictInBack( m_activity, lang, name, lstnr );
+            break;
+        case NEW_GAME_DFLT_NAME:
+            m_newGameParams = params;
+            askDefaultName();
+            break;
+
+        case ASKED_PHONE_STATE:
+            rematchWithNameAndPerm( true, params );
+            break;
+
+        case STORAGE_CONFIRMED:
+            int id = (Integer)params[0];
+            if ( R.id.games_menu_loaddb == id ) {
+                DBUtils.loadDB( m_activity );
+                XWPrefs.clearGroupPositions( m_activity );
+                mkListAdapter();
+            } else if ( R.id.games_menu_storedb == id ) {
+                DBUtils.saveDB( m_activity );
+                showToast( R.string.db_store_done );
             }
-        } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
-            if ( Action.NEW_GAME_DFLT_NAME == action ) {
-                m_newGameParams = params;
-                makeThenLaunchOrConfigure();
-            }
-        } else if ( DlgDelegate.DISMISS_BUTTON == which ) {
-            switch( action ) {
-            case ENABLE_DUALPANE_EXIT:
-                setDualpaneAndFinish( true );
-                break;
-            }
+            break;
+
+        default:
+            super.onPosButton( action, params );
+        }
+    }
+
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case NEW_GAME_DFLT_NAME:
+            m_newGameParams = params;
+            makeThenLaunchOrConfigure();
+            break;
+
+        case ASKED_PHONE_STATE:
+            rematchWithNameAndPerm( false, params );
+            break;
+
+        default:
+            super.onNegButton( action, params );
+        }
+    }
+
+    @Override
+    public void onDismissed( Action action, Object[] params )
+    {
+        switch( action ) {
+        case ENABLE_DUALPANE_EXIT:
+            setDualpaneAndFinish( true );
+            break;
+        default:
+            super.onDismissed( action, params );
         }
     }
 
@@ -1560,34 +1604,10 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_loaddb:
-            new Perms23.Builder( Perms23.Perm.STORAGE )
-                .asyncQuery( m_activity, new Perms23.PermCbck() {
-                        @Override
-                        public void onPermissionResult( Map<Perms23.Perm,
-                                                        Boolean> granted )
-                        {
-                            Assert.assertTrue( granted.containsKey(Perms23.Perm.STORAGE) );
-                            if ( granted.get(Perms23.Perm.STORAGE) ) {
-                                DBUtils.loadDB( m_activity );
-                                XWPrefs.clearGroupPositions( m_activity );
-                                mkListAdapter();
-                            }
-                        }
-                    } );
-            break;
         case R.id.games_menu_storedb:
-            new Perms23.Builder( Perms23.Perm.STORAGE )
-                .asyncQuery( m_activity, new Perms23.PermCbck() {
-                        @Override
-                        public void onPermissionResult( Map<Perms23.Perm, Boolean> granted )
-                        {
-                            Assert.assertTrue( granted.containsKey( Perms23.Perm.STORAGE ) );
-                            if ( granted.get( Perms23.Perm.STORAGE ) ) {
-                                DBUtils.saveDB( m_activity );
-                                showToast( R.string.db_store_done );
-                            }
-                        }
-                    } );
+            Perms23.tryGetPerms( this, Perm.STORAGE,
+                                 null, Action.STORAGE_CONFIRMED,
+                                 this, itemID );
             break;
 
         default:
@@ -2147,35 +2167,68 @@ public class GamesListDelegate extends ListDelegateBase
     private void startRematch( Intent intent )
     {
         if ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) {
-            m_rematchIntent = intent;
+            m_rematchExtras = intent.getExtras();
             showDialog( DlgID.GAMES_LIST_NAME_REMATCH );
         }
     }
 
-    private void startRematchWithName( EditText edit )
+    private void startRematchWithName( final String gameName,
+                                       boolean showRationale )
     {
-        String gameName = edit.getText().toString();
         if ( null != gameName && 0 < gameName.length() ) {
-            Intent intent = m_rematchIntent;
-            long srcRowID = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
-            String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
-            String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
-            String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
-            String p2pMacAddress = intent.getStringExtra( REMATCH_P2PADDR_EXTRA );
-            String dict = intent.getStringExtra( REMATCH_DICT_EXTRA );
-            int lang = intent.getIntExtra( REMATCH_LANG_EXTRA, -1 );
-            String json = intent.getStringExtra( REMATCH_PREFS_EXTRA );
-            int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
-            CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
+            Bundle extras = m_rematchExtras;
+            int bits = extras.getInt( REMATCH_ADDRS_EXTRA, -1 );
+            final CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
+            boolean hasSMS = addrs.contains( CommsConnType.COMMS_CONN_SMS );
+            if ( !hasSMS || null != SMSService.getPhoneInfo( m_activity ) ) {
+                rematchWithNameAndPerm( gameName, addrs );
+            } else {
+                int id = (1 == addrs.size())
+                    ? R.string.phone_lookup_rationale_drop
+                    : R.string.phone_lookup_rationale_others;
+                String msg = getString( R.string.phone_lookup_rationale )
+                    + "\n\n" + getString( id );
+                Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE, msg,
+                                     Action.ASKED_PHONE_STATE, this,
+                                     gameName, addrs );
+            }
+        }
+    }
+
+    private void rematchWithNameAndPerm( boolean granted, Object[] params )
+    {
+        CommsConnTypeSet addrs = (CommsConnTypeSet)params[1];
+        if ( !granted ) {
+            addrs.remove( CommsConnType.COMMS_CONN_SMS );
+            m_rematchExtras.remove( REMATCH_PHONE_EXTRA );
+        }
+        if ( 0 < addrs.size() ) {
+            rematchWithNameAndPerm( (String)params[0], addrs );
+        }
+    }
+
+    private void rematchWithNameAndPerm( String gameName, CommsConnTypeSet addrs )
+    {
+        if ( null != gameName && 0 < gameName.length() ) {
+            Bundle extras = m_rematchExtras;
+            long srcRowID = extras.getLong( REMATCH_ROWID_EXTRA, DBUtils.ROWID_NOTFOUND );
+            boolean solo = extras.getBoolean( REMATCH_IS_SOLO, true );
 
             long newid;
-            if ( null == btAddr && null == phone && null == relayID
-                 && null == p2pMacAddress ) {
+            if ( solo ) {
                 newid = GameUtils.dupeGame( m_activity, srcRowID );
                 if ( DBUtils.ROWID_NOTFOUND != newid ) {
                     DBUtils.setName( m_activity, newid, gameName );
                 }
             } else {
+                String btAddr = extras.getString( REMATCH_BTADDR_EXTRA );
+                String phone = extras.getString( REMATCH_PHONE_EXTRA );
+                String relayID = extras.getString( REMATCH_RELAYID_EXTRA );
+                String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
+                String dict = extras.getString( REMATCH_DICT_EXTRA );
+                int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
+                String json = extras.getString( REMATCH_PREFS_EXTRA );
+
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
@@ -2184,7 +2237,7 @@ public class GamesListDelegate extends ListDelegateBase
             }
             launchGame( newid );
         }
-        m_rematchIntent = null;
+        m_rematchExtras = null;
     }
 
     private void tryAlert( Intent intent )
@@ -2430,7 +2483,7 @@ public class GamesListDelegate extends ListDelegateBase
         GameSummary summary = (GameSummary)params[1];
         final long rowid = (Long)params[0];
 
-        if ( summary.conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY )
+        if ( summary.conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
             Assert.fail();
         } else {
@@ -2653,22 +2706,28 @@ public class GamesListDelegate extends ListDelegateBase
         intent = makeSelfIntent( context );
         intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
         intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
+        boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
+        intent.putExtra( REMATCH_IS_SOLO, isSolo );
         intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
         intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
         intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
         if ( null != addrTypes ) {
-            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
+            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
             if ( null != btAddr ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_BT ) );
                 intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
             }
             if ( null != phone ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_SMS ) );
                 intent.putExtra( REMATCH_PHONE_EXTRA, phone );
             }
             if ( null != relayID ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_RELAY ) );
                 intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
             }
             if ( null != p2pMacAddress ) {
+                Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_P2P ) );
                 intent.putExtra( REMATCH_P2PADDR_EXTRA, p2pMacAddress );
             }
         }

@@ -29,7 +29,6 @@ import android.widget.TextView;
 import org.eehouse.android.xw4.R;
 
 public class LocListItem extends LinearLayout {
-    private static final String TAG = LocListItem.class.getSimpleName();
 
     protected static final int LOCAL_COLOR = Color.argb( 0xFF, 0x7f, 0x00, 0x00 );
 

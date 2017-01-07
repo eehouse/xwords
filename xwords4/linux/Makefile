@@ -246,6 +246,9 @@ ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	POINTER_SUPPORT = -DPOINTER_SUPPORT
 endif
 
+CFLAGS += `pkg-config --cflags glib-2.0`
+LIBS += `pkg-config --libs glib-2.0`
+
 CFLAGS += $(POINTER_SUPPORT)
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))

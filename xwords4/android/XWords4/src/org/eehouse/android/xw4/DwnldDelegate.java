@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -45,6 +46,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.Perms23.Perm;
 
 public class DwnldDelegate extends ListDelegateBase {
     private static final String TAG = DwnldDelegate.class.getSimpleName();
@@ -106,11 +111,14 @@ public class DwnldDelegate extends ListDelegateBase {
                 item.findViewById( R.id.progress_bar );
         }
 
-        public void setLabel( String text )
+        public DownloadFilesTask setLabel( String text )
         {
             TextView tv = (TextView)m_listItem.findViewById( R.id.dwnld_message );
             tv.setText( text );
+            return this;
         }
+
+        private boolean forApp() { return m_isApp; }
 
         @Override
         protected Void doInBackground( Void... unused )
@@ -286,22 +294,44 @@ public class DwnldDelegate extends ListDelegateBase {
 
         if ( 0 == m_dfts.size() ) {
             finish();
+        } else if ( !anyNeedsStorage() ) {
+            doWithPermissions( uris );
         } else {
-            Assert.assertTrue( m_dfts.size() == uris.length );
-            mkListAdapter();
+            tryGetPerms( Perm.STORAGE, R.string.download_rationale,
+                         Action.STORAGE_CONFIRMED, (Object)uris );
+        }
+    }
 
-            for ( int ii = 0; ii < uris.length; ++ii ) {
-                String showName = basename( uris[ii].getPath() );
-                showName = DictUtils.removeDictExtn( showName );
-                String msg =
-                    getString( R.string.downloading_dict_fmt, showName );
+    private void doWithPermissions( Uri[] uris )
+    {
+        Assert.assertTrue( m_dfts.size() == uris.length );
+        mkListAdapter();
 
-                dft = m_dfts.get( ii );
-                dft.setLabel( msg );
-                dft.execute();
+        for ( int ii = 0; ii < uris.length; ++ii ) {
+            String showName = basename( uris[ii].getPath() );
+            showName = DictUtils.removeDictExtn( showName );
+            String msg =
+                getString( R.string.downloading_dict_fmt, showName );
+
+            m_dfts.get( ii )
+                .setLabel( msg )
+                .execute();
+        }
+    } // doWithPermissions
+
+    private boolean anyNeedsStorage()
+    {
+        boolean result = false;
+        DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( m_activity );
+
+        for ( DownloadFilesTask task : m_dfts ) {
+            if ( task.forApp() || DictUtils.DictLoc.DOWNLOAD == loc ) {
+                result = true;
+                break;
             }
         }
-    } // init
+        return result;
+    }
 
     @Override
     protected boolean handleBackPressed()
@@ -313,6 +343,30 @@ public class DwnldDelegate extends ListDelegateBase {
             dft.cancel( true );
         }
         return super.handleBackPressed();
+    }
+
+    @Override
+    public void onPosButton( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case STORAGE_CONFIRMED:
+            doWithPermissions( (Uri[])params[0] );
+            break;
+        default:
+            super.onPosButton( action, params );
+        }
+    }
+
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        switch ( action ) {
+        case STORAGE_CONFIRMED:
+            finish();
+            break;
+        default:
+            super.onPosButton( action, params );
+        }
     }
 
     private void mkListAdapter()

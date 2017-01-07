@@ -35,7 +35,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWConnAddrPreference extends DialogPreference {
-    private static final String TAG = XWConnAddrPreference.class.getSimpleName();
 
     private Context m_context;
     private ConnViaViewLayout m_view;
@@ -112,7 +111,7 @@ public class XWConnAddrPreference extends DialogPreference {
     @Override
     public void onClick( DialogInterface dialog, int which )
     {
-        if ( AlertDialog.BUTTON_POSITIVE == which ) {
+        if ( AlertDialog.BUTTON_POSITIVE == which && null != m_view ) {
             CommsConnTypeSet curSet = m_view.getTypes();
             XWPrefs.setAddrTypes( m_context, curSet );
             setSummary( curSet.toString( m_context, true ) );

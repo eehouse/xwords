@@ -63,6 +63,7 @@ import java.util.Random;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -77,7 +78,6 @@ public class Utils {
 
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_firstVersion = null;
-    // private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
     private static HashMap<String,String> s_phonesHash =
@@ -113,9 +113,9 @@ public class Utils {
     public static boolean isGSMPhone( Context context )
     {
         boolean result = false;
-        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
+        if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
             SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
-            result = info.isPhone && info.isGSM;
+            result = null != info && info.isPhone && info.isGSM;
         }
         DbgUtils.logd( TAG, "isGSMPhone() => %b", result );
         return result;
@@ -129,18 +129,16 @@ public class Utils {
     public static boolean deviceSupportsSMS( Context context )
     {
         boolean result = false;
-        if ( Perms23.havePermission( Perms23.Perm.READ_PHONE_STATE ) ) {
+        if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
             TelephonyManager tm = (TelephonyManager)
                 context.getSystemService( Context.TELEPHONY_SERVICE );
-            result = null != tm;
+            if ( null != tm ) {
+                int type = tm.getPhoneType();
+                result = TelephonyManager.PHONE_TYPE_GSM == type;
+            }
         }
         DbgUtils.logd( TAG, "deviceSupportsSMS() => %b", result );
         return result;
-    }
-
-    public static void smsSupportChanged()
-    {
-        // s_deviceSupportSMS = null; // force to check again
     }
 
     public static void notImpl( Context context )
@@ -283,7 +281,7 @@ public class Utils {
         synchronized ( s_phonesHash ) {
             if ( s_phonesHash.containsKey( phone ) ) {
                 name = s_phonesHash.get( phone );
-            } else if ( Perms23.havePermission( Perms23.Perm.READ_CONTACTS ) ) {
+            } else if ( Perms23.havePermission( Perm.READ_CONTACTS ) ) {
                 try {
                     ContentResolver contentResolver = context
                         .getContentResolver();
@@ -306,7 +304,6 @@ public class Utils {
                 JSONObject phones = XWPrefs.getSMSPhones( context );
                 for ( Iterator<String> iter = phones.keys(); iter.hasNext(); ) {
                     String key = iter.next();
-                    DbgUtils.logd( TAG, "comparing %s, %s", key, phone );
                     if ( PhoneNumberUtils.compare( key, phone ) ) {
                         name = phones.optString( key, phone );
                         s_phonesHash.put( phone, name );
