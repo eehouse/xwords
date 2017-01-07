@@ -92,7 +92,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         getSavedState();
         rebuildList( true );
 
-        askContactsPermission( true );
+        askContactsPermission();
     }
 
     @Override
@@ -190,9 +190,6 @@ public class SMSInviteDelegate extends InviteDelegate {
     public void onPosButton( Action action, Object[] params )
     {
         switch ( action ) {
-        case RETRY_CONTACTS_ACTION:
-            askContactsPermission( false );
-            break;
         case CLEAR_ACTION:
             clearSelectedImpl();
             break;
@@ -334,22 +331,13 @@ public class SMSInviteDelegate extends InviteDelegate {
         saveAndRebuild();
     }
 
-    private void askContactsPermission( boolean showRationale )
+    private void askContactsPermission()
     {
-        Perms23.Builder builder = new Perms23.Builder( Perm.READ_CONTACTS );
-        if ( showRationale ) {
-            builder.setOnShowRationale( new Perms23.OnShowRationale() {
-                    @Override
-                    public void onShouldShowRationale( Set<Perm> perms )
-                    {
-                        makeOkOnlyBuilder( R.string.contacts_rationale )
-                            .setTitle( R.string.perms_rationale_title )
-                            .setAction( Action.RETRY_CONTACTS_ACTION )
-                            .show();
-                    }
-                } );
-        }
-        builder.asyncQuery( m_activity );
+        // We want to ask, and to give the rationale, but behave the same
+        // regardless of the answers given. So SKIP_CALLBACK.
+        Perms23.tryGetPerms( this, Perm.READ_CONTACTS,
+                             R.string.contacts_rationale,
+                             Action.SKIP_CALLBACK, this );
     }
 
     private class PhoneRec implements InviterItem {

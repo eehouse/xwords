@@ -180,10 +180,12 @@ public class Perms23 {
             }
             builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
                     public void onPermissionResult( Map<Perm, Boolean> perms ) {
-                        if ( perms.get( m_perm ) ) {
-                            m_cbck.onPosButton( m_action, m_params );
-                        } else {
-                            m_cbck.onNegButton( m_action, m_params );
+                        if ( Action.SKIP_CALLBACK != m_action ) {
+                            if ( perms.get( m_perm ) ) {
+                                m_cbck.onPosButton( m_action, m_params );
+                            } else {
+                                m_cbck.onNegButton( m_action, m_params );
+                            }
                         }
                     }
                 } );
