@@ -7,7 +7,10 @@ $(DEST_PATH)/%.java : $(SRC_PATH)/%.java
 		< $< > $@
 
 $(DEST_PATH)/icon48x48.png : $(SRC_PATH)/icon48x48.png
-	convert $< -fill red -gravity Center -annotate +0+5 ' Dbg ' $@
+	convert $< -rotate 180  -gravity Center $@
+
+$(DEST_PATH)/notify.png : $(SRC_PATH)/notify.png
+	convert $< -rotate 180  -gravity Center $@
 
 $(DEST_PATH)/%.png : $(SRC_PATH)/%.png
 	@cp $< $@
