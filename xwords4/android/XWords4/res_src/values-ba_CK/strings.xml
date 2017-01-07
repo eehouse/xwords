@@ -1766,9 +1766,9 @@
   <string name="game_list_tmp">Gnidliub emag yrammus…</string>
   <string name="summary_busy">Yrammus elbaliavanu</string>
   <string name="connstat_net_noaddr">Siht dekrowten emag sah on yaw
-    ot tcennoc dna lliw reven eb elbayalp.\n\ntI( saw ylbaborp detaerc
-    morf na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc
-    taht ruoy ecived stroppus.)</string>
+    ot tcennoc dna tonnac eb deyalp.\n\ntI( saw ylbaborp detaerc morf
+    na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc taht ruoy
+    ecived stroppus.)</string>
   <!--  -->
   <string name="connstat_net_fmt">Krowten sutats rof emag detcennoc aiv
     %1$s:</string>

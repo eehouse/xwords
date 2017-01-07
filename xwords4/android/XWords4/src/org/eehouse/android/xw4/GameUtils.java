@@ -113,8 +113,6 @@ public class GameUtils {
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
 
-        // loadMakeGame, if making a new game, will add comms as long
-        // as DeviceRole.SERVER_STANDALONE != gi.serverRole
         GamePtr gamePtr = loadMakeGame( context, gi, lockSrc );
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
@@ -122,11 +120,6 @@ public class GameUtils {
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec();
             XwJNI.comms_getAddr( gamePtr, addr );
-            if ( 0 == addr.conTypes.size() ) {
-                String relayName = XWPrefs.getDefaultRelayHost( context );
-                int relayPort = XWPrefs.getDefaultRelayPort( context );
-                XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
-            }
         }
         gamePtr.release();
 
