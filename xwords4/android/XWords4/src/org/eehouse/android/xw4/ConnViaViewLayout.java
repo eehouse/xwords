@@ -78,23 +78,6 @@ public class ConnViaViewLayout extends LinearLayout {
 
     private void addConnections()
     {
-
-        // We need SMS and PHONE permission to check if we can support SMS. So
-        // ask for it here. When we get what we're getting, proceed to
-        // actually check for what's supported. Those methods will return
-        // false if they don't have the permission they need.
-        new Perms23.Builder( Perms23.Perm.READ_PHONE_STATE )
-            .asyncQuery( m_activity, new Perms23.PermCbck() {
-                    @Override
-                    public void onPermissionResult( Map<Perms23.Perm,
-                                                    Boolean> granted ) {
-                        addConnectionsPostPermCheck();
-                    }
-                } );
-    }
-
-    private void addConnectionsPostPermCheck()
-    {
         LinearLayout list = (LinearLayout)findViewById( R.id.conn_types );
         list.removeAllViews();  // in case being reused
 

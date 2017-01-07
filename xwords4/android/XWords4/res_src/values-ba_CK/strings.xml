@@ -2339,13 +2339,13 @@
     daolnwod stsildrow tpecxe morf edisni Sdrowssorc dna evah ton
     ylsuoiverp derots yna ereht.
   </string>
-  <string name="phone_state_rationale">Sdrowssorc stnaw ot reffo uoy
-  eht noitpo fo gnignahcxe sevom aiv SMS \"atad\" segassem. Ni redro
-  ot enimreted fi ruoy ecived nac dnes SMS Sdrowssorc sdeen noissimrep
-  ot ksa ruoy ecived tuoba flesti. Fi ti nac\'t dnes SMS e(.g. esuaceb
-  ti nsi\'t a )enohp ro uoy nod\'t reve tnaw ot yalp aiv SMS
-  e(.g. esuaceb uoy yap rof hcae ,)egassem ti\'s efas ot yltnenamrep
-  yned noissimrep.
+  <string name="phone_state_rationale">Emos senohp nac egnahcxe SMS
+  \"atad\" segassem. Sdrowssorc dluow ekil ot reffo uoy siht noitpo
+  tub sdeen ot ksa ruoy ecived tuoba flesti tsrif ot( nrael fi ti\'s a
+  enohp dna fi os tahw epyt.)\n\nFi ruoy ecived nac\'t dnes SMS
+  e(.g. esuaceb ti nsi\'t a )enohp ro uoy nod\'t reve tnaw ot yalp aiv
+  SMS e(.g. esuaceb uoy yap rof hcae ,)egassem ti\'s efas ot
+  yltnenamrep yned noissimrep.
   </string>
   <string name="phone_lookup_rationale">Ot hctamer a emag gnisu SMS
   Sdrowssorc sdeen noissimrep ot ssecca ruoy enohp rebmun.</string>

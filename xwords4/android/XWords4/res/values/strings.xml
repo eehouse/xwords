@@ -2741,13 +2741,13 @@
     previously stored any there.
   </string>
 
-  <string name="phone_state_rationale">Crosswords wants to offer you
-  the option of exchanging moves via SMS \"data\" messages. In order
-  to determine if your device can send SMS Crosswords needs permission
-  to ask your device about itself. If it can\'t send SMS (e.g. because
-  it isn\'t a phone) or you don\'t ever want to play via SMS
-  (e.g. because you pay for each message), it\'s safe to permanently
-  deny permission.
+  <string name="phone_state_rationale">Some phones can exchange SMS
+  \"data\" messages. Crosswords would like to offer you this option
+  but needs to ask your device about itself first (to learn if it\'s a
+  phone and if so what type.)\n\nIf your device can\'t send SMS
+  (e.g. because it isn\'t a phone) or you don\'t ever want to play via
+  SMS (e.g. because you pay for each message), it\'s safe to
+  permanently deny permission.
   </string>
 
   <string name="phone_lookup_rationale">To rematch a game using SMS

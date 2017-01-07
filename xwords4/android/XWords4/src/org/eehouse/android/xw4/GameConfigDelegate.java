@@ -705,6 +705,11 @@ public class GameConfigDelegate extends DelegateBase
                                      true );
             setupRelayStuffIf( true );
             break;
+
+        case ASKED_PHONE_STATE:
+            showDialog( DlgID.CHANGE_CONN );
+            break;
+
         default:
             super.onPosButton( action, params );
         }
@@ -715,6 +720,9 @@ public class GameConfigDelegate extends DelegateBase
     {
         switch ( action ) {
         case DELETE_AND_EXIT:
+            showConnAfterCheck();
+            break;
+        case ASKED_PHONE_STATE:
             showDialog( DlgID.CHANGE_CONN );
             break;
         default:
@@ -746,7 +754,7 @@ public class GameConfigDelegate extends DelegateBase
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_changeConnButton == view ) {
-            showDialog( DlgID.CHANGE_CONN );
+            showConnAfterCheck();
         } else if ( m_playButton == view ) {
             // Launch BoardActivity for m_name, but ONLY IF user
             // confirms any changes required.  So we either launch
@@ -773,6 +781,17 @@ public class GameConfigDelegate extends DelegateBase
             DbgUtils.logw( TAG, "unknown v: " + view.toString() );
         }
     } // onClick
+
+    private void showConnAfterCheck()
+    {
+        if ( null == SMSService.getPhoneInfo( m_activity ) ) {
+            Perms23.tryGetPerms( this, Perms23.Perm.READ_PHONE_STATE,
+                                 R.string.phone_state_rationale,
+                                 Action.ASKED_PHONE_STATE, this );
+        } else {
+            onPosButton( Action.ASKED_PHONE_STATE, null );
+        }
+    }
 
     private void saveAndClose( boolean forceNew )
     {

@@ -134,6 +134,7 @@ public class DlgDelegate {
         ENABLE_RELAY_DO,
         ENABLE_RELAY_DO_OR,
         DISABLE_RELAY_DO,
+        ASKED_PHONE_STATE,
         PERMS_QUERY,
     }
 

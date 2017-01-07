@@ -112,7 +112,7 @@ public class Perms23 {
                 if ( !haveIt ) {
                     askStrings.add( permStr );
 
-                    if ( ActivityCompat
+                    if ( null != m_onShow && ActivityCompat
                          .shouldShowRequestPermissionRationale( activity,
                                                                 permStr ) ) {
                         needShow.add( perm );
