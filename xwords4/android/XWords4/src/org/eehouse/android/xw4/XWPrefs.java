@@ -266,7 +266,7 @@ public class XWPrefs {
                 String[] numbers = TextUtils.split( asStr, "\n" );
                 for ( String number : numbers ) {
                     try {
-                    obj.put( number, (String)null );
+                        obj.put( number, "" ); // null removes any entry
                     } catch ( JSONException ex ) {
                         DbgUtils.logex( TAG, ex );
                     }
@@ -274,6 +274,7 @@ public class XWPrefs {
             }
         }
 
+        // DbgUtils.logd( TAG, "getSMSPhones() => %s", obj.toString() );
         return obj;
     }
 

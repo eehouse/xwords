@@ -366,7 +366,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         {
             m_phone = phone;
 
-            if ( null == name ) {
+            if ( null == name || 0 == name.length() ) {
                 name = getString( R.string.contact_not_found );
             }
             m_name = name;
