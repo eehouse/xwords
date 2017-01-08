@@ -340,5 +340,9 @@ public class PrefsDelegate extends DelegateBase
         if ( !XWPrefs.getIsTablet( m_activity ) ) {
             hideOne( R.string.key_enable_dualpane, R.string.prefs_appearance );
         }
+
+        if ( Perms23.haveNativePerms() ) {
+            hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
+        }
     }
 }

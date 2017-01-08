@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -207,6 +208,14 @@ public class Perms23 {
                     }
                 } );
         }
+    }
+
+    // Is the OS supporting runtime permission natively, i.e. version 23/M or
+    // later.
+    public static boolean haveNativePerms()
+    {
+        boolean result = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        return result;
     }
 
     /**

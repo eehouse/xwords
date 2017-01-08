@@ -42,11 +42,13 @@ public class XWPrefs {
 
     public static boolean getSMSEnabled( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_enable_sms, false );
+        boolean haveNative = Perms23.haveNativePerms();
+        return haveNative || getPrefsBoolean( context, R.string.key_enable_sms, false );
     }
 
     public static void setSMSEnabled( Context context, boolean enabled )
     {
+        Assert.assertTrue( !Perms23.haveNativePerms() || !BuildConfig.DEBUG );
         setPrefsBoolean( context, R.string.key_enable_sms, enabled );
     }
 
