@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
@@ -249,20 +250,31 @@ public class Perms23 {
     }
 
     private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();
-    public static void gotPermissionResult( int code, String[] perms, int[] granteds )
+    public static void gotPermissionResult( Context context, int code,
+                                            String[] perms, int[] granteds )
     {
         // DbgUtils.logd( TAG, "gotPermissionResult(%s)", perms.toString() );
+        Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
+        for ( int ii = 0; ii < perms.length; ++ii ) {
+            Perm perm = Perm.getFor( perms[ii] );
+            boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
+            result.put( perm, granted );
+
+            // Hack. If SMS has been granted, resend all moves. This should be
+            // replaced with an api allowing listeners to register
+            // Perm-by-Perm, but I'm in a hurry.
+            if ( granted && perm == Perm.SEND_SMS ) {
+                GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS,
+                                       true );
+            }
+
+            // DbgUtils.logd( TAG, "calling %s.onPermissionResult(%s, %b)",
+            //                record.cbck.getClass().getSimpleName(), perm.toString(),
+            //                granted );
+        }
+
         PermCbck cbck = s_map.remove( code );
         if ( null != cbck ) {
-            Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
-            for ( int ii = 0; ii < perms.length; ++ii ) {
-                Perm perm = Perm.getFor( perms[ii] );
-                boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
-                result.put( perm, granted );
-                // DbgUtils.logd( TAG, "calling %s.onPermissionResult(%s, %b)",
-                //                record.cbck.getClass().getSimpleName(), perm.toString(),
-                //                granted );
-            }
             cbck.onPermissionResult( result );
         }
     }
