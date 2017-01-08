@@ -321,10 +321,16 @@ public class PrefsDelegate extends DelegateBase
 
     private void hideOne( int prefID, int screenID )
     {
-        Preference pref = m_activity.findPreference( getString( prefID ) );
-        String key = getString( screenID );
-        ((PreferenceScreen)m_activity.findPreference( key ))
-            .removePreference( pref );
+        try {
+            Preference pref = m_activity.findPreference( getString( prefID ) );
+            String key = getString( screenID );
+            ((PreferenceScreen)m_activity.findPreference( key ))
+                .removePreference( pref );
+        } catch ( NullPointerException ex ) {
+            // This is happening hiding key_enable_sms, but the hide still
+            // works!
+            // DbgUtils.logex( TAG, ex );
+        }
     }
 
     private void hideStuff()
