@@ -1663,7 +1663,7 @@ public class DBUtils {
         initDB( context );
         String[] columns = { ROW_ID };
         String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
-        String orderBy = String.format( "%s,%s DESC,%s DESC", DBHelper.GAME_OVER,
+        String orderBy = String.format( "%s,%s DESC,%s", DBHelper.GAME_OVER,
                                         DBHelper.TURN_LOCAL, DBHelper.LASTMOVE );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
