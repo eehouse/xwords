@@ -2110,7 +2110,7 @@
   <string name="title_addrs_pref">Etacinummoc aiv</string>
   <string name="new_game">Wen ecived-eno emag</string>
   <string name="new_game_networked">Wen dekrowten emag</string>
-  <string name="rematch_name_fmt">Hctamer: %1$s</string>
+  <string name="rematch_name_fmt">%1$s</string>
   <string name="new_game_message">Dluow uoy ekil ot etaerc siht emag
     gnisu tluafed ?sgnittes\n\nRo dluow uoy ekil ot erugifnoc ti
     ?tsrif</string>

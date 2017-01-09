@@ -1083,7 +1083,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( hasFocus ) {
             updateField();
 
-            m_launchedGames.clear();
+            m_launchedGames.clear(); // This is probably wrong!!!
         }
     }
 
@@ -2663,7 +2663,9 @@ public class GamesListDelegate extends ListDelegateBase
     public static void boardDestroyed( long rowid )
     {
         if ( null != s_self ) {
+            // remove likely a no-op: launching clears the set, but shouldn't
             s_self.m_launchedGames.remove( rowid );
+            s_self.invalidateOptionsMenuIf();
         }
     }
 
