@@ -143,7 +143,12 @@ public class GamesListDelegate extends ListDelegateBase
                 if ( ggi.m_expanded ) {
                     List<Object> children = makeChildren( groupID );
                     alist.addAll( children );
-                    Assert.assertTrue( ggi.m_count == children.size() );
+
+                    if ( BuildConfig.DEBUG && ggi.m_count != children.size() ) {
+                        DbgUtils.loge( TAG, "m_count: %d != size: %d",
+                                       ggi.m_count, children.size() );
+                        Assert.fail();
+                    }
                 }
             }
 
@@ -271,15 +276,17 @@ public class GamesListDelegate extends ListDelegateBase
         int getGroupPosition( long groupID )
         {
             int posn = -1;
-            long[] positions = getGroupPositions();
-            for ( int ii = 0; ii < positions.length; ++ii ) {
-                if ( positions[ii] == groupID ) {
-                    posn = ii;
-                    break;
+            if ( -1 != groupID ) {
+                long[] positions = getGroupPositions();
+                for ( int ii = 0; ii < positions.length; ++ii ) {
+                    if ( positions[ii] == groupID ) {
+                        posn = ii;
+                        break;
+                    }
                 }
-            }
-            if ( -1 == posn ) {
-                DbgUtils.logd( TAG, "getGroupPosition: group %d not found", groupID );
+                if ( -1 == posn ) {
+                    DbgUtils.logd( TAG, "getGroupPosition: group %d not found", groupID );
+                }
             }
             return posn;
         }
