@@ -226,7 +226,7 @@ def main():
             if path: 
                 verbose = 0 == len(verboses) or 0 < len([verb for verb in verboses if verb in path])
                 print "*** looking at %s ***" % (path)
-                dest = path.replace( 'res_src', 'res', 1 )
+                dest = path.replace( 'res_src', 'app/src/main/res', 1 )
                 checkAndCopy( parser, engNames, path, dest, verbose )
 
 ##############################################################################
