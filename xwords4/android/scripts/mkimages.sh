@@ -2,8 +2,8 @@
 
 set -e -u
 
-if [ ! -e build.xml ]; then
-    echo "no build.xml; please run from root of source tree"
+if [ ! -d img_src ]; then
+    echo "no img_src; please run from root of source tree"
     exit 1
 fi
 
@@ -31,11 +31,11 @@ done
 
 TARGET_DIRS="drawable-hdpi drawable-mdpi drawable-xhdpi"
 
-
 for SVG in img_src/*.svg; do
     for DIR in $TARGET_DIRS; do
         SVG=$(basename $SVG)
-        OUT=res/$DIR/${SVG/.svg/__gen.png}
+        OUT=app/src/main/res/$DIR/${SVG/.svg/__gen.png}
+        mkdir -p $(dirname $OUT)
         if [ -z "$CLEAN" ]; then
             make -f $(dirname $0)/images.mk $OUT
         else
