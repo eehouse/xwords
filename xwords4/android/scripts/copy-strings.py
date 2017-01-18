@@ -197,7 +197,7 @@ def main():
 
     # summarize the english file
     wd = os.path.dirname(sys.argv[0])
-    path = wd + '/../XWords4/res/values/strings.xml'
+    path = wd + '/../app/src/main/res/values/strings.xml'
     engNames = {}
 
     engFormats = {}
