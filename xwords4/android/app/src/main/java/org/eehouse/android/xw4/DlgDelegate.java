@@ -631,10 +631,10 @@ public class DlgDelegate {
         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL,
                                                         DateFormat.FULL );
         String dateString
-            = df.format( new Date( BuildConstants.BUILD_STAMP * 1000 ) );
+            = df.format( new Date( BuildConfig.BUILD_STAMP * 1000 ) );
         vers.setText( getString( R.string.about_vers_fmt,
                                  getString( R.string.app_version ),
-                                 BuildConstants.GIT_REV, dateString ) );
+                                 BuildConfig.GIT_REV, dateString ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = getString( R.string.xlator );

@@ -133,7 +133,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 JSONObject appParams = new JSONObject();
 
                 appParams.put( k_AVERS, versionCode );
-                appParams.put( k_GVERS, BuildConstants.GIT_REV );
+                appParams.put( k_GVERS, BuildConfig.GIT_REV );
                 appParams.put( k_GHASH, context.getString( R.string.git_rev ) );
                 appParams.put( k_INSTALLER, installer );
                 if ( devOK( context ) ) {
@@ -174,7 +174,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         if ( 0 < params.length() ) {
             try {
-                params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
+                params.put( k_STRINGSHASH, BuildConfig.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
                 DbgUtils.logd( TAG, "current update: %s",

@@ -851,8 +851,8 @@ public class RelayService extends XWService
                 DbgUtils.logd( TAG, "registering devID \"%s\" (type=%s)", devid,
                                typ.toString() );
 
-                out.writeShort( BuildConstants.CLIENT_VERS_RELAY );
-                writeVLIString( out, BuildConstants.GIT_REV );
+                out.writeShort( BuildConfig.CLIENT_VERS_RELAY );
+                writeVLIString( out, BuildConfig.GIT_REV );
                 // writeVLIString( out, String.format( "€%s", Build.MODEL) );
                 writeVLIString( out, Build.MODEL );
                 writeVLIString( out, Build.VERSION.RELEASE );

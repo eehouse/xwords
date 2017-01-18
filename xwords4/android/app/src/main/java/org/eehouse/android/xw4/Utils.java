@@ -191,7 +191,7 @@ public class Utils {
                                                R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
-                                          BuildConstants.GIT_REV );
+                                          BuildConfig.GIT_REV );
         intent.putExtra( Intent.EXTRA_TEXT, body );
         String chooserMsg = LocUtils.getString( context,
                                                 R.string.email_author_chooser );

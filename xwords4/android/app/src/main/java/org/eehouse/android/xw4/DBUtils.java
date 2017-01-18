@@ -2543,7 +2543,7 @@ public class DBUtils {
     private static String getVariantDBName()
     {
         return String.format( "%s_%s", DBHelper.getDBName(),
-                              BuildConstants.VARIANT );
+                              BuildConfig.FLAVOR );
     }
 
     // private static void clearChatHistoryString( Context context, long rowid )

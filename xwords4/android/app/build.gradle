@@ -35,6 +35,20 @@ android {
 
         def gitHash = "../scripts/gitversion.sh".execute().text.trim()
         resValue "string", "git_rev", "$gitHash"
+        variant.buildConfigField "String", "GIT_REV", "\"$gitHash\""
+
+        // def stamp = Long.valueOf('date +\'%s\''.execute().text.trim());
+        def stamp = Math.round(System.currentTimeMillis() / 1000)
+        variant.buildConfigField "long", "BUILD_STAMP", "$stamp"
+
+        // FIX ME
+        variant.buildConfigField "String", "STRINGS_HASH", "\"00000\""
+        variant.buildConfigField "boolean", "WIDIR_ENABLED", "false"
+
+        def senderID = System.getenv("GCM_SENDER_ID")
+        variant.buildConfigField "String", "GCM_SENDER_ID", "\"$senderID\""
+
+        variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
     }
     
     flavorDimensions "variant"//, "abi"
