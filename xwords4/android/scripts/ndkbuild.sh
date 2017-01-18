@@ -4,8 +4,8 @@ set -e -u
 
 ANDROID_NDK=${ANDROID_NDK:-''}
 
-if [ ! -e build.xml ]; then
-    echo "no build.xml; please run from root of source tree"
+if [ ! -d jni ]; then
+    echo "no jni directory; please run from root of source tree"
     exit 1
 fi
 

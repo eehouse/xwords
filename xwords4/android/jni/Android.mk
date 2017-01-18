@@ -3,10 +3,10 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-COMMON_PATH=../../../common
+COMMON_PATH=../../common
 LOCAL_C_INCLUDES+= \
 	-I$(LOCAL_PATH)/$(COMMON_PATH) \
-	-I$(LOCAL_PATH)/../../../relay \
+	-I$(LOCAL_PATH)/../../relay \
 
 LOCAL_LDLIBS += -llog
 
@@ -61,7 +61,7 @@ LOCAL_SRC_FILES +=         \
 	jniutlswrapper.c       \
 
 
-COMMON_PATH=../../../common
+COMMON_PATH=../../common
 COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/boarddrw.c   \
 	$(COMMON_PATH)/scorebdp.c   \
