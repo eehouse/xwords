@@ -1,7 +1,7 @@
 # -*- mode: Makefile -*-
 
 IMG_SRC = ./img_src
-IMG_DEST = res
+IMG_DEST = app/src/main/res
 PARAMS = -transparent white -negate
 
 # $(IMG_DEST)/drawable/%_gen.png:
