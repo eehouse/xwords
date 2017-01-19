@@ -3,18 +3,13 @@
 set -e -u
 
 usage () {
-    echo "usage: $(basename $0) [--tag tagname | --branch branchname] [--variant variant]"
+    echo "usage: $(basename $0) [--tag tagname | --branch branchname] "
     echo "   # (uses current branch as default)"
     exit 1
 }
 
 TAG=""
 BRANCH=""
-VARIANT="XWords4"
-
-if [ -f ./AndroidManifest.xml ]; then # we're in the right directory
-    VARIANT=$(basename $(pwd))
-fi
 
 while [ 0 -lt $# ] ; do
     case $1 in
@@ -26,18 +21,12 @@ while [ 0 -lt $# ] ; do
             BRANCH=$2
             shift
             ;;
-        --variant)
-            VARIANT=$2
-            shift
-            ;;
         *)
             usage
             ;;
     esac
     shift
 done
-
-echo "VARIANT=$VARIANT"
 
 if [ -n "$TAG" ]; then
     if ! git tag | grep -w "$TAG"; then
@@ -48,7 +37,7 @@ elif [ -z $BRANCH ]; then
     BRANCH=$(git branch | grep '^*' | sed 's,^.* ,,')
 fi
 
-echo "building $VARIANT with ${TAG}${BRANCH}"
+echo "building with ${TAG}${BRANCH}"
 
 BUILDIR=/tmp/$(basename $0)_build_$$
 OUT_FILE=$BUILDIR/apks.txt
@@ -61,9 +50,8 @@ cd $BUILDIR
 git clone $SRCDIR BUILD
 cd BUILD
 git checkout ${TAG}${BRANCH}
-cd ./xwords4/android/${VARIANT}
-../scripts/setup_local_props.sh
-../scripts/arelease.sh --variant ${VARIANT} --apk-list $OUT_FILE
+cd ./xwords4/android/
+./scripts/arelease.sh --apk-list $OUT_FILE
 mkdir -p /tmp/releases_${VARIANT}
 cp *.apk /tmp/releases_${VARIANT}
 
