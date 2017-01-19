@@ -1,6 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources>
-    <!-- What is \u200C? English strings are used as keys, so they all
+<resources xmlns:tools="http://schemas.android.com/tools"
+           tools:ignore="MissingTranslation"
+           >
+  <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
          zero-width, so it should do the trick:
          http://en.wikipedia.org/wiki/Zero-width_non-joiner 

@@ -52,13 +52,13 @@ cd BUILD
 git checkout ${TAG}${BRANCH}
 cd ./xwords4/android/
 ./scripts/arelease.sh --apk-list $OUT_FILE
-mkdir -p /tmp/releases_${VARIANT}
-cp *.apk /tmp/releases_${VARIANT}
+mkdir -p /tmp/releases
+cp app/build/outputs/apk/*.apk /tmp/releases
 
 if [ -n "$XW_RELEASE_SCP_DEST" ]; then
 	cat $OUT_FILE | while read APK; do
-		echo "running: scp /tmp/releases_${VARIANT}/$APK $XW_RELEASE_SCP_DEST ..."
-		scp /tmp/releases_${VARIANT}/$APK $XW_RELEASE_SCP_DEST
+		echo "running: scp /tmp/releases/$APK $XW_RELEASE_SCP_DEST ..."
+		scp /tmp/releases/$APK $XW_RELEASE_SCP_DEST
 	done
 fi
 

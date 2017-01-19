@@ -1,5 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools"
+           tools:ignore="MissingTranslation"
+           >
   <!-- Text of menuitem in main games-list screen's menu -->
   <string name="button_new_game">Pridať hru</string>
   <!-- Used to format game name plus some other information as the

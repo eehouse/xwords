@@ -1,5 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="button_new_game">Spiel hinzufügen</string>
+<resources xmlns:tools="http://schemas.android.com/tools"
+           tools:ignore="MissingTranslation"
+           >
+    <string name="button_new_game">Spiel hinzufügen</string>
     <string name="button_new_group">Gruppe hinzufügen</string>
 
     <string name="str_game_name_fmt">%1$s (%2$s)</string>

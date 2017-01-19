@@ -102,7 +102,7 @@ android {
         release {
             signingConfig signingConfigs.release
             debuggable false
-            minifyEnabled true
+            minifyEnabled false // PENDING
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {

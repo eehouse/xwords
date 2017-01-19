@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Resources in this file do not require localization -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools"
+           tools:ignore="MissingTranslation"
+           >
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
   <string name="key_show_arrow">key_show_arrow</string>

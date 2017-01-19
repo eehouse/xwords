@@ -5,37 +5,28 @@ set -u -e
 TAGNAME=""
 FILES=""
 LIST_FILE=''
-VARIANT="XWords4"
 XW_WWW_PATH=${XW_WWW_PATH:-""}
 XW_RELEASE_SCP_DEST=${XW_RELEASE_SCP_DEST:-""}
 
 usage() {
     echo "Error: $*" >&2
-    echo "usage: $0 [--tag <name>] [--variant variant] [--apk-list path/to/out.txt] [<package-unsigned.apk>]" >&2
+    echo "usage: $0 [--tag <name>] [--apk-list path/to/out.txt] [<package-unsigned.apk>]" >&2
     exit 1
 }
 
 do_build() {
     WD=$(pwd)
-    cd $(dirname $0)/../${VARIANT}/
+    cd $(dirname $0)/../
     rm -rf bin/ gen/
-    ant clean release
+	./gradlew clean assembleXw4Rel
     cd $WD
 }
-
-if [ -f ./AndroidManifest.xml ]; then # we're in the right directory
-    VARIANT=$(basename $(pwd))
-fi
 
 while [ "$#" -gt 0 ]; do
     case $1 in
         --tag)
             TAGNAME=$2
             git describe $TAGNAME || usage "$TAGNAME not a valid git tag"
-            shift
-            ;;
-        --variant)
-            VARIANT=$2
             shift
             ;;
 		--apk-list)
@@ -67,28 +58,7 @@ fi
 
 if [ -z "$FILES" ]; then
     do_build
-    FILES=$(ls $(dirname $0)/../*/bin/*-unsigned.apk)
-    if [ -z "$FILES" ]; then
-        echo "unable to find any unsigned packages" >&2
-        usage
-    fi
 fi
-
-for PACK_UNSIGNED in $FILES; do
-
-    PACK_SIGNED=$(basename $PACK_UNSIGNED)
-    echo "base: $PACK_SIGNED" >&2
-    PACK_SIGNED=${PACK_SIGNED/-unsigned}
-    echo "signed: $PACK_SIGNED" >&2
-    jarsigner -verbose -digestalg SHA1 -keystore ~/.keystore $PACK_UNSIGNED mykey
-    rm -f $PACK_SIGNED
-    zipalign -v 4 $PACK_UNSIGNED $PACK_SIGNED
-    [ -n "$XW_WWW_PATH" ] && cp $PACK_SIGNED $XW_WWW_PATH
-    TARGET="${PACK_SIGNED%.apk}_$(git rev-parse --verify HEAD)_$(git describe).apk"
-    cp $PACK_SIGNED "${TARGET}"
-    echo "created ${TARGET}" >&2
-	[ -n "$LIST_FILE" ] && echo ${TARGET} >> $LIST_FILE
-done
 
 if [ -n "$TAGNAME" ]; then
     git stash pop

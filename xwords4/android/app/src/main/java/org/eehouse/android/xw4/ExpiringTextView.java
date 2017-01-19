@@ -25,7 +25,7 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
-class ExpiringTextView extends TextView {
+public class ExpiringTextView extends TextView {
     private ExpiringDelegate m_delegate = null;
     private Context m_context;
 
