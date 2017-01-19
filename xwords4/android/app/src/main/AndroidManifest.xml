@@ -8,7 +8,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4"
           android:versionCode="111"
-          android:versionName="@string/app_version"
           >
 
   <!-- BE SURE TO MODIFY project.properties AND the variable TARGET in

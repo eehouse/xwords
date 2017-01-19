@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4dbg;
+package org.eehouse.android.xw4;
 
 import android.content.Context;
 
@@ -28,9 +28,9 @@ import com.crittercism.app.Crittercism;
 public class CrashTrack {
 
     public static void init( Context context ) {
-        if ( 0 < BuildConstants.CRITTERCISM_APP_ID.length() ) {
+        if ( 0 < BuildConfig.CRITTERCISM_APP_ID.length() ) {
             Crittercism.initialize(context.getApplicationContext(), 
-                                   BuildConstants.CRITTERCISM_APP_ID );
+                                   BuildConfig.CRITTERCISM_APP_ID );
         }
     }
 }
