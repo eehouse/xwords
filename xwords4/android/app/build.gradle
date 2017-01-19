@@ -1,8 +1,6 @@
 import groovy.swing.SwingBuilder
 
 def INITIAL_CLIENT_VERS = 8
-def LIBS_DEBUG = 'libs-debug'
-def LIBS_RELEASE = 'libs-release'
 def VERSION_CODE_BASE = 111
 def VERSION_NAME = '4.4.115'
 def VARIANTS = [ "xw4", "xw4dbg" ]
@@ -117,11 +115,21 @@ android {
         // directories here. AS doesn't respect what's set here: it'll
         // compile, but post-install app launch and source-level
         // debugging don't work.
-        release {
-            jniLibs.srcDir "../$LIBS_RELEASE"
+        xw4 {
+            release {
+                jniLibs.srcDir "../libs-release-xw4"
+            }
+            debug {
+                jniLibs.srcDir "../libs-debug-xw4"
+            }
         }
-        debug {
-            jniLibs.srcDir "../$LIBS_DEBUG"
+        xw4dbg {
+            release {
+                jniLibs.srcDir "../libs-release-xw4dbg"
+            }
+            debug {
+                jniLibs.srcDir "../libs-debug-xw4dbg"
+            }
         }
     }
 
@@ -181,18 +189,18 @@ afterEvaluate {
     VARIANTS.each { VARIANT ->
         String variantCaps = VARIANT.capitalize()
         BUILDS.each { BUILD ->
-            String lib = BUILD == 'Debug' ? LIBS_DEBUG : LIBS_RELEASE
             String nameLC = BUILD.toLowerCase()
-            String name = "ndkBuild${variantCaps}${BUILD}"
-            task "$name"(type: Exec) {
+            String lib = "libs-${nameLC}-${VARIANT}"
+            String ndkBuildTask = "ndkBuild${variantCaps}${BUILD}"
+            task "$ndkBuildTask"(type: Exec) {
                  workingDir '../'
                  commandLine './scripts/ndkbuild.sh', '-j3',
                  "BUILD_TARGET=${nameLC}", "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
-                 "VARIANT=$VARIANT", "NDK_LIBS_OUT=${lib}", "NDK_OUT=./obj-${nameLC}"
+                 "VARIANT=$VARIANT", "NDK_LIBS_OUT=${lib}", "NDK_OUT=./obj-${nameLC}-${VARIANT}"
             }
 
             String compileTask = "compile${variantCaps}${BUILD}Ndk"
-            tasks.getByName(compileTask).dependsOn name
+            tasks.getByName(compileTask).dependsOn ndkBuildTask
         }
     }
 
@@ -204,6 +212,21 @@ afterEvaluate {
                 "src/xw4dbg/res/values/strings.xml"
             }
     preBuild.dependsOn copyStringsTask
+}
+
+clean.dependsOn 'cleanNDK'
+task cleanNDK(type: Exec) {
+    ArrayList<String> lst = new ArrayList<String>(["rm", "-rf"]);
+    BUILDS.each { BUILD ->
+        String buildLC = BUILD.toLowerCase()
+        VARIANTS.each { VARIANT ->
+            lst.add("libs-${buildLC}-${VARIANT}")
+            lst.add("obj-${buildLC}-${VARIANT}")
+        }
+    }
+
+    workingDir '../'
+    commandLine lst
 }
 
 gradle.taskGraph.whenReady { taskGraph ->
