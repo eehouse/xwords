@@ -566,7 +566,9 @@ public class ConnStatusHandler {
         if ( BuildConfig.DEBUG ) {
             switch ( typ ) {
             case COMMS_CONN_RELAY:
-                result = String.format( "(DevID: %d) ", DevID.getRelayDevIDInt(context) );
+                result = String.format( "(DevID: %d; host: %s) ",
+                                        DevID.getRelayDevIDInt(context),
+                                        XWPrefs.getDefaultRelayHost(context) );
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();
