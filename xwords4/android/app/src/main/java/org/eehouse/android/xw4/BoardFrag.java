@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
+/* -*- compile-command: "find-and-gradle.sh installXw4Debug"; -*- */
 /*
  * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
