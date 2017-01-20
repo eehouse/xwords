@@ -922,9 +922,12 @@ public class WiDirService extends XWService {
         boolean forwarded = false;
         String destAddr = packet.getString( KEY_DEST );
         if ( null != destAddr && 0 < destAddr.length() ) {
-            Assert.assertFalse( destAddr.equals( sMacAddress ) );
-            forwardPacket( bytes, destAddr );
-            forwarded = true;
+            forwarded = destAddr.equals( sMacAddress );
+            if ( forwarded ) {
+                forwardPacket( bytes, destAddr );
+            } else {
+                DbgUtils.logd( TAG, "addr mismatch: %s vs %s", destAddr, sMacAddress );
+            }
         }
         return forwarded;
     }
