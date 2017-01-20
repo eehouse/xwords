@@ -1,0 +1,290 @@
+import groovy.swing.SwingBuilder
+
+def INITIAL_CLIENT_VERS = 8
+def VERSION_CODE_BASE = 111
+def VERSION_NAME = '4.4.115'
+def VARIANTS = [ "xw4", "xw4dbg" ]
+def BUILDS = [ "Debug", "Release" ]
+
+apply plugin: 'com.android.application'
+
+android {
+    buildToolsVersion '23.0.2'
+    defaultConfig {
+        minSdkVersion 7
+        targetSdkVersion 23
+        versionCode VERSION_CODE_BASE
+        versionName VERSION_NAME
+    }
+
+    // Rename all output artifacts to include version information
+    applicationVariants.all { variant ->
+        //     renameArtifact(variant)
+        //     variant.buildConfigField "String", "FIELD_NAME", "\"my String\""
+        def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
+        variant.buildConfigField "String", "SENDER_ID", "\"$GCM_SENDER_ID\""
+        def CRITTERCISM_APP_ID = System.getenv("CRITTERCISM_APP_ID")
+        variant.buildConfigField "String", "CRITTERCISM_APP_ID", "\"$CRITTERCISM_APP_ID\""
+
+        def gitHash = "../scripts/gitversion.sh".execute().text.trim()
+        resValue "string", "git_rev", "$gitHash"
+        variant.buildConfigField "String", "GIT_REV", "\"$gitHash\""
+
+        // def stamp = Long.valueOf('date +\'%s\''.execute().text.trim());
+        def stamp = Math.round(System.currentTimeMillis() / 1000)
+        variant.buildConfigField "long", "BUILD_STAMP", "$stamp"
+
+        // FIX ME
+        variant.buildConfigField "String", "STRINGS_HASH", "\"00000\""
+        variant.buildConfigField "boolean", "WIDIR_ENABLED", "false"
+
+        def senderID = System.getenv("GCM_SENDER_ID")
+        variant.buildConfigField "String", "GCM_SENDER_ID", "\"$senderID\""
+
+        variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
+    }
+    
+    flavorDimensions "variant"//, "abi"
+    productFlavors {
+        xw4 {
+            dimension "variant"
+            applicationId "org.eehouse.android.${VARIANTS[0]}"
+            manifestPlaceholders = [ APP_ID: applicationId ]
+            resValue "string", "app_name", "CrossWords"
+            resValue "string", "nbs_port", "3344"
+            resValue "string", "invite_prefix", "/and/"
+        }
+        xw4dbg {
+            dimension "variant"
+            applicationId "org.eehouse.android.${VARIANTS[1]}"
+            manifestPlaceholders = [ APP_ID: applicationId ]
+            resValue "string", "app_name", "CrossDbg"
+            resValue "string", "nbs_port", "3345"
+            resValue "string", "invite_prefix", "/anddbg/"
+        }
+
+        // WARNING: "all" breaks things. Seems to be a keyword. Need
+        // to figure out how to express include-all-abis
+        // all {
+        //     dimension "abi"
+        //     versionCode 0 + VERSION_CODE_BASE
+        // }
+        // armeabi {
+        //     dimension "abi"
+        //     versionCode 1 + VERSION_CODE_BASE
+        // }
+        // x86 {
+        //     dimension "abi"
+        //     versionCode 2 + VERSION_CODE_BASE
+        // }
+        // armeabiv7a {
+        //     dimension "abi"
+        //     versionCode 3 + VERSION_CODE_BASE
+        // }
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("HOME") + "/.keystore")
+            keyAlias "mykey"
+
+            // These two lines make gradle believe that the signingConfigs
+            // section is complete. Without them, tasks like installRelease
+            // will not be available!
+            storePassword "notReal"
+            keyPassword "notReal"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            debuggable false
+            minifyEnabled false // PENDING
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            // This doesn't work on marshmallow: duplicate permission error
+            // applicationIdSuffix ".debug"
+        }
+    }
+
+    sourceSets {
+        // Use symlinks instead of setting non-conventional
+        // directories here. AS doesn't respect what's set here: it'll
+        // compile, but post-install app launch and source-level
+        // debugging don't work.
+        xw4 {
+            release {
+                jniLibs.srcDir "../libs-release-xw4"
+            }
+            debug {
+                jniLibs.srcDir "../libs-debug-xw4"
+            }
+        }
+        xw4dbg {
+            release {
+                jniLibs.srcDir "../libs-release-xw4dbg"
+            }
+            debug {
+                jniLibs.srcDir "../libs-debug-xw4dbg"
+            }
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    def gitrev = "git describe --tags".execute().text.trim()
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.outputFile = 
+            new File(output.outputFile.parent,
+                     output.outputFile.name.replace(".apk", "-${gitrev}.apk"))
+        }
+    }
+}
+
+dependencies {
+    // Look into replacing this with a fetch too PENDING
+    compile files('../libs/gcm.jar')
+
+    // Should probably choose a version rather than risk having it
+    // upgraded on me. PENDING
+    compile 'com.android.support:support-v4:+'
+    // compile files('../libs/android-support-v13.jar')
+
+    xw4dbgCompile 'com.crittercism:crittercism-android-agent:+'
+}
+
+task mkImages(type: Exec) {
+    workingDir '../'
+    commandLine './scripts/mkimages.sh'
+}
+
+task copyStrings(type: Exec) {
+    workingDir '../'
+    commandLine './scripts/copy-strings.py'
+}
+
+task ndkSetup(type: Exec) {
+    workingDir '../'
+    commandLine "./scripts/ndksetup.sh", "--with-clang"
+}
+
+task myPreBuild(dependsOn: ['ndkSetup', 'mkImages', 'copyStrings', 'mkXml']) {
+}
+preBuild.dependsOn myPreBuild
+
+task mkXml(type: Exec) {
+    workingDir '../'
+    commandLine './scripts/mk_xml.py', '-o',
+        "app/src/main/java/org/eehouse/android/xw4/loc/LocIDsData.java",
+        '-t', "debug"
+}
+
+afterEvaluate {
+    VARIANTS.each { VARIANT ->
+        String variantCaps = VARIANT.capitalize()
+        BUILDS.each { BUILD ->
+            String nameLC = BUILD.toLowerCase()
+            String lib = "libs-${nameLC}-${VARIANT}"
+            String ndkBuildTask = "ndkBuild${variantCaps}${BUILD}"
+            task "$ndkBuildTask"(type: Exec) {
+                 workingDir '../'
+                 commandLine './scripts/ndkbuild.sh', '-j3',
+                 "BUILD_TARGET=${nameLC}", "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
+                 "VARIANT=$VARIANT", "NDK_LIBS_OUT=${lib}", "NDK_OUT=./obj-${nameLC}-${VARIANT}"
+            }
+
+            String compileTask = "compile${variantCaps}${BUILD}Ndk"
+            tasks.getByName(compileTask).dependsOn ndkBuildTask
+        }
+    }
+
+    String copyStringsTask = "copyStringsXw4Dbg"
+    task "$copyStringsTask"(type: Exec) {
+                workingDir './'
+                environment.put('APPNAME', 'CrossDbg')
+                commandLine 'make', '-f', '../scripts/Variant.mk',
+                "src/xw4dbg/res/values/strings.xml"
+            }
+    preBuild.dependsOn copyStringsTask
+}
+
+clean.dependsOn 'cleanNDK'
+task cleanNDK(type: Exec) {
+    ArrayList<String> lst = new ArrayList<String>(["rm", "-rf"]);
+    BUILDS.each { BUILD ->
+        String buildLC = BUILD.toLowerCase()
+        VARIANTS.each { VARIANT ->
+            lst.add("libs-${buildLC}-${VARIANT}")
+            lst.add("obj-${buildLC}-${VARIANT}")
+        }
+    }
+
+    workingDir '../'
+    commandLine lst
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if ( taskGraph.hasTask(':app:validateReleaseSigning') ) {
+        def pass
+        if (System.getenv("ANDROID_RELEASE_PASSWORD")) {
+            pass = System.getenv("ANDROID_RELEASE_PASSWORD")
+        } else if ( null != System.console() ) {
+            pass = System.console().readPassword("\nPlease enter key passphrase: ")
+            pass = new String(pass)
+        } else {
+            new SwingBuilder().edt {
+                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+                title: 'Enter password', // Dialog title
+                alwaysOnTop: true, // pretty much what the name says
+                resizable: false, // Don't allow the user to resize the dialog
+                locationRelativeTo: null, // Place dialog in center of the screen
+                pack: true, // We need to pack the dialog (so it will take the size of it's children
+                show: true // Let's show it
+                      ) {
+                    vbox { // Put everything below each other
+                        label(text: "Please enter key passphrase:")
+                        input = passwordField();
+                        button(defaultButton: true, text: 'OK', actionPerformed: {
+                                   pass = new String(input.password); // Set pass variable to value of input field
+                                   // println "myPass: $myPass"
+
+                                   dispose(); // Close dialog
+                               })
+                    }
+                }
+            }
+        }
+
+        android.signingConfigs.release.storePassword = pass
+        android.signingConfigs.release.keyPassword = pass
+    }
+}
+
+// def getVersionName() {
+//     try {
+//         def stdout = new ByteArrayOutputStream()
+//         exec {
+//             commandLine 'git', 'describe', '--dirty'
+//             standardOutput = stdout
+//         }
+//         return stdout.toString().trim()
+//     }
+//     catch (ignored) {
+//         return null;
+//     }
+// }
+
+// def renameArtifact(variant) {
+//     variant.outputs.each { output ->
+//         def name = String.format( "XWords4-%s-%s.apk", variant.name,
+//                                   getVersionName() )
+//         output.outputFile = new File( (String)output.outputFile.parent, 
+//                                       (String)name )
+//     }
+// }

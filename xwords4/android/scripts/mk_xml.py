@@ -79,7 +79,7 @@ def checkText( text ):
                 seen.add( digit )
     return text
 
-def printStrings( pairs, outfile, target, variant ):
+def printStrings( pairs, outfile, target ):
     match = CLASS_NAME.match(outfile)
     if not match:
         print "did you give me a java file?:", outfile
@@ -92,20 +92,20 @@ def printStrings( pairs, outfile, target, variant ):
 /***********************************************************************
 * Generated file (by %s); do not edit!!! 
 ***********************************************************************/
-package org.eehouse.android.%s.loc;
+package org.eehouse.android.xw4.loc;
 
 import android.content.Context;
 import junit.framework.Assert;
 
-import org.eehouse.android.%s.R;
-import org.eehouse.android.%s.DbgUtils;
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.DbgUtils;
 
 public class %s {
     private static final String TAG = %s.class.getSimpleName();
     public static final int NOT_FOUND = -1;
     protected static final int[] S_IDS = {
 """
-    fil.write( lines % (sys.argv[0], variant, variant, variant, name, name) )
+    fil.write( lines % (sys.argv[0], name, name) )
 
     keys = pairs.keys()
     for ii in range( len( keys ) ):
@@ -179,15 +179,13 @@ def main():
     outfile = ''
     outfileDbg = ''
     target=''
-    variant=''
-    pairs, rest = getopt.getopt(sys.argv[1:], "o:t:d:v:")
+    pairs, rest = getopt.getopt(sys.argv[1:], "o:t:d:")
     for option, value in pairs:
         if option == '-o': outfile = value
         elif option == '-t': target = value
-        elif option == '-v': variant = value
 
     # Gather all localizable strings
-    pairs = getStrings("res/values/strings.xml", False)
+    pairs = getStrings("app/src/main/res/values/strings.xml", False)
 
     # for subdir, dirs, files in os.walk('res_src'):
     #     for file in files:
@@ -195,7 +193,7 @@ def main():
     #         dest = src.replace( 'res_src', 'res', 1 )
     #         xform( src, dest )
 
-    if outfile: printStrings( pairs, outfile, target, variant )
+    if outfile: printStrings( pairs, outfile, target )
 
 ##############################################################################
 if __name__ == '__main__':

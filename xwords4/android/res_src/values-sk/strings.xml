@@ -1,0 +1,1418 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+           tools:ignore="MissingTranslation"
+           >
+  <!-- Text of menuitem in main games-list screen's menu -->
+  <string name="button_new_game">Pridať hru</string>
+  <!-- Used to format game name plus some other information as the
+         one-line summary for each game in the main screen.  The name
+         of the game is substituted for %1$s.  Something else
+         (language, player names, etc), is substituted for %2$s. This
+         does not require translation unless the parentheses or
+         ordering is wrong for your language.-->
+  <string name="str_game_name_fmt">XLATE ME: %1$s (%2$s)</string>
+  <!-- Games list screen menuitem text for creating a new group -->
+  <string name="button_new_group">XLATE ME: Add group</string>
+  <string name="list_item_config">Konfigurovať</string>
+  <!-- pulls up dialog to change the group of the selected game -->
+  <string name="list_item_move">XLATE ME: Move to group…</string>
+  <!-- pulls up dialog to rename (change name of) the selected game -->
+  <string name="list_item_rename">XLATE ME: Rename…</string>
+  <string name="list_item_delete">Vymazať</string>
+  <string name="list_item_copy">Kopírovať</string>
+  <!-- Text of confirmation dialog posted when list_item_reset menu
+         is selected -->
+  <!-- text within rename dialog (triggered by selecting
+         list_item_rename) -->
+  <string name="rename_label">XLATE ME: Change the name of this game to:</string>
+  <!--  -->
+  <string name="game_rename_title">XLATE ME: Rename game</string>
+  <!-- Title of dialog for renaming game (triggered by selecting
+         list_item_rename) -->
+  <!-- If you try to copy a networked game you get this error
+    message. -->
+  <string name="no_copy_network">XLATE ME: Games that have already connected
+      to the relay cannot be copied. Use \"New from\" for a
+      ready-to-play copy with all the same settings.</string>
+  <string name="list_item_reset">Vynulovať</string>
+  <string name="list_item_new_from">Nová hra podľa vzoru</string>
+  <string name="play">Hrať hru</string>
+  <string name="title_dicts_list">Slovníky Crosswords</string>
+  <string name="title_game_config_fmt">Konfigurovať %1$s</string>
+  <!-- text of checkbox at top of dialog allowing to unlock in-play
+    game to make changes -->
+  <string name="game_locked">XLATE ME: Lock settings</string>
+  <!-- title for popup list of langugages from which user picks -->
+  <string name="title_langs_list">XLATE ME: Languages (based on installed
+      wordlists)</string>
+  <!-- alternate window title used when game is networked -->
+  <string name="title_gamenet_config_fmt">XLATE ME: %1$s settings (networked)</string>
+  <string name="title_prefs">Predvoľby Crosswords</string>
+  <!-- Text of confirmation dialog for above -->
+  <string name="confirm_revert_all">XLATE ME: Are you sure you want to restore
+      all settings to their original values?</string>
+  <!-- Second menu item.  Reverts only the colors to their
+         default/original values -->
+  <string name="button_revert_colors">XLATE ME: Restore colors</string>
+  <!-- Text of confirmation dialog for above -->
+  <string name="confirm_revert_colors">XLATE ME: Are you sure you want to
+      restore all color settings to their original values?</string>
+  <!--
+       ############################################################
+       # :Menus:
+       # Preferences screen menus
+       #
+       # There are two menuitems availble via the menu key from this
+       # screen
+       ############################################################
+      -->
+  <!-- text of first menu item.  Will revert all preferences to
+         their default/original values -->
+  <string name="button_revert_all">XLATE ME: Restore all</string>
+  <string name="button_yes">Áno</string>
+  <string name="button_no">Nie</string>
+  <string name="button_save">Uložiť</string>
+  <string name="button_discard">Zrušiť</string>
+  <!-- Shown in the main screen when you launch Crosswords from an
+         invitation (received in email or messaging app, say) and
+         there's already a game running that matches that invitation.
+         It's to prevent you from opening multiple games and getting
+         confused.  But some people who play together all the time use
+         the same room name over and over so they'll get this warning
+         and it's harmless to ignore it. -->
+  <string name="dup_game_query_fmt">XLATE ME: You already have a game that seems
+    to have been created (on %1$s) from the same invitation.  Are you
+    sure you want to create another?</string>
+  <!-- Used for a button when informing user that his attempt to
+         connect to the relay failed because the room named does not
+         exist.  (I believe this no longer occurs.) -->
+  <string name="button_retry">XLATE ME: Retry</string>
+  <string name="player_label">Meno:</string>
+  <!-- If the dropdown is selected, this is the title displayed
+         above the list of selectable items.  The language the game
+         will use is substituted in for "%1$s". -->
+  <string name="dicts_list_prompt_fmt">XLATE ME: Installed wordlists (in %1$s)</string>
+  <!-- label for dropdown by which wordlist is chosen that this
+         player will use.  The language the game will use (which
+         constrains the choice of wordlists) is substituted in for
+         "%1$s". -->
+  <string name="dict_lang_label_fmt">XLATE ME: Wordlist (in %1$s)</string>
+  <string name="info_title">Pre vašu informáciu...</string>
+  <string name="query_title">Otázka...</string>
+  <!-- 
+       ###########################################################
+       # :Dialogs:
+       # About dialog
+       #
+       # Dialog giving copyright and other basic info about # the app
+       ########################################################### 
+      -->
+  <!-- String giving version info, which is substituted in. -->
+  <string name="about_vers_fmt">XLATE ME: Crosswords for Android, Version %1$s,
+        rev %2$s, built on %3$s.</string>
+  <!-- Welcome dialog text -->
+  <string name="default_name_message">XLATE ME: Thanks for installing
+      Crosswords!\n\nFeel free to enter your name here. It will be used
+      when creating new games.  (You can change it later in the \"New
+      game default\" section of Settings.)</string>
+  <!--
+       ###########################################################
+       # :Dialogs:
+       # Welcome dialog
+       # 
+       # Shown the first time a user launches Crosswords (and
+       # again only if the preference for default first user
+       # name is cleared).  Its purpose is to encourage him to
+       # enter the name of the most common non-robot player on
+       # this device.
+       ###########################################################
+      -->
+  <!-- Welcome dialog title -->
+  <string name="default_name_title">XLATE ME: Welcome</string>
+  <!-- Shown when you first pick the list_item_new_from menuitem -->
+  <string name="not_again_newfrom">XLATE ME: Create a new ready-to-play game
+      using all the settings from this one.  That is, treat this game
+      as a template.</string>
+  <!-- Shown when the board screen is visible and it's just become
+         another players turn. The idea is to give a hint about how to
+         find out about recent moves. -->
+  <string name="not_again_turnchanged">XLATE ME: The player whose turn it is
+      is drawn large in the scoreboard.\n\nHold your finger on a name in
+      the scoreboard to get details about that player\'s most recent
+      move.</string>
+  <!-- This is not currently shown -->
+  <!-- <string name="not_again_dicts">Crosswords wordlists, which are -->
+  <!--   just compressed lists of words plus tile information, determine -->
+  <!--   what language a game is played in and how \"smart\" the robot -->
+  <!--   is.  You can download different sized wordlists in many -->
+  <!--   languages here.  Email me at eehouse@eehouse.org for information -->
+  <!--   on building and installing your own wordlists.</string> -->
+  <!-- Shown the first time the board arrow is drawn on the current
+         Board screen.  The idea is that you're tapping around
+         figuring out how to play and when you tap an empty cell the
+         arrow appears.  This explains it. -->
+  <string name="not_again_arrow">XLATE ME: Moving tiles to the board:\nYou can
+      drag tiles between the rack and the board, or you can tap an
+      empty square to place the board arrow. Rack tiles you tap will
+      replace the arrow (moving it one square in the direction it
+      points.)  Tap the arrow once to change its orientation; a second
+      time, to hide it. A checkbox in the Appearance section of
+      Settings will hide it permanently.</string>
+  <!-- This is shown in the Board screen when you successfully
+         connecting a game to the relay and are the last device in the
+         game to do so, i.e. the game is now complete and you should
+         expect play to begin. -->
+  <string name="not_again_conndall">XLATE ME: You have connected and joined a
+      game on the relay; the room is now full. The device that
+      created the room will now assign your initial tiles and play can
+      begin.</string>
+  <!-- This is shown in the Board screen when you successfully
+         connecting a game to the relay and are not the first device
+         in the game but not the last either.  So it will only occur
+         for games with more than two devices, which are rare. -->
+  <string name="not_again_conndmid">XLATE ME: You have connected and joined a
+      game on the relay. You will be notified when the remaining
+      device[s] have joined your room and play can begin.</string>
+  <!-- This is shown in the Board screen when you successfully
+         connect a game to the relay and are the first device in the
+         game to do so. -->
+  <string name="not_again_conndfirst">XLATE ME: You have connected and started
+      a game in a new room.  Once the remaining devices have joined
+      your room and Crosswords has assigned them tiles the game can
+      begin.</string>
+  <!-- Shown in the Game configure screen when the game_locked
+         checkbox is checked and you uncheck it.  -->
+  <string name="not_again_unlock">XLATE ME: This game is in play. Some
+      settings, e.g. the number of players, cannot be changed without
+      restarting it.  When you leave this page you will have a chance
+      to discard changes to avoid a restart.</string>
+  <!-- This is shown when you choose the board_menu_done menu item.
+         It's to let you know that there's a shortcut that does almost
+         the same thing. -->
+  <string name="not_again_done">XLATE ME: Tapping the \"pts\" counter that
+      appears at the right end of the rack is the easiest way to
+      commit a move.</string>
+  <!-- Shown when you tap the values button on the toolbar of the
+         main Board screen.  This is intended to allow players to
+         remind themselves how much played tiles are worth while
+         planning a move. -->
+  <string name="not_again_values">XLATE ME: This button changes whether the
+        board shows letters on placed tiles or their point values.
+        Use it to remind yourself what a tile is worth.</string>
+  <!-- Shown when you tap the chat button on the toolbar of the
+         main Board screen -->
+  <string name="not_again_chat">XLATE ME: This button opens the screen for
+      messaging between devices in this game.  Messages will be kept
+      until you delete the game that contains them.</string>
+  <!-- Shown when you tap the undo/redo button on the toolbar of the
+         main Board screen -->
+  <string name="not_again_undo">XLATE ME: This button undos or redoes the
+      current turn.</string>
+  <!-- Shown when you tap the zoom (+/-) button on the toolbar of
+         the main Board screen -->
+  <string name="not_again_zoom">XLATE ME: This button toggles the board
+      between zoomed and regular size. Drag it when it is zoomed to
+      see parts that are hidden.</string>
+  <!-- Shown when you tap the flip button on the toolbar of the main
+         Board screen -->
+  <string name="not_again_flip">XLATE ME: This button flips the board across a
+      diagonal axis.</string>
+  <!-- Shown when you tap the juggle button on the toolbar of the
+         main Board screen -->
+  <string name="not_again_juggle">XLATE ME: This button randomly rearranges
+      tiles in the rack.</string>
+  <!-- Shown when you tap the next hint button on the toolbar of the
+         main Board screen -->
+  <string name="not_again_hintnext">XLATE ME: This button shows all possible
+      moves in descending order (using tiles to the right of the rack
+      divider.)</string>
+  <!-- Currently not used -->
+  <!-- <string name="not_again_newgame">The new game you have created has -->
+  <!--   two players. Player 1 is a robot; Player 2 is you. Tap the game -->
+  <!--   to play; long-tap (hold your finger on the game) to change its -->
+  <!--   settings or for other options.</string> -->
+  <!-- Shown when you tap the Previous Hint button on the toolbar of
+         the main Board screen -->
+  <string name="not_again_hintprev">XLATE ME: This button shows all possible
+      moves in ascending order (using tiles to the right of the rack
+      divider.)</string>
+  <string name="not_again_trading_menu">XLATE ME: Use the menu or action bar
+      to commit your turn or exit exchange mode.</string>
+  <string name="not_again_trading_buttons">XLATE ME: Use the buttons to
+      commit your turn or exit exchange mode.</string>
+  <!-- Shown when the user chooses the "board_menu_trade" menu -->
+  <string name="not_again_trading">XLATE ME: You are entering tile-exchange
+      mode.\n\nTap tiles to add/remove them from the set to be
+      exchanged.\n\n</string>
+  <!-- The following strings (all whose names start with
+         "not_again") appear in the New user info dialog.
+      -->
+  <!-- shown when user chooses the gamel_menu_checkmoves menu -->
+  <string name="not_again_sync">XLATE ME: This action checks the relay for
+      pending moves/messages for all networked games and flags those
+      with pending moves. When you open a flagged game it will connect
+      and sync. (In a later release these moves will be downloaded in
+      the background.)</string>
+  <!-- Text for button in new-user-info dialog with title just
+         above.  -->
+  <string name="button_notagain">XLATE ME: Do not show again</string>
+  <!--
+       ###########################################################
+       # :Dialogs:
+       # New user info dialog
+       # 
+       # This dialog pops up in places I think new users need an
+       # explanation of something.  It always has a button allowing
+       # the user to say he doesn't need to see it again.
+       ########################################################### 
+      -->
+  <!-- Title of New user info dialog-->
+  <string name="newbie_title">XLATE ME: New user info</string>
+  <string name="title_tile_picker">Písmeno za žolíka</string>
+  <string name="tiles_left_title">Zostávajúce kamene</string>
+  <string name="counts_values_title">Počty a hodnoty kameňov</string>
+  <string name="history_title">História hry</string>
+  <string name="finalscores_title">Celkové skóre</string>
+  <!-- system menu for main board view -->
+  <string name="board_menu_done">Ukončiť ťah</string>
+  <string name="board_menu_trade">Vymeniť</string>
+  <!-- Undos the last *committed* turn.  Note that this is different
+         from the undo button that undoes or redoes an in-progress
+         not-yet-committed turn.  This is disabled for networked
+         games.-->
+  <string name="board_menu_undo_last">XLATE ME: Undo last</string>
+  <string name="board_menu_tray_show">XLATE ME: Show rack</string>
+  <!-- hide and shows the tray.  On devices where there is enough
+         room for the full board and tray to be shown then hiding the
+         tray just "turns it over", i.e. shows tiles with '?'
+         characters.-->
+  <string name="board_menu_tray_hide">XLATE ME: Hide rack</string>
+  <string name="board_submenu_game">Hra</string>
+  <string name="board_menu_game_counts">Počty a hodnoty</string>
+  <string name="board_menu_game_left">Zostávajúce kamene</string>
+  <string name="board_menu_game_history">História hry</string>
+  <string name="board_menu_game_final">Celkové skóre</string>
+  <string name="board_menu_game_resign">XLATE ME: Resign</string>
+  <string name="board_menu_game_resend">Preposlať správy</string>
+  <string name="board_menu_file_about">O Crosswords</string>
+  <!-- 
+       ############################################################
+       # :Menus:
+       # Context menu for main games-list screen
+       ############################################################ 
+      -->
+  <!-- title of contextual menu.  Name of the selected game is
+         substituted in. -->
+  <string name="game_item_menu_title_fmt">XLATE ME: \"%1$s\" actions:</string>
+  <!-- returned by util_getUserString -->
+  <!--string name="str_robot_moved">Robot uskutočnil tento ťah:</string-->
+  <string name="strs_values_header_fmt">%1$s počet/hodnota:\n</string>
+  <string name="strd_remaining_tiles_add_fmt">+ %1$d [všetky zostávajúce kamene]</string>
+  <string name="strd_unused_tiles_sub_fmt">- %1$d [nepoužité kamene]</string>
+  <string name="strd_time_penalty_sub_fmt"> - %1$d [čas]</string>
+  <string name="strs_move_across_fmt">ťah (od %1$s naprieč)</string>
+  <string name="strs_move_down_fmt">ťah (od %1$s dolu)</string>
+  <string name="strs_tray_at_start_fmt">Zásobník pri štarte: %1$s</string>
+  <string name="strss_traded_for_fmt">Vymenil %1$s za %2$s.</string>
+  <string name="str_phony_rejected">Nepovolené slovo; ťah stratený!</string>
+  <string name="strd_cumulative_score_fmt">Celkové skóre: %1$d</string>
+  <!-- Used in formatting remote player move summaries -->
+  <string name="str_remote_moved_fmt">XLATE ME: Remote player %1$s made this
+    move:\u0020</string>
+  <string name="strs_new_tiles_fmt">Nové kamene: %1$s</string>
+  <string name="str_passed">Prešiel</string>
+  <!-- Used in formatting reports of trades (exchanges of tiles).
+         Number of tiles traded is substituted for %1$d-->
+  <string name="str_lostturn">Ťah bol stratený</string>
+  <string name="str_commit_confirm">Potvrdiť tento ťah?\n</string>
+  <!-- Used to separate names of players when listing them on one
+    line in a game summary.  The \u0020 is a space in xml. -->
+  <string name="vs_join">XLATE ME: \u0020vs.\u0020</string>
+  <!-- Used, with remote player's name substituted for %1$s, to
+    indicate that the player is remote. -->
+  <string name="str_nonlocal_name_fmt">XLATE ME: %1$s (remote)</string>
+  <string name="str_bonus_all">Bonus za využitie všetkých kameňov: 50\n</string>
+  <string name="strd_turn_score_fmt">Skóre za ťah: %1$d\n</string>
+  <!-- text of dialog shown when the menu item board_menu_undo_last
+         is chosen. -->
+  <string name="confirm_undo_last">XLATE ME: Are you sure you want to undo the
+      last committed turn? (There is no redo option.)</string>
+  <!-- First line in the remaining tiles dialog (reached by tapping
+         the number at left end of the scoreboard) -->
+  <!-- error messages -->
+  <string name="str_tiles_not_in_line">Kamene musia ležať v jednom rade.</string>
+  <string name="str_no_empties_in_turn">Medzi kameňmi nesmie byť žiadne prázdne políčko.</string>
+  <string name="str_two_tiles_first_move">V prvom ťahu musíte umiestniť dva alebo viacej kameňov.</string>
+  <string name="str_tiles_must_contact">Nové kamene musia naväzovať na už položené kamene (alebo sa s nimi krížiť).</string>
+  <string name="str_not_your_turn">To nemôžete spraviť; nie je to váš ťah!</string>
+  <string name="str_no_peek_robot_tiles">Nenakúkajte na kamene robota!</string>
+  <string name="str_too_few_tiles_left_to_trade">Zostáva príliž málo kameňov na výmenu.</string>
+  <string name="str_cant_undo_tileassign">Priradenie kameňa nemôže byť vrátené spät.</string>
+  <string name="str_cant_hint_while_disabled">Pre túto hru je zakázaná nápoveda. Pre novú hru ju môžete povoliť v Predvolbách.</string>
+  <string name="str_no_peek_remote_tiles">Nenakúkajte na kamene vzdialeného hráča!</string>
+  <string name="str_reg_unexpected_user">Odmietnutý pokus o registráciu neočakávaného hráča(ů)</string>
+  <string name="str_server_dict_wins">Konflikt medzi slovníkmi Servera a Klienta; Platí vždy slovník Servera.</string>
+  <string name="downloading_dict_fmt">Nahrávam slovník Crosswords %1$s...</string>
+  <string name="str_reg_server_sans_remote">Aspoň jeden hráč musí byť označený ako \"Vzdialený\" aby ste mohli hru spustiť ako Server.</string>
+  <string name="remote_label">Hráč klient</string>
+  <string name="robot_label">Hráč robot</string>
+  <string name="robot_name_fmt">%1$s (robot)</string>
+  <!-- Final state: game is over. -->
+  <string name="summary_relay_gameover_fmt">XLATE ME: Game over in room \"%1$s\"</string>
+  <!-- Third state: enough devices have connected in the room to
+         form a complete game.  We'll be in this state as long as the
+         game exists. -->
+  <string name="summary_relay_conn_fmt">XLATE ME: Game in play in room \"%1$s\"</string>
+  <!-- Second state: has been assigned to a room on the relay
+         (meaning the network is working) but there are not yet as
+         many players as expected: the game is not complete and play
+         cannot happen. -->
+  <string name="summary_relay_wait_fmt">XLATE ME: Waiting for players in room
+      \"%1$s\"</string>
+  <!-- The display of each networked game includes one of three
+         states it can be in in the process of connecting to the
+         relay.  These next three strings are used to create those
+         three. -->
+  <!-- First state: is configured to use a room but has not yet
+         contacted the relay and been assigned that room. -->
+  <string name="summary_relay_conf_fmt">XLATE ME: Configured for room
+      \"%1$s\"</string>
+  <!-- Used as a substitute for the names of remote players when
+         they aren't available yet because the connection is not
+         complete.  Displayed in the lists of players found in each
+         game listing. -->
+  <string name="missing_player">XLATE ME: (not here yet…)</string>
+  <string name="guest_name">(hráč klient)</string>
+  <string name="password_label">Heslo</string>
+  <!-- Text of "toast" shown when a game is notified by the relay
+         that all expected players have registered.  At this point
+         play can begin. -->
+  <string name="msg_relay_all_here_fmt">XLATE ME: All players are here in room
+      \"%1$s\".</string>
+  <!-- Text of "toast" (mini window briefly displayed) shown when a
+         game first connects to the relay.  The three substitutions
+         are the device's order within the game (e.g. 2), the name of
+         the room, and how many additional players have not yet
+         registered with the relay in this game.  This should be seen
+         only once per game. -->
+  <!-- Short for "points", this is shown at the right end of the
+         tray in place of the first tile placed along with the points
+         the current move would earn if committed. -->
+  <string name="pts">XLATE ME: pts</string>
+  <!-- Most users create games with only two players, which is the
+         default, but Crosswords supports up to four.  When I'm using
+         the above string to encourage the opener of a game missing
+         players to invite, IF the number of missing players is
+         greater than one this text is appended to the above. -->
+  <string name="invite_multiple">XLATE ME: \u0020(You are expecting multiple
+      remote players.  Be sure to address your invitation to
+      that many people.)</string>
+
+  <!-- displayed when you long-tap a scoreboard entry and there's no
+         most recent score to show -->
+  <string name="no_moves_made">XLATE ME: (No moves yet)</string>
+  <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Triple-word -->
+  <string name="bonus_w3x_summary">XLATE ME: 3W</string>
+  <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Triple-letter -->
+  <string name="bonus_l3x_summary">XLATE ME: 3L</string>
+  <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Double-word -->
+  <string name="bonus_w2x_summary">XLATE ME: 2W</string>
+  <!-- Bonus value hint that's displayed in gray text in the colored
+         bonus square. Double-letter -->
+  <string name="bonus_l2x_summary">XLATE ME: 2L</string>
+  <string name="entering_trade">XLATE ME: Tap tiles to select…</string>
+  <string name="button_trade_cancel">XLATE ME: Cancel trade</string>
+  <!--
+       ############################################################
+       # :Screens:
+       # Board screen
+       #
+       #
+       # (an open game, with the 15x15 grid of # squares, letters
+       # played etc., is displayed here)
+       ############################################################
+      -->
+  <!-- Buttons shown at bottom when board is in exchange mode,
+         i.e. after user has picked board_menu_trade menu item -->
+  <string name="button_trade_commit">XLATE ME: Commit trade</string>
+  <string name="player_edit_title">Hráč</string>
+  <string name="players_label_standalone">Hráči</string>
+  <!-- text for separator above the list of players that's used for
+         networked games.  The numbers of local and non-local players
+         are substituted for %1$d and %2$d. -->
+  <string name="players_label_host_fmt">XLATE ME: Players (%1$d local, %2$d
+      off-device)</string>
+  <string name="button_add_player">Pridať hráča</string>
+  <string name="button_juggle_players">Prehodiť hráča</string>
+  <!-- If the query returns no rooms, this message is displayed,
+    with the number of players in the game and its language
+    substituted. -->
+  <string name="no_name_found_fmt">XLATE ME: No public rooms found for
+      %1$d-player games in %2$s. Try refreshing or creating your
+      own.</string>
+  <!-- If you check the join_room checkbox Crosswords queries the
+    relay.  This is the text of the progress indicator displayed what
+    that's going on.  (It's often visible for only a very short
+    time.)-->
+  <string name="public_names_progress_fmt">XLATE ME: Fetching public rooms for
+      %1$d-player games in %2$s.</string>
+  <!-- title for popup of public rooms found on server -->
+  <string name="room_public_prompt">XLATE ME: Select public room</string>
+  <!-- text of checkbox -->
+  <string name="room_public">XLATE ME: Make new room public</string>
+  <!-- hint (text shown when field is empty) for room name field -->
+  <string name="new_room_hint">XLATE ME: Room name</string>
+  <!-- text of checkbox asking if user wants to search for open
+    public rooms -->
+  <string name="join_room">XLATE ME: Join public room</string>
+  <!-- text of separator marking out the connection area of the dialog -->
+  <string name="connect_label_relay">XLATE ME: Connection (via internet)</string>
+  <string name="langdict_label">XLATE ME: Game language/wordlist</string>
+  <!-- text of separator marking out the language area of the
+         dialog.  First is used for single-device games, and second
+         for networked games (where players aren't allowed to have
+         different wordlists.) -->
+  <string name="lang_label">XLATE ME: Game language</string>
+  <string name="dicts_item_select">Nastaviť ako východzí</string>
+  <!--  -->
+  <string name="loc_external">XLATE ME: External</string>
+  <!-- see move_dictf above -->
+  <string name="loc_internal">XLATE ME: Internal</string>
+  <!-- When the dicts_item_move menu is chosen, this text is used in
+         the confirmation dialog.  The name of the selected wordlist
+         is substituted for %1$s.  The strings loc_internal and
+         loc_internal are substitued for %2$s and %3$s (or vice-versa,
+         depending on the current location of the wordlist.)-->
+  <string name="move_dict_fmt">XLATE ME: Location for wordlist %1$s</string>
+  <!--  -->
+  <string name="button_default_both">XLATE ME: Both</string>
+  <!--  -->
+  <string name="button_default_robot">XLATE ME: Robot</string>
+  <!-- These three strings are the text for three buttons giving
+         choices in respose to the dialog launched in response to the
+         dicts_item_select menu (see dicts_item_select above.) -->
+  <string name="button_default_human">XLATE ME: Human</string>
+  <!--
+       ############################################################
+       # :Dialogs:
+       # Wordlists screen dialogs
+       ############################################################ 
+      -->
+  <!-- Used as the text fo the confirming/querying dialog that goes
+         up when the dicts_item_select menuitem is chosen.  The
+         possible answers are the three button text strings below. -->
+  <string name="set_default_message_fmt">XLATE ME: For what players should the
+    wordlist %1$s be the default for new games? (The language %2$s will be
+    the default for both.)</string>
+  <!-- Additional text appended to text confirm_delete_dictf in the
+         wordlist delete confiration dialog in the case where the
+         wordlist to be deleted is NOT the last in its language. The
+         name of the language is substituted for %1$s. -->
+  <!-- text of confirmation dialog posted when the delete 'X' button
+         beside the listing of a wordlist is tapped.  The name of the
+         wordlist is substituted for %1$s.  Sometimes one of the two
+         strings below is appended. -->
+  <string name="settings_label">Nastavenie hry</string>
+  <string name="minutes_label">Minút v hre</string>
+  <!-- title of popup used to determine how words are handled that
+         are not in the wordlist used for the game (or player if using
+         different wordlists per player) -->
+  <string name="phonies_spinner_prompt">XLATE ME: How to handle \"phonies\"
+        (words not in wordlist)</string>
+  <string name="robot_smartest">XLATE ME: Smartest robot</string>
+  <string name="robot_smarter">XLATE ME: Smarter robot</string>
+  <!-- Three possible choices presented in the popup above -->
+  <string name="robot_smart">XLATE ME: Smart robot</string>
+  <!-- title of popup used to select how "smart" (how capable) the
+    robot player will be. -->
+  <string name="robot_spinner_prompt">XLATE ME: How smart is the robot player?</string>
+  <string name="download_dicts">Nahrať viac...</string>
+  <!--
+       ############################################################
+       # :Menus:
+       # Wordlists screen menus
+       ############################################################ 
+      -->
+  <!-- title of contextual menu item.  If chosen it brings up a
+         dialog that offers to move the selected wordlist from its
+         current storage location to the other.  This menuitem is
+         hidden if the selected wordlist is built in or if there is
+         only one possible storage location, e.g. if the device has no
+         SD card slot. -->
+  <string name="dicts_item_move">XLATE ME: Change storage location</string>
+  <!-- If you tap the download_dicts button and Android fails to
+         find and launch an app that's registered to handle http
+         downloads a Toast is posted with this message. -->
+  <string name="no_download_warning">XLATE ME: Unable to download. Do you have
+      a web browser installed?</string>
+  <!-- Used to describe wordlists that are in the Downloads
+         directory.  Currently I don't look there so this is unused,
+         but I will eventually do so.  This should be the same name as
+         the built-in Android web browser uses for the directory where
+         it saves files it downloads. -->
+  <string name="loc_downloads">XLATE ME: Downloads</string>
+  <!-- One of the strings used in the right column of the list of
+         installed wordlists to describe those that are part of
+         Crosswords and that cannot be uninstalled or moved.
+         loc_internal and loc_external are the other possible strings
+         in this column. -->
+  <string name="loc_builtin">XLATE ME: Built-in</string>
+  <string name="confirm_save_title">Potvrdiť uloženie</string>
+  <string name="confirm_save">Táto hra je rozohraná. Ak tieto zmeny uložíte, musí byť hra spustená znovu.
+    Chcete tieto zmeny uložiť alebo ich chcete zrušiť?</string>
+  <string name="hints_allowed">Povoliť nápovedu</string>
+  <!-- text of checkbox.  If this checkbox is checked, games created
+         for network play will by default have the hint feature
+         enabled. -->
+  <string name="nethints_allowed">XLATE ME: Allow hints (networked)</string>
+  <string name="use_timer">Povoliť časovač</string>
+  <string name="show_arrow">Ukázať šipku</string>
+  <string name="show_arrow_summary">Slovo sa začne písať v smere šipky a od jejho umiestenia</string>
+  <!-- clarification of above -->
+  <string name="keep_screenon_summary">XLATE ME: Keep board screen on 10 mins</string>
+  <!-- Checkbox that when set keeps the device screen from dimming
+         if the board screen is what's displayed.  This is to allow
+         users to think about a move without having to touch the
+         screen all the time.-->
+  <string name="keep_screenon">XLATE ME: Keep screen on</string>
+  <string name="explain_robot">Vysvetliť ťahy robota</string>
+  <string name="explain_robot_summary">Ukázať skóre po každom ťahu robota</string>
+  <string name="skip_confirm_turn">Preskočit potvrdenie ťahu</string>
+  <string name="skip_confirm_turn_summary">Neukazovať skóre po každom ťahu hráča</string>
+  <!-- explanation of the above -->
+  <string name="summary_sort_tiles">XLATE ME: Sort racks whenever new tiles
+      are added</string>
+  <!-- If this preference is checked, tiles in the rack will be
+         re-ordered alphabetically whenever tiles are added,
+         i.e. after ever move.-->
+  <string name="title_sort_tiles">XLATE ME: Sort new tiles</string>
+  <string name="ringer_zoom">Priblížiť tlačidlami hlasitosti</string>
+  <string name="ringer_zoom_summary">Priblížiť hracie pole pomocou tlačidiel ovládania hlasitosti zvuku</string>
+  <!-- If you click on the Play button without having entered a room
+         name you get an alert with this error message. -->
+  <string name="no_empty_rooms">XLATE ME: This game cannot connect without a
+        room name.</string>
+  <!-- This button takes you to the normal Game Configure screen -->
+  <string name="advanced_config">XLATE ME: Advanced game settings</string>
+  <!-- This is the "hint" printed in light text in the empty player
+         name field -->
+  <string name="local_name_hint">XLATE ME: Player name</string>
+  <string name="explain_b4">XLATE ME: • Press the \"Play game\" button on both
+      phones to start the game.</string>
+  <string name="explain_b3">XLATE ME: • Optionally, enter player names in the
+      second box (one per phone)</string>
+  <string name="explain_b2">XLATE ME: • Enter the room name in the first box
+      below. The room names on your two phones must be
+      identical.</string>
+  <!-- These four strings are displayed as step-by-step
+         instructions-->
+  <string name="explain_b1">XLATE ME: • Agree on a room name with the other
+      player.</string>
+  <!-- ############################################################
+         # :Screens:
+         # RelayGameActivity screen
+         #
+         # This screen is a simple alternative to the Game Configure
+         # screen.  You'll get it when you choose the list_item_config
+         # on certain unconfigured simple relay games (currently simple
+         # means they have 2 players.  These days about the only way to
+         # get this screen is to create a relay game manually and to
+         # abort after making the room name empty.  That is, this is
+         # left over from an older way of helping people connect, from
+         # before invitations.
+
+         # The dialog has a list of instructions, two text fields for
+         # room name and local player name, and two buttons.
+         ############################################################
+         -->
+  <!-- This is the heading above the list of steps.  The default
+         language is substituted for %1$s. -->
+  <!--
+       ############################################################
+       # :Menus:
+       # Chat messages screen menu
+       ############################################################ 
+      -->
+  <!-- This is the only menu item in the chat screen.  Press it and
+         all the chat messages are erased.  There is no effect on
+         other devices in the game: no "clear chat" message is
+         transmitted. -->
+  <string name="chat_menu_clear">XLATE ME: Clear history</string>
+  <!-- Text on the button that causes the contents of the
+         message-composition field to be sent. -->
+  <string name="chat_send">XLATE ME: Send</string>
+  <!-- Prefix for remote messages -->
+  <string name="chat_other_id">XLATE ME: Not me:\u0020</string>
+  <!-- Prefix for local messages -->
+  <string name="chat_local_id">XLATE ME: Me:\u0020</string>
+  <!-- ############################################################
+         # :Screens:
+         # Chat screen
+         #
+         # Shown when the chat button is pressed from the Board screen
+         # or when a chat message (as opposed to a move message) comes
+         # in from the relay.  It displays a history of messages with
+         # slightly different colored backgrounds and with prefixes to
+         # indicate whether they are local or remote in origin.
+         ############################################################
+      -->
+  <!-- title of the chat screen.  The name of the current game is
+         substituted for %1$s. -->
+  <string name="chat_title_fmt">XLATE ME: %1$s message history</string>
+  <!-- Text of dialog asking user to confirm a move that exchanges
+         tiles (instead of forming a new word to earn points) -->
+  <string name="invite_chooser_sms">XLATE ME: sms</string>
+  <string name="invite_chooser_email">XLATE ME: email</string>
+  <!-- When I've created the invitation, in text or html, I ask
+         Android to launch an app that can send it, typically an email
+         or messaging app.  Android then asks the user to choose which
+         of the installed apps that can process the request he'd like
+         to have launched.  This string is passed to Android and used
+         as the title of the dialog that presents that choice. -->
+  <string name="invite_chooser_fmt">XLATE ME: Send invitation via %1$s</string>
+  <!-- This is the body of the text version of the invitation. A URL
+         is created with parameters describing the game and
+         substituted for "%1$s".-->
+  <string name="invite_txt_fmt">XLATE ME: Let\'s play Crosswords! Join this game:
+    %1$s .</string>
+  <!-- This is the body of the html version of the invitation. A URL
+         is created with parameters describing the game and
+         substituted for "%1$s".  (The funky \u003c and friends are
+         encodings for the greater-than and less-than symbols which
+         are not legal in xml strings.)-->
+  <string name="invite_htm_fmt">XLATE ME: \u003ca href=\"%1$s\"\u003ETap
+    here\u003c/a\u003E (or tap the full link below, or, if you already
+    have Crosswords installed, open the attachment) to accept my
+    invitation and join this game.
+
+    \u003cbr \\\u003E
+    \u003cbr \\\u003E
+    (full link: %1$s )
+    </string>
+  <!-- This is the subject line of the email/text sent to invite
+         someone to join a game. -->
+  <string name="invite_subject_fmt">XLATE ME: Let\'s play Crosswords (Room %1$s)</string>
+  <string name="button_nfc">XLATE ME: NFC</string>
+  <string name="button_html">XLATE ME: Email</string>
+  <!-- When an invitation is sent, the user gets to choose between
+    plaintext and html formatting.  These two strings are shown in the
+    two buttons in the dialog. -->
+  <string name="button_text">XLATE ME: SMS/Text</string>
+  <string name="nfc_or_sms_or_email">XLATE ME: Send invitation using SMS
+    (texting) or NFC (\"Android beaming\" – NEW) or via email?</string>
+  <string name="nfc_or_email">XLATE ME: Send invitation using NFC (Android
+    beaming – NEW) or via email?</string>
+  <!-- The invitation process begins with this query.  The choice is
+         between html and plaintext formatting but I also provide some
+         explanation/guidance. -->
+  <string name="sms_or_email">XLATE ME: Send invitation using SMS (texting) or
+       via email?</string>
+  <!-- EXPLAIN ME -->
+  <string name="bt_networked_desc">XLATE ME: Create a game that will be played
+      via Bluetooth with devices that are nearby and paired with
+      yours.  Both buttons will initiate a game with other devices
+      (one or more) that you choose (from paired devices that already
+      have Crosswords installed.)  The first uses defaults; the second
+      lets you change them before beginning the game.</string>
+  <!-- EXPLAIN ME -->
+  <string name="bt_disabled">XLATE ME: Bluetooth is not available.  This may
+      mean that your device doesn\'t support it, or that it\'s been
+      turned off.</string>
+  <!-- section separator (white-on-gray bar) for third section:
+         bluetooth games -->
+  <string name="newgame_bt_header">XLATE ME: New Bluetooth game</string>
+  <!-- Text of first of two buttons for new networked games.  Tap
+         this and a game will be created, but you probably won't see
+         it immediately because an email or messaging app will be
+         launched to send your invitation. -->
+  <string name="newgame_invite">XLATE ME: Invite now</string>
+  <!-- This is the second of two descriptions on this screen.  It
+         explains what networked games are and describes the two
+         buttons used to create them. -->
+  <string name="newgame_networked_desc">XLATE ME: Create a game that will be
+      played over the network.  The \"Invite now\" button starts a
+      two-device game and helps you invite a friend to join it.  Or
+      press \"Configure first\" to change some of the defaults before
+      you start your networked game. (You\'ll have a chance to send
+      invites later.)</string>
+  <!-- section separator (white-on-gray bar) for second section:
+         networked games -->
+  <string name="newgame_networked_header">XLATE ME: New Networked game</string>
+  <!-- Text of first of two buttons for new standalone games.  Tap
+         this and a new game will be created and opened.  If the first
+         player is a robot it will immediately take its turn.-->
+  <string name="newgame_local">XLATE ME: Play now</string>
+  <!-- This is one of two descriptions on this screen.  It explains
+         what standalone games are and describes the two buttons used
+         to create them.  The name of the language of the default
+         wordlist is substituted in for %1$s. -->
+  <string name="newgame_local_desc_fmt">XLATE ME: Create a new game where all
+      players will be on this device.  To play against a robot and
+      with your default settings (in %1$s, etc.) just press \"Play
+      now\".  To add players or change game settings, press
+      \"Configure first\".</string>
+  <!-- ############################################################
+         # :Screens:
+         # New game screen
+         #
+         # This comes up when you tap the "new game" button on the
+         # main screen or the new game menuitem in the main screen's
+         # menu.  It has descriptions and buttons for creating the two
+         # types of supported games, standalone and networked.
+         ############################################################
+      -->
+  <!-- section separator (white-on-gray bar) for first section:
+         standalone games -->
+  <string name="newgame_local_header">XLATE ME: New Local-only game</string>
+  <!-- This text is displayed as the "summary" for both of the
+         notify choices above, as extra information.  (There could be
+         different strings if it makes more sense in your language.)
+         -->
+  <string name="notify_other_summary">XLATE ME: When opponent moves arrive</string>
+  <!-- When one or more new moves is found, should I vibrate the
+         device -->
+  <string name="notify_vibrate">XLATE ME: Vibrate</string>
+  <!-- When one or more new moves is found, should I play a
+         notification sound -->
+  <string name="notify_sound">XLATE ME: Play sound</string>
+  <string name="connect_daily">XLATE ME: Once every day</string>
+  <string name="connect_six_hours">XLATE ME: Every six hours</string>
+  <string name="connect_one_hour">XLATE ME: Every hour</string>
+  <string name="connect_thirty_mins">XLATE ME: Every 30 minutes</string>
+  <string name="connect_fifteen_mins">XLATE ME: Every 15 minutes</string>
+  <string name="connect_five_mins">XLATE ME: Every 5 minutes</string>
+  <!-- These are the possible values for the connect_frequency
+         setting presented as a drop-down list. -->
+  <string name="connect_never">XLATE ME: Never check</string>
+  <!--       
+       ############################################################
+       # :Screens:
+       # Network game settings preference subscreen (within
+       # Preferences screen)
+       ############################################################
+      -->
+  <!-- When there are networked games connecting using the relay,
+         Crosswords wakes up periodically to check if there are any
+         new moves available and fetches them.  This controls how
+         frequently that check is done. -->
+  <string name="connect_frequency">XLATE ME: Background move check</string>
+  <!-- explanation of the above -->
+  <string name="network_behavior_summary">XLATE ME: Settings that apply to
+        networked games</string>
+  <string name="network_behavior">XLATE ME: Network game settings</string>
+  <!-- explanation of the above -->
+  <string name="hide_crosshairs_summary">XLATE ME: Do not visually indicate which board cell is touched</string>
+  <!-- If this preference is checked the "crosshairs" (vertical and
+         horzontal lines through the cell your finger is on that help
+         you tell where the app thinks you're actually tapping) will
+         not be shown.  Some users have complained that this feature
+         is distracting, presumably because they're using tablets with
+         large enough screens that they always know where they're
+         tapping. -->
+  <string name="hide_crosshairs">XLATE ME: Disable crosshairs</string>
+  <!-- explanation of the above -->
+  <string name="peek_other_summary">XLATE ME: Tapping on scoreboard name shows
+        that player\'s tiles</string>
+  <!-- If this preference is checked, tapping on the scoreboard
+         entry for any player reveals that player's tiles and any
+         pending move (after asking for his password if one is set.)
+         This feature, which is disabled by default, is meant for the
+         case where serveral human players are sharing a device: it
+         might make sense for one to be able to study the board even
+         though it's not his turn e.g. while the player whose turn it
+         is is temporarily unable to play. -->
+  <string name="peek_other">XLATE ME: View tiles out-of-turn</string>
+  <string name="phonies_ignore">Ignorovať slovník</string>
+  <string name="phonies_warn">Varovať ak nie je v slovníku</string>
+  <string name="phonies_disallow">Zakázať ak nie je v slovníku</string>
+  <string name="menu_prefs">Predvolby</string>
+  <!-- If you choose the above option and have no networked games
+         you get this error message -->
+  <string name="no_games_to_refresh">XLATE ME: No games found that connect via
+      the relay.</string>
+  <!-- Text of progress indicator shown while check is being conducted -->
+  <string name="msgs_progress">XLATE ME: Checking relay for moves
+      etc…</string>
+  <!-- Regardless of the setting of the connect_frequency
+         preference, checks the relay immediately for any moves for
+         networked games on this device and posts a notification if
+         any is downloaded. -->
+  <string name="gamel_menu_checkmoves">XLATE ME: Check for moves</string>
+  <string name="gamel_menu_dicts">Slovníky</string>
+  <string name="prefs_defaults">Východzie nastavenie</string>
+  <string name="prefs_defaults_summary">Východzie nastavenie pre novú hru</string>
+  <!-- clarification of above -->
+  <string name="prefs_dicts_summary">XLATE ME: Default wordlists</string>
+  <!-- sub-preference for dictionaries (soon to be called "word lists") -->
+  <string name="prefs_dicts">XLATE ME: Wordlists</string>
+  <!-- Used to indicate that a preference is not enabled, i.e. not
+         part of the game and that the user should ignore it. -->
+  <string name="tell_unused">XLATE ME: Not used yet…</string>
+  <!-- Label for the fourth "player name" preference (unused)-->
+  <string name="pref_player4_name">XLATE ME: Fourth player</string>
+  <!-- Label for the third "player name" preference (unused) -->
+  <string name="pref_player3_name">XLATE ME: Third player</string>
+  <!-- Label for the second "player name" preference (unused)-->
+  <string name="pref_player2_name">XLATE ME: Second player</string>
+  <!-- Label for the first "player name" preference -->
+  <string name="pref_player1_name">XLATE ME: First player</string>
+  <!-- clarification of the above -->
+  <string name="prefs_names_summary">XLATE ME: Default player names</string>
+  <!-- sub-preference title for editing default player names.
+         There's only enabled now, though.-->
+  <string name="prefs_names">XLATE ME: Player names</string>
+  <string name="default_dict">Slovník pre hru</string>
+  <!-- default new-game setting for handline phonies (words not
+         found in the word list) -->
+  <string name="default_phonies">XLATE ME: Handle phonies</string>
+  <!-- clarification on above -->
+  <string name="init_autojuggle_sum">XLATE ME: Randomly, for new games</string>
+  <!-- Will new games, on default, randomly rearrange the start
+         order of players. -->
+  <string name="init_autojuggle">XLATE ME: Juggle players</string>
+  <!-- clarification on hints_allowed, whether new NETWORKED games
+         will default to having the hint feature enabled(string
+         elsewhere in this file) -->
+  <string name="nethints_allowed_sum">XLATE ME: Enable hints for two-device games</string>
+  <!-- clarification on hints_allowed, whether new games will
+         default to having the hint feature enabled(string elsewhere
+         in this file) -->
+  <string name="hints_allowed_sum">XLATE ME: Enable the hint feature</string>
+  <!-- dictionary used by default for robot players when creating
+         new game -->
+  <string name="default_robodict">XLATE ME: Wordlist for robots</string>
+  <string name="board_size">Veľkosť hracej plochy</string>
+  <!-- clarification of above -->
+  <string name="hide_title_summary">XLATE ME: Hiding the game name lets the
+        board be slightly larger</string>
+  <!-- Checkbox that when set prevents showing a title bar in the
+         game board window to save space -->
+  <string name="hide_title">XLATE ME: Hide titlebar</string>
+  <!-- List the state of the game, "Game over" or "10 moves made"
+         etc. -->
+  <string name="game_summary_field_state">XLATE ME: Game state</string>
+  <!-- List names of opponents (summarized), e.g. "Game 2 (vs Kati)" -->
+  <string name="game_summary_field_opponents">XLATE ME: Opponent name[s]</string>
+  <!-- Put the language there, so it reads "Game 2 (English)" -->
+  <string name="game_summary_field_language">XLATE ME: Game language</string>
+  <!-- Put nothing in the summary space, so it just reads "Game 2" -->
+  <string name="game_summary_field_empty">XLATE ME: \u003cNothing\u003E</string>
+  <!-- Preference to control what's listed next to game name in the
+         first line of a game summary in the main games-list screen,
+         e.g., if the option is "Game Language", "English" in the
+         listing "Game 2 (English)"
+         
+         The following strings beginning with "game_summary_field_" are
+         possible values -->
+  <string name="summary_field">XLATE ME: Include in game listing</string>
+  <!-- clarification of the above -->
+  <string name="prefs_appearance_summary">XLATE ME: Settings controlling
+        appearance</string>
+  <!--
+       ############################################################
+       # :Screens:
+       # Appearances subscreen of Preferences screen
+       ############################################################
+      -->
+  <!-- title of this sub-preference -->
+  <string name="prefs_appearance">XLATE ME: Appearance</string>
+  <string name="prefs_colors">Farby</string>
+  <string name="prefs_colors_summary">Upraviť farby hráčov a hracej plochy</string>
+  <string name="bonus_l2x">Dvojitá hodnota písmena</string>
+  <string name="bonus_l3x">Trojitá hodnota písmena</string>
+  <string name="bonus_w2x">Dvojitá hodnota slova</string>
+  <string name="bonus_w3x">Trojitá hodnota slova</string>
+  <!-- color of the "crosshairs", lines drawn vertically and
+         horizontally through the square the user is currently
+         touching in order to guide the fat-fingered (most of us) in
+         operations that require accurately selecting a single square
+         on the board.-->
+  <string name="clr_crosshairs">XLATE ME: Crosshairs color</string>
+  <string name="tile_back">Pozadie kamenňov</string>
+  <string name="empty">Prázdne pole/pozadie</string>
+  <!-- the color of text, e.g. "2L", shown on a bonus square on the
+         board -->
+  <string name="key_bonushint">XLATE ME: In-square bonus hint</string>
+  <!-- the background color of the area outside the board,
+         e.g. between entries in the scoreboard -->
+  <string name="background">XLATE ME: Board background</string>
+  <string name="relay_alert">Chyba pripojenia</string>
+  <string name="msg_too_many">Chcete prihlásiť viac hráčov ako očakáva server.</string>
+  <string name="msg_no_room">Žiadny server si nezaregistroval miestnosť s týmto menom.</string>
+  <string name="msg_dup_room">Iný server si už zaregistroval miestnosť s týmto menom. Premenujte ju alebo to skúste neskôr.</string>
+  <string name="msg_lost_other">Relay stratil kontakt s niektorým zariadením v hre.</string>
+  <!-- When a game has been connected and the relay is notified that
+         a device in the game has deleted its part of the game, this
+         message is posted when you connect your end of it to the
+         relay.  Once this happens there is no way to continue the
+         game so you might as well delete it (unless you're saving it
+         for its history etc.) -->
+  <string name="msg_dev_deleted">XLATE ME: This game has been deleted on
+      another device. You will not be able to play any
+      further.</string>
+  <string name="ids_badwords_fmt">Slovo[á] %1$s nebolo nájdené v slovníku.</string>
+  <string name="badwords_accept">  Chcete napriek tomu potvrdiť tento ťah?</string>
+  <string name="badwords_lost">  Ťah stratený.</string>
+  <string name="badwords_title">Neplatné slovo[á]</string>
+  <string name="ids_endnow">Určite chcete hru ihneď ukončiť?</string>
+  <string name="force_title">Vzdialený hráč[i]</string>
+  <string name="force_expl">Ako Server vyberte jedného alebo viacerých hráčov ktorí sa budú mocť
+    pripojiť ako Klient.</string>
+  <!-- Displayed as a "Toast" (mini window briefly displayed) if you
+       didn't choose a remote player and I was forced to pick one. I
+       always pick the first. -->
+  <string name="forced_consistent">XLATE ME: Modified first player.</string>
+  <string name="gameOver">Hra skončená</string>
+  <!-- <string name="moves_fmt">Bolo zahraných %1$d ťahov</string> -->
+  <!-- When you select the list_item_reset contextual menu, you are
+          asked to confirm.  This is the text of the first button
+          ("Cancel" is the second).  -->
+  <string name="button_reset">XLATE ME: Reset</string>
+  <!-- When you select the gamel_menu_delete_all menuitem or
+         list_item_delete contextual menu, you are asked to confirm.
+         This is the text of the first button ("Cancel" is the
+         second).  -->
+  <string name="button_delete">Vymazat</string>
+  <!-- about dialog stuff -->
+  <string name="about_copyright">Copyright (C) 1998-2012 Eric
+    House. Tento software je vydaný pod licenciou GNU Public License.</string>
+  <string name="about_web">Manuál a zdrojové kódy nájdete na:
+    http://xwords.sf.net.  Hlásiť chyby, doporučiť vylepšenia, ponúknuť pomoc, atď.
+    môžete na email: eehouse@eehouse.org.</string>
+  <!-- fill this in other than in English -->
+  <string name="xlator">Slovenský preklad Tomáš Morkus</string>
+  <string name="loc_menu_xlate">XLATE ME: Translate</string>
+  <string name="sel_items_fmt">XLATE ME: Selected: %1$d</string>
+  <string name="slmenu_deselect_all">XLATE ME: Unselect all</string>
+  <string name="slmenu_select_all">XLATE ME: Select all</string>
+  <string name="lookup_title">XLATE ME: Word lookup</string>
+  <string name="not_again_studycopy">XLATE ME: The selected words will be
+    copied to the system clipboard. You can then paste them into any
+    app that supports pasting text, e.g. an email app.</string>
+  <string name="study_no_lists">XLATE ME: You have not yet saved any words
+    into a studylist.</string>
+  <string name="study_no_lang_fmt">XLATE ME: You have not yet saved any words
+    into a studylist for %1$s.</string>
+  <string name="study_langpick">XLATE ME: Your words for:</string>
+  <string name="studylist_title_fmt">XLATE ME: Studylist for %1$s</string>
+  <string name="add_done_fmt">XLATE ME: %1$s added to list</string>
+  <string name="slmenu_clear_sel">XLATE ME: Delete</string>
+  <string name="slmenu_copy_sel">XLATE ME: Copy to clipboard</string>
+  <string name="gamel_menu_study">XLATE ME: Studylist…</string>
+  <string name="summary_studyon">XLATE ME: Offer to add to and display lists
+    of words to remember</string>
+  <string name="title_studyon">XLATE ME: Enable studylists</string>
+  <string name="add_to_study_fmt">XLATE ME: Add %1$s to studylist</string>
+  <string name="no_market">XLATE ME: Google Play app not found</string>
+  <string name="menu_rateme">XLATE ME: Rate Crosswords</string>
+  <string name="not_again_firefox">XLATE ME: If Android gives you a choice of
+    browsers for viewing the wordlists downloads page, DO NOT choose
+    Firefox. Some versions have a bug that can cause the wordlists to
+    be lost.</string>
+  <string name="pct_suffix">XLATE ME: \u0020pct.</string>
+  <string name="not_again_sms_ready">XLATE ME: You have NFC enabled. That
+    means that any time a board that\'s missing a player is open, you
+    can tap a nearby person\'s device to invite him/her to
+    play – if he/she is also using NFC.</string>
+  <string name="sms_ready_text">XLATE ME: Tap the receiving device now</string>
+  <string name="no_hide_titlebar">XLATE ME: This setting is ignored on devices
+    like yours that depend on the \"Action bar.\"</string>
+  <string name="button_go_settings">XLATE ME: Launch Settings</string>
+  <string name="enable_nfc">XLATE ME: NFC is turned off on this device. You
+    can use the Android Settings app to turn it on .</string>
+  <string name="board_menu_invite">XLATE ME: Invite</string>
+  <string name="cur_menu_marker_fmt">XLATE ME: %1$s (in use)</string>
+  <!-- <string name="summary_thumb_enabled">Display snapshots of games</string> -->
+  <string name="dropped_dupe">XLATE ME: Invitation received but ignored: it
+    has already been used to create a game.</string>
+  <string name="thumb_off">XLATE ME: Disabled</string>
+  <string name="summary_thumbsize">XLATE ME: Thumbnail size</string>
+  <string name="sel_groups_fmt">XLATE ME: Groups: %1$d</string>
+  <string name="sel_games_fmt">XLATE ME: Games: %1$d</string>
+  <string name="not_again_backclears">XLATE ME: The back button clears any
+    selection instead of exiting. Hit it again to exit the
+    app.</string>
+  <string name="not_again_newselect">XLATE ME: Tapping a game opens it.\n\nYou
+    can instead tap the icons at the left to select or deselect games,
+    then act on selected games, e.g. to delete them, using the menu or
+    \"Actionbar.\"</string>
+  <string name="relay_alert_title">XLATE ME: Message from relay</string>
+  <string name="show_wordlist_browser">XLATE ME: Wordlist browser</string>
+  <string name="change_group">XLATE ME: Move selected games to:</string>
+  <string name="square_tiles_summary">XLATE ME: Even if they can be taller</string>
+  <string name="square_tiles">XLATE ME: Square rack tiles</string>
+  <string name="button_reconnect">XLATE ME: Reconnect</string>
+  <!-- Button shown in game over dialog triggering creation of new
+         game with the same players and parameters as the one that
+         just ended. -->
+  <string name="button_rematch">XLATE ME: Rematch</string>
+  <string name="no_move_onegroup">XLATE ME: Moving is impossible until there
+    is more than one group.</string>
+  <string name="cannot_delete_default_group_fmt">XLATE ME: The group for new games, %1$s, 
+    cannot be deleted.</string>
+  <string name="game_name_group_title">XLATE ME: Name group</string>
+  <string name="rename_group_label">XLATE ME: Change the name of this group to:</string>
+  <string name="group_new_games">XLATE ME: New games</string>
+  <string name="group_cur_games">XLATE ME: My games</string>
+  <string name="list_group_movedown">XLATE ME: Move down</string>
+  <string name="list_group_moveup">XLATE ME: Move up</string>
+  <string name="list_group_default">XLATE ME: Put new games here</string>
+  <string name="list_group_rename">XLATE ME: Rename</string>
+  <string name="list_group_delete">XLATE ME: Delete</string>
+  <string name="newgroup_label">XLATE ME: Name your new group:</string>
+  <string name="download_path_title">XLATE ME: Downloads Directory</string>
+  <string name="default_loc_summary">XLATE ME: (Not in external/sdcard memory)</string>
+  <string name="default_loc">XLATE ME: Store wordlists internally</string>
+  <string name="download_failed">XLATE ME: Download unsuccessful</string>
+  <string name="download_done">XLATE ME: Download finished</string>
+  <string name="button_decline">XLATE ME: Decline</string>
+  <string name="invite_dict_missing_body_noname_fmt">XLATE ME: You have been
+    invited to play Crosswords using the wordlist %2$s (for play in
+    %3$s), but it is not installed.  Would you like to download the
+    wordlist?</string>
+  <string name="invite_dict_missing_body_fmt">XLATE ME: %1$s has invited you to
+    play Crosswords using the wordlist %2$s (for play in %3$s), but it
+    is not installed.  Would you like to download the wordlist or
+    decline the invitation?</string>
+  <string name="invite_dict_missing_title">XLATE ME: Missing wordlist</string>
+  <string name="missing_dict_detail">XLATE ME: Required wordlist missing</string>
+  <string name="missing_dict_title">XLATE ME: Game invitation pending</string>
+  <!-- Shown in toast when relaunching after switching dicts -->
+  <string name="reload_new_dict_fmt">XLATE ME: Reloading game with %1$s</string>
+  <string name="inform_dict_download">XLATE ME: \u0020(You will have to download it
+    first.)</string>
+  <!--  -->
+  <string name="inform_dict_diffdict_fmt">XLATE ME: You are using the wordlist
+    %1$s but the game host is using %2$s. Would you like to use %3$s
+    too?</string>
+  <string name="inform_dict_title">XLATE ME: Wordlist mismatch</string>
+  <!--  -->
+  <string name="inform_dict_diffversion_fmt">XLATE ME: You and the host of this
+    game are using different versions of the wordlist %1$s.</string>
+  <!-- Used in formatting final scores display -->
+  <string name="str_winner">XLATE ME: Winner</string>
+  <!-- Used in formatting final scores display -->
+  <string name="str_resigned">XLATE ME: Resigned</string>
+  <!--  -->
+  <string name="new_app_avail">XLATE ME: Tap to download and install</string>
+  <!--  -->
+  <string name="new_app_avail_fmt">XLATE ME: New version of %1$s</string>
+  <!--  -->
+  <string name="new_dict_avail_fmt">XLATE ME: Tap to update %1$s</string>
+  <!--  -->
+  <string name="new_dict_avail">XLATE ME: New wordlist available</string>
+  <string name="checkupdates_none_found">XLATE ME: Everything is up-to-date.</string>
+  <!--  -->
+  <string name="gamel_menu_checkupdates">XLATE ME: Check for updates</string>
+  <!--  -->
+  <string name="warn_sms_disabled">XLATE ME: Play via SMS is currently
+    disabled, so no moves will be sent for this game.  (If you want to
+    enable play via SMS, go to Settings-&gt;Network game settings.)
+    </string>
+  <!--  -->
+  <string name="confirm_sms_willpay">XLATE ME: Yes: I\'ll pay all carrier charges</string>
+  <!--  -->
+  <string name="confirm_sms_unlimited">XLATE ME: Yes: I have unlimited texting</string>
+  <!--  -->
+  <string name="confirm_sms_leave">XLATE ME: No: leave disabled</string>
+  <!--  -->
+  <string name="confirm_sms_prompt">XLATE ME: Enable play via SMS?</string>
+  <!--  -->
+  <string name="confirm_sms_expl">XLATE ME: Warning: This feature is meant for
+    phones with unlimited texting plans. Once you enable it dozens of
+    SMS (text) messages will be sent (invisibly) for each game
+    played. If you don\'t have an unlimited plan your carrier may
+    charge you for each and every message!\n\nShould play via SMS be
+    enabled?</string>
+  <!--  -->
+  <string name="confirm_sms_title">XLATE ME: Confirm your SMS plan</string>
+  <!--  -->
+  <string name="enable_sms_summary">XLATE ME: Only if you have unlimited texting!</string>
+  <!--  -->
+  <string name="enable_sms">XLATE ME: Allow games via SMS</string>
+  <!--  -->
+  <string name="connstat_bt">XLATE ME: bluetooth</string>
+  <!--  -->
+  <string name="connstat_sms">XLATE ME: sms/texting</string>
+  <!--  -->
+  <string name="connstat_relay">XLATE ME: internet/relay</string>
+  <!--  -->
+  <string name="connstat_noreceipt">XLATE ME: No messages have been received.</string>
+  <!--  -->
+  <string name="connstat_lastreceipt_fmt">XLATE ME: Last receipt was %1$s</string>
+  <!--  -->
+  <string name="connstat_lastother_unsucc_fmt">XLATE ME: (Last successful send was
+    %1$s)</string>
+  <!--  -->
+  <string name="connstat_lastother_succ_fmt">XLATE ME: (Last failure was %1$s)</string>
+  <!--  -->
+  <string name="connstat_lastsend_fmt">XLATE ME: Last send was %1$s (%2$s)</string>
+  <!--  -->
+  <string name="connstat_unsucc">XLATE ME: unsuccessful</string>
+  <!--  -->
+  <string name="connstat_succ">XLATE ME: successful</string>
+  <!--  -->
+  <string name="connstat_net_fmt">XLATE ME: Network status for game connected via
+    %1$s:</string>
+  <!--  -->
+  <string name="game_list_tmp">XLATE ME: Building game summary…</string>
+  <!-- board menu for small devices only -->
+  <string name="board_menu_dict">XLATE ME: Browse wordlist</string>
+  <!--  -->
+  <string name="menu_toggle_values">XLATE ME: Toggle values</string>
+  <!--  -->
+  <string name="menu_chat">XLATE ME: Chat</string>
+  <!--  -->
+  <string name="menu_zoom">XLATE ME: Zoom in/out</string>
+  <!--  -->
+  <string name="menu_flip">XLATE ME: Flip board</string>
+  <!--  -->
+  <string name="menu_juggle">XLATE ME: Juggle rack</string>
+  <!--  -->
+  <string name="board_menu_undo_current">XLATE ME: Undo/Redo</string>
+  <!--  -->
+  <string name="menu_hint_next">XLATE ME: Next hint</string>
+  <!--  -->
+  <string name="menu_hint_prev">XLATE ME: Prev hint</string>
+  <!--  -->
+  <string name="remote_undone">XLATE ME: Remote device undid a turn.</string>
+  <!--  -->
+  <string name="warn_unlimited">XLATE ME: Are you certain this number is on an
+    account with unlimited texting?  Click cancel if you are not.</string>
+  <!--  -->
+  <string name="summary_conn_sms_fmt">XLATE ME: Game in play with %1$s</string>
+  <!--  -->
+  <string name="phone_label">XLATE ME: Connected number[s]:</string>
+  <!--  -->
+  <string name="connect_label_sms">XLATE ME: Connection (via SMS/text)</string>
+  <!--  -->
+  <string name="invite_success">XLATE ME: Invitation received.</string>
+  <!--  -->
+  <string name="confirm_clear_sms">XLATE ME: Are you sure you want to delete the
+    checked phone number[s]?</string>
+  <!--  -->
+  <string name="get_sms_number">XLATE ME: Enter phone number:</string>
+  <!--  -->
+  <string name="empty_sms_inviter">XLATE ME: Phone list is empty. Use the
+    \"Import contact\" button to add people you want to
+    invite, the + button to enter numbers directly.</string>
+  <!--  -->
+  <string name="warn_nomobile_fmt">XLATE ME: The number %1$s for %2$s is not
+    a \"mobile\" number. Import anyway?</string>
+  <!--  -->
+  <string name="manual_owner_name">XLATE ME: (Not in contacts)</string>
+  <!--  -->
+  <string name="button_sms_add">XLATE ME: Import contact</string>
+  <!--  -->
+  <string name="new_smsmove_title">XLATE ME: New move via SMS</string>
+  <!--  -->
+  <string name="new_name_body_fmt">XLATE ME: %1$s has invited you to play</string>
+  <!--  -->
+  <string name="dft_sms_name_fmt">XLATE ME: SMS Game %1$X</string>
+  <!--  -->
+  <string name="sms_disabled">XLATE ME: Playing via SMS is currently disabled.
+    You can enable it in Settings-&gt;Network game settings.</string>
+  <!--  -->
+  <string name="sms_networked_desc">XLATE ME: Create a game that will be
+    played via invisible text messages.  The \"Invite now\" button
+    starts a two-device game and helps you invite a friend to join it.
+    Or press \"Configure first\" to change some of the defaults before
+    you start your SMS game. (You\'ll have a chance to send
+    invites later.)</string>
+  <!--  -->
+  <string name="newgame_sms_header">XLATE ME: New SMS Game</string>
+  <!--  -->
+  <string name="dft_name_fmt">XLATE ME: Game %1$X</string>
+  <!--  -->
+  <string name="game_smsname_title">XLATE ME: Name your game</string>
+  <!--  -->
+  <string name="game_btname_title">XLATE ME: Bluetooth game name</string>
+  <!--  -->
+  <string name="smsname_label">XLATE ME: New SMS game name</string>
+  <!--  -->
+  <string name="btname_label">XLATE ME: New Bluetooth game name</string>
+  <!--  -->
+  <string name="button_invite">XLATE ME: Invite checked</string>
+  <!--  -->
+  <string name="bt_fail_fmt">XLATE ME: Bluetooth sends to %1$s have failed too many
+        times. Re-open the game to try again.</string>
+  <!--  -->
+  <string name="bt_resend_fmt">XLATE ME: Bluetooth send to %1$s failed; retry %3$d in
+        %2$d seconds.</string>
+  <!--  -->
+  <!--  -->
+  <string name="new_move_body">XLATE ME: One or more moves has arrived</string>
+  <!--  -->
+  <string name="new_btmove_title">XLATE ME: New move via Bluetooth</string>
+  <!--  -->
+  <string name="bt_bad_proto_fmt">XLATE ME: Crosswords on %1$s wrong version for
+      Bluetooth play.</string>
+  <!--  -->
+  <string name="new_bt_body_fmt">XLATE ME: Paired device %1$s has invited you to
+      play</string>
+  <!--  -->
+  <string name="new_bt_title">XLATE ME: New game via Bluetooth</string>
+  <!--  -->
+  <string name="summary_conn">XLATE ME: Game in play</string>
+  <!--  -->
+  <string name="summary_gameover">XLATE ME: Game over</string>
+  <!--  -->
+  <string name="summary_wait_guest">XLATE ME: Unconnected</string>
+  <!--  -->
+  <string name="summary_wait_host">XLATE ME: Waiting for connection[s]</string>
+  <!--  -->
+  <string name="invite_progress">XLATE ME: Sending new game info…</string>
+  <!--  -->
+  <string name="scan_progress">XLATE ME: Scanning for Crosswords on paired devices</string>
+  <!--  -->
+  <string name="bt_pick_clear_button">XLATE ME: Remove checked</string>
+  <!--  -->
+  <string name="bt_pick_rescan_button">XLATE ME: Rescan</string>
+  <string name="newgame_enable_bt">XLATE ME: Turn Bluetooth on</string>
+  <!--  -->
+  <string name="email_body_rev_fmt">XLATE ME: (If relevant, please include the
+      version: \"%1$s\"; and make/model of your phone or
+      tablet.)</string>
+  <!--  -->
+  <string name="email_author_chooser">XLATE ME: Send comment via</string>
+  <!--  -->
+  <string name="email_author_subject">XLATE ME: Comment about Crosswords</string>
+  <!--  -->
+  <string name="board_menu_file_email">XLATE ME: Email author</string>
+  <!--  -->
+  <string name="prompt_max_len">XLATE ME: Words no longer than</string>
+  <!--  -->
+  <string name="prompt_min_len">XLATE ME: Words no shorter than</string>
+  <!--  -->
+  <string name="max_len">XLATE ME: Max length</string>
+  <!--  -->
+  <string name="min_len">XLATE ME: Min length</string>
+  <!--  -->
+  <string name="alert_empty_dict_fmt">XLATE ME: The wordlist %1$s contains only
+      tile information.  There are no words to browse.</string>
+  <!--  -->
+  <string name="not_again_browseall">XLATE ME: This button opens the wordlist
+      browser on the wordlist of your choice.</string>
+  <!--  -->
+  <string name="not_again_browse">XLATE ME: This button opens the wordlist
+      browser on the current player\'s wordlist.</string>
+  <!--  -->
+  <string name="dict_browse_nowords_fmt">XLATE ME: No word in %1$s starts with
+      %2$s.</string>
+  <!--  -->
+  <string name="dict_browse_title1_fmt">XLATE ME: %1$s (%2$d words using %3$d
+      tiles)</string>
+  <!--  -->
+  <string name="dict_browse_title_fmt">XLATE ME: %1$s (%2$d words using %3$d-%4$d
+      tiles)</string>
+  <!--  -->
+  <string name="pick_faceup">XLATE ME: Pick tiles face-up</string>
+  <!--  -->
+  <string name="cur_tiles_fmt">XLATE ME: Tile picker\n(so far: %1$s)</string>
+  <!--  -->
+  <string name="tilepick_all">XLATE ME: Pick for me</string>
+  <!--  -->
+  <string name="tilepick_undo">XLATE ME: Undo last</string>
+  <!--  -->
+  <string name="word_search_hint">XLATE ME: First letters</string>
+  <!--  -->
+  <string name="button_search">XLATE ME: Find</string>
+  <!--  -->
+  <string name="button_move">XLATE ME: Move</string>
+  <!--  -->
+  <string name="not_again_lookup">XLATE ME: This button lets you look up the
+      words just played online.  (Note that not all languages are
+      supported yet.)</string>
+  <!--  -->
+  <string name="board_menu_pass">XLATE ME: Pass</string>
+  <!--  -->
+  <string name="pick_url_title_fmt">XLATE ME: Look up %1$s at</string>
+  <!--  -->
+  <string name="button_done_fmt">XLATE ME: Done with %1$s</string>
+  <!--  -->
+  <string name="button_done">XLATE ME: Done</string>
+  <string name="title_lookup_study">XLATE ME: Tap to look up or study</string>
+  <!--  -->
+  <string name="title_lookup">XLATE ME: Tap to look up</string>
+  <string name="button_lookup_study_fmt">XLATE ME: Look up/study %1$s</string>
+  <!--  -->
+  <string name="button_lookup_fmt">XLATE ME: Look up %1$s</string>
+  <string name="button_lookup_study">XLATE ME: Look up/study words</string>
+  <!-- New strings that need to be documented and found a home
+         above. -->
+  <string name="button_lookup">XLATE ME: Look up words</string>
+  <!-- text of button in About Crosswords dialog summoning above
+         dialog -->
+  <string name="changes_button">XLATE ME: Recent changes</string>
+  <!-- text of dialog showing the set of changes made since the last
+         release -->
+  <string name="changes_title">XLATE ME: Recent changes</string>
+  <!-- Another paragraph giving credit for work done other than by
+         Eric House and translators -->
+  <string name="about_credits">XLATE ME: Toolbar icons by Sarah Chu.</string>
+  <string name="no_dict_title">Slovník sa nenašiel</string>
+  <!-- This is an alternative message presented when there's also
+         the option of downloading another wordlist.  Game name,
+         wordlist name and language are substituted in. -->
+  <string name="no_dict_subst_fmt">XLATE ME: Unable to open game \"%1$s\" because
+      wordlist %2$s not found. (It may have been deleted, or stored
+      on an external card that is no longer available.) You can
+      download a replacement or substitute another %3$s
+      wordlist.</string>
+  <!-- If the missing wordlist is discovered when trying to open the
+         game, we have more options.  If there's another wordlist in
+         the same language, we can offer to substitute without needing
+         to download.  Otherwise the user must choose between
+         downloading and not opening the game.  This first message
+         takes wordlist name and language substituted in for %1$ and
+         %2$ -->
+  <string name="no_dict_fmt">XLATE ME: You need to download a replacement %2$s
+    wordlist before you can open game \"%1$s\". (The original may have
+    been deleted or stored on an external card that is no longer
+    available.)</string>
+  <!-- The only button available when the above message is displayed -->
+  <string name="button_close_game">XLATE ME: Close game</string>
+  <!-- If the wordlist disappears mid-game there are no choices,
+         just an explanation and this button, after which the game
+         closes. -->
+  <string name="no_dict_finish">XLATE ME: A wordlist this game is using has
+      disappeared. (Usually this means it\'s on an external card that
+      is no longer available.)</string>
+  <string name="button_download">Nahrať</string>
+  <!-- If substituting an existing same-language wordlist by
+         choosing button_substdict user gets to choose from a list of
+         wordlists.  This is the title of that list. -->
+  <string name="subst_dict_title">XLATE ME: Substitute wordlist (wordcount)</string>
+  <!-- Text of button allowing user to choose to open with a
+         different (but same-language wordlist) -->
+  <string name="button_substdict">XLATE ME: Substitute</string>
+  <string name="msg_ask_password_fmt">Heslo pre \"%1$s\":</string>
+  <!-- When a move is fetched from the relay a Notification is
+    posted.  These are its title, which appears in the top bar of the
+    device, and the body that appears when you pull the notifications
+    down. -->
+  <string name="notify_title">XLATE ME: Moves made</string>
+  <!-- used to create default player names.  Number between 1 and 4
+         is substituted -->
+  <string name="player_fmt">Hráč %1$d</string>
+  <!-- used to create default names of games (when user has not
+         named them.) -->
+  <string name="game_fmt">Hra %1$d</string>
+  <string name="red">Červená</string>
+  <string name="green">Zelená</string>
+  <string name="blue">Modrá</string>
+  <!-- clarification of the above -->
+  <string name="prefs_behavior_summary">XLATE ME: Settings controlling app behavior</string>
+  <!--       
+       ############################################################
+       # :Screens:
+       # Behavior preference subscreen (within Preferences screen)
+       ############################################################
+      -->
+  <!-- title of this sub-preference -->
+  <string name="prefs_behavior">XLATE ME: Behavior</string>
+  <string name="initial_player_minutes">Trvanie hry v minutách</string>
+</resources>
