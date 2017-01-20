@@ -37,7 +37,7 @@ for SVG in img_src/*.svg; do
         OUT=app/src/main/res/$DIR/${SVG/.svg/__gen.png}
         mkdir -p $(dirname $OUT)
         if [ -z "$CLEAN" ]; then
-            make -f $(dirname $0)/images.mk $OUT
+            make -f $(dirname $0)/images.mk $OUT >/dev/null 2>&1
         else
             rm -f $OUT
         fi
