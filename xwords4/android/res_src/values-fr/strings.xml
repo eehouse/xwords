@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools"
-           tools:ignore="MissingTranslation"
-          >
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
          zero-width, so it should do the trick:
@@ -3528,4 +3526,49 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
   <string name="post_dualpane_title">Redémarrer Crosswords</string>
   <string name="dualpane_restart">Fermeture de l\'application…</string>
   <string name="after_restart">Ce changement ne s\'appliquera pas tant que vous n\'aurez pas relancé Crosswords.</string>
+  <string name="invite_choice_p2p">Wifi Direct</string>
+	<string name="bt_pair_settings">En appairer d\'autres</string>
+
+      <string name="p2p_invite_title">Invitation par WiFi direct</string>
+
+    <plurals name="invite_p2p_desc_fmt">
+	<item quantity="one">Sélectionnez le nom de l\'appareil WiFi Direct que vous souhaitez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
+	<item quantity="other">Sélectionnez les noms des appareils WiFi Direct que vous souhaitez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
+</plurals>
+
+    <string name="invite_p2p_desc_extra">Seuls les appareils actuellement disponibles sont affichés. Si un appareil à proximité ne s\'affiche pas, assurez-vous que le WiFi est allumé, que Crosswords est installé, et que le WiFi Direct est activé.</string>
+
+    <string name="empty_p2p_inviter">Il n\'y a actuellement pas d\'appareils accessibles par WiFi Direct qui ont Crosswords installé.</string>
+
+    <string name="not_again_comms_p2p">Utiliser le WiFi Direct pour jouer contre un appareil faisant du WiFi Direct, sur lequel Crosswords est installé.</string>
+
+  <string name="missing_perms">Cette partie est configurée pour communiquer par SMS mais Crosswords n\'a pas la permission de le faire. Vous pouvez toujours ouvrir cette partie, mais elle pourrait ne pas être en capacité d\'envoyer ou recevoir des coups.
+
+Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouvez retirer le réglage de communication par SMS.</string>
+
+  <string name="download_rationale">"Crosswords a besoin d\'accéder à un stockage temporaire pour conserver ce que vous êtes sur le point de télécharger.
+ "</string>
+
+  <string name="sms_invite_rationale">"
+ Crosswords a besoin de la permission d\'envoyer une invitation par SMS.
+ "</string>
+
+  <string name="toast_no_permission">Permission non accordée</string>
+
+<string name="contacts_rationale">"
+ Crosswords veut accéder à vos contacts pour pouvoir mettre un nom sur les numéros de téléphones qui vous envoient des invitations par SMS. Vous pourrez toujours recevoir des invitations si vous n\'accordez pas cette permission, mais seul le numéro de téléphone de l\'expéditeur s\'affichera.
+ "</string>
+
+  <string name="button_ask_again">Redemander</string>
+  <string name="contact_not_found">Pas dans les contacts</string>
+  <string name="sms_send_failed">Échec de l\'envoi de SMS</string>
+  <string name="button_skip">Sauter</string>
+
+  <string name="perms_rationale_title">Permissions Android</string>
+  <string name="phone_state_rationale">"
+ Certains téléphones peuvent échanger des SMS \"de données\". Crosswords souhaite vous offrir cette possibilité mais a d\'abord besoin d\'interroger votre appareil sur lui-même (pour savoir si c\'est un téléphone et, le cas échéant, de quel type).
+
+Si votre appareil ne peut pas envoyer de SMS de données (par ex. parce que ce n\'est pas un téléphone) ou que vous ne souhaiterez jamais jouer par SMS (par ex. parce que vous payez pour chaque message), il est raisonnable que refuser cette permission de manière permanente.
+ "</string>
+
   </resources>
