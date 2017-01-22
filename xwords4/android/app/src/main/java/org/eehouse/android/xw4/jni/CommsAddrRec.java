@@ -123,7 +123,7 @@ public class CommsAddrRec {
             if ( Utils.isGSMPhone( context ) ) {
                 supported.add( CommsConnType.COMMS_CONN_SMS );
             }
-            if ( WiDirService.supported() ) {
+            if ( WiDirService.enabled() ) {
                 supported.add( CommsConnType.COMMS_CONN_P2P );
             }
             return supported;

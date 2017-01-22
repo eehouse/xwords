@@ -325,6 +325,11 @@
                         android:summary="@string/notify_other_summary"
                         android:defaultValue="false"
                         />
+    <CheckBoxPreference android:key="@string/key_enable_p2p"
+                        android:title="@string/title_enable_p2p"
+                        android:summary="@string/summary_enable_p2p"
+                        android:defaultValue="false"
+                        />
 
     <PreferenceScreen android:title="@string/network_advanced_title"
                       android:summary="@string/network_advanced_summary"

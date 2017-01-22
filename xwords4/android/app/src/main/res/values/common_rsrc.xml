@@ -60,6 +60,7 @@
   <string name="key_disable_relay">key_disable_relay</string>
   <string name="key_notify_vibrate">key_notify_vibrate</string>
   <string name="key_enable_sms">key_enable_sms</string>
+  <string name="key_enable_p2p">key_enable_p2p</string>
   <string name="key_network_behavior">key_network_behavior</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_thumbsize">key_thumbsize3</string>

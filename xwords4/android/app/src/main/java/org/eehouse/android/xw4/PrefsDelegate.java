@@ -350,5 +350,9 @@ public class PrefsDelegate extends DelegateBase
         if ( Perms23.haveNativePerms() ) {
             hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
         }
+
+        if ( ! BuildConfig.WIDIR_ENABLED ) {
+            hideOne( R.string.key_enable_p2p, R.string.key_network_behavior );
+        }
     }
 }
