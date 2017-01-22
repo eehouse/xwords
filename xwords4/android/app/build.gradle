@@ -148,12 +148,13 @@ android {
         abortOnError false
     }
 
-    def gitrev = "git describe --tags".execute().text.trim()
+    def gitrev = "git describe --tags --dirty".execute().text.trim()
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
-            output.outputFile = 
-            new File(output.outputFile.parent,
-                     output.outputFile.name.replace(".apk", "-${gitrev}.apk"))
+            def newName = output.outputFile.name
+            newName = newName.replace(".apk","-${gitrev}.apk")
+            newName = newName.replace("app-","")
+            output.outputFile = new File(output.outputFile.parent, newName)
         }
     }
 }
