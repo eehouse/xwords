@@ -95,6 +95,16 @@ android {
             storePassword "notReal"
             keyPassword "notReal"
         }
+        debug {
+            def path = System.getenv("DEBUG_KEYSTORE_PATH")
+            if (! path) {
+                path = "./debug.keystore"
+            }
+            storeFile file(path)
+            keyAlias "androiddebugkey"
+            storePassword "android"
+            keyPassword "android"
+        }
     }
 
     buildTypes {
