@@ -23,6 +23,7 @@
 #include "nli.h"
 #include "comms.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 void
 nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
@@ -135,7 +136,7 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
             nli->osVers = stream_getU32( stream );
         }
     }
-    LOG_RETURNF( "%d", success );
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 

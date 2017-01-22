@@ -20,6 +20,7 @@
 
 #include "xportwrapper.h"
 #include "andutils.h"
+#include "dbgutil.h"
 #include "paths.h"
 
 typedef struct _AndTransportProcs {
@@ -145,7 +146,7 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len, const XP_UCHAR* msgNo,
                                             jbytes, jMsgNo, jRelayID );
         deleteLocalRefs( env, jbytes, jRelayID, jMsgNo, DELETE_NO_REF );
     }
-    LOG_RETURNF( "%d", result );
+    LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
 
