@@ -5,6 +5,7 @@ def VERSION_CODE_BASE = 111
 def VERSION_NAME = '4.4.115'
 def VARIANTS = [ "xw4", "xw4dbg" ]
 def BUILDS = [ "Debug", "Release" ]
+def GITREV = "git describe --tags --dirty".execute().text.trim()
 
 apply plugin: 'com.android.application'
 
@@ -26,9 +27,8 @@ android {
         def CRITTERCISM_APP_ID = System.getenv("CRITTERCISM_APP_ID")
         variant.buildConfigField "String", "CRITTERCISM_APP_ID", "\"$CRITTERCISM_APP_ID\""
 
-        def gitHash = "../scripts/gitversion.sh".execute().text.trim()
-        resValue "string", "git_rev", "$gitHash"
-        variant.buildConfigField "String", "GIT_REV", "\"$gitHash\""
+        resValue "string", "git_rev", "$GITREV"
+        variant.buildConfigField "String", "GIT_REV", "\"$GITREV\""
 
         // def stamp = Long.valueOf('date +\'%s\''.execute().text.trim());
         def stamp = Math.round(System.currentTimeMillis() / 1000)
@@ -148,11 +148,10 @@ android {
         abortOnError false
     }
 
-    def gitrev = "git describe --tags --dirty".execute().text.trim()
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
             def newName = output.outputFile.name
-            newName = newName.replace(".apk","-${gitrev}.apk")
+            newName = newName.replace(".apk","-${GITREV}.apk")
             newName = newName.replace("app-","")
             output.outputFile = new File(output.outputFile.parent, newName)
         }
