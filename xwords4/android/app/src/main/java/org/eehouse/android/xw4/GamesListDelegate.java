@@ -80,7 +80,6 @@ public class GamesListDelegate extends ListDelegateBase
 
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
-    private static final String SAVE_ROWIDS = "SAVE_ROWIDS";
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
@@ -587,7 +586,6 @@ public class GamesListDelegate extends ListDelegateBase
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
-    private long[] m_rowids;
     private long m_groupid;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
@@ -766,9 +764,20 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case CHANGE_GROUP:
-            final long startGroup = ( 1 == m_rowids.length )
-                ? DBUtils.getGroupForGame( m_activity, m_rowids[0] ) : -1;
-            final int[] selItem = {-1}; // hack!!!!
+            long srcGroup = -1;
+            // If all games are coming from the same group we can disable move
+            // when that's the destination
+            for ( long rowid : m_selGames ) {
+                long groupID = DBUtils.getGroupForGame( m_activity, rowid );
+                if ( -1 == srcGroup ) {
+                    srcGroup = groupID;
+                } else if ( srcGroup != groupID ) {
+                    srcGroup = -1;
+                    break;
+                }
+            }
+            final int[] selItem = {-1};
+            final long fSrcGroup = srcGroup;;
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlgi, int item ) {
                         GamesListDelegate self = curThis();
@@ -776,10 +785,10 @@ public class GamesListDelegate extends ListDelegateBase
                         AlertDialog dlg = (AlertDialog)dlgi;
                         Button btn =
                             dlg.getButton( AlertDialog.BUTTON_POSITIVE );
-                        boolean enabled = startGroup == -1;
+                        boolean enabled = fSrcGroup == -1;
                         if ( !enabled ) {
                             long newGroup = self.m_adapter.getGroupIDFor( item );
-                            enabled = newGroup != startGroup;
+                            enabled = newGroup != fSrcGroup;
                         }
                         btn.setEnabled( enabled );
                     }
@@ -789,10 +798,7 @@ public class GamesListDelegate extends ListDelegateBase
                         GamesListDelegate self = curThis();
                         Assert.assertTrue( -1 != selItem[0] );
                         long gid = self.m_adapter.getGroupIDFor( selItem[0] );
-                        for ( long rowid : self.m_rowids ) {
-                            DBUtils.moveGame( self.m_activity, rowid, gid );
-                        }
-                        self.mkListAdapter();
+                        self.moveSelGamesTo( gid );
                     }
                 };
             OnClickListener lstnr3 =
@@ -804,7 +810,7 @@ public class GamesListDelegate extends ListDelegateBase
                     }
                 };
             String[] groups = m_adapter.groupNames();
-            int curGroupPos = m_adapter.getGroupPosition( startGroup );
+            int curGroupPos = m_adapter.getGroupPosition( fSrcGroup );
             dialog = makeAlertBuilder()
                 .setTitle( R.string.change_group )
                 .setSingleChoiceItems( groups, curGroupPos, lstnr )
@@ -1036,7 +1042,6 @@ public class GamesListDelegate extends ListDelegateBase
     {
         // super.onSaveInstanceState( outState );
         outState.putLong( SAVE_ROWID, m_rowid );
-        outState.putLongArray( SAVE_ROWIDS, m_rowids );
         outState.putLong( SAVE_GROUPID, m_groupid );
         outState.putString( SAVE_DICTNAMES, m_missingDictName );
         outState.putBoolean( SAVE_NEXTSOLO, m_nextIsSolo );
@@ -1052,7 +1057,6 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( null != bundle ) {
             m_rowid = bundle.getLong( SAVE_ROWID );
-            m_rowids = bundle.getLongArray( SAVE_ROWIDS );
             m_groupid = bundle.getLong( SAVE_GROUPID );
             m_netLaunchInfo = NetLaunchInfo.makeFrom( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
@@ -1070,6 +1074,22 @@ public class GamesListDelegate extends ListDelegateBase
         //     m_adapter.notifyDataSetChanged();
         //     // mkListAdapter();
         // }
+    }
+
+    private void moveSelGamesTo( long gid )
+    {
+        for ( long rowid : m_selGames ) {
+            DBUtils.moveGame( m_activity, rowid, gid );
+        }
+
+        // Invalidate if there could have been change
+        if ( ! DBUtils.getGroups( m_activity ).get( gid ).m_expanded ) {
+            m_selGames.clear();
+            invalidateOptionsMenuIf();
+            setTitle();
+        }
+
+        mkListAdapter();
     }
 
     public void invalidateOptionsMenuIf()
@@ -1797,7 +1817,6 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_move:
-            m_rowids = selRowIDs;
             showDialog( DlgID.CHANGE_GROUP );
             break;
         case R.id.games_game_new_from:
