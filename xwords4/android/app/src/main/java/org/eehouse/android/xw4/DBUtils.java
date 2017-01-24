@@ -1801,6 +1801,7 @@ public class DBUtils {
         ContentValues values = new ContentValues();
         values.put( DBHelper.GROUPID, groupID );
         updateRow( context, DBHelper.TABLE_NAME_SUM, gameid, values );
+        invalGroupsCache();
     }
 
     private static String getChatHistoryStr( Context context, long rowid )

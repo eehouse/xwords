@@ -792,7 +792,6 @@ public class GamesListDelegate extends ListDelegateBase
                         for ( long rowid : self.m_rowids ) {
                             DBUtils.moveGame( self.m_activity, rowid, gid );
                         }
-                        DBUtils.setGroupExpanded( self.m_activity, gid, true );
                         self.mkListAdapter();
                     }
                 };
