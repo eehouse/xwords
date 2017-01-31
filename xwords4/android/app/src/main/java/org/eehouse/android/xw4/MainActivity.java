@@ -31,7 +31,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import junit.framework.Assert;
@@ -52,9 +51,6 @@ public class MainActivity extends XWActivity
 
     // Used only if m_dpEnabled is true
     private LinearLayout m_root;
-    private int m_maxPanes;
-    private int m_nextID = 0x00FFFFFF;
-    private Boolean m_isPortrait;
     private boolean m_safeToCommit;
     private ArrayList<Runnable> m_runWhenSafe = new ArrayList<Runnable>();
     private Intent m_newIntent; // work in progress...
@@ -75,8 +71,6 @@ public class MainActivity extends XWActivity
         if ( m_dpEnabled ) {
             m_root = (LinearLayout)findViewById( R.id.main_container );
             getSupportFragmentManager().addOnBackStackChangedListener( this );
-
-            m_maxPanes = maxPanes();
 
             // Nothing to do if we're restarting
             if ( savedInstanceState == null ) {
@@ -102,6 +96,7 @@ public class MainActivity extends XWActivity
     {
         setSafeToRun();
         super.onPostResume();
+        setVisiblePanes();
     }
 
     // called when we're brought to the front (probably as a result of
@@ -112,33 +107,6 @@ public class MainActivity extends XWActivity
         super.onNewIntent( intent );
 
         m_dlgt.handleNewIntent( intent );
-    }
-
-    @Override
-    public void onConfigurationChanged( Configuration newConfig )
-    {
-        if ( m_dpEnabled ) {
-            Rect rect = new Rect();
-            m_root.getWindowVisibleDisplayFrame( rect );
-
-            boolean isPortrait
-                = Configuration.ORIENTATION_PORTRAIT == newConfig.orientation;
-            DbgUtils.logi( TAG, "onConfigurationChanged(isPortrait=%b)",
-                           isPortrait );
-            m_isPortrait = isPortrait;
-            if ( isPortrait != (rect.width() <= rect.height()) ) {
-                DbgUtils.logd( TAG, "onConfigurationChanged(): isPortrait:"
-                               + " %b; width: %d; height: %d",
-                               isPortrait, rect.width(), rect.height() );
-            }
-            int maxPanes = isPortrait? 1 : MAX_PANES_LANDSCAPE;
-            if ( m_maxPanes != maxPanes ) {
-                m_maxPanes = maxPanes;
-                setVisiblePanes();
-            }
-            tellOrientationChanged();
-        }
-        super.onConfigurationChanged( newConfig );
     }
 
     /* Sometimes I'm getting crashes because views don't have fragments
@@ -349,8 +317,8 @@ public class MainActivity extends XWActivity
                                    child.getId() );
                 }
                 m_root.removeView( child );
-                setVisiblePanes();
             }
+            setVisiblePanes();
 
             // If there's a pending on-result call, make it.
             if ( null != m_pendingResult ) {
@@ -384,7 +352,7 @@ public class MainActivity extends XWActivity
     private XWFragment[] getVisibleFragments()
     {
         int childCount = m_root.getChildCount();
-        int count = Math.min( m_maxPanes, childCount );
+        int count = Math.min( maxPanes(), childCount );
         XWFragment[] result = new XWFragment[count];
         for ( int ii = 0; ii < count; ++ii ) {
             View child = m_root.getChildAt( childCount - 1 - ii );
@@ -393,23 +361,6 @@ public class MainActivity extends XWActivity
         }
 
         return result;
-    }
-
-    // Walk all Fragment children and if they care notify of change.
-    private void tellOrientationChanged()
-    {
-        FragmentManager fm = getSupportFragmentManager();
-        int nPanes = m_root.getChildCount();
-        for ( int ii = 0; ii < nPanes; ++ii ) {
-            FrameLayout frame = (FrameLayout)m_root.getChildAt( ii );
-            int id = frame.getId();
-            Fragment frag = fm.findFragmentById( id );
-            if ( null == frag ) {
-                DbgUtils.logw( TAG,"tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
-            } else if ( frag instanceof XWFragment ) {
-                ((XWFragment)frag).getDelegate().orientationChanged();
-            }
-        }
     }
 
     private int maxPanes()
@@ -422,7 +373,7 @@ public class MainActivity extends XWActivity
         } else {
             result = 1;
         }
-        // DbgUtils.logf( "maxPanes() => %d", result );
+        // DbgUtils.logd( TAG, "maxPanes() => %d", result );
         return result;
     }
 
@@ -430,10 +381,10 @@ public class MainActivity extends XWActivity
     {
         // hide all but the right-most m_maxPanes children
         int nPanes = m_root.getChildCount();
+        int maxPanes = maxPanes();
         for ( int ii = 0; ii < nPanes; ++ii ) {
             View child = m_root.getChildAt( ii );
-            boolean visible = ii >= nPanes - m_maxPanes;
-            DbgUtils.logi( TAG, "pane %d: visible=%b", ii, visible );
+            boolean visible = ii >= nPanes - maxPanes;
             child.setVisibility( visible ? View.VISIBLE : View.GONE );
             setMenuVisibility( child, visible );
             if ( visible ) {
@@ -456,9 +407,8 @@ public class MainActivity extends XWActivity
 
     private void setMenuVisibility( View cont, boolean visible )
     {
-        FrameLayout layout = (FrameLayout)cont;
         FragmentManager fm = getSupportFragmentManager();
-        int hidingId = layout.getId();
+        int hidingId = cont.getId();
         Fragment frag = fm.findFragmentById( hidingId );
         if ( null != frag ) {   // hasn't been popped?
             frag.setMenuVisibility( visible );
@@ -491,60 +441,37 @@ public class MainActivity extends XWActivity
         }
     }
 
+    private void popUnneeded( FragmentManager fm, String newName, String parentName )
+    {
+        final int fragCount = fm.getBackStackEntryCount();
+        int lastKept = fragCount;
+        for ( int ii = 0; ii < fragCount; ++ii ) {
+            FragmentManager.BackStackEntry entry = fm.getBackStackEntryAt( ii );
+            String entryName = entry.getName();
+            if ( entryName.equals( newName ) ) {
+                lastKept = ii - 1; // keep only my parent; kill my same-class sibling!
+                break;
+            } else if ( entryName.equals(parentName) ) {
+                lastKept = ii;
+                break;
+            }
+        }
+
+        for ( int ii = fragCount - 1; ii > lastKept; --ii ) {
+            fm.popBackStack();
+        }
+    }
+    
     private void safeAddFragment( Fragment fragment, String parentName )
     {
         Assert.assertTrue( m_safeToCommit );
         String newName = fragment.getClass().getSimpleName();
-        boolean replace = false;
         FragmentManager fm = getSupportFragmentManager();
-        int fragCount = fm.getBackStackEntryCount();
-        int containerCount = m_root.getChildCount();
-        DbgUtils.logi( TAG, "fragCount: %d; containerCount: %d", fragCount, containerCount );
-        // Assert.assertTrue( fragCount == containerCount );
 
-        // Replace IF we're adding something of the same class at right OR if
-        // we're adding something with the existing left pane as its parent
-        // (delegator)
-        if ( 1 < fragCount ) {
-            Assert.assertTrue( MAX_PANES_LANDSCAPE == 2 ); // otherwise FIXME
-            FragmentManager.BackStackEntry entry
-                = fm.getBackStackEntryAt( fragCount - 2 );
-            String curName = entry.getName();
-            // DbgUtils.logf( "comparing %s, %s", curName, parentName );
-            replace = curName.equals( parentName );
-        }
-
-        if ( replace ) {
-            fm.popBackStack();
-        }
-
-        // Replace doesn't seem to work with generated IDs, so we'll create a
-        // new FrameLayout each time.  If we're replacing, we'll replace the
-        // current rightmost FrameLayout.  Otherwise we'll add a new one.
-        LinearLayout.LayoutParams lp
-            = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams
-                                            .MATCH_PARENT, 1.0f);
-        FrameLayout cont = new FrameLayout( this );
-        cont.setLayoutParams( lp );
-        int id = --m_nextID;
-        cont.setId( id );
-        if ( LOG_IDS ) {
-            DbgUtils.logi( TAG, "assigning id %x to view with name %s", id, newName );
-        }
-        m_root.addView( cont, replace ? containerCount - 1 : containerCount );
-
-        if ( !replace && containerCount >= m_maxPanes ) {
-            int indx = containerCount - m_maxPanes;
-            View child = m_root.getChildAt( indx );
-            child.setVisibility( View.GONE );
-
-            setMenuVisibility( child, false );
-
-            DbgUtils.logi( TAG, "hiding %dth container", indx );
-        }
+        popUnneeded( fm, newName, parentName );
 
         fm.beginTransaction()
-            .add( id, fragment )
+            .add( R.id.main_container, fragment )
             .addToBackStack( newName )
             .commit();
         // Don't do this. It causes an exception if e.g. from fragment.start()

@@ -69,6 +69,7 @@ abstract class XWFragment extends Fragment implements Delegator {
         super.onSaveInstanceState( outState );
         Assert.assertNotNull( m_parentName );
         outState.putString( PARENT_NAME, m_parentName );
+        m_dlgt.onSaveInstanceState( outState );
     }
 
     protected void onCreate( DelegateBase dlgt, Bundle sis )
@@ -79,6 +80,7 @@ abstract class XWFragment extends Fragment implements Delegator {
             m_parentName = sis.getString( PARENT_NAME );
             Assert.assertNotNull( m_parentName );
         }
+        Assert.assertNull( m_dlgt );
         m_dlgt = dlgt;
     }
 

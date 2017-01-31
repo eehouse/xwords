@@ -6,6 +6,7 @@
               android:paddingLeft="8dp"
               android:paddingRight="8dp"
               android:focusableInTouchMode="true"
+              android:layout_weight="1"
               >
 
   <TextView android:id="@+id/desc"
