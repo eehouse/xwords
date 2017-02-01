@@ -33,6 +33,9 @@ import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.Assert;
 
 abstract class XWFragment extends Fragment implements Delegator {
@@ -42,6 +45,25 @@ abstract class XWFragment extends Fragment implements Delegator {
     private DelegateBase m_dlgt;
     private String m_parentName;
     private boolean m_hasOptionsMenu = false;
+
+    private static Set<XWFragment> sActiveFrags = new HashSet<XWFragment>();
+    public static XWFragment findOwnsView( View view )
+    {
+        XWFragment result = null;
+        DbgUtils.assertOnUIThread();
+        for ( XWFragment frag : sActiveFrags ) {
+            DbgUtils.logd( TAG, "findOwnsView(): looking at fragment %s",
+                           frag.getClass().getSimpleName() );
+           if ( frag.getView() == view ) {
+               Assert.assertNull( result );
+               result = frag;
+               // break;
+            }
+        }
+
+        DbgUtils.logd( TAG, "findOwnsView() => " + result );
+        return result;
+    }
 
     public XWFragment setParentName( Delegator parent )
     {
@@ -99,6 +121,7 @@ abstract class XWFragment extends Fragment implements Delegator {
                               Bundle savedInstanceState )
     {
         DbgUtils.logd( TAG, "%s.onCreateView() called", getClass().getSimpleName() );
+        sActiveFrags.add(this);
         return m_dlgt.inflateView( inflater, container );
     }
 
@@ -150,6 +173,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     {
         DbgUtils.logd( TAG, "%s.onDestroy() called", getClass().getSimpleName() );
         m_dlgt.onDestroy();
+        sActiveFrags.remove( this );
         super.onDestroy();
     }
 

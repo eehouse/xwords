@@ -148,7 +148,7 @@ public class MainActivity extends XWActivity
                 break;
             }
             View child = m_root.getChildAt( top );
-            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            XWFragment frag = findFragment( child );
             if ( frag == newTopFrag ) {
                 break;
             }
@@ -168,11 +168,10 @@ public class MainActivity extends XWActivity
     private boolean dispatchNewIntentImpl( Intent intent )
     {
         boolean handled = false;
-        FragmentManager fm = getSupportFragmentManager();
 
         for ( int ii = m_root.getChildCount() - 1; !handled && ii >= 0; --ii ) {
             View child = m_root.getChildAt( ii );
-            XWFragment frag = (XWFragment)fm.findFragmentById( child.getId() );
+            XWFragment frag = findFragment( child );
             if ( null != frag ) {
                 handled = frag.getDelegate().canHandleNewIntent( intent );
                 if ( handled ) {
@@ -260,7 +259,8 @@ public class MainActivity extends XWActivity
         public int m_request;
         public int m_result;
         public Intent m_data;
-        public PendingResultCache( Fragment target, int request, int result, Intent data ) {
+        public PendingResultCache( Fragment target, int request,
+                                   int result, Intent data ) {
             m_frag = new WeakReference<Fragment>(target);
             m_request = request;
             m_result = result;
@@ -343,8 +343,7 @@ public class MainActivity extends XWActivity
         XWFragment frag = null;
         View child = m_root.getChildAt( m_root.getChildCount() - 1 );
         if ( null != child ) {
-            frag = (XWFragment)getSupportFragmentManager()
-                .findFragmentById( child.getId() );
+            frag = findFragment( child );
         }
         return frag;
     }
@@ -356,8 +355,7 @@ public class MainActivity extends XWActivity
         XWFragment[] result = new XWFragment[count];
         for ( int ii = 0; ii < count; ++ii ) {
             View child = m_root.getChildAt( childCount - 1 - ii );
-            result[ii] = (XWFragment)getSupportFragmentManager()
-                .findFragmentById( child.getId() );
+            result[ii] = findFragment( child );
         }
 
         return result;
@@ -395,24 +393,28 @@ public class MainActivity extends XWActivity
 
     private void trySetTitle( View view )
     {
-        XWFragment frag = (XWFragment)
-            getSupportFragmentManager().findFragmentById( view.getId() );
+        XWFragment frag = findFragment( view );
         if ( null != frag ) {
             frag.setTitle();
         } else {
-            DbgUtils.logd( TAG, "trySetTitle(): no fragment for id %x",
-                            view.getId() );
+            DbgUtils.logd( TAG, "trySetTitle(): no fragment found" );
         }
     }
 
     private void setMenuVisibility( View cont, boolean visible )
     {
-        FragmentManager fm = getSupportFragmentManager();
-        int hidingId = cont.getId();
-        Fragment frag = fm.findFragmentById( hidingId );
+        Fragment frag = findFragment( cont );
         if ( null != frag ) {   // hasn't been popped?
             frag.setMenuVisibility( visible );
         }
+    }
+
+    private XWFragment findFragment( View view )
+    {
+        XWFragment frag = XWFragment.findOwnsView( view );
+        DbgUtils.logd( TAG, "findFragmentById(view=%s) => " + frag,
+                       view.toString() );
+        return frag;
     }
 
     private void addFragmentImpl( Fragment fragment, Bundle bundle,
@@ -471,7 +473,7 @@ public class MainActivity extends XWActivity
         popUnneeded( fm, newName, parentName );
 
         fm.beginTransaction()
-            .add( R.id.main_container, fragment )
+            .add( R.id.main_container, fragment, newName )
             .addToBackStack( newName )
             .commit();
         // Don't do this. It causes an exception if e.g. from fragment.start()
