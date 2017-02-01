@@ -84,6 +84,8 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
     private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
+    private static final String SAVE_SELGAMES = "SAVE_SELGAMES";
+    private static final String SAVE_SELGROUPS = "SAVE_SELGROUPS";
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -1045,6 +1047,8 @@ public class GamesListDelegate extends ListDelegateBase
         outState.putLong( SAVE_GROUPID, m_groupid );
         outState.putString( SAVE_DICTNAMES, m_missingDictName );
         outState.putBoolean( SAVE_NEXTSOLO, m_nextIsSolo );
+        outState.putSerializable( SAVE_SELGAMES, (HashSet)m_selGames );
+        outState.putSerializable( SAVE_SELGROUPS, (HashSet)m_selGroupIDs );
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
         }
@@ -1062,6 +1066,8 @@ public class GamesListDelegate extends ListDelegateBase
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
             m_nextIsSolo = bundle.getBoolean( SAVE_NEXTSOLO );
             m_rematchExtras = bundle.getBundle( SAVE_REMATCHEXTRAS );
+            m_selGames = (HashSet)bundle.getSerializable( SAVE_SELGAMES );
+            m_selGroupIDs = (HashSet)bundle.getSerializable( SAVE_SELGROUPS );
         }
     }
 
