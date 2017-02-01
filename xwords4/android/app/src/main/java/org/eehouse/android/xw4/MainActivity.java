@@ -96,7 +96,9 @@ public class MainActivity extends XWActivity
     {
         setSafeToRun();
         super.onPostResume();
-        setVisiblePanes();
+        if ( m_dpEnabled ) {
+            setVisiblePanes();
+        }
     }
 
     // called when we're brought to the front (probably as a result of
