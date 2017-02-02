@@ -1040,6 +1040,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
+    @Override
     protected void onSaveInstanceState( Bundle outState )
     {
         // super.onSaveInstanceState( outState );
@@ -1321,7 +1322,7 @@ public class GamesListDelegate extends ListDelegateBase
             doOpenGame( params );
             break;
         case ENABLE_DUALPANE:
-            makeOkOnlyBuilder( R.string.dualpane_exit_now)
+            makeOkOnlyBuilder( R.string.dualpane_exit_now )
                 .setAction( Action.ENABLE_DUALPANE_EXIT )
                 .show();
             break;

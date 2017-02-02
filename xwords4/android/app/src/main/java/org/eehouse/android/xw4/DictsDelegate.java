@@ -60,6 +60,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,6 +77,10 @@ public class DictsDelegate extends ListDelegateBase
                DlgDelegate.DlgClickNotify, GroupStateListener,
                DownloadFinishedListener, XWListItem.ExpandedListener {
     private static final String TAG = DictsDelegate.class.getSimpleName();
+
+    private static final String REMOTE_SHOW_KEY = "REMOTE_SHOW_KEY";
+    private static final String REMOTE_INFO_KEY = "REMOTE_INFO_KEY";
+    private static final String SEL_DICTS_KEY = "SEL_DICTS_KEY";
 
     protected static final String DICT_SHOWREMOTE = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
@@ -96,7 +102,8 @@ public class DictsDelegate extends ListDelegateBase
     private CheckBox m_checkbox;
     private String[] m_locNames;
     private String m_finishOnName;
-    private Map<String, XWListItem> m_selDicts;
+    private Map<String, XWListItem> m_selViews;
+    private Map<String, Object> m_selDicts = new HashMap<String, Object>();
     private String m_origTitle;
     private boolean m_showRemote = false;
     private String m_filterLang;
@@ -153,7 +160,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    private static class DictInfo implements Comparable {
+    private static class DictInfo implements Comparable, Serializable {
         public String m_name;
         public String m_lang;
         public int m_nWords;
@@ -249,11 +256,11 @@ public class DictsDelegate extends ListDelegateBase
                 }
                 result = item;
 
+                String name = null;
                 if ( dataObj instanceof DictAndLoc ) {
                     DictAndLoc dal = (DictAndLoc)dataObj;
 
-                    String name = dal.name;
-                    item.setText( name );
+                    name = dal.name;
 
                     DictLoc loc = dal.loc;
                     item.setComment( m_locNames[loc.ordinal()] );
@@ -262,28 +269,27 @@ public class DictsDelegate extends ListDelegateBase
                     item.setOnClickListener( DictsDelegate.this );
                     item.setExpandedListener( null ); // item might be reused
 
-                    // Replace sel entry if present
-                    if ( m_selDicts.containsKey( name ) ) {
-                        m_selDicts.put( name, item );
-                        item.setSelected( true );
-                    }
                 } else if ( dataObj instanceof DictInfo ) {
                     DictInfo info = (DictInfo)dataObj;
-                    String name = info.m_name;
-                    item.setText( name );
+                    name = info.m_name;
+
                     item.setCached( info );
 
                     item.setExpandedListener( DictsDelegate.this );
                     item.setExpanded( m_expandedItems.contains( info ) );
                     item.setComment( m_onServerStr );
 
-                    if ( m_selDicts.containsKey( name ) ) {
-                        m_selDicts.put( name, item );
-                        item.setSelected( true );
-                    }
                 } else {
                     Assert.fail();
                 }
+
+                item.setText( name );
+
+                boolean selected = m_selDicts.containsKey( name );
+                if ( selected ) {
+                    m_selViews.put( name, item );
+                }
+                item.setSelected( selected );
             }
             return result;
         }
@@ -362,10 +368,10 @@ public class DictsDelegate extends ListDelegateBase
         DlgID dlgID = DlgID.values()[id];
         switch( dlgID ) {
         case MOVE_DICT:
-            final XWListItem[] selItems = getSelItems();
+            final String[] selNames = getSelNames();
             final int[] moveTo = { -1 };
             message = getString( R.string.move_dict_fmt,
-                                 getJoinedNames( selItems ) );
+                                 getJoinedSelNames(selNames) );
 
             OnClickListener newSelLstnr =
                 new OnClickListener() {
@@ -389,7 +395,7 @@ public class DictsDelegate extends ListDelegateBase
                         DictsDelegate self = curThis();
                         DictLoc toLoc = self.itemToRealLoc( moveTo[0] );
                         Assert.assertTrue( self == DictsDelegate.this );
-                        moveDicts( selItems, toLoc );
+                        moveDicts( selNames, toLoc );
                     }
                 };
 
@@ -403,23 +409,22 @@ public class DictsDelegate extends ListDelegateBase
             break;
 
         case SET_DEFAULT:
-            final XWListItem row = m_selDicts.values().iterator().next();
+            final String name = m_selDicts.keySet().iterator().next();
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         DictsDelegate self = curThis();
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
-                            self.setDefault( row, R.string.key_default_dict,
+                            self.setDefault( name, R.string.key_default_dict,
                                              R.string.key_default_robodict );
                         }
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_NEUTRAL == item ) {
-                            self.setDefault( row, R.string.key_default_robodict,
+                            self.setDefault( name, R.string.key_default_robodict,
                                              R.string.key_default_dict );
                         }
                     }
                 };
-            String name = row.getText();
             String lang = DictLangCache.getLangName( m_activity, name);
             lang = xlateLang( lang );
             message = getString( R.string.set_default_message_fmt, name, lang );
@@ -479,6 +484,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         m_onServerStr = getString( R.string.dict_on_server );
@@ -499,7 +505,8 @@ public class DictsDelegate extends ListDelegateBase
         m_checkbox = (CheckBox)findViewById( R.id.show_remote );
         m_checkbox.setOnClickListener( this );
 
-        mkListAdapter();
+        getBundledData( savedInstanceState );
+        m_checkbox.setSelected( m_showRemote );
 
         Bundle args = getArguments();
         if ( null != args ) {
@@ -554,6 +561,23 @@ public class DictsDelegate extends ListDelegateBase
     {
         MountEventReceiver.unregister( this );
         super.onStop();
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState )
+    {
+        outState.putBoolean( REMOTE_SHOW_KEY, m_showRemote );
+        outState.putSerializable( REMOTE_INFO_KEY, m_remoteInfo );
+        outState.putSerializable( SEL_DICTS_KEY, (HashMap)m_selDicts );
+    }
+
+    private void getBundledData( Bundle sis )
+    {
+        if ( null != sis ) {
+            m_showRemote = sis.getBoolean( REMOTE_SHOW_KEY, false  );
+            m_remoteInfo = (HashMap)sis.getSerializable( REMOTE_INFO_KEY );
+            m_selDicts = (HashMap)sis.getSerializable( SEL_DICTS_KEY );
+        }
     }
 
     public void onClick( View view )
@@ -631,13 +655,12 @@ public class DictsDelegate extends ListDelegateBase
             Uri[] uris = new Uri[countNeedDownload()];
             String[] names = new String[uris.length];
             int count = 0;
-            for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
-                  iter.hasNext(); ) {
-                XWListItem litm = iter.next();
-                Object cached = litm.getCached();
+
+            for ( Map.Entry<String, Object> entry : m_selDicts.entrySet() ) {
+                Object cached = entry.getValue();
                 if ( cached instanceof DictInfo ) {
                     DictInfo info = (DictInfo)cached;
-                    String name = litm.getText();
+                    String name = entry.getKey();
                     Uri uri = Utils.makeDictUri( m_activity, info.m_lang,
                                                  name );
                     uris[count] = uri;
@@ -654,36 +677,38 @@ public class DictsDelegate extends ListDelegateBase
         return handled;
     }
 
-    private void moveDicts( XWListItem[] selItems, DictLoc toLoc )
+    private void moveDicts( String[] selNames, DictLoc toLoc )
     {
         if ( DictUtils.needsStoragePermission( toLoc ) ) {
             tryGetPerms( Perm.STORAGE, R.string.move_dict_rationale,
-                         Action.MOVE_CONFIRMED, selItems, toLoc );
+                         Action.MOVE_CONFIRMED, selNames, toLoc );
         } else {
-            moveDictsWithPermission( selItems, toLoc );
+            moveDictsWithPermission( selNames, toLoc );
         }
     }
 
     private void moveDictsWithPermission( Object[] params )
     {
-        XWListItem[] selItems = (XWListItem[])params[0];
+        String[] selNames = (String[])params[0];
         DictLoc toLoc = (DictLoc)params[1];
-        moveDictsWithPermission( selItems, toLoc );
+        moveDictsWithPermission( selNames, toLoc );
     }
 
-    private void moveDictsWithPermission( XWListItem[] selItems, DictLoc toLoc )
+    private void moveDictsWithPermission( String[] selNames, DictLoc toLoc )
     {
-        for ( XWListItem selItem : selItems ) {
-            DictLoc fromLoc = (DictLoc)selItem.getCached();
-            String name = selItem.getText();
+        for ( String name : selNames ) {
+            DictLoc fromLoc = (DictLoc)m_selDicts.get( name );
             if ( fromLoc == toLoc ) {
                 DbgUtils.logw( TAG, "not moving %s: same loc", name );
             } else if ( DictUtils.moveDict( m_activity,
                                             name, fromLoc,
                                             toLoc ) ) {
-                selItem.setComment( m_locNames[toLoc.ordinal()] );
-                selItem.setCached( toLoc );
-                selItem.invalidate();
+                if ( m_selViews.containsKey( name ) ) {
+                    XWListItem selItem = m_selViews.get( name );
+                    selItem.setComment( m_locNames[toLoc.ordinal()] );
+                    selItem.setCached( toLoc );
+                    selItem.invalidate();
+                }
                 DBUtils.dictsMoveInfo( m_activity, name,
                                        fromLoc, toLoc );
             } else {
@@ -691,7 +716,6 @@ public class DictsDelegate extends ListDelegateBase
                 DbgUtils.logw( TAG, "moveDict(%s) failed", name );
             }
         }
-
     }
 
     private void switchShowingRemote( boolean showRemote )
@@ -712,10 +736,9 @@ public class DictsDelegate extends ListDelegateBase
     private int countNeedDownload()
     {
         int result = 0;
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
+        for ( Iterator<Object> iter = m_selDicts.values().iterator();
               iter.hasNext(); ) {
-            XWListItem litm = iter.next();
-            Object obj = litm.getCached();
+            Object obj = iter.next();
             if ( obj instanceof DictInfo ) {
                 ++result;
             }
@@ -737,9 +760,8 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    private void setDefault( XWListItem view, int keyId, int otherKey )
+    private void setDefault( String name, int keyId, int otherKey )
     {
-        String name = view.getText();
         int langCode = DictLangCache.getDictLangCode( m_activity, name );
         String curLangName = XWPrefs.getPrefsString( m_activity, R.string.key_default_language );
         int curLangCode = DictLangCache.getLangLangCode( m_activity, curLangName );
@@ -797,9 +819,9 @@ public class DictsDelegate extends ListDelegateBase
     private boolean selItemsVolatile()
     {
         boolean result = 0 < m_selDicts.size();
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
+        for ( Iterator<Object> iter = m_selDicts.values().iterator();
               result && iter.hasNext(); ) {
-            Object obj = iter.next().getCached();
+            Object obj = iter.next();
             if ( obj instanceof DictLoc ) {
                 DictLoc loc = (DictLoc)obj;
                 if ( loc == DictLoc.BUILT_IN ) {
@@ -814,9 +836,9 @@ public class DictsDelegate extends ListDelegateBase
 
     private void deleteSelected()
     {
-        XWListItem[] items = getSelItems();
+        String[] names = getSelNames();
         String msg = getQuantityString( R.plurals.confirm_delete_dict_fmt,
-                                        items.length, getJoinedNames( items ) );
+                                        names.length, getJoinedSelNames(names) );
 
         // Confirm.  And for each dict, warn if (after ALL are deleted) any
         // game will no longer be openable without downloading.  For now
@@ -845,8 +867,7 @@ public class DictsDelegate extends ListDelegateBase
 
         Map<Integer, LangDelData> dels = new HashMap<Integer, LangDelData>();
         Set<Integer> skipLangs = new HashSet<Integer>();
-        for ( XWListItem item : items ) {
-            String dict = item.getText();
+        for ( String dict : m_selDicts.keySet() ) {
             int langCode = DictLangCache.getDictLangCode( m_activity, dict );
             if ( skipLangs.contains( langCode ) ) {
                 continue;
@@ -879,7 +900,7 @@ public class DictsDelegate extends ListDelegateBase
 
         makeConfirmThenBuilder( msg, Action.DELETE_DICT_ACTION )
             .setPosButton( R.string.button_delete )
-            .setParams( (Object)items )
+            .setParams( (Object)names )
             .show();
     } // deleteSelected
 
@@ -906,18 +927,18 @@ public class DictsDelegate extends ListDelegateBase
     {
         switch( action ) {
         case DELETE_DICT_ACTION:
-            XWListItem[] items = (XWListItem[])params[0];
-            for ( XWListItem item : items ) {
-                String name = item.getText();
-                DictLoc loc = (DictLoc)item.getCached();
+            String[] names = (String[])params[0];
+            for ( String name : names ) {
+                DictLoc loc = (DictLoc)m_selDicts.get( name );
                 deleteDict( name, loc );
             }
             clearSelections();
+
             mkListAdapter();
             break;
         case UPDATE_DICTS_ACTION:
             Uri[] uris = new Uri[m_needUpdates.size()];
-            String[] names = new String[uris.length];
+            names = new String[uris.length];
             int count = 0;
             for ( Iterator<String> iter = m_needUpdates.keySet().iterator();
                   iter.hasNext();  ) {
@@ -969,7 +990,7 @@ public class DictsDelegate extends ListDelegateBase
         m_adapter = new DictListAdapter( m_activity );
         setListAdapterKeepScroll( m_adapter );
 
-        m_selDicts = new HashMap<String, XWListItem>();
+        m_selViews = new HashMap<String, XWListItem>();
     }
 
     private void saveClosed()
@@ -981,50 +1002,45 @@ public class DictsDelegate extends ListDelegateBase
     private void clearSelections()
     {
         if ( 0 < m_selDicts.size() ) {
-            XWListItem[] items = getSelItems();
-
-            m_selDicts.clear();
-
-            for ( XWListItem item : items ) {
-                item.setSelected( false );
+            for ( String name : getSelNames() ) {
+                if ( m_selViews.containsKey( name ) ) {
+                    XWListItem item = m_selViews.get( name );
+                    item.setSelected( false );
+                }
             }
+            m_selDicts.clear();
+            m_selViews.clear();
         }
     }
 
-    private String getJoinedNames( XWListItem[] items )
+    private String[] getSelNames()
     {
-        String[] names = new String[items.length];
-        int ii = 0;
-        for ( XWListItem item : items ) {
-            names[ii++] = item.getText();
-        }
+        Set<String> nameSet = m_selDicts.keySet();
+        String[] names = nameSet.toArray( new String[nameSet.size()] );
+        return names;
+    }
+
+    private String getJoinedSelNames(String[] names)
+    {
         return TextUtils.join( ", ", names );
     }
 
-    private XWListItem[] getSelItems()
+    private String getJoinedSelNames()
     {
-        XWListItem[] items = new XWListItem[m_selDicts.size()];
-        int indx = 0;
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
-              iter.hasNext(); ) {
-            items[indx++] = iter.next();
-        }
-        return items;
+        String[] names = getSelNames();
+        return getJoinedSelNames( names );
     }
-
 
     private int[] countSelDicts()
     {
-        int[] results = new int[2];
-        Assert.assertTrue( 0 == results[0] && 0 == results[1] );
-        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator();
-              iter.hasNext(); ) {
-            Object obj = iter.next().getCached();
+        int[] results = new int[] { 0, 0 };
+        for ( Object obj : m_selDicts.values() ) {
             if ( obj instanceof DictLoc ) {
                 ++results[SEL_LOCAL];
             } else if ( obj instanceof DictInfo ) {
                 ++results[SEL_REMOTE];
             } else {
+                DbgUtils.logd( TAG, "obj is a: " + obj );
                 Assert.fail();
             }
         }
@@ -1200,8 +1216,10 @@ public class DictsDelegate extends ListDelegateBase
         XWListItem dictView = (XWListItem)toggled;
         String lang = dictView.getText();
         if ( selected ) {
-            m_selDicts.put( lang, dictView );
+            m_selViews.put( lang, dictView );
+            m_selDicts.put( lang, dictView.getCached() );
         } else {
+            m_selViews.remove( lang );
             m_selDicts.remove( lang );
         }
         invalidateOptionsMenuIf();
