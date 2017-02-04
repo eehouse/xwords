@@ -10,7 +10,7 @@ def GITREV = "git describe --tags --dirty".execute().text.trim()
 apply plugin: 'com.android.application'
 
 android {
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '23.0.3'
     defaultConfig {
         minSdkVersion 7
         targetSdkVersion 23
@@ -162,10 +162,7 @@ dependencies {
     // Look into replacing this with a fetch too PENDING
     compile files('../libs/gcm.jar')
 
-    // Should probably choose a version rather than risk having it
-    // upgraded on me. PENDING
-    compile 'com.android.support:support-v4:+'
-    // compile files('../libs/android-support-v13.jar')
+    compile 'com.android.support:support-v4:23.4.0'
 
     xw4dbgCompile 'com.crittercism:crittercism-android-agent:+'
 }
