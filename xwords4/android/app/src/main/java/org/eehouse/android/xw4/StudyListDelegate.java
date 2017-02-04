@@ -48,7 +48,8 @@ import java.util.Set;
 
 public class StudyListDelegate extends ListDelegateBase
     implements OnItemSelectedListener, SelectableItem,
-               View.OnLongClickListener, View.OnClickListener {
+               View.OnLongClickListener, View.OnClickListener,
+               DBUtils.StudyListListener {
 
     protected static final int NO_LANG = -1;
 
@@ -85,6 +86,20 @@ public class StudyListDelegate extends ListDelegateBase
         getBundledData( sis );
 
         initOrFinish( getIntent() );
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        DBUtils.addStudyListChangedListener( this );
+    }
+
+    @Override
+    protected void onPause()
+    {
+        DBUtils.removeStudyListChangedListener( this );
+        super.onPause();
     }
 
     @Override
@@ -163,6 +178,17 @@ public class StudyListDelegate extends ListDelegateBase
     {
         if ( null != sis ) {
             m_checkeds = (HashSet)sis.getSerializable( CHECKED_KEY );
+        }
+    }
+
+    //////////////////////////////////////////////////
+    // DBUtils.StudyListListener
+    //////////////////////////////////////////////////
+    @Override
+    public void onWordAdded( String word, int langCode )
+    {
+        if ( langCode == m_langCodes[m_langPosition] ) {
+            loadList();
         }
     }
 

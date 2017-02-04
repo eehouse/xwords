@@ -88,6 +88,12 @@ public class DBUtils {
     private static HashSet<DBChangeListener> s_listeners =
         new HashSet<DBChangeListener>();
 
+    public static interface StudyListListener {
+        void onWordAdded( String word, int langCode );
+    }
+    private static Set<StudyListListener> s_slListeners
+        = new HashSet<StudyListListener>();
+
     private static SQLiteOpenHelper s_dbHelper = null;
 
     public static class Obit {
@@ -1896,6 +1902,20 @@ public class DBUtils {
         }
     }
 
+    protected static void addStudyListChangedListener( StudyListListener lnr )
+    {
+        synchronized( s_slListeners ) {
+            s_slListeners.add( lnr );
+        }
+    }
+
+    protected static void removeStudyListChangedListener( StudyListListener lnr )
+    {
+        synchronized( s_slListeners ) {
+            s_slListeners.remove( lnr );
+        }
+    }
+
     public static void loadDB( Context context )
     {
         copyGameDB( context, false );
@@ -2157,6 +2177,7 @@ public class DBUtils {
             db.insert( DBHelper.TABLE_NAME_STUDYLIST, null, values );
             db.close();
         }
+        notifyStudyListListeners( word, lang );
     }
 
     public static int[] studyListLangs( Context context )
@@ -2603,6 +2624,15 @@ public class DBUtils {
             }
         }
         return result;
+    }
+
+    private static void notifyStudyListListeners( String word, int lang )
+    {
+        synchronized( s_slListeners ) {
+            for ( StudyListListener listener : s_slListeners ) {
+                listener.onWordAdded( word, lang );
+            }
+        }
     }
 
     private static void notifyListeners( long rowid, GameChangeType change )
