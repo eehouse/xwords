@@ -80,7 +80,6 @@ public class GameConfigDelegate extends DelegateBase
     private Button m_addPlayerButton;
     private Button m_changeConnButton;
     private Button m_jugglePlayersButton;
-    private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
     private View m_connectSetRelay;
     private Spinner m_dictSpinner;
@@ -147,7 +146,7 @@ public class GameConfigDelegate extends DelegateBase
             lstnr = new OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged( CompoundButton buttonView,
-                                                 boolean isChecked )
+                                                  boolean isChecked )
                     {
                         m_gi.players[position].isLocal = !isChecked;
                     }
@@ -330,12 +329,6 @@ public class GameConfigDelegate extends DelegateBase
         case PLAYER_EDIT:
             setPlayerSettings( dialog );
             break;
-        // case ROLE_EDIT_RELAY:
-        // case ROLE_EDIT_SMS:
-        // case ROLE_EDIT_BT:
-        //     setRoleHints( id, dialog );
-        //     setRoleSettings();
-        //     break;
         case FORCE_REMOTE:
             ListView listview = (ListView)dialog.findViewById( R.id.players );
             listview.setAdapter( new RemoteChoices() );
@@ -497,8 +490,7 @@ public class GameConfigDelegate extends DelegateBase
         m_changeConnButton.setOnClickListener( this );
         m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
         m_jugglePlayersButton.setOnClickListener( this );
-        m_playButton = (Button)findViewById( R.id.play_button );
-        m_playButton.setOnClickListener( this );
+        findViewById( R.id.play_button ).setOnClickListener( this );
 
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
@@ -576,8 +568,8 @@ public class GameConfigDelegate extends DelegateBase
             GameLock gameLock;
             XwJNI.GamePtr gamePtr;
             if ( null == m_jniThread ) {
-                 gameLock = new GameLock( m_rowid, false ).lock();
-                 gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
+                gameLock = new GameLock( m_rowid, false ).lock();
+                gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
             } else {
                 gameLock = m_jniThread.getLock();
                 gamePtr = m_jniThread.getGamePtr();
@@ -739,50 +731,60 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( isFinishing() ) {
             // do nothing; we're on the way out
-        } else if ( m_addPlayerButton == view ) {
-            int curIndex = m_gi.nPlayers;
-            if ( curIndex < CurGameInfo.MAX_NUM_PLAYERS ) {
-                m_gi.addPlayer(); // ups nPlayers
-                loadPlayersList();
-            }
-        } else if ( m_jugglePlayersButton == view ) {
-            m_gi.juggle();
-            loadPlayersList();
-        } else if ( m_joinPublicCheck == view ) {
-            adjustConnectStuff();
-        } else if ( m_gameLockedCheck == view ) {
-            makeNotAgainBuilder( R.string.not_again_unlock,
-                                 R.string.key_notagain_unlock,
-                                 Action.LOCKED_CHANGE_ACTION )
-                .show();
-        } else if ( m_refreshRoomsButton == view ) {
-            refreshNames();
-        } else if ( m_changeConnButton == view ) {
-            showConnAfterCheck();
-        } else if ( m_playButton == view ) {
-            // Launch BoardActivity for m_name, but ONLY IF user
-            // confirms any changes required.  So we either launch
-            // from here if there's no confirmation needed, or launch
-            // a new dialog whose OK button does the same thing.
-            saveChanges();
-
-            if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
-                makeConfirmThenBuilder( R.string.config_no_connvia,
-                                        Action.DELETE_AND_EXIT )
-                    .setPosButton( R.string.button_discard )
-                    .setNegButton( R.string.button_edit )
-                    .show();
-            } else if ( m_isNewGame || !m_gameStarted ) {
-                saveAndClose( true );
-            } else if ( m_giOrig.changesMatter(m_gi)
-                        || m_carOrig.changesMatter(m_car) ) {
-                showDialog( DlgID.CONFIRM_CHANGE_PLAY );
-            } else {
-                finishAndLaunch();
-            }
-
         } else {
-            DbgUtils.logw( TAG, "unknown v: " + view.toString() );
+            switch ( view.getId() ) {
+            case R.id.add_player:
+                int curIndex = m_gi.nPlayers;
+                if ( curIndex < CurGameInfo.MAX_NUM_PLAYERS ) {
+                    m_gi.addPlayer(); // ups nPlayers
+                    loadPlayersList();
+                }
+                break;
+            case R.id.juggle_players:
+                m_gi.juggle();
+                loadPlayersList();
+                break;
+            case R.id.join_public_room_check:
+                adjustConnectStuff();
+                break;
+            case R.id.game_locked_check:
+                makeNotAgainBuilder( R.string.not_again_unlock,
+                                     R.string.key_notagain_unlock,
+                                     Action.LOCKED_CHANGE_ACTION )
+                    .show();
+                break;
+            case R.id.refresh_button:
+                refreshNames();
+                break;
+            case R.id.change_connection:
+                showConnAfterCheck();
+                break;
+            case R.id.play_button:
+                // Launch BoardActivity for m_name, but ONLY IF user
+                // confirms any changes required.  So we either launch
+                // from here if there's no confirmation needed, or launch
+                // a new dialog whose OK button does the same thing.
+                saveChanges();
+
+                if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
+                    makeConfirmThenBuilder( R.string.config_no_connvia,
+                                            Action.DELETE_AND_EXIT )
+                        .setPosButton( R.string.button_discard )
+                        .setNegButton( R.string.button_edit )
+                        .show();
+                } else if ( m_isNewGame || !m_gameStarted ) {
+                    saveAndClose( true );
+                } else if ( m_giOrig.changesMatter(m_gi)
+                            || m_carOrig.changesMatter(m_car) ) {
+                    showDialog( DlgID.CONFIRM_CHANGE_PLAY );
+                } else {
+                    finishAndLaunch();
+                }
+                break;
+            default:
+                DbgUtils.logw( TAG, "unknown v: " + view.toString() );
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
         }
     } // onClick
 
