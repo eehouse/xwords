@@ -54,31 +54,35 @@ public class StudyListDelegate extends ListDelegateBase
 
     protected static final String START_LANG = "START_LANG";
 
+    private static final String CHECKED_KEY = "CHECKED_KEY";
+
     private Activity m_activity;
     private Spinner m_spinner;
     private View m_pickView;    // LinearLayout, actually
     private int[] m_langCodes;
     private String[] m_words;
-    private Set<Integer> m_checkeds;
+    private Set<String> m_checkeds;
     private int m_langPosition;
     private SLWordsAdapter m_adapter;
     private ListView m_list;
     private String m_origTitle;
 
-    protected StudyListDelegate( Delegator delegator, Bundle savedInstanceState )
+    protected StudyListDelegate( Delegator delegator, Bundle sis )
     {
-        super( delegator, savedInstanceState, R.layout.studylist, R.menu.studylist );
+        super( delegator, sis, R.layout.studylist, R.menu.studylist );
         m_activity = delegator.getActivity();
     }
 
-    protected void init( Bundle savedInstanceState )
+    protected void init( Bundle sis )
     {
         m_list = (ListView)findViewById( android.R.id.list );
 
         m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
         m_pickView = findViewById( R.id.pick_lang );
-        m_checkeds = new HashSet<Integer>();
+        m_checkeds = new HashSet<String>();
         m_words = new String[0];
+
+        getBundledData( sis );
 
         initOrFinish( getIntent() );
     }
@@ -130,8 +134,8 @@ public class StudyListDelegate extends ListDelegateBase
             break;
 
         case R.id.slmenu_select_all:
-            for ( int ii = 0; ii < m_words.length; ++ii ) {
-                m_checkeds.add( ii );
+            for ( String word : m_words ) {
+                m_checkeds.add( word );
             }
             makeAdapter();
             setTitleBar();
@@ -147,6 +151,19 @@ public class StudyListDelegate extends ListDelegateBase
             handled = false;
         }
         return handled;
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState )
+    {
+        outState.putSerializable( CHECKED_KEY, (HashSet)m_checkeds );
+    }
+
+    private void getBundledData( Bundle sis )
+    {
+        if ( null != sis ) {
+            m_checkeds = (HashSet)sis.getSerializable( CHECKED_KEY );
+        }
     }
 
     //////////////////////////////////////////////////
@@ -188,6 +205,7 @@ public class StudyListDelegate extends ListDelegateBase
                                 int position, long id )
     {
         m_langPosition = position;
+        m_checkeds.clear();
         loadList();             // because language has changed
     }
 
@@ -223,32 +241,30 @@ public class StudyListDelegate extends ListDelegateBase
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
-        m_checkeds.add( ((XWListItem)clicked).getPosition() );
+        m_checkeds.add( ((XWListItem)clicked).getText() );
     }
 
     public void itemToggled( SelectableItem.LongClickHandler toggled,
                              boolean selected )
     {
-        int position = ((XWListItem)toggled).getPosition();
+        String word = ((XWListItem)toggled).getText();
         if ( selected ) {
-            m_checkeds.add( position );
+            m_checkeds.add( word );
         } else {
-            m_checkeds.remove( position );
+            m_checkeds.remove( word );
         }
         setTitleBar();
     }
 
     public boolean getSelected( SelectableItem.LongClickHandler obj )
     {
-        return m_checkeds.contains( ((XWListItem)obj).getPosition() );
+        return m_checkeds.contains( ((XWListItem)obj).getText() );
     }
 
     private void loadList()
     {
         int lang = m_langCodes[m_langPosition];
         m_words = DBUtils.studyListWords( m_activity, lang );
-
-        m_checkeds.clear();
 
         makeAdapter();
 
@@ -325,11 +341,7 @@ public class StudyListDelegate extends ListDelegateBase
         if ( nSels == m_words.length ) {
             result = m_words;
         } else {
-            result = new String[nSels];
-            Iterator<Integer> iter = m_checkeds.iterator();
-            for ( int ii = 0; iter.hasNext(); ++ii ) {
-                result[ii] = m_words[iter.next()];
-            }
+            result = m_checkeds.toArray( new String[nSels] );
         }
         return result;
     }
@@ -385,8 +397,9 @@ public class StudyListDelegate extends ListDelegateBase
             XWListItem item =
                 XWListItem.inflate( m_activity, StudyListDelegate.this );
             item.setPosition( position );
-            item.setText( m_words[position] );
-            item.setSelected( m_checkeds.contains(position) );
+            String word = m_words[position];
+            item.setText( word );
+            item.setSelected( m_checkeds.contains( word ) );
             item.setOnLongClickListener( StudyListDelegate.this );
             item.setOnClickListener( StudyListDelegate.this );
             return item;
