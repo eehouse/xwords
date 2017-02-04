@@ -52,16 +52,13 @@ abstract class XWFragment extends Fragment implements Delegator {
         XWFragment result = null;
         DbgUtils.assertOnUIThread();
         for ( XWFragment frag : sActiveFrags ) {
-            DbgUtils.logd( TAG, "findOwnsView(): looking at fragment %s",
-                           frag.getClass().getSimpleName() );
            if ( frag.getView() == view ) {
                Assert.assertNull( result );
                result = frag;
-               // break;
+               // break;  <-- put this back eventually
             }
         }
 
-        DbgUtils.logd( TAG, "findOwnsView() => " + result );
         return result;
     }
 

@@ -414,8 +414,6 @@ public class MainActivity extends XWActivity
     private XWFragment findFragment( View view )
     {
         XWFragment frag = XWFragment.findOwnsView( view );
-        DbgUtils.logd( TAG, "findFragmentById(view=%s) => " + frag,
-                       view.toString() );
         return frag;
     }
 
