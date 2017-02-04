@@ -22,11 +22,13 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 
+import java.io.Serializable;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
 
-public class LocalPlayer {
+public class LocalPlayer implements Serializable {
     public String name;
     public String password;
     public String dictName;

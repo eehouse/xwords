@@ -66,6 +66,7 @@ public class GameConfigDelegate extends DelegateBase
     private static final String INTENT_FORRESULT_NEWGAME = "newgame";
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
+    private static final String LOCAL_GI = "LOCAL_GI";
 
     private Activity m_activity;
     private CheckBox m_joinPublicCheck;
@@ -530,6 +531,7 @@ public class GameConfigDelegate extends DelegateBase
 
     protected void onPause()
     {
+        saveChanges();          // save before clearing m_giOrig!
         m_giOrig = null;        // flag for onStart and onResume
         super.onPause();
         if ( null != m_jniThread ) {
@@ -541,6 +543,7 @@ public class GameConfigDelegate extends DelegateBase
     protected void onSaveInstanceState( Bundle outState )
     {
         outState.putInt( WHICH_PLAYER, m_whichPlayer );
+        outState.putSerializable( LOCAL_GI, m_gi );
     }
 
     @Override
@@ -666,6 +669,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( null != bundle ) {
             m_whichPlayer = bundle.getInt( WHICH_PLAYER );
+            m_gi = (CurGameInfo)bundle.getSerializable( LOCAL_GI );
         }
     }
 
@@ -1151,41 +1155,6 @@ public class GameConfigDelegate extends DelegateBase
         Assert.fail();
         return 0;
     }
-
-    // private int titleForDlg( int id )
-    // {
-    //     switch( id ) {
-    //     // case ROLE_EDIT_RELAY:
-    //     //     return R.string.tab_relay;
-    //     // case ROLE_EDIT_SMS:
-    //     //     return R.string.tab_sms;
-    //     // case ROLE_EDIT_BT:
-    //     //     return R.string.tab_bluetooth;
-    //     }
-    //     Assert.fail();
-    //     return -1;
-    // }
-
-    // private String[] makeXportStrings()
-    // {
-    //     ArrayList<String> strings = new ArrayList<String>();
-    //     ArrayList<CommsAddrRec.CommsConnType> types
-    //         = new ArrayList<CommsAddrRec.CommsConnType>();
-
-    //     strings.add( getString(R.string.tab_relay) );
-    //     types.add( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY );
-
-    //     if ( m_canDoSMS ) {
-    //         strings.add( getString(R.string.tab_sms) );
-    //         types.add( CommsAddrRec.CommsConnType.COMMS_CONN_SMS );
-    //     }
-    //     if ( m_canDoBT ) {
-    //         strings.add( getString(R.string.tab_bluetooth) );
-    //         types.add( CommsAddrRec.CommsConnType.COMMS_CONN_BT );
-    //     }
-    //     m_types = types.toArray( new CommsAddrRec.CommsConnType[types.size()] );
-    //     return strings.toArray( new String[strings.size()] );
-    // }
 
     private void saveChanges()
     {

@@ -35,7 +35,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 
-public class CurGameInfo {
+import java.io.Serializable;
+
+public class CurGameInfo implements Serializable {
     private static final String TAG = CurGameInfo.class.getSimpleName();
     
     public static final int MAX_NUM_PLAYERS = 4;
