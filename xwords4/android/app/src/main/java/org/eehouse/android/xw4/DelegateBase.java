@@ -156,7 +156,8 @@ public class DelegateBase implements DlgClickNotify,
     protected void onStop()
     {
         // Alerts disappear on their own if not in dualpane mode
-        if ( m_activity instanceof MainActivity
+        if ( false
+             && m_activity instanceof MainActivity
              && ((MainActivity)m_activity).inDPMode() ) {
             DlgDelegate.closeAlerts( m_activity, this );
         }
