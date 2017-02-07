@@ -591,7 +591,6 @@ public class GamesListDelegate extends ListDelegateBase
     private long m_groupid;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
-    private GameNamer m_namer;
     private Set<Long> m_launchedGames; // prevent problems with double-taps
     private boolean m_menuPrepared;
     private boolean m_moveAfterNewGroup;
@@ -710,45 +709,47 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case RENAME_GAME:
+            GameSummary summary = GameUtils.getSummary( m_activity, m_rowid );
+            int labelID = (summary.isMultiGame() && !summary.anyMissing())
+                ? R.string.rename_label_caveat : R.string.rename_label;
+            final GameNamer namer1 =
+                buildNamer(GameUtils.getName( m_activity, m_rowid ), labelID );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         GamesListDelegate self = curThis();
-                        String name = self.m_namer.getName();
+                        String name = namer1.getName();
                         DBUtils.setName( self.m_activity, self.m_rowid,
                                          name );
                         self.m_adapter.invalName( self.m_rowid );
                     }
                 };
-            GameSummary summary = GameUtils.getSummary( m_activity, m_rowid );
-            int labelID = (summary.isMultiGame() && !summary.anyMissing())
-                ? R.string.rename_label_caveat : R.string.rename_label;
-            dialog = buildNamerDlg( GameUtils.getName( m_activity, m_rowid ),
-                                    labelID, R.string.game_rename_title,
+            dialog = buildNamerDlg( namer1, R.string.game_rename_title,
                                     lstnr, null, DlgID.RENAME_GAME );
             break;
 
         case RENAME_GROUP:
+            final GameNamer namer2 = buildNamer( m_adapter.groupName(m_groupid),
+                                                R.string.rename_group_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         GamesListDelegate self = curThis();
-                        String name = self.m_namer.getName();
+                        String name = namer2.getName();
                         DBUtils.setGroupName( self.m_activity,
                                               self.m_groupid, name );
                         self.reloadGame( self.m_rowid );
                         self.mkListAdapter();
                     }
                 };
-            dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
-                                    R.string.rename_group_label,
-                                    R.string.game_name_group_title,
+            dialog = buildNamerDlg( namer2, R.string.game_name_group_title,
                                     lstnr, null, DlgID.RENAME_GROUP );
             break;
 
         case NEW_GROUP:
+            final GameNamer namer3 = buildNamer( "", R.string.newgroup_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         GamesListDelegate self = curThis();
-                        String name = self.m_namer.getName();
+                        String name = namer3.getName();
                         DBUtils.addGroup( self.m_activity, name );
                         self.mkListAdapter();
                         self.showNewGroupIf();
@@ -759,7 +760,7 @@ public class GamesListDelegate extends ListDelegateBase
                         curThis().showNewGroupIf();
                     }
                 };
-            dialog = buildNamerDlg( "", R.string.newgroup_label,
+            dialog = buildNamerDlg( namer3,
                                     R.string.game_name_group_title,
                                     lstnr, lstnr2, DlgID.RENAME_GROUP );
             setRemoveOnDismiss( dialog, dlgID );
@@ -2357,19 +2358,23 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private Dialog buildNamerDlg( String curname, int labelID, int titleID,
+    private GameNamer buildNamer( String name, int labelID )
+    {
+        GameNamer namer = (GameNamer)inflate( R.layout.rename_game );
+        namer.setName( name );
+        namer.setLabel( labelID );
+        return namer;
+    }
+
+    private Dialog buildNamerDlg( GameNamer namer, int titleID,
                                   OnClickListener lstnr1, OnClickListener lstnr2,
                                   DlgID dlgID )
     {
-        m_namer = (GameNamer)inflate( R.layout.rename_game );
-        m_namer.setName( curname );
-        m_namer.setLabel( labelID );
-
         Dialog dialog = makeAlertBuilder()
             .setTitle( titleID )
             .setPositiveButton( android.R.string.ok, lstnr1 )
             .setNegativeButton( android.R.string.cancel, lstnr2 )
-            .setView( m_namer )
+            .setView( namer )
             .create();
         setRemoveOnDismiss( dialog, dlgID );
         return dialog;
