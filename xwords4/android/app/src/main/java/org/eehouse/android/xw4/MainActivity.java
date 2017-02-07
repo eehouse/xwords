@@ -25,10 +25,11 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -109,6 +110,11 @@ public class MainActivity extends XWActivity
         super.onNewIntent( intent );
 
         m_dlgt.handleNewIntent( intent );
+    }
+
+    protected void show( DialogFragment df )
+    {
+        df.show( getSupportFragmentManager(), "dialog" );
     }
 
     /* Sometimes I'm getting crashes because views don't have fragments

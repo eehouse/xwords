@@ -22,13 +22,14 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -421,6 +422,15 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showDialog( dlgID );
     }
 
+    protected void show( DialogFragment df )
+    {
+        if ( m_activity instanceof MainActivity ) {
+            ((MainActivity)m_activity).show( df );
+        } else {
+            Assert.assertTrue( !BuildConfig.DEBUG );
+        }
+    }
+
     protected void removeDialog( DlgID dlgID )
     {
         removeDialog( dlgID.ordinal() );
@@ -480,12 +490,6 @@ public class DelegateBase implements DlgClickNotify,
     public NotAgainBuilder makeNotAgainBuilder( int msgId, int key )
     {
         return m_dlgDelegate.makeNotAgainBuilder( msgId, key );
-    }
-
-    // It sucks that these must be duplicated here and XWActivity
-    protected void showAboutDialog()
-    {
-        m_dlgDelegate.showAboutDialog();
     }
 
     public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action ) {

@@ -23,16 +23,17 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.support.v4.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -387,9 +388,6 @@ public class DlgDelegate {
         case LOOKUP:
             dialog = createLookupDialog();
             break;
-        case DIALOG_ABOUT:
-            dialog = createAboutDialog();
-            break;
         case DIALOG_OKONLY:
             dialog = createOKDialog( state, dlgID );
             break;
@@ -440,11 +438,6 @@ public class DlgDelegate {
     public void showDictGoneFinish()
     {
         showDialog( DlgID.DLG_DICTGONE );
-    }
-
-    public void showAboutDialog()
-    {
-        showDialog( DlgID.DIALOG_ABOUT );
     }
 
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
@@ -621,44 +614,6 @@ public class DlgDelegate {
                     }
                 } );
         }
-    }
-
-    private Dialog createAboutDialog()
-    {
-        final View view = LocUtils.inflate( m_activity, R.layout.about_dlg );
-        TextView vers = (TextView)view.findViewById( R.id.version_string );
-
-        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL,
-                                                        DateFormat.FULL );
-        String dateString
-            = df.format( new Date( BuildConfig.BUILD_STAMP * 1000 ) );
-        vers.setText( getString( R.string.about_vers_fmt,
-                                 getString( R.string.app_version ),
-                                 BuildConfig.GIT_REV, dateString ) );
-
-        TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
-        String str = getString( R.string.xlator );
-        if ( str.length() > 0 && !str.equals("[empty]") ) {
-            xlator.setText( str );
-        } else {
-            xlator.setVisibility( View.GONE );
-        }
-
-        return LocUtils.makeAlertBuilder( m_activity )
-            .setIcon( R.drawable.icon48x48 )
-            .setTitle( R.string.app_name )
-            .setView( view )
-            .setNegativeButton( R.string.changes_button,
-                                new OnClickListener() {
-                                    @Override
-                                    public void onClick( DialogInterface dlg,
-                                                         int which )
-                                    {
-                                        FirstRunDialog.show( m_activity );
-                                    }
-                                } )
-            .setPositiveButton( android.R.string.ok, null )
-            .create();
     }
 
     private Dialog createLookupDialog()

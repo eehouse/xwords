@@ -1630,7 +1630,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_about:
-            showAboutDialog();
+            show( AboutAlert.newInstance() );
             break;
 
         case R.id.games_menu_email:
