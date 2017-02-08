@@ -91,7 +91,7 @@ public class XWApp extends Application {
         BTService.startService( this );
         RelayService.startService( this );
         GCMIntentService.init( this );
-        WiDirService.init( this );
+        WiDirWrapper.init( this );
     }
 
     // This is called on emulator only, but good for ensuring no memory leaks
