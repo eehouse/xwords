@@ -923,8 +923,9 @@ public class DictsDelegate extends ListDelegateBase
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch( action ) {
         case DELETE_DICT_ACTION:
             String[] names = (String[])params[0];
@@ -956,8 +957,9 @@ public class DictsDelegate extends ListDelegateBase
             mkListAdapter();
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     private DictLoc itemToRealLoc( int item )

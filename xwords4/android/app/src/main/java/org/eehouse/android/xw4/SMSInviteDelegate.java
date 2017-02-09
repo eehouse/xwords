@@ -187,8 +187,9 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case CLEAR_ACTION:
             clearSelectedImpl();
@@ -205,13 +206,15 @@ public class SMSInviteDelegate extends InviteDelegate {
             saveAndRebuild();
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     @Override
-    public void onNegButton( Action action, final Object[] params )
+    public boolean onNegButton( Action action, final Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case USE_IMMOBILE_ACTION:
             if ( m_immobileConfirmed ) {
@@ -230,8 +233,9 @@ public class SMSInviteDelegate extends InviteDelegate {
             }
             break;
         default:
-            super.onNegButton( action, params );
+            handled = super.onNegButton( action, params );
         }
+        return handled;
     }
 
     private void addPhoneNumbers( Intent intent )

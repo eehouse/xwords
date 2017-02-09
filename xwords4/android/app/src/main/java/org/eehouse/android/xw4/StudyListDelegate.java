@@ -196,8 +196,9 @@ public class StudyListDelegate extends ListDelegateBase
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case SL_CLEAR_ACTION:
             String[] selWords = getSelWords();
@@ -219,9 +220,10 @@ public class StudyListDelegate extends ListDelegateBase
             showToast( msg );
             break;
         default:
-            Assert.fail();
+            Assert.assertFalse( BuildConfig.DEBUG );
             break;
         }
+        return handled;
     }
 
     //////////////////////////////////////////////////

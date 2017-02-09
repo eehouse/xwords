@@ -226,8 +226,9 @@ public class ChatDelegate extends DelegateBase {
     }
 
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case CLEAR_ACTION:
             DBUtils.clearChatHistory( m_activity, m_rowid );
@@ -236,8 +237,9 @@ public class ChatDelegate extends DelegateBase {
             layout.removeAllViews();
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     public static boolean append( long rowid, String msg, int fromIndx )

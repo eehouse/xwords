@@ -680,8 +680,9 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         Assert.assertTrue( curThis() == this );
         switch( action ) {
         case LOCKED_CHANGE_ACTION:
@@ -707,13 +708,15 @@ public class GameConfigDelegate extends DelegateBase
             break;
 
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     @Override
-    public void onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case DELETE_AND_EXIT:
             showConnAfterCheck();
@@ -722,9 +725,10 @@ public class GameConfigDelegate extends DelegateBase
             showDialog( DlgID.CHANGE_CONN );
             break;
         default:
-            super.onNegButton( action, params );
+            handled = super.onNegButton( action, params );
             break;
         }
+        return handled;
     }
 
     public void onClick( View view )

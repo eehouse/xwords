@@ -641,8 +641,9 @@ public class DelegateBase implements DlgClickNotify,
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         DbgUtils.logd( TAG, "%s.posButtonClicked(%s)", getClass().getSimpleName(),
                        action.toString() );
         switch( action ) {
@@ -664,12 +665,15 @@ public class DelegateBase implements DlgClickNotify,
         default:
             DbgUtils.logd( TAG, "unhandled action %s", action.toString() );
             // Assert.assertTrue( !BuildConfig.DEBUG );
+            handled = false;
             break;
         }
+        return handled;
     }
 
-    public void onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object[] params )
     {
+        boolean handled = true;
         // DbgUtils.logd( TAG, "%s.negButtonClicked(%s)", getClass().getSimpleName(),
         //                action.toString() );
         switch ( action ) {
@@ -678,14 +682,17 @@ public class DelegateBase implements DlgClickNotify,
             break;
         default:
             DbgUtils.logd( TAG, "onNegButton: unhandled action %s", action.toString() );
+            handled = false;
             break;
         }
+        return handled;
     }
 
-    public void onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object[] params )
     {
         DbgUtils.logd( TAG, "%s.dlgDismissed(%s)", getClass().getSimpleName(),
                        action.toString() );
+        return false;
     }
 
     public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object[] params )

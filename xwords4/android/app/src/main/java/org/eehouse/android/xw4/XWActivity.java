@@ -265,21 +265,21 @@ public class XWActivity extends FragmentActivity
     // DlgClickNotify interface
     ////////////////////////////////////////////////////////////
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
-        m_dlgt.onPosButton( action, params );
+        return m_dlgt.onPosButton( action, params );
     }
 
     @Override
-    public void onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object[] params )
     {
-        m_dlgt.onNegButton( action, params );
+        return m_dlgt.onNegButton( action, params );
     }
 
     @Override
-    public void onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object[] params )
     {
-        m_dlgt.onDismissed( action, params );
+        return m_dlgt.onDismissed( action, params );
     }
 
     @Override

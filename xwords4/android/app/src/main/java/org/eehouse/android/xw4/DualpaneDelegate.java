@@ -98,12 +98,32 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = false;
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getVisibleFragments();
         for ( XWFragment frag : frags ) {
-            frag.getDelegate().onPosButton( action, params );
+            handled = frag.getDelegate().onPosButton( action, params );
+            if ( handled ) {
+                break;
+            }
         }
+        return handled;
+    }
+
+    @Override
+    public boolean onNegButton( Action action, Object[] params )
+    {
+        boolean handled = false;
+        MainActivity main = (MainActivity)m_activity;
+        XWFragment[] frags = main.getVisibleFragments();
+        for ( XWFragment frag : frags ) {
+            handled = frag.getDelegate().onNegButton( action, params );
+            if ( handled ) {
+                break;
+            }
+        }
+        return handled;
     }
 }

@@ -242,8 +242,9 @@ public class PrefsDelegate extends DelegateBase
     }
 
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case ENABLE_SMS_DO:
             XWPrefs.setSMSEnabled( m_activity, true );
@@ -254,8 +255,9 @@ public class PrefsDelegate extends DelegateBase
             RelayCheckBoxPreference.setChecked();
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     private void relaunch()

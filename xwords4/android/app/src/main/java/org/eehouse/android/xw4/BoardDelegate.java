@@ -1007,8 +1007,9 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
 
     @Override
-    public void onPosButton( Action action, final Object[] params )
+    public boolean onPosButton( Action action, final Object[] params )
     {
+        boolean handled = true;
         JNICmd cmd = JNICmd.CMD_NONE;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
@@ -1100,17 +1101,20 @@ public class BoardDelegate extends DelegateBase
                 } );
             // FALLTHRU: so super gets called, before
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
 
         if ( JNICmd.CMD_NONE != cmd ) {
             handleViaThread( cmd );
         }
+
+        return handled;
     }
 
     @Override
-    public void onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
             m_dropOnDismiss = true;
@@ -1125,13 +1129,15 @@ public class BoardDelegate extends DelegateBase
             showInviteChoicesThen( params );
             break;
         default:
-            super.onNegButton( action, params );
+            handled = super.onNegButton( action, params );
         }
+        return handled;
     }
 
     @Override
-    public void onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
             if ( m_dropOnDismiss ) {
@@ -1145,7 +1151,10 @@ public class BoardDelegate extends DelegateBase
         case DELETE_AND_EXIT:
             finish();
             break;
+        default:
+            handled = false;
         }
+        return handled;
     }
 
     public void inviteChoiceMade( Action action, InviteMeans means,

@@ -308,9 +308,9 @@ public class DlgDelegate {
         public static enum InviteMeans {
             SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
         };
-        void onPosButton( Action action, Object[] params );
-        void onNegButton( Action action, Object[] params );
-        void onDismissed( Action action, Object[] params );
+        boolean onPosButton( Action action, Object[] params );
+        boolean onNegButton( Action action, Object[] params );
+        boolean onDismissed( Action action, Object[] params );
 
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
     }

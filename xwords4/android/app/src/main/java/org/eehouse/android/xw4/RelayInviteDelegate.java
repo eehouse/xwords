@@ -278,8 +278,9 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch( action ) {
         case CLEAR_ACTION:
             clearSelectedImpl();
@@ -288,20 +289,25 @@ public class RelayInviteDelegate extends InviteDelegate {
             m_immobileConfirmed = true;
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
             break;
         }
+        return handled;
     }
 
     @Override
-    public void onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object[] params )
     {
+        boolean handled = true;
         if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
             makeConfirmThenBuilder( R.string.warn_unlimited,
                                     Action.POST_WARNING_ACTION )
                 .setPosButton( R.string.button_yes )
                 .show();
+        } else {
+            handled = false;
         }
+        return handled;
     }
 
     // private int countChecks()

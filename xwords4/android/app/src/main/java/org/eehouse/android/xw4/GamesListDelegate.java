@@ -1269,8 +1269,9 @@ public class GamesListDelegate extends ListDelegateBase
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch( action ) {
         case NEW_NET_GAME:
             m_netLaunchInfo = (NetLaunchInfo)params[0];
@@ -1377,13 +1378,15 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     @Override
-    public void onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case NEW_GAME_DFLT_NAME:
             m_newGameParams = params;
@@ -1395,20 +1398,23 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         default:
-            super.onNegButton( action, params );
+            handled = super.onNegButton( action, params );
         }
+        return handled;
     }
 
     @Override
-    public void onDismissed( Action action, Object[] params )
+    public boolean onDismissed( Action action, Object[] params )
     {
+        boolean handled = true;
         switch( action ) {
         case ENABLE_DUALPANE_EXIT:
             setDualpaneAndFinish( true );
             break;
         default:
-            super.onDismissed( action, params );
+            handled = super.onDismissed( action, params );
         }
+        return handled;
     }
 
     @Override

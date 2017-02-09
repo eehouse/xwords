@@ -168,14 +168,16 @@ public class BTInviteDelegate extends InviteDelegate {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch( action ) {
         case OPEN_BT_PREFS_ACTION:
             BTService.openBTSettings( m_activity );
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 }

@@ -346,27 +346,31 @@ public class DwnldDelegate extends ListDelegateBase {
     }
 
     @Override
-    public void onPosButton( Action action, Object[] params )
+    public boolean onPosButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case STORAGE_CONFIRMED:
             doWithPermissions( (Uri[])params[0] );
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     @Override
-    public void onNegButton( Action action, Object[] params )
+    public boolean onNegButton( Action action, Object[] params )
     {
+        boolean handled = true;
         switch ( action ) {
         case STORAGE_CONFIRMED:
             finish();
             break;
         default:
-            super.onPosButton( action, params );
+            handled = super.onPosButton( action, params );
         }
+        return handled;
     }
 
     private void mkListAdapter()
