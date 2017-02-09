@@ -34,10 +34,8 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class NotAgainAlert extends DialogFragment {
+public class NotAgainAlert extends DlgDelegateAlert {
     private static final String TAG = NotAgainAlert.class.getSimpleName();
-    private static final String STATE_KEY = "STATE_KEY";
-    private DlgState m_state;
 
     public static NotAgainAlert newInstance( DlgState state )
     {
@@ -46,7 +44,7 @@ public class NotAgainAlert extends DialogFragment {
 
     public NotAgainAlert( DlgState state )
     {
-        m_state = state;
+        super( state );
     }
 
     public NotAgainAlert() {}
@@ -56,13 +54,12 @@ public class NotAgainAlert extends DialogFragment {
     {
         final Context context = getActivity();
 
-        if ( null != sis ) {
-            m_state = (DlgState)sis.getParcelable( STATE_KEY );
-        }
+        getBundleData( sis );
+        final DlgState state = getState();
 
         final NotAgainView naView = (NotAgainView)
             LocUtils.inflate( context, R.layout.not_again_view );
-        naView.setMessage( m_state.m_msg );
+        naView.setMessage( state.m_msg );
         // final OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
@@ -71,11 +68,11 @@ public class NotAgainAlert extends DialogFragment {
             .setPositiveButton( android.R.string.ok,
                                 mkCallbackClickListener( naView ) );
 
-        if ( null != m_state.m_pair ) {
-            final ActionPair more = m_state.m_pair;
+        if ( null != state.m_pair ) {
+            final ActionPair more = state.m_pair;
             OnClickListener lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        checkNotAgainCheck( m_state, naView );
+                        checkNotAgainCheck( state, naView );
                         // m_clickCallback.onPosButton( more.action, more.params );
                     }
                 };
@@ -84,57 +81,6 @@ public class NotAgainAlert extends DialogFragment {
 
         Dialog dialog = builder.create();
         return dialog;
-    }
-
-    @Override
-    public void onSaveInstanceState( Bundle bundle )
-    {
-        super.onSaveInstanceState( bundle );
-        bundle.putParcelable( STATE_KEY, m_state );
-    }
-
-    // Belongs in superclass?
-    private void checkNotAgainCheck( DlgState state, NotAgainView naView )
-    {
-        if ( null != naView && naView.getChecked() ) {
-            DbgUtils.logd( TAG, "is checked" );
-            if ( 0 != state.m_prefsKey ) {
-                XWPrefs.setPrefsBoolean( getActivity(), m_state.m_prefsKey,
-                                         true );
-            } else if ( null != state.m_onNAChecked ) {
-                m_state.m_onNAChecked.run();
-            }
-        }
-    }
-
-    private OnClickListener mkCallbackClickListener( final NotAgainView naView )
-    {
-        OnClickListener cbkOnClickLstnr;
-        cbkOnClickLstnr = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int button ) {
-                    checkNotAgainCheck( m_state, naView );
-
-                    Activity activity = getActivity();
-                    if ( Action.SKIP_CALLBACK != m_state.m_action
-                         && activity instanceof XWActivity ) {
-                        XWActivity xwact = (XWActivity)activity;
-                        switch ( button ) {
-                        case AlertDialog.BUTTON_POSITIVE:
-                            xwact.onPosButton( m_state.m_action, m_state.m_params );
-                            break;
-                        case AlertDialog.BUTTON_NEGATIVE:
-                            xwact.onNegButton( m_state.m_action, m_state.m_params );
-                            break;
-                        default:
-                            DbgUtils.loge( TAG, "unexpected button %d",
-                                           button );
-                            // ignore on release builds
-                            Assert.assertFalse( BuildConfig.DEBUG );
-                        }
-                    }
-                }
-            };
-        return cbkOnClickLstnr;
     }
 
 }

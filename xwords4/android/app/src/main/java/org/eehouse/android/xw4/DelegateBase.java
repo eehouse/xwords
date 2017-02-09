@@ -697,6 +697,6 @@ public class DelegateBase implements DlgClickNotify,
 
     public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object[] params )
     {
-        Assert.fail();
+        // Assert.fail();
     }
 }

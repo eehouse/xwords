@@ -391,20 +391,25 @@ public class DlgDelegate {
         case DIALOG_OKONLY:
             dialog = createOKDialog( state, dlgID );
             break;
-        // case DIALOG_NOTAGAIN:
-        //     dialog = createNotAgainDialog( state, dlgID );
-        //     break;
+        case DIALOG_NOTAGAIN:
+            Assert.assertFalse( BuildConfig.DEBUG );
+            //     dialog = createNotAgainDialog( state, dlgID );
+            break;
         case CONFIRM_THEN:
             dialog = createConfirmThenDialog( state, dlgID );
             break;
         case INVITE_CHOICES_THEN:
-            dialog = createInviteChoicesDialog( state, dlgID );
+            Assert.assertFalse( BuildConfig.DEBUG );
+        //     dialog = createInviteChoicesDialog( state, dlgID );
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
             break;
         case DIALOG_ENABLESMS:
             dialog = createEnableSMSDialog( state, dlgID );
+            break;
+        default:
+            DbgUtils.logd( TAG, "not creating %s", dlgID.toString() );
             break;
         }
         return dialog;
@@ -414,7 +419,8 @@ public class DlgDelegate {
     {
         switch( dlgId ) {
         case INVITE_CHOICES_THEN:
-            prepareInviteChoicesDialog( dialog );
+            Assert.assertFalse( BuildConfig.DEBUG );
+            // prepareInviteChoicesDialog( dialog );
             break;
         case DIALOG_ENABLESMS:
             prepareEnableSMSDialog( dialog );
@@ -509,8 +515,9 @@ public class DlgDelegate {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
                 .setAction( action )
                 .setParams( info );
-            addState( state );
-            showDialog( DlgID.INVITE_CHOICES_THEN );
+            // addState( state );
+            // showDialog( DlgID.INVITE_CHOICES_THEN );
+            m_dlgt.show( InviteChoicesAlert.newInstance( state ) );
         } else {
             post( new Runnable() {
                     public void run() {
@@ -641,34 +648,6 @@ public class DlgDelegate {
         return dialog;
     }
 
-    // private Dialog createNotAgainDialog( final DlgState state, DlgID dlgID )
-    // {
-    //     final NotAgainView naView = (NotAgainView)
-    //         LocUtils.inflate( m_activity, R.layout.not_again_view );
-    //     naView.setMessage( state.m_msg );
-    //     final OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
-
-    //     AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
-    //         .setTitle( R.string.newbie_title )
-    //         .setView( naView )
-    //         .setPositiveButton( android.R.string.ok, lstnr_p );
-
-    //     if ( null != state.m_pair ) {
-    //         final ActionPair more = state.m_pair;
-    //         OnClickListener lstnr = new OnClickListener() {
-    //                 public void onClick( DialogInterface dlg, int item ) {
-    //                     checkNotAgainCheck( state, naView );
-    //                     m_clickCallback.onPosButton( more.action, more.params );
-    //                 }
-    //             };
-    //         builder.setNegativeButton( more.buttonStr, lstnr );
-    //     }
-
-    //     Dialog dialog = builder.create();
-
-    //     return setCallbackDismissListener( dialog, state, dlgID );
-    // } // createNotAgainDialog
-
     private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
     {
         NotAgainView naView = (NotAgainView)
@@ -684,111 +663,6 @@ public class DlgDelegate {
             .setNegativeButton( state.m_negButton, lstnr );
 
         return setCallbackDismissListener( builder.create(), state, dlgID );
-    }
-
-    private Dialog createInviteChoicesDialog( final DlgState state, DlgID dlgID )
-    {
-        final ArrayList<DlgClickNotify.InviteMeans> means =
-            new ArrayList<DlgClickNotify.InviteMeans>();
-        ArrayList<String> items = new ArrayList<String>();
-        DlgClickNotify.InviteMeans lastMeans = null;
-        if ( null != state.m_params
-             && state.m_params[0] instanceof SentInvitesInfo ) {
-            lastMeans =((SentInvitesInfo)state.m_params[0]).getLastMeans();
-        }
-
-        if ( XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS(m_activity) ) {
-            items.add( getString( R.string.invite_choice_sms ) );
-            means.add( DlgClickNotify.InviteMeans.SMS );
-        }
-        items.add( getString( R.string.invite_choice_email ) );
-        means.add( DlgClickNotify.InviteMeans.EMAIL );
-        if ( BTService.BTAvailable() ) {
-            items.add( getString( R.string.invite_choice_bt ) );
-            means.add( DlgClickNotify.InviteMeans.BLUETOOTH );
-        }
-        if ( XWApp.RELAYINVITE_SUPPORTED ) {
-            items.add( getString( R.string.invite_choice_relay ) );
-            means.add( DlgClickNotify.InviteMeans.RELAY );
-        }
-        if ( WiDirService.enabled() ) {
-            items.add( getString( R.string.invite_choice_p2p ) );
-            means.add( DlgClickNotify.InviteMeans.WIFIDIRECT );
-        }
-        if ( XWPrefs.getNFCToSelfEnabled( m_activity )
-             || NFCUtils.nfcAvail( m_activity )[0] ) {
-            items.add( getString( R.string.invite_choice_nfc ) );
-            means.add( DlgClickNotify.InviteMeans.NFC );
-        }
-        items.add( getString( R.string.slmenu_copy_sel ) );
-        means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
-
-        final int[] sel = { -1 };
-        if ( null != lastMeans ) {
-            for ( int ii = 0; ii < means.size(); ++ii ) {
-                if ( lastMeans == means.get(ii) ) {
-                    sel[0] = ii;
-                    break;
-                }
-            }
-        }
-
-        OnClickListener selChanged = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int view ) {
-                    sel[0] = view;
-                    switch ( means.get(view) ) {
-                    case CLIPBOARD:
-                        String msg =
-                            getString( R.string.not_again_clip_expl_fmt,
-                                       getString(R.string.slmenu_copy_sel) );
-                        new NotAgainBuilder( msg, R.string.key_na_clip_expl )
-                            .show();
-                        break;
-                    case SMS:
-                        if ( ! XWPrefs.getSMSEnabled( m_activity ) ) {
-                            new ConfirmThenBuilder( R.string.warn_sms_disabled,
-                                                    Action.ENABLE_SMS_ASK )
-                                .setPosButton( R.string.button_enable_sms )
-                                .setNegButton( R.string.button_later )
-                                .show();
-                        }
-                        break;
-                    }
-                    Button button = ((AlertDialog)dlg)
-                        .getButton( AlertDialog.BUTTON_POSITIVE );
-                    button.setEnabled( true );
-                }
-            };
-        OnClickListener okClicked = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int view ) {
-                    Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
-                    int indx = sel[0];
-                    if ( 0 <= indx ) {
-                        m_clickCallback.inviteChoiceMade( state.m_action,
-                                                          means.get(indx),
-                                                          state.m_params );
-                    }
-                }
-            };
-
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.invite_choice_title )
-            .setSingleChoiceItems( items.toArray( new String[items.size()] ),
-                                   sel[0], selChanged )
-            .setPositiveButton( android.R.string.ok, okClicked )
-            .setNegativeButton( android.R.string.cancel, null );
-
-        return setCallbackDismissListener( builder.create(), state, dlgID );
-    }
-
-    private void prepareInviteChoicesDialog( Dialog dialog )
-    {
-        AlertDialog ad = (AlertDialog)dialog;
-        Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
-        if ( null != button ) {
-            long[] ids = ad.getListView().getCheckedItemIds();
-            button.setEnabled( 1 == ids.length );
-        }
     }
 
     private Dialog createDictGoneDialog()

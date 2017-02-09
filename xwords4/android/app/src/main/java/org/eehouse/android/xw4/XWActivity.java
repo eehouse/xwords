@@ -217,6 +217,19 @@ public class XWActivity extends FragmentActivity
         m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
+    // This are a hack! I need some way to build fragment-based alerts from
+    // inside fragment-based alerts.
+    public DlgDelegate.NotAgainBuilder makeNotAgainBuilder( String msg, int keyId )
+    {
+        return m_dlgt.makeNotAgainBuilder( msg, keyId );
+    }
+
+    public DlgDelegate.ConfirmThenBuilder makeConfirmThenBuilder( int msgID,
+                                                                  Action action )
+    {
+        return m_dlgt.makeConfirmThenBuilder( msgID, action );
+    }
+
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////
@@ -287,5 +300,4 @@ public class XWActivity extends FragmentActivity
     {
         m_dlgt.inviteChoiceMade( action, means, params );
     }
-
 }

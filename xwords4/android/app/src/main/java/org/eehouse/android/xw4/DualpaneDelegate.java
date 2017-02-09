@@ -126,4 +126,15 @@ public class DualpaneDelegate extends DelegateBase {
         }
         return handled;
     }
+
+    @Override
+    public void inviteChoiceMade( Action action, InviteMeans means,
+                                  Object[] params )
+    {
+        MainActivity main = (MainActivity)m_activity;
+        XWFragment[] frags = main.getVisibleFragments();
+        for ( XWFragment frag : frags ) {
+            frag.getDelegate().inviteChoiceMade( action, means, params );
+        }
+    }
 }

@@ -1157,6 +1157,7 @@ public class BoardDelegate extends DelegateBase
         return handled;
     }
 
+    @Override
     public void inviteChoiceMade( Action action, InviteMeans means,
                                   Object[] params )
     {
