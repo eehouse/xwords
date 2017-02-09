@@ -462,8 +462,8 @@ public class DlgDelegate {
             if ( Action.SKIP_CALLBACK != action ) {
                 post( new Runnable() {
                         public void run() {
-                            m_clickCallback
-                                .onPosButton( action, params );
+                            XWActivity xwact = (XWActivity)m_activity;
+                            xwact.onPosButton( action, params );
                         }
                     });
             }
