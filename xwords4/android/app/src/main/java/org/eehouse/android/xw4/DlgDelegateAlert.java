@@ -70,7 +70,8 @@ public class DlgDelegateAlert extends DialogFragment {
                 XWPrefs.setPrefsBoolean( getActivity(), m_state.m_prefsKey,
                                          true );
             } else if ( null != state.m_onNAChecked ) {
-                m_state.m_onNAChecked.run();
+                XWActivity activity = (XWActivity)getActivity();
+                activity.onPosButton( m_state.m_onNAChecked, null );
             }
         }
     }

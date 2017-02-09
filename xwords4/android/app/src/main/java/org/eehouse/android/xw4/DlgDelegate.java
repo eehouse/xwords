@@ -134,6 +134,10 @@ public class DlgDelegate {
         DISABLE_RELAY_DO,
         ASKED_PHONE_STATE,
         PERMS_QUERY,
+
+        // Sent when not-again checkbox checked
+        SET_NA_DEFAULTNAME,
+        SET_GOT_LANGDICT,
     }
 
     public static class ActionPair {
@@ -145,27 +149,10 @@ public class DlgDelegate {
         public Object[] params; // null for now
     }
 
-    // typesafe int, basically
-    public static class NAKey implements Runnable {
-        private Context m_context;
-        private int m_nakey;
-        public NAKey(int key) { m_nakey = key; }
-        boolean isSet( Context context ) {
-            m_context = context; // hack!!!
-            return XWPrefs.getPrefsBoolean( context, m_nakey, false );
-        }
-
-        @Override
-        public void run() {
-            Assert.assertNotNull( m_context );
-            XWPrefs.setPrefsBoolean( m_context, m_nakey, true );
-        }
-    }
-
     public abstract class DlgDelegateBuilder {
         protected String m_msgString;
-        protected NAKey m_nakey;
-        protected Runnable m_onNA;
+        protected int m_nakey;
+        protected Action m_onNA;
         protected int m_posButton = android.R.string.ok;
         protected int m_negButton = android.R.string.cancel;
         protected Action m_action;
@@ -179,10 +166,10 @@ public class DlgDelegate {
         { this( getString(msgId), action );}
 
         public DlgDelegateBuilder setNAKey( int keyId )
-        {  m_nakey = new NAKey( keyId ); return this; }
+        {  m_nakey = keyId; return this; }
 
-        public DlgDelegateBuilder setOnNA( Runnable proc )
-        { m_onNA = proc; return this; }
+        public DlgDelegateBuilder setOnNA( Action onNA )
+        { m_onNA = onNA; return this; }
 
         public DlgDelegateBuilder setPosButton( int id )
         { m_posButton = id; return this; }
@@ -483,15 +470,12 @@ public class DlgDelegate {
         }
     }
 
-    private void showConfirmThen( NAKey nakey, Runnable onNA, String msg,
+    private void showConfirmThen( int nakey, Action onNA, String msg,
                                   int posButton, int negButton, Action action,
                                   int titleId, Object[] params )
     {
-        if ( null != nakey ) {
-            Assert.assertNull( onNA );
-            onNA = nakey;     // so the run() method will be called to set the key
-        }
-        if ( null == nakey || !nakey.isSet( m_activity ) ) {
+        if ( 0 == nakey ||
+             ! XWPrefs.getPrefsBoolean( m_activity, nakey, false ) ) {
             DlgState state = new DlgState( DlgID.CONFIRM_THEN ).setOnNA(onNA)
                 .setMsg( msg )
                 .setPosButton( posButton )
@@ -770,7 +754,8 @@ public class DlgDelegate {
                 XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey,
                                          true );
             } else if ( null != state.m_onNAChecked ) {
-                state.m_onNAChecked.run();
+                XWActivity activity = (XWActivity)m_activity;
+                activity.onPosButton( state.m_onNAChecked, null);
             }
         }
     }

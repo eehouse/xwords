@@ -50,7 +50,6 @@ import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
-import org.eehouse.android.xw4.DlgDelegate.NAKey;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.Perms23.Perm;
@@ -1377,6 +1376,15 @@ public class GamesListDelegate extends ListDelegateBase
             }
             break;
 
+        case SET_NA_DEFAULTNAME:
+            XWPrefs.setPrefsBoolean( m_activity, R.string.key_notagain_dfltname,
+                                     true );
+            break;
+        case SET_GOT_LANGDICT:
+            XWPrefs.setPrefsBoolean( m_activity, R.string.key_got_langdict,
+                                     true );
+            break;
+
         default:
             handled = super.onPosButton( action, params );
         }
@@ -2318,13 +2326,6 @@ public class GamesListDelegate extends ListDelegateBase
                 if ( 0 < code ) {
                     String[] names = DictLangCache.getHaveLang( m_activity, code );
                     if ( 0 == names.length ) {
-                        final Runnable onNA = new Runnable() {
-                                public void run() {
-                                    XWPrefs.setPrefsBoolean( m_activity, R.string
-                                                             .key_got_langdict,
-                                                             true );
-                                }
-                            };
 
                         OnGotLcDictListener lstnr = new OnGotLcDictListener() {
                                 public void gotDictInfo( boolean success, String lang,
@@ -2336,7 +2337,7 @@ public class GamesListDelegate extends ListDelegateBase
                                                        xlateLang( lang ) );
                                         makeConfirmThenBuilder( msg, Action.DWNLD_LOC_DICT )
                                             .setPosButton( R.string.button_download )
-                                            .setOnNA( onNA )
+                                            .setOnNA( Action.SET_GOT_LANGDICT )
                                             .setParams( lang, name )
                                             .show();
                                     }
@@ -2628,16 +2629,8 @@ public class GamesListDelegate extends ListDelegateBase
                     .getString( m_activity, R.string.not_again_dfltname_fmt,
                                 name2 );
 
-                Runnable onChecked = new Runnable() {
-                        public void run() {
-                            XWPrefs
-                                .setPrefsBoolean( m_activity,
-                                                  R.string.key_notagain_dfltname,
-                                                  true );
-                        }
-                    };
                 makeConfirmThenBuilder( msg, Action.NEW_GAME_DFLT_NAME )
-                    .setOnNA( onChecked )
+                    .setOnNA( Action.SET_NA_DEFAULTNAME )
                     .setNegButton( R.string.button_later )
                     .setParams( edit, doConfigure )
                     .show();
