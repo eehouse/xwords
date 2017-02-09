@@ -663,7 +663,7 @@ public class DelegateBase implements DlgClickNotify,
             break;
         default:
             DbgUtils.logd( TAG, "unhandled action %s", action.toString() );
-            Assert.assertTrue( !BuildConfig.DEBUG );
+            // Assert.assertTrue( !BuildConfig.DEBUG );
             break;
         }
     }

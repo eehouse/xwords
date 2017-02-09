@@ -391,9 +391,9 @@ public class DlgDelegate {
         case DIALOG_OKONLY:
             dialog = createOKDialog( state, dlgID );
             break;
-        case DIALOG_NOTAGAIN:
-            dialog = createNotAgainDialog( state, dlgID );
-            break;
+        // case DIALOG_NOTAGAIN:
+        //     dialog = createNotAgainDialog( state, dlgID );
+        //     break;
         case CONFIRM_THEN:
             dialog = createConfirmThenDialog( state, dlgID );
             break;
@@ -471,8 +471,9 @@ public class DlgDelegate {
             DlgState state = new DlgState( DlgID.DIALOG_NOTAGAIN )
                 .setMsg( msg).setPrefsKey( prefsKey ).setAction( action )
                 .setActionPair( more ).setParams( params );
-            addState( state );
-            showDialog( DlgID.DIALOG_NOTAGAIN );
+            // addState( state );
+            // showDialog( DlgID.DIALOG_NOTAGAIN );
+            m_dlgt.show( NotAgainAlert.newInstance( state ) );
         }
     }
 
@@ -640,33 +641,33 @@ public class DlgDelegate {
         return dialog;
     }
 
-    private Dialog createNotAgainDialog( final DlgState state, DlgID dlgID )
-    {
-        final NotAgainView naView = (NotAgainView)
-            LocUtils.inflate( m_activity, R.layout.not_again_view );
-        naView.setMessage( state.m_msg );
-        final OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
+    // private Dialog createNotAgainDialog( final DlgState state, DlgID dlgID )
+    // {
+    //     final NotAgainView naView = (NotAgainView)
+    //         LocUtils.inflate( m_activity, R.layout.not_again_view );
+    //     naView.setMessage( state.m_msg );
+    //     final OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
 
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.newbie_title )
-            .setView( naView )
-            .setPositiveButton( android.R.string.ok, lstnr_p );
+    //     AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
+    //         .setTitle( R.string.newbie_title )
+    //         .setView( naView )
+    //         .setPositiveButton( android.R.string.ok, lstnr_p );
 
-        if ( null != state.m_pair ) {
-            final ActionPair more = state.m_pair;
-            OnClickListener lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        checkNotAgainCheck( state, naView );
-                        m_clickCallback.onPosButton( more.action, more.params );
-                    }
-                };
-            builder.setNegativeButton( more.buttonStr, lstnr );
-        }
+    //     if ( null != state.m_pair ) {
+    //         final ActionPair more = state.m_pair;
+    //         OnClickListener lstnr = new OnClickListener() {
+    //                 public void onClick( DialogInterface dlg, int item ) {
+    //                     checkNotAgainCheck( state, naView );
+    //                     m_clickCallback.onPosButton( more.action, more.params );
+    //                 }
+    //             };
+    //         builder.setNegativeButton( more.buttonStr, lstnr );
+    //     }
 
-        Dialog dialog = builder.create();
+    //     Dialog dialog = builder.create();
 
-        return setCallbackDismissListener( dialog, state, dlgID );
-    } // createNotAgainDialog
+    //     return setCallbackDismissListener( dialog, state, dlgID );
+    // } // createNotAgainDialog
 
     private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
     {

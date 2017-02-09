@@ -29,6 +29,8 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 public class DualpaneDelegate extends DelegateBase {
     private static final String TAG = DualpaneDelegate.class.getSimpleName();
     private Activity m_activity;
@@ -95,4 +97,13 @@ public class DualpaneDelegate extends DelegateBase {
         return main.dispatchOnContextItemSelected( item );
     }
 
+    @Override
+    public void onPosButton( Action action, Object[] params )
+    {
+        MainActivity main = (MainActivity)m_activity;
+        XWFragment[] frags = main.getVisibleFragments();
+        for ( XWFragment frag : frags ) {
+            frag.getDelegate().onPosButton( action, params );
+        }
+    }
 }

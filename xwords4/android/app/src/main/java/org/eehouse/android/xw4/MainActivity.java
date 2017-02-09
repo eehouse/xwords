@@ -356,7 +356,7 @@ public class MainActivity extends XWActivity
         return frag;
     }
 
-    private XWFragment[] getVisibleFragments()
+    protected XWFragment[] getVisibleFragments()
     {
         int childCount = m_root.getChildCount();
         int count = Math.min( maxPanes(), childCount );

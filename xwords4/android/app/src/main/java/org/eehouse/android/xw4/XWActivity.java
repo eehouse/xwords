@@ -34,9 +34,12 @@ import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 import junit.framework.Assert;
 
-public class XWActivity extends FragmentActivity implements Delegator {
+public class XWActivity extends FragmentActivity
+    implements Delegator, DlgDelegate.DlgClickNotify {
     private static final String TAG = XWActivity.class.getSimpleName();
 
     private DelegateBase m_dlgt;
@@ -257,4 +260,32 @@ public class XWActivity extends FragmentActivity implements Delegator {
     {
         Assert.fail();
     }
+
+    ////////////////////////////////////////////////////////////
+    // DlgClickNotify interface
+    ////////////////////////////////////////////////////////////
+    @Override
+    public void onPosButton( Action action, Object[] params )
+    {
+        m_dlgt.onPosButton( action, params );
+    }
+
+    @Override
+    public void onNegButton( Action action, Object[] params )
+    {
+        m_dlgt.onNegButton( action, params );
+    }
+
+    @Override
+    public void onDismissed( Action action, Object[] params )
+    {
+        m_dlgt.onDismissed( action, params );
+    }
+
+    @Override
+    public void inviteChoiceMade( Action action, InviteMeans means, Object[] params )
+    {
+        m_dlgt.inviteChoiceMade( action, means, params );
+    }
+
 }
