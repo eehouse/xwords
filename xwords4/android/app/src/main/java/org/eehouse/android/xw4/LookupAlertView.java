@@ -43,10 +43,10 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.util.ArrayList;
 
-public class LookupAlert extends LinearLayout
+public class LookupAlertView extends LinearLayout
     implements View.OnClickListener, Dialog.OnKeyListener,
                AdapterView.OnItemClickListener {
-    private static final String TAG = LookupAlert.class.getSimpleName();
+    private static final String TAG = LookupAlertView.class.getSimpleName();
 
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
@@ -85,7 +85,7 @@ public class LookupAlert extends LinearLayout
     private Button m_studyButton;
     private TextView m_summary;
 
-    public LookupAlert( Context context, AttributeSet as ) {
+    public LookupAlertView( Context context, AttributeSet as ) {
         super( context, as );
         m_context = context;
     }
@@ -373,7 +373,7 @@ public class LookupAlert extends LinearLayout
 
     public static Dialog makeDialog( Activity parent, Bundle bundle )
     {
-        LookupAlert view = (LookupAlert)
+        LookupAlertView view = (LookupAlertView)
             LocUtils.inflate( parent, R.layout.lookup );
         view.init( parent, bundle );
 

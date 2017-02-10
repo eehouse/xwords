@@ -510,13 +510,13 @@ public class DlgDelegate {
 
     public void launchLookup( String[] words, int lang, boolean noStudy )
     {
-        if ( LookupAlert.needAlert( m_activity, words, lang, noStudy ) ) {
-            Bundle params = LookupAlert.makeParams( words, lang, noStudy );
+        if ( LookupAlertView.needAlert( m_activity, words, lang, noStudy ) ) {
+            Bundle params = LookupAlertView.makeParams( words, lang, noStudy );
             addState( new DlgState( DlgID.LOOKUP )
                       .setParams( new Object[]{params} ) );
             showDialog( DlgID.LOOKUP );
         } else {
-            LookupAlert.launchWordLookup( m_activity, words[0], lang );
+            LookupAlertView.launchWordLookup( m_activity, words[0], lang );
         }
     }
 
@@ -600,7 +600,7 @@ public class DlgDelegate {
         // state is null per a play store crash report.
         if ( null != state ) {
             Bundle bundle = (Bundle)state.m_params[0];
-            result = LookupAlert.makeDialog( m_activity, bundle );
+            result = LookupAlertView.makeDialog( m_activity, bundle );
         }
         return result;
     }
