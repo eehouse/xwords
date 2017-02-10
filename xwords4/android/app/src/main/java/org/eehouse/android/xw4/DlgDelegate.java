@@ -376,14 +376,8 @@ public class DlgDelegate {
             dialog = createLookupDialog();
             break;
         case DIALOG_OKONLY:
-            Assert.assertFalse( BuildConfig.DEBUG );
-            break;
         case DIALOG_NOTAGAIN:
-            Assert.assertFalse( BuildConfig.DEBUG );
-            break;
         case CONFIRM_THEN:
-            dialog = createConfirmThenDialog( state, dlgID );
-            break;
         case INVITE_CHOICES_THEN:
             Assert.assertFalse( BuildConfig.DEBUG );
             break;
@@ -460,8 +454,6 @@ public class DlgDelegate {
             DlgState state = new DlgState( DlgID.DIALOG_NOTAGAIN )
                 .setMsg( msg).setPrefsKey( prefsKey ).setAction( action )
                 .setActionPair( more ).setParams( params );
-            // addState( state );
-            // showDialog( DlgID.DIALOG_NOTAGAIN );
             m_dlgt.show( NotAgainAlert.newInstance( state ) );
         }
     }
@@ -479,8 +471,7 @@ public class DlgDelegate {
                 .setAction( action )
                 .setTitle( titleId )
                 .setParams( params );
-            addState( state );
-            showDialog( DlgID.CONFIRM_THEN );
+            m_dlgt.show( ConfirmThenAlert.newInstance( state ) );
         }
     }
 
@@ -495,8 +486,6 @@ public class DlgDelegate {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
                 .setAction( action )
                 .setParams( info );
-            // addState( state );
-            // showDialog( DlgID.INVITE_CHOICES_THEN );
             m_dlgt.show( InviteChoicesAlert.newInstance( state ) );
         } else {
             post( new Runnable() {
@@ -614,23 +603,6 @@ public class DlgDelegate {
             result = LookupAlert.makeDialog( m_activity, bundle );
         }
         return result;
-    }
-
-    private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
-    {
-        NotAgainView naView = (NotAgainView)
-            LocUtils.inflate( m_activity, R.layout.not_again_view );
-        naView.setMessage( state.m_msg );
-        naView.setShowNACheckbox( null != state.m_onNAChecked );
-        OnClickListener lstnr = mkCallbackClickListener( state, naView );
-
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )
-            .setView( naView )
-            .setPositiveButton( state.m_posButton, lstnr )
-            .setNegativeButton( state.m_negButton, lstnr );
-
-        return setCallbackDismissListener( builder.create(), state, dlgID );
     }
 
     private Dialog createDictGoneDialog()
