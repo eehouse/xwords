@@ -373,8 +373,6 @@ public class DlgDelegate {
         DlgState state = findForID( dlgID );
         switch( dlgID ) {
         case LOOKUP:
-            dialog = createLookupDialog();
-            break;
         case DIALOG_OKONLY:
         case DIALOG_NOTAGAIN:
         case CONFIRM_THEN:
@@ -510,14 +508,7 @@ public class DlgDelegate {
 
     public void launchLookup( String[] words, int lang, boolean noStudy )
     {
-        if ( LookupAlertView.needAlert( m_activity, words, lang, noStudy ) ) {
-            Bundle params = LookupAlertView.makeParams( words, lang, noStudy );
-            addState( new DlgState( DlgID.LOOKUP )
-                      .setParams( new Object[]{params} ) );
-            showDialog( DlgID.LOOKUP );
-        } else {
-            LookupAlertView.launchWordLookup( m_activity, words[0], lang );
-        }
+        m_dlgt.show( LookupAlert.newInstance( words, lang, noStudy ) );
     }
 
     public void startProgress( int titleID, int msgID, OnCancelListener lstnr )
@@ -591,18 +582,6 @@ public class DlgDelegate {
                     }
                 } );
         }
-    }
-
-    private Dialog createLookupDialog()
-    {
-        Dialog result = null;
-        DlgState state = findForID( DlgID.LOOKUP );
-        // state is null per a play store crash report.
-        if ( null != state ) {
-            Bundle bundle = (Bundle)state.m_params[0];
-            result = LookupAlertView.makeDialog( m_activity, bundle );
-        }
-        return result;
     }
 
     private Dialog createDictGoneDialog()

@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh installXw4Debug"; -*- */
 /*
- * Copyright 2009-2014 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009-2017 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -48,10 +47,13 @@ public class LookupAlertView extends LinearLayout
                AdapterView.OnItemClickListener {
     private static final String TAG = LookupAlertView.class.getSimpleName();
 
+    public interface OnDoneListener {
+        void onDone();
+    }
+
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
-    public static final String NOSTUDY = "NOSTUDY";
-    private static final String FORCELIST = "FORCELIST";
+    public static final String STUDY_ON = "STUDY_ON";
     private static final String STATE = "STATE";
     private static final String WORDINDEX = "WORDINDEX";
     private static final String URLINDEX = "URLINDEX";
@@ -72,10 +74,9 @@ public class LookupAlertView extends LinearLayout
 
     // These two are probably always the same object
     private Context m_context;
-    private Activity m_parent;
+    private OnDoneListener m_onDone;
     private ListView m_listView;
     private String[] m_words;
-    private boolean m_forceList;
     private boolean m_studyOn;
     private int m_wordIndex = 0;
     private int m_urlIndex = 0;
@@ -90,56 +91,18 @@ public class LookupAlertView extends LinearLayout
         m_context = context;
     }
 
-    // @Override
-    // protected void onCreate( Bundle savedInstanceState )
-    // {
-    //     super.onCreate( savedInstanceState );
-    //     requestWindowFeature( Window.FEATURE_NO_TITLE );
-    //     setContentView( R.layout.lookup );
-
-    //     Intent intent = getIntent();
-    //     m_words = intent.getStringArrayExtra( WORDS );
-    //     setLang( intent.getIntExtra( LANG, -1 ) );
-    //     m_forceList = intent.getBooleanExtra( FORCELIST, false );
-    //     m_studyOn = XWPrefs.getStudyEnabled( this );
-    //     if ( m_studyOn ) {
-    //         m_studyOn = !intent.getBooleanExtra( NOSTUDY, false );
-    //     }
-
-    //     m_state = STATE_DONE;
-    //     adjustState( 1 );
-
-    //     m_wordsAdapter = new ArrayAdapter<String>( this, LIST_LAYOUT,
-    //                                                m_words );
-    //     getListView().setOnItemClickListener( this );
-
-    //     m_doneButton = (Button)findViewById( R.id.button_done );
-    //     m_doneButton.setOnClickListener( this );
-    //     m_studyButton = (Button)findViewById( R.id.button_study );
-    //     if ( m_studyOn ) {
-    //         m_studyButton.setOnClickListener( this );
-    //     } else {
-    //         m_studyButton.setVisibility( View.GONE );
-    //     }
-
-    //     m_summary = (TextView)findViewById( R.id.summary );
-
-    //     switchState();
-    // }
-
-    private void init( Activity activity, Bundle params )
+    protected void init( OnDoneListener lstn, Bundle bundle )
     {
-        m_parent = activity;
-        m_words = params.getStringArray( WORDS );
-        setLang( activity, params.getInt( LANG, -1 ) );
-        m_forceList = params.getBoolean( FORCELIST, false );
-        m_studyOn = XWPrefs.getStudyEnabled( m_context );
-        if ( m_studyOn ) {
-            m_studyOn = !params.getBoolean( NOSTUDY, false );
-        }
+        m_onDone = lstn;
+        m_words = bundle.getStringArray( WORDS );
+        int lang = bundle.getInt( LANG, 0 );
+        setLang( m_context, lang  );
+        m_studyOn = XWPrefs.getStudyEnabled( m_context )
+            && bundle.getBoolean( STUDY_ON, true );
 
-        m_state = STATE_DONE;
-        adjustState( 1 );
+        m_state = bundle.getInt( STATE, STATE_WORDS );
+        m_wordIndex = bundle.getInt( WORDINDEX, 0 );
+        m_urlIndex = bundle.getInt( URLINDEX, 0 );
 
         m_wordsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT,
                                                    m_words );
@@ -160,26 +123,14 @@ public class LookupAlertView extends LinearLayout
         switchState();
     }
 
-    // @Override
-    // protected void onSaveInstanceState( Bundle outState )
-    // {
-    //     super.onSaveInstanceState( outState );
-    //     outState.putInt( STATE, m_state );
-    //     outState.putInt( WORDINDEX, m_wordIndex );
-    //     outState.putInt( URLINDEX, m_urlIndex );
-    // }
-
-    // private void getBundledData( Bundle bundle )
-    // {
-    //     if ( null == bundle ) {
-    //         m_state = STATE_DONE;
-    //         adjustState( 1 );
-    //     } else {
-    //         m_state = bundle.getInt( STATE );
-    //         m_wordIndex = bundle.getInt( WORDINDEX );
-    //         m_urlIndex = bundle.getInt( URLINDEX );
-    //     }
-    // }
+    // NOT @Override!!!
+    protected void saveInstanceState( Bundle bundle )
+    {
+        addParams( bundle, m_words, s_lang, m_studyOn );
+        bundle.putInt( STATE, m_state );
+        bundle.putInt( WORDINDEX, m_wordIndex );
+        bundle.putInt( URLINDEX, m_urlIndex );
+    }
 
     //////////////////////////////////////////////////////////////////////
     // View.OnClickListener
@@ -223,7 +174,7 @@ public class LookupAlertView extends LinearLayout
                 m_state += incr;
             }
             if ( STATE_URLS == m_state &&
-                ( 1 >= s_lookupUrls.length && !m_forceList && !m_studyOn ) ) {
+                ( 1 >= s_lookupUrls.length && !m_studyOn ) ) {
                 m_state += incr;
             }
             if ( m_state == curState ) {
@@ -242,7 +193,7 @@ public class LookupAlertView extends LinearLayout
     {
         switch( m_state ) {
         case STATE_DONE:
-            m_parent.removeDialog( DlgID.LOOKUP.ordinal() );
+            m_onDone.onDone();
             break;
         case STATE_WORDS:
             m_listView.setAdapter( m_wordsAdapter );
@@ -275,26 +226,22 @@ public class LookupAlertView extends LinearLayout
         }
     } // switchState
 
-    private static void lookupWord( Context context, String word, String fmt )
+    private void lookupWord( Context context, String word, String fmt )
     {
-        if ( false ) {
-            DbgUtils.logw( TAG, "skipping lookupWord(%s)", word );
-        } else {
-            String langCode = s_langCodes[s_lang];
-            String dict_url = String.format( fmt, langCode, word );
-            Uri uri = Uri.parse( dict_url );
-            Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-            intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        String langCode = s_langCodes[s_lang];
+        String dict_url = String.format( fmt, langCode, word );
+        Uri uri = Uri.parse( dict_url );
+        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 
-            try {
-                context.startActivity( intent );
-            } catch ( android.content.ActivityNotFoundException anfe ) {
-                DbgUtils.logex( TAG, anfe );
-            }
+        try {
+            context.startActivity( intent );
+        } catch ( android.content.ActivityNotFoundException anfe ) {
+            DbgUtils.logex( TAG, anfe );
         }
     } // lookupWord
 
-    private static void setLang( Context context, int lang )
+    private void setLang( Context context, int lang )
     {
         if ( null == s_langCodes ) {
             s_langCodes = context.getResources().getStringArray( R.array.language_codes );
@@ -350,45 +297,19 @@ public class LookupAlertView extends LinearLayout
         return handled;
     }
 
-    public static boolean needAlert( Context context, String[] words,
-                                     int langCode, boolean noStudy )
+    private static void addParams( Bundle bundle, String[] words, int lang,
+                                   boolean studyOn )
     {
-        boolean result = !noStudy || 1 < words.length;
-        if ( !result ) {
-            setLang( context, langCode );
-            result = 1 < s_lookupUrls.length;
-        }
-        return result;
-    }
-
-    public static Bundle makeParams( String[] words, int lang,
-                                     boolean noStudyOption )
-    {
-        Bundle bundle = new Bundle();
         bundle.putStringArray( WORDS, words );
         bundle.putInt( LANG, lang );
-        bundle.putBoolean( NOSTUDY, noStudyOption );
+        bundle.putBoolean( STUDY_ON, studyOn );
+    }
+
+    protected static Bundle makeParams( String[] words, int lang,
+                                        boolean noStudyOption )
+    {
+        Bundle bundle = new Bundle();
+        addParams( bundle, words, lang, !noStudyOption );
         return bundle;
-    }
-
-    public static Dialog makeDialog( Activity parent, Bundle bundle )
-    {
-        LookupAlertView view = (LookupAlertView)
-            LocUtils.inflate( parent, R.layout.lookup );
-        view.init( parent, bundle );
-
-        Dialog result = LocUtils.makeAlertBuilder( parent )
-            .setTitle( R.string.lookup_title )
-            .setView( view )
-            .create();
-        result.setOnKeyListener( view );
-        return result;
-    }
-
-    protected static void launchWordLookup( Context context, String word,
-                                            int langCode )
-    {
-        setLang( context, langCode );
-        lookupWord( context, word, s_lookupUrls[0] );
     }
 }
