@@ -376,18 +376,16 @@ public class DlgDelegate {
             dialog = createLookupDialog();
             break;
         case DIALOG_OKONLY:
-            dialog = createOKDialog( state, dlgID );
+            Assert.assertFalse( BuildConfig.DEBUG );
             break;
         case DIALOG_NOTAGAIN:
             Assert.assertFalse( BuildConfig.DEBUG );
-            //     dialog = createNotAgainDialog( state, dlgID );
             break;
         case CONFIRM_THEN:
             dialog = createConfirmThenDialog( state, dlgID );
             break;
         case INVITE_CHOICES_THEN:
             Assert.assertFalse( BuildConfig.DEBUG );
-        //     dialog = createInviteChoicesDialog( state, dlgID );
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
@@ -418,14 +416,12 @@ public class DlgDelegate {
     private void showOKOnlyDialogThen( String msg, Action action,
                                        Object[] params, int titleId )
     {
-        // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY )
             .setMsg( msg )
             .setParams( params )
             .setTitle( titleId )
             .setAction(action);
-        addState( state );
-        showDialog( DlgID.DIALOG_OKONLY );
+        m_dlgt.show( OkOnlyAlert.newInstance( state ) );
     }
 
     public void showDictGoneFinish()
@@ -618,18 +614,6 @@ public class DlgDelegate {
             result = LookupAlert.makeDialog( m_activity, bundle );
         }
         return result;
-    }
-
-    private Dialog createOKDialog( DlgState state, DlgID dlgID )
-    {
-        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( state.m_titleId == 0 ? R.string.info_title : state.m_titleId )
-            .setMessage( state.m_msg )
-            .setPositiveButton( android.R.string.ok, null )
-            .create();
-        dialog = setCallbackDismissListener( dialog, state, dlgID );
-
-        return dialog;
     }
 
     private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
