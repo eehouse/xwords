@@ -39,12 +39,9 @@ public class NotAgainAlert extends DlgDelegateAlert {
 
     public static NotAgainAlert newInstance( DlgState state )
     {
-        return new NotAgainAlert( state );
-    }
-
-    public NotAgainAlert( DlgState state )
-    {
-        super( state );
+        NotAgainAlert result = new NotAgainAlert();
+        result.addStateArgument( state );
+        return result;
     }
 
     public NotAgainAlert() {}
@@ -54,8 +51,7 @@ public class NotAgainAlert extends DlgDelegateAlert {
     {
         final Context context = getActivity();
 
-        getBundleData( sis );
-        final DlgState state = getState();
+        final DlgState state = getState( sis );
 
         final NotAgainView naView = (NotAgainView)
             LocUtils.inflate( context, R.layout.not_again_view );
@@ -82,5 +78,4 @@ public class NotAgainAlert extends DlgDelegateAlert {
         Dialog dialog = builder.create();
         return dialog;
     }
-
 }

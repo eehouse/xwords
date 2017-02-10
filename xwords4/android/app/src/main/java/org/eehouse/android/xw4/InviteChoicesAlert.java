@@ -45,12 +45,9 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
 
     public static InviteChoicesAlert newInstance( DlgState state )
     {
-        return new InviteChoicesAlert( state );
-    }
-    
-    public InviteChoicesAlert( DlgState state )
-    {
-        super( state );
+        InviteChoicesAlert result = new InviteChoicesAlert();
+        result.addStateArgument( state );
+        return result;
     }
     
     public InviteChoicesAlert() {}
@@ -60,8 +57,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
     {
         final Context context = getActivity();
 
-        getBundleData( sis );
-        final DlgState state = getState();
+        final DlgState state = getState( sis );
 
         final ArrayList<InviteMeans> means =
             new ArrayList<InviteMeans>();

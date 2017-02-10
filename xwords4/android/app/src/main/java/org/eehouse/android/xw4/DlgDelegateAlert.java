@@ -43,23 +43,30 @@ public class DlgDelegateAlert extends DialogFragment {
     private static final String STATE_KEY = "STATE_KEY";
     private DlgState m_state;
 
-    public DlgDelegateAlert( DlgState state ) { m_state = state; }
     public DlgDelegateAlert() {}
 
-    protected final DlgState getState() { return m_state; }
+    protected final DlgState getState( Bundle sis )
+    {
+        if ( null != sis ) {
+            m_state = (DlgState)sis.getParcelable( STATE_KEY );
+        } else {
+            Bundle args = getArguments();
+            Assert.assertNotNull( args );
+            m_state = DlgState.fromBundle( args );
+        }
+        return m_state;
+    }
+
+    protected void addStateArgument( DlgState state )
+    {
+        setArguments( state.toBundle() );
+    }
 
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
         super.onSaveInstanceState( bundle );
         bundle.putParcelable( STATE_KEY, m_state );
-    }
-
-    protected void getBundleData( Bundle sis )
-    {
-        if ( null != sis ) {
-            m_state = (DlgState)sis.getParcelable( STATE_KEY );
-        }
     }
 
     protected void checkNotAgainCheck( DlgState state, NotAgainView naView )

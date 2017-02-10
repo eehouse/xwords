@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -27,6 +28,8 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 
 public class DlgState implements Parcelable {
+    private static final String BUNDLE_KEY = "bk";
+
     public DlgID m_id;
     public String m_msg;
     public int m_posButton;
@@ -65,6 +68,18 @@ public class DlgState implements Parcelable {
 
     public int describeContents() {
         return 0;
+    }
+
+    public Bundle toBundle()
+    {
+        Bundle result = new Bundle();
+        result.putParcelable( BUNDLE_KEY, this );
+        return result;
+    }
+
+    public static DlgState fromBundle( Bundle bundle )
+    {
+        return (DlgState)bundle.getParcelable( BUNDLE_KEY );
     }
 
     public void writeToParcel( Parcel out, int flags ) {

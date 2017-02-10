@@ -427,6 +427,8 @@ public class DelegateBase implements DlgClickNotify,
     {
         if ( m_activity instanceof MainActivity ) {
             ((MainActivity)m_activity).show( df );
+        } else if ( m_activity instanceof PrefsActivity ) {
+            ((PrefsActivity)m_activity).show( df );
         } else {
             Assert.assertTrue( !BuildConfig.DEBUG );
         }

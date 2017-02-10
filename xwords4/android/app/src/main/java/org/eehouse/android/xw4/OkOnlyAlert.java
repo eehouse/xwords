@@ -39,12 +39,9 @@ public class OkOnlyAlert extends DlgDelegateAlert {
 
     public static OkOnlyAlert newInstance( DlgState state )
     {
-        return new OkOnlyAlert( state );
-    }
-
-    public OkOnlyAlert( DlgState state )
-    {
-        super( state );
+        OkOnlyAlert result = new OkOnlyAlert();
+        result.addStateArgument( state );
+        return result;
     }
 
     public OkOnlyAlert() {}
@@ -54,8 +51,7 @@ public class OkOnlyAlert extends DlgDelegateAlert {
     {
         final Context context = getActivity();
 
-        getBundleData( sis );
-        final DlgState state = getState();
+        final DlgState state = getState( sis );
 
         Dialog dialog = LocUtils.makeAlertBuilder( getActivity() )
             .setTitle( state.m_titleId == 0 ? R.string.info_title : state.m_titleId )

@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.support.v4.app.DialogFragment;
 
 import junit.framework.Assert;
 
@@ -153,4 +154,11 @@ public class PrefsActivity extends PreferenceActivity
     public void addFragment( XWFragment fragment, Bundle extras ) { Assert.fail(); }
     public void addFragmentForResult( XWFragment fragment, Bundle extras,
                                       RequestCode code ) { Assert.fail(); }
+    public void show( DialogFragment fragment )
+    {
+        // This can't work right now because PrefsActivity doesn't inherit
+        // from anything that can show fragments. So I need to convert to the
+        // newer preferences framework too. :-(
+        Assert.fail();
+    }
 }

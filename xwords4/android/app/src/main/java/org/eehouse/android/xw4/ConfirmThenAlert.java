@@ -30,19 +30,18 @@ public class ConfirmThenAlert extends DlgDelegateAlert {
 
     public static ConfirmThenAlert newInstance( DlgState state )
     {
-        return new ConfirmThenAlert( state );
+        ConfirmThenAlert result = new ConfirmThenAlert();
+        result.addStateArgument( state );
+        return result;
     }
 
     public ConfirmThenAlert() {}
-    public ConfirmThenAlert( DlgState state ) { super( state ); }
 
     @Override
     public Dialog onCreateDialog( Bundle sis )
     {
         final Context context = getActivity();
-
-        getBundleData( sis );
-        final DlgState state = getState();
+        final DlgState state = getState( sis );
         
         NotAgainView naView = (NotAgainView)
             LocUtils.inflate( context, R.layout.not_again_view );
