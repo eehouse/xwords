@@ -274,6 +274,11 @@ public class XWActivity extends FragmentActivity
         Assert.fail();
     }
 
+    protected Dialog makeDialog( DlgID dlgID, Object[] params )
+    {
+        return m_dlgt.makeDialog( dlgID, params );
+    }
+
     ////////////////////////////////////////////////////////////
     // DlgClickNotify interface
     ////////////////////////////////////////////////////////////

@@ -581,13 +581,9 @@ public class GamesListDelegate extends ListDelegateBase
     private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
-    private String m_missingDictName;
     private long m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
     private int m_missingDictMenuId;
-    private String[] m_sameLangDicts;
     private int m_missingDictLang;
-    private long m_rowid;
-    private long m_groupid;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private Set<Long> m_launchedGames; // prevent problems with double-taps
@@ -610,52 +606,52 @@ public class GamesListDelegate extends ListDelegateBase
         s_self = this;
     }
 
-    protected Dialog onCreateDialog( int id )
+    @Override
+    protected Dialog makeDialog( DlgID dlgID, Object[] params )
     {
         Dialog dialog = null;
-        OnClickListener lstnr;
-        OnClickListener lstnr2;
-        LinearLayout layout;
-
+        OnClickListener lstnr, lstnr2;
         AlertDialog.Builder ab;
-        DlgID dlgID = DlgID.values()[id];
+
         switch ( dlgID ) {
         case WARN_NODICT:
         case WARN_NODICT_NEW:
-        case WARN_NODICT_SUBST:
+        case WARN_NODICT_SUBST: {
+            final long rowid = (Long)params[0];
+            final String missingDictName = (String)params[1];
+            final int missingDictLang = (Integer)params[2];
+
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        GamesListDelegate self = curThis();
-                        // no name, so user must pick
-                        if ( null == m_missingDictName ) {
+                        if ( null == missingDictName ) {
                             DictsDelegate
                                 .downloadForResult( getDelegator(),
                                                     RequestCode
                                                     .REQUEST_LANG_GL,
-                                                    self.m_missingDictLang );
+                                                    missingDictLang );
                         } else {
                             DwnldDelegate
-                                .downloadDictInBack( self.m_activity,
-                                                     self.m_missingDictLang,
-                                                     self.m_missingDictName,
-                                                     self );
+                                .downloadDictInBack( m_activity,
+                                                     missingDictLang,
+                                                     missingDictName,
+                                                     GamesListDelegate.this );
                         }
                     }
                 };
             String message;
             String langName =
-                DictLangCache.getLangName( m_activity, m_missingDictLang );
+                DictLangCache.getLangName( m_activity, missingDictLang );
             String locLang = xlateLang( langName );
-            String gameName = GameUtils.getName( m_activity, m_missingDictRowId );
+            String gameName = GameUtils.getName( m_activity, rowid );
             if ( DlgID.WARN_NODICT == dlgID ) {
                 message = getString( R.string.no_dict_fmt, gameName, locLang );
             } else if ( DlgID.WARN_NODICT_NEW == dlgID ) {
                 message = getString( R.string.invite_dict_missing_body_noname_fmt,
-                                     null, m_missingDictName, locLang );
+                                     null, missingDictName, locLang );
             } else {
                 // WARN_NODICT_SUBST
                 message = getString( R.string.no_dict_subst_fmt, gameName,
-                                     m_missingDictName, locLang );
+                                     missingDictName, locLang );
             }
 
             ab = makeAlertBuilder()
@@ -667,30 +663,32 @@ public class GamesListDelegate extends ListDelegateBase
             if ( DlgID.WARN_NODICT_SUBST == dlgID ) {
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            curThis().showDialog( DlgID.SHOW_SUBST );
+                            showDialogFragment( DlgID.SHOW_SUBST, rowid,
+                                                missingDictName, missingDictLang );
                         }
                     };
                 ab.setNeutralButton( R.string.button_substdict, lstnr );
             }
             dialog = ab.create();
-            setRemoveOnDismiss( dialog, dlgID );
+        }
             break;
-        case SHOW_SUBST:
-            m_sameLangDicts =
-                DictLangCache.getHaveLangCounts( m_activity, m_missingDictLang );
+        case SHOW_SUBST: {
+            final long rowid = (Long)params[0];
+            final String missingDict = (String)params[1];
+            final int lang = (Integer)params[2];
+
+            final String[] sameLangDicts =
+                DictLangCache.getHaveLangCounts( m_activity, lang );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg,
                                          int which ) {
-                        GamesListDelegate self = curThis();
                         int pos = ((AlertDialog)dlg).getListView().
                             getCheckedItemPosition();
-                        String dict = self.m_sameLangDicts[pos];
-                        dict = DictLangCache.stripCount( dict );
-                        if ( GameUtils.replaceDicts( self.m_activity,
-                                                     self.m_missingDictRowId,
-                                                     self.m_missingDictName,
-                                                     dict ) ) {
-                            self.launchGameIf();
+                        String newDict = sameLangDicts[pos];
+                        newDict = DictLangCache.stripCount( newDict );
+                        if ( GameUtils.replaceDicts( m_activity, rowid,
+                                                     missingDict, newDict ) ) {
+                            launchGameIf();
                         }
                     }
                 };
@@ -698,60 +696,59 @@ public class GamesListDelegate extends ListDelegateBase
                 .setTitle( R.string.subst_dict_title )
                 .setPositiveButton( R.string.button_substdict, lstnr )
                 .setNegativeButton( android.R.string.cancel, null )
-                .setSingleChoiceItems( m_sameLangDicts, 0, null )
+                .setSingleChoiceItems( sameLangDicts, 0, null )
                 .create();
-            // Force destruction so onCreateDialog() will get
-            // called next time and we can insert a different
-            // list.  There seems to be no way to change the list
-            // inside onPrepareDialog().
-            setRemoveOnDismiss( dialog, dlgID );
+        }
             break;
 
-        case RENAME_GAME:
-            GameSummary summary = GameUtils.getSummary( m_activity, m_rowid );
+        case RENAME_GAME: {
+            final long rowid = (Long)params[0];
+            GameSummary summary = GameUtils.getSummary( m_activity, rowid );
             int labelID = (summary.isMultiGame() && !summary.anyMissing())
                 ? R.string.rename_label_caveat : R.string.rename_label;
-            final GameNamer namer1 =
-                buildNamer(GameUtils.getName( m_activity, m_rowid ), labelID );
+            final GameNamer namer =
+                buildNamer(GameUtils.getName( m_activity, rowid ), labelID );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        GamesListDelegate self = curThis();
-                        String name = namer1.getName();
-                        DBUtils.setName( self.m_activity, self.m_rowid,
+                        String name = namer.getName();
+                        DBUtils.setName( m_activity, rowid,
                                          name );
-                        self.m_adapter.invalName( self.m_rowid );
+                        m_adapter.invalName( rowid );
                     }
                 };
-            dialog = buildNamerDlg( namer1, R.string.game_rename_title,
+            dialog = buildNamerDlg( namer, R.string.game_rename_title,
                                     lstnr, null, DlgID.RENAME_GAME );
+        }
             break;
 
-        case RENAME_GROUP:
-            final GameNamer namer2 = buildNamer( m_adapter.groupName(m_groupid),
-                                                R.string.rename_group_label );
+        case RENAME_GROUP: {
+            final long groupID = (Long)params[0];
+            final GameNamer namer = buildNamer( m_adapter.groupName(groupID),
+                                                 R.string.rename_group_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         GamesListDelegate self = curThis();
-                        String name = namer2.getName();
-                        DBUtils.setGroupName( self.m_activity,
-                                              self.m_groupid, name );
-                        self.reloadGame( self.m_rowid );
+                        String name = namer.getName();
+                        DBUtils.setGroupName( m_activity,
+                                              groupID, name );
+                        // Don't have m_rowid any more. But what's this doing again?
+                        // reloadGame( m_rowid );
                         self.mkListAdapter();
                     }
                 };
-            dialog = buildNamerDlg( namer2, R.string.game_name_group_title,
+            dialog = buildNamerDlg( namer, R.string.game_name_group_title,
                                     lstnr, null, DlgID.RENAME_GROUP );
+        }
             break;
 
-        case NEW_GROUP:
-            final GameNamer namer3 = buildNamer( "", R.string.newgroup_label );
+        case NEW_GROUP: {
+            final GameNamer namer = buildNamer( "", R.string.newgroup_label );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        GamesListDelegate self = curThis();
-                        String name = namer3.getName();
-                        DBUtils.addGroup( self.m_activity, name );
-                        self.mkListAdapter();
-                        self.showNewGroupIf();
+                        String name = namer.getName();
+                        DBUtils.addGroup( m_activity, name );
+                        mkListAdapter();
+                        showNewGroupIf();
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -759,17 +756,18 @@ public class GamesListDelegate extends ListDelegateBase
                         curThis().showNewGroupIf();
                     }
                 };
-            dialog = buildNamerDlg( namer3,
+            dialog = buildNamerDlg( namer,
                                     R.string.game_name_group_title,
                                     lstnr, lstnr2, DlgID.RENAME_GROUP );
-            setRemoveOnDismiss( dialog, dlgID );
+        }
             break;
 
-        case CHANGE_GROUP:
+        case CHANGE_GROUP: {
+            long[] selGames = (long[])params[0];
             long srcGroup = -1;
             // If all games are coming from the same group we can disable move
             // when that's the destination
-            for ( long rowid : m_selGames ) {
+            for ( long rowid : selGames ) {
                 long groupID = DBUtils.getGroupForGame( m_activity, rowid );
                 if ( -1 == srcGroup ) {
                     srcGroup = groupID;
@@ -782,14 +780,13 @@ public class GamesListDelegate extends ListDelegateBase
             final long fSrcGroup = srcGroup;;
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlgi, int item ) {
-                        GamesListDelegate self = curThis();
                         selItem[0] = item;
                         AlertDialog dlg = (AlertDialog)dlgi;
                         Button btn =
                             dlg.getButton( AlertDialog.BUTTON_POSITIVE );
                         boolean enabled = fSrcGroup == -1;
                         if ( !enabled ) {
-                            long newGroup = self.m_adapter.getGroupIDFor( item );
+                            long newGroup = m_adapter.getGroupIDFor( item );
                             enabled = newGroup != fSrcGroup;
                         }
                         btn.setEnabled( enabled );
@@ -797,18 +794,16 @@ public class GamesListDelegate extends ListDelegateBase
                 };
             lstnr2 = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        GamesListDelegate self = curThis();
                         Assert.assertTrue( -1 != selItem[0] );
-                        long gid = self.m_adapter.getGroupIDFor( selItem[0] );
-                        self.moveSelGamesTo( gid );
+                        long gid = m_adapter.getGroupIDFor( selItem[0] );
+                        moveSelGamesTo( gid );
                     }
                 };
             OnClickListener lstnr3 =
                 new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        GamesListDelegate self = curThis();
-                        self.m_moveAfterNewGroup = true;
-                        self.showDialog( DlgID.NEW_GROUP );
+                        m_moveAfterNewGroup = true;
+                        showDialogFragment( DlgID.NEW_GROUP );
                     }
                 };
             String[] groups = m_adapter.groupNames();
@@ -820,11 +815,11 @@ public class GamesListDelegate extends ListDelegateBase
                 .setNeutralButton( R.string.button_newgroup, lstnr3 )
                 .setNegativeButton( android.R.string.cancel, null )
                 .create();
-            setRemoveOnDismiss( dialog, dlgID );
+        }
             break;
 
-        case GET_NAME:
-            layout = (LinearLayout)inflate( R.layout.dflt_name );
+        case GET_NAME: {
+            LinearLayout layout = (LinearLayout)inflate( R.layout.dflt_name );
             final EditText etext =
                 (EditText)layout.findViewById( R.id.name_edit );
             etext.setText( CommonPrefs.getDefaultPlayerName( m_activity,
@@ -848,101 +843,103 @@ public class GamesListDelegate extends ListDelegateBase
                         makeThenLaunchOrConfigure();
                     }
                 });
+        }
             break;
 
-        case GAMES_LIST_NEWGAME:
+        case GAMES_LIST_NEWGAME: {
+            boolean solo = (Boolean)params[0];
             LinearLayout view = (LinearLayout)
                 LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
             final EditText edit = (EditText)view.findViewById( R.id.edit );
+
+            boolean canDoDefaults = solo ||
+                0 < XWPrefs.getAddrTypes( m_activity ).size();
+            int iconResID = solo ? R.drawable.sologame__gen : R.drawable.multigame__gen;
+            int titleID = solo ? R.string.new_game : R.string.new_game_networked;
+
+            String msg = getString( canDoDefaults ? R.string.new_game_message
+                                    : R.string.new_game_message_nodflt );
+            if ( !solo ) {
+                msg += "\n\n" + getString( R.string.new_game_message_net );
+            }
+            TextView tmpEdit = (TextView)view.findViewById( R.id.msg );
+            tmpEdit.setText( msg );
+            tmpEdit = (TextView)view.findViewById( R.id.edit );
+            tmpEdit.setText( GameUtils.makeDefaultName( m_activity ) );
+
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         curThis().makeThenLaunchOrConfigure( edit, true, false );
                     }
                 };
-            lstnr2 = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        curThis().makeThenLaunchOrConfigure( edit, false, false );
-                    }
-                };
 
-            dialog = makeAlertBuilder()
+            ab = makeAlertBuilder()
                 .setView( view )
-                .setTitle( "foo" )// ditto, but can't be empty (!)
-                .setIcon( R.drawable.sologame__gen ) // same for icon
-                .setPositiveButton( R.string.newgame_configure_first, lstnr )
-                .setNegativeButton( R.string.use_defaults, lstnr2 )
-                .create();
+                .setTitle( titleID )
+                .setIcon( iconResID )
+                .setPositiveButton( R.string.newgame_configure_first, lstnr );
+            if ( canDoDefaults ) {
+                lstnr2 = new OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            curThis().makeThenLaunchOrConfigure( edit, false, false );
+                        }
+                    };
+                ab.setNegativeButton( R.string.use_defaults, lstnr2 );
+            }
+            dialog = ab.create();
+        }
             break;
 
-        case GAMES_LIST_NAME_REMATCH:
-            view = (LinearLayout)
+        case GAMES_LIST_NAME_REMATCH: {
+            Bundle rematchExtras = (Bundle)params[0];
+            LinearLayout view = (LinearLayout)
                 LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
+            int iconResID = R.drawable.sologame__gen;
+            if ( null != rematchExtras ) {
+                EditText edit = (EditText)view.findViewById( R.id.edit );
+                edit.setText( rematchExtras.getString( REMATCH_NEWNAME_EXTRA ));
+                boolean solo = rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
+                if ( !solo ) {
+                    iconResID = R.drawable.multigame__gen;
+                }
+                view.findViewById( R.id.msg ).setVisibility( View.GONE );
+            }
+
             dialog = makeAlertBuilder()
                 .setView( view )
                 .setTitle( R.string.button_rematch )
-                .setIcon( R.drawable.sologame__gen )
+                .setIcon( iconResID )
                 .setPositiveButton( android.R.string.ok, new OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             EditText edit = (EditText)((Dialog)dlg)
                                 .findViewById( R.id.edit );
                             String gameName = edit.getText().toString();
-                            curThis().startRematchWithName( gameName, true );
+                            startRematchWithName( gameName, true );
                         }
                     } )
                 .create();
+        }
             break;
 
         default:
-            dialog = super.onCreateDialog( id );
+            dialog = super.makeDialog( dlgID, params );
             break;
         }
         return dialog;
-    } // onCreateDialog
+    } // makeDialog
 
     @Override
     protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
+        Assert.fail();
+        /*
         AlertDialog ad = (AlertDialog)dialog;
         switch( dlgID ) {
         case CHANGE_GROUP:
             ad.getButton( AlertDialog.BUTTON_POSITIVE ).setEnabled( false );
             break;
-        case GAMES_LIST_NEWGAME:
-            boolean canDoDefaults = m_nextIsSolo
-                || 0 < XWPrefs.getAddrTypes( m_activity ).size();
-            ad.getButton( AlertDialog.BUTTON_NEGATIVE )
-                .setVisibility( canDoDefaults ? View.VISIBLE : View.GONE );
-
-            ad.setIcon( m_nextIsSolo ? R.drawable.sologame__gen
-                        : R.drawable.multigame__gen );
-            ad.setTitle( m_nextIsSolo ? R.string.new_game
-                         : R.string.new_game_networked);
-
-            String msg = getString( canDoDefaults ? R.string.new_game_message
-                                    : R.string.new_game_message_nodflt );
-            if ( !m_nextIsSolo ) {
-                msg += "\n\n" + getString( R.string.new_game_message_net );
-            }
-            TextView edit = (TextView)dialog.findViewById( R.id.msg );
-            edit.setText( msg );
-            edit = (TextView)dialog.findViewById( R.id.edit );
-            edit.setText( GameUtils.makeDefaultName( m_activity ) );
-            edit.setVisibility( View.VISIBLE );
-            break;
-
-        case GAMES_LIST_NAME_REMATCH:
-            if ( null != m_rematchExtras ) {
-                edit = (TextView)dialog.findViewById( R.id.edit );
-                edit.setText( m_rematchExtras
-                              .getString( REMATCH_NEWNAME_EXTRA ) );
-                boolean solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
-                ad.setIcon( solo ? R.drawable.sologame__gen
-                            : R.drawable.multigame__gen );
-                ((TextView)dialog.findViewById( R.id.msg ))
-                    .setVisibility( View.GONE );
-            }
-            break;
         }
+        */
     }
 
     @Override
@@ -1044,9 +1041,6 @@ public class GamesListDelegate extends ListDelegateBase
     protected void onSaveInstanceState( Bundle outState )
     {
         // super.onSaveInstanceState( outState );
-        outState.putLong( SAVE_ROWID, m_rowid );
-        outState.putLong( SAVE_GROUPID, m_groupid );
-        outState.putString( SAVE_DICTNAMES, m_missingDictName );
         outState.putBoolean( SAVE_NEXTSOLO, m_nextIsSolo );
         outState.putSerializable( SAVE_SELGAMES, (HashSet)m_selGames );
         outState.putSerializable( SAVE_SELGROUPS, (HashSet)m_selGroupIDs );
@@ -1061,10 +1055,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void getBundledData( Bundle bundle )
     {
         if ( null != bundle ) {
-            m_rowid = bundle.getLong( SAVE_ROWID );
-            m_groupid = bundle.getLong( SAVE_GROUPID );
             m_netLaunchInfo = NetLaunchInfo.makeFrom( bundle );
-            m_missingDictName = bundle.getString( SAVE_DICTNAMES );
             m_nextIsSolo = bundle.getBoolean( SAVE_NEXTSOLO );
             m_rematchExtras = bundle.getBundle( SAVE_REMATCHEXTRAS );
             m_selGames = (HashSet)bundle.getSerializable( SAVE_SELGAMES );
@@ -1607,7 +1598,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_newgroup:
             m_moveAfterNewGroup = false;
-            showDialog( DlgID.NEW_GROUP );
+            showDialogFragment( DlgID.NEW_GROUP );
             break;
 
         case R.id.games_menu_dicts:
@@ -1839,7 +1830,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_move:
-            showDialog( DlgID.CHANGE_GROUP );
+            showDialogFragment( DlgID.CHANGE_GROUP, m_selGames );
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
@@ -1879,8 +1870,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_rename:
-            m_rowid = selRowIDs[0];
-            showDialog( DlgID.RENAME_GAME );
+            showDialogFragment( DlgID.RENAME_GAME, selRowIDs[0] );
             break;
 
             // DEBUG only
@@ -1943,8 +1933,7 @@ public class GamesListDelegate extends ListDelegateBase
                 XWPrefs.setDefaultNewGameGroup( m_activity, groupID );
                 break;
             case R.id.games_group_rename:
-                m_groupid = groupID;
-                showDialog( DlgID.RENAME_GROUP );
+                showDialogFragment( DlgID.RENAME_GROUP, groupID );
                 break;
             case R.id.games_group_moveup:
                 moveGroup( groupID, true );
@@ -1982,7 +1971,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void handleNewGame( boolean solo )
     {
         m_nextIsSolo = solo;
-        showDialog( DlgID.GAMES_LIST_NEWGAME );
+        showDialogFragment( DlgID.GAMES_LIST_NEWGAME, solo );
     }
 
     private void handleNewGameButton( boolean solo )
@@ -2039,10 +2028,7 @@ public class GamesListDelegate extends ListDelegateBase
                 DictLangCache.haveDict( m_activity, nli.lang, nli.dict );
         }
         if ( !haveDict ) {
-            m_netLaunchInfo = nli;
-            m_missingDictLang = nli.lang;
-            m_missingDictName = nli.dict;
-            showDialog( DlgID.WARN_NODICT_NEW );
+            showDialogFragment( DlgID.WARN_NODICT_NEW, 0, nli.dict, nli.lang );
         }
         return haveDict;
     }
@@ -2067,23 +2053,22 @@ public class GamesListDelegate extends ListDelegateBase
         }
 
         if ( !hasDicts ) {
-            m_missingDictLang = missingLang[0];
+            String missingDictName = null;
+            int missingDictLang = missingLang[0];
             if ( 0 < missingNames[0].length ) {
-                m_missingDictName = missingNames[0][0];
-            } else {
-                m_missingDictName = null;
+                missingDictName = missingNames[0][0];
             }
             m_missingDictRowId = rowid;
             m_missingDictMenuId = forMenu;
-            if ( 0 == DictLangCache.getLangCount( m_activity, m_missingDictLang ) ) {
-                showDialog( DlgID.WARN_NODICT );
-            } else if ( null != m_missingDictName ) {
-                showDialog( DlgID.WARN_NODICT_SUBST );
+            if ( 0 == DictLangCache.getLangCount( m_activity, missingDictLang ) ) {
+                showDialogFragment( DlgID.WARN_NODICT, rowid, missingDictName, missingDictLang );
+            } else if ( null != missingDictName ) {
+                showDialogFragment( DlgID.WARN_NODICT_SUBST, rowid, missingDictName,
+                                    missingDictLang );
             } else {
                 String dict =
-                    DictLangCache.getHaveLang( m_activity, m_missingDictLang)[0];
-                if ( GameUtils.replaceDicts( m_activity, m_missingDictRowId,
-                                             null, dict ) ) {
+                    DictLangCache.getHaveLang( m_activity, missingDictLang)[0];
+                if ( GameUtils.replaceDicts( m_activity, rowid, null, dict ) ) {
                     launchGameIf();
                 }
             }
@@ -2215,7 +2200,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) {
             m_rematchExtras = intent.getExtras();
-            showDialog( DlgID.GAMES_LIST_NAME_REMATCH );
+            showDialogFragment( DlgID.GAMES_LIST_NAME_REMATCH, intent.getExtras() );
         }
     }
 
@@ -2310,7 +2295,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String name = CommonPrefs.getDefaultPlayerName( m_activity, 0, true );
         CommonPrefs.setDefaultPlayerName( m_activity, name );
-        showDialog( DlgID.GET_NAME );
+        showDialogFragment( DlgID.GET_NAME );
     }
 
     private void getDictForLangIf()
@@ -2391,7 +2376,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( m_moveAfterNewGroup ) {
             m_moveAfterNewGroup = false;
-            showDialog( DlgID.CHANGE_GROUP );
+            showDialogFragment( DlgID.CHANGE_GROUP );
         }
     }
 

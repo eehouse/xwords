@@ -423,6 +423,18 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showDialog( dlgID );
     }
 
+    protected Dialog makeDialog( DlgID dlgID, Object[] params )
+    {
+        DbgUtils.logd( TAG, "makeDialog(): not handling %s", dlgID.toString() );
+        return null;
+    }
+
+    protected void showDialogFragment( DlgID dlgID, Object... params )
+    {
+        DialogFragment fragment = DBAlert.newInstance( dlgID, params );
+        show( fragment );
+    }
+
     protected void show( DialogFragment df )
     {
         if ( m_activity instanceof MainActivity ) {
