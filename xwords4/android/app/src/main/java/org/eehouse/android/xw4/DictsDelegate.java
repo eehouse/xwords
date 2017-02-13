@@ -358,16 +358,16 @@ public class DictsDelegate extends ListDelegateBase
         m_activity = delegator.getActivity();
     }
 
-    protected Dialog onCreateDialog( int id )
+    @Override
+    protected Dialog makeDialog( DlgID dlgID, Object[] params )
     {
         OnClickListener lstnr, lstnr2;
         Dialog dialog;
         String message;
         boolean doRemove = true;
 
-        DlgID dlgID = DlgID.values()[id];
         switch( dlgID ) {
-        case MOVE_DICT:
+        case MOVE_DICT: {
             final String[] selNames = getSelNames();
             final int[] moveTo = { -1 };
             message = getString( R.string.move_dict_fmt,
@@ -392,9 +392,7 @@ public class DictsDelegate extends ListDelegateBase
 
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        DictsDelegate self = curThis();
-                        DictLoc toLoc = self.itemToRealLoc( moveTo[0] );
-                        Assert.assertTrue( self == DictsDelegate.this );
+                        DictLoc toLoc = itemToRealLoc( moveTo[0] );
                         moveDicts( selNames, toLoc );
                     }
                 };
@@ -406,22 +404,22 @@ public class DictsDelegate extends ListDelegateBase
                 .setPositiveButton( R.string.button_move, lstnr )
                 .setNegativeButton( android.R.string.cancel, null )
                 .create();
+        }
             break;
 
-        case SET_DEFAULT:
+        case SET_DEFAULT: {
             final String name = m_selDicts.keySet().iterator().next();
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        DictsDelegate self = curThis();
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
-                            self.setDefault( name, R.string.key_default_dict,
-                                             R.string.key_default_robodict );
+                            setDefault( name, R.string.key_default_dict,
+                                        R.string.key_default_robodict );
                         }
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_NEUTRAL == item ) {
-                            self.setDefault( name, R.string.key_default_robodict,
-                                             R.string.key_default_dict );
+                            setDefault( name, R.string.key_default_robodict,
+                                        R.string.key_default_dict );
                         }
                     }
                 };
@@ -435,18 +433,19 @@ public class DictsDelegate extends ListDelegateBase
                 .setNeutralButton( R.string.button_default_robot, lstnr )
                 .setNegativeButton( R.string.button_default_both, lstnr )
                 .create();
+        }
             break;
 
-        case DICT_OR_DECLINE:
+        case DICT_OR_DECLINE: {
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        DictsDelegate self = curThis();
-                        Intent intent = self.getIntent();
+                        Intent intent = getIntent();
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
                         String name = intent.getStringExtra( MultiService.DICT );
-                        self.m_launchedForMissing = true;
+                        m_launchedForMissing = true;
                         DwnldDelegate
-                            .downloadDictInBack( self.m_activity, lang, name, self );
+                            .downloadDictInBack( m_activity, lang, name,
+                                                 DictsDelegate.this );
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -458,31 +457,15 @@ public class DictsDelegate extends ListDelegateBase
             dialog = MultiService.missingDictDialog( m_activity, getIntent(),
                                                      lstnr, lstnr2 );
             break;
-
-        default:
-            dialog = super.onCreateDialog( id );
-            doRemove = false;
-            break;
         }
 
-        if ( doRemove && null != dialog ) {
-            setRemoveOnDismiss( dialog, dlgID );
+        default:
+            dialog = super.makeDialog( dlgID, params );
+            break;
         }
 
         return dialog;
     } // onCreateDialog
-
-    @Override
-    protected void prepareDialog( DlgID dlgID, Dialog dialog )
-    {
-        if ( DlgID.MOVE_DICT == dlgID ) {
-            // The move button should always start out disabled
-            // because the selected location should be where it
-            // currently is.
-            ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
-                .setEnabled( false );
-        }
-    }
 
     @Override
     protected void init( Bundle savedInstanceState )
@@ -511,7 +494,7 @@ public class DictsDelegate extends ListDelegateBase
         Bundle args = getArguments();
         if ( null != args ) {
             if ( MultiService.isMissingDictBundle( args ) ) {
-                showDialog( DlgID.DICT_OR_DECLINE );
+                showDialogFragment( DlgID.DICT_OR_DECLINE );
             } else {
                 boolean showRemote = args.getBoolean( DICT_SHOWREMOTE, false );
                 if ( showRemote ) {
@@ -643,10 +626,10 @@ public class DictsDelegate extends ListDelegateBase
             deleteSelected();
             break;
         case R.id.dicts_move:
-            showDialog( DlgID.MOVE_DICT );
+            showDialogFragment( DlgID.MOVE_DICT );
             break;
         case R.id.dicts_select:
-            showDialog( DlgID.SET_DEFAULT );
+            showDialogFragment( DlgID.SET_DEFAULT );
             break;
         case R.id.dicts_deselect_all:
             clearSelections();
