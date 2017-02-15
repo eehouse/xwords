@@ -437,8 +437,8 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void show( DialogFragment df )
     {
-        if ( m_activity instanceof MainActivity ) {
-            ((MainActivity)m_activity).show( df );
+        if ( m_activity instanceof XWActivity ) {
+            ((XWActivity)m_activity).show( df );
         } else if ( m_activity instanceof PrefsActivity ) {
             ((PrefsActivity)m_activity).show( df );
         } else {

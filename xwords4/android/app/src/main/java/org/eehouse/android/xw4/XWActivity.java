@@ -25,9 +25,10 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
-import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -272,6 +273,11 @@ public class XWActivity extends FragmentActivity
                                       RequestCode request  )
     {
         Assert.fail();
+    }
+
+    protected void show( DialogFragment df )
+    {
+        df.show( getSupportFragmentManager(), "dialog" );
     }
 
     protected Dialog makeDialog( DlgID dlgID, Object[] params )

@@ -112,11 +112,6 @@ public class MainActivity extends XWActivity
         m_dlgt.handleNewIntent( intent );
     }
 
-    protected void show( DialogFragment df )
-    {
-        df.show( getSupportFragmentManager(), "dialog" );
-    }
-
     /* Sometimes I'm getting crashes because views don't have fragments
      * associated yet. I suspect that's because adding them's been postponed
      * via the m_runWhenSafe mechanism. So: postpone handling intents too.
