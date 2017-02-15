@@ -359,14 +359,14 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     @Override
-    protected Dialog makeDialog( DlgID dlgID, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         OnClickListener lstnr, lstnr2;
         Dialog dialog;
         String message;
         boolean doRemove = true;
 
-        switch( dlgID ) {
+        switch( alert.getDlgID() ) {
         case MOVE_DICT: {
             final String[] selNames = getSelNames();
             final int[] moveTo = { -1 };
@@ -460,7 +460,7 @@ public class DictsDelegate extends ListDelegateBase
         }
 
         default:
-            dialog = super.makeDialog( dlgID, params );
+            dialog = super.makeDialog( alert, params );
             break;
         }
 

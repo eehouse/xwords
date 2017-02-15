@@ -47,13 +47,13 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    protected Dialog makeDialog( DlgID dlgID, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         Dialog dialog = null;
         MainActivity main = (MainActivity)m_activity;
         XWFragment[] frags = main.getVisibleFragments();
         for ( XWFragment frag : frags ) {
-            dialog = frag.getDelegate().makeDialog( dlgID, params );
+            dialog = frag.getDelegate().makeDialog( alert, params );
             if ( null != dialog ) {
                 break;
             }

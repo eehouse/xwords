@@ -280,9 +280,9 @@ public class XWActivity extends FragmentActivity
         df.show( getSupportFragmentManager(), "dialog" );
     }
 
-    protected Dialog makeDialog( DlgID dlgID, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
-        return m_dlgt.makeDialog( dlgID, params );
+        return m_dlgt.makeDialog( alert, params );
     }
 
     ////////////////////////////////////////////////////////////

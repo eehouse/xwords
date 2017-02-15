@@ -19,9 +19,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.support.v4.app.DialogFragment;
-import android.os.Bundle;
 import android.app.Dialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 
 import java.io.Serializable;
 
@@ -31,8 +32,13 @@ public class DBAlert extends DialogFragment {
     private static final String DLG_ID_KEY = "DLG_ID_KEY";
     private static final String PARMS_KEY = "PARMS_KEY";
 
+    public interface OnDismissListener {
+        void onDismissed();
+    }
+
     private Object[] mParams;
     private DlgID mDlgID;
+    private OnDismissListener m_onDismiss;
     
     public static DBAlert newInstance( DlgID dlgID, Object[] params )
     {
@@ -52,6 +58,8 @@ public class DBAlert extends DialogFragment {
 
     public DBAlert() {}
 
+    public DlgID getDlgID() { return mDlgID; }
+
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
@@ -70,6 +78,20 @@ public class DBAlert extends DialogFragment {
         mParams = (Object[])sis.getSerializable(PARMS_KEY);
         
         XWActivity activity = (XWActivity)getActivity();
-        return activity.makeDialog( mDlgID, mParams );
+        return activity.makeDialog( this, mParams );
+    }
+
+    @Override
+    public void onDismiss( DialogInterface dif )
+    {
+        if ( null != m_onDismiss ) {
+            m_onDismiss.onDismissed();
+        }
+        super.onDismiss( dif );
+    }
+
+    protected void setOnDismiss( OnDismissListener lstnr )
+    {
+        m_onDismiss = lstnr;
     }
 }

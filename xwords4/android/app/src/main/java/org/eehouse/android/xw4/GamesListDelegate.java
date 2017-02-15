@@ -607,12 +607,13 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected Dialog makeDialog( DlgID dlgID, Object[] params )
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         Dialog dialog = null;
         OnClickListener lstnr, lstnr2;
         AlertDialog.Builder ab;
 
+        DlgID dlgID = alert.getDlgID();
         switch ( dlgID ) {
         case WARN_NODICT:
         case WARN_NODICT_NEW:
@@ -824,25 +825,25 @@ public class GamesListDelegate extends ListDelegateBase
                 (EditText)layout.findViewById( R.id.name_edit );
             etext.setText( CommonPrefs.getDefaultPlayerName( m_activity,
                                                              0, true ) );
+            alert.setOnDismiss( new DBAlert.OnDismissListener() {
+                    @Override
+                    public void onDismissed() {
+                        String name = etext.getText().toString();
+                        if ( 0 == name.length() ) {
+                            name = CommonPrefs.
+                                getDefaultPlayerName( m_activity, 0, true );
+                        } else {
+                            CommonPrefs.setDefaultPlayerName( m_activity, name );
+                        }
+                        makeThenLaunchOrConfigure();
+                    }
+                } );
             dialog = makeAlertBuilder()
                 .setTitle( R.string.default_name_title )
                 .setMessage( R.string.default_name_message )
                 .setPositiveButton( android.R.string.ok, null )
                 .setView( layout )
                 .create();
-            dialog.setOnDismissListener(new DialogInterface.
-                                        OnDismissListener() {
-                    public void onDismiss( DialogInterface dlg ) {
-                        String name = etext.getText().toString();
-                        if ( 0 == name.length() ) {
-                            name = CommonPrefs.
-                                getDefaultPlayerName( m_activity, 0, true );
-                        }
-                        CommonPrefs.setDefaultPlayerName( m_activity, name );
-
-                        makeThenLaunchOrConfigure();
-                    }
-                });
         }
             break;
 
@@ -922,7 +923,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         default:
-            dialog = super.makeDialog( dlgID, params );
+            dialog = super.makeDialog( alert, params );
             break;
         }
         return dialog;
