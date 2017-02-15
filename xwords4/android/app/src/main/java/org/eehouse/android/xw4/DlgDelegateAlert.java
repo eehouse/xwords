@@ -72,7 +72,6 @@ public class DlgDelegateAlert extends DialogFragment {
     protected void checkNotAgainCheck( DlgState state, NotAgainView naView )
     {
         if ( null != naView && naView.getChecked() ) {
-            DbgUtils.logd( TAG, "is checked" );
             if ( 0 != state.m_prefsKey ) {
                 XWPrefs.setPrefsBoolean( getActivity(), m_state.m_prefsKey,
                                          true );
@@ -81,6 +80,19 @@ public class DlgDelegateAlert extends DialogFragment {
                 activity.onPosButton( m_state.m_onNAChecked, null );
             }
         }
+    }
+
+    protected OnClickListener mkCallbackClickListener( final ActionPair pair,
+                                                       final NotAgainView naView )
+    {
+        return new OnClickListener() {
+            @Override
+            public void onClick( DialogInterface dlg, int button ) {
+                checkNotAgainCheck( m_state, naView );
+                XWActivity xwact = (XWActivity)getActivity();
+                xwact.onPosButton( pair.action, m_state.m_params );
+            }
+        };
     }
 
     protected OnClickListener mkCallbackClickListener( final NotAgainView naView )

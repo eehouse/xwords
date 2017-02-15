@@ -49,14 +49,12 @@ public class NotAgainAlert extends DlgDelegateAlert {
     @Override
     public Dialog onCreateDialog( Bundle sis )
     {
-        final Context context = getActivity();
+        Context context = getActivity();
+        DlgState state = getState( sis );
 
-        final DlgState state = getState( sis );
-
-        final NotAgainView naView = (NotAgainView)
+        NotAgainView naView = (NotAgainView)
             LocUtils.inflate( context, R.layout.not_again_view );
         naView.setMessage( state.m_msg );
-        // final OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
             .setTitle( R.string.newbie_title )
@@ -65,17 +63,11 @@ public class NotAgainAlert extends DlgDelegateAlert {
                                 mkCallbackClickListener( naView ) );
 
         if ( null != state.m_pair ) {
-            final ActionPair more = state.m_pair;
-            OnClickListener lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        checkNotAgainCheck( state, naView );
-                        // m_clickCallback.onPosButton( more.action, more.params );
-                    }
-                };
-            builder.setNegativeButton( more.buttonStr, lstnr );
+            ActionPair pair = state.m_pair;
+            builder.setNegativeButton( pair.buttonStr,
+                                       mkCallbackClickListener( pair, naView ) );
         }
 
-        Dialog dialog = builder.create();
-        return dialog;
+        return builder.create();
     }
 }
