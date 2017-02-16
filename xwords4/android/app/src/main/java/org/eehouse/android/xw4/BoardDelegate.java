@@ -114,14 +114,11 @@ public class BoardDelegate extends DelegateBase
     private ArrayList<String> m_pendingChats;
 
     private EditText m_passwdEdit;
-    private String[] m_texts;
     private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
     private int[] m_missingCounts;
     private InviteMeans m_missingMeans = null;
     private boolean m_progressShown = false;
-    private String m_curTiles;
-    private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
     private JNIUtils m_jniu;
     private boolean m_inTrade;  // save this in bundle?
@@ -335,7 +332,8 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case PICK_TILE_REQUESTBLANK_BLK:
-        case PICK_TILE_REQUESTTRAY_BLK:
+        case PICK_TILE_REQUESTTRAY_BLK: {
+            String[] texts = (String[])params[0];
             checkBlocking();
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dialog,
@@ -343,13 +341,16 @@ public class BoardDelegate extends DelegateBase
                         m_resultCode = item;
                     }
                 };
-            ab.setItems( m_texts, lstnr );
+            ab.setItems( texts, lstnr );
 
             if ( DlgID.PICK_TILE_REQUESTBLANK_BLK == dlgID ) {
                 ab.setTitle( R.string.title_tile_picker );
             } else {
-                ab.setTitle( getString( R.string.cur_tiles_fmt, m_curTiles ) );
-                if ( m_canUndoTiles ) {
+                String curTiles = (String)params[1];
+                boolean canUndoTiles = (Boolean)params[2];
+
+                ab.setTitle( getString( R.string.cur_tiles_fmt, curTiles ) );
+                if ( canUndoTiles ) {
                     OnClickListener undoClicked = new OnClickListener() {
                             public void onClick( DialogInterface dialog,
                                                  int whichButton ) {
@@ -372,6 +373,7 @@ public class BoardDelegate extends DelegateBase
 
             dialog = ab.create();
             alert.setOnDismissListener( m_blockingODL );
+        }
             break;
 
         case ASK_PASSWORD_BLK:
@@ -1785,10 +1787,9 @@ public class BoardDelegate extends DelegateBase
 
         // This is supposed to be called from the jni thread
         @Override
-        public int userPickTileBlank( int playerNum, String[] texts)
+        public int userPickTileBlank( int playerNum, String[] texts )
         {
-            m_texts = texts;
-            waitBlockingDialog( DlgID.PICK_TILE_REQUESTBLANK_BLK, 0 );
+            waitBlockingDialog( DlgID.PICK_TILE_REQUESTBLANK_BLK, 0, (Object)texts );
             return m_resultCode;
         }
 
@@ -1796,11 +1797,11 @@ public class BoardDelegate extends DelegateBase
         public int userPickTileTray( int playerNum, String[] texts,
                                      String[] curTiles, int nPicked )
         {
-            m_texts = texts;
-            m_curTiles = TextUtils.join( ", ", curTiles );
-            m_canUndoTiles = 0 < nPicked;
+            String curTilesStr = TextUtils.join( ", ", curTiles );
+            boolean canUndoTiles = 0 < nPicked;
             waitBlockingDialog( DlgID.PICK_TILE_REQUESTTRAY_BLK,
-                                UtilCtxt.PICKER_PICKALL );
+                                UtilCtxt.PICKER_PICKALL, texts, curTilesStr,
+                                canUndoTiles );
             return m_resultCode;
         }
 
@@ -2351,13 +2352,8 @@ public class BoardDelegate extends DelegateBase
         }
     } // populateToolbar
 
-    private int waitBlockingDialog( final DlgID dlgID, int cancelResult )
-    {
-        return waitBlockingDialog( dlgID, cancelResult, 0, null );
-    }
-
     private int waitBlockingDialog( final DlgID dlgID, int cancelResult,
-                                    final int title, final String msg )
+                                    final Object... params )
     {
         int result = cancelResult;
         // this has been true; dunno why
@@ -2371,7 +2367,7 @@ public class BoardDelegate extends DelegateBase
             if ( post( new Runnable() {
                     public void run() {
                         m_blockingDlgID = dlgID;
-                        showDialogFragment( dlgID, title, msg );
+                        showDialogFragment( dlgID, params );
                     }
                 } ) ) {
 

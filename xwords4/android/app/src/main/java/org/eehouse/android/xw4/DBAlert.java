@@ -50,7 +50,7 @@ public class DBAlert extends DialogFragment {
     {
         if ( BuildConfig.DEBUG ) {
             for ( Object obj : params ) {
-                if ( !(obj instanceof Serializable) ) {
+                if ( null != obj && !(obj instanceof Serializable) ) {
                     DbgUtils.logd( TAG, "OOPS: %s not Serializable",
                                    obj.getClass().getName() );
                     // Assert.fail();
