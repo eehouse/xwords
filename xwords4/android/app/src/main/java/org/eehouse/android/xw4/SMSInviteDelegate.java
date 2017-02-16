@@ -106,7 +106,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             startActivityForResult( intent, RequestCode.GET_CONTACT );
             break;
         case R.id.manual_add_button:
-            showDialog( DlgID.GET_NUMBER );
+            showDialogFragment( DlgID.GET_NUMBER );
             break;
         case R.id.button_clear:
             int count = getChecked().size();
@@ -131,38 +131,37 @@ public class SMSInviteDelegate extends InviteDelegate {
     }
 
     @Override
-    protected Dialog onCreateDialog( int id )
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            DialogInterface.OnClickListener lstnr;
-            DlgID dlgID = DlgID.values()[id];
-            switch( dlgID ) {
-            case GET_NUMBER:
-                final GameNamer namerView =
-                    (GameNamer)inflate( R.layout.rename_game );
-                namerView.setLabel( R.string.get_sms_number );
-                namerView.setKeyListener(DialerKeyListener.getInstance());
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            SMSInviteDelegate self = (SMSInviteDelegate)curThis();
-                            String number = namerView.getName();
-                            PhoneRec rec = new PhoneRec( number );
-                            self.makeConfirmThenBuilder( R.string.warn_unlimited,
-                                                         Action.POST_WARNING_ACTION )
-                                .setPosButton( R.string.button_yes )
-                                .setParams( number, null )
-                                .show();
-                        }
-                    };
-                dialog = makeAlertBuilder()
-                    .setNegativeButton( android.R.string.cancel, null )
-                    .setPositiveButton( android.R.string.ok, lstnr )
-                    .setView( namerView )
-                    .create();
-                break;
-            }
-            setRemoveOnDismiss( dialog, dlgID );
+        Dialog dialog;
+        DialogInterface.OnClickListener lstnr;
+        switch( alert.getDlgID() ) {
+        case GET_NUMBER: {
+            final GameNamer namerView =
+                (GameNamer)inflate( R.layout.rename_game );
+            namerView.setLabel( R.string.get_sms_number );
+            namerView.setKeyListener(DialerKeyListener.getInstance());
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        String number = namerView.getName();
+                        PhoneRec rec = new PhoneRec( number );
+                        makeConfirmThenBuilder( R.string.warn_unlimited,
+                                                Action.POST_WARNING_ACTION )
+                            .setPosButton( R.string.button_yes )
+                            .setParams( number, null )
+                            .show();
+                    }
+                };
+            dialog = makeAlertBuilder()
+                .setPositiveButton( android.R.string.ok, lstnr )
+                .setNegativeButton( android.R.string.cancel, null )
+                .setView( namerView )
+                .create();
+        }
+            break;
+        default:
+            dialog = super.makeDialog( alert, params );
+            break;
         }
         return dialog;
     }

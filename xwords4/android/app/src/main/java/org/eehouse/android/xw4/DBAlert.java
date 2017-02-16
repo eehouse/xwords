@@ -20,15 +20,21 @@
 package org.eehouse.android.xw4;
 
 import android.app.Dialog;
+import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.DialogFragment;
+
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.Serializable;
 
 import junit.framework.Assert;
 
 public class DBAlert extends DialogFragment {
+    private static final String TAG = DBAlert.class.getSimpleName();
     private static final String DLG_ID_KEY = "DLG_ID_KEY";
     private static final String PARMS_KEY = "PARMS_KEY";
 
@@ -44,7 +50,11 @@ public class DBAlert extends DialogFragment {
     {
         if ( BuildConfig.DEBUG ) {
             for ( Object obj : params ) {
-                Assert.assertTrue( obj instanceof Serializable );
+                if ( !(obj instanceof Serializable) ) {
+                    DbgUtils.logd( TAG, "OOPS: %s not Serializable",
+                                   obj.getClass().getName() );
+                    // Assert.fail();
+                }
             }
         }
         
@@ -69,6 +79,15 @@ public class DBAlert extends DialogFragment {
     }
     
     @Override
+    public void onDismiss( DialogInterface dif )
+    {
+        if ( null != m_onDismiss ) {
+            m_onDismiss.onDismissed();
+        }
+        super.onDismiss( dif );
+    }
+
+    @Override
     public Dialog onCreateDialog( Bundle sis )
     {
         if ( null == sis ) {
@@ -78,19 +97,36 @@ public class DBAlert extends DialogFragment {
         mParams = (Object[])sis.getSerializable(PARMS_KEY);
         
         XWActivity activity = (XWActivity)getActivity();
-        return activity.makeDialog( this, mParams );
-    }
+        Dialog dialog = activity.makeDialog( this, mParams );
 
-    @Override
-    public void onDismiss( DialogInterface dif )
-    {
-        if ( null != m_onDismiss ) {
-            m_onDismiss.onDismissed();
+        if ( null == dialog ) {
+            dialog = LocUtils.makeAlertBuilder( getActivity() )
+                .setTitle( "Stub Alert" )
+                .setMessage( String.format( "Unable to create for %s", mDlgID.toString() ) )
+                .setPositiveButton( "Bummer", null )
+                // .setNegativeButton( "Try now", new OnClickListener() {
+                //         @Override
+                //         public void onClick( DialogInterface dlg, int button ) {
+                //             DBAlert alrt = newInstance( mDlgID, mParams );
+                //             ((MainActivity)getActivity()).show( alrt );
+                //         }
+                //     })
+                .create();
+
+            new Handler().post( new Runnable() {
+                    @Override
+                    public void run() {
+                        DBAlert newMe = newInstance( mDlgID, mParams );
+                        ((MainActivity)getActivity()).show( newMe );
+
+                        dismiss();          // kill myself...
+                    }
+                } );
         }
-        super.onDismiss( dif );
+        return dialog;
     }
 
-    protected void setOnDismiss( OnDismissListener lstnr )
+    protected void setOnDismissListener( OnDismissListener lstnr )
     {
         m_onDismiss = lstnr;
     }

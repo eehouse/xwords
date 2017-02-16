@@ -163,17 +163,6 @@ public class Utils {
         showToast( context, msg );
     }
 
-    public static void setRemoveOnDismiss( final Activity activity,
-                                           Dialog dialog, DlgID dlgID )
-    {
-        final int id = dlgID.ordinal();
-        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                public void onDismiss( DialogInterface di ) {
-                    activity.removeDialog( id );
-                }
-            } );
-    }
-
     public static void launchSettings( Context context )
     {
         Intent intent = new Intent( context, PrefsActivity.class );
@@ -326,30 +315,30 @@ public class Utils {
         return str;
     }
 
-    public static void setChecked( Dialog dialog, int id, boolean value )
+    public static void setChecked( View parent, int id, boolean value )
     {
-        CheckBox cbx = (CheckBox)dialog.findViewById( id );
+        CheckBox cbx = (CheckBox)parent.findViewById( id );
         cbx.setChecked( value );
     }
 
-    public static void setText( Dialog dialog, int id, String value )
+    public static void setText( View parent, int id, String value )
     {
-        EditText editText = (EditText)dialog.findViewById( id );
+        EditText editText = (EditText)parent.findViewById( id );
         if ( null != editText ) {
             editText.setText( value, TextView.BufferType.EDITABLE   );
         }
     }
 
-    public static void setInt( Dialog dialog, int id, int value )
+    public static void setInt( View parent, int id, int value )
     {
         String str = Integer.toString(value);
-        setText( dialog, id, str );
+        setText( parent, id, str );
     }
 
-    public static void setEnabled( Dialog dialog, int id, boolean enabled )
+    public static void setEnabled( View parent, int id, boolean enabled )
     {
-        View view = dialog.findViewById( id );
-        view.setEnabled( enabled );
+        View view = parent.findViewById( id );
+        parent.setEnabled( enabled );
     }
 
     public static boolean getChecked( Dialog dialog, int id )

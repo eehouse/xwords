@@ -825,7 +825,7 @@ public class GamesListDelegate extends ListDelegateBase
                 (EditText)layout.findViewById( R.id.name_edit );
             etext.setText( CommonPrefs.getDefaultPlayerName( m_activity,
                                                              0, true ) );
-            alert.setOnDismiss( new DBAlert.OnDismissListener() {
+            alert.setOnDismissListener( new DBAlert.OnDismissListener() {
                     @Override
                     public void onDismissed() {
                         String name = etext.getText().toString();
@@ -2369,7 +2369,6 @@ public class GamesListDelegate extends ListDelegateBase
             .setNegativeButton( android.R.string.cancel, lstnr2 )
             .setView( namer )
             .create();
-        setRemoveOnDismiss( dialog, dlgID );
         return dialog;
     }
 

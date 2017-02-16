@@ -465,7 +465,7 @@ public class DictsDelegate extends ListDelegateBase
         }
 
         return dialog;
-    } // onCreateDialog
+    } // makeDialog
 
     @Override
     protected void init( Bundle savedInstanceState )

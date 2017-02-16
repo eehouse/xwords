@@ -450,8 +450,11 @@ public class DlgDelegate {
             }
         } else {
             DlgState state = new DlgState( DlgID.DIALOG_NOTAGAIN )
-                .setMsg( msg).setPrefsKey( prefsKey ).setAction( action )
-                .setActionPair( more ).setParams( params );
+                .setMsg( msg)
+                .setPrefsKey( prefsKey )
+                .setAction( action )
+                .setActionPair( more )
+                .setParams( params );
             m_dlgt.show( NotAgainAlert.newInstance( state ) );
         }
     }
@@ -622,7 +625,6 @@ public class DlgDelegate {
             .setPositiveButton( R.string.button_enable, lstnr )
             .setNegativeButton( android.R.string.cancel, null )
             .create();
-        Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
         return dialog;
     }
 

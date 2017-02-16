@@ -23,6 +23,8 @@ package org.eehouse.android.xw4.jni;
 import android.content.Context;
 import android.text.TextUtils;
 
+import java.io.Serializable;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils;
@@ -39,7 +41,7 @@ import org.json.JSONObject;
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo
  */
-public class GameSummary {
+public class GameSummary implements Serializable {
     private static final String TAG = GameSummary.class.getSimpleName();
     public static final String EXTRA_REMATCH_BTADDR = "rm_btaddr";
     public static final String EXTRA_REMATCH_PHONE = "rm_phone";
