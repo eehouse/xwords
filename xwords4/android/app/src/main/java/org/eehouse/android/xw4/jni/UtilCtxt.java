@@ -104,7 +104,6 @@ public interface UtilCtxt {
     String getUserQuantityString( int stringCode, int quantity );
 
     static final int QUERY_COMMIT_TURN = 0;
-    static final int QUERY_ROBOT_TRADE = 1;
     boolean userQuery( int id, String query );
 
     boolean confirmTrade( String[] tiles );

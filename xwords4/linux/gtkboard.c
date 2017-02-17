@@ -2253,11 +2253,6 @@ gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
         question = strFromStream( stream );
         freeMe = XP_TRUE;
         break;
-    case QUERY_ROBOT_TRADE:
-        question = strFromStream( stream );
-        freeMe = XP_TRUE;
-        buttons = GTK_BUTTONS_OK;
-        break;
 
     default:
         XP_ASSERT( 0 );

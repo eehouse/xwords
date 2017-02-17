@@ -293,12 +293,6 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         answers[numAnswers++] = "Cancel";
         answers[numAnswers++] = "Ok";
         break;
-    case QUERY_ROBOT_TRADE:
-        question = strFromStream( stream );
-        freeMe = XP_TRUE;
-        answers[numAnswers++] = "Ok";
-        okIndex = 0;
-        break;
         
     default:
         XP_ASSERT( 0 );

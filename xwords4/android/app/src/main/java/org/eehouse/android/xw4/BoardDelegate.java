@@ -270,7 +270,6 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case QUERY_REQUEST_BLK:
-        case QUERY_INFORM_BLK:
         case DLG_BADWORDS_BLK:
             checkBlocking();
         case DLG_SCORES: {
@@ -1837,16 +1836,6 @@ public class BoardDelegate extends DelegateBase
             boolean result;
 
             switch( id ) {
-                // Though robot-move dialogs don't normally need to block,
-                // if the player after this one is also a robot and we
-                // don't block then a second dialog will replace this one.
-                // So block.  Yuck.
-            case UtilCtxt.QUERY_ROBOT_TRADE:
-                waitBlockingDialog( DlgID.QUERY_INFORM_BLK, 0,
-                                    R.string.info_title, query );
-                result = true;
-                break;
-
                 // These *are* blocking dialogs
             case UtilCtxt.QUERY_COMMIT_TURN:
                 result = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0,
