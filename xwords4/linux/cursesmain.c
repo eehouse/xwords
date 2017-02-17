@@ -1362,13 +1362,12 @@ curses_util_getVTManager(XW_UtilCtxt* uc)
     return globals->cGlobals.params->vtMgr;
 } /* linux_util_getVTManager */
 
-static XP_Bool
-curses_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), 
-                         const XP_UCHAR* XP_UNUSED(name), 
-                         XP_UCHAR* XP_UNUSED(buf), XP_U16* XP_UNUSED(len) )
+static void
+curses_util_informNeedPassword( XW_UtilCtxt* XP_UNUSED(uc),
+                                XP_U16 playerNum,
+                                const XP_UCHAR* name )
 {
-    XP_WARNF( "curses_util_askPassword not implemented" );
-    return XP_FALSE;
+    XP_WARNF( "curses_util_informNeedPassword(num=%d, name=%s", playerNum, name );
 } /* curses_util_askPassword */
 
 static void
@@ -1459,7 +1458,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_userError = curses_util_userError;
 
     util->vtable->m_util_getVTManager = curses_util_getVTManager;
-    util->vtable->m_util_askPassword = curses_util_askPassword;
+    util->vtable->m_util_informNeedPassword = curses_util_informNeedPassword;
     util->vtable->m_util_yOffsetChange = curses_util_yOffsetChange;
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     util->vtable->m_util_turnChanged = curses_util_turnChanged;

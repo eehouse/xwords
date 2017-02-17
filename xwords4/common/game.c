@@ -663,12 +663,11 @@ player_hasPasswd( LocalPlayer* player )
 } /* player_hasPasswd */
 
 XP_Bool
-player_passwordMatches( LocalPlayer* player, XP_U8* buf, XP_U16 len )
+player_passwordMatches( LocalPlayer* player, const XP_UCHAR* buf )
 {
     XP_ASSERT( player->isLocal );
 
-    return (XP_STRLEN(player->password) == len)
-        && (0 == XP_STRNCMP( player->password, (XP_UCHAR*)buf, len ));
+    return 0 == XP_STRCMP( player->password, (XP_UCHAR*)buf );
 } /* player_passwordMatches */
 
 XP_U16

@@ -1709,12 +1709,30 @@ gtk_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi,
     return chosen;
 } /* gtk_util_userPickTile */
 
-static XP_Bool
-gtk_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* name, 
-                      XP_UCHAR* buf, XP_U16* len )
+static gint
+ask_password( gpointer data )
 {
-    XP_Bool ok = gtkpasswdask( name, buf, len );
-    return ok;
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+
+    XP_UCHAR buf[32];
+    XP_U16 len = VSIZE(buf);
+    if ( gtkpasswdask( globals->askPassName, buf, &len ) ) {
+        BoardCtxt* board = globals->cGlobals.game.board;
+        if ( board_passwordProvided( board, globals->askPassPlayer, buf ) ) {
+            board_draw( board );
+        }
+    }
+    return 0;
+}
+
+static void
+gtk_util_informNeedPassword( XW_UtilCtxt* uc, XP_U16 player, const XP_UCHAR* name )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    globals->askPassName = name;
+    globals->askPassPlayer = player;
+
+    (void)g_idle_add( ask_password, globals );
 } /* gtk_util_askPassword */
 
 static void
@@ -2403,7 +2421,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_getVTManager = gtk_util_getVTManager;
     util->vtable->m_util_userPickTileBlank = gtk_util_userPickTileBlank;
     util->vtable->m_util_userPickTileTray = gtk_util_userPickTileTray;
-    util->vtable->m_util_askPassword = gtk_util_askPassword;
+    util->vtable->m_util_informNeedPassword = gtk_util_informNeedPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;
 #ifdef XWFEATURE_TURNCHANGENOTIFY

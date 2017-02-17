@@ -188,35 +188,17 @@ and_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi,
     return result;
 } /* and_util_userPickTile */
 
-static XP_Bool
-and_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
-                      XP_UCHAR* buf, XP_U16* len )
+static void
+and_util_informNeedPassword( XW_UtilCtxt* uc, XP_U16 player,
+                             const XP_UCHAR* name )
 {
-    XP_Bool result = false;
-    UTIL_CBK_HEADER("askPassword", "(Ljava/lang/String;)Ljava/lang/String;" );
+    UTIL_CBK_HEADER("informNeedPassword", "(ILjava/lang/String;)V" );
 
     jstring jname = (*env)->NewStringUTF( env, name );
-    jstring jstr = (*env)->CallObjectMethod( env, util->jutil, mid, 
-                                             jname );
+    (*env)->CallVoidMethod( env, util->jutil, mid, player, jname );
     deleteLocalRef( env, jname );
-
-    if ( NULL != jstr ) {       /* null means user cancelled */
-        jsize jsiz = (*env)->GetStringUTFLength( env, jstr );
-        if ( jsiz < *len ) {
-            const char* chars = (*env)->GetStringUTFChars( env, jstr, NULL );
-            XP_MEMCPY( buf, chars, jsiz );
-            (*env)->ReleaseStringUTFChars( env, jstr, chars );
-            buf[jsiz] = '\0';
-            *len = jsiz;
-            result = XP_TRUE;
-        }
-        deleteLocalRef( env, jstr );
-    }
-
     UTIL_CBK_TAIL();
-    return result;
 }
-
 
 static void
 and_util_trayHiddenChange(XW_UtilCtxt* uc, XW_TrayVisState newState,
@@ -735,7 +717,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(confirmTrade);
     SET_PROC(userPickTileBlank);
     SET_PROC(userPickTileTray);
-    SET_PROC(askPassword);
+    SET_PROC(informNeedPassword);
     SET_PROC(trayHiddenChange);
     SET_PROC(yOffsetChange);
 #ifdef XWFEATURE_TURNCHANGENOTIFY

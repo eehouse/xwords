@@ -1201,6 +1201,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getSelPlayer
 }
 
 JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1passwordProvided
+(JNIEnv* env, jclass C, GamePtrType gamePtr, jint player, jstring jpasswd )
+{
+    jboolean result;
+    XWJNI_START();
+    const char* passwd = (*env)->GetStringUTFChars( env, jpasswd, NULL );
+    result = board_passwordProvided( state->game.board, player, passwd );
+    (*env)->ReleaseStringUTFChars( env, jpasswd, passwd );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1hideTray
 (JNIEnv* env, jclass C, GamePtrType gamePtr)
 {

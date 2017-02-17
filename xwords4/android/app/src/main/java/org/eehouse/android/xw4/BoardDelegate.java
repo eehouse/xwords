@@ -113,7 +113,6 @@ public class BoardDelegate extends DelegateBase
     private Perms23.PermCbck m_permCbck;
     private ArrayList<String> m_pendingChats;
 
-    private EditText m_passwdEdit;
     private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
     private int[] m_missingCounts;
@@ -138,7 +137,6 @@ public class BoardDelegate extends DelegateBase
     private String m_room;
     private String m_toastStr;
     private String[] m_words;
-    private String m_pwdName;
     private String m_getDict;
 
     private int m_nMissing = -1;
@@ -376,25 +374,26 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case ASK_PASSWORD_BLK:
-            checkBlocking();
-            String dlgTitle = getString( R.string.msg_ask_password_fmt, m_pwdName );
+        case ASK_PASSWORD: {
+            final int player = (Integer)params[0];
+            String name = (String)params[1];
             LinearLayout pwdLayout =
                 (LinearLayout)inflate( R.layout.passwd_view );
-            m_passwdEdit = (EditText)pwdLayout.findViewById( R.id.edit );
-            m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
-            ab.setTitle( dlgTitle )
+            final EditText edit = (EditText)pwdLayout.findViewById( R.id.edit );
+            ab.setTitle( getString( R.string.msg_ask_password_fmt, name ) )
                 .setView( pwdLayout )
                 .setPositiveButton( android.R.string.ok,
                                     new OnClickListener() {
                                         public void
                                             onClick( DialogInterface dlg,
                                                      int whichButton ) {
-                                            m_resultCode = 1;
+                                            String pwd = edit.getText().toString();
+                                            handleViaThread( JNICmd.CMD_PASS_PASSWD,
+                                                             player, pwd );
                                         }
                                     });
             dialog = ab.create();
-            alert.setOnDismissListener( m_blockingODL );
+        }
             break;
 
         case QUERY_ENDGAME:
@@ -659,7 +658,6 @@ public class BoardDelegate extends DelegateBase
         outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
         outState.putStringArray( WORDS, m_words );
-        outState.putString( PWDNAME, m_pwdName );
         outState.putString( GETDICT, m_getDict );
     }
 
@@ -669,7 +667,6 @@ public class BoardDelegate extends DelegateBase
             m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
             m_words = bundle.getStringArray( WORDS );
-            m_pwdName = bundle.getString( PWDNAME );
             m_getDict = bundle.getString( GETDICT );
         }
     }
@@ -1806,17 +1803,9 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public String askPassword( String name )
+        public void informNeedPassword( int player, String name )
         {
-            m_pwdName = name;
-
-            waitBlockingDialog( DlgID.ASK_PASSWORD_BLK, 0 );
-
-            String result = 0 == m_resultCode
-                ? null      // means cancelled
-                : m_passwdEdit.getText().toString();
-            m_passwdEdit = null;
-            return result;
+            showDialogFragment( DlgID.ASK_PASSWORD, player, name );
         }
 
         @Override

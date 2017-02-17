@@ -93,6 +93,7 @@ public class JNIThread extends Thread {
             CMD_POST_OVER,
             CMD_SENDCHAT,
             CMD_NETSTATS,
+            CMD_PASS_PASSWD,
             // CMD_DRAW_CONNS_STATUS,
             // CMD_DRAW_BT_STATUS,
             // CMD_DRAW_SMS_STATUS,
@@ -658,6 +659,12 @@ public class JNIThread extends Thread {
                 sendForDialog( ((Integer)args[0]).intValue(),
                                XwJNI.comms_getStats( m_jniGamePtr )
                                );
+                break;
+
+            case CMD_PASS_PASSWD:
+                int player = ((Integer)args[0]).intValue();
+                String pwd = (String)args[1];
+                draw = XwJNI.board_passwordProvided( m_jniGamePtr, player, pwd );
                 break;
 
             case CMD_TIMER_FIRED:

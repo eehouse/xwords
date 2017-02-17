@@ -41,7 +41,8 @@ public interface UtilCtxt {
     int userPickTileTray( int playerNum, String[] tiles,
                           String[] curTiles, int nPicked );
 
-    String askPassword( String name );
+    void informNeedPassword( int player, String name );
+
     void turnChanged( int newTurn );
 
     boolean engineProgressCallback();

@@ -61,10 +61,9 @@ public class UtilCtxtImpl implements UtilCtxt {
         return 0;
     }
 
-    public String askPassword( String name )
+    public void informNeedPassword( int player, String name )
     {
-        subclassOverride( "askPassword" );
-        return null;
+        subclassOverride( "informNeedPassword" );
     }
 
     public void turnChanged( int newTurn )

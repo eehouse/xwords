@@ -157,6 +157,9 @@ XP_Bool board_redoReplacedTiles( BoardCtxt* board );
 
 XP_U16 board_getSelPlayer(const BoardCtxt* board );
 
+XP_Bool board_passwordProvided( BoardCtxt* board, XP_U16 player, const
+                                XP_UCHAR* pass );
+
 XP_Bool board_requestHint( BoardCtxt* board, 
 #ifdef XWFEATURE_SEARCHLIMIT
                            XP_Bool useTileLimits,

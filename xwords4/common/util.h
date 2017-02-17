@@ -117,8 +117,8 @@ typedef struct UtilVtable {
                                         XP_U16 playerNum,
                                         const XP_UCHAR** texts, XP_U16 nTiles );
 
-    XP_Bool (*m_util_askPassword)( XW_UtilCtxt* uc, const XP_UCHAR* name,
-                                   XP_UCHAR* buf, XP_U16* len );
+    void (*m_util_informNeedPassword)( XW_UtilCtxt* uc, XP_U16 playerNum,
+                                       const XP_UCHAR* name );
 
     void (*m_util_trayHiddenChange)(XW_UtilCtxt* uc, 
                                     XW_TrayVisState newState,
@@ -246,8 +246,8 @@ struct XW_UtilCtxt {
          (uc)->vtable->m_util_userPickTileBlank( (uc), (n), (tx), (nt) )
 #define util_userPickTileTray( uc, w, n, tx, nt ) \
          (uc)->vtable->m_util_userPickTileTray( (uc), (w), (n), (tx), (nt) )
-#define util_askPassword( uc, n, b, lp ) \
-         (uc)->vtable->m_util_askPassword( (uc), (n), (b), (lp) )
+#define util_informNeedPassword( uc, pn, n ) \
+         (uc)->vtable->m_util_informNeedPassword( (uc), (pn), (n) )
 
 #define util_trayHiddenChange( uc, b, n ) \
          (uc)->vtable->m_util_trayHiddenChange((uc), (b), (n))

@@ -96,7 +96,7 @@ void gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGi );
 XP_U16 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly );
 
 XP_Bool player_hasPasswd( LocalPlayer* player );
-XP_Bool player_passwordMatches( LocalPlayer* player, XP_U8* buf, XP_U16 len );
+XP_Bool player_passwordMatches( LocalPlayer* player, const XP_UCHAR* pwd );
 XP_U16 player_timePenalty( CurGameInfo* gi, XP_U16 playerNum );
 
 #ifdef CPLUS

@@ -2619,22 +2619,7 @@ askRevealTray( BoardCtxt* board )
         revealed = !player_hasPasswd( lp );
 
         if ( !revealed ) {
-            const XP_UCHAR* name = emptyStringIfNull(lp->name);
-
-            /* repeat until player gets passwd right or hits cancel */
-            for ( ; ; ) {
-                XP_UCHAR buf[16];
-                XP_U16 buflen = sizeof(buf);
-                if ( !util_askPassword( board->util, name, buf, &buflen ) ) {
-                    break;
-                }
-                if ( buflen > 0 ) {
-                    if ( player_passwordMatches( lp, (XP_U8*)buf, buflen ) ) {
-                        revealed = XP_TRUE;
-                        break;
-                    }
-                }
-            }
+            util_informNeedPassword( board->util, selPlayer, lp->name );
         }
     }
 
@@ -2645,6 +2630,19 @@ askRevealTray( BoardCtxt* board )
     }
     return justReverse || revealed;
 } /* askRevealTray */
+
+XP_Bool
+board_passwordProvided( BoardCtxt* board, XP_U16 player, const XP_UCHAR* passwd )
+{
+    LocalPlayer* lp = &board->gi->players[player];
+    XP_Bool draw = player_passwordMatches( lp, passwd );
+    if ( draw ) {
+        setTrayVisState( board, TRAY_REVEALED );
+    } else {
+        util_informNeedPassword( board->util, player, lp->name );
+    }
+    return draw;
+}
 
 XP_Bool
 checkRevealTray( BoardCtxt* board )
