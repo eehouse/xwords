@@ -269,7 +269,23 @@ public class BoardDelegate extends DelegateBase
             dialog = ab.create();
             break;
 
-        case QUERY_REQUEST_BLK:
+        case QUERY_TRADE:
+        case QUERY_MOVE: {
+            String msg = (String)params[0];
+            lstnr = new OnClickListener() {
+                    public void onClick( DialogInterface dialog,
+                                         int whichButton ) {
+                        handleViaThread( JNICmd.CMD_COMMIT_TRUE );
+                    }
+                };
+            dialog = ab.setMessage( msg )
+                .setTitle( R.string.query_title )
+                .setPositiveButton( R.string.button_yes, lstnr )
+                .setNegativeButton( android.R.string.cancel, null )
+                .create();
+        }
+            break;
+
         case DLG_BADWORDS_BLK:
             checkBlocking();
         case DLG_SCORES: {
@@ -285,18 +301,8 @@ public class BoardDelegate extends DelegateBase
                         m_resultCode = 1;
                     }
                 };
-            ab.setPositiveButton( DlgID.QUERY_REQUEST_BLK == dlgID ?
-                                  R.string.button_yes : android.R.string.ok,
-                                  lstnr );
-            if ( DlgID.QUERY_REQUEST_BLK == dlgID ) {
-                lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dialog,
-                                             int whichButton ) {
-                            m_resultCode = 0;
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_no, lstnr );
-            } else if ( DlgID.DLG_SCORES == dlgID ) {
+            ab.setPositiveButton( android.R.string.ok, lstnr );
+            if ( DlgID.DLG_SCORES == dlgID ) {
                 if ( null != m_words && m_words.length > 0 ) {
                     String buttonTxt;
                     boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
@@ -898,7 +904,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_trade_commit:
-            cmd = JNICmd.CMD_COMMIT;
+            cmd = JNICmd.CMD_COMMIT_FALSE;
             break;
         case R.id.board_menu_trade_cancel:
             cmd = JNICmd.CMD_CANCELTRADE;
@@ -1026,7 +1032,7 @@ public class BoardDelegate extends DelegateBase
             Utils.launchSettings( m_activity );
             break;
         case COMMIT_ACTION:
-            cmd = JNICmd.CMD_COMMIT;
+            cmd = JNICmd.CMD_COMMIT_FALSE;
             break;
         case SHOW_EXPL_ACTION:
             showToast( m_toastStr );
@@ -1221,7 +1227,7 @@ public class BoardDelegate extends DelegateBase
     public void onClick( View view )
     {
         if ( view == m_exchCommmitButton ) {
-            handleViaThread( JNICmd.CMD_COMMIT );
+            handleViaThread( JNICmd.CMD_COMMIT_FALSE );
         } else if ( view == m_exchCancelButton ) {
             handleViaThread( JNICmd.CMD_CANCELTRADE );
         }
@@ -1831,32 +1837,18 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public boolean userQuery( int id, String query )
+        public void notifyMove( String msg )
         {
-            boolean result;
-
-            switch( id ) {
-                // These *are* blocking dialogs
-            case UtilCtxt.QUERY_COMMIT_TURN:
-                result = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0,
-                                                  R.string.query_title, query);
-                break;
-            default:
-                Assert.fail();
-                result = false;
-            }
-
-            return result;
+            showDialogFragment( DlgID.QUERY_MOVE, msg );
         }
 
         @Override
-        public boolean confirmTrade( String[] tiles )
+        public void notifyTrade( String[] tiles )
         {
             String dlgBytes =
                 getQuantityString( R.plurals.query_trade_fmt, tiles.length,
                                    tiles.length, TextUtils.join( ", ", tiles ));
-            return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0,
-                                            R.string.info_title, dlgBytes );
+            showDialogFragment( DlgID.QUERY_TRADE, dlgBytes );
         }
 
         @Override
@@ -2048,10 +2040,11 @@ public class BoardDelegate extends DelegateBase
                 waitBlockingDialog( DlgID.DLG_BADWORDS_BLK, 0, R.string.badwords_title,
                                     message + getString( R.string.badwords_lost ) );
             } else {
-                String dlgBytes = message + getString( R.string.badwords_accept );
-                accept = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0,
-                                                  R.string.query_title,
-                                                  dlgBytes );
+                Assert.fail();
+                // String dlgBytes = message + getString( R.string.badwords_accept );
+                // accept = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0,
+                //                                   R.string.query_title,
+                //                                   dlgBytes );
             }
 
             return accept;

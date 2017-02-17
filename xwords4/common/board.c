@@ -1010,8 +1010,8 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
     }
 } /* warnBadWords */
 
-static XP_Bool
-boardConfirmTrade( BoardCtxt* board, const TrayTileSet* tiles )
+static void
+boardNotifyTrade( BoardCtxt* board, const TrayTileSet* tiles )
 {
     const XP_UCHAR* tfaces[MAX_TRAY_TILES];
     XP_U16 ii;
@@ -1021,11 +1021,11 @@ boardConfirmTrade( BoardCtxt* board, const TrayTileSet* tiles )
         tfaces[ii] = dict_getTileString( dict, tiles->tiles[ii] );
     }
 
-    return util_confirmTrade( board->util, tfaces, tiles->nTiles );
+    util_notifyTrade( board->util, tfaces, tiles->nTiles );
 }
 
 XP_Bool
-board_commitTurn( BoardCtxt* board ) 
+board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed )
 {
     XP_Bool result = XP_FALSE;
     const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
@@ -1038,7 +1038,7 @@ board_commitTurn( BoardCtxt* board )
     } else if ( 0 == model_getNumTilesTotal( board->model, turn ) ) {
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
-    } else if ( checkRevealTray( board ) ) {
+    } else if ( alreadyConfirmed || checkRevealTray( board ) ) {
         if ( pti->tradeInProgress ) {
             TileBit traySelBits = pti->traySelBits;
             result = XP_TRUE; /* there's at least the window to clean up
@@ -1049,33 +1049,39 @@ board_commitTurn( BoardCtxt* board )
             } else {
                 TrayTileSet selTiles;
                 getSelTiles( board, traySelBits, &selTiles );
-                if ( boardConfirmTrade( board, &selTiles ) ) {
+                if ( alreadyConfirmed ) {
                     /* server_commitTrade() changes selPlayer, so board_endTrade
                        must be called first() */
                     (void)board_endTrade( board );
 
                     (void)server_commitTrade( board->server, &selTiles );
+                } else {
+                    boardNotifyTrade( board, &selTiles );
                 }
             }
         } else {
-            XP_Bool warn, legal;
-            WordNotifierInfo info;
-            XWStreamCtxt* stream = 
-                mem_stream_make( MPPARM(board->mpool) 
-                                 util_getVTManager(board->util), NULL,
-                                 CHANNEL_NONE, (MemStreamCloseCallback)NULL );
-
-            const XP_UCHAR* str = util_getUserString(board->util, 
-                                                     STR_COMMIT_CONFIRM);
-            stream_catString( stream, str );
+            XWStreamCtxt* stream = NULL;
+            XP_Bool legal = alreadyConfirmed;
             
-            warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
+            if ( !legal ) {
+                WordNotifierInfo info;
+                XP_Bool warn;
+                stream = mem_stream_make( MPPARM(board->mpool)
+                                          util_getVTManager(board->util), NULL,
+                                          CHANNEL_NONE, (MemStreamCloseCallback)NULL );
 
-            board->badWordRejected = XP_FALSE;
-            info.proc = warnBadWords;
-            info.closure = board;
-            legal = model_checkMoveLegal( board->model, turn, stream,
+                const XP_UCHAR* str = util_getUserString(board->util,
+                                                         STR_COMMIT_CONFIRM);
+                stream_catString( stream, str );
+
+                warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
+
+                board->badWordRejected = XP_FALSE;
+                info.proc = warnBadWords;
+                info.closure = board;
+                legal = model_checkMoveLegal( board->model, turn, stream,
                                           warn? &info:(WordNotifierInfo*)NULL);
+            }
 
             if ( !legal || board->badWordRejected ) {
                 result = XP_FALSE;
@@ -1083,13 +1089,12 @@ board_commitTurn( BoardCtxt* board )
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
                    passwords and peek at tiles. */
-                if ( gi_countLocalPlayers( board->gi, XP_TRUE ) > 1 ) {
+                if ( !alreadyConfirmed
+                     && gi_countLocalPlayers( board->gi, XP_TRUE ) > 1 ) {
                     result = board_hideTray( board );
                 }
 
-                if ( board->skipCommitConfirm
-                     || util_userQuery( board->util, QUERY_COMMIT_TURN,
-                                        stream ) ) {
+                if ( board->skipCommitConfirm || alreadyConfirmed ) {
                     result = server_commitMove( board->server ) || result;
                     /* invalidate all tiles in case we'll be drawing this tray
                        again rather than some other -- as is the case in a
@@ -1098,9 +1103,14 @@ board_commitTurn( BoardCtxt* board )
                        showing points-this-turn), but this is easier. */
                     board_invalTrayTiles( board, ALLTILES );
                     pti->traySelBits = 0x00;
+                } else {
+                    util_notifyMove( board->util, stream );
                 }
             }
-            stream_destroy( stream );
+
+            if ( NULL != stream ) {
+                stream_destroy( stream );
+            }
 
             if ( result ) {
                 setArrowVisibleFor( board, turn, XP_FALSE );

@@ -174,7 +174,7 @@ void board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row );
 
 void board_resetEngine( BoardCtxt* board );
 
-XP_Bool board_commitTurn( BoardCtxt* board );
+XP_Bool board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed );
 
 void board_pushTimerSave( BoardCtxt* board );
 void board_popTimerSave( BoardCtxt* board );

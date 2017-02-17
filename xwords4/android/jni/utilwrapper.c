@@ -123,33 +123,28 @@ and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     UTIL_CBK_TAIL();
 }
 
-static XP_Bool
-and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
+static void
+and_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
 {
-    jboolean result = XP_FALSE;
-    XP_ASSERT( id < QUERY_LAST_COMMON );
-    UTIL_CBK_HEADER("userQuery", "(ILjava/lang/String;)Z" );
+    UTIL_CBK_HEADER("notifyMove", "(Ljava/lang/String;)V" );
 
     jstring jstr = NULL;
     if ( NULL != stream ) {
         jstr = streamToJString( env, stream );
     }
-    result = (*env)->CallBooleanMethod( env, util->jutil, mid, id, jstr );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jstr );
     deleteLocalRef( env, jstr );
     UTIL_CBK_TAIL();
-    return result;
 }
 
-static XP_Bool
-and_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
+static void
+and_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
 {
-    XP_Bool result = XP_FALSE;
-    UTIL_CBK_HEADER("confirmTrade", "([Ljava/lang/String;)Z" );
+    UTIL_CBK_HEADER("notifyTrade", "([Ljava/lang/String;)V" );
     jobjectArray jtiles = makeStringArray( env, nTiles, tiles );
-    result = (*env)->CallBooleanMethod( env, util->jutil, mid, jtiles );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jtiles );
     deleteLocalRef( env, jtiles );
     UTIL_CBK_TAIL();
-    return result;
 }
 
 static XP_S16
@@ -713,8 +708,8 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
 #endif
     SET_PROC(getSquareBonus);
     SET_PROC(userError);
-    SET_PROC(userQuery);
-    SET_PROC(confirmTrade);
+    SET_PROC(notifyMove);
+    SET_PROC(notifyTrade);
     SET_PROC(userPickTileBlank);
     SET_PROC(userPickTileTray);
     SET_PROC(informNeedPassword);

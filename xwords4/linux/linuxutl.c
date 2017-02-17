@@ -608,11 +608,11 @@ formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len )
 }
 
 void
-formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, 
-                    char* buf, XP_U16 buflen )
+formatConfirmTrade( CommonGlobals* cGlobals, const XP_UCHAR** tiles,
+                    XP_U16 nTiles )
 {
-    char tileBuf[128];
     int offset = 0;
+    char tileBuf[128];
     int ii;
 
     XP_ASSERT( nTiles > 0 );
@@ -623,7 +623,7 @@ formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles,
     }
     tileBuf[offset-2] = '\0';
 
-    snprintf( buf, buflen,
+    snprintf( cGlobals->question, VSIZE(cGlobals->question),
               "Are you sure you want to trade the selected tiles (%s)?",
               tileBuf );
 }

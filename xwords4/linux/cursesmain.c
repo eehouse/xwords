@@ -275,48 +275,35 @@ curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     }
 } /* curses_util_userError */
 
-static XP_Bool
-curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
+static void
+curses_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
 {
-    CursesAppGlobals* globals;
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char* question;
     const char* answers[3] = {NULL};
     short numAnswers = 0;
     XP_Bool freeMe = XP_FALSE;
-    XP_Bool result;
-    XP_U16 okIndex = 1;
 
-    switch( id ) {
-    case QUERY_COMMIT_TURN:
-        question = strFromStream( stream );
-        freeMe = XP_TRUE;
-        answers[numAnswers++] = "Cancel";
-        answers[numAnswers++] = "Ok";
-        break;
+    question = strFromStream( stream );
+    freeMe = XP_TRUE;
+    answers[numAnswers++] = "Cancel";
+    answers[numAnswers++] = "Ok";
         
-    default:
-        XP_ASSERT( 0 );
-        return 0;
-    }
-    globals = (CursesAppGlobals*)uc->closure;
-    result = okIndex == cursesask( globals, question, numAnswers, answers );
+    //     result = okIndex ==
+    cursesask( globals, question, numAnswers, answers );
 
     if ( freeMe ) {
         free( question );
     }
-
-    return result;
 } /* curses_util_userQuery */
 
-static XP_Bool
-curses_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
-                          XP_U16 nTiles )
+static void
+curses_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    char question[256];
-    formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
-    const char* buttons[] = { "Cancel", "Ok" };
-    return 1 == cursesask( globals, question, VSIZE(buttons), buttons );
+    formatConfirmTrade( &globals->cGlobals, tiles, nTiles );
+    /* const char* buttons[] = { "Cancel", "Ok" }; */
+    /* cursesask( globals, question, VSIZE(buttons), buttons ); */
 }
 
 static void
@@ -632,7 +619,8 @@ handleHint( CursesAppGlobals* globals )
 static XP_Bool
 handleCommit( CursesAppGlobals* globals )
 {
-    globals->doDraw = board_commitTurn( globals->cGlobals.game.board );
+    globals->doDraw = board_commitTurn( globals->cGlobals.game.board,
+                                        XP_FALSE );
     return XP_TRUE;
 } /* handleCommit */
 
@@ -1466,8 +1454,8 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_showChat = curses_util_showChat;
 #endif
 
-    util->vtable->m_util_userQuery = curses_util_userQuery;
-    util->vtable->m_util_confirmTrade = curses_util_confirmTrade;
+    util->vtable->m_util_notifyMove = curses_util_notifyMove;
+    util->vtable->m_util_notifyTrade = curses_util_notifyTrade;
     util->vtable->m_util_userPickTileBlank = curses_util_userPickTileBlank;
     util->vtable->m_util_userPickTileTray = curses_util_userPickTileTray;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;

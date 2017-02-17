@@ -134,10 +134,6 @@ typedef struct GtkGameGlobals {
 
     DropTypeData dropData[COMMS_CONN_NTYPES];
 
-    // tmp state for while asking password
-    const XP_UCHAR* askPassName;
-    XP_U16 askPassPlayer;
-
     XP_Bool gridOn;
     XP_Bool mouseDown;
     XP_Bool altKeyDown;

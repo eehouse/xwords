@@ -237,16 +237,13 @@ public class UtilCtxtImpl implements UtilCtxt {
         return result;
     }
 
-    public boolean userQuery( int id, String query )
+    public void notifyMove( String query )
     {
-        subclassOverride( "userQuery" );
-        return false;
+        subclassOverride( "notifyMove" );
     }
-
-    public boolean confirmTrade( String[] tiles )
+    public void notifyTrade( String[] tiles )
     {
-        subclassOverride( "confirmTrade" );
-        return false;
+        subclassOverride( "notifyTrade" );
     }
 
     public void userError( int id )

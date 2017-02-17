@@ -39,8 +39,9 @@ void linux_util_vt_destroy( XW_UtilCtxt* util );
 
 const XP_UCHAR* linux_getErrString( UtilErrID id, XP_Bool* silent );
 
-void formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, char* buf, 
-                         XP_U16 buflen );
+void formatConfirmTrade( CommonGlobals* cGlobals, const XP_UCHAR** tiles,
+                         XP_U16 nTiles );
+
 void formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len );
 
 void initNoConnStorage( CommonGlobals* cGlobals );

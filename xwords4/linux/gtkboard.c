@@ -1445,7 +1445,7 @@ handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_done_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_commitTurn( globals->cGlobals.game.board ) ) {
+    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE ) ) {
         board_draw( globals->cGlobals.game.board );
         disenable_buttons( globals );
     }
@@ -1543,7 +1543,7 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_commitTurn( globals->cGlobals.game.board ) ) {
+    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_commit_button */
@@ -1713,12 +1713,12 @@ static gint
 ask_password( gpointer data )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
+    CommonGlobals* cGlobals = &globals->cGlobals;
     XP_UCHAR buf[32];
     XP_U16 len = VSIZE(buf);
-    if ( gtkpasswdask( globals->askPassName, buf, &len ) ) {
-        BoardCtxt* board = globals->cGlobals.game.board;
-        if ( board_passwordProvided( board, globals->askPassPlayer, buf ) ) {
+    if ( gtkpasswdask( cGlobals->askPassName, buf, &len ) ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( board_passwordProvided( board, cGlobals->selPlayer, buf ) ) {
             board_draw( board );
         }
     }
@@ -1729,8 +1729,9 @@ static void
 gtk_util_informNeedPassword( XW_UtilCtxt* uc, XP_U16 player, const XP_UCHAR* name )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    globals->askPassName = name;
-    globals->askPassPlayer = player;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    cGlobals->askPassName = name;
+    cGlobals->selPlayer = player;
 
     (void)g_idle_add( ask_password, globals );
 } /* gtk_util_askPassword */
@@ -2237,46 +2238,68 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     }
 } /* gtk_util_userError */
 
-static XP_Bool
-gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, 
-                    XWStreamCtxt* stream )
+static gint
+ask_move( gpointer data )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    GtkButtonsType buttons = GTK_BUTTONS_YES_NO;
+    gint chosen = gtkask( globals->window, cGlobals->question, buttons, NULL );
+    if ( GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( board_commitTurn( board, XP_TRUE ) ) {
+            board_draw( board );
+        }
+    }
+    return 0;
+}
+
+static void
+gtk_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    XP_Bool result;
-    char* question;
-    XP_Bool freeMe = XP_FALSE;
-    GtkButtonsType buttons = GTK_BUTTONS_YES_NO;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    /* char* question; */
+    /* XP_Bool freeMe = XP_FALSE; */
 
-    switch( id ) {
-	
-    case QUERY_COMMIT_TURN:
-        question = strFromStream( stream );
-        freeMe = XP_TRUE;
-        break;
+    XP_U16 len = stream_getSize( stream );
+    XP_ASSERT( len <= VSIZE(cGlobals->question) );
+    stream_getBytes( stream, cGlobals->question, len );
+    (void)g_idle_add( ask_move, globals );
 
-    default:
-        XP_ASSERT( 0 );
-        return XP_FALSE;
-    }
-    gint chosen = gtkask( globals->window, question, buttons, NULL );
-    result = GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES;
+    /* question = strFromStream( stream ); */
+    /* strcpy( cGlobals->question, question ); */
+    /* free( question ); */
 
-    if ( freeMe ) {
-        free( question );
-    }
+    /* /\*gint chosen = *\/gtkask( globals->window, question, buttons, NULL ); */
+    // result = GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES;
 
-    return result;
 } /* gtk_util_userQuery */
 
-static XP_Bool
-gtk_util_confirmTrade( XW_UtilCtxt* uc, 
-                       const XP_UCHAR** tiles, XP_U16 nTiles )
+static gint
+ask_trade( gpointer data )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+
+    if ( GTK_RESPONSE_YES == gtkask( globals->window,
+                                     cGlobals->question, 
+                                     GTK_BUTTONS_YES_NO, NULL ) ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( board_commitTurn( board, XP_TRUE ) ) {
+            board_draw( board );
+        }
+    }
+    return 0;
+}
+
+static void
+gtk_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    char question[256];
-    formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
-    return GTK_RESPONSE_YES == gtkask( globals->window, question, 
-                                       GTK_BUTTONS_YES_NO, NULL );
+    formatConfirmTrade( &globals->cGlobals, tiles, nTiles );
+
+    (void)g_idle_add( ask_trade, globals );
 }
 
 static GtkWidget*
@@ -2411,8 +2434,8 @@ static void
 setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 {
     util->vtable->m_util_userError = gtk_util_userError;
-    util->vtable->m_util_userQuery = gtk_util_userQuery;
-    util->vtable->m_util_confirmTrade = gtk_util_confirmTrade;
+    util->vtable->m_util_notifyMove = gtk_util_notifyMove;
+    util->vtable->m_util_notifyTrade = gtk_util_notifyTrade;
     util->vtable->m_util_getVTManager = gtk_util_getVTManager;
     util->vtable->m_util_userPickTileBlank = gtk_util_userPickTileBlank;
     util->vtable->m_util_userPickTileTray = gtk_util_userPickTileTray;

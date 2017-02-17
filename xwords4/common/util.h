@@ -64,12 +64,6 @@ typedef enum {
     ERR_RELAY_END = ERR_RELAY_BASE + XWRELAY_ERROR_LASTERR
 } UtilErrID;
 
-typedef enum {
-    QUERY_COMMIT_TURN, /* 0 means cancel; 1 means commit */
-
-    QUERY_LAST_COMMON
-} UtilQueryID;
-
 #define PICKER_PICKALL -1
 #define PICKER_BACKUP -2
 
@@ -104,10 +98,9 @@ typedef struct UtilVtable {
                                           XP_U16 col, XP_U16 row );
     void (*m_util_userError)( XW_UtilCtxt* uc, UtilErrID id );
 
-    XP_Bool (*m_util_userQuery)( XW_UtilCtxt* uc, UtilQueryID id,
-                                 XWStreamCtxt* stream );
-    XP_Bool (*m_util_confirmTrade)( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
-                                    XP_U16 nTiles );
+    void (*m_util_notifyMove)( XW_UtilCtxt* uc, XWStreamCtxt* stream );
+    void (*m_util_notifyTrade)( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
+                                XP_U16 nTiles );
     /* return of < 0 means computer should pick */
     XP_S16 (*m_util_userPickTileBlank)( XW_UtilCtxt* uc, XP_U16 playerNum,
                                         const XP_UCHAR** tileFaces, 
@@ -235,11 +228,11 @@ struct XW_UtilCtxt {
 #define util_userError(uc,err) \
          (uc)->vtable->m_util_userError((uc),(err))
 
-#define util_userQuery(uc,qcode,str) \
-         (uc)->vtable->m_util_userQuery((uc),(qcode),(str))
+#define util_notifyMove(uc, str)                         \
+         (uc)->vtable->m_util_notifyMove((uc), (str))
 
-#define util_confirmTrade( uc, tx, nt )                 \
-         (uc)->vtable->m_util_confirmTrade((uc),(tx),(nt))
+#define util_notifyTrade(uc, tx, nt)                            \
+        (uc)->vtable->m_util_notifyTrade((uc), (tx), (nt))
 
 #define util_userPickTileBlank( uc, n, tx, nt ) \
          (uc)->vtable->m_util_userPickTileBlank( (uc), (n), (tx), (nt) )

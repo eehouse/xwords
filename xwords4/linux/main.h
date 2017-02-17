@@ -215,6 +215,11 @@ struct CommonGlobals {
     /* hash by relayID of lists of messages */
     GHashTable* noConnMsgs;
 
+    /* Saved state from util method to response method */
+    XP_U16 selPlayer;
+    char question[256*4];
+    const XP_UCHAR* askPassName;
+
 #ifdef XWFEATURE_RELAY
     int relaySocket;                 /* tcp connection to relay */
     void* storage;

@@ -103,10 +103,8 @@ public interface UtilCtxt {
     String getUserString( int stringCode );
     String getUserQuantityString( int stringCode, int quantity );
 
-    static final int QUERY_COMMIT_TURN = 0;
-    boolean userQuery( int id, String query );
-
-    boolean confirmTrade( String[] tiles );
+    void notifyMove( String query );
+    void notifyTrade( String[] tiles );
 
     // These oughtto be an enum but then I'd have to cons one up in C.
     static final int ERR_NONE = 0;

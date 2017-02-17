@@ -1634,7 +1634,7 @@ handleHidetrayCmd( CEAppGlobals* globals )
 static XP_Bool
 handleDoneCmd( CEAppGlobals* globals)
 {
-    return board_commitTurn( globals->game.board );
+    return board_commitTurn( globals->game.board, XP_FALSE );
 } /* handleDoneCmd */
 
 static void 
