@@ -55,6 +55,7 @@
 #include "game.h"
 #include "movestak.h"
 #include "strutils.h"
+#include "dbgutil.h"
 #include "gtkask.h"
 #include "gtkinvit.h"
 #include "gtkaskm.h"
@@ -2819,7 +2820,7 @@ makeNewGame( GtkGameGlobals* globals )
                                    gi->dictName, XP_TRUE );
         gi->dictLang = dict_getLangCode( cGlobals->dict );
     }
-    LOG_RETURNF( "%d", success );
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 

@@ -37,6 +37,7 @@ void dbg_logstream( const XWStreamCtxt* stream, const char* func, int line );
 #  define XP_LOGSTREAM( s )
 # endif
 
+#define boolToStr(b) ((b)?"true" : "false")
 
 # ifdef DEBUG
 #  define DIRTY_SLOT XP_Bool _isDirty;

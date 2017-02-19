@@ -30,6 +30,7 @@
 #include "memstream.h"
 #include "xwrelay.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -1812,7 +1813,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         XP_LOGF( "%s: dropping relay msg with cmd %d", __func__, (XP_U16)cmd );
     }
     
-    LOG_RETURNF( "%d", consumed );
+    LOG_RETURNF( "%s", boolToStr(consumed) );
     return consumed;
 } /* relayPreProcess */
 #endif
@@ -1893,7 +1894,7 @@ preProcess( CommsCtxt* comms, const CommsAddrRec* useAddr,
         XP_ASSERT(0);
         break;
     }
-    LOG_RETURNF( "%d", consumed );
+    LOG_RETURNF( "%s", boolToStr(consumed) );
     return consumed;
 } /* preProcess */
 
@@ -1981,6 +1982,7 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
 static XP_Bool
 checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
 {
+    XP_Bool success = XP_TRUE;
     XP_PlayerAddr channelNo = *channelNoP;
     if ( 0 == (channelNo & CHANNEL_MASK) ) {
         channelNo |= ++comms->nextChannelNo;
@@ -1990,7 +1992,8 @@ checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
         comms->nextChannelNo = channelNo;
     }
     *channelNoP = channelNo;
-    return XP_TRUE;             /* for now */
+    LOG_RETURNF( "%s", boolToStr(success) );
+    return success;
 }
 
 /* An initial message comes only from a client to a server, and from the

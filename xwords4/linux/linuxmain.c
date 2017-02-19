@@ -68,6 +68,7 @@
 #include "model.h"
 #include "util.h"
 #include "strutils.h"
+#include "dbgutil.h"
 #include "dictiter.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
@@ -1052,7 +1053,7 @@ send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
         g_slist_free( cGlobals->packetQueue );
         cGlobals->packetQueue = NULL;
     }
-    LOG_RETURNF( "%d", success );
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 
@@ -2664,4 +2665,3 @@ main( int argc, char** argv )
     XP_LOGF( "%s exiting main, returning %d", argv[0], result );
     return result;
 } /* main */
-

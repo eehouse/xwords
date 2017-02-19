@@ -2081,6 +2081,9 @@
     <!--  -->
     <string name="enable_sms_summary">Only if you have unlimited texting!</string>
 
+    <string name="title_enable_p2p">Enable WiFi Direct</string>
+    <string name="summary_enable_p2p">Experimental, uses lots of battery</string>
+
     <!--  -->
     <string name="confirm_sms_title">Confirm your SMS plan</string>
     <!--  -->

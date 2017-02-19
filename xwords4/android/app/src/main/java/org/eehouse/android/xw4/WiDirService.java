@@ -45,6 +45,7 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.net.wifi.p2p.nsd.WifiP2pUpnpServiceInfo;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -77,6 +78,7 @@ public class WiDirService extends XWService {
     private static final String SERVICE_NAME = "srvc_" + BuildConfig.FLAVOR;
     private static final String SERVICE_REG_TYPE = "_presence._tcp";
     private static final int OWNER_PORT = 5432;
+    private static final String PEERS_LIST_KEY = TAG + ".peers_key";
 
     private enum P2PAction { _NONE,
                              GOT_MSG,
@@ -96,6 +98,7 @@ public class WiDirService extends XWService {
     private static final String KEY_MAP = "map";
     private static final String KEY_RETADDR = "raddr";
 
+    private static boolean s_enabled = false;
     private static Channel sChannel;
     private static ServiceDiscoverer s_discoverer;
     private static IntentFilter sIntentFilter;
@@ -119,6 +122,7 @@ public class WiDirService extends XWService {
     private static String sDeviceName;
     private static Set<DevSetListener> s_devListeners
         = new HashSet<DevSetListener>();
+    private static Set<String> s_peersSet;
 
     private P2pMsgSink m_sink;
 
@@ -137,7 +141,7 @@ public class WiDirService extends XWService {
     {
         int result;
 
-        if ( BuildConfig.WIDIR_ENABLED && null != intent ) {
+        if ( enabled() && null != intent ) {
             result = Service.START_STICKY;
 
             int ordinal = intent.getIntExtra( KEY_CMD, -1 );
@@ -181,6 +185,20 @@ public class WiDirService extends XWService {
     public static void init( Context context )
     {
         DbgUtils.logd( TAG, "init()" );
+        s_enabled = XWPrefs.getPrefsBoolean( context, R.string.key_enable_p2p,
+                                             false );
+
+        Assert.assertNull( s_peersSet );
+        s_peersSet = new HashSet<String>();
+        String peers = DBUtils.getStringFor( context, PEERS_LIST_KEY, null );
+        if ( null != peers ) {
+            String[] macs = TextUtils.split( peers, "," );
+            for ( String mac : macs ) {
+                s_peersSet.add( mac );
+            }
+        }
+        DbgUtils.logd( TAG, "loaded saved peers: %s", s_peersSet.toString() );
+
         try {
             ChannelListener listener = new ChannelListener() {
                     @Override
@@ -190,7 +208,7 @@ public class WiDirService extends XWService {
                 };
             sChannel = getMgr().initialize( context, Looper.getMainLooper(),
                                             listener );
-            s_discoverer = new ServiceDiscoverer( sChannel );
+            s_discoverer = new ServiceDiscoverer();
             sHavePermission = true;
         } catch ( NoClassDefFoundError ndf ) { // old os version
             sHavePermission = false;
@@ -202,22 +220,28 @@ public class WiDirService extends XWService {
     public static void reset( Context context )
     {
         // Put experimental stuff here that might help get a connection
+
+        if ( null != s_discoverer ) {
+            s_discoverer.restart();
+        }
     }
 
-    public static boolean supported()
+    public static boolean enabled()
     {
-        return BuildConfig.WIDIR_ENABLED;
+        boolean result = BuildConfig.WIDIR_ENABLED && s_enabled;
+        return result;
     }
 
-    public static boolean connecting() {
-        return supported()
+    public static boolean connecting()
+    {
+        return enabled()
             && 0 < sSocketWrapMap.size()
             && sSocketWrapMap.values().iterator().next().isConnected();
     }
 
     public static String getMyMacAddress( Context context )
     {
-        if ( BuildConfig.WIDIR_ENABLED ) {
+        if ( enabled() ) {
             if ( null == sMacAddress && null != context ) {
                 sMacAddress = DBUtils.getStringFor( context, MAC_ADDR_KEY, null );
             }
@@ -230,10 +254,16 @@ public class WiDirService extends XWService {
 
     public static String formatNetStateInfo()
     {
+        String connectState = "";
+        if ( null != s_discoverer ) {
+            connectState = s_discoverer.stateToString();
+        }
+
         String map = mapToString( copyUserMap() );
-        return String.format( "role: %s; map: %s nThreads: %d",
-                              sAmGroupOwner ? "owner" : "guest", map,
-                              Thread.activeCount() );
+        connectState += String.format( "; role: %s; map: %s nThreads: %d",
+                                       sAmGroupOwner ? "owner" : "guest", map,
+                                       Thread.activeCount() );
+        return connectState;
     }
 
     private static String getMyMacAddress() { return getMyMacAddress(null); }
@@ -306,7 +336,7 @@ public class WiDirService extends XWService {
 
     public static void activityResumed( Activity activity )
     {
-        if ( BuildConfig.WIDIR_ENABLED && sHavePermission ) {
+        if ( enabled() && sHavePermission ) {
             if ( initListeners( activity ) ) {
                 activity.registerReceiver( sReceiver, sIntentFilter );
                 DbgUtils.logd( TAG, "activityResumed() done" );
@@ -317,7 +347,7 @@ public class WiDirService extends XWService {
 
     public static void activityPaused( Activity activity )
     {
-        if ( BuildConfig.WIDIR_ENABLED && sHavePermission ) {
+        if ( enabled() && sHavePermission ) {
             Assert.assertNotNull( sReceiver );
             // No idea why I'm seeing this exception...
             try {
@@ -346,7 +376,7 @@ public class WiDirService extends XWService {
     private static boolean initListeners( final Context context )
     {
         boolean succeeded = false;
-        if ( BuildConfig.WIDIR_ENABLED ) {
+        if ( enabled() ) {
             if ( null == sIface ) {
                 try {
                     WifiP2pManager mgr = getMgr();
@@ -447,10 +477,13 @@ public class WiDirService extends XWService {
     // See: http://stackoverflow.com/questions/26300889/wifi-p2p-service-discovery-works-intermittently
     private static class ServiceDiscoverer implements Runnable, ActionListener {
         private State m_curState = State.START;
+        private State m_lastGoodState = State.START;
+        private State m_lastBadState = State.START;
         private Channel m_channel;
         private Handler m_handler;
         private WifiP2pManager m_mgr;
         private int[] m_failures;
+        private boolean m_lastSucceeded;
 
         enum State {
             START,
@@ -463,11 +496,19 @@ public class WiDirService extends XWService {
             DONE,
         }
 
-        public ServiceDiscoverer( Channel channel )
+        public ServiceDiscoverer()
         {
             m_mgr = getMgr();
             m_channel = sChannel;
             m_handler = new Handler();
+        }
+
+        public String stateToString()
+        {
+            return String.format("last good: %s(%d); last bad: %s(%d); success last: %b",
+                                 m_lastGoodState.toString(), m_lastGoodState.ordinal(),
+                                 m_lastBadState.toString(), m_lastBadState.ordinal(),
+                                 m_lastSucceeded );
         }
 
         public void restart()
@@ -487,6 +528,8 @@ public class WiDirService extends XWService {
         // ActionListener interface
         @Override
         public void onSuccess() {
+            m_lastSucceeded = true;
+            m_lastGoodState = m_curState;
             DbgUtils.logd( TAG, "onSuccess(): state %s done",
                            m_curState.toString() );
             m_curState = State.values()[m_curState.ordinal() + 1];
@@ -495,6 +538,9 @@ public class WiDirService extends XWService {
 
         @Override
         public void onFailure( int code ) {
+            m_lastSucceeded = false;
+            m_lastBadState = m_curState;
+
             int count = ++m_failures[m_curState.ordinal()];
             String codeStr = null;
             switch ( code ) {
@@ -568,8 +614,10 @@ public class WiDirService extends XWService {
                 break;
 
             case DONE:
-                m_curState = State.START;
-                schedule( /*5 * */ 60 );
+                DbgUtils.logd( TAG, "machine done; should I try connecting to: %s?",
+                               s_peersSet.toString() );
+                // m_curState = State.START;
+                // schedule( /*5 * */ 60 );
                 break;
 
             default:
@@ -594,7 +642,7 @@ public class WiDirService extends XWService {
 
     private static void setDiscoveryListeners( WifiP2pManager mgr )
     {
-        if ( BuildConfig.WIDIR_ENABLED ) {
+        if ( enabled() ) {
             DnsSdServiceResponseListener srl = new DnsSdServiceResponseListener() {
                     @Override
                     public void onDnsSdServiceAvailable(String instanceName,
@@ -922,9 +970,12 @@ public class WiDirService extends XWService {
         boolean forwarded = false;
         String destAddr = packet.getString( KEY_DEST );
         if ( null != destAddr && 0 < destAddr.length() ) {
-            Assert.assertFalse( destAddr.equals( sMacAddress ) );
-            forwardPacket( bytes, destAddr );
-            forwarded = true;
+            forwarded = destAddr.equals( sMacAddress );
+            if ( forwarded ) {
+                forwardPacket( bytes, destAddr );
+            } else {
+                DbgUtils.logd( TAG, "addr mismatch: %s vs %s", destAddr, sMacAddress );
+            }
         }
         return forwarded;
     }
@@ -1011,6 +1062,22 @@ public class WiDirService extends XWService {
         return wrap;
     }
 
+    private static void updatePeersList( WifiP2pDeviceList peerList )
+    {
+        Set<String> newSet = new HashSet<String>();
+        for ( WifiP2pDevice device : peerList.getDeviceList() ) {
+            String macAddress = device.deviceAddress;
+            newSet.add( macAddress );
+        }
+
+        DbgUtils.logd( TAG, "updatePeersList(): old set: %s; new set: %s",
+                       s_peersSet.toString(), newSet.toString() );
+        s_peersSet = newSet;
+
+        DBUtils.setStringFor( XWApp.getContext(), PEERS_LIST_KEY,
+                              TextUtils.join( ",", s_peersSet ) );
+    }
+
     private static class WFDBroadcastReceiver extends BroadcastReceiver
         implements WifiP2pManager.ConnectionInfoListener,
                    WifiP2pManager.PeerListListener {
@@ -1025,7 +1092,7 @@ public class WiDirService extends XWService {
 
         @Override
         public void onReceive( Context context, Intent intent ) {
-            if ( BuildConfig.WIDIR_ENABLED ) {
+            if ( enabled() ) {
                 String action = intent.getAction();
                 DbgUtils.logd( TAG, "got intent: " + intent.toString() );
 
@@ -1114,6 +1181,8 @@ public class WiDirService extends XWService {
         public void onPeersAvailable( WifiP2pDeviceList peerList ) {
             DbgUtils.logd( TAG, "got list of %d peers",
                            peerList.getDeviceList().size() );
+
+            updatePeersList( peerList );
 
             for ( WifiP2pDevice device : peerList.getDeviceList() ) {
                 // DbgUtils.logd( TAG, "not connecting to: %s", device.toString() );

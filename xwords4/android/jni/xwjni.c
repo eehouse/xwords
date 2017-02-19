@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
+/* -*- compile-command: "find-and-gradle.sh installXw4Debug"; -*- */
 /*
  * Copyright © 2009 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -29,6 +29,7 @@
 #include "board.h"
 #include "mempool.h"
 #include "strutils.h"
+#include "dbgutil.h"
 #include "dictnry.h"
 #include "dictiter.h"
 #include "dictmgr.h"
@@ -1507,7 +1508,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
     stream_setOnCloseProc( stream, and_send_on_close );
     result = server_initClientConnection( state->game.server, stream );
     XWJNI_END();
-    LOG_RETURNF( "%d", result );
+    LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
 

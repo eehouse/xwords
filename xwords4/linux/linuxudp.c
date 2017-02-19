@@ -195,7 +195,7 @@ remembered( const LinUDPStuff* stuff, int sock )
             known = XP_TRUE;
         } 
     }
-    LOG_RETURNF( "%d", (int)known );
+    LOG_RETURNF( "%s", boolToStr(known) );
     return known;
 }
 
