@@ -1291,4 +1291,7 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
   <string name="perms_rationale_title">Android のアクセス許可</string>
   <string name="toast_no_permission">アクセス許可が付与されていません</string>
 
-</resources>
+<string name="title_enable_p2p">WiFi ダイレクトを有効にする</string>
+    <string name="summary_enable_p2p">実験的。バッテリーを多く使用します</string>
+
+    </resources>
