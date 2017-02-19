@@ -39,6 +39,7 @@ typedef struct GtkNewGameState {
     CommsAddrRec addr;
 
     DeviceRole role;
+    XWPhoniesChoice phoniesAction;
     gboolean revert;
     gboolean cancelled;
     XP_Bool loaded;
@@ -98,6 +99,14 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
         }
 #endif
     }
+}
+
+static void
+phonies_combo_changed( GtkComboBox* combo, gpointer gp )
+{
+    GtkNewGameState* state = (GtkNewGameState*)gp;
+    gint index = gtk_combo_box_get_active( combo );
+    state->phoniesAction = (XWPhoniesChoice)index;
 }
 
 static void
@@ -197,6 +206,30 @@ call_connsdlg_func( gpointer data )
     gtkConnsDlg( state->globals, &state->addr, state->role,
                  !state->isNewGame );
     return 0;
+}
+
+static void
+addPhoniesCombo( GtkNewGameState* state, GtkWidget* parent )
+{
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Phonies"),
+                        FALSE, TRUE, 0 );
+    GtkWidget* phoniesCombo = gtk_combo_box_text_new();
+
+    const char* ptxts[] = { "IGNORE", "WARN", "DISALLOW" };
+
+    for ( int ii = 0; ii < VSIZE(ptxts); ++ii ) {
+        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(phoniesCombo),
+                                        ptxts[ii] );
+    }
+
+    g_signal_connect( phoniesCombo, "changed",
+                      G_CALLBACK(phonies_combo_changed), state );
+    gtk_widget_show( phoniesCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), phoniesCombo, FALSE, TRUE, 0 );
+    gtk_widget_show( hbox );
+
+    gtk_box_pack_start( GTK_BOX(parent), hbox, FALSE, TRUE, 0 );
 }
 
 static GtkWidget*
@@ -348,6 +381,8 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_widget_show( boardSizeCombo );
     gtk_box_pack_start( GTK_BOX(hbox), boardSizeCombo, FALSE, TRUE, 0 );
 
+    /* Dictionary combo */
+
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Dictionary: "),
                         FALSE, TRUE, 0 );
     dictCombo = gtk_combo_box_text_new();
@@ -371,8 +406,9 @@ makeNewGameDialog( GtkNewGameState* state )
     }
 	g_slist_free( dicts );
 
-    gtk_widget_show( hbox );
+    addPhoniesCombo( state, hbox );
 
+    gtk_widget_show( hbox );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     /* buttons at the bottom */
@@ -608,6 +644,7 @@ newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
                 gi->boardSize = state.nCols;
                 replaceStringIfDifferent( globals->cGlobals.util->mpool,
                                           &gi->dictName, state.dict );
+                gi->phoniesAction = state.phoniesAction;
             } else {
                 /* Do it again if we warned user of inconsistency. */
                 state.revert = XP_TRUE;
