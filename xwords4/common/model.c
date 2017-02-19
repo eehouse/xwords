@@ -26,6 +26,7 @@
 #include "util.h"
 #include "pool.h"
 #include "game.h"
+#include "dbgutil.h"
 #include "memstream.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"
@@ -749,7 +750,7 @@ model_foreachPendingCell( ModelCtxt* model, XP_S16 turn,
     for ( pt = player->pendingTiles; count--; ++pt ) {
         (*bl)( closure, turn, pt->col, pt->row, XP_FALSE );
     }
-} /* model_invalPendingCells */
+} /* model_foreachPendingCell */
 
 XP_U16 
 model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row )
@@ -1329,23 +1330,21 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
 
 } /* model_packTilesUtil */
 
+/* setup async query for blank value, but while at it return a reasonable
+   default.  */
 static Tile
-askBlankTile( ModelCtxt* model, XP_U16 turn )
+askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row)
 {
     XP_U16 nUsed = MAX_UNIQUE_TILES;
-    XP_S16 chosen;
     const XP_UCHAR* tfaces[MAX_UNIQUE_TILES];
     Tile tiles[MAX_UNIQUE_TILES];
 
     model_packTilesUtil( model, NULL, XP_FALSE,
                          &nUsed, tfaces, tiles );
 
-    chosen = util_userPickTileBlank( model->vol.util, turn, tfaces, nUsed );
-
-    if ( chosen < 0 ) {
-        chosen = 0;
-    }
-    return tiles[chosen];
+    util_notifyPickTileBlank( model->vol.util, turn, col, row,
+                              tfaces, nUsed );
+    return tiles[0];
 } /* askBlankTile */
 
 void
@@ -1362,7 +1361,7 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
             tile = blankFace;
         } else {
             XP_ASSERT( turn >= 0 );
-            tile = askBlankTile( model, (XP_U16)turn );
+            tile = TILE_BLANK_BIT | askBlankTile( model, (XP_U16)turn, col, row );
         }
         tile |= TILE_BLANK_BIT;
     }
@@ -1386,6 +1385,32 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
 
     notifyBoardListeners( model, turn, col, row, XP_TRUE );
 } /* model_moveTrayToBoard */
+
+XP_Bool
+model_setBlankValue( ModelCtxt* model, XP_U16 turn,
+                     XP_U16 col, XP_U16 row, XP_U16 newIndex )
+{
+    XP_Bool found = XP_FALSE;
+    PlayerCtxt* player = &model->players[turn];
+    for ( int ii = 0; ii < player->nPending; ++ii ) {
+        PendingTile* pt = &player->pendingTiles[ii];
+        found = pt->col == col && pt->row == row;
+        if ( found ) {
+            XP_ASSERT( (pt->tile & TILE_BLANK_BIT) != 0 );
+            if ( (pt->tile & TILE_BLANK_BIT) != 0 ) {
+                XP_U16 nUsed = MAX_UNIQUE_TILES;
+                const XP_UCHAR* tfaces[MAX_UNIQUE_TILES];
+                Tile tiles[MAX_UNIQUE_TILES];
+                model_packTilesUtil( model, NULL, XP_FALSE,
+                                     &nUsed, tfaces, tiles );
+
+                pt->tile = tiles[newIndex] | TILE_BLANK_BIT;
+            }
+            break;
+        }
+    }
+    return found;
+}
 
 XP_Bool
 model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
@@ -1505,7 +1530,7 @@ model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur,
             pt->col = colNew;
             pt->row = rowNew;
             if ( isBlank ) {
-                pt->tile = TILE_BLANK_BIT | askBlankTile( model, turn );
+                (void)askBlankTile( model, turn, colNew, rowNew );
             }
 
             decrPendingTileCountAt( model, colCur, rowCur );

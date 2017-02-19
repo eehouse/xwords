@@ -102,7 +102,8 @@ typedef struct UtilVtable {
     void (*m_util_notifyTrade)( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
                                 XP_U16 nTiles );
     /* return of < 0 means computer should pick */
-    XP_S16 (*m_util_userPickTileBlank)( XW_UtilCtxt* uc, XP_U16 playerNum,
+    void (*m_util_notifyPickTileBlank)( XW_UtilCtxt* uc, XP_U16 playerNum,
+                                        XP_U16 col, XP_U16 row,
                                         const XP_UCHAR** tileFaces, 
                                         XP_U16 nTiles );
     XP_S16 (*m_util_userPickTileTray)( XW_UtilCtxt* uc, const PickInfo* pi, 
@@ -234,8 +235,8 @@ struct XW_UtilCtxt {
 #define util_notifyTrade(uc, tx, nt)                            \
         (uc)->vtable->m_util_notifyTrade((uc), (tx), (nt))
 
-#define util_userPickTileBlank( uc, n, tx, nt ) \
-         (uc)->vtable->m_util_userPickTileBlank( (uc), (n), (tx), (nt) )
+#define util_notifyPickTileBlank( uc, c, r, n, tx, nt )                  \
+         (uc)->vtable->m_util_notifyPickTileBlank( (uc), (c), (r), (n), (tx), (nt) )
 #define util_userPickTileTray( uc, w, n, tx, nt ) \
          (uc)->vtable->m_util_userPickTileTray( (uc), (w), (n), (tx), (nt) )
 #define util_informNeedPassword( uc, pn, n ) \

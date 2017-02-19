@@ -147,21 +147,19 @@ and_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
     UTIL_CBK_TAIL();
 }
 
-static XP_S16
-and_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, 
-                            const XP_UCHAR** tileFaces, XP_U16 nTiles )
+static void
+and_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
+                              XP_U16 col, XP_U16 row,
+                              const XP_UCHAR** tileFaces, XP_U16 nTiles )
 {
-    XP_S16 result = -1;
-    UTIL_CBK_HEADER("userPickTileBlank", "(I[Ljava/lang/String;)I" );
+    UTIL_CBK_HEADER("notifyPickTileBlank", "(III[Ljava/lang/String;)V" );
 
     jobject jtexts = makeStringArray( env, nTiles, tileFaces );
 
-    result = (*env)->CallIntMethod( env, util->jutil, mid, 
-                                    playerNum, jtexts );
+    (*env)->CallVoidMethod( env, util->jutil, mid, playerNum, col, row, jtexts );
 
     deleteLocalRef( env, jtexts );
     UTIL_CBK_TAIL();
-    return result;
 }
 
 static XP_S16
@@ -710,7 +708,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(userError);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);
-    SET_PROC(userPickTileBlank);
+    SET_PROC(notifyPickTileBlank);
     SET_PROC(userPickTileTray);
     SET_PROC(informNeedPassword);
     SET_PROC(trayHiddenChange);

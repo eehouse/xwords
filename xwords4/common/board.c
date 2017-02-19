@@ -1211,6 +1211,19 @@ board_resetEngine( BoardCtxt* board )
     server_resetEngine( board->server, board->selPlayer );
 } /* board_resetEngine */
 
+XP_Bool
+board_setBlankValue( BoardCtxt* board, XP_U16 player, XP_U16 col, XP_U16 row,
+                     XP_U16 tileIndex )
+{
+    XP_Bool draw = model_setBlankValue( board->model, player, col, row,
+                                        tileIndex );
+    if ( draw ) {
+        invalCell( board, col, row );
+    }
+    return draw;
+}
+
+
 #ifdef XWFEATURE_MINIWIN
 /* Find a rectangle either centered on the board or pinned to the point at
  * which the mouse went down.

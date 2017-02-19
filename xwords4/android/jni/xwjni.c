@@ -1258,6 +1258,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1endTrade
 }
 
 JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1setBlankValue
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint player,
+  jint col, jint row, jint tile )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_setBlankValue( state->game.board, player, col, row, tile );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1toggle_1showValues
 ( JNIEnv* env, jclass C, GamePtrType gamePtr )
 {

@@ -314,6 +314,9 @@ public class XwJNI {
     public static native boolean board_beginTrade( GamePtr gamePtr );
     public static native boolean board_endTrade( GamePtr gamePtr );
 
+    public static native boolean board_setBlankValue( GamePtr gamePtr, int player,
+                                                      int col, int row, int tile );
+
     public static native String board_formatRemainingTiles( GamePtr gamePtr );
     public static native void board_sendChat( GamePtr gamePtr, String msg );
 

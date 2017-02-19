@@ -334,7 +334,24 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case PICK_TILE_REQUESTBLANK_BLK:
+        case PICK_TILE_REQUESTBLANK: {
+            final int turn = (Integer)params[0];
+            final int col = (Integer)params[1];
+            final int row  = (Integer)params[2];
+            String[] texts = (String[])params[3];
+            dialog = ab.setItems( texts, new OnClickListener() {
+                    public void onClick( DialogInterface dialog,
+                                         int item ) {
+                        handleViaThread( JNICmd.CMD_SET_BLANK, turn, col,
+                                         row, item );
+                    }
+                })
+                .setNegativeButton( android.R.string.cancel, null )
+                .setTitle( R.string.title_tile_picker )
+                .create();
+        }
+            break;
+
         case PICK_TILE_REQUESTTRAY_BLK: {
             String[] texts = (String[])params[0];
             checkBlocking();
@@ -346,34 +363,30 @@ public class BoardDelegate extends DelegateBase
                 };
             ab.setItems( texts, lstnr );
 
-            if ( DlgID.PICK_TILE_REQUESTBLANK_BLK == dlgID ) {
-                ab.setTitle( R.string.title_tile_picker );
-            } else {
-                String curTiles = (String)params[1];
-                boolean canUndoTiles = (Boolean)params[2];
+            String curTiles = (String)params[1];
+            boolean canUndoTiles = (Boolean)params[2];
 
-                ab.setTitle( getString( R.string.cur_tiles_fmt, curTiles ) );
-                if ( canUndoTiles ) {
-                    OnClickListener undoClicked = new OnClickListener() {
-                            public void onClick( DialogInterface dialog,
-                                                 int whichButton ) {
-                                m_resultCode = UtilCtxt.PICKER_BACKUP;
-                                removeDialog( dlgID );
-                            }
-                        };
-                    ab.setPositiveButton( R.string.tilepick_undo,
-                                          undoClicked );
-                }
-                OnClickListener doAllClicked = new OnClickListener() {
+            ab.setTitle( getString( R.string.cur_tiles_fmt, curTiles ) );
+            if ( canUndoTiles ) {
+                OnClickListener undoClicked = new OnClickListener() {
                         public void onClick( DialogInterface dialog,
                                              int whichButton ) {
-                            m_resultCode = UtilCtxt.PICKER_PICKALL;
+                            m_resultCode = UtilCtxt.PICKER_BACKUP;
                             removeDialog( dlgID );
                         }
                     };
-                ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
+                ab.setPositiveButton( R.string.tilepick_undo,
+                                      undoClicked );
             }
-
+            OnClickListener doAllClicked = new OnClickListener() {
+                    public void onClick( DialogInterface dialog,
+                                         int whichButton ) {
+                        m_resultCode = UtilCtxt.PICKER_PICKALL;
+                        removeDialog( dlgID );
+                    }
+                };
+            ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
+                
             dialog = ab.create();
             alert.setOnDismissListener( m_blockingODL );
         }
@@ -1789,10 +1802,10 @@ public class BoardDelegate extends DelegateBase
 
         // This is supposed to be called from the jni thread
         @Override
-        public int userPickTileBlank( int playerNum, String[] texts )
+        public void notifyPickTileBlank( int playerNum, int col, int row, String[] texts )
         {
-            waitBlockingDialog( DlgID.PICK_TILE_REQUESTBLANK_BLK, 0, (Object)texts );
-            return m_resultCode;
+            showDialogFragment( DlgID.PICK_TILE_REQUESTBLANK, playerNum, col,
+                                row, texts );
         }
 
         @Override

@@ -37,7 +37,7 @@ public interface UtilCtxt {
     public static final int PICKER_PICKALL = -1;
     public static final int PICKER_BACKUP = -2;
 
-    int userPickTileBlank( int playerNum, String[] texts );
+    void notifyPickTileBlank( int playerNum, int col, int row, String[] texts );
     int userPickTileTray( int playerNum, String[] tiles,
                           String[] curTiles, int nPicked );
 

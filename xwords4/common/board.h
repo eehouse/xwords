@@ -171,6 +171,8 @@ XP_Bool board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp );
 BoardObjectType board_getFocusOwner( BoardCtxt* board );
 
 void board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row );
+XP_Bool board_setBlankValue( BoardCtxt* board, XP_U16 XP_UNUSED(player),
+                             XP_U16 col, XP_U16 row, XP_U16 tileIndex );
 
 void board_resetEngine( BoardCtxt* board );
 

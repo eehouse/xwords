@@ -48,10 +48,10 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "requestTime" );
     }
 
-    public int userPickTileBlank( int playerNum, String[] texts )
+    public void notifyPickTileBlank( int playerNum, int col, int row,
+                                     String[] texts )
     {
         subclassOverride( "userPickTileBlank" );
-        return 0;
     }
 
     public int userPickTileTray( int playerNum, String[] texts,

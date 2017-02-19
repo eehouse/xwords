@@ -1684,16 +1684,45 @@ gtk_util_getVTManager(XW_UtilCtxt* uc)
     return globals->cGlobals.params->vtMgr;
 } /* linux_util_getVTManager */
 
-static XP_S16
-gtk_util_userPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, 
-                            const XP_UCHAR** texts, XP_U16 nTiles )
-{
-    XP_S16 chosen;
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-	XP_UCHAR* name = globals->cGlobals.gi->players[playerNum].name;
 
-    chosen = gtkletterask( NULL, XP_FALSE, name, nTiles, texts );
-    return chosen;
+static gint
+ask_blank( gpointer data )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+
+    XP_UCHAR* name = globals->cGlobals.gi->players[cGlobals->selPlayer].name;
+    XP_S16 result = gtkletterask( NULL, XP_FALSE, name,
+                                  cGlobals->nTiles, cGlobals->tiles );
+
+    for ( int ii = 0; ii < cGlobals->nTiles; ++ii ) {
+        g_free( (gpointer)cGlobals->tiles[ii] );
+    }
+
+    if ( result >= 0
+         && board_setBlankValue( cGlobals->game.board, cGlobals->selPlayer,
+                                 cGlobals->blankCol, cGlobals->blankRow,
+                                 result ) ) {
+        board_draw( cGlobals->game.board );
+    }
+
+    return 0;
+}
+static void
+gtk_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, XP_U16 col,
+                              XP_U16 row, const XP_UCHAR** texts, XP_U16 nTiles )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    cGlobals->selPlayer = playerNum;
+    cGlobals->blankCol = col;
+    cGlobals->blankRow = row;
+    cGlobals->nTiles = nTiles;
+    for ( int ii = 0; ii < nTiles; ++ii ) {
+        cGlobals->tiles[ii] = g_strdup( texts[ii] );
+    }
+
+    (void)g_idle_add( ask_blank, globals );
 }
 
 static XP_S16
@@ -2437,7 +2466,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_notifyMove = gtk_util_notifyMove;
     util->vtable->m_util_notifyTrade = gtk_util_notifyTrade;
     util->vtable->m_util_getVTManager = gtk_util_getVTManager;
-    util->vtable->m_util_userPickTileBlank = gtk_util_userPickTileBlank;
+    util->vtable->m_util_notifyPickTileBlank = gtk_util_notifyPickTileBlank;
     util->vtable->m_util_userPickTileTray = gtk_util_userPickTileTray;
     util->vtable->m_util_informNeedPassword = gtk_util_informNeedPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
