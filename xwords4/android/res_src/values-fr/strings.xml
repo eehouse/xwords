@@ -3571,4 +3571,8 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
 Si votre appareil ne peut pas envoyer de SMS de données (par ex. parce que ce n\'est pas un téléphone) ou que vous ne souhaiterez jamais jouer par SMS (par ex. parce que vous payez pour chaque message), il est raisonnable que refuser cette permission de manière permanente.
  "</string>
 
+  <string name="title_enable_p2p">Activer Wi-Fi Direct</string>
+    <string name="summary_enable_p2p">Expérimental, utilise beaucoup de batterie</string>
+
+    <string name="remove_sms">Effacer SMS</string>
   </resources>
