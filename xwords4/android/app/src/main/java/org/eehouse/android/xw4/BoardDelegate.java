@@ -1464,7 +1464,7 @@ public class BoardDelegate extends DelegateBase
                     if ( null == msg ) {
                         askNoAddrsDelete();
                     } else {
-                        showDialogFragment( DlgID.DLG_CONNSTAT,
+                        showDialogFragment( DlgID.DLG_CONNSTAT, null,
                                             R.string.info_title, msg );
                     }
                 }
