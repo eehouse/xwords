@@ -282,11 +282,10 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "notifyGameOver" );
     }
 
-    public boolean warnIllegalWord( String dict, String[] words, int turn,
+    public void notifyIllegalWords( String dict, String[] words, int turn,
                                     boolean turnLost )
     {
-        subclassOverride( "warnIllegalWord" );
-        return false;
+        subclassOverride( "notifyIllegalWords" );
     }
 
     // These need to go into some sort of chat DB, not dropped.

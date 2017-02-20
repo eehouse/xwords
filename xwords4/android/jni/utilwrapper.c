@@ -454,25 +454,23 @@ and_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 stringCode, XP_U16 quant
     return result;
 }
 
-static XP_Bool
-and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
-                          XP_U16 turn, XP_Bool turnLost )
+static void
+and_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
+                             XP_U16 turn, XP_Bool turnLost )
 {
-    jboolean result = XP_FALSE;
-    UTIL_CBK_HEADER("warnIllegalWord", 
-                    "(Ljava/lang/String;[Ljava/lang/String;IZ)Z" );
+    UTIL_CBK_HEADER("notifyIllegalWords",
+                    "(Ljava/lang/String;[Ljava/lang/String;IZ)V" );
     XP_ASSERT( bwi->nWords > 0 );
     if ( bwi->nWords > 0 ) {
         jobjectArray jwords = makeStringArray( env, bwi->nWords, 
                                                (const XP_UCHAR**)bwi->words );
         XP_ASSERT( !!bwi->dictName );
         jstring jname = (*env)->NewStringUTF( env, bwi->dictName );
-        result = (*env)->CallBooleanMethod( env, util->jutil, mid,
-                                            jname, jwords, turn, turnLost );
+        (*env)->CallVoidMethod( env, util->jutil, mid,
+                                jname, jwords, turn, turnLost );
         deleteLocalRefs( env, jwords, jname, DELETE_NO_REF );
     }
     UTIL_CBK_TAIL();
-    return result;
 }
 
 #ifdef XWFEATURE_CHAT
@@ -732,7 +730,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(makeEmptyDict);
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
-    SET_PROC(warnIllegalWord);
+    SET_PROC(notifyIllegalWords);
 #ifdef XWFEATURE_CHAT
     SET_PROC(showChat);
 #endif

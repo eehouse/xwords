@@ -71,8 +71,7 @@ public class JNIThread extends Thread {
             CMD_KEYDOWN,
             CMD_KEYUP,
             CMD_TIMER_FIRED,
-            CMD_COMMIT_FALSE,
-            CMD_COMMIT_TRUE,
+            CMD_COMMIT,
             CMD_JUGGLE,
             CMD_FLIP,
             CMD_TOGGLE_TRAY,
@@ -544,13 +543,14 @@ public class JNIThread extends Thread {
                 draw = processKeyEvent( elem.m_cmd, (XwJNI.XP_Key)args[0], barr );
                 break;
 
-            case CMD_COMMIT_FALSE:
-                draw = XwJNI.board_commitTurn( m_jniGamePtr, false );
+            case CMD_COMMIT:
+                boolean phoniesConfirmed = args.length < 1
+                    ? false : (Boolean)args[0];
+                boolean turnConfirmed = args.length < 2
+                    ? false : (Boolean)args[1];
+                draw = XwJNI.board_commitTurn( m_jniGamePtr, phoniesConfirmed,
+                                               turnConfirmed );
                 break;
-            case CMD_COMMIT_TRUE:
-                draw = XwJNI.board_commitTurn( m_jniGamePtr, true );
-                break;
-
             case CMD_JUGGLE:
                 draw = XwJNI.board_juggleTray( m_jniGamePtr );
                 break;

@@ -620,7 +620,7 @@ static XP_Bool
 handleCommit( CursesAppGlobals* globals )
 {
     globals->doDraw = board_commitTurn( globals->cGlobals.game.board,
-                                        XP_FALSE );
+                                        XP_FALSE, XP_FALSE );
     return XP_TRUE;
 } /* handleCommit */
 
@@ -1371,15 +1371,14 @@ curses_util_turnChanged( XW_UtilCtxt* XP_UNUSED(uc), XP_S16 newTurn )
 }
 #endif
 
-static XP_Bool
-curses_util_warnIllegalWord( XW_UtilCtxt* XP_UNUSED(uc), 
-                             BadWordInfo* XP_UNUSED(bwi), 
-                             XP_U16 XP_UNUSED(player),
-                             XP_Bool XP_UNUSED(turnLost) )
+static void
+curses_util_notifyIllegalWords( XW_UtilCtxt* XP_UNUSED(uc),
+                                BadWordInfo* XP_UNUSED(bwi),
+                                XP_U16 XP_UNUSED(player),
+                                XP_Bool XP_UNUSED(turnLost) )
 {
-    XP_WARNF( "curses_util_warnIllegalWord not implemented" );
-    return XP_FALSE;
-} /* curses_util_warnIllegalWord */
+    XP_WARNF( "curses_util_notifyIllegalWords not implemented" );
+} /* curses_util_notifyIllegalWord */
 
 static void
 curses_util_remSelected( XW_UtilCtxt* uc )
@@ -1445,7 +1444,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     util->vtable->m_util_turnChanged = curses_util_turnChanged;
 #endif
-    util->vtable->m_util_warnIllegalWord = curses_util_warnIllegalWord;
+    util->vtable->m_util_notifyIllegalWords = curses_util_notifyIllegalWords;
     util->vtable->m_util_remSelected = curses_util_remSelected;
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;

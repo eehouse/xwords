@@ -1445,7 +1445,7 @@ handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_done_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE ) ) {
+    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE, XP_FALSE ) ) {
         board_draw( globals->cGlobals.game.board );
         disenable_buttons( globals );
     }
@@ -1543,7 +1543,7 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE ) ) {
+    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE, XP_FALSE ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_commit_button */
@@ -2117,49 +2117,48 @@ gtk_util_requestTime( XW_UtilCtxt* uc )
     globals->idleID = g_idle_add( idle_func, globals );
 } /* gtk_util_requestTime */
 
-static XP_Bool
-gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
-			  XP_Bool turnLost )
+static gint
+ask_bad_words( gpointer data )
 {
-    XP_Bool result;
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+
+    if ( GTK_RESPONSE_YES == gtkask( globals->window, cGlobals->question,
+                                     GTK_BUTTONS_YES_NO, NULL ) ) {
+        board_commitTurn( cGlobals->game.board, XP_TRUE, XP_FALSE );
+    }
+    return 0;
+}
+
+static void
+gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
+                             XP_Bool turnLost )
+{
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    CommonGlobals* cGlobals = &globals->cGlobals;
     char buf[300];
+    gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
 
     if ( turnLost ) {
-        char wordsBuf[256];
-        XP_U16 i;
-        XP_UCHAR* name = globals->cGlobals.gi->players[player].name;
+        XP_UCHAR* name = cGlobals->gi->players[player].name;
         XP_ASSERT( !!name );
 
-        for ( i = 0, wordsBuf[0] = '\0'; ; ) {
-            char wordBuf[18];
-            sprintf( wordBuf, "\"%s\"", bwi->words[i] );
-            strcat( wordsBuf, wordBuf );
-            if ( ++i == bwi->nWords ) {
-                break;
-            }
-            strcat( wordsBuf, ", " );
-        }
-
         sprintf( buf, "Player %d (%s) played illegal word[s] %s; loses turn.",
-                 player+1, name, wordsBuf );
+                 player+1, name, strs );
 
-        if ( globals->cGlobals.params->skipWarnings ) {
+        if ( cGlobals->params->skipWarnings ) {
             XP_LOGF( "%s", buf );
         }  else {
             gtkUserError( globals, buf );
         }
-        result = XP_TRUE;
     } else {
-        XP_ASSERT( bwi->nWords == 1 );
-        sprintf( buf, "Word \"%s\" not in the current dictionary (%s). "
-                 "Use it anyway?", bwi->words[0], bwi->dictName );
-        result = GTK_RESPONSE_YES == gtkask( globals->window, buf, 
-                                             GTK_BUTTONS_YES_NO, NULL );
-    }
+        sprintf( cGlobals->question, "Word[s] \"%s\" not in the current dictionary (%s). "
+                 "Use anyway?", strs, bwi->dictName );
 
-    return result;
-} /* gtk_util_warnIllegalWord */
+        (void)g_idle_add( ask_bad_words, globals );
+    }
+    g_free( strs );
+} /* gtk_util_notifyIllegalWords */
 
 static void
 gtk_util_remSelected( XW_UtilCtxt* uc )
@@ -2276,7 +2275,7 @@ ask_move( gpointer data )
     gint chosen = gtkask( globals->window, cGlobals->question, buttons, NULL );
     if ( GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, XP_TRUE ) ) {
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE ) ) {
             board_draw( board );
         }
     }
@@ -2315,7 +2314,7 @@ ask_trade( gpointer data )
                                      cGlobals->question, 
                                      GTK_BUTTONS_YES_NO, NULL ) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, XP_TRUE ) ) {
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE ) ) {
             board_draw( board );
         }
     }
@@ -2488,7 +2487,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_setTimer = gtk_util_setTimer;
     util->vtable->m_util_clearTimer = gtk_util_clearTimer;
     util->vtable->m_util_requestTime = gtk_util_requestTime;
-    util->vtable->m_util_warnIllegalWord = gtk_util_warnIllegalWord;
+    util->vtable->m_util_notifyIllegalWords = gtk_util_notifyIllegalWords;
     util->vtable->m_util_remSelected = gtk_util_remSelected;
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = gtk_util_makeStreamFromAddr;

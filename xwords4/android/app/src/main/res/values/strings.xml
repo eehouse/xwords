@@ -897,6 +897,8 @@
          found in the word list) -->
     <string name="default_phonies">Handle phonies</string>
 
+    <string name="phonies_found_title">Phonies found</string>
+
     <!-- default number of minutes on timer for new games -->
     <string name="initial_player_minutes">Timer minutes per player</string>
 

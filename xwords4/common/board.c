@@ -984,8 +984,14 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 #endif
 #endif
 
+typedef struct _BadWordList {
+    BadWordInfo bwi;
+    XP_UCHAR buf[256];
+    XP_U16 index;
+} BadWordList;
+
 static void
-warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
+saveBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
               const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
               const MoveInfo* XP_UNUSED(movei), 
@@ -993,22 +999,14 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
 #endif
               void* closure )
 {
-    XP_Bool ok = XP_TRUE;
     if ( !isLegal ) {
-        BadWordInfo bwi = {0};
-        BoardCtxt* board = (BoardCtxt*)closure;
-        XP_S16 turn = server_getCurrentTurn( board->server, NULL );
-
-        bwi.nWords = 1;
-        bwi.words[0] = word;
-        bwi.dictName = 
-            dict_getShortName( model_getPlayerDict( board->model, turn ) );
-
-        ok = !board->badWordRejected
-            && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
-        board->badWordRejected = !ok || board->badWordRejected;
+        BadWordList* bwlp = (BadWordList*)closure;
+        bwlp->bwi.words[bwlp->bwi.nWords] = &bwlp->buf[bwlp->index];
+        XP_STRCAT( &bwlp->buf[bwlp->index], word );
+        bwlp->index += XP_STRLEN(word) + 1;
+        ++bwlp->bwi.nWords;
     }
-} /* warnBadWords */
+} /* saveBadWords */
 
 static void
 boardNotifyTrade( BoardCtxt* board, const TrayTileSet* tiles )
@@ -1025,7 +1023,8 @@ boardNotifyTrade( BoardCtxt* board, const TrayTileSet* tiles )
 }
 
 XP_Bool
-board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed )
+board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
+                  XP_Bool turnConfirmed /* includes trade */ )
 {
     XP_Bool result = XP_FALSE;
     const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
@@ -1038,7 +1037,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed )
     } else if ( 0 == model_getNumTilesTotal( board->model, turn ) ) {
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
-    } else if ( alreadyConfirmed || checkRevealTray( board ) ) {
+    } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board ) ) {
         if ( pti->tradeInProgress ) {
             TileBit traySelBits = pti->traySelBits;
             result = XP_TRUE; /* there's at least the window to clean up
@@ -1049,7 +1048,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed )
             } else {
                 TrayTileSet selTiles;
                 getSelTiles( board, traySelBits, &selTiles );
-                if ( alreadyConfirmed ) {
+                if ( turnConfirmed ) {
                     /* server_commitTrade() changes selPlayer, so board_endTrade
                        must be called first() */
                     (void)board_endTrade( board );
@@ -1061,11 +1060,10 @@ board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed )
             }
         } else {
             XWStreamCtxt* stream = NULL;
-            XP_Bool legal = alreadyConfirmed;
+            XP_Bool legal = turnConfirmed;
+            BadWordList bwl = {0};
             
             if ( !legal ) {
-                WordNotifierInfo info;
-                XP_Bool warn;
                 stream = mem_stream_make( MPPARM(board->mpool)
                                           util_getVTManager(board->util), NULL,
                                           CHANNEL_NONE, (MemStreamCloseCallback)NULL );
@@ -1074,27 +1072,30 @@ board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed )
                                                          STR_COMMIT_CONFIRM);
                 stream_catString( stream, str );
 
-                warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
-
-                board->badWordRejected = XP_FALSE;
-                info.proc = warnBadWords;
-                info.closure = board;
+                XP_Bool warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
+                WordNotifierInfo info;
+                if ( warn ) {
+                    info.proc = saveBadWords;
+                    info.closure = &bwl;
+                }
                 legal = model_checkMoveLegal( board->model, turn, stream,
-                                          warn? &info:(WordNotifierInfo*)NULL);
+                                              warn? &info:(WordNotifierInfo*)NULL);
             }
 
-            if ( !legal || board->badWordRejected ) {
-                result = XP_FALSE;
+            if ( 0 < bwl.bwi.nWords && !phoniesConfirmed ) {
+                bwl.bwi.dictName =
+                    dict_getShortName( model_getPlayerDict( board->model, turn ) );
+                util_notifyIllegalWords( board->util, &bwl.bwi, turn, XP_FALSE );
             } else {
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
                    passwords and peek at tiles. */
-                if ( !alreadyConfirmed
+                if ( !turnConfirmed
                      && gi_countLocalPlayers( board->gi, XP_TRUE ) > 1 ) {
                     result = board_hideTray( board );
                 }
 
-                if ( board->skipCommitConfirm || alreadyConfirmed ) {
+                if ( board->skipCommitConfirm || turnConfirmed ) {
                     result = server_commitMove( board->server ) || result;
                     /* invalidate all tiles in case we'll be drawing this tray
                        again rather than some other -- as is the case in a

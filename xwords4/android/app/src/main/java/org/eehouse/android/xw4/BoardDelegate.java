@@ -275,7 +275,7 @@ public class BoardDelegate extends DelegateBase
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dialog,
                                          int whichButton ) {
-                        handleViaThread( JNICmd.CMD_COMMIT_TRUE );
+                        handleViaThread( JNICmd.CMD_COMMIT, true, true );
                     }
                 };
             dialog = ab.setMessage( msg )
@@ -286,8 +286,21 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case DLG_BADWORDS_BLK:
-            checkBlocking();
+        case NOTIFY_BADWORDS: {
+            lstnr = new OnClickListener() {
+                    public void onClick( DialogInterface dlg, int bx ) {
+                        handleViaThread( JNICmd.CMD_COMMIT, true, false );
+                    }
+                };
+            dialog = ab.setTitle( R.string.phonies_found_title )
+                .setMessage( (String)params[0] )
+                .setPositiveButton( R.string.button_yes, lstnr )
+                .setNegativeButton( android.R.string.cancel, null )
+                .create();
+        }
+            break;
+
+        case DLG_BADWORDS:
         case DLG_SCORES: {
             int title = (Integer)params[0];
             String msg = (String)params[1];
@@ -917,7 +930,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_trade_commit:
-            cmd = JNICmd.CMD_COMMIT_FALSE;
+            cmd = JNICmd.CMD_COMMIT;
             break;
         case R.id.board_menu_trade_cancel:
             cmd = JNICmd.CMD_CANCELTRADE;
@@ -1045,7 +1058,7 @@ public class BoardDelegate extends DelegateBase
             Utils.launchSettings( m_activity );
             break;
         case COMMIT_ACTION:
-            cmd = JNICmd.CMD_COMMIT_FALSE;
+            cmd = JNICmd.CMD_COMMIT;
             break;
         case SHOW_EXPL_ACTION:
             showToast( m_toastStr );
@@ -1240,7 +1253,7 @@ public class BoardDelegate extends DelegateBase
     public void onClick( View view )
     {
         if ( view == m_exchCommmitButton ) {
-            handleViaThread( JNICmd.CMD_COMMIT_FALSE );
+            handleViaThread( JNICmd.CMD_COMMIT );
         } else if ( view == m_exchCancelButton ) {
             handleViaThread( JNICmd.CMD_CANCELTRADE );
         }
@@ -2034,33 +2047,21 @@ public class BoardDelegate extends DelegateBase
             handleViaThread( JNICmd.CMD_POST_OVER );
         }
 
-        // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
-        // {
-        //     DbgUtils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
-        //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
-        // }
         @Override
-        public boolean warnIllegalWord( String dict, String[] words, int turn,
+        public void notifyIllegalWords( String dict, String[] words, int turn,
                                         boolean turnLost )
         {
-            boolean accept = turnLost;
-
             String wordsString = TextUtils.join( ", ", words );
             String message =
                 getString( R.string.ids_badwords_fmt, wordsString, dict );
 
             if ( turnLost ) {
-                waitBlockingDialog( DlgID.DLG_BADWORDS_BLK, 0, R.string.badwords_title,
+                showDialogFragment( DlgID.DLG_BADWORDS, R.string.badwords_title,
                                     message + getString( R.string.badwords_lost ) );
             } else {
-                Assert.fail();
-                // String dlgBytes = message + getString( R.string.badwords_accept );
-                // accept = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0,
-                //                                   R.string.query_title,
-                //                                   dlgBytes );
+                String msg = message + getString( R.string.badwords_accept );
+                showDialogFragment( DlgID.NOTIFY_BADWORDS, msg );
             }
-
-            return accept;
         }
 
         // Let's have this block in case there are multiple messages.  If

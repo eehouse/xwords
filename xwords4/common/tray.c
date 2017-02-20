@@ -460,7 +460,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
         }
 #endif
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
-        result = board_commitTurn( board, XP_FALSE );
+        result = board_commitTurn( board, XP_FALSE, XP_FALSE );
 #if defined XWFEATURE_TRAYUNDO_ALL
     } else if ( index < 0 ) { /* other empty area */
         /* it better be true */

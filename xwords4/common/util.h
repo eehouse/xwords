@@ -159,7 +159,7 @@ typedef struct UtilVtable {
                                                      XP_U16 stringCode,
                                                      XP_U16 quantity );
 
-    XP_Bool (*m_util_warnIllegalWord)( XW_UtilCtxt* uc, BadWordInfo* bwi, 
+    void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, BadWordInfo* bwi,
                                        XP_U16 turn, XP_Bool turnLost );
 
     void (*m_util_remSelected)(XW_UtilCtxt* uc);
@@ -302,8 +302,8 @@ struct XW_UtilCtxt {
 #define util_getUserQuantityString( uc, c, q )            \
          (uc)->vtable->m_util_getUserQuantityString((uc),(c),(q))
 
-#define util_warnIllegalWord( uc, w, p, b ) \
-         (uc)->vtable->m_util_warnIllegalWord((uc),(w),(p),(b))
+#define util_notifyIllegalWords( uc, w, p, b ) \
+         (uc)->vtable->m_util_notifyIllegalWords((uc),(w),(p),(b))
 
 #define util_remSelected( uc )              \
          (uc)->vtable->m_util_remSelected((uc))

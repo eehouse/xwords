@@ -1282,11 +1282,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1toggle_1showValues
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1commitTurn
-(JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean alreadyConfirmed)
+(JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean phoniesConfirmed,
+ jboolean turnConfirmed)
 {
     jboolean result;
     XWJNI_START();
-    result = board_commitTurn( state->game.board, alreadyConfirmed );
+    result = board_commitTurn( state->game.board, phoniesConfirmed,
+                               turnConfirmed );
     XWJNI_END();
     return result;
 }

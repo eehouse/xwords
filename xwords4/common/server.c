@@ -1618,7 +1618,7 @@ badWordMoveUndoAndTellUser( ServerCtxt* server, BadWordInfo* bwi )
 
     model_rejectPreviousMove( model, server->pool, &turn );
 
-    util_warnIllegalWord( server->vol.util, bwi, turn, XP_TRUE );
+    util_notifyIllegalWords( server->vol.util, bwi, turn, XP_TRUE );
 } /* badWordMoveUndoAndTellUser */
 
 EngineCtxt*

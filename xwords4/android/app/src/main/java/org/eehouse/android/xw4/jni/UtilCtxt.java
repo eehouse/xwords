@@ -141,7 +141,7 @@ public interface UtilCtxt {
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
 
-    boolean warnIllegalWord( String dict, String[] words, int turn,
+    void notifyIllegalWords( String dict, String[] words, int turn,
                              boolean turnLost );
 
     void showChat( String msg, int fromIndx, String fromName );

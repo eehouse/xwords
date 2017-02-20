@@ -299,7 +299,9 @@ public class XwJNI {
     public static native boolean board_showTray( GamePtr gamePtr );
     public static native boolean board_toggle_showValues( GamePtr gamePtr );
     public static native boolean board_commitTurn( GamePtr gamePtr,
-                                                   boolean alreadyConfirmed );
+                                                   boolean phoniesConfirmed,
+                                                   boolean turnConfirmed );
+
     public static native boolean board_flip( GamePtr gamePtr );
     public static native boolean board_replaceTiles( GamePtr gamePtr );
     public static native int board_getSelPlayer( GamePtr gamePtr );

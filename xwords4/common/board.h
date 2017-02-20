@@ -176,7 +176,8 @@ XP_Bool board_setBlankValue( BoardCtxt* board, XP_U16 XP_UNUSED(player),
 
 void board_resetEngine( BoardCtxt* board );
 
-XP_Bool board_commitTurn( BoardCtxt* board, XP_Bool alreadyConfirmed );
+XP_Bool board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
+                          XP_Bool turnConfirmed );
 
 void board_pushTimerSave( BoardCtxt* board );
 void board_popTimerSave( BoardCtxt* board );

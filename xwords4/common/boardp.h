@@ -169,7 +169,6 @@ struct BoardCtxt {
     XP_Bool showGrid;
     XP_Bool gameOver;
     XP_Bool leftHanded;
-    XP_Bool badWordRejected;
     XP_Bool timerPending;
     XP_Bool disableArrow;
     XP_Bool hideValsInTray;
