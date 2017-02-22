@@ -764,7 +764,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case CHANGE_GROUP: {
-            long[] selGames = (long[])params[0];
+            Set<Long> selGames = (Set<Long>)params[0];
             long srcGroup = -1;
             // If all games are coming from the same group we can disable move
             // when that's the destination
