@@ -1021,7 +1021,7 @@ public class BoardDelegate extends DelegateBase
 
         case R.id.board_menu_file_prefs:
             m_firingPrefs = true;
-            Utils.launchSettings( m_activity );
+            PrefsDelegate.launch( m_activity );
             break;
 
         default:
@@ -1055,7 +1055,7 @@ public class BoardDelegate extends DelegateBase
             doSyncMenuitem();
             break;
         case SMS_CONFIG_ACTION:
-            Utils.launchSettings( m_activity );
+            PrefsDelegate.launch( m_activity );
             break;
         case COMMIT_ACTION:
             cmd = JNICmd.CMD_COMMIT;

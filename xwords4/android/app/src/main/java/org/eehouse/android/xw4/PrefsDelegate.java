@@ -22,7 +22,9 @@ package org.eehouse.android.xw4;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -267,7 +269,7 @@ public class PrefsDelegate extends DelegateBase
 
         // Now replace this activity with a new copy
         // so the new values get loaded.
-        Utils.launchSettings( m_activity );
+        PrefsDelegate.launch( m_activity );
         finish();
     }
 
@@ -356,5 +358,11 @@ public class PrefsDelegate extends DelegateBase
         if ( ! BuildConfig.WIDIR_ENABLED ) {
             hideOne( R.string.key_enable_p2p, R.string.key_network_behavior );
         }
+    }
+
+    public static void launch( Context context )
+    {
+        Intent intent = new Intent( context, PrefsActivity.class );
+        context.startActivity( intent );
     }
 }

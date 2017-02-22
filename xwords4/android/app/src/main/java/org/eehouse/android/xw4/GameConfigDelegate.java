@@ -665,7 +665,7 @@ public class GameConfigDelegate extends DelegateBase
             handleLockedChange();
             break;
         case SMS_CONFIG_ACTION:
-            Utils.launchSettings( m_activity );
+            PrefsDelegate.launch( m_activity );
             break;
         case DELETE_AND_EXIT:
             if ( m_isNewGame ) {

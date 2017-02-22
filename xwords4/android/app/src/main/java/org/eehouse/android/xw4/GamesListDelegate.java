@@ -1618,7 +1618,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_prefs:
-            Utils.launchSettings( m_activity );
+            PrefsDelegate.launch( m_activity );
             break;
 
         case R.id.games_menu_rateme:

@@ -163,12 +163,6 @@ public class Utils {
         showToast( context, msg );
     }
 
-    public static void launchSettings( Context context )
-    {
-        Intent intent = new Intent( context, PrefsActivity.class );
-        context.startActivity( intent );
-    }
-
     public static void emailAuthor( Context context )
     {
         Intent intent = new Intent( Intent.ACTION_SEND );
