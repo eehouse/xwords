@@ -33,7 +33,6 @@ import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
-import android.support.v4.app.DialogFragment;
 
 /** Abstract superclass for Alerts that have moved from and are still created
  * inside DlgDelegate

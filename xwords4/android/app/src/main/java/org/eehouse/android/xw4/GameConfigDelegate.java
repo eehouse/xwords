@@ -270,12 +270,13 @@ public class GameConfigDelegate extends DelegateBase
         }
             break;
         case CHANGE_CONN: {
+            CommsConnTypeSet conTypes = (CommsConnTypeSet)params[0];
             LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
             final ConnViaViewLayout items = (ConnViaViewLayout)
                 layout.findViewById( R.id.conn_types );
             items.setActivity( m_activity );
 
-            items.configure( m_conTypes,
+            items.configure( conTypes,
                              new ConnViaViewLayout.CheckEnabledWarner() {
                                  public void warnDisabled( CommsConnType typ ) {
                                      switch( typ ) {
@@ -680,7 +681,7 @@ public class GameConfigDelegate extends DelegateBase
             break;
 
         case ASKED_PHONE_STATE:
-            showDialogFragment( DlgID.CHANGE_CONN );
+            showDialogFragment( DlgID.CHANGE_CONN, m_conTypes );
             break;
 
         default:
@@ -698,7 +699,7 @@ public class GameConfigDelegate extends DelegateBase
             showConnAfterCheck();
             break;
         case ASKED_PHONE_STATE:
-            showDialogFragment( DlgID.CHANGE_CONN );
+            showDialogFragment( DlgID.CHANGE_CONN, m_conTypes );
             break;
         default:
             handled = super.onNegButton( action, params );
@@ -775,7 +776,7 @@ public class GameConfigDelegate extends DelegateBase
                                  R.string.phone_state_rationale,
                                  Action.ASKED_PHONE_STATE, this );
         } else {
-            showDialogFragment( DlgID.CHANGE_CONN );
+            showDialogFragment( DlgID.CHANGE_CONN, m_conTypes );
         }
     }
 

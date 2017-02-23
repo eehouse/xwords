@@ -377,13 +377,11 @@ public class DlgDelegate {
         case DIALOG_NOTAGAIN:
         case CONFIRM_THEN:
         case INVITE_CHOICES_THEN:
+        case DIALOG_ENABLESMS:
             Assert.assertFalse( BuildConfig.DEBUG );
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
-            break;
-        case DIALOG_ENABLESMS:
-            dialog = createEnableSMSDialog( state, dlgID );
             break;
         default:
             DbgUtils.logd( TAG, "not creating %s", dlgID.toString() );
@@ -396,11 +394,9 @@ public class DlgDelegate {
     {
         switch( dlgId ) {
         case INVITE_CHOICES_THEN:
+        case DIALOG_ENABLESMS:
             Assert.assertFalse( BuildConfig.DEBUG );
             // prepareInviteChoicesDialog( dialog );
-            break;
-        case DIALOG_ENABLESMS:
-            prepareEnableSMSDialog( dialog );
             break;
         }
     }
@@ -429,8 +425,8 @@ public class DlgDelegate {
         DlgState state = new DlgState( DlgID.DIALOG_ENABLESMS )
             .setAction( action )
             .setParams( params );
-        addState( state );
-        showDialog( DlgID.DIALOG_ENABLESMS );
+
+        m_dlgt.show( EnableSMSAlert.newInstance( state ) );
     }
 
     private void showNotAgainDlgThen( String msg, int prefsKey,
@@ -601,120 +597,6 @@ public class DlgDelegate {
                 }
             } );
 
-        return dialog;
-    }
-
-    private Dialog createEnableSMSDialog( final DlgState state, DlgID dlgID )
-    {
-        final View layout = LocUtils.inflate( m_activity, R.layout.confirm_sms );
-
-        DialogInterface.OnClickListener lstnr =
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    Spinner reasons = (Spinner)
-                        layout.findViewById( R.id.confirm_sms_reasons );
-                    boolean enabled = 0 < reasons.getSelectedItemPosition();
-                    Assert.assertTrue( enabled );
-                    m_clickCallback.onPosButton( state.m_action, state.m_params );
-                }
-            };
-
-        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.confirm_sms_title )
-            .setView( layout )
-            .setPositiveButton( R.string.button_enable, lstnr )
-            .setNegativeButton( android.R.string.cancel, null )
-            .create();
-        return dialog;
-    }
-
-    private void checkEnableButton( Dialog dialog, Spinner reasons )
-    {
-        boolean enabled = 0 < reasons.getSelectedItemPosition();
-        AlertDialog adlg = (AlertDialog)dialog;
-        Button button = adlg.getButton( AlertDialog.BUTTON_POSITIVE );
-        button.setEnabled( enabled );
-    }
-
-    private void prepareEnableSMSDialog( final Dialog dialog )
-    {
-        final Spinner reasons = (Spinner)
-            dialog.findViewById( R.id.confirm_sms_reasons );
-
-        OnItemSelectedListener onItemSel = new OnItemSelectedListener() {
-                public void onItemSelected( AdapterView<?> parent, View view,
-                                            int position, long id )
-                {
-                    checkEnableButton( dialog, reasons );
-                }
-
-                public void onNothingSelected( AdapterView<?> parent ) {}
-            };
-        reasons.setOnItemSelectedListener( onItemSel );
-        checkEnableButton( dialog, reasons );
-    }
-
-    private OnClickListener mkCallbackClickListener( final DlgState state,
-                                                     final NotAgainView naView )
-    {
-        OnClickListener cbkOnClickLstnr;
-        cbkOnClickLstnr = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int button ) {
-                    checkNotAgainCheck( state, naView );
-
-                    if ( Action.SKIP_CALLBACK != state.m_action ) {
-                        switch ( button ) {
-                        case AlertDialog.BUTTON_POSITIVE:
-                            m_clickCallback.onPosButton( state.m_action,
-                                                         state.m_params );
-                            break;
-                        case AlertDialog.BUTTON_NEGATIVE:
-                            m_clickCallback.onNegButton( state.m_action,
-                                                         state.m_params );
-                            break;
-                        default:
-                            DbgUtils.loge( TAG, "unexpected button %d",
-                                           button );
-                            // ignore on release builds
-                            Assert.assertFalse( BuildConfig.DEBUG );
-                        }
-                    }
-                }
-            };
-        return cbkOnClickLstnr;
-    }
-
-    private void checkNotAgainCheck( DlgState state, NotAgainView naView )
-    {
-        if ( null != naView && naView.getChecked() ) {
-            if ( 0 != state.m_prefsKey ) {
-                XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey,
-                                         true );
-            } else if ( null != state.m_onNAChecked ) {
-                XWActivity activity = (XWActivity)m_activity;
-                activity.onPosButton( state.m_onNAChecked, null);
-            }
-        }
-    }
-
-    private Dialog setCallbackDismissListener( final Dialog dialog,
-                                               final DlgState state,
-                                               DlgID dlgID )
-    {
-        final int id = dlgID.ordinal();
-        DialogInterface.OnDismissListener cbkOnDismissLstnr
-            = new DialogInterface.OnDismissListener() {
-                    public void onDismiss( DialogInterface di ) {
-                        dropState( state );
-                        if ( Action.SKIP_CALLBACK != state.m_action ) {
-                            m_clickCallback.onDismissed( state.m_action,
-                                                         state.m_params );
-                        }
-                        m_activity.removeDialog( id );
-                    }
-                };
-
-        dialog.setOnDismissListener( cbkOnDismissLstnr );
         return dialog;
     }
 
