@@ -218,15 +218,19 @@ public class JNIThread extends Thread {
             }
             m_jniGamePtr = null;
             if ( null != stream ) {
-                m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi, dictNames,
-                                                     pairs.m_bytes, pairs.m_paths,
-                                                     m_gi.langName(), utils, jniUtils,
+                m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi,
+                                                     dictNames, pairs.m_bytes,
+                                                     pairs.m_paths,
+                                                     m_gi.langName( m_context ),
+                                                     utils, jniUtils,
                                                      null, cp, m_xport );
             }
             if ( null == m_jniGamePtr ) {
                 m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
-                                              pairs.m_paths, m_gi.langName(), utils,
-                                              jniUtils, null, cp, m_xport );
+                                              pairs.m_paths,
+                                              m_gi.langName(m_context),
+                                              utils, jniUtils, null, cp,
+                                              m_xport );
             }
             Assert.assertNotNull( m_jniGamePtr );
             m_lastSavedState = Arrays.hashCode( stream );

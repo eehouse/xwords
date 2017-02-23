@@ -124,7 +124,7 @@ public class GameUtils {
         gamePtr.release();
 
         gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes, pairs.m_paths,
-                                 gi.langName(), (UtilCtxt)null,
+                                 gi.langName( context ), (UtilCtxt)null,
                                  JNIUtilsImpl.get( context ), (DrawCtx)null,
                                  CommonPrefs.get( context ), (TransportProcs)null );
 
@@ -363,7 +363,7 @@ public class GameUtils {
                 DbgUtils.logw( TAG, "loadMakeGame() failing: dicts %s unavailable",
                                TextUtils.join( ",", dictNames ) );
             } else {
-                String langName = gi.langName();
+                String langName = gi.langName( context );
                 gamePtr = XwJNI.initFromStream( rowid, stream, gi, dictNames,
                                                 pairs.m_bytes, pairs.m_paths,
                                                 langName, util,
@@ -585,7 +585,7 @@ public class GameUtils {
         Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
         gi.setFrom( jsonData );
-        gi.setLang( lang[0], dict[0] );
+        gi.setLang( context, lang[0], dict[0] );
         gi.forceChannel = forceChannel;
         lang[0] = gi.dictLang;
         dict[0] = gi.dictName;
@@ -977,7 +977,7 @@ public class GameUtils {
             XwJNI.gi_from_stream( gi, stream );
 
             // first time required so dictNames() will work
-            gi.replaceDicts( newDict );
+            gi.replaceDicts( context, newDict );
 
             String[] dictNames = gi.dictNames();
             DictUtils.DictPairs pairs = DictUtils.openDicts( context,
@@ -986,11 +986,11 @@ public class GameUtils {
             GamePtr gamePtr =
                 XwJNI.initFromStream( rowid, stream, gi, dictNames,
                                       pairs.m_bytes, pairs.m_paths,
-                                      gi.langName(), null,
+                                      gi.langName( context ), null,
                                       JNIUtilsImpl.get(context), null,
                                       CommonPrefs.get( context ), null );
             // second time required as game_makeFromStream can overwrite
-            gi.replaceDicts( newDict );
+            gi.replaceDicts( context, newDict );
 
             saveGame( context, gamePtr, gi, lock, false );
 
@@ -1022,7 +1022,7 @@ public class GameUtils {
         // games?
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
-        String langName = gi.langName();
+        String langName = gi.langName( context );
         GamePtr gamePtr = null;
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );

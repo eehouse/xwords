@@ -569,7 +569,7 @@ public class GameConfigDelegate extends DelegateBase
                 }
 
                 if ( null == m_gi ) {
-                    m_gi = new CurGameInfo( m_activity, m_giOrig );
+                    m_gi = new CurGameInfo( m_giOrig );
                 }
 
                 m_carOrig = new CommsAddrRec();
@@ -848,7 +848,7 @@ public class GameConfigDelegate extends DelegateBase
         if ( !isFinishing() ) {
             m_playerLayout.removeAllViews();
 
-            String[] names = m_gi.visibleNames( false );
+            String[] names = m_gi.visibleNames( m_activity, false );
             // only enable delete if one will remain (or two if networked)
             boolean canDelete = names.length > 2
                 || (localOnlyGame() && names.length > 1);
@@ -973,7 +973,8 @@ public class GameConfigDelegate extends DelegateBase
 
     private void selLangChanged( String chosen )
     {
-        m_gi.setLang( DictLangCache.getLangLangCode( m_activity, chosen ) );
+        m_gi.setLang( m_activity, DictLangCache
+                      .getLangLangCode( m_activity, chosen ) );
         loadPlayersList();
         configDictSpinner( m_dictSpinner, m_gi.dictLang, m_gi.dictName );
     }

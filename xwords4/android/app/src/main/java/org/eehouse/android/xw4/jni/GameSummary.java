@@ -358,7 +358,7 @@ public class GameSummary implements Serializable {
     {
         String[] names = null;
         if ( null != m_gi ) {
-            names = m_gi.visibleNames( false );
+            names = m_gi.visibleNames( m_context, false );
         } else if ( null != m_playersSummary ) {
             names = TextUtils.split( m_playersSummary, "\n" );
         }

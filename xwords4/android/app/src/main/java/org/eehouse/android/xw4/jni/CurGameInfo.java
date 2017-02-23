@@ -71,7 +71,6 @@ public class CurGameInfo implements Serializable {
     // private int m_nVisiblePlayers;
     private int m_smartness;
     private String m_name;      // not shared across the jni boundary
-    private Context m_context;
 
     public CurGameInfo( Context context )
     {
@@ -81,7 +80,6 @@ public class CurGameInfo implements Serializable {
     public CurGameInfo( Context context, String inviteID )
     {
         boolean isNetworked = null != inviteID;
-        m_context = context;
         nPlayers = 2;
         gameSeconds = 60 * nPlayers *
             CommonPrefs.getDefaultPlayerMinutes( context );
@@ -127,12 +125,11 @@ public class CurGameInfo implements Serializable {
             juggle();
         }
 
-        setLang( 0 );
+        setLang( context, 0 );
     }
 
-    public CurGameInfo( Context context, CurGameInfo src )
+    public CurGameInfo( CurGameInfo src )
     {
-        m_context = context;
         m_name = src.m_name;
         gameID = src.gameID;
         nPlayers = src.nPlayers;
@@ -200,23 +197,23 @@ public class CurGameInfo implements Serializable {
         }
     }
 
-    public void setLang( int lang, String dict )
+    public void setLang( Context context, int lang, String dict )
     {
         if ( null != dict ) {
             dictName = dict;
         }
-        setLang( lang );
+        setLang( context, lang );
     }
 
-    public void setLang( int lang )
+    public void setLang( Context context, int lang )
     {
         if ( 0 == lang ) {
-            String dictName = CommonPrefs.getDefaultHumanDict( m_context );
-            lang = DictLangCache.getDictLangCode( m_context, dictName );
+            String dictName = CommonPrefs.getDefaultHumanDict( context );
+            lang = DictLangCache.getDictLangCode( context, dictName );
         }
         if ( dictLang != lang ) {
             dictLang = lang;
-            assignDicts();
+            assignDicts( context );
         }
     }
 
@@ -317,10 +314,10 @@ public class CurGameInfo implements Serializable {
         return locs;
     }
 
-    public String[] visibleNames( boolean withDicts )
+    public String[] visibleNames( Context context, boolean withDicts )
     {
         String nameFmt = withDicts?
-            LocUtils.getString( m_context, R.string.name_dict_fmt )
+            LocUtils.getString( context, R.string.name_dict_fmt )
             : "%s";
         String[] names = new String[nPlayers];
         for ( int ii = 0; ii < nPlayers; ++ii ) {
@@ -328,14 +325,14 @@ public class CurGameInfo implements Serializable {
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 String name;
                 if ( lp.isRobot() ) {
-                    String format = LocUtils.getString( m_context, R.string.robot_name_fmt );
+                    String format = LocUtils.getString( context, R.string.robot_name_fmt );
                     name = String.format( format, lp.name );
                 } else {
                     name = lp.name;
                 }
                 names[ii] = String.format( nameFmt, name, dictName(lp) );
             } else {
-                names[ii] = LocUtils.getString( m_context, R.string.guest_name );
+                names[ii] = LocUtils.getString( context, R.string.guest_name );
             }
         }
         return names;
@@ -352,10 +349,10 @@ public class CurGameInfo implements Serializable {
     }
 
     // Replace any dict that doesn't exist with newDict
-    public void replaceDicts( String newDict )
+    public void replaceDicts( Context context, String newDict )
     {
         String[] dicts =
-            DictLangCache.getHaveLang( m_context, dictLang );
+            DictLangCache.getHaveLang( context, dictLang );
         HashSet<String> installed = new HashSet<String>( Arrays.asList(dicts) );
 
         if ( !installed.contains( dictName ) ) {
@@ -372,9 +369,9 @@ public class CurGameInfo implements Serializable {
         }
     }
 
-    public String langName()
+    public String langName( Context context )
     {
-        return DictLangCache.getLangName( m_context, dictLang );
+        return DictLangCache.getLangName( context, dictLang );
     }
 
     public String dictName( final LocalPlayer lp )
@@ -484,7 +481,7 @@ public class CurGameInfo implements Serializable {
         return canJuggle;
     }
 
-    private void assignDicts()
+    private void assignDicts( Context context )
     {
         // For each player's dict, if non-null and language matches
         // leave it alone.  Otherwise replace with default if that
@@ -492,13 +489,13 @@ public class CurGameInfo implements Serializable {
         // right language.
 
         String humanDict =
-            DictLangCache.getBestDefault( m_context, dictLang, true );
+            DictLangCache.getBestDefault( context, dictLang, true );
         String robotDict =
-            DictLangCache.getBestDefault( m_context, dictLang, false );
+            DictLangCache.getBestDefault( context, dictLang, false );
 
         if ( null == dictName
-             || ! DictUtils.dictExists( m_context, dictName )
-             || dictLang != DictLangCache.getDictLangCode( m_context,
+             || ! DictUtils.dictExists( context, dictName )
+             || dictLang != DictLangCache.getDictLangCode( context,
                                                            dictName ) ) {
             dictName = humanDict;
         }
@@ -507,7 +504,7 @@ public class CurGameInfo implements Serializable {
             LocalPlayer lp = players[ii];
 
             if ( null != lp.dictName &&
-                 dictLang != DictLangCache.getDictLangCode( m_context,
+                 dictLang != DictLangCache.getDictLangCode( context,
                                                             lp.dictName ) ) {
                 lp.dictName = null;
             }
