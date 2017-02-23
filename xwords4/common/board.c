@@ -1061,7 +1061,8 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
         } else {
             XWStreamCtxt* stream = NULL;
             XP_Bool legal = turnConfirmed;
-            BadWordList bwl = {0};
+            BadWordList bwl;
+            XP_MEMSET( &bwl, 0, sizeof(bwl) );
             
             if ( !legal ) {
                 stream = mem_stream_make( MPPARM(board->mpool)
