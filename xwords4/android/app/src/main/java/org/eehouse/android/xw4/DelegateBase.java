@@ -580,11 +580,6 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.stopProgress();
     }
 
-    protected void showDictGoneFinish()
-    {
-        m_dlgDelegate.showDictGoneFinish();
-    }
-
     protected void showSMSEnableDialog( Action action, Object... params )
     {
         m_dlgDelegate.showSMSEnableDialog( action, params );

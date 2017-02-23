@@ -553,7 +553,7 @@ public class GameConfigDelegate extends DelegateBase
             }
 
             if ( null == gamePtr ) {
-                showDictGoneFinish();
+                Assert.assertFalse( BuildConfig.DEBUG );
             } else {
                 m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
                     || XwJNI.comms_isConnected( gamePtr );

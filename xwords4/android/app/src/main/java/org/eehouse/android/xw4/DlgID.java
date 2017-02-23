@@ -32,7 +32,6 @@ public enum DlgID {
     , DICT_OR_DECLINE
     , DLG_CONNSTAT
     , DLG_DELETED
-    , DLG_DICTGONE
     , DLG_INVITE
     , DLG_OKONLY
     , ENABLE_NFC

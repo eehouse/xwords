@@ -380,9 +380,6 @@ public class DlgDelegate {
         case DIALOG_ENABLESMS:
             Assert.assertFalse( BuildConfig.DEBUG );
             break;
-        case DLG_DICTGONE:
-            dialog = createDictGoneDialog();
-            break;
         default:
             DbgUtils.logd( TAG, "not creating %s", dlgID.toString() );
             break;
@@ -410,11 +407,6 @@ public class DlgDelegate {
             .setTitle( titleId )
             .setAction(action);
         m_dlgt.show( OkOnlyAlert.newInstance( state ) );
-    }
-
-    public void showDictGoneFinish()
-    {
-        showDialog( DlgID.DLG_DICTGONE );
     }
 
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
@@ -581,23 +573,6 @@ public class DlgDelegate {
                     }
                 } );
         }
-    }
-
-    private Dialog createDictGoneDialog()
-    {
-        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.no_dict_title )
-            .setMessage( R.string.no_dict_finish )
-            .setPositiveButton( R.string.button_close_game, null )
-            .create();
-
-        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                public void onDismiss( DialogInterface di ) {
-                    m_activity.finish();
-                }
-            } );
-
-        return dialog;
     }
 
     private DlgState findForID( DlgID dlgID )
