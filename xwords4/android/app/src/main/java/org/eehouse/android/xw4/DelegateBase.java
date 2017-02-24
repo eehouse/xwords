@@ -436,6 +436,32 @@ public class DelegateBase implements DlgClickNotify,
         show( fragment );
     }
 
+    protected void show( DlgState state )
+    {
+        DlgDelegateAlert df = null;
+        switch ( state.m_id ) {
+        case CONFIRM_THEN:
+            df = ConfirmThenAlert.newInstance( state );
+            break;
+        case DIALOG_ENABLESMS:
+            df = EnableSMSAlert.newInstance( state );
+            break;
+        case DIALOG_OKONLY:
+            df = OkOnlyAlert.newInstance( state );
+            break;
+        case DIALOG_NOTAGAIN:
+            df = NotAgainAlert.newInstance( state );
+            break;
+        case INVITE_CHOICES_THEN:
+            df = InviteChoicesAlert.newInstance( state );
+            break;
+        default:
+            Assert.fail();
+        }
+
+        show( df );
+    }
+
     protected void show( DialogFragment df )
     {
         if ( m_activity instanceof XWActivity ) {
@@ -580,9 +606,9 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.stopProgress();
     }
 
-    protected void showSMSEnableDialog( Action action, Object... params )
+    protected void showSMSEnableDialog( Action action )
     {
-        m_dlgDelegate.showSMSEnableDialog( action, params );
+        m_dlgDelegate.showSMSEnableDialog( action );
     }
 
     protected boolean isVisible() { return m_isVisible; }
@@ -653,7 +679,7 @@ public class DelegateBase implements DlgClickNotify,
                        action.toString() );
         switch( action ) {
         case ENABLE_SMS_ASK:
-            showSMSEnableDialog( Action.ENABLE_SMS_DO, params );
+            showSMSEnableDialog( Action.ENABLE_SMS_DO );
             break;
         case ENABLE_SMS_DO:
             XWPrefs.setSMSEnabled( m_activity, true );

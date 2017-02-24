@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -46,6 +47,7 @@ import java.util.Map;
 
 public class PrefsDelegate extends DelegateBase
     implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private static final String TAG = PrefsDelegate.class.getSimpleName();
 
     private PreferenceActivity m_activity;
     private static int[] s_keys = {
@@ -260,6 +262,31 @@ public class PrefsDelegate extends DelegateBase
             handled = super.onPosButton( action, params );
         }
         return handled;
+    }
+
+    @Override
+    protected void show( DlgState state )
+    {
+        Assert.assertNotNull( state );
+        switch ( state.m_id ) {
+        case CONFIRM_THEN:
+        case DIALOG_OKONLY:
+        case DIALOG_ENABLESMS:
+            HostDelegate.showForResult( m_activity, state );
+            break;
+
+        default:
+            Assert.fail();
+        }
+    }
+
+    @Override
+    protected void onActivityResult( RequestCode requestCode, int resultCode,
+                                     Intent data )
+    {
+        if ( Activity.RESULT_CANCELED != resultCode ) {
+            HostDelegate.resultReceived( this, requestCode, data );
+        }
     }
 
     private void relaunch()

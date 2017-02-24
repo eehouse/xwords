@@ -73,6 +73,10 @@
       </intent-filter>
     </activity>
 
+    <activity android:name="HostActivity"
+              android:theme="@android:style/Theme.Translucent.NoTitleBar"
+              />
+
     <activity android:name="DictsActivity"
               android:label="@string/title_dicts_list"
               android:configChanges="keyboardHidden|orientation|screenSize"

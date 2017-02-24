@@ -406,19 +406,18 @@ public class DlgDelegate {
             .setParams( params )
             .setTitle( titleId )
             .setAction(action);
-        m_dlgt.show( OkOnlyAlert.newInstance( state ) );
+        m_dlgt.show( state );
     }
 
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
     // calls onPosButton/onNegButton with the action and in params a Boolean
     // indicating whether enabling is now ok.
-    public void showSMSEnableDialog( Action action, Object... params )
+    public void showSMSEnableDialog( Action action )
     {
         DlgState state = new DlgState( DlgID.DIALOG_ENABLESMS )
-            .setAction( action )
-            .setParams( params );
+            .setAction( action );
 
-        m_dlgt.show( EnableSMSAlert.newInstance( state ) );
+        m_dlgt.show( state );
     }
 
     private void showNotAgainDlgThen( String msg, int prefsKey,
@@ -443,7 +442,7 @@ public class DlgDelegate {
                 .setAction( action )
                 .setActionPair( more )
                 .setParams( params );
-            m_dlgt.show( NotAgainAlert.newInstance( state ) );
+            m_dlgt.show( state );
         }
     }
 
@@ -460,7 +459,7 @@ public class DlgDelegate {
                 .setAction( action )
                 .setTitle( titleId )
                 .setParams( params );
-            m_dlgt.show( ConfirmThenAlert.newInstance( state ) );
+            m_dlgt.show( state );
         }
     }
 
@@ -475,7 +474,7 @@ public class DlgDelegate {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
                 .setAction( action )
                 .setParams( info );
-            m_dlgt.show( InviteChoicesAlert.newInstance( state ) );
+            m_dlgt.show( state );
         } else {
             post( new Runnable() {
                     public void run() {

@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh installXw4Debug"; -*- */
 /*
- * Copyright 2015 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,31 +20,17 @@
 
 package org.eehouse.android.xw4;
 
-// Just make sure all calls to startActivityForResult are using unique codes.
+import android.os.Bundle;
+import android.app.Activity;
+import android.content.Intent;
 
-public enum RequestCode {
-    __UNUSED,
+public class HostActivity extends XWActivity {
+    private HostDelegate m_dlgt;
 
-    // BoardDelegate
-    BT_INVITE_RESULT,
-    SMS_INVITE_RESULT,
-    RELAY_INVITE_RESULT,
-    P2P_INVITE_RESULT,
+    @Override
+    public void onCreate( Bundle sis ) {
+        m_dlgt = new HostDelegate( this, sis );
+        super.onCreate( sis, m_dlgt );
+    }
 
-    // PermUtils
-    PERM_REQUEST,
-
-    // GameConfig
-    REQUEST_LANG_GC,
-    REQUEST_DICT,
-
-    // Games list
-    REQUEST_LANG_GL,
-    CONFIG_GAME,
-
-    // SMSInviteDelegate
-    GET_CONTACT,
-
-    // HostDelegate
-    HOST_DIALOG,
 }

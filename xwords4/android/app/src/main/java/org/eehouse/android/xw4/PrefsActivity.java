@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.v4.app.DialogFragment;
@@ -100,6 +101,14 @@ public class PrefsActivity extends PreferenceActivity
     {
         super.onPrepareDialog( id, dialog );
         m_dlgt.prepareDialog( DlgID.values()[id], dialog );
+    }
+
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode,
+                                     Intent data )
+    {
+        RequestCode rc = RequestCode.values()[requestCode];
+        m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
     public OkOnlyBuilder makeOkOnlyBuilder( int msgId )

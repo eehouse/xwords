@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 
 import junit.framework.Assert;
 
@@ -68,6 +69,17 @@ public class DlgDelegateAlert extends DialogFragment {
         bundle.putParcelable( STATE_KEY, m_state );
     }
 
+    @Override
+    public void onDismiss( DialogInterface dif )
+    {
+        Activity activity = getActivity();
+        if ( activity instanceof DlgClickNotify ) {
+            ((DlgClickNotify)activity)
+                .onDismissed( m_state.m_action, m_state.m_params );
+        }
+        super.onDismiss( dif );
+    }
+
     protected void checkNotAgainCheck( DlgState state, NotAgainView naView )
     {
         if ( null != naView && naView.getChecked() ) {
@@ -75,8 +87,8 @@ public class DlgDelegateAlert extends DialogFragment {
                 XWPrefs.setPrefsBoolean( getActivity(), m_state.m_prefsKey,
                                          true );
             } else if ( null != state.m_onNAChecked ) {
-                XWActivity activity = (XWActivity)getActivity();
-                activity.onPosButton( m_state.m_onNAChecked, null );
+                DlgClickNotify notify = (DlgClickNotify)getActivity();
+                notify.onPosButton( m_state.m_onNAChecked, null );
             }
         }
     }
@@ -103,14 +115,14 @@ public class DlgDelegateAlert extends DialogFragment {
 
                     Activity activity = getActivity();
                     if ( Action.SKIP_CALLBACK != m_state.m_action
-                         && activity instanceof XWActivity ) {
-                        XWActivity xwact = (XWActivity)activity;
+                         && activity instanceof DlgClickNotify ) {
+                        DlgClickNotify notify = (DlgClickNotify)activity;
                         switch ( button ) {
                         case AlertDialog.BUTTON_POSITIVE:
-                            xwact.onPosButton( m_state.m_action, m_state.m_params );
+                            notify.onPosButton( m_state.m_action, m_state.m_params );
                             break;
                         case AlertDialog.BUTTON_NEGATIVE:
-                            xwact.onNegButton( m_state.m_action, m_state.m_params );
+                            notify.onNegButton( m_state.m_action, m_state.m_params );
                             break;
                         default:
                             DbgUtils.loge( TAG, "unexpected button %d",
