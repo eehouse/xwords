@@ -272,6 +272,7 @@ public class PrefsDelegate extends DelegateBase
         case CONFIRM_THEN:
         case DIALOG_OKONLY:
         case DIALOG_ENABLESMS:
+        case DIALOG_NOTAGAIN:
             HostDelegate.showForResult( m_activity, state );
             break;
 
