@@ -191,9 +191,11 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 } /* board_make */
 
 void
-board_destroy( BoardCtxt* board )
+board_destroy( BoardCtxt* board, XP_Bool ownsUtil )
 {
-    util_clearTimer( board->util, TIMER_TIMERTICK );
+    if ( ownsUtil ) {
+        util_clearTimer( board->util, TIMER_TIMERTICK );
+    }
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
@@ -413,7 +415,7 @@ board_drawSnapshot( const BoardCtxt* curBoard, DrawCtx* dctx,
     newBoard->showGrid = curBoard->showGrid;
 
     board_draw( newBoard );
-    board_destroy( newBoard );
+    board_destroy( newBoard, XP_FALSE );
 }
 
 #ifdef COMMON_LAYOUT

@@ -363,8 +363,8 @@ void
 game_dispose( XWGame* game )
 {
     /* The board should be reused!!! PENDING(ehouse) */
-    if ( !!game->board ) { 
-        board_destroy( game->board ); 
+    if ( !!game->board ) {
+        board_destroy( game->board, XP_TRUE );
         game->board = NULL;
     }
 
