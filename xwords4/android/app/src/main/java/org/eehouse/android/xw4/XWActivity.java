@@ -78,7 +78,7 @@ public class XWActivity extends FragmentActivity
         }
         m_dlgt.onPause();
         super.onPause();
-        WiDirService.activityPaused( this );
+        WiDirWrapper.activityPaused( this );
     }
 
     @Override
@@ -88,7 +88,7 @@ public class XWActivity extends FragmentActivity
             DbgUtils.logi( TAG, "onResume(this=%H)", this );
         }
         super.onResume();
-        WiDirService.activityResumed( this );
+        WiDirWrapper.activityResumed( this );
         m_dlgt.onResume();
     }
 

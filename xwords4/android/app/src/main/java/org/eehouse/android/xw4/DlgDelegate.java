@@ -469,7 +469,7 @@ public class DlgDelegate {
         if ( (XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS( m_activity ))
              || XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0]
-             || WiDirService.enabled()
+             || WiDirWrapper.enabled()
              || BTService.BTAvailable() ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
                 .setAction( action )

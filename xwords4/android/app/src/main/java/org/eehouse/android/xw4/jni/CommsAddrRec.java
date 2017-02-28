@@ -27,6 +27,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.BTService;
 import org.eehouse.android.xw4.WiDirService;
+import org.eehouse.android.xw4.WiDirWrapper;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
@@ -123,7 +124,7 @@ public class CommsAddrRec {
             if ( Utils.isGSMPhone( context ) ) {
                 supported.add( CommsConnType.COMMS_CONN_SMS );
             }
-            if ( WiDirService.enabled() ) {
+            if ( WiDirWrapper.enabled() ) {
                 supported.add( CommsConnType.COMMS_CONN_P2P );
             }
             return supported;
