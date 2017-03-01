@@ -134,7 +134,6 @@ public class BoardDelegate extends DelegateBase
     private JNIThread.GameStateInfo m_gsi;
     private DlgID m_blockingDlgID = DlgID.NONE;
 
-    private String m_room;
     private String m_toastStr;
     private String[] m_words;
     private String m_getDict;
@@ -686,7 +685,6 @@ public class BoardDelegate extends DelegateBase
 
     protected void onSaveInstanceState( Bundle outState )
     {
-        outState.putString( ROOM, m_room );
         outState.putString( TOASTSTR, m_toastStr );
         outState.putStringArray( WORDS, m_words );
         outState.putString( GETDICT, m_getDict );
@@ -695,7 +693,6 @@ public class BoardDelegate extends DelegateBase
     private void getBundledData( Bundle bundle )
     {
         if ( null != bundle ) {
-            m_room = bundle.getString( ROOM );
             m_toastStr = bundle.getString( TOASTSTR );
             m_words = bundle.getStringArray( WORDS );
             m_getDict = bundle.getString( GETDICT );
@@ -1650,7 +1647,6 @@ public class BoardDelegate extends DelegateBase
                 skipDismiss = !tryRematchInvites( false );
             } else if ( !m_haveInvited ) {
                 m_haveInvited = true;
-                m_room = room;
                 showDialogFragment( DlgID.DLG_INVITE );
                 invalidateOptionsMenuIf();
                 skipDismiss = true;
