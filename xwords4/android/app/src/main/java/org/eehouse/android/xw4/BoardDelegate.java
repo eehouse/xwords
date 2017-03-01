@@ -143,6 +143,8 @@ public class BoardDelegate extends DelegateBase
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
     private boolean m_dropOnDismiss;
+    private DBAlert m_inviteAlert;
+    private boolean m_showedInviteAlert; // once per launch of the board
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -442,6 +444,9 @@ public class BoardDelegate extends DelegateBase
             break;
         case DLG_INVITE:
             dialog = makeAlertDialog();
+            if ( null != dialog ) {
+                m_inviteAlert = alert;
+            }
             break;
 
         case ENABLE_NFC:
@@ -742,7 +747,7 @@ public class BoardDelegate extends DelegateBase
                 setBackgroundColor();
                 setKeepScreenOn();
             } else if ( 0 < m_nMissing ) {
-                showDialogFragment( DlgID.DLG_INVITE );
+                showInviteAlert();
             }
         }
     }
@@ -1647,7 +1652,7 @@ public class BoardDelegate extends DelegateBase
                 skipDismiss = !tryRematchInvites( false );
             } else if ( !m_haveInvited ) {
                 m_haveInvited = true;
-                showDialogFragment( DlgID.DLG_INVITE );
+                showInviteAlert();
                 invalidateOptionsMenuIf();
                 skipDismiss = true;
             } else {
@@ -1963,8 +1968,9 @@ public class BoardDelegate extends DelegateBase
             } else if ( 0 < nMissing && isServer && !m_haveInvited ) {
                 doDismiss = false;
                 post( new Runnable() {
+                        @Override
                         public void run() {
-                            showDialogFragment( DlgID.DLG_INVITE );
+                            showInviteAlert();
                         }
                     } );
             }
@@ -2266,12 +2272,18 @@ public class BoardDelegate extends DelegateBase
     private void dismissInviteAlert( final int nMissing, final boolean connected )
     {
         runOnUiThread( new Runnable() {
+                @Override
                 public void run() {
                     if ( m_relayMissing && connected ) {
                         m_relayMissing = false;
                     }
                     if ( 0 == nMissing || !m_relayMissing ) {
-                        dismissDialog( DlgID.DLG_INVITE );
+                        if ( null != m_inviteAlert ) {
+                            DbgUtils.logd( TAG, "dismissing invite alert" );
+                            m_inviteAlert.dismiss();
+                            m_inviteAlert = null;
+                            // m_showedInviteAlert = false;
+                        }
                     }
                 }
             } );
@@ -2396,6 +2408,14 @@ public class BoardDelegate extends DelegateBase
                     showDialogFragment( dlgID, fTitle, txt );
                 }
             } );
+    }
+
+    private void showInviteAlert()
+    {
+        if ( !m_showedInviteAlert && null == m_inviteAlert ) {
+            m_showedInviteAlert = true;
+            showDialogFragment( DlgID.DLG_INVITE );
+        }
     }
 
     private boolean doZoom( int zoomBy )
