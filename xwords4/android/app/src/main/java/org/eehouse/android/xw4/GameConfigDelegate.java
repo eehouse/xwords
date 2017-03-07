@@ -212,7 +212,7 @@ public class GameConfigDelegate extends DelegateBase
                 .create();
             alert.setOnDismissListener( new DBAlert.OnDismissListener() {
                     @Override
-                    public void onDismissed() {
+                    public void onDismissed( XWDialogFragment frag ) {
                         if ( m_gi.forceRemoteConsistent() ) {
                             showToast( R.string.forced_consistent );
                             loadPlayersList();
@@ -251,7 +251,7 @@ public class GameConfigDelegate extends DelegateBase
 
             alert.setOnDismissListener( new DBAlert.OnDismissListener() {
                     @Override
-                    public void onDismissed() {
+                    public void onDismissed( XWDialogFragment frag ) {
                         closeNoSave();
                     }
                 } );

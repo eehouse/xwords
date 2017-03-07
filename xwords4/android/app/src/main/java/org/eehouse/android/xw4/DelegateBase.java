@@ -66,6 +66,7 @@ public class DelegateBase implements DlgClickNotify,
     private Activity m_activity;
     private int m_optionsMenuID;
     private int m_layoutID;
+    private boolean m_finishCalled;
     private View m_rootView;
     private boolean m_isVisible;
     private ArrayList<Runnable> m_visibleProcs = new ArrayList<Runnable>();
@@ -297,7 +298,10 @@ public class DelegateBase implements DlgClickNotify,
         if ( m_activity instanceof MainActivity ) {
             MainActivity main = (MainActivity)m_activity;
             if ( main.inDPMode() ) {
-                main.finishFragment();
+                if ( !m_finishCalled ) {
+                    m_finishCalled = true;
+                    main.finishFragment();
+                }
                 handled = true;
             }
         }

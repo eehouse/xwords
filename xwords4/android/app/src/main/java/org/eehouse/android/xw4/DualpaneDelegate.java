@@ -143,6 +143,21 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
+    public boolean onDismissed( Action action, Object[] params )
+    {
+        boolean handled = false;
+        MainActivity main = (MainActivity)m_activity;
+        XWFragment[] frags = main.getVisibleFragments();
+        for ( XWFragment frag : frags ) {
+            handled = frag.getDelegate().onDismissed( action, params );
+            if ( handled ) {
+                break;
+            }
+        }
+        return handled;
+    }
+
+    @Override
     public void inviteChoiceMade( Action action, InviteMeans means,
                                   Object[] params )
     {

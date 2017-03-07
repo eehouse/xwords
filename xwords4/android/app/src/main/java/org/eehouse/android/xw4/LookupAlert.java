@@ -30,7 +30,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class LookupAlert extends DialogFragment {
+public class LookupAlert extends XWDialogFragment {
     private LookupAlertView m_view;
 
     public static LookupAlert newInstance( String[] words, int lang, boolean noStudy )

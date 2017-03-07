@@ -33,19 +33,13 @@ import java.io.Serializable;
 
 import junit.framework.Assert;
 
-public class DBAlert extends DialogFragment {
+public class DBAlert extends XWDialogFragment {
     private static final String TAG = DBAlert.class.getSimpleName();
     private static final String DLG_ID_KEY = "DLG_ID_KEY";
     private static final String PARMS_KEY = "PARMS_KEY";
 
-    public interface OnDismissListener {
-        void onDismissed();
-    }
-
     private Object[] mParams;
     private DlgID mDlgID;
-    private OnDismissListener m_onDismiss;
-    
     public static DBAlert newInstance( DlgID dlgID, Object[] params )
     {
         if ( BuildConfig.DEBUG ) {
@@ -78,15 +72,6 @@ public class DBAlert extends DialogFragment {
         bundle.putSerializable( PARMS_KEY, mParams );
     }
     
-    @Override
-    public void onDismiss( DialogInterface dif )
-    {
-        if ( null != m_onDismiss ) {
-            m_onDismiss.onDismissed();
-        }
-        super.onDismiss( dif );
-    }
-
     @Override
     public Dialog onCreateDialog( Bundle sis )
     {
@@ -126,8 +111,4 @@ public class DBAlert extends DialogFragment {
         return dialog;
     }
 
-    protected void setOnDismissListener( OnDismissListener lstnr )
-    {
-        m_onDismiss = lstnr;
-    }
 }

@@ -38,7 +38,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 /** Abstract superclass for Alerts that have moved from and are still created
  * inside DlgDelegate
  */
-public class DlgDelegateAlert extends DialogFragment {
+public class DlgDelegateAlert extends XWDialogFragment {
     private static final String TAG = DlgDelegateAlert.class.getSimpleName();
     private static final String STATE_KEY = "STATE_KEY";
     private DlgState m_state;

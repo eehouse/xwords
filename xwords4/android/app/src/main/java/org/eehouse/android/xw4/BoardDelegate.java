@@ -24,10 +24,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,6 +42,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,6 +74,7 @@ import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -166,7 +168,7 @@ public class BoardDelegate extends DelegateBase
 
     private DBAlert.OnDismissListener m_blockingODL =
         new DBAlert.OnDismissListener() {
-            public void onDismissed() {
+            public void onDismissed( XWDialogFragment frag ) {
                 releaseIfBlocking();
             }
         };
@@ -267,7 +269,7 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case DLG_DELETED:
+        case DLG_DELETED: {
             ab = ab.setTitle( R.string.query_title )
                 .setMessage( R.string.msg_dev_deleted )
                 .setPositiveButton( android.R.string.ok, null );
@@ -279,6 +281,7 @@ public class BoardDelegate extends DelegateBase
                 };
             ab.setNegativeButton( R.string.button_delete, lstnr );
             dialog = ab.create();
+        }
             break;
 
         case QUERY_TRADE:
@@ -355,7 +358,6 @@ public class BoardDelegate extends DelegateBase
             }
 
             dialog = ab.create();
-            alert.setOnDismissListener( m_blockingODL );
         }
             break;
 
@@ -454,9 +456,20 @@ public class BoardDelegate extends DelegateBase
                 .create();
             break;
         case DLG_INVITE:
-            dialog = makeAlertDialog();
+            InviteAlertState state = (InviteAlertState)params[0];
+            dialog = makeInviteDialog( alert, state );
             if ( null != dialog ) {
                 m_inviteAlert = alert;
+                alert.setOnDismissListener( new DBAlert.OnDismissListener() {
+                        @Override
+                        public void onDismissed( XWDialogFragment frag ) {
+                            DbgUtils.logd( TAG, "onDismissed(%s)", frag.toString() );
+                            m_inviteAlert = null;
+                            // if ( m_nMissing > 0 ) {
+                            //     finish();
+                            // }
+                        }
+                    });
             }
             break;
 
@@ -472,136 +485,153 @@ public class BoardDelegate extends DelegateBase
         return dialog;
     } // makeDialog
 
-    private Dialog makeAlertDialog()
-    {
-        String message;
-        int titleID;
-        boolean showInviteButton = true;
-        boolean showNeutButton = false;
-
-        int buttonTxt = R.string.newgame_invite;
-
-        if ( m_relayMissing ) {
-            titleID = R.string.seeking_relay;
-            // If relay is only means, don't allow at all
-            boolean relayOnly = 1 >= m_connTypes.size();
-            showInviteButton = !relayOnly;
-            message = getString( R.string.no_relay_conn );
-            if ( NetStateCache.netAvail( m_activity )
-                 && NetStateCache.onWifi() ) {
-                message += getString( R.string.wifi_warning );
-            }
-            if ( !relayOnly ) {
-                CommsConnTypeSet without = (CommsConnTypeSet)
-                    m_connTypes.clone();
-                without.remove( CommsConnType.COMMS_CONN_RELAY );
-                message += "\n\n"
-                    + getString( R.string.drop_relay_warning_fmt,
-                                 without.toString( m_activity, true ) );
-                buttonTxt = R.string.newgame_drop_relay;
-            }
-        } else {
-            m_sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
-            int nSent = m_sentInfo.getMinPlayerCount();
-            boolean invitesSent = nSent >= m_nMissing;
-            if ( invitesSent ) {
-                if ( m_summary.hasRematchInfo() ) {
-                    titleID = R.string.waiting_rematch_title;
-                    message = getString( R.string.rematch_msg );
-                } else {
-                    titleID = R.string.waiting_invite_title;
-                    message = getQuantityString( R.plurals.invite_sent_fmt,
-                                                 nSent, nSent, m_nMissing );
-                }
-                buttonTxt = R.string.button_reinvite;
-                showNeutButton = true;
-            } else if ( DeviceRole.SERVER_ISCLIENT == m_gi.serverRole ) {
-                Assert.assertFalse( m_summary.hasRematchInfo() );
-                message = getString( R.string.invited_msg );
-                titleID = R.string.waiting_title;
-                showInviteButton = false;
-            } else {
-                titleID = R.string.waiting_title;
-                message = getQuantityString( R.plurals.invite_msg_fmt,
-                                             m_nMissing, m_nMissing );
-            }
-
-            if ( ! invitesSent && showInviteButton ) {
-                String ps = null;
-                if ( m_nMissing > 1 ) {
-                    ps = getString( R.string.invite_multiple );
-                } else {
-                    boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                    if ( avail[1] ) {
-                        ps = getString( R.string.invite_if_nfc );
-                    }
-                }
-                if ( null != ps ) {
-                    message += "\n\n" + ps;
-                }
-            }
-
-            message += "\n\n" + getString( R.string.invite_stays );
-        }
-
-        // Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
-        // button.setVisibility( nukeInviteButton ? View.GONE : View.VISIBLE );
-        // if ( !nukeInviteButton ) {
-        //     button.setText( buttonTxt );
-        // }
-        // button = ad.getButton( AlertDialog.BUTTON_NEUTRAL );
-        // button.setVisibility( nukeNeutButton ? View.GONE : View.VISIBLE );
-
-        OnClickListener lstnr = new OnClickListener() {
-                public void onClick( DialogInterface dialog, int item ){
-                    if ( !m_relayMissing ||
-                         ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
-                        Assert.assertTrue( 0 < m_nMissing );
-                        if ( m_summary.hasRematchInfo() ) {
-                            tryRematchInvites( true );
-                        } else {
-                            callInviteChoices( m_sentInfo );
-                        }
-                    } else {
-                        askDropRelay();
-                    }
-                }
-            };
-
-        AlertDialog.Builder ab = makeAlertBuilder()
-            .setTitle( titleID )
-            .setMessage( message )
-            .setPositiveButton( buttonTxt, lstnr )
-            .setOnCancelListener( new OnCancelListener() {
-                    public void onCancel( DialogInterface dialog ) {
-                        finish();
-                    }
-                } );
-
-        if ( showNeutButton ) {
-            OnClickListener lstnrMore = new OnClickListener() {
-                    public void onClick( DialogInterface dialog,
-                                         int item ) {
-                        String msg = m_sentInfo
-                            .getAsText( m_activity );
-                        makeOkOnlyBuilder( msg ).show();
-                    }
-                };
-            ab.setNeutralButton( R.string.newgame_invite_more, lstnrMore );
-        }
-        if ( showInviteButton ) {
-            OnClickListener lstnrWait = new OnClickListener() {
-                    public void onClick( DialogInterface dialog,
-                                         int item ) {
-                        finish();
-                    }
-                };
-            ab.setNegativeButton( R.string.button_wait, lstnrWait );
-        }
-
-        Dialog dialog = ab.create();
-        return dialog;
+    private static class InviteAlertState implements Serializable {
+        GameSummary summary;
+        CurGameInfo gi;
+        boolean relayMissing;
+        CommsConnTypeSet connTypes;
+        long rowid;
+        int nMissing;
     }
+
+    private Dialog makeInviteDialog( final DBAlert alert,
+                                     final InviteAlertState state )
+    {
+        Dialog dialog = null;
+        final Activity activity = alert.getActivity();
+        if ( null != activity ) {
+            final SentInvitesInfo[] sentInfo = { null };
+            String message;
+            int titleID;
+            boolean showInviteButton = true;
+            boolean showNeutButton = false;
+
+            int buttonTxt = R.string.newgame_invite;
+
+            if ( state.relayMissing ) {
+                titleID = R.string.seeking_relay;
+                // If relay is only means, don't allow at all
+                boolean relayOnly = 1 >= state.connTypes.size();
+                showInviteButton = !relayOnly;
+                message = activity.getString( R.string.no_relay_conn );
+                if ( NetStateCache.netAvail( activity )
+                     && NetStateCache.onWifi() ) {
+                    message += LocUtils.getString( activity, R.string.wifi_warning );
+                }
+                if ( !relayOnly ) {
+                    CommsConnTypeSet without = (CommsConnTypeSet)
+                        state.connTypes.clone();
+                    without.remove( CommsConnType.COMMS_CONN_RELAY );
+                    message += "\n\n"
+                        + LocUtils.getString( activity,
+                                              R.string.drop_relay_warning_fmt,
+                                              without.toString( activity, true ) );
+                    buttonTxt = R.string.newgame_drop_relay;
+                }
+            } else {
+                sentInfo[0] = DBUtils.getInvitesFor( activity, state.rowid );
+                int nSent = sentInfo[0].getMinPlayerCount();
+                boolean invitesSent = nSent >= state.nMissing;
+                if ( invitesSent ) {
+                    if ( state.summary.hasRematchInfo() ) {
+                        titleID = R.string.waiting_rematch_title;
+                        message = LocUtils.getString( activity, R.string.rematch_msg );
+                    } else {
+                        titleID = R.string.waiting_invite_title;
+                        message = LocUtils
+                            .getQuantityString( activity, R.plurals.invite_sent_fmt,
+                                                nSent, nSent, state.nMissing );
+                    }
+                    buttonTxt = R.string.button_reinvite;
+                    showNeutButton = true;
+                } else if ( DeviceRole.SERVER_ISCLIENT == state.gi.serverRole ) {
+                    Assert.assertFalse( state.summary.hasRematchInfo() );
+                    message = LocUtils.getString( activity, R.string.invited_msg );
+                    titleID = R.string.waiting_title;
+                    showInviteButton = false;
+                } else {
+                    titleID = R.string.waiting_title;
+                    message = LocUtils
+                        .getQuantityString( activity, R.plurals.invite_msg_fmt,
+                                            state.nMissing, state.nMissing );
+                }
+
+                if ( ! invitesSent && showInviteButton ) {
+                    String ps = null;
+                    if ( state.nMissing > 1 ) {
+                        ps = LocUtils.getString( activity, R.string.invite_multiple );
+                    } else {
+                        boolean[] avail = NFCUtils.nfcAvail( activity );
+                        if ( avail[1] ) {
+                            ps = LocUtils.getString( activity, R.string.invite_if_nfc );
+                        }
+                    }
+                    if ( null != ps ) {
+                        message += "\n\n" + ps;
+                    }
+                }
+
+                message += "\n\n" + LocUtils.getString( activity, R.string.invite_stays );
+            }
+
+            // Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
+            // button.setVisibility( nukeInviteButton ? View.GONE : View.VISIBLE );
+            // if ( !nukeInviteButton ) {
+            //     button.setText( buttonTxt );
+            // }
+            // button = ad.getButton( AlertDialog.BUTTON_NEUTRAL );
+            // button.setVisibility( nukeNeutButton ? View.GONE : View.VISIBLE );
+
+            OnClickListener lstnr = new OnClickListener() {
+                    public void onClick( DialogInterface dialog, int item ){
+                        if ( !state.relayMissing ||
+                             ! state.connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
+                            Assert.assertTrue( 0 < state.nMissing );
+                            if ( state.summary.hasRematchInfo() ) {
+                                tryRematchInvites( true );
+                            } else {
+                                callInviteChoices( sentInfo[0] );
+                            }
+                        } else {
+                            askDropRelay();
+                        }
+                    }
+                };
+
+            AlertDialog.Builder ab = makeAlertBuilder()
+                .setTitle( titleID )
+                .setMessage( message )
+                .setPositiveButton( buttonTxt, lstnr )
+                .setOnCancelListener( new OnCancelListener() {
+                        public void onCancel( DialogInterface dialog ) {
+                            finish();
+                        }
+                    } );
+
+            if ( showNeutButton ) {
+                OnClickListener lstnrMore = new OnClickListener() {
+                        public void onClick( DialogInterface dialog,
+                                             int item ) {
+                            String msg = sentInfo[0].getAsText( activity );
+                            makeOkOnlyBuilder( msg ).show();
+                        }
+                    };
+                ab.setNeutralButton( R.string.newgame_invite_more, lstnrMore );
+            }
+            if ( showInviteButton ) {
+                OnClickListener lstnrWait = new OnClickListener() {
+                        public void onClick( DialogInterface dialog,
+                                             int item ) {
+                            finish();
+                        }
+                    };
+                ab.setNegativeButton( R.string.button_wait, lstnrWait );
+            }
+
+            dialog = ab.create();
+        }
+        return dialog;
+    } // makeInviteDialog
 
     public BoardDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -757,8 +787,8 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
-            } else if ( 0 < m_nMissing ) {
-                showInviteAlert();
+            } else {
+                showInviteAlertIf();
             }
         }
     }
@@ -1197,6 +1227,11 @@ public class BoardDelegate extends DelegateBase
         case DELETE_AND_EXIT:
             finish();
             break;
+
+        case LAUNCH_INVITE_ACTION:
+            showInviteAlertIf();
+            break;
+
         default:
             handled = false;
         }
@@ -1663,7 +1698,7 @@ public class BoardDelegate extends DelegateBase
                 skipDismiss = !tryRematchInvites( false );
             } else if ( !m_haveInvited ) {
                 m_haveInvited = true;
-                showInviteAlert();
+                showInviteAlertIf();
                 invalidateOptionsMenuIf();
                 skipDismiss = true;
             } else {
@@ -1981,7 +2016,7 @@ public class BoardDelegate extends DelegateBase
                 post( new Runnable() {
                         @Override
                         public void run() {
-                            showInviteAlert();
+                            showInviteAlertIf();
                         }
                     } );
             }
@@ -2292,8 +2327,6 @@ public class BoardDelegate extends DelegateBase
                         if ( null != m_inviteAlert ) {
                             DbgUtils.logd( TAG, "dismissing invite alert" );
                             m_inviteAlert.dismiss();
-                            m_inviteAlert = null;
-                            // m_showedInviteAlert = false;
                         }
                     }
                 }
@@ -2421,11 +2454,18 @@ public class BoardDelegate extends DelegateBase
             } );
     }
 
-    private void showInviteAlert()
+    private void showInviteAlertIf()
     {
-        if ( !m_showedInviteAlert && null == m_inviteAlert ) {
+        if ( null == m_inviteAlert & m_nMissing > 0 ) {
             m_showedInviteAlert = true;
-            showDialogFragment( DlgID.DLG_INVITE );
+            InviteAlertState ias = new InviteAlertState();
+            ias.summary = m_summary;
+            ias.gi = m_gi;
+            ias.relayMissing = m_relayMissing;
+            ias.connTypes = m_connTypes;
+            ias.rowid = m_rowid;
+            ias.nMissing = m_nMissing;
+            showDialogFragment( DlgID.DLG_INVITE, ias );
         }
     }
 

@@ -827,7 +827,7 @@ public class GamesListDelegate extends ListDelegateBase
                                                              0, true ) );
             alert.setOnDismissListener( new DBAlert.OnDismissListener() {
                     @Override
-                    public void onDismissed() {
+                    public void onDismissed( XWDialogFragment frag ) {
                         String name = etext.getText().toString();
                         if ( 0 == name.length() ) {
                             name = CommonPrefs.

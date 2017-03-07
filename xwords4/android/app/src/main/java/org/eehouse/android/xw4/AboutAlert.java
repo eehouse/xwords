@@ -36,7 +36,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class AboutAlert extends DialogFragment {
+public class AboutAlert extends XWDialogFragment {
 
     public static AboutAlert newInstance()
     {
