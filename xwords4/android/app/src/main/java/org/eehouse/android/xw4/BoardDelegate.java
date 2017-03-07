@@ -181,18 +181,27 @@ public class BoardDelegate extends DelegateBase
 
         Dialog dialog;
         switch ( dlgID ) {
+        case DLG_RETRY:
         case DLG_OKONLY: {
             int title = (Integer)params[0];
             String msg = (String)params[1];
-            dialog = ab
-                .setTitle( title )
+            ab.setTitle( title )
                 .setMessage( msg )
-                .setPositiveButton( android.R.string.ok, null )
-                .create();
+                .setPositiveButton( android.R.string.ok, null );
+            if ( DlgID.DLG_RETRY == dlgID ) {
+                lstnr = new OnClickListener() {
+                        @Override
+                        public void onClick( DialogInterface dlg,
+                                             int whichButton ) {
+                            handleViaThread( JNICmd.CMD_RESET );
+                        }
+                    };
+                ab.setNegativeButton( R.string.button_retry, lstnr );
+            }
+            dialog = ab.create();
         }
             break;
 
-        case DLG_RETRY:
         case GAME_OVER:
         case DLG_CONNSTAT: {
             GameSummary summary = (GameSummary)params[0];
@@ -201,15 +210,7 @@ public class BoardDelegate extends DelegateBase
             ab.setTitle( title )
                 .setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
-            if ( DlgID.DLG_RETRY == dlgID ) {
-                lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dlg,
-                                             int whichButton ) {
-                            handleViaThread( JNICmd.CMD_RESET );
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_retry, lstnr );
-            } else if ( DlgID.GAME_OVER == dlgID
+            if ( DlgID.GAME_OVER == dlgID
                         && rematchSupported( m_activity, true, summary ) ) {
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg,
