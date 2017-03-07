@@ -181,7 +181,17 @@ public class BoardDelegate extends DelegateBase
 
         Dialog dialog;
         switch ( dlgID ) {
-        case DLG_OKONLY:
+        case DLG_OKONLY: {
+            int title = (Integer)params[0];
+            String msg = (String)params[1];
+            dialog = ab
+                .setTitle( title )
+                .setMessage( msg )
+                .setPositiveButton( android.R.string.ok, null )
+                .create();
+        }
+            break;
+
         case DLG_RETRY:
         case GAME_OVER:
         case DLG_CONNSTAT: {
