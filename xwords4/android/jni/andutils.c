@@ -371,16 +371,17 @@ makeBooleanArray( JNIEnv *env, int siz, const jboolean* vals )
     return array;
 }
 
-int
-getIntFromArray( JNIEnv* env, jintArray arr, bool del )
+void
+getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del )
 {
     jint* ints = (*env)->GetIntArrayElements(env, arr, 0);
-    int result = ints[0];
+    for ( int ii = 0; ii < count; ++ii ) {
+        dest[ii] = ints[ii];
+    }
     (*env)->ReleaseIntArrayElements( env, arr, ints, 0 );
     if ( del ) {
         deleteLocalRef( env, arr );
     }
-    return result;
 }
 
 void

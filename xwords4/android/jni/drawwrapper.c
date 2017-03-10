@@ -293,8 +293,11 @@ and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* rect,
                                                  nTilesLeft, widthArray, 
                                                  heightArray );
     if ( result ) {
-        *width = getIntFromArray( env, widthArray, true );
-        *height = getIntFromArray( env, heightArray, true );
+        int tmp;
+        getIntsFromArray( env, &tmp, widthArray, 1, true );
+        *width = tmp;
+        getIntsFromArray( env, &tmp, heightArray, 1, true );
+        *height = tmp;
     }
     returnJRect( draw, JCACHE_RECT0, jrect );
     return result;
@@ -337,8 +340,11 @@ and_draw_measureScoreText( DrawCtx* dctx,
                             widthArray, heightArray );
     returnJRect( draw, JCACHE_RECT0, jrect );
 
-    *width = getIntFromArray( env, widthArray, true );
-    *height = getIntFromArray( env, heightArray, true );
+    int tmp;
+    getIntsFromArray( env, &tmp, widthArray, 1, true );
+    *width = tmp;
+    getIntsFromArray( env, &tmp, heightArray, 1, true );
+    *height = tmp;
 } /* and_draw_measureScoreText */
 
 static void
@@ -603,8 +609,12 @@ and_draw_measureMiniWText( DrawCtx* dctx, const XP_UCHAR* textP,
                             jstr, widthArray, heightArray );
 
     deleteLocalRef( env, jstr );
-    *width = getIntFromArray( env, widthArray, true );
-    *height = getIntFromArray( env, heightArray, true );
+
+    int tmp;
+    getIntsFromArray( env, &tmp, widthArray, 1, true );
+    *width = tmp;
+    getIntsFromArray( env, &tmp, heightArray, 1, true );
+    *height = tmp;
 }
 
 static void 
