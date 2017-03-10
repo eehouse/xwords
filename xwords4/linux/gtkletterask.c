@@ -42,8 +42,8 @@ abort_button_event( GtkWidget* XP_UNUSED(widget), gpointer XP_UNUSED(closure) )
 #define BUTTONS_PER_ROW 13
 
 XP_S16
-gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name, 
-              XP_U16 nTiles, const XP_UCHAR** texts )
+gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
+              XP_U16 nTiles, const XP_UCHAR** texts, const XP_U16* counts )
 {
     GtkWidget* dialog;
     GtkWidget* label;
@@ -70,7 +70,9 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
         g_signal_connect( button, "clicked", 
                           G_CALLBACK(set_bool_and_quit), &results[ii] );
-        gtk_widget_show( button );
+
+        /* disable if we don't have any tiles! */
+        gtk_widget_set_sensitive( button, !counts || counts[ii] > 0 );
 
         if ( ii+1 == nTiles || (ii % BUTTONS_PER_ROW == 0) ) {
             gtk_widget_show( hbox );
@@ -118,9 +120,10 @@ gtkletterask( const PickInfo* pi, XP_Bool forTray, const XP_UCHAR* name,
         char curTilesBuf[64];
         int len = snprintf( curTilesBuf, sizeof(curTilesBuf), "%s", 
                             "Tiles so far: " );
-        for ( ii = 0; ii < pi->nCurTiles; ++ii ) {
+        for ( ii = 0; ii < curPick->nTiles; ++ii ) {
+            Tile tile = curPick->tiles[ii];
             len += snprintf( &curTilesBuf[len], sizeof(curTilesBuf) - len, "%s ", 
-                             pi->curTiles[ii] );
+                             texts[tile] );
         }
 
         GtkWidget* curTilesLabel = gtk_label_new( curTilesBuf );

@@ -220,10 +220,13 @@ struct CommonGlobals {
     char question[256*4];
     const XP_UCHAR* askPassName;
     XP_U16 nTiles;
+    XP_U16 nToPick;
     XP_U16 blankCol;
     XP_U16 blankRow;
+    XP_Bool pickIsInitial;
 
     const XP_UCHAR* tiles[MAX_UNIQUE_TILES];
+    XP_U16 tileCounts[MAX_UNIQUE_TILES];
 
 #ifdef XWFEATURE_RELAY
     int relaySocket;                 /* tcp connection to relay */

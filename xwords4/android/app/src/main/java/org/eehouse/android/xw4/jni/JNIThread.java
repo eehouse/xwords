@@ -72,6 +72,7 @@ public class JNIThread extends Thread {
             CMD_KEYUP,
             CMD_TIMER_FIRED,
             CMD_COMMIT,
+            CMD_TILES_PICKED,
             CMD_JUGGLE,
             CMD_FLIP,
             CMD_TOGGLE_TRAY,
@@ -552,9 +553,17 @@ public class JNIThread extends Thread {
                     ? false : (Boolean)args[0];
                 boolean turnConfirmed = args.length < 2
                     ? false : (Boolean)args[1];
+                int[] newTiles = args.length < 3 ? null : (int[])args[2];
                 draw = XwJNI.board_commitTurn( m_jniGamePtr, phoniesConfirmed,
-                                               turnConfirmed );
+                                               turnConfirmed, newTiles );
                 break;
+
+            case CMD_TILES_PICKED:
+                int playerNum = (Integer)args[0];
+                int[] tiles = (int[])args[1];
+                XwJNI.server_tilesPicked( m_jniGamePtr, playerNum, tiles );
+                break;
+
             case CMD_JUGGLE:
                 draw = XwJNI.board_juggleTray( m_jniGamePtr );
                 break;

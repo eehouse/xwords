@@ -102,12 +102,18 @@ XP_U32 server_getLastMoveTime( const ServerCtxt* server );
 /* Signed in case no dictionary available */
 XP_S16 server_countTilesInPool( ServerCtxt* server );
 
+XP_Bool server_askPickTiles( ServerCtxt* server, XP_U16 player,
+                             TrayTileSet* newTiles, XP_U16 nToPick );
+void server_tilesPicked( ServerCtxt* server, XP_U16 player,
+                         const TrayTileSet* newTiles );
+
 XP_U16 server_getPendingRegs( const ServerCtxt* server );
 
 XP_Bool server_do( ServerCtxt* server );
 
-XP_Bool server_commitMove( ServerCtxt* server );
-XP_Bool server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles );
+XP_Bool server_commitMove( ServerCtxt* server, TrayTileSet* newTiles );
+XP_Bool server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
+                            TrayTileSet* newTiles );
 
 /* call this when user wants to end the game */
 void server_endGame( ServerCtxt* server );

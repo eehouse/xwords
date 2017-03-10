@@ -38,8 +38,9 @@ public interface UtilCtxt {
     public static final int PICKER_BACKUP = -2;
 
     void notifyPickTileBlank( int playerNum, int col, int row, String[] texts );
-    int userPickTileTray( int playerNum, String[] tiles,
-                          String[] curTiles, int nPicked );
+
+    void informNeedPickTiles( boolean isInitial, int playerNum, int nToPick,
+                              String[] texts, int[] counts );
 
     void informNeedPassword( int player, String name );
 

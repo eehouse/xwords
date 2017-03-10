@@ -1445,7 +1445,8 @@ handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_done_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE, XP_FALSE ) ) {
+    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE,
+                           XP_FALSE, NULL ) ) {
         board_draw( globals->cGlobals.game.board );
         disenable_buttons( globals );
     }
@@ -1543,7 +1544,8 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE, XP_FALSE ) ) {
+    if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE,
+                           XP_FALSE, NULL ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_commit_button */
@@ -1693,7 +1695,7 @@ ask_blank( gpointer data )
 
     XP_UCHAR* name = globals->cGlobals.gi->players[cGlobals->selPlayer].name;
     XP_S16 result = gtkletterask( NULL, XP_FALSE, name,
-                                  cGlobals->nTiles, cGlobals->tiles );
+                                  cGlobals->nTiles, cGlobals->tiles, NULL );
 
     for ( int ii = 0; ii < cGlobals->nTiles; ++ii ) {
         g_free( (gpointer)cGlobals->tiles[ii] );
@@ -1725,18 +1727,78 @@ gtk_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, XP_U16 col,
     (void)g_idle_add( ask_blank, globals );
 }
 
-static XP_S16
-gtk_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi,
-                           XP_U16 playerNum, const XP_UCHAR** texts, 
-                           XP_U16 nTiles )
+static gint
+ask_tiles( gpointer data )
 {
-    XP_S16 chosen;
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-	XP_UCHAR* name = globals->cGlobals.gi->players[playerNum].name;
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
 
-    chosen = gtkletterask( pi, XP_TRUE, name, nTiles, texts );
-    return chosen;
-} /* gtk_util_userPickTile */
+    TrayTileSet newTiles = {0};
+    XP_UCHAR* name = cGlobals->gi->players[cGlobals->selPlayer].name;
+    for ( XP_Bool done = XP_FALSE; !done; ) {
+        XP_S16 picked = gtkletterask( &newTiles, XP_TRUE, name,
+                                      cGlobals->nTiles, cGlobals->tiles,
+                                      cGlobals->tileCounts );
+        switch ( picked ) {
+        case PICKER_PICKALL:
+            done = XP_TRUE;
+            break;
+        case PICKER_BACKUP:
+            if ( newTiles.nTiles > 0 ) {
+                Tile backed = newTiles.tiles[--newTiles.nTiles];
+                ++cGlobals->tileCounts[backed];
+            }
+            break;
+        default:
+            XP_ASSERT( picked >= 0 && picked < cGlobals->nTiles );
+            --cGlobals->tileCounts[picked];
+            newTiles.tiles[newTiles.nTiles++] = picked;
+            done = newTiles.nTiles == cGlobals->nToPick;
+            break;
+        }
+    }
+
+    for ( int ii = 0; ii < cGlobals->nTiles; ++ii ) {
+        g_free( (gpointer)cGlobals->tiles[ii] );
+    }
+
+    BoardCtxt* board = cGlobals->game.board;
+    XP_Bool draw = XP_TRUE;
+    if ( cGlobals->pickIsInitial ) {
+        server_tilesPicked( cGlobals->game.server, cGlobals->selPlayer,
+                            &newTiles );
+    } else {
+        draw = board_commitTurn( cGlobals->game.board, XP_TRUE, XP_TRUE,
+                                 &newTiles );
+    }
+
+    if ( draw ) {
+        board_draw( board );
+    }
+
+    return 0;
+}
+
+static void
+gtk_util_informNeedPickTiles( XW_UtilCtxt* uc, XP_Bool isInitial,
+                              XP_U16 player, XP_U16 nToPick,
+                              XP_U16 nFaces, const XP_UCHAR** faces,
+                              const XP_U16* counts )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    cGlobals->selPlayer = player;
+    cGlobals->pickIsInitial = isInitial;
+
+    cGlobals->nToPick = nToPick;
+    cGlobals->nTiles = nFaces;
+    for ( int ii = 0; ii < nFaces; ++ii ) {
+        cGlobals->tiles[ii] = g_strdup( faces[ii] );
+        cGlobals->tileCounts[ii] = counts[ii];
+    }
+
+    (void)g_idle_add( ask_tiles, globals );
+} /* gtk_util_informNeedPickTiles */
 
 static gint
 ask_password( gpointer data )
@@ -2125,7 +2187,7 @@ ask_bad_words( gpointer data )
 
     if ( GTK_RESPONSE_YES == gtkask( globals->window, cGlobals->question,
                                      GTK_BUTTONS_YES_NO, NULL ) ) {
-        board_commitTurn( cGlobals->game.board, XP_TRUE, XP_FALSE );
+        board_commitTurn( cGlobals->game.board, XP_TRUE, XP_FALSE, NULL );
     }
     return 0;
 }
@@ -2275,7 +2337,7 @@ ask_move( gpointer data )
     gint chosen = gtkask( globals->window, cGlobals->question, buttons, NULL );
     if ( GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, XP_TRUE, XP_TRUE ) ) {
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
             board_draw( board );
         }
     }
@@ -2314,7 +2376,7 @@ ask_trade( gpointer data )
                                      cGlobals->question, 
                                      GTK_BUTTONS_YES_NO, NULL ) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, XP_TRUE, XP_TRUE ) ) {
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
             board_draw( board );
         }
     }
@@ -2466,7 +2528,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_notifyTrade = gtk_util_notifyTrade;
     util->vtable->m_util_getVTManager = gtk_util_getVTManager;
     util->vtable->m_util_notifyPickTileBlank = gtk_util_notifyPickTileBlank;
-    util->vtable->m_util_userPickTileTray = gtk_util_userPickTileTray;
+    util->vtable->m_util_informNeedPickTiles = gtk_util_informNeedPickTiles;
     util->vtable->m_util_informNeedPassword = gtk_util_informNeedPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;

@@ -1869,16 +1869,32 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public int userPickTileTray( int playerNum, String[] texts,
-                                     String[] curTiles, int nPicked )
+        public void informNeedPickTiles( final boolean isInitial,
+                                         final int playerNum, int nToPick,
+                                         String[] texts, int[] counts )
         {
-            String curTilesStr = TextUtils.join( ", ", curTiles );
-            boolean canUndoTiles = 0 < nPicked;
-            waitBlockingDialog( DlgID.PICK_TILE_REQUESTTRAY_BLK,
-                                UtilCtxt.PICKER_PICKALL, texts, curTilesStr,
-                                canUndoTiles );
-            return m_resultCode;
+            post( new Runnable() {
+                    @Override
+                    public void run() {
+                        int[] noNewTiles = new int[0];
+                        if ( isInitial ) {
+                            handleViaThread( JNICmd.CMD_TILES_PICKED, playerNum, noNewTiles );
+                        } else {
+                            handleViaThread( JNICmd.CMD_COMMIT, true, true, noNewTiles );
+                        }
+                    }
+                } );
         }
+        // public int userPickTileTray( int playerNum, String[] texts,
+        //                              String[] curTiles, int nPicked )
+        // {
+        //     String curTilesStr = TextUtils.join( ", ", curTiles );
+        //     boolean canUndoTiles = 0 < nPicked;
+        //     waitBlockingDialog( DlgID.PICK_TILE_REQUESTTRAY_BLK,
+        //                         UtilCtxt.PICKER_PICKALL, texts, curTilesStr,
+        //                         canUndoTiles );
+        //     return m_resultCode;
+        // }
 
         @Override
         public void informNeedPassword( int player, String name )

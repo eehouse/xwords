@@ -54,11 +54,10 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "userPickTileBlank" );
     }
 
-    public int userPickTileTray( int playerNum, String[] texts,
-                                 String[] curTiles, int nPicked )
+    public void informNeedPickTiles( boolean isInitial, int playerNum, int nToPick,
+                                     String[] texts, int[] counts )
     {
-        subclassOverride( "userPickTileTray" );
-        return 0;
+        subclassOverride( "informNeedPickTiles" );
     }
 
     public void informNeedPassword( int player, String name )

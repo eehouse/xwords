@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
+/* -*-mode: C; compile-command: "find-and-gradle.sh insXwdDeb"; -*- */
 /* 
  * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.

@@ -300,7 +300,8 @@ public class XwJNI {
     public static native boolean board_toggle_showValues( GamePtr gamePtr );
     public static native boolean board_commitTurn( GamePtr gamePtr,
                                                    boolean phoniesConfirmed,
-                                                   boolean turnConfirmed );
+                                                   boolean turnConfirmed,
+                                                   int[] newTiles );
 
     public static native boolean board_flip( GamePtr gamePtr );
     public static native boolean board_replaceTiles( GamePtr gamePtr );
@@ -358,6 +359,8 @@ public class XwJNI {
     public static native void server_reset( GamePtr gamePtr );
     public static native void server_handleUndo( GamePtr gamePtr );
     public static native boolean server_do( GamePtr gamePtr );
+    public static native void server_tilesPicked( GamePtr gamePtr, int player, int[] tiles );
+
     public static native String server_formatDictCounts( GamePtr gamePtr, int nCols );
     public static native boolean server_getGameIsOver( GamePtr gamePtr );
     public static native String server_writeFinalScores( GamePtr gamePtr );

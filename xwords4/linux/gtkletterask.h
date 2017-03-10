@@ -26,9 +26,10 @@
 
 #include "gtkboard.h"
 
-XP_S16 gtkletterask( const PickInfo* pi, XP_Bool forTray, 
+XP_S16 gtkletterask( const TrayTileSet* curPick, XP_Bool forTray,
                      const XP_UCHAR* name, 
-                     XP_U16 nTiles, const XP_UCHAR** texts );
+                     XP_U16 nTiles, const XP_UCHAR** texts,
+                     const XP_U16* counts );
 
 
 #endif /* _GTKLETTERASK_H_ */

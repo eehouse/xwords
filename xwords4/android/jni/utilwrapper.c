@@ -1,6 +1,6 @@
-/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
+/* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
 /* 
- * Copyright 2001-2014 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2017 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -162,24 +162,23 @@ and_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
     UTIL_CBK_TAIL();
 }
 
-static XP_S16
-and_util_userPickTileTray( XW_UtilCtxt* uc, const PickInfo* pi, 
-                           XP_U16 playerNum, const XP_UCHAR** tileFaces, 
-                           XP_U16 nTiles )
+static void
+and_util_informNeedPickTiles( XW_UtilCtxt* uc, XP_Bool isInitial,
+                              XP_U16 player, XP_U16 nToPick,
+                              XP_U16 nFaces, const XP_UCHAR** faces,
+                              const XP_U16* counts )
 {
-    XP_S16 result = -1;
-    UTIL_CBK_HEADER("userPickTileTray", 
-                    "(I[Ljava/lang/String;[Ljava/lang/String;I)I" );
-    jobject jtexts = makeStringArray( env, nTiles, tileFaces );
-    jobject jcurtiles = makeStringArray( env, pi->nCurTiles, pi->curTiles );
-    result = (*env)->CallIntMethod( env, util->jutil, mid, 
-                                    playerNum, jtexts, jcurtiles, 
-                                    pi->thisPick );
-    deleteLocalRefs( env, jtexts, jcurtiles, DELETE_NO_REF );
-        
+    UTIL_CBK_HEADER("informNeedPickTiles",
+                    "(ZII[Ljava/lang/String;[I)V" );
+    jobject jtexts = makeStringArray( env, nFaces, faces );
+    jobject jcounts = makeIntArray( env, nFaces, counts );
+
+    (*env)->CallVoidMethod( env, util->jutil, mid, isInitial, player,
+                            nToPick, jtexts, jcounts );
+
+    deleteLocalRefs( env, jtexts, jcounts, DELETE_NO_REF );
     UTIL_CBK_TAIL();
-    return result;
-} /* and_util_userPickTile */
+} /* and_util_informNeedPickTiles */
 
 static void
 and_util_informNeedPassword( XW_UtilCtxt* uc, XP_U16 player,
@@ -707,7 +706,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);
     SET_PROC(notifyPickTileBlank);
-    SET_PROC(userPickTileTray);
+    SET_PROC(informNeedPickTiles);
     SET_PROC(informNeedPassword);
     SET_PROC(trayHiddenChange);
     SET_PROC(yOffsetChange);

@@ -34,6 +34,7 @@
 #include "pool.h"
 #include "engine.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -132,6 +133,8 @@ struct ServerCtxt {
 
 /******************************* prototypes *******************************/
 static void assignTilesToAll( ServerCtxt* server );
+static void makePoolOnce( ServerCtxt* server );
+
 static void resetEngines( ServerCtxt* server );
 static void nextTurn( ServerCtxt* server, XP_S16 nxtTurn );
 
@@ -142,6 +145,9 @@ static void badWordMoveUndoAndTellUser( ServerCtxt* server,
 static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XP_S16 turn );
 static XWStreamCtxt* mkServerStream( ServerCtxt* server );
+static void fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
+                        const TrayTileSet* tradedTiles,
+                        TrayTileSet* resultTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server, 
@@ -900,7 +906,7 @@ makeRobotMove( ServerCtxt* server )
         if ( trade ) {
             TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
             XP_LOGF( "%s: robot trading %d tiles", __func__, oldTiles.nTiles );
-            result = server_commitTrade( server, &oldTiles );
+            result = server_commitTrade( server, &oldTiles, NULL );
 
             /* Quick hack to fix gremlin bug where all-robot game seen none
                able to trade for tiles to move and blowing the undo stack.
@@ -933,7 +939,7 @@ makeRobotMove( ServerCtxt* server )
                     server->nv.prevMoveStream = stream;
                     server->nv.prevWordsStream = wordsStream;
                 }
-                result = server_commitMove( server );
+                result = server_commitMove( server, NULL );
             } else {
                 result = XP_FALSE;
             }
@@ -1047,6 +1053,64 @@ showPrevScore( ServerCtxt* server )
     SETSTATE( server, server->nv.stateAfterShow );
 } /* showPrevScore */
 
+void
+server_tilesPicked( ServerCtxt* server, XP_U16 player,
+                    const TrayTileSet* newTilesP )
+{
+    TrayTileSet newTiles = *newTilesP;
+    pool_removeTiles( server->pool, &newTiles );
+
+    fetchTiles( server, player, MAX_TRAY_TILES, NULL, &newTiles );
+    model_assignPlayerTiles( server->vol.model, player, &newTiles );
+
+    util_requestTime( server->vol.util );
+}
+
+static void
+informNeedPickTiles( ServerCtxt* server, XP_Bool initial, XP_U16 turn,
+                     XP_U16 nToPick )
+{
+    ModelCtxt* model = server->vol.model;
+    DictionaryCtxt* dict = model_getDictionary(model);
+    XP_U16 nFaces = dict_numTileFaces( dict );
+    XP_U16 counts[MAX_UNIQUE_TILES];
+    const XP_UCHAR* faces[MAX_UNIQUE_TILES];
+
+    XP_U16 nLeft = pool_getNTilesLeft( server->pool );
+    if ( nLeft < nToPick ) {
+        nToPick = nLeft;
+    }
+
+    for ( Tile tile = 0; tile < nFaces; ++tile ) {
+        faces[tile] = dict_getTileString( dict, tile );
+        counts[tile] = pool_getNTilesLeftFor( server->pool, tile );
+    }
+    util_informNeedPickTiles( server->vol.util, initial, turn,
+                              nToPick, nFaces, faces, counts );
+}
+
+static XP_Bool
+askedForTiles( ServerCtxt* server )
+{
+    XP_Bool asked = XP_FALSE;
+    CurGameInfo* gi = server->vol.gi;
+    if ( gi->serverRole == SERVER_STANDALONE && gi->allowPickTiles ) {
+         XP_U16 nPlayers = gi->nPlayers;
+        ModelCtxt* model = server->vol.model;
+        makePoolOnce( server );
+        for ( XP_U16 turn = 0; !asked && turn < nPlayers; ++turn ) {
+            LocalPlayer* player = &gi->players[turn];
+            XP_U16 nTiles = model_getNumTilesInTray( model, turn );
+            if ( nTiles == 0 && !LP_IS_ROBOT(player) ) {
+                informNeedPickTiles( server, XP_TRUE, turn, MAX_TRAY_TILES );
+                asked = XP_TRUE;
+            }
+        }
+    }
+    LOG_RETURNF( "%s", boolToStr(asked));
+    return asked;
+}
+
 XP_Bool
 server_do( ServerCtxt* server )
 {
@@ -1062,10 +1126,12 @@ server_do( ServerCtxt* server )
         case XWSTATE_BEGIN:
             if ( server->nv.pendingRegistrations == 0 ) { /* all players on
                                                              device */
-                assignTilesToAll( server );
-                SETSTATE( server, XWSTATE_INTURN );
-                setTurn( server, 0 );
-                moreToDo = XP_TRUE;
+                if ( !askedForTiles( server ) ) {
+                    assignTilesToAll( server );
+                    SETSTATE( server, XWSTATE_INTURN );
+                    setTurn( server, 0 );
+                    moreToDo = XP_TRUE;
+                }
             }
             break;
 
@@ -1359,8 +1425,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         dict_unref( newDict );  /* new owner will have ref'd */
 
         XP_ASSERT( !server->pool );
-        pool = server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
-        pool_initFromDict( server->pool, model_getDictionary(model));
+        makePoolOnce( server );
+        pool = server->pool;
 
         /* now read the assigned tiles for each player from the stream, and
            remove them from the newly-created local pool. */
@@ -1755,6 +1821,23 @@ curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
     *nUsedP = nUsed;
 } /* curTrayAsTexts */
 
+/**
+ * Return true (after calling util_informPickTiles()) IFF allowPickTiles is
+ * TRUE and the tile set passed in is NULL.  If it doesn't contain as many
+ * tiles as are needed that's cool: server code will later interpret that as
+ * meaning the remainder should be assigned randomly as usual.
+ */
+XP_Bool
+server_askPickTiles( ServerCtxt* server, XP_U16 turn, TrayTileSet* newTiles,
+                     XP_U16 nToPick )
+{
+    XP_Bool asked = newTiles == NULL && server->vol.gi->allowPickTiles;
+    if ( asked ) {
+        informNeedPickTiles( server, XP_FALSE, turn, nToPick );
+    }
+    return asked;
+}
+
 /* Get tiles for one user.  If picking is available, let user pick until
  * cancels.  Otherwise, and after cancel, pick for 'im.
  */
@@ -1763,7 +1846,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
             const TrayTileSet* tradedTiles, TrayTileSet* resultTiles )
 {
     XP_Bool ask;
-    XP_U16 nSoFar = 0;
+    XP_U16 nSoFar = resultTiles->nTiles;
     XP_U16 nLeft;
     PoolContext* pool = server->pool;
     TrayTileSet oneTile;
@@ -1796,17 +1879,17 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 
 #ifdef FEATURE_TRAY_EDIT        /* good compiler would note ask==0, but... */
     /* First ask until cancelled */
-    for ( nSoFar = 0; ask && nSoFar < nToFetch;  ) {
+    for ( ; ask && nSoFar < nToFetch;  ) {
         const XP_UCHAR* texts[MAX_UNIQUE_TILES];
         Tile tiles[MAX_UNIQUE_TILES];
         XP_S16 chosen;
         XP_U16 nUsed = MAX_UNIQUE_TILES;
-
+        // XP_ASSERT(0);           /* should no longer happen!!! */
         model_packTilesUtil( server->vol.model, pool,
                              XP_TRUE, &nUsed, texts, tiles );
 
-        chosen = util_userPickTileTray( server->vol.util, &pi, playerNum,
-                                        texts, nUsed );
+        chosen = PICKER_PICKALL; /*util_userPickTileTray( server->vol.util,
+                                   &pi, playerNum, texts, nUsed );*/
 
         if ( chosen == PICKER_PICKALL ) {
             ask = XP_FALSE;
@@ -1847,6 +1930,18 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 } /* fetchTiles */
 
 static void
+makePoolOnce( ServerCtxt* server )
+{
+    ModelCtxt* model = server->vol.model;
+    XP_ASSERT( model_getDictionary(model) != NULL );
+    if ( server->pool == NULL ) {
+        server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
+        XP_STATUSF( "initing pool" );
+        pool_initFromDict( server->pool, model_getDictionary(model));
+    }
+}
+
+static void
 assignTilesToAll( ServerCtxt* server )
 {
     XP_U16 numAssigned;
@@ -1855,12 +1950,7 @@ assignTilesToAll( ServerCtxt* server )
     XP_U16 nPlayers = server->vol.gi->nPlayers;
 
     XP_ASSERT( server->vol.gi->serverRole != SERVER_ISCLIENT );
-    XP_ASSERT( model_getDictionary(model) != NULL );
-    if ( server->pool == NULL ) {
-        server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
-        XP_STATUSF( "initing pool" );
-        pool_initFromDict( server->pool, model_getDictionary(model));
-    }
+    makePoolOnce( server );
 
     XP_STATUSF( "assignTilesToAll" );
 
@@ -1871,9 +1961,11 @@ assignTilesToAll( ServerCtxt* server )
         numAssigned = MAX_TRAY_TILES;
     }
     for ( ii = 0; ii < nPlayers; ++ii ) {
-        TrayTileSet newTiles;
-        fetchTiles( server, ii, numAssigned, NULL, &newTiles );
-        model_assignPlayerTiles( model, ii, &newTiles );
+        if ( 0 == model_getNumTilesInTray( model, ii ) ) {
+            TrayTileSet newTiles = {0};
+            fetchTiles( server, ii, numAssigned, NULL, &newTiles );
+            model_assignPlayerTiles( model, ii, &newTiles );
+        }
         sortTilesIf( server, ii );
     }
 
@@ -2345,15 +2437,19 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
  * if it was legal -- but only if DISALLOW is set.
  */
 XP_Bool
-server_commitMove( ServerCtxt* server )
+server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
 {
     XP_S16 turn = server->nv.currentTurn;
     ModelCtxt* model = server->vol.model;
     CurGameInfo* gi = server->vol.gi;
-    TrayTileSet newTiles;
+    TrayTileSet newTiles = {0};
     XP_U16 nTilesMoved;
     XP_Bool isLegalMove = XP_TRUE;
     XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
+
+    if ( !!newTilesP ) {
+        newTiles = *newTilesP;
+    }
 
 #ifdef DEBUG
     if ( LP_IS_ROBOT( &gi->players[turn] ) ) {
@@ -2408,9 +2504,13 @@ server_commitMove( ServerCtxt* server )
 } /* server_commitMove */
 
 XP_Bool
-server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles )
+server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
+                    TrayTileSet* newTilesP )
 {
-    TrayTileSet newTiles;
+    TrayTileSet newTiles = {0};
+    if ( !!newTilesP ) {
+        newTiles = *newTilesP;
+    }
     XP_U16 turn = server->nv.currentTurn;
 
     fetchTiles( server, turn, oldTiles->nTiles, oldTiles, &newTiles );

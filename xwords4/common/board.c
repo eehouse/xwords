@@ -1026,17 +1026,19 @@ boardNotifyTrade( BoardCtxt* board, const TrayTileSet* tiles )
 
 XP_Bool
 board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
-                  XP_Bool turnConfirmed /* includes trade */ )
+                  XP_Bool turnConfirmed /* includes trade */,
+                  TrayTileSet* newTiles )
 {
     XP_Bool result = XP_FALSE;
     const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
     PerTurnInfo* pti = board->pti + turn;
+    ModelCtxt* model = board->model;
 
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
     } else if ( turn != board->selPlayer ) {
         util_userError( board->util, ERR_NOT_YOUR_TURN );
-    } else if ( 0 == model_getNumTilesTotal( board->model, turn ) ) {
+    } else if ( 0 == model_getNumTilesTotal( model, turn ) ) {
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
     } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board ) ) {
@@ -1051,11 +1053,15 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                 TrayTileSet selTiles;
                 getSelTiles( board, traySelBits, &selTiles );
                 if ( turnConfirmed ) {
-                    /* server_commitTrade() changes selPlayer, so board_endTrade
-                       must be called first() */
-                    (void)board_endTrade( board );
+                    if ( !server_askPickTiles( board->server, turn, newTiles,
+                                               selTiles.nTiles ) ) {
+                        /* server_commitTrade() changes selPlayer, so board_endTrade
+                           must be called first() */
+                        (void)board_endTrade( board );
 
-                    (void)server_commitTrade( board->server, &selTiles );
+                        (void)server_commitTrade( board->server, &selTiles,
+                                                  newTiles );
+                    }
                 } else {
                     boardNotifyTrade( board, &selTiles );
                 }
@@ -1081,13 +1087,13 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                     info.proc = saveBadWords;
                     info.closure = &bwl;
                 }
-                legal = model_checkMoveLegal( board->model, turn, stream,
+                legal = model_checkMoveLegal( model, turn, stream,
                                               warn? &info:(WordNotifierInfo*)NULL);
             }
 
             if ( 0 < bwl.bwi.nWords && !phoniesConfirmed ) {
                 bwl.bwi.dictName =
-                    dict_getShortName( model_getPlayerDict( board->model, turn ) );
+                    dict_getShortName( model_getPlayerDict( model, turn ) );
                 util_notifyIllegalWords( board->util, &bwl.bwi, turn, XP_FALSE );
             } else {
                 /* Hide the tray so no peeking.  Leave it hidden even if user
@@ -1099,14 +1105,20 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                 }
 
                 if ( board->skipCommitConfirm || turnConfirmed ) {
-                    result = server_commitMove( board->server ) || result;
-                    /* invalidate all tiles in case we'll be drawing this tray
-                       again rather than some other -- as is the case in a
-                       two-player game where one's a robot. We really only
-                       need the selected tiles and the rightmost (in case it's
-                       showing points-this-turn), but this is easier. */
-                    board_invalTrayTiles( board, ALLTILES );
-                    pti->traySelBits = 0x00;
+                    XP_U16 nToPick = MAX_TRAY_TILES -
+                        model_getNumTilesInTray( model, turn );
+                    if ( !server_askPickTiles( board->server, turn, newTiles,
+                                               nToPick ) ) {
+                        result = server_commitMove( board->server, newTiles )
+                            || result;
+                        /* invalidate all tiles in case we'll be drawing this tray
+                           again rather than some other -- as is the case in a
+                           two-player game where one's a robot. We really only
+                           need the selected tiles and the rightmost (in case it's
+                           showing points-this-turn), but this is easier. */
+                        board_invalTrayTiles( board, ALLTILES );
+                        pti->traySelBits = 0x00;
+                    }
                 } else {
                     util_notifyMove( board->util, stream );
                 }

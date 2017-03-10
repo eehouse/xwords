@@ -220,6 +220,21 @@ envForMe( EnvThreadInfo* ti, const char* caller )
     return result;
 }
 
+static void
+tilesArrayToTileSet( JNIEnv* env, jintArray jtiles, TrayTileSet* tset )
+{
+    if ( jtiles != NULL ) {
+        jsize nTiles = (*env)->GetArrayLength( env, jtiles );
+        int tmp[MAX_TRAY_TILES];
+        getIntsFromArray( env, tmp, jtiles, nTiles, XP_FALSE );
+
+        tset->nTiles = nTiles;
+        for ( int ii = 0; ii < nTiles; ++ii ) {
+            tset->tiles[ii] = tmp[ii];
+        }
+    }
+}
+
 #ifdef GAMEPTR_IS_OBJECT
 static JNIState*
 getState( JNIEnv* env, GamePtrType gamePtr )
@@ -1282,13 +1297,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1toggle_1showValues
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1commitTurn
-(JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean phoniesConfirmed,
- jboolean turnConfirmed)
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean phoniesConfirmed,
+  jboolean turnConfirmed, jintArray jNewTiles )
 {
     jboolean result;
     XWJNI_START();
+    TrayTileSet* newTilesP = NULL;
+    TrayTileSet newTiles;
+
+    if ( jNewTiles != NULL ) {
+        tilesArrayToTileSet( env, jNewTiles, &newTiles );
+        newTilesP = &newTiles;
+    }
+
     result = board_commitTurn( state->game.board, phoniesConfirmed,
-                               turnConfirmed );
+                               turnConfirmed, newTilesP );
     XWJNI_END();
     return result;
 }
@@ -1354,6 +1377,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1do
     result = server_do( state->game.server );
     XWJNI_END();
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1tilesPicked
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jint player, jintArray jNewTiles )
+{
+    XWJNI_START();
+    TrayTileSet newTiles;
+    tilesArrayToTileSet( env, jNewTiles, &newTiles );
+    server_tilesPicked( state->game.server, player, &newTiles );
+    XWJNI_END();
 }
 
 JNIEXPORT void JNICALL
