@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2017 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -2573,7 +2573,7 @@ setContains( const TrayTileSet* tiles, Tile tile )
 #ifdef DEBUG 
 static void 
 assertDiffTurn( ModelCtxt* model, XP_U16 XP_UNUSED(turn), 
-                const StackEntry* entry, void* closure)
+                const StackEntry* entry, void* closure )
 {
     if ( 1 < model->nPlayers ) {
         DiffTurnState* state = (DiffTurnState*)closure;

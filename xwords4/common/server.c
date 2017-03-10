@@ -132,7 +132,7 @@ struct ServerCtxt {
 #define NPASSES_OK(s) model_recentPassCountOk((s)->vol.model)
 
 /******************************* prototypes *******************************/
-static void assignTilesToAll( ServerCtxt* server );
+static XP_Bool assignTilesToAll( ServerCtxt* server );
 static void makePoolOnce( ServerCtxt* server );
 
 static void resetEngines( ServerCtxt* server );
@@ -777,7 +777,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
             XP_ASSERT( ii == playersInMsg ); /* otherwise malformed */
             setStreamVersion( server );
             checkResizeBoard( server );
-            assignTilesToAll( server );
+            (void)assignTilesToAll( server );
             SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
         }
         informMissing( server );
@@ -1057,6 +1057,8 @@ void
 server_tilesPicked( ServerCtxt* server, XP_U16 player,
                     const TrayTileSet* newTilesP )
 {
+    XP_ASSERT( 0 == model_getNumTilesInTray( server->vol.model, player ) );
+
     TrayTileSet newTiles = *newTilesP;
     pool_removeTiles( server->pool, &newTiles );
 
@@ -1089,28 +1091,6 @@ informNeedPickTiles( ServerCtxt* server, XP_Bool initial, XP_U16 turn,
                               nToPick, nFaces, faces, counts );
 }
 
-static XP_Bool
-askedForTiles( ServerCtxt* server )
-{
-    XP_Bool asked = XP_FALSE;
-    CurGameInfo* gi = server->vol.gi;
-    if ( gi->serverRole == SERVER_STANDALONE && gi->allowPickTiles ) {
-         XP_U16 nPlayers = gi->nPlayers;
-        ModelCtxt* model = server->vol.model;
-        makePoolOnce( server );
-        for ( XP_U16 turn = 0; !asked && turn < nPlayers; ++turn ) {
-            LocalPlayer* player = &gi->players[turn];
-            XP_U16 nTiles = model_getNumTilesInTray( model, turn );
-            if ( nTiles == 0 && !LP_IS_ROBOT(player) ) {
-                informNeedPickTiles( server, XP_TRUE, turn, MAX_TRAY_TILES );
-                asked = XP_TRUE;
-            }
-        }
-    }
-    LOG_RETURNF( "%s", boolToStr(asked));
-    return asked;
-}
-
 XP_Bool
 server_do( ServerCtxt* server )
 {
@@ -1126,8 +1106,7 @@ server_do( ServerCtxt* server )
         case XWSTATE_BEGIN:
             if ( server->nv.pendingRegistrations == 0 ) { /* all players on
                                                              device */
-                if ( !askedForTiles( server ) ) {
-                    assignTilesToAll( server );
+                if ( assignTilesToAll( server ) ) {
                     SETSTATE( server, XWSTATE_INTURN );
                     setTurn( server, 0 );
                     moreToDo = XP_TRUE;
@@ -1941,15 +1920,17 @@ makePoolOnce( ServerCtxt* server )
     }
 }
 
-static void
+static XP_Bool
 assignTilesToAll( ServerCtxt* server )
 {
+    XP_Bool allDone = XP_TRUE;
     XP_U16 numAssigned;
     XP_U16 ii;
     ModelCtxt* model = server->vol.model;
-    XP_U16 nPlayers = server->vol.gi->nPlayers;
+    CurGameInfo* gi = server->vol.gi;
+    XP_U16 nPlayers = gi->nPlayers;
 
-    XP_ASSERT( server->vol.gi->serverRole != SERVER_ISCLIENT );
+    XP_ASSERT( gi->serverRole != SERVER_ISCLIENT );
     makePoolOnce( server );
 
     XP_STATUSF( "assignTilesToAll" );
@@ -1960,15 +1941,27 @@ assignTilesToAll( ServerCtxt* server )
     if ( numAssigned > MAX_TRAY_TILES ) {
         numAssigned = MAX_TRAY_TILES;
     }
+
+    /* Loop through all the players. If picking tiles is on, stop for each
+       local player that doesn't have tiles yet. Return TRUE if we get all the
+       way through without doing that. */
+
+    XP_Bool pickingTiles = gi->serverRole == SERVER_STANDALONE
+        && gi->allowPickTiles;
     for ( ii = 0; ii < nPlayers; ++ii ) {
         if ( 0 == model_getNumTilesInTray( model, ii ) ) {
+            if ( pickingTiles && !LP_IS_ROBOT(&gi->players[ii]) ) {
+                informNeedPickTiles( server, XP_TRUE, ii, MAX_TRAY_TILES );
+                allDone = XP_FALSE;
+                break;
+            }
             TrayTileSet newTiles = {0};
             fetchTiles( server, ii, numAssigned, NULL, &newTiles );
             model_assignPlayerTiles( model, ii, &newTiles );
         }
         sortTilesIf( server, ii );
     }
-
+    return allDone;
 } /* assignTilesToAll */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
