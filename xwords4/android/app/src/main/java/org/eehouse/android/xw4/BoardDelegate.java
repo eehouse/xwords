@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 
 import junit.framework.Assert;
 
@@ -126,15 +125,9 @@ public class BoardDelegate extends DelegateBase
     private BoardUtilCtxt m_utils;
     private boolean m_gameOver = false;
 
-    // call startActivityForResult synchronously
-    private Semaphore m_forResultWait = new Semaphore(0);
-    private int m_resultCode;
-
-    private Thread m_blockingThread;
     private JNIThread m_jniThread;
     private JNIThread m_jniThreadRef;
     private JNIThread.GameStateInfo m_gsi;
-    private DlgID m_blockingDlgID = DlgID.NONE;
 
     private String m_toastStr;
     private String[] m_words;
@@ -165,13 +158,6 @@ public class BoardDelegate extends DelegateBase
             }
         }
     }
-
-    private DBAlert.OnDismissListener m_blockingODL =
-        new DBAlert.OnDismissListener() {
-            public void onDismissed( XWDialogFragment frag ) {
-                releaseIfBlocking();
-            }
-        };
 
     @Override
     protected Dialog makeDialog( DBAlert alert, Object[] params )
@@ -323,13 +309,7 @@ public class BoardDelegate extends DelegateBase
             if ( 0 != title ) {
                 ab.setTitle( title );
             }
-            lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dialog,
-                                         int whichButton ) {
-                        m_resultCode = 1;
-                    }
-                };
-            ab.setPositiveButton( android.R.string.ok, lstnr );
+            ab.setPositiveButton( android.R.string.ok, null );
             if ( DlgID.DLG_SCORES == dlgID ) {
                 if ( null != m_words && m_words.length > 0 ) {
                     String buttonTxt;
@@ -379,45 +359,45 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case PICK_TILE_REQUESTTRAY_BLK: {
-            String[] texts = (String[])params[0];
-            checkBlocking();
-            lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dialog,
-                                         int item ) {
-                        m_resultCode = item;
-                    }
-                };
-            ab.setItems( texts, lstnr );
+        // case PICK_TILE_REQUESTTRAY_BLK: {
+        //     String[] texts = (String[])params[0];
+        //     checkBlocking();
+        //     lstnr = new OnClickListener() {
+        //             public void onClick( DialogInterface dialog,
+        //                                  int item ) {
+        //                 m_resultCode = item;
+        //             }
+        //         };
+        //     ab.setItems( texts, lstnr );
 
-            String curTiles = (String)params[1];
-            boolean canUndoTiles = (Boolean)params[2];
+        //     String curTiles = (String)params[1];
+        //     boolean canUndoTiles = (Boolean)params[2];
 
-            ab.setTitle( getString( R.string.cur_tiles_fmt, curTiles ) );
-            if ( canUndoTiles ) {
-                OnClickListener undoClicked = new OnClickListener() {
-                        public void onClick( DialogInterface dialog,
-                                             int whichButton ) {
-                            m_resultCode = UtilCtxt.PICKER_BACKUP;
-                            removeDialog( dlgID );
-                        }
-                    };
-                ab.setPositiveButton( R.string.tilepick_undo,
-                                      undoClicked );
-            }
-            OnClickListener doAllClicked = new OnClickListener() {
-                    public void onClick( DialogInterface dialog,
-                                         int whichButton ) {
-                        m_resultCode = UtilCtxt.PICKER_PICKALL;
-                        removeDialog( dlgID );
-                    }
-                };
-            ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
+        //     ab.setTitle( getString( R.string.cur_tiles_fmt, curTiles ) );
+        //     if ( canUndoTiles ) {
+        //         OnClickListener undoClicked = new OnClickListener() {
+        //                 public void onClick( DialogInterface dialog,
+        //                                      int whichButton ) {
+        //                     m_resultCode = UtilCtxt.PICKER_BACKUP;
+        //                     removeDialog( dlgID );
+        //                 }
+        //             };
+        //         ab.setPositiveButton( R.string.tilepick_undo,
+        //                               undoClicked );
+        //     }
+        //     OnClickListener doAllClicked = new OnClickListener() {
+        //             public void onClick( DialogInterface dialog,
+        //                                  int whichButton ) {
+        //                 m_resultCode = UtilCtxt.PICKER_PICKALL;
+        //                 removeDialog( dlgID );
+        //             }
+        //         };
+        //     ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
                 
-            dialog = ab.create();
-            alert.setOnDismissListener( m_blockingODL );
-        }
-            break;
+        //     dialog = ab.create();
+        //     alert.setOnDismissListener( m_blockingODL );
+        // }
+        //     break;
 
         case ASK_PASSWORD: {
             final int player = (Integer)params[0];
@@ -1614,63 +1594,6 @@ public class BoardDelegate extends DelegateBase
         return xpKey;
     }
 
-    // Blocking thread stuff: The problem this is solving occurs when
-    // you have a blocking dialog up, meaning the jni thread is
-    // blocked, and you hit the home button.  onPause() gets called
-    // which wants to use jni calls to e.g. summarize.  For those to
-    // succeed (the jni being non-reentrant and set up to assert if it
-    // is reentered) the jni thread must first be unblocked and
-    // allowed to return back through the jni.  We unblock using
-    // Thread.interrupt method, the exception from which winds up
-    // caught in waitBlockingDialog.  The catch dismisses the dialog
-    // with the default/cancel value, but that takes us into the
-    // onDismissListener which normally releases the semaphore.  But
-    // if we've interrupted then we can't release it or blocking won't
-    // work for as long as this activity lives.  Hence
-    // releaseIfBlocking().  This feels really fragile but it does
-    // work.
-
-    private void checkBlocking()
-    {
-        if ( null == m_blockingThread ) {
-            DbgUtils.logd( TAG, "no blocking thread!!!" );
-        }
-    }
-
-    private void setBlockingThread()
-    {
-        synchronized( this ) {
-            Assert.assertTrue( null == m_blockingThread );
-            m_blockingThread = Thread.currentThread();
-        }
-    }
-
-    private void clearBlockingThread()
-    {
-        synchronized( this ) {
-            Assert.assertTrue( null != m_blockingThread );
-            m_blockingThread = null;
-        }
-    }
-
-    private void interruptBlockingThread()
-    {
-        synchronized( this ) {
-            if ( null != m_blockingThread ) {
-                m_blockingThread.interrupt();
-            }
-        }
-    }
-
-    private void releaseIfBlocking()
-    {
-        synchronized( this ) {
-            if ( null != m_blockingThread ) {
-                m_forResultWait.release();
-            }
-        }
-    }
-
     private void handleConndMessage( String room, int devOrder, // <- hostID
                                      boolean allHere, int nMissing )
     {
@@ -1870,12 +1793,16 @@ public class BoardDelegate extends DelegateBase
 
         @Override
         public void informNeedPickTiles( final boolean isInitial,
-                                         final int playerNum, int nToPick,
+                                         final int playerNum, final int nToPick,
                                          String[] texts, int[] counts )
         {
             post( new Runnable() {
                     @Override
                     public void run() {
+                        String msg = String.format( "Picked %d tiles for player #%d",
+                                                    nToPick, playerNum + 1 );
+                        makeOkOnlyBuilder( msg )
+                            .show();
                         int[] noNewTiles = new int[0];
                         if ( isInitial ) {
                             handleViaThread( JNICmd.CMD_TILES_PICKED, playerNum, noNewTiles );
@@ -2155,7 +2082,6 @@ public class BoardDelegate extends DelegateBase
         boolean firstStart = null == m_handler;
         if ( firstStart ) {
             m_handler = new Handler();
-            m_blockingDlgID = DlgID.NONE;
 
             success = m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
                                                 makeJNIHandler() );
@@ -2405,46 +2331,6 @@ public class BoardDelegate extends DelegateBase
         }
     } // populateToolbar
 
-    private int waitBlockingDialog( final DlgID dlgID, int cancelResult,
-                                    final Object... params )
-    {
-        int result = cancelResult;
-        // this has been true; dunno why
-        if ( DlgID.NONE != m_blockingDlgID ) {
-            DbgUtils.logw( TAG, "waitBlockingDialog: dropping dlgID %d b/c %d set",
-                           dlgID, m_blockingDlgID );
-        } else {
-            setBlockingThread();
-            m_resultCode = cancelResult;
-
-            if ( post( new Runnable() {
-                    public void run() {
-                        m_blockingDlgID = dlgID;
-                        showDialogFragment( dlgID, params );
-                    }
-                } ) ) {
-
-                try {
-                    m_forResultWait.acquire();
-                } catch ( java.lang.InterruptedException ie ) {
-                    DbgUtils.logex( TAG, ie );
-                    if ( DlgID.NONE != m_blockingDlgID ) {
-                        try {
-                            dismissDialog( m_blockingDlgID );
-                        } catch ( java.lang.IllegalArgumentException iae ) {
-                            DbgUtils.logex( TAG, iae );
-                        }
-                    }
-                }
-                m_blockingDlgID = DlgID.NONE;
-            }
-
-            clearBlockingThread();
-            result = m_resultCode;
-        }
-        return result;
-    }
-
     private void nonBlockingDialog( final DlgID dlgID, final String txt )
     {
         int dlgTitle = 0;
@@ -2521,8 +2407,6 @@ public class BoardDelegate extends DelegateBase
     private void pauseGame()
     {
         if ( null != m_jniThread ) {
-            interruptBlockingThread();
-
             m_jniThread.release();
             m_jniThread = null;
 

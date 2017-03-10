@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh installXw4Debug"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -64,7 +65,7 @@ public enum DlgID {
     , ASK_PASSWORD
     , DLG_RETRY
     , DLG_SCORES
-    , PICK_TILE_REQUESTTRAY_BLK
+    , PICK_TILE_REQUESTTRAY
     , DLG_USEDICT
     , DLG_GETDICT
     , GAMES_LIST_NEWGAME
