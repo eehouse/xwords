@@ -61,7 +61,6 @@ public enum DlgID {
     , NOTIFY_BADWORDS
     , QUERY_MOVE
     , QUERY_TRADE
-    , PICK_TILE_REQUESTBLANK
     , ASK_PASSWORD
     , DLG_RETRY
     , DLG_SCORES

@@ -95,6 +95,8 @@ public class DlgDelegate {
         DROP_RELAY_ACTION,
         DROP_SMS_ACTION,
         INVITE_SMS,
+        BLANK_PICKED,
+        TRAY_PICKED,
 
         // Dict Browser
         FINISH_ACTION,
@@ -295,9 +297,9 @@ public class DlgDelegate {
         public static enum InviteMeans {
             SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
         };
-        boolean onPosButton( Action action, Object[] params );
-        boolean onNegButton( Action action, Object[] params );
-        boolean onDismissed( Action action, Object[] params );
+        boolean onPosButton( Action action, Object... params );
+        boolean onNegButton( Action action, Object... params );
+        boolean onDismissed( Action action, Object... params );
 
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
     }

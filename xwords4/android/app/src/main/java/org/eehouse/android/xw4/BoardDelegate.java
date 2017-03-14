@@ -74,6 +74,7 @@ import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.TilePickAlert.TilePickState;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -341,23 +342,24 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case PICK_TILE_REQUESTBLANK: {
-            final int turn = (Integer)params[0];
-            final int col = (Integer)params[1];
-            final int row  = (Integer)params[2];
-            String[] texts = (String[])params[3];
-            dialog = ab.setItems( texts, new OnClickListener() {
-                    public void onClick( DialogInterface dialog,
-                                         int item ) {
-                        handleViaThread( JNICmd.CMD_SET_BLANK, turn, col,
-                                         row, item );
-                    }
-                })
-                .setNegativeButton( android.R.string.cancel, null )
-                .setTitle( R.string.title_tile_picker )
-                .create();
-        }
-            break;
+        // case PICK_TILE_REQUESTBLANK: {
+        //     final int turn = (Integer)params[0];
+        //     final int col = (Integer)params[1];
+        //     final int row  = (Integer)params[2];
+        //     String[] texts = (String[])params[3];
+        //     dialog = ab
+        //         .setItems( texts, new OnClickListener() {
+        //                 public void onClick( DialogInterface dialog,
+        //                                      int item ) {
+        //                     handleViaThread( JNICmd.CMD_SET_BLANK, turn, col,
+        //                                      row, item );
+        //                 }
+        //             })
+        //         .setNegativeButton( android.R.string.cancel, null )
+        //         .setTitle( R.string.title_tile_picker )
+        //         .create();
+        // }
+        //     break;
 
         // case PICK_TILE_REQUESTTRAY_BLK: {
         //     String[] texts = (String[])params[0];
@@ -1149,6 +1151,24 @@ public class BoardDelegate extends DelegateBase
             showInviteChoicesThen( params );
             break;
 
+        case BLANK_PICKED:
+            TilePickAlert.TilePickState tps
+                = (TilePickAlert.TilePickState)params[0];
+            int[] newTiles = (int[])params[1];
+            handleViaThread( JNICmd.CMD_SET_BLANK, tps.playerNum,
+                             tps.col, tps.row, newTiles[0] );
+            break;
+
+        case TRAY_PICKED:
+            tps = (TilePickAlert.TilePickState)params[0];
+            newTiles = (int[])params[1];
+            if ( tps.isInitial ) {
+                handleViaThread( JNICmd.CMD_TILES_PICKED, tps.playerNum, newTiles );
+            } else {
+                handleViaThread( JNICmd.CMD_COMMIT, true, true, newTiles );
+            }
+            break;
+
         case ENABLE_SMS_DO:
             post( new Runnable() {
                     public void run() {
@@ -1787,41 +1807,21 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void notifyPickTileBlank( int playerNum, int col, int row, String[] texts )
         {
-            showDialogFragment( DlgID.PICK_TILE_REQUESTBLANK, playerNum, col,
-                                row, texts );
+            TilePickAlert.TilePickState tps =
+                new TilePickAlert.TilePickState( playerNum, texts, col, row );
+            show( TilePickAlert.newInstance( Action.BLANK_PICKED, tps ) );
         }
 
         @Override
-        public void informNeedPickTiles( final boolean isInitial,
-                                         final int playerNum, final int nToPick,
+        public void informNeedPickTiles( boolean isInitial,
+                                         int playerNum, int nToPick,
                                          String[] texts, int[] counts )
         {
-            post( new Runnable() {
-                    @Override
-                    public void run() {
-                        String msg = String.format( "Picked %d tiles for player #%d",
-                                                    nToPick, playerNum + 1 );
-                        makeOkOnlyBuilder( msg )
-                            .show();
-                        int[] noNewTiles = new int[0];
-                        if ( isInitial ) {
-                            handleViaThread( JNICmd.CMD_TILES_PICKED, playerNum, noNewTiles );
-                        } else {
-                            handleViaThread( JNICmd.CMD_COMMIT, true, true, noNewTiles );
-                        }
-                    }
-                } );
+            TilePickAlert.TilePickState tps
+                = new TilePickAlert.TilePickState( isInitial, playerNum, nToPick,
+                                                   texts, counts );
+            show( TilePickAlert.newInstance( Action.TRAY_PICKED, tps ) );
         }
-        // public int userPickTileTray( int playerNum, String[] texts,
-        //                              String[] curTiles, int nPicked )
-        // {
-        //     String curTilesStr = TextUtils.join( ", ", curTiles );
-        //     boolean canUndoTiles = 0 < nPicked;
-        //     waitBlockingDialog( DlgID.PICK_TILE_REQUESTTRAY_BLK,
-        //                         UtilCtxt.PICKER_PICKALL, texts, curTilesStr,
-        //                         canUndoTiles );
-        //     return m_resultCode;
-        // }
 
         @Override
         public void informNeedPassword( int player, String name )

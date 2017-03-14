@@ -2456,6 +2456,7 @@ server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
     XP_ASSERT( turn >= 0 );
 
     nTilesMoved = model_getCurrentMoveCount( model, turn );
+    pool_removeTiles( server->pool, &newTiles );
     fetchTiles( server, turn, nTilesMoved, NULL, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY

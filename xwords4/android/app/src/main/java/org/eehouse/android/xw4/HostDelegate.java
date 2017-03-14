@@ -89,9 +89,9 @@ class HostDelegate extends DelegateBase {
     {
         Action action = Action.values()[data.getIntExtra(ACTION, -1)];
         if ( data.getBooleanExtra( IS_POS_BUTTON, false ) ) {
-            target.onPosButton( action, null );
+            target.onPosButton( action );
         } else {
-            target.onNegButton( action, null );
+            target.onNegButton( action );
         }
     }
 }
