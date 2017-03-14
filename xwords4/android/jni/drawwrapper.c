@@ -227,7 +227,7 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     for ( int ii = 0; ii < numPlayers; ++ii ) {
         jarr[ii] = scores[ii];
     }
-    jintArray jscores = makeIntArray( env, numPlayers, jarr );
+    jintArray jscores = makeIntArray( env, numPlayers, jarr, sizeof(jarr[0]) );
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
     result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
@@ -284,9 +284,9 @@ and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* rect,
                          XP_U16* width, XP_U16* height )
 {
     DRAW_CBK_HEADER("measureRemText", "(Landroid/graphics/Rect;I[I[I)Z" );
-    
-    jintArray widthArray = makeIntArray( env, 1, NULL );
-    jintArray heightArray = makeIntArray( env, 1, NULL );
+
+    jintArray widthArray = (*env)->NewIntArray( env, 1 );
+    jintArray heightArray = (*env)->NewIntArray( env, 1 );
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
     jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, 
@@ -333,8 +333,8 @@ and_draw_measureScoreText( DrawCtx* dctx,
     jobject jrect = makeJRect( draw, JCACHE_RECT0, r );
     jobject jdsi = makeDSI( draw, JCACHE_DSI, dsi );
 
-    jintArray widthArray = makeIntArray( env, 1, NULL );
-    jintArray heightArray = makeIntArray( env, 1, NULL );
+    jintArray widthArray = (*env)->NewIntArray( env, 1 );
+    jintArray heightArray = (*env)->NewIntArray( env, 1 );
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, jdsi,
                             widthArray, heightArray );
@@ -601,8 +601,8 @@ and_draw_measureMiniWText( DrawCtx* dctx, const XP_UCHAR* textP,
 {
     DRAW_CBK_HEADER( "measureMiniWText", "(Ljava/lang/String;[I[I)V" );
 
-    jintArray widthArray = makeIntArray( env, 1, NULL );
-    jintArray heightArray = makeIntArray( env, 1, NULL );
+    jintArray widthArray = (*env)->NewIntArray( env, 1 );
+    jintArray heightArray = (*env)->NewIntArray( env, 1 );
     jstring jstr = (*env)->NewStringUTF( env, textP );
 
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 

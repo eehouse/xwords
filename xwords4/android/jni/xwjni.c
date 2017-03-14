@@ -1799,7 +1799,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             jvals[ii] = model_getPlayerScore( model, ii );
         }
     }
-    jintArray jarr = makeIntArray( env, nPlayers, jvals );
+    jintArray jarr = makeIntArray( env, nPlayers, jvals, sizeof(jvals[0]) );
     setObject( env, jsummary, "scores", "[I", jarr );
     deleteLocalRef( env, jarr );
 
@@ -2218,7 +2218,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
         LengthsArray lens;
         if ( 0 < dict_countWords( &iter, &lens ) ) {
             XP_ASSERT( sizeof(jint) == sizeof(lens.lens[0]) );
-            result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens );
+            result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens,
+                                   sizeof(lens.lens[0]) );
         }
     }
     return result;
@@ -2257,7 +2258,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
         XP_ASSERT( !!data->idata.indices );
         XP_ASSERT( sizeof(jint) == sizeof(data->idata.indices[0]) );
         jindices = makeIntArray( env, data->idata.count, 
-                                 (jint*)data->idata.indices );
+                                 (jint*)data->idata.indices,
+                                 sizeof(data->idata.indices[0]) );
     }
     return jindices;
 }

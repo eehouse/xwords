@@ -312,16 +312,32 @@ getBools( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis
 }
 
 jintArray
-makeIntArray( JNIEnv *env, int siz, const jint* vals )
+makeIntArray( JNIEnv *env, int count, const void* vals, size_t elemSize )
 {
-    jintArray array = (*env)->NewIntArray( env, siz );
+    jintArray array = (*env)->NewIntArray( env, count );
     XP_ASSERT( !!array );
-    if ( !!vals ) {
-        jint* elems = (*env)->GetIntArrayElements( env, array, NULL );
-        XP_ASSERT( !!elems );
-        XP_MEMCPY( elems, vals, siz * sizeof(*elems) );
-        (*env)->ReleaseIntArrayElements( env, array, elems, 0 );
+    jint* elems = (*env)->GetIntArrayElements( env, array, NULL );
+    XP_ASSERT( !!elems );
+    jint elem;
+    for ( int ii = 0; ii < count; ++ii ) {
+        switch( elemSize ) {
+        case sizeof(XP_U32):
+            elem = *(XP_U32*)vals;
+            break;
+        case sizeof(XP_U16):
+            elem = *(XP_U16*)vals;
+            break;
+        case sizeof(XP_U8):
+            elem = *(XP_U8*)vals;
+            break;
+        default:
+            XP_ASSERT(0);
+            break;
+        }
+        vals += elemSize;
+        elems[ii] = elem;
     }
+    (*env)->ReleaseIntArrayElements( env, array, elems, 0 );
     return array;
 }
 

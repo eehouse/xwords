@@ -68,7 +68,7 @@ void setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
 bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig, 
                 jobject* ret );
 
-jintArray makeIntArray( JNIEnv *env, int size, const jint* vals );
+jintArray makeIntArray( JNIEnv *env, int size, const void* vals, size_t elemSize );
 void getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del );
 void setIntInArray( JNIEnv* env, jintArray arr, int index, int val );
 
