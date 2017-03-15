@@ -1265,6 +1265,8 @@ public class GameConfigDelegate extends DelegateBase
         } else {
             String connString = m_conTypes.toString( m_activity, true );
             m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+            // hide pick-face-up button for networked games
+            findViewById( R.id.pick_faceup ).setVisibility( View.GONE );
         }
     }
 
