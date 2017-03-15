@@ -1535,7 +1535,8 @@
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
-    <string name="title_tile_picker">Letter for blank</string>
+    <string name="title_blank_picker">Tile for blank</string>
+    <string name="tile_tray_picker">New tiles for tray</string>
 
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Current pick: %1$s</string>
@@ -1819,7 +1820,7 @@
       <!--  -->
     <string name="tilepick_undo">Undo last\u200C</string>
       <!--  -->
-    <string name="tilepick_all">Pick for me</string>
+    <string name="tilepick_all_fmt">Pick %1$d for me</string>
       <!--  -->
     <string name="cur_tiles_fmt">Tile picker\n(so far: %1$s)</string>
       <!--  -->

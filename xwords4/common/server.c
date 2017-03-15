@@ -1068,7 +1068,7 @@ server_tilesPicked( ServerCtxt* server, XP_U16 player,
     util_requestTime( server->vol.util );
 }
 
-static void
+static XP_Bool
 informNeedPickTiles( ServerCtxt* server, XP_Bool initial, XP_U16 turn,
                      XP_U16 nToPick )
 {
@@ -1082,13 +1082,17 @@ informNeedPickTiles( ServerCtxt* server, XP_Bool initial, XP_U16 turn,
     if ( nLeft < nToPick ) {
         nToPick = nLeft;
     }
+    XP_Bool asking = nToPick > 0;
 
-    for ( Tile tile = 0; tile < nFaces; ++tile ) {
-        faces[tile] = dict_getTileString( dict, tile );
-        counts[tile] = pool_getNTilesLeftFor( server->pool, tile );
+    if ( asking ) {
+        for ( Tile tile = 0; tile < nFaces; ++tile ) {
+            faces[tile] = dict_getTileString( dict, tile );
+            counts[tile] = pool_getNTilesLeftFor( server->pool, tile );
+        }
+        util_informNeedPickTiles( server->vol.util, initial, turn,
+                                  nToPick, nFaces, faces, counts );
     }
-    util_informNeedPickTiles( server->vol.util, initial, turn,
-                              nToPick, nFaces, faces, counts );
+    return asking;
 }
 
 XP_Bool
@@ -1812,7 +1816,7 @@ server_askPickTiles( ServerCtxt* server, XP_U16 turn, TrayTileSet* newTiles,
 {
     XP_Bool asked = newTiles == NULL && server->vol.gi->allowPickTiles;
     if ( asked ) {
-        informNeedPickTiles( server, XP_FALSE, turn, nToPick );
+        asked = informNeedPickTiles( server, XP_FALSE, turn, nToPick );
     }
     return asked;
 }
@@ -1950,8 +1954,9 @@ assignTilesToAll( ServerCtxt* server )
         && gi->allowPickTiles;
     for ( ii = 0; ii < nPlayers; ++ii ) {
         if ( 0 == model_getNumTilesInTray( model, ii ) ) {
-            if ( pickingTiles && !LP_IS_ROBOT(&gi->players[ii]) ) {
-                informNeedPickTiles( server, XP_TRUE, ii, MAX_TRAY_TILES );
+            if ( pickingTiles && !LP_IS_ROBOT(&gi->players[ii])
+                 && informNeedPickTiles( server, XP_TRUE, ii,
+                                         MAX_TRAY_TILES ) ) {
                 allDone = XP_FALSE;
                 break;
             }

@@ -154,7 +154,7 @@ public class TilePickView extends LinearLayout {
     private void showPending()
     {
         TextView desc = (TextView)findViewById( R.id.pending_desc );
-        if ( null == m_state.counts ) {
+        if ( m_state.forBlank() ) {
             desc.setVisibility( View.GONE );
         } else {
             List<String> faces = new ArrayList<String>();
@@ -184,7 +184,7 @@ public class TilePickView extends LinearLayout {
         Button button = m_buttons.get( index );
         Context context = getContext();
         String face = m_state.faces[index];
-        if ( null != m_state.counts ) {
+        if ( !m_state.forBlank() ) {
             int count = m_state.counts[index] - pendingCount( index );
             face = LocUtils.getString( context, R.string.tile_button_txt_fmt,
                                        face, count );
@@ -204,7 +204,7 @@ public class TilePickView extends LinearLayout {
 
     private void updateDelButton()
     {
-        int vis = null == m_state.counts || m_pendingTiles.size() == 0
+        int vis = m_state.forBlank() || m_pendingTiles.size() == 0
             ? View.INVISIBLE : View.VISIBLE;
         findViewById( R.id.del ).setVisibility( vis );
     }

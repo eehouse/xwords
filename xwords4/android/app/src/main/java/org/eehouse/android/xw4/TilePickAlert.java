@@ -45,7 +45,7 @@ public class TilePickAlert extends XWDialogFragment
     private TilePickState m_state;
     private Action m_action;
     private AlertDialog m_dialog;
-    private int[] m_selTiles;
+    private int[] m_selTiles = new int[0];
 
     public static class TilePickState implements Serializable {
         public int col;
@@ -69,6 +69,8 @@ public class TilePickAlert extends XWDialogFragment
             this.faces = faces;
             this.counts = counts;
         }
+
+        public boolean forBlank() { return null == counts; }
     }
 
     public static TilePickAlert newInstance( Action action, TilePickState state )
@@ -106,11 +108,12 @@ public class TilePickAlert extends XWDialogFragment
         m_view = (TilePickView)LocUtils.inflate( activity, R.layout.tile_picker );
         m_view.init( this, m_state, sis );
 
-
+        int resId = m_state.forBlank()
+            ? R.string.title_blank_picker : R.string.tile_tray_picker;
         AlertDialog.Builder ab = LocUtils.makeAlertBuilder( activity )
-            .setTitle( String.format( "Pick %d", m_state.nToPick ) )
+            .setTitle( resId )
             .setView( m_view );
-        if ( null != m_state.counts ) {
+        if ( !m_state.forBlank() ) {
             DialogInterface.OnClickListener lstnr =
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -118,10 +121,24 @@ public class TilePickAlert extends XWDialogFragment
                         onDone();
                     }
                 };
-            ab.setPositiveButton( R.string.tilepick_all, lstnr );
+            ab.setPositiveButton( buttonTxt(), lstnr );
         }
         m_dialog = ab.create();
         return m_dialog;
+    }
+
+    // TilePickView.TilePickListener interface
+    @Override
+    public void onTilesChanged( int nToPick, int[] newTiles )
+    {
+        m_selTiles = newTiles;
+        boolean haveAll = nToPick == newTiles.length;
+        if ( haveAll && m_state.forBlank() ) {
+            onDone();
+        } else if ( null != m_dialog ) {
+            m_dialog.getButton( AlertDialog.BUTTON_POSITIVE )
+                .setText( buttonTxt() );
+        }
     }
 
     private void onDone()
@@ -136,18 +153,13 @@ public class TilePickAlert extends XWDialogFragment
         dismiss();
     }
 
-    // TilePickView.TilePickListener
-    @Override
-    public void onTilesChanged( int nToPick, int[] newTiles )
+    private String buttonTxt()
     {
-        m_selTiles = newTiles;
-        boolean done = nToPick == newTiles.length;
-        if ( done && null == m_state.counts ) {
-            onDone();
-        } else if ( null != m_dialog ) {
-            int msgID = done ? android.R.string.ok : R.string.tilepick_all;
-            Button button = m_dialog.getButton( AlertDialog.BUTTON_POSITIVE );
-            button.setText( LocUtils.getString( getContext(), msgID ) );
-        }
+        Context context = getContext();
+        int left = m_state.nToPick - m_selTiles.length;
+        String txt = 0 == left
+            ? LocUtils.getString( context, android.R.string.ok )
+            : LocUtils.getString( context, R.string.tilepick_all_fmt, left );
+        return txt;
     }
 }
