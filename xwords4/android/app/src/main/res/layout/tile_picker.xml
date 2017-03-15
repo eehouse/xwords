@@ -10,11 +10,14 @@
   <LinearLayout android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
                 >
     <TextView android:id="@+id/pending_desc"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_weight="1"
+              android:layout_gravity="center_vertical"
               />
     <ImageButton android:id="@+id/del"
                  android:layout_width="32dp"
