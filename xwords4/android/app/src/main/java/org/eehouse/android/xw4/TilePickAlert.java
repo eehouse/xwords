@@ -106,25 +106,25 @@ public class TilePickAlert extends XWDialogFragment
         m_view = (TilePickView)LocUtils.inflate( activity, R.layout.tile_picker );
         m_view.init( this, m_state, sis );
 
-        DialogInterface.OnClickListener lstnr =
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick( DialogInterface dialog, int which ) {
-                    onDonePressed();
-                }
-            };
 
-        m_dialog = LocUtils.makeAlertBuilder( activity )
+        AlertDialog.Builder ab = LocUtils.makeAlertBuilder( activity )
             .setTitle( String.format( "Pick %d", m_state.nToPick ) )
-            .setView( m_view )
-            .setPositiveButton( R.string.tilepick_all, lstnr )
-            .create();
+            .setView( m_view );
+        if ( null != m_state.counts ) {
+            DialogInterface.OnClickListener lstnr =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dialog, int which ) {
+                        onDone();
+                    }
+                };
+            ab.setPositiveButton( R.string.tilepick_all, lstnr );
+        }
+        m_dialog = ab.create();
         return m_dialog;
     }
 
-    // TilePickView.TilePickListener
-    @Override
-    public void onDonePressed()
+    private void onDone()
     {
         Activity activity = getActivity();
         if ( activity instanceof DlgClickNotify ) {
@@ -136,12 +136,15 @@ public class TilePickAlert extends XWDialogFragment
         dismiss();
     }
 
+    // TilePickView.TilePickListener
     @Override
     public void onTilesChanged( int nToPick, int[] newTiles )
     {
         m_selTiles = newTiles;
-        if ( null != m_dialog ) {
-            boolean done = nToPick == newTiles.length;
+        boolean done = nToPick == newTiles.length;
+        if ( done && null == m_state.counts ) {
+            onDone();
+        } else if ( null != m_dialog ) {
             int msgID = done ? android.R.string.ok : R.string.tilepick_all;
             Button button = m_dialog.getButton( AlertDialog.BUTTON_POSITIVE );
             button.setText( LocUtils.getString( getContext(), msgID ) );

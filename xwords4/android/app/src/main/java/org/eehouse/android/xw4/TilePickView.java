@@ -21,30 +21,22 @@
 package org.eehouse.android.xw4;
 
 import android.text.TextUtils;
-// import android.app.Dialog;
 import android.content.Context;
-// import android.content.DialogInterface;
-// import android.content.Intent;
-// import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
-// import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-// import android.widget.AdapterView;
-// import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-// import android.widget.ListView;
 import android.widget.TextView;
-
-// import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.TilePickAlert.TilePickState;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -54,14 +46,13 @@ public class TilePickView extends LinearLayout {
     private static final boolean SHOW_UNAVAIL = false;
 
     public interface TilePickListener {
-        void onDonePressed();
         void onTilesChanged( int nToPick, int[] newTiles );
     }
 
     private ArrayList<Integer> m_pendingTiles;
     private TilePickListener m_listner;
     private TilePickState m_state;
-    private List<Button> m_pendingButtons;
+    private Map<Integer, Button> m_buttons = new HashMap<Integer, Button>();
 
     public TilePickView( Context context, AttributeSet as ) {
         super( context, as );
@@ -90,6 +81,8 @@ public class TilePickView extends LinearLayout {
                     m_listner.onTilesChanged( m_state.nToPick, getPending() );
                 }
             } );
+
+        m_listner.onTilesChanged( m_state.nToPick, getPending() );
     }
 
     // NOT @Override!!!
@@ -112,7 +105,6 @@ public class TilePickView extends LinearLayout {
         Context context = getContext();
         LinearLayout container = (LinearLayout)
             findViewById( R.id.button_bar_container );
-        m_pendingButtons = new ArrayList<Button>();
 
         LinearLayout bar = null;
         int barLen = 0;
@@ -132,8 +124,9 @@ public class TilePickView extends LinearLayout {
             }
 
             Button button = (Button)bar.getChildAt( visIndex % barLen );
+            m_buttons.put( dataIndex, button );
             button.setVisibility( View.VISIBLE );
-            updateButton( button, dataIndex, 0 );
+            updateButton( dataIndex, 0 );
             button.setOnClickListener( new OnClickListener() {
                     @Override
                     public void onClick( View view ) {
@@ -143,16 +136,16 @@ public class TilePickView extends LinearLayout {
         }
     }
 
-    private void onTileClicked( View view, int index ) {
+    private void onTileClicked( View view, int index )
+    {
+        // replace the last pick if we don't have room to add a new one
         if ( m_pendingTiles.size() == m_state.nToPick ) {
             removePending();
         }
-        Button button = (Button)view;
         m_pendingTiles.add( index );
-        m_pendingButtons.add( button );
 
         updateDelButton();
-        updateButton( button, index, -1 );
+        updateButton( index, -1 );
         showPending();
 
         m_listner.onTilesChanged( m_state.nToPick, getPending() );
@@ -160,22 +153,39 @@ public class TilePickView extends LinearLayout {
 
     private void showPending()
     {
-        TextView text = (TextView)findViewById( R.id.pending_desc );
-        List<String> faces = new ArrayList<String>();
-        for ( int indx : m_pendingTiles ) {
-            faces.add( m_state.faces[indx] );
+        TextView desc = (TextView)findViewById( R.id.pending_desc );
+        if ( null == m_state.counts ) {
+            desc.setVisibility( View.GONE );
+        } else {
+            List<String> faces = new ArrayList<String>();
+            for ( int indx : m_pendingTiles ) {
+                faces.add( m_state.faces[indx] );
+            }
+
+            desc.setText( LocUtils.getString( getContext(),
+                                              R.string.tile_pick_summary_fmt,
+                                              TextUtils.join( ",", faces ) ) );
         }
-        String msg = "Current selection: " + TextUtils.join( ",", faces );
-        text.setText( msg );
     }
 
-    private void updateButton( Button button, int index, int adjust )
+    private int pendingCount( int dataIndex )
     {
+        int count = 0;
+        for ( int index : m_pendingTiles ) {
+            if ( index == dataIndex ) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    private void updateButton( int index, int adjust )
+    {
+        Button button = m_buttons.get( index );
         Context context = getContext();
         String face = m_state.faces[index];
         if ( null != m_state.counts ) {
-            m_state.counts[index] += adjust;
-            int count = m_state.counts[index];
+            int count = m_state.counts[index] - pendingCount( index );
             face = LocUtils.getString( context, R.string.tile_button_txt_fmt,
                                        face, count );
 
@@ -188,14 +198,14 @@ public class TilePickView extends LinearLayout {
     private void removePending()
     {
         int tile = m_pendingTiles.remove( m_pendingTiles.size() - 1 );
-        Button button = m_pendingButtons.remove( m_pendingButtons.size() - 1 );
-        updateButton( button, tile, 1 );
+        updateButton( tile, 1 );
         showPending();
     }
 
     private void updateDelButton()
     {
-        int vis = m_pendingTiles.size() == 0 ? View.INVISIBLE : View.VISIBLE;
+        int vis = null == m_state.counts || m_pendingTiles.size() == 0
+            ? View.INVISIBLE : View.VISIBLE;
         findViewById( R.id.del ).setVisibility( vis );
     }
 }

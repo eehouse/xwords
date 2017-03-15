@@ -1538,6 +1538,7 @@
     <string name="title_tile_picker">Letter for blank</string>
 
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
+    <string name="tile_pick_summary_fmt">Current pick: %1$s</string>
 
     <!-- title of dialog brought up in response to the
          board_menu_game_left menu. The dialog lists all tiles
