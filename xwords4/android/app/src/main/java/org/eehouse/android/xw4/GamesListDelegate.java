@@ -1041,7 +1041,6 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void onSaveInstanceState( Bundle outState )
     {
-        // super.onSaveInstanceState( outState );
         outState.putBoolean( SAVE_NEXTSOLO, m_nextIsSolo );
         outState.putSerializable( SAVE_SELGAMES, (HashSet)m_selGames );
         outState.putSerializable( SAVE_SELGROUPS, (HashSet)m_selGroupIDs );
@@ -1051,6 +1050,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( null != m_rematchExtras ) {
             outState.putBundle( SAVE_REMATCHEXTRAS, m_rematchExtras );
         }
+        super.onSaveInstanceState( outState );
     }
 
     private void getBundledData( Bundle bundle )

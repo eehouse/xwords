@@ -88,8 +88,8 @@ public class MainActivity extends XWActivity
     @Override
     protected void onSaveInstanceState( Bundle outState )
     {
-        super.onSaveInstanceState( outState );
         m_safeToCommit = false;
+        super.onSaveInstanceState( outState );
     }
 
     @Override

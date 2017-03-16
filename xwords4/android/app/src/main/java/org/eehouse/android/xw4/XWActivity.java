@@ -66,8 +66,11 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onSaveInstanceState( Bundle outState )
     {
-        super.onSaveInstanceState( outState );
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logi( TAG, "onSaveInstanceState(this=%H)", this );
+        }
         m_dlgt.onSaveInstanceState( outState );
+        super.onSaveInstanceState( outState );
     }
 
     @Override

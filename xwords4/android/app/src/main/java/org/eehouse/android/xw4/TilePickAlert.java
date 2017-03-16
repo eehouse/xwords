@@ -88,10 +88,10 @@ public class TilePickAlert extends XWDialogFragment
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
-        super.onSaveInstanceState( bundle );
         bundle.putSerializable( TPS, m_state );
         bundle.putSerializable( ACTION, m_action );
         m_view.saveInstanceState( bundle );
+        super.onSaveInstanceState( bundle );
     }
 
     @Override

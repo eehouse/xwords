@@ -46,8 +46,8 @@ public class LookupAlert extends XWDialogFragment {
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
-        super.onSaveInstanceState( bundle );
         m_view.saveInstanceState( bundle );
+        super.onSaveInstanceState( bundle );
     }
 
     @Override

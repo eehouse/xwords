@@ -65,8 +65,8 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
-        super.onSaveInstanceState( bundle );
         bundle.putParcelable( STATE_KEY, m_state );
+        super.onSaveInstanceState( bundle );
     }
 
     @Override

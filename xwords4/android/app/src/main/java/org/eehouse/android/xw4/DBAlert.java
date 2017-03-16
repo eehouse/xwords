@@ -67,9 +67,9 @@ public class DBAlert extends XWDialogFragment {
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
-        super.onSaveInstanceState( bundle );
         bundle.putInt( DLG_ID_KEY, mDlgID.ordinal() );
         bundle.putSerializable( PARMS_KEY, mParams );
+        super.onSaveInstanceState( bundle );
     }
     
     @Override
