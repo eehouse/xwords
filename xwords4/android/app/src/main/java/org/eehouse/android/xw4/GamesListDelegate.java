@@ -62,6 +62,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -78,13 +79,9 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String TAG = GamesListDelegate.class.getSimpleName();
 
 
-    private static final String SAVE_ROWID = "SAVE_ROWID";
-    private static final String SAVE_GROUPID = "SAVE_GROUPID";
-    private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
     private static final String SAVE_REMATCHEXTRAS = "SAVE_REMATCHEXTRAS";
-    private static final String SAVE_SELGAMES = "SAVE_SELGAMES";
-    private static final String SAVE_SELGROUPS = "SAVE_SELGROUPS";
+    private static final String SAVE_MYSIS = TAG + "/MYSIS";
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -102,6 +99,19 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_P2PADDR_EXTRA = "rm_p2pma";
 
     private static final String ALERT_MSG = "alert_msg";
+
+    private static class MySIS implements Serializable {
+        public MySIS(){
+            selGames = new HashSet<Long>();
+            selGroupIDs = new HashSet<Long>();
+        }
+        int groupSelItem;
+        boolean nextIsSolo;
+        boolean moveAfterNewGroup;
+        Set<Long> selGames;
+        Set<Long> selGroupIDs;
+    }
+    private MySIS m_mySIS;
 
     private class GameListAdapter extends XWExpListAdapter {
         private long[] m_groupPositions;
@@ -185,7 +195,7 @@ public class GamesListDelegate extends ListDelegateBase
                     GameListItem.makeForRow( m_activity, convertView,
                                              rec.m_rowID, m_handler,
                                              m_fieldID, GamesListDelegate.this );
-                item.setSelected( m_selGames.contains( rec.m_rowID ) );
+                item.setSelected( m_mySIS.selGames.contains( rec.m_rowID ) );
                 result = item;
             } else {
                 Assert.fail();
@@ -588,11 +598,7 @@ public class GamesListDelegate extends ListDelegateBase
     private NetLaunchInfo m_netLaunchInfo;
     private Set<Long> m_launchedGames; // prevent problems with double-taps
     private boolean m_menuPrepared;
-    private boolean m_moveAfterNewGroup;
-    private Set<Long> m_selGames;
-    private Set<Long> m_selGroupIDs;
     private String m_origTitle;
-    private boolean m_nextIsSolo;
     private Button[] m_newGameButtons;
     private boolean m_haveShownGetDict;
     private Bundle m_rematchExtras;
@@ -763,60 +769,46 @@ public class GamesListDelegate extends ListDelegateBase
         }
             break;
 
-        case CHANGE_GROUP: {
-            Set<Long> selGames = (Set<Long>)params[0];
-            long srcGroup = -1;
-            // If all games are coming from the same group we can disable move
-            // when that's the destination
-            for ( long rowid : selGames ) {
-                long groupID = DBUtils.getGroupForGame( m_activity, rowid );
-                if ( -1 == srcGroup ) {
-                    srcGroup = groupID;
-                } else if ( srcGroup != groupID ) {
-                    srcGroup = -1;
-                    break;
-                }
-            }
-            final int[] selItem = {-1};
-            final long fSrcGroup = srcGroup;;
-            lstnr = new OnClickListener() {
-                    public void onClick( DialogInterface dlgi, int item ) {
-                        selItem[0] = item;
-                        AlertDialog dlg = (AlertDialog)dlgi;
-                        Button btn =
-                            dlg.getButton( AlertDialog.BUTTON_POSITIVE );
-                        boolean enabled = fSrcGroup == -1;
-                        if ( !enabled ) {
-                            long newGroup = m_adapter.getGroupIDFor( item );
-                            enabled = newGroup != fSrcGroup;
-                        }
-                        btn.setEnabled( enabled );
-                    }
-                };
-            lstnr2 = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        Assert.assertTrue( -1 != selItem[0] );
-                        long gid = m_adapter.getGroupIDFor( selItem[0] );
-                        moveSelGamesTo( gid );
-                    }
-                };
-            OnClickListener lstnr3 =
-                new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        m_moveAfterNewGroup = true;
-                        showDialogFragment( DlgID.NEW_GROUP );
-                    }
-                };
-            String[] groups = m_adapter.groupNames();
-            int curGroupPos = m_adapter.getGroupPosition( fSrcGroup );
+        case CHANGE_GROUP:
             dialog = makeAlertBuilder()
                 .setTitle( R.string.change_group )
-                .setSingleChoiceItems( groups, curGroupPos, lstnr )
-                .setPositiveButton( R.string.button_move, lstnr2 )
-                .setNeutralButton( R.string.button_newgroup, lstnr3 )
+                .setSingleChoiceItems( m_adapter.groupNames(),
+                                       m_mySIS.groupSelItem,
+                                       new OnClickListener() {
+                                           public void onClick(DialogInterface
+                                                               dlgi,
+                                                               int item ) {
+                                               m_mySIS.groupSelItem = item;
+                                               enableMoveGroupButton( dlgi );
+                                           }
+                                       } )
+                .setPositiveButton( R.string.button_move,
+                                    new OnClickListener() {
+                                        public void onClick( DialogInterface dlg,
+                                                             int item ) {
+                                            long gid = m_adapter
+                                                .getGroupIDFor( m_mySIS
+                                                                .groupSelItem );
+                                            moveSelGamesTo( gid );
+                                        }
+                                    } )
+                .setNeutralButton( R.string.button_newgroup,
+                                   new OnClickListener() {
+                                       @Override
+                                       public void onClick( DialogInterface dlg,
+                                                            int item ) {
+                                           m_mySIS.moveAfterNewGroup = true;
+                                           showDialogFragment( DlgID.NEW_GROUP );
+                                       }
+                                   } )
                 .setNegativeButton( android.R.string.cancel, null )
                 .create();
-        }
+            dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dlg) {
+                        enableMoveGroupButton( dlg );
+                    }
+                });
             break;
 
         case GET_NAME: {
@@ -929,6 +921,14 @@ public class GamesListDelegate extends ListDelegateBase
         return dialog;
     } // makeDialog
 
+
+    private void enableMoveGroupButton( DialogInterface dlgi )
+    {
+        ((AlertDialog)dlgi)
+            .getButton( AlertDialog.BUTTON_POSITIVE )
+            .setEnabled( 0 <= m_mySIS.groupSelItem );
+    }
+
     @Override
     protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
@@ -956,8 +956,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         Utils.cancelNotification( m_activity, R.string.post_dualpane_title );
 
-        m_selGames = new HashSet<Long>();
-        m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
 
         DBUtils.setDBChangeListener( this );
@@ -1041,9 +1039,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void onSaveInstanceState( Bundle outState )
     {
-        outState.putBoolean( SAVE_NEXTSOLO, m_nextIsSolo );
-        outState.putSerializable( SAVE_SELGAMES, (HashSet)m_selGames );
-        outState.putSerializable( SAVE_SELGROUPS, (HashSet)m_selGroupIDs );
+        outState.putSerializable( SAVE_MYSIS, m_mySIS );
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
         }
@@ -1057,10 +1053,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( null != bundle ) {
             m_netLaunchInfo = NetLaunchInfo.makeFrom( bundle );
-            m_nextIsSolo = bundle.getBoolean( SAVE_NEXTSOLO );
             m_rematchExtras = bundle.getBundle( SAVE_REMATCHEXTRAS );
-            m_selGames = (HashSet)bundle.getSerializable( SAVE_SELGAMES );
-            m_selGroupIDs = (HashSet)bundle.getSerializable( SAVE_SELGROUPS );
+            m_mySIS = (MySIS)bundle.getSerializable( SAVE_MYSIS );
+        } else {
+            m_mySIS = new MySIS();
         }
     }
 
@@ -1077,13 +1073,13 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void moveSelGamesTo( long gid )
     {
-        for ( long rowid : m_selGames ) {
+        for ( long rowid : m_mySIS.selGames ) {
             DBUtils.moveGame( m_activity, rowid, gid );
         }
 
         // Invalidate if there could have been change
         if ( ! DBUtils.getGroups( m_activity ).get( gid ).m_expanded ) {
-            m_selGames.clear();
+            m_mySIS.selGames.clear();
             invalidateOptionsMenuIf();
             setTitle();
         }
@@ -1096,7 +1092,8 @@ public class GamesListDelegate extends ListDelegateBase
         super.invalidateOptionsMenuIf();
 
         if ( !XWPrefs.getHideNewgameButtons( m_activity ) ) {
-            boolean enabled = 0 == m_selGames.size() && 1 >= m_selGroupIDs.size();
+            boolean enabled = 0 == m_mySIS.selGames.size()
+                && 1 >= m_mySIS.selGroupIDs.size();
             for ( Button button : m_newGameButtons ) {
                 button.setEnabled( enabled );
             }
@@ -1140,7 +1137,7 @@ public class GamesListDelegate extends ListDelegateBase
                     case GAME_DELETED:
                         m_adapter.removeGame( rowid );
                         m_launchedGames.remove( rowid );
-                        m_selGames.remove( rowid );
+                        m_mySIS.selGames.remove( rowid );
                         invalidateOptionsMenuIf();
                         break;
                     case GAME_CHANGED:
@@ -1194,18 +1191,18 @@ public class GamesListDelegate extends ListDelegateBase
         if ( toggled instanceof GameListItem ) {
             long rowid = ((GameListItem)toggled).getRowID();
             if ( selected ) {
-                m_selGames.add( rowid );
+                m_mySIS.selGames.add( rowid );
                 clearSelectedGroups();
             } else {
-                m_selGames.remove( rowid );
+                m_mySIS.selGames.remove( rowid );
             }
         } else if ( toggled instanceof GameListGroup ) {
             long id = ((GameListGroup)toggled).getGroupID();
             if ( selected ) {
-                m_selGroupIDs.add( id );
+                m_mySIS.selGroupIDs.add( id );
                 clearSelectedGames();
             } else {
-                m_selGroupIDs.remove( id );
+                m_mySIS.selGroupIDs.remove( id );
             }
         }
         invalidateOptionsMenuIf();
@@ -1218,10 +1215,10 @@ public class GamesListDelegate extends ListDelegateBase
         boolean selected;
         if ( obj instanceof GameListItem ) {
             long rowid = ((GameListItem)obj).getRowID();
-            selected = m_selGames.contains( rowid );
+            selected = m_mySIS.selGames.contains( rowid );
         } else if ( obj instanceof GameListGroup ) {
             long groupID = ((GameListGroup)obj).getGroupID();
-            selected = m_selGroupIDs.contains( groupID );
+            selected = m_mySIS.selGroupIDs.contains( groupID );
         } else {
             Assert.fail();
             selected = false;
@@ -1287,7 +1284,7 @@ public class GamesListDelegate extends ListDelegateBase
             long curID = (Long)params[0];
             long newid = GameUtils.dupeGame( m_activity, curID );
             if ( DBUtils.ROWID_NOTFOUND != newid ) {
-                m_selGames.add( newid );
+                m_mySIS.selGames.add( newid );
                 reloadGame( newid );
             }
             break;
@@ -1297,7 +1294,7 @@ public class GamesListDelegate extends ListDelegateBase
             setupButtons();
             // FALLTHRU
         case NEW_GAME_PRESSED:
-            handleNewGame( m_nextIsSolo );
+            handleNewGame( m_mySIS.nextIsSolo );
             break;
 
         case DELETE_GROUPS:
@@ -1451,7 +1448,8 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected boolean handleBackPressed()
     {
-        boolean handled = 0 < m_selGames.size() || 0 < m_selGroupIDs.size();
+        boolean handled = 0 < m_mySIS.selGames.size()
+            || 0 < m_mySIS.selGroupIDs.size();
         if ( handled ) {
             makeNotAgainBuilder( R.string.not_again_backclears,
                                  R.string.key_notagain_backclears,
@@ -1464,8 +1462,8 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onPrepareOptionsMenu( Menu menu )
     {
-        int nGamesSelected = m_selGames.size();
-        int nGroupsSelected = m_selGroupIDs.size();
+        int nGamesSelected = m_mySIS.selGames.size();
+        int nGroupsSelected = m_mySIS.selGroupIDs.size();
         int groupCount = m_adapter.getGroupCount();
         m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
         if ( m_menuPrepared ) {
@@ -1490,7 +1488,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             int selGroupPos = -1;
             if ( 1 == nGroupsSelected ) {
-                long id = m_selGroupIDs.iterator().next();
+                long id = m_mySIS.selGroupIDs.iterator().next();
                 selGroupPos = m_adapter.getGroupPosition( id );
             }
 
@@ -1498,7 +1496,7 @@ public class GamesListDelegate extends ListDelegateBase
             // But we enable delete so a warning message later can explain.
             Utils.setItemVisible( menu, R.id.games_group_delete,
                                   1 <= nGroupsSelected );
-            enable = (1 == nGroupsSelected) && ! m_selGroupIDs
+            enable = (1 == nGroupsSelected) && ! m_mySIS.selGroupIDs
                 .contains( XWPrefs.getDefaultNewGameGroup( m_activity ) );
             Utils.setItemVisible( menu, R.id.games_group_default, enable );
 
@@ -1527,7 +1525,7 @@ public class GamesListDelegate extends ListDelegateBase
             // Multiples can be deleted, but disable if any selected game is
             // currently open
             enable = 0 < nGamesSelected;
-            for ( long row : m_selGames ) {
+            for ( long row : m_mySIS.selGames ) {
                 enable = enable && !m_launchedGames.contains( row );
             }
             Utils.setItemVisible( menu, R.id.games_game_delete, enable );
@@ -1598,7 +1596,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_newgroup:
-            m_moveAfterNewGroup = false;
+            m_mySIS.moveAfterNewGroup = false;
             showDialogFragment( DlgID.NEW_GROUP );
             break;
 
@@ -1676,12 +1674,12 @@ public class GamesListDelegate extends ListDelegateBase
             item = (GameListItem)targetView;
             id = R.menu.games_list_game_menu;
 
-            selected = m_selGames.contains( item.getRowID() );
+            selected = m_mySIS.selGames.contains( item.getRowID() );
         } else if ( targetView instanceof GameListGroup ) {
             id = R.menu.games_list_group_menu;
 
             long groupID = ((GameListGroup)targetView).getGroupID();
-            selected = m_selGroupIDs.contains( groupID );
+            selected = m_mySIS.selGroupIDs.contains( groupID );
         } else {
             Assert.fail();
         }
@@ -1772,7 +1770,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( !expanded ) {
             long[] rows = DBUtils.getGroupGames( m_activity, groupID );
             for ( long row : rows ) {
-                m_selGames.remove( row );
+                m_mySIS.selGames.remove( row );
             }
             invalidateOptionsMenuIf();
             setTitle();
@@ -1831,7 +1829,8 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_move:
-            showDialogFragment( DlgID.CHANGE_GROUP, m_selGames );
+            m_mySIS.groupSelItem = -1;
+            showDialogFragment( DlgID.CHANGE_GROUP );
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
@@ -1858,7 +1857,7 @@ public class GamesListDelegate extends ListDelegateBase
                             GameLock lock =
                                 GameUtils.saveNewGame( self, stream, groupID );
                             DBUtils.saveSummary( self, lock, smry );
-                            m_selGames.add( lock.getRowid() );
+                            m_mySIS.selGames.add( lock.getRowid() );
                             lock.unlock();
                             mkListAdapter();
                         }
@@ -1908,7 +1907,7 @@ public class GamesListDelegate extends ListDelegateBase
             switch( itemID ) {
             case R.id.games_group_delete:
                 long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
-                if ( m_selGroupIDs.contains( dftGroup ) ) {
+                if ( m_mySIS.selGroupIDs.contains( dftGroup ) ) {
                     msg = getString( R.string.cannot_delete_default_group_fmt,
                                      m_adapter.groupName( dftGroup ) );
                     makeOkOnlyBuilder( msg ).show();
@@ -1971,13 +1970,13 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void handleNewGame( boolean solo )
     {
-        m_nextIsSolo = solo;
+        m_mySIS.nextIsSolo = solo;
         showDialogFragment( DlgID.GAMES_LIST_NEWGAME, solo );
     }
 
     private void handleNewGameButton( boolean solo )
     {
-        m_nextIsSolo = solo;
+        m_mySIS.nextIsSolo = solo;
 
         int count = m_adapter.getCount();
         boolean skipOffer = 6 > count || XWPrefs.getHideNewgameButtons( m_activity );
@@ -1998,11 +1997,11 @@ public class GamesListDelegate extends ListDelegateBase
     protected void setTitle()
     {
         int fmt = 0;
-        int nSels = m_selGames.size();
+        int nSels = m_mySIS.selGames.size();
         if ( 0 < nSels ) {
             fmt = R.string.sel_games_fmt;
         } else {
-            nSels = m_selGroupIDs.size();
+            nSels = m_mySIS.selGroupIDs.size();
             if ( 0 < nSels ) {
                 fmt = R.string.sel_groups_fmt;
             }
@@ -2374,8 +2373,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void showNewGroupIf()
     {
-        if ( m_moveAfterNewGroup ) {
-            m_moveAfterNewGroup = false;
+        if ( m_mySIS.moveAfterNewGroup ) {
+            m_mySIS.moveAfterNewGroup = false;
             showDialogFragment( DlgID.CHANGE_GROUP );
         }
     }
@@ -2384,7 +2383,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         for ( long rowid : rowids ) {
             GameUtils.deleteGame( m_activity, rowid, false );
-            m_selGames.remove( rowid );
+            m_mySIS.selGames.remove( rowid );
         }
         invalidateOptionsMenuIf();
         setTitle();
@@ -2406,7 +2405,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         clearSelections( false );
 
-        m_selGames.add( rowid );
+        m_mySIS.selGames.add( rowid );
         m_adapter.setSelected( rowid, true );
 
         invalidateOptionsMenuIf();
@@ -2431,11 +2430,11 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean clearSelectedGames()
     {
         // clear any selection
-        boolean needsClear = 0 < m_selGames.size();
+        boolean needsClear = 0 < m_mySIS.selGames.size();
         if ( needsClear ) {
             // long[] rowIDs = getSelRowIDs();
-            Set<Long> selGames = new HashSet<Long>( m_selGames );
-            m_selGames.clear();
+            Set<Long> selGames = new HashSet<Long>( m_mySIS.selGames );
+            m_mySIS.selGames.clear();
             m_adapter.clearSelectedGames( selGames );
         }
         return needsClear;
@@ -2444,10 +2443,10 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean clearSelectedGroups()
     {
         // clear any selection
-        boolean needsClear = 0 < m_selGroupIDs.size();
+        boolean needsClear = 0 < m_mySIS.selGroupIDs.size();
         if ( needsClear ) {
-            m_adapter.clearSelectedGroups( m_selGroupIDs );
-            m_selGroupIDs.clear();
+            m_adapter.clearSelectedGroups( m_mySIS.selGroupIDs );
+            m_mySIS.selGroupIDs.clear();
         }
         return needsClear;
     }
@@ -2529,9 +2528,9 @@ public class GamesListDelegate extends ListDelegateBase
 
     private long[] getSelRowIDs()
     {
-        long[] result = new long[m_selGames.size()];
+        long[] result = new long[m_mySIS.selGames.size()];
         int ii = 0;
-        for ( Iterator<Long> iter = m_selGames.iterator();
+        for ( Iterator<Long> iter = m_mySIS.selGames.iterator();
               iter.hasNext(); ) {
             result[ii++] = iter.next();
         }
@@ -2541,8 +2540,8 @@ public class GamesListDelegate extends ListDelegateBase
     private int getSelGroupPos()
     {
         int result = -1;
-        if ( 1 == m_selGroupIDs.size() ) {
-            long id = m_selGroupIDs.iterator().next();
+        if ( 1 == m_mySIS.selGroupIDs.size() ) {
+            long id = m_mySIS.selGroupIDs.iterator().next();
             result = m_adapter.getGroupPosition( id );
         }
         return result;
@@ -2550,9 +2549,9 @@ public class GamesListDelegate extends ListDelegateBase
 
     private long[] getSelGroupIDs()
     {
-        long[] result = new long[m_selGroupIDs.size()];
+        long[] result = new long[m_mySIS.selGroupIDs.size()];
         int ii = 0;
-        for ( Iterator<Long> iter = m_selGroupIDs.iterator();
+        for ( Iterator<Long> iter = m_mySIS.selGroupIDs.iterator();
               iter.hasNext(); ) {
             result[ii++] = iter.next();
         }
@@ -2642,12 +2641,12 @@ public class GamesListDelegate extends ListDelegateBase
         if ( skipAsk || !askingChangeName( edit, doConfigure ) ) {
             String name = edit.getText().toString();
             long rowID;
-            long groupID = 1 == m_selGroupIDs.size()
-                ? m_selGroupIDs.iterator().next() : DBUtils.GROUPID_UNSPEC;
+            long groupID = 1 == m_mySIS.selGroupIDs.size()
+                ? m_mySIS.selGroupIDs.iterator().next() : DBUtils.GROUPID_UNSPEC;
 
             // Ideally we'd check here whether user has set player name.
 
-            if ( m_nextIsSolo ) {
+            if ( m_mySIS.nextIsSolo ) {
                 rowID = GameUtils.saveNew( m_activity,
                                            new CurGameInfo( m_activity ),
                                            groupID, name );
