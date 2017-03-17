@@ -92,9 +92,7 @@ public class BoardDelegate extends DelegateBase
     private static final String DLG_BYTES = "DLG_BYTES";
     private static final String ROOM = "ROOM";
     private static final String PWDNAME = "PWDNAME";
-    private static final String TOASTSTR = "TOASTSTR";
-    private static final String WORDS = "WORDS";
-    private static final String GETDICT = "GETDICT";
+    private static final String SAVE_MYSIS = TAG + "/MYSIS";
 
     private Activity m_activity;
     private BoardView m_view;
@@ -130,9 +128,6 @@ public class BoardDelegate extends DelegateBase
     private JNIThread m_jniThreadRef;
     private JNIThread.GameStateInfo m_gsi;
 
-    private String m_toastStr;
-    private String[] m_words;
-    private String m_getDict;
 
     private int m_nMissing = -1;
     private int m_nGuestDevs = -1;
@@ -140,7 +135,6 @@ public class BoardDelegate extends DelegateBase
     private boolean m_overNotShown;
     private boolean m_dropOnDismiss;
     private DBAlert m_inviteAlert;
-    private boolean m_showedInviteAlert; // once per launch of the board
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -159,6 +153,13 @@ public class BoardDelegate extends DelegateBase
             }
         }
     }
+
+    private static class MySIS implements Serializable {
+        String toastStr;
+        String[] words;
+        String getDict;
+    }
+    private MySIS m_mySIS;
 
     @Override
     protected Dialog makeDialog( DBAlert alert, Object[] params )
@@ -239,12 +240,12 @@ public class BoardDelegate extends DelegateBase
                     public void onClick( DialogInterface dlg,
                                          int whichButton ) {
                         if ( DlgID.DLG_USEDICT == dlgID ) {
-                            setGotGameDict( m_getDict );
+                            setGotGameDict( m_mySIS.getDict );
                         } else {
                             DwnldDelegate
-                                .downloadDictInBack( m_activity,
-                                                     m_gi.dictLang,
-                                                     m_getDict, BoardDelegate.this );
+                                .downloadDictInBack( m_activity, m_gi.dictLang,
+                                                     m_mySIS.getDict,
+                                                     BoardDelegate.this );
                         }
                     }
                 };
@@ -312,14 +313,14 @@ public class BoardDelegate extends DelegateBase
             }
             ab.setPositiveButton( android.R.string.ok, null );
             if ( DlgID.DLG_SCORES == dlgID ) {
-                if ( null != m_words && m_words.length > 0 ) {
+                if ( null != m_mySIS.words && m_mySIS.words.length > 0 ) {
                     String buttonTxt;
                     boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
-                    if ( m_words.length == 1 ) {
+                    if ( m_mySIS.words.length == 1 ) {
                         int resID = studyOn
                             ? R.string.button_lookup_study_fmt
                             : R.string.button_lookup_fmt;
-                        buttonTxt = getString( resID, m_words[0] );
+                        buttonTxt = getString( resID, m_mySIS.words[0] );
                     } else {
                         int resID = studyOn ? R.string.button_lookup_study
                             : R.string.button_lookup;
@@ -713,17 +714,15 @@ public class BoardDelegate extends DelegateBase
 
     protected void onSaveInstanceState( Bundle outState )
     {
-        outState.putString( TOASTSTR, m_toastStr );
-        outState.putStringArray( WORDS, m_words );
-        outState.putString( GETDICT, m_getDict );
+        outState.putSerializable( SAVE_MYSIS, m_mySIS );
     }
 
     private void getBundledData( Bundle bundle )
     {
         if ( null != bundle ) {
-            m_toastStr = bundle.getString( TOASTSTR );
-            m_words = bundle.getStringArray( WORDS );
-            m_getDict = bundle.getString( GETDICT );
+            m_mySIS = (MySIS)bundle.getSerializable( SAVE_MYSIS );
+        } else {
+            m_mySIS = new MySIS();
         }
     }
 
@@ -1086,8 +1085,8 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_COMMIT;
             break;
         case SHOW_EXPL_ACTION:
-            showToast( m_toastStr );
-            m_toastStr = null;
+            showToast( m_mySIS.toastStr );
+            m_mySIS.toastStr = null;
             break;
         case BUTTON_BROWSEALL_ACTION:
         case BUTTON_BROWSE_ACTION:
@@ -1126,7 +1125,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TRADE;
             break;
         case LOOKUP_ACTION:
-            launchLookup( m_words, m_gi.dictLang );
+            launchLookup( m_mySIS.words, m_gi.dictLang );
             break;
         case NFC_TO_SELF:
             GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
@@ -1659,7 +1658,7 @@ public class BoardDelegate extends DelegateBase
 
         if ( null != toastStr ) {
             DbgUtils.logi( TAG, "handleConndMessage(): toastStr: %s", toastStr );
-            m_toastStr = toastStr;
+            m_mySIS.toastStr = toastStr;
             if ( naMsg == 0 ) {
                 onPosButton( Action.SHOW_EXPL_ACTION, null );
             } else {
@@ -1973,7 +1972,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void informMove( int turn, String expl, String words )
         {
-            m_words = null == words? null : wordsToArray( words );
+            m_mySIS.words = null == words? null : wordsToArray( words );
             nonBlockingDialog( DlgID.DLG_SCORES, expl );
             if ( isVisible() ) {
                 Utils.playNotificationSound( m_activity );
@@ -2026,7 +2025,7 @@ public class BoardDelegate extends DelegateBase
                     dlgID = DlgID.DLG_GETDICT;
                     msg += getString( R.string.inform_dict_download );
                 }
-                m_getDict = newName;
+                m_mySIS.getDict = newName;
                 nonBlockingDialog( dlgID, msg );
             }
         }
@@ -2359,7 +2358,6 @@ public class BoardDelegate extends DelegateBase
     private void showInviteAlertIf()
     {
         if ( null == m_inviteAlert & m_nMissing > 0 ) {
-            m_showedInviteAlert = true;
             InviteAlertState ias = new InviteAlertState();
             ias.summary = m_summary;
             ias.gi = m_gi;
