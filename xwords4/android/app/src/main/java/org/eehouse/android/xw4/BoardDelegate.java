@@ -119,8 +119,6 @@ public class BoardDelegate extends DelegateBase
     private InviteMeans m_missingMeans = null;
     private boolean m_progressShown = false;
     private boolean m_firingPrefs;
-    private JNIUtils m_jniu;
-    private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
     private boolean m_gameOver = false;
 
@@ -129,7 +127,6 @@ public class BoardDelegate extends DelegateBase
     private JNIThread.GameStateInfo m_gsi;
 
 
-    private int m_nMissing = -1;
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
@@ -155,9 +152,14 @@ public class BoardDelegate extends DelegateBase
     }
 
     private static class MySIS implements Serializable {
+        MySIS() { nMissing = -1; }
         String toastStr;
         String[] words;
         String getDict;
+        int nMissing;
+        int nAlerts;
+        boolean inTrade;
+        int inviteAlertCount;
     }
     private MySIS m_mySIS;
 
@@ -448,11 +450,12 @@ public class BoardDelegate extends DelegateBase
                         public void onDismissed( XWDialogFragment frag ) {
                             DbgUtils.logd( TAG, "onDismissed(%s)", frag.toString() );
                             m_inviteAlert = null;
-                            // if ( m_nMissing > 0 ) {
-                            //     finish();
-                            // }
+                            if ( null != m_mySIS && m_mySIS.nMissing > 0
+                                 && 0 == m_mySIS.inviteAlertCount ) {
+                                finish();
+                            }
                         }
-                    });
+                    } );
             }
             break;
 
@@ -573,6 +576,7 @@ public class BoardDelegate extends DelegateBase
                             if ( state.summary.hasRematchInfo() ) {
                                 tryRematchInvites( true );
                             } else {
+                                ++m_mySIS.inviteAlertCount;
                                 callInviteChoices( sentInfo[0] );
                             }
                         } else {
@@ -596,7 +600,10 @@ public class BoardDelegate extends DelegateBase
                         public void onClick( DialogInterface dialog,
                                              int item ) {
                             String msg = sentInfo[0].getAsText( activity );
-                            makeOkOnlyBuilder( msg ).show();
+                            ++m_mySIS.inviteAlertCount;
+                            makeOkOnlyBuilder( msg )
+                                .setAction( Action.INVITE_INFO )
+                                .show();
                         }
                     };
                 ab.setNeutralButton( R.string.newgame_invite_more, lstnrMore );
@@ -629,7 +636,6 @@ public class BoardDelegate extends DelegateBase
         m_pendingChats = new ArrayList<String>();
 
         m_utils = new BoardUtilCtxt();
-        m_jniu = JNIUtilsImpl.get( m_activity );
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );
@@ -715,6 +721,7 @@ public class BoardDelegate extends DelegateBase
     protected void onSaveInstanceState( Bundle outState )
     {
         outState.putSerializable( SAVE_MYSIS, m_mySIS );
+        m_mySIS = null; // signal that we're exiting
     }
 
     private void getBundledData( Bundle bundle )
@@ -759,6 +766,7 @@ public class BoardDelegate extends DelegateBase
 
     protected void onWindowFocusChanged( boolean hasFocus )
     {
+        // This is not called when dialog fragment comes/goes away
         if ( hasFocus ) {
             if ( m_firingPrefs ) {
                 m_firingPrefs = false;
@@ -1214,6 +1222,12 @@ public class BoardDelegate extends DelegateBase
     {
         boolean handled = true;
         switch ( action ) {
+        case INVITE_INFO:
+            if ( 0 < m_mySIS.inviteAlertCount ) {
+                --m_mySIS.inviteAlertCount;
+                showInviteAlertIf();
+            }
+            break;
         case ENABLE_RELAY_DO_OR:
             if ( m_dropOnDismiss ) {
                 postDelayed( new Runnable() {
@@ -1228,6 +1242,8 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case LAUNCH_INVITE_ACTION:
+            Assert.assertTrue( 0 < m_mySIS.inviteAlertCount || !BuildConfig.DEBUG );
+            --m_mySIS.inviteAlertCount;
             showInviteAlertIf();
             break;
 
@@ -1256,20 +1272,20 @@ public class BoardDelegate extends DelegateBase
                 }
                 break;
             case BLUETOOTH:
-                BTInviteDelegate.launchForResult( m_activity, m_nMissing, info,
+                BTInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS:
                 Perms23.tryGetPerms( this, Perm.SEND_SMS, R.string.sms_invite_rationale,
-                                     Action.INVITE_SMS, this, m_nMissing, info );
+                                     Action.INVITE_SMS, this, m_mySIS.nMissing, info );
                 break;
             case RELAY:
-                RelayInviteDelegate.launchForResult( m_activity, m_nMissing,
+                RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing,
                                                      RequestCode.RELAY_INVITE_RESULT );
                 break;
             case WIFIDIRECT:
                 WiDirInviteDelegate.launchForResult( m_activity,
-                                                     m_nMissing,
+                                                     m_mySIS.nMissing,
                                                      RequestCode.P2P_INVITE_RESULT );
                 break;
             case EMAIL:
@@ -1385,7 +1401,7 @@ public class BoardDelegate extends DelegateBase
     {
         runOnUiThread( new Runnable() {
                 public void run() {
-                    handleConndMessage( room, devOrder, allHere, nMissing );
+                    handleConndMessage( room, devOrder, allHere, nMissing ); // from here too
                 }
             } );
     }
@@ -1466,7 +1482,7 @@ public class BoardDelegate extends DelegateBase
     public String makeNFCMessage()
     {
         String data = null;
-        if ( 0 < m_nMissing ) {  // Isn't there a better test??
+        if ( 0 < m_mySIS.nMissing ) {  // Isn't there a better test??
             NetLaunchInfo nli = new NetLaunchInfo( m_gi );
             Assert.assertTrue( 0 <= m_nGuestDevs );
             nli.forceChannel = 1 + m_nGuestDevs;
@@ -1621,7 +1637,7 @@ public class BoardDelegate extends DelegateBase
         int naMsg = 0;
         int naKey = 0;
         String toastStr = null;
-        m_nMissing = nMissing;
+        m_mySIS.nMissing = nMissing;
         if ( allHere ) {
             // All players have now joined the game.  The device that
             // created the room will assign tiles.  Then it will be
@@ -1832,7 +1848,7 @@ public class BoardDelegate extends DelegateBase
         public void turnChanged( int newTurn )
         {
             if ( 0 <= newTurn ) {
-                m_nMissing = 0;
+                m_mySIS.nMissing = 0;
                 post( new Runnable() {
                         public void run() {
                             makeNotAgainBuilder( R.string.not_again_turnchanged,
@@ -1949,7 +1965,7 @@ public class BoardDelegate extends DelegateBase
             //                isServer, nDevs, nMissing );
             m_nGuestDevs = nDevs;
 
-            m_nMissing = nMissing; // will be 0 unless isServer is true
+            m_mySIS.nMissing = nMissing; // will be 0 unless isServer is true
 
             if ( null != connTypes && 0 == connTypes.size() ) {
                 askNoAddrsDelete();
@@ -2124,10 +2140,10 @@ public class BoardDelegate extends DelegateBase
                             m_gsi =
                                 m_jniThread.getGameStateInfo();
                             updateToolbar();
-                            if ( m_inTrade != m_gsi.inTrade ) {
-                                m_inTrade = m_gsi.inTrade;
+                            if ( m_mySIS.inTrade != m_gsi.inTrade ) {
+                                m_mySIS.inTrade = m_gsi.inTrade;
                             }
-                            m_view.setInTrade( m_inTrade );
+                            m_view.setInTrade( m_mySIS.inTrade );
                             adjustTradeVisibility();
                             invalidateOptionsMenuIf();
                         }
@@ -2357,14 +2373,15 @@ public class BoardDelegate extends DelegateBase
 
     private void showInviteAlertIf()
     {
-        if ( null == m_inviteAlert & m_nMissing > 0 ) {
+        if ( null == m_inviteAlert && m_mySIS.nMissing > 0
+             && m_mySIS.inviteAlertCount == 0 ) {
             InviteAlertState ias = new InviteAlertState();
             ias.summary = m_summary;
             ias.gi = m_gi;
             ias.relayMissing = m_relayMissing;
             ias.connTypes = m_connTypes;
             ias.rowid = m_rowid;
-            ias.nMissing = m_nMissing;
+            ias.nMissing = m_mySIS.nMissing;
             showDialogFragment( DlgID.DLG_INVITE, ias );
         }
     }
@@ -2461,7 +2478,7 @@ public class BoardDelegate extends DelegateBase
 
     private void tryInvites()
     {
-        if ( 0 < m_nMissing && m_summary.hasRematchInfo() ) {
+        if ( 0 < m_mySIS.nMissing && m_summary.hasRematchInfo() ) {
             tryRematchInvites( false );
         } else if ( null != m_missingDevs ) {
             Assert.assertNotNull( m_missingMeans );
@@ -2548,12 +2565,12 @@ public class BoardDelegate extends DelegateBase
     private void adjustTradeVisibility()
     {
         if ( null != m_toolbar ) {
-            m_toolbar.setVisible( !m_inTrade );
+            m_toolbar.setVisible( !m_mySIS.inTrade );
         }
         if ( null != m_tradeButtons ) {
-            m_tradeButtons.setVisibility( m_inTrade? View.VISIBLE : View.GONE );
+            m_tradeButtons.setVisibility( m_mySIS.inTrade? View.VISIBLE : View.GONE );
         }
-        if ( m_inTrade && null != m_exchCommmitButton ) {
+        if ( m_mySIS.inTrade && null != m_exchCommmitButton ) {
             m_exchCommmitButton.setEnabled( m_gsi.tradeTilesSelected );
         }
     }

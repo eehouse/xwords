@@ -97,6 +97,7 @@ public class DlgDelegate {
         INVITE_SMS,
         BLANK_PICKED,
         TRAY_PICKED,
+        INVITE_INFO,
 
         // Dict Browser
         FINISH_ACTION,
