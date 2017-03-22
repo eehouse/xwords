@@ -101,10 +101,14 @@ public class DBAlert extends XWDialogFragment {
             new Handler().post( new Runnable() {
                     @Override
                     public void run() {
-                        DBAlert newMe = newInstance( mDlgID, mParams );
-                        ((MainActivity)getActivity()).show( newMe );
-
-                        dismiss();          // kill myself...
+                        MainActivity activity = (MainActivity)getActivity();
+                        if ( null != activity ) {
+                            DBAlert newMe = newInstance( mDlgID, mParams );
+                            activity.show( newMe );
+                            dismiss();          // kill myself...
+                        } else {
+                            DbgUtils.logd( TAG, "null activity..." );
+                        }
                     }
                 } );
         }
