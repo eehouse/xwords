@@ -126,12 +126,12 @@ public class BoardDelegate extends DelegateBase
     private JNIThread m_jniThreadRef;
     private JNIThread.GameStateInfo m_gsi;
 
-
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
     private boolean m_dropOnDismiss;
     private DBAlert m_inviteAlert;
+    private int m_inviteAlertCount;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -159,7 +159,6 @@ public class BoardDelegate extends DelegateBase
         int nMissing;
         int nAlerts;
         boolean inTrade;
-        int inviteAlertCount;
     }
     private MySIS m_mySIS;
 
@@ -345,65 +344,6 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        // case PICK_TILE_REQUESTBLANK: {
-        //     final int turn = (Integer)params[0];
-        //     final int col = (Integer)params[1];
-        //     final int row  = (Integer)params[2];
-        //     String[] texts = (String[])params[3];
-        //     dialog = ab
-        //         .setItems( texts, new OnClickListener() {
-        //                 public void onClick( DialogInterface dialog,
-        //                                      int item ) {
-        //                     handleViaThread( JNICmd.CMD_SET_BLANK, turn, col,
-        //                                      row, item );
-        //                 }
-        //             })
-        //         .setNegativeButton( android.R.string.cancel, null )
-        //         .setTitle( R.string.title_tile_picker )
-        //         .create();
-        // }
-        //     break;
-
-        // case PICK_TILE_REQUESTTRAY_BLK: {
-        //     String[] texts = (String[])params[0];
-        //     checkBlocking();
-        //     lstnr = new OnClickListener() {
-        //             public void onClick( DialogInterface dialog,
-        //                                  int item ) {
-        //                 m_resultCode = item;
-        //             }
-        //         };
-        //     ab.setItems( texts, lstnr );
-
-        //     String curTiles = (String)params[1];
-        //     boolean canUndoTiles = (Boolean)params[2];
-
-        //     ab.setTitle( getString( R.string.cur_tiles_fmt, curTiles ) );
-        //     if ( canUndoTiles ) {
-        //         OnClickListener undoClicked = new OnClickListener() {
-        //                 public void onClick( DialogInterface dialog,
-        //                                      int whichButton ) {
-        //                     m_resultCode = UtilCtxt.PICKER_BACKUP;
-        //                     removeDialog( dlgID );
-        //                 }
-        //             };
-        //         ab.setPositiveButton( R.string.tilepick_undo,
-        //                               undoClicked );
-        //     }
-        //     OnClickListener doAllClicked = new OnClickListener() {
-        //             public void onClick( DialogInterface dialog,
-        //                                  int whichButton ) {
-        //                 m_resultCode = UtilCtxt.PICKER_PICKALL;
-        //                 removeDialog( dlgID );
-        //             }
-        //         };
-        //     ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
-                
-        //     dialog = ab.create();
-        //     alert.setOnDismissListener( m_blockingODL );
-        // }
-        //     break;
-
         case ASK_PASSWORD: {
             final int player = (Integer)params[0];
             String name = (String)params[1];
@@ -444,6 +384,10 @@ public class BoardDelegate extends DelegateBase
             InviteAlertState state = (InviteAlertState)params[0];
             dialog = makeInviteDialog( alert, state );
             if ( null != dialog ) {
+                // Hack: I can't prevent screen rotation from duplicating this alert
+                if ( null != m_inviteAlert ) {
+                    m_inviteAlert.dismiss();
+                }
                 m_inviteAlert = alert;
                 alert.setOnDismissListener( new DBAlert.OnDismissListener() {
                         @Override
@@ -451,7 +395,7 @@ public class BoardDelegate extends DelegateBase
                             DbgUtils.logd( TAG, "onDismissed(%s)", frag.toString() );
                             m_inviteAlert = null;
                             if ( null != m_mySIS && m_mySIS.nMissing > 0
-                                 && 0 == m_mySIS.inviteAlertCount ) {
+                                 && 0 == m_inviteAlertCount ) {
                                 finish();
                             }
                         }
@@ -576,7 +520,7 @@ public class BoardDelegate extends DelegateBase
                             if ( state.summary.hasRematchInfo() ) {
                                 tryRematchInvites( true );
                             } else {
-                                ++m_mySIS.inviteAlertCount;
+                                ++m_inviteAlertCount;
                                 callInviteChoices( sentInfo[0] );
                             }
                         } else {
@@ -588,19 +532,14 @@ public class BoardDelegate extends DelegateBase
             AlertDialog.Builder ab = makeAlertBuilder()
                 .setTitle( titleID )
                 .setMessage( message )
-                .setPositiveButton( buttonTxt, lstnr )
-                .setOnCancelListener( new OnCancelListener() {
-                        public void onCancel( DialogInterface dialog ) {
-                            finish();
-                        }
-                    } );
+                .setPositiveButton( buttonTxt, lstnr );
 
             if ( showNeutButton ) {
                 OnClickListener lstnrMore = new OnClickListener() {
                         public void onClick( DialogInterface dialog,
                                              int item ) {
                             String msg = sentInfo[0].getAsText( activity );
-                            ++m_mySIS.inviteAlertCount;
+                            ++m_inviteAlertCount;
                             makeOkOnlyBuilder( msg )
                                 .setAction( Action.INVITE_INFO )
                                 .show();
@@ -609,13 +548,7 @@ public class BoardDelegate extends DelegateBase
                 ab.setNeutralButton( R.string.newgame_invite_more, lstnrMore );
             }
             if ( showInviteButton ) {
-                OnClickListener lstnrWait = new OnClickListener() {
-                        public void onClick( DialogInterface dialog,
-                                             int item ) {
-                            finish();
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_wait, lstnrWait );
+                ab.setNegativeButton( R.string.button_wait, null );
             }
 
             dialog = ab.create();
@@ -1223,8 +1156,8 @@ public class BoardDelegate extends DelegateBase
         boolean handled = true;
         switch ( action ) {
         case INVITE_INFO:
-            if ( 0 < m_mySIS.inviteAlertCount ) {
-                --m_mySIS.inviteAlertCount;
+            if ( 0 < m_inviteAlertCount ) {
+                --m_inviteAlertCount;
                 showInviteAlertIf();
             }
             break;
@@ -1242,8 +1175,8 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case LAUNCH_INVITE_ACTION:
-            Assert.assertTrue( 0 < m_mySIS.inviteAlertCount || !BuildConfig.DEBUG );
-            --m_mySIS.inviteAlertCount;
+            Assert.assertTrue( 0 < m_inviteAlertCount || !BuildConfig.DEBUG );
+            --m_inviteAlertCount;
             showInviteAlertIf();
             break;
 
@@ -2374,7 +2307,7 @@ public class BoardDelegate extends DelegateBase
     private void showInviteAlertIf()
     {
         if ( null == m_inviteAlert && m_mySIS.nMissing > 0
-             && m_mySIS.inviteAlertCount == 0 ) {
+             && m_inviteAlertCount == 0 ) {
             InviteAlertState ias = new InviteAlertState();
             ias.summary = m_summary;
             ias.gi = m_gi;
