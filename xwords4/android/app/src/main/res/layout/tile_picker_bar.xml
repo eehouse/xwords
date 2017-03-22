@@ -17,5 +17,8 @@
   <Button style="@style/evenly_spaced_horizontal"
           android:visibility="invisible"
           />
+  <Button style="@style/evenly_spaced_horizontal"
+          android:visibility="invisible"
+          />
   
 </LinearLayout>
