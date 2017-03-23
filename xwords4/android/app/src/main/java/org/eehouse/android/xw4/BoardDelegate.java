@@ -80,6 +80,7 @@ public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DwnldDelegate.DownloadFinishedListener,
                ConnStatusHandler.ConnStatusCBacks,
+               XWDialogFragment.OnLastGoneListener,
                NFCUtils.NFCActor {
     private static final String TAG = BoardDelegate.class.getSimpleName();
 
@@ -131,7 +132,6 @@ public class BoardDelegate extends DelegateBase
     private boolean m_overNotShown;
     private boolean m_dropOnDismiss;
     private DBAlert m_inviteAlert;
-    private int m_inviteAlertCount;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -380,27 +380,10 @@ public class BoardDelegate extends DelegateBase
                 .setNegativeButton( R.string.button_no, null )
                 .create();
             break;
-        case DLG_INVITE:
+        case DLG_INVITE: {
             InviteAlertState state = (InviteAlertState)params[0];
             dialog = makeInviteDialog( alert, state );
-            if ( null != dialog ) {
-                // Hack: I can't prevent screen rotation from duplicating this alert
-                if ( null != m_inviteAlert ) {
-                    m_inviteAlert.dismiss();
-                }
-                m_inviteAlert = alert;
-                alert.setOnDismissListener( new DBAlert.OnDismissListener() {
-                        @Override
-                        public void onDismissed( XWDialogFragment frag ) {
-                            DbgUtils.logd( TAG, "onDismissed(%s)", frag.toString() );
-                            m_inviteAlert = null;
-                            if ( null != m_mySIS && m_mySIS.nMissing > 0
-                                 && 0 == m_inviteAlertCount ) {
-                                finish();
-                            }
-                        }
-                    } );
-            }
+        }
             break;
 
         case ENABLE_NFC:
@@ -520,7 +503,6 @@ public class BoardDelegate extends DelegateBase
                             if ( state.summary.hasRematchInfo() ) {
                                 tryRematchInvites( true );
                             } else {
-                                ++m_inviteAlertCount;
                                 callInviteChoices( sentInfo[0] );
                             }
                         } else {
@@ -539,7 +521,6 @@ public class BoardDelegate extends DelegateBase
                         public void onClick( DialogInterface dialog,
                                              int item ) {
                             String msg = sentInfo[0].getAsText( activity );
-                            ++m_inviteAlertCount;
                             makeOkOnlyBuilder( msg )
                                 .setAction( Action.INVITE_INFO )
                                 .show();
@@ -548,10 +529,36 @@ public class BoardDelegate extends DelegateBase
                 ab.setNeutralButton( R.string.newgame_invite_more, lstnrMore );
             }
             if ( showInviteButton ) {
-                ab.setNegativeButton( R.string.button_wait, null );
+                ab.setNegativeButton( R.string.button_wait,
+                                      new OnClickListener() {
+                                          @Override
+                                          public void onClick( DialogInterface di,
+                                                               int item ) {
+                                              finish();
+                                          }
+                                      } );
             }
 
             dialog = ab.create();
+
+            // Hack: I can't prevent screen rotation from duplicating this alert
+            // if ( null != m_inviteAlert ) {
+            //     m_inviteAlert.dismiss();
+            // }
+            m_inviteAlert = alert;
+            alert.setOnCancelListener( new DBAlert.OnCancelListener() {
+                    @Override
+                    public void onCancelled( XWDialogFragment frag ) {
+                        finish();
+                    }
+                } );
+            alert.setOnDismissListener( new DBAlert.OnDismissListener() {
+                    @Override
+                    public void onDismissed( XWDialogFragment frag ) {
+                        m_inviteAlert = null;
+                    }
+                } );
+
         }
         return dialog;
     } // makeInviteDialog
@@ -614,12 +621,14 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void onResume()
     {
+        XWDialogFragment.setOnLastGoneListener(this);
         super.onResume();
         doResume( false );
     }
 
     protected void onPause()
     {
+        XWDialogFragment.setOnLastGoneListener(null);
         closeIfFinishing( false );
         m_handler = null;
         ConnStatusHandler.setHandler( null );
@@ -654,7 +663,6 @@ public class BoardDelegate extends DelegateBase
     protected void onSaveInstanceState( Bundle outState )
     {
         outState.putSerializable( SAVE_MYSIS, m_mySIS );
-        m_mySIS = null; // signal that we're exiting
     }
 
     private void getBundledData( Bundle bundle )
@@ -1155,12 +1163,6 @@ public class BoardDelegate extends DelegateBase
     {
         boolean handled = true;
         switch ( action ) {
-        case INVITE_INFO:
-            if ( 0 < m_inviteAlertCount ) {
-                --m_inviteAlertCount;
-                showInviteAlertIf();
-            }
-            break;
         case ENABLE_RELAY_DO_OR:
             if ( m_dropOnDismiss ) {
                 postDelayed( new Runnable() {
@@ -1172,12 +1174,6 @@ public class BoardDelegate extends DelegateBase
             break;
         case DELETE_AND_EXIT:
             finish();
-            break;
-
-        case LAUNCH_INVITE_ACTION:
-            Assert.assertTrue( 0 < m_inviteAlertCount || !BuildConfig.DEBUG );
-            --m_inviteAlertCount;
-            showInviteAlertIf();
             break;
 
         default:
@@ -1451,6 +1447,14 @@ public class BoardDelegate extends DelegateBase
             recordInviteSent( InviteMeans.NFC, null );
         }
         return data;
+    }
+
+    //////////////////////////////////////////////////
+    // XWDialogFragment.OnLastGoneListener
+    //////////////////////////////////////////////////
+    public void onLastGone()
+    {
+        showInviteAlertIf();
     }
 
     //////////////////////////////////////////////////
@@ -2307,7 +2311,7 @@ public class BoardDelegate extends DelegateBase
     private void showInviteAlertIf()
     {
         if ( null == m_inviteAlert && m_mySIS.nMissing > 0
-             && m_inviteAlertCount == 0 ) {
+             && XWDialogFragment.inviteAlertCount() == 0 ) {
             InviteAlertState ias = new InviteAlertState();
             ias.summary = m_summary;
             ias.gi = m_gi;
