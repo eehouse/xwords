@@ -19,19 +19,25 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v4.app.DialogFragment;
+import android.view.View.OnClickListener;
+import android.view.View;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.Assert;
 
 class XWDialogFragment extends DialogFragment {
     private static final String TAG = XWDialogFragment.class.getSimpleName();
-    private static int s_count = 0;
 
     private OnDismissListener m_onDismiss;
     private OnCancelListener m_onCancel;
-    private static OnLastGoneListener s_onLast;
+    private Map<Integer, DialogInterface.OnClickListener> m_buttonMap;
 
     public interface OnDismissListener {
         void onDismissed( XWDialogFragment frag );
@@ -39,8 +45,25 @@ class XWDialogFragment extends DialogFragment {
     public interface OnCancelListener {
         void onCancelled( XWDialogFragment frag );
     }
-    public interface OnLastGoneListener {
-        void onLastGone();
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+
+        if ( null != m_buttonMap ) {
+            AlertDialog dialog = (AlertDialog)getDialog();
+            for ( final int but : m_buttonMap.keySet() ) {
+                // final int fbut = but;
+                dialog.getButton( but )
+                    .setOnClickListener( new OnClickListener() {
+                            @Override
+                            public void onClick( View view ) {
+                                dialogButtonClicked( view, but );
+                            }
+                        } );
+            }
+        }
     }
 
     @Override
@@ -61,28 +84,6 @@ class XWDialogFragment extends DialogFragment {
         super.onDismiss( dif );
     }
 
-    @Override
-    public void onAttach( Context context )
-    {
-        ++s_count;
-        super.onAttach( context );
-        // DbgUtils.logd(TAG, "%s added to %s; now %d", toString(),
-        //               context.getClass().getSimpleName(), s_count );
-    }
-
-    @Override
-    public void onDetach()
-    {
-        --s_count;
-        Assert.assertTrue( s_count >= 0 || !BuildConfig.DEBUG );
-        super.onDetach();
-        // DbgUtils.logd(TAG, "%s removed from %s; now %d", toString(),
-        //               getActivity().getClass().getSimpleName(), s_count );
-        if ( 0 == s_count && null != s_onLast ) {
-            s_onLast.onLastGone();
-        }
-    }
-    
     protected void setOnDismissListener( OnDismissListener lstnr )
     {
         Assert.assertTrue( null == lstnr || null == m_onDismiss || !BuildConfig.DEBUG );
@@ -95,15 +96,42 @@ class XWDialogFragment extends DialogFragment {
         m_onCancel = lstnr;
     }
 
-    protected static void setOnLastGoneListener( OnLastGoneListener lstnr )
+    protected void setNoDismissListenerPos( AlertDialog.Builder ab, int buttonID,
+                                            DialogInterface.OnClickListener lstnr )
     {
-        Assert.assertTrue( null == lstnr || null == s_onLast || !BuildConfig.DEBUG );
-        s_onLast = lstnr;
+        ab.setPositiveButton( buttonID, null );
+        getButtonMap().put( AlertDialog.BUTTON_POSITIVE, lstnr );
     }
 
-    protected static int inviteAlertCount()
+    protected void setNoDismissListenerNeut( AlertDialog.Builder ab, int buttonID,
+                                             DialogInterface.OnClickListener lstnr )
     {
-        DbgUtils.logd( TAG, "inviteAlertCount() => %d", s_count );
-        return s_count;
+        ab.setNeutralButton( buttonID, null );
+        getButtonMap().put( AlertDialog.BUTTON_NEUTRAL, lstnr );
+    }
+
+    protected void setNoDismissListenerNeg( AlertDialog.Builder ab, int buttonID,
+                                            DialogInterface.OnClickListener lstnr )
+    {
+        ab.setNegativeButton( buttonID, null );
+        getButtonMap().put( AlertDialog.BUTTON_NEGATIVE, lstnr );
+    }
+
+    private Map<Integer, DialogInterface.OnClickListener> getButtonMap()
+    {
+        if ( null == m_buttonMap ) {
+            m_buttonMap = new HashMap<Integer, DialogInterface.OnClickListener>();
+        }
+        return m_buttonMap;
+    }
+
+    private void dialogButtonClicked( View view, int button )
+    {
+        DialogInterface.OnClickListener listener = m_buttonMap.get( button );
+        if ( null != listener ) {
+            listener.onClick( getDialog(), button );
+        } else {
+            Assert.assertFalse( BuildConfig.DEBUG );
+        }
     }
 }

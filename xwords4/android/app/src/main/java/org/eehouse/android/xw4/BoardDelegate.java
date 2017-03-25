@@ -80,7 +80,6 @@ public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DwnldDelegate.DownloadFinishedListener,
                ConnStatusHandler.ConnStatusCBacks,
-               XWDialogFragment.OnLastGoneListener,
                NFCUtils.NFCActor {
     private static final String TAG = BoardDelegate.class.getSimpleName();
 
@@ -487,13 +486,9 @@ public class BoardDelegate extends DelegateBase
                 message += "\n\n" + LocUtils.getString( activity, R.string.invite_stays );
             }
 
-            // Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
-            // button.setVisibility( nukeInviteButton ? View.GONE : View.VISIBLE );
-            // if ( !nukeInviteButton ) {
-            //     button.setText( buttonTxt );
-            // }
-            // button = ad.getButton( AlertDialog.BUTTON_NEUTRAL );
-            // button.setVisibility( nukeNeutButton ? View.GONE : View.VISIBLE );
+            AlertDialog.Builder ab = makeAlertBuilder()
+                .setTitle( titleID )
+                .setMessage( message );
 
             OnClickListener lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dialog, int item ){
@@ -510,14 +505,10 @@ public class BoardDelegate extends DelegateBase
                         }
                     }
                 };
-
-            AlertDialog.Builder ab = makeAlertBuilder()
-                .setTitle( titleID )
-                .setMessage( message )
-                .setPositiveButton( buttonTxt, lstnr );
+            alert.setNoDismissListenerPos( ab, buttonTxt, lstnr );
 
             if ( showNeutButton ) {
-                OnClickListener lstnrMore = new OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog,
                                              int item ) {
                             String msg = sentInfo[0].getAsText( activity );
@@ -526,25 +517,26 @@ public class BoardDelegate extends DelegateBase
                                 .show();
                         }
                     };
-                ab.setNeutralButton( R.string.newgame_invite_more, lstnrMore );
+                alert.setNoDismissListenerNeut( ab, R.string.newgame_invite_more,
+                                                lstnr );
             }
             if ( showInviteButton ) {
-                ab.setNegativeButton( R.string.button_wait,
-                                      new OnClickListener() {
-                                          @Override
-                                          public void onClick( DialogInterface di,
-                                                               int item ) {
-                                              finish();
-                                          }
-                                      } );
+                lstnr = new OnClickListener() {
+                        @Override
+                        public void onClick( DialogInterface di, int item ) {
+                            alert.dismiss();
+                            finish();
+                        }
+                    };
+                alert.setNoDismissListenerNeg( ab, R.string.button_wait, lstnr );
             }
 
             dialog = ab.create();
 
             // Hack: I can't prevent screen rotation from duplicating this alert
-            // if ( null != m_inviteAlert ) {
-            //     m_inviteAlert.dismiss();
-            // }
+            if ( null != m_inviteAlert ) {
+                m_inviteAlert.dismiss();
+            }
             m_inviteAlert = alert;
             alert.setOnCancelListener( new DBAlert.OnCancelListener() {
                     @Override
@@ -558,7 +550,6 @@ public class BoardDelegate extends DelegateBase
                         m_inviteAlert = null;
                     }
                 } );
-
         }
         return dialog;
     } // makeInviteDialog
@@ -621,14 +612,12 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void onResume()
     {
-        XWDialogFragment.setOnLastGoneListener(this);
         super.onResume();
         doResume( false );
     }
 
     protected void onPause()
     {
-        XWDialogFragment.setOnLastGoneListener(null);
         closeIfFinishing( false );
         m_handler = null;
         ConnStatusHandler.setHandler( null );
@@ -1447,14 +1436,6 @@ public class BoardDelegate extends DelegateBase
             recordInviteSent( InviteMeans.NFC, null );
         }
         return data;
-    }
-
-    //////////////////////////////////////////////////
-    // XWDialogFragment.OnLastGoneListener
-    //////////////////////////////////////////////////
-    public void onLastGone()
-    {
-        showInviteAlertIf();
     }
 
     //////////////////////////////////////////////////
@@ -2310,8 +2291,7 @@ public class BoardDelegate extends DelegateBase
 
     private void showInviteAlertIf()
     {
-        if ( null == m_inviteAlert && m_mySIS.nMissing > 0
-             && XWDialogFragment.inviteAlertCount() == 0 ) {
+        if ( null == m_inviteAlert && m_mySIS.nMissing > 0 && !isFinishing() ) {
             InviteAlertState ias = new InviteAlertState();
             ias.summary = m_summary;
             ias.gi = m_gi;
