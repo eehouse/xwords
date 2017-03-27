@@ -47,9 +47,9 @@ class XWDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onStart()
+    public void onResume()
     {
-        super.onStart();
+        super.onResume();
 
         if ( null != m_buttonMap ) {
             AlertDialog dialog = (AlertDialog)getDialog();
