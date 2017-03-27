@@ -186,7 +186,7 @@ public class GameUtils {
                                                     GamePtr gamePtr,
                                                     CurGameInfo gi )
     {
-        GameSummary summary = new GameSummary( context, gi );
+        GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
 
         DBUtils.saveSummary( context, lock, summary );
@@ -1059,7 +1059,7 @@ public class GameUtils {
 
         saveGame( context, gamePtr, gi, lock, false );
 
-        GameSummary summary = new GameSummary( context, gi );
+        GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
         gamePtr.release();
         DBUtils.saveSummary( context, lock, summary );

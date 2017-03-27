@@ -1208,7 +1208,7 @@ public class BoardDelegate extends DelegateBase
                 break;
             case EMAIL:
             case CLIPBOARD:
-                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
+                NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi, 1,
                                                        1 + m_nGuestDevs );
                 if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
@@ -2405,7 +2405,7 @@ public class BoardDelegate extends DelegateBase
                 int nPlayers = m_missingCounts[ii];
                 Assert.assertTrue( 0 <= m_nGuestDevs );
                 int forceChannel = ii + m_nGuestDevs + 1;
-                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi,
+                NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
                                                        nPlayers, forceChannel );
                 if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
@@ -2660,7 +2660,7 @@ public class BoardDelegate extends DelegateBase
 
         if ( doIt ) {
             CommsConnTypeSet connTypes = summary.conTypes;
-            String newName = summary.getRematchName();
+            String newName = summary.getRematchName( activity );
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
                                     phone, relayID, p2pMacAddress, newName );
@@ -2716,8 +2716,8 @@ public class BoardDelegate extends DelegateBase
             // only supports a single invite for now!
             int numHere = 1;
             int forceChannel = 1;
-            NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere,
-                                                   forceChannel );
+            NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
+                                                   numHere, forceChannel );
 
             String value;
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );

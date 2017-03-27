@@ -381,7 +381,7 @@ public class JNIThread extends Thread {
             // Don't need this!!!! this only runs on the run() thread
             synchronized( this ) {
                 Assert.assertNotNull( m_lock );
-                GameSummary summary = new GameSummary( m_context, m_gi );
+                GameSummary summary = new GameSummary( m_gi );
                 XwJNI.game_summarize( m_jniGamePtr, summary );
                 DBUtils.saveGame( m_context, m_lock, state, false );
                 DBUtils.saveSummary( m_context, m_lock, summary );

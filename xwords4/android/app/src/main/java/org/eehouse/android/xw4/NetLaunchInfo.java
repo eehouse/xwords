@@ -225,9 +225,10 @@ public class NetLaunchInfo {
         gameID = gamID;
     }
 
-    public NetLaunchInfo( GameSummary summary, CurGameInfo gi, int numHere, int fc )
+    public NetLaunchInfo( Context context, GameSummary summary, CurGameInfo gi,
+                          int numHere, int fc )
     {
-        this( summary, gi );
+        this( context, summary, gi );
         nPlayersH = numHere;
         forceChannel = fc;
     }
@@ -237,7 +238,7 @@ public class NetLaunchInfo {
         this( gi.gameID, gi.getName(), gi.dictLang, gi.dictName, gi.nPlayers );
     }
 
-    public NetLaunchInfo( GameSummary summary, CurGameInfo gi )
+    public NetLaunchInfo( Context context, GameSummary summary, CurGameInfo gi )
     {
         this( gi );
 
@@ -251,10 +252,10 @@ public class NetLaunchInfo {
                 addRelayInfo( summary.roomName, summary.relayID );
                 break;
             case COMMS_CONN_SMS:
-                addSMSInfo( summary.getContext() );
+                addSMSInfo( context );
                 break;
             case COMMS_CONN_P2P:
-                addP2PInfo( summary.getContext() );
+                addP2PInfo( context );
                 break;
             default:
                 Assert.fail();

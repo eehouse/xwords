@@ -234,7 +234,7 @@ public class GameListItem extends LinearLayout
     {
         String state = null;    // hack to avoid calling summarizeState twice
         if ( null != m_summary ) {
-            state = m_summary.summarizeState();
+            state = m_summary.summarizeState( m_context );
             String value = null;
             switch ( m_fieldID ) {
             case R.string.game_summary_field_empty:
@@ -255,7 +255,7 @@ public class GameListItem extends LinearLayout
                 value = LocUtils.xlateLang( m_context, value, true );
                 break;
             case R.string.game_summary_field_opponents:
-                value = m_summary.playerNames();
+                value = m_summary.playerNames( m_context );
                 break;
             case R.string.game_summary_field_state:
                 value = state;
@@ -291,7 +291,7 @@ public class GameListItem extends LinearLayout
                 ExpiringLinearLayout tmp = (ExpiringLinearLayout)
                     LocUtils.inflate( m_context, R.layout.player_list_elem );
                 TextView tview = (TextView)tmp.findViewById( R.id.item_name );
-                tview.setText( summary.summarizePlayer( ii ) );
+                tview.setText( summary.summarizePlayer( m_context, ii ) );
                 tview = (TextView)tmp.findViewById( R.id.item_score );
                 tview.setText( String.format( "  %d", summary.scores[ii] ) );
                 boolean thisHasTurn = summary.isNextToPlay( ii, isLocal );
@@ -324,7 +324,7 @@ public class GameListItem extends LinearLayout
                     }
                 } );
 
-            String roleSummary = summary.summarizeRole( m_rowid );
+            String roleSummary = summary.summarizeRole( m_context, m_rowid );
             if ( null != roleSummary ) {
                 m_role.setText( roleSummary );
             } else {

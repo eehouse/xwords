@@ -79,31 +79,18 @@ public class GameSummary implements Serializable {
     private Integer m_giFlags;
     private String m_playersSummary;
     private CurGameInfo m_gi;
-    private Context m_context;
     private String[] m_remotePhones;
     private String m_extras;
 
-    private GameSummary() {}
+    public GameSummary() {}
 
-    public GameSummary( Context context ) {
-        m_context = context;
-        gameID = 0;
-    }
-
-    public GameSummary( Context context, CurGameInfo gi )
+    public GameSummary( CurGameInfo gi )
     {
-        this( context );
         nPlayers = gi.nPlayers;
         dictLang = gi.dictLang;
         serverRole = gi.serverRole;
         gameID = gi.gameID;
         m_gi = gi;
-    }
-
-    public Context getContext()
-    {
-        Assert.assertNotNull( m_context );
-        return m_context;
     }
 
     public boolean inRelayGame()
@@ -136,10 +123,10 @@ public class GameSummary implements Serializable {
         return result;
     }
 
-    public String getRematchName()
+    public String getRematchName( Context context )
     {
-        return LocUtils.getString( m_context, R.string.rematch_name_fmt,
-                                   playerNames() );
+        return LocUtils.getString( context, R.string.rematch_name_fmt,
+                                   playerNames( context ) );
     }
 
     public void setRemoteDevs( Context context, CommsConnType typ, String str )
@@ -156,7 +143,7 @@ public class GameSummary implements Serializable {
         }
     }
 
-    public void readPlayers( String playersStr )
+    public void readPlayers( Context context , String playersStr )
     {
         if ( null != playersStr ) {
             m_players = new String[nPlayers];
@@ -164,7 +151,7 @@ public class GameSummary implements Serializable {
             if ( playersStr.contains("\n") ) {
                 sep = "\n";
             } else {
-                sep = LocUtils.getString( m_context, R.string.vs_join );
+                sep = LocUtils.getString( context, R.string.vs_join );
             }
 
             int ii, nxt;
@@ -188,13 +175,13 @@ public class GameSummary implements Serializable {
         m_playersSummary = summary;
     }
 
-    public String summarizeState()
+    public String summarizeState( Context context )
     {
         String result = null;
         if ( gameOver ) {
-            result = LocUtils.getString( m_context, R.string.gameOver );
+            result = LocUtils.getString( context, R.string.gameOver );
         } else {
-            result = LocUtils.getQuantityString( m_context, R.plurals.moves_fmt,
+            result = LocUtils.getQuantityString( context, R.plurals.moves_fmt,
                                                  nMoves, nMoves );
         }
         return result;
@@ -202,7 +189,7 @@ public class GameSummary implements Serializable {
 
     // FIXME: should report based on whatever conType is giving us a
     // successful connection.
-    public String summarizeRole( long rowid )
+    public String summarizeRole( Context context, long rowid )
     {
         String result = null;
         if ( isMultiGame() ) {
@@ -210,10 +197,10 @@ public class GameSummary implements Serializable {
 
             int missing = countMissing();
             if ( 0 < missing ) {
-                DBUtils.SentInvitesInfo si = DBUtils.getInvitesFor( m_context,
+                DBUtils.SentInvitesInfo si = DBUtils.getInvitesFor( context,
                                                                     rowid );
                 if ( si.getMinPlayerCount() >= missing ) {
-                    result = LocUtils.getString( m_context,
+                    result = LocUtils.getString( context,
                                                  R.string.summary_invites_out );
                 }
             }
@@ -232,7 +219,7 @@ public class GameSummary implements Serializable {
                 } else {
                     fmtID = R.string.summary_relay_conn_fmt;
                 }
-                result = LocUtils.getString( m_context, fmtID, roomName );
+                result = LocUtils.getString( context, fmtID, roomName );
             }
 
             // Otherwise, use BT or SMS
@@ -250,13 +237,13 @@ public class GameSummary implements Serializable {
                     } else if ( null != remoteDevs
                                 && conTypes.contains( CommsConnType.COMMS_CONN_SMS)){
                         result =
-                            LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
+                            LocUtils.getString( context, R.string.summary_conn_sms_fmt,
                                                 TextUtils.join(", ", m_remotePhones) );
                     } else {
                         fmtID = R.string.summary_conn;
                     }
                     if ( null == result ) {
-                        result = LocUtils.getString( m_context, fmtID );
+                        result = LocUtils.getString( context, fmtID );
                     }
                 }
             }
@@ -333,14 +320,14 @@ public class GameSummary implements Serializable {
         m_giFlags = new Integer( flags );
     }
 
-    public String summarizePlayer( int indx )
+    public String summarizePlayer( Context context, int indx )
     {
         String player = m_players[indx];
         int formatID = 0;
         if ( !isLocal(indx) ) {
             boolean isMissing = 0 != ((1 << indx) & missingPlayers);
             if ( isMissing ) {
-                player = LocUtils.getString( m_context, R.string.missing_player );
+                player = LocUtils.getString( context, R.string.missing_player );
             } else {
                 formatID = R.string.str_nonlocal_name_fmt;
             }
@@ -349,23 +336,23 @@ public class GameSummary implements Serializable {
         }
 
         if ( 0 != formatID ) {
-            player = LocUtils.getString( m_context, formatID, player );
+            player = LocUtils.getString( context, formatID, player );
         }
         return player;
     }
 
-    public String playerNames()
+    public String playerNames( Context context )
     {
         String[] names = null;
         if ( null != m_gi ) {
-            names = m_gi.visibleNames( m_context, false );
+            names = m_gi.visibleNames( context, false );
         } else if ( null != m_playersSummary ) {
             names = TextUtils.split( m_playersSummary, "\n" );
         }
 
         String result = null;
         if ( null != names && 0 < names.length ) {
-            String joiner = LocUtils.getString( m_context, R.string.vs_join );
+            String joiner = LocUtils.getString( context, R.string.vs_join );
             result = TextUtils.join( joiner, names );
         }
 
