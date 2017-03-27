@@ -128,6 +128,7 @@ public class BoardDelegate extends DelegateBase
 
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
+    private boolean m_showedReInvite;
     private boolean m_overNotShown;
     private boolean m_dropOnDismiss;
     private DBAlert m_inviteAlert;
@@ -445,6 +446,7 @@ public class BoardDelegate extends DelegateBase
                 int nSent = sentInfo[0].getMinPlayerCount();
                 boolean invitesSent = nSent >= state.nMissing;
                 if ( invitesSent ) {
+                    m_showedReInvite = true;
                     if ( state.summary.hasRematchInfo() ) {
                         titleID = R.string.waiting_rematch_title;
                         message = LocUtils.getString( activity, R.string.rematch_msg );
@@ -2775,7 +2777,21 @@ public class BoardDelegate extends DelegateBase
 
     private void recordInviteSent( InviteMeans means, String dev )
     {
+        boolean invitesSent = true;
+        if ( !m_showedReInvite ) { // have we sent since?
+            SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
+            int nSent = sentInfo.getMinPlayerCount();
+            invitesSent = nSent >= m_mySIS.nMissing;
+        }
+
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
+
+        if ( !invitesSent ) {
+            m_inviteAlert.dismiss();
+            m_inviteAlert = null;
+            DbgUtils.logd( TAG, "recordInviteSent(): redoing invite alert" );
+            showInviteAlertIf();
+        }
     }
 
     private void handleViaThread( JNICmd cmd, Object... args )
