@@ -200,8 +200,12 @@ public class GameSummary implements Serializable {
                 DBUtils.SentInvitesInfo si = DBUtils.getInvitesFor( context,
                                                                     rowid );
                 if ( si.getMinPlayerCount() >= missing ) {
-                    result = LocUtils.getString( context,
-                                                 R.string.summary_invites_out );
+                    result = ( null != roomName )
+                        ? LocUtils.getString( context, R.string
+                                              .summary_invites_out_fmt,
+                                              roomName )
+                        : LocUtils.getString( context, R.string
+                                              .summary_invites_out );
                 }
             }
 

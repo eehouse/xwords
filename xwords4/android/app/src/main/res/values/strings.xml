@@ -62,6 +62,7 @@
     <string name="summary_relay_gameover_fmt">Game over in room \"%1$s\"</string>
 
     <string name="summary_invites_out">Players invited</string>
+    <string name="summary_invites_out_fmt">Players invited to room \"%1$s\"</string>
 
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Game over</string>
