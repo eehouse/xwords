@@ -155,8 +155,8 @@ public class GamesListDelegate extends ListDelegateBase
                     alist.addAll( children );
 
                     if ( BuildConfig.DEBUG && ggi.m_count != children.size() ) {
-                        DbgUtils.loge( TAG, "m_count: %d != size: %d",
-                                       ggi.m_count, children.size() );
+                        Log.e( TAG, "m_count: %d != size: %d",
+                               ggi.m_count, children.size() );
                         Assert.fail();
                     }
                 }
@@ -295,7 +295,7 @@ public class GamesListDelegate extends ListDelegateBase
                     }
                 }
                 if ( -1 == posn ) {
-                    DbgUtils.logd( TAG, "getGroupPosition: group %d not found", groupID );
+                    Log.d( TAG, "getGroupPosition: group %d not found", groupID );
                 }
             }
             return posn;
@@ -358,8 +358,8 @@ public class GamesListDelegate extends ListDelegateBase
             boolean changed = false;
             int newID = fieldToID( newField );
             if ( -1 == newID ) {
-                DbgUtils.logd( TAG, "setField(): unable to match"
-                               + " fieldName %s", newField );
+                Log.d( TAG, "setField(): unable to match fieldName %s",
+                       newField );
             } else if ( m_fieldID != newID ) {
                 m_fieldID = newID;
                 // return true so caller will do onContentChanged.
@@ -454,7 +454,7 @@ public class GamesListDelegate extends ListDelegateBase
         private ArrayList<Object> removeRange( ArrayList<Object> list,
                                                int start, int len )
         {
-            DbgUtils.logd( TAG, "removeRange(start=%d, len=%d)", start, len );
+            Log.d( TAG, "removeRange(start=%d, len=%d)", start, len );
             ArrayList<Object> result = new ArrayList<Object>(len);
             for ( int ii = 0; ii < len; ++ii ) {
                 result.add( list.remove( start ) );
@@ -1422,7 +1422,7 @@ public class GamesListDelegate extends ListDelegateBase
         switch ( requestCode ) {
         case REQUEST_LANG_GL:
             if ( !cancelled ) {
-                DbgUtils.logd( TAG, "lang need met" );
+                Log.d( TAG, "lang need met" );
                 if ( checkWarnNoDict( m_missingDictRowId ) ) {
                     launchGameIf();
                 }
@@ -1552,7 +1552,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             Assert.assertTrue( m_menuPrepared );
         } else {
-            DbgUtils.logd( TAG, "onPrepareOptionsMenu: incomplete so bailing" );
+            Log.d( TAG, "onPrepareOptionsMenu: incomplete so bailing" );
         }
         return m_menuPrepared;
     } // onPrepareOptionsMenu
@@ -1668,8 +1668,8 @@ public class GamesListDelegate extends ListDelegateBase
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
-        DbgUtils.logd( TAG, "onCreateContextMenu(t=%s)",
-                       targetView.getClass().getSimpleName() );
+        Log.d( TAG, "onCreateContextMenu(t=%s)",
+               targetView.getClass().getSimpleName() );
         if ( targetView instanceof GameListItem ) {
             item = (GameListItem)targetView;
             id = R.menu.games_list_game_menu;
@@ -2474,7 +2474,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void launchGame( long rowid, boolean invited )
     {
         if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-            DbgUtils.logd( TAG, "launchGame(): dropping bad rowid" );
+            Log.d( TAG, "launchGame(): dropping bad rowid" );
         } else if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             if ( m_adapter.inExpandedGroup( rowid ) ) {
@@ -2520,7 +2520,7 @@ public class GamesListDelegate extends ListDelegateBase
                     launchGame( rowid );
                 }
             } catch ( GameLock.GameLockedException gle ) {
-                DbgUtils.logex( TAG, gle );
+                Log.ex( TAG, gle );
                 finish();
             }
         }

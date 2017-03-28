@@ -361,7 +361,7 @@ public class PrefsDelegate extends DelegateBase
         } catch ( NullPointerException ex ) {
             // This is happening hiding key_enable_sms, but the hide still
             // works!
-            // DbgUtils.logex( TAG, ex );
+            // Log.ex( TAG, ex );
         }
     }
 

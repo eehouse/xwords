@@ -36,6 +36,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -184,8 +185,8 @@ public class JNIThread extends Thread {
             if ( BuildConfig.DEBUG ) {
                 Iterator<QueueElem> iter = m_queue.iterator();
                 while ( iter.hasNext() ) {
-                    DbgUtils.logi( TAG, "removing %s from queue",
-                                   iter.next().m_cmd.toString() );
+                    Log.i( TAG, "removing %s from queue",
+                           iter.next().m_cmd.toString() );
                 }
             }
             m_queue.clear();
@@ -215,7 +216,7 @@ public class JNIThread extends Thread {
 
             // Assert.assertNull( m_jniGamePtr ); // fired!!
             if ( null != m_jniGamePtr ) {
-                DbgUtils.logd( TAG, "configure(): m_jniGamePtr not null; that ok?" );
+                Log.d( TAG, "configure(): m_jniGamePtr not null; that ok?" );
             }
             m_jniGamePtr = null;
             if ( null != stream ) {
@@ -259,7 +260,7 @@ public class JNIThread extends Thread {
             join();
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
-            DbgUtils.logex( TAG, ie );
+            Log.ex( TAG, ie );
         }
         m_lock.unlock();
     }
@@ -376,7 +377,7 @@ public class JNIThread extends Thread {
         // PENDING: once certain this is true, stop saving the full array and
         // instead save the hash. Also, update it after each save.
         if ( hashesEqual ) {
-            DbgUtils.logd( TAG, "save_jni(): no change in game; can skip saving" );
+            Log.d( TAG, "save_jni(): no change in game; can skip saving" );
         } else {
             // Don't need this!!!! this only runs on the run() thread
             synchronized( this ) {
@@ -431,7 +432,7 @@ public class JNIThread extends Thread {
             try {
                 elem = m_queue.take();
             } catch ( InterruptedException ie ) {
-                DbgUtils.logw( TAG, "interrupted; killing thread" );
+                Log.w( TAG, "interrupted; killing thread" );
                 break;
             }
             boolean draw = false;
@@ -703,7 +704,7 @@ public class JNIThread extends Thread {
             case CMD_NONE:      // ignored
                 break;
             default:
-                DbgUtils.logw( TAG, "dropping cmd: %s", elem.m_cmd.toString() );
+                Log.w( TAG, "dropping cmd: %s", elem.m_cmd.toString() );
                 Assert.fail();
             }
 
@@ -722,7 +723,7 @@ public class JNIThread extends Thread {
                 XwJNI.comms_stop( m_jniGamePtr );
                 save_jni();
             } else {
-                DbgUtils.logw( TAG, "run(): exiting without saving" );
+                Log.w( TAG, "run(): exiting without saving" );
             }
             m_jniGamePtr.release();
             m_jniGamePtr = null;
@@ -750,8 +751,7 @@ public class JNIThread extends Thread {
     {
         m_queue.add( new QueueElem( cmd, true, args ) );
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
-            DbgUtils.logw( TAG, "adding %s to stopped thread!!!",
-                           cmd.toString() );
+            Log.w( TAG, "adding %s to stopped thread!!!", cmd.toString() );
             DbgUtils.printStack( TAG );
         }
     }
@@ -769,8 +769,8 @@ public class JNIThread extends Thread {
     private void retain_sync()
     {
         ++m_refCount;
-        DbgUtils.logi( TAG, "retain_sync(rowid=%d): m_refCount raised to %d",
-                       m_rowid, m_refCount );
+        Log.i( TAG, "retain_sync(rowid=%d): m_refCount raised to %d",
+               m_rowid, m_refCount );
     }
 
     public JNIThread retain()
@@ -792,8 +792,8 @@ public class JNIThread extends Thread {
                 stop = true;
             }
         }
-        DbgUtils.logi( TAG, "release(rowid=%d): m_refCount dropped to %d",
-                       m_rowid, m_refCount );
+        Log.i( TAG, "release(rowid=%d): m_refCount dropped to %d",
+               m_rowid, m_refCount );
 
         if ( stop ) {
             waitToStop( true );

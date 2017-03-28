@@ -362,7 +362,7 @@ public class DictLangCache {
         for ( DictAndLoc dal : dals ) {
             String name = getLangName( context, dal.name );
             if ( null == name || 0 == name.length() ) {
-                DbgUtils.logw( TAG, "bad lang name for dal name %s", dal.name );
+                Log.w( TAG, "bad lang name for dal name %s", dal.name );
                 // Assert.fail();
             }
             langs.add( name );
@@ -474,8 +474,8 @@ public class DictLangCache {
 
         // Tmp test that recovers from problem with new background download code
         if ( null != info && 0 == info.langCode ) {
-            DbgUtils.logw( TAG, "getInfo: dropping info for %s b/c lang code wrong",
-                           dal.name );
+            Log.w( TAG, "getInfo: dropping info for %s b/c lang code wrong",
+                   dal.name );
             info = null;
         }
 
@@ -494,8 +494,7 @@ public class DictLangCache {
                 DBUtils.dictsSetInfo( context, dal, info );
             } else {
                 info = null;
-                DbgUtils.logi( TAG,
-                               "getInfo(): unable to open dict %s", dal.name );
+                Log.i( TAG, "getInfo(): unable to open dict %s", dal.name );
             }
         }
         return info;

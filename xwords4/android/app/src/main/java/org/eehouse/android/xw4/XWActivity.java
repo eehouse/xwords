@@ -48,7 +48,7 @@ public class XWActivity extends FragmentActivity
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "onCreate(this=%H)", this );
+            Log.i( TAG, "onCreate(this=%H)", this );
         }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
@@ -67,7 +67,7 @@ public class XWActivity extends FragmentActivity
     protected void onSaveInstanceState( Bundle outState )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "onSaveInstanceState(this=%H)", this );
+            Log.i( TAG, "onSaveInstanceState(this=%H)", this );
         }
         m_dlgt.onSaveInstanceState( outState );
         super.onSaveInstanceState( outState );
@@ -77,7 +77,7 @@ public class XWActivity extends FragmentActivity
     protected void onPause()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "onPause(this=%H)", this );
+            Log.i( TAG, "onPause(this=%H)", this );
         }
         m_dlgt.onPause();
         super.onPause();
@@ -88,7 +88,7 @@ public class XWActivity extends FragmentActivity
     protected void onResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "onResume(this=%H)", this );
+            Log.i( TAG, "onResume(this=%H)", this );
         }
         super.onResume();
         WiDirWrapper.activityResumed( this );
@@ -99,7 +99,7 @@ public class XWActivity extends FragmentActivity
     protected void onPostResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "onPostResume(this=%H)", this );
+            Log.i( TAG, "onPostResume(this=%H)", this );
         }
         super.onPostResume();
     }
@@ -108,7 +108,7 @@ public class XWActivity extends FragmentActivity
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "%s.onStart(this=%H)", this );
+            Log.i( TAG, "%s.onStart(this=%H)", this );
         }
         super.onStart();
         m_dlgt.onStart();
@@ -118,7 +118,7 @@ public class XWActivity extends FragmentActivity
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "%s.onStop(this=%H)", this );
+            Log.i( TAG, "%s.onStop(this=%H)", this );
         }
         m_dlgt.onStop();
         super.onStop();
@@ -128,7 +128,7 @@ public class XWActivity extends FragmentActivity
     protected void onDestroy()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logi( TAG, "onDestroy(this=%H)", this );
+            Log.i( TAG, "onDestroy(this=%H)", this );
         }
         m_dlgt.onDestroy();
         super.onDestroy();

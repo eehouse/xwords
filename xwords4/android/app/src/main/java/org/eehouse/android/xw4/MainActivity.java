@@ -156,10 +156,9 @@ public class MainActivity extends XWActivity
                 break;
             }
             String name = frag.getClass().getSimpleName();
-            DbgUtils.logd( TAG, "popIntoView(): popping %d: %s", top, name );
+            Log.d( TAG, "popIntoView(): popping %d: %s", top, name );
             fm.popBackStackImmediate();
-            DbgUtils.logd( TAG, "popIntoView(): DONE popping %s",
-                           name );
+            Log.d( TAG, "popIntoView(): DONE popping %s", name );
         }
     }
 
@@ -182,14 +181,14 @@ public class MainActivity extends XWActivity
                     frag.getDelegate().handleNewIntent( intent );
                 }
             } else {
-                DbgUtils.logd( TAG, "no fragment for child %s indx %d",
-                                child.getClass().getSimpleName(), ii );
+                Log.d( TAG, "no fragment for child %s indx %d",
+                       child.getClass().getSimpleName(), ii );
             }
         }
 
         if ( BuildConfig.DEBUG && !handled ) {
             // DbgUtils.showf( this, "dropping intent %s", intent.toString() );
-            DbgUtils.logd( TAG, "dropping intent %s", intent.toString() );
+            Log.d( TAG, "dropping intent %s", intent.toString() );
             // DbgUtils.printStack();
             // setIntent( intent ); -- look at handling this in onPostResume()?
             m_newIntent = intent;
@@ -216,8 +215,8 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.onActivityResult( requestCode.ordinal(), resultCode, data );
         } else {
-            DbgUtils.logd( TAG, "dispatchOnActivityResult(): can't dispatch %s",
-                           requestCode.toString() );
+            Log.d( TAG, "dispatchOnActivityResult(): can't dispatch %s",
+                   requestCode.toString() );
         }
     }
 
@@ -309,15 +308,15 @@ public class MainActivity extends XWActivity
     {
         // make sure the right-most are visible
         int fragCount = getSupportFragmentManager().getBackStackEntryCount();
-        DbgUtils.logi( TAG, "onBackStackChanged(); count now %d", fragCount );
+        Log.i( TAG, "onBackStackChanged(); count now %d", fragCount );
         if ( 0 == fragCount ) {
             finish();
         } else {
             if ( fragCount == m_root.getChildCount() - 1 ) {
                 View child = m_root.getChildAt( fragCount );
                 if ( LOG_IDS ) {
-                    DbgUtils.logi( TAG, "onBackStackChanged(): removing view with id %x",
-                                   child.getId() );
+                    Log.i( TAG, "onBackStackChanged(): removing view with id %x",
+                           child.getId() );
                 }
                 m_root.removeView( child );
             }
@@ -327,7 +326,7 @@ public class MainActivity extends XWActivity
             if ( null != m_pendingResult ) {
                 Fragment target = m_pendingResult.getTarget();
                 if ( null != target ) {
-                    DbgUtils.logi( TAG,"onBackStackChanged(): calling onActivityResult()" );
+                    Log.i( TAG,"onBackStackChanged(): calling onActivityResult()" );
                     target.onActivityResult( m_pendingResult.m_request,
                                              m_pendingResult.m_result,
                                              m_pendingResult.m_data );
@@ -374,7 +373,7 @@ public class MainActivity extends XWActivity
         } else {
             result = 1;
         }
-        // DbgUtils.logd( TAG, "maxPanes() => %d", result );
+        // Log.d( TAG, "maxPanes() => %d", result );
         return result;
     }
 
@@ -400,7 +399,7 @@ public class MainActivity extends XWActivity
         if ( null != frag ) {
             frag.setTitle();
         } else {
-            DbgUtils.logd( TAG, "trySetTitle(): no fragment found" );
+            Log.d( TAG, "trySetTitle(): no fragment found" );
         }
     }
 

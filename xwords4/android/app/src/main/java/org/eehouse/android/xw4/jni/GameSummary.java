@@ -28,7 +28,7 @@ import java.io.Serializable;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils;
-import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWApp;
@@ -416,9 +416,9 @@ public class GameSummary implements Serializable {
             }
             m_extras = asObj.toString();
         } catch( org.json.JSONException ex ) {
-            DbgUtils.logex( TAG, ex );
+            Log.ex( TAG, ex );
         }
-        DbgUtils.logi( TAG, "putStringExtra(%s,%s) => %s", key, value, m_extras );
+        Log.i( TAG, "putStringExtra(%s,%s) => %s", key, value, m_extras );
     }
 
     public String getStringExtra( String key )
@@ -432,10 +432,10 @@ public class GameSummary implements Serializable {
                     result = null;
                 }
             } catch( org.json.JSONException ex ) {
-                DbgUtils.logex( TAG, ex );
+                Log.ex( TAG, ex );
             }
         }
-        DbgUtils.logi( TAG, "getStringExtra(%s) => %s", key, result );
+        Log.i( TAG, "getStringExtra(%s) => %s", key, result );
         return result;
     }
 
@@ -453,7 +453,7 @@ public class GameSummary implements Serializable {
                 break;
             }
         }
-        // DbgUtils.logd( TAG, "hasRematchInfo() => %b", found );
+        // Log.d( TAG, "hasRematchInfo() => %b", found );
         return found;
     }
 

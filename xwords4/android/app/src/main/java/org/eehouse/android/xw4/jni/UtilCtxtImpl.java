@@ -25,8 +25,8 @@ import android.telephony.PhoneNumberUtils;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DevID;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -207,7 +207,7 @@ public class UtilCtxtImpl implements UtilCtxt {
             break;
 
         default:
-            DbgUtils.logw( TAG, "no such stringCode: %d", stringCode );
+            Log.w( TAG, "no such stringCode: %d", stringCode );
         }
 
         String result = (0 == id) ? "" : LocUtils.getString( m_context, id );

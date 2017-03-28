@@ -166,7 +166,7 @@ public class BoardDelegate extends DelegateBase
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         final DlgID dlgID = alert.getDlgID();
-        DbgUtils.logd( TAG, "makeDialog(%s)", dlgID.toString() );
+        Log.d( TAG, "makeDialog(%s)", dlgID.toString() );
         OnClickListener lstnr;
         AlertDialog.Builder ab = makeAlertBuilder();
 
@@ -587,7 +587,7 @@ public class BoardDelegate extends DelegateBase
 
         Bundle args = getArguments();
         m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
-        DbgUtils.logi( TAG, "opening rowid %d", m_rowid );
+        Log.i( TAG, "opening rowid %d", m_rowid );
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
@@ -735,7 +735,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void orientationChanged()
     {
-        DbgUtils.logd( TAG, "BoardDelegate.orientationChanged()" );
+        Log.d( TAG, "BoardDelegate.orientationChanged()" );
         initToolbar();
         m_view.orientationChanged();
     }
@@ -989,7 +989,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            DbgUtils.logw( TAG, "menuitem %d not handled", id );
+            Log.w( TAG, "menuitem %d not handled", id );
             handled = false;
         }
 
@@ -1274,7 +1274,7 @@ public class BoardDelegate extends DelegateBase
             // This can be BT or SMS.  In BT case there's a progress
             // thing going.  Not in SMS case.
         case NEWGAME_FAILURE:
-            DbgUtils.logw( TAG, "failed to create game" );
+            Log.w( TAG, "failed to create game" );
             break;
         case NEWGAME_DUP_REJECTED:
             if ( m_progressShown ) {
@@ -1426,8 +1426,8 @@ public class BoardDelegate extends DelegateBase
                     nli.addP2PInfo( m_activity );
                     break;
                 default:
-                    DbgUtils.logw( TAG, "Not doing NFC join for conn type %s",
-                                   typ.toString() );
+                    Log.w( TAG, "Not doing NFC join for conn type %s",
+                           typ.toString() );
                 }
             }
             data = nli.makeLaunchJSON();
@@ -1593,7 +1593,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( null != toastStr ) {
-            DbgUtils.logi( TAG, "handleConndMessage(): toastStr: %s", toastStr );
+            Log.i( TAG, "handleConndMessage(): toastStr: %s", toastStr );
             m_mySIS.toastStr = toastStr;
             if ( naMsg == 0 ) {
                 onPosButton( Action.SHOW_EXPL_ACTION, null );
@@ -2181,8 +2181,7 @@ public class BoardDelegate extends DelegateBase
             case COMMS_CONN_P2P:
                 break;
             default:
-                DbgUtils.logw( TAG, "tickle: unexpected type %s",
-                               typ.toString() );
+                Log.w( TAG, "tickle: unexpected type %s", typ.toString() );
                 Assert.fail();
             }
         }
@@ -2202,7 +2201,7 @@ public class BoardDelegate extends DelegateBase
                     }
                     if ( 0 == nMissing || !m_relayMissing ) {
                         if ( null != m_inviteAlert ) {
-                            DbgUtils.logd( TAG, "dismissing invite alert" );
+                            Log.d( TAG, "dismissing invite alert" );
                             m_inviteAlert.dismiss();
                         }
                     }
@@ -2439,7 +2438,7 @@ public class BoardDelegate extends DelegateBase
                         RelayService.inviteRemote( m_activity, destDevID,
                                                    null, nli );
                     } catch (NumberFormatException nfi) {
-                        DbgUtils.logex( TAG, nfi );
+                        Log.ex( TAG, nfi );
                     }
                     break;
                 case WIFIDIRECT:
@@ -2532,7 +2531,7 @@ public class BoardDelegate extends DelegateBase
         if ( canPost ) {
             m_handler.post( runnable );
         } else {
-            DbgUtils.logw( TAG, "post(): dropping b/c handler null" );
+            Log.w( TAG, "post(): dropping b/c handler null" );
             DbgUtils.printStack( TAG );
         }
         return canPost;
@@ -2543,7 +2542,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_handler ) {
             m_handler.postDelayed( runnable, when );
         } else {
-            DbgUtils.logw( TAG, "postDelayed: dropping %d because handler null", when );
+            Log.w( TAG, "postDelayed: dropping %d because handler null", when );
         }
     }
 
@@ -2552,8 +2551,8 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_handler ) {
             m_handler.removeCallbacks( which );
         } else {
-            DbgUtils.logw( TAG, "removeCallbacks: dropping %h because handler null",
-                           which );
+            Log.w( TAG, "removeCallbacks: dropping %h because handler null",
+                   which );
         }
     }
 
@@ -2696,7 +2695,7 @@ public class BoardDelegate extends DelegateBase
             doRematchIf( activity, null, rowID, summary, gi, gamePtr );
             gamePtr.release();
         } else {
-            DbgUtils.logw( TAG, "setupRematchFor(): unable to lock game" );
+            Log.w( TAG, "setupRematchFor(): unable to lock game" );
         }
 
         if ( null != thread ) {
@@ -2771,7 +2770,7 @@ public class BoardDelegate extends DelegateBase
             sendSMSInviteIf( (String)params[1], (NetLaunchInfo)params[0],
                              false );
         } else {
-            DbgUtils.logw( TAG, "retrySMSInvites: tests failed" );
+            Log.w( TAG, "retrySMSInvites: tests failed" );
         }
     }
 
@@ -2789,7 +2788,7 @@ public class BoardDelegate extends DelegateBase
         if ( !invitesSent ) {
             m_inviteAlert.dismiss();
             m_inviteAlert = null;
-            DbgUtils.logd( TAG, "recordInviteSent(): redoing invite alert" );
+            Log.d( TAG, "recordInviteSent(): redoing invite alert" );
             showInviteAlertIf();
         }
     }
@@ -2797,7 +2796,7 @@ public class BoardDelegate extends DelegateBase
     private void handleViaThread( JNICmd cmd, Object... args )
     {
         if ( null == m_jniThread ) {
-            DbgUtils.logw( TAG, "not calling handle(%s)", cmd.toString() );
+            Log.w( TAG, "not calling handle(%s)", cmd.toString() );
             DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );

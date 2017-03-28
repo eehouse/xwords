@@ -313,7 +313,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             try {
                 phones.put( rec.m_phone, rec.m_name );
             } catch ( JSONException ex ) {
-                DbgUtils.logex( TAG, ex );
+                Log.ex( TAG, ex );
             }
         }
         XWPrefs.setSMSPhones( m_activity, phones );

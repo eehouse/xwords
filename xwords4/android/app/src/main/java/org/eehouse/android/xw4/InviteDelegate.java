@@ -81,7 +81,7 @@ abstract class InviteDelegate extends ListDelegateBase
                 result = str1.equals( pair.str1 )
                     && ((null == str2 && null == pair.str2)
                         || str2.equals( pair.str2 ) );
-                DbgUtils.logd( TAG, "%s.equals(%s) => %b", str1, pair.str1, result );
+                Log.d( TAG, "%s.equals(%s) => %b", str1, pair.str1, result );
             }
             return result;
         }

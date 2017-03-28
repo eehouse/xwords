@@ -25,7 +25,7 @@ import android.content.Context;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils;
-import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.Utils;
 
 import java.io.ByteArrayInputStream;
@@ -71,7 +71,7 @@ public class JNIUtilsImpl implements JNIUtils {
         try {
             isr = new InputStreamReader( bais, isUTF8? "UTF8" : "ISO8859_1" );
         } catch( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logi( TAG, "splitFaces: %s", uee.toString() );
+            Log.i( TAG, "splitFaces: %s", uee.toString() );
             isr = new InputStreamReader( bais );
         }
 
@@ -85,7 +85,7 @@ public class JNIUtilsImpl implements JNIUtils {
             try {
                 chr = isr.read();
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logw( TAG, ioe.toString() );
+                Log.w( TAG, ioe.toString() );
             }
             if ( -1 == chr ) {
                 addFace( faces, face );
@@ -148,7 +148,7 @@ public class JNIUtilsImpl implements JNIUtils {
             }
             digest = md.digest();
         } catch ( java.security.NoSuchAlgorithmException nsae ) {
-            DbgUtils.logex( TAG, nsae );
+            Log.ex( TAG, nsae );
         }
         return Utils.digestToString( digest );
     }

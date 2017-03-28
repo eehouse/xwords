@@ -384,7 +384,7 @@ public class DlgDelegate {
             Assert.assertFalse( BuildConfig.DEBUG );
             break;
         default:
-            DbgUtils.logd( TAG, "not creating %s", dlgID.toString() );
+            Log.d( TAG, "not creating %s", dlgID.toString() );
             break;
         }
         return dialog;
@@ -559,7 +559,7 @@ public class DlgDelegate {
             break;
 
         default:
-            DbgUtils.loge( TAG, "eventOccurred: unhandled event %s", event.toString() );
+            Log.e( TAG, "eventOccurred: unhandled event %s", event.toString() );
         }
 
         if ( null != msg ) {
@@ -643,8 +643,8 @@ public class DlgDelegate {
             if ( null == oneBase ) {
                 iter.remove();  // no point in keeping it
             } else if ( base.equals( oneBase ) ) {
-                DbgUtils.logd( TAG, "removing alert %s for %s", dlgID.toString(),
-                               oneBase.toString() );
+                Log.d( TAG, "removing alert %s for %s", dlgID.toString(),
+                       oneBase.toString() );
                 activity.removeDialog( dlgID.ordinal() );
                 iter.remove();  // no point in keeping this either
             }

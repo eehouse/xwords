@@ -268,13 +268,13 @@ public class XWPrefs {
                     try {
                         obj.put( number, "" ); // null removes any entry
                     } catch ( JSONException ex ) {
-                        DbgUtils.logex( TAG, ex );
+                        Log.ex( TAG, ex );
                     }
                 }
             }
         }
 
-        // DbgUtils.logd( TAG, "getSMSPhones() => %s", obj.toString() );
+        // Log.d( TAG, "getSMSPhones() => %s", obj.toString() );
         return obj;
     }
 

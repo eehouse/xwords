@@ -92,7 +92,7 @@
 //                        isPortrait );
 //         m_isPortrait = isPortrait;
 //         if ( isPortrait != (rect.width() <= rect.height()) ) {
-//             DbgUtils.logdf( "FragActivity.onConfigurationChanged(): isPortrait:"
+//             Log.df( "FragActivity.onConfigurationChanged(): isPortrait:"
 //                             + " %b; width: %d; height: %d",
 //                             isPortrait, rect.width(), rect.height() );
 //         }

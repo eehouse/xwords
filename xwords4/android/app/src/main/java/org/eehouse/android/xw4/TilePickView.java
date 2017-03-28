@@ -65,7 +65,7 @@ public class TilePickView extends LinearLayout {
         m_listner = lstn;
         m_pendingTiles = (ArrayList<Integer>)bundle.getSerializable( NEW_TILES );
         if ( null == m_pendingTiles ) {
-            DbgUtils.logd( TAG, "creating new m_pendingTiles" );
+            Log.d( TAG, "creating new m_pendingTiles" );
             m_pendingTiles = new ArrayList<Integer>();
         }
 

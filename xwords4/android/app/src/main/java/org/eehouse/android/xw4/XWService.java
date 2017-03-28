@@ -65,8 +65,8 @@ class XWService extends Service {
         if ( null != s_srcMgr ) {
             s_srcMgr.postEvent( event, args );
         } else {
-            DbgUtils.logd( TAG, "postEvent(): dropping %s event",
-                           event.toString() );
+            Log.d( TAG, "postEvent(): dropping %s event",
+                   event.toString() );
         }
     }
 
@@ -82,7 +82,7 @@ class XWService extends Service {
                 s_seen.add( inviteID );
             }
         }
-        DbgUtils.logd( TAG, "checkNotDupe(%s) => %b", inviteID, !isDupe );
+        Log.d( TAG, "checkNotDupe(%s) => %b", inviteID, !isDupe );
         return !isDupe;
     }
 

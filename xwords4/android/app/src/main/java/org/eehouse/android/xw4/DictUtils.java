@@ -207,9 +207,9 @@ public class DictUtils {
                 fis.close();
                 loc = DictLoc.INTERNAL;
             } catch ( java.io.FileNotFoundException fnf ) {
-                // DbgUtils.logex( fnf );
+                // Log.ex( fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( TAG, ioe );
+                Log.ex( TAG, ioe );
             }
         }
 
@@ -278,7 +278,7 @@ public class DictUtils {
 
             success = DBUtils.copyFileStream( fos, fis );
         } catch ( java.io.FileNotFoundException fnfe ) {
-            DbgUtils.logex( TAG, fnfe );
+            Log.ex( TAG, fnfe );
         }
         return success;
     } // copyDict
@@ -375,11 +375,11 @@ public class DictUtils {
                 bytes = new byte[len];
                 fis.read( bytes, 0, len );
                 fis.close();
-                DbgUtils.logi( TAG, "Successfully loaded %s", name );
+                Log.i( TAG, "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
-                // DbgUtils.logex( fnf );
+                // Log.ex( fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( TAG, ioe );
+                Log.ex( TAG, ioe );
             }
         }
 
@@ -492,9 +492,9 @@ public class DictUtils {
                     invalDictList();
                 }
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.logex( TAG, fnf );
+                Log.ex( TAG, fnf );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( TAG, ioe );
+                Log.ex( TAG, ioe );
                 tmpFile.delete();
             }
         }
@@ -579,7 +579,7 @@ public class DictUtils {
             AssetManager am = context.getAssets();
             return am.list("");
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logex( TAG, ioe );
+            Log.ex( TAG, ioe );
             return new String[0];
         }
     }
@@ -604,7 +604,7 @@ public class DictUtils {
                 if ( !result.exists() ) {
                     result.mkdirs();
                     if ( !result.exists() ) {
-                        DbgUtils.logw( TAG, "unable to create sd dir %s", packdir );
+                        Log.w( TAG, "unable to create sd dir %s", packdir );
                         result = null;
                     }
                 }

@@ -387,7 +387,7 @@ public class ConnStatusHandler {
                 // } catch ( java.lang.ClassNotFoundException cnfe ) {
                 //     DbgUtils.logf( "loadState: %s", cnfe.toString() );
                 } catch ( Exception ex ) {
-                    DbgUtils.logex( TAG, ex );
+                    Log.ex( TAG, ex );
                 }
             }
         }
@@ -506,7 +506,7 @@ public class ConnStatusHandler {
                 XWPrefs.setPrefsString( context, R.string.key_connstat_data,
                                         as64 );
             } catch ( java.io.IOException ioe ) {
-                DbgUtils.logex( TAG, ioe );
+                Log.ex( TAG, ioe );
             }
             s_needsSave = false;
         }
@@ -545,8 +545,7 @@ public class ConnStatusHandler {
             result = WiDirService.connecting();
             break;
         default:
-            DbgUtils.logw( TAG, "connTypeEnabled: %s not handled",
-                           connType.toString() );
+            Log.w( TAG, "connTypeEnabled: %s not handled", connType.toString() );
             break;
         }
         return result;

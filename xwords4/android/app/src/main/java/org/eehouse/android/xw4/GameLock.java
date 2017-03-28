@@ -56,8 +56,8 @@ public class GameLock {
         m_isForWrite = isForWrite;
         m_lockCount = 0;
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logi( TAG, "GameLock(rowid:%d,isForWrite:%b)=>"
-                           + "this: %H", rowid, isForWrite, this );
+            Log.i( TAG, "GameLock(rowid:%d,isForWrite:%b)=>this: %H",
+                   rowid, isForWrite, this );
             DbgUtils.printStack( TAG );
         }
     }
@@ -92,20 +92,19 @@ public class GameLock {
                 }
             } else if ( this == owner && ! m_isForWrite ) {
                 if ( DEBUG_LOCKS ) {
-                    DbgUtils.logi( TAG, "tryLock(): incrementing lock count" );
+                    Log.i( TAG, "tryLock(): incrementing lock count" );
                 }
                 Assert.assertTrue( 0 == m_lockCount );
                 ++m_lockCount;
                 gotIt = true;
                 owner = null;
             } else if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( TAG, "tryLock(): rowid %d already held by lock %H",
-                               m_rowid, owner );
+                Log.i( TAG, "tryLock(): rowid %d already held by lock %H",
+                       m_rowid, owner );
             }
         }
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logi( TAG, "tryLock %H (rowid=%d) => %b",
-                           this, m_rowid, gotIt );
+            Log.i( TAG, "tryLock %H (rowid=%d) => %b", this, m_rowid, gotIt );
         }
         return owner;
     }
@@ -125,8 +124,8 @@ public class GameLock {
         long sleptTime = 0;
 
         if ( DEBUG_LOCKS ) {
-            DbgUtils.logi( TAG, "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid,
-                           maxMillis );
+            Log.i( TAG, "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid,
+                   maxMillis );
         }
 
         for ( ; ; ) {
@@ -136,11 +135,11 @@ public class GameLock {
                 break;
             }
             if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( TAG, "lock() %H failed; sleeping", this );
+                Log.i( TAG, "lock() %H failed; sleeping", this );
                 if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= ASSERT_TIME ) {
-                    DbgUtils.logi( TAG, "lock %H seeking stack:", curOwner );
+                    Log.i( TAG, "lock %H seeking stack:", curOwner );
                     DbgUtils.printStack( TAG, curOwner.m_lockTrace );
-                    DbgUtils.logi( TAG, "lock %H seeking stack:", this );
+                    Log.i( TAG, "lock %H seeking stack:", this );
                     DbgUtils.printStack( TAG );
                 }
             }
@@ -148,12 +147,12 @@ public class GameLock {
                 Thread.sleep( SLEEP_TIME ); // milliseconds
                 sleptTime += SLEEP_TIME;
             } catch( InterruptedException ie ) {
-                DbgUtils.logex( TAG, ie );
+                Log.ex( TAG, ie );
                 break;
             }
 
             if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( TAG, "lock() %H awake; "
+                Log.i( TAG, "lock() %H awake; "
                                + "sleptTime now %d millis", this, sleptTime );
             }
 
@@ -163,7 +162,7 @@ public class GameLock {
                 throw new GameLockedException();
             } else if ( sleptTime >= ASSERT_TIME ) {
                 if ( DEBUG_LOCKS ) {
-                    DbgUtils.logi( TAG, "lock %H overlocked", this );
+                    Log.i( TAG, "lock %H overlocked", this );
                 }
                 Assert.fail();
             }
@@ -189,8 +188,7 @@ public class GameLock {
             --m_lockCount;
 
             if ( DEBUG_LOCKS ) {
-                DbgUtils.logi( TAG, "unlock: this: %H (rowid:%d) unlocked",
-                               this, m_rowid );
+                Log.i( TAG, "unlock: this: %H (rowid:%d) unlocked", this, m_rowid );
             }
         }
     }
@@ -205,7 +203,7 @@ public class GameLock {
     {
         boolean result = m_isForWrite && 1 == m_lockCount;
         if ( !result ) {
-            DbgUtils.logw( TAG, "canWrite(): %H, returning false", this );
+            Log.w( TAG, "canWrite(): %H, returning false", this );
         }
         return result;
     }

@@ -92,9 +92,9 @@ public class BoardContainer extends ViewGroup {
                 measureChild( s_isPortrait ? HBAR_INDX : VBAR_INDX, m_toolsBounds );
                 adjustBounds();
                 View child = getChildAt( s_isPortrait ? HBAR_INDX : VBAR_INDX );
-                DbgUtils.logi( TAG, "measured %s; passed ht: %d; got back ht: %d",
-                               child.toString(), m_toolsBounds.height(),
-                               child.getMeasuredHeight() );
+                Log.i( TAG, "measured %s; passed ht: %d; got back ht: %d",
+                       child.toString(), m_toolsBounds.height(),
+                       child.getMeasuredHeight() );
 
                 if ( haveTradeBar() ) {
                     // Measure the exchange buttons bar

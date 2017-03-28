@@ -125,8 +125,7 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
                             notify.onNegButton( m_state.m_action, m_state.m_params );
                             break;
                         default:
-                            DbgUtils.loge( TAG, "unexpected button %d",
-                                           button );
+                            Log.e( TAG, "unexpected button %d", button );
                             // ignore on release builds
                             Assert.assertFalse( BuildConfig.DEBUG );
                         }

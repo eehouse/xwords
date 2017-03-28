@@ -98,7 +98,7 @@ import android.content.Context;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Log;
 
 public class %s {
     private static final String TAG = %s.class.getSimpleName();
@@ -130,11 +130,11 @@ public class %s {
             if ( strs[ii].equals( fromCtxt ) ) {
                 ++nMatches;
             } else {
-                DbgUtils.logi( TAG, "unequal strings: \\"%%s\\" vs \\"%%s\\"",
-                               strs[ii], fromCtxt );
+                Log.i( TAG, "unequal strings: \\"%%s\\" vs \\"%%s\\"",
+                       strs[ii], fromCtxt );
             }
         }
-        DbgUtils.logi( TAG, "checkStrings: %%d of %%d strings matched", nMatches, strs.length );
+        Log.i( TAG, "checkStrings: %%d of %%d strings matched", nMatches, strs.length );
 """
     func += "    }"
 

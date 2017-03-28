@@ -24,9 +24,9 @@ import android.content.Context;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictLangCache;
 import org.eehouse.android.xw4.DictUtils;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.json.JSONObject;
@@ -164,7 +164,7 @@ public class CurGameInfo implements Serializable {
                 ;
             jsonData = obj.toString();
         } catch ( org.json.JSONException jse ) {
-            DbgUtils.logex( TAG, jse );
+            Log.ex( TAG, jse );
         }
 
         return jsonData;
@@ -182,7 +182,7 @@ public class CurGameInfo implements Serializable {
                 int tmp = obj.optInt( PHONIES, phoniesAction.ordinal() );
                 phoniesAction = XWPhoniesChoice.values()[tmp];
             } catch ( org.json.JSONException jse ) {
-                DbgUtils.logex( TAG, jse );
+                Log.ex( TAG, jse );
             }
         }
     }

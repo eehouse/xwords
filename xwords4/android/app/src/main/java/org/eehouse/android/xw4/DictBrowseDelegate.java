@@ -259,7 +259,7 @@ public class DictBrowseDelegate extends DelegateBase
         try {
             super.finalize();
         } catch ( java.lang.Throwable err ){
-            DbgUtils.logi( TAG, "%s", err.toString() );
+            Log.i( TAG, "%s", err.toString() );
         }
     }
 
@@ -455,7 +455,7 @@ public class DictBrowseDelegate extends DelegateBase
         DictUtils.DictLoc loc
             = DictUtils.getDictLoc( delegator.getActivity(), name );
         if ( null == loc ) {
-            DbgUtils.logw( TAG, "launch(): DictLoc null; try again?" );
+            Log.w( TAG, "launch(): DictLoc null; try again?" );
         } else {
             launch( delegator, name, loc );
         }

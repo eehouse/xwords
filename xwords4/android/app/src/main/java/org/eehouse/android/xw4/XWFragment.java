@@ -84,7 +84,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onSaveInstanceState( Bundle outState )
     {
-        DbgUtils.logd( TAG, "%s.onCreate() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onCreate() called", getClass().getSimpleName() );
         Assert.assertNotNull( m_parentName );
         outState.putString( PARENT_NAME, m_parentName );
         m_dlgt.onSaveInstanceState( outState );
@@ -93,7 +93,7 @@ abstract class XWFragment extends Fragment implements Delegator {
 
     protected void onCreate( DelegateBase dlgt, Bundle sis )
     {
-        DbgUtils.logd( TAG, "%s.onCreate() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onCreate() called", getClass().getSimpleName() );
         super.onCreate( sis );
         if ( null != sis ) {
             m_parentName = sis.getString( PARENT_NAME );
@@ -108,7 +108,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     // @Override
     // public void onAttach( Activity activity )
     // {
-    //     DbgUtils.logdf( "%s.onAttach() called",
+    //     Log.df( "%s.onAttach() called",
     //                     this.getClass().getSimpleName() );
     //     super.onAttach( activity );
     // }
@@ -117,7 +117,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     public View onCreateView( LayoutInflater inflater, ViewGroup container,
                               Bundle savedInstanceState )
     {
-        DbgUtils.logd( TAG, "%s.onCreateView() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onCreateView() called", getClass().getSimpleName() );
         sActiveFrags.add(this);
         return m_dlgt.inflateView( inflater, container );
     }
@@ -125,7 +125,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
-        DbgUtils.logd( TAG, "%s.onActivityCreated() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onActivityCreated() called", getClass().getSimpleName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
         if ( m_hasOptionsMenu ) {
@@ -136,7 +136,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onPause()
     {
-        DbgUtils.logd( TAG, "%s.onPause() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onPause() called", getClass().getSimpleName() );
         m_dlgt.onPause();
         super.onPause();
     }
@@ -144,7 +144,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onResume()
     {
-        DbgUtils.logd( TAG, "%s.onResume() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onResume() called", getClass().getSimpleName() );
         super.onResume();
         m_dlgt.onResume();
     }
@@ -152,7 +152,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onStart()
     {
-        DbgUtils.logd( TAG, "%s.onStart() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onStart() called", getClass().getSimpleName() );
         super.onStart();
         m_dlgt.onStart();
     }
@@ -160,7 +160,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onStop()
     {
-        DbgUtils.logd( TAG, "%s.onStop() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onStop() called", getClass().getSimpleName() );
         m_dlgt.onStop();
         super.onStop();
     }
@@ -168,7 +168,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onDestroy()
     {
-        DbgUtils.logd( TAG, "%s.onDestroy() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onDestroy() called", getClass().getSimpleName() );
         m_dlgt.onDestroy();
         sActiveFrags.remove( this );
         super.onDestroy();
@@ -177,7 +177,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onActivityResult( int requestCode, int resultCode, Intent data )
     {
-        DbgUtils.logd( TAG, "%s.onActivityResult() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onActivityResult() called", getClass().getSimpleName() );
         m_dlgt.onActivityResult( RequestCode.values()[requestCode], 
                                  resultCode, data );
     }

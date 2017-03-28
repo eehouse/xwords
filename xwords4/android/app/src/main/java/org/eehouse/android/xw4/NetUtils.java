@@ -72,9 +72,9 @@ public class NetUtils {
             socket.setSoTimeout( timeoutMillis );
 
         } catch ( java.net.UnknownHostException uhe ) {
-            DbgUtils.logex( TAG, uhe );
+            Log.ex( TAG, uhe );
         } catch( java.io.IOException ioe ) {
-            DbgUtils.logex( TAG, ioe );
+            Log.ex( TAG, ioe );
         }
         return socket;
     }
@@ -129,7 +129,7 @@ public class NetUtils {
                         DBUtils.clearObits( m_context, m_obits );
                     }
                 } catch ( java.io.IOException ioe ) {
-                    DbgUtils.logex( TAG, ioe );
+                    Log.ex( TAG, ioe );
                 }
             }
         }
@@ -193,13 +193,13 @@ public class NetUtils {
                 }
                 if ( 0 != dis.available() ) {
                     msgs = null;
-                    DbgUtils.loge( TAG, "format error: bytes left over in stream" );
+                    Log.e( TAG, "format error: bytes left over in stream" );
                 }
                 socket.close();
             }
 
         } catch( Exception npe ) {
-            DbgUtils.logex( TAG, npe );
+            Log.ex( TAG, npe );
         }
         return msgs;
     } // queryRelay
@@ -225,10 +225,10 @@ public class NetUtils {
             result = (HttpURLConnection)new URL(url).openConnection();
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );
-            DbgUtils.logex( TAG, mue );
+            Log.ex( TAG, mue );
         } catch ( java.io.IOException ioe ) {
             Assert.assertNull( result );
-            DbgUtils.logex( TAG, ioe );
+            Log.ex( TAG, ioe );
         }
         return result;
     }
@@ -273,12 +273,12 @@ public class NetUtils {
                     }
                     result = new String( bas.toByteArray() );
                 } else {
-                    DbgUtils.logw( TAG, "runConn: responseCode: %d", responseCode );
+                    Log.w( TAG, "runConn: responseCode: %d", responseCode );
                 }
             } catch ( java.net.ProtocolException pe ) {
-                DbgUtils.logex( TAG, pe );
+                Log.ex( TAG, pe );
             } catch( java.io.IOException ioe ) {
-                DbgUtils.logex( TAG, ioe );
+                Log.ex( TAG, ioe );
             }
         }
 
@@ -299,7 +299,7 @@ public class NetUtils {
             }
             result = TextUtils.join( "&", pairs );
         } catch ( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logex( TAG, uee );
+            Log.ex( TAG, uee );
         }
 
         return result;

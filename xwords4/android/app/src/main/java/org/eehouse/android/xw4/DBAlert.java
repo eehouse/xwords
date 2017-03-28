@@ -45,8 +45,8 @@ public class DBAlert extends XWDialogFragment {
         if ( BuildConfig.DEBUG ) {
             for ( Object obj : params ) {
                 if ( null != obj && !(obj instanceof Serializable) ) {
-                    DbgUtils.logd( TAG, "OOPS: %s not Serializable",
-                                   obj.getClass().getName() );
+                    Log.d( TAG, "OOPS: %s not Serializable",
+                           obj.getClass().getName() );
                     // Assert.fail();
                 }
             }
@@ -107,7 +107,7 @@ public class DBAlert extends XWDialogFragment {
                             activity.show( newMe );
                             dismiss();          // kill myself...
                         } else {
-                            DbgUtils.logd( TAG, "null activity..." );
+                            Log.d( TAG, "null activity..." );
                         }
                     }
                 } );

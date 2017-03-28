@@ -338,7 +338,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
                     }
                 } else {
-                    DbgUtils.logw( TAG, "No remote info for lang %s", langName );
+                    Log.w( TAG, "No remote info for lang %s", langName );
                 }
             }
 
@@ -682,7 +682,7 @@ public class DictsDelegate extends ListDelegateBase
         for ( String name : selNames ) {
             DictLoc fromLoc = (DictLoc)m_selDicts.get( name );
             if ( fromLoc == toLoc ) {
-                DbgUtils.logw( TAG, "not moving %s: same loc", name );
+                Log.w( TAG, "not moving %s: same loc", name );
             } else if ( DictUtils.moveDict( m_activity,
                                             name, fromLoc,
                                             toLoc ) ) {
@@ -696,7 +696,7 @@ public class DictsDelegate extends ListDelegateBase
                                        fromLoc, toLoc );
             } else {
                 DbgUtils.showf( m_activity, R.string.toast_no_permission );
-                DbgUtils.logw( TAG, "moveDict(%s) failed", name );
+                Log.w( TAG, "moveDict(%s) failed", name );
             }
         }
     }
@@ -892,7 +892,7 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     public void cardMounted( boolean nowMounted )
     {
-        DbgUtils.logi( TAG, "cardMounted(%b)", nowMounted );
+        Log.i( TAG, "cardMounted(%b)", nowMounted );
         // post so other SDCardNotifiee implementations get a chance
         // to process first: avoid race conditions
         post( new Runnable() {
@@ -1025,12 +1025,12 @@ public class DictsDelegate extends ListDelegateBase
             } else if ( obj instanceof DictInfo ) {
                 ++results[SEL_REMOTE];
             } else {
-                DbgUtils.logd( TAG, "obj is a: " + obj );
+                Log.d( TAG, "obj is a: " + obj );
                 Assert.fail();
             }
         }
-        DbgUtils.logi( TAG, "countSelDicts() => {loc: %d; remote: %d}",
-                       results[SEL_LOCAL], results[SEL_REMOTE] );
+        Log.i( TAG, "countSelDicts() => {loc: %d; remote: %d}",
+               results[SEL_LOCAL], results[SEL_REMOTE] );
         return results;
     }
 
@@ -1192,7 +1192,7 @@ public class DictsDelegate extends ListDelegateBase
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
-        DbgUtils.logi( TAG, "itemClicked not implemented" );
+        Log.i( TAG, "itemClicked not implemented" );
     }
 
     public void itemToggled( SelectableItem.LongClickHandler toggled,
@@ -1287,7 +1287,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
 
                     } catch ( JSONException ex ) {
-                        DbgUtils.logex( TAG, ex );
+                        Log.ex( TAG, ex );
                         theOne = null;
                     }
                 }
@@ -1385,7 +1385,7 @@ public class DictsDelegate extends ListDelegateBase
                     new HashSet<String>( Arrays.asList( m_langs ) );
 
                 // DictLangCache hits the DB hundreds of times below. Fix!
-                DbgUtils.logw( TAG, "Fix me I'm stupid" );
+                Log.w( TAG, "Fix me I'm stupid" );
                 try {
                     // DbgUtils.logf( "data: %s", jsonData );
                     JSONObject obj = new JSONObject( jsonData );
@@ -1467,7 +1467,7 @@ public class DictsDelegate extends ListDelegateBase
 
                     success = true;
                 } catch ( JSONException ex ) {
-                    DbgUtils.logex( TAG, ex );
+                    Log.ex( TAG, ex );
                 }
             }
 

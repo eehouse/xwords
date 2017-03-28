@@ -72,18 +72,18 @@ public class BiDiSockWrap {
                     while ( mActive ) {
                         try {
                             Thread.sleep( waitMillis );
-                            DbgUtils.logd( TAG, "trying to connect..." );
+                            Log.d( TAG, "trying to connect..." );
                             Socket socket = new Socket( mAddress, mPort );
-                            DbgUtils.logd( TAG, "connected!!!" );
+                            Log.d( TAG, "connected!!!" );
                             init( socket );
                             mIface.connectStateChanged( BiDiSockWrap.this, true );
                             break;
                         } catch ( java.net.UnknownHostException uhe ) {
-                            DbgUtils.logex( TAG, uhe );
+                            Log.ex( TAG, uhe );
                         } catch ( IOException ioe ) {
-                            DbgUtils.logex( TAG, ioe );
+                            Log.ex( TAG, ioe );
                         } catch ( InterruptedException ie ) {
-                            DbgUtils.logex( TAG, ie );
+                            Log.ex( TAG, ie );
                         }
                         waitMillis = Math.min( waitMillis * 2, 1000 * 60 );
                     }
@@ -102,7 +102,7 @@ public class BiDiSockWrap {
         try {
             send( packet.getBytes( "UTF-8" ) );
         } catch ( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.logex( TAG, uee );
+            Log.ex( TAG, uee );
         }
     }
 
@@ -132,13 +132,13 @@ public class BiDiSockWrap {
 
     private void closeSocket()
     {
-        DbgUtils.logd( TAG, "closeSocket()" );
+        Log.d( TAG, "closeSocket()" );
         mRunThreads = false;
         mActive = false;
         try {
             mSocket.close();
         } catch ( IOException ioe ) {
-            DbgUtils.logex( TAG, ioe );
+            Log.ex( TAG, ioe );
         }
         mIface.connectStateChanged( this, false );
         mQueue.add( new byte[0] );
@@ -150,13 +150,13 @@ public class BiDiSockWrap {
         mWriteThread = new Thread( new Runnable() {
                 @Override
                 public void run() {
-                    DbgUtils.logd( TAG, "write thread starting" );
+                    Log.d( TAG, "write thread starting" );
                     try {
                         DataOutputStream outStream
                             = new DataOutputStream( mSocket.getOutputStream() );
                         while ( mRunThreads ) {
                             byte[] packet = mQueue.take();
-                            DbgUtils.logd( TAG,
+                            Log.d( TAG,
                                            "write thread got packet of len %d",
                                            packet.length );
                             Assert.assertNotNull( packet );
@@ -170,12 +170,12 @@ public class BiDiSockWrap {
                             mIface.onWriteSuccess( BiDiSockWrap.this );
                         }
                     } catch ( IOException ioe ) {
-                        DbgUtils.logex( TAG, ioe );
+                        Log.ex( TAG, ioe );
                         closeSocket();
                     } catch ( InterruptedException ie ) {
                         Assert.fail();
                     }
-                    DbgUtils.logd( TAG, "write thread exiting" );
+                    Log.d( TAG, "write thread exiting" );
                 }
             } );
         mWriteThread.start();
@@ -183,22 +183,22 @@ public class BiDiSockWrap {
         mReadThread = new Thread( new Runnable() {
                 @Override
                 public void run() {
-                    DbgUtils.logd( TAG, "read thread starting" );
+                    Log.d( TAG, "read thread starting" );
                     try {
                         DataInputStream inStream
                             = new DataInputStream( mSocket.getInputStream() );
                         while ( mRunThreads ) {
                             short len = inStream.readShort();
-                            DbgUtils.logd( TAG, "got len: %d", len );
+                            Log.d( TAG, "got len: %d", len );
                             byte[] packet = new byte[len];
                             inStream.read( packet );
                             mIface.gotPacket( BiDiSockWrap.this, packet );
                         }
                     } catch( IOException ioe ) {
-                        DbgUtils.logex( TAG, ioe );
+                        Log.ex( TAG, ioe );
                         closeSocket();
                     }
-                    DbgUtils.logd( TAG, "read thread exiting" );
+                    Log.d( TAG, "read thread exiting" );
                 }
             } );
         mReadThread.start();

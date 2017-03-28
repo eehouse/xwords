@@ -84,7 +84,7 @@ public class NetStateCache {
 
                 boolean netAvail = getIsConnected( context );
                 if ( netAvail ) {
-                    DbgUtils.logi( TAG, "netAvail(): second-guessing successful!!!" );
+                    Log.i( TAG, "netAvail(): second-guessing successful!!!" );
                     s_netAvail = true;
                     if ( null != s_receiver ) {
                         s_receiver.notifyStateChanged( context );
@@ -94,7 +94,7 @@ public class NetStateCache {
         }
 
         boolean result = s_netAvail || s_onSDKSim;
-        DbgUtils.logd( TAG, "netAvail() => %b", result );
+        Log.d( TAG, "netAvail() => %b", result );
         return result;
     }
 
@@ -124,7 +124,7 @@ public class NetStateCache {
         if ( null != ni && ni.isConnectedOrConnecting() ) {
             result = true;
         }
-        DbgUtils.logi( TAG, "NetStateCache.getConnected() => %b", result );
+        Log.i( TAG, "NetStateCache.getConnected() => %b", result );
         return result;
     }
 
@@ -165,8 +165,8 @@ public class NetStateCache {
             boolean connectedReal = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
             if ( connectedReal != connectedCached ) {
-                DbgUtils.logw( TAG, "connected: cached: %b; actual: %b",
-                               connectedCached, connectedReal );
+                Log.w( TAG, "connected: cached: %b; actual: %b",
+                       connectedCached, connectedReal );
             }
         }
     }
@@ -194,7 +194,7 @@ public class NetStateCache {
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
-                DbgUtils.logd( TAG, "onReceive(state=%s)", state.toString() );
+                Log.d( TAG, "onReceive(state=%s)", state.toString() );
 
                 boolean netAvail;
                 switch ( state ) {
@@ -215,8 +215,8 @@ public class NetStateCache {
                     s_netAvail = netAvail; // keep current in case we're asked
                     notifyStateChanged( context );
                 } else {
-                    DbgUtils.logd( TAG, "onReceive: no change; "
-                                   + "doing nothing; s_netAvail=%b", s_netAvail );
+                    Log.d( TAG, "onReceive: no change; doing nothing;"
+                           + " s_netAvail=%b", s_netAvail );
                 }
             }
         }
@@ -240,8 +240,7 @@ public class NetStateCache {
                             Assert.assertTrue( mLastStateSent != s_netAvail );
                             mLastStateSent = s_netAvail;
 
-                            DbgUtils.logi( TAG, "notifyStateChanged(%b)",
-                                           s_netAvail );
+                            Log.i( TAG, "notifyStateChanged(%b)", s_netAvail );
 
                             synchronized( s_ifs ) {
                                 Iterator<StateChangedIf> iter = s_ifs.iterator();

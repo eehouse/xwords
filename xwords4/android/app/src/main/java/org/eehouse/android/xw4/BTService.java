@@ -301,8 +301,8 @@ public class BTService extends XWService {
         }
 
         if ( -1 == nSent ) {
-            DbgUtils.logi( TAG, "enqueueFor(): can't send to %s",
-                           targetAddr.bt_hostName );
+            Log.i( TAG, "enqueueFor(): can't send to %s",
+                   targetAddr.bt_hostName );
         }
         return nSent;
     }
@@ -329,13 +329,13 @@ public class BTService extends XWService {
             ? BluetoothAdapter.getDefaultAdapter() : null;
         if ( null != adapter && adapter.isEnabled() ) {
             m_adapter = adapter;
-            DbgUtils.logi( TAG, "onCreate(); bt name = %s; bt addr = %s",
-                           adapter.getName(), adapter.getAddress() );
+            Log.i( TAG, "onCreate(); bt name = %s; bt addr = %s",
+                   adapter.getName(), adapter.getAddress() );
             initAddrs();
             startListener();
             startSender();
         } else {
-            DbgUtils.logw( TAG, "not starting threads: BT not available" );
+            Log.w( TAG, "not starting threads: BT not available" );
             stopSelf();
         }
     }
@@ -349,11 +349,11 @@ public class BTService extends XWService {
             if ( -1 == ordinal ) {
                 // Drop it
             } else if ( null == m_sender ) {
-                DbgUtils.logw( TAG, "exiting: m_queue is null" );
+                Log.w( TAG, "exiting: m_queue is null" );
                 stopSelf();
             } else {
                 BTAction cmd = BTAction.values()[ordinal];
-                DbgUtils.logi( TAG, "onStartCommand; cmd=%s", cmd.toString() );
+                Log.i( TAG, "onStartCommand; cmd=%s", cmd.toString() );
                 switch( cmd ) {
                 case CLEAR:
                     String[] btAddrs = intent.getStringArrayExtra( CLEAR_KEY );
@@ -366,7 +366,7 @@ public class BTService extends XWService {
                 case INVITE:
                     String jsonData = intent.getStringExtra( GAMEDATA_KEY );
                     NetLaunchInfo nli = new NetLaunchInfo( this, jsonData );
-                    DbgUtils.logi( TAG, "onStartCommand: nli: %s", nli.toString() );
+                    Log.i( TAG, "onStartCommand: nli: %s", nli.toString() );
                     String btAddr = intent.getStringExtra( ADDR_KEY );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
                     break;
@@ -472,7 +472,7 @@ public class BTService extends XWService {
                             break;
 
                         default:
-                            DbgUtils.loge( TAG, "unexpected msg %s", cmd.toString());
+                            Log.e( TAG, "unexpected msg %s", cmd.toString());
                             break;
                         }
                         updateStatusIn( true );
@@ -486,7 +486,7 @@ public class BTService extends XWService {
                         sendBadProto( socket );
                     }
                 } catch ( IOException ioe ) {
-                    DbgUtils.logw( TAG, "trying again..." );
+                    Log.w( TAG, "trying again..." );
                     logIOE( ioe);
                     continue;
                 }
@@ -588,8 +588,8 @@ public class BTService extends XWService {
                         result = rslt == ReceiveResult.GAME_GONE ?
                             BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
                     } else {
-                        DbgUtils.loge( TAG, "receiveMessage(): read only "
-                                       + "%d of %d bytes", nRead, len );
+                        Log.e( TAG, "receiveMessage(): read only %d of %d bytes",
+                               nRead, len );
                     }
                     break;
                 case MESG_GAMEGONE:
@@ -705,7 +705,7 @@ public class BTService extends XWService {
                 try {
                     elem = m_queue.poll( timeout, TimeUnit.SECONDS );
                 } catch ( InterruptedException ie ) {
-                    DbgUtils.logw( TAG, "interrupted; killing thread" );
+                    Log.w( TAG, "interrupted; killing thread" );
                     break;
                 }
 
@@ -837,7 +837,7 @@ public class BTService extends XWService {
                             outStream.writeShort( nliData.length );
                             outStream.write( nliData, 0, nliData.length );
                         }
-                        DbgUtils.logi( TAG, "<eeh>sending invite" );
+                        Log.i( TAG, "<eeh>sending invite" );
                         outStream.flush();
 
                         DataInputStream inStream =
@@ -880,8 +880,8 @@ public class BTService extends XWService {
             MultiEvent evt;
             if ( success ) {
                 evt = MultiEvent.MESSAGE_DROPPED;
-                DbgUtils.logw( TAG, "sendElem: dropping message %s because game %X dead",
-                               elem.m_cmd, elem.m_gameID );
+                Log.w( TAG, "sendElem: dropping message %s because game %X dead",
+                       elem.m_cmd, elem.m_gameID );
             } else {
                 evt = MultiEvent.MESSAGE_REFUSED;
             }
@@ -1084,7 +1084,7 @@ public class BTService extends XWService {
         try {
             m_listener.join( 100 );
         } catch ( InterruptedException ie ) {
-            DbgUtils.logex( TAG, ie );
+            Log.ex( TAG, ie );
         }
         m_listener = null;
     }
@@ -1095,7 +1095,7 @@ public class BTService extends XWService {
         try {
             m_sender.join( 100 );
         } catch ( InterruptedException ie ) {
-            DbgUtils.logex( TAG, ie );
+            Log.ex( TAG, ie );
         }
         m_sender = null;
     }
@@ -1167,10 +1167,10 @@ public class BTService extends XWService {
             dos = new DataOutputStream( socket.getOutputStream() );
             dos.writeByte( BT_PROTO );
             dos.writeByte( cmd.ordinal() );
-            DbgUtils.logi( TAG, "connect() to %s successful", name );
+            Log.i( TAG, "connect() to %s successful", name );
         } catch ( IOException ioe ) {
             dos = null;
-            DbgUtils.logw( TAG, "BTService.connect() to %s failed", name );
+            Log.w( TAG, "BTService.connect() to %s failed", name );
             // logIOE( ioe );
         }
         return dos;
@@ -1178,7 +1178,7 @@ public class BTService extends XWService {
 
     private void logIOE( IOException ioe )
     {
-        DbgUtils.logex( TAG, ioe );
+        Log.ex( TAG, ioe );
         ++s_errCount;
         // if ( 0 == s_errCount % 10 ) {
             postEvent( MultiEvent.BT_ERR_COUNT, s_errCount );
@@ -1215,13 +1215,13 @@ public class BTService extends XWService {
                     try {
                         Thread.sleep( millis );
                     } catch ( InterruptedException ie ) {
-                        DbgUtils.logw( TAG, "killSocketIn: killed by owner" );
+                        Log.w( TAG, "killSocketIn: killed by owner" );
                         return;
                     }
                     try {
                         socket.close();
                     } catch( IOException ioe ) {
-                        DbgUtils.logex( TAG, ioe );
+                        Log.ex( TAG, ioe );
                     }
                 }
             } );
@@ -1238,7 +1238,7 @@ public class BTService extends XWService {
         {
             int nSent = -1;
             if ( null == m_sender ) {
-                DbgUtils.logw( TAG, "sendViaBluetooth(): no send thread" );
+                Log.w( TAG, "sendViaBluetooth(): no send thread" );
             } else {
                 String btAddr = getSafeAddr( addr );
                 if ( null != btAddr && 0 < btAddr.length() ) {
@@ -1246,8 +1246,8 @@ public class BTService extends XWService {
                                                    gameID ) );
                     nSent = buf.length;
                 } else {
-                    DbgUtils.logi( TAG, "sendViaBluetooth(): no addr for dev %s",
-                                   addr.bt_hostName );
+                    Log.i( TAG, "sendViaBluetooth(): no addr for dev %s",
+                           addr.bt_hostName );
                 }
             }
             return nSent;

@@ -109,10 +109,10 @@ public class MultiMsgSink implements TransportProcs {
             Assert.fail();
             break;
         }
-        DbgUtils.logi( TAG, "transportSend(): sent %d via %s",
+        Log.i( TAG, "transportSend(): sent %d via %s",
                        nSent, typ.toString() );
         if ( 0 < nSent ) {
-            DbgUtils.logd( TAG, "transportSend: adding %s", msgNo );
+            Log.d( TAG, "transportSend: adding %s", msgNo );
             m_sentSet.add( msgNo );
         }
 
@@ -139,7 +139,7 @@ public class MultiMsgSink implements TransportProcs {
                                                    relayID, buf );
         boolean success = buf.length == nSent;
         if ( success ) {
-            DbgUtils.logd( TAG, "relayNoConnProc: adding %s", msgNo );
+            Log.d( TAG, "relayNoConnProc: adding %s", msgNo );
             m_sentSet.add( msgNo );
         }
         return success;

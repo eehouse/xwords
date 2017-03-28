@@ -26,7 +26,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.Looper;
 import android.text.format.Time;
-import android.util.Log;
 
 import junit.framework.Assert;
 
@@ -79,31 +78,6 @@ public class DbgUtils {
         }
     }
 
-    public static void logd( String tag, String fmt, Object... args ) {
-        callLog( LogType.DEBUG, tag, fmt, args );
-    }
-
-    public static void loge( String tag, String fmt, Object... args )
-    {
-        callLog( LogType.ERROR, tag, fmt, args );
-    }
-
-    public static void logi( String tag, String fmt, Object... args )
-    {
-        logi( tag, true, fmt, args );
-    }
-
-    public static void logi( String tag, boolean persist, String fmt,
-                             Object... args )
-    {
-        callLog( LogType.INFO, tag, fmt, args );
-    }
-
-    public static void logw( String tag, String fmt, Object... args )
-    {
-        callLog( LogType.WARN, tag, fmt, args );
-    }
-
     public static void showf( String format, Object... args )
     {
         showf( XWApp.getContext(), format, args );
@@ -121,12 +95,6 @@ public class DbgUtils {
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
-    public static void logex( String tag, Exception exception )
-    {
-        logw( TAG, "Exception: %s", exception.toString() );
-        printStack( tag, exception.getStackTrace() );
-    }
-
     public static void assertOnUIThread()
     {
         Assert.assertTrue( Looper.getMainLooper().equals(Looper.myLooper()) );
@@ -137,7 +105,7 @@ public class DbgUtils {
         if ( s_doLog && null != trace ) {
             // 1: skip printStack etc.
             for ( int ii = 1; ii < trace.length; ++ii ) {
-                DbgUtils.logd( tag, "ste %d: %s", ii, trace[ii].toString() );
+                Log.d( tag, "ste %d: %s", ii, trace[ii].toString() );
             }
         }
     }
@@ -169,7 +137,7 @@ public class DbgUtils {
     {
         if ( s_doLog ) {
             String dump = DatabaseUtils.dumpCursorToString( cursor );
-            logi( TAG, "cursor: %s", dump );
+            Log.i( TAG, "cursor: %s", dump );
         }
     }
 

@@ -49,7 +49,7 @@ public class XWPacket {
                 m_obj.put( KEY_CMD, cmd.ordinal() );
             }
         } catch ( JSONException ex ) {
-            DbgUtils.logd( TAG, ex.toString() );
+            Log.d( TAG, ex.toString() );
         }
     }
 
@@ -58,7 +58,7 @@ public class XWPacket {
         try {
             m_obj = new JSONObject( str );
         } catch ( JSONException ex ) {
-            DbgUtils.logd( TAG, ex.toString() );
+            Log.d( TAG, ex.toString() );
         }
     }
 
@@ -85,7 +85,7 @@ public class XWPacket {
         try {
             m_obj.put( key, value );
         } catch ( JSONException ex ) {
-            DbgUtils.logd( TAG, ex.toString() );
+            Log.d( TAG, ex.toString() );
         }
         return this;
     }
@@ -95,7 +95,7 @@ public class XWPacket {
         try {
             m_obj.put( key, value );
         } catch ( JSONException ex ) {
-            DbgUtils.logd( TAG, ex.toString() );
+            Log.d( TAG, ex.toString() );
         }
         return this;
     }
@@ -105,7 +105,7 @@ public class XWPacket {
         try {
             m_obj.put( key, value );
         } catch ( JSONException ex ) {
-            DbgUtils.logd( TAG, ex.toString() );
+            Log.d( TAG, ex.toString() );
         }
         return this;
     }

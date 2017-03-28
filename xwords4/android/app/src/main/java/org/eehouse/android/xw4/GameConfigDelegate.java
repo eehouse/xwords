@@ -165,7 +165,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         Dialog dialog = null;
         final DlgID dlgID = alert.getDlgID();
-        DbgUtils.logd( TAG, "makeDialog(%s)", dlgID.toString() );
+        Log.d( TAG, "makeDialog(%s)", dlgID.toString() );
 
         DialogInterface.OnClickListener dlpos;
         AlertDialog.Builder ab;
@@ -347,7 +347,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void setPlayerSettings( final View playerView )
     {
-        DbgUtils.logd( TAG, "setPlayerSettings()" );
+        Log.d( TAG, "setPlayerSettings()" );
         boolean isServer = ! localOnlyGame();
 
         // Independent of other hide/show logic, these guys are
@@ -414,7 +414,7 @@ public class GameConfigDelegate extends DelegateBase
 
         Utils.setChecked( playerView, R.id.robot_check, lp.isRobot() );
         Utils.setChecked( playerView, R.id.remote_check, ! lp.isLocal );
-        DbgUtils.logd( TAG, "setPlayerSettings() DONE" );
+        Log.d( TAG, "setPlayerSettings() DONE" );
     }
 
     private void getPlayerSettings( DialogInterface di )
@@ -763,7 +763,7 @@ public class GameConfigDelegate extends DelegateBase
                 }
                 break;
             default:
-                DbgUtils.logw( TAG, "unknown v: " + view.toString() );
+                Log.w( TAG, "unknown v: " + view.toString() );
                 Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
@@ -782,7 +782,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void saveAndClose( boolean forceNew )
     {
-        DbgUtils.logi( TAG, "saveAndClose(forceNew=%b)", forceNew );
+        Log.i( TAG, "saveAndClose(forceNew=%b)", forceNew );
         applyChanges( forceNew );
 
         finishAndLaunch();
@@ -1033,8 +1033,8 @@ public class GameConfigDelegate extends DelegateBase
             setting = 2;
             break;
         default:
-            DbgUtils.logw( TAG, "setSmartnessSpinner got %d from getRobotSmartness()",
-                           m_gi.getRobotSmartness() );
+            Log.w( TAG, "setSmartnessSpinner got %d from getRobotSmartness()",
+                   m_gi.getRobotSmartness() );
             Assert.fail();
         }
         m_smartnessSpinner.setSelection( setting );
@@ -1075,7 +1075,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void adjustPlayersLabel()
     {
-        DbgUtils.logi( TAG, "adjustPlayersLabel()" );
+        Log.i( TAG, "adjustPlayersLabel()" );
         String label;
         if ( localOnlyGame() ) {
             label = getString( R.string.players_label_standalone );

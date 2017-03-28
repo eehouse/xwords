@@ -92,8 +92,8 @@ public class ExpiringDelegate {
                 }
             }
 
-            DbgUtils.logd( TAG, "ref had %d refs, now has %d expiringdelegate views",
-                           sizeBefore, dlgts.size() );
+            Log.d( TAG, "ref had %d refs, now has %d expiringdelegate views",
+                   sizeBefore, dlgts.size() );
 
             for ( ExpiringDelegate dlgt : dlgts ) {
                 dlgt.timerFired();
@@ -121,8 +121,7 @@ public class ExpiringDelegate {
         private void setHandler( Handler handler )
         {
             if ( handler != m_handler ) {
-                DbgUtils.logd( TAG, "handler changing from %H to %H",
-                               m_handler, handler );
+                Log.d( TAG, "handler changing from %H to %H", m_handler, handler );
                 m_handler = handler;
                 reschedule();
             }

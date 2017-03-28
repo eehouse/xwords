@@ -30,9 +30,9 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.Delegator;
 import org.eehouse.android.xw4.ListDelegateBase;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 
 public class LocDelegate extends ListDelegateBase
@@ -81,7 +81,7 @@ public class LocDelegate extends ListDelegateBase
     protected void onWindowFocusChanged( boolean hasFocus )
     {
         if ( hasFocus && null != m_lastItem ) {
-            DbgUtils.logi( TAG, "updating LocListItem instance %H", m_lastItem );
+            Log.i( TAG, "updating LocListItem instance %H", m_lastItem );
             m_lastItem.update();
             m_lastItem = null;
         }

@@ -24,7 +24,7 @@ import android.graphics.Rect;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -52,8 +52,8 @@ public class XwJNI {
         public synchronized GamePtr retain()
         {
             ++m_refCount;
-            DbgUtils.logd( TAG, "retain(this=%H, rowid=%d): refCount now %d",
-                           this, m_rowid, m_refCount );
+            Log.d( TAG, "retain(this=%H, rowid=%d): refCount now %d",
+                   this, m_rowid, m_refCount );
             return this;
         }
 
@@ -62,8 +62,8 @@ public class XwJNI {
         public synchronized void release()
         {
             --m_refCount;
-            DbgUtils.logd( TAG, "release(this=%H, rowid=%d): refCount now %d",
-                           this, m_rowid, m_refCount );
+            Log.d( TAG, "release(this=%H, rowid=%d): refCount now %d",
+                   this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
                 if ( 0 != m_ptr ) {
                     if ( !haveEnv( getJNI().m_ptr ) ) {

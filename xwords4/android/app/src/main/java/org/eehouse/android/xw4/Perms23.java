@@ -102,7 +102,7 @@ public class Perms23 {
 
         public void asyncQuery( Activity activity, PermCbck cbck )
         {
-            DbgUtils.logd( TAG, "asyncQuery(%s)", m_perms.toString() );
+            Log.d( TAG, "asyncQuery(%s)", m_perms.toString() );
             boolean haveAll = true;
             boolean shouldShow = false;
             Set<Perm> needShow = new HashSet<Perm>();
@@ -135,12 +135,12 @@ public class Perms23 {
                     cbck.onPermissionResult( map );
                 }
             } else if ( 0 < needShow.size() && null != m_onShow ) {
-                // DbgUtils.logd( TAG, "calling onShouldShowRationale()" );
+                // Log.d( TAG, "calling onShouldShowRationale()" );
                 m_onShow.onShouldShowRationale( needShow );
             } else {
                 String[] permsArray = askStrings.toArray( new String[askStrings.size()] );
                 int code = register( cbck );
-                // DbgUtils.logd( TAG, "calling requestPermissions on %s",
+                // Log.d( TAG, "calling requestPermissions on %s",
                 //                activity.getClass().getSimpleName() );
                 ActivityCompat.requestPermissions( activity, permsArray, code );
             }
@@ -227,7 +227,7 @@ public class Perms23 {
                                     final Action action, final DlgClickNotify cbck,
                                     Object... params )
     {
-        // DbgUtils.logd( TAG, "tryGetPerms(%s)", perm.toString() );
+        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
         Context context = XWApp.getContext();
         String msg = LocUtils.getString( context, rationaleId );
         tryGetPerms( delegate, perm, msg, action, cbck, params );
@@ -237,14 +237,14 @@ public class Perms23 {
                                     String rationaleMsg, final Action action,
                                     final DlgClickNotify cbck, Object... params )
     {
-        // DbgUtils.logd( TAG, "tryGetPerms(%s)", perm.toString() );
+        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
         new QueryInfo( delegate, action, perm, rationaleMsg, cbck, params )
             .doIt( true );
     }
 
     public static void onGotPermsAction( boolean positive, Object[] params )
     {
-        // DbgUtils.logd( TAG, "onGotPermsAction(button=%d)", button );
+        // Log.d( TAG, "onGotPermsAction(button=%d)", button );
         QueryInfo info = (QueryInfo)params[0];
         info.handleButton( positive );
     }
@@ -253,7 +253,7 @@ public class Perms23 {
     public static void gotPermissionResult( Context context, int code,
                                             String[] perms, int[] granteds )
     {
-        // DbgUtils.logd( TAG, "gotPermissionResult(%s)", perms.toString() );
+        // Log.d( TAG, "gotPermissionResult(%s)", perms.toString() );
         Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
         for ( int ii = 0; ii < perms.length; ++ii ) {
             Perm perm = Perm.getFor( perms[ii] );
@@ -268,7 +268,7 @@ public class Perms23 {
                                        true );
             }
 
-            // DbgUtils.logd( TAG, "calling %s.onPermissionResult(%s, %b)",
+            // Log.d( TAG, "calling %s.onPermissionResult(%s, %b)",
             //                record.cbck.getClass().getSimpleName(), perm.toString(),
             //                granted );
         }

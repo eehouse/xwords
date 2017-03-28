@@ -129,14 +129,14 @@ public class DelegateBase implements DlgClickNotify,
     protected void onActivityResult( RequestCode requestCode, int resultCode,
                                      Intent data )
     {
-        DbgUtils.logi( TAG, "onActivityResult(): subclass responsibility!!!" );
+        Log.i( TAG, "onActivityResult(): subclass responsibility!!!" );
     }
 
     protected void onStart()
     {
         Class clazz = getClass();
         if ( s_instances.containsKey( clazz ) ) {
-            DbgUtils.logd( TAG, "onStart(): replacing curThis" );
+            Log.d( TAG, "onStart(): replacing curThis" );
         }
         s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
     }
@@ -172,7 +172,7 @@ public class DelegateBase implements DlgClickNotify,
             result = ref.get();
         }
         if ( this != result ) {
-            DbgUtils.logd( TAG, "%s.curThis() => " + result, this.toString() );
+            Log.d( TAG, "%s.curThis() => " + result, this.toString() );
         }
         return result;
     }
@@ -199,7 +199,7 @@ public class DelegateBase implements DlgClickNotify,
     protected boolean isFinishing()
     {
         boolean result = m_activity.isFinishing();
-        // DbgUtils.logd( TAG, "%s.isFinishing() => %b", getClass().getSimpleName(), result );
+        // Log.d( TAG, "%s.isFinishing() => %b", getClass().getSimpleName(), result );
         return result;
     }
 
@@ -430,7 +430,7 @@ public class DelegateBase implements DlgClickNotify,
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         DlgID dlgID = alert.getDlgID();
-        DbgUtils.logd( TAG, "makeDialog(): not handling %s", dlgID.toString() );
+        Log.d( TAG, "makeDialog(): not handling %s", dlgID.toString() );
         return null;
     }
 
@@ -487,7 +487,7 @@ public class DelegateBase implements DlgClickNotify,
         try {
             m_activity.dismissDialog( dlgID.ordinal() );
         } catch ( Exception ex ) {
-            // DbgUtils.logex( ex );
+            // Log.ex( ex );
         }
     }
 
@@ -619,13 +619,12 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean canHandleNewIntent( Intent intent )
     {
-        DbgUtils.logd( TAG, "canHandleNewIntent() => false" );
+        Log.d( TAG, "canHandleNewIntent() => false" );
         return false;
     }
 
     protected void handleNewIntent( Intent intent ) {
-        DbgUtils.logd( TAG, "handleNewIntent(%s): not handling",
-                       intent.toString() );
+        Log.d( TAG, "handleNewIntent(%s): not handling", intent.toString() );
     }
 
     protected void runWhenActive( Runnable proc )
@@ -643,7 +642,7 @@ public class DelegateBase implements DlgClickNotify,
         switch( event ) {
         case BT_ERR_COUNT:
             int count = (Integer)args[0];
-            DbgUtils.logi( TAG, "Bluetooth error count: %d", count );
+            Log.i( TAG, "Bluetooth error count: %d", count );
             break;
         case BAD_PROTO_BT:
             fmtId = R.string.bt_bad_proto_fmt;
@@ -658,8 +657,7 @@ public class DelegateBase implements DlgClickNotify,
             m_dlgDelegate.eventOccurred( event, args );
             break;
         default:
-            DbgUtils.logd( TAG, "eventOccurred(event=%s) (DROPPED)",
-                           event.toString() );
+            Log.d( TAG, "eventOccurred(event=%s) (DROPPED)", event.toString() );
             break;
         }
 
@@ -679,8 +677,8 @@ public class DelegateBase implements DlgClickNotify,
     public boolean onPosButton( Action action, Object[] params )
     {
         boolean handled = true;
-        DbgUtils.logd( TAG, "%s.posButtonClicked(%s)", getClass().getSimpleName(),
-                       action.toString() );
+        Log.d( TAG, "%s.posButtonClicked(%s)", getClass().getSimpleName(),
+               action.toString() );
         switch( action ) {
         case ENABLE_SMS_ASK:
             showSMSEnableDialog( Action.ENABLE_SMS_DO );
@@ -698,7 +696,7 @@ public class DelegateBase implements DlgClickNotify,
             Perms23.onGotPermsAction( true, params );
             break;
         default:
-            DbgUtils.logd( TAG, "unhandled action %s", action.toString() );
+            Log.d( TAG, "unhandled action %s", action.toString() );
             // Assert.assertTrue( !BuildConfig.DEBUG );
             handled = false;
             break;
@@ -709,14 +707,14 @@ public class DelegateBase implements DlgClickNotify,
     public boolean onNegButton( Action action, Object[] params )
     {
         boolean handled = true;
-        // DbgUtils.logd( TAG, "%s.negButtonClicked(%s)", getClass().getSimpleName(),
+        // Log.d( TAG, "%s.negButtonClicked(%s)", getClass().getSimpleName(),
         //                action.toString() );
         switch ( action ) {
         case PERMS_QUERY:
             Perms23.onGotPermsAction( false, params );
             break;
         default:
-            DbgUtils.logd( TAG, "onNegButton: unhandled action %s", action.toString() );
+            Log.d( TAG, "onNegButton: unhandled action %s", action.toString() );
             handled = false;
             break;
         }
@@ -725,8 +723,8 @@ public class DelegateBase implements DlgClickNotify,
 
     public boolean onDismissed( Action action, Object[] params )
     {
-        DbgUtils.logd( TAG, "%s.dlgDismissed(%s)", getClass().getSimpleName(),
-                       action.toString() );
+        Log.d( TAG, "%s.dlgDismissed(%s)", getClass().getSimpleName(),
+               action.toString() );
         return false;
     }
 

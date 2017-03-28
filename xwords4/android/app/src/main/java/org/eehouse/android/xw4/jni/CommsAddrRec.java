@@ -26,13 +26,13 @@ import android.text.TextUtils;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.BTService;
-import org.eehouse.android.xw4.WiDirService;
-import org.eehouse.android.xw4.WiDirWrapper;
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.SMSService;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.WiDirService;
+import org.eehouse.android.xw4.WiDirWrapper;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -319,8 +319,8 @@ public class CommsAddrRec {
                         || ip_relay_port != other.ip_relay_port;
                 break;
             default:
-                DbgUtils.logw( TAG, "changesMatter: not handling case: %s",
-                               conType.toString() );
+                Log.w( TAG, "changesMatter: not handling case: %s",
+                       conType.toString() );
                 break;
             }
         }

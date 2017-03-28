@@ -117,7 +117,7 @@ public class Utils {
             SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
             result = null != info && info.isPhone && info.isGSM;
         }
-        DbgUtils.logd( TAG, "isGSMPhone() => %b", result );
+        Log.d( TAG, "isGSMPhone() => %b", result );
         return result;
     }
 
@@ -137,7 +137,7 @@ public class Utils {
                 result = TelephonyManager.PHONE_TYPE_GSM == type;
             }
         }
-        DbgUtils.logd( TAG, "deviceSupportsSMS() => %b", result );
+        Log.d( TAG, "deviceSupportsSMS() => %b", result );
         return result;
     }
 
@@ -153,7 +153,7 @@ public class Utils {
         try {
             Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
         } catch ( java.lang.RuntimeException re ) {
-            DbgUtils.logex( TAG, re );
+            Log.ex( TAG, re );
         }
     }
 
@@ -442,7 +442,7 @@ public class Utils {
                     .versionCode;
                 s_appVersion = new Integer( version );
             } catch ( Exception e ) {
-                DbgUtils.logex( TAG, e );
+                Log.ex( TAG, e );
             }
         }
         return null == s_appVersion? 0 : s_appVersion;
