@@ -13,11 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>Crosswords 4.4.115 release</h2>
+  <h2>Crosswords 4.4.116 release</h2>
 
-  <p>This release uses the new permissions process introduced with
-      Android "Marshmallow": Crosswords only asks for permissions at
-      the moment they're required.</p>
+  <p>This release adds side-by-side display for large-screen devices
+      in the "landscape" orientation.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -27,23 +26,15 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Request permissions when they're needed, e.g. ask to send
-          SMS messages when a game is being configured to communicate
-          using SMS</li>
-      <li>Change order of games to put oldest in which it's your turn
-          at the top</li>
-      <li>New two-color icon for notifications (required by the newer
-          Android that supports just-in-time permissions)</li>
-      <li>Use less battery by being smarter about how often to check
-          the relay for moves (This will mostly impact those
-          installing from F-Droid.)</li>
-      <li>Stop mis-identifying tablets as data-SMS-capable (only GSM
-          phones are)</li>
-      <li>Shorten default rematch game name</li>
-      <li>Allow board &quot;squares&quot; to be wider than tall if it
-          fills the screen better</li>
-      <li>Improvements in localization for French, Catalan, Dutch,
-          Czech and Japanese (via Weblate)</li>
+      <li>Enable side-by-side display for tablets</li>
+      <li>In service of above, rewrite pretty much everything
+          dialog-related. :-)</li>
+      <li>Fix game timers</li>
+      <li>Make blank-tile-picker dialog prettier</li>
+      <li>Remove pick-face-up option for networked games. (It didn't
+          work anyway.)</li>
+      <li>Don't open a closed group when moving games to it</li>
+      <li>Fix occasional crash</li>
   </ul>
 
   <p>(The full changelog 
