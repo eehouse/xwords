@@ -32,7 +32,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-class XWDialogFragment extends DialogFragment {
+public class XWDialogFragment extends DialogFragment {
     private static final String TAG = XWDialogFragment.class.getSimpleName();
 
     private OnDismissListener m_onDismiss;

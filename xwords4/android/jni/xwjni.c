@@ -74,6 +74,7 @@ typedef int GamePtrType;
 #endif
 
 #ifdef LOG_MAPPING
+# ifdef DEBUG
 static int 
 countUsed(const EnvThreadInfo* ti)
 {
@@ -81,14 +82,15 @@ countUsed(const EnvThreadInfo* ti)
     for ( int ii = 0; ii < ti->nEntries; ++ii ) {
         EnvThreadEntry* entry = &ti->entries[ii];
         if ( 0 != entry->owner ) {
-# ifdef LOG_MAPPING_ALL
+#  ifdef LOG_MAPPING_ALL
             XP_LOGF( "%s(): ii=%d; owner: %x", __func__, ii, (unsigned int)entry->owner );
-# endif
+#  endif
             ++count;
         }
     }
     return count;
 }
+# endif
 #endif
 
 static void
@@ -212,11 +214,13 @@ JNIEnv*
 envForMe( EnvThreadInfo* ti, const char* caller )
 {
     JNIEnv* result = prvEnvForMe( ti );
+#ifdef DEBUG
     if( !result ) {
         pthread_t self = pthread_self();
         XP_LOGF( "no env for %s (thread %x)", caller, (int)self );
         XP_ASSERT(0);
     }
+#endif
     return result;
 }
 
