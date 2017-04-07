@@ -17,8 +17,6 @@
        ############################################################ 
       -->
 
-    <!-- Text of menuitem in main games-list screen's menu -->
-    <string name="button_new_game">Add game</string>
     <!-- Games list screen menuitem text for creating a new group -->
     <string name="button_new_group">Add group</string>
 
@@ -124,9 +122,6 @@
        # Context menu for main games-list screen
        ############################################################ 
       -->
-    <!-- title of contextual menu.  Name of the selected game is
-         substituted in. -->
-    <string name="game_item_menu_title_fmt">\"%1$s\" actions:</string>
 
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
@@ -862,10 +857,6 @@
     <!-- Label for the first "human player" name preference -->
     <string name="pref_human_name">Human player</string>
 
-    <!-- Used to indicate that a preference is not enabled, i.e. not
-         part of the game and that the user should ignore it. -->
-    <string name="tell_unused">Not used yet…</string>
-
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
     <string name="prefs_dicts">Wordlists</string>
     <!-- clarification of above -->
@@ -1148,42 +1139,10 @@
          # types of supported games, standalone and networked.
          ############################################################
       -->
-    <!-- section separator (white-on-gray bar) for first section:
-         standalone games -->
-    <string name="newgame_local_header">New Local-only game</string>
-
-    <!-- This is one of two descriptions on this screen.  It explains
-         what standalone games are and describes the two buttons used
-         to create them.  The name of the language of the default
-         wordlist is substituted in for %1$s. -->
-    <string name="newgame_local_desc_fmt">Create a new game where all
-      players will be on this device.  To play against a robot and
-      with your default settings (in %1$s, etc.) just press \"Play
-      now\".  To add players or change game settings, press
-      \"Configure first\".</string>
-
-    <!-- Text of first of two buttons for new standalone games.  Tap
-         this and a new game will be created and opened.  If the first
-         player is a robot it will immediately take its turn.-->
-    <string name="newgame_local">Play now</string>
 
     <!-- Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen -->
     <string name="newgame_configure_first">Configure first</string>
-
-    <!-- section separator (white-on-gray bar) for second section:
-         networked games -->
-    <string name="newgame_networked_header">New Networked game</string>
-
-    <!-- This is the second of two descriptions on this screen.  It
-         explains what networked games are and describes the two
-         buttons used to create them. -->
-    <string name="newgame_networked_desc">Create a game that will be
-      played over the network.  The \"Invite now\" button starts a
-      two-device game and helps you invite a friend to join it.  Or
-      press \"Configure first\" to change some of the defaults before
-      you start your networked game. (You\'ll have a chance to send
-      invites later.)</string>
 
     <!-- Text of first of two buttons for new networked games.  Tap
          this and a game will be created, but you probably won't see
@@ -1192,10 +1151,6 @@
     <string name="newgame_invite">Invite now</string>
     <string name="newgame_invite_more">More info</string>
     <string name="newgame_drop_relay">Drop Relay</string>
-
-    <!-- section separator (white-on-gray bar) for third section:
-         bluetooth games -->
-    <string name="newgame_bt_header">New Bluetooth game</string>
 
     <!-- EXPLAIN ME -->
     <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
@@ -1245,12 +1200,6 @@
     (full link: %1$s )
     </string>
 
-    <!-- This is the body of the text version of the invitation. A URL
-         is created with parameters describing the game and
-         substituted for "%1$s".-->
-    <string name="invite_txt_fmt">Let\'s play Crosswords! Join this game:
-    %1$s .</string>
-
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
          or messaging app.  Android then asks the user to choose which
@@ -1259,7 +1208,6 @@
          as the title of the dialog that presents that choice. -->
     <string name="invite_chooser_fmt">Send invitation via %1$s</string>
     <string name="invite_chooser_email">email</string>
-    <string name="invite_chooser_sms">sms</string>
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
@@ -1307,13 +1255,6 @@
          transmitted. -->
     <string name="chat_menu_clear">Clear history</string>
 
-
-    <!-- This is the "hint" printed in light text in the empty player
-         name field -->
-    <string name="local_name_hint">Player name</string>
-
-    <!-- This button takes you to the normal Game Configure screen -->
-    <string name="advanced_config">Advanced game settings</string>
 
     <!-- If you click on the Play button without having entered a room
          name you get an alert with this error message. -->
@@ -1422,13 +1363,6 @@
 
     <!-- title of alert -->
     <string name="no_dict_title">Wordlist not found</string>
-
-    <!-- If the wordlist disappears mid-game there are no choices,
-         just an explanation and this button, after which the game
-         closes. -->
-    <string name="no_dict_finish">A wordlist this game is using has
-      disappeared. (Usually this means it\'s on an external card that
-      is no longer available.)</string>
 
     <!-- The only button available when the above message is displayed -->
     <string name="button_close_game">Close game</string>
@@ -1819,11 +1753,7 @@
       <!--  -->
     <string name="word_search_hint">First letters</string>
       <!--  -->
-    <string name="tilepick_undo">Undo last\u200C</string>
-      <!--  -->
     <string name="tilepick_all_fmt">Pick %1$d for me</string>
-      <!--  -->
-    <string name="cur_tiles_fmt">Tile picker\n(so far: %1$s)</string>
       <!--  -->
     <string name="pick_faceup">Pick tiles face-up</string>
 
@@ -1905,10 +1835,6 @@
     using SMS. One of you may need to upgrade before you can
     continue.</string>
 
-      <!--  -->
-    <string name="new_btmove_title">Invitation via Bluetooth</string>
-    <!--  -->
-    <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->
     <plurals name="invite_bt_desc_fmt">
       <item quantity="one">Please check the device
@@ -1935,19 +1861,10 @@
     <string name="p2p_invite_title">WiFi Direct Invitation</string>
 
     <!--  -->
-    <string name="game_btname_title">Bluetooth game name</string>
-    <!--  -->
-    <string name="game_name_title">Name your game</string>
-    <!--  -->
     <string name="game_name_label">New game name:</string>
-    <string name="name_copy_fmt">%1$s copy</string>
-    <!--  -->
-    <string name="newgame_sms_header">New SMS Game</string>
     <!--  -->
     <!-- <string name="sms_disabled">Playing via SMS is currently disabled. -->
     <!-- You can enable it in Settings->Network game settings.</string> -->
-    <!--  -->
-    <string name="dft_sms_name_fmt">SMS Game %1$X</string>    
     <!--  -->
     <string name="new_name_body_fmt">%1$s has invited you to play</string>
     <!--  -->
@@ -2011,10 +1928,6 @@
     <string name="confirm_clear_relay">Are you sure you want to delete the
     checked device[s]?</string>
     <!--  -->
-    <string name="connect_label_sms">Connection (via SMS/text)</string>
-    <!--  -->
-    <string name="phone_label">Connected number[s]:</string>
-    <!--  -->
     <string name="summary_conn_sms_fmt">Game in play with %1$s</string>
     <!--  -->
     <string name="warn_unlimited">Are you certain this number is on an
@@ -2037,8 +1950,6 @@
 
     <!--  -->
     <string name="menu_flip">Flip board</string>
-    <!--  -->
-    <string name="menu_zoom">Zoom in/out</string>
     <!--  -->
     <string name="menu_chat">Chat</string>
     <string name="chat_sender_fmt">%1$s:</string>
@@ -2243,8 +2154,6 @@
 
     <string name="change_group">Move selected games to:</string>
 
-    <string name="show_wordlist_browser">Wordlist browser</string>
-
     <string name="relay_alert_title">Message from relay</string>
 
     <string name="not_again_newselect">Tapping a game opens it.\n\nYou
@@ -2272,8 +2181,6 @@
     can use the Android Settings app to turn it on .</string>
 
     <string name="button_go_settings">Launch Settings</string>
-
-    <string name="sms_ready_text">Tap the receiving device now</string>
 
     <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
     <!-- means that any time a board that\'s missing a player is open, you -->
@@ -2335,8 +2242,6 @@
     <string name="xlations_enabled_title">Enable local translating</string>
     <string name="xlations_enabled_summary">Add option to every screen menu</string>
 
-    <string name="data_gsm_only">SMS Data is only available on GSM phones.</string>
-
     <string name="loc_filters_prompt">Filter by:</string>
     <string name="loc_search_prompt">Search for:</string>
     <string name="loc_filters_all">All</string>
@@ -2380,7 +2285,6 @@
     <string name="remote_digesting">Processing wordlist information…</string>
     <string name="remote_no_net">Unable to fetch wordlist information
         from server.</string>
-    <string name="getinfo">Get info</string>
 
     <string name="delete_dicts">Delete wordlist[s]</string>
 
@@ -2562,15 +2466,12 @@
   <string name="advanced">For debugging</string>
   <string name="advanced_summary">You should never need these...</string>
   <string name="relay_host">Relay host</string>
-  <string name="redir_host">Invite redirect host</string>
   <string name="dict_host">Wordlist download URL</string>
   <string name="logging_on">Enable logging</string>
   <string name="logging_on_summary">(release builds only)</string>
   <string name="debug_features">Enable debug features</string>
   <string name="debug_features_summary">Menuitems etc. (release builds
   only)</string>
-  <string name="title_send_data_sms">Send SMS as data</string>
-  <string name="summary_send_data_sms">(GSM phones only)</string>
   <string name="board_menu_game_netstats">Network stats</string>
   <string name="board_menu_game_showInvites">Show invites</string>
   <string name="netstats_title">Game network stats</string>
@@ -2714,10 +2615,6 @@
 
   I hope you like it. If you don\'t you can disable it below or in App
   Settings.</string>
-
-  <!-- <string name="dualpane_exit_now">Crosswords will now exit so the -->
-  <!-- change can take effect. You can use the notification it posts to -->
-  <!-- restart.</string> -->
 
   <string name="disable_dualpane">Disable side-by-side</string>
   <string name="after_restart">This change will take effect after you
