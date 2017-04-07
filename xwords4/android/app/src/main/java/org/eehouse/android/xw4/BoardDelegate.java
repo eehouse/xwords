@@ -616,6 +616,7 @@ public class BoardDelegate extends DelegateBase
     {
         super.onResume();
         doResume( false );
+        checkAddDualpaneExpl();
     }
 
     protected void onPause()
@@ -1106,6 +1107,11 @@ public class BoardDelegate extends DelegateBase
             } else {
                 handleViaThread( JNICmd.CMD_COMMIT, true, true, newTiles );
             }
+            break;
+
+        case DISABLE_DUALPANE:
+            XWPrefs.setPrefsBoolean( m_activity, R.string.key_disable_dualpane, true );
+            makeOkOnlyBuilder( R.string.after_restart ).show();
             break;
 
         case ENABLE_SMS_DO:
@@ -2800,6 +2806,24 @@ public class BoardDelegate extends DelegateBase
             DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );
+        }
+    }
+
+    // If I'm upgrading and running this for the first time show an
+    // explanation about the new dualpane feature
+    private static boolean s_dpShown = false;
+    private void checkAddDualpaneExpl()
+    {
+        if ( !s_dpShown ) {
+            s_dpShown = true;
+            if ( XWPrefs.getIsTablet( m_activity )
+                 && !Utils.onFirstVersion(m_activity ) ) {
+                makeNotAgainBuilder( R.string.invite_dualpane,
+                                     R.string.key_notagain_dualpane )
+                    .setActionPair(new ActionPair(Action.DISABLE_DUALPANE,
+                                                  R.string.disable_dualpane))
+                    .show();
+            }
         }
     }
 } // class BoardDelegate

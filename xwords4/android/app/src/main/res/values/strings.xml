@@ -2413,7 +2413,7 @@
 
     <string name="force_tablet_title">Force tablet layout</string>
     <string name="force_tablet_summary">Even if my screen is too small</string>
-    <string name="enable_dualpane_summary">Side-by-side views on tablets, very experimental!</string>
+    <string name="disable_dualpane_summary">Side-by-side views on tablets</string>
 
     <!-- Nagging: title of notification reminder message -->
     <string name="nag_title">Reminder: It\'s your turn</string>
@@ -2707,30 +2707,21 @@
 
   <string name="no_invites">This game has sent no invitations</string>
 
-  <string name="invite_dualpane">You appear to be running a
-  tablet-sized device. Would you like to try an experimental new
-  feature that lets you view two panes (e.g. board and chat)
-  side-by-side when your device is horizontal?
+  <string name="invite_dualpane">This new version of Crosswords lets
+  devices like yours view two panes (e.g. Games List and Board)
+  side-by-side. That\'s when your device is horizontal; when it\'s
+  vertical there\'s no change.\n\n
 
-  \n\nYou can disable the feature later using the new \"Disable
-  side-by-side\" menu item. Or via App Settings.
+  I hope you like it. If you don\'t you can disable it below or in App
+  Settings.</string>
 
-  \n\nPlease let me know if you like the feature, report crashes, make
-  suggestions, etc.!!</string>
-
-  <string name="dualpane_exit_now">Crosswords will now exit so the
-  change can take effect. You can use the notification it posts to
-  restart.</string>
-
-  <string name="enable_dualpane">Enable side-by-side</string>
-  <string name="post_dualpane_title">Restart Crosswords</string>
-  <string name="post_dualpane_on_body">Start Crosswords with side-by-side enabled!</string>
-  <string name="post_dualpane_off_body">Start Crosswords with side-by-side disabled</string>
+  <!-- <string name="dualpane_exit_now">Crosswords will now exit so the -->
+  <!-- change can take effect. You can use the notification it posts to -->
+  <!-- restart.</string> -->
 
   <string name="disable_dualpane">Disable side-by-side</string>
-  <string name="dualpane_restart">Exiting app…</string>
-  <string name="after_restart">This change will not take effect until
-  you restart Crosswords.</string>
+  <string name="after_restart">This change will take effect after you
+  restart Crosswords.</string>
 
   <string name="missing_perms">This game is configured to
   communicate via SMS but Crosswords does not have permission to do

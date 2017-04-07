@@ -70,8 +70,6 @@ public class DlgDelegate {
         SET_HIDE_NEWGAME_BUTTONS,
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,
-        ENABLE_DUALPANE,
-        ENABLE_DUALPANE_EXIT,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
@@ -98,6 +96,7 @@ public class DlgDelegate {
         BLANK_PICKED,
         TRAY_PICKED,
         INVITE_INFO,
+        DISABLE_DUALPANE,
 
         // Dict Browser
         FINISH_ACTION,

@@ -3,10 +3,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
   <!-- Remove this once dualpane is well tested -->
-    <item android:id="@+id/games_menu_disable_dualpane"
-          android:title="@string/disable_dualpane"
-          />
-
     <item android:id="@+id/games_menu_newgame_solo"
           android:title="@string/new_game"
           android:icon="@drawable/content_new_solo__gen"

@@ -954,8 +954,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         CrashTrack.init( m_activity );
 
-        Utils.cancelNotification( m_activity, R.string.post_dualpane_title );
-
         getBundledData( savedInstanceState );
 
         DBUtils.setDBChangeListener( this );
@@ -967,15 +965,6 @@ public class GamesListDelegate extends ListDelegateBase
                     FirstRunDialog.show( m_activity );
                 }
                 s_firstShown = true;
-            } else if ( !XWPrefs.getPrefsBoolean( m_activity,
-                                                  R.string.key_enable_dualpane,
-                                                  false )
-                        && XWPrefs.getIsTablet( m_activity ) ) {
-                makeConfirmThenBuilder(R.string.invite_dualpane, Action.ENABLE_DUALPANE)
-                    .setNAKey(R.string.key_notagain_dualpane)
-                    .setPosButton(R.string.enable_dualpane)
-                    .setNegButton(R.string.button_later)
-                    .show();
             }
         }
 
@@ -1311,11 +1300,6 @@ public class GamesListDelegate extends ListDelegateBase
         case OPEN_GAME:
             doOpenGame( params );
             break;
-        case ENABLE_DUALPANE:
-            makeOkOnlyBuilder( R.string.dualpane_exit_now )
-                .setAction( Action.ENABLE_DUALPANE_EXIT )
-                .show();
-            break;
         case CLEAR_SELS:
             clearSelections();
             break;
@@ -1396,20 +1380,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         default:
             handled = super.onNegButton( action, params );
-        }
-        return handled;
-    }
-
-    @Override
-    public boolean onDismissed( Action action, Object[] params )
-    {
-        boolean handled = true;
-        switch( action ) {
-        case ENABLE_DUALPANE_EXIT:
-            setDualpaneAndFinish( true );
-            break;
-        default:
-            handled = super.onDismissed( action, params );
         }
         return handled;
     }
@@ -1546,10 +1516,6 @@ public class GamesListDelegate extends ListDelegateBase
                 0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
             Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
 
-            enable = XWPrefs.getPrefsBoolean( m_activity, R.string.key_enable_dualpane,
-                                              false );
-            Utils.setItemVisible( menu, R.id.games_menu_disable_dualpane, enable );
-
             Assert.assertTrue( m_menuPrepared );
         } else {
             Log.d( TAG, "onPrepareOptionsMenu: incomplete so bailing" );
@@ -1582,9 +1548,6 @@ public class GamesListDelegate extends ListDelegateBase
         switch ( itemID ) {
             // There's no selection for these items, so nothing to clear
 
-        case R.id.games_menu_disable_dualpane:
-            setDualpaneAndFinish( false );
-            break;
         case R.id.games_menu_resend:
             GameUtils.resendAllIf( m_activity, null, true );
             break;
@@ -2664,20 +2627,6 @@ public class GamesListDelegate extends ListDelegateBase
                 GameUtils.launchGame( getDelegator(), rowID );
             }
         }
-    }
-
-    private void setDualpaneAndFinish( boolean enable )
-    {
-        XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_dualpane,
-                                 enable );
-        Intent intent = makeSelfIntent( m_activity );
-        int bodyID = enable ? R.string.post_dualpane_on_body
-            : R.string.post_dualpane_off_body;
-        Utils.postNotification( m_activity, intent,
-                                R.string.post_dualpane_title,
-                                bodyID, R.string.post_dualpane_title );
-        Utils.showToast( m_activity, R.string.dualpane_restart );
-        m_activity.finish();
     }
 
     public static void boardDestroyed( long rowid )

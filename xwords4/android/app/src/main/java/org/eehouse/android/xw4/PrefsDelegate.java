@@ -62,7 +62,7 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_disable_nag,
         R.string.key_disable_nag_solo,
         R.string.key_disable_relay,
-        R.string.key_enable_dualpane,
+        R.string.key_disable_dualpane,
     };
     private static Map<String, Integer> s_keysHash = null;
 
@@ -235,7 +235,7 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_disable_relay:
                 RelayService.enabledChanged( m_activity );
                 break;
-            case R.string.key_enable_dualpane:
+            case R.string.key_disable_dualpane:
                 makeOkOnlyBuilder( R.string.after_restart ).show();
                 break;
             default:
@@ -376,7 +376,7 @@ public class PrefsDelegate extends DelegateBase
         }
 
         if ( !XWPrefs.getIsTablet( m_activity ) ) {
-            hideOne( R.string.key_enable_dualpane, R.string.prefs_appearance );
+            hideOne( R.string.key_disable_dualpane, R.string.prefs_appearance );
         }
 
         if ( Perms23.haveNativePerms() ) {

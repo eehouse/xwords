@@ -479,7 +479,7 @@ public class XWPrefs {
 
     public static boolean dualpaneEnabled( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_enable_dualpane, false );
+        return ! getPrefsBoolean( context, R.string.key_disable_dualpane, false );
     }
 
     public static CommsConnTypeSet getAddrTypes( Context context )

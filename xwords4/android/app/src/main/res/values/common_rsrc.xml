@@ -69,7 +69,7 @@
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
   <string name="key_force_tablet">key_force_tablet</string>
-  <string name="key_enable_dualpane">key_enable_dualpane2</string>
+  <string name="key_disable_dualpane">key_disable_dualpane2</string>
   <string name="key_force_radio">key_force_radio</string>
   <string name="key_addrs_pref">key_addrs_pref</string>
 
