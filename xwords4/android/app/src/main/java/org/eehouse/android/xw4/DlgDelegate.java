@@ -368,38 +368,6 @@ public class DlgDelegate {
         }
     }
 
-    public Dialog createDialog( int id )
-    {
-        Dialog dialog = null;
-        DlgID dlgID = DlgID.values()[id];
-        DlgState state = findForID( dlgID );
-        switch( dlgID ) {
-        case LOOKUP:
-        case DIALOG_OKONLY:
-        case DIALOG_NOTAGAIN:
-        case CONFIRM_THEN:
-        case INVITE_CHOICES_THEN:
-        case DIALOG_ENABLESMS:
-            Assert.assertFalse( BuildConfig.DEBUG );
-            break;
-        default:
-            Log.d( TAG, "not creating %s", dlgID.toString() );
-            break;
-        }
-        return dialog;
-    }
-
-    public void prepareDialog( DlgID dlgId, Dialog dialog )
-    {
-        switch( dlgId ) {
-        case INVITE_CHOICES_THEN:
-        case DIALOG_ENABLESMS:
-            Assert.assertFalse( BuildConfig.DEBUG );
-            // prepareInviteChoicesDialog( dialog );
-            break;
-        }
-    }
-
     private void showOKOnlyDialogThen( String msg, Action action,
                                        Object[] params, int titleId )
     {

@@ -104,6 +104,8 @@ public class DelegateBase implements DlgClickNotify,
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean handleBackPressed() { return false; }
     public void orientationChanged() {}
+    protected Dialog onCreateDialog( int id ) { return null; }
+    protected void prepareDialog( DlgID dlgId, Dialog dialog ) {}
 
     protected void requestWindowFeature( int feature ) {}
 
@@ -494,16 +496,6 @@ public class DelegateBase implements DlgClickNotify,
     protected void removeDialog( int id )
     {
         m_activity.removeDialog( id );
-    }
-
-    protected Dialog onCreateDialog( int id )
-    {
-        return m_dlgDelegate.createDialog( id );
-    }
-
-    protected void prepareDialog( DlgID dlgId, Dialog dialog )
-    {
-        m_dlgDelegate.prepareDialog( dlgId, dialog );
     }
 
     protected AlertDialog.Builder makeAlertBuilder()
