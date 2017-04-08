@@ -1470,8 +1470,8 @@
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
-    <string name="title_blank_picker">Tile for blank</string>
-    <string name="tile_tray_picker">New tiles for tray</string>
+    <string name="title_blank_picker">Pick tile for blank</string>
+    <string name="tile_tray_picker">Pick new tiles for tray</string>
 
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Current pick: %1$s</string>
