@@ -471,9 +471,17 @@ public class XWPrefs {
 
     public static boolean getIsTablet( Context context )
     {
-        boolean result = isTablet( context ) ||
-            getPrefsBoolean( context, R.string.key_force_tablet, false );
-        // DbgUtils.logf( "getIsTablet() => %b", result );
+        boolean result = isTablet( context );
+        String setting = getPrefsString( context, R.string.key_force_tablet );
+        if ( setting.equals( context.getString(R.string.force_tablet_os) ) ) {
+            // Leave it alone
+        } else if ( setting.equals( context.getString(R.string.force_tablet_tablet) ) ) {
+            result = true;
+        } else if ( setting.equals( context.getString(R.string.force_tablet_phone) ) ) {
+            result = false;
+        }
+
+        // Log.d( TAG, "getIsTablet() => %b (got %s)", result, setting );
         return result;
     }
 
