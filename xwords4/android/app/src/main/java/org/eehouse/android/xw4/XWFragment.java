@@ -84,7 +84,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onSaveInstanceState( Bundle outState )
     {
-        Log.d( TAG, "%s.onCreate() called", getClass().getSimpleName() );
+        Log.d( TAG, "%s.onSaveInstanceState() called", getClass().getSimpleName() );
         Assert.assertNotNull( m_parentName );
         outState.putString( PARENT_NAME, m_parentName );
         m_dlgt.onSaveInstanceState( outState );

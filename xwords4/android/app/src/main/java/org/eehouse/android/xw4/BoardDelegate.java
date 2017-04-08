@@ -652,9 +652,11 @@ public class BoardDelegate extends DelegateBase
         super.onDestroy();
     }
 
+    @Override
     protected void onSaveInstanceState( Bundle outState )
     {
         outState.putSerializable( SAVE_MYSIS, m_mySIS );
+        super.onSaveInstanceState( outState );
     }
 
     private void getBundledData( Bundle bundle )

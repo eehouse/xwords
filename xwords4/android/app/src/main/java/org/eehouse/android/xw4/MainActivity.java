@@ -458,10 +458,6 @@ public class MainActivity extends XWActivity
                         safeAddFragment( fragment, parentName );
                     }
                 } );
-            if ( BuildConfig.DEBUG ) {
-                DbgUtils.showf( this, "Putting off fragment construction; %d waiting",
-                                m_runWhenSafe.size() );
-            }
         }
     }
 

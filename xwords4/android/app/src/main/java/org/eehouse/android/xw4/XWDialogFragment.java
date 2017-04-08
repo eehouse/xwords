@@ -53,15 +53,18 @@ public class XWDialogFragment extends DialogFragment {
 
         if ( null != m_buttonMap ) {
             AlertDialog dialog = (AlertDialog)getDialog();
-            for ( final int but : m_buttonMap.keySet() ) {
-                // final int fbut = but;
-                dialog.getButton( but )
-                    .setOnClickListener( new OnClickListener() {
-                            @Override
-                            public void onClick( View view ) {
-                                dialogButtonClicked( view, but );
-                            }
-                        } );
+            Assert.assertTrue( null != dialog || !BuildConfig.DEBUG );
+            if ( null != dialog) {
+                for ( final int but : m_buttonMap.keySet() ) {
+                    // final int fbut = but;
+                    dialog.getButton( but ) // NPE!!!
+                        .setOnClickListener( new OnClickListener() {
+                                @Override
+                                public void onClick( View view ) {
+                                    dialogButtonClicked( view, but );
+                                }
+                            } );
+                }
             }
         }
     }
