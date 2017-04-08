@@ -302,9 +302,19 @@ public class DictBrowseDelegate extends DelegateBase
     @Override
     public boolean onPosButton( Action action, Object[] params )
     {
-        Assert.assertTrue( !BuildConfig.DEBUG || Action.FINISH_ACTION==action );
-        finish();
-        return true;
+        boolean handled = false;
+        switch( action ) {
+        case DELETE_DICT_ACTION:
+            // This comes in from parent
+            break;
+        case FINISH_ACTION:
+            handled = true;
+            finish();
+            break;
+        default:
+            Assert.assertTrue( !BuildConfig.DEBUG );
+        }
+        return handled;
     }
 
     private void findButtonClicked()

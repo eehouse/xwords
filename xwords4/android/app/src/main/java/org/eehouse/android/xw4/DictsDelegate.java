@@ -622,7 +622,7 @@ public class DictsDelegate extends ListDelegateBase
         boolean handled = true;
 
         switch ( item.getItemId() ) {
-        case R.id.dicts_delete:
+        case R.id.dicts_delete: // ideally, disable me when dictbrowse open
             deleteSelected();
             break;
         case R.id.dicts_move:
