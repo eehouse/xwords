@@ -622,17 +622,23 @@ public class GameConfigDelegate extends DelegateBase
                     new OnCheckedChangeListener() {
                         public void onCheckedChanged( CompoundButton buttonView,
                                                       boolean checked ) {
-                            View view = findViewById( R.id.timer_set );
-                            view.setVisibility( checked ? View.VISIBLE : View.GONE );
+                            showTimerSet( checked );
                         }
                     };
                 check.setOnCheckedChangeListener( lstnr );
                 setChecked( R.id.use_timer, m_gi.timerEnabled );
+                showTimerSet( m_gi.timerEnabled );
 
                 setBoardsizeSpinner();
             }
         }
     } // loadGame
+
+    private void showTimerSet( boolean show )
+    {
+        View view = findViewById( R.id.timer_set );
+        view.setVisibility( show ? View.VISIBLE : View.GONE );
+    }
 
     private void getBundledData( Bundle bundle )
     {
