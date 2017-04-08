@@ -2861,6 +2861,21 @@ tryMoveArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
     return result;
 } /* tryMoveArrow */
 
+static XP_Bool
+tryChangeBlank( const BoardCtxt* board, XP_U16 col, XP_U16 row )
+{
+    XP_Bool handled = XP_FALSE;
+    XP_Bool isBlank, isPending;
+    model_getTile( board->model, col, row, XP_TRUE, board->selPlayer, NULL,
+                   &isBlank, &isPending, NULL );
+    handled = isBlank && isPending;
+    if ( handled ) {
+        (void)model_askBlankTile( board->model, board->selPlayer, col, row );
+    }
+
+    return handled;
+}
+
 XP_Bool
 holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 {
@@ -2905,6 +2920,7 @@ handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool isPen )
         || moveSelTileToBoardXY( board, col, row )
 #endif
         || tryMoveArrow( board, col, row )
+        || tryChangeBlank( board, col, row )
         || (!isPen && tryReplaceTile( board, col, row ))
         ;
 } /* handleActionInCell */

@@ -323,6 +323,7 @@ void model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
                           XP_U16* nUsed, const XP_UCHAR** texts,
                           Tile* tiles );
 
+Tile model_askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row);
 
 #ifdef CPLUS
 }

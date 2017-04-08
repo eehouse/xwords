@@ -1332,8 +1332,8 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
 
 /* setup async query for blank value, but while at it return a reasonable
    default.  */
-static Tile
-askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row)
+Tile
+model_askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row)
 {
     XP_U16 nUsed = MAX_UNIQUE_TILES;
     const XP_UCHAR* tfaces[MAX_UNIQUE_TILES];
@@ -1345,7 +1345,7 @@ askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row)
     util_notifyPickTileBlank( model->vol.util, turn, col, row,
                               tfaces, nUsed );
     return tiles[0];
-} /* askBlankTile */
+} /* model_askBlankTile */
 
 void
 model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
@@ -1361,7 +1361,7 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
             tile = blankFace;
         } else {
             XP_ASSERT( turn >= 0 );
-            tile = TILE_BLANK_BIT | askBlankTile( model, (XP_U16)turn, col, row );
+            tile = TILE_BLANK_BIT | model_askBlankTile( model, (XP_U16)turn, col, row );
         }
         tile |= TILE_BLANK_BIT;
     }
@@ -1530,7 +1530,7 @@ model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur,
             pt->col = colNew;
             pt->row = rowNew;
             if ( isBlank ) {
-                (void)askBlankTile( model, turn, colNew, rowNew );
+                (void)model_askBlankTile( model, turn, colNew, rowNew );
             }
 
             decrPendingTileCountAt( model, colCur, rowCur );
