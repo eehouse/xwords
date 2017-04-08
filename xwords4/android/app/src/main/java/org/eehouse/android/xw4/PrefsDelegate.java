@@ -367,7 +367,7 @@ public class PrefsDelegate extends DelegateBase
 
     private void hideStuff()
     {
-        if ( !Utils.isGSMPhone( m_activity ) ) {
+        if ( !Utils.isGSMPhone( m_activity ) || Perms23.haveNativePerms() ) {
             hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
         }
 
@@ -377,10 +377,6 @@ public class PrefsDelegate extends DelegateBase
 
         if ( !XWPrefs.getIsTablet( m_activity ) ) {
             hideOne( R.string.key_disable_dualpane, R.string.prefs_appearance );
-        }
-
-        if ( Perms23.haveNativePerms() ) {
-            hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
         }
 
         if ( ! BuildConfig.WIDIR_ENABLED ) {
