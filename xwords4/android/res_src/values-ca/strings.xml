@@ -23,9 +23,9 @@
   <string name="list_item_reset">Reinicialitza</string>
   <string name="list_item_new_from">Nova</string>
   <string name="play">Partida</string>
-  <string name="title_dicts_list">Diccionaris del Crosswords</string>
+  <string name="title_dicts_list">Diccionaris del CrossWords</string>
   <string name="title_game_config_fmt">Configura el %1$s</string>
-  <string name="title_prefs">Configuració del Crosswords</string>
+  <string name="title_prefs">Configuració del CrossWords</string>
   <string name="button_yes">Sí</string>
   <string name="button_no">No</string>
   <string name="button_save">Desa</string>
@@ -48,7 +48,7 @@
   <string name="board_menu_game_history">Historial de la partida…</string>
   <string name="board_menu_game_final">Puntuacions finals</string>
   <string name="board_menu_game_resend">Reenvia els missatges</string>
-  <string name="board_menu_file_about">Quant al Crosswords…</string>
+  <string name="board_menu_file_about">Quant al CrossWords…</string>
   <!-- returned by util_getUserString -->
   <plurals name="strd_robot_traded_fmt">
     <item quantity="other">El robot ha canviat %1$d fitxes en aquest torn.</item>>
@@ -430,9 +430,9 @@ que connecti via el repetidor.</string>
 	<string name="invite_choice_bt">Bluetooth</string>
 	<string name="invite_choice_nfc">NFC («Android beaming»)</string>
 	<string name="invite_choice_title">Invitació de jugadors: Com?</string>
-    <string name="invite_subject_fmt">Juga al Crosswords (sala %1$s)</string>
+    <string name="invite_subject_fmt">Juga al CrossWords (sala %1$s)</string>
 
-    <string name="invite_txt_fmt">Juga al Crosswords! Uneix-te a aquesta partida: %1$s.</string>
+    <string name="invite_txt_fmt">Juga al CrossWords! Uneix-te a aquesta partida: %1$s.</string>
 
     <string name="invite_chooser_fmt">Envia la invitació via %1$s</string>
     <string name="invite_chooser_email">correu-e</string>
@@ -491,9 +491,9 @@ que connecti via el repetidor.</string>
     <string name="not_again_unlock">Aquesta partida és en joc. Alguns paràmetres, p. e. el nombre de jugadors, no es poden canviar sense reiniciar-la. En deixar aquesta pantalla podreu descartar els canvis per a evitar la reinicialització.</string>
 
     <string name="default_name_title">Benvingut</string>
-    <string name="default_name_message">Gràcies per instal·lar el Crosswords!\n\nIntroduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu canviar-lo després a la secció «Partida nova predeterminada» de la configuració.)</string>
+    <string name="default_name_message">Gràcies per instal·lar el CrossWords!\n\nIntroduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu canviar-lo després a la secció «Partida nova predeterminada» de la configuració.)</string>
 
-    <string name="about_vers_fmt">Crosswords per a l\'Android, versió %1$s, rev %2$s, construït en %3$s.</string>
+    <string name="about_vers_fmt">CrossWords per a l\'Android, versió %1$s, rev %2$s, construït en %3$s.</string>
     <string name="about_credits">Icones de la barra d\'eines per Sarah Chu.</string>
 
     <string name="changes_title">Canvis recents</string>
@@ -537,7 +537,7 @@ que connecti via el repetidor.</string>
       <string name="prompt_max_len">Paraules no més llargues de</string>
 
       <string name="board_menu_file_email">Envia un correu-e a l\'autor</string>
-      <string name="email_author_subject">Comentari sobre el Crosswords</string>
+      <string name="email_author_subject">Comentari sobre el CrossWords</string>
       <string name="email_author_chooser">Envia el comentari via</string>
 
       <string name="email_body_rev_fmt">(Si és rellevant, incloeu la versió: «%1$s»; i el fabricant i model del telèfon o tauleta.)</string>
@@ -545,14 +545,14 @@ que connecti via el repetidor.</string>
     <string name="bt_pick_clear_button">Suprimeix els seleccionats</string>
 
       <string name="invite_progress_title">S\'està connectant...</string>
-    <string name="invite_progress_fmt">S\'està enviant la invitació al Crosswords a %1$s</string>
+    <string name="invite_progress_fmt">S\'està enviant la invitació al CrossWords a %1$s</string>
       <string name="summary_wait_host">S\'està esperant la connexió...</string>
       <string name="summary_wait_guest">Sense connexió</string>
       <string name="summary_gameover">Partida finalitzada</string>
       <string name="summary_conn">Partida en joc</string>
       <string name="new_bt_title">Partida nova via Bluetooth</string>
       <string name="new_bt_body_fmt">Un jugador de l\'aparell %1$s vol iniciar una partida</string>
-      <string name="bt_bad_proto_fmt">La versió del Crosswords en «%1$s» és incompatible amb aquesta per a jugar via Bluetooth. Cal que actualitzeu abans per a continuar.</string>
+      <string name="bt_bad_proto_fmt">La versió del CrossWords en «%1$s» és incompatible amb aquesta per a jugar via Bluetooth. Cal que actualitzeu abans per a continuar.</string>
 
     <string name="new_btmove_title">Invitació via Bluetooth</string>
     <string name="new_move_body">Han arribat una o més jugades</string>
@@ -669,7 +669,7 @@ que connecti via el repetidor.</string>
 
     <string name="button_go_settings">Configuració d\'inici</string>
 
-    <string name="menu_rateme">Valoreu el Crosswords</string>
+    <string name="menu_rateme">Valoreu el CrossWords</string>
     <string name="no_market">No s\'ha trobat l\'aplicació del Google Play</string>
 
     <string name="add_to_study_fmt">Afegeix %1$s a la llista d\'estudi</string>
@@ -851,8 +851,8 @@ que connecti via el repetidor.</string>
     <string name="summary_conn_sms_fmt">Partida en joc amb %1$s</string>
     <string name="menu_toggle_values">Canvia els valors</string>
 
-    <string name="invite_dict_missing_body_noname_fmt">Us han convidat a jugar al Crosswords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari?</string>
-    <string name="invite_dict_missing_body_fmt">%1$s us ha convidat a jugar al Crosswords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari o rebutjar la invitació?</string>
+    <string name="invite_dict_missing_body_noname_fmt">Us han convidat a jugar al CrossWords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari?</string>
+    <string name="invite_dict_missing_body_fmt">%1$s us ha convidat a jugar al CrossWords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari o rebutjar la invitació?</string>
     <string name="missing_dict_title">Invitació a una partida pendent</string>
 	<string name="inform_dict_diffversion_fmt">Vós i l\'amfitrió de la partida useu versions difernts del diccionari %1$s.</string>
     <string name="remote_undone">L\'aparell remot ha desfet un torn.</string>
@@ -892,7 +892,7 @@ que connecti via el repetidor.</string>
 
     <string name="not_again_newfrom">Crea una partida llesta per a jugar usant la configuració d\'aquesta. Això és, usa aquesta partida com a plantilla.</string>
 
-    <string name="sms_bad_proto_fmt">La versió del Crosswords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS. Heu d\'actualitzar abans de continuar.</string>
+    <string name="sms_bad_proto_fmt">La versió del CrossWords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS. Heu d\'actualitzar abans de continuar.</string>
 
     <plurals name="invite_bt_desc_fmt">
 	<item quantity="one">Seleccioneu l\'aparell que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
@@ -929,7 +929,7 @@ que connecti via el repetidor.</string>
   <string name="confirm_drop_relay_bt">Bluetooth només per a aparells propers.</string>
   <string name="confirm_drop_relay_sms">No totes les operadores permeten jugar via SMS.</string>
 
-  <string name="not_again_comms_relay">El «repetidor» és un servidor d\'Internet que passa els missatges entre els aparells que executen el Crosswords. Això funciona bé si teniu una connexió a Internet plenament funcional, però podeu tenir problemes en xarxes WiFi restringides.</string>
+  <string name="not_again_comms_relay">El «repetidor» és un servidor d\'Internet que passa els missatges entre els aparells que executen el CrossWords. Això funciona bé si teniu una connexió a Internet plenament funcional, però podeu tenir problemes en xarxes WiFi restringides.</string>
 
   <string name="not_again_comms_sms">Jugar via SMS usa la mateixa tecnologia que els missatges SMS. Els missatges seran invisibles, l\'operadora els considera missatges de text, per tant potser preferiu inhabilitar aquesta característica llevat que tingueu missatges SMS il·limitats (o un bon pressupost). Noteu que l\'Android només permet aquesta característica en els dispositius amb operadora GSM, això és qualsevol operadora mundial, excepte Verizon i Sprint.</string>
 
@@ -942,7 +942,7 @@ que connecti via el repetidor.</string>
 
   <string name="not_again_sync">Aquesta acció comprova que no hi hagin jugades o missatges pendents al repetidor de totes partides i marca aquelles amb jugades pendents. Si obriu una partida marcada connectarà i sincronitzarà. (en una versió posterior aquestes jugades es baixaran en segon pla.)</string>
 
-    <string name="not_again_conndfirst">Teniu una partida connectada i iniciada en una sala nova. Una vegada els aparells que falten s\'hagin unit a la vostra sala, i el Crosswords hagi assignat les fitxes, la partida pot començar.</string>
+    <string name="not_again_conndfirst">Teniu una partida connectada i iniciada en una sala nova. Una vegada els aparells que falten s\'hagin unit a la vostra sala, i el CrossWords hagi assignat les fitxes, la partida pot començar.</string>
 
     <string name="not_again_conndmid">Heu connectat i unit a una partida al repetidor. Rebreu notificacions quan els aparells que manquen s\'hi hagin unit a la sala i pugui començar la partida.</string>
 
@@ -1000,7 +1000,7 @@ que connecti via el repetidor.</string>
 	<string name="hide_crosshairs">Inhabilita la creu</string>
     <string name="newgame_drop_relay">Treu el repetidor</string>
 
-    <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Toca aquí&lt;/a&gt; (o toca l\'enllaç següent, o, si ja teniu el Crosswords instal·lat, obriu l\'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br \&gt; &lt;br \&gt; (enllaç: %1$s ) </string>
+    <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Toca aquí&lt;/a&gt; (o toca l\'enllaç següent, o, si ja teniu el CrossWords instal·lat, obriu l\'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br \&gt; &lt;br \&gt; (enllaç: %1$s ) </string>
 
     <string name="no_dict_subst_fmt">No es pot obrir la partida «%1$s» perquè el diccionari %2$s no s\'ha trobat. (potser s\'ha suprimit o està emmagatzemat en una memòria externa que no es troba disponible.)\n\nPodeu baixar un substitut o substituir-lo amb un altre diccionari %3$s.</string>
 
@@ -1012,7 +1012,7 @@ que connecti via el repetidor.</string>
     <string name="warn_no_comms">Qualsevol partida en xarxa ha de tenir almenys una via de comunicació. Si no teniu opcions de connexió predeterminades, caldrà configurar manualment cada partida en xarxa.</string>
 
     <string name="config_no_connvia">Aquesta partia no té cap via de connexió i no es pot desar. Voleu descartar els canvis, o editar-la per a indicar una via de connexió?</string>
-    <string name="confirm_get_locdict_fmt">L\'aparell està configurat en %1$s. Voleu baixar un diccionari pera jugar al Crosswords en %1$s?</string>
+    <string name="confirm_get_locdict_fmt">L\'aparell està configurat en %1$s. Voleu baixar un diccionari pera jugar al CrossWords en %1$s?</string>
 
   <string name="enable_sms_toself_summary">Omet la ràdio si els números de telèfon són iguals</string>
 
@@ -1023,7 +1023,7 @@ que connecti via el repetidor.</string>
 
   <string name="confirm_sms_expl">Atenció: aquesta funcionalitat és per a telèfons amb plans de missatges SMS il·limitats. Si l\'habiliteu, per cada partida jugada, s\'enviaran dotzenes de missatges de text SMS de forma invisible. Si no teniu un pla il·limitat, la vostra operadora us pot cobrar cadascun dels missatges!\n\nVoleu habilitar el joc via SMS?</string>
 
-	<string name="app_not_found_fmt">No es pot connectar al Crosswords en l\'aparell %1$s. Comproveu que l\'aparell és proper i que té el Crosswords instal·lat.</string>
+	<string name="app_not_found_fmt">No es pot connectar al CrossWords en l\'aparell %1$s. Comproveu que l\'aparell és proper i que té el CrossWords instal·lat.</string>
 
 	<string name="enable_pubroom_summary">Els altres de la sala poden mirar i unir-s\'hi</string>
 

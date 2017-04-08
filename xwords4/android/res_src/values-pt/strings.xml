@@ -8,7 +8,7 @@
        # :Screens:
        # Main screen (list of games)
        #
-       # This is the first screen you see when you launch Crosswords
+       # This is the first screen you see when you launch CrossWords
        ############################################################ 
       -->
   <!-- Text of button at bottom of main games-list screen and of
@@ -91,8 +91,8 @@
          you get this error message -->
   <string name="no_games_to_refresh">Nenhum jogo encontrado que conecta
     pelo servidor.</string>
-  <!-- Brings up "About Crosswords" dialog -->
-  <string name="board_menu_file_about">Sobre Crosswords</string>
+  <!-- Brings up "About CrossWords" dialog -->
+  <string name="board_menu_file_about">Sobre CrossWords</string>
   <!-- 
        ############################################################
        # :Menus:
@@ -152,7 +152,7 @@
   <string name="download_dicts">Baixar mais...</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
-         Crosswords and that cannot be uninstalled or moved.
+         CrossWords and that cannot be uninstalled or moved.
          loc_internal and loc_external are the other possible strings
          in this column. -->
   <string name="loc_builtin">Internas</string>
@@ -273,7 +273,7 @@
   <string name="room_public">Tornar nova sala pública</string>
   <!-- title for popup of public rooms found on server -->
   <string name="room_public_prompt">Selecionar sala pública</string>
-  <!-- If you check the join_room checkbox Crosswords queries the
+  <!-- If you check the join_room checkbox CrossWords queries the
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
     time.)-->
@@ -442,7 +442,7 @@
   <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
   <!-- Most users create games with only two players, which is the
-         default, but Crosswords supports up to four.  When I'm using
+         default, but CrossWords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
@@ -635,7 +635,7 @@
        ############################################################
       -->
   <!-- window title -->
-  <string name="title_prefs">Configurações de Crosswords</string>
+  <string name="title_prefs">Configurações de CrossWords</string>
   <!--
        ############################################################
        # :Menus:
@@ -900,7 +900,7 @@
        ############################################################
       -->
   <!-- When there are networked games connecting using the relay,
-         Crosswords wakes up periodically to check if there are any
+         CrossWords wakes up periodically to check if there are any
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
   <string name="connect_frequency">Checagem de jogadas em
@@ -982,7 +982,7 @@
     two buttons in the dialog. -->
   <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-  <string name="invite_subject_fmt">Vamos jogar Crosswords (Sala %1$s)</string>
+  <string name="invite_subject_fmt">Vamos jogar CrossWords (Sala %1$s)</string>
   <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
@@ -990,7 +990,7 @@
          are not legal in xml strings.)-->
   <string name="invite_htm_fmt">\u003ca href=\"%1$s\"\u003EPressione aqui
     \u003c/a\u003E (ou selecione o link completo abaixo, ou se você já
-    tem Crosswords instalado, abra o anexo) para aceitar meu convite e
+    tem CrossWords instalado, abra o anexo) para aceitar meu convite e
     participar desse jogo.
 
     \u003cbr \\\u003E
@@ -1000,7 +1000,7 @@
   <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-  <string name="invite_txt_fmt">Vamos jogar Crosswords! Participe desse
+  <string name="invite_txt_fmt">Vamos jogar CrossWords! Participe desse
     jogo: %1$s .</string>
   <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
@@ -1242,7 +1242,7 @@
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->
   <string name="button_retry">Tentar novamente</string>
-  <!-- Shown in the main screen when you launch Crosswords from an
+  <!-- Shown in the main screen when you launch CrossWords from an
          invitation (received in email or messaging app, say) and
          there's already a game running that matches that invitation.
          It's to prevent you from opening multiple games and getting
@@ -1378,7 +1378,7 @@
          game to do so. -->
   <string name="not_again_conndfirst">Você conectou e iniciou um
     jogo numa sala nova.  Depois que os dispositivos restantes
-    tiverem entrado na sala e o Crosswords tiver distribuído as pedras,
+    tiverem entrado na sala e o CrossWords tiver distribuído as pedras,
     o jogo pode começar.</string>
   <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
@@ -1397,7 +1397,7 @@
     a sala fará a distribuição inicial de pedras e o jogo pode
     começar.</string>
   <!-- This is not currently shown -->
-  <!-- <string name="not_again_dicts">Crosswords wordlists, which are -->
+  <!-- <string name="not_again_dicts">CrossWords wordlists, which are -->
   <!--   just compressed lists of words plus tile information, determine -->
   <!--   what language a game is played in and how \"smart\" the robot -->
   <!--   is.  You can download different sized wordlists in many -->
@@ -1431,7 +1431,7 @@
        # :Dialogs:
        # Welcome dialog
        # 
-       # Shown the first time a user launches Crosswords (and
+       # Shown the first time a user launches CrossWords (and
        # again only if the preference for default first user
        # name is cleared).  Its purpose is to encourage him to
        # enter the name of the most common non-robot player on
@@ -1442,7 +1442,7 @@
   <string name="default_name_title">Bem-vindo</string>
   <!-- Welcome dialog text -->
   <string name="default_name_message">Obrigado por instalar o 
-      Crosswords! Preencha seu nome aqui. Será usado quando novos
+      CrossWords! Preencha seu nome aqui. Será usado quando novos
       jogos forem criados.  (Você pode mudá-lo depois na seção
       \"Padrões para novos jogos\" das Configurações.)</string>
   <!-- 
@@ -1454,7 +1454,7 @@
        ########################################################### 
       -->
   <!-- String giving version info, which is substituted in. -->
-  <string name="about_vers_fmt">Crosswords para Android, Versão %1$s,
+  <string name="about_vers_fmt">CrossWords para Android, Versão %1$s,
         rev %2$s, built on %3$s.</string>
   <!-- copyright info -->
   <string name="about_copyright">Copyright (C) 1998-2013 por Eric
@@ -1476,7 +1476,7 @@
   <!-- text of dialog showing the set of changes made since the last
          release -->
   <string name="changes_title">Mudanças recentes</string>
-  <!-- text of button in About Crosswords dialog summoning above
+  <!-- text of button in About CrossWords dialog summoning above
          dialog -->
   <string name="changes_button">Mudanças recentes</string>
   <!-- New strings that need to be documented and found a home
@@ -1536,7 +1536,7 @@
   <!--  -->
   <string name="board_menu_file_email">Enviar um email para o autor</string>
   <!--  -->
-  <string name="email_author_subject">Comentário sobre Crosswords</string>
+  <string name="email_author_subject">Comentário sobre CrossWords</string>
   <!--  -->
   <string name="email_author_chooser">Enviar comentário por</string>
   <!--  -->
@@ -1560,7 +1560,7 @@
   <!--  -->
   <string name="new_bt_body_fmt">Dispositivo pareado %1$s te convidou para jogar</string>
   <!--  -->
-  <string name="bt_bad_proto_fmt">Crosswords em %1$s na versão errada para
+  <string name="bt_bad_proto_fmt">CrossWords em %1$s na versão errada para
       jogar por Bluetooth.</string>
   <!--  -->
   <string name="new_btmove_title">Nova jogada por Bluetooth</string>
@@ -1721,11 +1721,11 @@
   <string name="missing_dict_detail">Lista de palavras necessária faltando</string>
   <string name="invite_dict_missing_title">Lista de palavras faltando</string>
   <string name="invite_dict_missing_body_fmt">%1$s lhe convidou para 
-    jogar Crosswords usando a lista de palavras %2$s (para jogar em %3$s),
+    jogar CrossWords usando a lista de palavras %2$s (para jogar em %3$s),
     mas ela não está instalada. Você gostaria de baixar a lista de palavras
     ou recusar o convite?</string>
   <string name="invite_dict_missing_body_noname_fmt">Você foi convidado
-    a jogar Crosswords usando a lista de palavras %2$s (para jogar em
+    a jogar CrossWords usando a lista de palavras %2$s (para jogar em
     %3$s), mas ela não está instalada. Você gostaria de baixar a
     lista de palavras?</string>
   <string name="button_decline">Recusar</string>

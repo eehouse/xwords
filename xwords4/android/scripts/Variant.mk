@@ -3,5 +3,5 @@
 src/xw4dbg/res/values/strings.xml: src/main/res/values/strings.xml
 	@mkdir -p $(shell dirname $@)
 	@sed \
-		-e "s,Crosswords,$(APPNAME),g" \
+		-e "s,CrossWords,$(APPNAME),g" \
 		< $< > $@

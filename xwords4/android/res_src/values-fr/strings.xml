@@ -13,7 +13,7 @@
        # :Screens:
        # Main screen (list of games)
        #
-       # This is the first screen you see when you launch Crosswords
+       # This is the first screen you see when you launch CrossWords
        ############################################################ 
       -->
 
@@ -110,8 +110,8 @@
          you get this error message -->
     <string name="no_games_to_refresh">Aucune partie trouvée se connectant par ce relai.</string>
 
-    <!-- Brings up "About Crosswords" dialog -->
-    <string name="board_menu_file_about">À propos de Crosswords…</string>
+    <!-- Brings up "About CrossWords" dialog -->
+    <string name="board_menu_file_about">À propos de CrossWords…</string>
 
     <!-- 
        ############################################################
@@ -190,7 +190,7 @@ toutes les informations de connexion.)</item>
        ############################################################ 
       -->
     <!-- window title -->
-    <string name="title_dicts_list">Listes de mots Crosswords</string>   
+    <string name="title_dicts_list">Listes de mots CrossWords</string>
     <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
@@ -199,7 +199,7 @@ toutes les informations de connexion.)</item>
 
     <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
-         Crosswords and that cannot be uninstalled or moved.
+         CrossWords and that cannot be uninstalled or moved.
          loc_internal and loc_external are the other possible strings
          in this column. -->
     <string name="loc_builtin">Prédéfinie</string>
@@ -355,7 +355,7 @@ installées)</string>
     <!--<string name="room_public_prompt">Select public room</string>-->
     <string name="room_public_prompt">Sélectionner le salon public</string>
 
-    <!-- If you check the join_room checkbox Crosswords queries the
+    <!-- If you check the join_room checkbox CrossWords queries the
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
     time.)-->
@@ -611,7 +611,7 @@ fait ?</item>
     <string name="invite_if_nfc">Ou toucher pour inviter -- si un autre appareil a aussi Android Beam et est proche.</string>
 
     <!-- Most users create games with only two players, which is the
-         default, but Crosswords supports up to four.  When I'm using
+         default, but CrossWords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
@@ -906,8 +906,8 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
        ############################################################
       -->
     <!-- window title -->
-    <!--<string name="title_prefs">Crosswords Settings</string>-->
-    <string name="title_prefs">Paramètres de Crosswords</string>
+    <!--<string name="title_prefs">CrossWords Settings</string>-->
+    <string name="title_prefs">Paramètres de CrossWords</string>
 
     <!--
        ############################################################
@@ -1280,7 +1280,7 @@ parties en réseau</string>
       -->
 
     <!-- When there are networked games connecting using the relay,
-         Crosswords wakes up periodically to check if there are any
+         CrossWords wakes up periodically to check if there are any
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
     <!--<string name="connect_frequency">Background move check</string>-->
@@ -1393,8 +1393,8 @@ arrivent</string>
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-    <!--<string name="invite_subject_fmt">Let\'s play Crosswords (Room %1$s)</string>-->
-    <string name="invite_subject_fmt">Jouons à Crosswords (salon %1$s)</string>
+    <!--<string name="invite_subject_fmt">Let\'s play CrossWords (Room %1$s)</string>-->
+    <string name="invite_subject_fmt">Jouons à CrossWords (salon %1$s)</string>
 
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
@@ -1403,7 +1403,7 @@ arrivent</string>
          are not legal in xml strings.)-->
     <!--<string name="invite_htm_fmt">\u003Ca href=\"%1$s\"\u003ETap
     here\u003C/a\u003E (or tap the full link below, or, if you already
-    have Crosswords installed, open the attachment) to accept my
+    have CrossWords installed, open the attachment) to accept my
     invitation and join this game.
 
     \u003Cbr \\\u003E
@@ -1412,7 +1412,7 @@ arrivent</string>
     </string>-->
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Toucher ici&lt;/a&gt;
  (ou suivez le lien complet ci-dessous, ou, si vous déjà
-installé Crosswords, ouvrez l\'attachement) pour accepter mon invitation et 
+installé CrossWords, ouvrez l\'attachement) pour accepter mon invitation et
 rejoindre cette partie.
 
     &lt;br \\&gt;
@@ -1423,9 +1423,9 @@ rejoindre cette partie.
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <!--<string name="invite_txt_fmt">Let\'s play Crosswords! Join this game:
+    <!--<string name="invite_txt_fmt">Let\'s play CrossWords! Join this game:
     %1$s .</string>-->
-    <string name="invite_txt_fmt">Jouons à Crosswords ! Rejoignez cette
+    <string name="invite_txt_fmt">Jouons à CrossWords ! Rejoignez cette
 partie : %1$s .</string>
 
     <!-- When I've created the invitation, in text or html, I ask
@@ -1772,7 +1772,7 @@ mots)</string>
     <!--<string name="button_retry">Retry</string>  -->
     <string name="button_retry">Réessayer</string>  
 
-    <!-- Shown in the main screen when you launch Crosswords from an
+    <!-- Shown in the main screen when you launch CrossWords from an
          invitation (received in email or messaging app, say) and
          there's already a game running that matches that invitation.
          It's to prevent you from opening multiple games and getting
@@ -1973,9 +1973,9 @@ d\'annuler les changements afin d\'éviter un redémarrage.</string>
          game to do so. -->
     <!--<string name="not_again_conndfirst">You have connected and started
       a game in a new room.  Once the remaining devices have joined
-      your room and Crosswords has assigned them tiles the game can
+      your room and CrossWords has assigned them tiles the game can
       begin.</string>-->
-    <string name="not_again_conndfirst">Vous vous êtes connecté et avez démarré une partie dans un nouveau salon. Une fois que les appareils restants auront rejoint votre salon et que Crosswords leur aura attribué des jetons, la partie pourra commencer.</string>
+    <string name="not_again_conndfirst">Vous vous êtes connecté et avez démarré une partie dans un nouveau salon. Une fois que les appareils restants auront rejoint votre salon et que CrossWords leur aura attribué des jetons, la partie pourra commencer.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
@@ -1997,7 +1997,7 @@ d\'annuler les changements afin d\'éviter un redémarrage.</string>
     <string name="not_again_conndall">Vous vous êtes connecté et avez rejoint une partie sur le relai ; le salon est maintenant complet. L\'appareil qui a créé le salon va maintenant vous attribuer vos jetons initiaux et la partie va commencer.</string>
 
     <!-- This is not currently shown -->
-    <!-- <string name="not_again_dicts">Crosswords wordlists, which are -->
+    <!-- <string name="not_again_dicts">CrossWords wordlists, which are -->
     <!--   just compressed lists of words plus tile information, determine -->
     <!--   what language a game is played in and how \"smart\" the robot -->
     <!--   is.  You can download different sized wordlists in many -->
@@ -2049,7 +2049,7 @@ modèle.</string>
        # :Dialogs:
        # Welcome dialog
        # 
-       # Shown the first time a user launches Crosswords (and
+       # Shown the first time a user launches CrossWords (and
        # again only if the preference for default first user
        # name is cleared).  Its purpose is to encourage him to
        # enter the name of the most common non-robot player on
@@ -2062,7 +2062,7 @@ modèle.</string>
     <string name="default_name_title">Nom par défaut du joueur</string>
     <!-- Welcome dialog text -->
     <!--<string name="default_name_message">Thanks for installing
-      Crosswords!\n\nFeel free to enter your name here. It will be used
+      CrossWords!\n\nFeel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>-->
     <string name="default_name_message">Saisissez votre nom ici. Il sera utilisé lors de la création de nouvelles parties. (Vous pourrez le changer plus tard dans la section \"Nouvelles parties\" des Paramètres.)</string>
@@ -2076,9 +2076,9 @@ modèle.</string>
        ########################################################### 
       -->
     <!-- String giving version info, which is substituted in. -->
-    <!--<string name="about_vers_fmt">Crosswords for Android, Version %1$s,
+    <!--<string name="about_vers_fmt">CrossWords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>-->
-    <string name="about_vers_fmt">Crosswords pour Android, version %1$s,
+    <string name="about_vers_fmt">CrossWords pour Android, version %1$s,
 rév. %2$s, compilé le %3$s.</string>
     <!-- copyright info -->
     <!--<string name="about_copyright">Copyright (C) 1998-2015 by Eric
@@ -2110,7 +2110,7 @@ xwords@eehouse.org.</string>
          release -->
     <!--<string name="changes_title">Recent changes</string>-->
     <string name="changes_title">Changements récents</string>
-    <!-- text of button in About Crosswords dialog summoning above
+    <!-- text of button in About CrossWords dialog summoning above
          dialog -->
     <!--<string name="changes_button">Recent changes\u200C</string>-->
     <string name="changes_button">Changements récents</string>
@@ -2228,7 +2228,7 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <string name="board_menu_file_email">Envoyer un mail à l\'auteur</string>
       <!--  -->
       <!-- Should not be translated -->
-    <string name="email_author_subject">Commentaire sur Crosswords</string>
+    <string name="email_author_subject">Commentaire sur CrossWords</string>
       <!--  -->
     <!--<string name="email_author_chooser">Send comment via</string>-->
     <string name="email_author_chooser">Envoyer un commentaire par</string>
@@ -2247,8 +2247,8 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
       <!--  -->
     <!--<string name="invite_progress_title">Connecting...</string>-->
     <string name="invite_progress_title">Connexion…</string>
-    <!--<string name="invite_progress_fmt">Sending invitation to Crosswords on %1$s</string>-->
-    <string name="invite_progress_fmt">Envoi d\'une invitation à Crosswords sur %1$s</string>
+    <!--<string name="invite_progress_fmt">Sending invitation to CrossWords on %1$s</string>-->
+    <string name="invite_progress_fmt">Envoi d\'une invitation à CrossWords sur %1$s</string>
       <!--  -->
     <!--<string name="summary_wait_host">Waiting for connection[s]</string>-->
     <string name="summary_wait_host">En attente de connexion[s]</string>
@@ -2268,11 +2268,11 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <!--<string name="new_bt_body_fmt">From a player on the device %1$s wants to start a game</string>-->
     <string name="new_bt_body_fmt">Un joueur sur l\'appareil %1$s veut démarrer une partie</string>
       <!--  -->
-    <!--<string name="bt_bad_proto_fmt">The version of Crosswords on
+    <!--<string name="bt_bad_proto_fmt">The version of CrossWords on
     \"%1$s\" is incompatible with this one for play using
     Bluetooth. One of you may need to upgrade before you can
     continue.</string>-->
-    <string name="bt_bad_proto_fmt">La version de Crosswords sur \"%1$s\" est incompatible avec celle-ci pour jouer par Bluetooth. L\'un de vous devrait se mettre à jour avant de pouvoir continuer.</string>
+    <string name="bt_bad_proto_fmt">La version de CrossWords sur \"%1$s\" est incompatible avec celle-ci pour jouer par Bluetooth. L\'un de vous devrait se mettre à jour avant de pouvoir continuer.</string>
 
       <!--  -->
     <string name="new_btmove_title">Invitation via Bluetooth</string>
@@ -2562,19 +2562,19 @@ mots manquante</string>
     <!--<string name="invite_dict_missing_title">Missing wordlist</string>-->
     <string name="invite_dict_missing_title">Liste de mots manquantes</string>
     <!--<string name="invite_dict_missing_body_fmt">%1$s has invited you to
-    play Crosswords using the wordlist %2$s (for play in %3$s), but it
+    play CrossWords using the wordlist %2$s (for play in %3$s), but it
     is not installed.  Would you like to download the wordlist or
     decline the invitation?</string>-->
     <string name="invite_dict_missing_body_fmt">%1$s vous a invité à jouer à
-Crosswords en utilisant la liste de mots %2$s (pour jouer en %3$s), mais elle
+CrossWords en utilisant la liste de mots %2$s (pour jouer en %3$s), mais elle
 n\'est pas installée. Voulez-vous télécharger la liste de mots ou refuser
 l\'invitation ?</string>
     <!--<string name="invite_dict_missing_body_noname_fmt">You have been
-    invited to play Crosswords using the wordlist %2$s (for play in
+    invited to play CrossWords using the wordlist %2$s (for play in
     %3$s), but it is not installed.  Would you like to download the
     wordlist?</string>-->
     <string name="invite_dict_missing_body_noname_fmt">Vous avez été invité
-à jouer à Crosswords en utilisant la liste de mots %2$s (pour jouer en
+à jouer à CrossWords en utilisant la liste de mots %2$s (pour jouer en
 %3$s), mais elle n\'est pas installée. Voulez-vous télécharger la liste de
 mots ?</string>
     <!--<string name="button_decline">Decline</string>-->
@@ -2718,8 +2718,8 @@ utilisée pour créer une partie.</string>
     <!--<string name="pct_suffix">\u0020pct.</string>-->
     <string name="pct_suffix">\u0020％</string>
 
-    <!--<string name="menu_rateme">Rate Crosswords</string>-->
-    <string name="menu_rateme">Évaluer Crosswords</string>
+    <!--<string name="menu_rateme">Rate CrossWords</string>-->
+    <string name="menu_rateme">Évaluer CrossWords</string>
     <!--<string name="no_market">Google Play app not found</string>-->
     <string name="no_market">Application Google Play non trouvée</string>
 
@@ -2997,10 +2997,10 @@ pour voir ce qui est disponible.</string>
 	one or more?\n\n(You may also need to open it on the device you
 	want to pair with.)</string>-->
 	<string name="bt_no_devs">Vous n\'avez pour l\'instant aucun appareil Bluetooth appairé. Voulez-vous ouvrir les paramètres d\'Android pour en ajouter un ou plusieurs ?\n\n(Vous pouvez aussi avoir besoin de les ouvrir sur l\'appareil auquel vous voulez vous appairer.)</string>
-	<!--<string name="app_not_found_fmt">Unable to connect to Crosswords
+	<!--<string name="app_not_found_fmt">Unable to connect to CrossWords
 	on the device %1$s.  Please check that the device is within range
-	and that Crosswords is installed on it.</string>-->
-	<string name="app_not_found_fmt">Impossible de se connecter à Crosswords par Bluetooth sur l\'appareil %1$s. Vérifiez que cet appareil est à portée de Bluetooth et que Crosswords est installé dessus.</string>
+	and that CrossWords is installed on it.</string>-->
+	<string name="app_not_found_fmt">Impossible de se connecter à CrossWords par Bluetooth sur l\'appareil %1$s. Vérifiez que cet appareil est à portée de Bluetooth et que CrossWords est installé dessus.</string>
 
 	<!-- label within default wordlists in app preferences -->
 	<!--<string name="default_language">Default language</string>-->
@@ -3027,11 +3027,11 @@ pour voir ce qui est disponible.</string>
     <string name="hide_newgames_summary">Cacher les boutons de nouvelles
 parties sur l\'écran principal permet de voir plus de parties</string>
     <!--XLATE-ME-->
-    <!--<string name="sms_bad_proto_fmt">The version of Crosswords on the
+    <!--<string name="sms_bad_proto_fmt">The version of CrossWords on the
     phone with number \"%1$s\" is incompatible with this one for play
     using SMS. One of you may need to upgrade before you can
     continue.</string>-->
-    <string name="sms_bad_proto_fmt">La version de Crosswords sur le téléphone
+    <string name="sms_bad_proto_fmt">La version de CrossWords sur le téléphone
 de numéro \"%1$s\" est incompatible avec celle-ci pour jouer par SMS. L\'un de
 vous doit faire une mise à jour avant de pouvoir continuer.</string>
     <!--XLATE-ME-->
@@ -3351,8 +3351,8 @@ pour la langue</string>
   <string name="pref_item_update_summary">Obtenir les versions intermédiaires</string>
   <!--<string name="confirm_get_locdict_fmt">Your device is set up for
   %1$s. Would you like to download a wordlist so you can play
-  Crosswords in %1$s?</string>-->
-  <string name="confirm_get_locdict_fmt">Votre appareil est configuré en %1$s. Souhaitez-vous télécharger une liste de mots afin de pouvoir jouer à Crosswords en %1$s ?</string>
+  CrossWords in %1$s?</string>-->
+  <string name="confirm_get_locdict_fmt">Votre appareil est configuré en %1$s. Souhaitez-vous télécharger une liste de mots afin de pouvoir jouer à CrossWords en %1$s ?</string>
   <!--<string name="checking_title">Checking</string>-->
   <string name="checking_title">Recherche</string>
   <!--<string name="checking_for_fmt">Checking for wordlists in %1$s…</string>-->
@@ -3390,7 +3390,7 @@ pour la langue</string>
 </plurals>
     <string name="button_enable">Activer</string>
 
-  <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner Crosswords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
+  <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner CrossWords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
 
   <string name="not_again_comms_sms">Les parties par SMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
 
@@ -3518,14 +3518,14 @@ Vous pourrez désactiver cette fonctionnalité plus tard en utilisant la nouvell
 Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les plantages, de faire des suggestions, etc. !!</string>
 
   <string name="enable_dualpane">Activer la vue côte à côte</string>
-  <string name="post_dualpane_on_body">Lancer Crosswords avec la vue côte à côte activée !</string>
-  <string name="post_dualpane_off_body">Lancer Crosswords avec la vue côte à côte désactivée</string>
+  <string name="post_dualpane_on_body">Lancer CrossWords avec la vue côte à côte activée !</string>
+  <string name="post_dualpane_off_body">Lancer CrossWords avec la vue côte à côte désactivée</string>
 
   <string name="disable_dualpane">Désactiver la vue côte à côte</string>
   <string name="db_enabled_toast">Mode vue côte à côte ACTIVÉ</string>
-<string name="dualpane_exit_now">Crosswords va maintenant se fermer pour que les changements s\'appliquent. Vous pouvez utiliser la notification qu\'il affiche pour le redémarrer.</string>
+<string name="dualpane_exit_now">CrossWords va maintenant se fermer pour que les changements s\'appliquent. Vous pouvez utiliser la notification qu\'il affiche pour le redémarrer.</string>
 
-  <string name="post_dualpane_title">Redémarrer Crosswords</string>
+  <string name="post_dualpane_title">Redémarrer CrossWords</string>
   <string name="dualpane_restart">Fermeture de l\'application…</string>
-  <string name="after_restart">Ce changement ne s\'appliquera pas tant que vous n\'aurez pas relancé Crosswords.</string>
+  <string name="after_restart">Ce changement ne s\'appliquera pas tant que vous n\'aurez pas relancé CrossWords.</string>
   </resources>

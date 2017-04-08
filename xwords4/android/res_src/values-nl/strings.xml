@@ -27,7 +27,7 @@
  etc…</string>
   <string name="no_games_to_refresh">Geen spellen gevonden die via
  de relay verbinden.</string>
-  <string name="board_menu_file_about">Over Crosswords…</string>
+  <string name="board_menu_file_about">Over CrossWords…</string>
   <string name="game_item_menu_title_fmt">\"%1$s\" acties:</string>
   <string name="list_item_config">Spelinstellingen…</string>
   <string name="list_item_rename">Hernoem…</string>
@@ -48,7 +48,7 @@
     <item quantity="one">Weet je zeker dat je %1$d geselecteerd spel wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
     <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
   </plurals>
-  <string name="title_dicts_list">Crosswords Woordenlijsten</string>
+  <string name="title_dicts_list">CrossWords Woordenlijsten</string>
   <string name="download_dicts">Meer downloaden…</string>
   <string name="loc_builtin">Ingebouwd</string>
   <string name="loc_downloads">Downloads</string>
@@ -189,7 +189,7 @@
     <item quantity="other">%1$d letters in de zak en op alle rekken:\n</item>
   </plurals>
   <string name="confirm_undo_last">Weet je zeker dat je de laatste zet ongedaan wilt maken? (Je kan deze niet opnieuw uitvoeren.)</string>
-  <string name="title_prefs">Crosswords instellingen</string>
+  <string name="title_prefs">CrossWords instellingen</string>
   <string name="button_revert_all">Alle herstellen</string>
   <string name="confirm_revert_colors">Weet je zeker dat je alle kleurinstellingen wilt herstellen naar de standaardinstellingen?</string>
   <string name="button_revert_colors">Herstel kleuren</string>
@@ -285,9 +285,9 @@
   <string name="invite_choice_bt">Bluetooth</string>
   <string name="invite_choice_nfc">NFC (\"Android Beam\")</string>
   <string name="invite_choice_title">Spelers uitnodigen: Hoe?</string>
-  <string name="invite_subject_fmt">Laten we Crosswords spelen (Kamer %1$s)</string>
-  <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Druk hier&lt;/a&gt; (of druk op de volledige link hieronder, of, als je Crosswords al geïnstalleerd hebt, open de bijlage) om mijn uitnodiging te accepteren en het spel bij te treden. &lt;br \&gt; &lt;br \&gt; (volledige link: %1$s) </string>
-  <string name="invite_txt_fmt">Laten we Crosswords spelen! Treed het volgende spel bij: %1$s.</string>
+  <string name="invite_subject_fmt">Laten we CrossWords spelen (Kamer %1$s)</string>
+  <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Druk hier&lt;/a&gt; (of druk op de volledige link hieronder, of, als je CrossWords al geïnstalleerd hebt, open de bijlage) om mijn uitnodiging te accepteren en het spel bij te treden. &lt;br \&gt; &lt;br \&gt; (volledige link: %1$s) </string>
+  <string name="invite_txt_fmt">Laten we CrossWords spelen! Treed het volgende spel bij: %1$s.</string>
   <string name="invite_chooser_fmt">Verstuur uitnodiging via %1$s</string>
   <string name="invite_chooser_email">email</string>
   <string name="invite_chooser_sms">sms</string>
@@ -358,15 +358,15 @@
   <string name="not_again_values">Deze knop wisselt het bord tussen het tonen van letters of de letterwaardes. Gebruik het om te zien wat een letter ook alweer waard is.</string>
   <string name="not_again_done">Op de \"pntn\" teller die rechts van het rek tevoorschijn komt drukken is de makkelijkste manier om een zet te doen.</string>
   <string name="not_again_unlock">Dit spel is bezig. Sommige instellingen, zoals de hoeveelheid spelers, kunnen niet veranderd worden zonder het spel te herstarten. Als je deze pagina verlaat heb je een kans om wijzigingen te annuleren om herstarten te voorkomen.</string>
-  <string name="not_again_conndfirst">Je hebt verbonden en een spel gestart in een nieuwe kamer. Zodra de andere apparaten de kamer toe zijn getreden en Crosswords letters uitgedeeld heeft kan het spel beginnen.</string>
+  <string name="not_again_conndfirst">Je hebt verbonden en een spel gestart in een nieuwe kamer. Zodra de andere apparaten de kamer toe zijn getreden en CrossWords letters uitgedeeld heeft kan het spel beginnen.</string>
   <string name="not_again_conndmid">Je hebt verbonden met een spel op de relay. Je krijgt een bericht als het overige apparaat/de overige apparaten de kamer toegetreden zijn en het spel kan beginnen.</string>
   <string name="not_again_conndall">Je hebt verbonden met een spel op de relay; de kamer is nu vol. Het apparaat dat de kamer gemaakt heeft zal de letters verdelen zodat het spel kan beginnen.</string>
   <string name="not_again_arrow">Letters naar het bord bewegen:\nJe kan letters van het rek naar het bord slepen, of je kan op een lege cel drukken om een pijl te plaatsen. Letters op het rek waar je op drukt zullen op de pijl geplaatst worden, en de pijl zal een vakje verder gaan in de aangegeven richting. Druk nogmaals op de pijl om de oriëntatie te wijzigen; een tweede keer om de pijl te verbergen. Onder de Uiterlijk optie in instellingen kun je de pijl permanent uitschakelen.</string>
   <string name="not_again_turnchanged">De speler die aan de beurt is wordt groot getoond op het scorebord.\n\nHoud de naam op het scorebord ingedrukt om informatie over de laatste zet van de speler te krijgen.</string>
   <string name="not_again_newfrom">Maak een nieuw spel, klaar om te spelen, met alle instellingen van dit spel. Dat wil zeggen, gebruik dit spel als een template.</string>
   <string name="default_name_title">Welkom</string>
-  <string name="default_name_message">Bedankt voor het installeren van Crosswords!\n\nVul je naam hieronder in. Het wordt gebruikt als je een nieuw spel maakt. (Je kan dit later wijzigen onder \"Standaardinstellingen nieuw spel\" in Instellingen.)</string>
-  <string name="about_vers_fmt">Crosswords voor Android, Versio %1$s, revisie %2$s, gebouwd op %3$s.</string>
+  <string name="default_name_message">Bedankt voor het installeren van CrossWords!\n\nVul je naam hieronder in. Het wordt gebruikt als je een nieuw spel maakt. (Je kan dit later wijzigen onder \"Standaardinstellingen nieuw spel\" in Instellingen.)</string>
+  <string name="about_vers_fmt">CrossWords voor Android, Versio %1$s, revisie %2$s, gebouwd op %3$s.</string>
   <string name="about_copyright">Copyright (C) 1998-2015 Eric House. Dit is vrije/open source software uitgebracht onder de GNU Public License.</string>
   <string name="about_web">Voor een handleiding of de broncode kijk op http://xwords.sf.net/android.php. Om bugs te rapporteren, functies aan te vragen, hulp aan te bieden, etc., stuur een mail naar xwords@eehouse.org.</string>
   <string name="xlator">[leeg]</string>
@@ -403,21 +403,21 @@
   <string name="prompt_min_len">Woorden niet korter dan</string>
   <string name="prompt_max_len">Woorden niet langer dan</string>
   <string name="board_menu_file_email">Email ontwikkelaar</string>
-  <string name="email_author_subject">Geef je mening over Crosswords</string>
+  <string name="email_author_subject">Geef je mening over CrossWords</string>
   <string name="email_author_chooser">Verstuur opmerking via</string>
   <string name="email_body_rev_fmt">(Indien relevant, geef alsjeblieft het versienummer mee: \"%1$s\"; en fabrikant/model van je telefoon of tablet.)</string>
   <string name="bt_pick_addall_button">Voeg alle paren toe</string>
   <string name="bt_pick_clear_button">Verwijder geselecteerde[n]</string>
   <string name="invite_progress_title">Verbinden...</string>
-  <string name="invite_progress_fmt">Uitnodiging om Crosswords te spelen versturen op %1$s</string>
+  <string name="invite_progress_fmt">Uitnodiging om CrossWords te spelen versturen op %1$s</string>
   <string name="summary_wait_host">Wachten op verbinding[en]</string>
   <string name="summary_wait_guest">Niet verbonden</string>
   <string name="summary_gameover">Spel voorbij</string>
   <string name="summary_conn">Spel bezig</string>
   <string name="new_bt_title">Nieuw spel via Bluetooth</string>
   <string name="new_bt_body_fmt">Een speler op apparaat %1$s wil een spel starten</string>
-  <string name="bt_bad_proto_fmt">De versie van Crosswords op \"%1$s\" is niet compatibel met deze versie voor spelen over Bluetooth. Een van beiden moet misschien geüpdatet worden voordat je door kan gaan.</string>
-  <string name="sms_bad_proto_fmt">De versie van Crosswords op de telefoon met nummer \"%1$s\" is niet compatibel met deze versie voor spelen over SMS. Een van beiden moet misschien geüpdatet worden voordat je door kan gaan.</string>
+  <string name="bt_bad_proto_fmt">De versie van CrossWords op \"%1$s\" is niet compatibel met deze versie voor spelen over Bluetooth. Een van beiden moet misschien geüpdatet worden voordat je door kan gaan.</string>
+  <string name="sms_bad_proto_fmt">De versie van CrossWords op de telefoon met nummer \"%1$s\" is niet compatibel met deze versie voor spelen over SMS. Een van beiden moet misschien geüpdatet worden voordat je door kan gaan.</string>
   <string name="new_btmove_title">Uitnodiging via Bluetooth</string>
   <string name="new_move_body">Een of meer zetten zijn gemaakt</string>
   <plurals name="invite_bt_desc_fmt">
@@ -507,8 +507,8 @@
   <string name="missing_dict_title">Wachten op speluitnodiging</string>
   <string name="missing_dict_detail">Druk om de missende woordenlijst te downloaden</string>
   <string name="invite_dict_missing_title">Missende woordenlijst</string>
-  <string name="invite_dict_missing_body_fmt">%1$s heeft je uitgenodigd om Crosswords te spelen met de woordenlijst %2$s (in %3$s), maar deze is niet geïnstalleerd. Wil je de woordenlijst downloaden, of de uitnodiging afwijzen?</string>
-  <string name="invite_dict_missing_body_noname_fmt">Je bent uitgenodigd om Crosswords te spelen met de woordenlijst %2$s (in %3$s), maar deze is niet geïnstalleerd. Wil je de woordenlijst downloaden?</string>
+  <string name="invite_dict_missing_body_fmt">%1$s heeft je uitgenodigd om CrossWords te spelen met de woordenlijst %2$s (in %3$s), maar deze is niet geïnstalleerd. Wil je de woordenlijst downloaden, of de uitnodiging afwijzen?</string>
+  <string name="invite_dict_missing_body_noname_fmt">Je bent uitgenodigd om CrossWords te spelen met de woordenlijst %2$s (in %3$s), maar deze is niet geïnstalleerd. Wil je de woordenlijst downloaden?</string>
   <string name="button_decline">Afwijzen</string>
   <string name="download_done">Downloaden voltooid</string>
   <string name="download_failed">Downloaden onsuccesvol</string>
@@ -558,7 +558,7 @@
   <string name="button_go_settings">Open instellingen</string>
   <string name="sms_ready_text">Druk nu op het ontvangende apparaat</string>
   <string name="pct_suffix">" pct"</string>
-  <string name="menu_rateme">Waardeer Crosswords</string>
+  <string name="menu_rateme">Waardeer CrossWords</string>
   <string name="no_market">Google Play app niet gevonden</string>
   <string name="add_to_study_fmt">Voeg %1$s aan studielijst toe</string>
   <string name="title_studyon">Schakel studielijsten in</string>
@@ -671,7 +671,7 @@
   <string name="lmi_phony_fmt">%1$s heeft een beurt verloren</string>
   <string name="lmi_tiles_fmt">Letters gedeeld naar %1$s</string>
   <string name="bt_no_devs">Je hebt om het moment geen gepaarde Bluetooth apparaten. Wil je de Android instellingen openen om een of meer apparaten te paren?\n\n(Je moet dit mogelijk ook doen op het apparaat waar je mee wilt paren.)</string>
-  <string name="app_not_found_fmt">Kan niet met Crosswords verbinden op apparaat %1$s. Controleer of het apparaat dichtbij genoeg is en dat Crosswords erop geïnstalleerd is.</string>
+  <string name="app_not_found_fmt">Kan niet met CrossWords verbinden op apparaat %1$s. Controleer of het apparaat dichtbij genoeg is en dat CrossWords erop geïnstalleerd is.</string>
   <string name="default_language">Stardaardtaal</string>
   <string name="title_addrs_pref">Communiceer via</string>
   <string name="new_game">Nieuw lokaal spel</string>
@@ -706,7 +706,7 @@
   <string name="not_again_enablepublic">Publieke kamers zijn in deze versie een \"geavanceerde\" optie geworden. Als je ze gebruikte en terug wilt hebben, schakel ze dan nu in. Je kan ze later weer uitschakelen in Instellingen.</string>
   <string name="disable_nag_title">Schakel beurtherinneringen uit</string>
   <string name="disable_nag_summary">Stuur me geen bericht, ook al is het al heel lang mijn beurt</string>
-  <string name="confirm_get_locdict_fmt">Jouw apparaat is ingesteld voor %1$s. Wil je een woordenlijst downloaden zodat je Crosswords in het %1$s kan spelen?</string>
+  <string name="confirm_get_locdict_fmt">Jouw apparaat is ingesteld voor %1$s. Wil je een woordenlijst downloaden zodat je CrossWords in het %1$s kan spelen?</string>
   <string name="advanced">Voor debuggen</string>
   <string name="advanced_summary">Je zal deze opties nooit nodig hoeven te hebben...</string>
   <string name="relay_host">Relay host</string>
@@ -765,7 +765,7 @@
   <string name="confirm_drop_relay_bt">Bluetooth werkt alleen voor apparaten in de buurt.</string>
   <string name="confirm_drop_relay_sms">Niet alle providers ondersteunen spelen via SMS.</string>
   <string name="button_enable">Schakel in</string>
-  <string name="not_again_comms_relay">De \"relay\" is een server op het internet die berichten doorstuurt tussen apparaten die Crosswords hebben draaien. Het werkt altijd op een goede internetverbinding, maar kan problemen hebben op WiFi netwerken met restricties.</string>
+  <string name="not_again_comms_relay">De \"relay\" is een server op het internet die berichten doorstuurt tussen apparaten die CrossWords hebben draaien. Het werkt altijd op een goede internetverbinding, maar kan problemen hebben op WiFi netwerken met restricties.</string>
   <string name="not_again_comms_sms">Spelen via SMS gebruikt dezelfde technologie als gewone SMS. Ook al zie je de berichten niet, je provider zal ze wel als SMS berichten rekenen, dus je wilt deze optie niet aanzetten tenzij je ongelimiteerd gratis SMS kan versturen. Let erop dat Android deze functie alleen ondersteund op apparaten met een GSM provider, dat wil zeggen elke provider ter wereld behalve Verizon en Sprint.</string>
   <string name="not_again_comms_bt">Gebruik Bluetooth om te spelen tegen een dichtbijzijnd apparaat dat \"gepaard\" is met jouw apparaat.</string>
   <string name="str_no_hint_found">Kon geen zetten vinden</string>
@@ -887,18 +887,18 @@ Je kan deze functie later uitgeschakelen onder de nieuwe \"Schakel
 Laat het me weten als je deze nieuwe functie fijn vind, crashen ziet of
  suggesties hebt, etc.!!</string>
 
-  <string name="dualpane_exit_now">Crosswords zal nu stoppen zo dat
+  <string name="dualpane_exit_now">CrossWords zal nu stoppen zo dat
  de verandering effect kan hebben. Je kan de notificatie gebruiken om te
  herstarten.</string>
 
   <string name="enable_dualpane">Schakel zij aan zij in</string>
-  <string name="post_dualpane_title">Herstart Crosswords</string>
-  <string name="post_dualpane_on_body">Start Crosswords met zij aan zij ingeschakeld!</string>
-  <string name="post_dualpane_off_body">Start Crosswords met zij aan zij uitgeschakeld</string>
+  <string name="post_dualpane_title">Herstart CrossWords</string>
+  <string name="post_dualpane_on_body">Start CrossWords met zij aan zij ingeschakeld!</string>
+  <string name="post_dualpane_off_body">Start CrossWords met zij aan zij uitgeschakeld</string>
 
   <string name="disable_dualpane">Schakel zij aan zijn uit</string>
   <string name="dualpane_restart">App sluiten…</string>
   <string name="after_restart">Deze verandering zal geen effect hebben totdat
- je Crosswords herstart.</string>
+ je CrossWords herstart.</string>
   <string name="db_enabled_toast">Zij aan zij mode INGESCHAKELD</string>
 </resources>

@@ -33,7 +33,7 @@
 
     <string name="gamel_menu_checkmoves">Züge prüfen</string>
 
-    <string name="board_menu_file_about">Über Crosswords…</string>
+    <string name="board_menu_file_about">Über CrossWords…</string>
 
     <string name="game_item_menu_title_fmt">Aktionen für „%1$s“:</string>
 
@@ -56,7 +56,7 @@ Diese Aktion kann nicht rückgängig gemacht werden.</item>
 Diese Aktion kann nicht rückgängig gemacht werden.</item>
 </plurals>
 
-    <string name="title_dicts_list">Crosswords-Wörterlisten</string>   
+    <string name="title_dicts_list">CrossWords-Wörterlisten</string>
     <string name="download_dicts">Weitere Sprachen herunterladen…</string>
 
 

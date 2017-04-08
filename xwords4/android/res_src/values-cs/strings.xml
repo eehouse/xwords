@@ -23,9 +23,9 @@
   <string name="list_item_reset">Vynulovat</string>
   <string name="list_item_new_from">Nová hra podle vzoru</string>
   <string name="play">Hrát hru</string>
-  <string name="title_dicts_list">Slovníky Crosswords</string>
+  <string name="title_dicts_list">Slovníky CrossWords</string>
   <string name="title_game_config_fmt">Konfigurovat %1$s</string>
-  <string name="title_prefs">Předvolby Crosswords</string>
+  <string name="title_prefs">Předvolby CrossWords</string>
   <string name="button_yes">Ano</string>
   <string name="button_no">Ne</string>
   <string name="button_save">Uložit</string>
@@ -47,7 +47,7 @@
   <string name="board_menu_game_history">Historie hry</string>
   <string name="board_menu_game_final">Celkové skóre</string>
   <string name="board_menu_game_resend">Přeposlat zprávy</string>
-  <string name="board_menu_file_about">O Crosswords</string>
+  <string name="board_menu_file_about">O CrossWords</string>
   <!-- returned by util_getUserString -->
   <!--string name="str_robot_moved">Robot provedl tento tah:</string-->
   <string name="strs_values_header_fmt">%1$s počet/hodnota:\n</string>
@@ -145,7 +145,7 @@
   <string name="gameOver">Hra skončena</string>
   <!-- <string name="moves_fmt">Bylo zahráno %1$d tahů</string> -->
   <!-- about dialog stuff -->
-  <string name="about_vers_fmt">Crosswords pro Android, Verze %1$s,
+  <string name="about_vers_fmt">CrossWords pro Android, Verze %1$s,
       revize %2$s.</string>
   <string name="about_copyright">Copyright (C) 1998-2012 Eric
     House. Tento software je vydán pod licencí GNU Public License.</string>
@@ -154,7 +154,7 @@
     můžete na email: eehouse@eehouse.org.</string>
   <!-- fill this in other than in English -->
   <string name="xlator">Český překlad Tomáš Morkus</string>
-  <string name="downloading_dict_fmt">Nahrávám slovník Crosswords %1$s...</string>
+  <string name="downloading_dict_fmt">Nahrávám slovník CrossWords %1$s...</string>
   <string name="no_dict_title">Slovník nebyl nalezen</string>
   <string name="button_download">Nahrát</string>
   <string name="msg_ask_password_fmt">Heslo pro \"%1$s\":</string>

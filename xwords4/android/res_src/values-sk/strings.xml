@@ -37,7 +37,7 @@
   <string name="list_item_reset">Vynulovať</string>
   <string name="list_item_new_from">Nová hra podľa vzoru</string>
   <string name="play">Hrať hru</string>
-  <string name="title_dicts_list">Slovníky Crosswords</string>
+  <string name="title_dicts_list">Slovníky CrossWords</string>
   <string name="title_game_config_fmt">Konfigurovať %1$s</string>
   <!-- text of checkbox at top of dialog allowing to unlock in-play
     game to make changes -->
@@ -47,7 +47,7 @@
       wordlists)</string>
   <!-- alternate window title used when game is networked -->
   <string name="title_gamenet_config_fmt">XLATE ME: %1$s settings (networked)</string>
-  <string name="title_prefs">Predvoľby Crosswords</string>
+  <string name="title_prefs">Predvoľby CrossWords</string>
   <!-- Text of confirmation dialog for above -->
   <string name="confirm_revert_all">XLATE ME: Are you sure you want to restore
       all settings to their original values?</string>
@@ -73,7 +73,7 @@
   <string name="button_no">Nie</string>
   <string name="button_save">Uložiť</string>
   <string name="button_discard">Zrušiť</string>
-  <!-- Shown in the main screen when you launch Crosswords from an
+  <!-- Shown in the main screen when you launch CrossWords from an
          invitation (received in email or messaging app, say) and
          there's already a game running that matches that invitation.
          It's to prevent you from opening multiple games and getting
@@ -108,11 +108,11 @@
        ########################################################### 
       -->
   <!-- String giving version info, which is substituted in. -->
-  <string name="about_vers_fmt">XLATE ME: Crosswords for Android, Version %1$s,
+  <string name="about_vers_fmt">XLATE ME: CrossWords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>
   <!-- Welcome dialog text -->
   <string name="default_name_message">XLATE ME: Thanks for installing
-      Crosswords!\n\nFeel free to enter your name here. It will be used
+      CrossWords!\n\nFeel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>
   <!--
@@ -120,7 +120,7 @@
        # :Dialogs:
        # Welcome dialog
        # 
-       # Shown the first time a user launches Crosswords (and
+       # Shown the first time a user launches CrossWords (and
        # again only if the preference for default first user
        # name is cleared).  Its purpose is to encourage him to
        # enter the name of the most common non-robot player on
@@ -141,7 +141,7 @@
       the scoreboard to get details about that player\'s most recent
       move.</string>
   <!-- This is not currently shown -->
-  <!-- <string name="not_again_dicts">Crosswords wordlists, which are -->
+  <!-- <string name="not_again_dicts">CrossWords wordlists, which are -->
   <!--   just compressed lists of words plus tile information, determine -->
   <!--   what language a game is played in and how \"smart\" the robot -->
   <!--   is.  You can download different sized wordlists in many -->
@@ -178,7 +178,7 @@
          game to do so. -->
   <string name="not_again_conndfirst">XLATE ME: You have connected and started
       a game in a new room.  Once the remaining devices have joined
-      your room and Crosswords has assigned them tiles the game can
+      your room and CrossWords has assigned them tiles the game can
       begin.</string>
   <!-- Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  -->
@@ -294,7 +294,7 @@
   <string name="board_menu_game_final">Celkové skóre</string>
   <string name="board_menu_game_resign">XLATE ME: Resign</string>
   <string name="board_menu_game_resend">Preposlať správy</string>
-  <string name="board_menu_file_about">O Crosswords</string>
+  <string name="board_menu_file_about">O CrossWords</string>
   <!-- 
        ############################################################
        # :Menus:
@@ -352,7 +352,7 @@
   <string name="str_no_peek_remote_tiles">Nenakúkajte na kamene vzdialeného hráča!</string>
   <string name="str_reg_unexpected_user">Odmietnutý pokus o registráciu neočakávaného hráča(ů)</string>
   <string name="str_server_dict_wins">Konflikt medzi slovníkmi Servera a Klienta; Platí vždy slovník Servera.</string>
-  <string name="downloading_dict_fmt">Nahrávam slovník Crosswords %1$s...</string>
+  <string name="downloading_dict_fmt">Nahrávam slovník CrossWords %1$s...</string>
   <string name="str_reg_server_sans_remote">Aspoň jeden hráč musí byť označený ako \"Vzdialený\" aby ste mohli hru spustiť ako Server.</string>
   <string name="remote_label">Hráč klient</string>
   <string name="robot_label">Hráč robot</string>
@@ -400,7 +400,7 @@
          the current move would earn if committed. -->
   <string name="pts">XLATE ME: pts</string>
   <!-- Most users create games with only two players, which is the
-         default, but Crosswords supports up to four.  When I'm using
+         default, but CrossWords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
@@ -453,7 +453,7 @@
   <string name="no_name_found_fmt">XLATE ME: No public rooms found for
       %1$d-player games in %2$s. Try refreshing or creating your
       own.</string>
-  <!-- If you check the join_room checkbox Crosswords queries the
+  <!-- If you check the join_room checkbox CrossWords queries the
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
     time.)-->
@@ -556,7 +556,7 @@
   <string name="loc_downloads">XLATE ME: Downloads</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
-         Crosswords and that cannot be uninstalled or moved.
+         CrossWords and that cannot be uninstalled or moved.
          loc_internal and loc_external are the other possible strings
          in this column. -->
   <string name="loc_builtin">XLATE ME: Built-in</string>
@@ -676,7 +676,7 @@
   <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-  <string name="invite_txt_fmt">XLATE ME: Let\'s play Crosswords! Join this game:
+  <string name="invite_txt_fmt">XLATE ME: Let\'s play CrossWords! Join this game:
     %1$s .</string>
   <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
@@ -685,7 +685,7 @@
          are not legal in xml strings.)-->
   <string name="invite_htm_fmt">XLATE ME: \u003ca href=\"%1$s\"\u003ETap
     here\u003c/a\u003E (or tap the full link below, or, if you already
-    have Crosswords installed, open the attachment) to accept my
+    have CrossWords installed, open the attachment) to accept my
     invitation and join this game.
 
     \u003cbr \\\u003E
@@ -694,7 +694,7 @@
     </string>
   <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-  <string name="invite_subject_fmt">XLATE ME: Let\'s play Crosswords (Room %1$s)</string>
+  <string name="invite_subject_fmt">XLATE ME: Let\'s play CrossWords (Room %1$s)</string>
   <string name="button_nfc">XLATE ME: NFC</string>
   <string name="button_html">XLATE ME: Email</string>
   <!-- When an invitation is sent, the user gets to choose between
@@ -715,7 +715,7 @@
       via Bluetooth with devices that are nearby and paired with
       yours.  Both buttons will initiate a game with other devices
       (one or more) that you choose (from paired devices that already
-      have Crosswords installed.)  The first uses defaults; the second
+      have CrossWords installed.)  The first uses defaults; the second
       lets you change them before beginning the game.</string>
   <!-- EXPLAIN ME -->
   <string name="bt_disabled">XLATE ME: Bluetooth is not available.  This may
@@ -795,7 +795,7 @@
        ############################################################
       -->
   <!-- When there are networked games connecting using the relay,
-         Crosswords wakes up periodically to check if there are any
+         CrossWords wakes up periodically to check if there are any
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
   <string name="connect_frequency">XLATE ME: Background move check</string>
@@ -1007,7 +1007,7 @@
   <string name="title_studyon">XLATE ME: Enable studylists</string>
   <string name="add_to_study_fmt">XLATE ME: Add %1$s to studylist</string>
   <string name="no_market">XLATE ME: Google Play app not found</string>
-  <string name="menu_rateme">XLATE ME: Rate Crosswords</string>
+  <string name="menu_rateme">XLATE ME: Rate CrossWords</string>
   <string name="not_again_firefox">XLATE ME: If Android gives you a choice of
     browsers for viewing the wordlists downloads page, DO NOT choose
     Firefox. Some versions have a bug that can cause the wordlists to
@@ -1070,11 +1070,11 @@
   <string name="download_done">XLATE ME: Download finished</string>
   <string name="button_decline">XLATE ME: Decline</string>
   <string name="invite_dict_missing_body_noname_fmt">XLATE ME: You have been
-    invited to play Crosswords using the wordlist %2$s (for play in
+    invited to play CrossWords using the wordlist %2$s (for play in
     %3$s), but it is not installed.  Would you like to download the
     wordlist?</string>
   <string name="invite_dict_missing_body_fmt">XLATE ME: %1$s has invited you to
-    play Crosswords using the wordlist %2$s (for play in %3$s), but it
+    play CrossWords using the wordlist %2$s (for play in %3$s), but it
     is not installed.  Would you like to download the wordlist or
     decline the invitation?</string>
   <string name="invite_dict_missing_title">XLATE ME: Missing wordlist</string>
@@ -1248,7 +1248,7 @@
   <!--  -->
   <string name="new_btmove_title">XLATE ME: New move via Bluetooth</string>
   <!--  -->
-  <string name="bt_bad_proto_fmt">XLATE ME: Crosswords on %1$s wrong version for
+  <string name="bt_bad_proto_fmt">XLATE ME: CrossWords on %1$s wrong version for
       Bluetooth play.</string>
   <!--  -->
   <string name="new_bt_body_fmt">XLATE ME: Paired device %1$s has invited you to
@@ -1266,7 +1266,7 @@
   <!--  -->
   <string name="invite_progress">XLATE ME: Sending new game info…</string>
   <!--  -->
-  <string name="scan_progress">XLATE ME: Scanning for Crosswords on paired devices</string>
+  <string name="scan_progress">XLATE ME: Scanning for CrossWords on paired devices</string>
   <!--  -->
   <string name="bt_pick_clear_button">XLATE ME: Remove checked</string>
   <!--  -->
@@ -1279,7 +1279,7 @@
   <!--  -->
   <string name="email_author_chooser">XLATE ME: Send comment via</string>
   <!--  -->
-  <string name="email_author_subject">XLATE ME: Comment about Crosswords</string>
+  <string name="email_author_subject">XLATE ME: Comment about CrossWords</string>
   <!--  -->
   <string name="board_menu_file_email">XLATE ME: Email author</string>
   <!--  -->
@@ -1344,7 +1344,7 @@
   <!-- New strings that need to be documented and found a home
          above. -->
   <string name="button_lookup">XLATE ME: Look up words</string>
-  <!-- text of button in About Crosswords dialog summoning above
+  <!-- text of button in About CrossWords dialog summoning above
          dialog -->
   <string name="changes_button">XLATE ME: Recent changes</string>
   <!-- text of dialog showing the set of changes made since the last
