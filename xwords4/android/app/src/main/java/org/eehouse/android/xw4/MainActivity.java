@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.text.TextUtils;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -39,6 +40,7 @@ import junit.framework.Assert;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends XWActivity
@@ -100,6 +102,7 @@ public class MainActivity extends XWActivity
         if ( m_dpEnabled ) {
             setVisiblePanes();
         }
+        logPaneFragments();
     }
 
     // called when we're brought to the front (probably as a result of
@@ -334,6 +337,8 @@ public class MainActivity extends XWActivity
                 m_pendingResult = null;
             }
         }
+
+        logPaneFragments();
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -348,6 +353,21 @@ public class MainActivity extends XWActivity
             frag = findFragment( child );
         }
         return frag;
+    }
+
+    private void logPaneFragments()
+    {
+        if ( BuildConfig.DEBUG ) {
+            List<String> pairs = new ArrayList<>();
+            int childCount = m_root.getChildCount();
+            for ( int ii = 0; ii < childCount; ++ii ) {
+                View child = m_root.getChildAt( ii );
+                String name = findFragment( child ).getClass().getSimpleName();
+                String pair = String.format("%d:%s", ii, name );
+                pairs.add( pair );
+            }
+            Log.d( TAG, "logPaneFragments(): %s", TextUtils.join(", ", pairs) );
+        }
     }
 
     protected XWFragment[] getVisibleFragments()
@@ -391,6 +411,8 @@ public class MainActivity extends XWActivity
                 trySetTitle( child );
             }
         }
+
+        logPaneFragments();
     }
 
     private void trySetTitle( View view )
