@@ -2813,12 +2813,16 @@ public class BoardDelegate extends DelegateBase
 
     // If I'm upgrading and running this for the first time show an
     // explanation about the new dualpane feature
+    //
+    // TODO remove a few weeks after shipping a version that includes it
     private static boolean s_dpShown = false;
     private void checkAddDualpaneExpl()
     {
         if ( !s_dpShown ) {
             s_dpShown = true;
             if ( XWPrefs.getIsTablet( m_activity )
+                 && !XWPrefs.getPrefsBoolean( m_activity, R.string
+                                              .key_disable_dualpane, false )
                  && !Utils.onFirstVersion(m_activity ) ) {
                 makeNotAgainBuilder( R.string.invite_dualpane,
                                      R.string.key_notagain_dualpane )
