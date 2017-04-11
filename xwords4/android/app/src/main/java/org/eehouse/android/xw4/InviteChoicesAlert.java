@@ -82,7 +82,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             items.add( getString( R.string.invite_choice_relay ) );
             means.add( InviteMeans.RELAY );
         }
-        if ( WiDirService.enabled() ) {
+        if ( WiDirWrapper.enabled() ) {
             items.add( getString( R.string.invite_choice_p2p ) );
             means.add( InviteMeans.WIFIDIRECT );
         }
