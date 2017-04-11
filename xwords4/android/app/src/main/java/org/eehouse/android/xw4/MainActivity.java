@@ -357,7 +357,7 @@ public class MainActivity extends XWActivity
 
     private void logPaneFragments()
     {
-        if ( BuildConfig.DEBUG ) {
+        if ( BuildConfig.DEBUG && null != m_root ) {
             List<String> pairs = new ArrayList<>();
             int childCount = m_root.getChildCount();
             for ( int ii = 0; ii < childCount; ++ii ) {
