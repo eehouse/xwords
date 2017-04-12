@@ -26,7 +26,10 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -278,9 +281,23 @@ public class XWActivity extends FragmentActivity
         Assert.fail();
     }
 
-    protected void show( DialogFragment df )
+    protected void show( XWDialogFragment df )
     {
-        df.show( getSupportFragmentManager(), "dialog" );
+        FragmentManager fm = getSupportFragmentManager();
+        String tag = df.getFragTag();
+        Log.d( TAG, "%s.show(%s) called; tag: %s", getClass().getSimpleName(),
+               df.getClass().getSimpleName(), tag );
+        FragmentTransaction trans = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag( tag );
+        if ( null != prev && prev instanceof DialogFragment ) {
+            Log.d( TAG, "removing %s (tag %s)",
+                   prev.getClass().getSimpleName(), tag );
+            ((DialogFragment)prev).dismiss();
+        }
+        trans.addToBackStack( tag );
+
+        // Create and show the dialog. show() commits the transaction
+        df.show( trans, tag );
     }
 
     protected Dialog makeDialog( DBAlert alert, Object[] params )

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../../../ && ./gradlew installXw4Debug"; -*- */
+/* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
 /*
  * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -39,6 +39,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class TilePickAlert extends XWDialogFragment
     implements TilePickView.TilePickListener {
+    private static final String TAG = TilePickAlert.class.getSimpleName();
     private static final String TPS = "TPS";
     private static final String ACTION = "ACTION";
     private TilePickView m_view;
@@ -126,6 +127,8 @@ public class TilePickAlert extends XWDialogFragment
         m_dialog = ab.create();
         return m_dialog;
     }
+
+    protected String getFragTag() { return TAG; }
 
     // TilePickView.TilePickListener interface
     @Override

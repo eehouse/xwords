@@ -438,8 +438,7 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void showDialogFragment( DlgID dlgID, Object... params )
     {
-        DialogFragment fragment = DBAlert.newInstance( dlgID, params );
-        show( fragment );
+        show( DBAlert.newInstance( dlgID, params ) );
     }
 
     protected void show( DlgState state )
@@ -468,7 +467,7 @@ public class DelegateBase implements DlgClickNotify,
         show( df );
     }
 
-    protected void show( DialogFragment df )
+    protected void show( XWDialogFragment df )
     {
         if ( m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );

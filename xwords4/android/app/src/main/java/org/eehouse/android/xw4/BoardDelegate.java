@@ -309,9 +309,8 @@ public class BoardDelegate extends DelegateBase
             int title = (Integer)params[0];
             String msg = (String)params[1];
             ab.setMessage( msg );
-            if ( 0 != title ) {
-                ab.setTitle( title );
-            }
+            Assert.assertTrue( 0 != title );
+            ab.setTitle( title );
             ab.setPositiveButton( android.R.string.ok, null );
             if ( DlgID.DLG_SCORES == dlgID ) {
                 if ( null != m_mySIS.words && m_mySIS.words.length > 0 ) {

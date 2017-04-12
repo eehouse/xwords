@@ -47,12 +47,14 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
 
     protected final DlgState getState( Bundle sis )
     {
-        if ( null != sis ) {
-            m_state = (DlgState)sis.getParcelable( STATE_KEY );
-        } else {
-            Bundle args = getArguments();
-            Assert.assertNotNull( args );
-            m_state = DlgState.fromBundle( args );
+        if ( m_state == null ) {
+            if ( null != sis ) {
+                m_state = (DlgState)sis.getParcelable( STATE_KEY );
+            } else {
+                Bundle args = getArguments();
+                Assert.assertNotNull( args );
+                m_state = DlgState.fromBundle( args );
+            }
         }
         return m_state;
     }
@@ -78,6 +80,12 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
                 .onDismissed( m_state.m_action, m_state.m_params );
         }
         super.onDismiss( dif );
+    }
+
+    @Override
+    protected String getFragTag()
+    {
+        return getState(null).m_id.toString();
     }
 
     protected void checkNotAgainCheck( DlgState state, NotAgainView naView )

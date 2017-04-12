@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 public enum DlgID {
     NONE
-    , LOOKUP
     , CHANGE_GROUP
     , CONFIRM_CHANGE
     , CONFIRM_CHANGE_PLAY
@@ -64,7 +63,6 @@ public enum DlgID {
     , ASK_PASSWORD
     , DLG_RETRY
     , DLG_SCORES
-    , PICK_TILE_REQUESTTRAY
     , DLG_USEDICT
     , DLG_GETDICT
     , GAMES_LIST_NEWGAME

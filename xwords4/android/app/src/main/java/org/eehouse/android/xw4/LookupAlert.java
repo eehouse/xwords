@@ -31,6 +31,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class LookupAlert extends XWDialogFragment {
+    private static final String TAG = LookupAlert.class.getSimpleName();
     private LookupAlertView m_view;
 
     public static LookupAlert newInstance( String[] words, int lang, boolean noStudy )
@@ -73,4 +74,7 @@ public class LookupAlert extends XWDialogFragment {
         result.setOnKeyListener( m_view );
         return result;
     }
+
+    @Override
+    protected String getFragTag() { return TAG; }
 }

@@ -357,16 +357,29 @@ public class MainActivity extends XWActivity
 
     private void logPaneFragments()
     {
-        if ( BuildConfig.DEBUG && null != m_root ) {
-            List<String> pairs = new ArrayList<>();
-            int childCount = m_root.getChildCount();
-            for ( int ii = 0; ii < childCount; ++ii ) {
-                View child = m_root.getChildAt( ii );
-                String name = findFragment( child ).getClass().getSimpleName();
-                String pair = String.format("%d:%s", ii, name );
-                pairs.add( pair );
+        if ( BuildConfig.DEBUG ) {
+            List<String> panePairs = new ArrayList<>();
+            if ( null != m_root ) {
+                int childCount = m_root.getChildCount();
+                for ( int ii = 0; ii < childCount; ++ii ) {
+                    View child = m_root.getChildAt( ii );
+                    String name = findFragment( child ).getClass().getSimpleName();
+                    String pair = String.format("%d:%s", ii, name );
+                    panePairs.add( pair );
+                }
             }
-            Log.d( TAG, "logPaneFragments(): %s", TextUtils.join(", ", pairs) );
+
+            FragmentManager fm = getSupportFragmentManager();
+            List<String> fragPairs = new ArrayList<>();
+            int fragCount = fm.getBackStackEntryCount();
+            for ( int ii = 0; ii < fragCount; ++ii ) {
+                FragmentManager.BackStackEntry entry = fm.getBackStackEntryAt( ii );
+                String name = entry.getName();
+                String pair = String.format("%d:%s", ii, name );
+                fragPairs.add( pair );
+            }
+            Log.d( TAG, "panes: [%s]; frags: [%s]", TextUtils.join(",", panePairs),
+                   TextUtils.join(",", fragPairs) );
         }
     }
 
