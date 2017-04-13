@@ -74,12 +74,12 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
     @Override
     public void onDismiss( DialogInterface dif )
     {
+        super.onDismiss( dif );
         Activity activity = getActivity();
         if ( activity instanceof DlgClickNotify ) {
             ((DlgClickNotify)activity)
                 .onDismissed( m_state.m_action, m_state.m_params );
         }
-        super.onDismiss( dif );
     }
 
     @Override
@@ -108,7 +108,7 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
             @Override
             public void onClick( DialogInterface dlg, int button ) {
                 checkNotAgainCheck( m_state, naView );
-                XWActivity xwact = (XWActivity)getActivity();
+                DlgClickNotify xwact = (DlgClickNotify)getActivity();
                 xwact.onPosButton( pair.action, m_state.m_params );
             }
         };

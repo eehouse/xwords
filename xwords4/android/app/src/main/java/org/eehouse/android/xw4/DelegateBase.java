@@ -436,8 +436,9 @@ public class DelegateBase implements DlgClickNotify,
         return null;
     }
 
-    protected void showDialogFragment( DlgID dlgID, Object... params )
+    protected void showDialogFragment( DlgID dlgID, final Object... params )
     {
+        DbgUtils.assertOnUIThread();
         show( DBAlert.newInstance( dlgID, params ) );
     }
 
@@ -469,6 +470,7 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void show( XWDialogFragment df )
     {
+        DbgUtils.assertOnUIThread();
         if ( m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );
         } else if ( m_activity instanceof PrefsActivity ) {
@@ -668,8 +670,7 @@ public class DelegateBase implements DlgClickNotify,
     public boolean onPosButton( Action action, Object[] params )
     {
         boolean handled = true;
-        Log.d( TAG, "%s.posButtonClicked(%s)", getClass().getSimpleName(),
-               action.toString() );
+        Log.d( TAG, "%s.onPosButton(%s)", getClass().getSimpleName(), action );
         switch( action ) {
         case ENABLE_SMS_ASK:
             showSMSEnableDialog( Action.ENABLE_SMS_DO );

@@ -72,19 +72,22 @@ abstract class XWDialogFragment extends DialogFragment {
     @Override
     public void onCancel( DialogInterface dialog )
     {
+        super.onCancel( dialog );
+        // Log.d( TAG, "%s.onCancel() called", getClass().getSimpleName() );
         if ( null != m_onCancel ) {
             m_onCancel.onCancelled( this );
         }
-        super.onCancel( dialog );
     }
 
     @Override
     public void onDismiss( DialogInterface dif )
     {
+        // Log.d( TAG, "%s.onDismiss() called", getClass().getSimpleName() );
+        super.onDismiss( dif );
+
         if ( null != m_onDismiss ) {
             m_onDismiss.onDismissed( this );
         }
-        super.onDismiss( dif );
     }
 
     abstract String getFragTag();

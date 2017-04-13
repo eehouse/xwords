@@ -1747,11 +1747,17 @@ public class BoardDelegate extends DelegateBase
 
         // This is supposed to be called from the jni thread
         @Override
-        public void notifyPickTileBlank( int playerNum, int col, int row, String[] texts )
+        public void notifyPickTileBlank( int playerNum, int col, int row,
+                                         String[] texts )
         {
-            TilePickAlert.TilePickState tps =
+            final TilePickAlert.TilePickState tps =
                 new TilePickAlert.TilePickState( playerNum, texts, col, row );
-            show( TilePickAlert.newInstance( Action.BLANK_PICKED, tps ) );
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        show( TilePickAlert.newInstance( Action.BLANK_PICKED, tps ) );
+                    }
+                } );
         }
 
         @Override
@@ -1759,10 +1765,15 @@ public class BoardDelegate extends DelegateBase
                                          int playerNum, int nToPick,
                                          String[] texts, int[] counts )
         {
-            TilePickAlert.TilePickState tps
+            final TilePickAlert.TilePickState tps
                 = new TilePickAlert.TilePickState( isInitial, playerNum, nToPick,
                                                    texts, counts );
-            show( TilePickAlert.newInstance( Action.TRAY_PICKED, tps ) );
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        show( TilePickAlert.newInstance( Action.TRAY_PICKED, tps ) );
+                    }
+                } );
         }
 
         @Override

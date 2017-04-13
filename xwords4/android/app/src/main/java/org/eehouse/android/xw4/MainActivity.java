@@ -130,6 +130,7 @@ public class MainActivity extends XWActivity
         if ( m_safeToCommit ) {
             handled = dispatchNewIntentImpl( intent );
         } else {
+            DbgUtils.assertOnUIThread();
             m_runWhenSafe.add( new Runnable() {
                     @Override
                     public void run() {
@@ -300,7 +301,7 @@ public class MainActivity extends XWActivity
     protected void finishFragment()
     {
         // Assert.assertTrue( fragment instanceof XWFragment );
-        // DbgUtils.logf( "MainActivity.finishFragment(%s)", fragment.toString() );
+        // Log.d( TAG, "finishFragment()" );
         getSupportFragmentManager().popBackStack/*Immediate*/();
     }
 
@@ -465,6 +466,7 @@ public class MainActivity extends XWActivity
         if ( m_safeToCommit ) {
             safeAddFragment( fragment, parentName );
         } else {
+            DbgUtils.assertOnUIThread();
             m_runWhenSafe.add( new Runnable() {
                     @Override
                     public void run() {
@@ -516,6 +518,7 @@ public class MainActivity extends XWActivity
 
     private void setSafeToRun()
     {
+        DbgUtils.assertOnUIThread();
         m_safeToCommit = true;
         for ( Runnable proc : m_runWhenSafe ) {
             proc.run();

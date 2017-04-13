@@ -285,19 +285,26 @@ public class XWActivity extends FragmentActivity
     {
         FragmentManager fm = getSupportFragmentManager();
         String tag = df.getFragTag();
-        Log.d( TAG, "%s.show(%s) called; tag: %s", getClass().getSimpleName(),
-               df.getClass().getSimpleName(), tag );
-        FragmentTransaction trans = fm.beginTransaction();
-        Fragment prev = fm.findFragmentByTag( tag );
-        if ( null != prev && prev instanceof DialogFragment ) {
-            Log.d( TAG, "removing %s (tag %s)",
-                   prev.getClass().getSimpleName(), tag );
-            ((DialogFragment)prev).dismiss();
-        }
-        trans.addToBackStack( tag );
+        if ( true ) {
+            df.show( fm, tag );
+        } else {
+            Log.d( TAG, "%s.show(%s) called; tag: %s", getClass().getSimpleName(),
+                   df.getClass().getSimpleName(), tag );
+            FragmentTransaction trans = fm.beginTransaction();
 
-        // Create and show the dialog. show() commits the transaction
-        df.show( trans, tag );
+            Fragment prev = fm.findFragmentByTag( tag );
+            if ( null != prev && prev instanceof DialogFragment ) {
+                Log.d( TAG, "show(): removing %s (tag %s)",
+                       prev.getClass().getSimpleName(), tag );
+                ((DialogFragment)prev).dismiss();
+            } else {
+                Log.d( TAG, "show(): NOT removing or didn't find for tag %s)", tag );
+            }
+            trans.addToBackStack( tag );
+
+            // Create and show the dialog. show() commits the transaction
+            df.show( trans, tag );
+        }
     }
 
     protected Dialog makeDialog( DBAlert alert, Object[] params )
