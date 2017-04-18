@@ -1111,7 +1111,8 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case DISABLE_DUALPANE:
-            XWPrefs.setPrefsBoolean( m_activity, R.string.key_disable_dualpane, true );
+            XWPrefs.setPrefsString( m_activity, R.string.key_force_tablet,
+                                    getString(R.string.force_tablet_phone) );
             makeOkOnlyBuilder( R.string.after_restart ).show();
             break;
 
@@ -2830,9 +2831,12 @@ public class BoardDelegate extends DelegateBase
     {
         if ( !s_dpShown ) {
             s_dpShown = true;
+            // Am I a tablet AND is that because my size says so rather than
+            // my having overridden it
             if ( XWPrefs.getIsTablet( m_activity )
-                 && !XWPrefs.getPrefsBoolean( m_activity, R.string
-                                              .key_disable_dualpane, false )
+                 && getString(R.string.force_tablet_default)
+                 .equals(XWPrefs.getPrefsString(m_activity,
+                                                R.string.key_force_tablet))
                  && !Utils.onFirstVersion(m_activity ) ) {
                 makeNotAgainBuilder( R.string.invite_dualpane,
                                      R.string.key_notagain_dualpane )

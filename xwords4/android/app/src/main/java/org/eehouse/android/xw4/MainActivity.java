@@ -65,7 +65,7 @@ public class MainActivity extends XWActivity
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        m_dpEnabled = XWPrefs.dualpaneEnabled( this ) && XWPrefs.getIsTablet( this );
+        m_dpEnabled = XWPrefs.getIsTablet( this );
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
             : new GamesListDelegate( this, savedInstanceState );
