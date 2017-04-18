@@ -2301,12 +2301,7 @@ public class BoardDelegate extends DelegateBase
             Assert.fail();
         }
 
-        final int fTitle = dlgTitle;
-        runOnUiThread( new Runnable() {
-                public void run() {
-                    showDialogFragment( dlgID, fTitle, txt );
-                }
-            } );
+        showDialogFragment( dlgID, dlgTitle, txt );
     }
 
     private void showInviteAlertIf()

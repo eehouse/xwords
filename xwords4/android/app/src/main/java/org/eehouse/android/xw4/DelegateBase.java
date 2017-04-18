@@ -436,10 +436,14 @@ public class DelegateBase implements DlgClickNotify,
         return null;
     }
 
-    protected void showDialogFragment( DlgID dlgID, final Object... params )
+    protected void showDialogFragment( final DlgID dlgID, final Object... params )
     {
-        DbgUtils.assertOnUIThread();
-        show( DBAlert.newInstance( dlgID, params ) );
+        runOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    show( DBAlert.newInstance( dlgID, params ) );
+                }
+            } );
     }
 
     protected void show( DlgState state )
