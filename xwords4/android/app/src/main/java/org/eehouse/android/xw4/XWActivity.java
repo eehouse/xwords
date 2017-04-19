@@ -111,7 +111,7 @@ public class XWActivity extends FragmentActivity
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "%s.onStart(this=%H)", this );
+            Log.i( TAG, "%s.onStart(this=%H)", getClass().getSimpleName(), this );
         }
         super.onStart();
         m_dlgt.onStart();
@@ -121,7 +121,7 @@ public class XWActivity extends FragmentActivity
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "%s.onStop(this=%H)", this );
+            Log.i( TAG, "%s.onStop(this=%H)", getClass().getSimpleName(), this );
         }
         m_dlgt.onStop();
         super.onStop();
