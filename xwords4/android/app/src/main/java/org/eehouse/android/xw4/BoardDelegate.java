@@ -1185,7 +1185,7 @@ public class BoardDelegate extends DelegateBase
 
     @Override
     public void inviteChoiceMade( Action action, InviteMeans means,
-                                  Object[] params )
+                                  Object... params )
     {
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
             SentInvitesInfo info = params[0] instanceof SentInvitesInfo

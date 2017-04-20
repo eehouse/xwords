@@ -334,7 +334,7 @@ public class XWActivity extends FragmentActivity
     }
 
     @Override
-    public void inviteChoiceMade( Action action, InviteMeans means, Object[] params )
+    public void inviteChoiceMade( Action action, InviteMeans means, Object... params )
     {
         m_dlgt.inviteChoiceMade( action, means, params );
     }
