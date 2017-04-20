@@ -118,6 +118,7 @@ public class BoardDelegate extends DelegateBase
     private int[] m_missingCounts;
     private InviteMeans m_missingMeans = null;
     private boolean m_progressShown = false;
+    private boolean m_isFirstLaunch;
     private boolean m_firingPrefs;
     private BoardUtilCtxt m_utils;
     private boolean m_gameOver = false;
@@ -563,6 +564,7 @@ public class BoardDelegate extends DelegateBase
 
     protected void init( Bundle savedInstanceState )
     {
+        m_isFirstLaunch = null == savedInstanceState;
         getBundledData( savedInstanceState );
 
         m_pendingChats = new ArrayList<String>();
@@ -2093,8 +2095,10 @@ public class BoardDelegate extends DelegateBase
                                       gi.dictLang );
                         break;
                     case JNIThread.GAME_OVER:
-                        showDialogFragment( DlgID.GAME_OVER, m_summary, msg.arg1,
-                                            (String)msg.obj );
+                        if ( m_isFirstLaunch ) {
+                            showDialogFragment( DlgID.GAME_OVER, m_summary, msg.arg1,
+                                                (String)msg.obj );
+                        }
                         break;
                     case JNIThread.MSGS_SENT:
                         int nSent = (Integer)msg.obj;
