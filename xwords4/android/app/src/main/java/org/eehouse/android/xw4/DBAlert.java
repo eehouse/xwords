@@ -73,6 +73,13 @@ public class DBAlert extends XWDialogFragment {
     }
 
     @Override
+    public boolean belongsOnBackStack()
+    {
+        boolean result = getDlgID().belongsOnBackStack();
+        return result;
+    }
+
+    @Override
     public String getFragTag()
     {
         return getDlgID().toString();

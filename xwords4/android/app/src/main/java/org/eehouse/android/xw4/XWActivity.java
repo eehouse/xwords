@@ -51,7 +51,8 @@ public class XWActivity extends FragmentActivity
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "onCreate(this=%H)", this );
+            Log.i( TAG, "%s.onCreate(this=%H,sis=%s)", getClass().getSimpleName(),
+                   this, savedInstanceState );
         }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
@@ -285,25 +286,18 @@ public class XWActivity extends FragmentActivity
     {
         FragmentManager fm = getSupportFragmentManager();
         String tag = df.getFragTag();
-        if ( true ) {
-            df.show( fm, tag );
-        } else {
-            Log.d( TAG, "%s.show(%s) called; tag: %s", getClass().getSimpleName(),
-                   df.getClass().getSimpleName(), tag );
+        // Log.d( TAG, "show(%s); tag: %s", df.getClass().getSimpleName(), tag );
+        if ( df.belongsOnBackStack() ) {
             FragmentTransaction trans = fm.beginTransaction();
 
             Fragment prev = fm.findFragmentByTag( tag );
             if ( null != prev && prev instanceof DialogFragment ) {
-                Log.d( TAG, "show(): removing %s (tag %s)",
-                       prev.getClass().getSimpleName(), tag );
                 ((DialogFragment)prev).dismiss();
-            } else {
-                Log.d( TAG, "show(): NOT removing or didn't find for tag %s)", tag );
             }
             trans.addToBackStack( tag );
-
-            // Create and show the dialog. show() commits the transaction
             df.show( trans, tag );
+        } else {
+            df.show( fm, tag );
         }
     }
 

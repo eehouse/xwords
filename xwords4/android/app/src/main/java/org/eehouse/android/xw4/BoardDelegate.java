@@ -2804,8 +2804,10 @@ public class BoardDelegate extends DelegateBase
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
 
         if ( !invitesSent ) {
-            m_inviteAlert.dismiss();
-            m_inviteAlert = null;
+            if ( null != m_inviteAlert ) {
+                m_inviteAlert.dismiss();
+                m_inviteAlert = null;
+            }
             Log.d( TAG, "recordInviteSent(): redoing invite alert" );
             showInviteAlertIf();
         }

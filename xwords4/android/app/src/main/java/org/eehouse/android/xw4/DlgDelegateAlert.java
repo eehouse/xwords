@@ -88,6 +88,13 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
         return getState(null).m_id.toString();
     }
 
+    @Override
+    public boolean belongsOnBackStack()
+    {
+        boolean result = getState(null).m_id.belongsOnBackStack();
+        return result;
+    }
+
     protected void checkNotAgainCheck( DlgState state, NotAgainView naView )
     {
         if ( null != naView && naView.getChecked() ) {

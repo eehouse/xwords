@@ -46,6 +46,8 @@ abstract class XWDialogFragment extends DialogFragment {
         void onCancelled( XWDialogFragment frag );
     }
 
+    abstract String getFragTag();
+
     @Override
     public void onResume()
     {
@@ -90,7 +92,7 @@ abstract class XWDialogFragment extends DialogFragment {
         }
     }
 
-    abstract String getFragTag();
+    public boolean belongsOnBackStack() { return false; }
 
     protected void setOnDismissListener( OnDismissListener lstnr )
     {
