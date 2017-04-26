@@ -2223,8 +2223,8 @@ public class BoardDelegate extends DelegateBase
                         m_relayMissing = false;
                     }
                     if ( 0 == nMissing || !m_relayMissing ) {
+                        Log.d( TAG, "dismissing invite alert %H", m_inviteAlert );
                         if ( null != m_inviteAlert ) {
-                            Log.d( TAG, "dismissing invite alert" );
                             m_inviteAlert.dismiss();
                         }
                     }
