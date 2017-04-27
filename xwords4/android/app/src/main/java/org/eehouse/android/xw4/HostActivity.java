@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh installXw4Debug"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,16 +20,11 @@
 package org.eehouse.android.xw4;
 
 import android.os.Bundle;
-import android.app.Activity;
-import android.content.Intent;
 
 public class HostActivity extends XWActivity {
-    private HostDelegate m_dlgt;
 
     @Override
     public void onCreate( Bundle sis ) {
-        m_dlgt = new HostDelegate( this, sis );
-        super.onCreate( sis, m_dlgt );
+        super.onCreate( sis, new HostDelegate( this, sis ) );
     }
-
 }

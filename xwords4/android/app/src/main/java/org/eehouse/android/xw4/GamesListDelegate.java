@@ -930,20 +930,6 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected void prepareDialog( DlgID dlgID, Dialog dialog )
-    {
-        Assert.fail();
-        /*
-        AlertDialog ad = (AlertDialog)dialog;
-        switch( dlgID ) {
-        case CHANGE_GROUP:
-            ad.getButton( AlertDialog.BUTTON_POSITIVE ).setEnabled( false );
-            break;
-        }
-        */
-    }
-
-    @Override
     protected void init( Bundle savedInstanceState )
     {
         m_origTitle = getTitle();

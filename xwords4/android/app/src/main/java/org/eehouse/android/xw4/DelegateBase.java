@@ -100,6 +100,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void onCreateContextMenu( ContextMenu menu, View view,
                                         ContextMenuInfo menuInfo ) {}
     protected boolean onContextItemSelected( MenuItem item ) { return false; }
+    protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean handleBackPressed() { return false; }
@@ -154,16 +155,6 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_isVisible = false;
         XWService.setListener( null );
-    }
-
-    protected void onStop()
-    {
-        // Alerts disappear on their own if not in dualpane mode
-        if ( false
-             && m_activity instanceof MainActivity
-             && ((MainActivity)m_activity).inDPMode() ) {
-            DlgDelegate.closeAlerts( m_activity, this );
-        }
     }
 
     protected DelegateBase curThis()
@@ -433,6 +424,7 @@ public class DelegateBase implements DlgClickNotify,
     {
         DlgID dlgID = alert.getDlgID();
         Log.d( TAG, "makeDialog(): not handling %s", dlgID.toString() );
+        Assert.assertFalse( BuildConfig.DEBUG );
         return null;
     }
 

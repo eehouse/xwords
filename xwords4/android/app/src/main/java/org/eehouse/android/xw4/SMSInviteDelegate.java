@@ -125,7 +125,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         if ( Activity.RESULT_CANCELED != resultCode && data != null ) {
             switch ( requestCode ) {
             case GET_CONTACT:
-                post ( new Runnable() {
+                post( new Runnable() {
                         @Override
                         public void run() {
                             addPhoneNumbers( data );

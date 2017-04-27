@@ -83,15 +83,8 @@ public class BoardDelegate extends DelegateBase
                NFCUtils.NFCActor {
     private static final String TAG = BoardDelegate.class.getSimpleName();
 
-    public static final String INTENT_KEY_CHAT = "chat";
-
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
-    private static final String DLG_TITLE = "DLG_TITLE";
-    private static final String DLG_TITLESTR = "DLG_TITLESTR";
-    private static final String DLG_BYTES = "DLG_BYTES";
-    private static final String ROOM = "ROOM";
-    private static final String PWDNAME = "PWDNAME";
     private static final String SAVE_MYSIS = TAG + "/MYSIS";
 
     private Activity m_activity;
