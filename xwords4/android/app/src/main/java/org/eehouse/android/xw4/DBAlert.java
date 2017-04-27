@@ -26,6 +26,9 @@ import android.os.Bundle;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -62,12 +65,30 @@ public class DBAlert extends XWDialogFragment {
 
     public DBAlert() {}
 
-    public DlgID getDlgID() { return mDlgID; }
+    public DlgID getDlgID() {
+        if ( null == mDlgID ) {
+            mDlgID = DlgID.values()[getArguments().getInt(DLG_ID_KEY, -1)];
+        }
+        return mDlgID;
+    }
+
+    @Override
+    public boolean belongsOnBackStack()
+    {
+        boolean result = getDlgID().belongsOnBackStack();
+        return result;
+    }
+
+    @Override
+    public String getFragTag()
+    {
+        return getDlgID().toString();
+    }
 
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
-        bundle.putInt( DLG_ID_KEY, mDlgID.ordinal() );
+        bundle.putInt( DLG_ID_KEY, getDlgID().ordinal() );
         bundle.putSerializable( PARMS_KEY, mParams );
         super.onSaveInstanceState( bundle );
     }
@@ -78,7 +99,6 @@ public class DBAlert extends XWDialogFragment {
         if ( null == sis ) {
             sis = getArguments();
         }
-        mDlgID = DlgID.values()[sis.getInt(DLG_ID_KEY, -1)];
         mParams = (Object[])sis.getSerializable(PARMS_KEY);
         
         XWActivity activity = (XWActivity)getActivity();
@@ -87,7 +107,8 @@ public class DBAlert extends XWDialogFragment {
         if ( null == dialog ) {
             dialog = LocUtils.makeAlertBuilder( getActivity() )
                 .setTitle( "Stub Alert" )
-                .setMessage( String.format( "Unable to create for %s", mDlgID.toString() ) )
+                .setMessage( String.format( "Unable to create for %s",
+                                            getDlgID().toString() ) )
                 .setPositiveButton( "Bummer", null )
                 // .setNegativeButton( "Try now", new OnClickListener() {
                 //         @Override
@@ -103,7 +124,7 @@ public class DBAlert extends XWDialogFragment {
                     public void run() {
                         MainActivity activity = (MainActivity)getActivity();
                         if ( null != activity ) {
-                            DBAlert newMe = newInstance( mDlgID, mParams );
+                            DBAlert newMe = newInstance( getDlgID(), mParams );
                             activity.show( newMe );
                             dismiss();          // kill myself...
                         } else {

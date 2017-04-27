@@ -2316,11 +2316,9 @@
     what\'s available.</string>
 
     <string name="force_tablet_title">Use tablet (side-by-side) layout?</string>
-    <string name="force_tablet_os">OS decides</string>
+    <string name="force_tablet_default">Use default for my device</string>
     <string name="force_tablet_tablet">Force tablet layout</string>
     <string name="force_tablet_phone">Force phone layout</string>
-
-    <string name="disable_dualpane_summary">Side-by-side views on tablets</string>
 
     <!-- Nagging: title of notification reminder message -->
     <string name="nag_title">Reminder: It\'s your turn</string>
@@ -2612,12 +2610,12 @@
   <string name="no_invites">This game has sent no invitations</string>
 
   <string name="invite_dualpane">This new version of CrossWords lets
-  devices like yours view two panes (e.g. Games List and Board)
-  side-by-side. That\'s when your device is horizontal; when it\'s
-  vertical there\'s no change.\n\n
+  larger-screened devices like yours view two panes (e.g. Games List
+  and Board) side-by-side. You\'ll notice this when your device is
+  horizontal; when it\'s vertical there\'s no change.\n\n
 
-  I hope you like it. If you don\'t you can disable it below or in App
-  Settings.</string>
+  I hope you like it. If you don\'t you can disable it below or in the
+  Appearance section of App Settings.</string>
 
   <string name="disable_dualpane">Disable side-by-side</string>
   <string name="after_restart">This change will take effect after you

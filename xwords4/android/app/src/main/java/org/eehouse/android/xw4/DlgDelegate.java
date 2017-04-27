@@ -301,7 +301,7 @@ public class DlgDelegate {
         boolean onNegButton( Action action, Object... params );
         boolean onDismissed( Action action, Object... params );
 
-        void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
+        void inviteChoiceMade( Action action, InviteMeans means, Object... params );
     }
     public interface HasDlgDelegate {
         OkOnlyBuilder makeOkOnlyBuilder( int msgID );
@@ -450,7 +450,7 @@ public class DlgDelegate {
                     public void run() {
                         DlgClickNotify.InviteMeans means
                             = DlgClickNotify.InviteMeans.EMAIL;
-                        m_clickCallback.inviteChoiceMade( action, means, null );
+                        m_clickCallback.inviteChoiceMade( action, means );
                     }
                 });
         }

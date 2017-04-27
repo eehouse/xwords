@@ -238,7 +238,7 @@ task cleanNDK(type: Exec) {
 }
 
 gradle.taskGraph.whenReady { taskGraph ->
-    if ( taskGraph.hasTask(':app:validateReleaseSigning') ) {
+    if ( taskGraph.hasTask(':app:validateSigningXw4Release') ) {
         def pass
         if (System.getenv("ANDROID_RELEASE_PASSWORD")) {
             pass = System.getenv("ANDROID_RELEASE_PASSWORD")

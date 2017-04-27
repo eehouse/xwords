@@ -65,7 +65,7 @@ public class MainActivity extends XWActivity
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        m_dpEnabled = XWPrefs.dualpaneEnabled( this );
+        m_dpEnabled = XWPrefs.getIsTablet( this );
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
             : new GamesListDelegate( this, savedInstanceState );
@@ -130,6 +130,7 @@ public class MainActivity extends XWActivity
         if ( m_safeToCommit ) {
             handled = dispatchNewIntentImpl( intent );
         } else {
+            DbgUtils.assertOnUIThread();
             m_runWhenSafe.add( new Runnable() {
                     @Override
                     public void run() {
@@ -300,7 +301,7 @@ public class MainActivity extends XWActivity
     protected void finishFragment()
     {
         // Assert.assertTrue( fragment instanceof XWFragment );
-        // DbgUtils.logf( "MainActivity.finishFragment(%s)", fragment.toString() );
+        // Log.d( TAG, "finishFragment()" );
         getSupportFragmentManager().popBackStack/*Immediate*/();
     }
 
@@ -358,15 +359,28 @@ public class MainActivity extends XWActivity
     private void logPaneFragments()
     {
         if ( BuildConfig.DEBUG ) {
-            List<String> pairs = new ArrayList<>();
-            int childCount = m_root.getChildCount();
-            for ( int ii = 0; ii < childCount; ++ii ) {
-                View child = m_root.getChildAt( ii );
-                String name = findFragment( child ).getClass().getSimpleName();
-                String pair = String.format("%d:%s", ii, name );
-                pairs.add( pair );
+            List<String> panePairs = new ArrayList<>();
+            if ( null != m_root ) {
+                int childCount = m_root.getChildCount();
+                for ( int ii = 0; ii < childCount; ++ii ) {
+                    View child = m_root.getChildAt( ii );
+                    String name = findFragment( child ).getClass().getSimpleName();
+                    String pair = String.format("%d:%s", ii, name );
+                    panePairs.add( pair );
+                }
             }
-            Log.d( TAG, "logPaneFragments(): %s", TextUtils.join(", ", pairs) );
+
+            FragmentManager fm = getSupportFragmentManager();
+            List<String> fragPairs = new ArrayList<>();
+            int fragCount = fm.getBackStackEntryCount();
+            for ( int ii = 0; ii < fragCount; ++ii ) {
+                FragmentManager.BackStackEntry entry = fm.getBackStackEntryAt( ii );
+                String name = entry.getName();
+                String pair = String.format("%d:%s", ii, name );
+                fragPairs.add( pair );
+            }
+            Log.d( TAG, "panes: [%s]; frags: [%s]", TextUtils.join(",", panePairs),
+                   TextUtils.join(",", fragPairs) );
         }
     }
 
@@ -452,6 +466,7 @@ public class MainActivity extends XWActivity
         if ( m_safeToCommit ) {
             safeAddFragment( fragment, parentName );
         } else {
+            DbgUtils.assertOnUIThread();
             m_runWhenSafe.add( new Runnable() {
                     @Override
                     public void run() {
@@ -503,6 +518,7 @@ public class MainActivity extends XWActivity
 
     private void setSafeToRun()
     {
+        DbgUtils.assertOnUIThread();
         m_safeToCommit = true;
         for ( Runnable proc : m_runWhenSafe ) {
             proc.run();

@@ -473,7 +473,7 @@ public class XWPrefs {
     {
         boolean result = isTablet( context );
         String setting = getPrefsString( context, R.string.key_force_tablet );
-        if ( setting.equals( context.getString(R.string.force_tablet_os) ) ) {
+        if ( setting.equals( context.getString(R.string.force_tablet_default) ) ) {
             // Leave it alone
         } else if ( setting.equals( context.getString(R.string.force_tablet_tablet) ) ) {
             result = true;
@@ -483,11 +483,6 @@ public class XWPrefs {
 
         // Log.d( TAG, "getIsTablet() => %b (got %s)", result, setting );
         return result;
-    }
-
-    public static boolean dualpaneEnabled( Context context )
-    {
-        return ! getPrefsBoolean( context, R.string.key_disable_dualpane, false );
     }
 
     public static CommsConnTypeSet getAddrTypes( Context context )

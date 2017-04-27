@@ -118,6 +118,7 @@ public class BoardDelegate extends DelegateBase
     private int[] m_missingCounts;
     private InviteMeans m_missingMeans = null;
     private boolean m_progressShown = false;
+    private boolean m_isFirstLaunch;
     private boolean m_firingPrefs;
     private BoardUtilCtxt m_utils;
     private boolean m_gameOver = false;
@@ -309,9 +310,8 @@ public class BoardDelegate extends DelegateBase
             int title = (Integer)params[0];
             String msg = (String)params[1];
             ab.setMessage( msg );
-            if ( 0 != title ) {
-                ab.setTitle( title );
-            }
+            Assert.assertTrue( 0 != title );
+            ab.setTitle( title );
             ab.setPositiveButton( android.R.string.ok, null );
             if ( DlgID.DLG_SCORES == dlgID ) {
                 if ( null != m_mySIS.words && m_mySIS.words.length > 0 ) {
@@ -564,6 +564,7 @@ public class BoardDelegate extends DelegateBase
 
     protected void init( Bundle savedInstanceState )
     {
+        m_isFirstLaunch = null == savedInstanceState;
         getBundledData( savedInstanceState );
 
         m_pendingChats = new ArrayList<String>();
@@ -1112,7 +1113,8 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case DISABLE_DUALPANE:
-            XWPrefs.setPrefsBoolean( m_activity, R.string.key_disable_dualpane, true );
+            XWPrefs.setPrefsString( m_activity, R.string.key_force_tablet,
+                                    getString(R.string.force_tablet_phone) );
             makeOkOnlyBuilder( R.string.after_restart ).show();
             break;
 
@@ -1183,7 +1185,7 @@ public class BoardDelegate extends DelegateBase
 
     @Override
     public void inviteChoiceMade( Action action, InviteMeans means,
-                                  Object[] params )
+                                  Object... params )
     {
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
             SentInvitesInfo info = params[0] instanceof SentInvitesInfo
@@ -1748,11 +1750,17 @@ public class BoardDelegate extends DelegateBase
 
         // This is supposed to be called from the jni thread
         @Override
-        public void notifyPickTileBlank( int playerNum, int col, int row, String[] texts )
+        public void notifyPickTileBlank( int playerNum, int col, int row,
+                                         String[] texts )
         {
-            TilePickAlert.TilePickState tps =
+            final TilePickAlert.TilePickState tps =
                 new TilePickAlert.TilePickState( playerNum, texts, col, row );
-            show( TilePickAlert.newInstance( Action.BLANK_PICKED, tps ) );
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        show( TilePickAlert.newInstance( Action.BLANK_PICKED, tps ) );
+                    }
+                } );
         }
 
         @Override
@@ -1760,10 +1768,15 @@ public class BoardDelegate extends DelegateBase
                                          int playerNum, int nToPick,
                                          String[] texts, int[] counts )
         {
-            TilePickAlert.TilePickState tps
+            final TilePickAlert.TilePickState tps
                 = new TilePickAlert.TilePickState( isInitial, playerNum, nToPick,
                                                    texts, counts );
-            show( TilePickAlert.newInstance( Action.TRAY_PICKED, tps ) );
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        show( TilePickAlert.newInstance( Action.TRAY_PICKED, tps ) );
+                    }
+                } );
         }
 
         @Override
@@ -2082,8 +2095,10 @@ public class BoardDelegate extends DelegateBase
                                       gi.dictLang );
                         break;
                     case JNIThread.GAME_OVER:
-                        showDialogFragment( DlgID.GAME_OVER, m_summary, msg.arg1,
-                                            (String)msg.obj );
+                        if ( m_isFirstLaunch ) {
+                            showDialogFragment( DlgID.GAME_OVER, m_summary, msg.arg1,
+                                                (String)msg.obj );
+                        }
                         break;
                     case JNIThread.MSGS_SENT:
                         int nSent = (Integer)msg.obj;
@@ -2208,8 +2223,8 @@ public class BoardDelegate extends DelegateBase
                         m_relayMissing = false;
                     }
                     if ( 0 == nMissing || !m_relayMissing ) {
+                        Log.d( TAG, "dismissing invite alert %H", m_inviteAlert );
                         if ( null != m_inviteAlert ) {
-                            Log.d( TAG, "dismissing invite alert" );
                             m_inviteAlert.dismiss();
                         }
                     }
@@ -2290,12 +2305,7 @@ public class BoardDelegate extends DelegateBase
             Assert.fail();
         }
 
-        final int fTitle = dlgTitle;
-        runOnUiThread( new Runnable() {
-                public void run() {
-                    showDialogFragment( dlgID, fTitle, txt );
-                }
-            } );
+        showDialogFragment( dlgID, dlgTitle, txt );
     }
 
     private void showInviteAlertIf()
@@ -2794,8 +2804,10 @@ public class BoardDelegate extends DelegateBase
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
 
         if ( !invitesSent ) {
-            m_inviteAlert.dismiss();
-            m_inviteAlert = null;
+            if ( null != m_inviteAlert ) {
+                m_inviteAlert.dismiss();
+                m_inviteAlert = null;
+            }
             Log.d( TAG, "recordInviteSent(): redoing invite alert" );
             showInviteAlertIf();
         }
@@ -2813,12 +2825,19 @@ public class BoardDelegate extends DelegateBase
 
     // If I'm upgrading and running this for the first time show an
     // explanation about the new dualpane feature
+    //
+    // TODO remove a few weeks after shipping a version that includes it
     private static boolean s_dpShown = false;
     private void checkAddDualpaneExpl()
     {
         if ( !s_dpShown ) {
             s_dpShown = true;
+            // Am I a tablet AND is that because my size says so rather than
+            // my having overridden it
             if ( XWPrefs.getIsTablet( m_activity )
+                 && getString(R.string.force_tablet_default)
+                 .equals(XWPrefs.getPrefsString(m_activity,
+                                                R.string.key_force_tablet))
                  && !Utils.onFirstVersion(m_activity ) ) {
                 makeNotAgainBuilder( R.string.invite_dualpane,
                                      R.string.key_notagain_dualpane )

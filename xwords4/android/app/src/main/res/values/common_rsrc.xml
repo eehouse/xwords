@@ -69,7 +69,6 @@
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
   <string name="key_force_tablet">key_force_tablet2</string>
-  <string name="key_disable_dualpane">key_disable_dualpane2</string>
   <string name="key_force_radio">key_force_radio</string>
   <string name="key_addrs_pref">key_addrs_pref</string>
 
@@ -316,7 +315,7 @@
   </string-array>
 
   <string-array name="force_tablet_names">
-    <item>@string/force_tablet_os</item>
+    <item>@string/force_tablet_default</item>
     <item>@string/force_tablet_phone</item>
     <item>@string/force_tablet_tablet</item>
   </string-array>

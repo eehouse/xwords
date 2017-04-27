@@ -81,6 +81,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         m_activity = delegator.getActivity();
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         String msg = getString( R.string.button_invite );
@@ -119,12 +120,17 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     @Override
     protected void onActivityResult( RequestCode requestCode, int resultCode,
-                                     Intent data )
+                                     final Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode && data != null ) {
             switch ( requestCode ) {
             case GET_CONTACT:
-                addPhoneNumbers( data );
+                post ( new Runnable() {
+                        @Override
+                        public void run() {
+                            addPhoneNumbers( data );
+                        }
+                    } );
                 break;
             }
         }

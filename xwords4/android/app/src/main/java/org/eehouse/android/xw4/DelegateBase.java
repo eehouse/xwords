@@ -436,10 +436,14 @@ public class DelegateBase implements DlgClickNotify,
         return null;
     }
 
-    protected void showDialogFragment( DlgID dlgID, Object... params )
+    protected void showDialogFragment( final DlgID dlgID, final Object... params )
     {
-        DialogFragment fragment = DBAlert.newInstance( dlgID, params );
-        show( fragment );
+        runOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    show( DBAlert.newInstance( dlgID, params ) );
+                }
+            } );
     }
 
     protected void show( DlgState state )
@@ -468,8 +472,9 @@ public class DelegateBase implements DlgClickNotify,
         show( df );
     }
 
-    protected void show( DialogFragment df )
+    protected void show( XWDialogFragment df )
     {
+        DbgUtils.assertOnUIThread();
         if ( m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );
         } else if ( m_activity instanceof PrefsActivity ) {
@@ -669,8 +674,7 @@ public class DelegateBase implements DlgClickNotify,
     public boolean onPosButton( Action action, Object[] params )
     {
         boolean handled = true;
-        Log.d( TAG, "%s.posButtonClicked(%s)", getClass().getSimpleName(),
-               action.toString() );
+        Log.d( TAG, "%s.onPosButton(%s)", getClass().getSimpleName(), action );
         switch( action ) {
         case ENABLE_SMS_ASK:
             showSMSEnableDialog( Action.ENABLE_SMS_DO );
@@ -720,7 +724,7 @@ public class DelegateBase implements DlgClickNotify,
         return false;
     }
 
-    public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object[] params )
+    public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object... params )
     {
         // Assert.fail();
     }

@@ -32,7 +32,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-public class XWDialogFragment extends DialogFragment {
+abstract class XWDialogFragment extends DialogFragment {
     private static final String TAG = XWDialogFragment.class.getSimpleName();
 
     private OnDismissListener m_onDismiss;
@@ -45,6 +45,8 @@ public class XWDialogFragment extends DialogFragment {
     public interface OnCancelListener {
         void onCancelled( XWDialogFragment frag );
     }
+
+    abstract String getFragTag();
 
     @Override
     public void onResume()
@@ -72,20 +74,25 @@ public class XWDialogFragment extends DialogFragment {
     @Override
     public void onCancel( DialogInterface dialog )
     {
+        super.onCancel( dialog );
+        // Log.d( TAG, "%s.onCancel() called", getClass().getSimpleName() );
         if ( null != m_onCancel ) {
             m_onCancel.onCancelled( this );
         }
-        super.onCancel( dialog );
     }
 
     @Override
     public void onDismiss( DialogInterface dif )
     {
+        // Log.d( TAG, "%s.onDismiss() called", getClass().getSimpleName() );
+        super.onDismiss( dif );
+
         if ( null != m_onDismiss ) {
             m_onDismiss.onDismissed( this );
         }
-        super.onDismiss( dif );
     }
+
+    public boolean belongsOnBackStack() { return false; }
 
     protected void setOnDismissListener( OnDismissListener lstnr )
     {

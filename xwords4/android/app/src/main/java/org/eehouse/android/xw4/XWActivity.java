@@ -26,7 +26,10 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -48,7 +51,8 @@ public class XWActivity extends FragmentActivity
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "onCreate(this=%H)", this );
+            Log.i( TAG, "%s.onCreate(this=%H,sis=%s)", getClass().getSimpleName(),
+                   this, savedInstanceState );
         }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
@@ -108,7 +112,7 @@ public class XWActivity extends FragmentActivity
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "%s.onStart(this=%H)", this );
+            Log.i( TAG, "%s.onStart(this=%H)", getClass().getSimpleName(), this );
         }
         super.onStart();
         m_dlgt.onStart();
@@ -118,7 +122,7 @@ public class XWActivity extends FragmentActivity
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "%s.onStop(this=%H)", this );
+            Log.i( TAG, "%s.onStop(this=%H)", getClass().getSimpleName(), this );
         }
         m_dlgt.onStop();
         super.onStop();
@@ -278,9 +282,23 @@ public class XWActivity extends FragmentActivity
         Assert.fail();
     }
 
-    protected void show( DialogFragment df )
+    protected void show( XWDialogFragment df )
     {
-        df.show( getSupportFragmentManager(), "dialog" );
+        FragmentManager fm = getSupportFragmentManager();
+        String tag = df.getFragTag();
+        // Log.d( TAG, "show(%s); tag: %s", df.getClass().getSimpleName(), tag );
+        if ( df.belongsOnBackStack() ) {
+            FragmentTransaction trans = fm.beginTransaction();
+
+            Fragment prev = fm.findFragmentByTag( tag );
+            if ( null != prev && prev instanceof DialogFragment ) {
+                ((DialogFragment)prev).dismiss();
+            }
+            trans.addToBackStack( tag );
+            df.show( trans, tag );
+        } else {
+            df.show( fm, tag );
+        }
     }
 
     protected Dialog makeDialog( DBAlert alert, Object[] params )
@@ -310,7 +328,7 @@ public class XWActivity extends FragmentActivity
     }
 
     @Override
-    public void inviteChoiceMade( Action action, InviteMeans means, Object[] params )
+    public void inviteChoiceMade( Action action, InviteMeans means, Object... params )
     {
         m_dlgt.inviteChoiceMade( action, means, params );
     }

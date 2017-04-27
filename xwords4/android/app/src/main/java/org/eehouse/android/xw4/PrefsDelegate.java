@@ -62,7 +62,7 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_disable_nag,
         R.string.key_disable_nag_solo,
         R.string.key_disable_relay,
-        R.string.key_disable_dualpane,
+        R.string.key_force_tablet,
     };
     private static Map<String, Integer> s_keysHash = null;
 
@@ -235,7 +235,7 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_disable_relay:
                 RelayService.enabledChanged( m_activity );
                 break;
-            case R.string.key_disable_dualpane:
+            case R.string.key_force_tablet:
                 makeOkOnlyBuilder( R.string.after_restart ).show();
                 break;
             default:
@@ -367,20 +367,12 @@ public class PrefsDelegate extends DelegateBase
 
     private void hideStuff()
     {
-        if ( !Utils.isGSMPhone( m_activity ) ) {
+        if ( !Utils.isGSMPhone( m_activity ) || Perms23.haveNativePerms() ) {
             hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
         }
 
         if ( ABUtils.haveActionBar() ) {
             hideOne( R.string.key_hide_title, R.string.prefs_appearance );
-        }
-
-        if ( !XWPrefs.getIsTablet( m_activity ) ) {
-            hideOne( R.string.key_disable_dualpane, R.string.prefs_appearance );
-        }
-
-        if ( Perms23.haveNativePerms() ) {
-            hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
         }
 
         if ( ! BuildConfig.WIDIR_ENABLED ) {

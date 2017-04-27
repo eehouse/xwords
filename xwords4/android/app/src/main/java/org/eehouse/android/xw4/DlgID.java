@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 public enum DlgID {
     NONE
-    , LOOKUP
     , CHANGE_GROUP
     , CONFIRM_CHANGE
     , CONFIRM_CHANGE_PLAY
@@ -33,7 +32,7 @@ public enum DlgID {
     , DICT_OR_DECLINE
     , DLG_CONNSTAT
     , DLG_DELETED
-    , DLG_INVITE
+    , DLG_INVITE(true)
     , DLG_OKONLY
     , ENABLE_NFC
     , FORCE_REMOTE
@@ -64,10 +63,15 @@ public enum DlgID {
     , ASK_PASSWORD
     , DLG_RETRY
     , DLG_SCORES
-    , PICK_TILE_REQUESTTRAY
     , DLG_USEDICT
     , DLG_GETDICT
     , GAMES_LIST_NEWGAME
     , CHANGE_CONN
     , GAMES_LIST_NAME_REMATCH
+    ;
+
+    private boolean m_addToStack;
+    private DlgID(boolean addToStack) { m_addToStack = addToStack; }
+    private DlgID() { m_addToStack = false; }
+    boolean belongsOnBackStack() { return m_addToStack; }
 }
