@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools"
-           tools:ignore="MissingTranslation"
-           >
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="button_new_game">ゲームを追加</string>
     <string name="button_new_group">グループを追加</string>
 
@@ -1216,4 +1214,84 @@
   <string name="after_restart">クロスワードを再起動するまで、
 この変更は有効になりません。</string>
   <string name="db_enabled_toast">サイド・バイ・サイド モードを有効にします</string>
-</resources>
+<string name="invite_choice_p2p">Wifi ダイレクト</string>
+	<string name="bt_pair_settings">ペアの詳細</string>
+
+      <string name="p2p_invite_title">WiFi ダイレクトへの招待</string>
+
+    <plurals name="invite_p2p_desc_fmt">
+	<item quantity="one">新しいゲームに招待する WiFi
+ダイレクトデバイスの名前を選択し、
+\"%2$s\" をタップしてください。</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="invite_p2p_desc_extra">現在利用可能なデバイスだけが表示されます。
+近くのデバイス表示されていない場合、WiFi がオンになっていること、
+クロスワードがインストールされていること、WiFi ダイレクトのプレイが
+有効になっていることを確認してください。</string>
+
+    <string name="empty_p2p_inviter">現在、クロスワードがインストールされている、
+WiFi ダイレクト経由で接続可能なデバイスはありません。</string>
+
+    <string name="not_again_comms_p2p">WiFi ダイレクトを使用して、クロスワードがインストールされた
+近くの WiFi ダイレクト対応デバイスに対してプレイします。</string>
+
+  <string name="missing_perms">このゲームは SMS 経由で通信するように構成されていますが、
+クロスワードにそれを行うアクセス許可がありません。
+まだ、ゲームを開くことができますが、移動を送信または受信できない場合があります。
+
+もう一度開き直して、もう一度アクセス許可を問い合わせることができます。
+または、SMS の通信設定を削除することもできます。</string>
+
+  <string name="download_rationale">"クロスワードは、ダウンロードを保存するために、
+一時ストレージへのアクセスが必要です。
+ "</string>
+
+  <string name="sms_invite_rationale">"
+ クロスワードは、SMS 経由で招待状を送信するためのアクセス許可が必要です。
+ "</string>
+
+  <string name="dicts_storage_rationale">"
+ クロスワードは、デバイスのダウンロード エリアに単語リストを保存したり読むことができますが、そこにアクセスするためのアクセス許可が必要です。
+
+クロスワードの中以外から単語リストをダウンロードしない場合や、以前に何も保存していない場合に、このアクセス許可を安全に拒否することができます。
+ "</string>
+
+  <string name="phone_state_rationale">"
+ 一部の携帯電話は、「データ」の SMS メッセージを交換できます。
+クロスワードはこのオプションを提供したいと思いますが、お使いのデバイス自体に確認する必要があります (携帯電話の種類を知るため)。 
+
+お使いのデバイスが、データ SMS を送信できない (例えば携帯電話ではないため) または SMS 経由でプレイしたくない (例えばメッセージに料金が必要なため) 場合、恒久的に拒否しても安全です。
+ "</string>
+
+  <string name="phone_lookup_rationale">"
+ SMS を使用して再戦するには、クロスワードはお使いの電話番号のアクセス許可が必要です。
+ "</string>
+
+  <string name="phone_lookup_rationale_drop">このアクセス許可がないと、
+この SMS 専用ゲームの再戦はできません。</string>
+  <string name="phone_lookup_rationale_others">このアクセス許可がないと、
+再戦は続行されますが、SMS 経由でプレイできないゲームを作成します。</string>
+
+  <string name="contacts_rationale">"
+ クロスワードは、SMS 経由で招待を送信する電話番号に名前を付けるため、連絡先にアクセスをします。
+このアクセス許可を付与しない場合でも、招待状を受け取ることができますが、送信者の電話番号のみが表示されます。
+ "</string>
+
+  <string name="move_dict_rationale">ダウンロード エリアに単語リストを保存するには、
+アクセス許可が必要です。</string>
+
+  <string name="remove_sms">SMS を削除</string>
+  <string name="button_ask_again">もう一度尋ねる</string>
+  <string name="contact_not_found">連絡先にありません</string>
+  <string name="sms_send_failed">SMS 送信に失敗しました</string>
+  <string name="button_skip">スキップ</string>
+
+  <string name="perms_rationale_title">Android のアクセス許可</string>
+  <string name="toast_no_permission">アクセス許可が付与されていません</string>
+
+<string name="title_enable_p2p">WiFi ダイレクトを有効にする</string>
+    <string name="summary_enable_p2p">実験的。バッテリーを多く使用します</string>
+
+    </resources>

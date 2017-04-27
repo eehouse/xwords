@@ -13,9 +13,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources xmlns:tools="http://schemas.android.com/tools"
-           tools:ignore="MissingTranslation"
-           >
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
   <string name="button_new_game">Afegeix una partida</string>
   <string name="list_item_config">Configuració de la partida…</string>
   <string name="list_item_delete">Suprimeix</string>
@@ -51,8 +49,9 @@
   <string name="board_menu_file_about">Quant al CrossWords…</string>
   <!-- returned by util_getUserString -->
   <plurals name="strd_robot_traded_fmt">
-    <item quantity="other">El robot ha canviat %1$d fitxes en aquest torn.</item>>
-  </plurals>
+	<item quantity="one">ha canviat 1 fitxa.</item>
+	<item quantity="other">ha canviat %1$d fitxes.</item>
+</plurals>
   <!--string name="str_robot_moved">El robot ha fet aquesta jugada:</string-->
   <string name="strs_values_header_fmt">%1$s quantitat/valors:\n</string>
   <string name="strd_remaining_tiles_add_fmt">+ %1$d [fitxes romanents]</string>
@@ -144,7 +143,7 @@
   <string name="bonus_w2x_summary">2P</string>
   <string name="bonus_l3x_summary">3L</string>
   <string name="bonus_w3x_summary">3P</string>
-  <string name="pts">pts</string>
+  <string name="pts">punts</string>
   <string name="tile_back">Fons de la fitxa</string>
   <string name="empty">Cel·la buida/fons</string>
   <string name="clr_crosshairs">Creu d\'ubicació</string>
@@ -491,7 +490,10 @@ que connecti via el repetidor.</string>
     <string name="not_again_unlock">Aquesta partida és en joc. Alguns paràmetres, p. e. el nombre de jugadors, no es poden canviar sense reiniciar-la. En deixar aquesta pantalla podreu descartar els canvis per a evitar la reinicialització.</string>
 
     <string name="default_name_title">Benvingut</string>
-    <string name="default_name_message">Gràcies per instal·lar el CrossWords!\n\nIntroduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu canviar-lo després a la secció «Partida nova predeterminada» de la configuració.)</string>
+    <string name="default_name_message">Gràcies per instal·lar el CrossWords!
+
+Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
+ canviar-lo després a la secció «Partida nova predeterminada» de la configuració.)</string>
 
     <string name="about_vers_fmt">CrossWords per a l\'Android, versió %1$s, rev %2$s, construït en %3$s.</string>
     <string name="about_credits">Icones de la barra d\'eines per Sarah Chu.</string>
@@ -545,8 +547,8 @@ que connecti via el repetidor.</string>
     <string name="bt_pick_clear_button">Suprimeix els seleccionats</string>
 
       <string name="invite_progress_title">S\'està connectant...</string>
-    <string name="invite_progress_fmt">S\'està enviant la invitació al CrossWords a %1$s</string>
-      <string name="summary_wait_host">S\'està esperant la connexió...</string>
+      <string name="invite_progress_fmt">S\'està enviant la invitació al CrossWords a %1$s</string>
+      <string name="summary_wait_host">S\'estan esperant les connexions...</string>
       <string name="summary_wait_guest">Sense connexió</string>
       <string name="summary_gameover">Partida finalitzada</string>
       <string name="summary_conn">Partida en joc</string>
@@ -972,7 +974,11 @@ que connecti via el repetidor.</string>
 
   <string name="bt_resend_fmt">L\'enviament via Bluetooth a %1$s ha fallat, intent %3$d en %2$d segons.</string>
     <string name="bt_fail_fmt">Els enviaments via Bluetooth a %1$s han fallat moltes vegades. Torneu a obrir la partida per a intentar-ho altra vegada.</string>
-        <string name="not_again_newselect">Tocar una partida l\'obre.\n\nTambé podeu tocar les icones a l\'esquerra per a seleccionar o desselecionar partides, aleshores actuar en les partides seleccionades, p. e. suprimir-les, fent servir el menú o la barra d\'accions.</string>
+        <string name="not_again_newselect">Tocar una partida l\'obre.
+
+També podeu tocar les icones a l\'esquerra per a seleccionar o treure partides,
+ aleshores actuar en les partides seleccionades, p. e. suprimir-les, fent servir
+ el menú o la barra d\'accions.</string>
 
     <string name="not_again_backclears">El botó enrere anul·la qualsevol selecció en comptes de sortir. Toqueu-lo una altra vegada per a sortir de l\'aplicació.</string>
 
@@ -1064,4 +1070,61 @@ aquesta partida. N\'estem esperant resposta.
 de %2$d destinataris. Useu el botó de tornar a
  convidar si penseu que les invitacions no ha arribat.</item>
 </plurals>
-    </resources>
+    <string name="invit_expl_sms_fmt">S\'ha enviat la invitació via SMS
+al telèfon %1$s a %2$s</string>
+    <string name="disable_relay">"Inhabilita el joc via el repetidor "</string>
+    <string name="disable_relay_summary">Inhabilita la comunicació per Internet</string>
+
+    <string name="newgame_invite_more">Més informació</string>
+    <string name="invite_choice_relay">Internet/repetidor</string>
+    <string name="invite_choice_p2p">Directe per Wifi</string>
+	<string name="chat_hint">Escriviu aquí...</string>
+
+    <string name="notify_title_turn_fmt">Teniu el torn en la partida $1$s</string>
+    <string name="invite_notice_title">Partida nova via invitació</string>
+      <string name="new_relay_body">Toqueu per a obrir una partida nova</string>
+
+
+      <string name="relay_invite_title">Invitació via repetidor</string>
+    <string name="p2p_invite_title">Invitació via mode directe per WiFi</string>
+
+    <string name="get_relay_number">Introduïu l\'ID de l\'aparell:</string>
+    <string name="confirm_clear_relay">Esteu segur que voleu suprimir els
+aparells seleccionats?</string>
+    <string name="chat_sender_fmt">%1$s:</string>
+    <string name="summary_busy">Resum no disponible</string>
+
+    <plurals name="warn_relay_games_fmt">
+	<item quantity="one">
+
+(Ho esteu fent servir en una partida.)</item>
+	<item quantity="other">
+
+(Ho esteu fent servir en $1$d partides.)</item>
+</plurals>
+
+    <string name="rematch_name_fmt">%1$s</string>
+
+    <string name="button_reinvite">Torna a convidar</string>
+
+    <string name="board_menu_game_showInvites">Mostra les invitacions</string>
+  <string name="processing_games">S\'estan processant les partides</string>
+
+  <string name="list_item_select">Selecciona</string>
+  <string name="list_item_deselect">Treu la selecció</string>
+
+  <string name="no_invites">Aquesta partida no té cap invitació</string>
+
+  <string name="post_dualpane_title">Tornar a iniciar el Crosswords</string>
+  <string name="dualpane_restart">S\'està sortint de l\'aplicació…</string>
+  <string name="button_enable_relay">Habilita el joc via repetidor</string>
+    <string name="button_disable_relay">Inhabilitat el joc via repetidor</string>
+    <string name="button_wait">Espereu</string>
+    <string name="disable_nags_title">Recordatoris de torn</string>
+    <string name="disable_nag_solo_title">Inhabilita els recordatoris de partides en solitari</string>
+
+  <string name="move_dict_rationale">Baixar un diccionari en l\'àrea
+ de baixades requereix permís.</string>
+
+  <string name="remove_sms">Suprimeix l\'SMS</string>
+  </resources>
