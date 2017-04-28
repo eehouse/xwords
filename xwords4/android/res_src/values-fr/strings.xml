@@ -3575,4 +3575,12 @@ Si votre appareil ne peut pas envoyer de SMS de données (par ex. parce que ce n
     <string name="summary_enable_p2p">Expérimental, utilise beaucoup de batterie</string>
 
     <string name="remove_sms">Effacer SMS</string>
-  </resources>
+  <string name="summary_invites_out_fmt">Joueurs invités au salon \"%1$s\"</string>
+
+    <string name="phonies_found_title">Faux mots trouvés</string>
+
+    <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
+    <string name="force_tablet_tablet">Forcer la mise en page pour tablette</string>
+    <string name="force_tablet_phone">Forcer la mise en page pour téléphone</string>
+
+    </resources>
