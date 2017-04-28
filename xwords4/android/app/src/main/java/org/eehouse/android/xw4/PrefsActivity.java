@@ -97,13 +97,6 @@ public class PrefsActivity extends PreferenceActivity
     }
 
     @Override
-    public void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
-    }
-
-    @Override
     protected void onActivityResult( int requestCode, int resultCode,
                                      Intent data )
     {
@@ -163,11 +156,4 @@ public class PrefsActivity extends PreferenceActivity
     public void addFragment( XWFragment fragment, Bundle extras ) { Assert.fail(); }
     public void addFragmentForResult( XWFragment fragment, Bundle extras,
                                       RequestCode code ) { Assert.fail(); }
-    public void show( DialogFragment fragment )
-    {
-        // This can't work right now because PrefsActivity doesn't inherit
-        // from anything that can show fragments. So I need to convert to the
-        // newer preferences framework too. :-(
-        Assert.fail();
-    }
 }

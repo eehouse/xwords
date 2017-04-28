@@ -122,23 +122,22 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected void onBarButtonClicked( int id )
     {
-        switch( id ) {
-        case R.id.button_relay_add:
-            Utils.notImpl( m_activity );
-            break;
-        case R.id.manual_add_button:
-            showDialog( DlgID.GET_NUMBER );
-            break;
-        case R.id.button_clear:
-            Utils.notImpl( m_activity );
-            // int count = getChecked().size();
-            // String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
-            //                                 count, count );
-            // makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
-            break;
-        }
+        // switch( id ) {
+        // case R.id.button_relay_add:
+        //     Utils.notImpl( m_activity );
+        //     break;
+        // case R.id.manual_add_button:
+        //     showDialog( DlgID.GET_NUMBER );
+        //     break;
+        // case R.id.button_clear:
+        //     Utils.notImpl( m_activity );
+        //     // int count = getChecked().size();
+        //     // String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
+        //     //                                 count, count );
+        //     // makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+        //     break;
+        // }
     }
-
 
     // protected void onSaveInstanceState( Bundle outState )
     // {

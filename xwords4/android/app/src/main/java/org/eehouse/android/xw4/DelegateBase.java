@@ -84,7 +84,7 @@ public class DelegateBase implements DlgClickNotify,
         Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
-        m_dlgDelegate = new DlgDelegate( m_activity, this, this, bundle );
+        m_dlgDelegate = new DlgDelegate( m_activity, this, this );
         m_layoutID = layoutID;
         m_optionsMenuID = menuID;
         LocUtils.xlateTitle( m_activity );
@@ -105,8 +105,6 @@ public class DelegateBase implements DlgClickNotify,
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean handleBackPressed() { return false; }
     public void orientationChanged() {}
-    protected Dialog onCreateDialog( int id ) { return null; }
-    protected void prepareDialog( DlgID dlgId, Dialog dialog ) {}
 
     protected void requestWindowFeature( int feature ) {}
 
@@ -415,11 +413,6 @@ public class DelegateBase implements DlgClickNotify,
         return cbx.isChecked();
     }
 
-    protected void showDialog( DlgID dlgID )
-    {
-        m_dlgDelegate.showDialog( dlgID );
-    }
-
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         DlgID dlgID = alert.getDlgID();
@@ -469,8 +462,6 @@ public class DelegateBase implements DlgClickNotify,
         DbgUtils.assertOnUIThread();
         if ( m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );
-        } else if ( m_activity instanceof PrefsActivity ) {
-            ((PrefsActivity)m_activity).show( df );
         } else {
             Assert.assertTrue( !BuildConfig.DEBUG );
         }

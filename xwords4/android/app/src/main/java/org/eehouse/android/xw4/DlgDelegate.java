@@ -28,28 +28,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
-import org.eehouse.android.xw4.loc.LocUtils;
-
-import java.lang.ref.WeakReference;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 public class DlgDelegate {
     private static final String TAG = DlgDelegate.class.getSimpleName();
@@ -288,9 +273,6 @@ public class DlgDelegate {
     public static final int NFC_BTN = AlertDialog.BUTTON_NEUTRAL;
     public static final int DISMISS_BUTTON = 0;
 
-    private static final String IDS = "IDS";
-    private static final String STATE_KEYF = "STATE_%d";
-
     public interface DlgClickNotify {
         // These are stored in the INVITES table. Don't change order
         // gratuitously
@@ -311,8 +293,6 @@ public class DlgDelegate {
         NotAgainBuilder makeNotAgainBuilder( int msgID, int prefsKey );
     }
 
-    private static Map<DlgID, WeakReference<DelegateBase>> s_pendings
-        = new HashMap<DlgID, WeakReference<DelegateBase>>();
     private Activity m_activity;
     private DelegateBase m_dlgt;
     private DlgClickNotify m_clickCallback;
@@ -320,52 +300,13 @@ public class DlgDelegate {
     private ProgressDialog m_progress;
     private Handler m_handler;
 
-    private HashMap<DlgID, DlgState> m_dlgStates;
-
     public DlgDelegate( Activity activity, DelegateBase dlgt,
-                        DlgClickNotify callback, Bundle bundle )
+                        DlgClickNotify callback )
     {
         m_activity = activity;
         m_dlgt = dlgt;
         m_clickCallback = callback;
         m_handler = new Handler();
-        m_dlgStates = new HashMap<DlgID,DlgState>();
-
-        if ( null != bundle ) {
-            int[] ids = bundle.getIntArray( IDS );
-            if ( null != ids ) {
-                for ( int id : ids ) {
-                    String key = String.format( STATE_KEYF, id );
-                    addState( (DlgState)bundle.getParcelable( key ) );
-                }
-            }
-        }
-    }
-
-    public void onSaveInstanceState( Bundle outState )
-    {
-        int[] ids = new int[m_dlgStates.size()];
-        if ( 0 < ids.length ) {
-            int indx = 0;
-            Iterator<DlgState> iter = m_dlgStates.values().iterator();
-            while ( iter.hasNext() ) {
-                DlgState state = iter.next();
-                int id = state.m_id.ordinal();
-                String key = String.format( STATE_KEYF, id );
-                outState.putParcelable( key, state );
-                ids[indx++] = id;
-            }
-        }
-        outState.putIntArray( IDS, ids );
-    }
-
-    protected void showDialog( DlgID dlgID )
-    {
-        // DbgUtils.logf( "showDialog(%s)", dlgID.toString() );
-        if ( !m_activity.isFinishing() ) {
-            s_pendings.put( dlgID, new WeakReference<DelegateBase>(m_dlgt) );
-            m_activity.showDialog( dlgID.ordinal() );
-        }
     }
 
     private void showOKOnlyDialogThen( String msg, Action action,
@@ -541,80 +482,6 @@ public class DlgDelegate {
                         }
                     }
                 } );
-        }
-    }
-
-    private DlgState findForID( DlgID dlgID )
-    {
-        DlgState state = m_dlgStates.get( dlgID );
-        // DbgUtils.logf( "findForID(%d)=>%H", id, state );
-        return state;
-    }
-
-    private void dropState( DlgState state )
-    {
-        int nDlgs = m_dlgStates.size();
-        Assert.assertNotNull( state );
-        // Assert.assertTrue( state == m_dlgStates.get( state.m_id ) );
-        m_dlgStates.remove( state.m_id );
-        // DbgUtils.logf( "dropState: active dialogs now %d from %d ",
-        //                m_dlgStates.size(), nDlgs );
-    }
-
-    private void addState( DlgState state )
-    {
-        // I'm getting serialization failures on devices pointing at
-        // DlgState but the code below says the object's fine (as it
-        // should be.)  Just to have a record....
-        //
-        // Bundle bundle = new Bundle();
-        // DbgUtils.logf( "addState: testing serializable" );
-        // bundle.putSerializable( "foo", state );
-        // state = (DlgState)bundle.getSerializable( "foo" );
-        // DbgUtils.logf( "addState: serializable is ok" );
-
-        m_dlgStates.put( state.m_id, state );
-    }
-
-    public static Dialog onCreateDialog( int id )
-    {
-        Dialog result = null;
-        DlgID dlgID = DlgID.values()[id];
-        WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
-        if ( null != ref ) {
-            DelegateBase dlgt = ref.get();
-            if ( null != dlgt ) {
-                result = dlgt.onCreateDialog( id );
-            }
-        }
-        return result;
-    }
-
-    public static void onPrepareDialog( int id, Dialog dialog )
-    {
-        DlgID dlgID = DlgID.values()[id];
-        WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
-        DelegateBase dlgt = ref.get();
-        if ( null != dlgt ) {
-            dlgt.prepareDialog( dlgID, dialog );
-        }
-    }
-
-    protected static void closeAlerts( Activity activity, DelegateBase base )
-    {
-        DbgUtils.assertOnUIThread();
-        Iterator<DlgID> iter = s_pendings.keySet().iterator();
-        while ( iter.hasNext() ) {
-            DlgID dlgID = iter.next();
-            DelegateBase oneBase = s_pendings.get( dlgID ).get();
-            if ( null == oneBase ) {
-                iter.remove();  // no point in keeping it
-            } else if ( base.equals( oneBase ) ) {
-                Log.d( TAG, "removing alert %s for %s", dlgID.toString(),
-                       oneBase.toString() );
-                activity.removeDialog( dlgID.ordinal() );
-                iter.remove();  // no point in keeping this either
-            }
         }
     }
 

@@ -193,24 +193,6 @@ public class XWActivity extends FragmentActivity
     }
 
     @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        Assert.assertNull( dialog );
-        if ( null == dialog ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override
-    public void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
-    }
-
-    @Override
     public void onConfigurationChanged( Configuration newConfig )
     {
         m_dlgt.orientationChanged();
