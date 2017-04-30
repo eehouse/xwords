@@ -1186,20 +1186,9 @@
     <string name="button_disable_relay">リレー プレイを無効にする</string>
     <string name="enable_dualpane_summary">タブレットでのサイド・バイ・サイド表示。非常に実験的です!</string>
 
-    <string name="invite_dualpane">タブレットサイズのデバイスで実行されているようです。
-お使いのデバイスが横向きのときに、(掲示板とチャットなど) 
-2 つのペインを左右に表示することができる、
-実験的な新機能を試してみたいですか?
-
- 
-
-新しい「サイド・バイ・サイドを無効にする」のメニュー項目を使用して、
-後でこの機能を無効にすることができます。またはアプリの設定から。
-
- 
-
-お好みの機能、クラッシュの報告、ご提案等について
-ご連絡ください!!</string>
+    <string name="invite_dualpane">この CrossWords の新しいバージョンは、2 つのペイン (ゲームリストや掲示板など) を左右で見るような大きい画面のデバイスを利用できます。お使いのデバイスが横向きのときに気づくと思いますが、縦向きの場合は変更はありません。
+\n
+\n 気に入っていただくことを願っています。気に入らない場合は、下またはアプリ設定の外観セクションで、無効にすることができます。</string>
 
   <string name="dualpane_exit_now">変更を反映するために、クロスワードを終了します。
 再起動を知らせる通知を使用することができます。</string>
@@ -1293,5 +1282,20 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 
 <string name="title_enable_p2p">WiFi ダイレクトを有効にする</string>
     <string name="summary_enable_p2p">実験的。バッテリーを多く使用します</string>
+
+    <string name="summary_invites_out_fmt">ルーム \"%1$s\" に招待されたプレイヤー</string>
+
+    <string name="phonies_found_title">にせものが見つかりました</string>
+
+    <string name="title_blank_picker">空白のタイルを選択</string>
+    <string name="tile_tray_picker">トレイの新しいタイルを選択</string>
+
+    <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
+    <string name="tile_pick_summary_fmt">現在の選択: %1$s</string>
+
+    <string name="tilepick_all_fmt">自分に %1$d を選択</string>
+      <string name="force_tablet_default">デバイスのデフォルトを使用する</string>
+    <string name="force_tablet_tablet">タブレットレイアウトを強制する</string>
+    <string name="force_tablet_phone">携帯電話のレイアウトを強制する</string>
 
     </resources>
