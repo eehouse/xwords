@@ -416,8 +416,8 @@ public class DelegateBase implements DlgClickNotify,
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         DlgID dlgID = alert.getDlgID();
-        Log.d( TAG, "makeDialog(): not handling %s", dlgID.toString() );
-        Assert.assertFalse( BuildConfig.DEBUG );
+        Log.d( TAG, "%s.makeDialog(): not handling %s", getClass().getSimpleName(),
+               dlgID.toString() );
         return null;
     }
 
