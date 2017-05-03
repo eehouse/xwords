@@ -610,7 +610,6 @@ public class BoardDelegate extends DelegateBase
     {
         super.onResume();
         doResume( false );
-        checkAddDualpaneExpl();
     }
 
     protected void onPause()
@@ -2813,31 +2812,6 @@ public class BoardDelegate extends DelegateBase
             DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );
-        }
-    }
-
-    // If I'm upgrading and running this for the first time show an
-    // explanation about the new dualpane feature
-    //
-    // TODO remove a few weeks after shipping a version that includes it
-    private static boolean s_dpShown = false;
-    private void checkAddDualpaneExpl()
-    {
-        if ( !s_dpShown ) {
-            s_dpShown = true;
-            // Am I a tablet AND is that because my size says so rather than
-            // my having overridden it
-            if ( XWPrefs.getIsTablet( m_activity )
-                 && getString(R.string.force_tablet_default)
-                 .equals(XWPrefs.getPrefsString(m_activity,
-                                                R.string.key_force_tablet))
-                 && !Utils.onFirstVersion(m_activity ) ) {
-                makeNotAgainBuilder( R.string.invite_dualpane,
-                                     R.string.key_notagain_dualpane )
-                    .setActionPair(new ActionPair(Action.DISABLE_DUALPANE,
-                                                  R.string.disable_dualpane))
-                    .show();
-            }
         }
     }
 } // class BoardDelegate
