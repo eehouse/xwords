@@ -1427,8 +1427,6 @@ public class BoardDelegate extends DelegateBase
             data = nli.makeLaunchJSON();
         }
         if ( null != data ) {
-            removeDialog( DlgID.CONFIRM_THEN );
-
             recordInviteSent( InviteMeans.NFC, null );
         }
         return data;

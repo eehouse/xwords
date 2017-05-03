@@ -466,25 +466,6 @@ public class DelegateBase implements DlgClickNotify,
         }
     }
 
-    protected void removeDialog( DlgID dlgID )
-    {
-        removeDialog( dlgID.ordinal() );
-    }
-
-    protected void dismissDialog( DlgID dlgID )
-    {
-        try {
-            m_activity.dismissDialog( dlgID.ordinal() );
-        } catch ( Exception ex ) {
-            // Log.ex( ex );
-        }
-    }
-
-    protected void removeDialog( int id )
-    {
-        m_activity.removeDialog( id );
-    }
-
     protected AlertDialog.Builder makeAlertBuilder()
     {
         return LocUtils.makeAlertBuilder( m_activity );
