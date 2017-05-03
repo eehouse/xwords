@@ -729,14 +729,6 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
-    public void orientationChanged()
-    {
-        Log.d( TAG, "BoardDelegate.orientationChanged()" );
-        initToolbar();
-        m_view.orientationChanged();
-    }
-
-    @Override
     protected void setTitle()
     {
         setTitle( GameUtils.getName( m_activity, m_rowid ) );

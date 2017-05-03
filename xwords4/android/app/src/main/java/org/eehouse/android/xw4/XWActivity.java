@@ -193,13 +193,6 @@ public class XWActivity extends FragmentActivity
     }
 
     @Override
-    public void onConfigurationChanged( Configuration newConfig )
-    {
-        m_dlgt.orientationChanged();
-        super.onConfigurationChanged( newConfig );
-    }
-
-    @Override
     protected void onActivityResult( int requestCode, int resultCode,
                                      Intent data )
     {
