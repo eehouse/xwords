@@ -62,18 +62,6 @@ public class DualpaneDelegate extends DelegateBase {
     }
 
     @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        return DlgDelegate.onCreateDialog( id );
-    }
-
-    @Override
-    protected void prepareDialog( DlgID dlgId, Dialog dialog )
-    {
-        DlgDelegate.onPrepareDialog( dlgId.ordinal(), dialog );
-    }
-
-    @Override
     protected void handleNewIntent( Intent intent )
     {
         MainActivity main = (MainActivity)m_activity;

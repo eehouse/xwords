@@ -75,65 +75,63 @@ public class PrefsDelegate extends DelegateBase
 
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            DialogInterface.OnClickListener lstnr = null;
-            int confirmID = 0;
+        DialogInterface.OnClickListener lstnr = null;
+        int confirmID = 0;
 
-            switch( DlgID.values()[id] ) {
-            case REVERT_COLORS:
-                confirmID = R.string.confirm_revert_colors;
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            PrefsDelegate self = (PrefsDelegate)curThis();
-                            SharedPreferences sp = self.getSharedPreferences();
-                            SharedPreferences.Editor editor = sp.edit();
-                            int[] colorKeys = {
-                                R.string.key_player0,
-                                R.string.key_player1,
-                                R.string.key_player2,
-                                R.string.key_player3,
-                                R.string.key_bonus_l2x,
-                                R.string.key_bonus_l3x,
-                                R.string.key_bonus_w2x,
-                                R.string.key_bonus_w3x,
-                                R.string.key_tile_back,
-                                R.string.key_clr_crosshairs,
-                                R.string.key_empty,
-                                R.string.key_background,
-                                R.string.key_clr_bonushint,
-                            };
-                            for ( int colorKey : colorKeys ) {
-                                editor.remove( getString(colorKey) );
-                            }
-                            editor.commit();
-                            self.relaunch();
+        switch( DlgID.values()[id] ) {
+        case REVERT_COLORS:
+            confirmID = R.string.confirm_revert_colors;
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        PrefsDelegate self = (PrefsDelegate)curThis();
+                        SharedPreferences sp = self.getSharedPreferences();
+                        SharedPreferences.Editor editor = sp.edit();
+                        int[] colorKeys = {
+                            R.string.key_player0,
+                            R.string.key_player1,
+                            R.string.key_player2,
+                            R.string.key_player3,
+                            R.string.key_bonus_l2x,
+                            R.string.key_bonus_l3x,
+                            R.string.key_bonus_w2x,
+                            R.string.key_bonus_w3x,
+                            R.string.key_tile_back,
+                            R.string.key_clr_crosshairs,
+                            R.string.key_empty,
+                            R.string.key_background,
+                            R.string.key_clr_bonushint,
+                        };
+                        for ( int colorKey : colorKeys ) {
+                            editor.remove( getString(colorKey) );
                         }
-                    };
-                break;
-            case REVERT_ALL:
-                confirmID = R.string.confirm_revert_all;
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            PrefsDelegate self = (PrefsDelegate)curThis();
-                            SharedPreferences sp = self.getSharedPreferences();
-                            SharedPreferences.Editor editor = sp.edit();
-                            editor.clear();
-                            editor.commit();
-                            self.relaunch();
-                        }
-                    };
-                break;
-            }
+                        editor.commit();
+                        self.relaunch();
+                    }
+                };
+            break;
+        case REVERT_ALL:
+            confirmID = R.string.confirm_revert_all;
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        PrefsDelegate self = (PrefsDelegate)curThis();
+                        SharedPreferences sp = self.getSharedPreferences();
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.clear();
+                        editor.commit();
+                        self.relaunch();
+                    }
+                };
+            break;
+        }
 
-            if ( null == dialog && null != lstnr ) {
-                dialog = makeAlertBuilder()
-                    .setTitle( R.string.query_title )
-                    .setMessage( confirmID )
-                    .setPositiveButton( android.R.string.ok, lstnr )
-                    .setNegativeButton( android.R.string.cancel, null )
-                    .create();
-            }
+        Dialog dialog = null;
+        if (  null != lstnr ) {
+            dialog = makeAlertBuilder()
+                .setTitle( R.string.query_title )
+                .setMessage( confirmID )
+                .setPositiveButton( android.R.string.ok, lstnr )
+                .setNegativeButton( android.R.string.cancel, null )
+                .create();
         }
         return dialog;
     }
@@ -154,13 +152,13 @@ public class PrefsDelegate extends DelegateBase
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View v ) {
-                    curThis().showDialog( DlgID.REVERT_COLORS );
+                    showDialog( DlgID.REVERT_COLORS );
                 }
             } );
         button = (Button)findViewById( R.id.revert_all );
         button.setOnClickListener(new View.OnClickListener() {
                 public void onClick( View v ) {
-                    curThis().showDialog( DlgID.REVERT_ALL );
+                    showDialog( DlgID.REVERT_ALL );
                 }
             } );
 
@@ -362,6 +360,13 @@ public class PrefsDelegate extends DelegateBase
             // This is happening hiding key_enable_sms, but the hide still
             // works!
             // Log.ex( TAG, ex );
+        }
+    }
+
+    private void showDialog( DlgID dlgID )
+    {
+        if ( !m_activity.isFinishing() ) {
+            m_activity.showDialog( dlgID.ordinal() );
         }
     }
 

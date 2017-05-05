@@ -312,7 +312,7 @@ public class DictBrowseDelegate extends DelegateBase
             finish();
             break;
         default:
-            Assert.assertTrue( !BuildConfig.DEBUG );
+            Assert.assertFalse( BuildConfig.DEBUG );
         }
         return handled;
     }

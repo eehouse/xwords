@@ -84,7 +84,7 @@ public class DelegateBase implements DlgClickNotify,
         Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
-        m_dlgDelegate = new DlgDelegate( m_activity, this, this, bundle );
+        m_dlgDelegate = new DlgDelegate( m_activity, this, this );
         m_layoutID = layoutID;
         m_optionsMenuID = menuID;
         LocUtils.xlateTitle( m_activity );
@@ -100,12 +100,10 @@ public class DelegateBase implements DlgClickNotify,
     protected void onCreateContextMenu( ContextMenu menu, View view,
                                         ContextMenuInfo menuInfo ) {}
     protected boolean onContextItemSelected( MenuItem item ) { return false; }
+    protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean handleBackPressed() { return false; }
-    public void orientationChanged() {}
-    protected Dialog onCreateDialog( int id ) { return null; }
-    protected void prepareDialog( DlgID dlgId, Dialog dialog ) {}
 
     protected void requestWindowFeature( int feature ) {}
 
@@ -154,16 +152,6 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_isVisible = false;
         XWService.setListener( null );
-    }
-
-    protected void onStop()
-    {
-        // Alerts disappear on their own if not in dualpane mode
-        if ( false
-             && m_activity instanceof MainActivity
-             && ((MainActivity)m_activity).inDPMode() ) {
-            DlgDelegate.closeAlerts( m_activity, this );
-        }
     }
 
     protected DelegateBase curThis()
@@ -424,15 +412,11 @@ public class DelegateBase implements DlgClickNotify,
         return cbx.isChecked();
     }
 
-    protected void showDialog( DlgID dlgID )
-    {
-        m_dlgDelegate.showDialog( dlgID );
-    }
-
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         DlgID dlgID = alert.getDlgID();
-        Log.d( TAG, "makeDialog(): not handling %s", dlgID.toString() );
+        Log.d( TAG, "%s.makeDialog(): not handling %s", getClass().getSimpleName(),
+               dlgID.toString() );
         return null;
     }
 
@@ -477,30 +461,9 @@ public class DelegateBase implements DlgClickNotify,
         DbgUtils.assertOnUIThread();
         if ( m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );
-        } else if ( m_activity instanceof PrefsActivity ) {
-            ((PrefsActivity)m_activity).show( df );
         } else {
             Assert.assertTrue( !BuildConfig.DEBUG );
         }
-    }
-
-    protected void removeDialog( DlgID dlgID )
-    {
-        removeDialog( dlgID.ordinal() );
-    }
-
-    protected void dismissDialog( DlgID dlgID )
-    {
-        try {
-            m_activity.dismissDialog( dlgID.ordinal() );
-        } catch ( Exception ex ) {
-            // Log.ex( ex );
-        }
-    }
-
-    protected void removeDialog( int id )
-    {
-        m_activity.removeDialog( id );
     }
 
     protected AlertDialog.Builder makeAlertBuilder()
