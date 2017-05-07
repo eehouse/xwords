@@ -3177,15 +3177,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     keep this game open while waiting. You will be notified when the
     game is ready to play.</string>-->
     <string name="rematch_msg">Cette partie héberge une revanche, et a envoyé une invitation. Vous verrez ce message jusqu\'à ce qu\'elle ait été acceptée.</string>
-    <!--XLATE-ME-->
-    <!--<string name="not_again_enablepublic">Public rooms have been made
-    an \"advanced\" feature in this release. If you were using them
-    and want them back, enable them now. You can turn them off again
-    in Settings.</string>-->
-    <string name="not_again_enablepublic">Les salons ont été transformés en
-fonctionnalité \"avancée\" dans cette version. Si vous les utilisiez et les
-revoulez, activez-les maintenant. Vous pouvez les désactiver de nouveau dans
-les paramètres.</string>
 
     <!--<string name="disable_nag_title">Disable turn reminders</string>-->
     <string name="disable_nag_title">Désactiver les rappels de parties en réseau</string>

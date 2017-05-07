@@ -1035,8 +1035,6 @@ També podeu tocar les icones a l\'esquerra per a seleccionar o treure partides,
 
     <string name="invite_stays">(Aquest diàleg es mostrarà fins que tots els jugadors remots hagin connectat. Podeu tancar la partida si penseu que pot trigar una mica. Podran connectar-hi igualment.)</string>
 
-    <string name="not_again_enablepublic">Les sales públiques són una funcionalitat avançada d\'aquesta versió. Si les usàveu i voleu seguir-ho fent, habiliteu l\'opció ara. Podeu inhabilitar-les altra vegada a la configuració.</string>
-
     <string name="expl_update_url">URL de comprovació d\'actualitzacions</string>
 
   <string name="rematch_msg">Gestió de les invitacions per a tornar a jugar la partida. Us mostrarem aquest missatge mentre no l\'accepteu.\n\nNo heu de tenir aquesta partida oberta mentre espereu. Rebreu una notificació quan la partida estigui preparada per a jugar.</string>

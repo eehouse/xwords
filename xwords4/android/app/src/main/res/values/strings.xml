@@ -2447,11 +2447,6 @@
     sent an invitation. You will see this message until it has been
     accepted.</string>
 
-    <string name="not_again_enablepublic">Public rooms have been made
-    an \"advanced\" feature in this release. If you were using them
-    and want them back, enable them now. You can turn them off again
-    in Settings.</string>
-
     <string name="disable_nags_title">Turn reminders</string>
     <string name="disable_nag_title">Disable network game reminders</string>
     <string name="disable_nag_summary">Do not notify me no matter

@@ -703,7 +703,6 @@
   <string name="button_edit">Bewerk</string>
   <string name="button_discard_changes">Verwijder veranderingen</string>
   <string name="rematch_msg">Nieuwe uitnodiging verstuurd. Je zult dit bericht zien tot het geaccepteerd is.\n\nJe hoeft het spel niet open te houden terwijl je wacht. Je krijgt een bericht als het spel klaar is om te spelen.</string>
-  <string name="not_again_enablepublic">Publieke kamers zijn in deze versie een \"geavanceerde\" optie geworden. Als je ze gebruikte en terug wilt hebben, schakel ze dan nu in. Je kan ze later weer uitschakelen in Instellingen.</string>
   <string name="disable_nag_title">Schakel beurtherinneringen uit</string>
   <string name="disable_nag_summary">Stuur me geen bericht, ook al is het al heel lang mijn beurt</string>
   <string name="confirm_get_locdict_fmt">Jouw apparaat is ingesteld voor %1$s. Wil je een woordenlijst downloaden zodat je CrossWords in het %1$s kan spelen?</string>

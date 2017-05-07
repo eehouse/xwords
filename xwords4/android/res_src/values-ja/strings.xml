@@ -451,7 +451,6 @@
     <string name="advanced_config">高度なゲームの設定</string>
 
     <string name="network_advanced_title">高度</string>
-    <string name="not_again_enablepublic">このリリースで、公開ルームは \"高度\" な機能として用意しました。これを使っていて元に戻したい場合、今すぐこれ有効にしてください。設定で再びオフにすることができます。</string>
 
     <string name="no_empty_rooms">このゲームはルーム名を指定しないと
 接続できません。</string>
