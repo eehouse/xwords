@@ -1,8 +1,8 @@
 import groovy.swing.SwingBuilder
 
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 112
-def VERSION_NAME = '4.4.116'
+def VERSION_CODE_BASE = 113
+def VERSION_NAME = '4.4.117'
 def VARIANTS = [ "xw4", "xw4dbg" ]
 def BUILDS = [ "Debug", "Release" ]
 def GITREV = "git describe --tags --dirty".execute().text.trim()
