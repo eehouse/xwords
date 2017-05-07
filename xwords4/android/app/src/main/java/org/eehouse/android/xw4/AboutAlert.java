@@ -56,7 +56,7 @@ public class AboutAlert extends XWDialogFragment {
         String dateString
             = df.format( new Date( BuildConfig.BUILD_STAMP * 1000 ) );
         vers.setText( getString( R.string.about_vers_fmt,
-                                 getString( R.string.app_version ),
+                                 BuildConfig.VERSION_NAME,
                                  BuildConfig.GIT_REV, dateString ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
