@@ -529,9 +529,7 @@ public class BoardDelegate extends DelegateBase
             dialog = ab.create();
 
             // Hack: I can't prevent screen rotation from duplicating this alert
-            if ( null != m_inviteAlert ) {
-                m_inviteAlert.dismiss();
-            }
+            dismissInviteAlert();
             m_inviteAlert = alert;
             alert.setOnCancelListener( new DBAlert.OnCancelListener() {
                     @Override
@@ -2206,12 +2204,26 @@ public class BoardDelegate extends DelegateBase
                     }
                     if ( 0 == nMissing || !m_relayMissing ) {
                         Log.d( TAG, "dismissing invite alert %H", m_inviteAlert );
-                        if ( null != m_inviteAlert ) {
-                            m_inviteAlert.dismiss();
-                        }
+                        dismissInviteAlert();
                     }
                 }
             } );
+    }
+
+    private void dismissInviteAlert()
+    {
+        if ( null != m_inviteAlert ) {
+            // Play Console reports a crash inside DialogFragment.dismiss()
+            // resulting from getFragmentManager() returning null. That
+            // probably means I'm on the way out and can safely drop?  Let's
+            // see....
+            try {
+                m_inviteAlert.dismiss();
+            } catch ( NullPointerException npe ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
+            m_inviteAlert = null;
+        }
     }
 
     private void pingBTRemotes()
@@ -2786,10 +2798,7 @@ public class BoardDelegate extends DelegateBase
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
 
         if ( !invitesSent ) {
-            if ( null != m_inviteAlert ) {
-                m_inviteAlert.dismiss();
-                m_inviteAlert = null;
-            }
+            dismissInviteAlert();
             Log.d( TAG, "recordInviteSent(): redoing invite alert" );
             showInviteAlertIf();
         }
