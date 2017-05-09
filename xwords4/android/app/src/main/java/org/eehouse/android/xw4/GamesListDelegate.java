@@ -884,14 +884,13 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case GAMES_LIST_NAME_REMATCH: {
-            Bundle rematchExtras = (Bundle)params[0];
             LinearLayout view = (LinearLayout)
                 LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
             int iconResID = R.drawable.sologame__gen;
-            if ( null != rematchExtras ) {
+            if ( null != m_rematchExtras ) {
                 EditText edit = (EditText)view.findViewById( R.id.edit );
-                edit.setText( rematchExtras.getString( REMATCH_NEWNAME_EXTRA ));
-                boolean solo = rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
+                edit.setText( m_rematchExtras.getString( REMATCH_NEWNAME_EXTRA ));
+                boolean solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
                 if ( !solo ) {
                     iconResID = R.drawable.multigame__gen;
                 }
@@ -920,7 +919,6 @@ public class GamesListDelegate extends ListDelegateBase
         }
         return dialog;
     } // makeDialog
-
 
     private void enableMoveGroupButton( DialogInterface dlgi )
     {
@@ -2149,7 +2147,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) {
             m_rematchExtras = intent.getExtras();
-            showDialogFragment( DlgID.GAMES_LIST_NAME_REMATCH, intent.getExtras() );
+            showDialogFragment( DlgID.GAMES_LIST_NAME_REMATCH );
         }
     }
 
