@@ -145,16 +145,18 @@ public class NagTurnReceiver extends BroadcastReceiver {
     {
         long result = 0;
         long now = new Date().getTime(); // in milliseconds
-        Assert.assertTrue( now >= moveTimeMillis );
-        long[] intervals = getIntervals( context );
-        for ( long nSecs : intervals ) {
-            long asMillis = moveTimeMillis + (nSecs * 1000);
-            if ( asMillis >= now ) {
-                result = asMillis;
-                break;
+        if ( now >= moveTimeMillis ) {
+            long[] intervals = getIntervals( context );
+            for ( long nSecs : intervals ) {
+                long asMillis = moveTimeMillis + (nSecs * 1000);
+                if ( asMillis >= now ) {
+                    result = asMillis;
+                    break;
+                }
             }
+        } else {
+            Assert.assertFalse( BuildConfig.DEBUG );
         }
-
         return result;
     }
 
