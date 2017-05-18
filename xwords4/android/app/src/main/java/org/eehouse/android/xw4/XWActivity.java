@@ -272,7 +272,12 @@ public class XWActivity extends FragmentActivity
             trans.addToBackStack( tag );
             df.show( trans, tag );
         } else {
-            df.show( fm, tag );
+            try {
+                df.show( fm, tag );
+            } catch (IllegalStateException ise ) {
+                Log.d( TAG, "error showing tag %s (df: %s)", tag, df );
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
         }
     }
 
