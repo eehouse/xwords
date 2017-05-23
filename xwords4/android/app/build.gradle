@@ -3,7 +3,7 @@ import groovy.swing.SwingBuilder
 def INITIAL_CLIENT_VERS = 8
 def VERSION_CODE_BASE = 114
 def VERSION_NAME = '4.4.118'
-def VARIANTS = [ "xw4", "xw4dbg" ]
+def VARIANTS = [ "xw4", "xw4d" ]
 def BUILDS = [ "Debug", "Release" ]
 def GITREV = "git describe --tags --dirty".execute().text.trim()
 
@@ -47,16 +47,16 @@ android {
     productFlavors {
         xw4 {
             dimension "variant"
-            applicationId "org.eehouse.android.${VARIANTS[0]}"
+            applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
             resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
         }
-        xw4dbg {
+        xw4d {
             dimension "variant"
-            applicationId "org.eehouse.android.${VARIANTS[1]}"
+            applicationId "org.eehouse.android.xw4dbg"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
@@ -134,12 +134,12 @@ android {
                 jniLibs.srcDir "../libs-debug-xw4"
             }
         }
-        xw4dbg {
+        xw4d {
             release {
-                jniLibs.srcDir "../libs-release-xw4dbg"
+                jniLibs.srcDir "../libs-release-xw4d"
             }
             debug {
-                jniLibs.srcDir "../libs-debug-xw4dbg"
+                jniLibs.srcDir "../libs-debug-xw4d"
             }
         }
     }
@@ -164,7 +164,7 @@ dependencies {
 
     compile 'com.android.support:support-v4:23.4.0'
 
-    xw4dbgCompile 'com.crittercism:crittercism-android-agent:+'
+    xw4dCompile 'com.crittercism:crittercism-android-agent:+'
 }
 
 task mkImages(type: Exec) {
@@ -212,12 +212,12 @@ afterEvaluate {
         }
     }
 
-    String copyStringsTask = "copyStringsXw4Dbg"
+    String copyStringsTask = "copyStringsXw4D"
     task "$copyStringsTask"(type: Exec) {
                 workingDir './'
                 environment.put('APPNAME', 'CrossDbg')
                 commandLine 'make', '-f', '../scripts/Variant.mk',
-                "src/xw4dbg/res/values/strings.xml"
+                "src/xw4d/res/values/strings.xml"
             }
     preBuild.dependsOn copyStringsTask
 }
