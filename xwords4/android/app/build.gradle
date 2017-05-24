@@ -3,7 +3,15 @@ def VERSION_CODE_BASE = 114
 def VERSION_NAME = '4.4.118'
 def VARIANTS = [ "xw4", "xw4d" ]
 def BUILDS = [ "Debug", "Release" ]
-def GITREV = "git describe --tags --dirty".execute().text.trim()
+
+// Get the git revision we're using. Since fdroid modifies files as
+// part of its build process -dirty will always be added, confusing
+// users. So add that for the non-fdroid case.
+def GITREV = "git describe --tags"
+if (! hasProperty('forFDroid')) {
+    GITREV += " --dirty"
+}
+GITREV = GITREV.execute().text.trim()
 
 apply plugin: 'com.android.application'
 
