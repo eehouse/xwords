@@ -8,10 +8,10 @@ core*
 xwords_4.4.0.0*
 gcm_loop.shelf
 nohup.out
-/xwords4/android/XWords4-dbg/src/xw4dbg/assets/gitvers.txt
+/xwords4/android/XWords4-dbg/src/xw4d/assets/gitvers.txt
 /xwords4/linux/xwgames.sqldb
 /xwords4/android/build
-/xwords4/android/libs-debug-xw4dbg
-/xwords4/android/obj-debug-xw4dbg
+/xwords4/android/libs-debug-xw4d
+/xwords4/android/obj-debug-xw4d
 /xwords4/android/app/build
 /xwords4/android/app/src/main/java/org/eehouse/android/xw4/loc/LocIDsData.java
