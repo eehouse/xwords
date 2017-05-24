@@ -15,11 +15,7 @@ usage() {
 }
 
 do_build() {
-    WD=$(pwd)
-    cd $(dirname $0)/../
-    rm -rf bin/ gen/
-	./gradlew clean assembleXw4Rel
-    cd $WD
+    (cd $(dirname $0)/../ && ./gradlew clean assembleXw4Rel)
 }
 
 while [ "$#" -gt 0 ]; do
@@ -58,6 +54,9 @@ fi
 
 if [ -z "$FILES" ]; then
     do_build
+	for f in $(dirname $0)/../app/build/outputs/apk/*-unsigned-*.apk; do
+		$(dirname $0)/sign-align.sh --apk $f
+	done
 fi
 
 if [ -n "$TAGNAME" ]; then

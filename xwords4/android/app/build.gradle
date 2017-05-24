@@ -1,5 +1,3 @@
-import groovy.swing.SwingBuilder
-
 def INITIAL_CLIENT_VERS = 8
 def VERSION_CODE_BASE = 114
 def VERSION_NAME = '4.4.118'
@@ -85,16 +83,6 @@ android {
     }
 
     signingConfigs {
-        release {
-            storeFile file(System.getenv("HOME") + "/.keystore")
-            keyAlias "mykey"
-
-            // These two lines make gradle believe that the signingConfigs
-            // section is complete. Without them, tasks like installRelease
-            // will not be available!
-            storePassword "notReal"
-            keyPassword "notReal"
-        }
         debug {
             def path = System.getenv("DEBUG_KEYSTORE_PATH")
             if (! path) {
@@ -109,7 +97,6 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
             debuggable false
             minifyEnabled false // PENDING
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -235,43 +222,6 @@ task cleanNDK(type: Exec) {
 
     workingDir '../'
     commandLine lst
-}
-
-gradle.taskGraph.whenReady { taskGraph ->
-    if ( taskGraph.hasTask(':app:validateSigningXw4Release') ) {
-        def pass
-        if (System.getenv("ANDROID_RELEASE_PASSWORD")) {
-            pass = System.getenv("ANDROID_RELEASE_PASSWORD")
-        } else if ( null != System.console() ) {
-            pass = System.console().readPassword("\nPlease enter key passphrase: ")
-            pass = new String(pass)
-        } else {
-            new SwingBuilder().edt {
-                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-                title: 'Enter password', // Dialog title
-                alwaysOnTop: true, // pretty much what the name says
-                resizable: false, // Don't allow the user to resize the dialog
-                locationRelativeTo: null, // Place dialog in center of the screen
-                pack: true, // We need to pack the dialog (so it will take the size of it's children
-                show: true // Let's show it
-                      ) {
-                    vbox { // Put everything below each other
-                        label(text: "Please enter key passphrase:")
-                        input = passwordField();
-                        button(defaultButton: true, text: 'OK', actionPerformed: {
-                                   pass = new String(input.password); // Set pass variable to value of input field
-                                   // println "myPass: $myPass"
-
-                                   dispose(); // Close dialog
-                               })
-                    }
-                }
-            }
-        }
-
-        android.signingConfigs.release.storePassword = pass
-        android.signingConfigs.release.keyPassword = pass
-    }
 }
 
 // def getVersionName() {
