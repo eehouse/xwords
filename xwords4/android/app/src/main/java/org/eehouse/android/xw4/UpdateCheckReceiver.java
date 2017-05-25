@@ -124,8 +124,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         // App update
-        if ( Utils.isGooglePlayApp( context ) ) {
-            // Do nothing
+        if ( BuildConfig.FOR_FDROID || Utils.isGooglePlayApp( context ) ) {
+            // Do nothing; can't or mustn't upgrade app
         } else {
             String installer = pm.getInstallerPackageName( packageName );
 

@@ -3,12 +3,13 @@ def VERSION_CODE_BASE = 114
 def VERSION_NAME = '4.4.118'
 def VARIANTS = [ "xw4", "xw4d" ]
 def BUILDS = [ "Debug", "Release" ]
+boolean forFDroid = hasProperty('forFDroid')
 
 // Get the git revision we're using. Since fdroid modifies files as
 // part of its build process -dirty will always be added, confusing
 // users. So add that for the non-fdroid case.
 def GITREV = "git describe --tags"
-if (! hasProperty('forFDroid')) {
+if (! forFDroid) {
     GITREV += " --dirty"
 }
 GITREV = GITREV.execute().text.trim()
@@ -47,6 +48,8 @@ android {
         variant.buildConfigField "String", "GCM_SENDER_ID", "\"$senderID\""
 
         variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
+
+        variant.buildConfigField "boolean", "FOR_FDROID", "$forFDroid"
     }
     
     flavorDimensions "variant"//, "abi"
