@@ -341,7 +341,7 @@ public class GameConfigDelegate extends DelegateBase
             break;
         }
 
-        Assert.assertNotNull( dialog );
+        Assert.assertTrue( dialog != null || !BuildConfig.DEBUG );
         return dialog;
     } // makeDialog
 

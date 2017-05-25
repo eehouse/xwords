@@ -122,18 +122,21 @@ public class DBAlert extends XWDialogFragment {
             new Handler().post( new Runnable() {
                     @Override
                     public void run() {
-                        MainActivity activity = (MainActivity)getActivity();
-                        if ( null != activity ) {
-                            DBAlert newMe = newInstance( getDlgID(), mParams );
-                            activity.show( newMe );
-                            dismiss();          // kill myself...
-                        } else {
-                            Log.d( TAG, "null activity..." );
+                        try {
+                            MainActivity activity = (MainActivity)getActivity();
+                            if ( null != activity ) {
+                                DBAlert newMe = newInstance( getDlgID(), mParams );
+                                activity.show( newMe );
+                                dismiss();          // kill myself...
+                            } else {
+                                Log.d( TAG, "null activity..." );
+                            }
+                        } catch ( IllegalStateException ex ) {
+                            Assert.assertFalse( BuildConfig.DEBUG );
                         }
                     }
                 } );
         }
         return dialog;
     }
-
 }

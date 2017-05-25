@@ -489,6 +489,8 @@ public class BTService extends XWService {
                     Log.w( TAG, "trying again..." );
                     logIOE( ioe);
                     continue;
+                } catch ( NullPointerException npe ) {
+                    continue;   // m_serverSocket probably null
                 }
             }
 
