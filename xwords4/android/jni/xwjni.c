@@ -1631,22 +1631,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
     jobjectArray result = NULL;
     XWJNI_START();
     XP_ASSERT( state->game.comms );
-    CommsAddrRec addrs[MAX_NUM_PLAYERS];
-    XP_U16 count = VSIZE(addrs);
-    comms_getAddrs( state->game.comms, addrs, &count );
+    if ( !!state->game.comms ) {
+        CommsAddrRec addrs[MAX_NUM_PLAYERS];
+        XP_U16 count = VSIZE(addrs);
+        comms_getAddrs( state->game.comms, addrs, &count );
 
-    jclass clas = (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec") );
-    result = (*env)->NewObjectArray( env, count, clas, NULL );
+        jclass clas = (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec") );
+        result = (*env)->NewObjectArray( env, count, clas, NULL );
 
-    jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
-    for ( int ii = 0; ii < count; ++ii ) {
-        jobject jaddr = (*env)->NewObject( env, clas, initId );
-        setJAddrRec( env, jaddr, &addrs[ii] );
-        (*env)->SetObjectArrayElement( env, result, ii, jaddr );
-        deleteLocalRef( env, jaddr );
+        jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
+        for ( int ii = 0; ii < count; ++ii ) {
+            jobject jaddr = (*env)->NewObject( env, clas, initId );
+            setJAddrRec( env, jaddr, &addrs[ii] );
+            (*env)->SetObjectArrayElement( env, result, ii, jaddr );
+            deleteLocalRef( env, jaddr );
+        }
+        deleteLocalRef( env, clas );
     }
-    deleteLocalRef( env, clas );
-
     XWJNI_END();
     return result;
 }

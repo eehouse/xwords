@@ -1141,6 +1141,8 @@ public class GameUtils {
 
             GamePtr gamePtr = loadMakeGame( context, lock );
             if ( null != gamePtr ) {
+                Assert.assertTrue( XwJNI.game_hasComms( gamePtr )
+                                   || !BuildConfig.DEBUG );
                 CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
                 for ( CommsAddrRec addr : addrs ) {
                     CommsConnTypeSet conTypes = addr.conTypes;
