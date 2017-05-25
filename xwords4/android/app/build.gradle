@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 114
-def VERSION_NAME = '4.4.118'
+def VERSION_CODE_BASE = 115
+def VERSION_NAME = '4.4.119'
 def VARIANTS = [ "xw4", "xw4d" ]
 def BUILDS = [ "Debug", "Release" ]
 boolean forFDroid = hasProperty('forFDroid')
