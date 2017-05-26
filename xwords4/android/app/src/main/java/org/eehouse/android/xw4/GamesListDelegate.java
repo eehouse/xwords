@@ -946,7 +946,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( isUpgrade ) {
             if ( !s_firstShown ) {
                 if ( LocUtils.getCurLangCode( m_activity ).equals( "en" ) ) {
-                    FirstRunDialog.show( m_activity );
+                    show( FirstRunDialog.newInstance() );
                 }
                 s_firstShown = true;
             }

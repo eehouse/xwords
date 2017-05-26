@@ -20,8 +20,9 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -31,14 +32,23 @@ import org.eehouse.android.xw4.loc.LocUtils;
  * similar feature in OpenSudoku, to whose author "Thanks".
  */
 
-public class FirstRunDialog {
-    public static void show( final Context context )
+public class FirstRunDialog extends XWDialogFragment {
+    private static final String TAG = FirstRunDialog.class.getSimpleName();
+
+    public static FirstRunDialog newInstance()
     {
-        final boolean showSurvey = !Utils.onFirstVersion( context );
+        return new FirstRunDialog();
+    }
+
+    @Override
+    public Dialog onCreateDialog( Bundle sis )
+    {
+        final Context context = getActivity();
+        // boolean showSurvey = !Utils.onFirstVersion( context );
 
         // This won't support e.g mailto refs.  Probably want to
         // launch the browser with an intent eventually.
-        final WebView view = new WebView( context );
+        WebView view = new WebView( context );
         view.setWebViewClient( new WebViewClient() {
                 private boolean m_loaded = false;
                 @Override
@@ -65,12 +75,14 @@ public class FirstRunDialog {
         view.getSettings().setJavaScriptEnabled( true ); // for surveymonkey
         view.loadUrl("file:///android_asset/changes.html");
 
-        LocUtils.makeAlertBuilder( context )
+        return LocUtils.makeAlertBuilder( context )
             .setIcon(android.R.drawable.ic_menu_info_details)
             .setTitle( R.string.changes_title )
             .setView( view )
             .setPositiveButton( android.R.string.ok, null)
-            .create()
-            .show();
+            .create();
     }
+
+    @Override
+    protected String getFragTag() { return TAG; }
 }

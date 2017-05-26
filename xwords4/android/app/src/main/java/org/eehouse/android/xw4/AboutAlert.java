@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
@@ -47,8 +48,8 @@ public class AboutAlert extends XWDialogFragment {
     @Override
     public Dialog onCreateDialog( Bundle sis )
     {
-        final Context context = getActivity();
-        final View view = LocUtils.inflate( context, R.layout.about_dlg );
+        Context context = getActivity();
+        View view = LocUtils.inflate( context, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
 
         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL,
@@ -67,21 +68,23 @@ public class AboutAlert extends XWDialogFragment {
             xlator.setVisibility( View.GONE );
         }
 
-        return LocUtils.makeAlertBuilder( context )
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
             .setIcon( R.drawable.icon48x48 )
             .setTitle( R.string.app_name )
             .setView( view )
-            .setNegativeButton( R.string.changes_button,
-                                new OnClickListener() {
-                                    @Override
-                                    public void onClick( DialogInterface dlg,
-                                                         int which )
-                                    {
-                                        FirstRunDialog.show( context );
-                                    }
-                                } )
-            .setPositiveButton( android.R.string.ok, null )
-            .create();
+            .setPositiveButton( android.R.string.ok, null );
+
+        if ( context instanceof XWActivity ) {
+            final XWActivity activity = (XWActivity)context;
+            builder.setNegativeButton( R.string.changes_button, new OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dlg, int which ) {
+                        activity.show( FirstRunDialog.newInstance() );
+                    }
+                } );
+        }
+
+        return builder.create();
     }
 
     @Override
