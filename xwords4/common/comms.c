@@ -160,8 +160,8 @@ struct CommsCtxt {
     } rr;
 
     XP_Bool isServer;
-#ifdef DEBUG
     XP_Bool disableds[COMMS_CONN_NTYPES][2];
+#ifdef DEBUG
     XP_Bool processingMsg;
     const XP_UCHAR* tag;
 #endif
@@ -721,6 +721,14 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         prevsQueueNext = &msg->next;
     }
 
+    if ( STREAM_VERS_DISABLEDS <= version ) {
+        for ( int typ = 0; typ < VSIZE(comms->disableds); ++typ ) {
+            for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
+                comms->disableds[typ][ii] = 0 != stream_getBits( stream, 1 );
+            }
+        }
+    }
+
     return comms;
 } /* comms_makeFromStream */
 
@@ -900,6 +908,12 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
         stream_putU16( stream, msg->len );
         stream_putBytes( stream, msg->msg, msg->len );
+    }
+
+    for ( int typ = 0; typ < VSIZE(comms->disableds); ++typ ) {
+        for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
+            stream_putBits( stream, 1, comms->disableds[typ][ii] ? 1 : 0 );
+        }
     }
 
     comms->lastSaveToken = saveToken;
