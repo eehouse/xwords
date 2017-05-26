@@ -392,6 +392,12 @@ public class XwJNI {
     public static native String comms_formatRelayID( GamePtr gamePtr, int indx );
     public static native String comms_getStats( GamePtr gamePtr );
 
+    // Used/defined (in C) for DEBUG only
+    public static native void comms_setAddrDisabled( GamePtr gamePtr, CommsConnType typ,
+                                                     boolean send, boolean enabled );
+    public static native boolean comms_getAddrDisabled( GamePtr gamePtr, CommsConnType typ,
+                                                        boolean send );
+
     // Dicts
     public static class DictWrapper {
         private int m_dictPtr;

@@ -42,6 +42,9 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter;
@@ -110,6 +113,7 @@ public class GameConfigDelegate extends DelegateBase
     private boolean m_gameStarted = false;
     private CommsConnType[] m_types;
     private String[] m_connStrings;
+    private Map<CommsConnType, boolean[]> m_disabMap;
     private static final int[] s_disabledWhenLocked
         = { R.id.juggle_players,
             R.id.add_player,
@@ -570,6 +574,8 @@ public class GameConfigDelegate extends DelegateBase
                                                 relayPort );
                 }
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
+
+                setDisableds( gamePtr );
 
                 if ( null == m_jniThread ) {
                     gamePtr.release();
@@ -1060,6 +1066,25 @@ public class GameConfigDelegate extends DelegateBase
         m_boardsizeSpinner.setSelection( selection );
     }
 
+    private void setDisableds( XwJNI.GamePtr gamePtr )
+    {
+        if ( BuildConfig.DEBUG && !localOnlyGame() ) {
+            m_disabMap = new HashMap<>();
+            LinearLayout disableds = (LinearLayout)findViewById( R.id.disableds );
+            disableds.setVisibility( View.VISIBLE );
+
+            for ( CommsConnType typ : m_conTypes ) {
+                boolean[] bools = new boolean[2];
+                m_disabMap.put( typ, bools );
+                bools[0] = XwJNI.comms_getAddrDisabled( gamePtr, typ, false );
+                bools[1] = XwJNI.comms_getAddrDisabled( gamePtr, typ, true );
+                DisablesItem item = (DisablesItem)inflate( R.layout.disables_item );
+                item.init( typ, bools );
+                disableds.addView( item );
+            }
+        }
+    }
+
     private void adjustPlayersLabel()
     {
         Log.i( TAG, "adjustPlayersLabel()" );
@@ -1178,8 +1203,8 @@ public class GameConfigDelegate extends DelegateBase
             GameLock gameLock = m_jniThread == null
                 ? new GameLock( m_rowid, true ).lock()
                 : m_jniThread.getLock();
-            GameUtils.applyChanges( m_activity, m_gi, m_car, gameLock,
-                                    forceNew );
+            GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
+                                    gameLock, forceNew );
             DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
             if ( null == m_jniThread ) {
                 gameLock.unlock();

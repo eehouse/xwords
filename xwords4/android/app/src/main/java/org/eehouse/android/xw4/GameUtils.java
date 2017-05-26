@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 public class GameUtils {
     private static final String TAG = GameUtils.class.getSimpleName();
@@ -606,7 +607,7 @@ public class GameUtils {
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, sink, gi, util, addr, lock, false );
+            applyChanges( context, sink, gi, util, addr, null, lock, false );
             lock.unlock();
         }
 
@@ -1003,17 +1004,19 @@ public class GameUtils {
     } // replaceDicts
 
     public static void applyChanges( Context context, CurGameInfo gi,
-                                     CommsAddrRec car, GameLock lock,
-                                     boolean forceNew )
+                                     CommsAddrRec car,
+                                     Map<CommsConnType, boolean[]> disab,
+                                     GameLock lock, boolean forceNew )
     {
         applyChanges( context, (MultiMsgSink)null, gi, (UtilCtxt)null, car,
-                      lock, forceNew );
+                      disab, lock, forceNew );
     }
 
     public static void applyChanges( Context context, MultiMsgSink sink,
                                      CurGameInfo gi, UtilCtxt util,
-                                     CommsAddrRec car, GameLock lock,
-                                     boolean forceNew )
+                                     CommsAddrRec car,
+                                     Map<CommsConnType, boolean[]> disab,
+                                     GameLock lock, boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -1050,6 +1053,14 @@ public class GameUtils {
 
         if ( null != car ) {
             XwJNI.comms_setAddr( gamePtr, car );
+        }
+
+        if ( BuildConfig.DEBUG && null != disab ) {
+            for ( CommsConnType typ : disab.keySet() ) {
+                boolean[] bools = disab.get( typ );
+                XwJNI.comms_setAddrDisabled( gamePtr, typ, false, bools[0] );
+                XwJNI.comms_setAddrDisabled( gamePtr, typ, true, bools[1] );
+            }
         }
 
         if ( null != sink ) {

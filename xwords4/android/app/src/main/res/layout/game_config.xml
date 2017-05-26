@@ -275,8 +275,19 @@
                  />
       </LinearLayout>
 
-    </LinearLayout>
 
+      <LinearLayout android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="vertical"
+                    android:id="@+id/disableds"
+                    android:visibility="gone"
+                    >
+
+        <TextView style="@style/config_separator"
+                  android:text="@string/disableds_title"
+                  />
+      </LinearLayout>
+    </LinearLayout>
   </ScrollView>
 
 </RelativeLayout>

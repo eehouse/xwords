@@ -2040,6 +2040,36 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
     return result;
 }
 
+#ifdef DEBUG
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddrDisabled
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jConnTyp,
+  jboolean forSend, jboolean val )
+{
+    XWJNI_START();
+    if ( NULL != state->game.comms ) {
+        CommsConnType connType = jEnumToInt( env, jConnTyp );
+        comms_setAddrDisabled( state->game.comms, connType, forSend, val );
+    }
+    XWJNI_END();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrDisabled
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jConnTyp,
+  jboolean forSend )
+{
+    jboolean result = XP_FALSE;
+    XWJNI_START();
+    if ( NULL != state->game.comms ) {
+        CommsConnType connType = jEnumToInt( env, jConnTyp );
+        result = comms_getAddrDisabled( state->game.comms, connType, forSend );
+    }
+    XWJNI_END();
+    return result;
+}
+#endif
+
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_haveEnv
 ( JNIEnv* env, jclass C, jint jniGlobalPtr )
