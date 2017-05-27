@@ -43,23 +43,27 @@ public class DisablesItem extends LinearLayout {
 
     void init( CommsConnType typ, boolean[] state )
     {
-        m_state = state;
-        m_type = typ;
-        ((TextView)findViewById(R.id.addr_type)).setText( typ.toString() );
+        if ( BuildConfig.DEBUG ) {
+            m_state = state;
+            m_type = typ;
+            ((TextView)findViewById(R.id.addr_type)).setText( typ.shortName() );
 
-        setupCheckbox( R.id.send, true );
-        setupCheckbox( R.id.receive, false );
+            setupCheckbox( R.id.send, true );
+            setupCheckbox( R.id.receive, false );
+        }
     }
 
     private void setupCheckbox( int id, final boolean forSend )
     {
-        final CheckBox cb = (CheckBox)findViewById( id );
-        cb.setChecked( m_state[forSend?1:0] );
-        cb.setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_state[forSend?1:0] = cb.isChecked();
-                }
-            } );
+        if ( BuildConfig.DEBUG ) {
+            final CheckBox cb = (CheckBox)findViewById( id );
+            cb.setChecked( m_state[forSend?1:0] );
+            cb.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
+                        m_state[forSend?1:0] = cb.isChecked();
+                    }
+                } );
+        }
     }
 }
