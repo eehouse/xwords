@@ -1,8 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
 def VERSION_CODE_BASE = 115
 def VERSION_NAME = '4.4.119'
-def VARIANTS = [ "xw4", "xw4d" ]
-def BUILDS = [ "Debug", "Release" ]
 boolean forFDroid = hasProperty('forFDroid')
 
 // Get the git revision we're using. Since fdroid modifies files as
@@ -126,18 +124,18 @@ android {
         // debugging don't work.
         xw4 {
             release {
-                jniLibs.srcDir "../libs-release-xw4"
+                jniLibs.srcDir "../libs-xw4Release"
             }
             debug {
-                jniLibs.srcDir "../libs-debug-xw4"
+                jniLibs.srcDir "../libs-xw4Debug"
             }
         }
         xw4d {
             release {
-                jniLibs.srcDir "../libs-release-xw4d"
+                jniLibs.srcDir "../libs-xw4dRelease"
             }
             debug {
-                jniLibs.srcDir "../libs-debug-xw4d"
+                jniLibs.srcDir "../libs-xw4dDebug"
             }
         }
     }
@@ -192,23 +190,40 @@ task mkXml(type: Exec) {
 }
 
 afterEvaluate {
-    VARIANTS.each { VARIANT ->
-        String variantCaps = VARIANT.capitalize()
-        BUILDS.each { BUILD ->
-            String nameLC = BUILD.toLowerCase()
-            String lib = "libs-${nameLC}-${VARIANT}"
-            String ndkBuildTask = "ndkBuild${variantCaps}${BUILD}"
-            task "$ndkBuildTask"(type: Exec) {
+    ArrayList<String> cleanCmdLst = new ArrayList<>(["rm", "-rf"]);
+    android.applicationVariants.all { variant ->
+        // print "variant: " + variant.name + "\n"
+        String BUILD = variant.getBuildType().getName()
+        // print "type: " + BUILD + "\n"
+        String FLAVOR = variant.getFlavorName()
+        // print "flavor: " + variant.getFlavorName() + "\n"
+        // print "variant: " + variant + "\n"
+
+        String variantCaps = variant.name.capitalize()
+        String nameLC = variant.getBuildType().getName().toLowerCase()
+        String lib = "libs-${variant.name}"
+        String ndkBuildTask = "ndkBuild${variantCaps}"
+        task "$ndkBuildTask"(type: Exec) {
                  workingDir '../'
                  commandLine './scripts/ndkbuild.sh', '-j3',
                  "BUILD_TARGET=${nameLC}", "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
-                 "VARIANT=$VARIANT", "NDK_LIBS_OUT=${lib}", "NDK_OUT=./obj-${nameLC}-${VARIANT}"
+                 "VARIANT=${FLAVOR}", "NDK_LIBS_OUT=${lib}",
+                 "NDK_OUT=./obj-${variant.name}"
             }
 
-            String compileTask = "compile${variantCaps}${BUILD}Ndk"
-            tasks.getByName(compileTask).dependsOn ndkBuildTask
-        }
+        String compileTask = "compile${variantCaps}Ndk"
+        tasks.getByName(compileTask).dependsOn ndkBuildTask
+
+        // For clean task
+        cleanCmdLst.add("libs-${variant.name}")
+        cleanCmdLst.add("./obj-${variant.name}")
     }
+
+    task cleanNDK(type: Exec) {
+        workingDir '../'
+        commandLine cleanCmdLst
+    }
+    clean.dependsOn 'cleanNDK'
 
     String copyStringsTask = "copyStringsXw4D"
     task "$copyStringsTask"(type: Exec) {
@@ -218,21 +233,6 @@ afterEvaluate {
                 "src/xw4d/res/values/strings.xml"
             }
     preBuild.dependsOn copyStringsTask
-}
-
-clean.dependsOn 'cleanNDK'
-task cleanNDK(type: Exec) {
-    ArrayList<String> lst = new ArrayList<String>(["rm", "-rf"]);
-    BUILDS.each { BUILD ->
-        String buildLC = BUILD.toLowerCase()
-        VARIANTS.each { VARIANT ->
-            lst.add("libs-${buildLC}-${VARIANT}")
-            lst.add("obj-${buildLC}-${VARIANT}")
-        }
-    }
-
-    workingDir '../'
-    commandLine lst
 }
 
 task makeBuildAssets() {
