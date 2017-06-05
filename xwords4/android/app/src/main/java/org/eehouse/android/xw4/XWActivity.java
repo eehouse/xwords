@@ -71,7 +71,8 @@ public class XWActivity extends FragmentActivity
     protected void onSaveInstanceState( Bundle outState )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "onSaveInstanceState(this=%H)", this );
+            Log.i( TAG, "%s.onSaveInstanceState(this=%H)",
+                   getClass().getSimpleName(), this );
         }
         m_dlgt.onSaveInstanceState( outState );
         super.onSaveInstanceState( outState );
@@ -81,7 +82,8 @@ public class XWActivity extends FragmentActivity
     protected void onPause()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "onPause(this=%H)", this );
+            Log.i( TAG, "%s.onPause(this=%H)", getClass().getSimpleName(),
+                   this );
         }
         m_dlgt.onPause();
         super.onPause();
@@ -92,7 +94,8 @@ public class XWActivity extends FragmentActivity
     protected void onResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "onResume(this=%H)", this );
+            Log.i( TAG, "%s.onResume(this=%H)", getClass().getSimpleName(),
+                   this );
         }
         super.onResume();
         WiDirWrapper.activityResumed( this );
@@ -103,7 +106,8 @@ public class XWActivity extends FragmentActivity
     protected void onPostResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "onPostResume(this=%H)", this );
+            Log.i( TAG, "%s.onPostResume(this=%H)",
+                   getClass().getSimpleName(), this );
         }
         super.onPostResume();
     }
@@ -132,7 +136,7 @@ public class XWActivity extends FragmentActivity
     protected void onDestroy()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            Log.i( TAG, "onDestroy(this=%H)", this );
+            Log.i( TAG, "%s.onDestroy(this=%H)", getClass().getSimpleName(), this );
         }
         m_dlgt.onDestroy();
         super.onDestroy();
