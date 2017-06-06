@@ -248,12 +248,11 @@ CookieRef::_Reconnect( int clientVersion, DevID* devID, HostID hid,
         logf( XW_LOGINFO, "%s: failing because spot taken", __func__ );
     } else {
         if ( alreadyHere ) {
-            logf( XW_LOGINFO, "%s: dropping because already here",
-                  __func__ );
-        } else {
-            pushReconnectEvent( clientVersion, devID, hid, nPlayersH, 
-                                nPlayersS, seed, addr );
+            logf( XW_LOGERROR, "%s: dropping because already here", __func__ );
         }
+
+        pushReconnectEvent( clientVersion, devID, hid, nPlayersH, nPlayersS,
+                            seed, addr );
         if ( gameDead ) {
             pushGameDead( addr );
         }
