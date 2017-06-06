@@ -210,10 +210,9 @@ public class ChatDelegate extends DelegateBase {
         boolean handled = true;
         switch ( item.getItemId() ) {
         case R.id.chat_menu_clear:
-            if ( handled ) {
-                makeConfirmThenBuilder( R.string.confirm_clear_chat, Action.CLEAR_ACTION )
-                    .show();
-            }
+            makeConfirmThenBuilder( R.string.confirm_clear_chat,
+                                    Action.CLEAR_ACTION )
+                .show();
             break;
         case R.id.chat_menu_send:
             handleSend();
