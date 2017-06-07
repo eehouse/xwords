@@ -884,6 +884,7 @@ DBMgr::execParams( QueryBuilder& qb )
               PQresStatus(PQresultStatus(result)), 
               PQresultErrorMessage(result) );
     }
+    PQclear( result );
     return success;
 }
 
