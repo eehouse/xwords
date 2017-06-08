@@ -82,6 +82,7 @@ public class GameUtils {
         LastMoveInfo m_lmi;     // instantiated on demand
         String m_chat;
         String m_chatFrom;
+        long m_chatTs;
     }
 
     private static Object s_syncObj = new Object();
@@ -866,6 +867,7 @@ public class GameUtils {
         private Context m_context;
         private long m_rowid;
         public String m_chat;
+        public long m_ts;
         public boolean m_gotMsg;
         public boolean m_gotChat;
         public String m_chatFrom;
@@ -880,12 +882,13 @@ public class GameUtils {
             m_gameOver = false;
         }
         @Override
-        public void showChat( String msg, int fromIndx, String fromName )
+        public void showChat( String msg, int fromIndx, String fromName, int tsSeconds )
         {
-            DBUtils.appendChatHistory( m_context, m_rowid, msg, fromIndx );
+            DBUtils.appendChatHistory( m_context, m_rowid, msg, fromIndx, tsSeconds );
             m_gotChat = true;
             m_chatFrom = fromName;
             m_chat = msg;
+            m_ts = tsSeconds;
         }
         public void turnChanged( int newTurn )
         {
@@ -935,6 +938,7 @@ public class GameUtils {
                         if ( null != feedImpl.m_chat ) {
                             bmr.m_chat = feedImpl.m_chat;
                             bmr.m_chatFrom = feedImpl.m_chatFrom;
+                            bmr.m_chatTs = feedImpl.m_ts;
                         } else {
                             LastMoveInfo lmi = new LastMoveInfo();
                             XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );

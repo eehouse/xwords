@@ -106,13 +106,15 @@ public class DBUtils {
     }
 
     public static class HistoryPair {
-        private HistoryPair( String p_msg, int p_playerIndx )
+        private HistoryPair( String p_msg, int p_playerIndx, int p_ts )
         {
             msg = p_msg;
             playerIndx = p_playerIndx;
+            ts = p_ts;
         }
         String msg;
         int playerIndx;
+        int ts;
     }
 
     public static class DictBrowseState {
@@ -1217,9 +1219,9 @@ public class DBUtils {
                     Log.d( TAG, "convertChatString(): removing substring %s; was: %s", prefix, msg );
                     msg = msg.substring( prefix.length(), msg.length() );
                     Log.d( TAG, "convertChatString(): removED substring; now %s", msg );
-                    valuess.add( cvForChat( rowid, msg, indx ) );
+                    valuess.add( cvForChat( rowid, msg, indx, 0 ) );
 
-                    HistoryPair pair = new HistoryPair(msg, indx );
+                    HistoryPair pair = new HistoryPair( msg, indx, 0 );
                     pairs.add( pair );
                 }
             }
@@ -1235,7 +1237,7 @@ public class DBUtils {
                                                 boolean[] playersLocal )
     {
         HistoryPair[] result = null;
-        String[] columns = { DBHelper.SENDER, DBHelper.MESSAGE };
+        String[] columns = { DBHelper.SENDER, DBHelper.MESSAGE, DBHelper.CHATTIME };
         String selection = String.format( "%s=%d", DBHelper.ROW, rowid );
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1245,10 +1247,12 @@ public class DBUtils {
                 result = new HistoryPair[cursor.getCount()];
                 int msgIndex = cursor.getColumnIndex( DBHelper.MESSAGE );
                 int plyrIndex = cursor.getColumnIndex( DBHelper.SENDER );
+                int tsIndex = cursor.getColumnIndex( DBHelper.CHATTIME );
                 for ( int ii = 0; cursor.moveToNext(); ++ii ) {
                     String msg = cursor.getString( msgIndex );
                     int plyr = cursor.getInt( plyrIndex );
-                    HistoryPair pair = new HistoryPair(msg, plyr );
+                    int ts = cursor.getInt( tsIndex );
+                    HistoryPair pair = new HistoryPair( msg, plyr, ts );
                     result[ii] = pair;
                 }
             }
@@ -1766,22 +1770,24 @@ public class DBUtils {
         }
     }
 
-    private static ContentValues cvForChat( long rowid, String msg, int plyr )
+    private static ContentValues cvForChat( long rowid, String msg, int plyr, long tsSeconds )
     {
         ContentValues values = new ContentValues();
         values.put( DBHelper.ROW, rowid );
         values.put( DBHelper.MESSAGE, msg );
         values.put( DBHelper.SENDER, plyr );
+        values.put( DBHelper.CHATTIME, tsSeconds );
         return values;
     }
 
     public static void appendChatHistory( Context context, long rowid,
-                                          String msg, int fromPlayer )
+                                          String msg, int fromPlayer,
+                                          long tsSeconds )
     {
         Assert.assertNotNull( msg );
         Assert.assertFalse( -1 == fromPlayer );
         ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
-        valuess.add( cvForChat( rowid, msg, fromPlayer ) );
+        valuess.add( cvForChat( rowid, msg, fromPlayer, tsSeconds ) );
         appendChatHistory( context, valuess );
         Log.i( TAG, "appendChatHistory: inserted \"%s\" from player %d",
                msg, fromPlayer );

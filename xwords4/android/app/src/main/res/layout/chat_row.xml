@@ -13,4 +13,11 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             />
+  <TextView android:id="@+id/chat_row_time"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:singleLine="true"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            />
 </TableRow>

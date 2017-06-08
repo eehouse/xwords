@@ -2255,7 +2255,8 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_CHAT
 static void
-gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg, XP_S16 from )
+gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg, XP_S16 from,
+                   XP_U32 timestamp )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     XP_UCHAR buf[1024];
@@ -2263,7 +2264,7 @@ gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg, XP_S16 from )
     if ( 0 <= from ) {
         name = globals->cGlobals.gi->players[from].name;
     }
-    XP_SNPRINTF( buf, VSIZE(buf), "quoth %s: %s", name, msg );
+    XP_SNPRINTF( buf, VSIZE(buf), "quoth %s at %d: %s", name, timestamp, msg );
     (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 }
 #endif

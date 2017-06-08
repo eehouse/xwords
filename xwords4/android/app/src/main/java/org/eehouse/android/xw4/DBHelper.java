@@ -47,7 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_CHAT = "chat";
     public static final String TABLE_NAME_LOGS = "logs";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 28;
+    private static final int DB_VERSION = 29;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -98,6 +98,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String ITERPREFIX = "ITERPREFIX";
     public static final String CREATE_TIME = "CREATE_TIME";
     public static final String LASTPLAY_TIME = "LASTPLAY_TIME";
+    public static final String CHATTIME = "CHATTIME";
 
     public static final String GROUPNAME = "GROUPNAME";
     public static final String EXPANDED = "EXPANDED";
@@ -221,6 +222,7 @@ public class DBHelper extends SQLiteOpenHelper {
         { ROW, "INTEGER" }
         ,{ SENDER, "INTEGER" }
         ,{ MESSAGE, "TEXT" }
+        ,{ CHATTIME, "INTEGER DEFAULT 0" }
     };
 
     private static final String[][] s_logsSchema = {
@@ -264,6 +266,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.i( TAG, "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
         boolean madeSumTable = false;
+        boolean madeChatTable = false;
         switch( oldVersion ) {
         case 5:
             createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
@@ -324,11 +327,16 @@ public class DBHelper extends SQLiteOpenHelper {
             createInvitesTable( db );
         case 25:
             createChatsTable( db );
+            madeChatTable = true;
         case 26:
             createLogsTable( db );
         case 27:
             if ( !madeSumTable ) {
                 addSumColumn( db, TURN_LOCAL );
+            }
+        case 28:
+            if ( !madeChatTable ) {
+                addColumn( db, TABLE_NAME_CHAT, s_chatsSchema, CHATTIME );
             }
 
             break;
@@ -355,16 +363,22 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private void addSumColumn( SQLiteDatabase db, String colName )
     {
+        addColumn( db, TABLE_NAME_SUM, s_summaryColsAndTypes, colName );
+    }
+
+    private void addColumn( SQLiteDatabase db, String tableName,
+                            String[][] colsAndTypes, String colName )
+    {
         String colType = null;
-        for ( int ii = 0; ii < s_summaryColsAndTypes.length; ++ii ) {
-            if ( s_summaryColsAndTypes[ii][0].equals( colName ) ) {
-                colType = s_summaryColsAndTypes[ii][1];
+        for ( int ii = 0; ii < colsAndTypes.length; ++ii ) {
+            if ( colsAndTypes[ii][0].equals( colName ) ) {
+                colType = colsAndTypes[ii][1];
                 break;
             }
         }
 
         String cmd = String.format( "ALTER TABLE %s ADD COLUMN %s %s;",
-                                    TABLE_NAME_SUM, colName, colType );
+                                    tableName, colName, colType );
         db.execSQL( cmd );
     }
 

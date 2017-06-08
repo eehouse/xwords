@@ -28,14 +28,17 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.View.OnLayoutChangeListener;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import java.text.DateFormat;
+import java.util.Date;
 
 import junit.framework.Assert;
 
@@ -115,7 +118,7 @@ public class ChatDelegate extends DelegateBase {
             = DBUtils.getChatHistory( m_activity, m_rowid, locals );
         if ( null != pairs ) {
             for ( DBUtils.HistoryPair pair : pairs ) {
-                addRow( pair.msg, pair.playerIndx );
+                addRow( pair.msg, pair.playerIndx, pair.ts );
             }
         }
 
@@ -160,7 +163,7 @@ public class ChatDelegate extends DelegateBase {
         super.onPause();
     }
 
-    private void addRow( String msg, int playerIndx )
+    private void addRow( String msg, int playerIndx, long tsSeconds )
     {
         TableRow row = (TableRow)inflate( R.layout.chat_row );
         if ( m_curPlayer == playerIndx ) {
@@ -171,6 +174,14 @@ public class ChatDelegate extends DelegateBase {
         view = (TextView)row.findViewById( R.id.chat_row_name );
         view.setText( getString( R.string.chat_sender_fmt,
                                  m_names[playerIndx] ) );
+
+        if ( tsSeconds > 0 ) {
+            view = (TextView)row.findViewById( R.id.chat_row_time );
+            DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT,
+                                                            DateFormat.SHORT );
+            view.setText( df.format( new Date( 1000L * tsSeconds ) ) );
+        }
+
         m_layout.addView( row );
 
         scrollDown();
@@ -188,8 +199,9 @@ public class ChatDelegate extends DelegateBase {
 
     private void handleSend() {
         String text = m_edit.getText().toString();
-        DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer );
-        addRow( text, m_curPlayer );
+        long ts = Utils.getCurSeconds();
+        DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer, ts );
+        addRow( text, m_curPlayer, (int)ts );
         m_edit.setText( null );
 
         m_jniThreadRef.sendChat( text );
@@ -241,12 +253,12 @@ public class ChatDelegate extends DelegateBase {
         return handled;
     }
 
-    public static boolean append( long rowid, String msg, int fromIndx )
+    public static boolean append( long rowid, String msg, int fromIndx, long tsSeconds )
     {
         boolean handled = null != s_visibleThis
             && s_visibleThis.m_rowid == rowid;
         if ( handled ) {
-            s_visibleThis.addRow( msg, fromIndx );
+            s_visibleThis.addRow( msg, fromIndx, tsSeconds );
             Utils.playNotificationSound( s_visibleThis.m_activity );
         }
         return handled;

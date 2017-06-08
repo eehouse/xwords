@@ -474,9 +474,9 @@ and_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #ifdef XWFEATURE_CHAT
 static void
-and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* msg, XP_S16 from )
+and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* msg, XP_S16 from, XP_U32 timestamp )
 {
-    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;ILjava/lang/String;)V" );
+    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;ILjava/lang/String;I)V" );
     jstring jname = NULL;
     if ( 0 <= from ) {
         LocalPlayer* lp = &uc->gameInfo->players[from];
@@ -485,7 +485,7 @@ and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* msg, XP_S16 from )
     }
 
     jstring jmsg = (*env)->NewStringUTF( env, msg );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg, from, jname );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg, from, jname, timestamp );
     deleteLocalRefs( env, jmsg, jname, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }

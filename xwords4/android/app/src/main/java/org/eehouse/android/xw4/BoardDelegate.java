@@ -1997,14 +1997,14 @@ public class BoardDelegate extends DelegateBase
         // chat-messages.
         @Override
         public void showChat( final String msg, final int fromIndx,
-                              String fromPlayer )
+                              String fromPlayer, final int tsSeconds )
         {
             runOnUiThread( new Runnable() {
                     public void run() {
                         DBUtils.appendChatHistory( m_activity, m_rowid, msg,
-                                                   fromIndx );
+                                                   fromIndx, tsSeconds );
                         if ( ! ChatDelegate.append( m_rowid, msg,
-                                                    fromIndx ) ) {
+                                                    fromIndx, tsSeconds ) ) {
                             startChatActivity();
                         }
                     }

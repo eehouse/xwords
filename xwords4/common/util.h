@@ -193,7 +193,7 @@ typedef struct UtilVtable {
 
 #ifdef XWFEATURE_CHAT
     void (*m_util_showChat)( XW_UtilCtxt* uc, const XP_UCHAR* const msg, 
-                             XP_S16 from );
+                             XP_S16 from, XP_U32 timestamp );
 #endif
 
 #ifdef SHOW_PROGRESS
@@ -342,7 +342,7 @@ struct XW_UtilCtxt {
 #endif
 
 #ifdef XWFEATURE_CHAT
-# define util_showChat( uc, m, f ) (uc)->vtable->m_util_showChat((uc),(m),(f))
+# define util_showChat( uc, m, f, ts ) (uc)->vtable->m_util_showChat((uc),(m),(f), (ts))
 #endif
 
 # ifdef SHOW_PROGRESS

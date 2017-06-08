@@ -1422,7 +1422,7 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 static void
 curses_util_showChat( XW_UtilCtxt* uc, 
                       const XP_UCHAR* const XP_UNUSED_DBG(msg),
-                      XP_S16 XP_UNUSED_DBG(from) )
+                      XP_S16 XP_UNUSED_DBG(from), XP_U32 XP_UNUSED(timestamp) )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     globals->nChatsSent = 0;
