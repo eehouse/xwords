@@ -1911,7 +1911,12 @@ public class BoardDelegate extends DelegateBase
         {
             m_mySIS.words = null == words? null : wordsToArray( words );
             nonBlockingDialog( DlgID.DLG_SCORES, expl );
-            if ( isVisible() ) {
+
+            // Post a notification if in background, or play sound if not. But
+            // do nothing for standalone case.
+            if ( DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
+                // do nothing
+            } else if ( isVisible() ) {
                 Utils.playNotificationSound( m_activity );
             } else {
                 LastMoveInfo lmi = new LastMoveInfo();
