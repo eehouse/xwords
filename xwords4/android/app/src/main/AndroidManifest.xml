@@ -117,6 +117,7 @@
     </receiver>
     <receiver android:name="RelayReceiver"/>
     <receiver android:name="NagTurnReceiver"/>
+    <receiver android:name="SMSResendReceiver"/>
 
     <receiver android:name="UpdateCheckReceiver">
       <intent-filter>
@@ -209,7 +210,6 @@
         <data android:port="@string/nbs_port" /> 
         <data android:host="*" /> 
       </intent-filter> 
-
     </receiver>
 
     <receiver android:name="com.google.android.gcm.GCMBroadcastReceiver" 

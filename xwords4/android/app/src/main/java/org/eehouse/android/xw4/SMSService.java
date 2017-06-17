@@ -538,6 +538,8 @@ public class SMSService extends XWService {
                 Log.w( TAG, "unexpected cmd %s", cmd.toString() );
                 break;
             }
+
+            SMSResendReceiver.resetTimer( this );
         } catch ( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
         }

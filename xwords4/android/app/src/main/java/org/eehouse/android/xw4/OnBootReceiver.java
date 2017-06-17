@@ -41,5 +41,6 @@ public class OnBootReceiver extends BroadcastReceiver {
     {
         NagTurnReceiver.restartTimer( context );
         RelayReceiver.setTimer( context );
+        SMSResendReceiver.setTimer( context );
     }
 }
