@@ -436,7 +436,7 @@ public class GameUtils {
     public static void resendAllIf( Context context, CommsConnType filter,
                                     boolean force )
     {
-        final boolean showUI = force;
+        boolean showUI = force;
         long now = Utils.getCurSeconds();
 
         if ( !force ) {

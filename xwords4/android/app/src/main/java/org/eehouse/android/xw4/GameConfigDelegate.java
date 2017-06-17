@@ -752,7 +752,7 @@ public class GameConfigDelegate extends DelegateBase
                             || m_carOrig.changesMatter(m_car) ) {
                     showDialogFragment( DlgID.CONFIRM_CHANGE_PLAY );
                 } else {
-                    finishAndLaunch();
+                    saveAndClose( false );
                 }
                 break;
             default:
