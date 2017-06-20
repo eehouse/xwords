@@ -38,7 +38,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.text.DateFormat;
-import java.util.Date;
+import android.text.format.DateUtils;
 
 import junit.framework.Assert;
 
@@ -176,10 +176,12 @@ public class ChatDelegate extends DelegateBase {
                                  m_names[playerIndx] ) );
 
         if ( tsSeconds > 0 ) {
-            view = (TextView)row.findViewById( R.id.chat_row_time );
-            DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT,
-                                                            DateFormat.SHORT );
-            view.setText( df.format( new Date( 1000L * tsSeconds ) ) );
+            long now = 1000L * Utils.getCurSeconds();
+            String str = DateUtils
+                .formatSameDayTime( 1000L * tsSeconds, now, DateFormat.MEDIUM,
+                                    DateFormat.MEDIUM )
+                .toString();
+            ((TextView)row.findViewById( R.id.chat_row_time )).setText( str );
         }
 
         m_layout.addView( row );

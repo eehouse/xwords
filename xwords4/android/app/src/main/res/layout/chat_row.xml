@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TableRow xmlns:android="http://schemas.android.com/apk/res/android">
-  <TextView android:id="@+id/chat_row_name" 
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_marginRight="8dp"
-            />
-  <TextView android:id="@+id/chat_row_text" 
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:singleLine="false"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            />
   <TextView android:id="@+id/chat_row_time"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:singleLine="true"
+            android:layout_marginRight="8dp"
+            android:maxLines="1"
+            />
+  <TextView android:id="@+id/chat_row_name"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_marginRight="8dp"
+            android:maxLines="1"
+            />
+  <TextView android:id="@+id/chat_row_text"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="0dp"
             android:layout_weight="1"
             />
