@@ -47,7 +47,8 @@ public class SMSResendReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS, true );
+        GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS, true,
+                               BuildConfig.DEBUG );
         setTimer( context, true );
     }
 

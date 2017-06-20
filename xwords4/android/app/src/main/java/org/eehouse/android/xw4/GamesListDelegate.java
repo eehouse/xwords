@@ -1533,7 +1533,7 @@ public class GamesListDelegate extends ListDelegateBase
             // There's no selection for these items, so nothing to clear
 
         case R.id.games_menu_resend:
-            GameUtils.resendAllIf( m_activity, null, true );
+            GameUtils.resendAllIf( m_activity, null, true, true );
             break;
         case R.id.games_menu_newgame_solo:
             handleNewGame( true );

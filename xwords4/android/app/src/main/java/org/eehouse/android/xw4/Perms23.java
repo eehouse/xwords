@@ -265,7 +265,7 @@ public class Perms23 {
             // Perm-by-Perm, but I'm in a hurry.
             if ( granted && perm == Perm.SEND_SMS ) {
                 GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS,
-                                       true );
+                                       true, true );
             }
 
             // Log.d( TAG, "calling %s.onPermissionResult(%s, %b)",

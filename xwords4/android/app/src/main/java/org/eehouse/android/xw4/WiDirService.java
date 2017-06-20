@@ -738,7 +738,7 @@ public class WiDirService extends XWService {
 
             GameUtils.resendAllIf( XWApp.getContext(),
                                    CommsConnType.COMMS_CONN_P2P,
-                                   false );
+                                   false, false );
         }
     }
 
