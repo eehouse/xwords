@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh -PuseCrashlytics insXw4dDeb"; -*- */
 /*
  * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -21,16 +21,38 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 
-// This class exists solely to allow crittercism to be included in a small
-// file that can be different in variants.  GamesList.java is too big.
-import com.crittercism.app.Crittercism;
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
+
+// This class exists solely to allow crashlytics to be included in a small
+// file that can be different in flavors.
 
 public class CrashTrack {
+    private static final String TAG = CrashTrack.class.getSimpleName();
 
     public static void init( Context context ) {
-        if ( 0 < BuildConfig.CRITTERCISM_APP_ID.length() ) {
-            Crittercism.initialize(context.getApplicationContext(), 
-                                   BuildConfig.CRITTERCISM_APP_ID );
+
+        if ( 0 < BuildConfig.FABRIC_API_KEY.length() ) {
+            // Crashlytics/Fabric sample code wants this between onCreate()'s
+            // super() call and the call to setContentView(). We'll see if
+            // this works.
+            Fabric.with( context, new Crashlytics() );
+
+            // Now crash as a test
+            if ( false ) {
+                new Thread( new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException ex) {}
+                            String nullStr = null;
+                            if ( nullStr.equals("") ) {
+                                Log.d( TAG, "something's very wrong" );
+                            }
+                        }
+                    } ).start();
+            }
         }
     }
 }

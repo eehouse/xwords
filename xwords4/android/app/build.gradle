@@ -1,6 +1,8 @@
 def INITIAL_CLIENT_VERS = 8
 def VERSION_CODE_BASE = 115
 def VERSION_NAME = '4.4.119'
+def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
+
 boolean forFDroid = hasProperty('forFDroid')
 
 // Get the git revision we're using. Since fdroid modifies files as
@@ -13,6 +15,14 @@ if (! forFDroid) {
 GITREV = GITREV.execute().text.trim()
 
 apply plugin: 'com.android.application'
+
+
+if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) {
+    apply plugin: 'io.fabric'
+}
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
 
 android {
     buildToolsVersion '23.0.3'
@@ -29,8 +39,7 @@ android {
         //     variant.buildConfigField "String", "FIELD_NAME", "\"my String\""
         def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
         variant.buildConfigField "String", "SENDER_ID", "\"$GCM_SENDER_ID\""
-        def CRITTERCISM_APP_ID = System.getenv("CRITTERCISM_APP_ID")
-        variant.buildConfigField "String", "CRITTERCISM_APP_ID", "\"$CRITTERCISM_APP_ID\""
+        variant.buildConfigField "String", "FABRIC_API_KEY", "\"$FABRIC_API_KEY\""
 
         resValue "string", "git_rev", "$GITREV"
         variant.buildConfigField "String", "GIT_REV", "\"$GITREV\""
@@ -63,8 +72,9 @@ android {
         }
         xw4d {
             dimension "variant"
+            minSdkVersion 8
             applicationId "org.eehouse.android.xw4dbg"
-            manifestPlaceholders = [ APP_ID: applicationId ]
+            manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
             resValue "string", "invite_prefix", "/anddbg/"
@@ -160,7 +170,9 @@ dependencies {
 
     compile 'com.android.support:support-v4:23.4.0'
 
-    xw4dCompile 'com.crittercism:crittercism-android-agent:+'
+    xw4dCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
+        transitive = true;
+    }
 }
 
 task mkImages(type: Exec) {
