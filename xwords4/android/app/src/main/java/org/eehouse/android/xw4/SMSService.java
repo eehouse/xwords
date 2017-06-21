@@ -523,7 +523,9 @@ public class SMSService extends XWService {
                 int gameID = dis.readInt();
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
-                feedMessage( gameID, rest, new CommsAddrRec( phone ) );
+                if ( feedMessage( gameID, rest, new CommsAddrRec( phone ) ) ) {
+                    SMSResendReceiver.resetTimer( this );
+                }
                 break;
             case DEATH:
                 gameID = dis.readInt();
@@ -538,8 +540,6 @@ public class SMSService extends XWService {
                 Log.w( TAG, "unexpected cmd %s", cmd.toString() );
                 break;
             }
-
-            SMSResendReceiver.resetTimer( this );
         } catch ( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
         }
@@ -708,12 +708,13 @@ public class SMSService extends XWService {
         return success;
     }
 
-    private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
+    private boolean feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
     {
         ReceiveResult rslt = receiveMessage( this, gameID, null, msg, addr );
         if ( ReceiveResult.GAME_GONE == rslt ) {
             sendDiedPacket( addr.sms_phone, gameID );
         }
+        return rslt == ReceiveResult.OK;
     }
 
     private void registerReceivers()
