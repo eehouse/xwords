@@ -34,6 +34,7 @@ import android.telephony.PhoneNumberUtils;
 import android.text.method.DialerKeyListener;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import junit.framework.Assert;
 
@@ -143,25 +144,30 @@ public class SMSInviteDelegate extends InviteDelegate {
         DialogInterface.OnClickListener lstnr;
         switch( alert.getDlgID() ) {
         case GET_NUMBER: {
-            final GameNamer namerView =
-                (GameNamer)inflate( R.layout.rename_game );
-            namerView.setLabel( R.string.get_sms_number );
-            namerView.setKeyListener(DialerKeyListener.getInstance());
+            final View getNumView = inflate( R.layout.get_sms );
+            ((EditText)getNumView.findViewById( R.id.num_field )).setKeyListener(DialerKeyListener.getInstance());
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        String number = namerView.getName();
-                        PhoneRec rec = new PhoneRec( number );
-                        makeConfirmThenBuilder( R.string.warn_unlimited,
-                                                Action.POST_WARNING_ACTION )
-                            .setPosButton( R.string.button_yes )
-                            .setParams( number, null )
-                            .show();
+                        String number
+                            = ((EditText)getNumView.findViewById(R.id.num_field))
+                            .getText().toString();
+                        if ( null != number && 0 < number.length() ) {
+                            String name
+                                = ((EditText)getNumView.findViewById(R.id.name_field))
+                                .getText().toString();
+                            makeConfirmThenBuilder( R.string.warn_unlimited,
+                                                    Action.POST_WARNING_ACTION )
+                                .setPosButton( R.string.button_yes )
+                                .setParams( number, name )
+                                .show();
+                        }
                     }
                 };
             dialog = makeAlertBuilder()
+                .setTitle( R.string.get_sms_title )
+                .setView( getNumView )
                 .setPositiveButton( android.R.string.ok, lstnr )
                 .setNegativeButton( android.R.string.cancel, null )
-                .setView( namerView )
                 .create();
         }
             break;

@@ -1919,7 +1919,9 @@
     empty. Use the \"Scan games\" button to scan your old games
     for opponents. Use the \"+\" button to enter device IDs directly.</string>
     <!--  -->
-    <string name="get_sms_number">Enter phone number:</string>
+    <string name="get_sms_title">Manual entry</string>
+    <string name="get_sms_number">Device phone number:</string>
+    <string name="get_sms_name">Contact name (optional):</string>
     <string name="get_relay_number">Enter device ID:</string>
     <!--  -->
     <plurals name="confirm_clear_sms_fmt">
