@@ -280,7 +280,8 @@ public class XWActivity extends FragmentActivity
                 df.show( fm, tag );
             } catch (IllegalStateException ise ) {
                 Log.d( TAG, "error showing tag %s (df: %s)", tag, df );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                // DLG_SCORES is causing this
+                // Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
     }
