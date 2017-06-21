@@ -1936,7 +1936,8 @@
     <string name="summary_conn_sms_fmt">Game in play with %1$s</string>
     <!--  -->
     <string name="warn_unlimited">Are you certain this number is on an
-    account with unlimited texting?  Click cancel if you are not.</string>
+    account with unlimited texting? Tap \"Cancel\" if you are
+    not.</string>
 
     <!--  -->
     <string name="remote_undone">Remote device undid a turn.</string>
@@ -2672,7 +2673,6 @@
   <!-- In the permissions rationale explanation, means go ahead and
        have the OS ask for permission -->
   <string name="button_ask_again">Ask again</string>
-  <string name="contact_not_found">Not in Contacts</string>
   <!-- Displayed as a toast -->
   <string name="sms_send_failed">SMS send failed</string>
   <!-- In the permissions rationale explanation, means don't have the

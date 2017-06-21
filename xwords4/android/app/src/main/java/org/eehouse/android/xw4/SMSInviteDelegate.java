@@ -364,14 +364,16 @@ public class SMSInviteDelegate extends InviteDelegate {
             this( null, phone );
         }
 
+        @Override
         public String getDev() { return m_phone; }
 
+        @Override
         public boolean equals( InviterItem item )
         {
             boolean result = false;
-            if ( null != item &&  item instanceof PhoneRec ) {
+            if ( null != item && item instanceof PhoneRec ) {
                 PhoneRec rec = (PhoneRec)item;
-                result = m_name.equals(rec.m_name)
+                result = m_name == rec.m_name
                     && PhoneNumberUtils.compare( m_phone, rec.m_phone );
             }
             return result;
@@ -380,10 +382,6 @@ public class SMSInviteDelegate extends InviteDelegate {
         private PhoneRec( String name, String phone )
         {
             m_phone = phone;
-
-            if ( null == name || 0 == name.length() ) {
-                name = getString( R.string.contact_not_found );
-            }
             m_name = name;
         }
     }
