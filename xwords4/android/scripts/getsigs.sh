@@ -2,55 +2,25 @@
 
 set -e -u
 
-DIR=""
-NODE=""
+NODE=xw4
 CLASSPATH=${CLASSPATH:-""}
 
 usage() {
     [ $# -gt 0 ] && echo "Error: $1"
-    echo "usage: $0 [--dir <dir>] [--node <pkg-node>]         "
-    echo "            # e.g. XWords4 or XWords4-dbg and xw4 or xw4_dbg"
+    echo "usage: $0 "
     exit 1
 }
-
-# Make sure android.jar is on CLASSPATH
-if [ "${CLASSPATH/android.jar/}" = "$CLASSPATH" ]; then
-	usage "android.jar not on CLASSPATH"
-fi
-
-while [ $# -gt 1 ]; do
-    case $1 in
-        --dir)
-            shift
-            DIR=$1
-            ;;
-        --node)
-            shift
-            NODE=$1
-            ;;
-        *)
-            usage
-            ;;
-    esac
-    shift
+while [ $# -gt 0 ]; do
+	case $1 in
+		--help) usage
+				;;
+		*) usage "unexpected flag $1"
+		   ;;
+	esac
+	shift
 done
 
-if [ -z "$DIR" ]; then
-    if [ -f ./AndroidManifest.xml ]; then # we're in the right directory
-        DIR=$(basename $(pwd))
-    fi
-fi
-if [ -z "$NODE" ]; then
-    if [ -f ./AndroidManifest.xml ]; then # we're in the right directory
-        NODE=$(grep 'package="org.eehouse.android' AndroidManifest.xml | sed 's,^.*android.\(.*\)",\1,')
-    fi
-fi
-
-[ -n "$DIR" -a -n "$NODE" ] || usage
-
-
-BASE=$(dirname $0)
-cd $BASE/../${DIR}/bin/classes
+cd $(dirname $0)/../app/build/intermediates/classes/${NODE}/debug
 
 javah -o /tmp/javah$$.txt org.eehouse.android.${NODE}.jni.XwJNI
 javap -s org.eehouse.android.${NODE}.jni.XwJNI
