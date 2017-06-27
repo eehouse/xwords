@@ -31,27 +31,30 @@ public class CrashTrack {
     private static final String TAG = CrashTrack.class.getSimpleName();
 
     public static void init( Context context ) {
-
         if ( 0 < BuildConfig.FABRIC_API_KEY.length() ) {
             // Crashlytics/Fabric sample code wants this between onCreate()'s
             // super() call and the call to setContentView(). We'll see if
             // this works.
-            Fabric.with( context, new Crashlytics() );
+            try {
+                Fabric.with( context, new Crashlytics() );
 
-            // Now crash as a test
-            if ( false ) {
-                new Thread( new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Thread.sleep(5000);
-                            } catch (InterruptedException ex) {}
-                            String nullStr = null;
-                            if ( nullStr.equals("") ) {
-                                Log.d( TAG, "something's very wrong" );
+                // Now crash as a test
+                if ( false ) {
+                    new Thread( new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Thread.sleep(5000);
+                                } catch (InterruptedException ex) {}
+                                String nullStr = null;
+                                if ( nullStr.equals("") ) {
+                                    Log.d( TAG, "something's very wrong" );
+                                }
                             }
-                        }
-                    } ).start();
+                        } ).start();
+                }
+            } catch ( Exception ex ) {
+                Log.d( TAG, "problem initing crashlytics" );
             }
         }
     }
