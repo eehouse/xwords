@@ -1999,8 +1999,11 @@ checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
     XP_Bool success = XP_TRUE;
     XP_PlayerAddr channelNo = *channelNoP;
     if ( 0 == (channelNo & CHANNEL_MASK) ) {
-        channelNo |= ++comms->nextChannelNo;
-        XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
+        success = comms->nextChannelNo < CHANNEL_MASK;
+        if ( success ) {
+            channelNo |= ++comms->nextChannelNo;
+        }
+        // XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
     } else {
         /* Let's make sure we don't assign it later */
         comms->nextChannelNo = channelNo;
