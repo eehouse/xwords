@@ -65,6 +65,10 @@ public class GameUtils {
     public static final String INVITED = "invited";
     public static final String INTENT_KEY_ROWID = "rowid";
 
+    interface ResendDoneProc {
+        void onResendDone( Context context, int numSent );
+    }
+
     private static Integer s_minScreen;
     // Used to determine whether to resend all messages on networking coming
     // back up.  The length of the array determines the number of times in the
@@ -436,6 +440,26 @@ public class GameUtils {
     public static void resendAllIf( Context context, CommsConnType filter,
                                     boolean force, boolean showUI )
     {
+        ResendDoneProc proc = null;
+        if ( showUI ) {
+            proc = new ResendDoneProc() {
+                    @Override
+                    public void onResendDone( Context context, int nSent )
+                    {
+                        String msg = LocUtils
+                            .getQuantityString( context,
+                                                R.plurals.resent_msgs_fmt,
+                                                nSent, nSent );
+                        DbgUtils.showf( context, msg );
+                    }
+                };
+        }
+        resendAllIf( context, filter, force, proc );
+    }
+
+    public static void resendAllIf( Context context, CommsConnType filter,
+                                    boolean force, ResendDoneProc proc )
+    {
         long now = Utils.getCurSeconds();
 
         if ( !force ) {
@@ -450,7 +474,7 @@ public class GameUtils {
             HashMap<Long,CommsConnTypeSet> games =
                 DBUtils.getGamesWithSendsPending( context );
             if ( 0 < games.size() ) {
-                new ResendTask( context, games, filter, showUI ).execute();
+                new ResendTask( context, games, filter, proc ).execute();
 
                 System.arraycopy( s_sendTimes, 0, /* src */
                                   s_sendTimes, 1, /* dest */
@@ -1216,17 +1240,17 @@ public class GameUtils {
     private static class ResendTask extends AsyncTask<Void, Void, Void> {
         private Context m_context;
         private HashMap<Long,CommsConnTypeSet> m_games;
-        private boolean m_showUI;
+        private ResendDoneProc m_doneProc;
         private CommsConnType m_filter;
         private MultiMsgSink m_sink;
 
         public ResendTask( Context context, HashMap<Long,CommsConnTypeSet> games,
-                           CommsConnType filter, boolean showUI )
+                           CommsConnType filter, ResendDoneProc proc )
         {
             m_context = context;
             m_games = games;
             m_filter = filter;
-            m_showUI = showUI;
+            m_doneProc = proc;
         }
 
         @Override
@@ -1278,13 +1302,9 @@ public class GameUtils {
         @Override
         protected void onPostExecute( Void unused )
         {
-            if ( m_showUI ) {
+            if ( null != m_doneProc ) {
                 int nSent = null == m_sink ? 0 : m_sink.numSent();
-                String msg =
-                    LocUtils.getQuantityString( m_context,
-                                                R.plurals.resent_msgs_fmt,
-                                                nSent, nSent );
-                DbgUtils.showf( m_context, msg );
+                m_doneProc.onResendDone( m_context, nSent );
             }
         }
     }

@@ -48,8 +48,22 @@ public class SMSResendReceiver extends BroadcastReceiver {
     public void onReceive( Context context, Intent intent )
     {
         GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS, true,
-                               BuildConfig.DEBUG );
-        setTimer( context, true );
+                               new GameUtils.ResendDoneProc() {
+                                   @Override
+                                   public void onResendDone( Context context,
+                                                             int nSent ) {
+                                       int backoff = -1;
+                                       if ( 0 < nSent ) {
+                                           backoff = setTimer( context, true );
+                                       }
+                                       if ( BuildConfig.DEBUG ) {
+                                           DbgUtils.showf( context,
+                                                           "%d SMS msgs resent;"
+                                                           + " backoff: %d",
+                                                           nSent, backoff);
+                                       }
+                                   }
+                               } );
     }
 
     static void resetTimer( Context context )
@@ -58,12 +72,12 @@ public class SMSResendReceiver extends BroadcastReceiver {
         setTimer( context );
     }
 
-    static void setTimer( Context context )
+    static int setTimer( Context context )
     {
-        setTimer( context, false );
+        return setTimer( context, false );
     }
     
-    private static void setTimer( Context context, boolean advance )
+    private static int setTimer( Context context, boolean advance )
     {
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
@@ -82,5 +96,6 @@ public class SMSResendReceiver extends BroadcastReceiver {
         Log.d( TAG, "set for %d seconds from now", millis / 1000 );
         millis += SystemClock.elapsedRealtime();
         am.set( AlarmManager.ELAPSED_REALTIME,  millis, pi );
+        return backoff;
     }
 }

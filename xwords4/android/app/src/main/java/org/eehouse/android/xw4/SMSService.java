@@ -625,7 +625,8 @@ public class SMSService extends XWService {
         } catch ( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
         } catch ( ArrayIndexOutOfBoundsException oob ) {
-            // enum this older code doesn't know about; drop it
+            // enum this older code doesn't know about, or just another app's
+            // message; drop it
             Log.w( TAG, "disAssemble: dropping message with too-new enum" );
         }
         return success;
