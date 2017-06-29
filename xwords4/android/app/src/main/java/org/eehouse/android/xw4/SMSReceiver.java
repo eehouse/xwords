@@ -33,7 +33,7 @@ public class SMSReceiver extends BroadcastReceiver {
     public void onReceive( Context context, Intent intent )
     {
         String action = intent.getAction();
-        // DbgUtils.logf( "SMSReceiver.onReceive: action=%s", action );
+        // Log.d( TAG, "onReceive(): action=%s", action );
         if ( action.equals("android.intent.action.DATA_SMS_RECEIVED") ) {
             Bundle bundle = intent.getExtras();
             if ( null != bundle ) {

@@ -681,8 +681,8 @@ public class SMSService extends XWService {
                     for ( byte[] fragment : fragments ) {
                         mgr.sendDataMessage( phone, null, nbsPort, fragment, sent,
                                              delivery );
-                        Log.i( TAG, "sendBuffers(): sent %d byte fragment",
-                               fragment.length );
+                        Log.i( TAG, "sendBuffers(): sent %d byte fragment to %s",
+                               fragment.length, phone );
                     }
                     success = true;
                 } catch ( IllegalArgumentException iae ) {
