@@ -70,6 +70,8 @@ public class GameConfigDelegate extends DelegateBase
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
     private static final String LOCAL_GI = "LOCAL_GI";
+    private static final String LOCAL_TYPES = "LOCAL_TYPES";
+    private static final String DIS_MAP = "DIS_MAP";
 
     private Activity m_activity;
     private CheckBox m_joinPublicCheck;
@@ -108,12 +110,9 @@ public class GameConfigDelegate extends DelegateBase
     private CommsAddrRec[] m_remoteAddrs;
     private CommsAddrRec m_car;
     private CommonPrefs m_cp;
-    // private boolean m_canDoSMS = false;
-    // private boolean m_canDoBT = false;
     private boolean m_gameStarted = false;
-    private CommsConnType[] m_types;
     private String[] m_connStrings;
-    private Map<CommsConnType, boolean[]> m_disabMap;
+    private HashMap<CommsConnType, boolean[]> m_disabMap;
     private static final int[] s_disabledWhenLocked
         = { R.id.juggle_players,
             R.id.add_player,
@@ -329,6 +328,7 @@ public class GameConfigDelegate extends DelegateBase
                         setConnLabel();
                         setupRelayStuffIf();
                         showHideRelayStuff();
+                        setDisableds();
                     }
                 };
 
@@ -504,6 +504,10 @@ public class GameConfigDelegate extends DelegateBase
     {
         outState.putInt( WHICH_PLAYER, m_whichPlayer );
         outState.putSerializable( LOCAL_GI, m_gi );
+        outState.putSerializable( LOCAL_TYPES, m_conTypes );
+        if ( BuildConfig.DEBUG ) {
+            outState.putSerializable( DIS_MAP, m_disabMap );
+        }
     }
 
     @Override
@@ -573,9 +577,14 @@ public class GameConfigDelegate extends DelegateBase
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName,
                                                 relayPort );
                 }
-                m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
 
-                setDisableds( gamePtr );
+                // load if the first time through....
+                if ( null == m_conTypes ) {
+                    m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
+                }
+
+                buildDisabledsMap( gamePtr );
+                setDisableds();
 
                 if ( null == m_jniThread ) {
                     gamePtr.release();
@@ -638,6 +647,10 @@ public class GameConfigDelegate extends DelegateBase
         if ( null != bundle ) {
             m_whichPlayer = bundle.getInt( WHICH_PLAYER );
             m_gi = (CurGameInfo)bundle.getSerializable( LOCAL_GI );
+            m_conTypes = (CommsConnTypeSet)bundle.getSerializable( LOCAL_TYPES );
+            if ( BuildConfig.DEBUG ) {
+                m_disabMap = (HashMap)bundle.getSerializable( DIS_MAP );
+            }
         }
     }
 
@@ -1066,18 +1079,36 @@ public class GameConfigDelegate extends DelegateBase
         m_boardsizeSpinner.setSelection( selection );
     }
 
-    private void setDisableds( XwJNI.GamePtr gamePtr )
+    private void buildDisabledsMap( XwJNI.GamePtr gamePtr )
     {
         if ( BuildConfig.DEBUG && !localOnlyGame() ) {
-            m_disabMap = new HashMap<>();
+            if ( null == m_disabMap ) {
+                m_disabMap = new HashMap<>();
+                for ( CommsConnType typ : CommsConnType.values() ) {
+                    boolean[] bools = new boolean[] {
+                        XwJNI.comms_getAddrDisabled( gamePtr, typ, false ),
+                        XwJNI.comms_getAddrDisabled( gamePtr, typ, true ),
+                    };
+                    m_disabMap.put( typ, bools );
+                }
+            }
+        }
+    }
+
+    private void setDisableds()
+    {
+        if ( BuildConfig.DEBUG && !localOnlyGame() ) {
             LinearLayout disableds = (LinearLayout)findViewById( R.id.disableds );
             disableds.setVisibility( View.VISIBLE );
 
+            for ( int ii = disableds.getChildCount() - 1; ii >= 0; --ii ) {
+                View child = disableds.getChildAt( ii );
+                if ( child instanceof DisablesItem ) {
+                    disableds.removeView( child );
+                }
+            }
             for ( CommsConnType typ : m_conTypes ) {
-                boolean[] bools = new boolean[2];
-                m_disabMap.put( typ, bools );
-                bools[0] = XwJNI.comms_getAddrDisabled( gamePtr, typ, false );
-                bools[1] = XwJNI.comms_getAddrDisabled( gamePtr, typ, true );
+                boolean[] bools = m_disabMap.get( typ );
                 DisablesItem item = (DisablesItem)inflate( R.layout.disables_item );
                 item.init( typ, bools );
                 disableds.addView( item );
