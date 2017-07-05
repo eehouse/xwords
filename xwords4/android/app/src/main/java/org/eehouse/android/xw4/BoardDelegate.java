@@ -2225,7 +2225,8 @@ public class BoardDelegate extends DelegateBase
             try {
                 m_inviteAlert.dismiss();
             } catch ( NullPointerException npe ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Log.ex( TAG, npe );
+                // Assert.assertFalse( BuildConfig.DEBUG );
             }
             m_inviteAlert = null;
         }
