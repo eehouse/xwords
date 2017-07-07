@@ -55,8 +55,8 @@ public class ConnStatusHandler {
         public Handler getHandler();
     }
 
-    private static final int GREEN = 0xFF00FF00;
-    private static final int RED = 0xFFFF0000;
+    private static final int GREEN = 0xFF00AF00;
+    private static final int RED = 0xFFAF0000;
     private static final int BLACK = 0xFF000000;
     private static final int SUCCESS_IN = 0;
     private static final int SUCCESS_OUT = 1;
@@ -301,56 +301,51 @@ public class ConnStatusHandler {
     {
         if ( !isSolo && null != s_rect ) {
             synchronized( s_lockObj ) {
-                Rect rect = new Rect( s_rect );
-                int quarterHeight = rect.height() / 4;
+                Rect scratchR = new Rect( s_rect );
+                int quarterHeight = scratchR.height() / 4;
 
-                int saveTop = rect.top;
-                SuccessRecord record;
                 boolean enabled = anyTypeEnabled( context, connTypes );
 
-                // Do the background coloring. Top quarter first
-                rect.bottom = rect.top + quarterHeight;
-                drawQuarter( canvas, res, rect, connTypes, enabled, false );
+                // Do the background coloring and arrow. Top half first
+                scratchR.bottom -= (2 * quarterHeight);
+                fillHalf( canvas, scratchR, connTypes, enabled, false );
+                scratchR.bottom -= quarterHeight;
+                drawArrow( canvas, res, scratchR, false );
 
-                // paint the middle two quarters black to give the icon a
-                // clear background
-                rect.top = rect.bottom;
-                rect.bottom += quarterHeight * 2;
-                s_fillPaint.setColor( BLACK );
-                canvas.drawRect( rect, s_fillPaint );
-
-                // bottom quarter
-                rect.top = rect.bottom;
-                rect.bottom = rect.top + quarterHeight;
-                drawQuarter( canvas, res, rect, connTypes, enabled, true );
-
-                rect.top = saveTop;
+                // bottom half and arrow
+                scratchR.top = s_rect.top + (2 * quarterHeight);
+                scratchR.bottom = s_rect.bottom;
+                fillHalf( canvas, scratchR, connTypes, enabled, true );
+                scratchR.top += quarterHeight;
+                drawArrow( canvas, res, scratchR, true );
 
                 // Center the icon in the remaining (vertically middle) rect
-                rect.top += quarterHeight;
-                rect.bottom = rect.top + (2 * quarterHeight);
-                int halfMin = Math.min( rect.width(), rect.height() ) / 2;
-                int center = rect.centerX();
-                rect.left = center - halfMin;
-                rect.right = center + halfMin;
-                center = rect.centerY();
-                rect.top = center - halfMin;
-                rect.bottom = center + halfMin;
-
-                int iconID = R.drawable.multigame__gen;
-                drawIn( canvas, res, iconID, rect );
+                scratchR.top = s_rect.top + quarterHeight;
+                scratchR.bottom = s_rect.bottom - quarterHeight;
+                int minDim = Math.min( scratchR.width(), scratchR.height() );
+                int dx = (scratchR.width() - minDim) / 2;
+                int dy = (scratchR.height() - minDim) / 2;
+                scratchR.inset( dx, dy );
+                Assert.assertTrue( !BuildConfig.DEBUG
+                                   || 1 >= Math.abs(scratchR.width()
+                                                    - scratchR.height()) );
+                drawIn( canvas, res, R.drawable.multigame__gen, scratchR );
             }
         }
     }
 
-    private static void drawQuarter( Canvas canvas, Resources res, Rect rect,
-                                     CommsConnTypeSet connTypes,
-                                     boolean enabled, boolean isIn )
+    private static void fillHalf( Canvas canvas, Rect rect,
+                                  CommsConnTypeSet connTypes, boolean enabled,
+                                  boolean isIn )
     {
         enabled = enabled && null != newestSuccess( connTypes, isIn );
         s_fillPaint.setColor( enabled ? GREEN : RED );
         canvas.drawRect( rect, s_fillPaint );
+    }
 
+    private static void drawArrow( Canvas canvas, Resources res, Rect rect,
+                                   boolean isIn )
+    {
         int arrowID;
         boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
         if ( isIn ) {
