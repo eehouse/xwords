@@ -39,10 +39,8 @@ public class SMSResendReceiver extends BroadcastReceiver {
     private static final String TAG = SMSResendReceiver.class.getSimpleName();
 
     private static final String BACKOFF_KEY = TAG + "/backoff";
-    private static final int MIN_BACKOFF_SECONDS
-        = BuildConfig.DEBUG ? 10 : 60 * 5;
-    private static final int MAX_BACKOFF_SECONDS
-        = BuildConfig.DEBUG ? 60 * 5 : 60 * 60 * 12;
+    private static final int MIN_BACKOFF_SECONDS = 60 * 5;
+    private static final int MAX_BACKOFF_SECONDS = 60 * 60 * 12;
 
     @Override
     public void onReceive( Context context, Intent intent )
