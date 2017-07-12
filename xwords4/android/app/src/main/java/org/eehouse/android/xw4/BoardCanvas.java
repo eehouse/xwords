@@ -324,7 +324,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     public void drawTimer( Rect rect, int player, int secondsLeft )
     {
-        if ( (m_lastSecsLeft != secondsLeft || m_lastTimerPlayer != player) ) {
+        if ( null != m_jniThread &&
+             (m_lastSecsLeft != secondsLeft || m_lastTimerPlayer != player) ) {
             m_lastSecsLeft = secondsLeft;
             m_lastTimerPlayer = player;
 
