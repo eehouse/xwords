@@ -118,10 +118,13 @@ android {
         release {
             debuggable false
             minifyEnabled false // PENDING
+            // proguard-android-optimize.txt doesn't work right now! Causes dex to fail
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             debuggable true
+            minifyEnabled true // for testing
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // This doesn't work on marshmallow: duplicate permission error
             // applicationIdSuffix ".debug"
         }

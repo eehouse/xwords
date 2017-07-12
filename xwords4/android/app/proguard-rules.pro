@@ -32,3 +32,11 @@
 
 # Prevents crash when jni code calls setInt on various jin.* classes
 -keep public class org.eehouse.android.xw4.jni.** { public *; }
+
+-keep public class org.eehouse.android.xw4.NetLaunchInfo
+-keep public class org.eehouse.android.xw4.SelectableItem
+-keep public class org.eehouse.android.xw4.XWListItem.* { public *; }
+-keep public class org.eehouse.android.xw4.BoardDelegate
+-keep public class org.eehouse.android.xw4.HeaderWithExpander$OnExpandedListener
+-keep public class org.eehouse.android.xw4.XWListItem$ExpandedListener
+-keep public class org.eehouse.android.xw4.XWListItem$DeleteCallback
