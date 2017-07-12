@@ -319,7 +319,7 @@ public class WiDirService extends XWService {
         if ( null != wrap ) {
             XWPacket packet = new XWPacket( XWPacket.CMD.MSG )
                 .put( KEY_SRC, getMyMacAddress() )
-                .put( KEY_DATA, XwJNI.base64Encode( buf ) )
+                .put( KEY_DATA, XwJNI.base64EncodeJava( buf ) )
                 .put( KEY_GAMEID, gameID )
                 ;
             if ( forwarding[0] ) {
@@ -746,7 +746,7 @@ public class WiDirService extends XWService {
     {
         Log.d( TAG, "handleGotMessage(%s)", intent.toString() );
         int gameID = intent.getIntExtra( KEY_GAMEID, 0 );
-        byte[] data = XwJNI.base64Decode( intent.getStringExtra( KEY_DATA ) );
+        byte[] data = XwJNI.base64DecodeJava( intent.getStringExtra( KEY_DATA ) );
         String macAddress = intent.getStringExtra( KEY_RETADDR );
 
         CommsAddrRec addr = new CommsAddrRec( CommsConnType.COMMS_CONN_P2P )

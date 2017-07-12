@@ -27,7 +27,7 @@ repositories {
 android {
     buildToolsVersion '23.0.3'
     defaultConfig {
-        minSdkVersion 7
+        minSdkVersion 8
         targetSdkVersion 23
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME

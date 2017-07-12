@@ -21,6 +21,9 @@
 package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
+import android.util.Base64;
+
+import java.util.Arrays;
 
 import junit.framework.Assert;
 
@@ -467,9 +470,24 @@ public class XwJNI {
     public static native String dict_iter_getDesc( int closure );
 
     // base64 stuff since 2.1 doesn't support it in java
-    public static native String base64Encode( byte[] in );
-    public static native byte[] base64Decode( String in );
+    private static native String base64Encode( byte[] in );
+    private static native byte[] base64Decode( String in );
 
+    public static String base64EncodeJava( byte[] in )
+    {
+        String str1 = base64Encode( in );
+        String str2 = Base64.encodeToString( in, Base64.NO_WRAP );
+        Assert.assertTrue( str2.equals(str1) );
+        return str1;
+    }
+
+    public static byte[] base64DecodeJava( String in )
+    {
+        byte[] b1 = base64Decode( in );
+        byte[] b2 = Base64.decode( in, Base64.NO_WRAP );
+        Assert.assertTrue( Arrays.equals( b1, b2 ) );
+        return b1;
+    }
 
     // Private methods -- called only here
     private static native int initGlobals();
