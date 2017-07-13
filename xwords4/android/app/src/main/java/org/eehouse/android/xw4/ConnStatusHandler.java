@@ -45,6 +45,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class ConnStatusHandler {
     private static final String TAG = ConnStatusHandler.class.getSimpleName();
@@ -68,17 +69,12 @@ public class ConnStatusHandler {
     private static ConnStatusCBacks s_cbacks;
     private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
     private static boolean[] s_showSuccesses = { false, false };
+    private static Time s_time = new Time();
 
     private static class SuccessRecord implements java.io.Serializable {
         public long lastSuccess;
         public long lastFailure;
         public boolean successNewer;
-        transient private Time m_time;
-
-        public SuccessRecord()
-        {
-            m_time = new Time();
-        }
 
         public boolean haveFailure()
         {
@@ -92,14 +88,14 @@ public class ConnStatusHandler {
 
         public String newerStr( Context context )
         {
-            m_time.set( successNewer? lastSuccess : lastFailure );
-            return format( context, m_time );
+            s_time.set( successNewer? lastSuccess : lastFailure );
+            return format( context, s_time );
         }
 
         public String olderStr( Context context )
         {
-            m_time.set( successNewer? lastFailure : lastSuccess );
-            return format( context, m_time );
+            s_time.set( successNewer? lastFailure : lastSuccess );
+            return format( context, s_time );
         }
 
         public void update( boolean success )
@@ -123,19 +119,11 @@ public class ConnStatusHandler {
                                                      0 );
             return seq.toString();
         }
-
-        // called during deserialization
-        private void readObject( ObjectInputStream in )
-            throws java.io.IOException, java.lang.ClassNotFoundException
-        {
-            in.defaultReadObject();
-            m_time = new Time();
-        }
     }
 
     private ConnStatusHandler() {}
 
-    private static HashMap<CommsConnType,SuccessRecord[]> s_records =
+    private static Map<CommsConnType,SuccessRecord[]> s_records =
         new HashMap<CommsConnType,SuccessRecord[]>();
     private static Class s_lockObj = ConnStatusHandler.class;
     private static boolean s_needsSave = false;
@@ -373,16 +361,9 @@ public class ConnStatusHandler {
                         new ObjectInputStream( new ByteArrayInputStream(bytes) );
                     s_records =
                         (HashMap<CommsConnType,SuccessRecord[]>)ois.readObject();
-                // } catch ( java.io.StreamCorruptedException sce ) {
-                //     DbgUtils.logf( "loadState: %s", sce.toString() );
-                // } catch ( java.io.OptionalDataException ode ) {
-                //     DbgUtils.logf( "loadState: %s", ode.toString() );
-                // } catch ( java.io.IOException ioe ) {
-                //     DbgUtils.logf( "loadState: %s", ioe.toString() );
-                // } catch ( java.lang.ClassNotFoundException cnfe ) {
-                //     DbgUtils.logf( "loadState: %s", cnfe.toString() );
                 } catch ( Exception ex ) {
                     Log.ex( TAG, ex );
+                    s_records = new HashMap<CommsConnType,SuccessRecord[]>();
                 }
             }
         }
@@ -494,7 +475,7 @@ public class ConnStatusHandler {
             try {
                 ObjectOutputStream out
                     = new ObjectOutputStream( bas );
-                out.writeObject(s_records);
+                out.writeObject( s_records );
                 out.flush();
                 String as64 =
                     XwJNI.base64EncodeJava( bas.toByteArray() );
