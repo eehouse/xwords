@@ -356,7 +356,7 @@ public class ConnStatusHandler {
                                                   R.string.key_connstat_data );
             if ( null != as64 && 0 < as64.length() ) {
                 try {
-                    byte[] bytes = XwJNI.base64DecodeJava( as64 );
+                    byte[] bytes = Utils.base64Decode( as64 );
                     ObjectInputStream ois =
                         new ObjectInputStream( new ByteArrayInputStream(bytes) );
                     s_records =
@@ -477,8 +477,7 @@ public class ConnStatusHandler {
                     = new ObjectOutputStream( bas );
                 out.writeObject( s_records );
                 out.flush();
-                String as64 =
-                    XwJNI.base64EncodeJava( bas.toByteArray() );
+                String as64 = Utils.base64Encode( bas.toByteArray() );
                 XWPrefs.setPrefsString( context, R.string.key_connstat_data,
                                         as64 );
             } catch ( java.io.IOException ioe ) {

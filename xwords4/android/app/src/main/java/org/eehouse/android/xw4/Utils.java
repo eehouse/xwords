@@ -43,6 +43,7 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -484,6 +485,16 @@ public class Utils {
         boolean result = "com.google.android.feedback".equals( installer )
             || "com.android.vending".equals( installer );
         return result;
+    }
+
+    public static String base64Encode( byte[] in )
+    {
+        return Base64.encodeToString( in, Base64.NO_WRAP );
+    }
+
+    public static byte[] base64Decode( String in )
+    {
+        return Base64.decode( in, Base64.NO_WRAP );
     }
 
     private static void setFirstBootStatics( Context context )

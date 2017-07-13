@@ -1345,7 +1345,7 @@ public class RelayService extends XWService
 
         byte[][][] msgs = new byte[1][count][];
         for ( int ii = 0; ii < count; ++ii ) {
-            msgs[0][ii] = XwJNI.base64DecodeJava( msgs64[ii] );
+            msgs[0][ii] = Utils.base64Decode( msgs64[ii] );
         }
         return msgs;
     }

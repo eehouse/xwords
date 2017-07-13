@@ -2381,7 +2381,7 @@ public class DBUtils {
     public static void setBytesFor( Context context, String key, byte[] bytes )
     {
         // DbgUtils.logf( "setBytesFor: writing %d bytes", bytes.length );
-        String asStr = XwJNI.base64EncodeJava( bytes );
+        String asStr = Utils.base64Encode( bytes );
         setStringFor( context, key, asStr );
     }
 
@@ -2390,7 +2390,7 @@ public class DBUtils {
         byte[] bytes = null;
         String asStr = getStringFor( context, key, null );
         if ( null != asStr ) {
-            bytes = XwJNI.base64DecodeJava( asStr );
+            bytes = Utils.base64Decode( asStr );
             // DbgUtils.logf( "getBytesFor: loaded %d bytes", bytes.length );
         }
         return bytes;
