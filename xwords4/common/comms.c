@@ -456,7 +456,10 @@ reset_internal( CommsCtxt* comms, XP_Bool isServer,
 
     cleanupAddrRecs( comms );
 
-    XP_ASSERT( 0 == comms->nextChannelNo ); /* testing... */
+    if ( 0 != comms->nextChannelNo ) {
+        XP_LOGF( "%s: comms->nextChannelNo: %d", __func__, comms->nextChannelNo );
+    }
+    XP_ASSERT( 0 == comms->nextChannelNo ); /* firing... */
     // comms->nextChannelNo = 0;
     if ( resetRelay ) {
         comms->channelSeed = 0;
