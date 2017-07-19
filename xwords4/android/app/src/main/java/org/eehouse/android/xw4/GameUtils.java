@@ -73,7 +73,7 @@ public class GameUtils {
     // Used to determine whether to resend all messages on networking coming
     // back up.  The length of the array determines the number of times in the
     // interval we'll do a send.
-    private static long[] s_sendTimes = {0,0,0,0};
+    private static Map<CommsConnType, long[]> s_sendTimes = new HashMap<>();
     private static final long RESEND_INTERVAL_SECS = 60 * 5; // 5 minutes
 
     public static class NoSuchGameException extends RuntimeException {
@@ -437,6 +437,7 @@ public class GameUtils {
         return thumb;
     }
 
+    // force applies only to relay
     public static void resendAllIf( Context context, CommsConnType filter,
                                     boolean force, boolean showUI )
     {
@@ -462,8 +463,16 @@ public class GameUtils {
     {
         long now = Utils.getCurSeconds();
 
+        // Note: HashMap permits null keys! So no need to test for null. BTW,
+        // here null filter means "all".
+        long[] sendTimes = s_sendTimes.get( filter );
+        if ( null == sendTimes ) {
+            sendTimes = new long[] { 0, 0, 0, 0 };
+            s_sendTimes.put( filter, sendTimes );
+        }
+
         if ( !force ) {
-            long oldest = s_sendTimes[s_sendTimes.length - 1];
+            long oldest = sendTimes[sendTimes.length - 1];
             long age = now - oldest;
             force = RESEND_INTERVAL_SECS < age;
             Log.d( TAG, "resendAllIf(): based on last send age of %d sec, doit = %b",
@@ -476,10 +485,10 @@ public class GameUtils {
             if ( 0 < games.size() ) {
                 new ResendTask( context, games, filter, proc ).execute();
 
-                System.arraycopy( s_sendTimes, 0, /* src */
-                                  s_sendTimes, 1, /* dest */
-                                  s_sendTimes.length - 1 );
-                s_sendTimes[0] = now;
+                System.arraycopy( sendTimes, 0, /* src */
+                                  sendTimes, 1, /* dest */
+                                  sendTimes.length - 1 );
+                sendTimes[0] = now;
             }
         }
     }
