@@ -30,7 +30,7 @@
 # from a tag.
 # -keepattributes SourceFile,LineNumberTable
 
-# Prevents crash when jni code calls setInt on various jin.* classes
+# Prevents crash when jni code calls setInt on various jni.* classes
 -keep public class org.eehouse.android.xw4.jni.** { public *; }
 
 -keep public class org.eehouse.android.xw4.NetLaunchInfo

@@ -632,8 +632,8 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 #endif
 
     } else {
-        XP_LOGF( "%s: wierd state %s; dropping message", __func__,
-                 getStateStr(server->nv.gameState) );
+        XP_LOGF( "%s: wierd state: %s (expected XWSTATE_NONE); dropping message",
+                 __func__, getStateStr(server->nv.gameState) );
     }
     stream_destroy( stream );
     return result;
