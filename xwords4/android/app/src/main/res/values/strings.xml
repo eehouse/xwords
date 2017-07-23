@@ -1922,7 +1922,9 @@
     <string name="get_sms_title">Manual entry</string>
     <string name="get_sms_number">Device phone number:</string>
     <string name="get_sms_name">Contact name (optional):</string>
+    <string name="get_relay_name">Device name (optional):</string>
     <string name="get_relay_number">Enter device ID:</string>
+
     <!--  -->
     <plurals name="confirm_clear_sms_fmt">
       <item quantity="one">Are you sure you want to delete the checked

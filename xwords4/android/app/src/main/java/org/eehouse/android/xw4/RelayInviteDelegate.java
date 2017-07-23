@@ -20,20 +20,22 @@
 
 package org.eehouse.android.xw4;
 
-import android.content.DialogInterface;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.method.DigitsKeyListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 
@@ -122,21 +124,21 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected void onBarButtonClicked( int id )
     {
-        // switch( id ) {
-        // case R.id.button_relay_add:
-        //     Utils.notImpl( m_activity );
-        //     break;
-        // case R.id.manual_add_button:
-        //     showDialog( DlgID.GET_NUMBER );
-        //     break;
-        // case R.id.button_clear:
-        //     Utils.notImpl( m_activity );
-        //     // int count = getChecked().size();
-        //     // String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
-        //     //                                 count, count );
-        //     // makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
-        //     break;
-        // }
+        switch( id ) {
+        case R.id.button_relay_add:
+            Utils.notImpl( m_activity );
+            break;
+        case R.id.manual_add_button:
+            showDialogFragment( DlgID.GET_NUMBER );
+            break;
+        case R.id.button_clear:
+            Utils.notImpl( m_activity );
+            // int count = getChecked().size();
+            // String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
+            //                                 count, count );
+            // makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+            break;
+        }
     }
 
     // protected void onSaveInstanceState( Bundle outState )
@@ -165,6 +167,48 @@ public class RelayInviteDelegate extends InviteDelegate {
     //         }
     //     }
     // }
+
+    @Override
+    protected Dialog makeDialog( DBAlert alert, Object[] params )
+    {
+        Dialog dialog;
+        DialogInterface.OnClickListener lstnr;
+        switch( alert.getDlgID() ) {
+        case GET_NUMBER: {
+            final View getNumView = inflate( R.layout.get_relay );
+            ((EditText)getNumView.findViewById( R.id.num_field ))
+                .setKeyListener(DigitsKeyListener.getInstance());
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        String number
+                            = ((EditText)getNumView.findViewById(R.id.num_field))
+                            .getText().toString();
+                        if ( null != number && 0 < number.length() ) {
+                            String name
+                                = ((EditText)getNumView.findViewById(R.id.name_field))
+                                .getText().toString();
+                            DevIDRec rec = new DevIDRec( name, number );
+                            m_devIDRecs.add( rec );
+                            clearChecked();
+                            onItemChecked( rec, true );
+                            saveAndRebuild();
+                        }
+                    }
+                };
+            dialog = makeAlertBuilder()
+                .setTitle( R.string.get_sms_title )
+                .setView( getNumView )
+                .setPositiveButton( android.R.string.ok, lstnr )
+                .setNegativeButton( android.R.string.cancel, null )
+                .create();
+        }
+            break;
+        default:
+            dialog = super.makeDialog( alert, params );
+            break;
+        }
+        return dialog;
+    }
 
     // protected Dialog onCreateDialog( int id )
     // {
@@ -203,7 +247,8 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        Assert.fail();
+        DevIDRec rec = (DevIDRec)data;
+        ((TwoStrsItem)child).setStrings( rec.m_opponent, rec.m_devID );
     }
 
     // We want to present user with list of previous opponents and devices. We
@@ -366,11 +411,12 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     private void rebuildList( boolean checkIfAll )
     {
-        // Collections.sort( m_devIDRecs, new Comparator<DevIDRec>() {
-        //         public int compare( DevIDRec rec1, DevIDRec rec2 ) {
-        //             return rec1.m_opponent.compareTo(rec2.m_opponent);
-        //         }
-        //     });
+        Collections.sort( m_devIDRecs, new Comparator<DevIDRec>() {
+                public int compare( DevIDRec rec1, DevIDRec rec2 ) {
+                    return rec1.m_opponent.compareTo(rec2.m_opponent);
+                }
+            });
+        updateListAdapter( m_devIDRecs.toArray( new DevIDRec[m_devIDRecs.size()] ) );
         // m_adapter = new RelayDevsAdapter();
         // setListAdapter( m_adapter );
         // if ( checkIfAll && m_devIDRecs.size() <= m_nMissing ) {
@@ -379,7 +425,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         //         iter.next().m_isChecked = true;
         //     }
         // }
-        // tryEnable();
+        tryEnable();
     }
 
     private void getSavedState()

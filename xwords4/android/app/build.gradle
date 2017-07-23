@@ -69,6 +69,7 @@ android {
             resValue "string", "nbs_port", "3344"
             resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
+            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
         }
         xw4d {
             dimension "variant"
@@ -79,6 +80,7 @@ android {
             resValue "string", "nbs_port", "3345"
             resValue "string", "invite_prefix", "/anddbg/"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
+            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need

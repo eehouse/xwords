@@ -78,7 +78,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             items.add( getString( R.string.invite_choice_bt ) );
             means.add( InviteMeans.BLUETOOTH );
         }
-        if ( XWApp.RELAYINVITE_SUPPORTED ) {
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
             items.add( getString( R.string.invite_choice_relay ) );
             means.add( InviteMeans.RELAY );
         }
