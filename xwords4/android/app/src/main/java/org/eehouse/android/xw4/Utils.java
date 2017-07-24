@@ -55,7 +55,12 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -495,6 +500,37 @@ public class Utils {
     public static byte[] base64Decode( String in )
     {
         return Base64.decode( in, Base64.NO_WRAP );
+    }
+
+    public static Object string64ToSerializable( String str64 )
+    {
+        Object result = null;
+        byte[] bytes = base64Decode( str64 );
+        try {
+            ObjectInputStream ois =
+                new ObjectInputStream( new ByteArrayInputStream(bytes) );
+            result = ois.readObject();
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+            Assert.assertFalse( BuildConfig.DEBUG );
+        }
+        return result;
+    }
+
+    public static String serializableToString64( Serializable obj )
+    {
+        String result = null;
+        ByteArrayOutputStream bas = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream out = new ObjectOutputStream( bas );
+            out.writeObject( obj );
+            out.flush();
+            result = base64Encode( bas.toByteArray() );
+        } catch ( Exception ex ) {
+            Log.ex( TAG, ex );
+            Assert.assertFalse( BuildConfig.DEBUG );
+        }
+        return result;
     }
 
     private static void setFirstBootStatics( Context context )

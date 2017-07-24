@@ -278,17 +278,6 @@ public class XWPrefs {
         return obj;
     }
 
-    // Used by RelayInviteDelegate.java
-    public static void setRelayIDs( Context context, String[] names )
-    {
-        setPrefsStringArray( context, R.string.key_relay_ids, names );
-    }
-
-    public static String[] getRelayIDs( Context context )
-    {
-        return getPrefsStringArray( context, R.string.key_relay_ids );
-    }
-
     public static void setBTAddresses( Context context, String[] addrs )
     {
         setPrefsStringArray( context, R.string.key_bt_addrs, addrs );

@@ -1932,8 +1932,13 @@
       <item quantity="other">Are you sure you want to delete the
        %1$d checked phone numbers?</item>
     </plurals>
-    <string name="confirm_clear_relay">Are you sure you want to delete the
-    checked device[s]?</string>
+    <plurals name="confirm_clear_relay_fmt">
+      <item quantity="one">Are you sure you want to delete the checked
+      RelayID record?</item>
+      <item quantity="other">Are you sure you want to delete the
+       %1$d checked RelayID records?</item>
+    </plurals>
+
     <!--  -->
     <string name="summary_conn_sms_fmt">Game in play with %1$s</string>
     <!--  -->

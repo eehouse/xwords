@@ -39,10 +39,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -123,9 +119,8 @@ public class ConnStatusHandler {
 
     private ConnStatusHandler() {}
 
-    private static Map<CommsConnType,SuccessRecord[]> s_records =
+    private static HashMap<CommsConnType,SuccessRecord[]> s_records =
         new HashMap<CommsConnType,SuccessRecord[]>();
-    private static Class s_lockObj = ConnStatusHandler.class;
     private static boolean s_needsSave = false;
 
     public static void setRect( int left, int top, int right, int bottom )
@@ -172,7 +167,7 @@ public class ConnStatusHandler {
         } else {
             StringBuffer sb = new StringBuffer();
             String tmp;
-            synchronized( s_lockObj ) {
+            synchronized( ConnStatusHandler.class ) {
                 sb.append( LocUtils.getString( context,
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context, true )));
@@ -253,7 +248,7 @@ public class ConnStatusHandler {
             cbacks = s_cbacks;
         }
 
-        synchronized( s_lockObj ) {
+        synchronized( ConnStatusHandler.class ) {
             SuccessRecord record = recordFor( connType, isIn );
             record.update( success );
         }
@@ -288,7 +283,7 @@ public class ConnStatusHandler {
                              CommsConnTypeSet connTypes, boolean isSolo )
     {
         if ( !isSolo && null != s_rect ) {
-            synchronized( s_lockObj ) {
+            synchronized( ConnStatusHandler.class ) {
                 Rect scratchR = new Rect( s_rect );
                 int quarterHeight = scratchR.height() / 4;
 
@@ -351,20 +346,15 @@ public class ConnStatusHandler {
     // @SuppressWarnings("unchecked")
     public static void loadState( Context context )
     {
-        synchronized( s_lockObj ) {
+        synchronized( ConnStatusHandler.class ) {
+            s_records = null;
             String as64 = XWPrefs.getPrefsString( context,
                                                   R.string.key_connstat_data );
             if ( null != as64 && 0 < as64.length() ) {
-                try {
-                    byte[] bytes = Utils.base64Decode( as64 );
-                    ObjectInputStream ois =
-                        new ObjectInputStream( new ByteArrayInputStream(bytes) );
-                    s_records =
-                        (HashMap<CommsConnType,SuccessRecord[]>)ois.readObject();
-                } catch ( Exception ex ) {
-                    Log.ex( TAG, ex );
-                    s_records = new HashMap<CommsConnType,SuccessRecord[]>();
-                }
+                s_records = (HashMap<CommsConnType,SuccessRecord[]>)Utils.string64ToSerializable(as64);
+            }
+            if ( null == s_records ) {
+                s_records = new HashMap<CommsConnType,SuccessRecord[]>();
             }
         }
     }
@@ -376,7 +366,7 @@ public class ConnStatusHandler {
             doSave( context );
         } else {
             boolean savePending;
-            synchronized( s_lockObj ) {
+            synchronized( ConnStatusHandler.class ) {
                 savePending = s_needsSave;
                 if ( !savePending ) {
                     s_needsSave = true;
@@ -400,7 +390,7 @@ public class ConnStatusHandler {
     private static void showSuccess( ConnStatusCBacks cbcks, boolean isIn )
     {
         if ( null != cbcks ) {
-            synchronized( s_lockObj ) {
+            synchronized( ConnStatusHandler.class ) {
                 if ( isIn && s_showSuccesses[SUCCESS_IN] ) {
                     // do nothing
                 } else if ( !isIn && s_showSuccesses[SUCCESS_OUT] ) {
@@ -413,7 +403,7 @@ public class ConnStatusHandler {
 
                         Runnable proc = new Runnable() {
                                 public void run() {
-                                    synchronized( s_lockObj ) {
+                                    synchronized( ConnStatusHandler.class ) {
                                         s_showSuccesses[index] = false;
                                         invalidateParent();
                                     }
@@ -468,21 +458,10 @@ public class ConnStatusHandler {
 
     private static void doSave( Context context )
     {
-        synchronized( s_lockObj ) {
-            // DbgUtils.logf( "ConnStatusHandler:doSave() doing save" );
-            ByteArrayOutputStream bas
-                = new ByteArrayOutputStream();
-            try {
-                ObjectOutputStream out
-                    = new ObjectOutputStream( bas );
-                out.writeObject( s_records );
-                out.flush();
-                String as64 = Utils.base64Encode( bas.toByteArray() );
-                XWPrefs.setPrefsString( context, R.string.key_connstat_data,
-                                        as64 );
-            } catch ( java.io.IOException ioe ) {
-                Log.ex( TAG, ioe );
-            }
+        synchronized( ConnStatusHandler.class ) {
+            String as64 = Utils.serializableToString64( s_records );
+            XWPrefs.setPrefsString( context, R.string.key_connstat_data,
+                                    as64 );
             s_needsSave = false;
         }
     }

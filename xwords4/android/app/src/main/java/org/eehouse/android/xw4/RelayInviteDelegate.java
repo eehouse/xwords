@@ -39,12 +39,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,8 +48,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 public class RelayInviteDelegate extends InviteDelegate {
     private static final String TAG = RelayInviteDelegate.class.getSimpleName();
+    private static final String RECS_KEY = "TAG" + "/recs";
 
     private static int[] BUTTONIDS = {
         R.id.button_relay_add,
@@ -132,11 +135,10 @@ public class RelayInviteDelegate extends InviteDelegate {
             showDialogFragment( DlgID.GET_NUMBER );
             break;
         case R.id.button_clear:
-            Utils.notImpl( m_activity );
-            // int count = getChecked().size();
-            // String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt,
-            //                                 count, count );
-            // makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+            int count = getChecked().size();
+            String msg = getQuantityString( R.plurals.confirm_clear_relay_fmt,
+                                            count, count );
+            makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
             break;
         }
     }
@@ -430,25 +432,19 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     private void getSavedState()
     {
-        String[] devIDs = XWPrefs.getRelayIDs( m_activity );
-
-        m_devIDRecs = new ArrayList<DevIDRec>(devIDs.length);
-        for ( String devID : devIDs ) {
-            DevIDRec rec = new DevIDRec( "me", devID );
-            m_devIDRecs.add( rec );
+        String dataString = DBUtils.getStringFor( m_activity, RECS_KEY, null );
+        if ( null == dataString ) {
+            m_devIDRecs = new ArrayList<DevIDRec>();
+        } else {
+            m_devIDRecs = (ArrayList<DevIDRec>)Utils
+                .string64ToSerializable( dataString );
         }
     }
 
     private void saveAndRebuild()
     {
-        String[] devIDs = new String[m_devIDRecs.size()];
-        Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            DevIDRec rec = iter.next();
-            devIDs[ii] = rec.m_devID;
-        }
-        XWPrefs.setRelayIDs( m_activity, devIDs );
-
+        String as64 = Utils.serializableToString64( m_devIDRecs );
+        DBUtils.setStringFor( m_activity, RECS_KEY, as64 );
         rebuildList( false );
     }
 
@@ -467,6 +463,16 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     private void clearSelectedImpl()
     {
+        Set<InviterItem> checked = getChecked();
+        Iterator<DevIDRec> iter = m_devIDRecs.iterator();
+        for ( ; iter.hasNext(); ) {
+            if ( checked.contains( iter.next() ) ) {
+                iter.remove();
+            }
+        }
+        clearChecked();
+        saveAndRebuild();
+
         // int count = m_adapter.getCount();
         // for ( int ii = count - 1; ii >= 0; --ii ) {
         //     if ( m_devIDRecs.get( ii ).m_isChecked ) {
@@ -476,7 +482,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         // saveAndRebuild();
     }
 
-    private class DevIDRec implements InviterItem {
+    private static class DevIDRec implements InviterItem, Serializable {
         public String m_devID;
         public String m_opponent;
         public int m_nPlayers;
