@@ -34,6 +34,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -303,24 +304,16 @@ public class RelayInviteDelegate extends InviteDelegate {
     //     // }
     // }
 
-    // @Override
-    // protected void tryEnable()
-    // {
-        // if ( null != m_devIDRecs ) {
-        //     int nPlayers = 0;
-        //     int nDevs = 0;
-        //     Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-        //     while ( iter.hasNext() ) {
-        //         DevIDRec rec = iter.next();
-        //         if ( rec.m_isChecked ) {
-        //             ++nDevs;
-        //             nPlayers += rec.m_nPlayers;
-        //         }
-        //     }
-        //     m_inviteButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
-        //     m_clearButton.setEnabled( 0 < nDevs );
-        // }
-    // }
+    @Override
+    protected void tryEnable()
+    {
+        super.tryEnable();
+
+        Button button = (Button)findViewById( R.id.button_clear );
+        if ( null != button ) { // may not be there yet
+            button.setEnabled( 0 < getChecked().size() );
+        }
+    }
 
     // DlgDelegate.DlgClickNotify interface
     @Override
