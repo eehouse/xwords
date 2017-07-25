@@ -64,6 +64,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         R.id.button_relay_add,
         R.id.manual_add_button,
         R.id.button_clear,
+        R.id.button_edit,
     };
 
     // private static final int GET_CONTACT = 1;
@@ -141,6 +142,9 @@ public class RelayInviteDelegate extends InviteDelegate {
                                             count, count );
             makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
             break;
+        case R.id.button_edit:
+            showDialogFragment( DlgID.GET_NUMBER, getChecked().iterator().next() );
+            break;
         }
     }
 
@@ -178,22 +182,33 @@ public class RelayInviteDelegate extends InviteDelegate {
         DialogInterface.OnClickListener lstnr;
         switch( alert.getDlgID() ) {
         case GET_NUMBER: {
+            final DevIDRec curRec =
+                1 <= params.length && params[0] instanceof DevIDRec
+                ? (DevIDRec)params[0] : null;
             final View getNumView = inflate( R.layout.get_relay );
-            ((EditText)getNumView.findViewById( R.id.num_field ))
-                .setKeyListener(DigitsKeyListener.getInstance());
+            final EditText numField = (EditText)
+                getNumView.findViewById( R.id.num_field );
+            numField.setKeyListener(DigitsKeyListener.getInstance());
+            final EditText nameField = (EditText)
+                getNumView.findViewById( R.id.name_field );
+            if ( null != curRec ) {
+                numField.setText( curRec.m_devID );
+                nameField.setText( curRec.m_opponent );
+            }
             lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        String number
-                            = ((EditText)getNumView.findViewById(R.id.num_field))
-                            .getText().toString();
+                        String number = numField.getText().toString();
                         if ( null != number && 0 < number.length() ) {
-                            String name
-                                = ((EditText)getNumView.findViewById(R.id.name_field))
-                                .getText().toString();
-                            DevIDRec rec = new DevIDRec( name, number );
-                            m_devIDRecs.add( rec );
-                            clearChecked();
-                            onItemChecked( rec, true );
+                            String name = nameField.getText().toString();
+                            if ( curRec != null ) {
+                                curRec.m_opponent = name;
+                                curRec.m_devID = number;
+                            } else {
+                                DevIDRec rec = new DevIDRec( name, number );
+                                m_devIDRecs.add( rec );
+                                clearChecked();
+                                onItemChecked( rec, true );
+                            }
                             saveAndRebuild();
                         }
                     }
@@ -312,6 +327,10 @@ public class RelayInviteDelegate extends InviteDelegate {
         Button button = (Button)findViewById( R.id.button_clear );
         if ( null != button ) { // may not be there yet
             button.setEnabled( 0 < getChecked().size() );
+        }
+        button = (Button)findViewById( R.id.button_edit );
+        if ( null != button ) {
+            button.setEnabled( 1 == getChecked().size() );
         }
     }
 

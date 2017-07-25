@@ -21,4 +21,8 @@
           android:text="@string/bt_pick_clear_button"
           style="@style/evenly_spaced_horizontal"
           />
+  <Button android:id="@+id/button_edit"
+          android:text="@string/button_edit"
+          style="@style/evenly_spaced_horizontal"
+          />
 </LinearLayout>
