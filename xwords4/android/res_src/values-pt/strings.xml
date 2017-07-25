@@ -1,8 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!-- -*- compile-command: "cd ../../; ant install"; -*- -->
-<resources xmlns:tools="http://schemas.android.com/tools"
-           tools:ignore="MissingTranslation"
-           >
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
   <!--
        ############################################################
        # :Screens:
@@ -1761,6 +1759,19 @@
     <plurals name="confirm_reset_fmt">
 	<item quantity="one">Você tem certeza de que deseja redefinir o %1$d jogo selecionado?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
 	<item quantity="other">Você tem certeza de que deseja redefinir os %1$d jogos selecionados?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+</plurals>
+
+    <string name="summary_invites_out">Jogadores convidados</string>
+    <string name="summary_invites_out_fmt">Jogadores convidados para a sala \"%1$s\"</string>
+
+    <plurals name="moves_fmt">
+	<item quantity="one">%1$d movimento jogado</item>
+	<item quantity="other">%1$d movimenotos jogados</item>
+</plurals>
+
+    <plurals name="confirm_delete_dict_fmt">
+	<item quantity="one">Você tem certeza que deseja apagar a lista de palavra %1$s?</item>
+	<item quantity="other">Você tem certeza que deseja apagar as listas de palavras %1$s?</item>
 </plurals>
 
     </resources>
