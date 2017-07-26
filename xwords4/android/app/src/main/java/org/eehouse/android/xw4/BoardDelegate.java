@@ -537,12 +537,6 @@ public class BoardDelegate extends DelegateBase
                         finish();
                     }
                 } );
-            alert.setOnDismissListener( new DBAlert.OnDismissListener() {
-                    @Override
-                    public void onDismissed( XWDialogFragment frag ) {
-                        m_inviteAlert = null;
-                    }
-                } );
         }
         return dialog;
     } // makeInviteDialog
@@ -2207,7 +2201,8 @@ public class BoardDelegate extends DelegateBase
                     if ( m_relayMissing && connected ) {
                         m_relayMissing = false;
                     }
-                    if ( 0 == nMissing || !m_relayMissing ) {
+                    // Why this m_relayMissing thing?
+                    if ( 0 == nMissing /* || !m_relayMissing*/ ) {
                         Log.d( TAG, "dismissing invite alert %H", m_inviteAlert );
                         dismissInviteAlert();
                     }
@@ -2310,7 +2305,7 @@ public class BoardDelegate extends DelegateBase
 
     private void showInviteAlertIf()
     {
-        if ( null == m_inviteAlert && m_mySIS.nMissing > 0 && !isFinishing() ) {
+        if ( /* null == m_inviteAlert && */m_mySIS.nMissing > 0 && !isFinishing() ) {
             InviteAlertState ias = new InviteAlertState();
             ias.summary = m_summary;
             ias.gi = m_gi;
