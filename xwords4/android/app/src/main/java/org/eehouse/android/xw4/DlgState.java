@@ -23,11 +23,18 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 
+import junit.framework.Assert;
+
 public class DlgState implements Parcelable {
+    private static final String TAG = DlgState.class.getSimpleName();
     private static final String BUNDLE_KEY = "bk";
 
     public DlgID m_id;
@@ -66,12 +73,57 @@ public class DlgState implements Parcelable {
     public DlgState setTitle( int id )
     { m_titleId = id; return this; }
 
+    // @Override
+    // public String toString()
+    // {
+    //     String params = "";
+    //     if ( null != m_params ) {
+    //         List<String> strs = new ArrayList<>();
+    //         for (Object obj : m_params) {
+    //             strs.add(String.format("%s", obj));
+    //         }
+    //         params = TextUtils.join( ",", strs );
+    //     }
+    //     return String.format("[msg: %s; key: %s; action: %s; pair %s: na: %s; pos: %d; neg: %d; title: %d; params: %s]",
+    //                          m_msg, m_prefsKey, m_action, m_pair, m_onNAChecked,
+    //                          m_posButton, m_negButton, m_titleId, params );
+    // }
+
+    // I only need this if BuildConfig.DEBUG is true...
+    @Override
+    public boolean equals(Object it)
+    {
+        boolean result;
+        if ( BuildConfig.DEBUG ) {
+            result = it != null && it instanceof DlgState;
+            if ( result ) {
+                DlgState other = (DlgState)it;
+                result = other != null
+                    && m_id.equals(other.m_id)
+                    && m_msg.equals(other.m_msg)
+                    && m_posButton == other.m_posButton
+                    && m_negButton == other.m_negButton
+                    && m_action == other.m_action
+                    && ((null == m_pair) ? (null == other.m_pair) : m_pair.equals(other.m_pair))
+                    && m_prefsKey == other.m_prefsKey
+                    && Arrays.deepEquals( m_params, other.m_params )
+                    && m_onNAChecked == other.m_onNAChecked
+                    && m_titleId == other.m_titleId;
+            }
+        } else {
+            result = super.equals( it );
+        }
+        return result;
+    }
+
     public int describeContents() {
         return 0;
     }
 
     public Bundle toBundle()
     {
+        testCanParcelize();
+
         Bundle result = new Bundle();
         result.putParcelable( BUNDLE_KEY, this );
         return result;
@@ -82,7 +134,8 @@ public class DlgState implements Parcelable {
         return (DlgState)bundle.getParcelable( BUNDLE_KEY );
     }
 
-    public void writeToParcel( Parcel out, int flags ) {
+    public void writeToParcel( Parcel out, int flags )
+    {
         out.writeInt( m_id.ordinal() );
         out.writeInt( m_posButton );
         out.writeInt( m_negButton );
@@ -91,6 +144,21 @@ public class DlgState implements Parcelable {
         out.writeInt( null == m_onNAChecked  ? -1 : m_onNAChecked.ordinal() );
         out.writeInt( m_titleId );
         out.writeString( m_msg );
+        out.writeSerializable( m_params );
+    }
+
+    private void testCanParcelize()
+    {
+        if (BuildConfig.DEBUG) {
+            Parcel parcel = Parcel.obtain();
+            writeToParcel(parcel, 0);
+
+            parcel.setDataPosition(0);
+
+            DlgState newState = DlgState.CREATOR.createFromParcel(parcel);
+            Assert.assertFalse(newState == this);
+            Assert.assertTrue(this.equals(newState));
+        }
     }
 
     public static final Parcelable.Creator<DlgState> CREATOR
@@ -106,13 +174,17 @@ public class DlgState implements Parcelable {
                     Action onNA = 0 > tmp ? null : Action.values()[tmp];
                     int titleId = in.readInt();
                     String msg = in.readString();
+                    Object[] params = (Object[])in.readSerializable();
                     DlgState state = new DlgState(id)
                     .setMsg( msg )
                     .setPosButton( posButton )
                     .setNegButton( negButton )
                     .setAction( action )
                     .setPrefsKey( prefsKey )
-                    .setOnNA( onNA );
+                    .setOnNA( onNA )
+                    .setTitle(titleId)
+                    .setParams(params)
+                    ;
                     return state;
                 }
 

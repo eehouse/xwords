@@ -26,6 +26,8 @@ import android.content.Intent;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
+import junit.framework.Assert;
+
 class HostDelegate extends DelegateBase {
     private static final String ACTION = "ACTION";
     private static final String IS_POS_BUTTON = "POS_BUTTON";

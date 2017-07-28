@@ -2455,8 +2455,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void doOpenGame( Object[] params )
     {
-        GameSummary summary = (GameSummary)params[1];
         final long rowid = (Long)params[0];
+        GameSummary summary = (GameSummary)params[1];
 
         if ( summary.conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
