@@ -439,7 +439,7 @@ public class GameSummary implements Serializable {
                 Log.ex( TAG, ex );
             }
         }
-        Log.i( TAG, "getStringExtra(%s) => %s", key, result );
+        // Log.i( TAG, "getStringExtra(%s) => %s", key, result );
         return result;
     }
 

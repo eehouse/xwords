@@ -49,6 +49,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.Serializable;
 import java.nio.channels.FileChannel;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -446,12 +447,28 @@ public class DBUtils {
         return result;
     }
 
-    public static class SentInvitesInfo {
+    public static class SentInvitesInfo implements Serializable {
         public long m_rowid;
         private ArrayList<InviteMeans> m_means;
         private ArrayList<String> m_targets;
         private ArrayList<Timestamp> m_timestamps;
         private int m_cachedCount = 0;
+
+        @Override
+        public boolean equals( Object other )
+        {
+            boolean result = null != other && other instanceof SentInvitesInfo;
+            if ( result ) {
+                SentInvitesInfo it = (SentInvitesInfo)other;
+                result = it.m_rowid == m_rowid
+                    && it.m_means.equals(m_means)
+                    && it.m_targets.equals(m_targets)
+                    && it.m_timestamps.equals(m_timestamps)
+                    && it.m_cachedCount == m_cachedCount;
+            }
+            // Log.d( TAG, "equals() => %b", result );
+            return result;
+        }
 
         private SentInvitesInfo( long rowID ) {
             m_rowid = rowID;

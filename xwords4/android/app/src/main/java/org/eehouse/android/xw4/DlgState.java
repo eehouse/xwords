@@ -100,7 +100,7 @@ public class DlgState implements Parcelable {
                 DlgState other = (DlgState)it;
                 result = other != null
                     && m_id.equals(other.m_id)
-                    && m_msg.equals(other.m_msg)
+                    && ((null == m_msg) ? (null == other.m_msg) : m_msg.equals(other.m_msg))
                     && m_posButton == other.m_posButton
                     && m_negButton == other.m_negButton
                     && m_action == other.m_action
@@ -157,7 +157,10 @@ public class DlgState implements Parcelable {
 
             DlgState newState = DlgState.CREATOR.createFromParcel(parcel);
             Assert.assertFalse(newState == this);
-            Assert.assertTrue(this.equals(newState));
+            if ( !this.equals(newState) ) {
+                Log.d( TAG, "restore failed!!: %s => %s", this, newState );
+                Assert.fail();
+            }
         }
     }
 
