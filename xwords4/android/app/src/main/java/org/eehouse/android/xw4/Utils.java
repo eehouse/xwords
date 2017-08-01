@@ -533,6 +533,16 @@ public class Utils {
         return result;
     }
 
+    public static void testSerialization( Serializable obj )
+    {
+        if ( BuildConfig.DEBUG ) {
+            String as64 = serializableToString64( obj );
+            Object other = string64ToSerializable( as64 );
+            Assert.assertTrue( other.equals( obj ) );
+            Log.d( TAG, "testSerialization(%s) worked!!!", obj );
+        }
+    }
+
     private static void setFirstBootStatics( Context context )
     {
         if ( null == s_isFirstBootThisVersion ) {

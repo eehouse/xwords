@@ -26,21 +26,23 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
-import junit.framework.Assert;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Iterator;
 
-import org.eehouse.android.xw4.jni.CommsAddrRec;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.jni.CurGameInfo;
-import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.InputStream;
-import java.util.Iterator;
+import junit.framework.Assert;
 
-public class NetLaunchInfo {
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
+
+public class NetLaunchInfo implements Serializable {
     private static final String TAG = NetLaunchInfo.class.getSimpleName();
     private static final String ADDRS_KEY = "ad";
     private static final String PHONE_KEY = "phn";
@@ -108,6 +110,8 @@ public class NetLaunchInfo {
         p2pMacAddress = bundle.getString( MultiService.P2P_MAC_ADDRESS );
 
         m_addrs = new CommsConnTypeSet( bundle.getInt( ADDRS_KEY ) );
+
+        Utils.testSerialization( this );
     }
 
     public static NetLaunchInfo makeFrom( Bundle bundle )
@@ -315,6 +319,45 @@ public class NetLaunchInfo {
 
         int flags = m_addrs.toInt();
         bundle.putInt( ADDRS_KEY, flags );
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        NetLaunchInfo other = null;
+        boolean result = null != obj && obj instanceof NetLaunchInfo;
+        if ( result ) {
+            other = (NetLaunchInfo)obj;
+            result = ((null == gameName) ? (null == other.gameName)
+                      : gameName.equals(other.gameName))
+                && ((null == dict) ? (null == other.dict)
+                    : dict.equals(other.dict))
+                && lang == other.lang
+                && forceChannel == other.forceChannel
+                && nPlayersT == other.nPlayersT
+                && nPlayersH == other.nPlayersH
+                && ((null == room) ? (null == other.room)
+                    : room.equals(other.room))
+                && ((null == btName) ? (null == other.btName)
+                    : btName.equals(other.btName))
+                && ((null == btAddress) ? (null == other.btAddress)
+                    : btAddress.equals(other.btAddress))
+                && ((null == p2pMacAddress) ? (null == other.p2pMacAddress)
+                    : p2pMacAddress.equals(other.p2pMacAddress))
+                && ((null == phone) ? (null == other.phone)
+                    : phone.equals(other.phone))
+                && isGSM == other. isGSM
+                && osVers == other.osVers
+                && _conTypes == other._conTypes
+                && gameID == other.gameID
+                && ((null == m_addrs ? (null == other.m_addrs)
+                     : m_addrs.equals(other.m_addrs)))
+                && m_valid == other.m_valid
+                && ((null == inviteID ? (null == other.inviteID)
+                     : inviteID.equals(other.inviteID)))
+                ;
+        }
+        return result;
     }
 
     public String makeLaunchJSON()
@@ -608,5 +651,7 @@ public class NetLaunchInfo {
             }
         }
         m_valid = valid;
+
+        Utils.testSerialization( this );
     }
 }

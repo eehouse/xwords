@@ -26,7 +26,9 @@ import java.io.Serializable;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 
 public class LocalPlayer implements Serializable {
     public String name;
@@ -43,6 +45,8 @@ public class LocalPlayer implements Serializable {
         String fmt = context.getString( R.string.player_fmt);
         name = String.format( fmt, num + 1 );
         password = "";
+
+        // Utils.testSerialization( this );
     }
 
     public LocalPlayer( final LocalPlayer src )
@@ -53,6 +57,34 @@ public class LocalPlayer implements Serializable {
         password = src.password;
         dictName = src.dictName;
         secondsUsed = src.secondsUsed;
+
+        // Utils.testSerialization( this );
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        boolean result;
+        if ( BuildConfig.DEBUG ) {
+            LocalPlayer other = null;
+            result = null != obj && obj instanceof LocalPlayer;
+            if ( result ) {
+                other = (LocalPlayer)obj;
+                result = secondsUsed == other.secondsUsed
+                    && robotIQ == other.robotIQ
+                    && isLocal == other.isLocal
+                    && ((null == name) ? (null == other.name)
+                        : name.equals(other.name))
+                    && ((null == password) ? (null == other.password)
+                        : password.equals(other.password))
+                    && ((null == dictName) ? (null == other.dictName)
+                        : dictName.equals(other.dictName))
+                    ;
+            }
+        } else {
+            result = super.equals( obj );
+        }
+        return result;
     }
 
     public boolean isRobot()

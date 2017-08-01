@@ -22,20 +22,21 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import org.json.JSONObject;
+
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.DictLangCache;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.json.JSONObject;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-
-import java.io.Serializable;
 
 public class CurGameInfo implements Serializable {
     private static final String TAG = CurGameInfo.class.getSimpleName();
@@ -149,6 +150,8 @@ public class CurGameInfo implements Serializable {
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             players[ii] = new LocalPlayer( src.players[ii] );
         }
+
+        Utils.testSerialization( this );
     }
 
     public String getJSONData()
@@ -268,6 +271,43 @@ public class CurGameInfo implements Serializable {
         }
 
         return matter;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        boolean result;
+        if ( BuildConfig.DEBUG ) {
+            CurGameInfo other = null;
+            result = null != obj && obj instanceof CurGameInfo;
+            if ( result ) {
+                other = (CurGameInfo)obj;
+                result = dictLang == other.dictLang
+                    && gameID == other.gameID
+                    && gameSeconds == other.gameSeconds
+                    && nPlayers == other.nPlayers
+                    && boardSize == other.boardSize
+                    && forceChannel == other.forceChannel
+                    && hintsNotAllowed == other.hintsNotAllowed
+                    && timerEnabled == other.timerEnabled
+                    && allowPickTiles == other.allowPickTiles
+                    && allowHintRect == other.allowHintRect
+                    && m_smartness == other.m_smartness
+                    && Arrays.deepEquals( players, other.players )
+                    && ((null == dictName) ? (null == other.dictName)
+                        : dictName.equals(other.dictName))
+                    && ((null == serverRole) ? (null == other.serverRole)
+                        : serverRole.equals(other.serverRole))
+                    && ((null == phoniesAction) ? (null == other.phoniesAction)
+                        : phoniesAction.equals(other.phoniesAction))
+                    && ((null == m_name) ? (null == other.m_name)
+                        : m_name.equals(other.m_name))
+                    ;
+            }
+        } else {
+            result = super.equals( obj );
+        }
+        return result;
     }
 
     public int remoteCount()

@@ -862,7 +862,8 @@ public class GamesListDelegate extends ListDelegateBase
 
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        curThis().makeThenLaunchOrConfigure( edit, true, false );
+                        String name = edit.getText().toString();
+                        curThis().makeThenLaunchOrConfigure( name, true, false );
                     }
                 };
 
@@ -874,7 +875,8 @@ public class GamesListDelegate extends ListDelegateBase
             if ( canDoDefaults ) {
                 lstnr2 = new OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            curThis().makeThenLaunchOrConfigure( edit, false, false );
+                            String name = edit.getText().toString();
+                            curThis().makeThenLaunchOrConfigure( name, false, false );
                         }
                     };
                 ab.setNegativeButton( R.string.use_defaults, lstnr2 );
@@ -2543,7 +2545,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     // Returns true if user has what looks like a default name and has not
     // said he wants us to stop bugging him about it.
-    private boolean askingChangeName( EditText edit, boolean doConfigure )
+    private boolean askingChangeName( String name, boolean doConfigure )
     {
         boolean asking = false;
         boolean skipAsk = XWPrefs
@@ -2563,7 +2565,7 @@ public class GamesListDelegate extends ListDelegateBase
                 makeConfirmThenBuilder( msg, Action.NEW_GAME_DFLT_NAME )
                     .setOnNA( Action.SET_NA_DEFAULTNAME )
                     .setNegButton( R.string.button_later )
-                    .setParams( edit, doConfigure )
+                    .setParams( name, doConfigure )
                     .show();
             }
         }
@@ -2574,19 +2576,18 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean handled = null != m_newGameParams;
         if ( handled ) {
-            EditText edit = (EditText)m_newGameParams[0];
+            String name = (String)m_newGameParams[0];
             boolean doConfigure = (Boolean)m_newGameParams[1];
             m_newGameParams = null;
-            makeThenLaunchOrConfigure( edit, doConfigure, true );
+            makeThenLaunchOrConfigure( name, doConfigure, true );
         }
         return handled;
     }
 
-    private void makeThenLaunchOrConfigure( EditText edit, boolean doConfigure,
+    private void makeThenLaunchOrConfigure( String name, boolean doConfigure,
                                             boolean skipAsk )
     {
-        if ( skipAsk || !askingChangeName( edit, doConfigure ) ) {
-            String name = edit.getText().toString();
+        if ( skipAsk || !askingChangeName( name, doConfigure ) ) {
             long rowID;
             long groupID = 1 == m_mySIS.selGroupIDs.size()
                 ? m_mySIS.selGroupIDs.iterator().next() : DBUtils.GROUPID_UNSPEC;

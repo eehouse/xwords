@@ -73,21 +73,27 @@ public class DlgState implements Parcelable {
     public DlgState setTitle( int id )
     { m_titleId = id; return this; }
 
-    // @Override
-    // public String toString()
-    // {
-    //     String params = "";
-    //     if ( null != m_params ) {
-    //         List<String> strs = new ArrayList<>();
-    //         for (Object obj : m_params) {
-    //             strs.add(String.format("%s", obj));
-    //         }
-    //         params = TextUtils.join( ",", strs );
-    //     }
-    //     return String.format("[msg: %s; key: %s; action: %s; pair %s: na: %s; pos: %d; neg: %d; title: %d; params: %s]",
-    //                          m_msg, m_prefsKey, m_action, m_pair, m_onNAChecked,
-    //                          m_posButton, m_negButton, m_titleId, params );
-    // }
+    @Override
+    public String toString()
+    {
+        if ( BuildConfig.DEBUG) {
+            String params = "";
+            if ( null != m_params ) {
+                List<String> strs = new ArrayList<>();
+                for (Object obj : m_params) {
+                    strs.add(String.format("%s", obj));
+                }
+                params = TextUtils.join( ",", strs );
+            }
+            return String.format("[id: %s; msg: %s; key: %s; action: %s; pair %s; "
+                                 + "na: %s; pos: %d; neg: %d; title: %d; "
+                                 + "params: %s]",
+                                 m_id, m_msg, m_prefsKey, m_action, m_pair, m_onNAChecked,
+                                 m_posButton, m_negButton, m_titleId, params );
+        } else {
+            return super.toString();
+        }
+    }
 
     // I only need this if BuildConfig.DEBUG is true...
     @Override

@@ -24,9 +24,13 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import java.io.Serializable;
+import java.util.Arrays;
+
+import org.json.JSONObject;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
@@ -36,7 +40,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.json.JSONObject;
 
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo
@@ -96,6 +99,55 @@ public class GameSummary implements Serializable {
     public boolean inRelayGame()
     {
         return null != relayID;
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        boolean result;
+        if ( BuildConfig.DEBUG ) {
+            result = null != obj && obj instanceof GameSummary;
+            if ( result ) {
+                GameSummary other = (GameSummary)obj;
+                result = lastMoveTime == other.lastMoveTime
+                    && nMoves == other.nMoves
+                    && turn == other.turn
+                    && turnIsLocal == other.turnIsLocal
+                    && nPlayers == other.nPlayers
+                    && missingPlayers == other.missingPlayers
+                    && gameOver == other.gameOver
+                    && seed == other.seed
+                    && modtime == other.modtime
+                    && gameID == other.gameID
+                    && dictLang == other.dictLang
+                    && nPacketsPending == other.nPacketsPending
+                    && ((null == scores) ? (null == other.scores)
+                        : scores.equals(other.scores))
+                    && Arrays.deepEquals( m_players, other.m_players )
+                    && ((null == conTypes) ? (null == other.conTypes)
+                        : conTypes.equals(other.conTypes))
+                    && ((null == roomName) ? (null == other.roomName)
+                        : roomName.equals(other.roomName))
+                    && ((null == relayID) ? (null == other.relayID)
+                        : relayID.equals(other.relayID))
+                    && Arrays.deepEquals( remoteDevs, other.remoteDevs )
+                    && ((null == serverRole) ? (null == other.serverRole)
+                        : serverRole.equals(other.serverRole))
+                    && ((null == m_giFlags) ? (null == other.m_giFlags)
+                        : m_giFlags.equals(other.m_giFlags))
+                    && ((null == m_playersSummary) ? (null == other.m_playersSummary)
+                        : m_playersSummary.equals(other.m_playersSummary))
+                    && ((null == m_gi) ? (null == other.m_gi)
+                        : m_gi.equals(other.m_gi))
+                    && Arrays.deepEquals( m_remotePhones, other.m_remotePhones )
+                    && ((null == m_extras) ? (null == other.m_extras)
+                        : m_extras.equals(other.m_extras))
+                    ;
+            }
+        } else {
+            result = super.equals( obj );
+        }
+        return result;
     }
 
     public String summarizePlayers()
