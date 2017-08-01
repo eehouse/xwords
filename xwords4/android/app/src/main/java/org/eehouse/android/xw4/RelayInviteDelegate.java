@@ -79,9 +79,11 @@ public class RelayInviteDelegate extends InviteDelegate {
     public static void launchForResult( Activity activity, int nMissing,
                                         RequestCode requestCode )
     {
-        Intent intent = new Intent( activity, RelayInviteActivity.class );
-        intent.putExtra( INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode.ordinal() );
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            Intent intent = new Intent( activity, RelayInviteActivity.class );
+            intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+            activity.startActivityForResult( intent, requestCode.ordinal() );
+        }
     }
 
     public RelayInviteDelegate( Delegator delegator, Bundle savedInstanceState )
@@ -92,59 +94,63 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     protected void init( Bundle savedInstanceState )
     {
-        String msg = getString( R.string.button_invite );
-        msg = getQuantityString( R.plurals.invite_relay_desc_fmt, m_nMissing,
-                                 m_nMissing, msg );
-        super.init( msg, R.string.empty_relay_inviter );
-        addButtonBar( R.layout.relay_buttons, BUTTONIDS );
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            String msg = getString( R.string.button_invite );
+            msg = getQuantityString( R.plurals.invite_relay_desc_fmt, m_nMissing,
+                                     m_nMissing, msg );
+            super.init( msg, R.string.empty_relay_inviter );
+            addButtonBar( R.layout.relay_buttons, BUTTONIDS );
 
-        // getBundledData( savedInstanceState );
+            // getBundledData( savedInstanceState );
 
-        // m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
-        // m_addButton.setOnClickListener( new View.OnClickListener() {
-        //         public void onClick( View view )
-        //         {
-        //             showDialog( DlgID.GET_NUMBER );
-        //         }
-        //     } );
+            // m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
+            // m_addButton.setOnClickListener( new View.OnClickListener() {
+            //         public void onClick( View view )
+            //         {
+            //             showDialog( DlgID.GET_NUMBER );
+            //         }
+            //     } );
 
-        // if ( XWPrefs.getRelayInviteToSelfEnabled( m_activity ) ) {
-        //     ImageButton addMe = (ImageButton)findViewById( R.id.add_self_button );
-        //     addMe.setVisibility( View.VISIBLE );
-        //     addMe.setOnClickListener( new View.OnClickListener() {
-        //             public void onClick( View view ) {
-        //                 int devIDInt = DevID.getRelayDevIDInt( m_activity );
-        //                 String devID = String.format( "%d", devIDInt );
-        //                 DevIDRec rec = new DevIDRec( "self", devID );
-        //                 addChecked( rec );
-        //                 saveAndRebuild();
-        //             }
-        //         } );
-        // }
+            // if ( XWPrefs.getRelayInviteToSelfEnabled( m_activity ) ) {
+            //     ImageButton addMe = (ImageButton)findViewById( R.id.add_self_button );
+            //     addMe.setVisibility( View.VISIBLE );
+            //     addMe.setOnClickListener( new View.OnClickListener() {
+            //             public void onClick( View view ) {
+            //                 int devIDInt = DevID.getRelayDevIDInt( m_activity );
+            //                 String devID = String.format( "%d", devIDInt );
+            //                 DevIDRec rec = new DevIDRec( "self", devID );
+            //                 addChecked( rec );
+            //                 saveAndRebuild();
+            //             }
+            //         } );
+            // }
 
-        getSavedState();
-        rebuildList( true );
+            getSavedState();
+            rebuildList( true );
+        }
     }
 
     @Override
     protected void onBarButtonClicked( int id )
     {
-        switch( id ) {
-        case R.id.button_relay_add:
-            Utils.notImpl( m_activity );
-            break;
-        case R.id.manual_add_button:
-            showDialogFragment( DlgID.GET_NUMBER );
-            break;
-        case R.id.button_clear:
-            int count = getChecked().size();
-            String msg = getQuantityString( R.plurals.confirm_clear_relay_fmt,
-                                            count, count );
-            makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
-            break;
-        case R.id.button_edit:
-            showDialogFragment( DlgID.GET_NUMBER, getChecked().iterator().next() );
-            break;
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            switch( id ) {
+            case R.id.button_relay_add:
+                Utils.notImpl( m_activity );
+                break;
+            case R.id.manual_add_button:
+                showDialogFragment( DlgID.GET_NUMBER );
+                break;
+            case R.id.button_clear:
+                int count = getChecked().size();
+                String msg = getQuantityString( R.plurals.confirm_clear_relay_fmt,
+                                                count, count );
+                makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
+                break;
+            case R.id.button_edit:
+                showDialogFragment( DlgID.GET_NUMBER, getChecked().iterator().next() );
+                break;
+            }
         }
     }
 
@@ -178,52 +184,54 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
-        Dialog dialog;
-        DialogInterface.OnClickListener lstnr;
-        switch( alert.getDlgID() ) {
-        case GET_NUMBER: {
-            final DevIDRec curRec =
-                1 <= params.length && params[0] instanceof DevIDRec
-                ? (DevIDRec)params[0] : null;
-            final View getNumView = inflate( R.layout.get_relay );
-            final EditText numField = (EditText)
-                getNumView.findViewById( R.id.num_field );
-            numField.setKeyListener(DigitsKeyListener.getInstance());
-            final EditText nameField = (EditText)
-                getNumView.findViewById( R.id.name_field );
-            if ( null != curRec ) {
-                numField.setText( curRec.m_devID );
-                nameField.setText( curRec.m_opponent );
-            }
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        String number = numField.getText().toString();
-                        if ( null != number && 0 < number.length() ) {
-                            String name = nameField.getText().toString();
-                            if ( curRec != null ) {
-                                curRec.m_opponent = name;
-                                curRec.m_devID = number;
-                            } else {
-                                DevIDRec rec = new DevIDRec( name, number );
-                                m_devIDRecs.add( rec );
-                                clearChecked();
-                                onItemChecked( rec, true );
+        Dialog dialog = null;
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            DialogInterface.OnClickListener lstnr;
+            switch( alert.getDlgID() ) {
+            case GET_NUMBER: {
+                final DevIDRec curRec =
+                    1 <= params.length && params[0] instanceof DevIDRec
+                    ? (DevIDRec)params[0] : null;
+                final View getNumView = inflate( R.layout.get_relay );
+                final EditText numField = (EditText)
+                    getNumView.findViewById( R.id.num_field );
+                numField.setKeyListener(DigitsKeyListener.getInstance());
+                final EditText nameField = (EditText)
+                    getNumView.findViewById( R.id.name_field );
+                if ( null != curRec ) {
+                    numField.setText( curRec.m_devID );
+                    nameField.setText( curRec.m_opponent );
+                }
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            String number = numField.getText().toString();
+                            if ( null != number && 0 < number.length() ) {
+                                String name = nameField.getText().toString();
+                                if ( curRec != null ) {
+                                    curRec.m_opponent = name;
+                                    curRec.m_devID = number;
+                                } else {
+                                    DevIDRec rec = new DevIDRec( name, number );
+                                    m_devIDRecs.add( rec );
+                                    clearChecked();
+                                    onItemChecked( rec, true );
+                                }
+                                saveAndRebuild();
                             }
-                            saveAndRebuild();
                         }
-                    }
-                };
-            dialog = makeAlertBuilder()
-                .setTitle( R.string.get_sms_title )
-                .setView( getNumView )
-                .setPositiveButton( android.R.string.ok, lstnr )
-                .setNegativeButton( android.R.string.cancel, null )
-                .create();
-        }
-            break;
-        default:
-            dialog = super.makeDialog( alert, params );
-            break;
+                    };
+                dialog = makeAlertBuilder()
+                    .setTitle( R.string.get_sms_title )
+                    .setView( getNumView )
+                    .setPositiveButton( android.R.string.ok, lstnr )
+                    .setNegativeButton( android.R.string.cancel, null )
+                    .create();
+            }
+                break;
+            default:
+                dialog = super.makeDialog( alert, params );
+                break;
+            }
         }
         return dialog;
     }
@@ -322,15 +330,17 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected void tryEnable()
     {
-        super.tryEnable();
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            super.tryEnable();
 
-        Button button = (Button)findViewById( R.id.button_clear );
-        if ( null != button ) { // may not be there yet
-            button.setEnabled( 0 < getChecked().size() );
-        }
-        button = (Button)findViewById( R.id.button_edit );
-        if ( null != button ) {
-            button.setEnabled( 1 == getChecked().size() );
+            Button button = (Button)findViewById( R.id.button_clear );
+            if ( null != button ) { // may not be there yet
+                button.setEnabled( 0 < getChecked().size() );
+            }
+            button = (Button)findViewById( R.id.button_edit );
+            if ( null != button ) {
+                button.setEnabled( 1 == getChecked().size() );
+            }
         }
     }
 
@@ -339,16 +349,18 @@ public class RelayInviteDelegate extends InviteDelegate {
     public boolean onPosButton( Action action, Object[] params )
     {
         boolean handled = true;
-        switch( action ) {
-        case CLEAR_ACTION:
-            clearSelectedImpl();
-            break;
-        case USE_IMMOBILE_ACTION:
-            m_immobileConfirmed = true;
-            break;
-        default:
-            handled = super.onPosButton( action, params );
-            break;
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            switch( action ) {
+            case CLEAR_ACTION:
+                clearSelectedImpl();
+                break;
+            case USE_IMMOBILE_ACTION:
+                m_immobileConfirmed = true;
+                break;
+            default:
+                handled = super.onPosButton( action, params );
+                break;
+            }
         }
         return handled;
     }
@@ -357,13 +369,15 @@ public class RelayInviteDelegate extends InviteDelegate {
     public boolean onDismissed( Action action, Object[] params )
     {
         boolean handled = true;
-        if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
-            makeConfirmThenBuilder( R.string.warn_unlimited,
-                                    Action.POST_WARNING_ACTION )
-                .setPosButton( R.string.button_yes )
-                .show();
-        } else {
-            handled = false;
+        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
+                makeConfirmThenBuilder( R.string.warn_unlimited,
+                                        Action.POST_WARNING_ACTION )
+                    .setPosButton( R.string.button_yes )
+                    .show();
+            } else {
+                handled = false;
+            }
         }
         return handled;
     }
@@ -593,114 +607,114 @@ public class RelayInviteDelegate extends InviteDelegate {
     //     }
     // }
 
-    private class ListOpponentsTask extends AsyncTask<Void, Void, Set<String>> {
-        private Context m_context;
-        private String[] m_relayIDs;
-        private long[] m_rowIDs;
+    // private class ListOpponentsTask extends AsyncTask<Void, Void, Set<String>> {
+    //     private Context m_context;
+    //     private String[] m_relayIDs;
+    //     private long[] m_rowIDs;
 
-        public ListOpponentsTask( Context context, String[] relayIDs, long[] rowIDs ) {
-            m_context = context;
-            m_relayIDs = relayIDs;
-            m_rowIDs = rowIDs;
-        }
+    //     public ListOpponentsTask( Context context, String[] relayIDs, long[] rowIDs ) {
+    //         m_context = context;
+    //         m_relayIDs = relayIDs;
+    //         m_rowIDs = rowIDs;
+    //     }
 
-        @Override protected Set<String> doInBackground( Void... unused )
-        {
-            Set<String> result = null;
-            JSONObject reply = null;
-            try {
-                startProgress( R.string.fetching_from_relay );
+    //     @Override protected Set<String> doInBackground( Void... unused )
+    //     {
+    //         Set<String> result = null;
+    //         JSONObject reply = null;
+    //         try {
+    //             startProgress( R.string.fetching_from_relay );
 
-                JSONArray ids = new JSONArray();
-                for ( String id : m_relayIDs ) {
-                    ids.put( id );
-                }
-                JSONObject params = new JSONObject();
-                params.put( "relayIDs", ids );
-                params.put( "me", DevID.getRelayDevIDInt( m_activity ) );
-                Log.i( TAG, "sending to server: %s", params.toString() );
+    //             JSONArray ids = new JSONArray();
+    //             for ( String id : m_relayIDs ) {
+    //                 ids.put( id );
+    //             }
+    //             JSONObject params = new JSONObject();
+    //             params.put( "relayIDs", ids );
+    //             params.put( "me", DevID.getRelayDevIDInt( m_activity ) );
+    //             Log.i( TAG, "sending to server: %s", params.toString() );
 
-                HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "opponentIDsFor" );
-                if ( null != conn ) {
-                    String str = NetUtils.runConn( conn, params );
-                    Log.i( TAG, "got json from server: %s", str );
-                    reply = new JSONObject( str );
-                }
+    //             HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "opponentIDsFor" );
+    //             if ( null != conn ) {
+    //                 String str = NetUtils.runConn( conn, params );
+    //                 Log.i( TAG, "got json from server: %s", str );
+    //                 reply = new JSONObject( str );
+    //             }
 
-                if ( null != reply ) {
-                    result = new HashSet<String>();
+    //             if ( null != reply ) {
+    //                 result = new HashSet<String>();
 
-                    setProgressMsg( R.string.processing_games );
+    //                 setProgressMsg( R.string.processing_games );
 
-                    JSONArray objs = reply.getJSONArray("devIDs");
-                    for ( int ii = 0; ii < objs.length(); ++ii ) {
-                        JSONObject obj = objs.getJSONObject( ii );
-                        Iterator<String> keys = obj.keys();
-                        Assert.assertTrue( keys.hasNext() );
-                        String key = keys.next();
-                        Assert.assertFalse( keys.hasNext() );
-                        JSONArray devIDs2 = obj.getJSONArray( key );
-                        for ( int jj = 0; jj < devIDs2.length(); ++jj ) {
-                            result.add( devIDs2.getString(jj) );
-                        }
-                    }
-                }
+    //                 JSONArray objs = reply.getJSONArray("devIDs");
+    //                 for ( int ii = 0; ii < objs.length(); ++ii ) {
+    //                     JSONObject obj = objs.getJSONObject( ii );
+    //                     Iterator<String> keys = obj.keys();
+    //                     Assert.assertTrue( keys.hasNext() );
+    //                     String key = keys.next();
+    //                     Assert.assertFalse( keys.hasNext() );
+    //                     JSONArray devIDs2 = obj.getJSONArray( key );
+    //                     for ( int jj = 0; jj < devIDs2.length(); ++jj ) {
+    //                         result.add( devIDs2.getString(jj) );
+    //                     }
+    //                 }
+    //             }
 
-            } catch ( org.json.JSONException je ) {
-                Log.ex( TAG, je );
-            }
+    //         } catch ( org.json.JSONException je ) {
+    //             Log.ex( TAG, je );
+    //         }
 
-            stopProgress();
-            return result;
-        }
+    //         stopProgress();
+    //         return result;
+    //     }
 
-        @Override protected void onPostExecute( Set<String> devIDs )
-        {
-            if ( null == devIDs ) {
-                Log.w( TAG, "onPostExecute: no results from server?" );
-            } else {
-                m_devIDRecs = new ArrayList<DevIDRec>(devIDs.size());
-                Iterator<String> iter = devIDs.iterator();
-                while ( iter.hasNext() ) {
-                    String devID = iter.next();
-                    DevIDRec rec = new DevIDRec( "name", devID );
-                    m_devIDRecs.add( rec );
-                }
+    //     @Override protected void onPostExecute( Set<String> devIDs )
+    //     {
+    //         if ( null == devIDs ) {
+    //             Log.w( TAG, "onPostExecute: no results from server?" );
+    //         } else {
+    //             m_devIDRecs = new ArrayList<DevIDRec>(devIDs.size());
+    //             Iterator<String> iter = devIDs.iterator();
+    //             while ( iter.hasNext() ) {
+    //                 String devID = iter.next();
+    //                 DevIDRec rec = new DevIDRec( "name", devID );
+    //                 m_devIDRecs.add( rec );
+    //             }
 
-                // m_adapter = new RelayDevsAdapter();
-                // setListAdapter( m_adapter );
-                // // m_checked.clear();
-                // tryEnable();
-            }
-        }
+    //             // m_adapter = new RelayDevsAdapter();
+    //             // setListAdapter( m_adapter );
+    //             // // m_checked.clear();
+    //             // tryEnable();
+    //         }
+    //     }
 
-        private void startProgress( final int msgID )
-        {
-            runOnUiThread( new Runnable() {
-                    public void run() {
-                        RelayInviteDelegate.this
-                            .startProgress( R.string.rel_invite_title, msgID );
-                    }
-                } );
-        }
+    //     private void startProgress( final int msgID )
+    //     {
+    //         runOnUiThread( new Runnable() {
+    //                 public void run() {
+    //                     RelayInviteDelegate.this
+    //                         .startProgress( R.string.rel_invite_title, msgID );
+    //                 }
+    //             } );
+    //     }
 
-        private void setProgressMsg( final int id )
-        {
-            runOnUiThread( new Runnable() {
-                    public void run() {
-                        RelayInviteDelegate.this.setProgressMsg( id );
-                    }
-                } );
-        }
+    //     private void setProgressMsg( final int id )
+    //     {
+    //         runOnUiThread( new Runnable() {
+    //                 public void run() {
+    //                     RelayInviteDelegate.this.setProgressMsg( id );
+    //                 }
+    //             } );
+    //     }
 
-        private void stopProgress()
-        {
-            runOnUiThread( new Runnable() {
-                    public void run() {
-                        RelayInviteDelegate.this.stopProgress();
-                    }
-                } );
-        }
+    //     private void stopProgress()
+    //     {
+    //         runOnUiThread( new Runnable() {
+    //                 public void run() {
+    //                     RelayInviteDelegate.this.stopProgress();
+    //                 }
+    //             } );
+    //     }
 
-    }
+    // }
 }
