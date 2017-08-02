@@ -652,7 +652,7 @@ public class DelegateBase implements DlgClickNotify,
             RelayService.setEnabled( m_activity, true );
             break;
         case PERMS_QUERY:
-            Perms23.onGotPermsAction( true, params );
+            Perms23.onGotPermsAction( this, true, params );
             break;
         default:
             Log.d( TAG, "unhandled action %s", action.toString() );
@@ -670,7 +670,7 @@ public class DelegateBase implements DlgClickNotify,
         //                action.toString() );
         switch ( action ) {
         case PERMS_QUERY:
-            Perms23.onGotPermsAction( false, params );
+            Perms23.onGotPermsAction( this, false, params );
             break;
         default:
             Log.d( TAG, "onNegButton: unhandled action %s", action.toString() );

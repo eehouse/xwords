@@ -154,13 +154,24 @@ public class Perms23 {
         private String m_rationaleMsg;
         private Object[] m_params;
 
-        public QueryInfo( DelegateBase delegate, Action action,
-                          Perm perm, String msg, Object[] params ) {
+        private QueryInfo( DelegateBase delegate, Action action,
+                           Perm perm, String msg, Object[] params ) {
             m_delegate = delegate;
             m_action = action;
             m_perm = perm;
             m_rationaleMsg = msg;
             m_params = params;
+        }
+
+        private QueryInfo( DelegateBase delegate, Object[] params )
+        {
+            this( delegate, (Action)params[0], (Perm)params[1], (String)params[2],
+                  (Object[])params[3] );
+        }
+
+        private Object[] getParams()
+        {
+            return new Object[] { m_action, m_perm, m_rationaleMsg, m_params };
         }
 
         private void doIt( boolean showRationale )
@@ -174,7 +185,7 @@ public class Perms23 {
                                 .setTitle( R.string.perms_rationale_title )
                                 .setPosButton( R.string.button_ask_again )
                                 .setNegButton( R.string.button_skip )
-                                .setParams( QueryInfo.this )
+                                .setParams( QueryInfo.this.getParams() )
                                 .show();
                         }
                     } );
@@ -238,10 +249,10 @@ public class Perms23 {
             .doIt( true );
     }
 
-    public static void onGotPermsAction( boolean positive, Object[] params )
+    public static void onGotPermsAction( DelegateBase delegate, boolean positive,
+                                         Object[] params )
     {
-        // Log.d( TAG, "onGotPermsAction(button=%d)", button );
-        QueryInfo info = (QueryInfo)params[0];
+        QueryInfo info = new QueryInfo( delegate, params );
         info.handleButton( positive );
     }
 
