@@ -1164,7 +1164,8 @@ public class BoardDelegate extends DelegateBase
                                   Object... params )
     {
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
-            SentInvitesInfo info = params[0] instanceof SentInvitesInfo
+            SentInvitesInfo info = 0 < params.length
+                && params[0] instanceof SentInvitesInfo
                 ? (SentInvitesInfo)params[0] : null;
             switch( means ) {
             case NFC:
