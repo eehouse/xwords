@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -294,14 +295,12 @@ public class CurGameInfo implements Serializable {
                     && allowHintRect == other.allowHintRect
                     && m_smartness == other.m_smartness
                     && Arrays.deepEquals( players, other.players )
-                    && ((null == dictName) ? (null == other.dictName)
-                        : dictName.equals(other.dictName))
+                    && TextUtils.equals( dictName, other.dictName )
                     && ((null == serverRole) ? (null == other.serverRole)
                         : serverRole.equals(other.serverRole))
                     && ((null == phoniesAction) ? (null == other.phoniesAction)
                         : phoniesAction.equals(other.phoniesAction))
-                    && ((null == m_name) ? (null == other.m_name)
-                        : m_name.equals(other.m_name))
+                    && TextUtils.equals( m_name, other.m_name )
                     ;
             }
         } else {

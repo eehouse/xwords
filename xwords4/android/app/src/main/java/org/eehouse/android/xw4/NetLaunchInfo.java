@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -328,24 +329,17 @@ public class NetLaunchInfo implements Serializable {
         boolean result = null != obj && obj instanceof NetLaunchInfo;
         if ( result ) {
             other = (NetLaunchInfo)obj;
-            result = ((null == gameName) ? (null == other.gameName)
-                      : gameName.equals(other.gameName))
-                && ((null == dict) ? (null == other.dict)
-                    : dict.equals(other.dict))
+            result = TextUtils.equals( gameName, other.gameName )
+                && TextUtils.equals( dict, other.dict )
                 && lang == other.lang
                 && forceChannel == other.forceChannel
                 && nPlayersT == other.nPlayersT
                 && nPlayersH == other.nPlayersH
-                && ((null == room) ? (null == other.room)
-                    : room.equals(other.room))
-                && ((null == btName) ? (null == other.btName)
-                    : btName.equals(other.btName))
-                && ((null == btAddress) ? (null == other.btAddress)
-                    : btAddress.equals(other.btAddress))
-                && ((null == p2pMacAddress) ? (null == other.p2pMacAddress)
-                    : p2pMacAddress.equals(other.p2pMacAddress))
-                && ((null == phone) ? (null == other.phone)
-                    : phone.equals(other.phone))
+                && TextUtils.equals( room, other.room )
+                && TextUtils.equals( btName, other.btName )
+                && TextUtils.equals( btAddress, other.btAddress )
+                && TextUtils.equals( p2pMacAddress, other.p2pMacAddress )
+                && TextUtils.equals( phone, other.phone )
                 && isGSM == other. isGSM
                 && osVers == other.osVers
                 && _conTypes == other._conTypes
@@ -353,8 +347,7 @@ public class NetLaunchInfo implements Serializable {
                 && ((null == m_addrs ? (null == other.m_addrs)
                      : m_addrs.equals(other.m_addrs)))
                 && m_valid == other.m_valid
-                && ((null == inviteID ? (null == other.inviteID)
-                     : inviteID.equals(other.inviteID)))
+                && TextUtils.equals( inviteID, other.inviteID )
                 ;
         }
         return result;

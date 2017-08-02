@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.io.Serializable;
 
@@ -73,12 +74,9 @@ public class LocalPlayer implements Serializable {
                 result = secondsUsed == other.secondsUsed
                     && robotIQ == other.robotIQ
                     && isLocal == other.isLocal
-                    && ((null == name) ? (null == other.name)
-                        : name.equals(other.name))
-                    && ((null == password) ? (null == other.password)
-                        : password.equals(other.password))
-                    && ((null == dictName) ? (null == other.dictName)
-                        : dictName.equals(other.dictName))
+                    && TextUtils.equals( name, other.name )
+                    && TextUtils.equals( password, other.password )
+                    && TextUtils.equals( dictName, other.dictName )
                     ;
             }
         } else {
