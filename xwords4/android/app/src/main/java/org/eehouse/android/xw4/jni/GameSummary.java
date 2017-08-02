@@ -121,16 +121,15 @@ public class GameSummary implements Serializable {
                     && gameID == other.gameID
                     && dictLang == other.dictLang
                     && nPacketsPending == other.nPacketsPending
-                    && ((null == scores) ? (null == other.scores)
-                        : scores.equals(other.scores))
-                    && Arrays.deepEquals( m_players, other.m_players )
+                    && Arrays.equals( scores, other.scores )
+                    && Arrays.equals( m_players, other.m_players )
                     && ((null == conTypes) ? (null == other.conTypes)
                         : conTypes.equals(other.conTypes))
                     && ((null == roomName) ? (null == other.roomName)
                         : roomName.equals(other.roomName))
                     && ((null == relayID) ? (null == other.relayID)
                         : relayID.equals(other.relayID))
-                    && Arrays.deepEquals( remoteDevs, other.remoteDevs )
+                    && Arrays.equals( remoteDevs, other.remoteDevs )
                     && ((null == serverRole) ? (null == other.serverRole)
                         : serverRole.equals(other.serverRole))
                     && ((null == m_giFlags) ? (null == other.m_giFlags)
@@ -139,7 +138,7 @@ public class GameSummary implements Serializable {
                         : m_playersSummary.equals(other.m_playersSummary))
                     && ((null == m_gi) ? (null == other.m_gi)
                         : m_gi.equals(other.m_gi))
-                    && Arrays.deepEquals( m_remotePhones, other.m_remotePhones )
+                    && Arrays.equals( m_remotePhones, other.m_remotePhones )
                     && ((null == m_extras) ? (null == other.m_extras)
                         : m_extras.equals(other.m_extras))
                     ;
