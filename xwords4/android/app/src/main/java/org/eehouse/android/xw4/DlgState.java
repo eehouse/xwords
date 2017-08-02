@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +62,19 @@ public class DlgState implements Parcelable {
     public DlgState setAction( Action action )
     { m_action = action; return this; }
     public DlgState setParams( Object... params )
-    { m_params = params; return this; }
+    {
+        if ( BuildConfig.DEBUG ) {
+            for ( Object obj : params ) {
+                if ( null != obj && !(obj instanceof Serializable) ) {
+                    Log.d( TAG, "OOPS: %s not Serializable",
+                           obj.getClass().getName() );
+                    Assert.assertFalse( BuildConfig.DEBUG );
+                }
+            }
+        }
+        m_params = params;
+        return this;
+    }
     public DlgState setActionPair( ActionPair pair )
     { m_pair = pair; return this; }
     public DlgState setOnNA( Action na )
