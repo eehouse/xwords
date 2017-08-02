@@ -1592,9 +1592,8 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_loaddb:
         case R.id.games_menu_storedb:
-            Perms23.tryGetPerms( this, Perm.STORAGE,
-                                 null, Action.STORAGE_CONFIRMED,
-                                 this, itemID );
+            Perms23.tryGetPerms( this, Perm.STORAGE, null,
+                                 Action.STORAGE_CONFIRMED, itemID );
             break;
 
         default:
@@ -2170,8 +2169,7 @@ public class GamesListDelegate extends ListDelegateBase
                 String msg = getString( R.string.phone_lookup_rationale )
                     + "\n\n" + getString( id );
                 Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE, msg,
-                                     Action.ASKED_PHONE_STATE, this,
-                                     gameName, addrs );
+                                     Action.ASKED_PHONE_STATE, gameName, addrs );
             }
         }
     }

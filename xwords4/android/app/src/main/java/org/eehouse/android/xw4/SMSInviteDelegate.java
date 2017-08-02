@@ -352,7 +352,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         // regardless of the answers given. So SKIP_CALLBACK.
         Perms23.tryGetPerms( this, Perm.READ_CONTACTS,
                              R.string.contacts_rationale,
-                             Action.SKIP_CALLBACK, this );
+                             Action.SKIP_CALLBACK );
     }
 
     private class PhoneRec implements InviterItem {

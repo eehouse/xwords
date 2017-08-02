@@ -110,7 +110,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void tryGetPerms( Perms23.Perm perm, int rationale,
                                 Action action, Object... params )
     {
-        Perms23.tryGetPerms( this, perm, rationale, action, this, params );
+        Perms23.tryGetPerms( this, perm, rationale, action, params );
     }
 
     // Fragments only

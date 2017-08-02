@@ -711,7 +711,7 @@ public class BoardDelegate extends DelegateBase
     {
         Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE,
                              R.string.phone_state_rationale,
-                             Action.ASKED_PHONE_STATE, this, info );
+                             Action.ASKED_PHONE_STATE, info );
     }
 
     private void showInviteChoicesThen( Object[] params )
@@ -1183,7 +1183,7 @@ public class BoardDelegate extends DelegateBase
                 break;
             case SMS:
                 Perms23.tryGetPerms( this, Perm.SEND_SMS, R.string.sms_invite_rationale,
-                                     Action.INVITE_SMS, this, m_mySIS.nMissing, info );
+                                     Action.INVITE_SMS, m_mySIS.nMissing, info );
                 break;
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing,

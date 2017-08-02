@@ -151,18 +151,15 @@ public class Perms23 {
         private Action m_action;
         private Perm m_perm;
         private DelegateBase m_delegate;
-        private DlgClickNotify m_cbck;
         private String m_rationaleMsg;
         private Object[] m_params;
 
         public QueryInfo( DelegateBase delegate, Action action,
-                          Perm perm, String msg,
-                          DlgClickNotify cbck, Object[] params ) {
+                          Perm perm, String msg, Object[] params ) {
             m_delegate = delegate;
             m_action = action;
             m_perm = perm;
             m_rationaleMsg = msg;
-            m_cbck = cbck;
             m_params = params;
         }
 
@@ -186,9 +183,9 @@ public class Perms23 {
                     public void onPermissionResult( Map<Perm, Boolean> perms ) {
                         if ( Action.SKIP_CALLBACK != m_action ) {
                             if ( perms.get( m_perm ) ) {
-                                m_cbck.onPosButton( m_action, m_params );
+                                m_delegate.onPosButton( m_action, m_params );
                             } else {
-                                m_cbck.onNegButton( m_action, m_params );
+                                m_delegate.onNegButton( m_action, m_params );
                             }
                         }
                     }
@@ -204,7 +201,7 @@ public class Perms23 {
                         if ( positive ) {
                             doIt( false );
                         } else {
-                            m_cbck.onNegButton( m_action, m_params );
+                            m_delegate.onNegButton( m_action, m_params );
                         }
                     }
                 } );
@@ -224,21 +221,20 @@ public class Perms23 {
      * either positive or negative, the former if permission granted.
      */
     public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
-                                    final Action action, final DlgClickNotify cbck,
-                                    Object... params )
+                                    final Action action, Object... params )
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
         Context context = XWApp.getContext();
         String msg = LocUtils.getString( context, rationaleId );
-        tryGetPerms( delegate, perm, msg, action, cbck, params );
+        tryGetPerms( delegate, perm, msg, action, params );
     }
 
     public static void tryGetPerms( DelegateBase delegate, Perm perm,
                                     String rationaleMsg, final Action action,
-                                    final DlgClickNotify cbck, Object... params )
+                                    Object... params )
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
-        new QueryInfo( delegate, action, perm, rationaleMsg, cbck, params )
+        new QueryInfo( delegate, action, perm, rationaleMsg, params )
             .doIt( true );
     }
 

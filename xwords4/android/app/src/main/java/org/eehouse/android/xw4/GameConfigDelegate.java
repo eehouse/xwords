@@ -780,7 +780,7 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == SMSService.getPhoneInfo( m_activity ) ) {
             Perms23.tryGetPerms( this, Perms23.Perm.READ_PHONE_STATE,
                                  R.string.phone_state_rationale,
-                                 Action.ASKED_PHONE_STATE, this );
+                                 Action.ASKED_PHONE_STATE );
         } else {
             showDialogFragment( DlgID.CHANGE_CONN, m_conTypes );
         }
