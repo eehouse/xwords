@@ -63,7 +63,7 @@ public class DlgState implements Parcelable {
     { m_action = action; return this; }
     public DlgState setParams( Object... params )
     {
-        if ( BuildConfig.DEBUG ) {
+        if ( BuildConfig.DEBUG && null != params ) {
             for ( Object obj : params ) {
                 if ( null != obj && !(obj instanceof Serializable) ) {
                     Log.d( TAG, "OOPS: %s not Serializable",
