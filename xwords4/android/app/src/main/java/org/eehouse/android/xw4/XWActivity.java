@@ -266,23 +266,23 @@ public class XWActivity extends FragmentActivity
         FragmentManager fm = getSupportFragmentManager();
         String tag = df.getFragTag();
         // Log.d( TAG, "show(%s); tag: %s", df.getClass().getSimpleName(), tag );
-        if ( df.belongsOnBackStack() ) {
-            FragmentTransaction trans = fm.beginTransaction();
+        try {
+            if ( df.belongsOnBackStack() ) {
+                FragmentTransaction trans = fm.beginTransaction();
 
-            Fragment prev = fm.findFragmentByTag( tag );
-            if ( null != prev && prev instanceof DialogFragment ) {
-                ((DialogFragment)prev).dismiss();
-            }
-            trans.addToBackStack( tag );
-            df.show( trans, tag );
-        } else {
-            try {
+                Fragment prev = fm.findFragmentByTag( tag );
+                if ( null != prev && prev instanceof DialogFragment ) {
+                    ((DialogFragment)prev).dismiss();
+                }
+                trans.addToBackStack( tag );
+                df.show( trans, tag );
+            } else {
                 df.show( fm, tag );
-            } catch (IllegalStateException ise ) {
-                Log.d( TAG, "error showing tag %s (df: %s)", tag, df );
-                // DLG_SCORES is causing this
-                // Assert.assertFalse( BuildConfig.DEBUG );
             }
+        } catch (IllegalStateException ise ) {
+            Log.d( TAG, "error showing tag %s (df: %s)", tag, df );
+            // DLG_SCORES is causing this for non-belongsOnBackStack() case
+            Assert.assertFalse( BuildConfig.DEBUG );
         }
     }
 
