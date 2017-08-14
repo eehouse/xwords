@@ -1976,6 +1976,7 @@ public class GamesListDelegate extends ListDelegateBase
                 DictLangCache.haveDict( m_activity, nli.lang, nli.dict );
         }
         if ( !haveDict ) {
+            m_netLaunchInfo = nli;
             showDialogFragment( DlgID.WARN_NODICT_NEW, 0L, nli.dict, nli.lang );
         }
         return haveDict;
