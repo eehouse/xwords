@@ -453,7 +453,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         getBundledData( savedInstanceState );
 
-        m_browseText = getString( R.string.download_dicts );
+        m_browseText = getString( R.string.download_more );
         DictLangCache.setLast( m_browseText );
 
         m_cp = CommonPrefs.get( m_activity );
