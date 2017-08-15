@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random, string, psycopg2
+import logging, shelve, hashlib, sys, re, json, subprocess, glob, os
+import struct, random, string, psycopg2, zipfile
 import mk_for_download, mygit
 import xwconfig
 
@@ -53,6 +54,10 @@ k_LANGSVERS = 'lvers'
 
 # Version for those sticking with RELEASES
 k_REL_REV = 'android_beta_98'
+
+# newer build-info.txt file contain lines like this:
+# git: android_beta_123
+pat_git_tag = re.compile( 'git: (\S*)', re.DOTALL | re.MULTILINE )
 
 # Version for those getting intermediate builds
 
@@ -164,18 +169,57 @@ def getDictSums():
     openShelf()
     return s_shelf[k_SUMS]
 
+def getGitRevFor(file, repo):
+    result = None
+    zip = zipfile.ZipFile(file);
+
+    try:
+        result = zip.read('assets/gitvers.txt').split("\n")[0]
+    except KeyError, err:
+        result = None
+
+    if not result:
+        try:
+            data = zip.read('assets/build-info.txt')
+            match = pat_git_tag.match(data)
+            if match:
+                tag = match.group(1)
+                if not 'dirty' in tag:
+                    result = repo.tagToRev(tag)
+        except KeyError, err:
+            None
+
+    # print "getGitRevFor(", file, "->", result
+    return result
+
 def getOrderedApks( path, debug ):
     # logging.debug( "getOrderedApks(" + path + ")" )
     apks = []
+    fileToRev = {}
 
     pattern = path
-    if debug: pattern += "/XWords4-debug-android_*.apk"
-    else: pattern += "/XWords4-release_*android_beta_*.apk"
+    if debug: pattern += "/*debug*.apk"
+    else: pattern += "/*release*.apk"
+
+    repo = mygit.GitRepo(xwconfig.k_REPOPATH)
+    refs = repo.getAllRevs()
+    revToOrder = {}
+    index = 0
+    for ref in refs:
+        revToOrder[ref] = index
+        index = index + 1
 
     files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
     for mtime, file in sorted(files, reverse=True):
         # logging.debug( file + ": " + str(mtime) )
-        apks.append( file )
+        gitRev = getGitRevFor(file, repo)
+        if gitRev:
+            if gitRev in revToOrder:
+                fileToRev[file] = gitRev
+                apks.append( file )
+
+    # now we can sort based on the ordering of git revisions
+    apks = sorted(apks, key=lambda apk: revToOrder[fileToRev[apk]])
 
     return apks
 
@@ -525,7 +569,7 @@ def usage():
     print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
     print '                    | --test-get-app app <org.eehouse.app.name> avers gvers'
     print '                    | --test-get-dicts name lang curSum'
-    print '                    | --list-apks [path/to/apks]'
+    print '                    | --list-apks [path/to/apks] [debug|release]'
     print '                    | --list-dicts'
     print '                    | --opponent-ids-for'
     print '                    | --clear-shelf'
@@ -564,10 +608,12 @@ def main():
         print getDicts( [params] )
     elif arg == '--list-apks':
         argc = len(sys.argv)
-        if argc >= 4: usage()
+        if argc >= 5: usage()
         path = ""
         if argc >= 3: path = sys.argv[2]
-        apks = getOrderedApks( path, False )
+        debug = False
+        if argc >= 4: debug = sys.argv[3] == 'debug'
+        apks = getOrderedApks( path, debug )
         if 0 == len(apks): print "No apks in", path
         for apk in apks:
             print apk

@@ -80,6 +80,24 @@ class GitRepo:
                     break
         return result;
 
+    def getAllRevs( self ):
+        result = []
+        params = ['git',  'rev-list',  '--reverse', 'HEAD']
+        out, err = self.__doProcess( params )
+        if err: self.__error('error from getRevsBetween')
+        result = None
+        if out:
+            result = out.splitlines()
+        return result
+
+    def tagToRev(self, tag):
+        result = None
+        params = ['git', 'rev-list', '-n',  '1', tag]
+        out, err = self.__doProcess( params )
+        if err: self.__error('error from getRevsBetween')
+        if out: result = out.strip()
+        return result
+
     def getHeadRev( self ):
         return self.getRevsBetween( 'HEAD', 'HEAD' )[0]
 
