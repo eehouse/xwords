@@ -192,36 +192,36 @@ def getGitRevFor(file, repo):
     # print "getGitRevFor(", file, "->", result
     return result
 
-def getOrderedApks( path, debug ):
-    # logging.debug( "getOrderedApks(" + path + ")" )
-    apks = []
-    fileToRev = {}
 
-    pattern = path
-    if debug: pattern += "/*debug*.apk"
-    else: pattern += "/*release*.apk"
+pat_badge_info = re.compile("package: name='([^']*)' versionCode='([^']*)' versionName='([^']*)'", re.DOTALL )
 
-    repo = mygit.GitRepo(xwconfig.k_REPOPATH)
-    refs = repo.getAllRevs()
-    revToOrder = {}
-    index = 0
-    for ref in refs:
-        revToOrder[ref] = index
-        index = index + 1
+def getAAPTInfo(file):
+    result = None
+    test = subprocess.Popen(["aapt", "dump", "badging", file], shell = False, stdout = subprocess.PIPE)
+    for line in test.communicate():
+        if line:
+            match = pat_badge_info.match(line)
+            if match:
+                result = { 'appID' : match.group(1),
+                           'versionCode' : int(match.group(2)),
+                           'versionName' : match.group(3),
+                           }
+                break
+    return result
 
+def getOrderedApks( path, appID, debug ):
+    apkToCode = {}
+    apkToMtime = {}
+    if debug: pattern = path + "/*debug*.apk"
+    else: pattern = path + "/*release*.apk"
     files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
     for mtime, file in sorted(files, reverse=True):
-        # logging.debug( file + ": " + str(mtime) )
-        gitRev = getGitRevFor(file, repo)
-        if gitRev:
-            if gitRev in revToOrder:
-                fileToRev[file] = gitRev
-                apks.append( file )
-
-    # now we can sort based on the ordering of git revisions
-    apks = sorted(apks, key=lambda apk: revToOrder[fileToRev[apk]])
-
-    return apks
+        info = getAAPTInfo(file)
+        if info['appID'] == appID:
+            apkToCode[file] = info['versionCode']
+            apkToMtime[file] = mtime
+    result = sorted(apkToCode.keys(), reverse=True, key=lambda file: (apkToCode[file], apkToMtime[file]))
+    return result
 
 def getVariantDir( name ):
     result = ''
@@ -280,7 +280,7 @@ def getApp( params, name ):
         # If we're a dev device, always push the latest
         if k_DEBUG in params and params[k_DEBUG]:
             dir = k_filebase + k_apkDir + variantDir
-            apks = getOrderedApks( dir, True )
+            apks = getOrderedApks( dir, name, True )
             if 0 < len(apks):
                 apk = apks[0]
                 curApk = params[k_GVERS] + '.apk'
@@ -291,7 +291,7 @@ def getApp( params, name ):
                     logging.debug("url: " + url)
                     result = {k_URL: url}
         elif k_DEVOK in params and params[k_DEVOK]:
-            apks = getOrderedApks( k_filebase + k_apkDir, False )
+            apks = getOrderedApks( k_filebase + k_apkDir, name, False )
             if 0 < len(apks):
                 apk = apks[0]
                 # Does path NOT contain name of installed file
@@ -303,19 +303,15 @@ def getApp( params, name ):
                     result = {k_URL: url}
                     logging.debug( result )
                     
-        elif k_AVERS in params and k_GVERS in params:
-            avers = params[k_AVERS]
+        elif k_GVERS in params:
             gvers = params[k_GVERS]
             if k_INSTALLER in params: installer = params[k_INSTALLER]
             else: installer = ''
 
-            logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
-                           % (name, avers, installer, gvers) )
+            logging.debug( "name: %s; installer: %s; gvers: %s"
+                           % (name, installer, gvers) )
             if name in k_versions:
-                versForName = k_versions[name]
-                if versForName[k_AVERS] > int(avers):
-                    result = {k_URL: k_urlbase + '/' + versForName[k_URL]}
-                elif k_GVERS in versForName and not gvers == versForName[k_GVERS]:
+                if k_GVERS in versForName and not gvers == versForName[k_GVERS]:
                     result = {k_URL: k_urlbase + '/' + versForName[k_URL]}
                 else:
                     logging.debug(name + " is up-to-date")
@@ -565,23 +561,25 @@ def clearShelf():
     for key in shelf: del shelf[key]
     shelf.close()
 
-def usage():
+def usage(msg=None):
+    if msg: print "ERROR:", msg
     print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
     print '                    | --test-get-app app <org.eehouse.app.name> avers gvers'
     print '                    | --test-get-dicts name lang curSum'
-    print '                    | --list-apks [path/to/apks] [debug|release]'
+    print '                    | --list-apks [--path <path/to/apks>] [--debug] --appID org.something'
     print '                    | --list-dicts'
     print '                    | --opponent-ids-for'
     print '                    | --clear-shelf'
     sys.exit(-1)
 
 def main():
-    if 1 >= len(sys.argv): usage();
+    argc = len(sys.argv)
+    if 1 >= argc: usage();
     arg = sys.argv[1]
     if arg == '--clear-shelf':
         clearShelf()
     elif arg == '--list-dicts':
-        if 2 < len(sys.argv): lc = sys.argv[2]
+        if 2 < argc: lc = sys.argv[2]
         else: lc = None
         dictsJson = listDicts( lc )
         print json.dumps( dictsJson )
@@ -592,14 +590,13 @@ def main():
         s_shelf[k_SUMS] = dictSums
         closeShelf()
     elif arg == '--test-get-app':
-        if not 5 == len(sys.argv): usage()
+        if not 4 == argc: usage()
         params = { k_NAME: sys.argv[2], 
-                   k_AVERS: int(sys.argv[3]),
-                   k_GVERS: sys.argv[4],
+                   k_GVERS: sys.argv[3],
                    }
-        print getApp( params )
+        print getApp( params, sys.argv[2] )
     elif arg == '--test-get-dicts':
-        if not 5 == len(sys.argv): usage()
+        if not 5 == argc: usage()
         params = { k_NAME: sys.argv[2], 
                    k_LANG : sys.argv[3], 
                    k_MD5SUM : sys.argv[4], 
@@ -607,14 +604,19 @@ def main():
                    }
         print getDicts( [params] )
     elif arg == '--list-apks':
-        argc = len(sys.argv)
-        if argc >= 5: usage()
         path = ""
-        if argc >= 3: path = sys.argv[2]
         debug = False
-        if argc >= 4: debug = sys.argv[3] == 'debug'
-        apks = getOrderedApks( path, debug )
-        if 0 == len(apks): print "No apks in", path
+        appID = ''
+        args = sys.argv[2:]
+        while len(args):
+            arg = args.pop(0)
+            if arg == '--appID': appID = args.pop(0)
+            elif arg == '--debug': debug = True
+            elif arg == '--path': path = args.pop(0)
+        if not appID: usage('--appID not optional')
+        apks = getOrderedApks( path, appID, debug )
+        if not len(apks): print "No apks in", path
+        else: print
         for apk in apks:
             print apk
     elif arg == '--opponent-ids-for':
