@@ -511,8 +511,7 @@ public class Utils {
                 new ObjectInputStream( new ByteArrayInputStream(bytes) );
             result = ois.readObject();
         } catch ( Exception ex ) {
-            Log.ex( TAG, ex );
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Log.d( TAG, ex.getMessage() );
         }
         return result;
     }

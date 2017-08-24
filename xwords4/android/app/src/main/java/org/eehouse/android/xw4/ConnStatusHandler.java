@@ -84,14 +84,24 @@ public class ConnStatusHandler {
 
         public String newerStr( Context context )
         {
-            s_time.set( successNewer? lastSuccess : lastFailure );
-            return format( context, s_time );
+            String result = null;
+            long time = successNewer? lastSuccess : lastFailure;
+            if ( time > 0 ) {
+                s_time.set( time );
+                result = format( context, s_time );
+            }
+            return result;
         }
 
         public String olderStr( Context context )
         {
-            s_time.set( successNewer? lastFailure : lastSuccess );
-            return format( context, s_time );
+            String result = null;
+            long time = successNewer? lastFailure : lastSuccess;
+            if ( time > 0 ) {
+                s_time.set( time );
+                result = format( context, s_time );
+            }
+            return result;
         }
 
         public void update( boolean success )
@@ -175,13 +185,20 @@ public class ConnStatusHandler {
                     String did = addDebugInfo( context, typ );
                     sb.append( String.format( "\n\n*** %s %s***\n",
                                               typ.longName( context ), did ) );
+
+                    // For sends we list failures too.
                     SuccessRecord record = recordFor( typ, false );
                     tmp = LocUtils.getString( context, record.successNewer?
                                               R.string.connstat_succ :
                                               R.string.connstat_unsucc );
-                    sb.append( LocUtils
-                               .getString( context, R.string.connstat_lastsend_fmt,
-                                           tmp, record.newerStr( context ) ) );
+
+                    String timeStr = record.newerStr( context );
+                    if ( null != timeStr ) {
+                        sb.append( LocUtils
+                                   .getString( context, R.string.connstat_lastsend_fmt,
+                                               tmp, timeStr ) )
+                            .append( "\n" );
+                    }
 
                     int fmtId = 0;
                     if ( record.successNewer ) {
@@ -193,11 +210,12 @@ public class ConnStatusHandler {
                             fmtId = R.string.connstat_lastother_unsucc_fmt;
                         }
                     }
-                    if ( 0 != fmtId ) {
-                        sb.append( LocUtils.getString( context, fmtId,
-                                                       record.olderStr( context )));
+                    timeStr = record.olderStr( context );
+                    if ( 0 != fmtId && null != timeStr ) {
+                        sb.append( LocUtils.getString( context, fmtId, timeStr ))
+                            .append( "\n" );
                     }
-                    sb.append( "\n\n" );
+                    sb.append( "\n" );
 
                     record = recordFor( typ, true );
                     if ( record.haveSuccess() ) {
