@@ -164,6 +164,7 @@ public class DlgState implements Parcelable {
         out.writeInt( m_titleId );
         out.writeString( m_msg );
         out.writeSerializable( m_params );
+        out.writeSerializable( m_pair );
     }
 
     private void testCanParcelize()
@@ -197,6 +198,7 @@ public class DlgState implements Parcelable {
                     int titleId = in.readInt();
                     String msg = in.readString();
                     Object[] params = (Object[])in.readSerializable();
+                    ActionPair pair = (ActionPair)in.readSerializable();
                     DlgState state = new DlgState(id)
                     .setMsg( msg )
                     .setPosButton( posButton )
@@ -206,6 +208,7 @@ public class DlgState implements Parcelable {
                     .setOnNA( onNA )
                     .setTitle(titleId)
                     .setParams(params)
+                    .setActionPair(pair)
                     ;
                     return state;
                 }
