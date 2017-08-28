@@ -24,19 +24,20 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -1926,8 +1927,19 @@ public class GamesListDelegate extends ListDelegateBase
     {
         m_mySIS.nextIsSolo = solo;
 
-        int count = m_adapter.getCount();
-        boolean skipOffer = 6 > count || XWPrefs.getHideNewgameButtons( m_activity );
+        boolean skipOffer = XWPrefs.getHideNewgameButtons( m_activity );
+        if ( ! skipOffer ) {
+            // If the API's availble, offer to hide buttons as soon as there
+            // are enough games that the list is scrollable. Otherwise fall
+            // back to there being at least four games.
+            if ( Build.VERSION.SDK_INT >= 19 ) {
+                ListView list = getListView();
+                skipOffer = !list.canScrollList( 1 ) && !list.canScrollList( -1 );
+            } else {
+                skipOffer = 4 > m_adapter.getCount();
+            }
+        }
+
         if ( skipOffer ) {
             handleNewGame( solo );
         } else {
