@@ -290,8 +290,7 @@ public class DelegateBase implements DlgClickNotify,
             if ( main.inDPMode() ) {
                 if ( !m_finishCalled ) {
                     m_finishCalled = true;
-                    XWFragment fragment = (XWFragment)m_delegator;
-                    main.finishFragment( fragment.getCommitID() );
+                    main.finishFragment( (XWFragment)m_delegator );
                 }
                 handled = true;
             }

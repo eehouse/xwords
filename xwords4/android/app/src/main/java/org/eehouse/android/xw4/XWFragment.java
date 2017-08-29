@@ -41,6 +41,7 @@ import junit.framework.Assert;
 abstract class XWFragment extends Fragment implements Delegator {
     private static final String TAG = XWFragment.class.getSimpleName();
     private static final String PARENT_NAME = "PARENT_NAME";
+    private static final String COMMIT_ID = "COMMIT_ID";
 
     private DelegateBase m_dlgt;
     private String m_parentName;
@@ -91,6 +92,7 @@ abstract class XWFragment extends Fragment implements Delegator {
         Log.d( TAG, "%s.onSaveInstanceState() called", getClass().getSimpleName() );
         Assert.assertNotNull( m_parentName );
         outState.putString( PARENT_NAME, m_parentName );
+        outState.putInt( COMMIT_ID, m_commitID );
         m_dlgt.onSaveInstanceState( outState );
         super.onSaveInstanceState( outState );
     }
@@ -102,6 +104,7 @@ abstract class XWFragment extends Fragment implements Delegator {
         if ( null != sis ) {
             m_parentName = sis.getString( PARENT_NAME );
             Assert.assertNotNull( m_parentName );
+            m_commitID = sis.getInt( COMMIT_ID );
         }
         Assert.assertNull( m_dlgt );
         m_dlgt = dlgt;
