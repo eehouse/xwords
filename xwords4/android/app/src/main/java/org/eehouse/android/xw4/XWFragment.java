@@ -45,6 +45,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     private DelegateBase m_dlgt;
     private String m_parentName;
     private boolean m_hasOptionsMenu = false;
+    private int m_commitID;
 
     private static Set<XWFragment> sActiveFrags = new HashSet<XWFragment>();
     public static XWFragment findOwnsView( View view )
@@ -74,6 +75,9 @@ abstract class XWFragment extends Fragment implements Delegator {
         Assert.assertNotNull( m_parentName );
         return m_parentName;
     }
+
+    public void setCommitID( int id ) { m_commitID = id; }
+    public int getCommitID() { return m_commitID; }
 
     protected void onCreate( DelegateBase dlgt, Bundle sis, boolean hasOptionsMenu )
     {
