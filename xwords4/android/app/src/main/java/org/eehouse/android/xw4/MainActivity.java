@@ -298,11 +298,12 @@ public class MainActivity extends XWActivity
                                                   resultCode, data );
     }
 
-    protected void finishFragment()
+    protected void finishFragment( int commitID )
     {
         // Assert.assertTrue( fragment instanceof XWFragment );
         // Log.d( TAG, "finishFragment()" );
-        getSupportFragmentManager().popBackStack/*Immediate*/();
+        getSupportFragmentManager()
+            .popBackStack( commitID, FragmentManager.POP_BACK_STACK_INCLUSIVE );
     }
 
     //////////////////////////////////////////////////////////////////////
