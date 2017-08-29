@@ -1297,4 +1297,15 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="force_tablet_tablet">タブレットレイアウトを強制する</string>
     <string name="force_tablet_phone">携帯電話のレイアウトを強制する</string>
 
+    <string name="download_more">さらにダウンロード…</string>
+
+    <string name="disableds_title">無効なアドレスの種類</string>
+
+      <string name="get_sms_title">手動入力</string>
+    <string name="get_sms_name">連絡先の名前 (オプション):</string>
+    <string name="get_relay_name">デバイス名 (オプション):</string>
+    <plurals name="confirm_clear_relay_fmt">
+	<item quantity="other">%1$d のチェックした RelayID レコードを削除してもよろしいですか?</item>
+</plurals>
+
     </resources>
