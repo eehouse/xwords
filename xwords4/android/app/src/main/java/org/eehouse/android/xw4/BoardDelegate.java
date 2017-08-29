@@ -126,6 +126,7 @@ public class BoardDelegate extends DelegateBase
     private boolean m_overNotShown;
     private boolean m_dropOnDismiss;
     private DBAlert m_inviteAlert;
+    private boolean m_haveStartedShowing;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -2225,6 +2226,7 @@ public class BoardDelegate extends DelegateBase
                 // Assert.assertFalse( BuildConfig.DEBUG );
             }
             m_inviteAlert = null;
+            m_haveStartedShowing = false;
         }
     }
 
@@ -2304,9 +2306,14 @@ public class BoardDelegate extends DelegateBase
         showDialogFragment( dlgID, dlgTitle, txt );
     }
 
+    // This is failing sometimes, and so the null == m_inviteAlert test means
+    // we never post it. BUT on a lot of devices without the test we wind up
+    // trying over and over to put the thing up.
     private void showInviteAlertIf()
     {
-        if ( /* null == m_inviteAlert && */m_mySIS.nMissing > 0 && !isFinishing() ) {
+        DbgUtils.assertOnUIThread();
+        if ( ! m_haveStartedShowing && null == m_inviteAlert
+             && m_mySIS.nMissing > 0 && !isFinishing() ) {
             InviteAlertState ias = new InviteAlertState();
             ias.summary = m_summary;
             ias.gi = m_gi;
@@ -2315,6 +2322,7 @@ public class BoardDelegate extends DelegateBase
             ias.rowid = m_rowid;
             ias.nMissing = m_mySIS.nMissing;
             showDialogFragment( DlgID.DLG_INVITE, ias );
+            m_haveStartedShowing = true;
         }
     }
 
