@@ -3574,4 +3574,15 @@ Si votre appareil ne peut pas envoyer de SMS de données (par ex. parce que ce n
     <string name="force_tablet_tablet">Forcer la mise en page pour tablette</string>
     <string name="force_tablet_phone">Forcer la mise en page pour téléphone</string>
 
+    <string name="download_more">Autres téléchargements…</string>
+
+    <string name="disableds_title">Types d\'adresses désactivées</string>
+
+      <string name="get_sms_name">Nom de contact (optionnel) :</string>
+    <string name="get_relay_name">Nom de l\'appareil (optionnel) :</string>
+    <plurals name="confirm_clear_relay_fmt">
+	<item quantity="one">Êtes-vous sûr de vouloir effacer l\'enregistrement RelayID sélectionné ?</item>
+	<item quantity="other">Êtes-vous sûr de vouloir effacer les %1$d enregistrements RelayID sélectionnés ?</item>
+</plurals>
+
     </resources>
