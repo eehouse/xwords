@@ -325,10 +325,9 @@ public class GameListItem extends LinearLayout
                 } );
 
             String roleSummary = summary.summarizeRole( m_context, m_rowid );
+            m_role.setVisibility( null == roleSummary ? View.GONE : View.VISIBLE );
             if ( null != roleSummary ) {
                 m_role.setText( roleSummary );
-            } else {
-                m_role.setVisibility( View.GONE );
             }
 
             update( expanded, summary.lastMoveTime, haveATurn,
