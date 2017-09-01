@@ -1622,8 +1622,12 @@ public class DBUtils {
         initDB( context );
         String[] columns = { ROW_ID };
         String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
-        String orderBy = String.format( "%s,%s DESC,%s", DBHelper.GAME_OVER,
-                                        DBHelper.TURN_LOCAL, DBHelper.LASTMOVE );
+        // Sort unconnected games at top (turn==-1), games that are finished
+        // at the bottom, then games at the top by how long it's been the
+        // device owner's turn.
+        String orderBy = String.format( "%s is -1 DESC,%s,%s DESC,%s", DBHelper.TURN,
+                                        DBHelper.GAME_OVER, DBHelper.TURN_LOCAL,
+                                        DBHelper.LASTMOVE );
         synchronized( s_dbHelper ) {
             Cursor cursor = s_db.query( DBHelper.TABLE_NAME_SUM, columns,
                                         selection, // selection
