@@ -53,6 +53,9 @@ public class XWApp extends Application {
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
     public static final int SEL_COLOR = Color.argb( 0xFF, 0x09, 0x70, 0x93 );
 
+    public static final int GREEN = 0xFF00AF00;
+    public static final int RED = 0xFFAF0000;
+
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;
     private static Context s_context = null;
