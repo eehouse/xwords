@@ -1616,25 +1616,34 @@ public class DBUtils {
         return result;
     }
 
+    // ORDER BY clause that governs display of games in main GamesList view
+    private static final String s_getGroupGamesOrderBy =
+        TextUtils.join(",", new String[] {
+                // Ended games at bottom
+                DBHelper.GAME_OVER,
+                // games with unread chat messages at top
+                "(" + DBHelper.HASMSGS + " & " + GameSummary.MSG_FLAGS_CHAT + ") IS NOT 0 DESC",
+                // Games not yet connected at top
+                DBHelper.TURN + " is -1 DESC",
+                // Games where it's a local player's turn at top
+                DBHelper.TURN_LOCAL + " DESC",
+                // finally, sort by timestamp of last-made move
+                DBHelper.LASTMOVE,
+            });
+
     public static long[] getGroupGames( Context context, long groupID )
     {
         long[] result = null;
         initDB( context );
-        String[] columns = { ROW_ID };
+        String[] columns = { ROW_ID, DBHelper.HASMSGS };
         String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
-        // Sort unconnected games at top (turn==-1), games that are finished
-        // at the bottom, then games at the top by how long it's been the
-        // device owner's turn.
-        String orderBy = String.format( "%s is -1 DESC,%s,%s DESC,%s", DBHelper.TURN,
-                                        DBHelper.GAME_OVER, DBHelper.TURN_LOCAL,
-                                        DBHelper.LASTMOVE );
         synchronized( s_dbHelper ) {
             Cursor cursor = s_db.query( DBHelper.TABLE_NAME_SUM, columns,
                                         selection, // selection
                                         null, // args
                                         null, // groupBy
                                         null, // having
-                                        orderBy
+                                        s_getGroupGamesOrderBy
                                         );
             int index = cursor.getColumnIndex( ROW_ID );
             result = new long[ cursor.getCount() ];
