@@ -104,7 +104,6 @@ public class BoardDelegate extends DelegateBase
     private Button m_exchCancelButton;
     private SentInvitesInfo m_sentInfo;
     private Perms23.PermCbck m_permCbck;
-    private ArrayList<String> m_pendingChats;
 
     private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
@@ -552,8 +551,6 @@ public class BoardDelegate extends DelegateBase
     {
         m_isFirstLaunch = null == savedInstanceState;
         getBundledData( savedInstanceState );
-
-        m_pendingChats = new ArrayList<String>();
 
         m_utils = new BoardUtilCtxt();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
@@ -2144,7 +2141,6 @@ public class BoardDelegate extends DelegateBase
 
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 warnIfNoTransport();
-                trySendChats();
                 tickle( isStart );
                 tryInvites();
             }
@@ -2405,15 +2401,6 @@ public class BoardDelegate extends DelegateBase
                     .show();
             }
         }
-    }
-
-    private void trySendChats()
-    {
-        Iterator<String> iter = m_pendingChats.iterator();
-        while ( iter.hasNext() ) {
-            handleViaThread( JNICmd.CMD_SENDCHAT, iter.next() );
-        }
-        m_pendingChats.clear();
     }
 
     private void tryInvites()
