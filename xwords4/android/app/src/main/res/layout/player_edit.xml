@@ -55,7 +55,7 @@
                 android:capitalize="words"
                 android:selectAllOnFocus="true"
                 android:gravity="fill_horizontal"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:textAppearance="?android:attr/textAppearanceMedium" 
                 />
 
@@ -105,7 +105,7 @@
                   android:capitalize="none"
                   android:gravity="fill_horizontal"
                   android:password="true"
-                  android:singleLine="true"
+                  android:maxLines="1"
                   android:textAppearance="?android:attr/textAppearanceMedium"
                   />
       </LinearLayout>

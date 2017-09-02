@@ -140,7 +140,7 @@
                       android:scrollHorizontally="false"
                       android:autoText="false"
                       android:capitalize="none"
-                      android:singleLine="true"
+                      android:maxLines="1"
                       android:selectAllOnFocus="true"
                       android:windowSoftInputMode="stateHidden"
                       android:maxLength="31"
