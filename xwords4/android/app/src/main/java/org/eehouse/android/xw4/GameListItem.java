@@ -64,7 +64,8 @@ public class GameListItem extends LinearLayout
     private LinearLayout m_list;
     private TextView m_state;
     private TextView m_modTime;
-    private ImageView m_marker;
+    private ImageView m_gameTypeImage;
+    private View m_hasChatMarker;
     private TextView m_role;
 
     private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
@@ -194,7 +195,8 @@ public class GameListItem extends LinearLayout
         m_list = (LinearLayout)findViewById( R.id.player_list );
         m_state = (TextView)findViewById( R.id.state );
         m_modTime = (TextView)findViewById( R.id.modtime );
-        m_marker = (ImageView)findViewById( R.id.msg_marker );
+        m_gameTypeImage = (ImageView)findViewById( R.id.game_type_marker );
+        m_hasChatMarker = (View)findViewById( R.id.has_chat_marker );
         m_thumb = (ImageView)findViewById( R.id.thumbnail );
         m_role = (TextView)findViewById( R.id.role );
     }
@@ -316,13 +318,17 @@ public class GameListItem extends LinearLayout
 
             int iconID = summary.isMultiGame() ?
                 R.drawable.multigame__gen : R.drawable.sologame__gen;
-            m_marker.setImageResource( iconID );
-            m_marker.setOnClickListener( new View.OnClickListener() {
+            m_gameTypeImage.setImageResource( iconID );
+            m_gameTypeImage.setOnClickListener( new View.OnClickListener() {
                     @Override
                     public void onClick( View view ) {
                         toggleSelected();
                     }
                 } );
+
+            int flags = DBUtils.getMsgFlags( m_context, m_rowid );
+            boolean hasChat = 0 != (flags & GameSummary.MSG_FLAGS_CHAT);
+            m_hasChatMarker.setVisibility( hasChat ? View.VISIBLE : View.GONE );
 
             String roleSummary = summary.summarizeRole( m_context, m_rowid );
             m_role.setVisibility( null == roleSummary ? View.GONE : View.VISIBLE );

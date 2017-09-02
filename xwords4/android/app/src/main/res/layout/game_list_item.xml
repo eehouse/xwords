@@ -31,13 +31,25 @@
                   android:visibility="gone"
                   >
 
-        <ImageView android:id="@+id/msg_marker"
-	               android:layout_width="42dp"
-	               android:layout_height="fill_parent"
-                   android:layout_gravity="center_vertical|center_horizontal"
-                   android:paddingLeft="8dip"
-                   android:paddingRight="8dip"
-                   />
+        <RelativeLayout android:id="@+id/game_view_container"
+                        android:layout_width="42dp"
+	                    android:layout_height="fill_parent"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:paddingLeft="8dip"
+                        android:paddingRight="8dip"
+                        >
+            <ImageView android:id="@+id/game_type_marker"
+	                   android:layout_width="fill_parent"
+	                   android:layout_height="fill_parent"
+                       android:src="@drawable/multigame__gen"
+                       />
+            <ImageView android:id="@+id/has_chat_marker"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:src="@drawable/stat_notify_chat"
+                       android:layout_alignParentBottom="true"
+                       />
+        </RelativeLayout>
 
         <ImageView android:id="@+id/thumbnail"
                    android:layout_width="wrap_content"
