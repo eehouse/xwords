@@ -65,7 +65,6 @@ public class GameListItem extends LinearLayout
     private TextView m_state;
     private TextView m_modTime;
     private ImageView m_gameTypeImage;
-    private View m_hasChatMarker;
     private TextView m_role;
 
     private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
@@ -196,7 +195,6 @@ public class GameListItem extends LinearLayout
         m_state = (TextView)findViewById( R.id.state );
         m_modTime = (TextView)findViewById( R.id.modtime );
         m_gameTypeImage = (ImageView)findViewById( R.id.game_type_marker );
-        m_hasChatMarker = (View)findViewById( R.id.has_chat_marker );
         m_thumb = (ImageView)findViewById( R.id.thumbnail );
         m_role = (TextView)findViewById( R.id.role );
     }
@@ -326,9 +324,13 @@ public class GameListItem extends LinearLayout
                     }
                 } );
 
-            int flags = DBUtils.getMsgFlags( m_context, m_rowid );
-            boolean hasChat = 0 != (flags & GameSummary.MSG_FLAGS_CHAT);
-            m_hasChatMarker.setVisibility( hasChat ? View.VISIBLE : View.GONE );
+            boolean hasChat = summary.isMultiGame();
+            if ( hasChat ) {
+                int flags = DBUtils.getMsgFlags( m_context, m_rowid );
+                hasChat = 0 != (flags & GameSummary.MSG_FLAGS_CHAT);
+            }
+            findViewById( R.id.has_chat_marker )
+                .setVisibility( hasChat ? View.VISIBLE : View.GONE );
 
             String roleSummary = summary.summarizeRole( m_context, m_rowid );
             m_role.setVisibility( null == roleSummary ? View.GONE : View.VISIBLE );
