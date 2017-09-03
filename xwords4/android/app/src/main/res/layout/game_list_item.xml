@@ -45,8 +45,8 @@
                        />
             <ImageView android:id="@+id/has_chat_marker"
                        android:layout_width="wrap_content"
-                       android:layout_height="wrap_content"
-                       android:src="@drawable/stat_notify_chat"
+                       android:layout_height="22dp"
+                       android:src="@drawable/green_chat__gen"
                        android:layout_alignParentBottom="true"
                        />
         </RelativeLayout>
