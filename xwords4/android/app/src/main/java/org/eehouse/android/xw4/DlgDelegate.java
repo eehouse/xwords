@@ -32,6 +32,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 
+import java.io.Serializable;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
@@ -126,13 +128,29 @@ public class DlgDelegate {
         SET_GOT_LANGDICT,
     }
 
-    public static class ActionPair {
+    public static class ActionPair implements Serializable {
         public ActionPair( Action act, int str ) {
             buttonStr = str; action = act;
         }
         public int buttonStr;
         public Action action;
-        public Object[] params; // null for now
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            boolean result;
+            if ( BuildConfig.DEBUG ) {
+                result = null != obj && obj instanceof ActionPair;
+                if ( result ) {
+                    ActionPair other = (ActionPair)obj;
+                    result = buttonStr == other.buttonStr
+                        && action == other.action;
+                }
+            } else {
+                result = super.equals( obj );
+            }
+            return result;
+        }
     }
 
     public abstract class DlgDelegateBuilder {

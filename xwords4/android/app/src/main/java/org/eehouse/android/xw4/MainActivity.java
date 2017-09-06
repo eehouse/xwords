@@ -298,11 +298,12 @@ public class MainActivity extends XWActivity
                                                   resultCode, data );
     }
 
-    protected void finishFragment()
+    protected void finishFragment( XWFragment fragment )
     {
-        // Assert.assertTrue( fragment instanceof XWFragment );
         // Log.d( TAG, "finishFragment()" );
-        getSupportFragmentManager().popBackStack/*Immediate*/();
+        int ID = fragment.getCommitID();
+        getSupportFragmentManager()
+            .popBackStack( ID, FragmentManager.POP_BACK_STACK_INCLUSIVE );
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -453,14 +454,14 @@ public class MainActivity extends XWActivity
         return frag;
     }
 
-    private void addFragmentImpl( Fragment fragment, Bundle bundle,
+    private void addFragmentImpl( XWFragment fragment, Bundle bundle,
                                   String parentName )
     {
         fragment.setArguments( bundle );
         addFragmentImpl( fragment, parentName );
     }
 
-    private void addFragmentImpl( final Fragment fragment,
+    private void addFragmentImpl( final XWFragment fragment,
                                   final String parentName )
     {
         if ( m_safeToCommit ) {
@@ -497,7 +498,7 @@ public class MainActivity extends XWActivity
         }
     }
     
-    private void safeAddFragment( Fragment fragment, String parentName )
+    private void safeAddFragment( XWFragment fragment, String parentName )
     {
         Assert.assertTrue( m_safeToCommit );
         String newName = fragment.getClass().getSimpleName();
@@ -505,10 +506,11 @@ public class MainActivity extends XWActivity
 
         popUnneeded( fm, newName, parentName );
 
-        fm.beginTransaction()
+        int ID = fm.beginTransaction()
             .add( R.id.main_container, fragment, newName )
             .addToBackStack( newName )
             .commit();
+        fragment.setCommitID( ID );
         // Don't do this. It causes an exception if e.g. from fragment.start()
         // I wind up launching another fragment and calling into this code
         // again. If I need executePendingTransactions() I'm doing something

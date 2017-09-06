@@ -75,6 +75,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     // private RelayDevsAdapter m_adapter;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
+    private String m_devIDStr;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         RequestCode requestCode )
@@ -100,6 +101,8 @@ public class RelayInviteDelegate extends InviteDelegate {
                                      m_nMissing, msg );
             super.init( msg, R.string.empty_relay_inviter );
             addButtonBar( R.layout.relay_buttons, BUTTONIDS );
+
+            m_devIDStr = String.format( "%d", DevID.getRelayDevIDInt(m_activity) );
 
             // getBundledData( savedInstanceState );
 
@@ -437,6 +440,21 @@ public class RelayInviteDelegate extends InviteDelegate {
     //     }
     // } // addPhoneNumbers
 
+    private void addSelf()
+    {
+        boolean hasSelf = false;
+        for ( DevIDRec rec : m_devIDRecs ) {
+            if ( rec.m_devID.equals( m_devIDStr ) ) {
+                hasSelf = true;
+                break;
+            }
+        }
+        if ( !hasSelf ) {
+            DevIDRec rec = new DevIDRec( "me", m_devIDStr );
+            m_devIDRecs.add( rec );
+        }
+    }
+
     private void rebuildList( boolean checkIfAll )
     {
         Collections.sort( m_devIDRecs, new Comparator<DevIDRec>() {
@@ -444,15 +462,9 @@ public class RelayInviteDelegate extends InviteDelegate {
                     return rec1.m_opponent.compareTo(rec2.m_opponent);
                 }
             });
+
+        addSelf();
         updateListAdapter( m_devIDRecs.toArray( new DevIDRec[m_devIDRecs.size()] ) );
-        // m_adapter = new RelayDevsAdapter();
-        // setListAdapter( m_adapter );
-        // if ( checkIfAll && m_devIDRecs.size() <= m_nMissing ) {
-        //     Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-        //     while ( iter.hasNext() ) {
-        //         iter.next().m_isChecked = true;
-        //     }
-        // }
         tryEnable();
     }
 
