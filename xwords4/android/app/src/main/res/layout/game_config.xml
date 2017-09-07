@@ -138,8 +138,6 @@
                       android:layout_height="wrap_content"
                       android:layout_width="fill_parent"
                       android:scrollHorizontally="false"
-                      android:autoText="false"
-                      android:capitalize="none"
                       android:maxLines="1"
                       android:inputType="text"
                       android:selectAllOnFocus="true"
