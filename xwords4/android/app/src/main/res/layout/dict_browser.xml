@@ -27,6 +27,7 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:maxLines="1"
+              android:inputType="text"
               android:layout_weight="1"
               android:hint="@string/word_search_hint"
               android:capitalize="characters"

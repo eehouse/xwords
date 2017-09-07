@@ -32,6 +32,7 @@
                   android:layout_weight="1"
    	              android:textAppearance="?android:attr/textAppearanceMedium"
                   android:maxLines="1"
+                  android:inputType="text"
                   />
 
         <TextView android:id="@+id/text_item2"
@@ -40,6 +41,7 @@
                   android:layout_weight="1"
                   android:gravity="right"
                   android:maxLines="1"
+                  android:inputType="text"
                   android:visibility="gone"
                   />
 

@@ -8,14 +8,16 @@
     >
   <TextView android:id="@+id/item_name"
             android:layout_width="wrap_content" 
-	        android:layout_height="wrap_content"
+            android:layout_height="wrap_content"
             android:maxLines="1"
-	        android:gravity="left"
+            android:inputType="text"
+            android:gravity="left"
             />
   <TextView android:id="@+id/item_score"
             android:layout_width="fill_parent" 
-	        android:layout_height="wrap_content"
+            android:layout_height="wrap_content"
             android:maxLines="1"
-	        android:gravity="right"
+            android:inputType="text"
+            android:gravity="right"
             />
 </org.eehouse.android.xw4.ExpiringLinearLayout>

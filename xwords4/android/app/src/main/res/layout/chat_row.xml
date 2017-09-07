@@ -6,12 +6,14 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginRight="8dp"
             android:maxLines="1"
+            android:inputType="text"
             />
   <TextView android:id="@+id/chat_row_name"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginRight="8dp"
             android:maxLines="1"
+            android:inputType="text"
             />
   <TextView android:id="@+id/chat_row_text"
             android:layout_height="wrap_content"
