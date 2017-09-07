@@ -10,10 +10,9 @@
             android:layout_width="fill_parent"
             android:layout_marginLeft="30dip"
             android:layout_marginRight="30dip"
-            android:autoText="false"
-            android:capitalize="words"
             android:maxLines="1"
-            android:inputType="text"
+            android:maxLength="32"
+            android:inputType="textCapWords"
             android:selectAllOnFocus="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
