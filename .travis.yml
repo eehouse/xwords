@@ -33,4 +33,4 @@ before_install:
   - sudo apt-get install -y python-lxml imagemagick
 
 script:
-  - ./gradlew build assXw4Deb
+  - ./gradlew assXw4Deb
