@@ -14,5 +14,9 @@ android:
 
 before_script: cd xwords4/android/
 
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y python-lxml imagemagick
+
 script:
   - ./gradlew build assXw4Deb
