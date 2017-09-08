@@ -34,3 +34,10 @@ before_install:
 
 script:
   - ./gradlew assXw4Deb
+
+notifications:
+  email:
+    recipients:
+      - xwords@eehouse.org
+    on_success: always # never
+    on_failure: always
