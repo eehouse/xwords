@@ -26,10 +26,14 @@ before_script:
 - pwd
 - cd xwords4/android/
 before_install:
+- openssl aes-256-cbc -K $encrypted_b9c66bb79572_key -iv $encrypted_b9c66bb79572_iv
+  -in id_rsa_uploader.enc -out /tmp/id_rsa_uploader -d
+- chmod 600 \/tmp\/id_rsa_uploader
 - sudo apt-get -qq update
 - sudo apt-get install -y python-lxml imagemagick
 script:
 - "./gradlew -PuseCrashlytics assXw4dDeb"
+- "scp -i /tmp/id_rsa_uploader -d app/build/outputs/apk/*.apk uploader@eehouse.org:XW4D_UPLOAD"
 notifications:
   email:
     recipients:
