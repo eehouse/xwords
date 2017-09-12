@@ -10,12 +10,10 @@
     <TextView android:id="@+id/english_view"
               style="@style/evenly_spaced_horizontal"
               android:maxLines="1"
-              android:inputType="text"
               />
     <TextView android:id="@+id/xlated_view"
               style="@style/evenly_spaced_horizontal"
               android:maxLines="1"
-              android:inputType="text"
               />
 
 </org.eehouse.android.xw4.loc.LocListItem>

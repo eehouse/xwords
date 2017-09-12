@@ -79,7 +79,6 @@
                      android:gravity="center"
                      android:layout_weight="1"
                      android:maxLines="1"
-                     android:inputType="text"
                      android:textAppearance="?android:attr/textAppearanceMedium"
                      />
 
