@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 124
-def VERSION_NAME = '4.4.128'
+def VERSION_CODE_BASE = 125
+def VERSION_NAME = '4.4.129'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 
 boolean forFDroid = hasProperty('forFDroid')
