@@ -38,7 +38,7 @@ android {
         //     renameArtifact(variant)
         //     variant.buildConfigField "String", "FIELD_NAME", "\"my String\""
         def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
-        variant.buildConfigField "String", "SENDER_ID", "\"$GCM_SENDER_ID\""
+        variant.buildConfigField "String", "GCM_SENDER_ID", "\"$GCM_SENDER_ID\""
         variant.buildConfigField "String", "FABRIC_API_KEY", "\"$FABRIC_API_KEY\""
 
         resValue "string", "git_rev", "$GITREV"
@@ -50,9 +50,6 @@ android {
 
         // FIX ME
         variant.buildConfigField "String", "STRINGS_HASH", "\"00000\""
-
-        def senderID = System.getenv("GCM_SENDER_ID")
-        variant.buildConfigField "String", "GCM_SENDER_ID", "\"$senderID\""
 
         variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
 
