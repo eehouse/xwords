@@ -2,6 +2,7 @@ def INITIAL_CLIENT_VERS = 8
 def VERSION_CODE_BASE = 125
 def VERSION_NAME = '4.4.129'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
+def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
 
 boolean forFDroid = hasProperty('forFDroid')
 
@@ -37,8 +38,6 @@ android {
     applicationVariants.all { variant ->
         //     renameArtifact(variant)
         //     variant.buildConfigField "String", "FIELD_NAME", "\"my String\""
-        def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
-        variant.buildConfigField "String", "GCM_SENDER_ID", "\"$GCM_SENDER_ID\""
         variant.buildConfigField "String", "FABRIC_API_KEY", "\"$FABRIC_API_KEY\""
 
         resValue "string", "git_rev", "$GITREV"
@@ -67,6 +66,8 @@ android {
             resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
+
+            buildConfigField "String", "GCM_SENDER_ID", "\"$GCM_SENDER_ID\""
         }
         xw4d {
             dimension "variant"
@@ -78,6 +79,8 @@ android {
             resValue "string", "invite_prefix", "/anddbg/"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
+
+            buildConfigField "String", "GCM_SENDER_ID", "\"\""
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need
