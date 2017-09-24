@@ -564,6 +564,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final int[] DEBUG_ITEMS = {
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
+        R.id.games_menu_writegit,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,
@@ -1595,6 +1596,10 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_menu_storedb:
             Perms23.tryGetPerms( this, Perm.STORAGE, null,
                                  Action.STORAGE_CONFIRMED, itemID );
+            break;
+
+        case R.id.games_menu_writegit:
+            Utils.gitInfoToClip( m_activity );
             break;
 
         default:

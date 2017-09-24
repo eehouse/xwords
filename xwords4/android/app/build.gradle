@@ -3,6 +3,7 @@ def VERSION_CODE_BASE = 125
 def VERSION_NAME = '4.4.129'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
+def BUILD_INFO_NAME = "build-info.txt"
 
 boolean forFDroid = hasProperty('forFDroid')
 
@@ -57,6 +58,10 @@ android {
     
     flavorDimensions "variant"//, "abi"
     productFlavors {
+        all {
+            buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
+        }
+
         xw4 {
             dimension "variant"
             applicationId "org.eehouse.android.xw4"
@@ -254,15 +259,14 @@ afterEvaluate {
 
 task makeBuildAssets() {
     def assetsDir = android.sourceSets.main.assets.srcDirs.toArray()[0]
-    String path = new File(assetsDir, 'build-info.txt').getAbsolutePath()
-    File file = new File(path);
+    String path = new File(assetsDir, BUILD_INFO_NAME).getAbsolutePath()
     String out = "git: ${GITREV}\n"
 
     String diff = "git diff".execute().text.trim()
     if (diff) {
         out += "\n" + diff
     }
-    file.write(out)
+    new File(path).write(out)
 }
 
 gradle.projectsEvaluated {

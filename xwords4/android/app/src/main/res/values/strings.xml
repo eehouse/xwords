@@ -2491,6 +2491,7 @@
   <string name="name_dict_fmt">%1$s/%2$s</string>
   <string name="gamel_menu_storedb">Write games to SD card</string>
   <string name="gamel_menu_loaddb">Load games from SD card</string>
+  <string name="gamel_menu_writegit">Copy git info to clipboard</string>
   <string name="enable_dupes_title">Accept duplicate invites</string>
   <string name="xlations_locale">Fake locale for translation</string>
   <string name="enable_dupes_summary">Accept invitations more than once</string>
