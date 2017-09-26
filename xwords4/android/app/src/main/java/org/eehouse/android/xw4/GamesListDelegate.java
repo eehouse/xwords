@@ -1540,10 +1540,10 @@ public class GamesListDelegate extends ListDelegateBase
             GameUtils.resendAllIf( m_activity, null, true, true );
             break;
         case R.id.games_menu_newgame_solo:
-            handleNewGame( true );
+            handleNewGameButton( true );
             break;
         case R.id.games_menu_newgame_net:
-            handleNewGame( false );
+            handleNewGameButton( false );
             break;
 
         case R.id.games_menu_newgroup:
