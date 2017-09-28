@@ -840,7 +840,7 @@ public class BoardDelegate extends DelegateBase
         Utils.setItemVisible( menu, R.id.board_menu_game_invites, enable );
 
         enable = XWPrefs.getStudyEnabled( m_activity );
-        Utils.setItemVisible( menu, R.id.games_menu_study, enable );
+        Utils.setItemVisible( menu, R.id.board_menu_study, enable );
 
         return true;
     } // onPrepareOptionsMenu
@@ -910,7 +910,7 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_tray:
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
-        case R.id.games_menu_study:
+        case R.id.board_menu_study:
             StudyListDelegate.launchOrAlert( getDelegator(), m_gi.dictLang, this );
             break;
         case R.id.board_menu_game_netstats:
