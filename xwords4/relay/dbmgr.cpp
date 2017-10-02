@@ -1015,10 +1015,10 @@ DBMgr::CountStoredMessages( DevIDRelay relayID )
 }
 
 void
-DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
+DBMgr::StoreMessage( DevIDRelay destDevID, const uint8_t* const buf,
                      int len )
 {
-    clearHasNoMessages( devID );
+    clearHasNoMessages( destDevID );
 
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE " "
@@ -1027,13 +1027,13 @@ DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
     StrWPF query;
     if ( m_useB64 ) {
         gchar* b64 = g_base64_encode( buf, len );
-        query.catf( fmt, "msg64", devID, "", b64, len );
+        query.catf( fmt, "msg64", destDevID, "", b64, len );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
-        query.catf( fmt, "msg",  devID, "E", bytes, len );
+        query.catf( fmt, "msg",  destDevID, "E", bytes, len );
         PQfreemem( bytes );
     }
 
@@ -1042,15 +1042,15 @@ DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
 }
 
 void
-DBMgr::StoreMessage( const char* const connName, int hid, 
+DBMgr::StoreMessage( const char* const connName, int destHid,
                      const uint8_t* buf, int len )
 {
-    clearHasNoMessages( connName, hid );
+    clearHasNoMessages( connName, destHid );
 
-    DevIDRelay devID = getDevID( connName, hid );
+    DevIDRelay devID = getDevID( connName, destHid );
     if ( DEVID_NONE == devID ) {
         logf( XW_LOGERROR, "%s: warning: devid not found for connName=%s, "
-              "hid=%d", __func__, connName, hid );
+              "hid=%d", __func__, connName, destHid );
     } else {
         clearHasNoMessages( devID );
     }
@@ -1066,7 +1066,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     StrWPF query;
     if ( m_useB64 ) {
         gchar* b64 = g_base64_encode( buf, len );
-        query.catf( fmt, "msg64", connName, hid, devID, hid, connName, 
+        query.catf( fmt, "msg64", connName, destHid, devID, destHid, connName,
                     "", b64, len );
         
         query.catf( " WHERE NOT EXISTS (SELECT 1 FROM " MSGS_TABLE
@@ -1074,14 +1074,14 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 #ifdef HAVE_STIME
                     " AND stime='epoch'" 
 #endif
-                    " );", connName, hid, b64 );
+                    " );", connName, destHid, b64 );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
     
-        query.catf( fmt, "msg", connName, hid, devID, hid, connName, 
+        query.catf( fmt, "msg", connName, destHid, devID, destHid, connName,
                     "E", bytes, len );
         PQfreemem( bytes );
     }

@@ -760,15 +760,15 @@ send_havemsgs( const AddrInfo* addr )
 
 class MsgClosure {
 public:
-    MsgClosure( DevIDRelay devid, const vector<uint8_t>* packet,
+    MsgClosure( DevIDRelay dest, const vector<uint8_t>* packet,
                 OnMsgAckProc proc, void* procClosure )
     {
-        m_devid = devid;
+        m_destDevID = dest;
         m_packet = *packet;
         m_proc = proc;
         m_procClosure = procClosure;
     }
-    DevIDRelay m_devid;
+    DevIDRelay m_destDevID;
     vector<uint8_t> m_packet;
     OnMsgAckProc m_proc;
     void* m_procClosure;
@@ -779,21 +779,21 @@ onPostedMsgAcked( bool acked, uint32_t packetID, void* data )
 {
     MsgClosure* mc = (MsgClosure*)data;
     if ( !acked ) {
-        DBMgr::Get()->StoreMessage( mc->m_devid, mc->m_packet.data(),
+        DBMgr::Get()->StoreMessage( mc->m_destDevID, mc->m_packet.data(),
                                     mc->m_packet.size() );
     }
     if ( NULL != mc->m_proc ) {
-        (*mc->m_proc)( acked, mc->m_devid, packetID, mc->m_procClosure );
+        (*mc->m_proc)( acked, mc->m_destDevID, packetID, mc->m_procClosure );
     }
     delete mc;
 }
 
 
 static bool
-post_or_store( DevIDRelay devid, vector<uint8_t>& packet, uint32_t packetID, 
+post_or_store( DevIDRelay destDevID, vector<uint8_t>& packet, uint32_t packetID,
                OnMsgAckProc proc, void* procClosure )
 {
-    const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( devid );
+    const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( destDevID );
     bool canSendNow = !!addru;
     
     bool sent = false;
@@ -805,20 +805,20 @@ post_or_store( DevIDRelay devid, vector<uint8_t>& packet, uint32_t packetID,
             sent = 0 < send_packet_via_udp_impl( packet, sock, dest_addr );
 
             if ( sent ) {
-                MsgClosure* mc = new MsgClosure( devid, &packet,
+                MsgClosure* mc = new MsgClosure( destDevID, &packet,
                                                  proc, procClosure );
                 UDPAckTrack::setOnAck( onPostedMsgAcked, packetID, (void*)mc );
             }
         }
     }
     if ( !sent ) {
-        DBMgr::Get()->StoreMessage( devid, packet.data(), packet.size() );
+        DBMgr::Get()->StoreMessage( destDevID, packet.data(), packet.size() );
     }
     return sent;
 }
 
 bool
-post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
+post_message( DevIDRelay destDevID, const char* message, OnMsgAckProc proc,
               void* procClosure )
 {
     vector<uint8_t> packet;
@@ -830,7 +830,7 @@ post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
     assemble_packet( packet, &packetID, XWPDEV_ALERT, lenbuf, lenlen,
                      message, len, NULL );
 
-    return post_or_store( devid, packet, packetID, proc, procClosure );
+    return post_or_store( destDevID, packet, packetID, proc, procClosure );
 }
 
 void
