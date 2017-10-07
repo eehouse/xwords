@@ -1577,7 +1577,7 @@ parsePair( const char* optarg, XP_U16* min, XP_U16* max )
     } else {
         int intmin, intmax;
         if ( 2 == sscanf( optarg, "%d:%d", &intmin, &intmax ) ) {
-            if ( intmin <= intmin ) {
+            if ( intmin <= intmax ) {
                 *min = intmin;
                 *max = intmax;
                 success = true;
