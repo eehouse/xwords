@@ -649,10 +649,14 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
                                          nPlayersS, gameSeed, langCode,
                                          wantsPublic || makePublic, &isDead );
 
-        /* If the reconnect doesn't check out, treat it as a connect */
+        /* If the reconnect doesn't check out, treat it as a connect. But
+           preserve the existing hid. If the DB was deleted it's important
+           that devices keep their places (hids) */
         if ( NULL == cinfo ) {
-            logf( XW_LOGINFO, "%s: taking a second crack", __func__ );
-            m_hid = HOST_ID_NONE;
+            logf( XW_LOGINFO, "%s: taking a second crack; (cur hid: %d)",
+                  __func__, hid );
+            assert( m_hid == hid );
+            // m_hid = HOST_ID_NONE; /* wrong; but why was I doing it? */
             cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
                                              langCode, gameSeed, clientIndx,
                                              wantsPublic, makePublic, &m_seenSeed );
