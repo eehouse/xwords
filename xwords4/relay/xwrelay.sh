@@ -28,7 +28,7 @@ make_db() {
         exit 1
     fi
     createdb $DBNAME
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 create or replace function sum_array( DECIMAL [] )
 returns decimal
 as \$\$
@@ -40,7 +40,7 @@ from generate_series(
 \$\$ language sql immutable;
 EOF
 
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 CREATE TABLE games ( 
 cid integer
 ,room VARCHAR(32)
@@ -62,7 +62,7 @@ cid integer
 );
 EOF
 
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 CREATE TABLE msgs ( 
 id SERIAL
 ,connName VARCHAR(64)
@@ -78,7 +78,7 @@ id SERIAL
 );
 EOF
 
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 CREATE TABLE devices ( 
 id INTEGER UNIQUE PRIMARY KEY
 ,devTypes INTEGER[]
