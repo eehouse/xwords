@@ -70,6 +70,24 @@ endif
 
 memdebug all: xwrelay rq
 
+REQUIRED_DEBS = libpq-dev \
+
+.PHONY: debcheck debs_install
+
+debs_install:
+	sudo apt-get install $(REQUIRED_DEBS)
+
+debcheck:
+	@if which dpkg; then \
+		for DEB in $(REQUIRED_DEBS); do \
+			if ! dpkg -l $$DEB >/dev/null 2>&1; then \
+				echo "$$DEB not installed"; \
+				echo "try running 'make debs_install'"; \
+				break; \
+			fi \
+		done; \
+	fi
+
 # Manual config in order to place -lpq after the .obj files as
 # required by something Ubuntu did upgrading natty to oneiric
 xwrelay: $(OBJ)

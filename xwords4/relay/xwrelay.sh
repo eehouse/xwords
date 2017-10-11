@@ -14,7 +14,7 @@ LOGFILE=/tmp/xwrelay_log_$$.txt
 date > $LOGFILE
 
 usage() {
-    echo "usage: $0 start | stop | restart | mkdb"
+    echo "usage: $0 start | stop | restart | mkdb | debs_install"
 }
 
 make_db() {
@@ -114,6 +114,10 @@ do_start() {
     fi
 }
 
+install_debs() {
+    sudo apt-get install postgresql-client postgresql
+}
+
 case $1 in
     
     stop)
@@ -149,6 +153,9 @@ case $1 in
         make_db
         ;;
 
+    debs_install)
+		install_debs
+		;;
     *)
         usage
         exit 0
