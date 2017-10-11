@@ -15,7 +15,7 @@ before_script:
 - export TERM=dumb
 - curl -L http://dl.google.com/android/ndk/android-ndk-r10e-linux-x86_64.bin -O
 - chmod u+x android-ndk-r10e-linux-x86_64.bin
-- ./android-ndk-r10e-linux-x86_64.bin > /dev/null
+- "./android-ndk-r10e-linux-x86_64.bin > /dev/null"
 - rm android-ndk-r10e-linux-x86_64.bin
 - export ANDROID_NDK_HOME=`pwd`/android-ndk-r10e
 - export LOCAL_ANDROID_NDK_HOME="$ANDROID_NDK_HOME"
@@ -23,17 +23,18 @@ before_script:
 - export PATH=$PATH:${ANDROID_NDK_HOME}
 - cd xwords4/android/
 before_install:
-- openssl aes-256-cbc -K $encrypted_b9c66bb79572_key -iv $encrypted_b9c66bb79572_iv
-  -in xwords4/android/id_rsa_uploader.enc -out /tmp/id_rsa_uploader -d
+- openssl aes-256-cbc -K $encrypted_8436f2891714_key -iv $encrypted_8436f2891714_iv
+  -in id_rsa_uploader.enc -out /tmp/id_rsa_uploader -d
 - chmod 600 \/tmp\/id_rsa_uploader
 - sudo apt-get -qq update
 - sudo apt-get install -y python-lxml imagemagick
 script:
-- ./gradlew -PuseCrashlytics assXw4dDeb
-- scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d app/build/outputs/apk/*.apk uploader@eehouse.org:XW4D_UPLOAD
+- "./gradlew -PuseCrashlytics assXw4dDeb"
+- scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d app/build/outputs/apk/*.apk
+  uploader@eehouse.org:XW4D_UPLOAD
 notifications:
   email:
     recipients:
     - xwords@eehouse.org
-    on_success: never
+    on_success: always
     on_failure: always
