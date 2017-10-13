@@ -10,7 +10,7 @@ function printHead() {
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="/xw4mobile.css" />
-    <title>Crosswords Invite redirect</title>
+    <title>CrossWords Invite redirect</title>
   </head>
   <body>
     <div class="center">
@@ -51,32 +51,31 @@ function printAndroid() {
 print <<<EOF
 <div>
 <p>You&apos;ll have come here after clicking a link in an email or
-  text inviting you to a Crosswords game. But you should not be seeing
+  text inviting you to a CrossWords game. But you should not be seeing
   this page.</p>
 
 <p>If you got this page on your device, it means either
   <ul>
-    <li>The copy of Crosswords you have is NOT beta 56 or newer (dating from about Dec. 1, 2012).</li>
-    <li> OR </li>
-    <li> that your copy of Crosswords is new enough <em>BUT</em> that
-      when you clicked on the link and were asked to choose between a
-      browser and Crosswords you chose the browser.</li>
+    <li>You don't have CrossWords installed</li>
+    <li>OR</li>
+    <li>that when you clicked on the link and were asked to choose between a
+        browser and CrossWords you chose the browser.</li>
 </ul></p>
 
-<p>In the first case, install the latest Crosswords,
+<p>In the first case, install the latest CrossWords,
 either <a href="market://search?q=pname:org.eehouse.android.xw4">via
 the Google Play store</a> or
-(sideloading) <a href="https://sourceforge.net/projects/xwords/files/xwords_Android/4.4%20beta%2056/XWords4-release_android_beta_56.apk/download">via
+(sideloading) <a href="https://sourceforge.net/projects/xwords/files/xwords_Android/4.4%20beta%20129/XWords4-release_android_beta_129.apk/download">via
 Sourceforge.net</a>. After the install is finished go back to the
 invite email (or text) and tap the link again.</p>
 
 <p>In the second case, hit your browser&apos;s back button, click the
 link in your invite email (or text) again, and this time let
-Crosswords handle it.</p>
+CrossWords handle it.</p>
 
 <p>(If you get tired of having to having to make that choice, Android
-will allow you to make Crosswords the default.  If you do that
-Crosswords will be given control of all URLs that start with
+will allow you to make CrossWords the default.  If you do that
+CrossWords will be given control of all URLs that start with
 "http://eehouse.org/and/" -- not all URLs of any type.)</p>
 
 <p>Have fun.  And as always, <a href="mailto:xwords@eehouse.org">let
