@@ -114,7 +114,7 @@ def md5Checksums( sums, filePath ):
     if filePath in sums:
         result = sums[filePath]
     else:
-        logging.debug( "opening %s" % (k_filebase + "and_wordlists/" + filePath))
+        # logging.debug( "opening %s" % (k_filebase + "and_wordlists/" + filePath))
         try:
             file = open( k_filebase + "and_wordlists/" + filePath, 'rb' )
             md5 = hashlib.md5()
@@ -145,7 +145,7 @@ def openShelf():
         if not k_SUMS in s_shelf: s_shelf[k_SUMS] = {}
         if not k_COUNT in s_shelf: s_shelf[k_COUNT] = 0
     s_shelf[k_COUNT] += 1
-    logging.debug( "Count now %d" % s_shelf[k_COUNT] )
+    # logging.debug( "Count now %d" % s_shelf[k_COUNT] )
 
 def closeShelf():
     global s_shelf
@@ -560,15 +560,13 @@ def getUpdates( req, params ):
             result[k_DICTS] = dictsResult
 
     # Let's not upgrade strings at the same time as we're upgrading the app
-    if appResult:
-        logging.debug( 'skipping xlation upgrade because app being updated' )
-    elif k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
-        xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
-        if xlateResult: 
-            logging.debug( xlateResult )
-            result[k_XLATEINFO] = xlateResult;
-    else:
-        logging.debug( "NOT FOUND xlate info" )
+    # if appResult:
+    #     logging.debug( 'skipping xlation upgrade because app being updated' )
+    # elif k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
+    #     xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
+    #     if xlateResult:
+    #         logging.debug( xlateResult )
+    #         result[k_XLATEINFO] = xlateResult;
         
     result = json.dumps( result )
     # logging.debug( result )
