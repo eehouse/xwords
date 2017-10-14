@@ -61,9 +61,12 @@
 
         <!-- this layout is vertical, holds everything but the status
              icon[s] (plural later) -->
-        <LinearLayout android:orientation="vertical"
+        <LinearLayout android:id="@+id/right_side"
+                      android:orientation="vertical"
                       android:layout_width="fill_parent"
                       android:layout_height="wrap_content"
+                      android:clickable="true"
+                      android:longClickable="true"
                       >
 
             <!-- This is the game name and expander -->
