@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools"
-           tools:ignore="MissingTranslation"
-           >
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="button_new_game">Spiel hinzufügen</string>
     <string name="button_new_group">Gruppe hinzufügen</string>
 
@@ -11,8 +9,8 @@
 
     <string name="missing_player">(noch nicht hier …)</string>
 
-    <string name="summary_relay_conf_fmt">Konfiguriert für Raum „%1$s“</string>
-    <string name="summary_relay_wait_fmt">Auf Spieler in Raum „%1$s“ warten</string>
+    <string name="summary_relay_conf_fmt">Konfiguriert für Raum „%1$s”</string>
+    <string name="summary_relay_wait_fmt">Auf Spieler in Raum „%1$s” warten</string>
     <string name="summary_relay_conn_fmt">Spiel läuft in Raum „%1$s“</string>
     <string name="summary_relay_gameover_fmt">Spiel vorbei in Raum „%1$s“</string>
 
