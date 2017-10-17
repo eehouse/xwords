@@ -94,7 +94,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
                 // Can't figure out how to read a null-terminated string
                 // from DataInputStream so parse it myself.
                 byte[] bytes = new byte[len];
-                dis.read( bytes );
+                dis.readFully( bytes );
 
                 int index = -1;
                 for ( int ii = 0; ii < nRooms; ++ii ) {
