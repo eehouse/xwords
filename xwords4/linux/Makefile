@@ -226,7 +226,7 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/relaycon.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
-LIBS = -lm -luuid $(GPROFFLAG)
+LIBS = -lm -luuid -lcurl -ljson-c $(GPROFFLAG)
 ifdef USE_SQLITE
 LIBS += -lsqlite3
 DEFINES += -DUSE_SQLITE

@@ -20,6 +20,9 @@
 #include <netdb.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <curl/curl.h>
+#include <json-c/json.h>
+
 
 #include "relaycon.h"
 #include "linuxmain.h"
@@ -402,10 +405,88 @@ hostNameToIP( const XP_UCHAR* name )
     return ip;
 }
 
+typedef struct _ReadState {
+    gchar* ptr;
+    size_t curSize;
+} ReadState;
+
+static size_t
+write_callback(void *contents, size_t size, size_t nmemb, void* data)
+{
+    ReadState* rs = (ReadState*)data;
+    XP_LOGF( "%s(size=%ld, nmemb=%ld)", __func__, size, nmemb );
+    // void** pp = (void**)data;
+    size_t oldLen = rs->curSize;
+    size_t newLength = size * nmemb;
+    rs->ptr = g_realloc( rs->ptr, oldLen + newLength );
+    memcpy( rs->ptr + oldLen - 1, contents, newLength );
+    rs->ptr[oldLen + newLength - 1] = '\0';
+    size_t result =  size * nmemb;
+    // XP_LOGF( "%s() => %ld: (passed: \"%s\")", __func__, result, *strp );
+    return result;
+}
+
+static ssize_t
+post( const XP_U8* msgbuf, XP_U16 len )
+{
+    const char* data = g_base64_encode( msgbuf, len );
+    struct json_object* jobj = json_object_new_object();
+    struct json_object* jstr = json_object_new_string(data);
+    // g_free( data );
+    json_object_object_add( jobj, "data", jstr );
+    const char* asStr = json_object_to_json_string( jobj );
+    XP_LOGF( "%s: added str: %s", __func__, asStr );
+
+    ReadState rs = {
+        .ptr = g_malloc0(1),
+        .curSize = 1L
+    };
+
+    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
+    XP_ASSERT(res == CURLE_OK);
+    CURL* curl = curl_easy_init();
+
+    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost/relay.py/post");
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+    char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
+    char buf[4*1024];
+    size_t buflen = snprintf( buf, sizeof(buf), "params=%s", curl_params);
+    XP_ASSERT( buflen < sizeof(buf) );
+    curl_free(curl_params);
+
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf));
+
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback );
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &rs );
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+    res = curl_easy_perform(curl);
+    XP_LOGF( "%s(): curl_easy_perform() => %d", __func__, res );
+    /* Check for errors */
+    if (res != CURLE_OK) {
+        XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    }
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+
+    XP_LOGF( "%s(): got \"%s\"", __func__, rs.ptr );
+    g_free( rs.ptr );
+
+    (void)json_object_put( jobj );
+    return len;
+}
+
 static ssize_t
 sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 {
-    ssize_t nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
+    ssize_t nSent;
+    if (1) {
+        nSent = post( msgbuf, len );
+    } else {
+        nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                             (struct sockaddr*)&storage->saddr, 
                             sizeof(storage->saddr) );
 #ifdef COMMS_CHECKSUM
@@ -415,6 +496,7 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 #else
     XP_LOGF( "%s()=>%zd", __func__, nSent );
 #endif
+    }
     return nSent;
 }
 
