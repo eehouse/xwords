@@ -20,15 +20,17 @@ def post(req, params):
     addr = ("127.0.0.1", 10997)
     sock.sendto(data, addr)
 
-    response = None
-    try:
-        data, server = sock.recvfrom(1024)
-        response = base64.b64encode(data)
-    except socket.timeout:
-        #If data is not received back from server, print it has timed out  
-        err = 'timeout'
+    responses = []
+    while True:
+        try:
+            data, server = sock.recvfrom(1024)
+            responses.append(base64.b64encode(data))
+        except socket.timeout:
+            #If data is not received back from server, print it has timed out  
+            err = 'timeout'
+            break
     
-    jobj = {'err' : err, 'data' : response}
+    jobj = {'err' : err, 'data' : responses}
     return json.dumps(jobj)
 
 def main():

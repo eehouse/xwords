@@ -486,11 +486,15 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     json_object* reply = json_tokener_parse( rs.ptr );
     json_object* replyData;
     if ( json_object_object_get_ex( reply, "data", &replyData ) && !!replyData ) {
-        const char* str = json_object_get_string( replyData );
-        gsize out_len;
-        guchar* buf = g_base64_decode( (const gchar*)str, &out_len );
-        process( storage, buf, len );
-        g_free( buf );
+        int len = json_object_array_length(replyData);
+        for ( int ii = 0; ii < len; ++ii ) {
+            json_object* datum = json_object_array_get_idx( replyData, ii );
+            const char* str = json_object_get_string( datum );
+            gsize out_len;
+            guchar* buf = g_base64_decode( (const gchar*)str, &out_len );
+            process( storage, buf, len );
+            g_free( buf );
+        }
         (void)json_object_put( replyData );
     }
     (void)json_object_put( reply );
