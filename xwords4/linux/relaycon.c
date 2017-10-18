@@ -492,7 +492,7 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
             const char* str = json_object_get_string( datum );
             gsize out_len;
             guchar* buf = g_base64_decode( (const gchar*)str, &out_len );
-            process( storage, buf, len );
+            process( storage, buf, out_len );
             g_free( buf );
         }
         (void)json_object_put( replyData );
