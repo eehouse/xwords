@@ -242,30 +242,9 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
     }
 }
 
-static gboolean 
-relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpointer data )
+static gboolean
+process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
 {
-    XP_ASSERT( 0 != (G_IO_IN & condition) ); /* FIX ME */
-    RelayConStorage* storage = (RelayConStorage*)data;
-    XP_U8 buf[512];
-    struct sockaddr_in from;
-    socklen_t fromlen = sizeof(from);
-
-    int socket = g_io_channel_unix_get_fd( source );
-    XP_LOGF( "%s: calling recvfrom on socket %d", __func__, socket );
-
-    ssize_t nRead = recvfrom( socket, buf, sizeof(buf), 0, /* flags */
-                              (struct sockaddr*)&from, &fromlen );
-
-    gchar* b64 = g_base64_encode( (const guchar*)buf,
-                                  ((0 <= nRead)? nRead : 0) );
-    XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
-    g_free( b64 );
-#ifdef COMMS_CHECKSUM
-    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
-    XP_LOGF( "%s: read %zd bytes ('%s')(sum=%s)", __func__, nRead, b64, sum );
-    g_free( sum );
-#endif
     if ( 0 <= nRead ) {
         const XP_U8* ptr = buf;
         const XP_U8* end = buf + nRead;
@@ -369,6 +348,33 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
     return TRUE;
 }
 
+static gboolean
+relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpointer data )
+{
+    XP_ASSERT( 0 != (G_IO_IN & condition) ); /* FIX ME */
+    RelayConStorage* storage = (RelayConStorage*)data;
+    XP_U8 buf[512];
+    struct sockaddr_in from;
+    socklen_t fromlen = sizeof(from);
+
+    int socket = g_io_channel_unix_get_fd( source );
+    XP_LOGF( "%s: calling recvfrom on socket %d", __func__, socket );
+
+    ssize_t nRead = recvfrom( socket, buf, sizeof(buf), 0, /* flags */
+                              (struct sockaddr*)&from, &fromlen );
+
+    gchar* b64 = g_base64_encode( (const guchar*)buf,
+                                  ((0 <= nRead)? nRead : 0) );
+    XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
+    g_free( b64 );
+#ifdef COMMS_CHECKSUM
+    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
+    XP_LOGF( "%s: read %zd bytes ('%s')(sum=%s)", __func__, nRead, b64, sum );
+    g_free( sum );
+#endif
+    return process( storage, buf, nRead );
+}
+
 void
 relaycon_cleanup( LaunchParams* params )
 {
@@ -427,7 +433,7 @@ write_callback(void *contents, size_t size, size_t nmemb, void* data)
 }
 
 static ssize_t
-post( const XP_U8* msgbuf, XP_U16 len )
+post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 {
     const char* data = g_base64_encode( msgbuf, len );
     struct json_object* jobj = json_object_new_object();
@@ -471,11 +477,26 @@ post( const XP_U8* msgbuf, XP_U16 len )
     /* always cleanup */
     curl_easy_cleanup(curl);
     curl_global_cleanup();
+    (void)json_object_put( jobj );
 
     XP_LOGF( "%s(): got \"%s\"", __func__, rs.ptr );
+
+    /* Now pull any data from the reply */
+    // got "{"status": "ok", "dataLen": 14, "data": "AYQDiDAyMUEzQ0MyADw=", "err": "none"}"
+    json_object* reply = json_tokener_parse( rs.ptr );
+    json_object* replyData;
+    if ( json_object_object_get_ex( reply, "data", &replyData ) && !!replyData ) {
+        const char* str = json_object_get_string( replyData );
+        gsize out_len;
+        guchar* buf = g_base64_decode( (const gchar*)str, &out_len );
+        process( storage, buf, len );
+        g_free( buf );
+        (void)json_object_put( replyData );
+    }
+    (void)json_object_put( reply );
+
     g_free( rs.ptr );
 
-    (void)json_object_put( jobj );
     return len;
 }
 
@@ -484,7 +505,7 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 {
     ssize_t nSent;
     if (1) {
-        nSent = post( msgbuf, len );
+        nSent = post( storage, msgbuf, len );
     } else {
         nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                             (struct sockaddr*)&storage->saddr, 
