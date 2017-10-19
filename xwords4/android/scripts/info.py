@@ -7,7 +7,10 @@ import mk_for_download, mygit
 import xwconfig
 
 # I'm not checking my key in...
-import mykey
+try :
+    import mykey
+except:
+    print('unable to load mykey')
 
 from stat import ST_CTIME
 try:
