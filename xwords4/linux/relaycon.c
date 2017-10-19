@@ -63,6 +63,76 @@ static size_t writeVLI( XP_U8* out, uint32_t nn );
 static size_t un2vli( int nn, uint8_t* buf );
 static bool vli2un( const uint8_t** inp, uint32_t* outp );
 
+typedef struct _ReadState {
+    gchar* ptr;
+    size_t curSize;
+} ReadState;
+
+static size_t
+write_callback(void *contents, size_t size, size_t nmemb, void* data)
+{
+    ReadState* rs = (ReadState*)data;
+    XP_LOGF( "%s(size=%ld, nmemb=%ld)", __func__, size, nmemb );
+    // void** pp = (void**)data;
+    size_t oldLen = rs->curSize;
+    size_t newLength = size * nmemb;
+    rs->ptr = g_realloc( rs->ptr, oldLen + newLength );
+    memcpy( rs->ptr + oldLen - 1, contents, newLength );
+    rs->ptr[oldLen + newLength - 1] = '\0';
+    size_t result =  size * nmemb;
+    // XP_LOGF( "%s() => %ld: (passed: \"%s\")", __func__, result, *strp );
+    return result;
+}
+
+void
+checkForMsgs(const XP_UCHAR* id)
+{
+    ReadState rs = {
+        .ptr = g_malloc0(1),
+        .curSize = 1L
+    };
+
+    /* build a json array of relayIDs, then stringify it */
+    json_object* params = json_object_new_array();
+    json_object* idstr = json_object_new_string(id);
+    json_object_array_add(params, idstr);
+    const char* asStr = json_object_to_json_string( params );
+    XP_LOGF( "%s: added str: %s", __func__, asStr );
+
+    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
+    XP_ASSERT(res == CURLE_OK);
+    CURL* curl = curl_easy_init();
+
+    curl_easy_setopt(curl, CURLOPT_URL,
+                     "http://localhost/xw4/relay.py/query");
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+    char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
+    char buf[4*1024];
+    size_t buflen = snprintf( buf, sizeof(buf), "ids=%s", curl_params);
+    XP_ASSERT( buflen < sizeof(buf) );
+    curl_free(curl_params);
+    
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf));
+
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback );
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &rs );
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+    res = curl_easy_perform(curl);
+
+        XP_LOGF( "%s(): curl_easy_perform() => %d", __func__, res );
+    /* Check for errors */
+    if (res != CURLE_OK) {
+        XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    }
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+
+    XP_LOGF( "%s(): got \"%s\"", __func__, rs.ptr );
+}
 
 void
 relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 
@@ -411,26 +481,6 @@ hostNameToIP( const XP_UCHAR* name )
     return ip;
 }
 
-typedef struct _ReadState {
-    gchar* ptr;
-    size_t curSize;
-} ReadState;
-
-static size_t
-write_callback(void *contents, size_t size, size_t nmemb, void* data)
-{
-    ReadState* rs = (ReadState*)data;
-    XP_LOGF( "%s(size=%ld, nmemb=%ld)", __func__, size, nmemb );
-    // void** pp = (void**)data;
-    size_t oldLen = rs->curSize;
-    size_t newLength = size * nmemb;
-    rs->ptr = g_realloc( rs->ptr, oldLen + newLength );
-    memcpy( rs->ptr + oldLen - 1, contents, newLength );
-    rs->ptr[oldLen + newLength - 1] = '\0';
-    size_t result =  size * nmemb;
-    // XP_LOGF( "%s() => %ld: (passed: \"%s\")", __func__, result, *strp );
-    return result;
-}
 
 static ssize_t
 post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
