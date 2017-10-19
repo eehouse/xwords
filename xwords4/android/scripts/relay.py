@@ -36,6 +36,9 @@ def post(req, params):
     return json.dumps(jobj)
 
 def query(req, ids):
+    print(ids)
+    ids = json.loads(ids)
+
     idsLen = 0
     for id in ids: idsLen += len(id)
 
@@ -95,7 +98,7 @@ def dosend(sock, bytes):
                                                                                     
 
 def main():
-    print(query(None, sys.argv[1:]))
+    print(query(None, json.dumps(sys.argv[1:])))
     # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
     # params = json.dumps(params)
     # print(post(None, params))
