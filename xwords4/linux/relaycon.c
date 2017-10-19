@@ -452,7 +452,7 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     XP_ASSERT(res == CURLE_OK);
     CURL* curl = curl_easy_init();
 
-    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost/relay.py/post");
+    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost/xw4/relay.py/post");
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
     char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
