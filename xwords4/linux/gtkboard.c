@@ -1175,6 +1175,15 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     stream_destroy( stream );
     
 } /* handle_memstats */
+
+static void
+handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    LaunchParams* params = globals->cGlobals.params;
+    if ( checkForMsgs( params, &globals->cGlobals.game ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
+}
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT
@@ -1281,6 +1290,8 @@ makeMenus( GtkGameGlobals* globals )
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
                          (GCallback)handle_memstats, globals );
+    (void)createAddItem( fileMenu, "Check for moves",
+                         (GCallback)handle_movescheck, globals );
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT

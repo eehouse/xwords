@@ -529,11 +529,46 @@ hostNameToIP( const XP_UCHAR* name )
     return ip;
 }
 
+typedef struct _PostArgs {
+    RelayConStorage* storage;
+    ReadState rs;
+    const XP_U8* msgbuf;
+    XP_U16 len;
+} PostArgs;
 
-static ssize_t
-post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
+static gboolean
+onGotData(gpointer user_data)
 {
-    const char* data = g_base64_encode( msgbuf, len );
+    PostArgs* pa = (PostArgs*)user_data;
+    /* Now pull any data from the reply */
+    // got "{"status": "ok", "dataLen": 14, "data": "AYQDiDAyMUEzQ0MyADw=", "err": "none"}"
+    json_object* reply = json_tokener_parse( pa->rs.ptr );
+    json_object* replyData;
+    if ( json_object_object_get_ex( reply, "data", &replyData ) && !!replyData ) {
+        int len = json_object_array_length(replyData);
+        for ( int ii = 0; ii < len; ++ii ) {
+            json_object* datum = json_object_array_get_idx( replyData, ii );
+            const char* str = json_object_get_string( datum );
+            gsize out_len;
+            guchar* buf = g_base64_decode( (const gchar*)str, &out_len );
+            process( pa->storage, buf, out_len );
+            g_free( buf );
+        }
+        (void)json_object_put( replyData );
+    }
+    (void)json_object_put( reply );
+
+    g_free( pa->rs.ptr );
+    g_free( pa );
+
+    return FALSE;
+}
+
+static void*
+postThread( void* arg )
+{
+    PostArgs* pa = (PostArgs*)arg;
+    const char* data = g_base64_encode( pa->msgbuf, pa->len );
     struct json_object* jobj = json_object_new_object();
     struct json_object* jstr = json_object_new_string(data);
     // g_free( data );
@@ -541,10 +576,8 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     const char* asStr = json_object_to_json_string( jobj );
     XP_LOGF( "%s: added str: %s", __func__, asStr );
 
-    ReadState rs = {
-        .ptr = g_malloc0(1),
-        .curSize = 1L
-    };
+    pa->rs.ptr = g_malloc0(1);
+    pa->rs.curSize = 1L;
 
     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
     XP_ASSERT(res == CURLE_OK);
@@ -563,7 +596,7 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf));
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback );
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &rs );
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &pa->rs );
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
     res = curl_easy_perform(curl);
@@ -577,28 +610,24 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     curl_global_cleanup();
     (void)json_object_put( jobj );
 
-    XP_LOGF( "%s(): got \"%s\"", __func__, rs.ptr );
+    XP_LOGF( "%s(): got \"%s\"", __func__, pa->rs.ptr );
 
-    /* Now pull any data from the reply */
-    // got "{"status": "ok", "dataLen": 14, "data": "AYQDiDAyMUEzQ0MyADw=", "err": "none"}"
-    json_object* reply = json_tokener_parse( rs.ptr );
-    json_object* replyData;
-    if ( json_object_object_get_ex( reply, "data", &replyData ) && !!replyData ) {
-        int len = json_object_array_length(replyData);
-        for ( int ii = 0; ii < len; ++ii ) {
-            json_object* datum = json_object_array_get_idx( replyData, ii );
-            const char* str = json_object_get_string( datum );
-            gsize out_len;
-            guchar* buf = g_base64_decode( (const gchar*)str, &out_len );
-            process( storage, buf, out_len );
-            g_free( buf );
-        }
-        (void)json_object_put( replyData );
-    }
-    (void)json_object_put( reply );
+    (void)g_idle_add(onGotData, pa);
 
-    g_free( rs.ptr );
+    return NULL;
+}
 
+static ssize_t
+post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
+{
+    PostArgs* pa = (PostArgs*)g_malloc0(sizeof(*pa));
+    pa->storage = storage;
+    pa->msgbuf = msgbuf;
+    pa->len = len;
+
+    pthread_t thread;
+    (void)pthread_create( &thread, NULL, postThread, (void*)pa );
+    pthread_detach( thread );
     return len;
 }
 
