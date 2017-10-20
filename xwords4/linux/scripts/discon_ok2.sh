@@ -19,7 +19,7 @@ MAXDEVS=""
 ONEPER=""
 RESIGN_RATIO=""
 DROP_N=""
-MINRUN=2
+MINRUN=2		                # seconds
 ONE_PER_ROOM=""                 # don't run more than one device at a time per room
 USE_GTK=""
 UNDO_PCT=0
@@ -609,6 +609,7 @@ function usage() {
     echo "    [--one-per]              # force one player per device  \\" >&2
     echo "    [--port <int>]                                          \\" >&2
     echo "    [--resign-ratio <0 <= n <=1000 >                        \\" >&2
+	echo "    [--no-timeout]           # run until all games done     \\" >&2
     echo "    [--seed <int>]                                          \\" >&2
     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
     echo "    [--udp-incr <pct>]                                      \\" >&2
@@ -698,6 +699,9 @@ while [ "$#" -gt 0 ]; do
             RESIGN_RATIO=$(getArg $*)
             shift
             ;;
+		--no-timeout)
+			TIMEOUT=0x7FFFFFFF
+			;;
         --help)
             usage
             ;;
