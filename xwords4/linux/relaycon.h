@@ -57,5 +57,5 @@ void relaycon_cleanup( LaunchParams* params );
 XP_U32 makeClientToken( sqlite3_int64 rowid, XP_U16 seed );
 void rowidFromToken( XP_U32 clientToken, sqlite3_int64* rowid, XP_U16* seed );
 
-void checkForMsgs(const XP_UCHAR* id);
+XP_Bool checkForMsgs(LaunchParams* params, XWGame* game);
 #endif

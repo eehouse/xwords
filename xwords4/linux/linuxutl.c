@@ -41,7 +41,7 @@
 void 
 linux_debugf( const char* format, ... )
 {
-    char buf[1000];
+    char buf[1024*8];
     va_list ap;
     struct tm* timp;
     struct timeval tv;
@@ -50,14 +50,17 @@ linux_debugf( const char* format, ... )
     gettimeofday( &tv, &tz );
     timp = localtime( &tv.tv_sec );
 
-    snprintf( buf, sizeof(buf), "<%d>%.2d:%.2d:%.2d:", getpid(), 
-             timp->tm_hour, timp->tm_min, timp->tm_sec );
+    size_t len = snprintf( buf, sizeof(buf), "<%d>%.2d:%.2d:%.2d:", getpid(), 
+                           timp->tm_hour, timp->tm_min, timp->tm_sec );
+    XP_ASSERT( len < sizeof(buf) );
 
     va_start(ap, format);
-
-    vsprintf(buf+strlen(buf), format, ap);
-
+    len = vsprintf(buf+strlen(buf), format, ap);
     va_end(ap);
+
+    if ( len >= sizeof(buf) ) {
+        buf[sizeof(buf)-1] = '\0';
+    }
     
     fprintf( stderr, "%s\n", buf );
 }

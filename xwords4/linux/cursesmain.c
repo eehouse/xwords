@@ -1752,6 +1752,28 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
 }
 
 static gboolean
+queryTimerFired( gpointer data )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+
+    XWGame* game = &globals->cGlobals.game;
+    if ( !!game->comms ) {
+        XP_ASSERT( globals->nextQueryTimeSecs > 0 );
+        if ( checkForMsgs( globals->cGlobals.params, game ) ) {
+            globals->nextQueryTimeSecs = 1;
+        } else {
+            globals->nextQueryTimeSecs *= 2;
+        }
+
+        (void)g_timeout_add_seconds( globals->nextQueryTimeSecs,
+                                     queryTimerFired, &g_globals );
+    }
+
+    return FALSE;
+}
+
+static gboolean
 chatsTimerFired( gpointer data )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
@@ -1928,6 +1950,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             (void)g_timeout_add_seconds( params->chatsInterval, chatsTimerFired, 
                                          &g_globals );
         }
+        g_globals.nextQueryTimeSecs = 1;
+        (void)g_timeout_add_seconds( g_globals.nextQueryTimeSecs,
+                                     queryTimerFired, &g_globals );
 
         XP_Bool opened = XP_FALSE;
         initCurses( &g_globals, &width, &height );
