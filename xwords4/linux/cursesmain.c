@@ -279,35 +279,57 @@ curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     }
 } /* curses_util_userError */
 
+static gint
+ask_move( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    const char* answers[] = {"Ok", "Cancel", NULL};
+
+    if (0 == cursesask(globals, cGlobals->question, VSIZE(answers)-1, answers) ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
+            board_draw( board );
+        }
+    }
+
+    return FALSE;
+}
+
+/* this needs to change!!! */
 static void
 curses_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    char* question;
-    const char* answers[3] = {NULL};
-    short numAnswers = 0;
-    XP_Bool freeMe = XP_FALSE;
-
-    question = strFromStream( stream );
-    freeMe = XP_TRUE;
-    answers[numAnswers++] = "Cancel";
-    answers[numAnswers++] = "Ok";
-        
-    //     result = okIndex ==
-    cursesask( globals, question, numAnswers, answers );
-
-    if ( freeMe ) {
-        free( question );
-    }
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    XP_U16 len = stream_getSize( stream );
+    XP_ASSERT( len <= VSIZE(cGlobals->question) );
+    stream_getBytes( stream, cGlobals->question, len );
+    (void)g_idle_add( ask_move, globals );
 } /* curses_util_userQuery */
+
+static gint
+ask_trade( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+
+    const char* buttons[] = { "Ok", "Cancel" };
+    if (0 == cursesask( globals, cGlobals->question, VSIZE(buttons), buttons ) ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
+            board_draw( board );
+        }
+    }
+    return FALSE;
+}
 
 static void
 curses_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     formatConfirmTrade( &globals->cGlobals, tiles, nTiles );
-    /* const char* buttons[] = { "Cancel", "Ok" }; */
-    /* cursesask( globals, question, VSIZE(buttons), buttons ); */
+    (void)g_idle_add( ask_trade, globals );
 }
 
 static void
@@ -1950,9 +1972,12 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             (void)g_timeout_add_seconds( params->chatsInterval, chatsTimerFired, 
                                          &g_globals );
         }
-        g_globals.nextQueryTimeSecs = 1;
-        (void)g_timeout_add_seconds( g_globals.nextQueryTimeSecs,
-                                     queryTimerFired, &g_globals );
+
+        if ( params->useHTTP ) {
+            g_globals.nextQueryTimeSecs = 1;
+            (void)g_timeout_add_seconds( g_globals.nextQueryTimeSecs,
+                                         queryTimerFired, &g_globals );
+        }
 
         XP_Bool opened = XP_FALSE;
         initCurses( &g_globals, &width, &height );

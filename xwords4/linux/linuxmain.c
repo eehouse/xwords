@@ -634,6 +634,7 @@ typedef enum {
     ,CMD_CHAT
     ,CMD_USEUDP
     ,CMD_NOUDP
+    ,CMD_USEHTTP
     ,CMD_DROPSENDRELAY
     ,CMD_DROPRCVRELAY
     ,CMD_DROPSENDSMS
@@ -752,6 +753,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
     ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp (on by default)" }
     ,{ CMD_NOUDP, false, "no-use-udp", "connect to relay old-style, via tcp not udp" }
+    ,{ CMD_USEHTTP, false, "use-http", "use relay's new http interfaces rather than sockets" }
 
     ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
@@ -2398,6 +2400,9 @@ main( int argc, char** argv )
         case CMD_NOUDP:
             mainParams.useUdp = false;
             break;
+        case CMD_USEHTTP:
+            mainParams.useHTTP = true;
+            break;
 
         case CMD_DROPSENDRELAY:
             mainParams.commsDisableds[COMMS_CONN_RELAY][1] = XP_TRUE;
@@ -2487,10 +2492,10 @@ main( int argc, char** argv )
             mainParams.dictDirs = g_slist_append( mainParams.dictDirs, "./" );
         }
 
-        if ( isServer ) {
-            if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
-                mainParams.pgi.serverRole = SERVER_STANDALONE;
-            } else {
+        if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
+            mainParams.pgi.serverRole = SERVER_STANDALONE;
+        } else if ( isServer ) {
+            if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) {
                 mainParams.pgi.serverRole = SERVER_ISSERVER;
             }
         } else {
@@ -2646,7 +2651,7 @@ main( int argc, char** argv )
         if ( mainParams.useCurses ) {
             if ( mainParams.needsNewGame ) {
                 /* curses doesn't have newgame dialog */
-                usage( argv[0], "game params required for curses version" );
+                usage( argv[0], "game params required for curses version, e.g. --name Eric --remote-player");
             } else {
 #if defined PLATFORM_NCURSES
                 cursesmain( isServer, &mainParams );

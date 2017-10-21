@@ -74,7 +74,6 @@ write_callback(void *contents, size_t size, size_t nmemb, void* data)
 {
     ReadState* rs = (ReadState*)data;
     XP_LOGF( "%s(size=%ld, nmemb=%ld)", __func__, size, nmemb );
-    // void** pp = (void**)data;
     size_t oldLen = rs->curSize;
     const size_t newLength = size * nmemb;
     XP_ASSERT( (oldLen + newLength) > 0 );
@@ -83,6 +82,26 @@ write_callback(void *contents, size_t size, size_t nmemb, void* data)
     rs->ptr[oldLen + newLength - 1] = '\0';
     // XP_LOGF( "%s() => %ld: (passed: \"%s\")", __func__, result, *strp );
     return newLength;
+}
+
+static void
+addJsonParams( CURL* curl, const char* name, json_object* param )
+{
+    const char* asStr = json_object_to_json_string( param );
+    XP_LOGF( "%s: added str: %s", __func__, asStr );
+
+    char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
+    // char buf[4*1024];
+    gchar* buf = g_strdup_printf( "%s=%s", name, curl_params );
+
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDS, buf );
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf) );
+
+    g_free( buf );
+    // size_t buflen = snprintf( buf, sizeof(buf), "ids=%s", curl_params);
+    // XP_ASSERT( buflen < sizeof(buf) );
+    curl_free( curl_params );
+    json_object_put( param );
 }
 
 XP_Bool
@@ -100,7 +119,6 @@ checkForMsgs( LaunchParams* params, XWGame* game )
     }
 
     if ( !!idBuf[0] ) {
-    
         ReadState rs = {
             .ptr = g_malloc0(1),
             .curSize = 1L
@@ -110,8 +128,6 @@ checkForMsgs( LaunchParams* params, XWGame* game )
         json_object* ids = json_object_new_array();
         json_object* idstr = json_object_new_string(idBuf);
         json_object_array_add(ids, idstr);
-        const char* asStr = json_object_to_json_string( ids );
-        XP_LOGF( "%s: added str: %s", __func__, asStr );
 
         CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
         XP_ASSERT(res == CURLE_OK);
@@ -121,15 +137,8 @@ checkForMsgs( LaunchParams* params, XWGame* game )
                          "http://localhost/xw4/relay.py/query");
         curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
-        char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
-        char buf[4*1024];
-        size_t buflen = snprintf( buf, sizeof(buf), "ids=%s", curl_params);
-        XP_ASSERT( buflen < sizeof(buf) );
-        curl_free(curl_params);
+        addJsonParams( curl, "ids", ids );
     
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf));
-
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback );
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &rs );
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
@@ -149,31 +158,33 @@ checkForMsgs( LaunchParams* params, XWGame* game )
 
         if (res == CURLE_OK) {
             json_object* reply = json_tokener_parse( rs.ptr );
-            json_object_object_foreach(reply, key, val) {
-                int len = json_object_array_length(val);
-                XP_LOGF( "%s: got key: %s of len %d", __func__, key, len );
-                for ( int ii = 0; ii < len; ++ii ) {
-                    json_object* forGame = json_object_array_get_idx(val, ii);
-                    int len2 = json_object_array_length(forGame);
-                    foundAny = foundAny || len2 > 0;
-                    for ( int jj = 0; jj < len2; ++jj ) {
-                        json_object* oneMove = json_object_array_get_idx(forGame, jj);
-                        const char* asStr = json_object_get_string(oneMove);
-                        gsize out_len;
-                        guchar* buf = g_base64_decode( asStr, &out_len );
-                        XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool)
-                                                                params->vtMgr, params, 
-                                                                CHANNEL_NONE, NULL );
-                        stream_putBytes( stream, buf, out_len );
-                        g_free(buf);
+            if ( !!reply ) {
+                json_object_object_foreach(reply, key, val) {
+                    int len = json_object_array_length(val);
+                    XP_LOGF( "%s: got key: %s of len %d", __func__, key, len );
+                    for ( int ii = 0; ii < len; ++ii ) {
+                        json_object* forGame = json_object_array_get_idx(val, ii);
+                        int len2 = json_object_array_length(forGame);
+                        foundAny = foundAny || len2 > 0;
+                        for ( int jj = 0; jj < len2; ++jj ) {
+                            json_object* oneMove = json_object_array_get_idx(forGame, jj);
+                            const char* asStr = json_object_get_string(oneMove);
+                            gsize out_len;
+                            guchar* buf = g_base64_decode( asStr, &out_len );
+                            XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool)
+                                                                    params->vtMgr, params,
+                                                                    CHANNEL_NONE, NULL );
+                            stream_putBytes( stream, buf, out_len );
+                            g_free(buf);
 
-                        CommsAddrRec addr = {0};
-                        addr_addType( &addr, COMMS_CONN_RELAY );
-                        XP_Bool handled = game_receiveMessage( game, stream, &addr );
-                        XP_LOGF( "%s(): game_receiveMessage() => %d", __func__, handled );
-                        stream_destroy( stream );
+                            CommsAddrRec addr = {0};
+                            addr_addType( &addr, COMMS_CONN_RELAY );
+                            XP_Bool handled = game_receiveMessage( game, stream, &addr );
+                            XP_LOGF( "%s(): game_receiveMessage() => %d", __func__, handled );
+                            stream_destroy( stream );
 
-                        foundAny = XP_TRUE;
+                            foundAny = XP_TRUE;
+                        }
                     }
                 }
             }
@@ -568,13 +579,11 @@ static void*
 postThread( void* arg )
 {
     PostArgs* pa = (PostArgs*)arg;
-    const char* data = g_base64_encode( pa->msgbuf, pa->len );
+    char* data = g_base64_encode( pa->msgbuf, pa->len );
     struct json_object* jobj = json_object_new_object();
     struct json_object* jstr = json_object_new_string(data);
-    // g_free( data );
+    g_free( data );
     json_object_object_add( jobj, "data", jstr );
-    const char* asStr = json_object_to_json_string( jobj );
-    XP_LOGF( "%s: added str: %s", __func__, asStr );
 
     pa->rs.ptr = g_malloc0(1);
     pa->rs.curSize = 1L;
@@ -586,14 +595,7 @@ postThread( void* arg )
     curl_easy_setopt(curl, CURLOPT_URL, "http://localhost/xw4/relay.py/post");
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
-    char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
-    char buf[4*1024];
-    size_t buflen = snprintf( buf, sizeof(buf), "params=%s", curl_params);
-    XP_ASSERT( buflen < sizeof(buf) );
-    curl_free(curl_params);
-
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf));
+    addJsonParams( curl, "params", jobj );
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback );
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &pa->rs );
@@ -608,11 +610,11 @@ postThread( void* arg )
     /* always cleanup */
     curl_easy_cleanup(curl);
     curl_global_cleanup();
-    (void)json_object_put( jobj );
 
     XP_LOGF( "%s(): got \"%s\"", __func__, pa->rs.ptr );
 
-    (void)g_idle_add(onGotData, pa);
+    // Put the data on the main thread for processing
+    (void)g_idle_add( onGotData, pa );
 
     return NULL;
 }
@@ -635,7 +637,7 @@ static ssize_t
 sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 {
     ssize_t nSent;
-    if (1) {
+    if ( storage->params->useHTTP ) {
         nSent = post( storage, msgbuf, len );
     } else {
         nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
