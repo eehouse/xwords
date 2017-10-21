@@ -1290,8 +1290,10 @@ makeMenus( GtkGameGlobals* globals )
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
                          (GCallback)handle_memstats, globals );
-    (void)createAddItem( fileMenu, "Check for moves",
-                         (GCallback)handle_movescheck, globals );
+    if ( globals->cGlobals.params->useHTTP ) {
+        (void)createAddItem( fileMenu, "Check for moves",
+                             (GCallback)handle_movescheck, globals );
+    }
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT
