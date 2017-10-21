@@ -11,14 +11,14 @@ try:
 except ImportError:
     apacheAvailable = False
 
-def post(req, params):
+def post(req, params, timeoutSecs = 1):
     err = 'none'
     dataLen = 0
     jobj = json.loads(params)
     data = base64.b64decode(jobj['data'])
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(1)         # seconds
+    sock.settimeout(timeoutSecs)         # seconds
     addr = ("127.0.0.1", 10997)
     sock.sendto(data, addr)
 
