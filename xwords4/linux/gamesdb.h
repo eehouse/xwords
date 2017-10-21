@@ -31,6 +31,7 @@ typedef struct _GameInfo {
     XP_UCHAR name[128];
     XP_UCHAR room[128];
     XP_UCHAR conn[128];
+    XP_UCHAR relayID[32];
 #ifdef PLATFORM_GTK
     GdkPixbuf* snap;
 #endif

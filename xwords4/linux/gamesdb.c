@@ -52,6 +52,7 @@ openGamesDB( const char* dbName )
         ",inviteInfo BLOB"
         ",room VARCHAR(32)"
         ",connvia VARCHAR(32)"
+        ",relayid VARCHAR(32)"
         ",ended INT(1)"
         ",turn INT(2)"
         ",local INT(1)"
@@ -199,11 +200,12 @@ addSnapshot( CommonGlobals* cGlobals )
 void
 summarize( CommonGlobals* cGlobals )
 {
-    XP_S16 nMoves = model_getNMoves( cGlobals->game.model );
-    XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
+    const XWGame* game = &cGlobals->game;
+    XP_S16 nMoves = model_getNMoves( game->model );
+    XP_Bool gameOver = server_getGameIsOver( game->server );
     XP_Bool isLocal;
-    XP_S16 turn = server_getCurrentTurn( cGlobals->game.server, &isLocal );
-    XP_U32 lastMoveTime = server_getLastMoveTime( cGlobals->game.server );
+    XP_S16 turn = server_getCurrentTurn( game->server, &isLocal );
+    XP_U32 lastMoveTime = server_getLastMoveTime( game->server );
     XP_U16 seed = 0;
     XP_S16 nMissing = 0;
     XP_U16 nTotal = cGlobals->gi->nPlayers;
@@ -214,10 +216,11 @@ summarize( CommonGlobals* cGlobals )
 
     // gchar* connvia = "local";
     gchar connvia[128] = {0};
+    XP_UCHAR relayID[32] = {0};
 
-    if ( !!cGlobals->game.comms ) {
-        nMissing = server_getMissingPlayers( cGlobals->game.server );
-        comms_getAddr( cGlobals->game.comms, &addr );
+    if ( !!game->comms ) {
+        nMissing = server_getMissingPlayers( game->server );
+        comms_getAddr( game->comms, &addr );
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
             if ( !!connvia[0] ) {
@@ -242,18 +245,21 @@ summarize( CommonGlobals* cGlobals )
                 break;
             }
         }
-        seed = comms_getChannelSeed( cGlobals->game.comms );
+        seed = comms_getChannelSeed( game->comms );
+        XP_U16 len = VSIZE(relayID);
+        (void)comms_getRelayID( game->comms, relayID, &len );
     } else {
         strcat( connvia, "local" );
     }
 
     const char* fmt = "UPDATE games "
-        " SET room='%s', ended=%d, turn=%d, local=%d, ntotal=%d, nmissing=%d, "
-        " nmoves=%d, seed=%d, gameid=%d, connvia='%s', lastMoveTime=%d"
+        " SET room='%s', ended=%d, turn=%d, local=%d, ntotal=%d, "
+        " nmissing=%d, nmoves=%d, seed=%d, gameid=%d, connvia='%s', "
+        " relayid='%s', lastMoveTime=%d"
         " WHERE rowid=%lld";
     XP_UCHAR buf[256];
     snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, isLocal?1:0,
-              nTotal, nMissing, nMoves, seed, gameID, connvia, lastMoveTime,
+              nTotal, nMissing, nMoves, seed, gameID, connvia, relayID, lastMoveTime,
               cGlobals->selRow );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
@@ -310,7 +316,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT room, ended, turn, local, nmoves, ntotal, nmissing, "
-        "seed, connvia, gameid, lastMoveTime, snap "
+        "seed, connvia, gameid, lastMoveTime, relayid, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -321,25 +327,28 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
     result = sqlite3_step( ppStmt );
     if ( SQLITE_ROW == result ) {
         success = XP_TRUE;
-        getColumnText( ppStmt, 0, gib->room, sizeof(gib->room) );
-        gib->gameOver = 1 == sqlite3_column_int( ppStmt, 1 );
-        gib->turn = sqlite3_column_int( ppStmt, 2 );
-        gib->turnLocal = 1 == sqlite3_column_int( ppStmt, 3 );
-        gib->nMoves = sqlite3_column_int( ppStmt, 4 );
-        gib->nTotal = sqlite3_column_int( ppStmt, 5 );
-        gib->nMissing = sqlite3_column_int( ppStmt, 6 );
-        gib->seed = sqlite3_column_int( ppStmt, 7 );
-        getColumnText( ppStmt, 8, gib->conn, sizeof(gib->conn) );
-        gib->gameID = sqlite3_column_int( ppStmt, 9 );
-        gib->lastMoveTime = sqlite3_column_int( ppStmt, 10 );
+        int col = 0;
+        getColumnText( ppStmt, col++, gib->room, sizeof(gib->room) );
+        gib->gameOver = 1 == sqlite3_column_int( ppStmt, col++ );
+        gib->turn = sqlite3_column_int( ppStmt, col++ );
+        gib->turnLocal = 1 == sqlite3_column_int( ppStmt, col++ );
+        gib->nMoves = sqlite3_column_int( ppStmt, col++ );
+        gib->nTotal = sqlite3_column_int( ppStmt, col++ );
+        gib->nMissing = sqlite3_column_int( ppStmt, col++ );
+        gib->seed = sqlite3_column_int( ppStmt, col++ );
+        getColumnText( ppStmt, col++, gib->conn, sizeof(gib->conn) );
+        gib->gameID = sqlite3_column_int( ppStmt, col++ );
+        gib->lastMoveTime = sqlite3_column_int( ppStmt, col++ );
+        getColumnText( ppStmt, col++, gib->relayID, sizeof(gib->relayID) );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
 
 #ifdef PLATFORM_GTK
         /* Load the snapshot */
         GdkPixbuf* snap = NULL;
-        const XP_U8* ptr = sqlite3_column_blob( ppStmt, 11 );
+        int snapCol = col++;
+        const XP_U8* ptr = sqlite3_column_blob( ppStmt, snapCol );
         if ( !!ptr ) {
-            int size = sqlite3_column_bytes( ppStmt, 11 );
+            int size = sqlite3_column_bytes( ppStmt, snapCol );
             /* Skip the version that's written in */
             ptr += sizeof(XP_U16); size -= sizeof(XP_U16);
             GInputStream* istr = g_memory_input_stream_new_from_data( ptr, size, NULL );

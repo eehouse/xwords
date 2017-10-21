@@ -76,7 +76,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM,
-       CONN_ITEM, OVER_ITEM, TURN_ITEM, LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
+       CONN_ITEM, RELAYID_ITEM, OVER_ITEM, TURN_ITEM, LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
        MISSING_ITEM, LASTTURN_ITEM, N_ITEMS };
 
 static void
@@ -167,6 +167,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "GameID", GAMEID_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
     addTextColumn( list, "Conn. via", CONN_ITEM );
+    addTextColumn( list, "RelayID", RELAYID_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "Local", LOCAL_ITEM );
@@ -183,6 +184,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT,     /* GAMEID_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
                                               G_TYPE_STRING,  /* CONN_ITEM */
+                                              G_TYPE_STRING,  /*RELAYID_ITEM */
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_STRING,  /* LOCAL_ITEM */
@@ -239,6 +241,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         GAMEID_ITEM, gib->gameID,
                         SEED_ITEM, gib->seed,
                         CONN_ITEM, gib->conn,
+                        RELAYID_ITEM, gib->relayID,
                         TURN_ITEM, gib->turn,
                         OVER_ITEM, gib->gameOver,
                         LOCAL_ITEM, localString,

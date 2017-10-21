@@ -1315,7 +1315,7 @@ static void
 disenable_buttons( GtkGameGlobals* globals )
 {
     XP_U16 nPending = server_getPendingRegs( globals->cGlobals.game.server );
-    if ( !globals->invite_button && 0 < nPending ) {
+    if ( !globals->invite_button && 0 < nPending && !!globals->buttons_hbox ) {
         globals->invite_button = 
             addButton( globals->buttons_hbox, "Invite",
                        G_CALLBACK(handle_invite_button), globals );
