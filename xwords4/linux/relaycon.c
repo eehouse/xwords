@@ -29,6 +29,7 @@
 #include "comtypes.h"
 
 typedef struct _RelayConStorage {
+    pthread_t mainThread;
     int socket;
     RelayConnProcs procs;
     void* procsClosure;
@@ -202,6 +203,8 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     XP_MEMCPY( &storage->procs, procs, sizeof(storage->procs) );
     storage->procsClosure = procsClosure;
 
+    storage->mainThread = pthread_self();
+
     storage->socket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
     (*procs->socketAdded)( storage, storage->socket, relaycon_receive );
 
@@ -358,6 +361,12 @@ relaycon_deleted( LaunchParams* params, const XP_UCHAR* devID,
     indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
 
     sendIt( storage, tmpbuf, indx );
+}
+
+static XP_Bool
+onMainThread( RelayConStorage* storage )
+{
+    return storage->mainThread = pthread_self();
 }
 
 static void
@@ -579,6 +588,7 @@ static void*
 postThread( void* arg )
 {
     PostArgs* pa = (PostArgs*)arg;
+    XP_ASSERT( !onMainThread(pa->storage) );
     char* data = g_base64_encode( pa->msgbuf, pa->len );
     struct json_object* jobj = json_object_new_object();
     struct json_object* jstr = json_object_new_string(data);
