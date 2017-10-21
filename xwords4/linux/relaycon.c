@@ -27,9 +27,15 @@
 #include "relaycon.h"
 #include "linuxmain.h"
 #include "comtypes.h"
+#include "gamesdb.h"
+
+#define MAX_MOVE_CHECK_SECS ((XP_U16)(60 * 60 * 24))
 
 typedef struct _RelayConStorage {
     pthread_t mainThread;
+    guint moveCheckerID;
+    XP_U16 nextMoveCheckSecs;
+
     int socket;
     RelayConnProcs procs;
     void* procsClosure;
@@ -48,6 +54,7 @@ static RelayConStorage* getStorage( LaunchParams* params );
 static XP_U32 hostNameToIP( const XP_UCHAR* name );
 static gboolean relaycon_receive( GIOChannel *source, GIOCondition condition, 
                                   gpointer data );
+static void scheule_next_check( RelayConStorage* storage );
 static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
@@ -216,6 +223,10 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->params = params;
 
     storage->proto = XWPDEV_PROTO_VERSION_1;
+
+    if ( params->useHTTP ) {
+        scheule_next_check( storage );
+    }
 }
 
 /* Send existing relay-assigned rDevID to relay, or empty string if we have
@@ -641,6 +652,49 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     (void)pthread_create( &thread, NULL, postThread, (void*)pa );
     pthread_detach( thread );
     return len;
+}
+
+static gboolean
+checkForMoves( gpointer user_data )
+{
+    LOG_FUNC();
+    RelayConStorage* storage = (RelayConStorage*)user_data;
+    XP_ASSERT( onMainThread(storage) );
+
+    sqlite3* dbp = storage->params->pDb;
+    GHashTable* map = getRowsToRelayIDsMap( dbp );
+    GList* ids = g_hash_table_get_values( map );
+    for ( GList* iter = ids; !!iter; iter = iter->next ) {
+        gpointer data = iter->data;
+        XP_LOGF( "checkForMoves: got id: %s", (char*)data );
+    }
+    g_list_free( ids );
+    g_hash_table_destroy( map );
+
+    scheule_next_check( storage );
+    return FALSE;
+}
+
+static void
+scheule_next_check( RelayConStorage* storage )
+{
+    XP_ASSERT( onMainThread(storage) );
+
+    if ( storage->moveCheckerID != 0 ) {
+        g_source_remove( storage->moveCheckerID );
+        storage->moveCheckerID = 0;
+    }
+
+    storage->nextMoveCheckSecs *= 2;
+    if ( storage->nextMoveCheckSecs > MAX_MOVE_CHECK_SECS ) {
+        storage->nextMoveCheckSecs = MAX_MOVE_CHECK_SECS;
+    } else if ( storage->nextMoveCheckSecs == 0 ) {
+        storage->nextMoveCheckSecs = 1;
+    }
+
+    storage->moveCheckerID = g_timeout_add( 1000 * storage->nextMoveCheckSecs,
+                                            checkForMoves, storage );
+    XP_ASSERT( storage->moveCheckerID != 0 );
 }
 
 static ssize_t

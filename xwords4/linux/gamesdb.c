@@ -311,6 +311,40 @@ listGames( sqlite3* pDb )
     return list;
 }
 
+GHashTable*
+getRowsToRelayIDsMap( sqlite3* pDb )
+{
+    GHashTable* table = g_hash_table_new( g_int64_hash, g_int64_equal );
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, "SELECT rowid, relayid FROM games", 
+                                     -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, SQLITE_OK );
+    XP_USE( result );
+    while ( NULL != ppStmt ) {
+        switch( sqlite3_step( ppStmt ) ) {
+        case SQLITE_ROW:        /* have data */
+        {
+            sqlite3_int64* key = g_malloc( sizeof( *key ) );
+            *key = sqlite3_column_int64( ppStmt, 0 );
+            XP_UCHAR relayID[32];
+            getColumnText( ppStmt, 1, relayID, VSIZE(relayID) );
+            gpointer value = g_strdup( relayID );
+            g_hash_table_insert( table, key, value );
+        }
+        break;
+        case SQLITE_DONE:
+            sqlite3_finalize( ppStmt );
+            ppStmt = NULL;
+            break;
+        default:
+            XP_ASSERT( 0 );
+            break;
+        }
+    }
+
+    return table;
+}
+
 XP_Bool
 getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
