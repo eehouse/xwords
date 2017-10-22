@@ -30,6 +30,7 @@
 #include "gamesdb.h"
 
 #define MAX_MOVE_CHECK_SECS ((XP_U16)(60 * 60 * 24))
+#define RELAY_API_PROTO "http"
 
 typedef struct _RelayConStorage {
     pthread_t mainThread;
@@ -43,6 +44,7 @@ typedef struct _RelayConStorage {
     uint32_t nextID;
     XWPDevProto proto;
     LaunchParams* params;
+    XP_UCHAR host[64];
 } RelayConStorage;
 
 typedef struct _MsgHeader {
@@ -139,6 +141,9 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->saddr.sin_family = PF_INET;
     storage->saddr.sin_addr.s_addr = htonl( hostNameToIP(host) );
     storage->saddr.sin_port = htons(port);
+
+    XP_ASSERT( XP_STRLEN(host) < VSIZE(storage->host) );
+    XP_MEMCPY( storage->host, host, XP_STRLEN(host) + 1 );
 
     storage->params = params;
 
@@ -533,14 +538,17 @@ postThread( void* arg )
     XP_ASSERT(res == CURLE_OK);
     CURL* curl = curl_easy_init();
 
-    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost/xw4/relay.py/post");
-    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    char url[128];
+    snprintf( url, sizeof(url), "%s://%s/xw4/relay.py/post",
+              RELAY_API_PROTO, pa->storage->host );
+    curl_easy_setopt( curl, CURLOPT_URL, url );
+    curl_easy_setopt( curl, CURLOPT_POST, 1L );
 
     addJsonParams( curl, "params", jobj );
 
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback );
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &pa->rs );
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
+    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &pa->rs );
+    curl_easy_setopt( curl, CURLOPT_VERBOSE, 1L );
 
     res = curl_easy_perform(curl);
     XP_LOGF( "%s(): curl_easy_perform() => %d", __func__, res );
@@ -558,7 +566,7 @@ postThread( void* arg )
     (void)g_idle_add( onGotPostData, pa );
 
     return NULL;
-}
+} /* postThread */
 
 static ssize_t
 post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
@@ -632,6 +640,7 @@ static void*
 queryThread( void* arg )
 {
     QueryArgs* qa = (QueryArgs*)arg;
+    XP_ASSERT( !onMainThread(qa->storage) );
     GList* ids = g_hash_table_get_keys( qa->map );
     qa->rs.ptr = g_malloc0(1);
     qa->rs.curSize = 1L;
@@ -647,8 +656,10 @@ queryThread( void* arg )
     XP_ASSERT(res == CURLE_OK);
     CURL* curl = curl_easy_init();
 
-    curl_easy_setopt(curl, CURLOPT_URL,
-                     "http://localhost/xw4/relay.py/query");
+    char url[128];
+    snprintf( url, sizeof(url), "%s://%s/xw4/relay.py/query",
+              RELAY_API_PROTO, qa->storage->host );
+    curl_easy_setopt(curl, CURLOPT_URL, url );
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
     addJsonParams( curl, "ids", jIds );
@@ -674,7 +685,7 @@ queryThread( void* arg )
     g_idle_add( onGotQueryData, qa );
 
     return NULL;
-}
+} /* queryThread */
 
 static gboolean
 checkForMoves( gpointer user_data )
