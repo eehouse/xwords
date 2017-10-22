@@ -27,6 +27,8 @@
 typedef struct _Procs {
     void (*msgReceived)( void* closure, const CommsAddrRec* from, 
                          const XP_U8* buf, XP_U16 len );
+    void (*msgForRow)( void* closure, const CommsAddrRec* from,
+                       sqlite3_int64 rowid, const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure );
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
                            XP_U16 maxInterval );
@@ -57,5 +59,5 @@ void relaycon_cleanup( LaunchParams* params );
 XP_U32 makeClientToken( sqlite3_int64 rowid, XP_U16 seed );
 void rowidFromToken( XP_U32 clientToken, sqlite3_int64* rowid, XP_U16* seed );
 
-XP_Bool checkForMsgs(LaunchParams* params, XWGame* game);
+void checkForMsgsNow( LaunchParams* params );
 #endif

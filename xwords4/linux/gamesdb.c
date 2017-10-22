@@ -312,11 +312,11 @@ listGames( sqlite3* pDb )
 }
 
 GHashTable*
-getRowsToRelayIDsMap( sqlite3* pDb )
+getRelayIDsToRowsMap( sqlite3* pDb )
 {
-    GHashTable* table = g_hash_table_new( g_int64_hash, g_int64_equal );
+    GHashTable* table = g_hash_table_new( g_str_hash, g_str_equal );
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, "SELECT rowid, relayid FROM games", 
+    int result = sqlite3_prepare_v2( pDb, "SELECT relayid, rowid FROM games", 
                                      -1, &ppStmt, NULL );
     assertPrintResult( pDb, result, SQLITE_OK );
     XP_USE( result );
@@ -324,12 +324,13 @@ getRowsToRelayIDsMap( sqlite3* pDb )
         switch( sqlite3_step( ppStmt ) ) {
         case SQLITE_ROW:        /* have data */
         {
-            sqlite3_int64* key = g_malloc( sizeof( *key ) );
-            *key = sqlite3_column_int64( ppStmt, 0 );
             XP_UCHAR relayID[32];
-            getColumnText( ppStmt, 1, relayID, VSIZE(relayID) );
-            gpointer value = g_strdup( relayID );
+            getColumnText( ppStmt, 0, relayID, VSIZE(relayID) );
+            gpointer key = g_strdup( relayID );
+            sqlite3_int64* value = g_malloc( sizeof( *key ) );
+            *value = sqlite3_column_int64( ppStmt, 1 );
             g_hash_table_insert( table, key, value );
+            /* XP_LOGF( "%s(): added map %s => %lld", __func__, (char*)key, *value ); */
         }
         break;
         case SQLITE_DONE:

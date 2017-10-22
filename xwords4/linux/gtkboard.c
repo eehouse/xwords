@@ -341,6 +341,8 @@ relay_connd_gtk( void* closure, XP_UCHAR* const room,
     char buf[256];
 
     if ( allHere ) {
+        /* disable for now. Seeing this too often */
+        skip = XP_TRUE;
         snprintf( buf, sizeof(buf),
                   "All expected players have joined in %s.  Play!", room );
     } else {
@@ -1179,10 +1181,7 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    LaunchParams* params = globals->cGlobals.params;
-    if ( checkForMsgs( params, &globals->cGlobals.game ) ) {
-        board_draw( globals->cGlobals.game.board );
-    }
+    checkForMsgsNow( globals->cGlobals.params );
 }
 #endif
 

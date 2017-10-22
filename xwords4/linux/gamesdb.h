@@ -56,7 +56,8 @@ void summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
 GSList* listGames( sqlite3* dbp );
-GHashTable *getRowsToRelayIDsMap(sqlite3* dbp);
+/* Mapping of relayID -> rowid */
+GHashTable* getRelayIDsToRowsMap( sqlite3* pDb );
 
 XP_Bool getGameInfo( sqlite3* dbp, sqlite3_int64 rowid, GameInfo* gib );
 void getRowsForGameID( sqlite3* dbp, XP_U32 gameID, sqlite3_int64* rowids, 

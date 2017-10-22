@@ -696,6 +696,17 @@ gtkGotBuf( void* closure, const CommsAddrRec* from,
     XP_USE( seed );
 }
 
+static void
+gtkGotMsgForRow( void* closure, const CommsAddrRec* from,
+                 sqlite3_int64 rowid, const XP_U8* buf, XP_U16 len )
+{
+    XP_LOGF( "%s(): got msg of len %d for row %lld", __func__, len, rowid );
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    // LaunchParams* params = apg->params;
+    (void)feedBufferGTK( apg, rowid, buf, len, from );
+    LOG_RETURN_VOID();
+}
+
 static gint
 requestMsgs( gpointer data )
 {
@@ -850,6 +861,7 @@ gtkmain( LaunchParams* params )
         if ( params->useUdp ) {
             RelayConnProcs procs = {
                 .msgReceived = gtkGotBuf,
+                .msgForRow = gtkGotMsgForRow,
                 .msgNoticeReceived = gtkNoticeRcvd,
                 .devIDReceived = gtkDevIDReceived,
                 .msgErrorMsg = gtkErrorMsgRcvd,
