@@ -96,19 +96,17 @@ static void
 addJsonParams( CURL* curl, const char* name, json_object* param )
 {
     const char* asStr = json_object_to_json_string( param );
-    XP_LOGF( "%s: added str: %s", __func__, asStr );
 
     char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
-    // char buf[4*1024];
     gchar* buf = g_strdup_printf( "%s=%s", name, curl_params );
+    XP_LOGF( "%s: added param: %s", __func__, buf );
+    curl_free( curl_params );
 
     curl_easy_setopt( curl, CURLOPT_POSTFIELDS, buf );
     curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf) );
 
-    g_free( buf );
-    // size_t buflen = snprintf( buf, sizeof(buf), "ids=%s", curl_params);
-    // XP_ASSERT( buflen < sizeof(buf) );
-    curl_free( curl_params );
+    // Can't free the buf!! Well, maybe after the send...
+    // g_free( buf );
     json_object_put( param );
 }
 
@@ -654,6 +652,56 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     return len;
 }
 
+typedef struct _QueryArgs {
+    RelayConStorage* storage;
+    GSList* ids;
+    ReadState rs;
+} QueryArgs;
+
+static void*
+queryThread( void* arg )
+{
+    QueryArgs* qa = (QueryArgs*)arg;
+    GSList* ids = qa->ids;
+    qa->rs.ptr = g_malloc0(1);
+    qa->rs.curSize = 1L;
+
+    json_object* jIds = json_object_new_array();
+    for ( GSList* iter = ids; !!iter; iter = iter->next ) {
+        json_object* idstr = json_object_new_string( iter->data );
+        json_object_array_add(jIds, idstr);
+    }
+
+    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
+    XP_ASSERT(res == CURLE_OK);
+    CURL* curl = curl_easy_init();
+
+    curl_easy_setopt(curl, CURLOPT_URL,
+                     "http://localhost/xw4/relay.py/query");
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+    addJsonParams( curl, "ids", jIds );
+    
+    curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
+    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &qa->rs );
+    curl_easy_setopt( curl, CURLOPT_VERBOSE, 1L );
+
+    res = curl_easy_perform( curl );
+
+    XP_LOGF( "%s(): curl_easy_perform() => %d", __func__, res );
+    /* Check for errors */
+    if (res != CURLE_OK) {
+        XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    }
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+
+    XP_LOGF( "%s(): got <<%s>>", __func__, qa->rs.ptr );
+
+    return NULL;
+}
+
 static gboolean
 checkForMoves( gpointer user_data )
 {
@@ -661,15 +709,23 @@ checkForMoves( gpointer user_data )
     RelayConStorage* storage = (RelayConStorage*)user_data;
     XP_ASSERT( onMainThread(storage) );
 
+    QueryArgs* qa = (QueryArgs*)g_malloc0(sizeof(*qa));
+    qa->storage = storage;
+
     sqlite3* dbp = storage->params->pDb;
     GHashTable* map = getRowsToRelayIDsMap( dbp );
-    GList* ids = g_hash_table_get_values( map );
-    for ( GList* iter = ids; !!iter; iter = iter->next ) {
+    GList* values = g_hash_table_get_values( map );
+    for ( GList* iter = values; !!iter; iter = iter->next ) {
         gpointer data = iter->data;
         XP_LOGF( "checkForMoves: got id: %s", (char*)data );
+        qa->ids = g_slist_prepend( qa->ids, g_strdup(data) );
     }
-    g_list_free( ids );
+    g_list_free( values );
     g_hash_table_destroy( map );
+
+    pthread_t thread;
+    (void)pthread_create( &thread, NULL, queryThread, (void*)qa );
+    pthread_detach( thread );
 
     scheule_next_check( storage );
     return FALSE;
