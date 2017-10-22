@@ -76,22 +76,28 @@ static size_t un2vli( int nn, uint8_t* buf );
 static bool vli2un( const uint8_t** inp, uint32_t* outp );
 
 
-typedef struct _ReadState {
+typedef struct _WriteState {
     gchar* ptr;
     size_t curSize;
-} ReadState;
+} WriteState;
 
 static size_t
 write_callback(void *contents, size_t size, size_t nmemb, void* data)
 {
-    ReadState* rs = (ReadState*)data;
+    WriteState* ws = (WriteState*)data;
+
+    if ( !ws->ptr ) {
+        ws->ptr = g_malloc0(1);
+        ws->curSize = 1L;
+    }
+
     XP_LOGF( "%s(size=%ld, nmemb=%ld)", __func__, size, nmemb );
-    size_t oldLen = rs->curSize;
+    size_t oldLen = ws->curSize;
     const size_t newLength = size * nmemb;
     XP_ASSERT( (oldLen + newLength) > 0 );
-    rs->ptr = g_realloc( rs->ptr, oldLen + newLength );
-    memcpy( rs->ptr + oldLen - 1, contents, newLength );
-    rs->ptr[oldLen + newLength - 1] = '\0';
+    ws->ptr = g_realloc( ws->ptr, oldLen + newLength );
+    memcpy( ws->ptr + oldLen - 1, contents, newLength );
+    ws->ptr[oldLen + newLength - 1] = '\0';
     // XP_LOGF( "%s() => %ld: (passed: \"%s\")", __func__, result, *strp );
     return newLength;
 }
@@ -487,7 +493,7 @@ hostNameToIP( const XP_UCHAR* name )
 
 typedef struct _PostArgs {
     RelayConStorage* storage;
-    ReadState rs;
+    WriteState ws;
     const XP_U8* msgbuf;
     XP_U16 len;
 } PostArgs;
@@ -498,7 +504,7 @@ onGotPostData(gpointer user_data)
     PostArgs* pa = (PostArgs*)user_data;
     /* Now pull any data from the reply */
     // got "{"status": "ok", "dataLen": 14, "data": "AYQDiDAyMUEzQ0MyADw=", "err": "none"}"
-    json_object* reply = json_tokener_parse( pa->rs.ptr );
+    json_object* reply = json_tokener_parse( pa->ws.ptr );
     json_object* replyData;
     if ( json_object_object_get_ex( reply, "data", &replyData ) && !!replyData ) {
         int len = json_object_array_length(replyData);
@@ -514,7 +520,7 @@ onGotPostData(gpointer user_data)
     }
     (void)json_object_put( reply );
 
-    g_free( pa->rs.ptr );
+    g_free( pa->ws.ptr );
     g_free( pa );
 
     return FALSE;
@@ -531,9 +537,6 @@ postThread( void* arg )
     g_free( data );
     json_object_object_add( jobj, "data", jstr );
 
-    pa->rs.ptr = g_malloc0(1);
-    pa->rs.curSize = 1L;
-
     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
     XP_ASSERT(res == CURLE_OK);
     CURL* curl = curl_easy_init();
@@ -547,7 +550,7 @@ postThread( void* arg )
     addJsonParams( curl, "params", jobj );
 
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
-    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &pa->rs );
+    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &pa->ws );
     curl_easy_setopt( curl, CURLOPT_VERBOSE, 1L );
 
     res = curl_easy_perform(curl);
@@ -560,7 +563,7 @@ postThread( void* arg )
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 
-    XP_LOGF( "%s(): got \"%s\"", __func__, pa->rs.ptr );
+    XP_LOGF( "%s(): got \"%s\"", __func__, pa->ws.ptr );
 
     // Put the data on the main thread for processing
     (void)g_idle_add( onGotPostData, pa );
@@ -585,7 +588,7 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 typedef struct _QueryArgs {
     RelayConStorage* storage;
     /* GSList* ids; */
-    ReadState rs;
+    WriteState ws;
     GHashTable* map;
 } QueryArgs;
 
@@ -594,7 +597,7 @@ onGotQueryData( gpointer user_data )
 {
     QueryArgs* qa = (QueryArgs*)user_data;
     XP_Bool foundAny = false;
-    json_object* reply = json_tokener_parse( qa->rs.ptr );
+    json_object* reply = json_tokener_parse( qa->ws.ptr );
     if ( !!reply ) {
         CommsAddrRec addr = {0};
         addr_addType( &addr, COMMS_CONN_RELAY );
@@ -642,8 +645,6 @@ queryThread( void* arg )
     QueryArgs* qa = (QueryArgs*)arg;
     XP_ASSERT( !onMainThread(qa->storage) );
     GList* ids = g_hash_table_get_keys( qa->map );
-    qa->rs.ptr = g_malloc0(1);
-    qa->rs.curSize = 1L;
 
     json_object* jIds = json_object_new_array();
     for ( GList* iter = ids; !!iter; iter = iter->next ) {
@@ -665,7 +666,7 @@ queryThread( void* arg )
     addJsonParams( curl, "ids", jIds );
     
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
-    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &qa->rs );
+    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &qa->ws );
     curl_easy_setopt( curl, CURLOPT_VERBOSE, 1L );
 
     res = curl_easy_perform( curl );
@@ -679,7 +680,7 @@ queryThread( void* arg )
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 
-    XP_LOGF( "%s(): got <<%s>>", __func__, qa->rs.ptr );
+    XP_LOGF( "%s(): got <<%s>>", __func__, qa->ws.ptr );
 
     /* Put processing back on the main thread */
     g_idle_add( onGotQueryData, qa );
