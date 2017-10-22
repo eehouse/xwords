@@ -31,6 +31,7 @@ NAMES=(UNUSED Brynn Ariela Kati Eric)
 SEND_CHAT=''
 CORE_COUNT=$(ls core.* 2>/dev/null | wc -l)
 DUP_PACKETS=''
+HTTP_PCT=0
 
 declare -A PIDS
 declare -A APPS
@@ -220,6 +221,9 @@ build_cmds() {
             PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --db $FILE"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
+			if [ $((${RANDOM}%100)) -lt $HTTP_PCT ]; then
+				PARAMS="$PARAMS --use-http"
+			fi
             # PARAMS="$PARAMS --split-packets 2"
             if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
@@ -615,6 +619,7 @@ function usage() {
     echo "    [--udp-incr <pct>]                                      \\" >&2
     echo "    [--udp-start <pct>]      # default: $UDP_PCT_START                 \\" >&2
     echo "    [--undo-pct <int>]                                      \\" >&2
+    echo "    [--http-pct <0 <= n <=100>]                             \\" >&2
 
     exit 1
 }
@@ -689,6 +694,11 @@ while [ "$#" -gt 0 ]; do
             ;;
         --undo-pct)
             UNDO_PCT=$(getArg $*)
+            shift
+            ;;
+        --http-pct)
+            HTTP_PCT=$(getArg $*)
+            [ $HTTP_PCT -ge 0 -a $HTTP_PCT -le 100 ] || usage "n must be 0 <= n <= 100"
             shift
             ;;
         --send-chat)
