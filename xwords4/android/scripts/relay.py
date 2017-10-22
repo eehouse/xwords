@@ -36,7 +36,7 @@ def post(req, params, timeoutSecs = 1):
     return json.dumps(jobj)
 
 def query(req, ids):
-    print(ids)
+    print('ids', ids)
     ids = json.loads(ids)
 
     idsLen = 0
@@ -47,29 +47,25 @@ def query(req, ids):
     sock.connect(('127.0.0.1', 10998))
 
     lenShort = 2 + idsLen + len(ids) + 1
-    sock.send(struct.pack("hBBh", socket.htons(lenShort),
-                          PROTOCOL_VERSION, PRX_GET_MSGS,
-                          socket.htons(len(ids))))
+    print(lenShort, PROTOCOL_VERSION, PRX_GET_MSGS, len(ids))
+    header = struct.Struct("!hBBh")
+    assert header.size == 6
+    sock.send(header.pack(lenShort, PROTOCOL_VERSION, PRX_GET_MSGS, len(ids)))
 
     for id in ids: sock.send(id + '\n')
 
-    unpacker = struct.Struct('2H') # 2s f')
-    data = sock.recv(unpacker.size)
-    resLen, nameCount = unpacker.unpack(data)
-    resLen = socket.ntohs(resLen)
-    nameCount = socket.ntohs(nameCount)
+    unpacker = struct.Struct('!2H') # 2s f')
+    resLen, nameCount = unpacker.unpack(sock.recv(unpacker.size)) # problem when ids empty
     print('resLen:', resLen, 'nameCount:', nameCount)
     msgsLists = {}
     if nameCount == len(ids):
         for ii in range(nameCount):
             perGame = []
-            shortUnpacker = struct.Struct('H')
-            countsThisGame, = shortUnpacker.unpack(sock.recv(shortUnpacker.size))
-            countsThisGame = socket.ntohs(countsThisGame)
+            shortUnpacker = struct.Struct('!H')
+            countsThisGame, = shortUnpacker.unpack(sock.recv(shortUnpacker.size)) # problem
             print('countsThisGame:', countsThisGame)
             for jj in range(countsThisGame):
                 msgLen, = shortUnpacker.unpack(sock.recv(shortUnpacker.size))
-                msgLen = socket.ntohs(msgLen)
                 print('msgLen:', msgLen)
                 msgs = []
                 if msgLen > 0:
@@ -81,21 +77,6 @@ def query(req, ids):
             msgsLists[ids[ii]] = perGame
 
     return json.dumps(msgsLists)
-
-    # received = sock.recv(1024*4)
-    # print('len:', len(received))
-    # short resLen = dis.readShort();          // total message length
-    # short nameCount = dis.readShort();
-
-
-def dosend(sock, bytes):
-    totalsent = 0
-    while totalsent < len(bytes):
-        sent = sock.send(bytes[totalsent:])
-        if sent == 0:
-            raise RuntimeError("socket connection broken")
-        totalsent = totalsent + sent
-                                                                                    
 
 def main():
     print(query(None, json.dumps(sys.argv[1:])))
