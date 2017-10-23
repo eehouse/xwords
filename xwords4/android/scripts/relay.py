@@ -46,9 +46,9 @@ def query(req, ids):
     sock.settimeout(5)         # seconds
     sock.connect(('127.0.0.1', 10998))
 
-    lenShort = 2 + idsLen + len(ids) + 1
+    lenShort = 2 + idsLen + len(ids) + 2
     print(lenShort, PROTOCOL_VERSION, PRX_GET_MSGS, len(ids))
-    header = struct.Struct("!hBBh")
+    header = struct.Struct('!hBBh')
     assert header.size == 6
     sock.send(header.pack(lenShort, PROTOCOL_VERSION, PRX_GET_MSGS, len(ids)))
 
