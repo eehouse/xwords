@@ -139,7 +139,6 @@ addJsonParams( CURL* curl, const char* name, json_object* param )
     
     char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
     gchar* buf = g_strdup_printf( "%s=%s", name, curl_params );
-    XP_LOGF( "%s: added param: %s", __func__, buf );
     curl_free( curl_params );
 
     curl_easy_setopt( curl, CURLOPT_POSTFIELDS, buf );
@@ -148,6 +147,41 @@ addJsonParams( CURL* curl, const char* name, json_object* param )
     // Can't free the buf!! Well, maybe after the send...
     // g_free( buf );
     json_object_put( param );
+}
+
+static XP_Bool
+runWitCurl( RelayTask* task, const gchar* proc, const gchar* key,
+            json_object* jVal )
+{
+    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
+    XP_ASSERT(res == CURLE_OK);
+    CURL* curl = curl_easy_init();
+
+    char url[128];
+    snprintf( url, sizeof(url), "%s://%s/xw4/relay.py/%s",
+              RELAY_API_PROTO, task->storage->host, proc );
+    curl_easy_setopt( curl, CURLOPT_URL, url );
+    curl_easy_setopt( curl, CURLOPT_POST, 1L );
+
+    addJsonParams( curl, key, jVal );
+
+    curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
+    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &task->ws );
+    // curl_easy_setopt( curl, CURLOPT_VERBOSE, 1L );
+
+    res = curl_easy_perform(curl);
+    XP_Bool success = res == CURLE_OK;
+    XP_LOGF( "%s(): curl_easy_perform() => %d", __func__, res );
+    /* Check for errors */
+    if ( ! success ) {
+        XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    } else {
+        XP_LOGF( "%s(): got for %s: \"%s\"", __func__, proc, task->ws.ptr );
+    }
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    return success;
 }
 
 void
@@ -631,33 +665,8 @@ handlePost( RelayTask* task )
     g_free( data );
     json_object_object_add( jobj, "data", jstr );
 
-    CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
-    XP_ASSERT(res == CURLE_OK);
-    CURL* curl = curl_easy_init();
+    runWitCurl( task, "post", "params", jobj );
 
-    char url[128];
-    snprintf( url, sizeof(url), "%s://%s/xw4/relay.py/post",
-              RELAY_API_PROTO, task->storage->host );
-    curl_easy_setopt( curl, CURLOPT_URL, url );
-    curl_easy_setopt( curl, CURLOPT_POST, 1L );
-
-    addJsonParams( curl, "params", jobj );
-
-    curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
-    curl_easy_setopt( curl, CURLOPT_WRITEDATA, &task->ws );
-    curl_easy_setopt( curl, CURLOPT_VERBOSE, 1L );
-
-    res = curl_easy_perform(curl);
-    XP_LOGF( "%s(): curl_easy_perform() => %d", __func__, res );
-    /* Check for errors */
-    if (res != CURLE_OK) {
-        XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
-    }
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
-
-    XP_LOGF( "%s(): got \"%s\"", __func__, task->ws.ptr );
 
     // Put the data on the main thread for processing
     (void)g_idle_add( onGotPostData, task );
@@ -739,34 +748,7 @@ handleQuery( RelayTask* task )
         }
         g_list_free( ids );
 
-        CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
-        XP_ASSERT(res == CURLE_OK);
-        CURL* curl = curl_easy_init();
-
-        char url[128];
-        snprintf( url, sizeof(url), "%s://%s/xw4/relay.py/query",
-                  RELAY_API_PROTO, task->storage->host );
-        curl_easy_setopt(curl, CURLOPT_URL, url );
-        curl_easy_setopt(curl, CURLOPT_POST, 1L);
-
-        addJsonParams( curl, "ids", jIds );
-    
-        curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
-        curl_easy_setopt( curl, CURLOPT_WRITEDATA, &task->ws );
-        curl_easy_setopt( curl, CURLOPT_VERBOSE, 1L );
-
-        res = curl_easy_perform( curl );
-
-        /* Check for errors */
-        if (res != CURLE_OK) {
-            XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
-        }
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        curl_global_cleanup();
-
-        XP_LOGF( "%s(): got <<%s>>", __func__, task->ws.ptr );
-
+        runWitCurl( task, "query", "ids", jIds );
     }
     /* Put processing back on the main thread */
     g_idle_add( onGotQueryData, task );
