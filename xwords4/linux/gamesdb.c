@@ -316,11 +316,10 @@ getRelayIDsToRowsMap( sqlite3* pDb )
 {
     GHashTable* table = g_hash_table_new( g_str_hash, g_str_equal );
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, "SELECT relayid, rowid FROM games", 
-                                     -1, &ppStmt, NULL );
+    int result = sqlite3_prepare_v2( pDb, "SELECT relayid, rowid FROM games "
+                                     "where NOT relayid = ''", -1, &ppStmt, NULL );
     assertPrintResult( pDb, result, SQLITE_OK );
-    XP_USE( result );
-    while ( NULL != ppStmt ) {
+    while ( result == SQLITE_OK && NULL != ppStmt ) {
         switch( sqlite3_step( ppStmt ) ) {
         case SQLITE_ROW:        /* have data */
         {
