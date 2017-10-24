@@ -62,6 +62,8 @@ static gboolean relaycon_receive( GIOChannel *source, GIOCondition condition,
                                   gpointer data );
 static void schedule_next_check( RelayConStorage* storage );
 static void reset_schedule_check_interval( RelayConStorage* storage );
+static void checkForMovesOnce( RelayConStorage* storage );
+
 static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
@@ -153,7 +155,7 @@ checkForMsgsNow( LaunchParams* params )
 {
     RelayConStorage* storage = getStorage( params );
     XP_ASSERT( onMainThread(storage) );
-    XP_ASSERT(0);               /* FIX ME */
+    checkForMovesOnce( storage );
 }
 
 void
@@ -688,7 +690,6 @@ onGotQueryData( gpointer user_data )
             /* Currently there's an array of arrays for each relayID (value) */
             json_object_object_foreach(reply, relayID, arrOfArrOfMoves) {
                 int len1 = json_object_array_length( arrOfArrOfMoves );
-                XP_LOGF( "%s: got key: %s of len %d", __func__, relayID, len1 );
                 if ( len1 > 0 ) {
                     sqlite3_int64 rowid = *(sqlite3_int64*)g_hash_table_lookup( task->u.query.map, relayID );
                     for ( int ii = 0; ii < len1; ++ii ) {
@@ -771,18 +772,23 @@ handleQuery( RelayTask* task )
     g_idle_add( onGotQueryData, task );
 } /* handleQuery */
 
-static gboolean
-checkForMoves( gpointer user_data )
+static void
+checkForMovesOnce( RelayConStorage* storage )
 {
     LOG_FUNC();
-    RelayConStorage* storage = (RelayConStorage*)user_data;
     XP_ASSERT( onMainThread(storage) );
 
     RelayTask* task = makeRelayTask( storage, QUERY );
     sqlite3* dbp = storage->params->pDb;
     task->u.query.map = getRelayIDsToRowsMap( dbp );
     addTask( storage, task );
+}
 
+static gboolean
+checkForMoves( gpointer user_data )
+{
+    RelayConStorage* storage = (RelayConStorage*)user_data;
+    checkForMovesOnce( storage );
     schedule_next_check( storage );
     return FALSE;
 }
