@@ -1178,11 +1178,6 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     
 } /* handle_memstats */
 
-static void
-handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
-{
-    checkForMsgsNow( globals->cGlobals.params );
-}
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT
@@ -1207,15 +1202,15 @@ frame_active( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 }
 #endif
 
-static GtkWidget*
+GtkWidget*
 createAddItem( GtkWidget* parent, gchar* label, 
-               GCallback handlerFunc, GtkGameGlobals* globals ) 
+               GCallback handlerFunc, gpointer closure )
 {
     GtkWidget* item = gtk_menu_item_new_with_label( label );
 
     if ( handlerFunc != NULL ) {
         g_signal_connect( item, "activate", G_CALLBACK(handlerFunc),
-                          globals );
+                          closure );
     }
     
     gtk_menu_shell_append( GTK_MENU_SHELL(parent), item );
@@ -1289,10 +1284,6 @@ makeMenus( GtkGameGlobals* globals )
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
                          (GCallback)handle_memstats, globals );
-    if ( globals->cGlobals.params->useHTTP ) {
-        (void)createAddItem( fileMenu, "Check for moves",
-                             (GCallback)handle_movescheck, globals );
-    }
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT

@@ -187,6 +187,10 @@ XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
                         sqlite3_int64 rowid );
 void destroy_board_window( GtkWidget* widget, GtkGameGlobals* globals );
 
+GtkWidget* makeAddSubmenu( GtkWidget* menubar, gchar* label );
+GtkWidget* createAddItem( GtkWidget* parent, gchar* label,
+                          GCallback handlerFunc, gpointer closure );
+
 #endif /* PLATFORM_GTK */
 
 #endif

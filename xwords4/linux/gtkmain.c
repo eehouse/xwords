@@ -510,6 +510,13 @@ trySetWinConfig( GtkAppGlobals* apg )
 }
 
 static void
+handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    LaunchParams* params = apg->params;
+    checkForMsgsNow( params );
+}
+
+static void
 makeGamesWindow( GtkAppGlobals* apg )
 {
     GtkWidget* window;
@@ -532,6 +539,17 @@ makeGamesWindow( GtkAppGlobals* apg )
     GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add( GTK_CONTAINER(swin), vbox );
     gtk_widget_show( vbox );
+
+    // add menubar here
+    GtkWidget* menubar = gtk_menu_bar_new();
+    GtkWidget* netMenu = makeAddSubmenu( menubar, "Network" );
+    if ( params->useHTTP ) {
+        (void)createAddItem( netMenu, "Check for moves",
+                             (GCallback)handle_movescheck, apg );
+    }
+    gtk_widget_show( menubar );
+    gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
+
     GtkWidget* list = init_games_list( apg );
     gtk_container_add( GTK_CONTAINER(vbox), list );
     
