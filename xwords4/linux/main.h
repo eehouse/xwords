@@ -106,6 +106,7 @@ typedef struct LaunchParams {
     XP_Bool useCurses;
     XP_Bool useUdp;
     XP_Bool useHTTP;
+    XP_Bool noHTTPAuto;
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
     XP_U16 askTimeout;

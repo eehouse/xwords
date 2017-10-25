@@ -786,22 +786,23 @@ static void
 schedule_next_check( RelayConStorage* storage )
 {
     XP_ASSERT( onMainThread(storage) );
+    if ( !storage->params->noHTTPAuto ) {
+        if ( storage->moveCheckerID != 0 ) {
+            g_source_remove( storage->moveCheckerID );
+            storage->moveCheckerID = 0;
+        }
 
-    if ( storage->moveCheckerID != 0 ) {
-        g_source_remove( storage->moveCheckerID );
-        storage->moveCheckerID = 0;
+        storage->nextMoveCheckSecs *= 2;
+        if ( storage->nextMoveCheckSecs > MAX_MOVE_CHECK_SECS ) {
+            storage->nextMoveCheckSecs = MAX_MOVE_CHECK_SECS;
+        } else if ( storage->nextMoveCheckSecs == 0 ) {
+            storage->nextMoveCheckSecs = 1;
+        }
+
+        storage->moveCheckerID = g_timeout_add( 1000 * storage->nextMoveCheckSecs,
+                                                checkForMoves, storage );
+        XP_ASSERT( storage->moveCheckerID != 0 );
     }
-
-    storage->nextMoveCheckSecs *= 2;
-    if ( storage->nextMoveCheckSecs > MAX_MOVE_CHECK_SECS ) {
-        storage->nextMoveCheckSecs = MAX_MOVE_CHECK_SECS;
-    } else if ( storage->nextMoveCheckSecs == 0 ) {
-        storage->nextMoveCheckSecs = 1;
-    }
-
-    storage->moveCheckerID = g_timeout_add( 1000 * storage->nextMoveCheckSecs,
-                                            checkForMoves, storage );
-    XP_ASSERT( storage->moveCheckerID != 0 );
 }
 
 static ssize_t

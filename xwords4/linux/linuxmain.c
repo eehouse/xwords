@@ -635,6 +635,7 @@ typedef enum {
     ,CMD_USEUDP
     ,CMD_NOUDP
     ,CMD_USEHTTP
+    ,CMD_NOHTTPAUTO
     ,CMD_DROPSENDRELAY
     ,CMD_DROPRCVRELAY
     ,CMD_DROPSENDSMS
@@ -754,6 +755,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp (on by default)" }
     ,{ CMD_NOUDP, false, "no-use-udp", "connect to relay old-style, via tcp not udp" }
     ,{ CMD_USEHTTP, false, "use-http", "use relay's new http interfaces rather than sockets" }
+    ,{ CMD_NOHTTPAUTO, false, "no-http-auto", "When http's on, don't periodically connect to relay (manual only)" }
 
     ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
@@ -975,6 +977,7 @@ linux_setupDevidParams( LaunchParams* params )
 static int
 linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
 {
+    XP_ASSERT( !cGlobals->params->useHTTP );
     struct sockaddr_in to_sock;
     struct hostent* host;
     int sock = cGlobals->relaySocket;
@@ -1176,6 +1179,7 @@ linux_relay_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         result = relaycon_send( cGlobals->params, buf, buflen, 
                                 clientToken, addrRec );
     } else {
+        XP_ASSERT( !cGlobals->params->useHTTP );
         int sock = cGlobals->relaySocket;
     
         if ( sock == -1 ) {
@@ -2403,6 +2407,9 @@ main( int argc, char** argv )
         case CMD_USEHTTP:
             mainParams.useHTTP = true;
             break;
+        case CMD_NOHTTPAUTO:
+            mainParams.noHTTPAuto = true;
+            break;
 
         case CMD_DROPSENDRELAY:
             mainParams.commsDisableds[COMMS_CONN_RELAY][1] = XP_TRUE;
@@ -2651,7 +2658,8 @@ main( int argc, char** argv )
         if ( mainParams.useCurses ) {
             if ( mainParams.needsNewGame ) {
                 /* curses doesn't have newgame dialog */
-                usage( argv[0], "game params required for curses version, e.g. --name Eric --remote-player");
+                usage( argv[0], "game params required for curses version, e.g. --name Eric "
+                       "--remote-player --dict-dir ../ --game-dict dict.xwd");
             } else {
 #if defined PLATFORM_NCURSES
                 cursesmain( isServer, &mainParams );

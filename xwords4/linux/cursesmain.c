@@ -1681,6 +1681,7 @@ static void
 cursesGotBuf( void* closure, const CommsAddrRec* addr, 
               const XP_U8* buf, XP_U16 len )
 {
+    LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     XP_U32 clientToken;
     XP_ASSERT( sizeof(clientToken) < len );
@@ -1698,6 +1699,19 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
         XP_LOGF( "%s: dropping packet; meant for a different device",
                  __func__ );
     }
+    LOG_RETURN_VOID();
+}
+
+static void
+cursesGotForRow( void* closure, const CommsAddrRec* from,
+                 sqlite3_int64 rowid, const XP_U8* buf,
+                 XP_U16 len )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    XP_ASSERT( globals->cGlobals.selRow == rowid );
+    gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, from );
+    LOG_RETURN_VOID();
 }
 
 static gint
@@ -1971,6 +1985,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         if ( params->useUdp ) {
             RelayConnProcs procs = {
                 .msgReceived = cursesGotBuf,
+                .msgForRow = cursesGotForRow,
                 .msgNoticeReceived = cursesNoticeRcvd,
                 .devIDReceived = cursesDevIDReceived,
                 .msgErrorMsg = cursesErrorMsgRcvd,
