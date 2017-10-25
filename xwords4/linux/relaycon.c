@@ -29,13 +29,13 @@
 #include "comtypes.h"
 #include "gamesdb.h"
 
-#define MAX_MOVE_CHECK_SECS ((XP_U16)(60 * 60 * 24))
+#define MAX_MOVE_CHECK_MS ((XP_U16)(1000 * 60 * 60 * 24))
 #define RELAY_API_PROTO "http"
 
 typedef struct _RelayConStorage {
     pthread_t mainThread;
     guint moveCheckerID;
-    XP_U16 nextMoveCheckSecs;
+    XP_U32 nextMoveCheckMS;
     pthread_cond_t relayCondVar;
     pthread_mutex_t relayMutex;
     GSList* relayTaskList;
@@ -779,7 +779,7 @@ static void
 reset_schedule_check_interval( RelayConStorage* storage )
 {
     XP_ASSERT( onMainThread(storage) );
-    storage->nextMoveCheckSecs = 0;
+    storage->nextMoveCheckMS = 0;
 }
 
 static void
@@ -792,14 +792,14 @@ schedule_next_check( RelayConStorage* storage )
             storage->moveCheckerID = 0;
         }
 
-        storage->nextMoveCheckSecs *= 2;
-        if ( storage->nextMoveCheckSecs > MAX_MOVE_CHECK_SECS ) {
-            storage->nextMoveCheckSecs = MAX_MOVE_CHECK_SECS;
-        } else if ( storage->nextMoveCheckSecs == 0 ) {
-            storage->nextMoveCheckSecs = 1;
+        storage->nextMoveCheckMS *= 2;
+        if ( storage->nextMoveCheckMS > MAX_MOVE_CHECK_MS ) {
+            storage->nextMoveCheckMS = MAX_MOVE_CHECK_MS;
+        } else if ( storage->nextMoveCheckMS == 0 ) {
+            storage->nextMoveCheckMS = 250;
         }
 
-        storage->moveCheckerID = g_timeout_add( 1000 * storage->nextMoveCheckSecs,
+        storage->moveCheckerID = g_timeout_add( storage->nextMoveCheckMS,
                                                 checkForMoves, storage );
         XP_ASSERT( storage->moveCheckerID != 0 );
     }
