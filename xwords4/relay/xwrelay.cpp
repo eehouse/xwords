@@ -761,13 +761,17 @@ send_havemsgs( const AddrInfo* addr )
 class MsgClosure {
 public:
     MsgClosure( DevIDRelay dest, const vector<uint8_t>* packet,
-                OnMsgAckProc proc, void* procClosure )
+                int msgID, OnMsgAckProc proc, void* procClosure )
     {
+        assert(m_msgID != 0);
         m_destDevID = dest;
         m_packet = *packet;
         m_proc = proc;
         m_procClosure = procClosure;
+        m_msgID = msgID;
     }
+    int getMsgID() { return m_msgID; }
+    int m_msgID;
     DevIDRelay m_destDevID;
     vector<uint8_t> m_packet;
     OnMsgAckProc m_proc;
@@ -778,9 +782,14 @@ static void
 onPostedMsgAcked( bool acked, uint32_t packetID, void* data )
 {
     MsgClosure* mc = (MsgClosure*)data;
-    if ( !acked ) {
-        DBMgr::Get()->StoreMessage( mc->m_destDevID, mc->m_packet.data(),
-                                    mc->m_packet.size() );
+    int msgID = mc->getMsgID();
+    if ( acked ) {
+        DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
+    } else {
+        assert( msgID != 0 );
+        // So we only store after ack fails? Change that!!!
+        // DBMgr::Get()->StoreMessage( mc->m_destDevID, mc->m_packet.data(),
+        //                             mc->m_packet.size() );
     }
     if ( NULL != mc->m_proc ) {
         (*mc->m_proc)( acked, mc->m_destDevID, packetID, mc->m_procClosure );
@@ -793,6 +802,8 @@ static bool
 post_or_store( DevIDRelay destDevID, vector<uint8_t>& packet, uint32_t packetID,
                OnMsgAckProc proc, void* procClosure )
 {
+    int msgID = DBMgr::Get()->StoreMessage( destDevID, packet.data(), packet.size() );
+
     const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( destDevID );
     bool canSendNow = !!addru;
     
@@ -804,15 +815,12 @@ post_or_store( DevIDRelay destDevID, vector<uint8_t>& packet, uint32_t packetID,
         if ( get_addr_info_if( &addr, &sock, &dest_addr ) ) {
             sent = 0 < send_packet_via_udp_impl( packet, sock, dest_addr );
 
-            if ( sent ) {
-                MsgClosure* mc = new MsgClosure( destDevID, &packet,
+            if ( sent && msgID != 0 ) {
+                MsgClosure* mc = new MsgClosure( destDevID, &packet, msgID,
                                                  proc, procClosure );
                 UDPAckTrack::setOnAck( onPostedMsgAcked, packetID, (void*)mc );
             }
         }
-    }
-    if ( !sent ) {
-        DBMgr::Get()->StoreMessage( destDevID, packet.data(), packet.size() );
     }
     return sent;
 }

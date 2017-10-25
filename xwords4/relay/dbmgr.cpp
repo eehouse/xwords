@@ -1014,15 +1014,16 @@ DBMgr::CountStoredMessages( DevIDRelay relayID )
     return getCountWhere( MSGS_TABLE, test );
 }
 
-void
+int
 DBMgr::StoreMessage( DevIDRelay destDevID, const uint8_t* const buf,
                      int len )
 {
+    int msgID = 0;
     clearHasNoMessages( destDevID );
 
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE " "
-        "(devid, %s, msglen) VALUES(%d, %s'%s', %d)";
+        "(devid, %s, msglen) VALUES(%d, %s'%s', %d) RETURNING id";
     
     StrWPF query;
     if ( m_useB64 ) {
@@ -1038,13 +1039,20 @@ DBMgr::StoreMessage( DevIDRelay destDevID, const uint8_t* const buf,
     }
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-    execSql( query );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    if ( 1 == PQntuples( result ) ) {
+        msgID = atoi( PQgetvalue( result, 0, 0 ) );
+    }
+    PQclear( result );
+    return msgID;
 }
 
-void
+int
 DBMgr::StoreMessage( const char* const connName, int destHid,
                      const uint8_t* buf, int len )
 {
+    int msgID = 0;
     clearHasNoMessages( connName, destHid );
 
     DevIDRelay devID = getDevID( connName, destHid );
@@ -1074,7 +1082,7 @@ DBMgr::StoreMessage( const char* const connName, int destHid,
 #ifdef HAVE_STIME
                     " AND stime='epoch'" 
 #endif
-                    " );", connName, destHid, b64 );
+                    " )", connName, destHid, b64 );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
@@ -1085,9 +1093,17 @@ DBMgr::StoreMessage( const char* const connName, int destHid,
                     "E", bytes, len );
         PQfreemem( bytes );
     }
+    query.catf(" RETURNING id;");
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-    execSql( query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    if ( 1 == PQntuples( result ) ) {
+        msgID = atoi( PQgetvalue( result, 0, 0 ) );
+    } else {
+        logf( XW_LOGINFO, "Not stored; duplicate?" );
+    }
+    PQclear( result );
+    return msgID;
 }
 
 void
