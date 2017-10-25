@@ -1,7 +1,7 @@
 #!/bin/bash
 set -u -e
 
-LOGDIR=$(basename $0)_logs
+LOGDIR=./$(basename $0)_logs
 APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
@@ -598,6 +598,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
+    echo "    [--log-root]             # default: .                   \\" >&2
     echo "    [--dup-packets]          # send all packets twice       \\" >&2
     echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
@@ -653,6 +654,11 @@ while [ "$#" -gt 0 ]; do
             APPS_OLD[${#APPS_OLD[@]}]=$(getArg $*)
             shift
             ;;
+		--log-root)
+			[ -d $2 ] || usage "$1: no such directory $2"
+			LOGDIR=$2/$(basename $0)_logs
+			shift
+			;;
         --dup-packets)
             DUP_PACKETS=1
             ;;
@@ -761,7 +767,8 @@ for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
 done
 
 if [ -z "$RESUME" -a -d $LOGDIR ]; then
-    mv $LOGDIR /tmp/${LOGDIR}_$$
+	NEWNAME="$(basename $LOGDIR)_$$"
+    (cd $(dirname $LOGDIR) && mv $(basename $LOGDIR) /tmp/${NEWNAME})
 fi
 mkdir -p $LOGDIR
 
