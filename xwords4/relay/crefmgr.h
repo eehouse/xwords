@@ -128,7 +128,7 @@ class CRefMgr {
                                int nPlayersS, int seed, int langCode, 
                                bool isPublic, bool* isDead );
 
-    CidInfo* getMakeCookieRef( const char* const connName, bool* isDead );
+    CidInfo* getMakeCookieRef( const char* const connName, HostID hid, bool* isDead );
 
     CidInfo* getCookieRef( CookieID cid, bool failOk = false );
     CidInfo* getCookieRef( const AddrInfo* addr );
@@ -179,7 +179,7 @@ class SafeCref {
               const AddrInfo* addr, int clientVersion, DevID* devID, 
               int nPlayersH, int nPlayersS, unsigned short gameSeed, 
               int clientIndx, int langCode, bool wantsPublic, bool makePublic );
-    SafeCref( const char* const connName );
+    SafeCref( const char* const connName, HostID hid );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( const AddrInfo* addr );
     /* SafeCref( CookieRef* cref ); */

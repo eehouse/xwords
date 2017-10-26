@@ -75,7 +75,7 @@ class DBMgr {
     bool FindRelayIDFor( const char* connName, HostID hid, unsigned short seed,
                          const DevID* host, DevIDRelay* devID );
 
-    CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
+    CookieID FindGame( const char* connName, HostID hid, char* cookieBuf, int bufLen,
                        int* langP, int* nPlayersTP, int* nPlayersHP,
                        bool* isDead );
 

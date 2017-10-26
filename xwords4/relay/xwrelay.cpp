@@ -1446,7 +1446,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const uint8_t* bufp,
             }
             unsigned short nMsgs;
             if ( getNetShort( &bufp, end, &nMsgs ) ) {
-                SafeCref scr( connName );
+                SafeCref scr( connName, hid );
                 while ( scr.IsValid() && nMsgs-- > 0 ) {
                     unsigned short len;
                     if ( getNetShort( &bufp, end, &len ) ) {
@@ -1536,7 +1536,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                                                 sizeof( connName ), &hid ) ) {
                                 break;
                             }
-                            SafeCref scr( connName );
+                            SafeCref scr( connName, hid );
                             scr.DeviceGone( hid, seed );
                         }
                     }
@@ -1774,7 +1774,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                     logf( XW_LOGERROR, "parse failed!!!" );
                     break;
                 }
-                SafeCref scr( connName );
+                SafeCref scr( connName, hid );
                 if ( scr.IsValid() ) {
                     AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
                     handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
@@ -1841,7 +1841,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                 string connName;
                 if ( DBMgr::Get()->FindPlayer( devID.asRelayID(), clientToken, 
                                                connName, &hid, &seed ) ) {
-                    SafeCref scr( connName.c_str() );
+                    SafeCref scr( connName.c_str(), hid );
                     scr.DeviceGone( hid, seed );
                 }
             }

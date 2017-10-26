@@ -337,7 +337,7 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
 } /* getMakeCookieRef */
 
 CidInfo*
-CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
+CRefMgr::getMakeCookieRef( const char* const connName, HostID hid, bool* isDead )
 {
     CookieRef* cref = NULL;
     CidInfo* cinfo = NULL;
@@ -347,7 +347,7 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
     int nAlreadyHere = 0;
 
     for ( ; ; ) {               /* for: see comment above */
-        CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
+        CookieID cid = m_db->FindGame( connName, hid, curCookie, sizeof(curCookie),
                                        &curLangCode, &nPlayersT, &nAlreadyHere,
                                        isDead );
         if ( 0 != cid ) {           /* already open */
@@ -672,13 +672,13 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
 }
 
 /* ConnName case -- must exist (unless DB record's been removed */
-SafeCref::SafeCref( const char* const connName )
+SafeCref::SafeCref( const char* const connName, HostID hid )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
     bool isDead = false;
-    CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, &isDead );
+    CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, hid, &isDead );
     if ( NULL != cinfo && NULL != cinfo->GetRef() ) {
         assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
         m_locked = cinfo->GetRef()->Lock();

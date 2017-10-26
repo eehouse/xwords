@@ -153,19 +153,19 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
 } /* FindGameFor */
 
 CookieID
-DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
+DBMgr::FindGame( const char* connName, HostID hid, char* roomBuf, int roomBufLen,
                  int* langP, int* nPlayersTP, int* nPlayersHP, bool* isDead )
 {
     MutexLock ml( &m_cidsMutex );
 
     CookieID cid = 0;
 
-    const char* fmt = "SELECT room, lang, nTotal, nPerDevice, dead FROM "
+    const char* fmt = "SELECT room, lang, nTotal, nPerDevice[%d], dead FROM "
         GAMES_TABLE " WHERE connName = '%s'"
         // " LIMIT 1"
         ;
     StrWPF query;
-    query.catf( fmt, connName );
+    query.catf( fmt, hid, connName );
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -173,7 +173,7 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
     if ( 1 == PQntuples( result ) ) {
         int col = 0;
         cid = m_cidsMap[connName];
-        snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        snprintf( roomBuf, roomBufLen, "%s", PQgetvalue( result, 0, col++ ) );
         *langP = atoi( PQgetvalue( result, 0, col++ ) );
         *nPlayersTP = atoi( PQgetvalue( result, 0, col++ ) );
         *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
