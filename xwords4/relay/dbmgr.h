@@ -190,6 +190,8 @@ class DBMgr {
     pthread_mutex_t m_haveNoMessagesMutex;
     set<DevIDRelay> m_haveNoMessagesDevID;
     set<StrWPF> m_haveNoMessagesConnname;
+    pthread_mutex_t m_cidsMutex;
+    map<string, CookieID> m_cidsMap;
 }; /* DBMgr */
 
 
