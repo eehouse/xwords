@@ -17,7 +17,7 @@ SAVE_GOOD=""
 MINDEVS=""
 MAXDEVS=""
 ONEPER=""
-RESIGN_RATIO=""
+RESIGN_PCT=0
 DROP_N=""
 MINRUN=2		                # seconds
 ONE_PER_ROOM=""                 # don't run more than one device at a time per room
@@ -357,11 +357,11 @@ kill_from_log() {
 }
 
 maybe_resign() {
-    if [ "$RESIGN_RATIO" -gt 0 ]; then
+    if [ "$RESIGN_PCT" -gt 0 ]; then
         KEY=$1
         LOG=${LOGS[$KEY]}
         if grep -aq XWRELAY_ALLHERE $LOG; then
-            if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
+			if [ $((${RANDOM}%100)) -lt $RESIGN_PCT ]; then
                 echo "making $LOG $(connName $LOG) resign..."
                 kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || /bin/true
             fi
@@ -613,7 +613,7 @@ function usage() {
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--one-per]              # force one player per device  \\" >&2
     echo "    [--port <int>]                                          \\" >&2
-    echo "    [--resign-ratio <0 <= n <=1000 >                        \\" >&2
+    echo "    [--resign-pct <0 <= n <=100 >                           \\" >&2
 	echo "    [--no-timeout]           # run until all games done     \\" >&2
     echo "    [--seed <int>]                                          \\" >&2
     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
@@ -704,15 +704,16 @@ while [ "$#" -gt 0 ]; do
             ;;
         --http-pct)
             HTTP_PCT=$(getArg $*)
-            [ $HTTP_PCT -ge 0 -a $HTTP_PCT -le 100 ] || usage "n must be 0 <= n <= 100"
+            [ $HTTP_PCT -ge 0 -a $HTTP_PCT -le 100 ] || usage "$1: n must be 0 <= n <= 100"
             shift
             ;;
         --send-chat)
             SEND_CHAT=$(getArg $*)
             shift
             ;;
-        --resign-ratio)
-            RESIGN_RATIO=$(getArg $*)
+        --resign-pct)
+            RESIGN_PCT=$(getArg $*)
+			[ $RESIGN_PCT -ge 0 -a $RESIGN_PCT -le 100 ] || usage "$1: n must be 0 <= n <= 100"
             shift
             ;;
 		--no-timeout)
@@ -739,7 +740,7 @@ done
 [ -z "$PORT" ] && PORT=10997
 [ -z "$TIMEOUT" ] && TIMEOUT=$((NGAMES*60+500))
 [ -z "$SAVE_GOOD" ] && SAVE_GOOD=YES
-[ -z "$RESIGN_RATIO" -a "$NGAMES" -gt 1 ] && RESIGN_RATIO=1000 || RESIGN_RATIO=0
+# [ -z "$RESIGN_PCT" -a "$NGAMES" -gt 1 ] && RESIGN_RATIO=1000 || RESIGN_RATIO=0
 [ -z "$DROP_N" ] && DROP_N=0
 [ -z "$USE_GTK" ] && USE_GTK=FALSE
 [ -z "$UPGRADE_ODDS" ] && UPGRADE_ODDS=10
@@ -780,7 +781,7 @@ DEADDIR=$LOGDIR/dead
 mkdir -p $DEADDIR
 
 for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT SAVE_GOOD \
-    MINDEVS MAXDEVS ONEPER RESIGN_RATIO DROP_N ALL_VIA_RQ SEED \
+    MINDEVS MAXDEVS ONEPER RESIGN_PCT DROP_N ALL_VIA_RQ SEED \
     APP_NEW; do
     echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
 done
