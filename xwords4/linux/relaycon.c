@@ -135,7 +135,7 @@ static void
 addJsonParams( CURL* curl, const char* name, json_object* param )
 {
     const char* asStr = json_object_to_json_string( param );
-    XP_LOGF( "%s: adding param: %s", __func__, asStr );
+    XP_LOGF( "%s: adding param (with name %s): %s", __func__, name, asStr );
     
     char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
     gchar* buf = g_strdup_printf( "%s=%s", name, curl_params );
@@ -667,7 +667,6 @@ handlePost( RelayTask* task )
 
     runWitCurl( task, "post", "params", jobj );
 
-
     // Put the data on the main thread for processing
     (void)g_idle_add( onGotPostData, task );
 } /* handlePost */
@@ -815,6 +814,7 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
         nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                         (struct sockaddr*)&storage->saddr, 
                         sizeof(storage->saddr) );
+    }
 #ifdef COMMS_CHECKSUM
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, msgbuf, len );
     XP_LOGF( "%s: sent %d bytes with sum %s", __func__, len, sum );
@@ -822,7 +822,6 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 #else
     XP_LOGF( "%s()=>%zd", __func__, nSent );
 #endif
-    }
     return nSent;
 }
 
