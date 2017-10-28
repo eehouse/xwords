@@ -996,13 +996,13 @@ processReconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
 } /* processReconnect */
 
 static bool
-processAck( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
+processAck( const uint8_t* bufp, int bufLen, AddrInfo::ClientToken clientToken )
 {
     bool success = false;
     const uint8_t* end = bufp + bufLen;
     HostID srcID;
     if ( getNetByte( &bufp, end, &srcID ) ) {
-        SafeCref scr( addr );
+        SafeCref scr( clientToken, srcID );
         success = scr.HandleAck( srcID );
     }
     return success;
@@ -1092,7 +1092,8 @@ forwardMessage( const uint8_t* buf, int buflen, const AddrInfo* addr )
 } /* forwardMessage */
 
 static bool
-processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr )
+processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr,
+                AddrInfo::ClientToken clientToken )
 {
     bool success = false;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
@@ -1107,7 +1108,11 @@ processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr )
         success = processReconnect( buf+1, bufLen-1, addr );
         break;
     case XWRELAY_ACK:
-        success = processAck( buf+1, bufLen-1, addr );
+        if ( clientToken != 0 ) {
+            success = processAck( buf+1, bufLen-1, clientToken );
+        } else {
+            logf( XW_LOGERROR, "%s(): null client token", __func__ );
+        }
         break;
     case XWRELAY_GAME_DISCONNECT:
         success = processDisconnect( buf+1, bufLen-1, addr );
@@ -1468,7 +1473,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const uint8_t* bufp,
 static void
 game_thread_proc( UdpThreadClosure* utc )
 {
-    if ( !processMessage( utc->buf(), utc->len(), utc->addr() ) ) {
+    if ( !processMessage( utc->buf(), utc->len(), utc->addr(), 0 ) ) {
         XWThreadPool::GetTPool()->CloseSocket( utc->addr() );
     }
 }
@@ -1756,7 +1761,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             clientToken = ntohl( clientToken );
             if ( AddrInfo::NULL_TOKEN != clientToken ) {
                 AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
-                (void)processMessage( ptr, end - ptr, &addr );
+                (void)processMessage( ptr, end - ptr, &addr, clientToken );
             } else {
                 logf( XW_LOGERROR, "%s: dropping packet with token of 0",
                       __func__ );

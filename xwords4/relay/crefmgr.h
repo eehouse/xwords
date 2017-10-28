@@ -129,6 +129,7 @@ class CRefMgr {
                                bool isPublic, bool* isDead );
 
     CidInfo* getMakeCookieRef( const char* const connName, HostID hid, bool* isDead );
+    CidInfo* getMakeCookieRef( const AddrInfo::ClientToken clientToken, HostID srcID );
 
     CidInfo* getCookieRef( CookieID cid, bool failOk = false );
     CidInfo* getCookieRef( const AddrInfo* addr );
@@ -182,6 +183,7 @@ class SafeCref {
     SafeCref( const char* const connName, HostID hid );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( const AddrInfo* addr );
+    SafeCref( const AddrInfo::ClientToken clientToken, HostID srcID );
     /* SafeCref( CookieRef* cref ); */
     ~SafeCref();
 

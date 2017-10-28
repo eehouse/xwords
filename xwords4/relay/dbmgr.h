@@ -76,6 +76,10 @@ class DBMgr {
     CookieID FindGame( const char* connName, HostID hid, char* cookieBuf, int bufLen,
                        int* langP, int* nPlayersTP, int* nPlayersHP,
                        bool* isDead );
+    CookieID FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
+                       char* connNameBuf, int connNameBufLen,
+                       char* cookieBuf, int cookieBufLen,
+                       int* langP, int* nPlayersTP, int* nPlayersHP );
 
     bool FindGameFor( const char* connName, char* cookieBuf, int bufLen,
                       unsigned short seed, HostID hid,

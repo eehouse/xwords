@@ -185,6 +185,41 @@ DBMgr::FindGame( const char* connName, HostID hid, char* roomBuf, int roomBufLen
     return cid;
 } /* FindGame */
 
+CookieID
+DBMgr::FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
+                 char* connNameBuf, int connNameBufLen,
+                 char* roomBuf, int roomBufLen,
+                 int* langP, int* nPlayersTP, int* nPlayersHP )
+{
+    CookieID cid = 0;
+    const char* fmt = "SELECT room, lang, nTotal, nPerDevice[%d], connname FROM "
+        GAMES_TABLE " WHERE tokens[%d] = %d and NOT dead";
+        // " LIMIT 1"
+        ;
+    StrWPF query;
+    query.catf( fmt, hid, hid, clientToken );
+    logf( XW_LOGINFO, "query: %s", query.c_str() );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    assert( 1 >= PQntuples( result ) );
+    if ( 1 == PQntuples( result ) ) {
+        int col = 0;
+        // room
+        snprintf( roomBuf, roomBufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        // lang
+        *langP = atoi( PQgetvalue( result, 0, col++ ) );
+        *nPlayersTP = atoi( PQgetvalue( result, 0, col++ ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
+        snprintf( connNameBuf, connNameBufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        cid = GetCIDImpl(connNameBuf);
+    }
+    PQclear( result );
+
+    logf( XW_LOGINFO, "%s(ct=%d,hid=%d) => %d (connname=%s)", __func__, clientToken,
+          hid, cid, connNameBuf );
+    return cid;
+}
+
 bool
 DBMgr::FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken token, 
                    string& connName, HostID* hidp, unsigned short* seed )
