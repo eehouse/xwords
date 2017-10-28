@@ -50,7 +50,7 @@ linux_debugf( const char* format, ... )
     gettimeofday( &tv, &tz );
     timp = localtime( &tv.tv_sec );
 
-    size_t len = snprintf( buf, sizeof(buf), "<%d:%lu>%.2d:%.2d:%.2d:", getpid(),
+    size_t len = snprintf( buf, sizeof(buf), "<%d:%lx>%.2d:%.2d:%.2d:", getpid(),
                            pthread_self(), timp->tm_hour, timp->tm_min, timp->tm_sec );
     XP_ASSERT( len < sizeof(buf) );
 
