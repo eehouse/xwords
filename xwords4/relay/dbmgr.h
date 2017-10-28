@@ -65,8 +65,6 @@ class DBMgr {
 
     void WaitDBConn( void );
     
-    void ClearCIDs( void );
-
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
                  int langCode, int nPlayersT, bool isPublic );
 
@@ -170,6 +168,9 @@ class DBMgr {
     void formatUpdate( QueryBuilder& qb, bool append, const char* const desc, 
                        int clientVersion, const char* const model, 
                        const char* const osVers, DevIDRelay relayID );
+
+    bool AddCIDImpl( const char* const connName, CookieID cid );
+    CookieID GetCIDImpl( const char* const connName );
 
     PGconn* getThreadConn( void );
     void clearThreadConn();

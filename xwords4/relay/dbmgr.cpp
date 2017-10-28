@@ -91,7 +91,7 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !connName ) connName = "";
  
     MutexLock ml( &m_cidsMutex );
-    m_cidsMap[ connName ] = cid;
+    AddCIDImpl( connName, cid );
 
     QueryBuilder qb;
     qb.appendQueryf( "INSERT INTO " GAMES_TABLE
@@ -144,7 +144,7 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
         *langP = atoi( PQgetvalue( result, 0, col++ ) );
         *isDead = 't' == PQgetvalue( result, 0, col++ )[0];
 
-        *cidp = m_cidsMap[connName];
+        *cidp = GetCIDImpl(connName);
     }
     PQclear( result );
 
@@ -172,7 +172,7 @@ DBMgr::FindGame( const char* connName, HostID hid, char* roomBuf, int roomBufLen
     assert( 1 >= PQntuples( result ) );
     if ( 1 == PQntuples( result ) ) {
         int col = 0;
-        cid = m_cidsMap[connName];
+        cid = GetCIDImpl(connName);
         snprintf( roomBuf, roomBufLen, "%s", PQgetvalue( result, 0, col++ ) );
         *langP = atoi( PQgetvalue( result, 0, col++ ) );
         *nPlayersTP = atoi( PQgetvalue( result, 0, col++ ) );
@@ -294,7 +294,7 @@ DBMgr::SeenSeed( const char* cookie, unsigned short seed,
     if ( found ) {
         int col = 0;
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
-        *cid = m_cidsMap[connNameBuf];
+        *cid = GetCIDImpl(connNameBuf);
 
         const char* seeds = PQgetvalue( result, 0, col++ );
         int perDeviceSum = atoi( PQgetvalue( result, 0, col++ ) );
@@ -336,8 +336,8 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     CookieID cid = 0;
     if ( 1 == PQntuples( result ) ) {
         int col = 0;
-        cid = m_cidsMap[connNameBuf];
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        cid = GetCIDImpl(connNameBuf);
         *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
         /* cid may be 0, but should use game anyway  */
     }
@@ -642,19 +642,43 @@ DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
 }
 
 bool
+DBMgr::AddCIDImpl( const char* const connName, CookieID cid )
+{
+    logf( XW_LOGINFO, "%s(%s, %d)", __func__, connName, cid );
+    assert( cid != 0 );
+    assert( m_cidsMap.find(connName) == m_cidsMap.end() );
+    m_cidsMap[connName] = cid;
+    assert( m_cidsMap.find(connName) != m_cidsMap.end() );
+    return TRUE;
+}
+
+bool
 DBMgr::AddCID( const char* const connName, CookieID cid )
 {
     MutexLock ml( &m_cidsMutex );
-    m_cidsMap[ connName ] = cid;
+    return AddCIDImpl( connName, cid );
+}
 
-    return TRUE;
+CookieID
+DBMgr::GetCIDImpl( const char* const connName )
+{
+    CookieID cid = 0;
+    map<string, CookieID>::const_iterator iter = m_cidsMap.find(connName);
+    if (iter != m_cidsMap.end()) {
+        cid = iter->second;
+    }
+    logf( XW_LOGINFO, "%s(%s) => %d", __func__, connName, cid );
+    return cid;
 }
 
 void
 DBMgr::ClearCID( const char* connName )
 {
+    logf( XW_LOGINFO, "%s(%s)", __func__, connName );
     MutexLock ml( &m_cidsMutex );
-    m_cidsMap.erase( connName );
+    assert( 0 != GetCIDImpl(connName) );
+    m_cidsMap.erase( m_cidsMap.find( connName ));
+    assert( 0 == GetCIDImpl(connName) );
 }
 
 void
@@ -771,13 +795,6 @@ DBMgr::WaitDBConn( void )
     }
 
     logf( XW_LOGERROR, "%s() done", __func__ );
-}
-
-void
-DBMgr::ClearCIDs( void )
-{
-    MutexLock ml( &m_cidsMutex );
-    m_cidsMap.clear();
 }
 
 void
