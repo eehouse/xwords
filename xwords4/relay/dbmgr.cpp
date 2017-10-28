@@ -647,7 +647,7 @@ DBMgr::AddCIDImpl( const char* const connName, CookieID cid )
     logf( XW_LOGINFO, "%s(%s, %d)", __func__, connName, cid );
     assert( cid != 0 );
     assert( m_cidsMap.find(connName) == m_cidsMap.end() );
-    m_cidsMap[connName] = cid;
+    m_cidsMap.insert( pair<string, CookieID>(connName, cid) );
     assert( m_cidsMap.find(connName) != m_cidsMap.end() );
     return TRUE;
 }
@@ -666,6 +666,7 @@ DBMgr::GetCIDImpl( const char* const connName )
     map<string, CookieID>::const_iterator iter = m_cidsMap.find(connName);
     if (iter != m_cidsMap.end()) {
         cid = iter->second;
+        assert( cid != 0 );
     }
     logf( XW_LOGINFO, "%s(%s) => %d", __func__, connName, cid );
     return cid;
@@ -678,7 +679,7 @@ DBMgr::ClearCID( const char* connName )
     MutexLock ml( &m_cidsMutex );
     assert( 0 != GetCIDImpl(connName) );
     m_cidsMap.erase( m_cidsMap.find( connName ));
-    assert( 0 == GetCIDImpl(connName) );
+    assert( m_cidsMap.find(connName) == m_cidsMap.end() );
 }
 
 void
