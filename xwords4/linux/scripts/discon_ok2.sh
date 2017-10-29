@@ -512,7 +512,8 @@ run_cmds() {
         local KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
         ROOM=${ROOMS[$KEY]}
-        if [ 0 -eq ${PIDS[$KEY]} ]; then
+        PID=${PIDS[$KEY]}
+        if [ 0 -eq ${PID} ]; then
             if [ -n "$ONE_PER_ROOM" -a 0 -ne ${ROOM_PIDS[$ROOM]} ]; then
                 continue
             fi
@@ -526,10 +527,12 @@ run_cmds() {
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
         else
-            PID=${PIDS[$KEY]}
             if [ -d /proc/$PID ]; then
                 SLEEP=$((${MINEND[$KEY]} - $NOW))
-                [ $SLEEP -gt 0 ] && sleep $SLEEP
+                if [ $SLEEP -gt 0 ]; then
+					sleep 1
+					continue
+				fi
                 kill $PID || /bin/true
                 wait $PID
             fi
@@ -606,6 +609,7 @@ function usage() {
     echo "    [--host <hostname>]                                     \\" >&2
     echo "    [--max-devs <int>]                                      \\" >&2
     echo "    [--min-devs <int>]                                      \\" >&2
+    echo "    [--min-run <int>]        # run each at least this long  \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
     echo "    [--new-app-args [arg*]]  # passed only to new app       \\" >&2
     echo "    [--num-games <int>]                                     \\" >&2
@@ -683,6 +687,11 @@ while [ "$#" -gt 0 ]; do
             MAXDEVS=$(getArg $*)
             shift
             ;;
+		--min-run)
+			MINRUN=$(getArg $*)
+			[ $MINRUN -ge 2 -a $MINRUN -le 60 ] || usage "$1: n must be 2 <= n <= 60"
+			shift
+			;;
         --one-per)
             ONEPER=TRUE
             ;;
