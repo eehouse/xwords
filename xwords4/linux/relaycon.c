@@ -69,7 +69,7 @@ static void reset_schedule_check_interval( RelayConStorage* storage );
 static void checkForMovesOnce( RelayConStorage* storage );
 static gboolean gotDataTimer(gpointer user_data);
 
-static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
+static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, XP_U16 timeout );
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
 static XP_U16 getNetShort( const XP_U8** ptr );
@@ -103,6 +103,7 @@ typedef struct _RelayTask {
         struct {
             XP_U8* msgbuf;
             XP_U16 len;
+            float timeoutSecs;
         } post;
         struct {
             GHashTable* map;
@@ -110,7 +111,7 @@ typedef struct _RelayTask {
     } u;
 } RelayTask;
 
-static RelayTask* makeRelayTask(RelayConStorage* storage, TaskType typ);
+static RelayTask* makeRelayTask( RelayConStorage* storage, TaskType typ );
 static void freeRelayTask(RelayTask* task);
 static void handlePost( RelayTask* task );
 static void handleQuery( RelayTask* task );
@@ -139,26 +140,44 @@ write_callback(void *contents, size_t size, size_t nmemb, void* data)
 }
 
 static void
-addJsonParams( CURL* curl, const char* name, json_object* param )
+addJsonParams( CURL* curl, va_list ap )
 {
-    const char* asStr = json_object_to_json_string( param );
-    XP_LOGF( "%s: adding param (with name %s): %s", __func__, name, asStr );
+    gchar* buf = NULL;
+    for ( ; ; ) {
+        const char* name = va_arg(ap, const char*);
+        if ( !name ) {
+            break;
+        }
+        json_object* param = va_arg(ap, json_object*);
+        XP_ASSERT( !!param );
     
-    char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
-    gchar* buf = g_strdup_printf( "%s=%s", name, curl_params );
-    curl_free( curl_params );
+        const char* asStr = json_object_to_json_string( param );
+        XP_LOGF( "%s: adding param (with name %s): %s", __func__, name, asStr );
 
+        char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
+        gchar* tmp = g_strdup_printf( "%s=%s", name, curl_params );
+        curl_free( curl_params );
+
+        if ( !buf ) {
+            buf = tmp;
+        } else {
+            gchar* cur = buf;
+            buf = g_strdup_printf( "%s&%s", cur, tmp );
+            g_free( tmp );
+            g_free( cur );
+        }
+        json_object_put( param );
+    }
+    XP_LOGF( "%s(): setting params: %s", __func__, buf );
     curl_easy_setopt( curl, CURLOPT_POSTFIELDS, buf );
     curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf) );
 
     // Can't free the buf!! Well, maybe after the send...
     // g_free( buf );
-    json_object_put( param );
 }
 
 static XP_Bool
-runWitCurl( RelayTask* task, const gchar* proc, const gchar* key,
-            json_object* jVal )
+runWitCurl( RelayTask* task, const gchar* proc, ...)
 {
     CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
     XP_ASSERT(res == CURLE_OK);
@@ -170,7 +189,10 @@ runWitCurl( RelayTask* task, const gchar* proc, const gchar* key,
     curl_easy_setopt( curl, CURLOPT_URL, url );
     curl_easy_setopt( curl, CURLOPT_POST, 1L );
 
-    addJsonParams( curl, key, jVal );
+    va_list ap;
+    va_start( ap, proc );
+    addJsonParams( curl, ap );
+    va_end( ap );
 
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
     curl_easy_setopt( curl, CURLOPT_WRITEDATA, &task->ws );
@@ -266,7 +288,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux box" );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux version" );
 
-    sendIt( storage, tmpbuf, indx );
+    sendIt( storage, tmpbuf, indx, 2.0 );
 }
 
 void
@@ -303,7 +325,7 @@ relaycon_invite( LaunchParams* params, XP_U32 destDevID,
     indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, ptr, len );
     stream_destroy( stream );
 
-    sendIt( storage, tmpbuf, indx );
+    sendIt( storage, tmpbuf, indx, 2.0 );
     LOG_RETURN_VOID();
 }
 
@@ -320,7 +342,7 @@ relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     indx += writeHeader( storage, tmpbuf, XWPDEV_MSG );
     indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
     indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, buf, buflen );
-    nSent = sendIt( storage, tmpbuf, indx );
+    nSent = sendIt( storage, tmpbuf, indx, 2.0 );
     if ( nSent > buflen ) {
         nSent = buflen;
     }
@@ -348,7 +370,7 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
                         (const XP_U8*)relayID, idLen );
     tmpbuf[indx++] = '\n';
     indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, buf, buflen );
-    nSent = sendIt( storage, tmpbuf, indx );
+    nSent = sendIt( storage, tmpbuf, indx, 2.0 );
     if ( nSent > buflen ) {
         nSent = buflen;
     }
@@ -367,7 +389,7 @@ relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID )
     indx += writeHeader( storage, tmpbuf, XWPDEV_RQSTMSGS );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
 
-    sendIt( storage, tmpbuf, indx );
+    sendIt( storage, tmpbuf, indx, 2.0 );
 }
 
 void
@@ -382,7 +404,7 @@ relaycon_deleted( LaunchParams* params, const XP_UCHAR* devID,
     indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
     indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
 
-    sendIt( storage, tmpbuf, indx );
+    sendIt( storage, tmpbuf, indx, 0.0 );
 }
 
 static XP_Bool
@@ -455,7 +477,7 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
         XP_U8 tmpbuf[16];
         int indx = writeHeader( storage, tmpbuf, XWPDEV_ACK );
         indx += writeVLI( &tmpbuf[indx], header->packetID );
-        sendIt( storage, tmpbuf, indx );
+        sendIt( storage, tmpbuf, indx, 0.0 );
     }
 }
 
@@ -630,13 +652,6 @@ hostNameToIP( const XP_UCHAR* name )
     return ip;
 }
 
-typedef struct _PostArgs {
-    RelayConStorage* storage;
-    WriteState ws;
-    XP_U8* msgbuf;
-    XP_U16 len;
-} PostArgs;
-
 static gboolean
 onGotPostData(gpointer user_data)
 {
@@ -679,18 +694,20 @@ handlePost( RelayTask* task )
     g_free( data );
     json_object_object_add( jobj, "data", jstr );
 
-    runWitCurl( task, "post", "params", jobj );
+    json_object* jTimeout = json_object_new_double( task->u.post.timeoutSecs );
+    runWitCurl( task, "post", "params", jobj, "timeoutSecs", jTimeout, NULL );
 
     // Put the data on the main thread for processing
     addToGotData( task );
 } /* handlePost */
 
 static ssize_t
-post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
+post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeout )
 {
     XP_LOGF( "%s(len=%d)", __func__, len );
     RelayTask* task = makeRelayTask( storage, POST );
     task->u.post.msgbuf = g_malloc(len);
+    task->u.post.timeoutSecs = timeout;
     XP_MEMCPY( task->u.post.msgbuf, msgbuf, len );
     task->u.post.len = len;
     addTask( storage, task );
@@ -761,7 +778,7 @@ handleQuery( RelayTask* task )
         }
         g_list_free( ids );
 
-        runWitCurl( task, "query", "ids", jIds );
+        runWitCurl( task, "query", "ids", jIds, NULL );
     }
     /* Put processing back on the main thread */
     addToGotData( task );
@@ -879,11 +896,11 @@ schedule_next_check( RelayConStorage* storage )
 }
 
 static ssize_t
-sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
+sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, XP_U16 timeout )
 {
     ssize_t nSent;
     if ( storage->params->useHTTP ) {
-        nSent = post( storage, msgbuf, len );
+        nSent = post( storage, msgbuf, len, timeout );
     } else {
         nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                         (struct sockaddr*)&storage->saddr, 

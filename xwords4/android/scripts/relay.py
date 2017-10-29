@@ -11,14 +11,14 @@ try:
 except ImportError:
     apacheAvailable = False
 
-def post(req, params, timeoutSecs = 1):
+def post(req, params, timeoutSecs = 1.0):
     err = 'none'
     dataLen = 0
     jobj = json.loads(params)
     data = base64.b64decode(jobj['data'])
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(timeoutSecs)         # seconds
+    sock.settimeout(float(timeoutSecs))         # seconds
     addr = ("127.0.0.1", 10997)
     sock.sendto(data, addr)
 
@@ -35,7 +35,7 @@ def post(req, params, timeoutSecs = 1):
     jobj = {'err' : err, 'data' : responses}
     return json.dumps(jobj)
 
-def query(req, ids):
+def query(req, ids, timeoutSecs = 5.0):
     print('ids', ids)
     ids = json.loads(ids)
 
@@ -43,7 +43,7 @@ def query(req, ids):
     for id in ids: idsLen += len(id)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(5)         # seconds
+    sock.settimeout(float(timeoutSecs))
     sock.connect(('127.0.0.1', 10998))
 
     lenShort = 2 + idsLen + len(ids) + 2
