@@ -619,6 +619,19 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
 void
 relaycon_cleanup( LaunchParams* params )
 {
+    RelayConStorage* storage = (RelayConStorage*)params->relayConStorage;
+    if ( storage->params->useHTTP ) {
+        pthread_mutex_lock( &storage->relayMutex );
+        int nRelayTasks = g_slist_length( storage->relayTaskList );
+        pthread_mutex_unlock( &storage->relayMutex );
+
+        pthread_mutex_lock( &storage->gotDataMutex );
+        int nDataTasks = g_slist_length( storage->gotDataTaskList );
+        pthread_mutex_unlock( &storage->gotDataMutex );
+
+        XP_LOGF( "%s(): sends pending: %d; data tasks pending: %d", __func__,
+                 nRelayTasks, nDataTasks );
+    }
     XP_FREEP( params->mpool, &params->relayConStorage );
 }
 
