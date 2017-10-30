@@ -99,6 +99,7 @@ typedef struct _RelayTask {
     int id;
     RelayConStorage* storage;
     WriteState ws;
+    XP_U32 ctime;
     union {
         struct {
             XP_U8* msgbuf;
@@ -423,9 +424,17 @@ relayThread( void* arg )
             pthread_cond_wait( &storage->relayCondVar, &storage->relayMutex );
         }
 
-        RelayTask* task = storage->relayTaskList->data;
-        storage->relayTaskList = storage->relayTaskList->next;
+        int len = g_slist_length( storage->relayTaskList );
+        GSList* head = storage->relayTaskList;
+        storage->relayTaskList = g_slist_remove_link( storage->relayTaskList,
+                                                      storage->relayTaskList );
+        RelayTask* task = head->data;
+        g_slist_free( head );
+
         pthread_mutex_unlock( &storage->relayMutex );
+
+        XP_LOGF( "%s(): processing one of %d; created %d secs ago",
+                 __func__, len, ((XP_U32)time(NULL)) - task->ctime );
 
         switch ( task->typ ) {
         case POST:
@@ -457,6 +466,7 @@ makeRelayTask( RelayConStorage* storage, TaskType typ )
     RelayTask* task = (RelayTask*)g_malloc0(sizeof(*task));
     task->typ = typ;
     task->id = ++storage->nextTaskID;
+    task->ctime = (XP_U32)time(NULL);
     task->storage = storage;
     XP_LOGF( "%s(): made with id %d from storage %p", __func__, task->id, storage );
     return task;
@@ -465,7 +475,8 @@ makeRelayTask( RelayConStorage* storage, TaskType typ )
 static void
 freeRelayTask( RelayTask* task )
 {
-    XP_LOGF( "%s(): deleting id %d", __func__, task->id );
+    XP_LOGF( "%s(): deleting id %d (%d secs old)", __func__, task->id,
+             ((XP_U32)time(NULL)) - task->ctime );
     g_free( task->ws.ptr );
     g_free( task );
 }
@@ -666,22 +677,23 @@ hostNameToIP( const XP_UCHAR* name )
 }
 
 static gboolean
-onGotPostData(gpointer user_data)
+onGotPostData( gpointer user_data )
 {
     RelayTask* task = (RelayTask*)user_data;
+    RelayConStorage* storage = task->storage;
     /* Now pull any data from the reply */
     // got "{"status": "ok", "dataLen": 14, "data": "AYQDiDAyMUEzQ0MyADw=", "err": "none"}"
     if ( !!task->ws.ptr ) {
         json_object* reply = json_tokener_parse( task->ws.ptr );
         json_object* replyData;
         if ( json_object_object_get_ex( reply, "data", &replyData ) && !!replyData ) {
-            int len = json_object_array_length(replyData);
+            const int len = json_object_array_length(replyData);
             for ( int ii = 0; ii < len; ++ii ) {
                 json_object* datum = json_object_array_get_idx( replyData, ii );
                 const char* str = json_object_get_string( datum );
                 gsize out_len;
                 guchar* buf = g_base64_decode( (const gchar*)str, &out_len );
-                process( task->storage, buf, out_len );
+                process( storage, buf, out_len );
                 g_free( buf );
             }
             (void)json_object_put( replyData );
