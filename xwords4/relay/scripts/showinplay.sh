@@ -59,8 +59,9 @@ echo "SELECT dead as d,connname,room,lang as lg,clntVers as cv ,ntotal as t,nper
     | psql xwgames
 
 # Messages
+echo "Unack'd msgs count:" $(psql -t xwgames -c "select count(*) FROM msgs where stime = 'epoch' AND connname IN (SELECT connname from games $QUERY);")
 echo "SELECT id,connName,hid as h,token,ctime,stime,devid,msg64 "\
-     "FROM msgs WHERE connname IN (SELECT connname from games $QUERY) "\
+     "FROM msgs WHERE stime = 'epoch' AND connname IN (SELECT connname from games $QUERY) "\
      "ORDER BY ctime DESC, connname LIMIT $LIMIT;" \
     | psql xwgames
 
