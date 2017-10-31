@@ -54,14 +54,16 @@ def query(req, ids, timeoutSecs = 5.0):
 
     for id in ids: sock.send(id + '\n')
 
-    unpacker = struct.Struct('!2H') # 2s f')
-    resLen, nameCount = unpacker.unpack(sock.recv(unpacker.size)) # problem when ids empty
+    shortUnpacker = struct.Struct('!H')
+    resLen, = shortUnpacker.unpack(sock.recv(shortUnpacker.size))
+    nameCount, = shortUnpacker.unpack(sock.recv(shortUnpacker.size))
+    resLen -= shortUnpacker.size
     print('resLen:', resLen, 'nameCount:', nameCount)
     msgsLists = {}
-    if nameCount == len(ids):
+    if nameCount == len(ids) and resLen > 0:
+        print('nameCount', nameCount)
         for ii in range(nameCount):
             perGame = []
-            shortUnpacker = struct.Struct('!H')
             countsThisGame, = shortUnpacker.unpack(sock.recv(shortUnpacker.size)) # problem
             print('countsThisGame:', countsThisGame)
             for jj in range(countsThisGame):
