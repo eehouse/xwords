@@ -195,9 +195,6 @@ build_cmds() {
         for NLOCALS in ${LOCALS[@]}; do
             DEV=$((DEV + 1))
             FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
-            if [ $((RANDOM % 100)) -lt $UDP_PCT_START ]; then
-                FILE="$FILE --use-udp"
-            fi
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             > $LOG # clear the log
 
@@ -220,6 +217,9 @@ build_cmds() {
             PARAMS="$PARAMS --game-dict $DICT --relay-port $PORT --host $HOST "
             PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --db $FILE"
+			if [ $((RANDOM % 100)) -lt $UDP_PCT_START ]; then
+                PARAMS="$PARAMS --use-udp"
+            fi
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
 			if [ $((${RANDOM}%100)) -lt $HTTP_PCT ]; then
 				PARAMS="$PARAMS --use-http"
