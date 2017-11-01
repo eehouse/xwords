@@ -308,6 +308,21 @@ launch() {
 #      exec $CMD >/dev/null 2>>$LOG
 # }
 
+send_dead() {
+	ID=$1
+	DB=${FILES[$ID]}
+	while :; do
+		[ -f $DB ] || break		# it's gone
+		RES=$(echo 'select relayid, seed from games limit 1;' | sqlite3 -separator ' ' $DB || /bin/true)
+		[ -n "$RES" ] && break
+		sleep 0.2
+	done
+	RELAYID=$(echo $RES | awk '{print $1}')
+	SEED=$(echo $RES | awk '{print $2}')
+	JSON="[{\"relayID\":\"$RELAYID\", \"seed\":$SEED}]"
+	curl -G --data-urlencode params="$JSON" http://$HOST/xw4/relay.py/kill >/dev/null 2>&1
+}
+
 close_device() {
     ID=$1
     MVTO=$2
@@ -423,6 +438,7 @@ check_game() {
         for ID in $OTHERS $KEY; do
             echo -n "${ID}:${LOGS[$ID]}, "
             kill_from_log ${LOGS[$ID]} || /bin/true
+			send_dead $ID
             close_device $ID $DONEDIR "game over"
         done
         echo ""

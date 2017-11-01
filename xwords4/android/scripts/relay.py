@@ -3,14 +3,40 @@
 import base64, json, mod_python, socket, struct, sys
 
 PROTOCOL_VERSION = 0
+PRX_DEVICE_GONE = 3
 PRX_GET_MSGS = 4
 
-try:
-    from mod_python import apache
-    apacheAvailable = True
-except ImportError:
-    apacheAvailable = False
+# try:
+#     from mod_python import apache
+#     apacheAvailable = True
+# except ImportError:
+#     apacheAvailable = False
 
+def kill(req, params):
+    print(params)
+    params = json.loads(params)
+    count = len(params)
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('127.0.0.1', 10998))
+
+    header = struct.Struct('!BBh')
+    strLens = 0
+    for ii in range(count):
+        strLens += len(params[ii]['relayID']) + 1
+    size = header.size + (2*count) + strLens
+    sock.send(struct.Struct('!h').pack(size))
+    sock.send(header.pack(PROTOCOL_VERSION, PRX_DEVICE_GONE, count))
+
+    for ii in range(count):
+        elem = params[ii]
+        asBytes = bytes(elem['relayID'])
+        sock.send(struct.Struct('!H%dsc' % (len(asBytes))).pack(elem['seed'], asBytes, '\n'))
+    sock.close()
+
+    result = {'err': 0}
+    return json.dumps(result)
+    
 def post(req, params, timeoutSecs = 1.0):
     err = 'none'
     dataLen = 0
@@ -81,10 +107,26 @@ def query(req, ids, timeoutSecs = 5.0):
     return json.dumps(msgsLists)
 
 def main():
-    print(query(None, json.dumps(sys.argv[1:])))
-    # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
-    # params = json.dumps(params)
-    # print(post(None, params))
+    result = None
+    if len(sys.argv) > 1:
+        cmd = sys.argv[1]
+        args = sys.argv[2:]
+        if cmd == 'query':
+            result = query(None, json.dumps(args))
+        elif cmd == 'post':
+            # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
+            # params = json.dumps(params)
+            # print(post(None, params))
+            None
+        elif cmd == 'kill':
+            result = kill( None, json.dumps([{'relayID': args[0], 'seed':int(args[1])}]) )
+
+    if result:
+        print '->', result
+    else:
+        print 'USAGE: query [connname/hid]*'
+        # print '       post '
+        print '       kill <relayID> <seed>'
 
 ##############################################################################
 if __name__ == '__main__':
