@@ -42,7 +42,7 @@ SRC = \
 
 # STATIC ?= -static
 GITINFO = gitversion.txt
-HASH=$(shell git describe)
+HASH=$(shell git rev-parse --verify HEAD)
 
 OBJ = $(patsubst %.cpp,obj/%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
