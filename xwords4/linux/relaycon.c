@@ -69,7 +69,7 @@ static void reset_schedule_check_interval( RelayConStorage* storage );
 static void checkForMovesOnce( RelayConStorage* storage );
 static gboolean gotDataTimer(gpointer user_data);
 
-static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, XP_U16 timeout );
+static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeoutSecs );
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
 static XP_U16 getNetShort( const XP_U8** ptr );
@@ -405,7 +405,7 @@ relaycon_deleted( LaunchParams* params, const XP_UCHAR* devID,
     indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
     indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
 
-    sendIt( storage, tmpbuf, indx, 0.0 );
+    sendIt( storage, tmpbuf, indx, 0.1 );
 }
 
 static XP_Bool
@@ -488,7 +488,7 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
         XP_U8 tmpbuf[16];
         int indx = writeHeader( storage, tmpbuf, XWPDEV_ACK );
         indx += writeVLI( &tmpbuf[indx], header->packetID );
-        sendIt( storage, tmpbuf, indx, 0.0 );
+        sendIt( storage, tmpbuf, indx, 0.1 );
     }
 }
 
@@ -921,11 +921,11 @@ schedule_next_check( RelayConStorage* storage )
 }
 
 static ssize_t
-sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, XP_U16 timeout )
+sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeoutSecs )
 {
     ssize_t nSent;
     if ( storage->params->useHTTP ) {
-        nSent = post( storage, msgbuf, len, timeout );
+        nSent = post( storage, msgbuf, len, timeoutSecs );
     } else {
         nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                         (struct sockaddr*)&storage->saddr, 
