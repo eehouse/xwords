@@ -46,6 +46,10 @@ typedef struct GtkDrawCtx {
 /*     GdkDrawable* pixmap; */
     GtkWidget* drawing_area;
     cairo_surface_t* surface;
+#ifdef GDK_AVAILABLE_IN_3_22
+    GdkDrawingContext* dc;
+#endif
+
     struct GtkGameGlobals* globals;
 
 #ifdef USE_CAIRO

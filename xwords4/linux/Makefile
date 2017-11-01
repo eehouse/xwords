@@ -226,7 +226,7 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/relaycon.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
-LIBS = -lm -luuid -lcurl -ljson-c $(GPROFFLAG)
+LIBS = -lm -lpthread -luuid -lcurl -ljson-c $(GPROFFLAG)
 ifdef USE_SQLITE
 LIBS += -lsqlite3
 DEFINES += -DUSE_SQLITE
@@ -242,7 +242,7 @@ endif
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-3.0`
 	CFLAGS += `pkg-config --cflags gtk+-3.0`
-#   CFLAGS += -DGDK_DISABLE_DEPRECATED
+	CFLAGS += -DGDK_DISABLE_DEPRECATED
 	POINTER_SUPPORT = -DPOINTER_SUPPORT
 endif
 
