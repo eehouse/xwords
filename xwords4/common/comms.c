@@ -1773,7 +1773,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         }
 
         if ( consumed ) {
-            XP_LOGF( "%s: rejecting data message", __func__ );
+            XP_LOGF( "%s: rejecting data message (consumed)", __func__ );
         } else {
             *senderID = srcID;
         }

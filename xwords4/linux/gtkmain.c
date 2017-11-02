@@ -513,7 +513,7 @@ static void
 handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 {
     LaunchParams* params = apg->params;
-    checkForMsgsNow( params );
+    relaycon_checkMsgs( params );
 }
 
 static void

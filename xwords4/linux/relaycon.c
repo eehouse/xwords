@@ -215,8 +215,9 @@ runWitCurl( RelayTask* task, const gchar* proc, ...)
 }
 
 void
-checkForMsgsNow( LaunchParams* params )
+relaycon_checkMsgs( LaunchParams* params )
 {
+    LOG_FUNC();
     RelayConStorage* storage = getStorage( params );
     XP_ASSERT( onMainThread(storage) );
     checkForMovesOnce( storage );
@@ -414,6 +415,30 @@ onMainThread( RelayConStorage* storage )
     return storage->mainThread = pthread_self();
 }
 
+static const gchar*
+taskName( const RelayTask* task )
+{
+    switch (task->typ) {
+    case POST: return "POST";
+    case QUERY: return "QUERY";
+    default: XP_ASSERT(0);
+        return NULL;
+    }
+}
+
+static gchar*
+listTasks( GSList* tasks )
+{
+    gchar* names[1 + g_slist_length(tasks)];
+    names[g_slist_length(tasks)] = NULL;
+    for ( int ii = 0; !!tasks; ++ii ) {
+        names[ii] = (gchar*)taskName( (RelayTask*)tasks->data );
+        tasks = tasks->next;
+    }
+
+    return g_strjoinv( ",", names );
+}
+
 static void*
 relayThread( void* arg )
 {
@@ -431,10 +456,13 @@ relayThread( void* arg )
         RelayTask* task = head->data;
         g_slist_free( head );
 
+        gchar* strs = listTasks(storage->relayTaskList);
+
         pthread_mutex_unlock( &storage->relayMutex );
 
-        XP_LOGF( "%s(): processing one of %d; created %d secs ago",
-                 __func__, len, ((XP_U32)time(NULL)) - task->ctime );
+        XP_LOGF( "%s(): processing one of %d (%s); created %d secs ago",
+                 __func__, len, strs, ((XP_U32)time(NULL)) - task->ctime );
+        g_free( strs );
 
         switch ( task->typ ) {
         case POST:

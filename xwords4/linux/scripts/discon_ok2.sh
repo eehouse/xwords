@@ -478,10 +478,8 @@ update_ldevid() {
             if [ $RNUM -lt 30 ]; then        # upgrade or first run
                 CMD="--ldevid LINUX_TEST_$(printf %.5d ${KEY})_"
             fi
-        else
-            if [ $RNUM -lt 10 ]; then
-                CMD="${CMD}x"                             # give it a new local ID
-            fi
+        elif [ $RNUM -lt 10 ]; then
+            CMD="${CMD}x"                             # give it a new local ID
         fi
         ARGS_DEVID[$KEY]="$CMD"
     fi

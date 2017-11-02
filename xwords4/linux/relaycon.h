@@ -59,5 +59,5 @@ void relaycon_cleanup( LaunchParams* params );
 XP_U32 makeClientToken( sqlite3_int64 rowid, XP_U16 seed );
 void rowidFromToken( XP_U32 clientToken, sqlite3_int64* rowid, XP_U16* seed );
 
-void checkForMsgsNow( LaunchParams* params );
+void relaycon_checkMsgs( LaunchParams* params );
 #endif
