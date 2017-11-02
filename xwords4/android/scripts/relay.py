@@ -68,41 +68,44 @@ def query(req, ids, timeoutSecs = 5.0):
     idsLen = 0
     for id in ids: idsLen += len(id)
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(float(timeoutSecs))
-    sock.connect(('127.0.0.1', 10998))
+    tcpSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcpSock.settimeout(float(timeoutSecs))
+    tcpSock.connect(('127.0.0.1', 10998))
 
     lenShort = 2 + idsLen + len(ids) + 2
     print(lenShort, PROTOCOL_VERSION, PRX_GET_MSGS, len(ids))
     header = struct.Struct('!hBBh')
     assert header.size == 6
-    sock.send(header.pack(lenShort, PROTOCOL_VERSION, PRX_GET_MSGS, len(ids)))
+    tcpSock.send(header.pack(lenShort, PROTOCOL_VERSION, PRX_GET_MSGS, len(ids)))
 
-    for id in ids: sock.send(id + '\n')
+    for id in ids: tcpSock.send(id + '\n')
 
-    shortUnpacker = struct.Struct('!H')
-    resLen, = shortUnpacker.unpack(sock.recv(shortUnpacker.size))
-    nameCount, = shortUnpacker.unpack(sock.recv(shortUnpacker.size))
-    resLen -= shortUnpacker.size
-    print('resLen:', resLen, 'nameCount:', nameCount)
     msgsLists = {}
-    if nameCount == len(ids) and resLen > 0:
-        print('nameCount', nameCount)
-        for ii in range(nameCount):
-            perGame = []
-            countsThisGame, = shortUnpacker.unpack(sock.recv(shortUnpacker.size)) # problem
-            print('countsThisGame:', countsThisGame)
-            for jj in range(countsThisGame):
-                msgLen, = shortUnpacker.unpack(sock.recv(shortUnpacker.size))
-                print('msgLen:', msgLen)
-                msgs = []
-                if msgLen > 0:
-                    msg = sock.recv(msgLen)
-                    print('msg len:', len(msg))
-                    msg = base64.b64encode(msg)
-                    msgs.append(msg)
-                perGame.append(msgs)
-            msgsLists[ids[ii]] = perGame
+    try:
+        shortUnpacker = struct.Struct('!H')
+        resLen, = shortUnpacker.unpack(tcpSock.recv(shortUnpacker.size)) # not getting all bytes
+        nameCount, = shortUnpacker.unpack(tcpSock.recv(shortUnpacker.size))
+        resLen -= shortUnpacker.size
+        print('resLen:', resLen, 'nameCount:', nameCount)
+        if nameCount == len(ids) and resLen > 0:
+            print('nameCount', nameCount)
+            for ii in range(nameCount):
+                perGame = []
+                countsThisGame, = shortUnpacker.unpack(tcpSock.recv(shortUnpacker.size)) # problem
+                print('countsThisGame:', countsThisGame)
+                for jj in range(countsThisGame):
+                    msgLen, = shortUnpacker.unpack(tcpSock.recv(shortUnpacker.size))
+                    print('msgLen:', msgLen)
+                    msgs = []
+                    if msgLen > 0:
+                        msg = tcpSock.recv(msgLen)
+                        print('msg len:', len(msg))
+                        msg = base64.b64encode(msg)
+                        msgs.append(msg)
+                    perGame.append(msgs)
+                msgsLists[ids[ii]] = perGame
+    except:
+        None
 
     return json.dumps(msgsLists)
 
