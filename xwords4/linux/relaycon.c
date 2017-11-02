@@ -429,14 +429,22 @@ taskName( const RelayTask* task )
 static gchar*
 listTasks( GSList* tasks )
 {
+    XP_U32 now = (XP_U32)time(NULL);
     gchar* names[1 + g_slist_length(tasks)];
-    names[g_slist_length(tasks)] = NULL;
+    int len = g_slist_length(tasks);
+    names[len] = NULL;
     for ( int ii = 0; !!tasks; ++ii ) {
-        names[ii] = (gchar*)taskName( (RelayTask*)tasks->data );
+        RelayTask* task = (RelayTask*)tasks->data;
+        names[ii] = g_strdup_printf( "{%s:id:%d;age:%ds}", taskName(task),
+                                     task->id, now - task->ctime );
         tasks = tasks->next;
     }
 
-    return g_strjoinv( ",", names );
+    gchar* result = g_strjoinv( ",", names );
+    for ( int ii = 0; ii < len; ++ii ) {
+        g_free( names[ii] );
+    }
+    return result;
 }
 
 static void*
@@ -450,18 +458,17 @@ relayThread( void* arg )
         }
 
         int len = g_slist_length( storage->relayTaskList );
+        gchar* strs = listTasks( storage->relayTaskList );
         GSList* head = storage->relayTaskList;
         storage->relayTaskList = g_slist_remove_link( storage->relayTaskList,
                                                       storage->relayTaskList );
         RelayTask* task = head->data;
         g_slist_free( head );
 
-        gchar* strs = listTasks(storage->relayTaskList);
 
         pthread_mutex_unlock( &storage->relayMutex );
 
-        XP_LOGF( "%s(): processing one of %d (%s); created %d secs ago",
-                 __func__, len, strs, ((XP_U32)time(NULL)) - task->ctime );
+        XP_LOGF( "%s(): processing first of %d (%s)", __func__, len, strs );
         g_free( strs );
 
         switch ( task->typ ) {
@@ -483,8 +490,11 @@ addTask( RelayConStorage* storage, RelayTask* task )
 {
     pthread_mutex_lock( &storage->relayMutex );
     storage->relayTaskList = g_slist_append( storage->relayTaskList, task );
+    gchar* strs = listTasks( storage->relayTaskList );
     pthread_cond_signal( &storage->relayCondVar );
     pthread_mutex_unlock( &storage->relayMutex );
+    XP_LOGF( "%s(): task list now: %s", __func__, strs );
+    g_free( strs );
 }
 
 static RelayTask*
@@ -496,15 +506,16 @@ makeRelayTask( RelayConStorage* storage, TaskType typ )
     task->id = ++storage->nextTaskID;
     task->ctime = (XP_U32)time(NULL);
     task->storage = storage;
-    XP_LOGF( "%s(): made with id %d from storage %p", __func__, task->id, storage );
     return task;
 }
 
 static void
 freeRelayTask( RelayTask* task )
 {
-    XP_LOGF( "%s(): deleting id %d (%d secs old)", __func__, task->id,
-             ((XP_U32)time(NULL)) - task->ctime );
+    GSList faker = { .next = NULL, .data = task };
+    gchar* str = listTasks(&faker);
+    XP_LOGF( "%s(): deleting %s", __func__, str );
+    g_free( str );
     g_free( task->ws.ptr );
     g_free( task );
 }
@@ -662,14 +673,19 @@ relaycon_cleanup( LaunchParams* params )
     if ( storage->params->useHTTP ) {
         pthread_mutex_lock( &storage->relayMutex );
         int nRelayTasks = g_slist_length( storage->relayTaskList );
+        gchar* taskStrs = listTasks( storage->relayTaskList );
         pthread_mutex_unlock( &storage->relayMutex );
 
         pthread_mutex_lock( &storage->gotDataMutex );
         int nDataTasks = g_slist_length( storage->gotDataTaskList );
+        gchar* gotStrs = listTasks( storage->gotDataTaskList );
         pthread_mutex_unlock( &storage->gotDataMutex );
 
-        XP_LOGF( "%s(): sends pending: %d; data tasks pending: %d", __func__,
-                 nRelayTasks, nDataTasks );
+        XP_LOGF( "%s(): sends pending: %d (%s); data tasks pending: %d (%s)", __func__,
+                 nRelayTasks, gotStrs, nDataTasks, taskStrs );
+
+        g_free( gotStrs );
+        g_free( taskStrs );
     }
     XP_FREEP( params->mpool, &params->relayConStorage );
 }
