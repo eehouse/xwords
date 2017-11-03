@@ -485,11 +485,26 @@ relayThread( void* arg )
     return NULL;
 }
 
+static XP_Bool
+didCombine( const RelayTask* one, const RelayTask* two )
+{
+    /* For now.... */
+    XP_Bool result = one->typ == QUERY && two->typ == QUERY;
+    return result;
+}
+
 static void
 addTask( RelayConStorage* storage, RelayTask* task )
 {
     pthread_mutex_lock( &storage->relayMutex );
-    storage->relayTaskList = g_slist_append( storage->relayTaskList, task );
+
+    /* Let's see if the current last task is the same. */
+    GSList* last = g_slist_last( storage->relayTaskList );
+    if ( !!last && didCombine( last->data, task ) ) {
+        freeRelayTask( task );
+    } else {
+        storage->relayTaskList = g_slist_append( storage->relayTaskList, task );
+    }
     gchar* strs = listTasks( storage->relayTaskList );
     pthread_cond_signal( &storage->relayCondVar );
     pthread_mutex_unlock( &storage->relayMutex );
@@ -938,13 +953,14 @@ static void
 reset_schedule_check_interval( RelayConStorage* storage )
 {
     XP_ASSERT( onMainThread(storage) );
-    storage->nextMoveCheckMS = 0;
+    storage->nextMoveCheckMS = 500;
 }
 
 static void
 schedule_next_check( RelayConStorage* storage )
 {
     XP_ASSERT( onMainThread(storage) );
+    XP_ASSERT( !storage->params->noHTTPAuto );
     if ( !storage->params->noHTTPAuto ) {
         if ( storage->moveCheckerID != 0 ) {
             g_source_remove( storage->moveCheckerID );
@@ -955,7 +971,7 @@ schedule_next_check( RelayConStorage* storage )
         if ( storage->nextMoveCheckMS > MAX_MOVE_CHECK_MS ) {
             storage->nextMoveCheckMS = MAX_MOVE_CHECK_MS;
         } else if ( storage->nextMoveCheckMS == 0 ) {
-            storage->nextMoveCheckMS = 250;
+            storage->nextMoveCheckMS = 1000;
         }
 
         storage->moveCheckerID = g_timeout_add( storage->nextMoveCheckMS,
