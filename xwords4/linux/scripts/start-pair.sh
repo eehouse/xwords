@@ -3,11 +3,13 @@
 set -e -u
 
 IN_SEQ=''
-HTTP=''
+HTTP='--use-http'
+CURSES='--curses'
+SLEEP_SEC=10000
 
 usage() {
 	[ $# -gt 0 ] && echo "ERROR: $1"
-	echo "usage: $0 --in-sequence|--at-once [--use-http]"
+	echo "usage: $0 --in-sequence|--at-once [--no-use-http] [--gtk]"
 	cat <<EOF
 
 Starts a pair of devices meant to get into the same game. Verification
@@ -26,8 +28,11 @@ while [ $# -gt 0 ]; do
 		--at-once)
 			IN_SEQ=0
 		;;
-		--use-http)
-			HTTP=--use-http
+		--no-use-http)
+			HTTP=''
+			;;
+		--gtk)
+			CURSES=''
 			;;
 		*)
 			usage "unexpected param $1"
@@ -55,7 +60,7 @@ for GAME in $(seq 1); do
 	# for N in $(seq 1); do
 		DB=$DB_TMPLATE${GAME}_${N}.sqldb
 		LOG=$LOG_TMPLATE${GAME}_${N}.log
-		exec ./obj_linux_memdbg/xwords --server --curses --remote-player --name Player \
+		exec ./obj_linux_memdbg/xwords --server $CURSES --remote-player --robot Player \
 			 --room $ROOM --game-dict dict.xwd $HTTP\
 			 --skip-confirm --db $DB --close-stdin --server \
 			 >/dev/null 2>>$LOG &
@@ -71,7 +76,7 @@ for GAME in $(seq 1); do
 	done
 done
 
-[ -n "${PIDS}" ] && sleep 10
+[ -n "${PIDS}" ] && sleep $SLEEP_SEC
 for PID in $PIDS; do
 	kill $PID
 done
