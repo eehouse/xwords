@@ -70,7 +70,7 @@ endif
 
 memdebug all: xwrelay rq
 
-REQUIRED_DEBS = libpq-dev \
+REQUIRED_DEBS = libpq-dev g++ libglib2.0-dev postgresql \
 
 .PHONY: debcheck debs_install
 
