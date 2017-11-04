@@ -550,18 +550,18 @@ assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd,
     }
 
 #ifdef LOG_UDP_PACKETS
-    gsize size = 0;
-    gint state = 0;
-    gint save = 0;
-    gchar out[1024];
-    for ( unsigned int ii = 0; ii < iocount; ++ii ) {
-        size += g_base64_encode_step( (const guchar*)vec[ii].iov_base, 
-                                      vec[ii].iov_len,
-                                      FALSE, &out[size], &state, &save );
-    }
-    size += g_base64_encode_close( FALSE, &out[size], &state, &save );
-    assert( size < sizeof(out) );
-    out[size] = '\0';
+    // gsize size = 0;
+    // gint state = 0;
+    // gint save = 0;
+    // gchar out[1024];
+    // for ( unsigned int ii = 0; ii < iocount; ++ii ) {
+    //     size += g_base64_encode_step( (const guchar*)vec[ii].iov_base,
+    //                                   vec[ii].iov_len,
+    //                                   FALSE, &out[size], &state, &save );
+    // }
+    // size += g_base64_encode_close( FALSE, &out[size], &state, &save );
+    // assert( size < sizeof(out) );
+    // out[size] = '\0';
 #endif
 }
 
@@ -640,8 +640,10 @@ send_via_udp_impl( int sock, const struct sockaddr* dest_addr,
 #ifdef LOG_UDP_PACKETS
     gchar* b64 = g_base64_encode( (uint8_t*)dest_addr, 
                                   sizeof(*dest_addr) );
+    gchar* out = g_base64_encode( packet.data(), packet.size() );
     logf( XW_LOGINFO, "%s()=>%d; addr='%s'; msg='%s'", __func__, nSent, 
           b64, out );
+    g_free( out );
     g_free( b64 );
 #else
     logf( XW_LOGINFO, "%s()=>%d", __func__, nSent );
