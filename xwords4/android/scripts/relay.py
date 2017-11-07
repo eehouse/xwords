@@ -17,13 +17,11 @@ def join(req, devID, room, lang = 1, nInGame = 2, nHere = 1, inviteID = None):
     connname = None
     con = psycopg2.connect(database='xwgames')
 
-    query = """UPDATE games SET njoined = njoined + %d
-    WHERE lang = %d AND nTotal = %d AND room = '%s' AND njoined + %d <= ntotal
+    query = """UPDATE games SET njoined = njoined + %s
+    WHERE lang = %s AND nTotal = %s AND room = %s AND njoined + %s <= ntotal
     RETURNING connname"""
-    query = query % (nHere, lang, nInGame, room, nHere)
-    print(query)
     cur = con.cursor()
-    cur.execute(query)
+    cur.execute(query, (nHere, lang, nInGame, room, nHere))
     for row in cur:
         connname = row[0]
         print 'got:', connname 
@@ -31,10 +29,8 @@ def join(req, devID, room, lang = 1, nInGame = 2, nHere = 1, inviteID = None):
     if not connname:
         connname = str(random.randint(0, 10000000000))
         query = """INSERT INTO games (connname, room, lang, ntotal, njoined) 
-        values ('%s', '%s', %d, %d, %d) RETURNING connname; """
-        query %= (connname, room, lang, nInGame, nHere)
-        print(query)
-        cur.execute(query)
+        values (%s, %s, %s, %s, %s) RETURNING connname; """
+        cur.execute(query, (connname, room, lang, nInGame, nHere))
         for row in cur:
             print row
         else:
@@ -149,17 +145,19 @@ def main():
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
         args = sys.argv[2:]
-        if cmd == 'query':
-            result = query(None, json.dumps(args))
-        elif cmd == 'post':
-            # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
-            # params = json.dumps(params)
-            # print(post(None, params))
-            None
-        elif cmd == 'join':
-            result = join(None, 1, args[0])
-        elif cmd == 'kill':
-            result = kill( None, json.dumps([{'relayID': args[0], 'seed':int(args[1])}]) )
+        try :
+            if cmd == 'query':
+                result = query(None, json.dumps(args))
+            elif cmd == 'post':
+                # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
+                # params = json.dumps(params)
+                # print(post(None, params))
+                pass
+            elif cmd == 'join':
+                result = join(None, 1, args[0], int(args[1]), int(args[2]))
+            elif cmd == 'kill':
+                result = kill( None, json.dumps([{'relayID': args[0], 'seed':int(args[1])}]) )
+        except : pass
 
     if result:
         print '->', result
@@ -167,6 +165,7 @@ def main():
         print 'USAGE: query [connname/hid]*'
         # print '       post '
         print '       kill <relayID> <seed>'
+        print '       join <roomName> <lang> <nTotal>'
 
 ##############################################################################
 if __name__ == '__main__':
