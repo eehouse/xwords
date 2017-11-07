@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import base64, json, mod_python, socket, struct, sys
+import psycopg2, random
 
 PROTOCOL_VERSION = 0
 PRX_DEVICE_GONE = 3
@@ -11,6 +12,40 @@ PRX_GET_MSGS = 4
 #     apacheAvailable = True
 # except ImportError:
 #     apacheAvailable = False
+
+def join(req, devID, room, lang = 1, nInGame = 2, nHere = 1, inviteID = None):
+    connname = None
+    con = psycopg2.connect(database='xwgames')
+
+    query = """UPDATE games SET njoined = njoined + %d
+    WHERE lang = %d AND nTotal = %d AND room = '%s' AND njoined + %d <= ntotal
+    RETURNING connname"""
+    query = query % (nHere, lang, nInGame, room, nHere)
+    print(query)
+    cur = con.cursor()
+    cur.execute(query)
+    for row in cur:
+        connname = row[0]
+        print 'got:', connname 
+
+    if not connname:
+        connname = str(random.randint(0, 10000000000))
+        query = """INSERT INTO games (connname, room, lang, ntotal, njoined) 
+        values ('%s', '%s', %d, %d, %d) RETURNING connname; """
+        query %= (connname, room, lang, nInGame, nHere)
+        print(query)
+        cur.execute(query)
+        for row in cur:
+            print row
+        else:
+            print 'got nothing'
+        print 'did an insert'
+    con.commit()
+    con.close()
+
+    result = {'connname': connname}
+
+    return json.dumps(result)
 
 def kill(req, params):
     print(params)
@@ -36,22 +71,22 @@ def kill(req, params):
 
     result = {'err': 0}
     return json.dumps(result)
-    
+
+# winds up in handle_udp_packet() in xwrelay.cpp
 def post(req, params, timeoutSecs = 1.0):
     err = 'none'
-    dataLen = 0
     jobj = json.loads(params)
     data = base64.b64decode(jobj['data'])
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(float(timeoutSecs))         # seconds
+    udpSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udpSock.settimeout(float(timeoutSecs))         # seconds
     addr = ("127.0.0.1", 10997)
-    sock.sendto(data, addr)
+    udpSock.sendto(data, addr)
 
     responses = []
     while True:
         try:
-            data, server = sock.recvfrom(1024)
+            data, server = udpSock.recvfrom(1024)
             responses.append(base64.b64encode(data))
         except socket.timeout:
             #If data is not received back from server, print it has timed out  
@@ -121,6 +156,8 @@ def main():
             # params = json.dumps(params)
             # print(post(None, params))
             None
+        elif cmd == 'join':
+            result = join(None, 1, args[0])
         elif cmd == 'kill':
             result = kill( None, json.dumps([{'relayID': args[0], 'seed':int(args[1])}]) )
 
