@@ -13,33 +13,89 @@ PRX_GET_MSGS = 4
 # except ImportError:
 #     apacheAvailable = False
 
-def join(req, devID, room, lang = 1, nInGame = 2, nHere = 1, inviteID = None):
+# Joining a game. Basic idea is you have stuff to match on (room,
+# number in game, language) and when somebody wants to join you add to
+# an existing matching game if there's space otherwise create a new
+# one. Problems are the unreliablity of transport: if you give a space
+# and the device doesn't get the message you can't hold it forever. So
+# device provides a seed that holds the space. If it asks again for a
+# space with the same seed it gets the same space. If it never asks
+# again (app deleted, say), the space needs eventually to be given to
+# somebody else. I think that's done by adding a timestamp array and
+# treating the space as available if TIME has expired. Need to think
+# about this: what if app fails to ACK for TIME, then returns with
+# seed to find it given away. Let's do a 30 minute reservation for
+# now? [Note: much of this is PENDING]
+
+def join(req, devID, room, seed, hid = 0, lang = 1, nInGame = 2, nHere = 1, inviteID = None):
     connname = None
     con = psycopg2.connect(database='xwgames')
-
-    query = """UPDATE games SET njoined = njoined + %s
-    WHERE lang = %s AND nTotal = %s AND room = %s AND njoined + %s <= ntotal
-    RETURNING connname"""
     cur = con.cursor()
-    cur.execute(query, (nHere, lang, nInGame, room, nHere))
-    for row in cur:
-        connname = row[0]
-        print 'got:', connname 
 
+    assert hid <= 4
+    assert seed != 0
+
+    # First see if there's a game with a space for me. Must match on
+    # room, lang and size. Must have room OR must have already given a
+    # spot for a seed equal to mine, in which case I get it
+    # back. Assumption is I didn't ack in time.
+
+    query = "SELECT connname, seeds, nperdevice FROM games "
+    query += "WHERE lang = %s AND nTotal = %s AND room = %s "
+    query += "AND (njoined + %s <= ntotal OR %s = ANY(seeds)) "
+    query += "LIMIT 1"
+    cur.execute( query, (lang, nInGame, room, nHere, seed))
+    for row in cur:
+        (connname, seeds, nperdevice) = row
+        print('found', connname, seeds, nperdevice)
+        break                   # should be only one!
+
+    # If we've found a match, we either need to UPDATE or, if the
+    # seeds match, remind the caller of where he belongs. If a hid's
+    # been specified, we honor it by updating if the slot's available;
+    # otherwise a new game has to be created.
+    if connname:
+        if seed in seeds and nHere == nperdevice[seeds.index(seed)]:
+            hid = seeds.index(seed) + 1
+            print('resusing seed case; outta here!')
+        else:
+            if hid == 0:
+                # Any gaps? Assign it
+                if None in seeds:
+                    hid = seeds.index(None) + 1
+                else:
+                    hid = len(seeds) + 1
+                print('set hid to', hid, 'based on ', seeds)
+            else:
+                print('hid already', hid)
+            query = "UPDATE games SET njoined = njoined + %s, "
+            query += "seeds[%d] = %%s, " % hid
+            query += "jtimes[%d] = 'now', " % hid
+            query += "nperdevice[%d] = %%s " % hid
+            query += "WHERE connname = %s "
+            print(query)
+            params = (nHere, seed, nHere, connname)
+            cur.execute(query, params)
+
+    # If nothing was found, add a new game and add me. Honor my hid
+    # preference if specified
     if not connname:
         connname = str(random.randint(0, 10000000000))
-        query = """INSERT INTO games (connname, room, lang, ntotal, njoined) 
-        values (%s, %s, %s, %s, %s) RETURNING connname; """
-        cur.execute(query, (connname, room, lang, nInGame, nHere))
+        useHid = hid == 0 and 1 or hid
+        print('not found case; inserting using hid:', useHid)
+        query = "INSERT INTO games (connname, room, lang, ntotal, njoined, seeds[%d], jtimes[%d], nperdevice[%d]) " % (useHid, useHid, useHid)
+        query += "VALUES (%s, %s, %s, %s, %s, %s, 'now', %s) "
+        query += "RETURNING connname, array_length(seeds,1); "
+        cur.execute(query, (connname, room, lang, nInGame, nHere, seed, nHere))
         for row in cur:
-            print row
-        else:
-            print 'got nothing'
-        print 'did an insert'
+            connname, gothid = row
+            break
+        if hid == 0: hid = gothid
+
     con.commit()
     con.close()
 
-    result = {'connname': connname}
+    result = {'connname': connname, 'hid' : hid}
 
     return json.dumps(result)
 
@@ -145,19 +201,18 @@ def main():
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
         args = sys.argv[2:]
-        try :
-            if cmd == 'query':
-                result = query(None, json.dumps(args))
-            elif cmd == 'post':
-                # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
-                # params = json.dumps(params)
-                # print(post(None, params))
-                pass
-            elif cmd == 'join':
-                result = join(None, 1, args[0], int(args[1]), int(args[2]))
-            elif cmd == 'kill':
-                result = kill( None, json.dumps([{'relayID': args[0], 'seed':int(args[1])}]) )
-        except : pass
+        if cmd == 'query':
+            result = query(None, json.dumps(args))
+        elif cmd == 'post':
+            # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
+            # params = json.dumps(params)
+            # print(post(None, params))
+            pass
+        elif cmd == 'join':
+            if len(args) == 6:
+                result = join(None, 1, args[0], int(args[1]), int(args[2]), int(args[3]), int(args[4]), int(args[5]))
+        elif cmd == 'kill':
+            result = kill( None, json.dumps([{'relayID': args[0], 'seed':int(args[1])}]) )
 
     if result:
         print '->', result
@@ -165,7 +220,7 @@ def main():
         print 'USAGE: query [connname/hid]*'
         # print '       post '
         print '       kill <relayID> <seed>'
-        print '       join <roomName> <lang> <nTotal>'
+        print '       join <roomName> <seed> <hid> <lang> <nTotal> <nHere>'
 
 ##############################################################################
 if __name__ == '__main__':
