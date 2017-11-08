@@ -49,6 +49,8 @@ cid integer
 ,pub BOOLEAN
 ,connName VARCHAR(64) UNIQUE PRIMARY KEY
 ,nTotal INTEGER
+,nJoined INTEGER DEFAULT 0
+,jtimes TIMESTAMP(0)[]
 ,clntVers INTEGER[]
 ,nPerDevice INTEGER[]
 ,seeds INTEGER[]
@@ -59,7 +61,7 @@ cid integer
 ,addrs INET[]
 ,devids INTEGER[]
 ,tokens INTEGER[]
-);
+,CHECK (nJoined <= nTotal))
 EOF
 
     cat <<-EOF | psql $DBNAME --file -
