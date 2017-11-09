@@ -28,12 +28,15 @@ PRX_GET_MSGS = 4
 # now? [Note: much of this is PENDING]
 
 def join(req, devID, room, seed, hid = 0, lang = 1, nInGame = 2, nHere = 1, inviteID = None):
+    assert hid <= 4
+    seed = int(seed)
+    assert seed != 0
+
     connname = None
+    logs = []                   # for debugging
     con = psycopg2.connect(database='xwgames')
     cur = con.cursor()
-
-    assert hid <= 4
-    assert seed != 0
+    # cur.execute('LOCK TABLE games IN ACCESS EXCLUSIVE MODE')
 
     # First see if there's a game with a space for me. Must match on
     # room, lang and size. Must have room OR must have already given a
@@ -95,7 +98,7 @@ def join(req, devID, room, seed, hid = 0, lang = 1, nInGame = 2, nHere = 1, invi
     con.commit()
     con.close()
 
-    result = {'connname': connname, 'hid' : hid}
+    result = {'connname': connname, 'hid' : hid, 'log' : ':'.join(logs)}
 
     return json.dumps(result)
 
