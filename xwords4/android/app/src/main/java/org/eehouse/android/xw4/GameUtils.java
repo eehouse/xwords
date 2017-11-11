@@ -1196,7 +1196,7 @@ public class GameUtils {
                     for ( CommsConnType typ : conTypes ) {
                         switch ( typ ) {
                         case COMMS_CONN_RELAY:
-                            tellRelayDied( context, summary, informNow );
+                            // see below
                             break;
                         case COMMS_CONN_BT:
                             BTService.gameDied( context, addr.bt_btAddr, gameID );
@@ -1209,6 +1209,14 @@ public class GameUtils {
                             break;
                         }
                     }
+                }
+
+                // comms doesn't have a relay address for us until the game's
+                // in play (all devices registered, at least.) To enable
+                // deleting on relay half-games that we created but nobody
+                // joined, special-case this one.
+                if ( summary.inRelayGame() ) {
+                    tellRelayDied( context, summary, informNow );
                 }
             
                 gamePtr.release();
