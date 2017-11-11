@@ -449,7 +449,7 @@ public class RelayService extends XWService
                 case TIMER_FIRED:
                     if ( !NetStateCache.netAvail( this ) ) {
                         Log.w( TAG, "not connecting: no network" );
-                    } else if ( startFetchThreadIf() ) {
+                    } else if ( startFetchThreadIfNotUDP() ) {
                         // do nothing
                     } else if ( registerWithRelayIfNot() ) {
                         requestMessages();
@@ -510,9 +510,9 @@ public class RelayService extends XWService
         }
     }
 
-    private boolean startFetchThreadIf()
+    private boolean startFetchThreadIfNotUDP()
     {
-        // DbgUtils.logf( "startFetchThreadIf()" );
+        // DbgUtils.logf( "startFetchThreadIfNotUDP()" );
         boolean handled = relayEnabled( this ) && !XWApp.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             m_fetchThread = new Thread( null, new Runnable() {
@@ -1247,7 +1247,7 @@ public class RelayService extends XWService
             registerWithRelay();
         } else {
             stopUDPThreadsIf();
-            startFetchThreadIf();
+            startFetchThreadIfNotUDP();
         }
     }
 
