@@ -38,6 +38,10 @@ import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -46,6 +50,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -621,33 +626,24 @@ public class RelayService extends XWService
                                 break;
                             }
 
-                            try {
-                                DatagramPacket outPacket = outData.assemble();
-                                m_UDPSocket.send( outPacket );
-                                int pid = outData.m_packetID;
-                                Log.d( TAG, "Sent udp packet, cmd=%s, id=%d,"
-                                       + " of length %d",
-                                       outData.m_cmd.toString(),
-                                       pid, outPacket.getLength());
-                                synchronized( s_packetsSent ) {
-                                    s_packetsSent.add( pid );
-                                }
-                                resetExitTimer();
-                                ConnStatusHandler.showSuccessOut();
-                            } catch ( java.net.SocketException se ) {
-                                Log.ex( TAG, se );
-                                Log.i( TAG, "Restarting threads to force"
-                                       + " new socket" );
-                                m_handler.post( new Runnable() {
-                                        public void run() {
-                                            stopUDPThreadsIf();
-                                        }
-                                    } );
-                            } catch ( java.io.IOException ioe ) {
-                                Log.ex( TAG, ioe );
-                            } catch ( NullPointerException npe ) {
-                                Log.w( TAG, "network problem; dropping packet" );
+                            int sentLen;
+                            byte[] data = outData.assemble();
+                            if ( XWPrefs.getPreferWebAPI( RelayService.this ) ) {
+                                sentLen = sendViaWeb( data );
+                            } else {
+                                sentLen = sendViaUDP( data );
                             }
+
+                            int pid = outData.m_packetID;
+                            Log.d( TAG, "Sent udp packet, cmd=%s, id=%d,"
+                                   + " of length %d",
+                                   outData.m_cmd.toString(),
+                                   pid, sentLen);
+                            synchronized( s_packetsSent ) {
+                                s_packetsSent.add( pid );
+                            }
+                            resetExitTimer();
+                            ConnStatusHandler.showSuccessOut();
                         }
                         Log.i( TAG, "write thread exiting" );
                     }
@@ -657,6 +653,51 @@ public class RelayService extends XWService
             Log.i( TAG, "m_UDPWriteThread not null and assumed to "
                    + "be running" );
         }
+    }
+
+    private int sendViaWeb( byte[] data )
+    {
+        try {
+            JSONObject params = new JSONObject();
+            String b64Data = Utils.base64Encode(data);
+            params.put( "data", b64Data );
+            HttpURLConnection conn = NetUtils.makeHttpRelayConn(this, "post");
+            String result = NetUtils.runConn(conn, params);
+            JSONObject resultObj = new JSONObject( result );
+            JSONArray resData = resultObj.getJSONArray( "data" );
+            for ( int ii = 0; ii < resData.length(); ++ii ) {
+                byte[] datum = Utils.base64Decode( resData.getString( ii ) );
+                // PENDING: skip ack or not
+                gotPacket( datum, false );
+            }
+        } catch ( JSONException ex ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
+        }
+        return data.length;
+    }
+
+    private int sendViaUDP( byte[] data )
+    {
+        int sentLen = -1;
+        try {
+            DatagramPacket outPacket = new DatagramPacket( data, data.length );
+            m_UDPSocket.send( outPacket );
+            sentLen = outPacket.getLength();
+        } catch ( java.net.SocketException se ) {
+            Log.ex( TAG, se );
+            Log.i( TAG, "Restarting threads to force"
+                   + " new socket" );
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        stopUDPThreadsIf();
+                    }
+                } );
+        } catch ( java.io.IOException ioe ) {
+            Log.ex( TAG, ioe );
+        } catch ( NullPointerException npe ) {
+            Log.w( TAG, "network problem; dropping packet" );
+        }
+        return sentLen;
     }
 
     private void stopUDPThreadsIf()
@@ -1441,13 +1482,13 @@ public class RelayService extends XWService
             return result;
         }
 
-        public DatagramPacket assemble()
+        public byte[] assemble()
         {
-            byte[] dest = new byte[getLength()];
-            System.arraycopy( m_header, 0, dest, 0, m_header.length );
+            byte[] data = new byte[getLength()];
+            System.arraycopy( m_header, 0, data, 0, m_header.length );
             byte[] basData = m_bas.toByteArray();
-            System.arraycopy( basData, 0, dest, m_header.length, basData.length );
-            return new DatagramPacket( dest, dest.length );
+            System.arraycopy( basData, 0, data, m_header.length, basData.length );
+            return data;
         }
 
         private void makeHeader()

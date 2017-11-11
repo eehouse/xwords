@@ -143,8 +143,8 @@ def kill(req, params):
 # winds up in handle_udp_packet() in xwrelay.cpp
 def post(req, params, timeoutSecs = 1.0):
     err = 'none'
-    jobj = json.loads(params)
-    data = base64.b64decode(jobj['data'])
+    params = json.loads(params)
+    data = base64.b64decode(params['data'])
 
     udpSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpSock.settimeout(float(timeoutSecs))         # seconds
@@ -161,18 +161,20 @@ def post(req, params, timeoutSecs = 1.0):
             err = 'timeout'
             break
     
-    jobj = {'err' : err, 'data' : responses}
-    return json.dumps(jobj)
+    result = {'err' : err, 'data' : responses}
+    return json.dumps(result)
 
-def query(req, ids, timeoutSecs = 5.0):
-    print('ids', ids)
-    ids = json.loads(ids)
+def query(req, params):
+    print('params', params)
+    params = json.loads(params)
+    ids = params['ids']
+    timeoutSecs = 'timeoutSecs' in params and float(params['timeoutSecs']) or 2.0
 
     idsLen = 0
     for id in ids: idsLen += len(id)
 
     tcpSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcpSock.settimeout(float(timeoutSecs))
+    tcpSock.settimeout(timeoutSecs)
     tcpSock.connect(('127.0.0.1', 10998))
 
     lenShort = 2 + idsLen + len(ids) + 2
@@ -217,8 +219,8 @@ def main():
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
         args = sys.argv[2:]
-        if cmd == 'query':
-            result = query(None, json.dumps(args))
+        if cmd == 'query' and len(args) > 0:
+            result = query(None, json.dumps({'ids':args}))
         elif cmd == 'post':
             # Params = { 'data' : 'V2VkIE9jdCAxOCAwNjowNDo0OCBQRFQgMjAxNwo=' }
             # params = json.dumps(params)
