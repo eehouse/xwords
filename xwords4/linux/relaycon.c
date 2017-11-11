@@ -84,6 +84,9 @@ static size_t writeBytes( XP_U8* buf, size_t len, const XP_U8* bytes,
 static size_t writeVLI( XP_U8* out, uint32_t nn );
 static size_t un2vli( int nn, uint8_t* buf );
 static bool vli2un( const uint8_t** inp, uint32_t* outp );
+#ifdef DEBUG
+static const char* msgToStr( XWRelayReg msg );
+#endif
 
 static void* relayThread( void* arg );
 
@@ -92,7 +95,11 @@ typedef struct _WriteState {
     size_t curSize;
 } WriteState;
 
-typedef enum { POST, QUERY, } TaskType;
+typedef enum {
+#ifdef RELAY_VIA_HTTP
+    JOIN,
+#endif
+    POST, QUERY, } TaskType;
 
 typedef struct _RelayTask {
     TaskType typ;
@@ -101,6 +108,18 @@ typedef struct _RelayTask {
     WriteState ws;
     XP_U32 ctime;
     union {
+#ifdef RELAY_VIA_HTTP
+        struct {
+            XP_U16 lang;
+            XP_U16 nHere;
+            XP_U16 nTotal;
+            XP_U16 seed;
+            XP_UCHAR devID[64];
+            XP_UCHAR room[MAX_INVITE_LEN + 1];
+            OnJoinedProc proc;
+            void* closure;
+        } join;
+#endif
         struct {
             XP_U8* msgbuf;
             XP_U16 len;
@@ -114,6 +133,9 @@ typedef struct _RelayTask {
 
 static RelayTask* makeRelayTask( RelayConStorage* storage, TaskType typ );
 static void freeRelayTask(RelayTask* task);
+#ifdef RELAY_VIA_HTTP
+static void handleJoin( RelayTask* task );
+#endif
 static void handlePost( RelayTask* task );
 static void handleQuery( RelayTask* task );
 static void addToGotData( RelayTask* task );
@@ -290,7 +312,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux box" );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux version" );
 
-    sendIt( storage, tmpbuf, indx, 2.0 );
+    sendIt( storage, tmpbuf, indx, 0.5 );
 }
 
 void
@@ -327,7 +349,7 @@ relaycon_invite( LaunchParams* params, XP_U32 destDevID,
     indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, ptr, len );
     stream_destroy( stream );
 
-    sendIt( storage, tmpbuf, indx, 2.0 );
+    sendIt( storage, tmpbuf, indx, 0.5 );
     LOG_RETURN_VOID();
 }
 
@@ -344,7 +366,7 @@ relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     indx += writeHeader( storage, tmpbuf, XWPDEV_MSG );
     indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
     indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, buf, buflen );
-    nSent = sendIt( storage, tmpbuf, indx, 2.0 );
+    nSent = sendIt( storage, tmpbuf, indx, 0.5 );
     if ( nSent > buflen ) {
         nSent = buflen;
     }
@@ -372,7 +394,7 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
                         (const XP_U8*)relayID, idLen );
     tmpbuf[indx++] = '\n';
     indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, buf, buflen );
-    nSent = sendIt( storage, tmpbuf, indx, 2.0 );
+    nSent = sendIt( storage, tmpbuf, indx, 0.5 );
     if ( nSent > buflen ) {
         nSent = buflen;
     }
@@ -391,7 +413,7 @@ relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID )
     indx += writeHeader( storage, tmpbuf, XWPDEV_RQSTMSGS );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
 
-    sendIt( storage, tmpbuf, indx, 2.0 );
+    sendIt( storage, tmpbuf, indx, 0.5 );
 }
 
 void
@@ -418,12 +440,19 @@ onMainThread( RelayConStorage* storage )
 static const gchar*
 taskName( const RelayTask* task )
 {
+    const char* str;
+# define CASE_STR(c)  case c: str = #c; break
     switch (task->typ) {
-    case POST: return "POST";
-    case QUERY: return "QUERY";
+        CASE_STR(POST);
+        CASE_STR(QUERY);
+#ifdef RELAY_VIA_HTTP
+        CASE_STR(JOIN);
+#endif
     default: XP_ASSERT(0);
-        return NULL;
+        str = NULL;
     }
+#undef CASE_STR
+    return str;
 }
 
 static gchar*
@@ -450,6 +479,7 @@ listTasks( GSList* tasks )
 static void*
 relayThread( void* arg )
 {
+    LOG_FUNC();
     RelayConStorage* storage = (RelayConStorage*)arg;
     for ( ; ; ) {
         pthread_mutex_lock( &storage->relayMutex );
@@ -472,6 +502,11 @@ relayThread( void* arg )
         g_free( strs );
 
         switch ( task->typ ) {
+#ifdef RELAY_VIA_HTTP
+        case JOIN:
+            handleJoin( task );
+            break;
+#endif
         case POST:
             handlePost( task );
             break;
@@ -535,6 +570,28 @@ freeRelayTask( RelayTask* task )
     g_free( task );
 }
 
+#ifdef RELAY_VIA_HTTP
+void
+relaycon_join( LaunchParams* params, const XP_UCHAR* devID, const XP_UCHAR* room,
+               XP_U16 nPlayersHere, XP_U16 nPlayersTotal, XP_U16 seed, XP_U16 lang,
+               OnJoinedProc proc, void* closure )
+{
+    LOG_FUNC();
+    RelayConStorage* storage = getStorage( params );
+    XP_ASSERT( onMainThread(storage) );
+    RelayTask* task = makeRelayTask( storage, JOIN );
+    task->u.join.nHere = nPlayersHere;
+    XP_STRNCPY( task->u.join.devID, devID, sizeof(task->u.join.devID) );
+    XP_STRNCPY( task->u.join.room, room, sizeof(task->u.join.room) );
+    task->u.join.nTotal = nPlayersTotal;
+    task->u.join.lang = lang;
+    task->u.join.seed = seed;
+    task->u.join.proc = proc;
+    task->u.join.closure = closure;
+    addTask( storage, task );
+}
+#endif
+
 static void
 sendAckIf( RelayConStorage* storage, const MsgHeader* header )
 {
@@ -555,6 +612,8 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
         MsgHeader header;
         if ( readHeader( &ptr, &header ) ) {
             sendAckIf( storage, &header );
+
+            XP_LOGF( "%s(): got %s", __func__, msgToStr(header.cmd) );
 
             switch( header.cmd ) {
             case XWPDEV_REGRSP: {
@@ -605,7 +664,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
                     assert( 0 );
                 }
                 XP_USE( packetID );
-                XP_LOGF( "got ack for packetID %d", packetID );
+                XP_LOGF( "%s(): got ack for packetID %d", __func__, packetID );
                 break;
             }
             case XWPDEV_ALERT: {
@@ -735,10 +794,34 @@ hostNameToIP( const XP_UCHAR* name )
     return ip;
 }
 
-static gboolean
-onGotPostData( gpointer user_data )
+#ifdef RELAY_VIA_HTTP
+static void
+onGotJoinData( RelayTask* task )
 {
-    RelayTask* task = (RelayTask*)user_data;
+    LOG_FUNC();
+    RelayConStorage* storage = task->storage;
+    XP_ASSERT( onMainThread(storage) );
+    if ( !!task->ws.ptr ) {
+        XP_LOGF( "%s(): got json? %s", __func__, task->ws.ptr );
+        json_object* reply = json_tokener_parse( task->ws.ptr );
+        json_object* jConnname = NULL;
+        json_object* jHID = NULL;
+        if ( json_object_object_get_ex( reply, "connname", &jConnname )
+             && json_object_object_get_ex( reply, "hid", &jHID ) ) {
+            const char* connname = json_object_get_string( jConnname );
+            XWHostID hid = json_object_get_int( jHID );
+            (*task->u.join.proc)( task->u.join.closure, connname, hid );
+        }
+        json_object_put( jConnname );
+        json_object_put( jHID );
+    }
+    freeRelayTask( task );
+}
+#endif
+
+static gboolean
+onGotPostData( RelayTask* task )
+{
     RelayConStorage* storage = task->storage;
     /* Now pull any data from the reply */
     // got "{"status": "ok", "dataLen": 14, "data": "AYQDiDAyMUEzQ0MyADw=", "err": "none"}"
@@ -766,6 +849,23 @@ onGotPostData( gpointer user_data )
 
     return FALSE;
 }
+
+#ifdef RELAY_VIA_HTTP
+static void
+handleJoin( RelayTask* task )
+{
+    LOG_FUNC();
+    runWitCurl( task, "join",
+                "devID", json_object_new_string( task->u.join.devID ),
+                "room", json_object_new_string( task->u.join.room ),
+                "seed", json_object_new_int( task->u.join.seed ),
+                "lang", json_object_new_int( task->u.join.lang ),
+                "nInGame", json_object_new_int( task->u.join.nTotal ),
+                "nHere", json_object_new_int( task->u.join.nHere ),
+                NULL );
+    addToGotData( task );
+}
+#endif
 
 static void
 handlePost( RelayTask* task )
@@ -799,9 +899,8 @@ post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeout )
 }
 
 static gboolean
-onGotQueryData( gpointer user_data )
+onGotQueryData( RelayTask* task )
 {
-    RelayTask* task = (RelayTask*)user_data;
     RelayConStorage* storage = task->storage;
     XP_Bool foundAny = false;
     if ( !!task->ws.ptr ) {
@@ -902,6 +1001,11 @@ gotDataTimer(gpointer user_data)
             break;
         } else {
             switch ( task->typ ) {
+#ifdef RELAY_VIA_HTTP
+            case JOIN:
+                onGotJoinData( task );
+                break;
+#endif
             case POST:
                 onGotPostData( task );
                 break;
@@ -1184,3 +1288,33 @@ vli2un( const uint8_t** inp, uint32_t* outp )
     }
     return success;
 }
+
+#ifdef DEBUG
+static const char*
+msgToStr( XWRelayReg msg )
+{
+    const char* str;
+# define CASE_STR(c)  case c: str = #c; break
+    switch( msg ) {
+    CASE_STR(XWPDEV_UNAVAIL);
+    CASE_STR(XWPDEV_REG);
+    CASE_STR(XWPDEV_REGRSP);
+    CASE_STR(XWPDEV_INVITE);
+    CASE_STR(XWPDEV_KEEPALIVE);
+    CASE_STR(XWPDEV_HAVEMSGS);
+    CASE_STR(XWPDEV_RQSTMSGS);
+    CASE_STR(XWPDEV_MSG);
+    CASE_STR(XWPDEV_MSGNOCONN);
+    CASE_STR(XWPDEV_MSGRSP);
+    CASE_STR(XWPDEV_BADREG);
+    CASE_STR(XWPDEV_ALERT);     // should not receive this....
+    CASE_STR(XWPDEV_ACK);
+    CASE_STR(XWPDEV_DELGAME);
+    default:
+        str = "<unknown>";
+        break;
+    }
+# undef CASE_STR
+    return str;
+}
+#endif

@@ -60,4 +60,12 @@ XP_U32 makeClientToken( sqlite3_int64 rowid, XP_U16 seed );
 void rowidFromToken( XP_U32 clientToken, sqlite3_int64* rowid, XP_U16* seed );
 
 void relaycon_checkMsgs( LaunchParams* params );
+
+# ifdef RELAY_VIA_HTTP
+typedef void (*OnJoinedProc)( void* closure, const XP_UCHAR* connname, XWHostID hid );
+void relaycon_join( LaunchParams* params, const XP_UCHAR* devID, const XP_UCHAR* room,
+                    XP_U16 nPlayersHere, XP_U16 nPlayersTotal, XP_U16 seed,
+                    XP_U16 lang, OnJoinedProc proc, void* closure );
+# endif
+
 #endif

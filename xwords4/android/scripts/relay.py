@@ -31,9 +31,17 @@ def join(req, devID, room, seed, hid = 0, lang = 1, nInGame = 2, nHere = 1, invi
     assert hid <= 4
     seed = int(seed)
     assert seed != 0
+    nInGame = int(nInGame)
+    nHere = int(nHere)
+    assert nHere <= nInGame
+    assert nInGame <= 4
+
+    devID = int(devID, 16)
 
     connname = None
     logs = []                   # for debugging
+    # logs.append('vers: ' + platform.python_version())
+
     con = psycopg2.connect(database='xwgames')
     cur = con.cursor()
     # cur.execute('LOCK TABLE games IN ACCESS EXCLUSIVE MODE')
@@ -72,24 +80,29 @@ def join(req, devID, room, seed, hid = 0, lang = 1, nInGame = 2, nHere = 1, invi
             else:
                 print('hid already', hid)
             query = "UPDATE games SET njoined = njoined + %s, "
+            query += "devids[%d] = %%s, " % hid
             query += "seeds[%d] = %%s, " % hid
             query += "jtimes[%d] = 'now', " % hid
             query += "nperdevice[%d] = %%s " % hid
             query += "WHERE connname = %s "
             print(query)
-            params = (nHere, seed, nHere, connname)
+            params = (nHere, devID, seed, nHere, connname)
             cur.execute(query, params)
 
     # If nothing was found, add a new game and add me. Honor my hid
     # preference if specified
     if not connname:
-        connname = str(random.randint(0, 10000000000))
+        # This requires python3, which likely requires mod_wsgi
+        # ts = datetime.datetime.utcnow().timestamp()
+        # connname = '%s:%d:1' % (xwconfig.k_HOSTNAME, int(ts * 1000))
+        connname = '%s:%d:1' % (xwconfig.k_HOSTNAME, random.randint(0, 10000000000))
         useHid = hid == 0 and 1 or hid
         print('not found case; inserting using hid:', useHid)
-        query = "INSERT INTO games (connname, room, lang, ntotal, njoined, seeds[%d], jtimes[%d], nperdevice[%d]) " % (useHid, useHid, useHid)
-        query += "VALUES (%s, %s, %s, %s, %s, %s, 'now', %s) "
+        query = "INSERT INTO games (connname, room, lang, ntotal, njoined, " + \
+                "devids[%d], seeds[%d], jtimes[%d], nperdevice[%d]) " % (4 * (useHid,))
+        query += "VALUES (%s, %s, %s, %s, %s, %s, %s, 'now', %s) "
         query += "RETURNING connname, array_length(seeds,1); "
-        cur.execute(query, (connname, room, lang, nInGame, nHere, seed, nHere))
+        cur.execute(query, (connname, room, lang, nInGame, nHere, devID, seed, nHere))
         for row in cur:
             connname, gothid = row
             break
@@ -221,6 +234,8 @@ def main():
         print '->', result
     else:
         print 'USAGE: query [connname/hid]*'
+        print '       join <roomName> <seed> <hid> <lang> <nTotal> <nHere>'
+        print '       query [connname/hid]*'
         # print '       post '
         print '       kill <relayID> <seed>'
         print '       join <roomName> <seed> <hid> <lang> <nTotal> <nHere>'

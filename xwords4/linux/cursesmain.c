@@ -1023,7 +1023,7 @@ curses_socket_added( void* closure, int newSock, GIOFunc func )
     /* XP_ASSERT( !globals->cGlobals.relaySocket ); */
     /* globals->cGlobals.relaySocket = newSock; */
 #endif
-} /* curses_socket_changed */
+} /* curses_socket_added */
 
 static void
 curses_onGameSaved( void* closure, sqlite3_int64 rowid, 
@@ -1613,6 +1613,27 @@ relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
     return storeNoConnMsg( &globals->cGlobals, msg, len, relayID );
 } /* relay_sendNoConn_curses */
 
+#ifdef RELAY_VIA_HTTP
+static void
+onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    CommsCtxt* comms = globals->cGlobals.game.comms;
+    comms_gameJoined( comms, connname, hid );
+}
+
+static void
+relay_requestJoin_curses( void* closure, const XP_UCHAR* devID, const XP_UCHAR* room,
+                          XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
+                          XP_U16 seed, XP_U16 lang )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    relaycon_join( globals->cGlobals.params, devID, room, nPlayersHere, nPlayersTotal,
+                   seed, lang, onJoined, globals );
+}
+#endif
+
 static void
 relay_status_curses( void* closure, CommsRelayState state )
 {
@@ -1949,6 +1970,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         .rconnd = relay_connd_curses,
         .rerror = relay_error_curses,
         .sendNoConn = relay_sendNoConn_curses,
+#ifdef RELAY_VIA_HTTP
+        .requestJoin = relay_requestJoin_curses,
+#endif
+
 # ifdef COMMS_XPORT_FLAGSPROC
         .getFlags = curses_getFlags,
 # endif
