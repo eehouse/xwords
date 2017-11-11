@@ -1998,7 +1998,7 @@ maint_str_loop( int udpsock, const char* str )
 } // maint_str_loop
 
 static uint32_t
-getIPAddr( void )
+getUDPIPAddr( void )
 {
     uint32_t result = INADDR_ANY;
     char iface[16] = {0};
@@ -2233,7 +2233,7 @@ main( int argc, char** argv )
         struct sockaddr_in saddr;
         g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
         saddr.sin_family = PF_INET;
-        saddr.sin_addr.s_addr = getIPAddr();
+        saddr.sin_addr.s_addr = getUDPIPAddr();
         saddr.sin_port = htons(udpport);
         int err = bind( g_udpsock, (struct sockaddr*)&saddr, sizeof(saddr) );
         if ( 0 == err ) {
