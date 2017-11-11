@@ -152,7 +152,7 @@ addJsonParams( CURL* curl, va_list ap )
         json_object* param = va_arg(ap, json_object*);
         XP_ASSERT( !!param );
     
-        const char* asStr = json_object_to_json_string( param );
+        const char* asStr = json_object_get_string( param );
         XP_LOGF( "%s: adding param (with name %s): %s", __func__, name, asStr );
 
         char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );

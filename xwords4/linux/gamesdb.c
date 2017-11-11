@@ -129,13 +129,14 @@ writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* p
     assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_blob_close( blob );
     assertPrintResult( pDb, result, SQLITE_OK );
+
     if ( !!stmt ) {
         sqlite3_finalize( stmt );
     }
 
     LOG_RETURNF( "%lld", curRow );
     return curRow;
-}
+} /* writeBlobColumnData */
 
 static sqlite3_int64
 writeBlobColumnStream( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
@@ -326,7 +327,7 @@ getRelayIDsToRowsMap( sqlite3* pDb )
             XP_UCHAR relayID[32];
             getColumnText( ppStmt, 0, relayID, VSIZE(relayID) );
             gpointer key = g_strdup( relayID );
-            sqlite3_int64* value = g_malloc( sizeof( *key ) );
+            sqlite3_int64* value = g_malloc( sizeof( value ) );
             *value = sqlite3_column_int64( ppStmt, 1 );
             g_hash_table_insert( table, key, value );
             /* XP_LOGF( "%s(): added map %s => %lld", __func__, (char*)key, *value ); */
