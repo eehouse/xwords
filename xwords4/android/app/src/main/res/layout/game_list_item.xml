@@ -64,7 +64,7 @@
         <LinearLayout android:id="@+id/right_side"
                       android:orientation="vertical"
                       android:layout_width="fill_parent"
-                      android:layout_height="wrap_content"
+                      android:layout_height="match_parent"
                       android:clickable="true"
                       android:longClickable="true"
                       >
