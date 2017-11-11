@@ -415,11 +415,29 @@
     <PreferenceScreen android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
                       >
+      <CheckBoxPreference android:key="@string/key_enable_relay_toself"
+                          android:title="@string/enable_relay_toself_title"
+                          android:summary="@string/enable_relay_toself_summary"
+                          android:defaultValue="false"
+                          />
       <org.eehouse.android.xw4.XWEditTextPreference 
           android:key="@string/key_relay_host"
           android:title="@string/relay_host"
           android:defaultValue="@string/default_host"
           />
+
+      <CheckBoxPreference android:key="@string/key_relay_via_http"
+                          android:title="@string/relay_via_http"
+                          android:summary="@string/relay_via_http_summary"
+                          android:defaultValue="false"
+                          />
+
+    <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_relay_url"
+        android:title="@string/expl_relay_url"
+        android:defaultValue="@string/default_relay_url"
+        />
+
       <org.eehouse.android.xw4.XWEditTextPreference
           android:key="@string/key_relay_port"
           android:title="@string/relay_port"
@@ -432,11 +450,6 @@
           android:defaultValue="10998"
           android:numeric="decimal"
           />
-      <CheckBoxPreference android:key="@string/key_enable_relay_toself"
-                          android:title="@string/enable_relay_toself_title"
-                          android:summary="@string/enable_relay_toself_summary"
-                          android:defaultValue="false"
-                          />
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/pref_group_l10n_title"
