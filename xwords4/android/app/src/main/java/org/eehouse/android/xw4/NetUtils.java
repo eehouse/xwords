@@ -342,17 +342,18 @@ public class NetUtils {
         return result;
     }
 
+    // This handles multiple params but only every gets passed one!
     private static String getPostDataString( Map<String, String> params )
     {
         String result = null;
         try {
             ArrayList<String> pairs = new ArrayList<String>();
             // StringBuilder sb = new StringBuilder();
-            String[] pair = { null, null };
+            // String[] pair = { null, null };
             for ( Map.Entry<String, String> entry : params.entrySet() ){
-                pair[0] = URLEncoder.encode( entry.getKey(), "UTF-8" );
-                pair[1] = URLEncoder.encode( entry.getValue(), "UTF-8" );
-                pairs.add( TextUtils.join( "=", pair ) );
+                pairs.add( URLEncoder.encode( entry.getKey(), "UTF-8" )
+                           + "="
+                           + URLEncoder.encode( entry.getValue(), "UTF-8" ) );
             }
             result = TextUtils.join( "&", pairs );
         } catch ( java.io.UnsupportedEncodingException uee ) {
