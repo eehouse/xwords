@@ -668,16 +668,25 @@ public class RelayService extends XWService
 
             HttpURLConnection conn = NetUtils.makeHttpRelayConn( this, "post" );
             String result = NetUtils.runConn(conn, params);
-            JSONObject resultObj = new JSONObject( result );
-            JSONArray resData = resultObj.getJSONArray( "data" );
-            Log.d( TAG, "sendViaWeb(): got %d replies", resData.length() );
+            if ( null != result ) {
+                Log.d( TAG, "sendViaWeb(): POST => %s", result );
+                JSONObject resultObj = new JSONObject( result );
+                JSONArray resData = resultObj.getJSONArray( "data" );
+                int nReplies = resData.length();
+                Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
 
-            noteSent( packets ); // before we process the acks below :-)
+                noteSent( packets ); // before we process the acks below :-)
 
-            for ( int ii = 0; ii < resData.length(); ++ii ) {
-                byte[] datum = Utils.base64Decode( resData.getString( ii ) );
-                // PENDING: skip ack or not
-                gotPacket( datum, false );
+                if ( nReplies > 0 ) {
+                    resetExitTimer();
+                }
+                for ( int ii = 0; ii < nReplies; ++ii ) {
+                    byte[] datum = Utils.base64Decode( resData.getString( ii ) );
+                    // PENDING: skip ack or not
+                    gotPacket( datum, false );
+                }
+            } else {
+                Log.e( TAG, "sendViaWeb(): failed result for POST" );
             }
         } catch ( JSONException ex ) {
             Assert.assertFalse( BuildConfig.DEBUG );
@@ -694,6 +703,9 @@ public class RelayService extends XWService
             try {
                 DatagramPacket udpPacket = new DatagramPacket( data, data.length );
                 m_UDPSocket.send( udpPacket );
+                if ( BuildConfig.DEBUG ) {
+                    Assert.assertFalse( XWPrefs.getPreferWebAPI( this ) );
+                }
                 sentLen += udpPacket.getLength();
                 noteSent( packet );
                 getOut = false;
@@ -1158,6 +1170,7 @@ public class RelayService extends XWService
         @Override
         protected Void doInBackground( Void... ignored )
         {
+            Assert.assertFalse( XWPrefs.getPreferWebAPI( m_context ) );
             // format: total msg lenth: 2
             //         number-of-relayIDs: 2
             //         for-each-relayid: relayid + '\n': varies
@@ -1205,6 +1218,8 @@ public class RelayService extends XWService
                 }
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
+
+                Assert.assertFalse( XWPrefs.getPreferWebAPI( m_context ) );
                 Socket socket = NetUtils.makeProxySocket( m_context, 8000 );
                 if ( null != socket ) {
                     DataOutputStream outStream =

@@ -110,13 +110,17 @@ public class NetUtils {
                     params.put( one );
                 }
                 HttpURLConnection conn = makeHttpRelayConn( m_context, "kill" );
-                Log.d( TAG, "kill params: %s", params.toString() );
+                Log.d( TAG, "runViaWeb(): kill params: %s", params.toString() );
                 String resStr = runConn( conn, params );
-                Log.d( TAG, "kill => %s", resStr );
+                Log.d( TAG, "runViaWeb(): kill => %s", resStr );
 
-                JSONObject result = new JSONObject( resStr );
-                if ( 0 == result.optInt( "err", -1 ) ) {
-                    DBUtils.clearObits( m_context, m_obits );
+                if ( null != resStr ) {
+                    JSONObject result = new JSONObject( resStr );
+                    if ( 0 == result.optInt( "err", -1 ) ) {
+                        DBUtils.clearObits( m_context, m_obits );
+                    }
+                } else {
+                    Log.e( TAG, "runViaWeb(): KILL => null" );
                 }
             } catch ( JSONException ex ) {
                 Assert.assertFalse( BuildConfig.DEBUG );
