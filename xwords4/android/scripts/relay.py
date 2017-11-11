@@ -141,10 +141,11 @@ def kill(req, params):
     return json.dumps(result)
 
 # winds up in handle_udp_packet() in xwrelay.cpp
-def post(req, params, timeoutSecs = 1.0):
+def post(req, params):
     err = 'none'
     params = json.loads(params)
     data = params['data']
+    timeoutSecs = 'timeoutSecs' in params and params['timeoutSecs'] or 1.0
     binData = [base64.b64decode(datum) for datum in data]
 
     udpSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

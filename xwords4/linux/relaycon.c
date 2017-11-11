@@ -162,10 +162,10 @@ write_callback(void *contents, size_t size, size_t nmemb, void* data)
     return newLength;
 }
 
-static void
-addJsonParams( CURL* curl, va_list ap )
+static gchar*
+mkJsonParams( CURL* curl, va_list ap )
 {
-    gchar* buf = NULL;
+    json_object* params = json_object_new_object();
     for ( ; ; ) {
         const char* name = va_arg(ap, const char*);
         if ( !name ) {
@@ -174,31 +174,20 @@ addJsonParams( CURL* curl, va_list ap )
         json_object* param = va_arg(ap, json_object*);
         XP_ASSERT( !!param );
     
-        const char* asStr = json_object_get_string( param );
-        XP_LOGF( "%s: adding param (with name %s): %s", __func__, name, asStr );
-
-        char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
-        gchar* tmp = g_strdup_printf( "%s=%s", name, curl_params );
-        curl_free( curl_params );
-
-        if ( !buf ) {
-            buf = tmp;
-        } else {
-            gchar* cur = buf;
-            buf = g_strdup_printf( "%s&%s", cur, tmp );
-            g_free( tmp );
-            g_free( cur );
-        }
-        json_object_put( param );
+        json_object_object_add( params, name, param );
+        // XP_LOGF( "%s: adding param (with name %s): %s", __func__, name, json_object_get_string(param) );
     }
-    XP_LOGF( "%s(): setting params: %s", __func__, buf );
-    curl_easy_setopt( curl, CURLOPT_POSTFIELDS, buf );
-    curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, (long)strlen(buf) );
 
-    // Can't free the buf!! Well, maybe after the send...
-    // g_free( buf );
+    const char* asStr = json_object_get_string( params );
+    char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
+    gchar* result = g_strdup_printf( "params=%s", curl_params );
+    curl_free( curl_params );
+    json_object_put( params );
+    return result;
 }
 
+/* relay.py's methods all take one json object param "param" So we wrap
+   everything else in that then send it. */
 static XP_Bool
 runWitCurl( RelayTask* task, const gchar* proc, ...)
 {
@@ -214,8 +203,11 @@ runWitCurl( RelayTask* task, const gchar* proc, ...)
 
     va_list ap;
     va_start( ap, proc );
-    addJsonParams( curl, ap );
+    gchar* params = mkJsonParams( curl, ap );
     va_end( ap );
+
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDS, params );
+    curl_easy_setopt( curl, CURLOPT_POSTFIELDSIZE, (long)strlen(params) );
 
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
     curl_easy_setopt( curl, CURLOPT_WRITEDATA, &task->ws );
@@ -233,6 +225,7 @@ runWitCurl( RelayTask* task, const gchar* proc, ...)
     /* always cleanup */
     curl_easy_cleanup(curl);
     curl_global_cleanup();
+    g_free( params );
     return success;
 }
 
@@ -873,13 +866,16 @@ handlePost( RelayTask* task )
     XP_LOGF( "%s(task.post.len=%d)", __func__, task->u.post.len );
     XP_ASSERT( !onMainThread(task->storage) );
     char* data = g_base64_encode( task->u.post.msgbuf, task->u.post.len );
-    struct json_object* jobj = json_object_new_object();
     struct json_object* jstr = json_object_new_string(data);
     g_free( data );
-    json_object_object_add( jobj, "data", jstr );
+
+    /* The protocol takes an array of messages so they can be combined. Do
+       that soon. */
+    json_object* dataArr = json_object_new_array();
+    json_object_array_add( dataArr, jstr);
 
     json_object* jTimeout = json_object_new_double( task->u.post.timeoutSecs );
-    runWitCurl( task, "post", "params", jobj, "timeoutSecs", jTimeout, NULL );
+    runWitCurl( task, "post", "data", dataArr, "timeoutSecs", jTimeout, NULL );
 
     // Put the data on the main thread for processing
     addToGotData( task );
