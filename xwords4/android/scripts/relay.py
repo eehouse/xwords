@@ -144,12 +144,14 @@ def kill(req, params):
 def post(req, params, timeoutSecs = 1.0):
     err = 'none'
     params = json.loads(params)
-    data = base64.b64decode(params['data'])
+    data = params['data']
+    binData = [base64.b64decode(datum) for datum in data]
 
     udpSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udpSock.settimeout(float(timeoutSecs))         # seconds
     addr = ("127.0.0.1", 10997)
-    udpSock.sendto(data, addr)
+    for binDatum in binData:
+        udpSock.sendto(binDatum, addr)
 
     responses = []
     while True:
