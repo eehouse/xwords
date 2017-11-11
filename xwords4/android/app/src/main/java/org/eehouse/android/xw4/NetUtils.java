@@ -25,6 +25,8 @@ import android.text.TextUtils;
 
 import junit.framework.Assert;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -88,7 +90,41 @@ public class NetUtils {
             m_obits = obits;
         }
 
-        public void run() {
+        public void run()
+        {
+            if ( XWPrefs.getPreferWebAPI( m_context ) ) {
+                runViaWeb();
+            } else {
+                runWithProxySocket();
+            }
+        }
+
+        private void runViaWeb()
+        {
+            try {
+                JSONArray params = new JSONArray();
+                for ( int ii = 0; ii < m_obits.length; ++ii ) {
+                    JSONObject one = new JSONObject();
+                    one.put( "relayID", m_obits[ii].m_relayID );
+                    one.put( "seed", m_obits[ii].m_seed );
+                    params.put( one );
+                }
+                HttpURLConnection conn = makeHttpRelayConn( m_context, "kill" );
+                Log.d( TAG, "kill params: %s", params.toString() );
+                String resStr = runConn( conn, params );
+                Log.d( TAG, "kill => %s", resStr );
+
+                JSONObject result = new JSONObject( resStr );
+                if ( 0 == result.optInt( "err", -1 ) ) {
+                    DBUtils.clearObits( m_context, m_obits );
+                }
+            } catch ( JSONException ex ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
+        }
+
+        private void runWithProxySocket()
+        {
             Socket socket = makeProxySocket( m_context, 10000 );
             if ( null != socket ) {
                 int strLens = 0;
@@ -139,8 +175,7 @@ public class NetUtils {
     {
         DBUtils.Obit[] obits = DBUtils.listObits( context );
         if ( null != obits && 0 < obits.length ) {
-            InformThread thread = new InformThread( context, obits );
-            thread.start();
+            new InformThread( context, obits ).start();
         }
     }
 
@@ -214,14 +249,26 @@ public class NetUtils {
         return host;
     }
 
-    protected static HttpURLConnection makeHttpConn( Context context,
-                                                     String proc )
+    protected static HttpURLConnection makeHttpRelayConn( Context context,
+                                                           String proc )
+    {
+        String url = XWPrefs.getDefaultRelayUrl( context );
+        return makeHttpConn( context, url, proc );
+    }
+
+    protected static HttpURLConnection makeHttpUpdateConn( Context context,
+                                                           String proc )
+    {
+        String url = XWPrefs.getDefaultUpdateUrl( context );
+        return makeHttpConn( context, url, proc );
+    }
+
+    private static HttpURLConnection makeHttpConn( Context context,
+                                                   String path, String proc )
     {
         HttpURLConnection result = null;
         try {
-            String url = String.format( "%s/%s",
-                                        XWPrefs.getDefaultUpdateUrl( context ),
-                                        proc );
+            String url = String.format( "%s/%s", path, proc );
             result = (HttpURLConnection)new URL(url).openConnection();
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );
@@ -233,11 +280,21 @@ public class NetUtils {
         return result;
     }
 
+    protected static String runConn( HttpURLConnection conn, JSONArray param )
+    {
+        return runConn( conn, param.toString() );
+    }
+
     protected static String runConn( HttpURLConnection conn, JSONObject param )
+    {
+        return runConn( conn, param.toString() );
+    }
+
+    private static String runConn( HttpURLConnection conn, String param )
     {
         String result = null;
         Map<String, String> params = new HashMap<String, String>();
-        params.put( k_PARAMS, param.toString() );
+        params.put( k_PARAMS, param );
         String paramsString = getPostDataString( params );
 
         if ( null != paramsString ) {
