@@ -462,7 +462,10 @@ reset_internal( CommsCtxt* comms, XP_Bool isServer,
     if ( 0 != comms->nextChannelNo ) {
         XP_LOGF( "%s: comms->nextChannelNo: %d", __func__, comms->nextChannelNo );
     }
-    XP_ASSERT( 0 == comms->nextChannelNo ); /* firing... */
+    /* This tends to fire when games reconnect to the relay after the DB's
+       been wiped and connect in a different order from that in which they did
+       originally. So comment it out. */
+    // XP_ASSERT( 0 == comms->nextChannelNo );
     // comms->nextChannelNo = 0;
     if ( resetRelay ) {
         comms->channelSeed = 0;
