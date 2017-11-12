@@ -166,7 +166,6 @@ public class RelayService extends XWService
     {
         boolean enabled = ! XWPrefs
             .getPrefsBoolean( context, R.string.key_disable_relay, false );
-        Log.d( TAG, "relayEnabled() => %b", enabled );
         return enabled;
     }
 
@@ -656,40 +655,44 @@ public class RelayService extends XWService
     {
         Log.d( TAG, "sendViaWeb(): sending %d at once", packets.size() );
         int sentLen = 0;
-        try {
-            JSONArray dataArray = new JSONArray();
-            for ( PacketData packet : packets ) {
-                byte[] datum = packet.assemble();
-                dataArray.put( Utils.base64Encode(datum) );
-                sentLen += datum.length;
-            }
-            JSONObject params = new JSONObject();
-            params.put( "data", dataArray );
-
-            HttpURLConnection conn = NetUtils.makeHttpRelayConn( this, "post" );
-            String result = NetUtils.runConn(conn, params);
-            if ( null != result ) {
-                Log.d( TAG, "sendViaWeb(): POST => %s", result );
-                JSONObject resultObj = new JSONObject( result );
-                JSONArray resData = resultObj.getJSONArray( "data" );
-                int nReplies = resData.length();
-                Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
-
-                noteSent( packets ); // before we process the acks below :-)
-
-                if ( nReplies > 0 ) {
-                    resetExitTimer();
+        HttpURLConnection conn = NetUtils.makeHttpRelayConn( this, "post" );
+        if ( null == conn ) {
+            Log.e( TAG, "sendViaWeb(): null conn for POST" );
+        } else {
+            try {
+                JSONArray dataArray = new JSONArray();
+                for ( PacketData packet : packets ) {
+                    byte[] datum = packet.assemble();
+                    dataArray.put( Utils.base64Encode(datum) );
+                    sentLen += datum.length;
                 }
-                for ( int ii = 0; ii < nReplies; ++ii ) {
-                    byte[] datum = Utils.base64Decode( resData.getString( ii ) );
-                    // PENDING: skip ack or not
-                    gotPacket( datum, false );
+                JSONObject params = new JSONObject();
+                params.put( "data", dataArray );
+
+                String result = NetUtils.runConn(conn, params);
+                if ( null != result ) {
+                    Log.d( TAG, "sendViaWeb(): POST => %s", result );
+                    JSONObject resultObj = new JSONObject( result );
+                    JSONArray resData = resultObj.getJSONArray( "data" );
+                    int nReplies = resData.length();
+                    Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
+
+                    noteSent( packets ); // before we process the acks below :-)
+
+                    if ( nReplies > 0 ) {
+                        resetExitTimer();
+                    }
+                    for ( int ii = 0; ii < nReplies; ++ii ) {
+                        byte[] datum = Utils.base64Decode( resData.getString( ii ) );
+                        // PENDING: skip ack or not
+                        gotPacket( datum, false );
+                    }
+                } else {
+                    Log.e( TAG, "sendViaWeb(): failed result for POST" );
                 }
-            } else {
-                Log.e( TAG, "sendViaWeb(): failed result for POST" );
+            } catch ( JSONException ex ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
-        } catch ( JSONException ex ) {
-            Assert.assertFalse( BuildConfig.DEBUG );
         }
         return sentLen;
     }
@@ -962,11 +965,15 @@ public class RelayService extends XWService
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
-            String devid = getDevID( null );
+            DevIDType[] typp = new DevIDType[1];
+            String devid = getDevID( typp );
             if ( null != devid ) {
                 DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
+                Log.d(TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
                 postPacket( bas, reg );
+            } else {
+                Log.d(TAG, "requestMessagesImpl(): devid is null" );
             }
         } catch ( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
