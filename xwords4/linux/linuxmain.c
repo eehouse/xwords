@@ -2659,7 +2659,7 @@ main( int argc, char** argv )
             if ( mainParams.needsNewGame ) {
                 /* curses doesn't have newgame dialog */
                 usage( argv[0], "game params required for curses version, e.g. --name Eric --room MyRoom"
-                       " --remote-player --dict-dir ../ --game-dict dict.xwd");
+                       " --remote-player --dict-dir ../ --game-dict CollegeEng_2to8.xwd");
             } else {
 #if defined PLATFORM_NCURSES
                 cursesmain( isServer, &mainParams );

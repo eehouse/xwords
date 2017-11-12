@@ -753,7 +753,7 @@ done
 
 # Assign defaults
 #[ 0 -eq ${#DICTS[@]} ] && DICTS=(dict.xwd)
-[ 0 -eq ${#DICTS} ] && DICTS=(dict.xwd)
+[ 0 -eq ${#DICTS} ] && DICTS=(CollegeEng_2to8.xwd)
 [ -z "$APP_NEW" ] && APP_NEW=./obj_linux_memdbg/xwords
 [ -z "$MINDEVS" ] && MINDEVS=2
 [ -z "$MAXDEVS" ] && MAXDEVS=4
