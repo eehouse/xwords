@@ -1640,6 +1640,9 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 
     NetLaunchInfo nli = {0};
     nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
+    XP_UCHAR buf[32];
+    snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
+    nli_setInviteID( &nli, buf );
     nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
 #ifdef DEBUG

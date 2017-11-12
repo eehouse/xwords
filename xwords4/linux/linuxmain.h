@@ -111,6 +111,8 @@ const XP_UCHAR* linux_getDevID( LaunchParams* params, DevIDType* typ );
 void linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew );
 XP_Bool linux_setupDevidParams( LaunchParams* params );
 
+unsigned int makeRandomInt();
+
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */
 

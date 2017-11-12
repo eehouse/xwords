@@ -1558,8 +1558,8 @@ linuxChangeRoles( CommonGlobals* cGlobals )
 }
 #endif
 
-static unsigned int
-defaultRandomSeed()
+unsigned int
+makeRandomInt()
 {
     /* use kernel device rather than time() so can run multiple times/second
        without getting the same results. */
@@ -2034,7 +2034,7 @@ main( int argc, char** argv )
     XP_Bool isServer = XP_FALSE;
     // char* portNum = NULL;
     // char* hostName = "localhost";
-    unsigned int seed = defaultRandomSeed();
+    unsigned int seed = makeRandomInt();
     LaunchParams mainParams;
     XP_U16 nPlayerDicts = 0;
     XP_U16 robotCount = 0;
