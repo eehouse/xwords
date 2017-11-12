@@ -69,7 +69,6 @@ DBMgr::DBMgr()
     pthread_key_create( &m_conn_key, destr_function );
 
     pthread_mutex_init( &m_haveNoMessagesMutex, NULL );
-    pthread_mutex_init( &m_cidsMutex, NULL );
 
     srand( time( NULL ) );
 }
@@ -90,13 +89,11 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
  
-    MutexLock ml( &m_cidsMutex );
-    AddCIDImpl( connName, cid );
-
     QueryBuilder qb;
     qb.appendQueryf( "INSERT INTO " GAMES_TABLE
-                    " (room, connName, nTotal, lang, pub)"
-                     " VALUES( $$, $$, $$, $$, $$ )" )
+                    " (cid, room, connName, nTotal, lang, pub)"
+                     " VALUES( $$, $$, $$, $$, $$, $$ )" )
+        .appendParam(cid)
         .appendParam(cookie)
         .appendParam(connName)
         .appendParam(nPlayersT)
@@ -125,7 +122,7 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
 {
     bool found = false;
 
-    const char* fmt = "SELECT room, lang, dead FROM "
+    const char* fmt = "SELECT cid, room, lang, dead FROM "
         GAMES_TABLE " WHERE connName = '%s' AND nTotal = %d "
         "AND %d = seeds[%d] AND 'A' = ack[%d] "
         ;
@@ -133,18 +130,15 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
     query.catf( fmt, connName, nPlayersS, seed, hid, hid );
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
-    MutexLock ml( &m_cidsMutex ); // not sure I need this....
-
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 >= PQntuples( result ) );
     found = 1 == PQntuples( result );
     if ( found ) {
         int col = 0;
+        *cidp = atoi( PQgetvalue( result, 0, col++ ) );
         snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
         *langP = atoi( PQgetvalue( result, 0, col++ ) );
         *isDead = 't' == PQgetvalue( result, 0, col++ )[0];
-
-        *cidp = GetCIDImpl(connName);
     }
     PQclear( result );
 
@@ -156,11 +150,9 @@ CookieID
 DBMgr::FindGame( const char* connName, HostID hid, char* roomBuf, int roomBufLen,
                  int* langP, int* nPlayersTP, int* nPlayersHP, bool* isDead )
 {
-    MutexLock ml( &m_cidsMutex );
-
     CookieID cid = 0;
 
-    const char* fmt = "SELECT room, lang, nTotal, nPerDevice[%d], dead FROM "
+    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice[%d], dead FROM "
         GAMES_TABLE " WHERE connName = '%s'"
         // " LIMIT 1"
         ;
@@ -172,7 +164,7 @@ DBMgr::FindGame( const char* connName, HostID hid, char* roomBuf, int roomBufLen
     assert( 1 >= PQntuples( result ) );
     if ( 1 == PQntuples( result ) ) {
         int col = 0;
-        cid = GetCIDImpl(connName);
+        cid = atoi( PQgetvalue( result, 0, col++ ) );
         snprintf( roomBuf, roomBufLen, "%s", PQgetvalue( result, 0, col++ ) );
         *langP = atoi( PQgetvalue( result, 0, col++ ) );
         *nPlayersTP = atoi( PQgetvalue( result, 0, col++ ) );
@@ -192,7 +184,7 @@ DBMgr::FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
                  int* langP, int* nPlayersTP, int* nPlayersHP )
 {
     CookieID cid = 0;
-    const char* fmt = "SELECT room, lang, nTotal, nPerDevice[%d], connname FROM "
+    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice[%d], connname FROM "
         GAMES_TABLE " WHERE tokens[%d] = %d and NOT dead";
         // " LIMIT 1"
         ;
@@ -204,6 +196,7 @@ DBMgr::FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
     assert( 1 >= PQntuples( result ) );
     if ( 1 == PQntuples( result ) ) {
         int col = 0;
+        cid = atoi( PQgetvalue( result, 0, col++ ) );
         // room
         snprintf( roomBuf, roomBufLen, "%s", PQgetvalue( result, 0, col++ ) );
         // lang
@@ -211,7 +204,6 @@ DBMgr::FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
         *nPlayersTP = atoi( PQgetvalue( result, 0, col++ ) );
         *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
         snprintf( connNameBuf, connNameBufLen, "%s", PQgetvalue( result, 0, col++ ) );
-        cid = GetCIDImpl(connNameBuf);
     }
     PQclear( result );
 
@@ -302,7 +294,7 @@ DBMgr::SeenSeed( const char* cookie, unsigned short seed,
                  CookieID* cid )
 {
     QueryBuilder qb;
-    qb.appendQueryf( "SELECT connName, seeds, sum_array(nPerDevice) FROM "
+    qb.appendQueryf( "SELECT cid, connName, seeds, sum_array(nPerDevice) FROM "
                      GAMES_TABLE
                      " WHERE NOT dead"
                      " AND room ILIKE $$"
@@ -319,8 +311,6 @@ DBMgr::SeenSeed( const char* cookie, unsigned short seed,
         .appendParam(wantsPublic?"TRUE":"FALSE" )
         .finish();
 
-    MutexLock ml( &m_cidsMutex );
-
     PGresult* result = PQexecParams( getThreadConn(), qb.c_str(),
                                      qb.paramCount(), NULL,
                                      qb.paramValues(),
@@ -328,8 +318,8 @@ DBMgr::SeenSeed( const char* cookie, unsigned short seed,
     bool found = 1 == PQntuples( result );
     if ( found ) {
         int col = 0;
+        *cid = atoi( PQgetvalue( result, 0, col++ ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
-        *cid = GetCIDImpl(connNameBuf);
 
         const char* seeds = PQgetvalue( result, 0, col++ );
         int perDeviceSum = atoi( PQgetvalue( result, 0, col++ ) );
@@ -346,7 +336,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
                  int* nPlayersHP )
 {
     QueryBuilder qb;
-    qb.appendQueryf("SELECT connName, sum_array(nPerDevice) FROM "
+    qb.appendQueryf("SELECT cid, connName, sum_array(nPerDevice) FROM "
                     GAMES_TABLE
                     " WHERE NOT dead"
                     " AND room ILIKE $$"
@@ -362,8 +352,6 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
         .appendParam(wantsPublic?"TRUE":"FALSE" )
         .finish();
 
-    MutexLock ml( &m_cidsMutex );
-
     PGresult* result = PQexecParams( getThreadConn(), qb.c_str(),
                                      qb.paramCount(), NULL,
                                      qb.paramValues(), 
@@ -371,8 +359,8 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     CookieID cid = 0;
     if ( 1 == PQntuples( result ) ) {
         int col = 0;
+        cid = atoi( PQgetvalue( result, 0, col++ ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
-        cid = GetCIDImpl(connNameBuf);
         *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
         /* cid may be 0, but should use game anyway  */
     }
@@ -677,44 +665,29 @@ DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
 }
 
 bool
-DBMgr::AddCIDImpl( const char* const connName, CookieID cid )
-{
-    logf( XW_LOGINFO, "%s(%s, %d)", __func__, connName, cid );
-    assert( cid != 0 );
-    assert( m_cidsMap.find(connName) == m_cidsMap.end() );
-    m_cidsMap.insert( pair<string, CookieID>(connName, cid) );
-    assert( m_cidsMap.find(connName) != m_cidsMap.end() );
-    return TRUE;
-}
-
-bool
 DBMgr::AddCID( const char* const connName, CookieID cid )
 {
-    MutexLock ml( &m_cidsMutex );
-    return AddCIDImpl( connName, cid );
-}
+    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d "
+        " WHERE connName = '%s' AND cid IS NULL";
+    StrWPF query;
+    query.catf( fmt, cid, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
-CookieID
-DBMgr::GetCIDImpl( const char* const connName )
-{
-    CookieID cid = 0;
-    map<string, CookieID>::const_iterator iter = m_cidsMap.find(connName);
-    if (iter != m_cidsMap.end()) {
-        cid = iter->second;
-        assert( cid != 0 );
-    }
-    logf( XW_LOGINFO, "%s(%s) => %d", __func__, connName, cid );
-    return cid;
+    bool result = execSql( query );
+    logf( XW_LOGINFO, "%s(cid=%d)=>%d", __func__, cid, result );
+    return result;
 }
 
 void
 DBMgr::ClearCID( const char* connName )
 {
-    logf( XW_LOGINFO, "%s(%s)", __func__, connName );
-    MutexLock ml( &m_cidsMutex );
-    assert( 0 != GetCIDImpl(connName) );
-    m_cidsMap.erase( m_cidsMap.find( connName ));
-    assert( m_cidsMap.find(connName) == m_cidsMap.end() );
+    const char* fmt = "UPDATE " GAMES_TABLE " SET cid = null "
+        "WHERE connName = '%s'";
+    StrWPF query;
+    query.catf( fmt, connName );
+    logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
+
+    execSql( query );
 }
 
 void
@@ -831,6 +804,12 @@ DBMgr::WaitDBConn( void )
     }
 
     logf( XW_LOGERROR, "%s() done", __func__ );
+}
+
+void
+DBMgr::ClearCIDs( void )
+{
+    execSql( "UPDATE " GAMES_TABLE " set cid = null" );
 }
 
 void

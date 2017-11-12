@@ -65,6 +65,8 @@ class DBMgr {
 
     void WaitDBConn( void );
     
+    void ClearCIDs( void );
+
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
                  int langCode, int nPlayersT, bool isPublic );
 
@@ -173,8 +175,6 @@ class DBMgr {
                        int clientVersion, const char* const model, 
                        const char* const osVers, DevIDRelay relayID );
 
-    bool AddCIDImpl( const char* const connName, CookieID cid );
-    CookieID GetCIDImpl( const char* const connName );
 
     PGconn* getThreadConn( void );
     void clearThreadConn();
@@ -195,8 +195,6 @@ class DBMgr {
     pthread_mutex_t m_haveNoMessagesMutex;
     set<DevIDRelay> m_haveNoMessagesDevID;
     set<StrWPF> m_haveNoMessagesConnname;
-    pthread_mutex_t m_cidsMutex;
-    map<string, CookieID> m_cidsMap;
 }; /* DBMgr */
 
 
