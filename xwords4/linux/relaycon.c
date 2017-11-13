@@ -181,6 +181,7 @@ mkJsonParams( CURL* curl, va_list ap )
     const char* asStr = json_object_get_string( params );
     char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
     gchar* result = g_strdup_printf( "params=%s", curl_params );
+    XP_LOGF( "%s: adding: params=%s (%s)", __func__, asStr, curl_params );
     curl_free( curl_params );
     json_object_put( params );
     return result;
