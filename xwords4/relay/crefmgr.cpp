@@ -337,7 +337,7 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
 } /* getMakeCookieRef */
 
 CidInfo*
-CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
+CRefMgr::getMakeCookieRef( const char* const connName, HostID hid, bool* isDead )
 {
     CookieRef* cref = NULL;
     CidInfo* cinfo = NULL;
@@ -347,7 +347,7 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
     int nAlreadyHere = 0;
 
     for ( ; ; ) {               /* for: see comment above */
-        CookieID cid = m_db->FindGame( connName, curCookie, sizeof(curCookie),
+        CookieID cid = m_db->FindGame( connName, hid, curCookie, sizeof(curCookie),
                                        &curLangCode, &nPlayersT, &nAlreadyHere,
                                        isDead );
         if ( 0 != cid ) {           /* already open */
@@ -372,6 +372,48 @@ CRefMgr::getMakeCookieRef( const char* const connName, bool* isDead )
         }
         break;
     }
+    return cinfo;
+}
+
+CidInfo*
+CRefMgr::getMakeCookieRef( const AddrInfo::ClientToken clientToken, HostID srcID )
+{
+    CookieRef* cref = NULL;
+    CidInfo* cinfo = NULL;
+    char curCookie[MAX_INVITE_LEN+1];
+    int curLangCode;
+    int nPlayersT = 0;
+    int nAlreadyHere = 0;
+
+    for ( ; ; ) {               /* for: see comment above */
+        char connName[MAX_CONNNAME_LEN+1] = {0};
+        CookieID cid = m_db->FindGame( clientToken, srcID,
+                                       connName, sizeof(connName),
+                                       curCookie, sizeof(curCookie),
+                                       &curLangCode, &nPlayersT, &nAlreadyHere );
+            // &seed );
+        if ( 0 != cid ) {           /* already open */
+            cinfo = m_cidlock->Claim( cid );
+            if ( NULL == cinfo->GetRef() ) {
+                m_cidlock->Relinquish( cinfo, true );
+                continue;
+            }
+        } else if ( nPlayersT == 0 ) { /* wasn't in the DB */
+                /* do nothing; insufficient info to fake it */
+        } else {
+            cinfo = m_cidlock->Claim();
+            if ( !m_db->AddCID( connName, cinfo->GetCid() ) ) {
+                m_cidlock->Relinquish( cinfo, true );
+                continue;
+            }
+            logf( XW_LOGINFO, "%s(): added cid???", __func__ );
+            cref = AddNew( curCookie, connName, cinfo->GetCid(), curLangCode,
+                           nPlayersT, nAlreadyHere );
+            cinfo->SetRef( cref );
+        }
+        break;
+    }
+    logf( XW_LOGINFO, "%s() => %p", __func__, cinfo );
     return cinfo;
 }
 
@@ -672,13 +714,13 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
 }
 
 /* ConnName case -- must exist (unless DB record's been removed */
-SafeCref::SafeCref( const char* const connName )
+SafeCref::SafeCref( const char* const connName, HostID hid )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
     bool isDead = false;
-    CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, &isDead );
+    CidInfo* cinfo = m_mgr->getMakeCookieRef( connName, hid, &isDead );
     if ( NULL != cinfo && NULL != cinfo->GetRef() ) {
         assert( cinfo->GetCid() == cinfo->GetRef()->GetCid() );
         m_locked = cinfo->GetRef()->Lock();
@@ -719,6 +761,19 @@ SafeCref::SafeCref( const AddrInfo* addr )
         m_locked = cref->Lock();
         m_isValid = m_locked && cref->HasSocket_locked( addr );
         m_cinfo = cinfo;
+    }
+}
+
+SafeCref::SafeCref( const AddrInfo::ClientToken clientToken, HostID srcID )
+    : m_cinfo( NULL )
+    , m_mgr( CRefMgr::Get() )
+    , m_isValid( false )
+{
+    CidInfo* cinfo = m_mgr->getMakeCookieRef( clientToken, srcID );
+    if ( NULL != cinfo && NULL != cinfo->GetRef() ) {
+        m_locked = cinfo->GetRef()->Lock();
+        m_cinfo = cinfo;
+        m_isValid = true;
     }
 }
 

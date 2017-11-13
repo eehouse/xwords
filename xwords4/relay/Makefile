@@ -42,7 +42,7 @@ SRC = \
 
 # STATIC ?= -static
 GITINFO = gitversion.txt
-HASH=$(shell git describe)
+HASH=$(shell git rev-parse --verify HEAD)
 
 OBJ = $(patsubst %.cpp,obj/%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
@@ -70,7 +70,7 @@ endif
 
 memdebug all: xwrelay rq
 
-REQUIRED_DEBS = libpq-dev \
+REQUIRED_DEBS = libpq-dev g++ libglib2.0-dev postgresql \
 
 .PHONY: debcheck debs_install
 

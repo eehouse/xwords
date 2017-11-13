@@ -75,9 +75,13 @@ class DBMgr {
     bool FindRelayIDFor( const char* connName, HostID hid, unsigned short seed,
                          const DevID* host, DevIDRelay* devID );
 
-    CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
+    CookieID FindGame( const char* connName, HostID hid, char* cookieBuf, int bufLen,
                        int* langP, int* nPlayersTP, int* nPlayersHP,
                        bool* isDead );
+    CookieID FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
+                       char* connNameBuf, int connNameBufLen,
+                       char* cookieBuf, int cookieBufLen,
+                       int* langP, int* nPlayersTP, int* nPlayersHP );
 
     bool FindGameFor( const char* connName, char* cookieBuf, int bufLen,
                       unsigned short seed, HostID hid,
@@ -137,10 +141,10 @@ class DBMgr {
     /* message storage -- different DB */
     int CountStoredMessages( const char* const connName );
     int CountStoredMessages( DevIDRelay relayID );
-    void StoreMessage( DevIDRelay destRelayID, const uint8_t* const buf,
-                       int len );
-    void StoreMessage( const char* const connName, int destHid,
-                       const uint8_t* const buf, int len );
+    int StoreMessage( DevIDRelay destRelayID, const uint8_t* const buf,
+                      int len );
+    int StoreMessage( const char* const connName, int destHid,
+                      const uint8_t* const buf, int len );
     void GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs );
     void GetStoredMessages( const char* const connName, HostID hid, 
                             vector<DBMgr::MsgInfo>& msgs );
@@ -170,6 +174,7 @@ class DBMgr {
     void formatUpdate( QueryBuilder& qb, bool append, const char* const desc, 
                        int clientVersion, const char* const model, 
                        const char* const osVers, DevIDRelay relayID );
+
 
     PGconn* getThreadConn( void );
     void clearThreadConn();
