@@ -755,9 +755,18 @@ public class GamesListDelegate extends ListDelegateBase
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = namer.getName();
-                        DBUtils.addGroup( m_activity, name );
-                        mkListAdapter();
-                        showNewGroupIf();
+                        long hasName = DBUtils.getGroup( m_activity, name );
+                        if ( DBUtils.GROUPID_UNSPEC == hasName ) {
+                            DBUtils.addGroup( m_activity, name );
+                            mkListAdapter();
+                            showNewGroupIf();
+                        } else {
+                            String msg = LocUtils
+                                .getString( m_activity,
+                                            R.string.duplicate_group_name_fmt,
+                                            name );
+                            makeOkOnlyBuilder( msg ).show();
+                        }
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -1060,8 +1069,6 @@ public class GamesListDelegate extends ListDelegateBase
             invalidateOptionsMenuIf();
             setTitle();
         }
-
-        mkListAdapter();
     }
 
     public void invalidateOptionsMenuIf()
@@ -1132,6 +1139,9 @@ public class GamesListDelegate extends ListDelegateBase
                     case GAME_CREATED:
                         mkListAdapter();
                         setSelGame( rowid );
+                        break;
+                    case GAME_MOVED:
+                        mkListAdapter();
                         break;
                     default:
                         Assert.fail();
