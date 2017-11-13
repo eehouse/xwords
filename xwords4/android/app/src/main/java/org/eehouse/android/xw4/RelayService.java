@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RelayService extends XWService
     implements NetStateCache.StateChangedIf {
@@ -98,7 +99,7 @@ public class RelayService extends XWService
     private static final String BINBUFFER = "BINBUFFER";
 
     private static HashSet<Integer> s_packetsSent = new HashSet<Integer>();
-    private static int s_nextPacketID = 1;
+    private static AtomicInteger s_nextPacketID = new AtomicInteger();
     private static boolean s_gcmWorking = false;
     private static boolean s_registered = false;
     private static CommsAddrRec s_addr =
@@ -1304,9 +1305,7 @@ public class RelayService extends XWService
     {
         int nextPacketID = 0;
         if ( XWRelayReg.XWPDEV_ACK != cmd ) {
-            synchronized( s_packetsSent ) {
-                nextPacketID = ++s_nextPacketID;
-            }
+            nextPacketID = s_nextPacketID.incrementAndGet();
         }
         return nextPacketID;
     }
