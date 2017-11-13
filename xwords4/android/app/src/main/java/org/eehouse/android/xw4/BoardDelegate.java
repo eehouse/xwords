@@ -204,6 +204,21 @@ public class BoardDelegate extends DelegateBase
                         }
                     };
                 ab.setNegativeButton( R.string.button_rematch, lstnr );
+
+                // If we're not already in the "archive" group, offer to move
+                final String archiveName = LocUtils
+                    .getString( m_activity, R.string.group_name_archive );
+                final long archiveGroup = DBUtils.getGroup( m_activity, archiveName );
+                long curGroup = DBUtils.getGroupForGame( m_activity, m_rowid );
+                if ( curGroup != archiveGroup ) {
+                    lstnr = new OnClickListener() {
+                            public void onClick( DialogInterface dlg,
+                                                 int whichButton ) {
+                                archiveAndClose( archiveName, archiveGroup );
+                            }
+                        };
+                    ab.setNeutralButton( R.string.button_archive, lstnr );
+                }
             } else if ( DlgID.DLG_CONNSTAT == dlgID
                         && BuildConfig.DEBUG && null != m_connTypes
                         && (m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
@@ -2573,6 +2588,16 @@ public class BoardDelegate extends DelegateBase
             wordsArray[ii] = tmp[jj-1];
         }
         return wordsArray;
+    }
+
+    private void archiveAndClose( String archiveName, long groupID )
+    {
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = DBUtils.addGroup( m_activity, archiveName );
+        }
+        DBUtils.moveGame( m_activity, m_rowid, groupID );
+        waitCloseGame( false );
+        finish();
     }
 
     // For now, supported if standalone or either BT or SMS used for transport

@@ -81,7 +81,9 @@ public class DBUtils {
     private static long s_cachedRowID = ROWID_NOTFOUND;
     private static byte[] s_cachedBytes = null;
 
-    public static enum GameChangeType { GAME_CHANGED, GAME_CREATED, GAME_DELETED };
+    public static enum GameChangeType { GAME_CHANGED, GAME_CREATED,
+                                        GAME_DELETED, GAME_MOVED,
+    };
 
     public static interface DBChangeListener {
         public void gameSaved( long rowid, GameChangeType change );
@@ -1701,6 +1703,29 @@ public class DBUtils {
         return result;
     }
 
+    public static long getGroup( Context context, String name )
+    {
+        long result = GROUPID_UNSPEC;
+        String[] columns = { ROW_ID };
+        String selection = DBHelper.GROUPNAME + " = ?";
+        String[] selArgs = { name };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            Cursor cursor = s_db.query( DBHelper.TABLE_NAME_GROUPS, columns,
+                                        selection, selArgs,
+                                        null, // groupBy
+                                        null, // having
+                                        null // orderby
+                                        );
+            if ( cursor.moveToNext() ) {
+                result = cursor.getLong( cursor.getColumnIndex( ROW_ID ) );
+            }
+            cursor.close();
+        }
+        return result;
+    }
+
     public static long addGroup( Context context, String name )
     {
         long rowid = GROUPID_UNSPEC;
@@ -1759,13 +1784,14 @@ public class DBUtils {
     }
 
     // Change group id of a game
-    public static void moveGame( Context context, long gameid, long groupID )
+    public static void moveGame( Context context, long rowid, long groupID )
     {
         Assert.assertTrue( GROUPID_UNSPEC != groupID );
         ContentValues values = new ContentValues();
         values.put( DBHelper.GROUPID, groupID );
-        updateRow( context, DBHelper.TABLE_NAME_SUM, gameid, values );
+        updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
         invalGroupsCache();
+        notifyListeners( rowid, GameChangeType.GAME_MOVED );
     }
 
     private static String getChatHistoryStr( Context context, long rowid )

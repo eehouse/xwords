@@ -1060,8 +1060,6 @@ public class GamesListDelegate extends ListDelegateBase
             invalidateOptionsMenuIf();
             setTitle();
         }
-
-        mkListAdapter();
     }
 
     public void invalidateOptionsMenuIf()
@@ -1132,6 +1130,9 @@ public class GamesListDelegate extends ListDelegateBase
                     case GAME_CREATED:
                         mkListAdapter();
                         setSelGame( rowid );
+                        break;
+                    case GAME_MOVED:
+                        mkListAdapter();
                         break;
                     default:
                         Assert.fail();
