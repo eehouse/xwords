@@ -1,2 +1,158 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="button_new_group">Legg til gruppe</string>
+
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+
+    <string name="robot_name_fmt">%1$s (maskin)</string>
+
+    <string name="missing_player">(ikke her enda…)</string>
+
+    <string name="summary_relay_conf_fmt">Satt opp for rom \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">Venter for spiller i rom \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Spill underveis i rom \"%1$s\"</string>
+    <string name="summary_relay_gameover_fmt">Spill over i rom \"%1$s\"</string>
+
+    <string name="summary_invites_out">Spillere invitert</string>
+    <string name="summary_invites_out_fmt">Spillere invitert til rom \"%1$s\"</string>
+
+    <string name="gameOver">Spill over</string>
+    <plurals name="moves_fmt">
+	<item quantity="one">%1$d trekk gjort</item>
+	<item quantity="other">%1$d trekk gjort</item>
+</plurals>
+
+    <string name="button_delete">Slett</string>
+    <string name="button_reset">Tilbakestill</string>
+
+    <string name="gamel_menu_dicts">Ordlister…</string>
+
+    <string name="menu_prefs">Programinnstillinger</string>
+
+    <string name="gamel_menu_checkmoves">Sjekk trekk</string>
+
+    <string name="board_menu_file_about">Om</string>
+
+    <string name="list_item_config">Spillinnstillinger…</string>
+    <string name="list_item_rename">Gi nytt navn…</string>
+    <string name="list_item_move">Flytt til gruppe…</string>
+
+    <string name="list_item_delete">Slett spill</string>
+    <string name="list_item_reset">Tilbakestill</string>
+    <string name="list_item_new_from">Nytt fra</string>
+    <string name="list_item_copy">Kopier</string>
+    <string name="game_rename_title">Gi nytt navn</string>
+    <string name="rename_label">Endre navnet på dette spillet til:</string>
+    <string name="rename_label_caveat">Endre navnet på dette spillet (kun på denne enheten) til:</string>
+
+    <string name="title_dicts_list">CrossWords-ordlister</string>   
+    <string name="download_more">Last ned flere…</string>
+
+    <string name="loc_builtin">Innebygd</string>
+
+    <string name="loc_downloads">Nedlastinger</string>
+
+    <string name="dicts_item_move">Endre nedlastingsplassering</string>
+
+    <string name="dicts_item_select">Gjør til forvalg</string>
+
+    <plurals name="confirm_delete_dict_fmt">
+	<item quantity="one">Er du sikker på at du vil slette ordlisten %1$s?</item>
+	<item quantity="other">Er du sikker på at du vil slette ordlistene %1$s?</item>
+</plurals>
+
+    <string name="confirm_deleteonly_dicts_fmt">Sletting av %1$s vil bety at du står uten noen %1$s-ordlister. Ett eller flere spill vil ikke kunne åpnes (til du laster ned en erstatningsliste).</string>
+
+    <string name="button_default_human">Menneske</string>
+    <string name="button_default_robot">Maskin</string>
+    <string name="button_default_both">Begge</string>
+
+    <string name="move_dict_fmt">Plassering for ordlisten %1$s</string>
+
+    <string name="loc_internal">Intern</string>
+    <string name="loc_external">Ekstern</string>
+
+    <string name="title_game_config_fmt">Innstillinger for %1$s</string>  
+
+    <string name="title_gamenet_config_fmt">%1$s-innstillinger (nettverksbasert)</string>  
+
+    <string name="title_langs_list">Språk (basert på installerte ordlister)</string>
+
+    <string name="game_locked">Lås innstillinger</string>
+
+    <string name="players_label_standalone">Spillere (trykk for å redigere)</string>
+
+    <string name="button_add_player">Legg til spiller</string>
+
+    <string name="button_juggle_players">Veksle spillere</string>
+
+    <string name="lang_label">Spillspråk</string>
+    <string name="langdict_label">Spillspråk/ordliste</string>
+
+    <string name="connect_label_fmt">Tilkobling (via %1$s)</string>
+
+    <string name="join_room">Ta del i offentlig rom</string>
+
+    <string name="new_room_hint">Romnavn</string>
+
+    <string name="room_public">Gjør nytt navn offentlig</string>
+
+    <string name="room_public_prompt">Sett offentlig rom</string>
+
+    <string name="public_names_progress_fmt">Henter offentlige rom for %1$d-spillerrom i %2$s.</string>
+
+    <string name="no_name_found_fmt">Ingen offentlige rom funnet for %1$d-spillerrom i %2$s. Prøv å gjenoppfriske eller å opprette ditt eget.</string>
+
+    <string name="settings_label">Andre innstillinger</string>
+
+    <string name="hints_allowed">Tillat hint</string>
+
+    <string name="nethints_allowed">Tillat hint (nettverksbasert)</string>
+
+    <string name="use_timer">Skru på spillklokke</string>
+
+    <string name="minutes_label">Minutter per spiller</string>
+
+    <string name="robot_spinner_prompt">Hvor smart skal maskinen være?</string>
+
+    <string name="robot_smart">Smart maskin</string>
+    <string name="robot_smarter">Smartere maskin</string>
+    <string name="robot_smartest">Smartest maskin</string>
+
+    <string name="confirm_save_title">Bekreft lagring</string>
+
+    <string name="play">Ta del i spill</string>
+
+    <string name="player_label">Navn:</string>
+
+    <string name="dict_lang_label_fmt">Ordliste (i %1$s)</string>
+
+    <string name="dicts_list_prompt_fmt">Installerte ordlister (i %1$s)</string>
+
+    <string name="robot_label">Maskinspiller</string>
+
+    <string name="password_label">Passord</string>
+
+
+    <string name="button_trade_commit">Bekreft bytte</string>
+    <string name="button_trade_cancel">Avbryt bytte</string>
+
+    <string name="entering_trade">Trykk på flisene for å velge…</string>
+
+
+    <string name="no_moves_made">(Ingen trekk enda)</string>
+
+    <string name="invit_expl_bt_fmt">Invitasjon sendt via Blåtann til tilknyttet enhet \"%1½s\" på %2$s</string>
+    <string name="invit_expl_notarget_fmt">Invitasjon sendt via %1$s på %2$s. Ukjent mottaker.</string>
+
+    <string name="relay_alert">Tilkoblingsproblem</string>
+
+    <string name="msg_no_room">Ingen vert har registrert et rom ved det navnet.</string>
+
+    <string name="board_menu_game_history">Spillhistorikk…</string>
+
+    <string name="board_menu_game_resign">Kapituler</string>
+
+    <string name="board_menu_game_resend">Send trekk på nytt</string>
+
+    <string name="str_robot_moved_fmt">"Maskinen %1$s gjorde dette trekket: "</string>
+    </resources>
