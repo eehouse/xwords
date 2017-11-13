@@ -193,7 +193,6 @@ DBMgr::FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
-    assert( 1 >= PQntuples( result ) );
     if ( 1 == PQntuples( result ) ) {
         int col = 0;
         cid = atoi( PQgetvalue( result, 0, col++ ) );
