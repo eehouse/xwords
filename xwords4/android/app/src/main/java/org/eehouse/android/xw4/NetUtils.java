@@ -334,7 +334,8 @@ public class NetUtils {
                     }
                     result = new String( bas.toByteArray() );
                 } else {
-                    Log.w( TAG, "runConn: responseCode: %d", responseCode );
+                    Log.w( TAG, "runConn: responseCode: %d for url: %s",
+                           responseCode, conn.getURL() );
                 }
             } catch ( java.net.ProtocolException pe ) {
                 Log.ex( TAG, pe );
