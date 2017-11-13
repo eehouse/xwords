@@ -66,6 +66,7 @@ public class RelayService extends XWService
     private static final int MAX_SEND = 1024;
     private static final int MAX_BUF = MAX_SEND - 2;
     private static final int REG_WAIT_INTERVAL = 10;
+    private static final int INITIAL_BACKOFF = 5;
 
     // One day, in seconds.  Probably should be configurable.
     private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
@@ -1494,18 +1495,19 @@ public class RelayService extends XWService
                 long now = Utils.getCurSeconds();
                 if ( s_curNextTimer <= now ) {
                     if ( 0 == s_curBackoff ) {
-                        s_curBackoff = 15;
+                        s_curBackoff = INITIAL_BACKOFF;
+                    } else {
+                        s_curBackoff = Math.min( 2 * s_curBackoff, result );
                     }
-                    s_curBackoff = Math.min( 2 * s_curBackoff, result );
                     s_curNextTimer += s_curBackoff;
                 }
 
                 diff = s_curNextTimer - now;
             }
             Assert.assertTrue( diff < Integer.MAX_VALUE );
-            Log.d( TAG, "figureBackoffSeconds() => %d", diff );
-            result =  (int)diff;
+            result = (int)diff;
         }
+        Log.d( TAG, "figureBackoffSeconds() => %d", result );
         return result;
     }
 
@@ -1519,6 +1521,11 @@ public class RelayService extends XWService
     }
 
     private class PacketData {
+        public ByteArrayOutputStream m_bas;
+        public XWRelayReg m_cmd;
+        public byte[] m_header;
+        public int m_packetID;
+
         public PacketData() { m_bas = null; }
 
         public PacketData( ByteArrayOutputStream bas, XWRelayReg cmd )
@@ -1564,10 +1571,5 @@ public class RelayService extends XWService
                 Log.ex( TAG, ioe );
             }
         }
-
-        public ByteArrayOutputStream m_bas;
-        public XWRelayReg m_cmd;
-        public byte[] m_header;
-        public int m_packetID;
     }
 }
