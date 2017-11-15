@@ -725,12 +725,12 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
     gchar* b64 = g_base64_encode( (const guchar*)buf,
                                   ((0 <= nRead)? nRead : 0) );
     XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
-    g_free( b64 );
 #ifdef COMMS_CHECKSUM
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
     XP_LOGF( "%s: read %zd bytes ('%s')(sum=%s)", __func__, nRead, b64, sum );
     g_free( sum );
 #endif
+    g_free( b64 );
     return process( storage, buf, nRead );
 }
 
