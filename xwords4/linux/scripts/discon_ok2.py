@@ -900,9 +900,8 @@ def parseArgs():
 
 def assignDefaults(args):
     if not args.NROOMS: args.NROOMS = args.NGAMES
-    if args.TIMEOUT: args.TIMEOUT = 100000000000 # huge number
+    args.TIMEOUT = not args.TIMEOUT and (args.NGAMES * 60 + 500) or 100000000000
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
-    else: args.TIMEOUT = args.NGAMES * 60 + 500
     args.LOGDIR = os.path.basename(sys.argv[0]) + '_logs'
     # Move an existing logdir aside
     if os.path.exists(args.LOGDIR):
