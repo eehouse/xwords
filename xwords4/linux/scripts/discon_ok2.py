@@ -178,7 +178,7 @@ class Device():
         self.devID = ''
         self.launchCount = 0
         self.allDone = False    # when true, can be killed
-        self.nTilesLeft = -1    # negative means don't know
+        self.nTilesLeft = None
         self.relayID = None
         self.relaySeed = 0
 
@@ -268,10 +268,7 @@ class Device():
         req = requests.get(url, params = {'params' : JSON})
 
     def getTilesCount(self):
-        result = None
-        if self.nTilesLeft != -1:
-            result = '%.2d:%.2d' % (self.indx, self.nTilesLeft)
-        return result
+        return (self.indx, self.nTilesLeft, self.launchCount)
 
     def update_ldevid(self):
         if not self.app in Device.sHasLDevIDMap:
@@ -628,11 +625,33 @@ def build_cmds(args):
 # }
 
 def summarizeTileCounts(devs):
-    nDevs = len(devs)
-    strs = [dev.getTilesCount() for dev in devs]
-    strs = [s for s in strs if s]
-    nWithTiles = len(strs)
-    print('%s %d/%d %s' % (datetime.datetime.now().strftime("%H:%M:%S"), nDevs, nWithTiles, ' '.join(strs)))
+    data = [dev.getTilesCount() for dev in devs]
+    nDevs = len(data)
+    totalTiles = 0
+    colWidth = nDevs < 100 and 2 or 3
+    headWidth = 0
+    fmtData = [{'head' : 'dev', },
+               {'head' : 'tls left', },
+               {'head' : 'launches', },
+    ]
+    for datum in fmtData:
+        headWidth = max(headWidth, len(datum['head']))
+        datum['data'] = []
+
+    for tupl in data:
+        fmtData[0]['data'].append('{:{width}d}'.format(tupl[0], width=colWidth))
+
+        nTiles = tupl[1]
+        fmtData[1]['data'].append(nTiles is None and ('-' * colWidth) or '{:{width}d}'.format(nTiles, width=colWidth))
+        if not nTiles is None: totalTiles += int(nTiles)
+
+        fmtData[2]['data'].append('{:{width}d}'.format(tupl[2], width=colWidth))
+
+    print('devs left: {}; tiles left: {}'.format(nDevs, totalTiles))
+    fmt = '{head:>%d} {data}' % headWidth
+    for datum in fmtData: datum['data'] = ' '.join(datum['data'])
+    for datum in fmtData:
+        print(fmt.format(**datum))
 
 def countCores():
     return len(glob.glob1('/tmp',"core*"))
