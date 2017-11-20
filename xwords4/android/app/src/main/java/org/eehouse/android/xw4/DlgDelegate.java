@@ -84,6 +84,7 @@ public class DlgDelegate {
         TRAY_PICKED,
         INVITE_INFO,
         DISABLE_DUALPANE,
+        ARCHIVE_ACTION,
 
         // Dict Browser
         FINISH_ACTION,
