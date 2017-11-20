@@ -120,5 +120,8 @@
     <item android:id="@+id/games_menu_loaddb"
           android:title="@string/gamel_menu_loaddb"
           />
+    <item android:id="@+id/games_menu_writegit"
+          android:title="@string/gamel_menu_writegit"
+          />
 
 </menu>

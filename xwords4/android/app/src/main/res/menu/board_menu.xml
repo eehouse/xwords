@@ -57,7 +57,7 @@
       </menu>
     </item>
     
-    <item android:id="@+id/games_menu_study"
+    <item android:id="@+id/board_menu_study"
           android:title="@string/gamel_menu_study"
           />
 

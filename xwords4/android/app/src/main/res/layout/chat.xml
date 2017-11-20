@@ -30,7 +30,6 @@
     <EditText android:id="@+id/chat_edit"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
-              android:singleLine="false"
               android:inputType="textCapSentences|textMultiLine"
               android:layout_weight="1"
               android:scrollHorizontally="false"

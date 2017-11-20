@@ -8,14 +8,14 @@
     >
   <TextView android:id="@+id/item_name"
             android:layout_width="wrap_content" 
-	        android:layout_height="wrap_content"
-            android:singleLine="true"
-	        android:gravity="left"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:gravity="left"
             />
   <TextView android:id="@+id/item_score"
             android:layout_width="fill_parent" 
-	        android:layout_height="wrap_content"
-            android:singleLine="true"
-	        android:gravity="right"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:gravity="right"
             />
 </org.eehouse.android.xw4.ExpiringLinearLayout>

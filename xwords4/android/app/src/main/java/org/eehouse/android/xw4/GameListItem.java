@@ -64,7 +64,7 @@ public class GameListItem extends LinearLayout
     private LinearLayout m_list;
     private TextView m_state;
     private TextView m_modTime;
-    private ImageView m_marker;
+    private ImageView m_gameTypeImage;
     private TextView m_role;
 
     private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
@@ -90,16 +90,6 @@ public class GameListItem extends LinearLayout
         m_lastMoveTime = 0;
         m_loadingCount = 0;
         m_dsdel = new DrawSelDelegate( this );
-
-        setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    // if selected, just un-select
-                    if ( null != m_summary ) {
-                        m_cb.itemClicked( GameListItem.this, m_summary );
-                    }
-                }
-            } );
     }
 
     public GameSummary getSummary()
@@ -174,13 +164,32 @@ public class GameListItem extends LinearLayout
     }
 
     // View.OnClickListener interface
-    public void onClick( View view ) {
-        m_expanded = !m_expanded;
-        DBUtils.setExpanded( m_rowid, m_expanded );
+    public void onClick( View view )
+    {
+        int id = view.getId();
+        switch ( id ) {
+        case R.id.expander:
+            m_expanded = !m_expanded;
+            DBUtils.setExpanded( m_rowid, m_expanded );
 
-        makeThumbnailIf( m_expanded );
+            makeThumbnailIf( m_expanded );
 
-        showHide();
+            showHide();
+            break;
+
+        case R.id.view_loaded:
+            toggleSelected();
+            break;
+
+        case R.id.right_side:
+            if ( null != m_summary ) {
+                m_cb.itemClicked( GameListItem.this, m_summary );
+            }
+            break;
+        default:
+            Assert.assertFalse(BuildConfig.DEBUG);
+            break;
+        }
     }
 
     private void findViews()
@@ -191,12 +200,15 @@ public class GameListItem extends LinearLayout
         m_expandButton.setOnClickListener( this );
         m_viewUnloaded = (TextView)findViewById( R.id.view_unloaded );
         m_viewLoaded = findViewById( R.id.view_loaded );
+        m_viewLoaded.setOnClickListener( this );
         m_list = (LinearLayout)findViewById( R.id.player_list );
         m_state = (TextView)findViewById( R.id.state );
         m_modTime = (TextView)findViewById( R.id.modtime );
-        m_marker = (ImageView)findViewById( R.id.msg_marker );
+        m_gameTypeImage = (ImageView)findViewById( R.id.game_type_marker );
         m_thumb = (ImageView)findViewById( R.id.thumbnail );
         m_role = (TextView)findViewById( R.id.role );
+
+        findViewById( R.id.right_side ).setOnClickListener( this );
     }
 
     private void setLoaded( boolean loaded )
@@ -316,19 +328,20 @@ public class GameListItem extends LinearLayout
 
             int iconID = summary.isMultiGame() ?
                 R.drawable.multigame__gen : R.drawable.sologame__gen;
-            m_marker.setImageResource( iconID );
-            m_marker.setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick( View view ) {
-                        toggleSelected();
-                    }
-                } );
+            m_gameTypeImage.setImageResource( iconID );
+
+            boolean hasChat = summary.isMultiGame();
+            if ( hasChat ) {
+                int flags = DBUtils.getMsgFlags( m_context, m_rowid );
+                hasChat = 0 != (flags & GameSummary.MSG_FLAGS_CHAT);
+            }
+            findViewById( R.id.has_chat_marker )
+                .setVisibility( hasChat ? View.VISIBLE : View.GONE );
 
             String roleSummary = summary.summarizeRole( m_context, m_rowid );
+            m_role.setVisibility( null == roleSummary ? View.GONE : View.VISIBLE );
             if ( null != roleSummary ) {
                 m_role.setText( roleSummary );
-            } else {
-                m_role.setVisibility( View.GONE );
             }
 
             update( expanded, summary.lastMoveTime, haveATurn,
@@ -420,6 +433,7 @@ public class GameListItem extends LinearLayout
     // }
     // GameListAdapter.ClickHandler interface
 
+    @Override
     public void longClicked()
     {
         toggleSelected();

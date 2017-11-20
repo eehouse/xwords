@@ -550,18 +550,18 @@ assemble_packet( vector<uint8_t>& packet, uint32_t* packetIDP, XWRelayReg cmd,
     }
 
 #ifdef LOG_UDP_PACKETS
-    gsize size = 0;
-    gint state = 0;
-    gint save = 0;
-    gchar out[1024];
-    for ( unsigned int ii = 0; ii < iocount; ++ii ) {
-        size += g_base64_encode_step( (const guchar*)vec[ii].iov_base, 
-                                      vec[ii].iov_len,
-                                      FALSE, &out[size], &state, &save );
-    }
-    size += g_base64_encode_close( FALSE, &out[size], &state, &save );
-    assert( size < sizeof(out) );
-    out[size] = '\0';
+    // gsize size = 0;
+    // gint state = 0;
+    // gint save = 0;
+    // gchar out[1024];
+    // for ( unsigned int ii = 0; ii < iocount; ++ii ) {
+    //     size += g_base64_encode_step( (const guchar*)vec[ii].iov_base,
+    //                                   vec[ii].iov_len,
+    //                                   FALSE, &out[size], &state, &save );
+    // }
+    // size += g_base64_encode_close( FALSE, &out[size], &state, &save );
+    // assert( size < sizeof(out) );
+    // out[size] = '\0';
 #endif
 }
 
@@ -640,8 +640,10 @@ send_via_udp_impl( int sock, const struct sockaddr* dest_addr,
 #ifdef LOG_UDP_PACKETS
     gchar* b64 = g_base64_encode( (uint8_t*)dest_addr, 
                                   sizeof(*dest_addr) );
+    gchar* out = g_base64_encode( packet.data(), packet.size() );
     logf( XW_LOGINFO, "%s()=>%d; addr='%s'; msg='%s'", __func__, nSent, 
           b64, out );
+    g_free( out );
     g_free( b64 );
 #else
     logf( XW_LOGINFO, "%s()=>%d", __func__, nSent );
@@ -760,15 +762,19 @@ send_havemsgs( const AddrInfo* addr )
 
 class MsgClosure {
 public:
-    MsgClosure( DevIDRelay devid, const vector<uint8_t>* packet,
-                OnMsgAckProc proc, void* procClosure )
+    MsgClosure( DevIDRelay dest, const vector<uint8_t>* packet,
+                int msgID, OnMsgAckProc proc, void* procClosure )
     {
-        m_devid = devid;
+        assert(m_msgID != 0);
+        m_destDevID = dest;
         m_packet = *packet;
         m_proc = proc;
         m_procClosure = procClosure;
+        m_msgID = msgID;
     }
-    DevIDRelay m_devid;
+    int getMsgID() { return m_msgID; }
+    int m_msgID;
+    DevIDRelay m_destDevID;
     vector<uint8_t> m_packet;
     OnMsgAckProc m_proc;
     void* m_procClosure;
@@ -778,22 +784,29 @@ static void
 onPostedMsgAcked( bool acked, uint32_t packetID, void* data )
 {
     MsgClosure* mc = (MsgClosure*)data;
-    if ( !acked ) {
-        DBMgr::Get()->StoreMessage( mc->m_devid, mc->m_packet.data(),
-                                    mc->m_packet.size() );
+    int msgID = mc->getMsgID();
+    if ( acked ) {
+        DBMgr::Get()->RemoveStoredMessages( &msgID, 1 );
+    } else {
+        assert( msgID != 0 );
+        // So we only store after ack fails? Change that!!!
+        // DBMgr::Get()->StoreMessage( mc->m_destDevID, mc->m_packet.data(),
+        //                             mc->m_packet.size() );
     }
     if ( NULL != mc->m_proc ) {
-        (*mc->m_proc)( acked, mc->m_devid, packetID, mc->m_procClosure );
+        (*mc->m_proc)( acked, mc->m_destDevID, packetID, mc->m_procClosure );
     }
     delete mc;
 }
 
 
 static bool
-post_or_store( DevIDRelay devid, vector<uint8_t>& packet, uint32_t packetID, 
+post_or_store( DevIDRelay destDevID, vector<uint8_t>& packet, uint32_t packetID,
                OnMsgAckProc proc, void* procClosure )
 {
-    const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( devid );
+    int msgID = DBMgr::Get()->StoreMessage( destDevID, packet.data(), packet.size() );
+
+    const AddrInfo::AddrUnion* addru = DevMgr::Get()->get( destDevID );
     bool canSendNow = !!addru;
     
     bool sent = false;
@@ -804,21 +817,18 @@ post_or_store( DevIDRelay devid, vector<uint8_t>& packet, uint32_t packetID,
         if ( get_addr_info_if( &addr, &sock, &dest_addr ) ) {
             sent = 0 < send_packet_via_udp_impl( packet, sock, dest_addr );
 
-            if ( sent ) {
-                MsgClosure* mc = new MsgClosure( devid, &packet,
+            if ( sent && msgID != 0 ) {
+                MsgClosure* mc = new MsgClosure( destDevID, &packet, msgID,
                                                  proc, procClosure );
                 UDPAckTrack::setOnAck( onPostedMsgAcked, packetID, (void*)mc );
             }
         }
     }
-    if ( !sent ) {
-        DBMgr::Get()->StoreMessage( devid, packet.data(), packet.size() );
-    }
     return sent;
 }
 
 bool
-post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
+post_message( DevIDRelay destDevID, const char* message, OnMsgAckProc proc,
               void* procClosure )
 {
     vector<uint8_t> packet;
@@ -830,7 +840,7 @@ post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
     assemble_packet( packet, &packetID, XWPDEV_ALERT, lenbuf, lenlen,
                      message, len, NULL );
 
-    return post_or_store( devid, packet, packetID, proc, procClosure );
+    return post_or_store( destDevID, packet, packetID, proc, procClosure );
 }
 
 void
@@ -988,13 +998,13 @@ processReconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
 } /* processReconnect */
 
 static bool
-processAck( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
+processAck( const uint8_t* bufp, int bufLen, AddrInfo::ClientToken clientToken )
 {
     bool success = false;
     const uint8_t* end = bufp + bufLen;
     HostID srcID;
     if ( getNetByte( &bufp, end, &srcID ) ) {
-        SafeCref scr( addr );
+        SafeCref scr( clientToken, srcID );
         success = scr.HandleAck( srcID );
     }
     return success;
@@ -1084,7 +1094,8 @@ forwardMessage( const uint8_t* buf, int buflen, const AddrInfo* addr )
 } /* forwardMessage */
 
 static bool
-processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr )
+processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr,
+                AddrInfo::ClientToken clientToken )
 {
     bool success = false;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
@@ -1099,7 +1110,11 @@ processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr )
         success = processReconnect( buf+1, bufLen-1, addr );
         break;
     case XWRELAY_ACK:
-        success = processAck( buf+1, bufLen-1, addr );
+        if ( clientToken != 0 ) {
+            success = processAck( buf+1, bufLen-1, clientToken );
+        } else {
+            logf( XW_LOGERROR, "%s(): null client token", __func__ );
+        }
         break;
     case XWRELAY_GAME_DISCONNECT:
         success = processDisconnect( buf+1, bufLen-1, addr );
@@ -1334,6 +1349,9 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
         logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
+            // This is wrong: should be removed when ACK returns and not
+            // before. But for some reason if I make that change apps wind up
+            // stalling.
             dbmgr->RemoveStoredMessages( msgIDs );
         }
     }
@@ -1438,7 +1456,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const uint8_t* bufp,
             }
             unsigned short nMsgs;
             if ( getNetShort( &bufp, end, &nMsgs ) ) {
-                SafeCref scr( connName );
+                SafeCref scr( connName, hid );
                 while ( scr.IsValid() && nMsgs-- > 0 ) {
                     unsigned short len;
                     if ( getNetShort( &bufp, end, &len ) ) {
@@ -1460,7 +1478,7 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const uint8_t* bufp,
 static void
 game_thread_proc( UdpThreadClosure* utc )
 {
-    if ( !processMessage( utc->buf(), utc->len(), utc->addr() ) ) {
+    if ( !processMessage( utc->buf(), utc->len(), utc->addr(), 0 ) ) {
         XWThreadPool::GetTPool()->CloseSocket( utc->addr() );
     }
 }
@@ -1528,7 +1546,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                                                 sizeof( connName ), &hid ) ) {
                                 break;
                             }
-                            SafeCref scr( connName );
+                            SafeCref scr( connName, hid );
                             scr.DeviceGone( hid, seed );
                         }
                     }
@@ -1748,7 +1766,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             clientToken = ntohl( clientToken );
             if ( AddrInfo::NULL_TOKEN != clientToken ) {
                 AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
-                (void)processMessage( ptr, end - ptr, &addr );
+                (void)processMessage( ptr, end - ptr, &addr, clientToken );
             } else {
                 logf( XW_LOGERROR, "%s: dropping packet with token of 0",
                       __func__ );
@@ -1766,7 +1784,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                     logf( XW_LOGERROR, "parse failed!!!" );
                     break;
                 }
-                SafeCref scr( connName );
+                SafeCref scr( connName, hid );
                 if ( scr.IsValid() ) {
                     AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
                     handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
@@ -1833,7 +1851,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                 string connName;
                 if ( DBMgr::Get()->FindPlayer( devID.asRelayID(), clientToken, 
                                                connName, &hid, &seed ) ) {
-                    SafeCref scr( connName.c_str() );
+                    SafeCref scr( connName.c_str(), hid );
                     scr.DeviceGone( hid, seed );
                 }
             }
@@ -1980,7 +1998,7 @@ maint_str_loop( int udpsock, const char* str )
 } // maint_str_loop
 
 static uint32_t
-getIPAddr( void )
+getUDPIPAddr( void )
 {
     uint32_t result = INADDR_ANY;
     char iface[16] = {0};
@@ -2215,7 +2233,7 @@ main( int argc, char** argv )
         struct sockaddr_in saddr;
         g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
         saddr.sin_family = PF_INET;
-        saddr.sin_addr.s_addr = getIPAddr();
+        saddr.sin_addr.s_addr = getUDPIPAddr();
         saddr.sin_port = htons(udpport);
         int err = bind( g_udpsock, (struct sockaddr*)&saddr, sizeof(saddr) );
         if ( 0 == err ) {

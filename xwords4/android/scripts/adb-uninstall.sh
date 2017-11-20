@@ -27,12 +27,15 @@ getPackage() {
 	echo $PACK
 }
 
+# FIXME: not all options require a working directory, e.g. --apk
 WD=$(pwd)
 while :; do
 	if [ -e ${WD}/AndroidManifest.xml -a -e ${WD}/build.xml ]; then
 		break
+	elif [ -e ${WD}/app/build.gradle ]; then
+		break
 	elif [ ${WD} = '/' ]; then
-		usage "reached / without finding AndroidManifest.xml"
+		usage "reached / without finding AndroidManifest.xml or build.gradle"
 	else
 		WD=$(cd $WD/.. && pwd)
 	fi

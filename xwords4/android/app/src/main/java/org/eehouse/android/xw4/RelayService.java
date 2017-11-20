@@ -736,7 +736,7 @@ public class RelayService extends XWService
                 case XWPDEV_MSG:
                     int token = dis.readInt();
                     byte[] msg = new byte[dis.available()];
-                    dis.read( msg );
+                    dis.readFully( msg );
                     postData( this, token, msg );
 
                     // game-related packets only count
@@ -756,9 +756,8 @@ public class RelayService extends XWService
                     resetBackoff = true;
                     intent = getIntentTo( this, MsgCmds.GOT_INVITE );
                     int srcDevID = dis.readInt();
-                    short len = dis.readShort();
-                    byte[] nliData = new byte[len];
-                    dis.read( nliData );
+                    byte[] nliData = new byte[dis.readShort()];
+                    dis.readFully( nliData );
                     NetLaunchInfo nli = XwJNI.nliFromStream( nliData );
                     intent.putExtra( INVITE_FROM, srcDevID );
                     String asStr = nli.toString();
@@ -995,9 +994,8 @@ public class RelayService extends XWService
     private String getVLIString( DataInputStream dis )
         throws java.io.IOException
     {
-        int len = vli2un( dis );
-        byte[] tmp = new byte[len];
-        dis.read( tmp );
+        byte[] tmp = new byte[vli2un( dis )];
+        dis.readFully( tmp );
         String result = new String( tmp );
         return result;
     }

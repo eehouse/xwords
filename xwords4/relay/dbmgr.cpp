@@ -70,20 +70,6 @@ DBMgr::DBMgr()
 
     pthread_mutex_init( &m_haveNoMessagesMutex, NULL );
 
-    /* Now figure out what the largest cid currently is.  There must be a way
-       to get postgres to do this for me.... */
-    /* const char* query = "SELECT cid FROM games ORDER BY cid DESC LIMIT 1"; */
-    /* PGresult* result = PQexec( m_pgconn, query ); */
-    /* if ( 0 == PQntuples( result ) ) { */
-    /*     m_nextCID = 1; */
-    /* } else { */
-    /*     char* value = PQgetvalue( result, 0, 0 ); */
-    /*     m_nextCID = 1 + atoi( value ); */
-    /* } */
-    /* PQclear(result); */
-    /* logf( XW_LOGINFO, "%s: m_nextCID=%d", __func__, m_nextCID ); */
-
-    // I've seen rand returning the same series several times....
     srand( time( NULL ) );
 }
  
@@ -107,7 +93,7 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     qb.appendQueryf( "INSERT INTO " GAMES_TABLE
                     " (cid, room, connName, nTotal, lang, pub)"
                      " VALUES( $$, $$, $$, $$, $$, $$ )" )
-        .appendParam(cid) 
+        .appendParam(cid)
         .appendParam(cookie)
         .appendParam(connName)
         .appendParam(nPlayersT)
@@ -136,7 +122,7 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
 {
     bool found = false;
 
-    const char* fmt = "SELECT cid, room, lang, nPerDevice, dead FROM " 
+    const char* fmt = "SELECT cid, room, lang, dead FROM "
         GAMES_TABLE " WHERE connName = '%s' AND nTotal = %d "
         "AND %d = seeds[%d] AND 'A' = ack[%d] "
         ;
@@ -148,10 +134,11 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
     assert( 1 >= PQntuples( result ) );
     found = 1 == PQntuples( result );
     if ( found ) {
-        *cidp = atoi( PQgetvalue( result, 0, 0 ) );
-        snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
-        *langP = atoi( PQgetvalue( result, 0, 2 ) );
-        *isDead = 't' == PQgetvalue( result, 0, 4 )[0];
+        int col = 0;
+        *cidp = atoi( PQgetvalue( result, 0, col++ ) );
+        snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        *langP = atoi( PQgetvalue( result, 0, col++ ) );
+        *isDead = 't' == PQgetvalue( result, 0, col++ )[0];
     }
     PQclear( result );
 
@@ -160,34 +147,69 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
 } /* FindGameFor */
 
 CookieID
-DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
+DBMgr::FindGame( const char* connName, HostID hid, char* roomBuf, int roomBufLen,
                  int* langP, int* nPlayersTP, int* nPlayersHP, bool* isDead )
 {
     CookieID cid = 0;
 
-    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice, dead FROM " 
+    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice[%d], dead FROM "
         GAMES_TABLE " WHERE connName = '%s'"
         // " LIMIT 1"
         ;
     StrWPF query;
-    query.catf( fmt, connName );
+    query.catf( fmt, hid, connName );
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 >= PQntuples( result ) );
     if ( 1 == PQntuples( result ) ) {
-        cid = atoi( PQgetvalue( result, 0, 0 ) );
-        snprintf( cookieBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
-        *langP = atoi( PQgetvalue( result, 0, 2 ) );
-        *nPlayersTP = atoi( PQgetvalue( result, 0, 3 ) );
-        *nPlayersHP = atoi( PQgetvalue( result, 0, 4 ) );
-        *isDead = 't' == PQgetvalue( result, 0, 5 )[0];
+        int col = 0;
+        cid = atoi( PQgetvalue( result, 0, col++ ) );
+        snprintf( roomBuf, roomBufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        *langP = atoi( PQgetvalue( result, 0, col++ ) );
+        *nPlayersTP = atoi( PQgetvalue( result, 0, col++ ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
+        *isDead = 't' == PQgetvalue( result, 0, col++ )[0];
     }
     PQclear( result );
 
     logf( XW_LOGINFO, "%s(%s)=>%d", __func__, connName, cid );
     return cid;
 } /* FindGame */
+
+CookieID
+DBMgr::FindGame( const AddrInfo::ClientToken clientToken, HostID hid,
+                 char* connNameBuf, int connNameBufLen,
+                 char* roomBuf, int roomBufLen,
+                 int* langP, int* nPlayersTP, int* nPlayersHP )
+{
+    CookieID cid = 0;
+    const char* fmt = "SELECT cid, room, lang, nTotal, nPerDevice[%d], connname FROM "
+        GAMES_TABLE " WHERE tokens[%d] = %d and NOT dead";
+        // " LIMIT 1"
+        ;
+    StrWPF query;
+    query.catf( fmt, hid, hid, clientToken );
+    logf( XW_LOGINFO, "query: %s", query.c_str() );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    if ( 1 == PQntuples( result ) ) {
+        int col = 0;
+        cid = atoi( PQgetvalue( result, 0, col++ ) );
+        // room
+        snprintf( roomBuf, roomBufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        // lang
+        *langP = atoi( PQgetvalue( result, 0, col++ ) );
+        *nPlayersTP = atoi( PQgetvalue( result, 0, col++ ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
+        snprintf( connNameBuf, connNameBufLen, "%s", PQgetvalue( result, 0, col++ ) );
+    }
+    PQclear( result );
+
+    logf( XW_LOGINFO, "%s(ct=%d,hid=%d) => %d (connname=%s)", __func__, clientToken,
+          hid, cid, connNameBuf );
+    return cid;
+}
 
 bool
 DBMgr::FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken token, 
@@ -294,11 +316,13 @@ DBMgr::SeenSeed( const char* cookie, unsigned short seed,
                                      NULL, NULL, 0 );
     bool found = 1 == PQntuples( result );
     if ( found ) {
-        *cid = atoi( PQgetvalue( result, 0, 0 ) );
-        *nPlayersHP = here_less_seed( PQgetvalue( result, 0, 2 ),
-                                      atoi( PQgetvalue( result, 0, 3 ) ),
-                                      seed );
-        snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
+        int col = 0;
+        *cid = atoi( PQgetvalue( result, 0, col++ ) );
+        snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
+
+        const char* seeds = PQgetvalue( result, 0, col++ );
+        int perDeviceSum = atoi( PQgetvalue( result, 0, col++ ) );
+        *nPlayersHP = here_less_seed( seeds, perDeviceSum, seed );
     }
     PQclear( result );
     logf( XW_LOGINFO, "%s(%4X)=>%s", __func__, seed, found?"true":"false" );
@@ -333,9 +357,10 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
                                      NULL, NULL, 0 );
     CookieID cid = 0;
     if ( 1 == PQntuples( result ) ) {
-        cid = atoi( PQgetvalue( result, 0, 0 ) );
-        snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
-        *nPlayersHP = atoi( PQgetvalue( result, 0, 2 ) );
+        int col = 0;
+        cid = atoi( PQgetvalue( result, 0, col++ ) );
+        snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, col++ ) );
+        *nPlayersHP = atoi( PQgetvalue( result, 0, col++ ) );
         /* cid may be 0, but should use game anyway  */
     }
     PQclear( result );
@@ -699,9 +724,11 @@ DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
         if ( PGRES_TUPLES_OK == PQresultStatus( result ) ) {
             int ntuples = PQntuples( result );
             for ( int ii = 0; ii < ntuples; ++ii ) {
-                RecordSent( PQgetvalue( result, ii, 0 ),
-                            atoi( PQgetvalue( result, ii, 1 ) ),
-                            atoi( PQgetvalue( result, ii, 2 ) ) );
+                int col = 0;
+                const char* const connName = PQgetvalue( result, ii, col++ );
+                HostID hid = atoi( PQgetvalue( result, ii, col++ ) );
+                int nBytes = atoi( PQgetvalue( result, ii, col++ ) );
+                RecordSent( connName, hid, nBytes );
             }
         }
         PQclear( result );
@@ -1014,43 +1041,51 @@ DBMgr::CountStoredMessages( DevIDRelay relayID )
     return getCountWhere( MSGS_TABLE, test );
 }
 
-void
-DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
+int
+DBMgr::StoreMessage( DevIDRelay destDevID, const uint8_t* const buf,
                      int len )
 {
-    clearHasNoMessages( devID );
+    int msgID = 0;
+    clearHasNoMessages( destDevID );
 
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE " "
-        "(devid, %s, msglen) VALUES(%d, %s'%s', %d)";
+        "(devid, %s, msglen) VALUES(%d, %s'%s', %d) RETURNING id";
     
     StrWPF query;
     if ( m_useB64 ) {
         gchar* b64 = g_base64_encode( buf, len );
-        query.catf( fmt, "msg64", devID, "", b64, len );
+        query.catf( fmt, "msg64", destDevID, "", b64, len );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
-        query.catf( fmt, "msg",  devID, "E", bytes, len );
+        query.catf( fmt, "msg",  destDevID, "E", bytes, len );
         PQfreemem( bytes );
     }
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-    execSql( query );
+
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    if ( 1 == PQntuples( result ) ) {
+        msgID = atoi( PQgetvalue( result, 0, 0 ) );
+    }
+    PQclear( result );
+    return msgID;
 }
 
-void
-DBMgr::StoreMessage( const char* const connName, int hid, 
+int
+DBMgr::StoreMessage( const char* const connName, int destHid,
                      const uint8_t* buf, int len )
 {
-    clearHasNoMessages( connName, hid );
+    int msgID = 0;
+    clearHasNoMessages( connName, destHid );
 
-    DevIDRelay devID = getDevID( connName, hid );
+    DevIDRelay devID = getDevID( connName, destHid );
     if ( DEVID_NONE == devID ) {
         logf( XW_LOGERROR, "%s: warning: devid not found for connName=%s, "
-              "hid=%d", __func__, connName, hid );
+              "hid=%d", __func__, connName, destHid );
     } else {
         clearHasNoMessages( devID );
     }
@@ -1066,7 +1101,7 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     StrWPF query;
     if ( m_useB64 ) {
         gchar* b64 = g_base64_encode( buf, len );
-        query.catf( fmt, "msg64", connName, hid, devID, hid, connName, 
+        query.catf( fmt, "msg64", connName, destHid, devID, destHid, connName,
                     "", b64, len );
         
         query.catf( " WHERE NOT EXISTS (SELECT 1 FROM " MSGS_TABLE
@@ -1074,20 +1109,28 @@ DBMgr::StoreMessage( const char* const connName, int hid,
 #ifdef HAVE_STIME
                     " AND stime='epoch'" 
 #endif
-                    " );", connName, hid, b64 );
+                    " )", connName, destHid, b64 );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
     
-        query.catf( fmt, "msg", connName, hid, devID, hid, connName, 
+        query.catf( fmt, "msg", connName, destHid, devID, destHid, connName,
                     "E", bytes, len );
         PQfreemem( bytes );
     }
+    query.catf(" RETURNING id;");
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
-    execSql( query );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    if ( 1 == PQntuples( result ) ) {
+        msgID = atoi( PQgetvalue( result, 0, 0 ) );
+    } else {
+        logf( XW_LOGINFO, "Not stored; duplicate?" );
+    }
+    PQclear( result );
+    return msgID;
 }
 
 void

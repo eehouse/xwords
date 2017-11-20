@@ -163,6 +163,7 @@ public class DelegateBase implements DlgClickNotify,
         }
         if ( this != result ) {
             Log.d( TAG, "%s.curThis() => " + result, this.toString() );
+            Assert.fail();
         }
         return result;
     }

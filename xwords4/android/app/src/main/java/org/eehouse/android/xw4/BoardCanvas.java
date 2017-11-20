@@ -322,26 +322,35 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public void drawTimer( Rect rect, int player, int secondsLeft )
+    public void drawTimer( Rect rect, final int player,
+                           int secondsLeft )
     {
-        if ( null != m_jniThread &&
-             (m_lastSecsLeft != secondsLeft || m_lastTimerPlayer != player) ) {
-            m_lastSecsLeft = secondsLeft;
-            m_lastTimerPlayer = player;
+        if ( m_lastSecsLeft != secondsLeft || m_lastTimerPlayer != player ) {
+            final Rect rectCopy = new Rect(rect);
+            final int secondsLeftCopy = secondsLeft;
+            m_activity.runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        if ( null != m_jniThread ) {
+                            m_lastSecsLeft = secondsLeftCopy;
+                            m_lastTimerPlayer = player;
 
-            String negSign = secondsLeft < 0? "-":"";
-            secondsLeft = Math.abs( secondsLeft );
-            String time = String.format( "%s%d:%02d", negSign, secondsLeft/60,
-                                         secondsLeft%60 );
+                            String negSign = secondsLeftCopy < 0? "-":"";
+                            int secondsLeft = Math.abs( secondsLeftCopy );
+                            String time =
+                                String.format( "%s%d:%02d", negSign,
+                                               secondsLeft/60, secondsLeft%60 );
 
-            fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-            m_fillPaint.setColor( m_playerColors[player] );
+                            fillRectOther( rectCopy, CommonPrefs.COLOR_BACKGRND );
+                            m_fillPaint.setColor( m_playerColors[player] );
 
-            Rect shorter = new Rect( rect );
-            shorter.inset( 0, shorter.height() / 5 );
-            drawCentered( time, shorter, null );
+                            rectCopy.inset( 0, rectCopy.height() / 5 );
+                            drawCentered( time, rectCopy, null );
 
-            m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+                            m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+                        }
+                    }
+                } );
         }
     }
 

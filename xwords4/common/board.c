@@ -447,10 +447,13 @@ printDims( const BoardDims* dimsp )
 #  define printDims( ldims )
 # endif
 
+/* For debugging the special case of square board */
+// #define FORCE_SQUARE
+
 void
 board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
                     XP_U16 bLeft, XP_U16 bTop,
-                    const XP_U16 bWidth, const XP_U16 bHeight,
+                    XP_U16 bWidth, XP_U16 bHeight,
                     XP_U16 colPctMax, XP_U16 scorePct, XP_U16 trayPct,
                     XP_U16 scoreWidth, XP_U16 fontWidth, XP_U16 fontHt,
                     XP_Bool squareTiles, BoardDims* dimsp )
@@ -464,6 +467,14 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     XP_U16 scoreHt;
     XP_U16 wantHt;
     XP_U16 nToScroll;
+
+#ifdef FORCE_SQUARE
+    if ( bWidth > bHeight ) {
+        bWidth = bHeight;
+    } else {
+        bHeight = bWidth;
+    }
+#endif
 
     ldims.left = bLeft;
     ldims.top = bTop;
@@ -552,7 +563,13 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 
         ldims.boardHt = cellSize * nCells;
         ldims.trayTop = ldims.top + scoreHt + (cellSize * (nCells-nToScroll));
-        ldims.height = heightUsed;
+        ldims.height =
+#ifdef FORCE_SQUARE
+            ldims.width
+#else
+            heightUsed
+#endif
+            ;
         ldims.cellSize = cellSize;
 
         if ( gi->timerEnabled ) {

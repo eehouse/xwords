@@ -29,12 +29,15 @@ import com.google.android.gcm.GCMRegistrar;
 
 import org.json.JSONArray;
 
+import junit.framework.Assert;
+
 public class GCMIntentService extends GCMBaseIntentService {
     private static final String TAG = GCMIntentService.class.getSimpleName();
 
     public GCMIntentService()
     {
         super( BuildConfig.GCM_SENDER_ID );
+        Assert.assertTrue( BuildConfig.GCM_SENDER_ID.length() > 0 );
     }
 
     @Override
@@ -120,20 +123,22 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     public static void init( Application app )
     {
-        int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
-        if ( 8 <= sdkVersion && 0 < BuildConfig.GCM_SENDER_ID.length() ) {
-            try {
-                GCMRegistrar.checkDevice( app );
-                // GCMRegistrar.checkManifest( app );
-                String regId = DevID.getGCMDevID( app );
-                if ( regId.equals("") ) {
-                    GCMRegistrar.register( app, BuildConfig.GCM_SENDER_ID );
+        if ( 0 < BuildConfig.GCM_SENDER_ID.length() ) {
+            int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
+            if ( 8 <= sdkVersion ) {
+                try {
+                    GCMRegistrar.checkDevice( app );
+                    // GCMRegistrar.checkManifest( app );
+                    String regId = DevID.getGCMDevID( app );
+                    if ( regId.equals("") ) {
+                        GCMRegistrar.register( app, BuildConfig.GCM_SENDER_ID );
+                    }
+                } catch ( UnsupportedOperationException uoe ) {
+                    Log.w( TAG, "Device can't do GCM." );
+                } catch ( Exception whatever ) {
+                    // funky devices could do anything
+                    Log.ex( TAG, whatever );
                 }
-            } catch ( UnsupportedOperationException uoe ) {
-                Log.w( TAG, "Device can't do GCM." );
-            } catch ( Exception whatever ) {
-                // funky devices could do anything
-                Log.ex( TAG, whatever );
             }
         }
     }

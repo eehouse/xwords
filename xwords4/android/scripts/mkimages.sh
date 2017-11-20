@@ -43,3 +43,8 @@ for SVG in img_src/*.svg; do
         fi
     done
 done
+
+OTHER_IMAGES="app/src/main/res/drawable/green_chat__gen.png"
+for IMAGE in $OTHER_IMAGES; do
+	make -f $(dirname $0)/images.mk $IMAGE >/dev/null 2>&1
+done

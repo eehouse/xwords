@@ -184,7 +184,7 @@ public class NetUtils {
                                 short len = dis.readShort();
                                 if ( len > 0 ) {
                                     byte[] packet = new byte[len];
-                                    dis.read( packet );
+                                    dis.readFully( packet );
                                     msgs[ii][jj] = packet;
                                 }
                             }

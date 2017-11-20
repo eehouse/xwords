@@ -52,9 +52,6 @@ public class ConnStatusHandler {
         public Handler getHandler();
     }
 
-    private static final int GREEN = 0xFF00AF00;
-    private static final int RED = 0xFFAF0000;
-    private static final int BLACK = 0xFF000000;
     private static final int SUCCESS_IN = 0;
     private static final int SUCCESS_OUT = 1;
     private static final int SHOW_SUCCESS_INTERVAL = 1000;
@@ -340,7 +337,7 @@ public class ConnStatusHandler {
                                   boolean isIn )
     {
         enabled = enabled && null != newestSuccess( connTypes, isIn );
-        s_fillPaint.setColor( enabled ? GREEN : RED );
+        s_fillPaint.setColor( enabled ? XWApp.GREEN : XWApp.RED );
         canvas.drawRect( rect, s_fillPaint );
     }
 

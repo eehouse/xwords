@@ -52,8 +52,8 @@ void send_havemsgs( const AddrInfo* addr );
 
 typedef void (*OnMsgAckProc)( bool acked, DevIDRelay devid, uint32_t packetID, 
                               void* data );
-bool post_message( DevIDRelay devid, const char* message, OnMsgAckProc proc,
-                   void* data );
+bool post_message( DevIDRelay destDevID, const char* message,
+                   OnMsgAckProc proc, void* data );
 void post_upgrade( DevIDRelay devid );
 
 time_t uptime(void);

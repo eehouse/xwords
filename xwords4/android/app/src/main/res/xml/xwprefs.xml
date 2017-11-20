@@ -16,12 +16,18 @@
           android:title="@string/pref_human_name"
           android:capitalize="words"
           android:defaultValue=""
+          android:maxLines="1"
+          android:maxLength="32"
+          android:inputType="text"
           />
       <org.eehouse.android.xw4.XWEditTextPreference 
           android:key="@string/key_robot_name"
           android:title="@string/robot_label" 
           android:capitalize="words"
           android:defaultValue="@string/button_default_robot"
+          android:maxLines="1"
+          android:maxLength="32"
+          android:inputType="text"
           />
     </PreferenceScreen>
 

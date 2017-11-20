@@ -31,13 +31,25 @@
                   android:visibility="gone"
                   >
 
-        <ImageView android:id="@+id/msg_marker"
-	               android:layout_width="42dp"
-	               android:layout_height="fill_parent"
-                   android:layout_gravity="center_vertical|center_horizontal"
-                   android:paddingLeft="8dip"
-                   android:paddingRight="8dip"
-                   />
+        <RelativeLayout android:id="@+id/game_view_container"
+                        android:layout_width="42dp"
+	                    android:layout_height="fill_parent"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:paddingLeft="8dip"
+                        android:paddingRight="8dip"
+                        >
+            <ImageView android:id="@+id/game_type_marker"
+	                   android:layout_width="fill_parent"
+	                   android:layout_height="fill_parent"
+                       android:src="@drawable/multigame__gen"
+                       />
+            <ImageView android:id="@+id/has_chat_marker"
+                       android:layout_width="wrap_content"
+                       android:layout_height="22dp"
+                       android:src="@drawable/green_chat__gen"
+                       android:layout_alignParentBottom="true"
+                       />
+        </RelativeLayout>
 
         <ImageView android:id="@+id/thumbnail"
                    android:layout_width="wrap_content"
@@ -49,9 +61,12 @@
 
         <!-- this layout is vertical, holds everything but the status
              icon[s] (plural later) -->
-        <LinearLayout android:orientation="vertical"
+        <LinearLayout android:id="@+id/right_side"
+                      android:orientation="vertical"
                       android:layout_width="fill_parent"
-                      android:layout_height="wrap_content"
+                      android:layout_height="match_parent"
+                      android:clickable="true"
+                      android:longClickable="true"
                       >
 
             <!-- This is the game name and expander -->
@@ -66,7 +81,7 @@
                      android:layout_height="wrap_content"
                      android:gravity="center"
                      android:layout_weight="1"
-                     android:singleLine="true"
+                     android:maxLines="1"
                      android:textAppearance="?android:attr/textAppearanceMedium"
                      />
 
