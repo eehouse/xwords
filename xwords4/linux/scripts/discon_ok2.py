@@ -624,7 +624,7 @@ def build_cmds(args):
 #     fi
 # }
 
-def summarizeTileCounts(devs):
+def summarizeTileCounts(devs, endTime):
     data = [dev.getTilesCount() for dev in devs]
     nDevs = len(data)
     totalTiles = 0
@@ -647,7 +647,8 @@ def summarizeTileCounts(devs):
 
         fmtData[2]['data'].append('{:{width}d}'.format(tupl[2], width=colWidth))
 
-    print('devs left: {}; tiles left: {}'.format(nDevs, totalTiles))
+    print('')
+    print('devs left: {}; tiles left: {}; {}/{}'.format(nDevs, totalTiles, datetime.datetime.now(), endTime ))
     fmt = '{head:>%d} {data}' % headWidth
     for datum in fmtData: datum['data'] = ' '.join(datum['data'])
     for datum in fmtData:
@@ -659,6 +660,7 @@ def countCores():
 def run_cmds(args, devs):
     nCores = countCores()
     endTime = datetime.datetime.now() + datetime.timedelta(seconds = args.TIMEOUT)
+    print('will run until', endTime)
     LOOPCOUNT = 0
 
     while len(devs) > 0:
@@ -670,7 +672,7 @@ def run_cmds(args, devs):
             break
 
         LOOPCOUNT += 1
-        if 0 == LOOPCOUNT % 20: summarizeTileCounts(devs)
+        if 0 == LOOPCOUNT % 20: summarizeTileCounts(devs, endTime)
 
         dev = random.choice(devs)
         if not dev.running():
