@@ -56,11 +56,11 @@
     <string name="dicts_item_select">Gjør til forvalg</string>
 
     <plurals name="confirm_delete_dict_fmt">
-	<item quantity="one">Er du sikker på at du vil slette ordlisten %1$s?</item>
-	<item quantity="other">Er du sikker på at du vil slette ordlistene %1$s?</item>
-</plurals>
+	  <item quantity="one">Er du sikker på at du vil slette ordlisten %1$s?</item>
+	  <item quantity="other">Er du sikker på at du vil slette ordlistene %1$s?</item>
+    </plurals>
 
-    <string name="confirm_deleteonly_dicts_fmt">Sletting av %1$s vil bety at du står uten noen %1$s-ordlister. Ett eller flere spill vil ikke kunne åpnes (til du laster ned en erstatningsliste).</string>
+    <string name="confirm_deleteonly_dicts_fmt">Sletting av %1$s vil bety at du står uten noen %2$s-ordlister. Ett eller flere spill vil ikke kunne åpnes (til du laster ned en erstatningsliste).</string>
 
     <string name="button_default_human">Menneske</string>
     <string name="button_default_robot">Maskin</string>
@@ -141,7 +141,7 @@
 
     <string name="no_moves_made">(Ingen trekk enda)</string>
 
-    <string name="invit_expl_bt_fmt">Invitasjon sendt via Blåtann til tilknyttet enhet \"%1½s\" på %2$s</string>
+    <string name="invit_expl_bt_fmt">Invitasjon sendt via Blåtann til tilknyttet enhet \"%1$s\" på %2$s</string>
     <string name="invit_expl_notarget_fmt">Invitasjon sendt via %1$s på %2$s. Ukjent mottaker.</string>
 
     <string name="relay_alert">Tilkoblingsproblem</string>
