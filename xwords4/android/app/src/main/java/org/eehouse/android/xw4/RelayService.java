@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import junit.framework.Assert;
 
@@ -740,8 +741,10 @@ public class RelayService extends XWService
         int pid = packet.m_packetID;
         Log.d( TAG, "Sent [udp?] packet: cmd=%s, id=%d",
                packet.m_cmd.toString(), pid);
-        synchronized( s_packetsSent ) {
-            s_packetsSent.put( pid, packet );
+        if ( packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
+            synchronized( s_packetsSent ) {
+                s_packetsSent.put( pid, packet );
+            }
         }
     }
 
@@ -1313,14 +1316,20 @@ public class RelayService extends XWService
         PacketData packet;
         synchronized( s_packetsSent ) {
             packet = s_packetsSent.remove( packetID );
+            if ( packet != null ) {
+                Log.d( TAG, "noteAck(): removed for id %d: %s", packetID, packet );
+            } else {
+                Log.w( TAG, "Weird: got ack %d but never sent", packetID );
+            }
+            if ( BuildConfig.DEBUG ) {
+                ArrayList<String> pstrs = new ArrayList<>();
+                for ( Integer pkid : s_packetsSent.keySet() ) {
+                    pstrs.add( s_packetsSent.get(pkid).toString() );
+                }
+                Log.d( TAG, "noteAck(): Got ack for %d; there are %d unacked packets: %s",
+                       packetID, s_packetsSent.size(), TextUtils.join( ",", pstrs ) );
+            }
         }
-        if ( packet != null ) {
-            Log.w( TAG, "noteAck(): removed for id %d: %s", packetID, packet );
-        } else {
-            Log.w( TAG, "Weird: got ack %d but never sent", packetID );
-        }
-        Log.d( TAG, "noteAck(): Got ack for %d; there are %d unacked packets",
-               packetID, s_packetsSent.size() );
     }
 
     // Called from any thread
@@ -1541,7 +1550,7 @@ public class RelayService extends XWService
         @Override
         public String toString()
         {
-            return String.format( "cmd: %s; age: %d ms", m_cmd,
+            return String.format( "{cmd: %s; age: %d ms}", m_cmd,
                                   System.currentTimeMillis() - m_created );
         }
 
