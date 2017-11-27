@@ -55,9 +55,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -98,7 +98,7 @@ public class RelayService extends XWService
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
 
-    private static HashSet<Integer> s_packetsSent = new HashSet<Integer>();
+    private static Map<Integer, PacketData> s_packetsSent = new HashMap<>();
     private static AtomicInteger s_nextPacketID = new AtomicInteger();
     private static boolean s_gcmWorking = false;
     private static boolean s_registered = false;
@@ -741,7 +741,7 @@ public class RelayService extends XWService
         Log.d( TAG, "Sent [udp?] packet: cmd=%s, id=%d",
                packet.m_cmd.toString(), pid);
         synchronized( s_packetsSent ) {
-            s_packetsSent.add( pid );
+            s_packetsSent.put( pid, packet );
         }
     }
 
@@ -1310,15 +1310,17 @@ public class RelayService extends XWService
 
     private static void noteAck( int packetID )
     {
+        PacketData packet;
         synchronized( s_packetsSent ) {
-            if ( s_packetsSent.contains( packetID ) ) {
-                s_packetsSent.remove( packetID );
-            } else {
-                Log.w( TAG, "Weird: got ack %d but never sent", packetID );
-            }
-            Log.d( TAG, "noteAck(): Got ack for %d; there are %d unacked packets",
-                   packetID, s_packetsSent.size() );
+            packet = s_packetsSent.remove( packetID );
         }
+        if ( packet != null ) {
+            Log.w( TAG, "noteAck(): removed for id %d: %s", packetID, packet );
+        } else {
+            Log.w( TAG, "Weird: got ack %d but never sent", packetID );
+        }
+        Log.d( TAG, "noteAck(): Got ack for %d; there are %d unacked packets",
+               packetID, s_packetsSent.size() );
     }
 
     // Called from any thread
@@ -1522,13 +1524,25 @@ public class RelayService extends XWService
         public XWRelayReg m_cmd;
         public byte[] m_header;
         public int m_packetID;
+        private long m_created;
 
-        public PacketData() { m_bas = null; }
+        public PacketData() {
+            m_bas = null;
+            m_created = System.currentTimeMillis();
+        }
 
         public PacketData( ByteArrayOutputStream bas, XWRelayReg cmd )
         {
+            this();
             m_bas = bas;
             m_cmd = cmd;
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "cmd: %s; age: %d ms", m_cmd,
+                                  System.currentTimeMillis() - m_created );
         }
 
         public int getLength()
