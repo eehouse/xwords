@@ -1743,6 +1743,14 @@
     <string name="not_again_lookup">This button lets you look up,
       online, the words just played.</string>
 
+    <string name="not_again_archive">Archiving uses a special group
+    called \"Archive\" to store finished games you want to keep. And,
+    since deleting an entire archive is easy, archiving is also a
+    great way to mark games for deletion – if that\'s what you prefer
+    to do.\n\n(Deleting the Archive group is safe because it will be
+    created anew when needed.)
+    </string>
+
       <!--  -->
     <string name="button_move">Move</string>
     <string name="button_newgroup">New group</string>

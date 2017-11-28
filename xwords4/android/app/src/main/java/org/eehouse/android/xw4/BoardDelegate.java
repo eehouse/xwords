@@ -214,7 +214,11 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg,
                                                  int whichButton ) {
-                                archiveAndClose( archiveName, archiveGroup );
+                                makeNotAgainBuilder( R.string.not_again_archive,
+                                                     R.string.key_na_archive,
+                                                     Action.ARCHIVE_ACTION )
+                                    .setParams( archiveName, archiveGroup )
+                                    .show();
                             }
                         };
                     ab.setNeutralButton( R.string.button_archive, lstnr );
@@ -1105,6 +1109,12 @@ public class BoardDelegate extends DelegateBase
             XWPrefs.setPrefsString( m_activity, R.string.key_force_tablet,
                                     getString(R.string.force_tablet_phone) );
             makeOkOnlyBuilder( R.string.after_restart ).show();
+            break;
+
+        case ARCHIVE_ACTION:
+            String archiveName = (String)params[0];
+            long archiveGroup = (Long)params[1];
+            archiveAndClose( archiveName, archiveGroup );
             break;
 
         case ENABLE_SMS_DO:

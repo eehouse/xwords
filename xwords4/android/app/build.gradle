@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 125
-def VERSION_NAME = '4.4.129'
+def VERSION_CODE_BASE = 127
+def VERSION_NAME = '4.4.131'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
 def BUILD_INFO_NAME = "build-info.txt"
@@ -73,6 +73,19 @@ android {
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
 
             buildConfigField "String", "GCM_SENDER_ID", "\"$GCM_SENDER_ID\""
+        }
+
+        xw4fdroid {
+            dimension "variant"
+            applicationId "org.eehouse.android.xw4"
+            manifestPlaceholders = [ APP_ID: applicationId ]
+            resValue "string", "app_name", "CrossWords"
+            resValue "string", "nbs_port", "3344"
+            resValue "string", "invite_prefix", "/and/"
+            buildConfigField "boolean", "WIDIR_ENABLED", "false"
+            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
+
+            buildConfigField "String", "GCM_SENDER_ID", "\"\""
         }
         xw4d {
             dimension "variant"
@@ -158,6 +171,14 @@ android {
                 jniLibs.srcDir "../libs-xw4dDebug"
             }
         }
+        xw4fdroid {
+            release {
+                jniLibs.srcDir "../libs-xw4fdroidRelease"
+            }
+            debug {
+                jniLibs.srcDir "../libs-xw4fdroidDebug"
+            }
+        }
     }
 
     lintOptions {
@@ -176,7 +197,7 @@ android {
 
 dependencies {
     // Look into replacing this with a fetch too PENDING
-    compile files('../libs/gcm.jar')
+    xw4Compile files('../libs/gcm.jar')
 
     compile 'com.android.support:support-v4:23.4.0'
 
