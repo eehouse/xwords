@@ -161,7 +161,8 @@ class Device():
     sTilesLeftPat = re.compile('.*pool_removeTiles: (\d+) tiles left in pool')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     
-    def __init__(self, args, indx, app, params, room, db, log, nInGame):
+    def __init__(self, args, game, indx, app, params, room, db, log, nInGame):
+        self.game = game
         self.indx = indx
         self.args = args
         self.pid = 0
@@ -268,7 +269,9 @@ class Device():
         req = requests.get(url, params = {'params' : JSON})
 
     def getTilesCount(self):
-        return (self.indx, self.nTilesLeft, self.launchCount)
+        return {'index': self.indx, 'nTilesLeft': self.nTilesLeft,
+                'launchCount': self.launchCount, 'game': self.game,
+        }
 
     def update_ldevid(self):
         if not self.app in Device.sHasLDevIDMap:
@@ -303,6 +306,7 @@ class Device():
 
                 if allDone:
                     for dev in Device.sConnnameMap[self.connname]:
+                        assert self.game == dev.game
                         dev.allDone = True
 
             # print('Closing', self.connname, datetime.datetime.now())
@@ -340,7 +344,6 @@ def build_cmds(args):
 
     for GAME in range(1,  args.NGAMES + 1):
         ROOM = 'ROOM_%.3d' % (GAME % args.NROOMS)
-        #         check_room $ROOM
         NDEVS = pick_ndevs(args)
         LOCALS = figure_locals(args, NDEVS) # as array
         NPLAYERS = sum(LOCALS)
@@ -406,7 +409,7 @@ def build_cmds(args):
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device(args, COUNTER, args.APP_NEW, PARAMS, ROOM, FILE, LOG, len(LOCALS))
+            dev = Device(args, GAME, COUNTER, args.APP_NEW, PARAMS, ROOM, FILE, LOG, len(LOCALS))
             dev.update_ldevid()
             devs.append(dev)
 
@@ -638,14 +641,23 @@ def summarizeTileCounts(devs, endTime):
         headWidth = max(headWidth, len(datum['head']))
         datum['data'] = []
 
-    for tupl in data:
-        fmtData[0]['data'].append('{:{width}d}'.format(tupl[0], width=colWidth))
+    # Group devices by game
+    games = []
+    prev = -1
+    for datum in data:
+        gameNo = datum['game']
+        if gameNo != prev:
+            games.append([])
+            prev = gameNo
+        games[-1].append('{:0{width}d}'.format(datum['index'], width=colWidth))
+    fmtData[0]['data'] = ['+'.join(game) for game in games]
 
-        nTiles = tupl[1]
+    for datum in data:
+        nTiles = datum['nTilesLeft']
         fmtData[1]['data'].append(nTiles is None and ('-' * colWidth) or '{:{width}d}'.format(nTiles, width=colWidth))
         if not nTiles is None: totalTiles += int(nTiles)
 
-        fmtData[2]['data'].append('{:{width}d}'.format(tupl[2], width=colWidth))
+        fmtData[2]['data'].append('{:{width}d}'.format(datum['launchCount'], width=colWidth))
 
     print('')
     print('devs left: {}; tiles left: {}; {}/{}'.format(nDevs, totalTiles, datetime.datetime.now(), endTime ))
