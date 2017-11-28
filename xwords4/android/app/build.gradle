@@ -74,6 +74,19 @@ android {
 
             buildConfigField "String", "GCM_SENDER_ID", "\"$GCM_SENDER_ID\""
         }
+
+        xw4fdroid {
+            dimension "variant"
+            applicationId "org.eehouse.android.xw4"
+            manifestPlaceholders = [ APP_ID: applicationId ]
+            resValue "string", "app_name", "CrossWords"
+            resValue "string", "nbs_port", "3344"
+            resValue "string", "invite_prefix", "/and/"
+            buildConfigField "boolean", "WIDIR_ENABLED", "false"
+            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
+
+            buildConfigField "String", "GCM_SENDER_ID", "\"\""
+        }
         xw4d {
             dimension "variant"
             minSdkVersion 8
@@ -156,6 +169,14 @@ android {
             }
             debug {
                 jniLibs.srcDir "../libs-xw4dDebug"
+            }
+        }
+        xw4fdroid {
+            release {
+                jniLibs.srcDir "../libs-xw4fdroidRelease"
+            }
+            debug {
+                jniLibs.srcDir "../libs-xw4fdroidDebug"
             }
         }
     }
