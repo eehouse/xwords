@@ -31,8 +31,6 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 
-import com.google.android.gcm.GCMRegistrar;
-
 public class DevID {
     private static final String TAG = DevID.class.getSimpleName();
 
@@ -137,7 +135,7 @@ public class DevID {
         if ( 0 != storedVers && storedVers < curVers ) {
             result = "";        // Don't trust what registrar has
         } else {
-            result = GCMRegistrar.getRegistrationId( context );
+            result = GCMStub.getRegistrationId( context );
         }
         return result;
     }

@@ -197,7 +197,7 @@ android {
 
 dependencies {
     // Look into replacing this with a fetch too PENDING
-    compile files('../libs/gcm.jar')
+    xw4Compile files('../libs/gcm.jar')
 
     compile 'com.android.support:support-v4:23.4.0'
 
