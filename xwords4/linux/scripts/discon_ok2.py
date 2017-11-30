@@ -258,6 +258,12 @@ class Device():
         self.proc = None
         self.check_game()
 
+    def handleAllDone(self):
+        if self.allDone:
+            self.moveFiles()
+            self.send_dead()
+        return self.allDone
+
     def moveFiles(self):
         assert not self.running()
         shutil.move(self.logPath, self.args.LOGDIR + '/done')
@@ -695,9 +701,7 @@ def run_cmds(args, devs):
 
         dev = random.choice(devs)
         if not dev.running():
-            if dev.allDone:
-                dev.moveFiles()
-                dev.send_dead()
+            if dev.handleAllDone():
                 devs.remove(dev)
             else:
 #             if [ -n "$ONE_PER_ROOM" -a 0 -ne ${ROOM_PIDS[$ROOM]} ]; then
@@ -717,6 +721,8 @@ def run_cmds(args, devs):
             time.sleep(1.0)
         else:
             dev.kill()
+            if dev.handleAllDone():
+                devs.remove(dev)
             # if g_DROP_N >= 0: dev.increment_drop()
             #             update_ldevid $KEY
 
@@ -1021,11 +1027,14 @@ def termHandler(signum, frame):
     gDone = True
 
 def main():
+    startTime = datetime.datetime.now()
     signal.signal(signal.SIGINT, termHandler)
 
     args = parseArgs()
     devs = build_cmds(args)
+    nDevs = len(devs)
     run_cmds(args, devs)
+    print('{} finished; took {} for {} devices'.format(sys.argv[0], datetime.datetime.now() - startTime, nDevs))
 
 ##############################################################################
 if __name__ == '__main__':
