@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import re, os, sys, getopt, shutil, threading, requests, json, glob
-import argparse, datetime, random, subprocess, time
+import argparse, datetime, random, signal, subprocess, time
 
 # LOGDIR=./$(basename $0)_logs
 # APP_NEW=""
@@ -631,11 +631,11 @@ def summarizeTileCounts(devs, endTime):
     data = [dev.getTilesCount() for dev in devs]
     nDevs = len(data)
     totalTiles = 0
-    colWidth = nDevs < 100 and 2 or 3
+    colWidth = max(2, len(str(nDevs)))
     headWidth = 0
     fmtData = [{'head' : 'dev', },
-               {'head' : 'tls left', },
                {'head' : 'launches', },
+               {'head' : 'tls left', },
     ]
     for datum in fmtData:
         headWidth = max(headWidth, len(datum['head']))
@@ -652,15 +652,20 @@ def summarizeTileCounts(devs, endTime):
         games[-1].append('{:0{width}d}'.format(datum['index'], width=colWidth))
     fmtData[0]['data'] = ['+'.join(game) for game in games]
 
+    nLaunches = 0
     for datum in data:
+        launchCount = datum['launchCount']
+        nLaunches += launchCount
+        fmtData[1]['data'].append('{:{width}d}'.format(launchCount, width=colWidth))
+
         nTiles = datum['nTilesLeft']
-        fmtData[1]['data'].append(nTiles is None and ('-' * colWidth) or '{:{width}d}'.format(nTiles, width=colWidth))
+        fmtData[2]['data'].append(nTiles is None and ('-' * colWidth) or '{:{width}d}'.format(nTiles, width=colWidth))
         if not nTiles is None: totalTiles += int(nTiles)
 
-        fmtData[2]['data'].append('{:{width}d}'.format(datum['launchCount'], width=colWidth))
 
     print('')
-    print('devs left: {}; tiles left: {}; {}/{}'.format(nDevs, totalTiles, datetime.datetime.now(), endTime ))
+    print('devs left: {}; tiles left: {}; total launches: {}; {}/{}'
+          .format(nDevs, totalTiles, nLaunches, datetime.datetime.now(), endTime ))
     fmt = '{head:>%d} {data}' % headWidth
     for datum in fmtData: datum['data'] = ' '.join(datum['data'])
     for datum in fmtData:
@@ -669,13 +674,15 @@ def summarizeTileCounts(devs, endTime):
 def countCores():
     return len(glob.glob1('/tmp',"core*"))
 
+gDone = False
+
 def run_cmds(args, devs):
     nCores = countCores()
     endTime = datetime.datetime.now() + datetime.timedelta(seconds = args.TIMEOUT)
     print('will run until', endTime)
     LOOPCOUNT = 0
 
-    while len(devs) > 0:
+    while len(devs) > 0 and not gDone:
         if countCores() > nCores:
             print('core file count increased; exiting')
             break
@@ -707,7 +714,7 @@ def run_cmds(args, devs):
 #             MINEND[$KEY]=$(($NOW + $MINRUN))
         elif not dev.minTimeExpired():
             # print('sleeping...')
-            time.sleep(2)
+            time.sleep(1.0)
         else:
             dev.kill()
             # if g_DROP_N >= 0: dev.increment_drop()
@@ -1008,7 +1015,14 @@ def assignDefaults(args):
 # SECONDS=$((SECONDS%60))
 # echo "*********$0 finished: $(date) (took $HOURS:$MINUTES:$SECONDS)**************"
 
+def termHandler(signum, frame):
+    global gDone
+    print('termHandler() called')
+    gDone = True
+
 def main():
+    signal.signal(signal.SIGINT, termHandler)
+
     args = parseArgs()
     devs = build_cmds(args)
     run_cmds(args, devs)
