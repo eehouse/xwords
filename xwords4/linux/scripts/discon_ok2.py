@@ -361,12 +361,9 @@ def build_cmds(args):
         DEV = 0
         for NLOCALS in LOCALS:
             DEV += 1
-            FILE="%s/GAME_%d_%d.sql3" % (args.LOGDIR, GAME, DEV)
-            LOG='%s/%d_%d_LOG.txt' % (args.LOGDIR, GAME, DEV)
-            # os.system("rm -f $LOG") # clear the log
+            DB = '{}/{:02d}_{:02d}_DB.sql3'.format(args.LOGDIR, GAME, DEV)
+            LOG = '{}/{:02d}_{:02d}_LOG.txt'.format(args.LOGDIR, GAME, DEV)
 
-            #             APPS[$COUNTER]="$APP_NEW"
-            #             NEW_ARGS[$COUNTER]="$APP_NEW_PARAMS"
             BOARD_SIZE = ['--board-size', '15']
             #             if [ 0 -lt ${#APPS_OLD[@]} ]; then
             #                 # 50% chance of starting out with old app
@@ -385,7 +382,7 @@ def build_cmds(args):
                 PARAMS += ['--undo-pct', args.UNDO_PCT]
             PARAMS += [ '--game-dict', DICT, '--relay-port', args.PORT, '--host', args.HOST]
             PARAMS += ['--slow-robot', '1:3', '--skip-confirm']
-            PARAMS += ['--db', FILE]
+            PARAMS += ['--db', DB]
             if random.randint(0,100) % 100 < g_UDP_PCT_START:
                 PARAMS += ['--use-udp']
 
@@ -415,7 +412,7 @@ def build_cmds(args):
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device(args, GAME, COUNTER, args.APP_NEW, PARAMS, ROOM, FILE, LOG, len(LOCALS))
+            dev = Device(args, GAME, COUNTER, args.APP_NEW, PARAMS, ROOM, DB, LOG, len(LOCALS))
             dev.update_ldevid()
             devs.append(dev)
 
