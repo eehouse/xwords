@@ -633,7 +633,8 @@ def build_cmds(args):
 #     fi
 # }
 
-def summarizeTileCounts(devs, endTime):
+def summarizeTileCounts(devs, endTime, state):
+    shouldGoOn = True
     data = [dev.getTilesCount() for dev in devs]
     nDevs = len(data)
     totalTiles = 0
@@ -677,6 +678,18 @@ def summarizeTileCounts(devs, endTime):
     for datum in fmtData:
         print(fmt.format(**datum))
 
+    # Now let's see if things are stuck: if the tile string hasn't
+    # changed in two minutes bail. Note that the count of tiles left
+    # isn't enough because it's zero for a long time as devices are
+    # using up what's left in their trays and getting killed.
+    now = datetime.datetime.now()
+    tilesStr = fmtData[2]['data']
+    if not 'tilesStr' in state or state['tilesStr'] != tilesStr:
+        state['lastChange'] = now
+        state['tilesStr'] = tilesStr
+
+    return now - state['lastChange'] < datetime.timedelta(minutes = 1)
+
 def countCores():
     return len(glob.glob1('/tmp',"core*"))
 
@@ -687,6 +700,7 @@ def run_cmds(args, devs):
     endTime = datetime.datetime.now() + datetime.timedelta(seconds = args.TIMEOUT)
     print('will run until', endTime)
     LOOPCOUNT = 0
+    printState = {}
 
     while len(devs) > 0 and not gDone:
         if countCores() > nCores:
@@ -697,7 +711,10 @@ def run_cmds(args, devs):
             break
 
         LOOPCOUNT += 1
-        if 0 == LOOPCOUNT % 20: summarizeTileCounts(devs, endTime)
+        if 0 == LOOPCOUNT % 20:
+            if not summarizeTileCounts(devs, endTime, printState):
+                print('no change in too long; exiting')
+                break
 
         dev = random.choice(devs)
         if not dev.running():
