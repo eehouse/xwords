@@ -188,10 +188,8 @@ public class BiDiSockWrap {
                         DataInputStream inStream
                             = new DataInputStream( mSocket.getInputStream() );
                         while ( mRunThreads ) {
-                            short len = inStream.readShort();
-                            Log.d( TAG, "got len: %d", len );
-                            byte[] packet = new byte[len];
-                            inStream.read( packet );
+                            byte[] packet = new byte[inStream.readShort()];
+                            inStream.readFully( packet );
                             mIface.gotPacket( BiDiSockWrap.this, packet );
                         }
                     } catch( IOException ioe ) {

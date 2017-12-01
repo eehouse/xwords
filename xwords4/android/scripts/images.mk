@@ -19,3 +19,7 @@ $(IMG_DEST)/drawable-mdpi/%__gen.png: $(IMG_SRC)/%.svg
 
 $(IMG_DEST)/drawable-hdpi/%__gen.png: $(IMG_SRC)/%.svg
 	convert $(PARAMS) -scale 48x48 $< $@
+
+# Build have-chat badge using R.color.dull_green
+$(IMG_DEST)/drawable/green_chat__gen.png: $(IMG_DEST)/drawable/stat_notify_chat.png
+	convert -fill '#00AF00' -colorize 50% $< $@

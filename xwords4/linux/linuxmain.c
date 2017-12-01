@@ -1577,7 +1577,7 @@ parsePair( const char* optarg, XP_U16* min, XP_U16* max )
     } else {
         int intmin, intmax;
         if ( 2 == sscanf( optarg, "%d:%d", &intmin, &intmax ) ) {
-            if ( intmin <= intmin ) {
+            if ( intmin <= intmax ) {
                 *min = intmin;
                 *max = intmax;
                 success = true;
@@ -2284,6 +2284,7 @@ main( int argc, char** argv )
             break;
         case CMD_PLAYERNAME:
             index = mainParams.pgi.nPlayers++;
+            XP_ASSERT( index < MAX_NUM_PLAYERS );
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 0; /* means human */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
@@ -2292,6 +2293,7 @@ main( int argc, char** argv )
             break;
         case CMD_REMOTEPLAYER:
             index = mainParams.pgi.nPlayers++;
+            XP_ASSERT( index < MAX_NUM_PLAYERS );
             mainParams.pgi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
@@ -2302,6 +2304,7 @@ main( int argc, char** argv )
         case CMD_ROBOTNAME:
             ++robotCount;
             index = mainParams.pgi.nPlayers++;
+            XP_ASSERT( index < MAX_NUM_PLAYERS );
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 1; /* real smart by default */
             mainParams.pgi.players[index].isLocal = XP_TRUE;

@@ -81,7 +81,9 @@ public class DBUtils {
     private static long s_cachedRowID = ROWID_NOTFOUND;
     private static byte[] s_cachedBytes = null;
 
-    public static enum GameChangeType { GAME_CHANGED, GAME_CREATED, GAME_DELETED };
+    public static enum GameChangeType { GAME_CHANGED, GAME_CREATED,
+                                        GAME_DELETED, GAME_MOVED,
+    };
 
     public static interface DBChangeListener {
         public void gameSaved( long rowid, GameChangeType change );
@@ -1616,21 +1618,34 @@ public class DBUtils {
         return result;
     }
 
+    // ORDER BY clause that governs display of games in main GamesList view
+    private static final String s_getGroupGamesOrderBy =
+        TextUtils.join(",", new String[] {
+                // Ended games at bottom
+                DBHelper.GAME_OVER,
+                // games with unread chat messages at top
+                "(" + DBHelper.HASMSGS + " & " + GameSummary.MSG_FLAGS_CHAT + ") IS NOT 0 DESC",
+                // Games not yet connected at top
+                DBHelper.TURN + " is -1 DESC",
+                // Games where it's a local player's turn at top
+                DBHelper.TURN_LOCAL + " DESC",
+                // finally, sort by timestamp of last-made move
+                DBHelper.LASTMOVE,
+            });
+
     public static long[] getGroupGames( Context context, long groupID )
     {
         long[] result = null;
         initDB( context );
-        String[] columns = { ROW_ID };
+        String[] columns = { ROW_ID, DBHelper.HASMSGS };
         String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
-        String orderBy = String.format( "%s,%s DESC,%s", DBHelper.GAME_OVER,
-                                        DBHelper.TURN_LOCAL, DBHelper.LASTMOVE );
         synchronized( s_dbHelper ) {
             Cursor cursor = s_db.query( DBHelper.TABLE_NAME_SUM, columns,
                                         selection, // selection
                                         null, // args
                                         null, // groupBy
                                         null, // having
-                                        orderBy
+                                        s_getGroupGamesOrderBy
                                         );
             int index = cursor.getColumnIndex( ROW_ID );
             result = new long[ cursor.getCount() ];
@@ -1685,6 +1700,29 @@ public class DBUtils {
             result = iter.next();
         }
         Assert.assertTrue( GROUPID_UNSPEC != result );
+        return result;
+    }
+
+    public static long getGroup( Context context, String name )
+    {
+        long result = GROUPID_UNSPEC;
+        String[] columns = { ROW_ID };
+        String selection = DBHelper.GROUPNAME + " = ?";
+        String[] selArgs = { name };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            Cursor cursor = s_db.query( DBHelper.TABLE_NAME_GROUPS, columns,
+                                        selection, selArgs,
+                                        null, // groupBy
+                                        null, // having
+                                        null // orderby
+                                        );
+            if ( cursor.moveToNext() ) {
+                result = cursor.getLong( cursor.getColumnIndex( ROW_ID ) );
+            }
+            cursor.close();
+        }
         return result;
     }
 
@@ -1746,13 +1784,14 @@ public class DBUtils {
     }
 
     // Change group id of a game
-    public static void moveGame( Context context, long gameid, long groupID )
+    public static void moveGame( Context context, long rowid, long groupID )
     {
         Assert.assertTrue( GROUPID_UNSPEC != groupID );
         ContentValues values = new ContentValues();
         values.put( DBHelper.GROUPID, groupID );
-        updateRow( context, DBHelper.TABLE_NAME_SUM, gameid, values );
+        updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
         invalGroupsCache();
+        notifyListeners( rowid, GameChangeType.GAME_MOVED );
     }
 
     private static String getChatHistoryStr( Context context, long rowid )

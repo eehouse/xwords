@@ -275,8 +275,7 @@ class CookieRef {
 
     bool notInUse(void) { return m_cid == 0; }
 
-    void store_message( HostID dest, const uint8_t* buf, 
-                        unsigned int len );
+    int store_message( HostID dest, const uint8_t* buf, unsigned int len );
     void send_stored_messages( HostID dest, const AddrInfo* addr );
 
     void printSeeds( const char* caller );

@@ -564,6 +564,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final int[] DEBUG_ITEMS = {
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
+        R.id.games_menu_writegit,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,
@@ -754,9 +755,18 @@ public class GamesListDelegate extends ListDelegateBase
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = namer.getName();
-                        DBUtils.addGroup( m_activity, name );
-                        mkListAdapter();
-                        showNewGroupIf();
+                        long hasName = DBUtils.getGroup( m_activity, name );
+                        if ( DBUtils.GROUPID_UNSPEC == hasName ) {
+                            DBUtils.addGroup( m_activity, name );
+                            mkListAdapter();
+                            showNewGroupIf();
+                        } else {
+                            String msg = LocUtils
+                                .getString( m_activity,
+                                            R.string.duplicate_group_name_fmt,
+                                            name );
+                            makeOkOnlyBuilder( msg ).show();
+                        }
                     }
                 };
             lstnr2 = new OnClickListener() {
@@ -1059,8 +1069,6 @@ public class GamesListDelegate extends ListDelegateBase
             invalidateOptionsMenuIf();
             setTitle();
         }
-
-        mkListAdapter();
     }
 
     public void invalidateOptionsMenuIf()
@@ -1131,6 +1139,9 @@ public class GamesListDelegate extends ListDelegateBase
                     case GAME_CREATED:
                         mkListAdapter();
                         setSelGame( rowid );
+                        break;
+                    case GAME_MOVED:
+                        mkListAdapter();
                         break;
                     default:
                         Assert.fail();
@@ -1539,10 +1550,10 @@ public class GamesListDelegate extends ListDelegateBase
             GameUtils.resendAllIf( m_activity, null, true, true );
             break;
         case R.id.games_menu_newgame_solo:
-            handleNewGame( true );
+            handleNewGameButton( true );
             break;
         case R.id.games_menu_newgame_net:
-            handleNewGame( false );
+            handleNewGameButton( false );
             break;
 
         case R.id.games_menu_newgroup:
@@ -1595,6 +1606,10 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_menu_storedb:
             Perms23.tryGetPerms( this, Perm.STORAGE, null,
                                  Action.STORAGE_CONFIRMED, itemID );
+            break;
+
+        case R.id.games_menu_writegit:
+            Utils.gitInfoToClip( m_activity );
             break;
 
         default:

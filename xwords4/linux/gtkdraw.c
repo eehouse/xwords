@@ -112,6 +112,12 @@ destroyCairo( GtkDrawCtx* dctx )
     dctx->_cairo = NULL;
 }
 
+static XP_Bool
+haveCairo( const GtkDrawCtx* dctx )
+{
+    return !!dctx->_cairo;
+}
+
 static cairo_t*
 getCairo( const GtkDrawCtx* dctx )
 {
@@ -1231,15 +1237,20 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
                     XP_U16 playerNum, XP_S16 secondsLeft )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    XP_UCHAR buf[10];
+    XP_Bool hadCairo = haveCairo( dctx );
+    if ( hadCairo || initCairo( dctx ) ) {
+        XP_UCHAR buf[10];
 
-    gtkFormatTimerText( buf, VSIZE(buf), secondsLeft );
+        gtkFormatTimerText( buf, VSIZE(buf), secondsLeft );
 
-/*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rInner ); */
-    gtkEraseRect( dctx, rInner );
-    draw_string_at( dctx, NULL, buf, rInner->height-1,
-                    rInner, XP_GTK_JUST_CENTER,
-                    &dctx->playerColors[playerNum], NULL );
+        gtkEraseRect( dctx, rInner );
+        draw_string_at( dctx, NULL, buf, rInner->height-1,
+                        rInner, XP_GTK_JUST_CENTER,
+                        &dctx->playerColors[playerNum], NULL );
+        if ( !hadCairo ) {
+            destroyCairo( dctx );
+        }
+    }
 } /* gtk_draw_drawTimer */
 
 #ifdef XWFEATURE_MINIWIN

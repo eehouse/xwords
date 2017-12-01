@@ -50,6 +50,7 @@ public class StudyListDelegate extends ListDelegateBase
     implements OnItemSelectedListener, SelectableItem,
                View.OnLongClickListener, View.OnClickListener,
                DBUtils.StudyListListener {
+    private static final String TAG = StudyListDelegate.class.getSimpleName();
 
     protected static final int NO_LANG = -1;
 
@@ -220,7 +221,8 @@ public class StudyListDelegate extends ListDelegateBase
             showToast( msg );
             break;
         default:
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Log.d( TAG, "not handling: %s", action );
+            handled = false;
             break;
         }
         return handled;

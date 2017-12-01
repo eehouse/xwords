@@ -54,13 +54,14 @@ echo ";   relay pid[s]: $(pidof xwrelay)"
 echo "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
 
 # Games
-echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as nPerDev,nsents as snts, seeds,devids,tokens,ack, mtimes "\
+echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as npd,nsents as snts, seeds,devids,tokens,ack, mtimes "\
      "FROM games $QUERY ORDER BY NOT dead, ctime DESC LIMIT $LIMIT;" \
     | psql xwgames
 
 # Messages
-echo "SELECT * "\
-     "FROM msgs WHERE connname IN (SELECT connname from games $QUERY) "\
+echo "Unack'd msgs count:" $(psql -t xwgames -c "select count(*) FROM msgs where stime = 'epoch' AND connname IN (SELECT connname from games $QUERY);")
+echo "SELECT id,connName,hid as h,token,ctime,stime,devid,msg64 "\
+     "FROM msgs WHERE stime = 'epoch' AND connname IN (SELECT connname from games $QUERY) "\
      "ORDER BY ctime DESC, connname LIMIT $LIMIT;" \
     | psql xwgames
 

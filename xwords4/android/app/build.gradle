@@ -1,7 +1,9 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 121
-def VERSION_NAME = '4.4.125'
+def VERSION_CODE_BASE = 126
+def VERSION_NAME = '4.4.130'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
+def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
+def BUILD_INFO_NAME = "build-info.txt"
 
 boolean forFDroid = hasProperty('forFDroid')
 
@@ -37,8 +39,6 @@ android {
     applicationVariants.all { variant ->
         //     renameArtifact(variant)
         //     variant.buildConfigField "String", "FIELD_NAME", "\"my String\""
-        def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
-        variant.buildConfigField "String", "SENDER_ID", "\"$GCM_SENDER_ID\""
         variant.buildConfigField "String", "FABRIC_API_KEY", "\"$FABRIC_API_KEY\""
 
         resValue "string", "git_rev", "$GITREV"
@@ -51,9 +51,6 @@ android {
         // FIX ME
         variant.buildConfigField "String", "STRINGS_HASH", "\"00000\""
 
-        def senderID = System.getenv("GCM_SENDER_ID")
-        variant.buildConfigField "String", "GCM_SENDER_ID", "\"$senderID\""
-
         variant.buildConfigField "short", "CLIENT_VERS_RELAY", "$INITIAL_CLIENT_VERS"
 
         variant.buildConfigField "boolean", "FOR_FDROID", "$forFDroid"
@@ -61,6 +58,10 @@ android {
     
     flavorDimensions "variant"//, "abi"
     productFlavors {
+        all {
+            buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
+        }
+
         xw4 {
             dimension "variant"
             applicationId "org.eehouse.android.xw4"
@@ -70,6 +71,8 @@ android {
             resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
+
+            buildConfigField "String", "GCM_SENDER_ID", "\"$GCM_SENDER_ID\""
         }
         xw4d {
             dimension "variant"
@@ -81,6 +84,8 @@ android {
             resValue "string", "invite_prefix", "/anddbg/"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
+
+            buildConfigField "String", "GCM_SENDER_ID", "\"\""
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need
@@ -254,9 +259,14 @@ afterEvaluate {
 
 task makeBuildAssets() {
     def assetsDir = android.sourceSets.main.assets.srcDirs.toArray()[0]
-    String path = new File(assetsDir, 'build-info.txt').getAbsolutePath()
-    File file = new File(path);
-    file.write("git: ${GITREV}\n");
+    String path = new File(assetsDir, BUILD_INFO_NAME).getAbsolutePath()
+    String out = "git: ${GITREV}\n"
+
+    String diff = "git diff".execute().text.trim()
+    if (diff) {
+        out += "\n" + diff
+    }
+    new File(path).write(out)
 }
 
 gradle.projectsEvaluated {

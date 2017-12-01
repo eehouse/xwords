@@ -1743,6 +1743,14 @@
     <string name="not_again_lookup">This button lets you look up,
       online, the words just played.</string>
 
+    <string name="not_again_archive">Archiving uses a special group
+    called \"Archive\" to store finished games you want to keep. And,
+    since deleting an entire archive is easy, archiving is also a
+    great way to mark games for deletion – if that\'s what you prefer
+    to do.\n\n(Deleting the Archive group is safe because it will be
+    created anew when needed.)
+    </string>
+
       <!--  -->
     <string name="button_move">Move</string>
     <string name="button_newgroup">New group</string>
@@ -2123,7 +2131,7 @@
     <string name="newgroup_label">Name your new group:</string>
 
     <string name="list_group_delete">Delete group</string>
-    <string name="list_group_rename">Rename</string>
+    <string name="list_group_rename">Rename group</string>
     <string name="list_group_default">Put new games here</string>
     <string name="list_group_moveup">Move up</string>
     <string name="list_group_movedown">Move down</string>
@@ -2158,6 +2166,10 @@
          game with the same players and parameters as the one that
          just ended. -->
     <string name="button_rematch">Rematch</string>
+    <string name="button_archive">Archive\u200C</string>
+    <string name="group_name_archive">Archive</string>
+
+    <string name="duplicate_group_name_fmt">The group \"%1$s\" already exists.</string>
 
     <string name="button_reconnect">Reconnect</string>
 
@@ -2419,11 +2431,11 @@
 
     <string name="set_pref">Hide buttons</string>
 
-    <string name="not_again_hidenewgamebuttons">These two buttons do
-    the same thing as the first two items in this window\'s Action Bar
-    (or menu). If you like you can hide the buttons to make more games
-    visible.\n\n(If you later want to unhide them go to the Appearance
-    section of App settings).
+    <string name="not_again_hidenewgamebuttons">The two buttons at the
+    bottom of this screen and the first two items in its Action Bar
+    (or menu) do the same thing. If you like you can hide the buttons
+    to make more games visible.\n\n(If you later want to unhide the
+    buttons go to the Appearance section of App settings).
     </string>
 
     <string name="waiting_title">Waiting for players</string>
@@ -2491,6 +2503,7 @@
   <string name="name_dict_fmt">%1$s/%2$s</string>
   <string name="gamel_menu_storedb">Write games to SD card</string>
   <string name="gamel_menu_loaddb">Load games from SD card</string>
+  <string name="gamel_menu_writegit">Copy git info to clipboard</string>
   <string name="enable_dupes_title">Accept duplicate invites</string>
   <string name="xlations_locale">Fake locale for translation</string>
   <string name="enable_dupes_summary">Accept invitations more than once</string>

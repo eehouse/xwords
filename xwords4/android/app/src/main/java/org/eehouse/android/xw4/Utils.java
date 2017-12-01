@@ -32,7 +32,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.text.ClipboardManager;
 
 import android.database.Cursor;
 import android.media.Ringtone;
@@ -55,9 +57,12 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -185,6 +190,33 @@ public class Utils {
         String chooserMsg = LocUtils.getString( context,
                                                 R.string.email_author_chooser );
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
+    }
+
+    static void gitInfoToClip( Context context )
+    {
+        StringBuilder sb;
+        try {
+            InputStream is = context.getAssets().open( BuildConfig.BUILD_INFO_NAME,
+                                                       AssetManager.ACCESS_BUFFER );
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            sb = new StringBuilder();
+            for ( ; ; ) {
+                String line = reader.readLine();
+                if ( null == line ) {
+                    break;
+                }
+                sb.append( line ).append( "\n" );
+            }
+            reader.close();
+        } catch ( Exception ex ) {
+            sb = null;
+        }
+
+        if ( null != sb ) {
+            ClipboardManager clipboard = (ClipboardManager)
+                context.getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText( sb.toString() );
+        }
     }
 
     public static void postNotification( Context context, Intent intent,

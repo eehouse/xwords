@@ -36,7 +36,6 @@ public class XWApp extends Application {
     private static final String TAG = XWApp.class.getSimpleName();
 
     public static final boolean BTSUPPORTED = true;
-    public static final boolean GCMSUPPORTED = true;
     public static final boolean ATTACH_SUPPORTED = false;
     public static final boolean LOG_LIFECYLE = false;
     public static final boolean DEBUG_EXP_TIMERS = false;
@@ -52,6 +51,9 @@ public class XWApp extends Application {
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
     public static final int SEL_COLOR = Color.argb( 0xFF, 0x09, 0x70, 0x93 );
+
+    public static final int GREEN = 0xFF00AF00;
+    public static final int RED = 0xFFAF0000;
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;

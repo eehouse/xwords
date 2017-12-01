@@ -158,8 +158,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
         if ( null != m_dims ) {
             if ( BoardContainer.getIsPortrait() != (m_dims.height > m_dims.width) ) {
-                // square possible; will break above!
-                Assert.assertTrue( m_dims.height != m_dims.width );
+                // square possible; will break above! No. tested by forceing square
                 Log.d( TAG, "onMeasure: discarding m_dims" );
                 if ( ++m_dimsTossCount < 4 ) {
                     m_dims = null;

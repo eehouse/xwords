@@ -66,20 +66,7 @@ k_filebase = "/var/www/html/"
 k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org"
-k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 91,
-        k_AVERS : 91,
-        k_URL : k_apkDir + 'XWords4-release_' + k_REL_REV + '.apk',
-        },
-               }
 
-# k_versions_dbg = { 'org.eehouse.android.xw4': {
-#         'version' : 74,
-#         k_AVERS : 74,
-#         k_GVERS : k_DBG_REV,
-#         k_URL : k_apkDir + 'XWords4-release_' + k_DBG_REV + '.apk',
-#         },
-#                }
 s_shelf = None
 
 g_langs = {'English' : 'en',
@@ -127,7 +114,7 @@ def md5Checksums( sums, filePath ):
     if filePath in sums:
         result = sums[filePath]
     else:
-        logging.debug( "opening %s" % (k_filebase + "and_wordlists/" + filePath))
+        # logging.debug( "opening %s" % (k_filebase + "and_wordlists/" + filePath))
         try:
             file = open( k_filebase + "and_wordlists/" + filePath, 'rb' )
             md5 = hashlib.md5()
@@ -158,7 +145,7 @@ def openShelf():
         if not k_SUMS in s_shelf: s_shelf[k_SUMS] = {}
         if not k_COUNT in s_shelf: s_shelf[k_COUNT] = 0
     s_shelf[k_COUNT] += 1
-    logging.debug( "Count now %d" % s_shelf[k_COUNT] )
+    # logging.debug( "Count now %d" % s_shelf[k_COUNT] )
 
 def closeShelf():
     global s_shelf
@@ -223,6 +210,34 @@ def getOrderedApks( path, appID, debug ):
     result = sorted(apkToCode.keys(), reverse=True, key=lambda file: (apkToCode[file], apkToMtime[file]))
     return result
 
+# Given a version, find the apk that has the next highest version
+def getNextAfter(path, appID, curVers, debug):
+    # print 'getNextAfter(', path, ')'
+    apks = getOrderedApks(path, appID, debug)
+
+    map = {}
+    max = 0
+    for apk in apks:
+        versionCode = getAAPTInfo(apk)['versionCode']
+        if versionCode > curVers:
+            map[versionCode] = apk
+            if max < versionCode: max = versionCode
+
+    # print map
+
+    result = None
+    if map:
+        print 'looking between', curVers+1, 'and', max
+        for nextVersion in range(curVers+1, max+1):
+            if nextVersion in map:
+                result = map[nextVersion]
+                break
+
+    if result:
+        print nextVersion, ':', result
+    return result
+
+# Returns '' for xw4, <variant> for anything else
 def getVariantDir( name ):
     result = ''
     splits = string.split( name, '.' )
@@ -271,10 +286,10 @@ def dictVersion( req, name, lang, md5sum ):
     closeShelf()
     return json.dumps( result )
 
-def getApp( params, name ):
+def getApp( params, name = None, debug = False):
     result = None
-    if k_NAME in params:
-        name = params[k_NAME]
+    if k_DEBUG in params: debug = params[k_DEBUG]
+    if k_NAME in params: name = params[k_NAME]
     if name:
         variantDir = getVariantDir( name )
         # If we're a dev device, always push the latest
@@ -303,18 +318,21 @@ def getApp( params, name ):
                     result = {k_URL: url}
                     logging.debug( result )
                     
-        elif k_GVERS in params:
-            gvers = params[k_GVERS]
+        elif k_AVERS in params:
+            vers = params[k_AVERS]
             if k_INSTALLER in params: installer = params[k_INSTALLER]
             else: installer = ''
 
             logging.debug( "name: %s; installer: %s; gvers: %s"
-                           % (name, installer, gvers) )
-            if name in k_versions:
-                if k_GVERS in versForName and not gvers == versForName[k_GVERS]:
-                    result = {k_URL: k_urlbase + '/' + versForName[k_URL]}
-                else:
-                    logging.debug(name + " is up-to-date")
+                           % (name, installer, vers) )
+            print "name: %s; installer: %s; vers: %s" % (name, installer, vers)
+            dir = k_filebase + k_apkDir + 'rel/'
+            apk = getNextAfter( dir, name, vers, debug )
+            if apk:
+                apk = apk[len(k_filebase):] # strip fs path
+                result = {k_URL: k_urlbase + '/' + apk}
+            else:
+                logging.debug(name + " is up-to-date")
         else:
             logging.debug( 'Error: bad name ' + name )
     else:
@@ -542,15 +560,13 @@ def getUpdates( req, params ):
             result[k_DICTS] = dictsResult
 
     # Let's not upgrade strings at the same time as we're upgrading the app
-    if appResult:
-        logging.debug( 'skipping xlation upgrade because app being updated' )
-    elif k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
-        xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
-        if xlateResult: 
-            logging.debug( xlateResult )
-            result[k_XLATEINFO] = xlateResult;
-    else:
-        logging.debug( "NOT FOUND xlate info" )
+    # if appResult:
+    #     logging.debug( 'skipping xlation upgrade because app being updated' )
+    # elif k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
+    #     xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
+    #     if xlateResult:
+    #         logging.debug( xlateResult )
+    #         result[k_XLATEINFO] = xlateResult;
         
     result = json.dumps( result )
     # logging.debug( result )
@@ -564,7 +580,7 @@ def clearShelf():
 def usage(msg=None):
     if msg: print "ERROR:", msg
     print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
-    print '                    | --test-get-app app <org.eehouse.app.name> avers gvers'
+    print '                    | --get-app --appID <org.something> --vers <avers> --gvers <gvers> [--debug]'
     print '                    | --test-get-dicts name lang curSum'
     print '                    | --list-apks [--path <path/to/apks>] [--debug] --appID org.something'
     print '                    | --list-dicts'
@@ -574,8 +590,9 @@ def usage(msg=None):
 
 def main():
     argc = len(sys.argv)
-    if 1 >= argc: usage();
+    if 1 >= argc: usage('too few args')
     arg = sys.argv[1]
+    args = sys.argv[2:]
     if arg == '--clear-shelf':
         clearShelf()
     elif arg == '--list-dicts':
@@ -589,12 +606,24 @@ def main():
             print arg, md5Checksums(dictSums, arg)
         s_shelf[k_SUMS] = dictSums
         closeShelf()
-    elif arg == '--test-get-app':
-        if not 4 == argc: usage()
-        params = { k_NAME: sys.argv[2], 
-                   k_GVERS: sys.argv[3],
+    elif arg == '--get-app':
+        appID = None
+        vers = 0
+        debug = False
+        while len(args):
+            arg = args.pop(0)
+            if arg == '--appID': appID = args.pop(0)
+            elif arg == '--vers': vers = int(args.pop(0))
+            elif arg == '--debug': debug = True
+            else: usage('unexpected arg: ' + arg)
+        if not appID: usage('--appID required')
+        elif not vers: usage('--vers required')
+        params = { k_NAME: appID,
+                   k_AVERS: vers,
+                   k_DEBUG: debug,
+                   k_DEVOK: False, # FIX ME
                    }
-        print getApp( params, sys.argv[2] )
+        print getApp( params )
     elif arg == '--test-get-dicts':
         if not 5 == argc: usage()
         params = { k_NAME: sys.argv[2], 
@@ -607,7 +636,6 @@ def main():
         path = ""
         debug = False
         appID = ''
-        args = sys.argv[2:]
         while len(args):
             arg = args.pop(0)
             if arg == '--appID': appID = args.pop(0)

@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -214,13 +213,13 @@ public class ExpiringDelegate {
             int offset = 0;
             int count = s_points.length;
             if ( 0 < redWidth ) {
-                s_paint.setColor( Color.RED );
+                s_paint.setColor( XWApp.RED );
                 canvas.drawLines( s_points, offset, count / 2, s_paint );
                 count /= 2;
                 offset += count;
             }
             if ( redWidth < width ) {
-                s_paint.setColor( Color.GREEN );
+                s_paint.setColor( XWApp.GREEN );
             }
             canvas.drawLines( s_points, offset, count, s_paint );
         }
@@ -256,7 +255,7 @@ public class ExpiringDelegate {
 
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor( Color.RED );
+        paint.setColor( XWApp.RED );
         canvas.drawRect( 0, 0, pct, 1, paint );
         paint.setColor( Utils.TURN_COLOR );
         canvas.drawRect( pct, 0, 100, 1, paint );

@@ -104,7 +104,6 @@ public class BoardDelegate extends DelegateBase
     private Button m_exchCancelButton;
     private SentInvitesInfo m_sentInfo;
     private Perms23.PermCbck m_permCbck;
-    private ArrayList<String> m_pendingChats;
 
     private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
@@ -205,6 +204,25 @@ public class BoardDelegate extends DelegateBase
                         }
                     };
                 ab.setNegativeButton( R.string.button_rematch, lstnr );
+
+                // If we're not already in the "archive" group, offer to move
+                final String archiveName = LocUtils
+                    .getString( m_activity, R.string.group_name_archive );
+                final long archiveGroup = DBUtils.getGroup( m_activity, archiveName );
+                long curGroup = DBUtils.getGroupForGame( m_activity, m_rowid );
+                if ( curGroup != archiveGroup ) {
+                    lstnr = new OnClickListener() {
+                            public void onClick( DialogInterface dlg,
+                                                 int whichButton ) {
+                                makeNotAgainBuilder( R.string.not_again_archive,
+                                                     R.string.key_na_archive,
+                                                     Action.ARCHIVE_ACTION )
+                                    .setParams( archiveName, archiveGroup )
+                                    .show();
+                            }
+                        };
+                    ab.setNeutralButton( R.string.button_archive, lstnr );
+                }
             } else if ( DlgID.DLG_CONNSTAT == dlgID
                         && BuildConfig.DEBUG && null != m_connTypes
                         && (m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
@@ -553,8 +571,6 @@ public class BoardDelegate extends DelegateBase
         m_isFirstLaunch = null == savedInstanceState;
         getBundledData( savedInstanceState );
 
-        m_pendingChats = new ArrayList<String>();
-
         m_utils = new BoardUtilCtxt();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
@@ -843,7 +859,7 @@ public class BoardDelegate extends DelegateBase
         Utils.setItemVisible( menu, R.id.board_menu_game_invites, enable );
 
         enable = XWPrefs.getStudyEnabled( m_activity );
-        Utils.setItemVisible( menu, R.id.games_menu_study, enable );
+        Utils.setItemVisible( menu, R.id.board_menu_study, enable );
 
         return true;
     } // onPrepareOptionsMenu
@@ -913,7 +929,7 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_tray:
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
-        case R.id.games_menu_study:
+        case R.id.board_menu_study:
             StudyListDelegate.launchOrAlert( getDelegator(), m_gi.dictLang, this );
             break;
         case R.id.board_menu_game_netstats:
@@ -1093,6 +1109,12 @@ public class BoardDelegate extends DelegateBase
             XWPrefs.setPrefsString( m_activity, R.string.key_force_tablet,
                                     getString(R.string.force_tablet_phone) );
             makeOkOnlyBuilder( R.string.after_restart ).show();
+            break;
+
+        case ARCHIVE_ACTION:
+            String archiveName = (String)params[0];
+            long archiveGroup = (Long)params[1];
+            archiveAndClose( archiveName, archiveGroup );
             break;
 
         case ENABLE_SMS_DO:
@@ -2144,7 +2166,6 @@ public class BoardDelegate extends DelegateBase
 
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 warnIfNoTransport();
-                trySendChats();
                 tickle( isStart );
                 tryInvites();
             }
@@ -2407,15 +2428,6 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void trySendChats()
-    {
-        Iterator<String> iter = m_pendingChats.iterator();
-        while ( iter.hasNext() ) {
-            handleViaThread( JNICmd.CMD_SENDCHAT, iter.next() );
-        }
-        m_pendingChats.clear();
-    }
-
     private void tryInvites()
     {
         if ( 0 < m_mySIS.nMissing && m_summary.hasRematchInfo() ) {
@@ -2586,6 +2598,16 @@ public class BoardDelegate extends DelegateBase
             wordsArray[ii] = tmp[jj-1];
         }
         return wordsArray;
+    }
+
+    private void archiveAndClose( String archiveName, long groupID )
+    {
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = DBUtils.addGroup( m_activity, archiveName );
+        }
+        DBUtils.moveGame( m_activity, m_rowid, groupID );
+        waitCloseGame( false );
+        finish();
     }
 
     // For now, supported if standalone or either BT or SMS used for transport

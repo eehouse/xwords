@@ -14,7 +14,7 @@ LOGFILE=/tmp/xwrelay_log_$$.txt
 date > $LOGFILE
 
 usage() {
-    echo "usage: $0 start | stop | restart | mkdb"
+    echo "usage: $0 start | stop | restart | mkdb | debs_install"
 }
 
 make_db() {
@@ -28,7 +28,7 @@ make_db() {
         exit 1
     fi
     createdb $DBNAME
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 create or replace function sum_array( DECIMAL [] )
 returns decimal
 as \$\$
@@ -40,7 +40,7 @@ from generate_series(
 \$\$ language sql immutable;
 EOF
 
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 CREATE TABLE games ( 
 cid integer
 ,room VARCHAR(32)
@@ -62,7 +62,7 @@ cid integer
 );
 EOF
 
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 CREATE TABLE msgs ( 
 id SERIAL
 ,connName VARCHAR(64)
@@ -78,7 +78,7 @@ id SERIAL
 );
 EOF
 
-    cat | psql $DBNAME --file - <<EOF
+    cat <<-EOF | psql $DBNAME --file -
 CREATE TABLE devices ( 
 id INTEGER UNIQUE PRIMARY KEY
 ,devTypes INTEGER[]
@@ -112,6 +112,10 @@ do_start() {
         sleep 1
         echo "running with pid=$(cat $PIDFILE)" | tee -a $LOGFILE
     fi
+}
+
+install_debs() {
+    sudo apt-get install postgresql-client postgresql
 }
 
 case $1 in
@@ -149,6 +153,9 @@ case $1 in
         make_db
         ;;
 
+    debs_install)
+		install_debs
+		;;
     *)
         usage
         exit 0

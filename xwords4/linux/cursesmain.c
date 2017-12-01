@@ -1721,11 +1721,10 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
 
         /* If we already have one, make sure it's the same! Else store. */
         gchar buf[64];
-        XP_Bool have = db_fetch( pDb, KEY_RDEVID, buf, sizeof(buf) );
+        XP_Bool have = db_fetch( pDb, KEY_RDEVID, buf, sizeof(buf) )
+            && 0 == strcmp( buf, devID );
         if ( !have ) {
             db_store( pDb, KEY_RDEVID, devID );
-        } else {
-            XP_ASSERT( 0 == strcmp( buf, devID ) );
         }
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, globals );
     } else {
