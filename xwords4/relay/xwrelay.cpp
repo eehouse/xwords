@@ -124,8 +124,6 @@ logf( XW_LogLevel level, const char* format, ... )
         va_end(ap);
 #else
         FILE* where = NULL;
-        struct tm* timp;
-        struct timeval tv;
         bool useFile;
         char logFile[256];
 
@@ -143,13 +141,14 @@ logf( XW_LogLevel level, const char* format, ... )
 
         if ( !!where ) {
             static int tm_yday = 0;
+            struct timeval tv;
             gettimeofday( &tv, NULL );
             struct tm result;
-            timp = localtime_r( &tv.tv_sec, &result );
+            struct tm* timp = localtime_r( &tv.tv_sec, &result );
 
             char timeBuf[64];
-            sprintf( timeBuf, "%.2d:%.2d:%.2d", timp->tm_hour, 
-                     timp->tm_min, timp->tm_sec );
+            sprintf( timeBuf, "%.2d:%.2d:%.2d.%03ld", timp->tm_hour,
+                     timp->tm_min, timp->tm_sec, tv.tv_usec / 1000 );
 
             /* log the date once/day.  This isn't threadsafe so may be
                repeated but that's harmless. */
