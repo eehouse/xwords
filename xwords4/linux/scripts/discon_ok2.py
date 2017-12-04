@@ -694,8 +694,7 @@ gDone = False
 
 def run_cmds(args, devs):
     nCores = countCores()
-    endTime = datetime.datetime.now() + datetime.timedelta(seconds = args.TIMEOUT)
-    print('will run until', endTime)
+    endTime = datetime.datetime.now() + datetime.timedelta(minutes = args.TIMEOUT_MINS)
     LOOPCOUNT = 0
     printState = {}
 
@@ -799,8 +798,8 @@ def mkParser():
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
     parser.add_argument('--num-rooms', dest = 'NROOMS', type = int, default = 0,
                         help = 'number of roooms (default to --num-games)')
-    parser.add_argument('--no-timeout', dest = 'TIMEOUT', default = False, action = 'store_true',
-                        help = 'run forever (default proportional to number of games')
+    parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
+                        help = 'minutes after which to timeout')
     parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
     parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, help = 'send all packet twice')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
@@ -828,7 +827,6 @@ def mkParser():
                         help = 'Port relay\'s on')
     parser.add_argument('--resign-pct', dest = 'RESIGN_PCT', default = 0, type = int, \
                         help = 'Odds of resigning [0..100]')
-    # # 	echo "    [--no-timeout]           # run until all games done     \\" >&2
     parser.add_argument('--seed', type = int, dest = 'SEED',
                         default = random.randint(1, 1000000000))
     # #     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
@@ -960,7 +958,6 @@ def parseArgs():
 
 def assignDefaults(args):
     if not args.NROOMS: args.NROOMS = args.NGAMES
-    args.TIMEOUT = not args.TIMEOUT and (args.NGAMES * 60 + 500) or 100000000000
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
     args.LOGDIR = os.path.basename(sys.argv[0]) + '_logs'
     # Move an existing logdir aside
