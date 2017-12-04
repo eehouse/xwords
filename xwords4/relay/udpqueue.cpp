@@ -28,7 +28,7 @@ static UdpQueue* s_instance = NULL;
 
 
 void 
-UdpThreadClosure::logStats()
+PacketThreadClosure::logStats()
 {
     time_t now = time( NULL );
     if ( 1 < now - m_created ) {
@@ -48,6 +48,7 @@ PartialPacket::stillGood() const
 bool
 PartialPacket::readAtMost( int len )
 {
+    assert( len > 0 );
     bool success = false;
     uint8_t tmp[len];
     ssize_t nRead = recv( m_sock, tmp, len, 0 );
@@ -58,9 +59,11 @@ PartialPacket::readAtMost( int len )
                   len, m_sock, m_errno, strerror(m_errno) );
         }
     } else if ( 0 == nRead ) {  // remote socket closed
-        logf( XW_LOGINFO, "%s: remote closed (socket=%d)", __func__, m_sock );
+        logf( XW_LOGINFO, "%s(): remote closed (socket=%d)", __func__, m_sock );
         m_errno = -1;           // so stillGood will fail
     } else {
+        // logf( XW_LOGVERBOSE0, "%s(): read %d bytes on socket %d", __func__,
+        //       nRead, m_sock );
         m_errno = 0;
         success = len == nRead;
         int curSize = m_buf.size();
@@ -152,17 +155,20 @@ void
 UdpQueue::handle( const AddrInfo* addr, const uint8_t* buf, int len, 
                   QueueCallback cb )
 {
-    UdpThreadClosure* utc = new UdpThreadClosure( addr, buf, len, cb );
+    PacketThreadClosure* ptc = new PacketThreadClosure( addr, buf, len, cb );
     MutexLock ml( &m_queueMutex );
     int id = ++m_nextID;
-    utc->setID( id );
+    ptc->setID( id );
     logf( XW_LOGINFO, "%s: enqueuing packet %d (socket %d, len %d)", 
           __func__, id, addr->getSocket(), len );
-    m_queue.push_back( utc );
+    m_queue.push_back( ptc );
 
     pthread_cond_signal( &m_queueCondVar );
 }
 
+// Remove any PartialPacket record with the same socket/fd. This makes sense
+// when the socket's being reused or when we have just dealt with a single
+// packet and might be getting more.
 void
 UdpQueue::newSocket_locked( int sock )
 {
@@ -194,25 +200,25 @@ UdpQueue::thread_main()
         while ( m_queue.size() == 0 ) {
             pthread_cond_wait( &m_queueCondVar, &m_queueMutex );
         }
-        UdpThreadClosure* utc = m_queue.front();
+        PacketThreadClosure* ptc = m_queue.front();
         m_queue.pop_front();
 
         pthread_mutex_unlock( &m_queueMutex );
 
-        utc->noteDequeued();
+        ptc->noteDequeued();
 
-        time_t age = utc->ageInSeconds();
+        time_t age = ptc->ageInSeconds();
         if ( 30 > age ) {
             logf( XW_LOGINFO, "%s: dispatching packet %d (socket %d); "
-                  "%d seconds old", __func__, utc->getID(), 
-                  utc->addr()->getSocket(), age );
-            (*utc->cb())( utc );
-            utc->logStats();
+                  "%d seconds old", __func__, ptc->getID(),
+                  ptc->addr()->getSocket(), age );
+            (*ptc->cb())( ptc );
+            ptc->logStats();
         } else {
             logf( XW_LOGINFO, "%s: dropping packet %d; it's %d seconds old!", 
                   __func__, age );
         }
-        delete utc;
+        delete ptc;
     }
     return NULL;
 }

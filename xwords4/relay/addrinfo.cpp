@@ -68,7 +68,7 @@ AddrInfo::equals( const AddrInfo& other ) const
         if ( isTCP() ) {
             equal = m_socket == other.m_socket;
             if ( equal && created() != other.created() ) {
-                logf( XW_LOGINFO, "%s: rejecting on time mismatch (%lx vs %lx)", 
+                logf( XW_LOGINFO, "%s(): rejecting on time mismatch (%lx vs %lx)",
                       __func__, created(), other.created() );
                 equal = false;
             }

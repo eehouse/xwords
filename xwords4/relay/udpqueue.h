@@ -30,13 +30,13 @@
 
 using namespace std;
 
-class UdpThreadClosure;
+class PacketThreadClosure;
 
-typedef void (*QueueCallback)( UdpThreadClosure* closure );
+typedef void (*QueueCallback)( PacketThreadClosure* closure );
 
-class UdpThreadClosure {
+class PacketThreadClosure {
 public:
-    UdpThreadClosure( const AddrInfo* addr, const uint8_t* buf, 
+    PacketThreadClosure( const AddrInfo* addr, const uint8_t* buf, 
                       int len, QueueCallback cb )
         : m_buf(new uint8_t[len])
         , m_len(len)
@@ -47,7 +47,7 @@ public:
             memcpy( m_buf, buf, len ); 
         }
 
-    ~UdpThreadClosure() { delete[] m_buf; }
+    ~PacketThreadClosure() { delete[] m_buf; }
 
     const uint8_t* buf() const { return m_buf; } 
     int len() const { return m_len; }
@@ -109,8 +109,8 @@ class UdpQueue {
     pthread_mutex_t m_partialsMutex;
     pthread_mutex_t m_queueMutex;
     pthread_cond_t m_queueCondVar;
-    deque<UdpThreadClosure*> m_queue;
-    // map<int, vector<UdpThreadClosure*> > m_bySocket;
+    deque<PacketThreadClosure*> m_queue;
+    // map<int, vector<PacketThreadClosure*> > m_bySocket;
     int m_nextID;
     map<int, PartialPacket*> m_partialPackets;
 };

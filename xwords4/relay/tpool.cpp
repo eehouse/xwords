@@ -119,13 +119,14 @@ XWThreadPool::Stop()
 void
 XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from )
 {
+    int sock = from->getSocket();
+    logf( XW_LOGVERBOSE0, "%s(sock=%d, isTCP=%d)", __func__, sock, from->isTCP() );
+    SockInfo si = { .m_type = stype,
+                    .m_proc = proc,
+                    .m_addr = *from
+    };
     {
-        int sock = from->getSocket();
         RWWriteLock ml( &m_activeSocketsRWLock );
-        SockInfo si;
-        si.m_type = stype;
-        si.m_proc = proc;
-        si.m_addr = *from;
         m_activeSockets.insert( pair<int, SockInfo>( sock, si ) );
     }
     interrupt_poll();
@@ -158,13 +159,14 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
 
         size_t prevSize = m_activeSockets.size();
 
-        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->getSocket() ); 
+        int sock = addr->getSocket();
+        map<int, SockInfo>::iterator iter = m_activeSockets.find( sock );
         if ( m_activeSockets.end() != iter && iter->second.m_addr.equals( *addr ) ) {
             m_activeSockets.erase( iter );
             found = true;
         }
-        logf( XW_LOGINFO, "%s: AFTER: %d sockets active (was %d)", __func__, 
-              m_activeSockets.size(), prevSize );
+        logf( XW_LOGINFO, "%s(): AFTER closing %d: %d sockets active (was %d)", __func__,
+              sock, m_activeSockets.size(), prevSize );
     }
     return found;
 } /* RemoveSocket */
@@ -172,6 +174,7 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
 void
 XWThreadPool::CloseSocket( const AddrInfo* addr )
 {
+    int sock = addr->getSocket();
     if ( addr->isTCP() ) {
         if ( !RemoveSocket( addr ) ) {
             MutexLock ml( &m_queueMutex );
@@ -184,8 +187,13 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
                 ++iter;
             }
         }
-        logf( XW_LOGINFO, "CLOSING socket %d", addr->getSocket() );
-        close( addr->getSocket() );
+        int err = close( sock );
+        if ( 0 != err ) {
+            logf( XW_LOGERROR, "%s(): close(socket=%d) => %d/%s", __func__,
+                  sock, errno, strerror(errno) );
+        } else {
+            logf( XW_LOGINFO, "%s(): close(socket=%d) succeeded", __func__, sock );
+        }
 
         /* We always need to interrupt the poll because the socket we're closing
            will be in the list being listened to.  That or we need to drop sockets
@@ -198,7 +206,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
 void
 XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
 {
-    logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, addr->getSocket(), why );
+    logf( XW_LOGINFO, "%s(socket = %d) reason: %s", __func__, addr->getSocket(), why );
     if ( addr->isTCP() ) {
         SockInfo si;
         si.m_type = STYPE_UNKNOWN;

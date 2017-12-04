@@ -1475,23 +1475,24 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const uint8_t* bufp,
 } // handleProxyMsgs
 
 static void
-game_thread_proc( UdpThreadClosure* utc )
+game_thread_proc( PacketThreadClosure* ptc )
 {
-    if ( !processMessage( utc->buf(), utc->len(), utc->addr(), 0 ) ) {
-        XWThreadPool::GetTPool()->CloseSocket( utc->addr() );
+    logf( XW_LOGVERBOSE0, "%s()", __func__ );
+    if ( !processMessage( ptc->buf(), ptc->len(), ptc->addr(), 0 ) ) {
+        XWThreadPool::GetTPool()->CloseSocket( ptc->addr() );
     }
 }
 
 static void
-proxy_thread_proc( UdpThreadClosure* utc )
+proxy_thread_proc( PacketThreadClosure* ptc )
 {
-    const int len = utc->len();
-    const AddrInfo* addr = utc->addr();
+    const int len = ptc->len();
+    const AddrInfo* addr = ptc->addr();
 
     if ( len > 0 ) {
         assert( addr->isTCP() );
         int sock = addr->getSocket();
-        const uint8_t* bufp = utc->buf();
+        const uint8_t* bufp = ptc->buf();
         const uint8_t* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
             XWPRXYCMD cmd = (XWPRXYCMD)*bufp++;
@@ -1725,10 +1726,10 @@ ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
 }
 
 static void
-handle_udp_packet( UdpThreadClosure* utc )
+handle_udp_packet( PacketThreadClosure* ptc )
 {
-    const uint8_t* ptr = utc->buf();
-    const uint8_t* end = ptr + utc->len();
+    const uint8_t* ptr = ptc->buf();
+    const uint8_t* end = ptr + ptc->len();
 
     UDPHeader header;
     if ( getHeader( &ptr, end, &header ) ) {
@@ -1751,7 +1752,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                         if ( 3 >= clientVers ) {
                             checkAllAscii( model, "bad model" );
                         }
-                        registerDevice( relayID, &devID, utc->addr(), 
+                        registerDevice( relayID, &devID, ptc->addr(),
                                         clientVers, devDesc, model, osVers );
                     }
                 }
@@ -1764,7 +1765,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             ptr += sizeof(clientToken);
             clientToken = ntohl( clientToken );
             if ( AddrInfo::NULL_TOKEN != clientToken ) {
-                AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
+                AddrInfo addr( g_udpsock, clientToken, ptc->saddr() );
                 (void)processMessage( ptr, end - ptr, &addr, clientToken );
             } else {
                 logf( XW_LOGERROR, "%s: dropping packet with token of 0",
@@ -1785,7 +1786,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                 }
                 SafeCref scr( connName, hid );
                 if ( scr.IsValid() ) {
-                    AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
+                    AddrInfo addr( g_udpsock, clientToken, ptc->saddr() );
                     handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
                     assert( ptr == end ); // DON'T CHECK THIS IN!!!
                 } else {
@@ -1820,7 +1821,7 @@ handle_udp_packet( UdpThreadClosure* utc )
         case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
             if ( getVLIString( &ptr, end, devID.m_devIDString ) ) {
-                const AddrInfo* addr = utc->addr();
+                const AddrInfo* addr = ptc->addr();
                 DevMgr::Get()->rememberDevice( devID.asRelayID(), addr );
 
                 if ( XWPDEV_RQSTMSGS == header.cmd ) {
@@ -1861,7 +1862,7 @@ handle_udp_packet( UdpThreadClosure* utc )
         }
 
         // Do this after the device and address are registered
-        ackPacketIf( &header, utc->addr() );
+        ackPacketIf( &header, ptc->addr() );
     }
 }
 
