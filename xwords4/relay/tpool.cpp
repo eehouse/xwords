@@ -265,7 +265,6 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
 
         if ( gotOne ) {
             sock = pr.m_info.m_addr.getSocket();
-            logf( XW_LOGINFO, "worker thread got socket %d from queue", socket );
             switch ( pr.m_act ) {
             case Q_READ:
                 assert( 0 );
@@ -275,6 +274,7 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
                 // }
                 break;
             case Q_KILL:
+                logf( XW_LOGINFO, "worker thread got socket %d from queue (to close it)", sock );
                 (*m_kFunc)( &pr.m_info.m_addr );
                 CloseSocket( &pr.m_info.m_addr );
                 break;
