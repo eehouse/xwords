@@ -400,35 +400,40 @@ XWThreadPool::real_listener()
             curfd = 1;
 
             int ii;
-            for ( ii = 0; ii < nSockets && nEvents > 0; ++ii ) {
+            for ( ii = 0; ii < nSockets && nEvents > 0; ++ii, ++curfd ) {
 
                 if ( fds[curfd].revents != 0 ) {
                     // int socket = fds[curfd].fd;
                     SockInfo* sinfo = &sinfos[curfd];
                     const AddrInfo* addr = &sinfo->m_addr;
 
-                    assert( fds[curfd].fd == addr->getSocket() );
+                    int sock = addr->getSocket();
+                    assert( fds[curfd].fd == sock );
                     if ( !SocketFound( addr ) ) {
+                        logf( XW_LOGINFO, "%s(): dropping socket %d: not found",
+                              __func__, addr->getSocket() );
                         /* no further processing if it's been removed while
-                           we've been sleeping in poll */
+                           we've been sleeping in poll. BUT: shouldn't curfd
+                           be incremented?? */
                         --nEvents;
                         continue;
                     }
 
                     if ( 0 != (fds[curfd].revents & (POLLIN | POLLPRI)) ) {
                         if ( !UdpQueue::get()->handle( addr, sinfo->m_proc ) ) {
+                            // This is likely wrong!!! return of 0 means
+                            // remote closed, not error.
                             RemoveSocket( addr );
-                            EnqueueKill( addr, "bad packet" );
+                            EnqueueKill( addr, "got EOF" );
                         }
                     } else {
-                        logf( XW_LOGERROR, "odd revents: %x", 
-                              fds[curfd].revents );
+                        logf( XW_LOGERROR, "%s(): odd revents: %x; bad socket %d",
+                              __func__, fds[curfd].revents, sock );
                         RemoveSocket( addr );
-                        EnqueueKill( addr, "error/hup in poll()" ); 
+                        EnqueueKill( addr, "error/hup in poll()" );
                     }
                     --nEvents;
                 }
-                ++curfd;
             }
             assert( nEvents == 0 );
         }

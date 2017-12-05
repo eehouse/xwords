@@ -1303,14 +1303,16 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
                const uint8_t* bufp, const uint8_t* end )
 {
     unsigned short nameCount;
-    int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
         DBMgr* dbmgr = DBMgr::Get();
         vector<uint8_t> out(4); /* space for len and n_msgs */
         assert( out.size() == 4 );
         vector<int> msgIDs;
-        for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
-
+        for ( int ii = 0; ii < nameCount; ++ii ) {
+            if ( bufp >= end ) {
+                logf( XW_LOGERROR, "%s(): ran off the end", __func__ );
+                break;
+            }
             // See NetUtils.java for reply format
             // message-length: 2
             // nameCount: 2
@@ -1344,9 +1346,14 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        ssize_t nwritten = write( addr->getSocket(), &out[0], out.size() );
-        logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
-        if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
+        int sock = addr->getSocket();
+        ssize_t nWritten = write( sock, &out[0], out.size() );
+        if ( nWritten < 0 ) {
+            logf( XW_LOGERROR, "%s(): write to socket %d failed: %d/%s", __func__,
+                  sock, errno, strerror(errno) );
+        } else if ( sendFull && (size_t)nWritten == out.size() ) {
+            logf( XW_LOGVERBOSE0, "%s(): wrote %d bytes to socket %d", __func__,
+                  nWritten, sock );
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
             // This is wrong: should be removed when ACK returns and not
             // before. But for some reason if I make that change apps wind up
