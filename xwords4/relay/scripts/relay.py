@@ -171,13 +171,13 @@ def query(req, params):
     print('params', params)
     params = json.loads(params)
     ids = params['ids']
-    timeoutSecs = 'timeoutSecs' in params and float(params['timeoutSecs']) or 2.0
+    # timeoutSecs = 'timeoutSecs' in params and float(params['timeoutSecs']) or 2.0
 
     idsLen = 0
     for id in ids: idsLen += len(id)
 
     tcpSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcpSock.settimeout(timeoutSecs)
+    # tcpSock.settimeout(timeoutSecs)
     tcpSock.connect(('127.0.0.1', 10998))
 
     lenShort = 2 + idsLen + len(ids) + 2
@@ -188,8 +188,9 @@ def query(req, params):
 
     for id in ids: tcpSock.send(id + '\n')
 
-    msgsLists = {}
+    result = {'ids':ids}
     try:
+        msgsLists = {}
         shortUnpacker = struct.Struct('!H')
         resLen, = shortUnpacker.unpack(tcpSock.recv(shortUnpacker.size)) # not getting all bytes
         nameCount, = shortUnpacker.unpack(tcpSock.recv(shortUnpacker.size))
@@ -212,10 +213,14 @@ def query(req, params):
                         msgs.append(msg)
                     perGame.append(msgs)
                 msgsLists[ids[ii]] = perGame
+
+        result['msgs'] = msgsLists
     except:
+        # Anything but a timeout should mean we abort/send nothing
+        result['err'] = 'hit exception'
         None
 
-    return json.dumps(msgsLists)
+    return json.dumps(result)
 
 def main():
     result = None

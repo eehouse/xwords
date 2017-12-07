@@ -216,7 +216,7 @@ runWitCurl( RelayTask* task, const gchar* proc, ...)
 
     res = curl_easy_perform(curl);
     XP_Bool success = res == CURLE_OK;
-    XP_LOGF( "%s(): curl_easy_perform() => %d", __func__, res );
+    XP_LOGF( "%s(): curl_easy_perform(%s) => %d", __func__, proc, res );
     /* Check for errors */
     if ( ! success ) {
         XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
@@ -906,26 +906,37 @@ onGotQueryData( RelayTask* task )
             CommsAddrRec addr = {0};
             addr_addType( &addr, COMMS_CONN_RELAY );
 
-            /* Currently there's an array of arrays for each relayID (value) */
-            json_object_object_foreach(reply, relayID, arrOfArrOfMoves) {
-                int len1 = json_object_array_length( arrOfArrOfMoves );
-                if ( len1 > 0 ) {
-                    sqlite3_int64 rowid = *(sqlite3_int64*)g_hash_table_lookup( task->u.query.map, relayID );
-                    for ( int ii = 0; ii < len1; ++ii ) {
-                        json_object* forGameArray = json_object_array_get_idx( arrOfArrOfMoves, ii );
-                        int len2 = json_object_array_length( forGameArray );
-                        for ( int jj = 0; jj < len2; ++jj ) {
-                            json_object* oneMove = json_object_array_get_idx( forGameArray, jj );
-                            const char* asStr = json_object_get_string( oneMove );
-                            gsize out_len;
-                            guchar* buf = g_base64_decode( asStr, &out_len );
-                            (*storage->procs.msgForRow)( storage->procsClosure, &addr,
-                                                         rowid, buf, out_len );
-                            g_free(buf);
-                            foundAny = XP_TRUE;
+            GList* ids = g_hash_table_get_keys( task->u.query.map );
+            const char* xxx = ids->data;
+
+            json_object* jMsgs;
+            if ( json_object_object_get_ex( reply, "msgs", &jMsgs ) ) {
+                /* Currently there's an array of arrays for each relayID (value) */
+                XP_LOGF( "%s: got result of len %d", __func__, json_object_object_length(jMsgs) );
+                XP_ASSERT( json_object_object_length(jMsgs) <= 1 );
+                json_object_object_foreach(jMsgs, relayID, arrOfArrOfMoves) {
+                    XP_ASSERT( 0 == strcmp( relayID, xxx ) );
+                    int len1 = json_object_array_length( arrOfArrOfMoves );
+                    if ( len1 > 0 ) {
+                        sqlite3_int64 rowid = *(sqlite3_int64*)g_hash_table_lookup( task->u.query.map, relayID );
+                        XP_LOGF( "%s(): got row %lld for relayID %s", __func__, rowid, relayID );
+                        for ( int ii = 0; ii < len1; ++ii ) {
+                            json_object* forGameArray = json_object_array_get_idx( arrOfArrOfMoves, ii );
+                            int len2 = json_object_array_length( forGameArray );
+                            for ( int jj = 0; jj < len2; ++jj ) {
+                                json_object* oneMove = json_object_array_get_idx( forGameArray, jj );
+                                const char* asStr = json_object_get_string( oneMove );
+                                gsize out_len;
+                                guchar* buf = g_base64_decode( asStr, &out_len );
+                                (*storage->procs.msgForRow)( storage->procsClosure, &addr,
+                                                             rowid, buf, out_len );
+                                g_free(buf);
+                                foundAny = XP_TRUE;
+                            }
                         }
                     }
                 }
+                json_object_put( jMsgs );
             }
             json_object_put( reply );
         }
@@ -955,6 +966,7 @@ handleQuery( RelayTask* task )
         for ( GList* iter = ids; !!iter; iter = iter->next ) {
             json_object* idstr = json_object_new_string( iter->data );
             json_object_array_add(jIds, idstr);
+            XP_ASSERT( !iter->next ); /* for curses case there should be only one */
         }
         g_list_free( ids );
 
@@ -1043,7 +1055,7 @@ getFromGotData( RelayConStorage* storage )
                                    storage->gotDataTaskList );
         task = head->data;
         g_slist_free( head );
-        XP_LOGF( "%s(): got id %d!", __func__, task->id );
+        XP_LOGF( "%s(): got task id %d", __func__, task->id );
     }
     // XP_LOGF( "%s(): len now %d", __func__, g_slist_length(storage->gotDataTaskList) );
     pthread_mutex_unlock( &storage->gotDataMutex );
