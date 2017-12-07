@@ -103,7 +103,11 @@ UdpQueue::get()
     return s_instance;
 }
 
-// return false if socket should no longer be used
+// If we're already assembling data from this socket, continue. Otherwise
+// create a new parital packet and store data there. If we wind up with a
+// complete packet, dispatch it and delete since the data's been delivered.
+//
+// Return false if socket should no longer be used.
 bool
 UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
 {
@@ -148,6 +152,7 @@ UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
     }
 
     success = success && (NULL == packet || packet->stillGood());
+    logf( XW_LOGVERBOSE0, "%s(sock=%d) => %d", __func__, sock, success );
     return success;
 }
 

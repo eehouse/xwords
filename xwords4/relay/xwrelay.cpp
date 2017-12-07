@@ -1030,7 +1030,7 @@ processDisconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
 } /* processDisconnect */
 
 static void
-killSocket( const AddrInfo* addr )
+rmSocketRefs( const AddrInfo* addr )
 {
     logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->getSocket() );
     CRefMgr::Get()->RemoveSocketRefs( addr );
@@ -1304,6 +1304,7 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
 {
     unsigned short nameCount;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
+        assert( nameCount == 1 ); // Don't commit this!!!
         DBMgr* dbmgr = DBMgr::Get();
         vector<uint8_t> out(4); /* space for len and n_msgs */
         assert( out.size() == 4 );
@@ -1330,6 +1331,7 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
                 break;
             }
 
+            logf( XW_LOGVERBOSE0, "%s(): connName: %s", __func__, connName );
             dbmgr->RecordAddress( connName, hid, addr );
 
             /* For each relayID, write the number of messages and then
@@ -1359,6 +1361,8 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
             // before. But for some reason if I make that change apps wind up
             // stalling.
             dbmgr->RemoveStoredMessages( msgIDs );
+        } else {
+            assert(0);
         }
     }
 } // handleMsgsMsg
@@ -1568,7 +1572,8 @@ proxy_thread_proc( PacketThreadClosure* ptc )
             }
         }
     }
-    XWThreadPool::GetTPool()->CloseSocket( addr );
+    // Should I remove this, or make it into more of an unref() call?
+    // XWThreadPool::GetTPool()->CloseSocket( addr );
 } // proxy_thread_proc
 
 static size_t
@@ -2342,7 +2347,7 @@ main( int argc, char** argv )
     (void)sigaction( SIGINT, &act, NULL );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
-    tPool->Setup( nWorkerThreads, killSocket );
+    tPool->Setup( nWorkerThreads, rmSocketRefs );
 
     /* set up select call */
     fd_set rfds;

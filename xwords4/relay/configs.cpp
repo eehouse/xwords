@@ -84,12 +84,13 @@ RelayConfigs::GetValueFor( const char* key, time_t* value )
 bool
 RelayConfigs::GetValueFor( const char* key, char* buf, int len )
 {
-    MutexLock ml( &m_values_mutex );
+    pthread_mutex_lock( &m_values_mutex );
     map<const char*,const char*>::const_iterator iter = m_values.find(key);
     bool found = iter != m_values.end();
     if ( found ) {
         snprintf( buf, len, "%s", iter->second );
     }
+    pthread_mutex_unlock( &m_values_mutex );
     return found;
 }
 
@@ -125,7 +126,7 @@ RelayConfigs::GetValueFor( const char* key, vector<int>& ints )
 void 
 RelayConfigs::SetValueFor( const char* key, const char* value )
 {
-    MutexLock ml( &m_values_mutex );
+    pthread_mutex_lock( &m_values_mutex );
 
     /* Remove any entry already there */
     map<const char*,const char*>::iterator iter = m_values.find(key);
@@ -136,6 +137,7 @@ RelayConfigs::SetValueFor( const char* key, const char* value )
     pair<map<const char*,const char*>::iterator,bool> result = 
         m_values.insert( pair<const char*,const char*>(strdup(key),strdup(value) ) );
     assert( result.second );
+    pthread_mutex_unlock( &m_values_mutex );
 }
 
 ino_t
