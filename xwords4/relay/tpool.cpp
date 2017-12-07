@@ -119,6 +119,7 @@ XWThreadPool::Stop()
 void
 XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from )
 {
+    from->ref();
     int sock = from->getSocket();
     logf( XW_LOGVERBOSE0, "%s(sock=%d, isTCP=%d)", __func__, sock, from->isTCP() );
     SockInfo si = { .m_type = stype,
@@ -174,7 +175,6 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
 void
 XWThreadPool::CloseSocket( const AddrInfo* addr )
 {
-    int sock = addr->getSocket();
     if ( addr->isTCP() ) {
         if ( !RemoveSocket( addr ) ) {
             MutexLock ml( &m_queueMutex );
@@ -187,6 +187,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
                 ++iter;
             }
         }
+        int sock = addr->getSocket();
         int err = close( sock );
         if ( 0 != err ) {
             logf( XW_LOGERROR, "%s(): close(socket=%d) => %d/%s", __func__,
@@ -284,7 +285,7 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
             case Q_KILL:
                 logf( XW_LOGINFO, "worker thread got socket %d from queue (to close it)", sock );
                 (*m_kFunc)( &pr.m_info.m_addr );
-                CloseSocket( &pr.m_info.m_addr );
+                pr.m_info.m_addr.unref();
                 break;
             }
         } else {

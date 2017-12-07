@@ -44,10 +44,14 @@ public:
         , m_cb(cb)
         , m_created(time( NULL ))
         { 
-            memcpy( m_buf, buf, len ); 
+            memcpy( m_buf, buf, len );
+            m_addr.ref();
         }
 
-    ~PacketThreadClosure() { delete[] m_buf; }
+    ~PacketThreadClosure() {
+        m_addr.unref();
+        delete[] m_buf;
+    }
 
     const uint8_t* buf() const { return m_buf; } 
     int len() const { return m_len; }

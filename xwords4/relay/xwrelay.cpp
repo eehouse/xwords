@@ -1490,7 +1490,7 @@ game_thread_proc( PacketThreadClosure* ptc )
 {
     logf( XW_LOGVERBOSE0, "%s()", __func__ );
     if ( !processMessage( ptc->buf(), ptc->len(), ptc->addr(), 0 ) ) {
-        XWThreadPool::GetTPool()->CloseSocket( ptc->addr() );
+        // XWThreadPool::GetTPool()->CloseSocket( ptc->addr() );
     }
 }
 

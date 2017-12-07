@@ -58,7 +58,7 @@ PartialPacket::readAtMost( int len )
             logf( XW_LOGERROR, "%s(len=%d, socket=%d): recv failed: %d (%s)", __func__, 
                   len, m_sock, m_errno, strerror(m_errno) );
         }
-    } else if ( 0 == nRead ) {  // remote socket closed
+    } else if ( 0 == nRead ) {  // remote socket half-closed
         logf( XW_LOGINFO, "%s(): remote closed (socket=%d)", __func__, m_sock );
         m_errno = -1;           // so stillGood will fail
     } else {
@@ -160,11 +160,12 @@ void
 UdpQueue::handle( const AddrInfo* addr, const uint8_t* buf, int len, 
                   QueueCallback cb )
 {
+    // addr->ref();
     PacketThreadClosure* ptc = new PacketThreadClosure( addr, buf, len, cb );
     MutexLock ml( &m_queueMutex );
     int id = ++m_nextID;
     ptc->setID( id );
-    logf( XW_LOGINFO, "%s: enqueuing packet %d (socket %d, len %d)", 
+    logf( XW_LOGINFO, "%s(): enqueuing packet %d (socket %d, len %d)",
           __func__, id, addr->getSocket(), len );
     m_queue.push_back( ptc );
 
@@ -223,6 +224,7 @@ UdpQueue::thread_main()
             logf( XW_LOGINFO, "%s: dropping packet %d; it's %d seconds old!", 
                   __func__, age );
         }
+        // ptc->addr()->unref();
         delete ptc;
     }
     return NULL;
