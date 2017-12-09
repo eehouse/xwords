@@ -120,6 +120,7 @@ void
 XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from )
 {
     from->ref();
+
     int sock = from->getSocket();
     logf( XW_LOGVERBOSE0, "%s(sock=%d, isTCP=%d)", __func__, sock, from->isTCP() );
     SockInfo si = { .m_type = stype,
@@ -128,6 +129,7 @@ XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* fro
     };
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
+        assert( m_activeSockets.find( sock ) == m_activeSockets.end() );
         m_activeSockets.insert( pair<int, SockInfo>( sock, si ) );
     }
     interrupt_poll();
