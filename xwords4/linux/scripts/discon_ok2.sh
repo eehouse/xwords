@@ -43,7 +43,7 @@ declare -A LOGS
 declare -A MINEND
 declare -A ROOM_PIDS
 declare -a APPS_OLD=()
-declare -a DICTS=				# wants to be =() too?
+declare -a DICTS=()				# wants to be =() too?
 declare -A CHECKED_ROOMS
 
 function cleanup() {
