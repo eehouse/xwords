@@ -20,13 +20,16 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "addrinfo.h"
 #include "xwrelay_priv.h"
 #include "tpool.h"
 #include "udpager.h"
+#include "mlock.h"
 
 // static uint32_t s_prevCreated = 0L;
 
@@ -68,7 +71,7 @@ AddrInfo::equals( const AddrInfo& other ) const
         if ( isTCP() ) {
             equal = m_socket == other.m_socket;
             if ( equal && created() != other.created() ) {
-                logf( XW_LOGINFO, "%s: rejecting on time mismatch (%lx vs %lx)", 
+                logf( XW_LOGINFO, "%s(): rejecting on time mismatch (%lx vs %lx)",
                       __func__, created(), other.created() );
                 equal = false;
             }
@@ -82,3 +85,40 @@ AddrInfo::equals( const AddrInfo& other ) const
     return equal;
 }
 
+static pthread_mutex_t s_refMutex = PTHREAD_MUTEX_INITIALIZER;
+static map<int, int > s_socketRefs;
+
+void AddrInfo::ref() const
+{
+    // logf( XW_LOGVERBOSE0, "%s(socket=%d)", __func__, m_socket );
+    MutexLock ml( &s_refMutex );
+    ++s_socketRefs[m_socket];
+    printRefMap();
+}
+
+void
+AddrInfo::unref() const
+{
+    // logf( XW_LOGVERBOSE0, "%s(socket=%d)", __func__, m_socket );
+
+    MutexLock ml( &s_refMutex );
+    assert( s_socketRefs[m_socket] > 0 );
+    --s_socketRefs[m_socket];
+    if ( s_socketRefs[m_socket] == 0 ) {
+        XWThreadPool::GetTPool()->CloseSocket( this );
+    }
+    printRefMap();
+}
+
+/* private, and assumes have mutex */
+void
+AddrInfo::printRefMap() const
+{
+    /* for ( map<int,int>::const_iterator iter = s_socketRefs.begin(); */
+    /*       iter != s_socketRefs.end(); ++iter ) { */
+    /*     int count = iter->second; */
+    /*     if ( count > 0 ) { */
+    /*         logf( XW_LOGVERBOSE0, "socket: %d; count: %d", iter->first, count ); */
+    /*     } */
+    /* } */
+}

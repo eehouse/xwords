@@ -119,13 +119,17 @@ XWThreadPool::Stop()
 void
 XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from )
 {
+    from->ref();
+
+    int sock = from->getSocket();
+    logf( XW_LOGVERBOSE0, "%s(sock=%d, isTCP=%d)", __func__, sock, from->isTCP() );
+    SockInfo si = { .m_type = stype,
+                    .m_proc = proc,
+                    .m_addr = *from
+    };
     {
-        int sock = from->getSocket();
         RWWriteLock ml( &m_activeSocketsRWLock );
-        SockInfo si;
-        si.m_type = stype;
-        si.m_proc = proc;
-        si.m_addr = *from;
+        assert( m_activeSockets.find( sock ) == m_activeSockets.end() );
         m_activeSockets.insert( pair<int, SockInfo>( sock, si ) );
     }
     interrupt_poll();
@@ -158,13 +162,14 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
 
         size_t prevSize = m_activeSockets.size();
 
-        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->getSocket() ); 
+        int sock = addr->getSocket();
+        map<int, SockInfo>::iterator iter = m_activeSockets.find( sock );
         if ( m_activeSockets.end() != iter && iter->second.m_addr.equals( *addr ) ) {
             m_activeSockets.erase( iter );
             found = true;
         }
-        logf( XW_LOGINFO, "%s: AFTER: %d sockets active (was %d)", __func__, 
-              m_activeSockets.size(), prevSize );
+        logf( XW_LOGINFO, "%s(): AFTER closing %d: %d sockets active (was %d)", __func__,
+              sock, m_activeSockets.size(), prevSize );
     }
     return found;
 } /* RemoveSocket */
@@ -184,8 +189,14 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
                 ++iter;
             }
         }
-        logf( XW_LOGINFO, "CLOSING socket %d", addr->getSocket() );
-        close( addr->getSocket() );
+        int sock = addr->getSocket();
+        int err = close( sock );
+        if ( 0 != err ) {
+            logf( XW_LOGERROR, "%s(): close(socket=%d) => %d/%s", __func__,
+                  sock, errno, strerror(errno) );
+        } else {
+            logf( XW_LOGINFO, "%s(): close(socket=%d) succeeded", __func__, sock );
+        }
 
         /* We always need to interrupt the poll because the socket we're closing
            will be in the list being listened to.  That or we need to drop sockets
@@ -198,7 +209,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
 void
 XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
 {
-    logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, addr->getSocket(), why );
+    logf( XW_LOGINFO, "%s(socket = %d) reason: %s", __func__, addr->getSocket(), why );
     if ( addr->isTCP() ) {
         SockInfo si;
         si.m_type = STYPE_UNKNOWN;
@@ -265,7 +276,6 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
 
         if ( gotOne ) {
             sock = pr.m_info.m_addr.getSocket();
-            logf( XW_LOGINFO, "worker thread got socket %d from queue", socket );
             switch ( pr.m_act ) {
             case Q_READ:
                 assert( 0 );
@@ -275,8 +285,9 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
                 // }
                 break;
             case Q_KILL:
+                logf( XW_LOGINFO, "worker thread got socket %d from queue (to close it)", sock );
                 (*m_kFunc)( &pr.m_info.m_addr );
-                CloseSocket( &pr.m_info.m_addr );
+                pr.m_info.m_addr.unref();
                 break;
             }
         } else {
@@ -392,35 +403,40 @@ XWThreadPool::real_listener()
             curfd = 1;
 
             int ii;
-            for ( ii = 0; ii < nSockets && nEvents > 0; ++ii ) {
+            for ( ii = 0; ii < nSockets && nEvents > 0; ++ii, ++curfd ) {
 
                 if ( fds[curfd].revents != 0 ) {
                     // int socket = fds[curfd].fd;
                     SockInfo* sinfo = &sinfos[curfd];
                     const AddrInfo* addr = &sinfo->m_addr;
 
-                    assert( fds[curfd].fd == addr->getSocket() );
+                    int sock = addr->getSocket();
+                    assert( fds[curfd].fd == sock );
                     if ( !SocketFound( addr ) ) {
+                        logf( XW_LOGINFO, "%s(): dropping socket %d: not found",
+                              __func__, addr->getSocket() );
                         /* no further processing if it's been removed while
-                           we've been sleeping in poll */
+                           we've been sleeping in poll. BUT: shouldn't curfd
+                           be incremented?? */
                         --nEvents;
                         continue;
                     }
 
                     if ( 0 != (fds[curfd].revents & (POLLIN | POLLPRI)) ) {
                         if ( !UdpQueue::get()->handle( addr, sinfo->m_proc ) ) {
+                            // This is likely wrong!!! return of 0 means
+                            // remote closed, not error.
                             RemoveSocket( addr );
-                            EnqueueKill( addr, "bad packet" );
+                            EnqueueKill( addr, "got EOF" );
                         }
                     } else {
-                        logf( XW_LOGERROR, "odd revents: %x", 
-                              fds[curfd].revents );
+                        logf( XW_LOGERROR, "%s(): odd revents: %x; bad socket %d",
+                              __func__, fds[curfd].revents, sock );
                         RemoveSocket( addr );
-                        EnqueueKill( addr, "error/hup in poll()" ); 
+                        EnqueueKill( addr, "error/hup in poll()" );
                     }
                     --nEvents;
                 }
-                ++curfd;
             }
             assert( nEvents == 0 );
         }
