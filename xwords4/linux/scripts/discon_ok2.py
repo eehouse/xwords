@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import re, os, sys, getopt, shutil, threading, requests, json, glob
-import argparse, datetime, random, subprocess, time
+import argparse, datetime, random, signal, subprocess, time
 
 # LOGDIR=./$(basename $0)_logs
 # APP_NEW=""
@@ -161,7 +161,8 @@ class Device():
     sTilesLeftPat = re.compile('.*pool_removeTiles: (\d+) tiles left in pool')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     
-    def __init__(self, args, indx, app, params, room, db, log, nInGame):
+    def __init__(self, args, game, indx, app, params, room, db, log, nInGame):
+        self.game = game
         self.indx = indx
         self.args = args
         self.pid = 0
@@ -178,7 +179,7 @@ class Device():
         self.devID = ''
         self.launchCount = 0
         self.allDone = False    # when true, can be killed
-        self.nTilesLeft = -1    # negative means don't know
+        self.nTilesLeft = None
         self.relayID = None
         self.relaySeed = 0
 
@@ -257,6 +258,12 @@ class Device():
         self.proc = None
         self.check_game()
 
+    def handleAllDone(self):
+        if self.allDone:
+            self.moveFiles()
+            self.send_dead()
+        return self.allDone
+
     def moveFiles(self):
         assert not self.running()
         shutil.move(self.logPath, self.args.LOGDIR + '/done')
@@ -268,10 +275,9 @@ class Device():
         req = requests.get(url, params = {'params' : JSON})
 
     def getTilesCount(self):
-        result = None
-        if self.nTilesLeft != -1:
-            result = '%.2d:%.2d' % (self.indx, self.nTilesLeft)
-        return result
+        return {'index': self.indx, 'nTilesLeft': self.nTilesLeft,
+                'launchCount': self.launchCount, 'game': self.game,
+        }
 
     def update_ldevid(self):
         if not self.app in Device.sHasLDevIDMap:
@@ -306,6 +312,7 @@ class Device():
 
                 if allDone:
                     for dev in Device.sConnnameMap[self.connname]:
+                        assert self.game == dev.game
                         dev.allDone = True
 
             # print('Closing', self.connname, datetime.datetime.now())
@@ -343,7 +350,6 @@ def build_cmds(args):
 
     for GAME in range(1,  args.NGAMES + 1):
         ROOM = 'ROOM_%.3d' % (GAME % args.NROOMS)
-        #         check_room $ROOM
         NDEVS = pick_ndevs(args)
         LOCALS = figure_locals(args, NDEVS) # as array
         NPLAYERS = sum(LOCALS)
@@ -355,12 +361,9 @@ def build_cmds(args):
         DEV = 0
         for NLOCALS in LOCALS:
             DEV += 1
-            FILE="%s/GAME_%d_%d.sql3" % (args.LOGDIR, GAME, DEV)
-            LOG='%s/%d_%d_LOG.txt' % (args.LOGDIR, GAME, DEV)
-            # os.system("rm -f $LOG") # clear the log
+            DB = '{}/{:02d}_{:02d}_DB.sql3'.format(args.LOGDIR, GAME, DEV)
+            LOG = '{}/{:02d}_{:02d}_LOG.txt'.format(args.LOGDIR, GAME, DEV)
 
-            #             APPS[$COUNTER]="$APP_NEW"
-            #             NEW_ARGS[$COUNTER]="$APP_NEW_PARAMS"
             BOARD_SIZE = ['--board-size', '15']
             #             if [ 0 -lt ${#APPS_OLD[@]} ]; then
             #                 # 50% chance of starting out with old app
@@ -379,7 +382,7 @@ def build_cmds(args):
                 PARAMS += ['--undo-pct', args.UNDO_PCT]
             PARAMS += [ '--game-dict', DICT, '--relay-port', args.PORT, '--host', args.HOST]
             PARAMS += ['--slow-robot', '1:3', '--skip-confirm']
-            PARAMS += ['--db', FILE]
+            PARAMS += ['--db', DB]
             if random.randint(0,100) % 100 < g_UDP_PCT_START:
                 PARAMS += ['--use-udp']
 
@@ -409,7 +412,7 @@ def build_cmds(args):
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device(args, COUNTER, args.APP_NEW, PARAMS, ROOM, FILE, LOG, len(LOCALS))
+            dev = Device(args, GAME, COUNTER, args.APP_NEW, PARAMS, ROOM, DB, LOG, len(LOCALS))
             dev.update_ldevid()
             devs.append(dev)
 
@@ -627,22 +630,75 @@ def build_cmds(args):
 #     fi
 # }
 
-def summarizeTileCounts(devs):
-    nDevs = len(devs)
-    strs = [dev.getTilesCount() for dev in devs]
-    strs = [s for s in strs if s]
-    nWithTiles = len(strs)
-    print('%s %d/%d %s' % (datetime.datetime.now().strftime("%H:%M:%S"), nDevs, nWithTiles, ' '.join(strs)))
+def summarizeTileCounts(devs, endTime, state):
+    shouldGoOn = True
+    data = [dev.getTilesCount() for dev in devs]
+    nDevs = len(data)
+    totalTiles = 0
+    colWidth = max(2, len(str(nDevs)))
+    headWidth = 0
+    fmtData = [{'head' : 'dev', },
+               {'head' : 'launches', },
+               {'head' : 'tls left', },
+    ]
+    for datum in fmtData:
+        headWidth = max(headWidth, len(datum['head']))
+        datum['data'] = []
+
+    # Group devices by game
+    games = []
+    prev = -1
+    for datum in data:
+        gameNo = datum['game']
+        if gameNo != prev:
+            games.append([])
+            prev = gameNo
+        games[-1].append('{:0{width}d}'.format(datum['index'], width=colWidth))
+    fmtData[0]['data'] = ['+'.join(game) for game in games]
+
+    nLaunches = 0
+    for datum in data:
+        launchCount = datum['launchCount']
+        nLaunches += launchCount
+        fmtData[1]['data'].append('{:{width}d}'.format(launchCount, width=colWidth))
+
+        nTiles = datum['nTilesLeft']
+        fmtData[2]['data'].append(nTiles is None and ('-' * colWidth) or '{:{width}d}'.format(nTiles, width=colWidth))
+        if not nTiles is None: totalTiles += int(nTiles)
+
+
+    print('')
+    print('devs left: {}; tiles left: {}; total launches: {}; {}/{}'
+          .format(nDevs, totalTiles, nLaunches, datetime.datetime.now(), endTime ))
+    fmt = '{head:>%d} {data}' % headWidth
+    for datum in fmtData: datum['data'] = ' '.join(datum['data'])
+    for datum in fmtData:
+        print(fmt.format(**datum))
+
+    # Now let's see if things are stuck: if the tile string hasn't
+    # changed in two minutes bail. Note that the count of tiles left
+    # isn't enough because it's zero for a long time as devices are
+    # using up what's left in their trays and getting killed.
+    now = datetime.datetime.now()
+    tilesStr = fmtData[2]['data']
+    if not 'tilesStr' in state or state['tilesStr'] != tilesStr:
+        state['lastChange'] = now
+        state['tilesStr'] = tilesStr
+
+    return now - state['lastChange'] < datetime.timedelta(minutes = 1)
 
 def countCores():
     return len(glob.glob1('/tmp',"core*"))
 
+gDone = False
+
 def run_cmds(args, devs):
     nCores = countCores()
-    endTime = datetime.datetime.now() + datetime.timedelta(seconds = args.TIMEOUT)
+    endTime = datetime.datetime.now() + datetime.timedelta(minutes = args.TIMEOUT_MINS)
     LOOPCOUNT = 0
+    printState = {}
 
-    while len(devs) > 0:
+    while len(devs) > 0 and not gDone:
         if countCores() > nCores:
             print('core file count increased; exiting')
             break
@@ -651,13 +707,14 @@ def run_cmds(args, devs):
             break
 
         LOOPCOUNT += 1
-        if 0 == LOOPCOUNT % 20: summarizeTileCounts(devs)
+        if 0 == LOOPCOUNT % 20:
+            if not summarizeTileCounts(devs, endTime, printState):
+                print('no change in too long; exiting')
+                break
 
         dev = random.choice(devs)
         if not dev.running():
-            if dev.allDone:
-                dev.moveFiles()
-                dev.send_dead()
+            if dev.handleAllDone():
                 devs.remove(dev)
             else:
 #             if [ -n "$ONE_PER_ROOM" -a 0 -ne ${ROOM_PIDS[$ROOM]} ]; then
@@ -674,9 +731,11 @@ def run_cmds(args, devs):
 #             MINEND[$KEY]=$(($NOW + $MINRUN))
         elif not dev.minTimeExpired():
             # print('sleeping...')
-            time.sleep(2)
+            time.sleep(1.0)
         else:
             dev.kill()
+            if dev.handleAllDone():
+                devs.remove(dev)
             # if g_DROP_N >= 0: dev.increment_drop()
             #             update_ldevid $KEY
 
@@ -739,8 +798,8 @@ def mkParser():
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
     parser.add_argument('--num-rooms', dest = 'NROOMS', type = int, default = 0,
                         help = 'number of roooms (default to --num-games)')
-    parser.add_argument('--no-timeout', dest = 'TIMEOUT', default = False, action = 'store_true',
-                        help = 'run forever (default proportional to number of games')
+    parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
+                        help = 'minutes after which to timeout')
     parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
     parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, help = 'send all packet twice')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
@@ -768,7 +827,6 @@ def mkParser():
                         help = 'Port relay\'s on')
     parser.add_argument('--resign-pct', dest = 'RESIGN_PCT', default = 0, type = int, \
                         help = 'Odds of resigning [0..100]')
-    # # 	echo "    [--no-timeout]           # run until all games done     \\" >&2
     parser.add_argument('--seed', type = int, dest = 'SEED',
                         default = random.randint(1, 1000000000))
     # #     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
@@ -900,7 +958,6 @@ def parseArgs():
 
 def assignDefaults(args):
     if not args.NROOMS: args.NROOMS = args.NGAMES
-    args.TIMEOUT = not args.TIMEOUT and (args.NGAMES * 60 + 500) or 100000000000
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
     args.LOGDIR = os.path.basename(sys.argv[0]) + '_logs'
     # Move an existing logdir aside
@@ -975,10 +1032,20 @@ def assignDefaults(args):
 # SECONDS=$((SECONDS%60))
 # echo "*********$0 finished: $(date) (took $HOURS:$MINUTES:$SECONDS)**************"
 
+def termHandler(signum, frame):
+    global gDone
+    print('termHandler() called')
+    gDone = True
+
 def main():
+    startTime = datetime.datetime.now()
+    signal.signal(signal.SIGINT, termHandler)
+
     args = parseArgs()
     devs = build_cmds(args)
+    nDevs = len(devs)
     run_cmds(args, devs)
+    print('{} finished; took {} for {} devices'.format(sys.argv[0], datetime.datetime.now() - startTime, nDevs))
 
 ##############################################################################
 if __name__ == '__main__':

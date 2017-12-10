@@ -51,7 +51,8 @@ fi
 
 echo -n "Device (pid) count: $(pidof xwords | wc | awk '{print $2}')"
 echo ";   relay pid[s]: $(pidof xwrelay)"
-echo "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
+echo -n "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
+echo "; Relay sockets: $(for PID in $(pidof xwrelay); do ls /proc/$PID/fd; done | sort -un | tr '\n' ' ')"
 
 # Games
 echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as npd,nsents as snts, seeds,devids,tokens,ack, mtimes "\
