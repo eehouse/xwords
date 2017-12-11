@@ -618,13 +618,18 @@ public class RelayService extends XWService
                         for ( ; ; ) {
                             List<PacketData> dataList = null;
                             try {
-                                PacketData outData = m_queue.take();
-                                if ( null != outData ) {
-                                    dataList = new ArrayList<>();
+                                dataList = new ArrayList<>();
+                                for ( PacketData outData = m_queue.take(); // blocks
+                                      null != outData;
+                                      outData = m_queue.poll() ) {         // doesn't block
+                                    if ( outData.isEOQ() ) {
+                                        dataList = null;
+                                        break;
+                                    }
                                     dataList.add(outData);
-                                    m_queue.drainTo(dataList);
+                                    Log.d( TAG, "got %d packets; %d more left", dataList.size(),
+                                           m_queue.size());
                                 }
-                                Log.d( TAG, "got %d packets; %d more left", dataList.size(), m_queue.size());
                             } catch ( InterruptedException ie ) {
                                 Log.w( TAG, "write thread killed" );
                                 break;
@@ -665,6 +670,7 @@ public class RelayService extends XWService
             try {
                 JSONArray dataArray = new JSONArray();
                 for ( PacketData packet : packets ) {
+                    Assert.assertFalse( packet.isEOQ() );
                     byte[] datum = packet.assemble();
                     dataArray.put( Utils.base64Encode(datum) );
                     sentLen += datum.length;
@@ -1553,6 +1559,8 @@ public class RelayService extends XWService
             return String.format( "{cmd: %s; age: %d ms}", m_cmd,
                                   System.currentTimeMillis() - m_created );
         }
+
+        public boolean isEOQ() { return 0 == getLength(); }
 
         public int getLength()
         {
