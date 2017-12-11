@@ -680,7 +680,7 @@ public class RelayService extends XWService
 
                 String result = NetUtils.runConn(conn, params);
                 if ( null != result ) {
-                    Log.d( TAG, "sendViaWeb(): POST => %s", result );
+                    Log.d( TAG, "sendViaWeb(): POST(%s) => %s", params, result );
                     JSONObject resultObj = new JSONObject( result );
                     JSONArray resData = resultObj.getJSONArray( "data" );
                     int nReplies = resData.length();
