@@ -763,6 +763,8 @@ public class RelayService extends XWService
 
     private void stopUDPThreadsIf()
     {
+        DbgUtils.assertOnUIThread();
+
         if ( null != m_UDPWriteThread ) {
             // can't add null
             m_queue.add( new PacketData() );
