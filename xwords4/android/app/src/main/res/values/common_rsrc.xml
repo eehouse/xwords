@@ -36,7 +36,7 @@
 
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
-  <string name="key_relay_via_http">key_relay_via_http</string>
+  <string name="key_relay_via_http_first">key_relay_via_http_first</string>
   <string name="key_update_url">key_update_url</string>
   <string name="key_relay_url">key_relay_url</string>
   <string name="key_update_prerel">key_update_prerel</string>

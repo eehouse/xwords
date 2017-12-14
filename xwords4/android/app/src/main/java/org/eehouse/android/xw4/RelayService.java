@@ -640,7 +640,7 @@ public class RelayService extends XWService
                             }
 
                             int sentLen;
-                            if ( XWPrefs.getPreferWebAPI( RelayService.this ) ) {
+                            if ( XWPrefs.getSkipToWebAPI( RelayService.this ) ) {
                                 sentLen = sendViaWeb( dataList );
                             } else {
                                 sentLen = sendViaUDP( dataList );
@@ -715,9 +715,7 @@ public class RelayService extends XWService
             try {
                 DatagramPacket udpPacket = new DatagramPacket( data, data.length );
                 m_UDPSocket.send( udpPacket );
-                if ( BuildConfig.DEBUG ) {
-                    Assert.assertFalse( XWPrefs.getPreferWebAPI( this ) );
-                }
+
                 sentLen += udpPacket.getLength();
                 noteSent( packet );
                 getOut = false;
@@ -746,7 +744,7 @@ public class RelayService extends XWService
     {
         int pid = packet.m_packetID;
         Log.d( TAG, "Sent [udp?] packet: cmd=%s, id=%d",
-               packet.m_cmd.toString(), pid);
+               packet.m_cmd.toString(), pid );
         if ( packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
             synchronized( s_packetsSent ) {
                 s_packetsSent.put( pid, packet );
@@ -1188,7 +1186,7 @@ public class RelayService extends XWService
         @Override
         protected Void doInBackground( Void... ignored )
         {
-            Assert.assertFalse( XWPrefs.getPreferWebAPI( m_context ) );
+            Assert.assertFalse( XWPrefs.getSkipToWebAPI( m_context ) );
             // format: total msg lenth: 2
             //         number-of-relayIDs: 2
             //         for-each-relayid: relayid + '\n': varies
@@ -1237,7 +1235,7 @@ public class RelayService extends XWService
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
 
-                Assert.assertFalse( XWPrefs.getPreferWebAPI( m_context ) );
+                Assert.assertFalse( XWPrefs.getSkipToWebAPI( m_context ) );
                 Socket socket = NetUtils.makeProxySocket( m_context, 8000 );
                 if ( null != socket ) {
                     DataOutputStream outStream =

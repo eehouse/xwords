@@ -90,16 +90,8 @@ public class NetUtils {
             m_obits = obits;
         }
 
+        @Override
         public void run()
-        {
-            if ( XWPrefs.getPreferWebAPI( m_context ) ) {
-                runViaWeb();
-            } else {
-                runWithProxySocket();
-            }
-        }
-
-        private void runViaWeb()
         {
             try {
                 JSONArray params = new JSONArray();
@@ -110,67 +102,17 @@ public class NetUtils {
                     params.put( one );
                 }
                 HttpURLConnection conn = makeHttpRelayConn( m_context, "kill" );
-                Log.d( TAG, "runViaWeb(): kill params: %s", params.toString() );
                 String resStr = runConn( conn, params );
-                Log.d( TAG, "runViaWeb(): kill => %s", resStr );
+                Log.d( TAG, "runViaWeb(): kill(%s) => %s", params, resStr );
 
                 if ( null != resStr ) {
                     JSONObject result = new JSONObject( resStr );
                     if ( 0 == result.optInt( "err", -1 ) ) {
                         DBUtils.clearObits( m_context, m_obits );
                     }
-                } else {
-                    Log.e( TAG, "runViaWeb(): KILL => null" );
                 }
             } catch ( JSONException ex ) {
                 Assert.assertFalse( BuildConfig.DEBUG );
-            }
-        }
-
-        private void runWithProxySocket()
-        {
-            Socket socket = makeProxySocket( m_context, 10000 );
-            if ( null != socket ) {
-                int strLens = 0;
-                int nObits = 0;
-                for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                    String relayID = m_obits[ii].m_relayID;
-                    if ( null != relayID ) {
-                        ++nObits;
-                        strLens += relayID.length() + 1; // 1 for /n
-                    }
-                }
-
-                try {
-                    DataOutputStream outStream =
-                        new DataOutputStream( socket.getOutputStream() );
-                    outStream.writeShort( 2 + 2 + (2*nObits) + strLens );
-                    outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                    outStream.writeByte( NetUtils.PRX_DEVICE_GONE );
-                    outStream.writeShort( m_obits.length );
-
-                    for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                        String relayID = m_obits[ii].m_relayID;
-                        if ( null != relayID ) {
-                            outStream.writeShort( m_obits[ii].m_seed );
-                            outStream.writeBytes( relayID );
-                            outStream.write( '\n' );
-                        }
-                    }
-
-                    outStream.flush();
-
-                    DataInputStream dis =
-                        new DataInputStream( socket.getInputStream() );
-                    short resLen = dis.readShort();
-                    socket.close();
-
-                    if ( resLen == 0 ) {
-                        DBUtils.clearObits( m_context, m_obits );
-                    }
-                } catch ( java.io.IOException ioe ) {
-                    Log.ex( TAG, ioe );
-                }
             }
         }
     }

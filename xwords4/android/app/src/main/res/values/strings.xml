@@ -2486,8 +2486,8 @@
   <string name="advanced">For debugging</string>
   <string name="advanced_summary">You should never need these...</string>
   <string name="relay_host">Relay host</string>
-  <string name="relay_via_http">Use Web APIs</string>
-  <string name="relay_via_http_summary">(instead of custom protocol to ports below)</string>
+  <string name="relay_via_http_first">Use Web APIs first</string>
+  <string name="relay_via_http_first_summary">(instead of as fallback for custom protocol)</string>
   <string name="dict_host">Wordlist download URL</string>
   <string name="logging_on">Enable logging</string>
   <string name="logging_on_summary">(release builds only)</string>

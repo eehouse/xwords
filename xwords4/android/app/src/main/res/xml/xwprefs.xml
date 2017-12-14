@@ -426,9 +426,9 @@
           android:defaultValue="@string/default_host"
           />
 
-      <CheckBoxPreference android:key="@string/key_relay_via_http"
-                          android:title="@string/relay_via_http"
-                          android:summary="@string/relay_via_http_summary"
+      <CheckBoxPreference android:key="@string/key_relay_via_http_first"
+                          android:title="@string/relay_via_http_first"
+                          android:summary="@string/relay_via_http_first_summary"
                           android:defaultValue="false"
                           />
 
