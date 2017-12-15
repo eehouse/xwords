@@ -160,7 +160,7 @@ public class RelayService extends XWService
     {
         boolean enabled = ! XWPrefs
             .getPrefsBoolean( context, R.string.key_disable_relay, false );
-        Log.d( TAG, "relayEnabled() => %b", enabled );
+        // Log.d( TAG, "relayEnabled() => %b", enabled );
         return enabled;
     }
 
