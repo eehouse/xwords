@@ -6,6 +6,13 @@
         android:title="@string/board_menu_invite"
         />
 
+  <item android:id="@+id/board_menu_archive"
+        android:title="@string/button_archive"
+        />
+  <item android:id="@+id/board_menu_rematch"
+        android:title="@string/button_rematch"
+        />
+
   <group android:id="@+id/group_done">
     <!-- title set in BoardActivity -->
     <item android:id="@+id/board_menu_done"
@@ -78,21 +85,21 @@
     </menu>
   </item>
 
-    <item android:id="@+id/games_menu_study"
-          android:title="@string/gamel_menu_study"
-          />
+  <item android:id="@+id/games_menu_study"
+        android:title="@string/gamel_menu_study"
+        />
 
-    <item android:id="@+id/gamel_menu_checkmoves"
-          android:title="@string/gamel_menu_checkmoves"
-          />
+  <item android:id="@+id/gamel_menu_checkmoves"
+        android:title="@string/gamel_menu_checkmoves"
+        />
 
-    <item android:id="@+id/board_menu_file_prefs"
-          android:title="@string/menu_prefs"
-          android:alphabeticShortcut="P"
-          />
-    <item android:id="@+id/board_menu_game_netstats"
-          android:title="@string/board_menu_game_netstats" />
-    <item android:id="@+id/board_menu_game_invites"
-          android:title="@string/board_menu_game_showInvites" />
+  <item android:id="@+id/board_menu_file_prefs"
+        android:title="@string/menu_prefs"
+        android:alphabeticShortcut="P"
+        />
+  <item android:id="@+id/board_menu_game_netstats"
+        android:title="@string/board_menu_game_netstats" />
+  <item android:id="@+id/board_menu_game_invites"
+        android:title="@string/board_menu_game_showInvites" />
 
 </menu>
