@@ -1709,7 +1709,9 @@
 
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
-    <string name="about_credits">Toolbar icons by Sarah Chu.</string>
+    <string name="about_credits">Toolbar icons by Sarah Chu. Navbar
+    icons from the Noun Project: \"archive\" by Trendy; \"rematch\" by
+    Becris; and \"swap\" by iconomania.</string>
 
     <!-- text of dialog showing the set of changes made since the last
          release -->
