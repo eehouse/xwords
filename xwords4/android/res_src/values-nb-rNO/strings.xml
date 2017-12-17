@@ -284,7 +284,6 @@
     <string name="invite_choice_sms">SMS (tekstmelding)</string>
 	<string name="invite_choice_email">E-post</string>
 	<string name="invite_choice_bt">Blåtann</string>
-	<string name="invite_choice_p2p"></string>
 	<string name="invite_choice_title">Invitasjon av spillere: Hvordan?</string>
     <string name="chat_local_id">"Meg: "</string>
     <string name="chat_other_id">"Ikke meg: "</string>
@@ -445,7 +444,6 @@
     <string name="download_failed">Nedlasting mislyktes</string>
 
     <string name="default_loc">Lagre ordlister internt</string> 
-    <string name="default_loc_summary"></string>
 
     <string name="download_path_title">Nedlastingsmappe</string>
 
@@ -594,7 +592,6 @@
     <string name="enable_pubroom_title">Skru på offentlige rom</string>
     <string name="enable_pubroom_summary">Rom andre kan se og ta del i</string>
 
-    <string name="connection_via_label"></string>
 
     <string name="set_pref">Skjul knapper</string>
 
@@ -612,7 +609,6 @@
   <string name="debug_features">Skru på feilrettingsfunksjoner</string>
   <string name="board_menu_game_netstats">Nettverksstatistikk</string>
   <string name="board_menu_game_showInvites">Vis invitasjoner</string>
-  <string name="git_rev_title"></string>
   <string name="name_dict_fmt">%1$s/%2$s</string>
   <string name="gamel_menu_storedb">Skriv spill til SD-kort</string>
   <string name="gamel_menu_loaddb">Last spill fra SD-kort</string>
