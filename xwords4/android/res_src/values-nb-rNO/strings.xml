@@ -1,0 +1,649 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="button_new_group">Legg til gruppe</string>
+
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+
+    <string name="robot_name_fmt">%1$s (maskin)</string>
+
+    <string name="missing_player">(ikke her enda…)</string>
+
+    <string name="summary_relay_conf_fmt">Satt opp for rom \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">Venter for spiller i rom \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Spill underveis i rom \"%1$s\"</string>
+    <string name="summary_relay_gameover_fmt">Spill over i rom \"%1$s\"</string>
+
+    <string name="summary_invites_out">Spillere invitert</string>
+    <string name="summary_invites_out_fmt">Spillere invitert til rom \"%1$s\"</string>
+
+    <string name="gameOver">Spill over</string>
+    <plurals name="moves_fmt">
+	<item quantity="one">%1$d trekk gjort</item>
+	<item quantity="other">%1$d trekk gjort</item>
+</plurals>
+
+    <string name="button_delete">Slett</string>
+    <string name="button_reset">Tilbakestill</string>
+
+    <string name="gamel_menu_dicts">Ordlister…</string>
+
+    <string name="menu_prefs">Programinnstillinger</string>
+
+    <string name="gamel_menu_checkmoves">Sjekk trekk</string>
+
+    <string name="board_menu_file_about">Om</string>
+
+    <string name="list_item_config">Spillinnstillinger…</string>
+    <string name="list_item_rename">Gi nytt navn…</string>
+    <string name="list_item_move">Flytt til gruppe…</string>
+
+    <string name="list_item_delete">Slett spill</string>
+    <string name="list_item_reset">Tilbakestill</string>
+    <string name="list_item_new_from">Nytt fra</string>
+    <string name="list_item_copy">Kopier</string>
+    <string name="game_rename_title">Gi nytt navn</string>
+    <string name="rename_label">Endre navnet på dette spillet til:</string>
+    <string name="rename_label_caveat">Endre navnet på dette spillet (kun på denne enheten) til:</string>
+
+    <string name="title_dicts_list">CrossWords-ordlister</string>   
+    <string name="download_more">Last ned flere…</string>
+
+    <string name="loc_builtin">Innebygd</string>
+
+    <string name="loc_downloads">Nedlastinger</string>
+
+    <string name="dicts_item_move">Endre nedlastingsplassering</string>
+
+    <string name="dicts_item_select">Gjør til forvalg</string>
+
+    <plurals name="confirm_delete_dict_fmt">
+	  <item quantity="one">Er du sikker på at du vil slette ordlisten %1$s?</item>
+	  <item quantity="other">Er du sikker på at du vil slette ordlistene %1$s?</item>
+    </plurals>
+
+    <string name="confirm_deleteonly_dicts_fmt">Sletting av %1$s vil bety at du står uten noen %2$s-ordlister. Ett eller flere spill vil ikke kunne åpnes (til du laster ned en erstatningsliste).</string>
+
+    <string name="button_default_human">Menneske</string>
+    <string name="button_default_robot">Maskin</string>
+    <string name="button_default_both">Begge</string>
+
+    <string name="move_dict_fmt">Plassering for ordlisten %1$s</string>
+
+    <string name="loc_internal">Intern</string>
+    <string name="loc_external">Ekstern</string>
+
+    <string name="title_game_config_fmt">Innstillinger for %1$s</string>  
+
+    <string name="title_gamenet_config_fmt">%1$s-innstillinger (nettverksbasert)</string>  
+
+    <string name="title_langs_list">Språk (basert på installerte ordlister)</string>
+
+    <string name="game_locked">Lås innstillinger</string>
+
+    <string name="players_label_standalone">Spillere (trykk for å redigere)</string>
+
+    <string name="button_add_player">Legg til spiller</string>
+
+    <string name="button_juggle_players">Veksle spillere</string>
+
+    <string name="lang_label">Spillspråk</string>
+    <string name="langdict_label">Spillspråk/ordliste</string>
+
+    <string name="connect_label_fmt">Tilkobling (via %1$s)</string>
+
+    <string name="join_room">Ta del i offentlig rom</string>
+
+    <string name="new_room_hint">Romnavn</string>
+
+    <string name="room_public">Gjør nytt navn offentlig</string>
+
+    <string name="room_public_prompt">Sett offentlig rom</string>
+
+    <string name="public_names_progress_fmt">Henter offentlige rom for %1$d-spillerrom i %2$s.</string>
+
+    <string name="no_name_found_fmt">Ingen offentlige rom funnet for %1$d-spillerrom i %2$s. Prøv å gjenoppfriske eller å opprette ditt eget.</string>
+
+    <string name="settings_label">Andre innstillinger</string>
+
+    <string name="hints_allowed">Tillat hint</string>
+
+    <string name="nethints_allowed">Tillat hint (nettverksbasert)</string>
+
+    <string name="use_timer">Skru på spillklokke</string>
+
+    <string name="minutes_label">Minutter per spiller</string>
+
+    <string name="robot_spinner_prompt">Hvor smart skal maskinen være?</string>
+
+    <string name="robot_smart">Smart maskin</string>
+    <string name="robot_smarter">Smartere maskin</string>
+    <string name="robot_smartest">Smartest maskin</string>
+
+    <string name="confirm_save_title">Bekreft lagring</string>
+
+    <string name="play">Ta del i spill</string>
+
+    <string name="player_label">Navn:</string>
+
+    <string name="dict_lang_label_fmt">Ordliste (i %1$s)</string>
+
+    <string name="dicts_list_prompt_fmt">Installerte ordlister (i %1$s)</string>
+
+    <string name="robot_label">Maskinspiller</string>
+
+    <string name="password_label">Passord</string>
+
+
+    <string name="button_trade_commit">Bekreft bytte</string>
+    <string name="button_trade_cancel">Avbryt bytte</string>
+
+    <string name="entering_trade">Trykk på flisene for å velge…</string>
+
+
+    <string name="no_moves_made">(Ingen trekk enda)</string>
+
+    <string name="invit_expl_bt_fmt">Invitasjon sendt via Blåtann til tilknyttet enhet \"%1$s\" på %2$s</string>
+    <string name="invit_expl_notarget_fmt">Invitasjon sendt via %1$s på %2$s. Ukjent mottaker.</string>
+
+    <string name="relay_alert">Tilkoblingsproblem</string>
+
+    <string name="msg_no_room">Ingen vert har registrert et rom ved det navnet.</string>
+
+    <string name="board_menu_game_history">Spillhistorikk…</string>
+
+    <string name="board_menu_game_resign">Kapituler</string>
+
+    <string name="board_menu_game_resend">Send trekk på nytt</string>
+
+    <string name="str_robot_moved_fmt">"Maskinen %1$s gjorde dette trekket: "</string>
+    <string name="player_edit_title">Rediger spiller</string>
+
+    <string name="badwords_accept">" Ønsker du fremdeles å godta dette trekket?"</string>
+    <string name="badwords_title">Illegale ord</string>
+
+    <string name="board_menu_done">Tur over</string>
+
+    <string name="board_menu_trade">Bytt</string>
+
+    <string name="board_menu_undo_last">Angre siste</string>
+
+    <string name="board_submenu_game">Spill →</string>
+
+    <string name="board_menu_game_left">Fliser som gjenstår…</string>
+
+    <plurals name="strd_robot_traded_fmt">
+	<item quantity="one">utvekslet ei flis.</item>
+	<item quantity="other">utvekslet %1$d flis.</item>
+</plurals>
+    <string name="strs_new_tiles_fmt">Nye fliser: %1$s</string>
+    <string name="strss_traded_for_fmt">Utvekslet %1$s for %2$s.</string>
+    <string name="vs_join">" mot "</string>
+
+    <string name="str_bonus_all">Bonus for bruk av alle flis: 50
+\n</string>
+    <string name="strd_turn_score_fmt">Poengsum for tur: %1$d
+\n</string>
+
+    <plurals name="strd_remains_header_fmt">
+	<item quantity="one">%1$d flis igjen å trekke fra.</item>
+	<item quantity="other"></item>
+</plurals>
+    <string name="button_revert_colors">Gjenopprett farger</string>
+    <string name="confirm_revert_all">Er du sikker på at du ønsker å tilbakestille alle innstillingene til forvalg?</string>
+
+    <string name="prefs_defaults">Nye spillforvalg</string>
+    <string name="prefs_defaults_summary">Forvalgte innstillinger for nye spill</string>
+
+    <string name="prefs_names">Spillernavn</string>
+
+    <string name="prefs_names_summary">Forvalgte spillernavn</string>
+
+    <string name="pref_player1_name">Første spiller</string>
+    <string name="pref_player2_name">Andre spiller</string>
+    <string name="pref_player3_name">Tredje spiller</string>
+    <string name="pref_player4_name">Fjerde spiller</string>
+
+    <string name="pref_human_name">Menneskelig spiller</string>
+
+    <string name="prefs_dicts">Ordlister</string>
+    <string name="prefs_dicts_summary">Forvalgte ordlister</string>
+
+    <string name="default_dict">Ordlister for mennesker</string>
+    <string name="default_robodict">Ordlister for roboter</string>
+
+    <string name="hints_allowed_sum">Skru på hint-funksjonen</string>
+
+    <string name="nethints_allowed_sum">Skru på hint for to-enhets -spill</string>
+
+    <string name="init_autojuggle">Sjongler spillere</string>
+    <string name="init_autojuggle_sum">Tilfeldig, for nye spill</string>
+
+    <string name="board_size">Brettstørrelse</string>
+
+    <string name="prefs_appearance">Utseende</string>
+    <string name="prefs_appearance_summary">Innstillinger for utseende</string>
+
+    <string name="summary_field">Inkluder i spilliste</string>
+
+    <string name="game_summary_field_empty">&lt;Ingenting&gt;</string>
+    <string name="game_summary_field_language">Spillspråk</string>
+    <string name="game_summary_field_opponents">Motstander[e]</string>
+    <string name="game_summary_field_state">Spilltilstand</string>
+
+    <string name="hide_title">Skjul tittellinje</string>
+    <string name="hide_title_summary">Å skjule spillnavn levner litt mer plass til utvidelse av brettet</string>
+
+    <string name="hide_newgames_title">Skjul knapp for nytt spill</string>
+    <string name="hide_newgames_summary">Å skjule knappen for nytt spill på hovedskjermen gjør spillet mer synlig</string>
+
+    <string name="show_arrow">Vis brettpil</string>
+    <string name="keep_screenon">Behold skjerm påslått</string>
+    <string name="keep_screenon_summary">Behold brettskjermen påslått i 10 minutter</string>
+
+    <string name="prefs_colors">Individuelle farger</string>
+    <string name="prefs_colors_summary">Rediger fargene brukt på brettet</string>
+
+    <string name="bonus_l2x">Dobbeltbokstav</string>
+    <string name="bonus_l3x">Trippelbokstav</string>
+    <string name="bonus_w2x">Dobbelord</string>
+    <string name="bonus_w3x">Trippelord</string>
+
+    <string name="tile_back">Flisbakgrunn</string>
+
+    <string name="empty">Tom celle/bakgrunn</string>
+
+    <string name="background">Brettbakgrunn</string>
+
+    <string name="red">Rød</string>
+    <string name="green">Grønn</string>
+    <string name="blue">Blå</string>
+    
+
+    <string name="prefs_behavior">Oppførsel</string>
+    <string name="explain_robot">Forklar andre trekk</string>
+    <string name="title_sort_tiles">Sorter nye flis</string>
+    <string name="peek_other_summary">Å trykke noens navn på resultattavla viser vedkommendes flis</string>
+    
+    <string name="network_behavior">Innstillinger for nettverksspill</string>
+    <string name="network_behavior_summary">Innstillinger som har innvirkning på nettverksspill</string>
+    <string name="connect_never">Aldri sjekk</string>
+    <string name="connect_five_mins">Hvert femte minutt</string>
+    <string name="connect_fifteen_mins">Hvert kvarter</string>
+    <string name="connect_thirty_mins">Hver halvtime</string>
+    <string name="connect_one_hour">Hver time</string>
+    <string name="connect_six_hours">Hver sjette time</string>
+    <string name="connect_daily">Én gang om dagen</string>
+
+    <string name="notify_sound">Spill lyd</string>
+
+    <string name="notify_vibrate">Vibrer</string>
+
+    <string name="notify_other_summary">Når motstanderens trekk mottas</string>
+
+    <string name="newgame_invite">Inviter nå</string>
+    <string name="newgame_invite_more">Mer info</string>
+    <string name="invite_choice_sms">SMS (tekstmelding)</string>
+	<string name="invite_choice_email">E-post</string>
+	<string name="invite_choice_bt">Blåtann</string>
+	<string name="invite_choice_p2p"></string>
+	<string name="invite_choice_title">Invitasjon av spillere: Hvordan?</string>
+    <string name="chat_local_id">"Meg: "</string>
+    <string name="chat_other_id">"Ikke meg: "</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_hint">Skriv her…</string>
+
+    <string name="chat_menu_clear">Tøm historikk</string>
+
+
+    <string name="no_empty_rooms">Dette spillet kan ikke koble til uten et romnavn.</string>
+
+
+
+    <string name="str_tiles_not_in_line">Alle spilte flis må være i en linje.</string>
+
+    <string name="str_too_few_tiles_left_to_trade">For få flis igjen å bytte.</string>
+
+    <string name="downloading_dict_fmt">Laster ned %1$s…</string>
+
+    <string name="no_dict_title">Ordliste ikke funnet</string>
+
+    <string name="button_close_game">Lukk spill</string>
+
+    <string name="no_dict_fmt">Spillet \"%1$s\" krever en %2$s-ordliste. Last ned én før du åpner det.</string>
+
+    <string name="button_download">Last ned</string>
+
+    <string name="button_substdict">Erstatt</string>
+
+    <string name="msg_ask_password_fmt">Passord for \"%1$s\":</string>
+
+    <string name="game_fmt">Spill %1$d</string>
+
+    <string name="player_fmt">Spiller %1$d</string>
+
+    <string name="notify_chat_title_fmt">Sludremelding i spillet %1$s</string>
+    <string name="notify_chat_body_fmt">%1$s: %2$s</string>
+    <string name="button_yes">Ja</string>  
+    <string name="button_no">Nei</string>  
+
+    <string name="button_save">Lagre</string>
+    <string name="button_discard">Forkast</string>
+
+    <string name="button_retry">Prøv igjen</string>  
+
+    <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
+    <string name="tile_pick_summary_fmt">Nåværende valg: %1$s</string>
+
+    <string name="tiles_left_title">Gjenstående flis</string>
+
+    <string name="history_title">Spillhistorikk</string>
+
+    <string name="query_title">Et spørsmål…</string>
+
+    <string name="newbie_title">Her er et tips</string>
+
+    <string name="button_notagain">Ikke vis igjen</string>
+
+    <string name="not_again_undo">Denne knappen angrer eller gjentar nåværende trekk.</string>
+    <string name="default_name_title">Forvalgt spillernavn</string>
+    <string name="default_name_message">Skriv inn navnet ditt her. Det vil bli brukt til opprettelse av nye spill. (Du kan endre det senere i \"Nytt spillforvalg\"-delen i innstillingene.)</string>
+
+    <string name="changes_title">Nylige endringer</string>
+    <string name="changes_button">Nylige endringer</string>
+
+    <string name="button_lookup_fmt">Slå opp %1$s</string>
+    <string name="button_done">Ferdig</string>
+      <string name="button_done_fmt">Ferdig med %1$s</string>
+
+      <string name="pick_url_title_fmt">Slå opp %1$s i</string>
+
+      <string name="board_menu_pass">Hopp over</string>
+
+      <string name="not_again_lookup">Denne knappen lar deg slå opp ord som akkurat ble spilt på nett.</string>
+
+      <string name="button_move">Flytt</string>
+    <string name="button_newgroup">Ny gruppe</string>
+
+      <string name="button_search">Finn</string>
+      <string name="word_search_hint">Første bokstaver</string>
+      <string name="tilepick_all_fmt">Plukk %1$d for meg</string>
+      <string name="disableds_title">Avskrudde adressetyper</string>
+
+      <string name="dict_browse_title_fmt">%1$s (%2$d ord ved bruk av %3$d-%4$d flis)</string>
+      <string name="dict_browse_title1_fmt">%1$s (%2$d ord ved bruk av %3$d flis</string>
+      <string name="dict_browse_nowords_fmt">Ingen ord i %1$s starter med %2$s.</string>
+      <string name="not_again_browse">Denne knappen åpner ordlisteutforskeren i gjeldende spillers ordliste.</string>
+      <string name="not_again_browseall">Denne knappen åpner ordlisteutforskeren i ordlisten du ønsker.</string>
+      <string name="alert_empty_dict_fmt">Ordlisten %1$s inneholder kun flisinformasjon. Det er ingen ord å utforske.</string>
+
+      <string name="min_len">Min. lengde</string>
+      <string name="max_len">Maks. lengde</string>
+      <string name="prompt_min_len">Ord som ikke er kortere enn</string>
+      <string name="prompt_max_len">Ord som ikke er lengre enn</string>
+
+      <string name="email_author_chooser">Send kommentar via</string>
+
+      <string name="summary_wait_guest">Ikke tilkoblet</string>
+      <string name="summary_gameover">Spill over</string>
+      <string name="summary_conn">Spill underveis</string>
+      <string name="invite_notice_title">Nytt spill via invitasjon</string>
+      <string name="new_bt_body_fmt">En spiller på enheten %1$s ønsker å starte et spill</string>
+    <string name="new_relay_body">Trykk for å åpne et nytt spill</string>
+
+
+      <string name="bt_resend_fmt">"Blåtannsforsendelse til %1$s mislyktes; prøv %3$d  i %2$d sekunder."</string>
+    <string name="bt_fail_fmt">Blåtannsforsendelser til %1$s har mislyktes for mange ganger. Åpne spillet igjen og prøv på nytt.</string>
+        <string name="bt_invite_title">Blåtannsinvitasjon</string>
+    <string name="sms_invite_title">SMS-invitasjon</string>
+	<string name="game_name_label">Nytt spillnavn:</string>
+    <string name="new_name_body_fmt">%1$s har invitert deg til å spille</string>
+    <string name="button_sms_add">Importer kontakt</string>
+    <string name="button_relay_add">Skann spill</string>
+    <string name="get_sms_number">Enhetens telefonnummer:</string>
+    <string name="get_sms_name">Kontaktnavn (valgfritt):</string>
+    <string name="get_relay_name">Enhetsnavn (valgfritt):</string>
+    <string name="get_relay_number">Skriv inn enhets-ID:</string>
+
+    <string name="summary_conn_sms_fmt">Spill underveis med %1$s</string>
+    <string name="menu_hint_prev">Forrige hint</string>
+
+    <string name="menu_hint_next">Neste hint</string>
+
+    <string name="board_menu_undo_current">Angre/gjenta</string>
+
+    <string name="menu_chat">Sludring</string>
+    <string name="chat_sender_fmt">%1$s:</string>
+    <string name="menu_toggle_values">Veksle verdier</string>
+
+    <string name="board_menu_dict">Utforsk ordliste</string>
+
+    <string name="connstat_lastsend_fmt">Siste forsendelse var %1$s (%2$s)</string>
+    <string name="connstat_lastreceipt_fmt">Siste kvittering var %1$s</string>
+    <string name="connstat_noreceipt">Ingen meldinger mottatt.</string>
+    <string name="connstat_sms">SMS/tekstmelding</string>
+    <string name="enable_sms">Tillat spill via SMS</string>
+    <string name="enable_sms_summary">Kun hvis du har ubegrensede tekstmeldinger!</string>
+
+    <string name="confirm_sms_title">Bekreft din SMS-plan</string>
+    <string name="button_enable_sms">Skru på SMS</string>
+    <string name="button_enable_bt">Skru på Blåtann</string>
+    <string name="button_later">Senere</string>
+
+    <string name="gamel_menu_checkupdates">Se etter oppdateringer</string>
+    <string name="checkupdates_none_found">Alt er oppdatert.</string>
+    <string name="new_dict_avail">Ny ordliste tilgjengelig</string>
+    <string name="new_dict_avail_fmt">Trykk for å oppgradere %1$s</string>
+    <string name="new_app_avail_fmt">Ny %1$s-versjon</string>
+    <string name="new_app_avail">Trykk for å laste ned og installere</string>
+    <string name="inform_dict_diffdict_fmt">Du bruker ordlista %1$s, men spillverten bruker %2$s. Ønsker du å bruke %3$s også?</string>
+    <string name="inform_dict_download">" (Du må i tilfelle late den ned først.)"</string>
+    <string name="missing_dict_title">Spillinvitasjon venter</string>
+	<string name="missing_dict_detail">Trykk for å laste ned manglende ordliste</string>
+    <string name="invite_dict_missing_title">Manglende ordliste</string>
+    <string name="button_decline">Avslå</string>
+
+    <string name="download_done">Nedlasting fullført</string>
+    <string name="download_failed">Nedlasting mislyktes</string>
+
+    <string name="default_loc">Lagre ordlister internt</string> 
+    <string name="default_loc_summary"></string>
+
+    <string name="download_path_title">Nedlastingsmappe</string>
+
+    <string name="newgroup_label">Navnet på din nye gruppe:</string>
+
+    <string name="list_group_delete">Slett gruppe</string>
+    <string name="list_group_rename">Gi nytt navn</string>
+    <string name="list_group_default">Putt nye spill her</string>
+    <string name="list_group_moveup">Flytt oppover</string>
+    <string name="list_group_movedown">Flytt nedover</string>
+
+    <string name="group_cur_games">Mine spill</string>
+    <string name="group_new_games">Nye spill</string>
+
+    <string name="rename_group_label">Endre navnet på denne gruppen til:</string>
+    <string name="game_name_group_title">Navngi gruppe</string>
+
+    <string name="cannot_delete_default_group_fmt">Gruppen for nye spill, %1$s, kan ikke slettes.</string>
+
+    <plurals name="group_name_fmt">
+	<item quantity="one">%1$s (%2$d spill)</item>
+	<item quantity="other">%1$s (%2$d spill)</item>
+</plurals>
+
+    <string name="button_reconnect">Koble til igjen</string>
+
+    <string name="change_group">Flytt valgte spill til:</string>
+
+    <string name="sel_games_fmt">Spill: %1$d</string>
+    <string name="sel_groups_fmt">Grupper: %1$d</string>
+    <string name="summary_thumbsize">Miniatyrbildestørrelse</string>
+    <string name="thumb_off">Avskrudd</string>
+
+    <string name="cur_menu_marker_fmt">%1$s (i bruk)</string>
+    <string name="add_to_study_fmt">Legg til %1$s i studieliste</string>
+    <string name="title_studyon">Skru på studielister</string>
+    <string name="summary_studyon">Tilby å legge til og vise lister over ord å huske</string>
+    <string name="gamel_menu_study">Studieliste…</string>
+
+    <string name="slmenu_copy_sel">Kopier til utklippstavle</string>
+    <string name="slmenu_clear_sel">Slett valgte</string>
+    <string name="add_done_fmt">%1$s lagt til i %2$s studieliste</string>
+    <string name="studylist_title_fmt">Studieliste for %1$s</string>
+
+    <string name="study_langpick">Dine ord for:</string>
+
+    <string name="lookup_title">Ordoppslag</string>
+
+    <string name="slmenu_select_all">Velg alle</string>
+    <string name="slmenu_deselect_all">Fravelt alle</string>
+    <string name="sel_items_fmt">Valgt: %1$d</string>
+
+    <string name="loc_menu_xlate">Oversett</string>
+    <string name="loc_lang_blessed">%1$s (offisiell)</string>
+    <string name="loc_lang_local">%1$s (din)</string>
+
+    <plurals name="new_xlations_fmt">
+	<item quantity="one">Installerte én ny oversettelse</item>
+	<item quantity="other">Installerte %1$d nye oversettelser</item>
+</plurals>
+
+    <string name="xlations_enabled_title">Skru på lokal oversetting</string>
+    <string name="xlations_enabled_summary">Legg til valget i hver skjermmeny</string>
+
+    <string name="loc_filters_prompt">Filtrer etter:</string>
+    <string name="loc_search_prompt">Søk etter:</string>
+    <string name="loc_filters_all">Alle</string>
+    <string name="loc_filters_screen">Siste skjerm</string>
+    <string name="loc_filters_menu">Seneste meny</string>
+    <string name="loc_filters_modified">Endret av meg</string>
+    
+    <string name="lang_name_english">Engelsk</string>
+    <string name="lang_name_french">Fransk</string>
+    <string name="lang_name_german">Tysk</string>
+    <string name="lang_name_turkish">Tyrkisk</string>
+    <string name="lang_name_arabic">Arabisk</string>
+    <string name="lang_name_spanish">Spansk</string>
+    <string name="lang_name_swedish">Svensk</string>
+    <string name="lang_name_polish">Polsk</string>
+    <string name="lang_name_danish">Dansk</string>
+    <string name="lang_name_italian">Italiensk</string>
+    <string name="lang_name_dutch">Hollandsk</string>
+    <string name="lang_name_catalan">Katalansk</string>
+    <string name="lang_name_portuguese">Portugisisk</string>
+    <string name="lang_name_russian">Russisk</string>
+    <string name="lang_name_czech">Tsjekkisk</string>
+    <string name="lang_name_greek">Gresk</string>
+    <string name="lang_name_slovak">Slovakisk</string>
+
+    <string name="loc_item_clear">Tøm</string>
+    <string name="loc_item_check">Sjekk</string>
+    <string name="remote_digesting">Behandler ordlisteinformasjon…</string>
+    <string name="delete_dicts">Slett ordliste[r]</string>
+
+    <string name="show_remote">Vis nedlastbare</string>
+    <string name="progress_title">Laster ned</string>
+
+    <string name="dict_on_server">Trykk for detaljer</string>
+    <plurals name="lang_name_fmt">
+	<item quantity="one">%1$s (%2$d ordlister)</item>
+	<item quantity="other">%1$s (%2$d ordlister)</item>
+</plurals>
+
+    <string name="dict_desc_fmt">%1$s (%2$s/%3$d ord)</string>
+
+    <string name="lang_unknown">Ukjent</string>
+
+    <string name="force_tablet_title">Bruk brett- (side-ved-side) -oppsett?</string>
+    <string name="force_tablet_default">Bruk forvalg for min enhet</string>
+    <plurals name="nag_hours_fmt">
+	<item quantity="one">%1$d time</item>
+	<item quantity="other">%1$d timer</item>
+</plurals>
+    <plurals name="nag_days_fmt">
+	<item quantity="one">%1$d dag</item>
+	<item quantity="other">%1$d dager</item>
+</plurals>
+    <string name="nag_body_fmt">%1$s flyttet for mer enn %2$s siden.</string>
+    <string name="nag_warn_last_fmt">Siste advarsel: %1$s</string>
+    <string name="prev_player">Din motstander</string>
+
+    <plurals name="lmi_move_fmt">
+	<item quantity="one">%1$s spilte %2$s for %3$d poeng</item>
+	<item quantity="other"></item>
+</plurals>
+    <string name="lmi_phony_fmt">%1$s mistet en tur</string>
+    <string name="default_language">Forvalgt språk</string>
+
+	<string name="title_addrs_pref">Kommuniser via</string>
+
+    <string name="new_game">Ny én-enhets -spill</string>
+    <string name="new_game_networked">Nytt nettverksbasert spill</string>
+    <string name="rematch_name_fmt">%1$s</string>
+
+    <string name="new_game_message_nodflt">Dette spillet må settes opp før det kan åpnes.</string>
+
+    <string name="use_defaults">Bruk forvalg</string>
+
+    <plurals name="nplayers_fmt">
+	<item quantity="one">Én spiller</item>
+	<item quantity="other">%1$d spillere</item>
+</plurals>
+    <string name="network_advanced_title">Avansert</string>
+    <string name="network_advanced_summary">For erfarne spillere</string>
+    <string name="invite_multi_title">Inviter flere</string>
+    <string name="enable_pubroom_title">Skru på offentlige rom</string>
+    <string name="enable_pubroom_summary">Rom andre kan se og ta del i</string>
+
+    <string name="connection_via_label"></string>
+
+    <string name="set_pref">Skjul knapper</string>
+
+    <string name="waiting_title">Venter på spillere</string>
+    <string name="waiting_invite_title">Venter på svar</string>
+    <string name="waiting_rematch_title">Omkamp underveis</string>
+    <string name="button_wait">Vent</string>
+    <string name="button_edit">Rediger</string>
+    <string name="button_discard_changes">Forkast endringer</string>
+
+    <string name="disable_nags_title">Turpåminnelser</string>
+    <string name="advanced">For feilretting</string>
+  <string name="advanced_summary">Du skal ikke trenge disse…</string>
+  <string name="logging_on">Skru på loggføring</string>
+  <string name="debug_features">Skru på feilrettingsfunksjoner</string>
+  <string name="board_menu_game_netstats">Nettverksstatistikk</string>
+  <string name="board_menu_game_showInvites">Vis invitasjoner</string>
+  <string name="git_rev_title"></string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="gamel_menu_storedb">Skriv spill til SD-kort</string>
+  <string name="gamel_menu_loaddb">Last spill fra SD-kort</string>
+  <string name="enable_dupes_summary">Godta invitasjoner mer enn én gang</string>
+  <string name="enable_sms_toself_title">Kortslutt SMS til deg selv</string>
+  <string name="force_radio_title">Lat som du har radio</string>
+  <string name="radio_name_real">Ikke lat som</string>
+  <string name="radio_name_gsm">GSM</string>
+  <string name="radio_name_cdma">CDMA</string>
+
+  <string name="pref_group_sms_title">SMS-ting</string>
+  <string name="pref_group_l10n_title">Lokaliserings-ting</string>
+  <string name="checking_title">Sjekker</string>
+  <string name="checking_for_fmt">Ser etter ordlister i %1$s…</string>
+  <string name="button_enable">Skru på</string>
+
+  <string name="str_no_hint_found">Finner ingen trekk</string>
+
+  <plurals name="resent_msgs_fmt">
+	<item quantity="one">Ett trekk sendt</item>
+	<item quantity="other">%1$s trekk sendt</item>
+</plurals>
+
+  <string name="clip_label">Invitasjonsnettadresse</string>
+  <string name="list_item_select">Velg</string>
+  <string name="list_item_deselect">Fravelg</string>
+
+  <string name="remove_sms">Fjern SMS</string>
+  <string name="button_ask_again">Spør igjen</string>
+  <string name="sms_send_failed">SMS-forsendelse mislyktes</string>
+  <string name="perms_rationale_title">Android-tilganger</string>
+  <string name="toast_no_permission">Tilgang ikke gitt</string>
+
+</resources>
