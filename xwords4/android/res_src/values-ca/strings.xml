@@ -1125,4 +1125,12 @@ aparells seleccionats?</string>
  de baixades requereix permís.</string>
 
   <string name="remove_sms">Suprimeix l\'SMS</string>
-  </resources>
+  <string name="summary_invites_out_fmt">Jugadors convidats a la sala «%1$s»</string>
+
+    <string name="download_more">Baixa\'n més…</string>
+
+    <string name="invit_expl_bt_fmt">S\'ha enviat la invitació via Bluetooth a l\'aparell emparellat «%1$s» a %2$s</string>
+    <string name="invit_expl_relay_fmt">S\'ha enviat la invitació via el repetidor d\'un altre aparell a %1$s</string>
+    <string name="invit_expl_notarget_fmt">S\'ha enviat la invitació via %1$s a %2$s. Destinatari desconegut.</string>
+
+    </resources>
