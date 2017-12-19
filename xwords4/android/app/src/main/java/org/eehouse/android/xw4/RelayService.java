@@ -619,7 +619,7 @@ public class RelayService extends XWService
     private boolean skipNativeSend()
     {
         boolean skip = m_nativeFailScore > 10 || m_skipUPDSet;
-        // Log.d( TAG, "skipNativeSend() => %b", skip );
+        // Log.d( TAG, "skipNativeSend(score=%d)) => %b", m_nativeFailScore, skip );
         return skip;
     }
 
@@ -722,6 +722,8 @@ public class RelayService extends XWService
     private int sendViaUDP( List<PacketData> packets )
     {
         int sentLen = 0;
+        long now = System.currentTimeMillis();
+
         for ( PacketData packet : packets ) {
             boolean getOut = true;
             byte[] data = packet.assemble();
@@ -731,6 +733,7 @@ public class RelayService extends XWService
 
                 sentLen += udpPacket.getLength();
                 noteSent( packet, s_packetsSentUDP );
+                packet.setSent( now );
                 getOut = false;
             } catch ( java.net.SocketException se ) {
                 Log.ex( TAG, se );
@@ -775,7 +778,6 @@ public class RelayService extends XWService
                                 } else {
                                     ++m_nativeFailScore; // FAILED: increment
                                     resend = true;       // if ANY fails, resend all
-                                    stillThere.setForWeb();
                                 }
                             }
                         }
@@ -1366,7 +1368,7 @@ public class RelayService extends XWService
         return nextPacketID;
     }
 
-    private static void noteAck( int packetID, boolean fromUDP )
+    private void noteAck( int packetID, boolean fromUDP )
     {
         PacketData packet;
         Map<Integer, PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
@@ -1591,7 +1593,7 @@ public class RelayService extends XWService
         public byte[] m_header;
         public int m_packetID;
         private long m_created;
-        private boolean m_useWeb;
+        private long m_sentUDP;
 
         public PacketData() {
             m_bas = null;
@@ -1612,8 +1614,8 @@ public class RelayService extends XWService
                                   System.currentTimeMillis() - m_created );
         }
 
-        void setForWeb() { m_useWeb = true; }
-        boolean getForWeb() { return m_useWeb; }
+        void setSent( long ms ) { m_sentUDP = ms; }
+        boolean getForWeb() { return m_sentUDP != 0; }
 
         public boolean isEOQ() { return 0 == getLength(); }
 
