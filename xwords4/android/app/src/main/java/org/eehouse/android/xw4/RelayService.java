@@ -121,7 +121,8 @@ public class RelayService extends XWService
     private int m_maxIntervalSeconds = 0;
     private long m_lastGamePacketReceived;
     // m_nativeNotWorking: set to true if too many acks missed?
-    private boolean m_nativeNotWorking = false;
+    private int m_nativeFailScore;
+    private boolean m_skipUPDSet;
     private static DevIDType s_curType = DevIDType.ID_TYPE_NONE;
     private static long s_regStartTime = 0;
 
@@ -318,7 +319,7 @@ public class RelayService extends XWService
     // Exists to get incoming data onto the main thread
     private static void postData( Context context, long rowid, byte[] msg )
     {
-        Log.d( TAG, "postData(): packet of length %d for token %d",
+        Log.d( TAG, "postData(): packet of length %d for token (rowid) %d",
                msg.length, rowid );
         if ( DBUtils.haveGame( context, rowid ) ) {
             Intent intent = getIntentTo( context, MsgCmds.RECEIVE )
@@ -386,6 +387,8 @@ public class RelayService extends XWService
                     }
                 }
             };
+
+        m_skipUPDSet = XWPrefs.getSkipToWebAPI( this );
     }
 
     @Override
@@ -581,7 +584,7 @@ public class RelayService extends XWService
                     }, getClass().getName() );
                 m_UDPReadThread.start();
             } else {
-                Log.i( TAG, "m_UDPReadThread not null and assumed to be running" );
+                // Log.i( TAG, "m_UDPReadThread not null and assumed to be running" );
             }
         } else {
             Log.i( TAG, "startUDPThreadsIfNot(): UDP disabled" );
@@ -615,10 +618,8 @@ public class RelayService extends XWService
 
     private boolean skipNativeSend()
     {
-        boolean skip = m_nativeNotWorking;
-        if ( ! skip ) {
-            skip = XWPrefs.getSkipToWebAPI( RelayService.this );
-        }
+        boolean skip = m_nativeFailScore > 10 || m_skipUPDSet;
+        // Log.d( TAG, "skipNativeSend() => %b", skip );
         return skip;
     }
 
@@ -698,7 +699,7 @@ public class RelayService extends XWService
                         JSONObject resultObj = new JSONObject( result );
                         JSONArray resData = resultObj.getJSONArray( "data" );
                         int nReplies = resData.length();
-                        Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
+                        // Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
 
                         noteSent( packets, s_packetsSentWeb ); // before we process the acks below :-)
 
@@ -759,23 +760,30 @@ public class RelayService extends XWService
 
     private void startAckTimer( final List<PacketData> packets )
     {
+        Assert.assertTrue( packets.size() > 0 );
         Runnable ackTimer = new Runnable() {
                 @Override
                 public void run() {
-                    List<PacketData> forResend = new ArrayList<>();
-                    Log.d( TAG, "ackTimer.run() called" );
+                    boolean resend = false;
+                    // Log.d( TAG, "ackTimer.run() called for %d packets", packets.size() );
                     synchronized ( s_packetsSentUDP ) {
                         for ( PacketData packet : packets ) {
-                            PacketData stillThere = s_packetsSentUDP.remove(packet.m_packetID);
-                            if ( stillThere != null ) {
-                                Log.d( TAG, "packed %d not yet acked; resending",
-                                       stillThere.m_packetID );
-                                stillThere.setForWeb();
-                                forResend.add( stillThere );
+                            if ( packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
+                                PacketData stillThere = s_packetsSentUDP.remove(packet.m_packetID);
+                                if ( stillThere == null ) {
+                                    --m_nativeFailScore; // got an ack: decrement
+                                } else {
+                                    ++m_nativeFailScore; // FAILED: increment
+                                    resend = true;       // if ANY fails, resend all
+                                    stillThere.setForWeb();
+                                }
                             }
                         }
+                        // Log.d( TAG, "ackScore: %d", m_nativeFailScore );
                     }
-                    m_queue.addAll( forResend );
+                    if ( resend ) {
+                        m_queue.addAll( packets );
+                    }
                 }
             };
         m_handler.postDelayed( ackTimer, 10 * 1000 );
@@ -928,7 +936,7 @@ public class RelayService extends XWService
         if ( resetBackoff ) {
             resetBackoffTimer();
         }
-    }
+    } // gotPacket()
 
     private void gotPacket( DatagramPacket packet )
     {
@@ -1564,7 +1572,7 @@ public class RelayService extends XWService
             Assert.assertTrue( diff < Integer.MAX_VALUE );
             result = (int)diff;
         }
-        Log.d( TAG, "figureBackoffSeconds() => %d", result );
+        // Log.d( TAG, "figureBackoffSeconds() => %d", result );
         return result;
     }
 
