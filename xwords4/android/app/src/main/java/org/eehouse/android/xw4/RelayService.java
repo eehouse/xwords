@@ -120,7 +120,6 @@ public class RelayService extends XWService
     private Runnable m_onInactivity;
     private int m_maxIntervalSeconds = 0;
     private long m_lastGamePacketReceived;
-    // m_nativeNotWorking: set to true if too many acks missed?
     private int m_nativeFailScore;
     private boolean m_skipUPDSet;
     private static DevIDType s_curType = DevIDType.ID_TYPE_NONE;
@@ -629,9 +628,8 @@ public class RelayService extends XWService
             m_UDPWriteThread = new Thread( null, new Runnable() {
                     public void run() {
                         Log.i( TAG, "write thread starting" );
+                        outer:
                         for ( ; ; ) {
-                            boolean exitNow = false;
-                            boolean useWeb = skipNativeSend();
                             List<PacketData> dataListUDP = new ArrayList<>();
                             List<PacketData> dataListWeb = new ArrayList<>();
                             try {
@@ -639,21 +637,16 @@ public class RelayService extends XWService
                                       null != outData;
                                       outData = m_queue.poll() ) {         // doesn't block
                                     if ( outData.isEOQ() ) {
-                                        exitNow = true;
-                                        break;
+                                        break outer;
                                     }
-                                    if ( useWeb || outData.getForWeb() ) {
-                                        dataListWeb.add(outData);
+                                    if ( skipNativeSend() || outData.getForWeb() ) {
+                                        dataListWeb.add (outData );
                                     } else {
-                                        dataListUDP.add(outData);
+                                        dataListUDP.add( outData );
                                     }
                                 }
                             } catch ( InterruptedException ie ) {
                                 Log.w( TAG, "write thread killed" );
-                                break;
-                            }
-                            if ( exitNow ) {
-                                Log.i( TAG, "stopping write thread" );
                                 break;
                             }
 
@@ -1031,7 +1024,7 @@ public class RelayService extends XWService
             if ( null != devid ) {
                 DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
-                Log.d(TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
+                // Log.d(TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
                 postPacket( bas, reg );
             } else {
                 Log.d(TAG, "requestMessagesImpl(): devid is null" );
@@ -1237,7 +1230,6 @@ public class RelayService extends XWService
         @Override
         protected Void doInBackground( Void... ignored )
         {
-            Assert.assertFalse( XWPrefs.getSkipToWebAPI( m_context ) );
             // format: total msg lenth: 2
             //         number-of-relayIDs: 2
             //         for-each-relayid: relayid + '\n': varies
@@ -1286,7 +1278,6 @@ public class RelayService extends XWService
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
 
-                Assert.assertFalse( XWPrefs.getSkipToWebAPI( m_context ) );
                 Socket socket = NetUtils.makeProxySocket( m_context, 8000 );
                 if ( null != socket ) {
                     DataOutputStream outStream =
@@ -1370,13 +1361,12 @@ public class RelayService extends XWService
 
     private void noteAck( int packetID, boolean fromUDP )
     {
-        PacketData packet;
         Map<Integer, PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
         synchronized( map ) {
-            packet = map.remove( packetID );
+            PacketData packet = map.remove( packetID );
             if ( packet != null ) {
-                Log.d( TAG, "noteAck(fromUDP=%b): removed for id %d: %s",
-                       fromUDP, packetID, packet );
+                // Log.d( TAG, "noteAck(fromUDP=%b): removed for id %d: %s",
+                //        fromUDP, packetID, packet );
             } else {
                 Log.w( TAG, "Weird: got ack %d but never sent", packetID );
             }
