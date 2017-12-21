@@ -265,6 +265,8 @@ REQUIRED_DEBS = gcc libgtk-3-dev \
 		libncursesw5-dev \
 		uuid-dev \
 		libsqlite3-dev \
+		libcurl4-openssl-dev \
+		libjson-c-dev \
 
 .PHONY: debcheck debs_install
 
