@@ -100,8 +100,8 @@ public class RelayService extends XWService
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
 
-    private static Map<Integer, PacketData> s_packetsSentUDP = new HashMap<>();
-    private static Map<Integer, PacketData> s_packetsSentWeb = new HashMap<>();
+    private static List<PacketData> s_packetsSentUDP = new ArrayList<>();
+    private static List<PacketData> s_packetsSentWeb = new ArrayList<>();
     private static AtomicInteger s_nextPacketID = new AtomicInteger();
     private static boolean s_gcmWorking = false;
     private static boolean s_registered = false;
@@ -619,7 +619,7 @@ public class RelayService extends XWService
     private boolean skipNativeSend()
     {
         boolean skip = m_nativeFailScore > 10 || m_skipUPDSet;
-        // Log.d( TAG, "skipNativeSend(score=%d)) => %b", m_nativeFailScore, skip );
+        Log.d( TAG, "skipNativeSend(score=%d)) => %b", m_nativeFailScore, skip );
         return skip;
     }
 
@@ -776,21 +776,26 @@ public class RelayService extends XWService
             m_lastRunMS = nowMS;
 
             long minSentMS = nowMS - 10000; // 10 seconds ago
+            long prevSentMS = 0;
             List<PacketData> forResend = new ArrayList<>();
             boolean foundNonAck = false;
             synchronized ( s_packetsSentUDP ) {
-                Iterator<Map.Entry<Integer, PacketData>> iter; 
-                for ( iter = s_packetsSentUDP.entrySet().iterator(); iter.hasNext(); ) {
-                    Map.Entry<Integer, PacketData> entry = iter.next();
-                    PacketData packet = entry.getValue();
-                    if ( packet.getSentMS() < minSentMS ) {
-                        forResend.add( packet );
-                        if ( packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
-                            foundNonAck = true;
-                            ++m_nativeFailScore;
-                        }
-                        iter.remove();
+                Iterator<PacketData> iter; 
+                for ( iter = s_packetsSentUDP.iterator(); iter.hasNext(); ) {
+                    PacketData packet = iter.next();
+                    long sentMS = packet.getSentMS();
+                    Assert.assertTrue( prevSentMS <= sentMS );
+                    prevSentMS = sentMS;
+                    if ( sentMS > minSentMS ) {
+                        break;
                     }
+
+                    forResend.add( packet );
+                    if ( packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
+                        foundNonAck = true;
+                        ++m_nativeFailScore;
+                    }
+                    iter.remove();
                 }
                 Log.d( TAG, "runUDPAckTimer(): %d too-new packets remaining",
                        s_packetsSentUDP.size() );
@@ -809,22 +814,25 @@ public class RelayService extends XWService
     
     private void noteSent( PacketData packet, boolean fromUDP )
     {
-        Map<Integer, PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
-        int pid = packet.m_packetID;
         Log.d( TAG, "Sent [udp?] packet: cmd=%s, id=%d",
-               packet.m_cmd.toString(), pid );
+               packet.m_cmd.toString(), packet.m_packetID );
         if ( !fromUDP || packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
-            synchronized( map ) {
-                map.put( pid, packet );
+            List<PacketData> list = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
+            synchronized( list ) {
+                list.add(packet );
             }
         }
     }
 
     private void noteSent( List<PacketData> packets, boolean fromUDP )
     {
+        List<PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
+        Log.d( TAG, "noteSent(): adding %d; size before: %d",
+               packets.size(), map.size() );
         for ( PacketData packet : packets ) {
             noteSent( packet, fromUDP );
         }
+        Log.d( TAG, "noteSent(): size after: %d", map.size() );
     }
 
     private void stopUDPThreadsIf()
@@ -1385,9 +1393,20 @@ public class RelayService extends XWService
 
     private void noteAck( int packetID, boolean fromUDP )
     {
-        Map<Integer, PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
+        Assert.assertTrue( packetID != 0 );
+        List<PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
         synchronized( map ) {
-            PacketData packet = map.remove( packetID );
+            PacketData packet = null;
+            Iterator<PacketData> iter = map.iterator();
+            for ( iter = map.iterator(); iter.hasNext(); ) {
+                PacketData next = iter.next();
+                if ( next.m_packetID == packetID ) {
+                    packet = next;
+                    iter.remove();
+                    break;
+                }
+            }
+
             if ( packet != null ) {
                 // Log.d( TAG, "noteAck(fromUDP=%b): removed for id %d: %s",
                 //        fromUDP, packetID, packet );
@@ -1399,8 +1418,8 @@ public class RelayService extends XWService
             }
             if ( BuildConfig.DEBUG ) {
                 ArrayList<String> pstrs = new ArrayList<>();
-                for ( Integer pkid : map.keySet() ) {
-                    pstrs.add( map.get(pkid).toString() );
+                for ( PacketData datum : map ) {
+                    pstrs.add( String.format("%d", datum.m_packetID ) );
                 }
                 Log.d( TAG, "noteAck(fromUDP=%b): Got ack for %d; there are %d unacked packets: %s",
                        fromUDP, packetID, map.size(), TextUtils.join( ",", pstrs ) );
