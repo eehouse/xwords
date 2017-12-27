@@ -38,7 +38,6 @@ public interface TransportProcs {
             , COMMS_RELAYSTATE_RECONNECTED
             , COMMS_RELAYSTATE_ALLCONNECTED
     };
-    void relayStatus( CommsRelayState newState );
 
     void relayConnd( String room, int devOrder, boolean allHere, int nMissing );
 
