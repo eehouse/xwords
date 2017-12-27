@@ -768,9 +768,8 @@ public class RelayService extends XWService
     private long m_lastRunMS = 0;
     private void runUDPAckTimer()
     {
-        Log.d( TAG, "runUDPAckTimer()" );
         long nowMS = System.currentTimeMillis();
-        if ( m_lastRunMS + 3000 > nowMS ) {
+        if ( m_lastRunMS + 3000 > nowMS ) { // never more frequently than 3 sec.
             // Log.d( TAG, "runUDPAckTimer(): too soon, so skipping" );
         } else {
             m_lastRunMS = nowMS;
@@ -814,9 +813,9 @@ public class RelayService extends XWService
     
     private void noteSent( PacketData packet, boolean fromUDP )
     {
-        Log.d( TAG, "Sent [udp?] packet: cmd=%s, id=%d",
-               packet.m_cmd.toString(), packet.m_packetID );
-        if ( !fromUDP || packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
+        Log.d( TAG, "Sent (fromUDP=%b) packet: cmd=%s, id=%d",
+               fromUDP, packet.m_cmd.toString(), packet.m_packetID );
+        if ( fromUDP || packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
             List<PacketData> list = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
             synchronized( list ) {
                 list.add(packet );
@@ -827,12 +826,12 @@ public class RelayService extends XWService
     private void noteSent( List<PacketData> packets, boolean fromUDP )
     {
         List<PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
-        Log.d( TAG, "noteSent(): adding %d; size before: %d",
-               packets.size(), map.size() );
+        Log.d( TAG, "noteSent(fromUDP=%b): adding %d; size before: %d",
+               fromUDP, packets.size(), map.size() );
         for ( PacketData packet : packets ) {
             noteSent( packet, fromUDP );
         }
-        Log.d( TAG, "noteSent(): size after: %d", map.size() );
+        Log.d( TAG, "noteSent(fromUDP=%b): size after: %d", fromUDP, map.size() );
     }
 
     private void stopUDPThreadsIf()
