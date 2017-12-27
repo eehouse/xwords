@@ -629,20 +629,20 @@ public class RelayService extends XWService
             m_UDPWriteThread = new Thread( null, new Runnable() {
                     public void run() {
                         Log.i( TAG, "write thread starting" );
-                        outer:
-                        for ( ; ; ) {
+                        for ( boolean gotEOQ = false; !gotEOQ; ) {
                             List<PacketData> dataListUDP = new ArrayList<>();
                             List<PacketData> dataListWeb = new ArrayList<>();
                             PacketData outData;
                             try {
                                 long ts = s_packetsSentUDP.size() > 0 ? 10 : 3600;
+                                Log.d( TAG, "blocking %d sec on poll()", ts );
                                 for ( outData = m_queue.poll(ts, TimeUnit.SECONDS);
                                       null != outData;
                                       outData = m_queue.poll() ) {         // doesn't block
-                                    if ( outData.isEOQ() ) {
-                                        break outer;
-                                    }
-                                    if ( skipNativeSend() || outData.getForWeb() ) {
+                                    if ( outData instanceof EOQPacketData ) {
+                                        gotEOQ = true;
+                                        break;
+                                    } else if ( skipNativeSend() || outData.getForWeb() ) {
                                         dataListWeb.add (outData );
                                     } else {
                                         dataListUDP.add( outData );
@@ -683,7 +683,7 @@ public class RelayService extends XWService
                 try {
                     JSONArray dataArray = new JSONArray();
                     for ( PacketData packet : packets ) {
-                        Assert.assertFalse( packet.isEOQ() );
+                        Assert.assertFalse( packet instanceof EOQPacketData );
                         byte[] datum = packet.assemble();
                         dataArray.put( Utils.base64Encode(datum) );
                         sentLen += datum.length;
@@ -726,40 +726,45 @@ public class RelayService extends XWService
     private int sendViaUDP( List<PacketData> packets )
     {
         int sentLen = 0;
-        long nowMS = System.currentTimeMillis();
 
-        for ( PacketData packet : packets ) {
-            boolean getOut = true;
-            byte[] data = packet.assemble();
-            try {
-                DatagramPacket udpPacket = new DatagramPacket( data, data.length );
-                m_UDPSocket.send( udpPacket );
+        if ( packets.size() > 0 ) {
+            noteSent( packets, true );
+            for ( PacketData packet : packets ) {
+                boolean getOut = true;
+                byte[] data = packet.assemble();
+                try {
+                    DatagramPacket udpPacket = new DatagramPacket( data, data.length );
+                    m_UDPSocket.send( udpPacket );
 
-                sentLen += udpPacket.getLength();
-                noteSent( packet, true );
-                packet.setSentMS( nowMS );
-                getOut = false;
-            } catch ( java.net.SocketException se ) {
-                Log.ex( TAG, se );
-                Log.i( TAG, "Restarting threads to force"
-                       + " new socket" );
-                m_handler.post( new Runnable() {
-                        public void run() {
-                            stopUDPThreadsIf();
-                        }
-                    } );
-            } catch ( java.io.IOException ioe ) {
-                Log.ex( TAG, ioe );
-            } catch ( NullPointerException npe ) {
-                Log.w( TAG, "network problem; dropping packet" );
+                    sentLen += udpPacket.getLength();
+                    // packet.setSentMS( nowMS );
+                    getOut = false;
+                } catch ( java.net.SocketException se ) {
+                    Log.ex( TAG, se );
+                    Log.i( TAG, "Restarting threads to force new socket" );
+                    ConnStatusHandler.updateStatusOut( this, null,
+                                                       CommsConnType.COMMS_CONN_RELAY,
+                                                       true );
+
+                    m_handler.post( new Runnable() {
+                            public void run() {
+                                stopUDPThreadsIf();
+                            }
+                        } );
+                    break;
+                } catch ( java.io.IOException ioe ) {
+                    Log.ex( TAG, ioe );
+                } catch ( NullPointerException npe ) {
+                    Log.w( TAG, "network problem; dropping packet" );
+                }
+                if ( getOut ) {
+                    break;
+                }
             }
-            if ( getOut ) {
-                break;
-            }
-        }
 
-        if ( sentLen > 0 ) {
-            ConnStatusHandler.showSuccessOut();
+            ConnStatusHandler.updateStatus( this, null,
+                                            CommsConnType.COMMS_CONN_RELAY,
+                                            sentLen > 0 );
         }
 
         return sentLen;
@@ -825,10 +830,14 @@ public class RelayService extends XWService
 
     private void noteSent( List<PacketData> packets, boolean fromUDP )
     {
+        long nowMS = System.currentTimeMillis();
         List<PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
         Log.d( TAG, "noteSent(fromUDP=%b): adding %d; size before: %d",
                fromUDP, packets.size(), map.size() );
         for ( PacketData packet : packets ) {
+            if ( fromUDP ) {
+                packet.setSentMS( nowMS );
+            }
             noteSent( packet, fromUDP );
         }
         Log.d( TAG, "noteSent(fromUDP=%b): size after: %d", fromUDP, map.size() );
@@ -840,7 +849,7 @@ public class RelayService extends XWService
 
         if ( null != m_UDPWriteThread ) {
             // can't add null
-            m_queue.add( new PacketData() );
+            m_queue.add( new EOQPacketData() );
             try {
                 Log.d( TAG, "joining m_UDPWriteThread" );
                 m_UDPWriteThread.join();
@@ -1055,7 +1064,7 @@ public class RelayService extends XWService
             if ( null != devid ) {
                 DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
-                // Log.d(TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
+                // Log.d( TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
                 postPacket( bas, reg );
             } else {
                 Log.d(TAG, "requestMessagesImpl(): devid is null" );
@@ -1184,6 +1193,7 @@ public class RelayService extends XWService
     private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd )
     {
         m_queue.add( new PacketData( bas, cmd ) );
+        startUDPThreadsIfNot();
         // 0 ok; thread will often have sent already!
         // DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
     }
@@ -1424,6 +1434,13 @@ public class RelayService extends XWService
                        fromUDP, packetID, map.size(), TextUtils.join( ",", pstrs ) );
             }
         }
+
+        // If we get an ACK, things are working, even if it's not found above
+        // (which would be the case for an ACK sent via web, which we don't
+        // save.)
+        ConnStatusHandler.updateStatus( this, null,
+                                        CommsConnType.COMMS_CONN_RELAY,
+                                        true );
     }
 
     // Called from any thread
@@ -1535,7 +1552,7 @@ public class RelayService extends XWService
             result = figureBackoffSeconds();
         }
 
-        Log.d( TAG, "getMaxIntervalSeconds() => %d", result );
+        Log.d( TAG, "getMaxIntervalSeconds() => %d", result ); // WFT? went from 40 to 1000
         return result;
     }
 
@@ -1630,14 +1647,10 @@ public class RelayService extends XWService
         private long m_created;
         private long m_sentUDP;
 
-        public PacketData() {
-            m_bas = null;
-            m_created = System.currentTimeMillis();
-        }
+        private PacketData() {}
 
         public PacketData( ByteArrayOutputStream bas, XWRelayReg cmd )
         {
-            this();
             m_bas = bas;
             m_cmd = cmd;
         }
@@ -1652,8 +1665,6 @@ public class RelayService extends XWService
         void setSentMS( long ms ) { m_sentUDP = ms; }
         long getSentMS() { return m_sentUDP; }
         boolean getForWeb() { return m_sentUDP != 0; }
-
-        public boolean isEOQ() { return 0 == getLength(); }
 
         public int getLength()
         {
@@ -1693,4 +1704,7 @@ public class RelayService extends XWService
             }
         }
     }
+
+    // Exits only to exist, so instanceof can distinguish
+    private class EOQPacketData extends PacketData {}
 }
