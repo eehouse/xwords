@@ -8,15 +8,15 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    data-name="Layer 1"
-   viewBox="0 0 100 100"
+   viewBox="0 0 66 82"
    x="0px"
    y="0px"
    id="svg3396"
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="archive.svg"
-   width="100"
-   height="100">
+   width="66"
+   height="82">
   <metadata
      id="metadata3416">
     <rdf:RDF>
@@ -41,40 +41,46 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-height="1163"
      id="namedview3412"
      showgrid="true"
      showborder="false"
      inkscape:zoom="6.616"
-     inkscape:cx="26.571947"
-     inkscape:cy="80.637848"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:cx="-17.332527"
+     inkscape:cy="66.335551"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg3396">
+     inkscape:current-layer="svg3396"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
     <inkscape:grid
        type="xygrid"
-       id="grid3510" />
+       id="grid3510"
+       originx="-17"
+       originy="-14" />
   </sodipodi:namedview>
   <title
      id="title3398">01</title>
   <path
-     d="m 83,26 -66,0 0,60 66,0 z m -6,54 -54,0 0,-48 54,0 z"
+     d="M 66,22 0,22 0,82 66,82 Z M 60,76 6,76 6,28 60,28 Z"
      id="path3400"
      inkscape:connector-curvature="0" />
   <polygon
-     points="41.7,46.7 35.7,46.7 35.7,58.3 64.3,58.3 64.3,46.7 64.3,46.7 58.3,46.7 58.3,52.3 41.7,52.3 "
+     points="64.3,58.3 64.3,46.7 64.3,46.7 58.3,46.7 58.3,52.3 41.7,52.3 41.7,46.7 35.7,46.7 35.7,58.3 "
      id="polygon3402"
-     transform="translate(0,-5)" />
+     transform="translate(-17,-9)" />
   <rect
-     x="25"
-     y="15"
+     x="8"
+     y="11"
      width="50"
      height="6"
      id="rect3404" />
   <rect
-     x="30"
-     y="4"
+     x="13"
+     y="0"
      width="40"
      height="6"
      id="rect3406" />
