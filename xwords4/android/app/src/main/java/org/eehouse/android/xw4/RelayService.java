@@ -70,6 +70,7 @@ public class RelayService extends XWService
     private static final int MAX_BUF = MAX_SEND - 2;
     private static final int REG_WAIT_INTERVAL = 10;
     private static final int INITIAL_BACKOFF = 5;
+    private static final int UDP_FAIL_LIMIT = 5;
 
     // One day, in seconds.  Probably should be configurable.
     private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
@@ -618,8 +619,8 @@ public class RelayService extends XWService
 
     private boolean skipNativeSend()
     {
-        boolean skip = m_nativeFailScore > 10 || m_skipUPDSet;
-        Log.d( TAG, "skipNativeSend(score=%d)) => %b", m_nativeFailScore, skip );
+        boolean skip = m_nativeFailScore > UDP_FAIL_LIMIT || m_skipUPDSet;
+        // Log.d( TAG, "skipNativeSend(score=%d)) => %b", m_nativeFailScore, skip );
         return skip;
     }
 

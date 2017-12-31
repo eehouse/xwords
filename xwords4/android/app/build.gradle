@@ -201,6 +201,8 @@ dependencies {
 
     compile 'com.android.support:support-v4:23.4.0'
 
+    // 2.6.8 is probably as far forward as I can go without upping my
+    // min-supported SDK version
     xw4dCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
