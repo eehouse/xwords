@@ -2128,13 +2128,13 @@ board_requestHint( BoardCtxt* board,
             result = nTiles > 0;
         }
 
+        XP_Bool canMove = XP_FALSE;
         if ( result ) {
 #ifdef XWFEATURE_SEARCHLIMIT
             BdHintLimits limits;
             BdHintLimits* lp = NULL;
 #endif
             XP_Bool wasVisible;
-            XP_Bool canMove;
 
             wasVisible = setArrowVisible( board, XP_FALSE );
 
@@ -2196,7 +2196,7 @@ board_requestHint( BoardCtxt* board,
             }
         }
 
-        if ( !result ) {
+        if ( !canMove ) {
             util_userError( board->util, ERR_NO_HINT_FOUND );
         }
     }
