@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RelayService extends XWService
     implements NetStateCache.StateChangedIf {
@@ -113,7 +114,7 @@ public class RelayService extends XWService
     static { resetBackoffTimer(); }
 
     private Thread m_fetchThread = null; // no longer used
-    private UDPThreads m_UDPThreads = null;
+    private AtomicReference<UDPThreads> m_UDPThreadsRef = new AtomicReference<>();
     private Handler m_handler;
     private Runnable m_onInactivity;
     private int m_maxIntervalSeconds = 0;
@@ -554,11 +555,12 @@ public class RelayService extends XWService
     private void startUDPThreadsIfNot()
     {
         if ( XWApp.UDP_ENABLED && relayEnabled( this ) ) {
-            if ( null == m_UDPThreads ) {
-                m_UDPThreads = new UDPThreads();
-                m_UDPThreads.start();
-            } else {
-                // Log.i( TAG, "m_UDPReadThread not null and assumed to be running" );
+            synchronized ( m_UDPThreadsRef ) {
+                if ( null == m_UDPThreadsRef.get() ) {
+                    UDPThreads threads = new UDPThreads();
+                    m_UDPThreadsRef.set( threads );
+                    threads.start();
+                }
             }
         } else {
             Log.i( TAG, "startUDPThreadsIfNot(): UDP disabled" );
@@ -608,9 +610,9 @@ public class RelayService extends XWService
     {
         DbgUtils.assertOnUIThread();
 
-        if ( null != m_UDPThreads ) {
-            m_UDPThreads.stop();
-            m_UDPThreads = null;
+        UDPThreads threads = m_UDPThreadsRef.getAndSet( null );
+        if ( null != threads ) {
+            threads.stop();
         }
     }
 
@@ -935,7 +937,10 @@ public class RelayService extends XWService
     private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd )
     {
         startUDPThreadsIfNot();
-        m_UDPThreads.add( new PacketData( bas, cmd ) );
+        UDPThreads threads = m_UDPThreadsRef.get();
+        if ( threads != null ) {
+            threads.add( new PacketData( bas, cmd ) );
+        }
         // 0 ok; thread will often have sent already!
         // DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
     }
