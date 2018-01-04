@@ -2601,6 +2601,12 @@
   <string name="enable_relay_toself_title">Enable relay invites to self</string>
   <string name="enable_relay_toself_summary">(To aid testing and debugging)</string>
 
+  <string name="ignore_gcm_title">Ignore incoming GCM messages</string>
+  <string name="ignore_gcm_summary">Mimic life without a google account</string>
+
+  <string name="show_sms_title">Show SMS sends, receives</string>
+  <string name="show_gcm_title">Show GCM receives</string>
+
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
     <item quantity="one">One move sent</item>

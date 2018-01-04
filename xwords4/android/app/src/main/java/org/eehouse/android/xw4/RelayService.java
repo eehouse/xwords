@@ -801,11 +801,11 @@ public class RelayService extends XWService
 
     private void requestMessagesImpl( XWRelayReg reg )
     {
-        ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             DevIDType[] typp = new DevIDType[1];
             String devid = getDevID( typp );
             if ( null != devid ) {
+                ByteArrayOutputStream bas = new ByteArrayOutputStream();
                 DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
                 // Log.d( TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
@@ -1606,7 +1606,8 @@ public class RelayService extends XWService
     private boolean shouldMaintainConnection()
     {
         boolean result = relayEnabled( this )
-            && (XWApp.GCM_IGNORED || !s_gcmWorking);
+            && (!s_gcmWorking || XWPrefs.getIgnoreGCM( this ));
+
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;
