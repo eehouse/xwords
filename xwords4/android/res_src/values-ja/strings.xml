@@ -1308,4 +1308,14 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 	<item quantity="other">%1$d のチェックした RelayID レコードを削除してもよろしいですか?</item>
 </plurals>
 
-    </resources>
+    <string name="not_again_archive">アーカイブは、「アーカイブ」と呼ばれる特別なグループを使用して、残しておきたい完了したゲームを保存します。アーカイブ全体の削除は簡単なので、削除するゲームをマークする方法としても役に立ちます - お好みの場合。
+\n
+\n(必要なときに新しく作成するので、アーカイブ グループを削除するのは安全です。)</string>
+
+      <string name="button_archive">アーカイブ</string>
+    <string name="group_name_archive">アーカイブ</string>
+
+    <string name="duplicate_group_name_fmt">グループ \"%1$s\" は既に存在します。</string>
+
+    <string name="gamel_menu_writegit">Git の情報をクリップボードにコピー</string>
+  </resources>
