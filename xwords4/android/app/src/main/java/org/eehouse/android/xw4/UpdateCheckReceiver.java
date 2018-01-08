@@ -258,7 +258,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         @Override protected String doInBackground( Void... unused )
         {
-            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "getUpdates" );
+            HttpURLConnection conn
+                = NetUtils.makeHttpUpdateConn( m_context, "getUpdates" );
             String json = null;
             if ( null != conn ) {
                 json = NetUtils.runConn( conn, m_params );

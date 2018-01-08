@@ -67,6 +67,7 @@ endif
 
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
+# CPPFLAGS += -DLOG_POLL
 
 memdebug all: xwrelay rq
 

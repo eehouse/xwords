@@ -61,6 +61,13 @@ nli_setDevID( NetLaunchInfo* nli, XP_U32 devID )
     types_addType( &nli->_conTypes, COMMS_CONN_RELAY );
 }
 
+void
+nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID )
+{
+    nli->inviteID[0] = '\0';
+    XP_STRCAT( nli->inviteID, inviteID );
+}
+
 void 
 nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 {

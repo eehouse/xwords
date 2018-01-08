@@ -1238,7 +1238,7 @@ public class DictsDelegate extends ListDelegateBase
             // parse less data
             String name = null;
             String proc = String.format( "listDicts?lc=%s", m_lc );
-            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, proc );
+            HttpURLConnection conn = NetUtils.makeHttpUpdateConn( m_context, proc );
             if ( null != conn ) {
                 JSONObject theOne = null;
                 String langName = null;
@@ -1320,7 +1320,7 @@ public class DictsDelegate extends ListDelegateBase
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
-            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "listDicts" );
+            HttpURLConnection conn = NetUtils.makeHttpUpdateConn( m_context, "listDicts" );
             if ( null != conn ) {
                 String json = NetUtils.runConn( conn, new JSONObject() );
                 if ( !isCancelled() ) {

@@ -115,6 +115,16 @@ public class XWPrefs {
         return getPrefsString( context, R.string.key_update_url );
     }
 
+    public static String getDefaultRelayUrl( Context context )
+    {
+        return getPrefsString( context, R.string.key_relay_url );
+    }
+
+    public static boolean getSkipToWebAPI( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_relay_via_http_first, false );
+    }
+
     public static int getDefaultProxyPort( Context context )
     {
         String val = getPrefsString( context, R.string.key_proxy_port );

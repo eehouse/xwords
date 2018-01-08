@@ -141,7 +141,7 @@ def writeDoc(doc, src, dest):
 def checkOrConvertString(engNames, elem, verbose):
     name = elem.get('name')
     if not elem.text:
-        print "elem", name, "is empty"
+        print "ERROR: elem", name, "is empty"
         sys.exit(1)
     elif not name in engNames or elem.text.startswith(s_prefix):
         ok = False

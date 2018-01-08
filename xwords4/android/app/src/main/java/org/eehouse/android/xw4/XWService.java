@@ -82,7 +82,7 @@ class XWService extends Service {
                 s_seen.add( inviteID );
             }
         }
-        Log.d( TAG, "checkNotDupe(%s) => %b", inviteID, !isDupe );
+        Log.d( TAG, "checkNotDupe('%s') => %b", inviteID, !isDupe );
         return !isDupe;
     }
 

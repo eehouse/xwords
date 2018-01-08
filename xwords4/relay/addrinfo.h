@@ -81,12 +81,18 @@ class AddrInfo {
 
     bool equals( const AddrInfo& other ) const;
 
+    /* refcount the underlying socket (doesn't modify instance) */
+    void ref() const;
+    void unref() const;
+    int getref() const;
+
  private:
     void construct( int sock, const AddrUnion* saddr, bool isTCP );
     void init( int sock, ClientToken clientToken, const AddrUnion* saddr ) {
         construct( sock, saddr, false );
         m_clientToken = clientToken;
     }
+    void printRefMap() const;
 
     // AddrInfo& operator=(const AddrInfo&);      // Prevent assignment
     int m_socket;

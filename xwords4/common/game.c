@@ -338,6 +338,34 @@ game_saveSucceeded( const XWGame* game, XP_U16 saveToken )
     }
 }
 
+XP_Bool
+game_receiveMessage( XWGame* game, XWStreamCtxt* stream, CommsAddrRec* retAddr )
+{
+    ServerCtxt* server = game->server;
+    CommsMsgState commsState;
+    XP_Bool result = comms_checkIncomingStream( game->comms, stream, retAddr,
+                                                &commsState );
+    if ( result ) {
+        (void)server_do( server );
+
+        result = server_receiveMessage( server, stream );
+    }
+    comms_msgProcessed( game->comms, &commsState, !result );
+
+    if ( result ) {
+        /* in case MORE work's pending.  Multiple calls are required in at
+           least one case, where I'm a host handling client registration *AND*
+           I'm a robot.  Only one server_do and I'll never make that first
+           robot move.  That's because comms can't detect a duplicate initial
+           packet (in validateInitialMessage()). */
+        for ( int ii = 0; ii < 5; ++ii ) {
+            (void)server_do( server );
+        }
+    }
+
+    return result;
+}
+
 void
 game_getState( const XWGame* game, GameStateInfo* gsi )
 {

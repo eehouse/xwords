@@ -36,7 +36,9 @@
 
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
+  <string name="key_relay_via_http_first">key_relay_via_http_first</string>
   <string name="key_update_url">key_update_url</string>
+  <string name="key_relay_url">key_relay_url</string>
   <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
@@ -150,6 +152,7 @@
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
+  <string name="default_relay_url">http://eehouse.org/xw4/relay.py</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 

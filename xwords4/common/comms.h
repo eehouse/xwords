@@ -32,7 +32,7 @@ EXTERN_C_START
 #define CONN_ID_NONE 0L
 
 typedef XP_U32 MsgID;           /* this is too big!!! PENDING */
-typedef XP_U8  XWHostID;
+typedef XP_U8 XWHostID;
 
 typedef enum {
     COMMS_CONN_NONE           /* I want errors on uninited case */
@@ -56,6 +56,9 @@ typedef enum {
     , COMMS_RELAYSTATE_CONNECTED
     , COMMS_RELAYSTATE_RECONNECTED
     , COMMS_RELAYSTATE_ALLCONNECTED
+#ifdef RELAY_VIA_HTTP
+    , COMMS_RELAYSTATE_USING_HTTP /* connection state doesn't matter */
+#endif
 } CommsRelayState;
 
 #ifdef XWFEATURE_BLUETOOTH
@@ -90,7 +93,7 @@ typedef struct _CommsAddrRec {
             XP_U16 port_ip;
         } ip;
         struct {
-            XP_UCHAR invite[MAX_INVITE_LEN + 1];
+            XP_UCHAR invite[MAX_INVITE_LEN + 1]; /* room!!!! */
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr;      /* looked up from above */
             XP_U16 port;
@@ -135,6 +138,12 @@ typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
 typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len, 
                                     const XP_UCHAR* msgNo,
                                     const XP_UCHAR* relayID, void* closure );
+# ifdef RELAY_VIA_HTTP
+typedef void (*RelayRequestJoinProc)( void* closure, const XP_UCHAR* devID,
+                                      const XP_UCHAR* room, XP_U16 nPlayersHere,
+                                      XP_U16 nPlayersTotal, XP_U16 seed,
+                                      XP_U16 lang );
+# endif
 #endif
 
 typedef enum {
@@ -161,6 +170,9 @@ typedef struct _TransportProcs {
     RelayConndProc rconnd;
     RelayErrorProc rerror;
     RelayNoConnProc sendNoConn;
+# ifdef RELAY_VIA_HTTP
+    RelayRequestJoinProc requestJoin;
+# endif
 #endif
     void* closure;
 } TransportProcs;
@@ -247,6 +259,10 @@ XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );
 XP_Bool comms_isConnected( const CommsCtxt* const comms );
+
+#ifdef RELAY_VIA_HTTP
+void comms_gameJoined( CommsCtxt* comms, const XP_UCHAR* connname, XWHostID hid );
+#endif
 
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );

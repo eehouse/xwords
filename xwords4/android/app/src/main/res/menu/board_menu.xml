@@ -5,9 +5,15 @@
   <group android:id="@+id/group_done">
     <!-- title set in BoardActivity -->
 
+    <item android:id="@+id/board_menu_archive"
+          android:title="@string/button_archive"
+          android:showAsAction="ifRoom"
+          android:icon="@drawable/archive__gen"
+          />
     <item android:id="@+id/board_menu_rematch"
           android:title="@string/button_rematch"
           android:showAsAction="ifRoom"
+          android:icon="@drawable/rematch__gen"
           />
     <item android:id="@+id/board_menu_done"
           android:alphabeticShortcut="D"
@@ -19,6 +25,7 @@
           android:title="@string/board_menu_trade"
           android:alphabeticShortcut="T"
           android:showAsAction="ifRoom"
+          android:icon="@drawable/trade__gen"
           />
   </group>
 

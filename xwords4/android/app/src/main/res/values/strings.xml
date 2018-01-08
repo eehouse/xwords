@@ -1709,7 +1709,9 @@
 
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
-    <string name="about_credits">Toolbar icons by Sarah Chu.</string>
+    <string name="about_credits">Toolbar icons by Sarah Chu. Navbar
+    icons from the Noun Project: \"archive\" by Trendy; \"rematch\" by
+    Becris; and \"swap\" by iconomania.</string>
 
     <!-- text of dialog showing the set of changes made since the last
          release -->
@@ -2486,6 +2488,8 @@
   <string name="advanced">For debugging</string>
   <string name="advanced_summary">You should never need these...</string>
   <string name="relay_host">Relay host</string>
+  <string name="relay_via_http_first">Use Web APIs first</string>
+  <string name="relay_via_http_first_summary">(instead of as fallback for custom protocol)</string>
   <string name="dict_host">Wordlist download URL</string>
   <string name="logging_on">Enable logging</string>
   <string name="logging_on_summary">(release builds only)</string>
@@ -2525,6 +2529,7 @@
   <string name="game_summary_field_gameid">gameid</string>
   <string name="game_summary_field_npackets">Pending packet count</string>
   <string name="expl_update_url">Update checks URL</string>
+  <string name="expl_relay_url">URL for relay web API</string>
 
   <string name="got_langdict_title">Fetch default wordlist for language</string>
   <string name="got_langdict_summary">Don\'t try a second time</string>

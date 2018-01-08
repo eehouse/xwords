@@ -341,6 +341,8 @@ relay_connd_gtk( void* closure, XP_UCHAR* const room,
     char buf[256];
 
     if ( allHere ) {
+        /* disable for now. Seeing this too often */
+        skip = XP_TRUE;
         snprintf( buf, sizeof(buf),
                   "All expected players have joined in %s.  Play!", room );
     } else {
@@ -428,13 +430,57 @@ relay_sendNoConn_gtk( const XP_U8* msg, XP_U16 len,
     return success;
 } /* relay_sendNoConn_gtk */
 
+static void
+tryConnectToServer(CommonGlobals* cGlobals)
+{
+    LaunchParams* params = cGlobals->params;
+    XWStreamCtxt* stream =
+        mem_stream_make( cGlobals->util->mpool, params->vtMgr,
+                         cGlobals, CHANNEL_NONE,
+                         sendOnClose );
+    (void)server_initClientConnection( cGlobals->game.server,
+                                       stream );
+}
+
+#ifdef RELAY_VIA_HTTP
+static void
+onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+    XWGame* game = &globals->cGlobals.game;
+    CommsCtxt* comms = game->comms;
+    comms_gameJoined( comms, connname, hid );
+    if ( hid > 1 ) {
+        globals->cGlobals.gi->serverRole = SERVER_ISCLIENT;
+        server_reset( game->server, game->comms );
+        tryConnectToServer( &globals->cGlobals );
+    }
+}
+
+static void
+relay_requestJoin_gtk( void* closure, const XP_UCHAR* devID, const XP_UCHAR* room,
+                       XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
+                       XP_U16 seed, XP_U16 lang )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+    LaunchParams* params = globals->cGlobals.params;
+    relaycon_join( params, devID, room, nPlayersHere, nPlayersTotal, seed, lang,
+                   onJoined, globals );
+}
+#endif
+
 #ifdef COMMS_XPORT_FLAGSPROC
 static XP_U32
 gtk_getFlags( void* closure )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+# ifdef RELAY_VIA_HTTP
+    XP_USE( globals );
+    return COMMS_XPORT_FLAGS_HASNOCONN;
+# else
     return (!!globals->draw) ? COMMS_XPORT_FLAGS_NONE
         : COMMS_XPORT_FLAGS_HASNOCONN;
+# endif
 }
 #endif
 
@@ -454,6 +500,9 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
     procs->rconnd = relay_connd_gtk;
     procs->rerror = relay_error_gtk;
     procs->sendNoConn = relay_sendNoConn_gtk;
+# ifdef RELAY_VIA_HTTP
+    procs->requestJoin = relay_requestJoin_gtk;
+# endif
 #endif
 }
 
@@ -663,12 +712,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
         } else {
             DeviceRole serverRole = cGlobals->gi->serverRole;
             if ( serverRole == SERVER_ISCLIENT ) {
-                XWStreamCtxt* stream = 
-                    mem_stream_make( MEMPOOL params->vtMgr, 
-                                     cGlobals, CHANNEL_NONE,
-                                     sendOnClose );
-                (void)server_initClientConnection( cGlobals->game.server, 
-                                                   stream );
+                tryConnectToServer( cGlobals );
             }
 #endif
         }
@@ -1014,12 +1058,7 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
         }
 
         if ( isClient ) {
-            XWStreamCtxt* stream =
-                mem_stream_make( MEMPOOL cGlobals->params->vtMgr,
-                                 cGlobals, CHANNEL_NONE, 
-                                 sendOnClose );
-            (void)server_initClientConnection( cGlobals->game.server, 
-                                               stream );
+            tryConnectToServer( cGlobals );
         }
 #endif
         (void)server_do( cGlobals->game.server ); /* assign tiles, etc. */
@@ -1175,6 +1214,7 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     stream_destroy( stream );
     
 } /* handle_memstats */
+
 #endif
 
 #ifdef XWFEATURE_ACTIVERECT
@@ -1199,15 +1239,15 @@ frame_active( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 }
 #endif
 
-static GtkWidget*
+GtkWidget*
 createAddItem( GtkWidget* parent, gchar* label, 
-               GCallback handlerFunc, GtkGameGlobals* globals ) 
+               GCallback handlerFunc, gpointer closure )
 {
     GtkWidget* item = gtk_menu_item_new_with_label( label );
 
     if ( handlerFunc != NULL ) {
         g_signal_connect( item, "activate", G_CALLBACK(handlerFunc),
-                          globals );
+                          closure );
     }
     
     gtk_menu_shell_append( GTK_MENU_SHELL(parent), item );
@@ -1302,7 +1342,7 @@ static void
 disenable_buttons( GtkGameGlobals* globals )
 {
     XP_U16 nPending = server_getPendingRegs( globals->cGlobals.game.server );
-    if ( !globals->invite_button && 0 < nPending ) {
+    if ( !globals->invite_button && 0 < nPending && !!globals->buttons_hbox ) {
         globals->invite_button = 
             addButton( globals->buttons_hbox, "Invite",
                        G_CALLBACK(handle_invite_button), globals );
@@ -1600,6 +1640,9 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 
     NetLaunchInfo nli = {0};
     nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
+    XP_UCHAR buf[32];
+    snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
+    nli_setInviteID( &nli, buf );
     nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
 #ifdef DEBUG

@@ -124,8 +124,6 @@ logf( XW_LogLevel level, const char* format, ... )
         va_end(ap);
 #else
         FILE* where = NULL;
-        struct tm* timp;
-        struct timeval tv;
         bool useFile;
         char logFile[256];
 
@@ -143,13 +141,14 @@ logf( XW_LogLevel level, const char* format, ... )
 
         if ( !!where ) {
             static int tm_yday = 0;
+            struct timeval tv;
             gettimeofday( &tv, NULL );
             struct tm result;
-            timp = localtime_r( &tv.tv_sec, &result );
+            struct tm* timp = localtime_r( &tv.tv_sec, &result );
 
             char timeBuf[64];
-            sprintf( timeBuf, "%.2d:%.2d:%.2d", timp->tm_hour, 
-                     timp->tm_min, timp->tm_sec );
+            sprintf( timeBuf, "%.2d:%.2d:%.2d.%03ld", timp->tm_hour,
+                     timp->tm_min, timp->tm_sec, tv.tv_usec / 1000 );
 
             /* log the date once/day.  This isn't threadsafe so may be
                repeated but that's harmless. */
@@ -1031,7 +1030,7 @@ processDisconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
 } /* processDisconnect */
 
 static void
-killSocket( const AddrInfo* addr )
+rmSocketRefs( const AddrInfo* addr )
 {
     logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->getSocket() );
     CRefMgr::Get()->RemoveSocketRefs( addr );
@@ -1304,14 +1303,17 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
                const uint8_t* bufp, const uint8_t* end )
 {
     unsigned short nameCount;
-    int ii;
     if ( getNetShort( &bufp, end, &nameCount ) ) {
+        assert( nameCount == 1 ); // Don't commit this!!!
         DBMgr* dbmgr = DBMgr::Get();
         vector<uint8_t> out(4); /* space for len and n_msgs */
         assert( out.size() == 4 );
         vector<int> msgIDs;
-        for ( ii = 0; ii < nameCount && bufp < end; ++ii ) {
-
+        for ( int ii = 0; ii < nameCount; ++ii ) {
+            if ( bufp >= end ) {
+                logf( XW_LOGERROR, "%s(): ran off the end", __func__ );
+                break;
+            }
             // See NetUtils.java for reply format
             // message-length: 2
             // nameCount: 2
@@ -1329,6 +1331,7 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
                 break;
             }
 
+            logf( XW_LOGVERBOSE0, "%s(): connName: %s", __func__, connName );
             dbmgr->RecordAddress( connName, hid, addr );
 
             /* For each relayID, write the number of messages and then
@@ -1345,14 +1348,21 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        ssize_t nwritten = write( addr->getSocket(), &out[0], out.size() );
-        logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
-        if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
+        int sock = addr->getSocket();
+        ssize_t nWritten = write( sock, &out[0], out.size() );
+        if ( nWritten < 0 ) {
+            logf( XW_LOGERROR, "%s(): write to socket %d failed: %d/%s", __func__,
+                  sock, errno, strerror(errno) );
+        } else if ( sendFull && (size_t)nWritten == out.size() ) {
+            logf( XW_LOGVERBOSE0, "%s(): wrote %d bytes to socket %d", __func__,
+                  nWritten, sock );
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
             // This is wrong: should be removed when ACK returns and not
             // before. But for some reason if I make that change apps wind up
             // stalling.
             dbmgr->RemoveStoredMessages( msgIDs );
+        } else {
+            assert(0);
         }
     }
 } // handleMsgsMsg
@@ -1476,23 +1486,24 @@ handleProxyMsgs( int sock, const AddrInfo* addr, const uint8_t* bufp,
 } // handleProxyMsgs
 
 static void
-game_thread_proc( UdpThreadClosure* utc )
+game_thread_proc( PacketThreadClosure* ptc )
 {
-    if ( !processMessage( utc->buf(), utc->len(), utc->addr(), 0 ) ) {
-        XWThreadPool::GetTPool()->CloseSocket( utc->addr() );
+    logf( XW_LOGVERBOSE0, "%s()", __func__ );
+    if ( !processMessage( ptc->buf(), ptc->len(), ptc->addr(), 0 ) ) {
+        // XWThreadPool::GetTPool()->CloseSocket( ptc->addr() );
     }
 }
 
 static void
-proxy_thread_proc( UdpThreadClosure* utc )
+proxy_thread_proc( PacketThreadClosure* ptc )
 {
-    const int len = utc->len();
-    const AddrInfo* addr = utc->addr();
+    const int len = ptc->len();
+    const AddrInfo* addr = ptc->addr();
 
     if ( len > 0 ) {
         assert( addr->isTCP() );
         int sock = addr->getSocket();
-        const uint8_t* bufp = utc->buf();
+        const uint8_t* bufp = ptc->buf();
         const uint8_t* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
             XWPRXYCMD cmd = (XWPRXYCMD)*bufp++;
@@ -1561,7 +1572,8 @@ proxy_thread_proc( UdpThreadClosure* utc )
             }
         }
     }
-    XWThreadPool::GetTPool()->CloseSocket( addr );
+    // Should I remove this, or make it into more of an unref() call?
+    // XWThreadPool::GetTPool()->CloseSocket( addr );
 } // proxy_thread_proc
 
 static size_t
@@ -1726,10 +1738,10 @@ ackPacketIf( const UDPHeader* header, const AddrInfo* addr )
 }
 
 static void
-handle_udp_packet( UdpThreadClosure* utc )
+handle_udp_packet( PacketThreadClosure* ptc )
 {
-    const uint8_t* ptr = utc->buf();
-    const uint8_t* end = ptr + utc->len();
+    const uint8_t* ptr = ptc->buf();
+    const uint8_t* end = ptr + ptc->len();
 
     UDPHeader header;
     if ( getHeader( &ptr, end, &header ) ) {
@@ -1752,7 +1764,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                         if ( 3 >= clientVers ) {
                             checkAllAscii( model, "bad model" );
                         }
-                        registerDevice( relayID, &devID, utc->addr(), 
+                        registerDevice( relayID, &devID, ptc->addr(),
                                         clientVers, devDesc, model, osVers );
                     }
                 }
@@ -1765,7 +1777,7 @@ handle_udp_packet( UdpThreadClosure* utc )
             ptr += sizeof(clientToken);
             clientToken = ntohl( clientToken );
             if ( AddrInfo::NULL_TOKEN != clientToken ) {
-                AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
+                AddrInfo addr( g_udpsock, clientToken, ptc->saddr() );
                 (void)processMessage( ptr, end - ptr, &addr, clientToken );
             } else {
                 logf( XW_LOGERROR, "%s: dropping packet with token of 0",
@@ -1786,7 +1798,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                 }
                 SafeCref scr( connName, hid );
                 if ( scr.IsValid() ) {
-                    AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
+                    AddrInfo addr( g_udpsock, clientToken, ptc->saddr() );
                     handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
                     assert( ptr == end ); // DON'T CHECK THIS IN!!!
                 } else {
@@ -1821,7 +1833,7 @@ handle_udp_packet( UdpThreadClosure* utc )
         case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
             if ( getVLIString( &ptr, end, devID.m_devIDString ) ) {
-                const AddrInfo* addr = utc->addr();
+                const AddrInfo* addr = ptc->addr();
                 DevMgr::Get()->rememberDevice( devID.asRelayID(), addr );
 
                 if ( XWPDEV_RQSTMSGS == header.cmd ) {
@@ -1862,7 +1874,7 @@ handle_udp_packet( UdpThreadClosure* utc )
         }
 
         // Do this after the device and address are registered
-        ackPacketIf( &header, utc->addr() );
+        ackPacketIf( &header, ptc->addr() );
     }
 }
 
@@ -2335,7 +2347,7 @@ main( int argc, char** argv )
     (void)sigaction( SIGINT, &act, NULL );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
-    tPool->Setup( nWorkerThreads, killSocket );
+    tPool->Setup( nWorkerThreads, rmSocketRefs );
 
     /* set up select call */
     fd_set rfds;

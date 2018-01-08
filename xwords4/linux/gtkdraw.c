@@ -1,6 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */ 
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 1997-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2017 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -86,7 +86,14 @@ initCairo( GtkDrawCtx* dctx )
     if ( !!dctx->surface ) {
         cairo = cairo_create( dctx->surface );
     } else if ( !!dctx->drawing_area ) {
+#ifdef GDK_AVAILABLE_IN_3_22
+        GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
+        const cairo_region_t* region = gdk_window_get_visible_region( window );
+        dctx->dc = gdk_window_begin_draw_frame( window, region );
+        cairo = gdk_drawing_context_get_cairo_context( dctx->dc );
+#else
         cairo = gdk_cairo_create( gtk_widget_get_window(dctx->drawing_area) );
+#endif
     } else {
         XP_ASSERT( 0 );
     }
@@ -108,7 +115,12 @@ destroyCairo( GtkDrawCtx* dctx )
 {
     /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !!dctx->_cairo );
-    cairo_destroy(dctx->_cairo);
+#ifdef GDK_AVAILABLE_IN_3_22
+    GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
+    gdk_window_end_draw_frame( window, dctx->dc );
+#else
+    cairo_destroy( dctx->_cairo );
+#endif
     dctx->_cairo = NULL;
 }
 

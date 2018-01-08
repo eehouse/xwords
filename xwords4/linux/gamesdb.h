@@ -31,6 +31,7 @@ typedef struct _GameInfo {
     XP_UCHAR name[128];
     XP_UCHAR room[128];
     XP_UCHAR conn[128];
+    XP_UCHAR relayID[32];
 #ifdef PLATFORM_GTK
     GdkPixbuf* snap;
 #endif
@@ -55,6 +56,9 @@ void summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
 GSList* listGames( sqlite3* dbp );
+/* Mapping of relayID -> rowid */
+GHashTable* getRelayIDsToRowsMap( sqlite3* pDb );
+
 XP_Bool getGameInfo( sqlite3* dbp, sqlite3_int64 rowid, GameInfo* gib );
 void getRowsForGameID( sqlite3* dbp, XP_U32 gameID, sqlite3_int64* rowids, 
                        int* nRowIDs );

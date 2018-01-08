@@ -82,6 +82,10 @@ void game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                         XWStreamCtxt* stream, XP_U16 saveToken );
 void game_saveSucceeded( const XWGame* game, XP_U16 saveToken );
+
+XP_Bool game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
+                             CommsAddrRec* retAddr );
+
 void game_dispose( XWGame* game );
 
 void game_getState( const XWGame* game, GameStateInfo* gsi );
