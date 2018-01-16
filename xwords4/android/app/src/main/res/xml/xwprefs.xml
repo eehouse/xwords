@@ -390,28 +390,6 @@
                         android:defaultValue="false"
                         />
 
-    <PreferenceScreen android:title="@string/pref_group_sms_title"
-                      android:summary="@string/pref_group_sms_summary"
-                      >
-      <CheckBoxPreference android:key="@string/key_enable_sms_toself"
-                          android:title="@string/enable_sms_toself_title"
-                          android:summary="@string/enable_sms_toself_summary"
-                          android:defaultValue="false"
-                          />
-      <org.eehouse.android.xw4.XWListPreference
-          android:key="@string/key_force_radio"
-          android:title="@string/force_radio_title"
-          android:entries="@array/force_radio_names"
-          android:entryValues="@array/force_radio_names"
-          android:defaultValue="@string/radio_name_real"
-          />
-
-      <CheckBoxPreference android:key="@string/key_show_sms"
-                          android:title="@string/show_sms_title"
-                          android:defaultValue="false"
-                          />
-    </PreferenceScreen>
-
     <PreferenceScreen android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
                       >
@@ -459,6 +437,28 @@
           android:defaultValue="10998"
           android:numeric="decimal"
           />
+    </PreferenceScreen>
+
+    <PreferenceScreen android:title="@string/pref_group_sms_title"
+                      android:summary="@string/pref_group_sms_summary"
+                      >
+      <CheckBoxPreference android:key="@string/key_enable_sms_toself"
+                          android:title="@string/enable_sms_toself_title"
+                          android:summary="@string/enable_sms_toself_summary"
+                          android:defaultValue="false"
+                          />
+      <org.eehouse.android.xw4.XWListPreference
+          android:key="@string/key_force_radio"
+          android:title="@string/force_radio_title"
+          android:entries="@array/force_radio_names"
+          android:entryValues="@array/force_radio_names"
+          android:defaultValue="@string/radio_name_real"
+          />
+
+      <CheckBoxPreference android:key="@string/key_show_sms"
+                          android:title="@string/show_sms_title"
+                          android:defaultValue="false"
+                          />
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/pref_group_l10n_title"
