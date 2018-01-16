@@ -1692,7 +1692,7 @@
     <string name="about_vers_fmt">CrossWords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>
     <!-- copyright info -->
-    <string name="about_copyright">Copyright (C) 1998-2017 by Eric
+    <string name="about_copyright">Copyright (C) 1998-2018 by Eric
         House. This free/open source software is released under the GNU Public
         License.</string>
 
