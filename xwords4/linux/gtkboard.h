@@ -46,6 +46,10 @@ typedef struct GtkDrawCtx {
 /*     GdkDrawable* pixmap; */
     GtkWidget* drawing_area;
     cairo_surface_t* surface;
+#ifdef GDK_AVAILABLE_IN_3_22
+    GdkDrawingContext* dc;
+#endif
+
     struct GtkGameGlobals* globals;
 
 #ifdef USE_CAIRO
@@ -186,6 +190,10 @@ XP_Bool makeNewGame( GtkGameGlobals* globals );
 XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
                         sqlite3_int64 rowid );
 void destroy_board_window( GtkWidget* widget, GtkGameGlobals* globals );
+
+GtkWidget* makeAddSubmenu( GtkWidget* menubar, gchar* label );
+GtkWidget* createAddItem( GtkWidget* parent, gchar* label,
+                          GCallback handlerFunc, gpointer closure );
 
 #endif /* PLATFORM_GTK */
 

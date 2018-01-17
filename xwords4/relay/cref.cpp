@@ -875,13 +875,13 @@ putNetShort( uint8_t** bufpp, unsigned short s )
     *bufpp += sizeof(s);
 }
 
-void
+int
 CookieRef::store_message( HostID dest, const uint8_t* buf, 
                           unsigned int len )
 {
     logf( XW_LOGVERBOSE0, "%s: storing msg size %d for dest %d", __func__,
           len, dest );
-    DBMgr::Get()->StoreMessage( ConnName(), dest, buf, len );
+    return DBMgr::Get()->StoreMessage( ConnName(), dest, buf, len );
 }
 
 void
@@ -1044,6 +1044,7 @@ CookieRef::postCheckAllHere()
 void
 CookieRef::postDropDevice( HostID hostID )
 {
+    logf( XW_LOGINFO, "%s(hostID=%d)", __func__, hostID );
     CRefEvent evt( XWE_ACKTIMEOUT );
     evt.u.ack.srcID = hostID;
     m_eventQueue.push_back( evt );
@@ -1192,21 +1193,16 @@ CookieRef::sendAnyStored( const CRefEvent* evt )
 }
 
 typedef struct _StoreData {
-    string connName;
-    HostID dest;
-    uint8_t* buf;
-    int buflen;
+    int msgID;
 } StoreData;
 
 void
 CookieRef::storeNoAck( bool acked, uint32_t packetID, void* data )
 {
     StoreData* sdata = (StoreData*)data;
-    if ( !acked ) {
-        DBMgr::Get()->StoreMessage( sdata->connName.c_str(), sdata->dest, 
-                                    sdata->buf, sdata->buflen );
+    if ( acked ) {
+        DBMgr::Get()->RemoveStoredMessages( &sdata->msgID, 1 );
     }
-    free( sdata->buf );
     delete sdata;
 }
 
@@ -1237,17 +1233,13 @@ CookieRef::forward_or_store( const CRefEvent* evt )
         }
 
         uint32_t packetID = 0;
+        int msgID = store_message( dest, buf, buflen );
         if ( (NULL == destAddr)
              || !send_with_length( destAddr, dest, buf, buflen, true, 
                                    &packetID ) ) {
-            store_message( dest, buf, buflen );
-        } else if ( 0 != packetID ) { // sent via UDP
+        } else if ( 0 != msgID && 0 != packetID ) { // sent via UDP
             StoreData* data = new StoreData;
-            data->connName = m_connName;
-            data->dest = dest;
-            data->buf = (uint8_t*)malloc( buflen );
-            memcpy( data->buf, buf, buflen );
-            data->buflen = buflen;
+            data->msgID = msgID;
             UDPAckTrack::setOnAck( storeNoAck, packetID, data );
         }
 
@@ -1376,20 +1368,16 @@ CookieRef::sendAllHere( bool initial )
        through the vector each time. */
     HostID dest;
     for ( dest = 1; dest <= m_nPlayersSought; ++dest ) {
-        bool sent = false;
         *idLoc = dest;   /* write in this target's hostId */
 
         {
             RWReadLock rrl( &m_socketsRWLock );
             HostRec* hr = m_sockets[dest-1];
             if ( !!hr ) {
-                sent = send_with_length( &hr->m_addr, dest, buf, 
-                                         bufp-buf, true );
+                (void)send_with_length( &hr->m_addr, dest, buf, bufp-buf, true );
             }
         }
-        if ( !sent ) {
-            store_message( dest, buf, bufp-buf );
-        }
+        (void)store_message( dest, buf, bufp-buf );
     }
 } /* sendAllHere */
 

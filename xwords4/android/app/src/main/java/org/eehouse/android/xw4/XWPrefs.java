@@ -67,6 +67,16 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_nfc_toself, false );
     }
 
+    public static boolean getIgnoreGCM( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_ignore_gcm, false );
+    }
+
+    public static boolean getToastGCM( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_show_gcm, false );
+    }
+
     public static boolean getRelayInviteToSelfEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_relay_toself, false );
@@ -113,6 +123,16 @@ public class XWPrefs {
     public static String getDefaultUpdateUrl( Context context )
     {
         return getPrefsString( context, R.string.key_update_url );
+    }
+
+    public static String getDefaultRelayUrl( Context context )
+    {
+        return getPrefsString( context, R.string.key_relay_url );
+    }
+
+    public static boolean getSkipToWebAPI( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_relay_via_http_first, false );
     }
 
     public static int getDefaultProxyPort( Context context )

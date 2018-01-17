@@ -119,10 +119,6 @@ public class MultiMsgSink implements TransportProcs {
         return nSent;
     }
 
-    public void relayStatus( CommsRelayState newState )
-    {
-    }
-
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
     }

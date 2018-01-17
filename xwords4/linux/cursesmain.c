@@ -279,35 +279,57 @@ curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     }
 } /* curses_util_userError */
 
+static gint
+ask_move( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    const char* answers[] = {"Ok", "Cancel", NULL};
+
+    if (0 == cursesask(globals, cGlobals->question, VSIZE(answers)-1, answers) ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
+            board_draw( board );
+        }
+    }
+
+    return FALSE;
+}
+
+/* this needs to change!!! */
 static void
 curses_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    char* question;
-    const char* answers[3] = {NULL};
-    short numAnswers = 0;
-    XP_Bool freeMe = XP_FALSE;
-
-    question = strFromStream( stream );
-    freeMe = XP_TRUE;
-    answers[numAnswers++] = "Cancel";
-    answers[numAnswers++] = "Ok";
-        
-    //     result = okIndex ==
-    cursesask( globals, question, numAnswers, answers );
-
-    if ( freeMe ) {
-        free( question );
-    }
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    XP_U16 len = stream_getSize( stream );
+    XP_ASSERT( len <= VSIZE(cGlobals->question) );
+    stream_getBytes( stream, cGlobals->question, len );
+    (void)g_idle_add( ask_move, globals );
 } /* curses_util_userQuery */
+
+static gint
+ask_trade( gpointer data )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)data;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+
+    const char* buttons[] = { "Ok", "Cancel" };
+    if (0 == cursesask( globals, cGlobals->question, VSIZE(buttons), buttons ) ) {
+        BoardCtxt* board = cGlobals->game.board;
+        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
+            board_draw( board );
+        }
+    }
+    return FALSE;
+}
 
 static void
 curses_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     formatConfirmTrade( &globals->cGlobals, tiles, nTiles );
-    /* const char* buttons[] = { "Cancel", "Ok" }; */
-    /* cursesask( globals, question, VSIZE(buttons), buttons ); */
+    (void)g_idle_add( ask_trade, globals );
 }
 
 static void
@@ -1001,7 +1023,7 @@ curses_socket_added( void* closure, int newSock, GIOFunc func )
     /* XP_ASSERT( !globals->cGlobals.relaySocket ); */
     /* globals->cGlobals.relaySocket = newSock; */
 #endif
-} /* curses_socket_changed */
+} /* curses_socket_added */
 
 static void
 curses_onGameSaved( void* closure, sqlite3_int64 rowid, 
@@ -1591,6 +1613,27 @@ relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
     return storeNoConnMsg( &globals->cGlobals, msg, len, relayID );
 } /* relay_sendNoConn_curses */
 
+#ifdef RELAY_VIA_HTTP
+static void
+onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    CommsCtxt* comms = globals->cGlobals.game.comms;
+    comms_gameJoined( comms, connname, hid );
+}
+
+static void
+relay_requestJoin_curses( void* closure, const XP_UCHAR* devID, const XP_UCHAR* room,
+                          XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
+                          XP_U16 seed, XP_U16 lang )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    relaycon_join( globals->cGlobals.params, devID, room, nPlayersHere, nPlayersTotal,
+                   seed, lang, onJoined, globals );
+}
+#endif
+
 static void
 relay_status_curses( void* closure, CommsRelayState state )
 {
@@ -1659,6 +1702,7 @@ static void
 cursesGotBuf( void* closure, const CommsAddrRec* addr, 
               const XP_U8* buf, XP_U16 len )
 {
+    LOG_FUNC();
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     XP_U32 clientToken;
     XP_ASSERT( sizeof(clientToken) < len );
@@ -1676,6 +1720,19 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
         XP_LOGF( "%s: dropping packet; meant for a different device",
                  __func__ );
     }
+    LOG_RETURN_VOID();
+}
+
+static void
+cursesGotForRow( void* closure, const CommsAddrRec* from,
+                 sqlite3_int64 rowid, const XP_U8* buf,
+                 XP_U16 len )
+{
+    LOG_FUNC();
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    XP_ASSERT( globals->cGlobals.selRow == rowid );
+    gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, from );
+    LOG_RETURN_VOID();
 }
 
 static gint
@@ -1913,6 +1970,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         .rconnd = relay_connd_curses,
         .rerror = relay_error_curses,
         .sendNoConn = relay_sendNoConn_curses,
+#ifdef RELAY_VIA_HTTP
+        .requestJoin = relay_requestJoin_curses,
+#endif
+
 # ifdef COMMS_XPORT_FLAGSPROC
         .getFlags = curses_getFlags,
 # endif
@@ -1949,6 +2010,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         if ( params->useUdp ) {
             RelayConnProcs procs = {
                 .msgReceived = cursesGotBuf,
+                .msgForRow = cursesGotForRow,
                 .msgNoticeReceived = cursesNoticeRcvd,
                 .devIDReceived = cursesDevIDReceived,
                 .msgErrorMsg = cursesErrorMsgRcvd,

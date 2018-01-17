@@ -274,6 +274,9 @@ CommsRelayState2Str( CommsRelayState state )
         CASE_STR(COMMS_RELAYSTATE_CONNECTED);
         CASE_STR(COMMS_RELAYSTATE_RECONNECTED);
         CASE_STR(COMMS_RELAYSTATE_ALLCONNECTED);
+#ifdef RELAY_VIA_HTTP
+        CASE_STR(COMMS_RELAYSTATE_USING_HTTP);
+#endif
     default:
         XP_ASSERT(0); 
     }
@@ -459,7 +462,10 @@ reset_internal( CommsCtxt* comms, XP_Bool isServer,
     if ( 0 != comms->nextChannelNo ) {
         XP_LOGF( "%s: comms->nextChannelNo: %d", __func__, comms->nextChannelNo );
     }
-    XP_ASSERT( 0 == comms->nextChannelNo ); /* firing... */
+    /* This tends to fire when games reconnect to the relay after the DB's
+       been wiped and connect in a different order from that in which they did
+       originally. So comment it out. */
+    // XP_ASSERT( 0 == comms->nextChannelNo );
     // comms->nextChannelNo = 0;
     if ( resetRelay ) {
         comms->channelSeed = 0;
@@ -1773,7 +1779,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         }
 
         if ( consumed ) {
-            XP_LOGF( "%s: rejecting data message", __func__ );
+            XP_LOGF( "%s: rejecting data message (consumed)", __func__ );
         } else {
             *senderID = srcID;
         }
@@ -2374,6 +2380,19 @@ comms_isConnected( const CommsCtxt* const comms )
     }
     return result;
 }
+
+#ifdef RELAY_VIA_HTTP
+void
+comms_gameJoined( CommsCtxt* comms, const XP_UCHAR* connname, XWHostID hid )
+{
+    LOG_FUNC();
+    XP_ASSERT( XP_STRLEN( connname ) + 1 < sizeof(comms->rr.connName) );
+    XP_STRNCPY( comms->rr.connName, connname, sizeof(comms->rr.connName) );
+    comms->rr.myHostID = hid;
+    comms->forceChannel = hid;
+    set_relay_state( comms, COMMS_RELAYSTATE_USING_HTTP );
+}
+#endif
 
 #if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
 static void
@@ -3097,14 +3116,34 @@ sendNoConn( CommsCtxt* comms, const MsgQueueElem* elem, XWHostID destID )
 static XP_Bool
 relayConnect( CommsCtxt* comms )
 {
-    XP_Bool success = XP_TRUE;
     LOG_FUNC();
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) && !comms->rr.connecting ) {
-        comms->rr.connecting = XP_TRUE;
-        success = send_via_relay( comms, comms->rr.connName[0]?
-                                  XWRELAY_GAME_RECONNECT : XWRELAY_GAME_CONNECT,
-                                  comms->rr.myHostID, NULL, 0, NULL );
-        comms->rr.connecting = XP_FALSE;
+    XP_Bool success = XP_TRUE;
+    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
+        if ( 0 ) {
+#ifdef RELAY_VIA_HTTP
+        } else if ( comms->rr.connName[0] ) {
+            set_relay_state( comms, COMMS_RELAYSTATE_USING_HTTP );
+        } else {
+            CommsAddrRec addr;
+            comms_getAddr( comms, &addr );
+            DevIDType ignored;  /*  but should it be? */
+            (*comms->procs.requestJoin)( comms->procs.closure,
+                                         util_getDevID( comms->util, &ignored ),
+                                         addr.u.ip_relay.invite, /* room */
+                                         comms->rr.nPlayersHere,
+                                         comms->rr.nPlayersTotal,
+                                         comms_getChannelSeed(comms),
+                                         comms->util->gameInfo->dictLang );
+            success = XP_FALSE;
+#else
+        } else if ( !comms->rr.connecting ) {
+            comms->rr.connecting = XP_TRUE;
+            success = send_via_relay( comms, comms->rr.connName[0]?
+                                      XWRELAY_GAME_RECONNECT : XWRELAY_GAME_CONNECT,
+                                      comms->rr.myHostID, NULL, 0, NULL );
+            comms->rr.connecting = XP_FALSE;
+#endif
+        }
     }
     return success;
 } /* relayConnect */

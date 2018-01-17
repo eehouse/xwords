@@ -71,6 +71,7 @@ struct CursesAppGlobals {
     gchar* lastErr;
 
     XP_U16 nChatsSent;
+    XP_U16 nextQueryTimeSecs;
 
     union {
         struct {

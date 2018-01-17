@@ -76,6 +76,7 @@ void nli_saveToStream( const NetLaunchInfo* invit, XWStreamCtxt* stream );
 void nli_makeAddrRec( const NetLaunchInfo* invit, CommsAddrRec* addr );
 
 void nli_setDevID( NetLaunchInfo* invit, XP_U32 devID );
+void nli_setInviteID( NetLaunchInfo* invit, const XP_UCHAR* inviteID );
 
 
 #endif

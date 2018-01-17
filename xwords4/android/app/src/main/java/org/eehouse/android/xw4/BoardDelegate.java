@@ -204,6 +204,18 @@ public class BoardDelegate extends DelegateBase
                         }
                     };
                 ab.setNegativeButton( R.string.button_rematch, lstnr );
+
+                // If we're not already in the "archive" group, offer to move
+                if ( !inArchiveGroup() ) {
+                    lstnr = new OnClickListener() {
+                            public void onClick( DialogInterface dlg,
+                                                 int whichButton ) {
+                                showArchiveNA();
+                            }
+                        };
+                    ab.setNeutralButton( R.string.button_archive, lstnr );
+                }
+
             } else if ( DlgID.DLG_CONNSTAT == dlgID
                         && BuildConfig.DEBUG && null != m_connTypes
                         && (m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
@@ -828,6 +840,9 @@ public class BoardDelegate extends DelegateBase
         enable = m_gameOver && rematchSupported( false );
         Utils.setItemVisible( menu, R.id.board_menu_rematch, enable );
 
+        enable = m_gameOver && !inArchiveGroup();
+        Utils.setItemVisible( menu, R.id.board_menu_archive, enable );
+
         boolean netGame = null != m_gi
             && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
         Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, netGame );
@@ -869,6 +884,10 @@ public class BoardDelegate extends DelegateBase
 
         case R.id.board_menu_rematch:
             doRematchIf();
+            break;
+
+        case R.id.board_menu_archive:
+            showArchiveNA();
             break;
 
         case R.id.board_menu_trade_commit:
@@ -1090,6 +1109,10 @@ public class BoardDelegate extends DelegateBase
             XWPrefs.setPrefsString( m_activity, R.string.key_force_tablet,
                                     getString(R.string.force_tablet_phone) );
             makeOkOnlyBuilder( R.string.after_restart ).show();
+            break;
+
+        case ARCHIVE_ACTION:
+            archiveAndClose();
             break;
 
         case ENABLE_SMS_DO:
@@ -2573,6 +2596,37 @@ public class BoardDelegate extends DelegateBase
             wordsArray[ii] = tmp[jj-1];
         }
         return wordsArray;
+    }
+
+    private boolean inArchiveGroup()
+    {
+        String archiveName = LocUtils
+            .getString( m_activity, R.string.group_name_archive );
+        long archiveGroup = DBUtils.getGroup( m_activity, archiveName );
+        long curGroup = DBUtils.getGroupForGame( m_activity, m_rowid );
+        return curGroup == archiveGroup;
+    }
+
+    private void showArchiveNA()
+    {
+        makeNotAgainBuilder( R.string.not_again_archive,
+                             R.string.key_na_archive,
+                             Action.ARCHIVE_ACTION )
+            .show();
+    }
+
+    private void archiveAndClose()
+    {
+        String archiveName = LocUtils
+            .getString( m_activity, R.string.group_name_archive );
+        long archiveGroupID = DBUtils.getGroup( m_activity, archiveName );
+
+        if ( DBUtils.GROUPID_UNSPEC == archiveGroupID ) {
+            archiveGroupID = DBUtils.addGroup( m_activity, archiveName );
+        }
+        DBUtils.moveGame( m_activity, m_rowid, archiveGroupID );
+        waitCloseGame( false );
+        finish();
     }
 
     // For now, supported if standalone or either BT or SMS used for transport

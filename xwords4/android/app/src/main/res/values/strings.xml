@@ -1692,7 +1692,7 @@
     <string name="about_vers_fmt">CrossWords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>
     <!-- copyright info -->
-    <string name="about_copyright">Copyright (C) 1998-2017 by Eric
+    <string name="about_copyright">Copyright (C) 1998-2018 by Eric
         House. This free/open source software is released under the GNU Public
         License.</string>
 
@@ -1709,7 +1709,9 @@
 
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
-    <string name="about_credits">Toolbar icons by Sarah Chu.</string>
+    <string name="about_credits">Toolbar icons by Sarah Chu. Navbar
+    icons from the Noun Project: \"archive\" by Trendy; \"rematch\" by
+    Becris; and \"swap\" by iconomania.</string>
 
     <!-- text of dialog showing the set of changes made since the last
          release -->
@@ -1742,6 +1744,14 @@
       <!--  -->
     <string name="not_again_lookup">This button lets you look up,
       online, the words just played.</string>
+
+    <string name="not_again_archive">Archiving uses a special group
+    called \"Archive\" to store finished games you want to keep. And,
+    since deleting an entire archive is easy, archiving is also a
+    great way to mark games for deletion – if that\'s what you prefer
+    to do.\n\n(Deleting the Archive group is safe because it will be
+    created anew when needed.)
+    </string>
 
       <!--  -->
     <string name="button_move">Move</string>
@@ -2158,6 +2168,10 @@
          game with the same players and parameters as the one that
          just ended. -->
     <string name="button_rematch">Rematch</string>
+    <string name="button_archive">Archive\u200C</string>
+    <string name="group_name_archive">Archive</string>
+
+    <string name="duplicate_group_name_fmt">The group \"%1$s\" already exists.</string>
 
     <string name="button_reconnect">Reconnect</string>
 
@@ -2474,6 +2488,8 @@
   <string name="advanced">For debugging</string>
   <string name="advanced_summary">You should never need these...</string>
   <string name="relay_host">Relay host</string>
+  <string name="relay_via_http_first">Use Web APIs first</string>
+  <string name="relay_via_http_first_summary">(instead of as fallback for custom protocol)</string>
   <string name="dict_host">Wordlist download URL</string>
   <string name="logging_on">Enable logging</string>
   <string name="logging_on_summary">(release builds only)</string>
@@ -2513,6 +2529,7 @@
   <string name="game_summary_field_gameid">gameid</string>
   <string name="game_summary_field_npackets">Pending packet count</string>
   <string name="expl_update_url">Update checks URL</string>
+  <string name="expl_relay_url">URL for relay web API</string>
 
   <string name="got_langdict_title">Fetch default wordlist for language</string>
   <string name="got_langdict_summary">Don\'t try a second time</string>
@@ -2583,6 +2600,12 @@
 
   <string name="enable_relay_toself_title">Enable relay invites to self</string>
   <string name="enable_relay_toself_summary">(To aid testing and debugging)</string>
+
+  <string name="ignore_gcm_title">Ignore incoming GCM messages</string>
+  <string name="ignore_gcm_summary">Mimic life without a google account</string>
+
+  <string name="show_sms_title">Show SMS sends, receives</string>
+  <string name="show_gcm_title">Show GCM receives</string>
 
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">

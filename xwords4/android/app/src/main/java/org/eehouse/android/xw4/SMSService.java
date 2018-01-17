@@ -522,7 +522,7 @@ public class SMSService extends XWService {
             case DATA:
                 int gameID = dis.readInt();
                 byte[] rest = new byte[dis.available()];
-                dis.read( rest );
+                dis.readFully( rest );
                 if ( feedMessage( gameID, rest, new CommsAddrRec( phone ) ) ) {
                     SMSResendReceiver.resetTimer( this );
                 }
@@ -618,7 +618,7 @@ public class SMSService extends XWService {
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
                 byte[] rest = new byte[dis.available()];
-                dis.read( rest );
+                dis.readFully( rest );
                 receive( cmd, rest, senderPhone );
                 success = true;
             }

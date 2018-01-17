@@ -1,29 +1,23 @@
-Here's how I'm building crosswords for Android.
+(Updated Dec 2017)
 
-First, cd into the directory xwords4/android/XWords4. Everything
+Here's how I'm building CrossWords for Android.
+
+First, cd into the directory xwords4/android. Everything
 happens there.
 
-IF (and it's a big if) you have all the necessary tools installed (the
-Android SDK and NDK, apache ant, and probably other stuff I've
-forgotten), two commands will build it, the first a one-time deal and
-the second repeated every time you made a change.
+To build and install the debug version of CrossWords:
 
-The build process requires a file called local.properties that must be
-generated locally.  Generate it before your first build by running
+# ./gradlew clean insXw4Deb
 
-# ../scripts/setup_local_props.sh 
+To build and install the debug version of CrossDbg (a variant meant
+for development that can co-exist with CrossWords):
 
-Then build using this command:
+# ./gradlew -PuseCrashlytics insXw4dDeb
 
-# ant debug 
-
-Or, if you have a device or emulator attached (listed by 'adb
-devices'), try
-
-# ant debug install
-
-Making a release build requires that you've set up your keys.  (I did
-this too long ago to remember how but the info's easy to find).  Once
-that's done, just tether your device and type
-
-# ant release install
+I do all development on Debian and Ubuntu Linux systems. I have built
+on MacOS, where once you get all the necessary tools installed via
+homebrew there's only one problem I'm aware of: the parameter 'white'
+that's passed to convert by android/scripts/images.mk on Linux systems
+needs to be 'black' on MacOS. I have no clue why. If you don't make
+this change the subset of actionbar icons that are generated from .svg
+files will be black-on-black.

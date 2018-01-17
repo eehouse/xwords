@@ -76,7 +76,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM,
-       CONN_ITEM, OVER_ITEM, TURN_ITEM, LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
+       CONN_ITEM, RELAYID_ITEM, OVER_ITEM, TURN_ITEM, LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
        MISSING_ITEM, LASTTURN_ITEM, N_ITEMS };
 
 static void
@@ -167,6 +167,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "GameID", GAMEID_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
     addTextColumn( list, "Conn. via", CONN_ITEM );
+    addTextColumn( list, "RelayID", RELAYID_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "Local", LOCAL_ITEM );
@@ -183,6 +184,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT,     /* GAMEID_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
                                               G_TYPE_STRING,  /* CONN_ITEM */
+                                              G_TYPE_STRING,  /*RELAYID_ITEM */
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_STRING,  /* LOCAL_ITEM */
@@ -239,6 +241,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         GAMEID_ITEM, gib->gameID,
                         SEED_ITEM, gib->seed,
                         CONN_ITEM, gib->conn,
+                        RELAYID_ITEM, gib->relayID,
                         TURN_ITEM, gib->turn,
                         OVER_ITEM, gib->gameOver,
                         LOCAL_ITEM, localString,
@@ -507,6 +510,13 @@ trySetWinConfig( GtkAppGlobals* apg )
 }
 
 static void
+handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    LaunchParams* params = apg->params;
+    relaycon_checkMsgs( params );
+}
+
+static void
 makeGamesWindow( GtkAppGlobals* apg )
 {
     GtkWidget* window;
@@ -529,6 +539,17 @@ makeGamesWindow( GtkAppGlobals* apg )
     GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add( GTK_CONTAINER(swin), vbox );
     gtk_widget_show( vbox );
+
+    // add menubar here
+    GtkWidget* menubar = gtk_menu_bar_new();
+    GtkWidget* netMenu = makeAddSubmenu( menubar, "Network" );
+    if ( params->useHTTP ) {
+        (void)createAddItem( netMenu, "Check for moves",
+                             (GCallback)handle_movescheck, apg );
+    }
+    gtk_widget_show( menubar );
+    gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
+
     GtkWidget* list = init_games_list( apg );
     gtk_container_add( GTK_CONTAINER(vbox), list );
     
@@ -693,6 +714,17 @@ gtkGotBuf( void* closure, const CommsAddrRec* from,
     XP_USE( seed );
 }
 
+static void
+gtkGotMsgForRow( void* closure, const CommsAddrRec* from,
+                 sqlite3_int64 rowid, const XP_U8* buf, XP_U16 len )
+{
+    XP_LOGF( "%s(): got msg of len %d for row %lld", __func__, len, rowid );
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    // LaunchParams* params = apg->params;
+    (void)feedBufferGTK( apg, rowid, buf, len, from );
+    LOG_RETURN_VOID();
+}
+
 static gint
 requestMsgs( gpointer data )
 {
@@ -847,6 +879,7 @@ gtkmain( LaunchParams* params )
         if ( params->useUdp ) {
             RelayConnProcs procs = {
                 .msgReceived = gtkGotBuf,
+                .msgForRow = gtkGotMsgForRow,
                 .msgNoticeReceived = gtkNoticeRcvd,
                 .devIDReceived = gtkDevIDReceived,
                 .msgErrorMsg = gtkErrorMsgRcvd,

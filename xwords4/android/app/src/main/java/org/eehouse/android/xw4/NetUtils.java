@@ -25,6 +25,8 @@ import android.text.TextUtils;
 
 import junit.framework.Assert;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -88,49 +90,29 @@ public class NetUtils {
             m_obits = obits;
         }
 
-        public void run() {
-            Socket socket = makeProxySocket( m_context, 10000 );
-            if ( null != socket ) {
-                int strLens = 0;
-                int nObits = 0;
+        @Override
+        public void run()
+        {
+            try {
+                JSONArray params = new JSONArray();
                 for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                    String relayID = m_obits[ii].m_relayID;
-                    if ( null != relayID ) {
-                        ++nObits;
-                        strLens += relayID.length() + 1; // 1 for /n
-                    }
+                    JSONObject one = new JSONObject();
+                    one.put( "relayID", m_obits[ii].m_relayID );
+                    one.put( "seed", m_obits[ii].m_seed );
+                    params.put( one );
                 }
+                HttpURLConnection conn = makeHttpRelayConn( m_context, "kill" );
+                String resStr = runConn( conn, params );
+                Log.d( TAG, "runViaWeb(): kill(%s) => %s", params, resStr );
 
-                try {
-                    DataOutputStream outStream =
-                        new DataOutputStream( socket.getOutputStream() );
-                    outStream.writeShort( 2 + 2 + (2*nObits) + strLens );
-                    outStream.writeByte( NetUtils.PROTOCOL_VERSION );
-                    outStream.writeByte( NetUtils.PRX_DEVICE_GONE );
-                    outStream.writeShort( m_obits.length );
-
-                    for ( int ii = 0; ii < m_obits.length; ++ii ) {
-                        String relayID = m_obits[ii].m_relayID;
-                        if ( null != relayID ) {
-                            outStream.writeShort( m_obits[ii].m_seed );
-                            outStream.writeBytes( relayID );
-                            outStream.write( '\n' );
-                        }
-                    }
-
-                    outStream.flush();
-
-                    DataInputStream dis =
-                        new DataInputStream( socket.getInputStream() );
-                    short resLen = dis.readShort();
-                    socket.close();
-
-                    if ( resLen == 0 ) {
+                if ( null != resStr ) {
+                    JSONObject result = new JSONObject( resStr );
+                    if ( 0 == result.optInt( "err", -1 ) ) {
                         DBUtils.clearObits( m_context, m_obits );
                     }
-                } catch ( java.io.IOException ioe ) {
-                    Log.ex( TAG, ioe );
                 }
+            } catch ( JSONException ex ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
     }
@@ -139,8 +121,7 @@ public class NetUtils {
     {
         DBUtils.Obit[] obits = DBUtils.listObits( context );
         if ( null != obits && 0 < obits.length ) {
-            InformThread thread = new InformThread( context, obits );
-            thread.start();
+            new InformThread( context, obits ).start();
         }
     }
 
@@ -184,7 +165,7 @@ public class NetUtils {
                                 short len = dis.readShort();
                                 if ( len > 0 ) {
                                     byte[] packet = new byte[len];
-                                    dis.read( packet );
+                                    dis.readFully( packet );
                                     msgs[ii][jj] = packet;
                                 }
                             }
@@ -214,14 +195,26 @@ public class NetUtils {
         return host;
     }
 
-    protected static HttpURLConnection makeHttpConn( Context context,
-                                                     String proc )
+    protected static HttpURLConnection makeHttpRelayConn( Context context,
+                                                           String proc )
+    {
+        String url = XWPrefs.getDefaultRelayUrl( context );
+        return makeHttpConn( context, url, proc );
+    }
+
+    protected static HttpURLConnection makeHttpUpdateConn( Context context,
+                                                           String proc )
+    {
+        String url = XWPrefs.getDefaultUpdateUrl( context );
+        return makeHttpConn( context, url, proc );
+    }
+
+    private static HttpURLConnection makeHttpConn( Context context,
+                                                   String path, String proc )
     {
         HttpURLConnection result = null;
         try {
-            String url = String.format( "%s/%s",
-                                        XWPrefs.getDefaultUpdateUrl( context ),
-                                        proc );
+            String url = String.format( "%s/%s", path, proc );
             result = (HttpURLConnection)new URL(url).openConnection();
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );
@@ -233,11 +226,21 @@ public class NetUtils {
         return result;
     }
 
+    protected static String runConn( HttpURLConnection conn, JSONArray param )
+    {
+        return runConn( conn, param.toString() );
+    }
+
     protected static String runConn( HttpURLConnection conn, JSONObject param )
+    {
+        return runConn( conn, param.toString() );
+    }
+
+    private static String runConn( HttpURLConnection conn, String param )
     {
         String result = null;
         Map<String, String> params = new HashMap<String, String>();
-        params.put( k_PARAMS, param.toString() );
+        params.put( k_PARAMS, param );
         String paramsString = getPostDataString( params );
 
         if ( null != paramsString ) {
@@ -273,7 +276,8 @@ public class NetUtils {
                     }
                     result = new String( bas.toByteArray() );
                 } else {
-                    Log.w( TAG, "runConn: responseCode: %d", responseCode );
+                    Log.w( TAG, "runConn: responseCode: %d for url: %s",
+                           responseCode, conn.getURL() );
                 }
             } catch ( java.net.ProtocolException pe ) {
                 Log.ex( TAG, pe );
@@ -285,17 +289,18 @@ public class NetUtils {
         return result;
     }
 
+    // This handles multiple params but only every gets passed one!
     private static String getPostDataString( Map<String, String> params )
     {
         String result = null;
         try {
             ArrayList<String> pairs = new ArrayList<String>();
             // StringBuilder sb = new StringBuilder();
-            String[] pair = { null, null };
+            // String[] pair = { null, null };
             for ( Map.Entry<String, String> entry : params.entrySet() ){
-                pair[0] = URLEncoder.encode( entry.getKey(), "UTF-8" );
-                pair[1] = URLEncoder.encode( entry.getValue(), "UTF-8" );
-                pairs.add( TextUtils.join( "=", pair ) );
+                pairs.add( URLEncoder.encode( entry.getKey(), "UTF-8" )
+                           + "="
+                           + URLEncoder.encode( entry.getValue(), "UTF-8" ) );
             }
             result = TextUtils.join( "&", pairs );
         } catch ( java.io.UnsupportedEncodingException uee ) {

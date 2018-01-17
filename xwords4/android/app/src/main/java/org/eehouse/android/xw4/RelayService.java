@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import junit.framework.Assert;
 
@@ -38,6 +39,10 @@ import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -46,13 +51,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RelayService extends XWService
     implements NetStateCache.StateChangedIf {
@@ -60,6 +70,8 @@ public class RelayService extends XWService
     private static final int MAX_SEND = 1024;
     private static final int MAX_BUF = MAX_SEND - 2;
     private static final int REG_WAIT_INTERVAL = 10;
+    private static final int INITIAL_BACKOFF = 5;
+    private static final int UDP_FAIL_LIMIT = 5;
 
     // One day, in seconds.  Probably should be configurable.
     private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
@@ -90,8 +102,9 @@ public class RelayService extends XWService
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
 
-    private static HashSet<Integer> s_packetsSent = new HashSet<Integer>();
-    private static int s_nextPacketID = 1;
+    private static List<PacketData> s_packetsSentUDP = new ArrayList<>();
+    private static List<PacketData> s_packetsSentWeb = new ArrayList<>();
+    private static AtomicInteger s_nextPacketID = new AtomicInteger();
     private static boolean s_gcmWorking = false;
     private static boolean s_registered = false;
     private static CommsAddrRec s_addr =
@@ -100,16 +113,14 @@ public class RelayService extends XWService
     private static long s_curNextTimer;
     static { resetBackoffTimer(); }
 
-    private Thread m_fetchThread = null;
-    private Thread m_UDPReadThread = null;
-    private Thread m_UDPWriteThread = null;
-    private DatagramSocket m_UDPSocket;
-    private LinkedBlockingQueue<PacketData> m_queue =
-        new LinkedBlockingQueue<PacketData>();
+    private Thread m_fetchThread = null; // no longer used
+    private AtomicReference<UDPThreads> m_UDPThreadsRef = new AtomicReference<>();
     private Handler m_handler;
     private Runnable m_onInactivity;
     private int m_maxIntervalSeconds = 0;
     private long m_lastGamePacketReceived;
+    private int m_nativeFailScore;
+    private boolean m_skipUPDSet;
     private static DevIDType s_curType = DevIDType.ID_TYPE_NONE;
     private static long s_regStartTime = 0;
 
@@ -160,7 +171,7 @@ public class RelayService extends XWService
     {
         boolean enabled = ! XWPrefs
             .getPrefsBoolean( context, R.string.key_disable_relay, false );
-        Log.d( TAG, "relayEnabled() => %b", enabled );
+        // Log.d( TAG, "relayEnabled() => %b", enabled );
         return enabled;
     }
 
@@ -306,7 +317,7 @@ public class RelayService extends XWService
     // Exists to get incoming data onto the main thread
     private static void postData( Context context, long rowid, byte[] msg )
     {
-        Log.d( TAG, "postData(): packet of length %d for token %d",
+        Log.d( TAG, "postData(): packet of length %d for token (rowid) %d",
                msg.length, rowid );
         if ( DBUtils.haveGame( context, rowid ) ) {
             Intent intent = getIntentTo( context, MsgCmds.RECEIVE )
@@ -374,6 +385,8 @@ public class RelayService extends XWService
                     }
                 }
             };
+
+        m_skipUPDSet = XWPrefs.getSkipToWebAPI( this );
     }
 
     @Override
@@ -388,7 +401,7 @@ public class RelayService extends XWService
                 cmd = null;
             }
             if ( null != cmd ) {
-                Log.d( TAG, "onStartCommand(): cmd=%s", cmd.toString() );
+                // Log.d( TAG, "onStartCommand(): cmd=%s", cmd.toString() );
                 switch( cmd ) {
                 case PROCESS_GAME_MSGS:
                     String[] relayIDs = new String[1];
@@ -403,7 +416,7 @@ public class RelayService extends XWService
                     byte[][][] msgss = expandMsgsArray( intent );
                     for ( byte[][] msgs : msgss ) {
                         for ( byte[] msg : msgs ) {
-                            gotPacket( msg, true );
+                            gotPacket( msg, true, false );
                         }
                     }
                     break;
@@ -449,7 +462,7 @@ public class RelayService extends XWService
                 case TIMER_FIRED:
                     if ( !NetStateCache.netAvail( this ) ) {
                         Log.w( TAG, "not connecting: no network" );
-                    } else if ( startFetchThreadIf() ) {
+                    } else if ( startFetchThreadIfNotUDP() ) {
                         // do nothing
                     } else if ( registerWithRelayIfNot() ) {
                         requestMessages();
@@ -510,9 +523,9 @@ public class RelayService extends XWService
         }
     }
 
-    private boolean startFetchThreadIf()
+    private boolean startFetchThreadIfNotUDP()
     {
-        // DbgUtils.logf( "startFetchThreadIf()" );
+        // DbgUtils.logf( "startFetchThreadIfNotUDP()" );
         boolean handled = relayEnabled( this ) && !XWApp.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             m_fetchThread = new Thread( null, new Runnable() {
@@ -542,152 +555,69 @@ public class RelayService extends XWService
     private void startUDPThreadsIfNot()
     {
         if ( XWApp.UDP_ENABLED && relayEnabled( this ) ) {
-            if ( null == m_UDPReadThread ) {
-                m_UDPReadThread = new Thread( null, new Runnable() {
-                        public void run() {
-
-                            connectSocket(); // block until this is done
-                            startWriteThread();
-
-                            Log.i( TAG, "read thread running" );
-                            byte[] buf = new byte[1024];
-                            for ( ; ; ) {
-                                DatagramPacket packet =
-                                    new DatagramPacket( buf, buf.length );
-                                try {
-                                    m_UDPSocket.receive( packet );
-                                    resetExitTimer();
-                                    gotPacket( packet );
-                                } catch ( java.io.InterruptedIOException iioe ) {
-                                    // DbgUtils.logf( "FYI: udp receive timeout" );
-                                } catch( java.io.IOException ioe ) {
-                                    break;
-                                }
-                            }
-                            Log.i( TAG, "read thread exiting" );
-                        }
-                    }, getClass().getName() );
-                m_UDPReadThread.start();
-            } else {
-                Log.i( TAG, "m_UDPReadThread not null and assumed to be running" );
+            synchronized ( m_UDPThreadsRef ) {
+                if ( null == m_UDPThreadsRef.get() ) {
+                    UDPThreads threads = new UDPThreads();
+                    m_UDPThreadsRef.set( threads );
+                    threads.start();
+                }
             }
         } else {
             Log.i( TAG, "startUDPThreadsIfNot(): UDP disabled" );
         }
     } // startUDPThreadsIfNot
 
-    private void connectSocket()
+    private boolean skipNativeSend()
     {
-        if ( null == m_UDPSocket ) {
-            int port = XWPrefs.getDefaultRelayPort( this );
-            String host = XWPrefs.getDefaultRelayHost( this );
-            try {
-                m_UDPSocket = new DatagramSocket();
-                m_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
+        boolean skip = m_nativeFailScore > UDP_FAIL_LIMIT || m_skipUPDSet;
+        // Log.d( TAG, "skipNativeSend(score=%d)) => %b", m_nativeFailScore, skip );
+        return skip;
+    }
 
-                InetAddress addr = InetAddress.getByName( host );
-                m_UDPSocket.connect( addr, port ); // remember this address
-                Log.d( TAG, "connectSocket(%s:%d): m_UDPSocket now %H",
-                       host, port, m_UDPSocket );
-            } catch( java.net.SocketException se ) {
-                Log.ex( TAG, se );
-                Assert.fail();
-            } catch( java.net.UnknownHostException uhe ) {
-                Log.ex( TAG, uhe );
+    // So it's a map. The timer iterates over the whole map, which should
+    // never be *that* big, and pulls everything older than 10 seconds. If
+    // anything in that list isn't an ACK (since ACKs will always be there
+    // because they're not ACK'd) then the whole thing gets resent.
+    
+    private void noteSent( PacketData packet, boolean fromUDP )
+    {
+        Log.d( TAG, "Sent (fromUDP=%b) packet: cmd=%s, id=%d",
+               fromUDP, packet.m_cmd.toString(), packet.m_packetID );
+        if ( fromUDP || packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
+            List<PacketData> list = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
+            synchronized( list ) {
+                list.add(packet );
             }
-        } else {
-            Assert.assertTrue( m_UDPSocket.isConnected() );
-            Log.i( TAG, "m_UDPSocket not null" );
         }
     }
 
-    private void startWriteThread()
+    private void noteSent( List<PacketData> packets, boolean fromUDP )
     {
-        if ( null == m_UDPWriteThread ) {
-            m_UDPWriteThread = new Thread( null, new Runnable() {
-                    public void run() {
-                        Log.i( TAG, "write thread starting" );
-                        for ( ; ; ) {
-                            PacketData outData;
-                            try {
-                                outData = m_queue.take();
-                            } catch ( InterruptedException ie ) {
-                                Log.w( TAG, "write thread killed" );
-                                break;
-                            }
-                            if ( null == outData
-                                 || 0 == outData.getLength() ) {
-                                Log.i( TAG, "stopping write thread" );
-                                break;
-                            }
-
-                            try {
-                                DatagramPacket outPacket = outData.assemble();
-                                m_UDPSocket.send( outPacket );
-                                int pid = outData.m_packetID;
-                                Log.d( TAG, "Sent udp packet, cmd=%s, id=%d,"
-                                       + " of length %d",
-                                       outData.m_cmd.toString(),
-                                       pid, outPacket.getLength());
-                                synchronized( s_packetsSent ) {
-                                    s_packetsSent.add( pid );
-                                }
-                                resetExitTimer();
-                                ConnStatusHandler.showSuccessOut();
-                            } catch ( java.net.SocketException se ) {
-                                Log.ex( TAG, se );
-                                Log.i( TAG, "Restarting threads to force"
-                                       + " new socket" );
-                                m_handler.post( new Runnable() {
-                                        public void run() {
-                                            stopUDPThreadsIf();
-                                        }
-                                    } );
-                            } catch ( java.io.IOException ioe ) {
-                                Log.ex( TAG, ioe );
-                            } catch ( NullPointerException npe ) {
-                                Log.w( TAG, "network problem; dropping packet" );
-                            }
-                        }
-                        Log.i( TAG, "write thread exiting" );
-                    }
-                }, getClass().getName() );
-            m_UDPWriteThread.start();
-        } else {
-            Log.i( TAG, "m_UDPWriteThread not null and assumed to "
-                   + "be running" );
+        long nowMS = System.currentTimeMillis();
+        List<PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
+        Log.d( TAG, "noteSent(fromUDP=%b): adding %d; size before: %d",
+               fromUDP, packets.size(), map.size() );
+        for ( PacketData packet : packets ) {
+            if ( fromUDP ) {
+                packet.setSentMS( nowMS );
+            }
+            noteSent( packet, fromUDP );
         }
+        Log.d( TAG, "noteSent(fromUDP=%b): size after: %d", fromUDP, map.size() );
     }
 
     private void stopUDPThreadsIf()
     {
-        if ( null != m_UDPWriteThread ) {
-            // can't add null
-            m_queue.add( new PacketData() );
-            try {
-                Log.d( TAG, "joining m_UDPWriteThread" );
-                m_UDPWriteThread.join();
-                Log.d( TAG, "SUCCESSFULLY joined m_UDPWriteThread" );
-            } catch( java.lang.InterruptedException ie ) {
-                Log.ex( TAG, ie );
-            }
-            m_UDPWriteThread = null;
-            m_queue.clear();
-        }
-        if ( null != m_UDPSocket && null != m_UDPReadThread ) {
-            m_UDPSocket.close();
-            try {
-                m_UDPReadThread.join();
-            } catch( java.lang.InterruptedException ie ) {
-                Log.ex( TAG, ie );
-            }
-            m_UDPReadThread = null;
-            m_UDPSocket = null;
+        DbgUtils.assertOnUIThread();
+
+        UDPThreads threads = m_UDPThreadsRef.getAndSet( null );
+        if ( null != threads ) {
+            threads.stop();
         }
     }
 
     // MIGHT BE Running on reader thread
-    private void gotPacket( byte[] data, boolean skipAck )
+    private void gotPacket( byte[] data, boolean skipAck, boolean fromUDP )
     {
         boolean resetBackoff = false;
         ByteArrayInputStream bis = new ByteArrayInputStream( data );
@@ -736,7 +666,7 @@ public class RelayService extends XWService
                 case XWPDEV_MSG:
                     int token = dis.readInt();
                     byte[] msg = new byte[dis.available()];
-                    dis.read( msg );
+                    dis.readFully( msg );
                     postData( this, token, msg );
 
                     // game-related packets only count
@@ -756,9 +686,8 @@ public class RelayService extends XWService
                     resetBackoff = true;
                     intent = getIntentTo( this, MsgCmds.GOT_INVITE );
                     int srcDevID = dis.readInt();
-                    short len = dis.readShort();
-                    byte[] nliData = new byte[len];
-                    dis.read( nliData );
+                    byte[] nliData = new byte[dis.readShort()];
+                    dis.readFully( nliData );
                     NetLaunchInfo nli = XwJNI.nliFromStream( nliData );
                     intent.putExtra( INVITE_FROM, srcDevID );
                     String asStr = nli.toString();
@@ -767,7 +696,7 @@ public class RelayService extends XWService
                     startService( intent );
                     break;
                 case XWPDEV_ACK:
-                    noteAck( vli2un( dis ) );
+                    noteAck( vli2un( dis ), fromUDP );
                     break;
                 // case XWPDEV_MSGFWDOTHERS:
                 //     Assert.assertTrue( 0 == dis.readByte() ); // protocol; means "invite", I guess.
@@ -786,7 +715,7 @@ public class RelayService extends XWService
         if ( resetBackoff ) {
             resetBackoffTimer();
         }
-    }
+    } // gotPacket()
 
     private void gotPacket( DatagramPacket packet )
     {
@@ -796,7 +725,7 @@ public class RelayService extends XWService
         byte[] data = new byte[packetLen];
         System.arraycopy( packet.getData(), 0, data, 0, packetLen );
         // DbgUtils.logf( "RelayService::gotPacket: %d bytes of data", packetLen );
-        gotPacket( data, false );
+        gotPacket( data, false, true );
     } // gotPacket
 
     private boolean shouldRegister()
@@ -872,13 +801,17 @@ public class RelayService extends XWService
 
     private void requestMessagesImpl( XWRelayReg reg )
     {
-        ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
-            String devid = getDevID( null );
+            DevIDType[] typp = new DevIDType[1];
+            String devid = getDevID( typp );
             if ( null != devid ) {
+                ByteArrayOutputStream bas = new ByteArrayOutputStream();
                 DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
+                // Log.d( TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
                 postPacket( bas, reg );
+            } else {
+                Log.d(TAG, "requestMessagesImpl(): devid is null" );
             }
         } catch ( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
@@ -995,16 +928,19 @@ public class RelayService extends XWService
     private String getVLIString( DataInputStream dis )
         throws java.io.IOException
     {
-        int len = vli2un( dis );
-        byte[] tmp = new byte[len];
-        dis.read( tmp );
+        byte[] tmp = new byte[vli2un( dis )];
+        dis.readFully( tmp );
         String result = new String( tmp );
         return result;
     }
 
     private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd )
     {
-        m_queue.add( new PacketData( bas, cmd ) );
+        startUDPThreadsIfNot();
+        UDPThreads threads = m_UDPThreadsRef.get();
+        if ( threads != null ) {
+            threads.add( new PacketData( bas, cmd ) );
+        }
         // 0 ok; thread will often have sent already!
         // DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
     }
@@ -1068,6 +1004,277 @@ public class RelayService extends XWService
         }
     }
 
+    private class UDPThreads {
+        private DatagramSocket m_UDPSocket;
+        private LinkedBlockingQueue<PacketData> m_queue =
+            new LinkedBlockingQueue<PacketData>();
+        private Thread m_UDPReadThread;
+        private Thread m_UDPWriteThread;
+
+        UDPThreads() {}
+
+        void start()
+        {
+            m_UDPReadThread = new Thread( null, new Runnable() {
+                    public void run() {
+
+                        connectSocket(); // block until this is done
+                        startWriteThread();
+
+                        Log.i( TAG, "read thread running" );
+                        byte[] buf = new byte[1024];
+                        for ( ; ; ) {
+                            DatagramPacket packet =
+                                new DatagramPacket( buf, buf.length );
+                            try {
+                                m_UDPSocket.receive( packet );
+                                resetExitTimer();
+                                gotPacket( packet );
+                            } catch ( java.io.InterruptedIOException iioe ) {
+                                // DbgUtils.logf( "FYI: udp receive timeout" );
+                            } catch( java.io.IOException ioe ) {
+                                break;
+                            }
+                        }
+                        Log.i( TAG, "read thread exiting" );
+                    }
+                }, getClass().getName() );
+            m_UDPReadThread.start();
+        }
+
+        void stop()
+        {
+            m_queue.add( new EOQPacketData() ); // will kill the writer thread
+        }
+
+        void add( PacketData packet )
+        {
+            m_queue.add( packet );
+        }
+
+        private void connectSocket()
+        {
+            if ( null == m_UDPSocket ) {
+                int port = XWPrefs.getDefaultRelayPort( RelayService.this );
+                String host = XWPrefs.getDefaultRelayHost( RelayService.this );
+                try {
+                    m_UDPSocket = new DatagramSocket();
+                    m_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
+
+                    InetAddress addr = InetAddress.getByName( host );
+                    m_UDPSocket.connect( addr, port ); // remember this address
+                    Log.d( TAG, "connectSocket(%s:%d): m_UDPSocket now %H",
+                           host, port, m_UDPSocket );
+                } catch( java.net.SocketException se ) {
+                    Log.ex( TAG, se );
+                    Assert.fail();
+                } catch( java.net.UnknownHostException uhe ) {
+                    Log.ex( TAG, uhe );
+                }
+            } else {
+                Assert.assertTrue( m_UDPSocket.isConnected() );
+                Log.i( TAG, "m_UDPSocket not null" );
+            }
+        }
+
+        private void startWriteThread()
+        {
+            Assert.assertNull( m_UDPWriteThread );
+
+            m_UDPWriteThread = new Thread( null, new Runnable() {
+                    public void run() {
+                        Log.i( TAG, "write thread starting" );
+                        for ( boolean gotEOQ = false; !gotEOQ; ) {
+                            List<PacketData> dataListUDP = new ArrayList<>();
+                            List<PacketData> dataListWeb = new ArrayList<>();
+                            PacketData outData;
+                            try {
+                                long ts = s_packetsSentUDP.size() > 0 ? 10 : 3600;
+                                Log.d( TAG, "blocking %d sec on poll()", ts );
+                                for ( outData = m_queue.poll(ts, TimeUnit.SECONDS);
+                                      null != outData;
+                                      outData = m_queue.poll() ) {         // doesn't block
+                                    if ( outData instanceof EOQPacketData ) {
+                                        gotEOQ = true;
+                                        break;
+                                    } else if ( skipNativeSend() || outData.getForWeb() ) {
+                                        dataListWeb.add (outData );
+                                    } else {
+                                        dataListUDP.add( outData );
+                                    }
+                                }
+                            } catch ( InterruptedException ie ) {
+                                Log.w( TAG, "write thread killed" );
+                                break;
+                            }
+
+                            sendViaWeb( dataListWeb );
+                            sendViaUDP( dataListUDP );
+
+                            resetExitTimer();
+                            runUDPAckTimer();
+
+                            ConnStatusHandler.showSuccessOut();
+                        }
+
+                        Log.i( TAG, "write thread killing read thread" );
+
+                        // now kill the read thread
+                        m_UDPSocket.close();
+                        try {
+                            m_UDPReadThread.join();
+                        } catch( java.lang.InterruptedException ie ) {
+                            Log.ex( TAG, ie );
+                        }
+
+                        Log.i( TAG, "write thread exiting" );
+                    }
+                }, getClass().getName() );
+            m_UDPWriteThread.start();
+        }
+
+        private int sendViaWeb( List<PacketData> packets )
+        {
+            Log.d( TAG, "sendViaWeb(): sending %d at once", packets.size() );
+            int sentLen = 0;
+            if ( packets.size() > 0 ) {
+                HttpURLConnection conn = NetUtils.makeHttpRelayConn( RelayService.this, "post" );
+                if ( null == conn ) {
+                    Log.e( TAG, "sendViaWeb(): null conn for POST" );
+                } else {
+                    try {
+                        JSONArray dataArray = new JSONArray();
+                        for ( PacketData packet : packets ) {
+                            Assert.assertFalse( packet instanceof EOQPacketData );
+                            byte[] datum = packet.assemble();
+                            dataArray.put( Utils.base64Encode(datum) );
+                            sentLen += datum.length;
+                        }
+                        JSONObject params = new JSONObject();
+                        params.put( "data", dataArray );
+
+                        String result = NetUtils.runConn( conn, params );
+                        boolean succeeded = null != result;
+                        if ( succeeded ) {
+                            Log.d( TAG, "sendViaWeb(): POST(%s) => %s", params, result );
+                            JSONObject resultObj = new JSONObject( result );
+                            JSONArray resData = resultObj.getJSONArray( "data" );
+                            int nReplies = resData.length();
+                            // Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
+
+                            noteSent( packets, false ); // before we process the acks below :-)
+
+                            for ( int ii = 0; ii < nReplies; ++ii ) {
+                                byte[] datum = Utils.base64Decode( resData.getString( ii ) );
+                                // PENDING: skip ack or not
+                                gotPacket( datum, false, false );
+                            }
+                        } else {
+                            Log.e( TAG, "sendViaWeb(): failed result for POST" );
+
+                        }
+
+                        ConnStatusHandler.updateStatus( RelayService.this, null,
+                                                        CommsConnType.COMMS_CONN_RELAY,
+                                                        succeeded );
+                    } catch ( JSONException ex ) {
+                        Assert.assertFalse( BuildConfig.DEBUG );
+                    }
+                }
+            }
+            return sentLen;
+        }
+
+        private int sendViaUDP( List<PacketData> packets )
+        {
+            int sentLen = 0;
+
+            if ( packets.size() > 0 ) {
+                noteSent( packets, true );
+                for ( PacketData packet : packets ) {
+                    boolean getOut = true;
+                    byte[] data = packet.assemble();
+                    try {
+                        DatagramPacket udpPacket = new DatagramPacket( data, data.length );
+                        m_UDPSocket.send( udpPacket );
+
+                        sentLen += udpPacket.getLength();
+                        // packet.setSentMS( nowMS );
+                        getOut = false;
+                    } catch ( java.net.SocketException se ) {
+                        Log.ex( TAG, se );
+                        Log.i( TAG, "Restarting threads to force new socket" );
+                        ConnStatusHandler.updateStatusOut( RelayService.this, null,
+                                                           CommsConnType.COMMS_CONN_RELAY,
+                                                           true );
+
+                        m_handler.post( new Runnable() {
+                                public void run() {
+                                    stopUDPThreadsIf();
+                                }
+                            } );
+                        break;
+                    } catch ( java.io.IOException ioe ) {
+                        Log.ex( TAG, ioe );
+                    } catch ( NullPointerException npe ) {
+                        Log.w( TAG, "network problem; dropping packet" );
+                    }
+                    if ( getOut ) {
+                        break;
+                    }
+                }
+
+                ConnStatusHandler.updateStatus( RelayService.this, null,
+                                                CommsConnType.COMMS_CONN_RELAY,
+                                                sentLen > 0 );
+            }
+
+            return sentLen;
+        }
+
+        private long m_lastRunMS = 0;
+        private void runUDPAckTimer()
+        {
+            long nowMS = System.currentTimeMillis();
+            if ( m_lastRunMS + 3000 > nowMS ) { // never more frequently than 3 sec.
+                // Log.d( TAG, "runUDPAckTimer(): too soon, so skipping" );
+            } else {
+                m_lastRunMS = nowMS;
+
+                long minSentMS = nowMS - 10000; // 10 seconds ago
+                long prevSentMS = 0;
+                List<PacketData> forResend = new ArrayList<>();
+                boolean foundNonAck = false;
+                synchronized ( s_packetsSentUDP ) {
+                    Iterator<PacketData> iter; 
+                    for ( iter = s_packetsSentUDP.iterator(); iter.hasNext(); ) {
+                        PacketData packet = iter.next();
+                        long sentMS = packet.getSentMS();
+                        Assert.assertTrue( prevSentMS <= sentMS );
+                        prevSentMS = sentMS;
+                        if ( sentMS > minSentMS ) {
+                            break;
+                        }
+
+                        forResend.add( packet );
+                        if ( packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
+                            foundNonAck = true;
+                            ++m_nativeFailScore;
+                        }
+                        iter.remove();
+                    }
+                    Log.d( TAG, "runUDPAckTimer(): %d too-new packets remaining",
+                           s_packetsSentUDP.size() );
+                }
+                if ( foundNonAck ) {
+                    Log.d( TAG, "runUDPAckTimer(): reposting %d packets", forResend.size() );
+                    m_queue.addAll( forResend );
+                }
+            }
+        }
+
+    }
+
     private static class AsyncSender extends AsyncTask<Void, Void, Void> {
         private Context m_context;
         private HashMap<String,ArrayList<byte[]>> m_msgHash;
@@ -1129,6 +1336,7 @@ public class RelayService extends XWService
                 }
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
+
                 Socket socket = NetUtils.makeProxySocket( m_context, 8000 );
                 if ( null != socket ) {
                     DataOutputStream outStream =
@@ -1205,24 +1413,52 @@ public class RelayService extends XWService
     {
         int nextPacketID = 0;
         if ( XWRelayReg.XWPDEV_ACK != cmd ) {
-            synchronized( s_packetsSent ) {
-                nextPacketID = ++s_nextPacketID;
-            }
+            nextPacketID = s_nextPacketID.incrementAndGet();
         }
         return nextPacketID;
     }
 
-    private static void noteAck( int packetID )
+    private void noteAck( int packetID, boolean fromUDP )
     {
-        synchronized( s_packetsSent ) {
-            if ( s_packetsSent.contains( packetID ) ) {
-                s_packetsSent.remove( packetID );
+        Assert.assertTrue( packetID != 0 );
+        List<PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
+        synchronized( map ) {
+            PacketData packet = null;
+            Iterator<PacketData> iter = map.iterator();
+            for ( iter = map.iterator(); iter.hasNext(); ) {
+                PacketData next = iter.next();
+                if ( next.m_packetID == packetID ) {
+                    packet = next;
+                    iter.remove();
+                    break;
+                }
+            }
+
+            if ( packet != null ) {
+                // Log.d( TAG, "noteAck(fromUDP=%b): removed for id %d: %s",
+                //        fromUDP, packetID, packet );
+                if ( fromUDP ) {
+                    --m_nativeFailScore;
+                }
             } else {
                 Log.w( TAG, "Weird: got ack %d but never sent", packetID );
             }
-            Log.d( TAG, "noteAck(): Got ack for %d; there are %d unacked packets",
-                   packetID, s_packetsSent.size() );
+            if ( BuildConfig.DEBUG ) {
+                ArrayList<String> pstrs = new ArrayList<>();
+                for ( PacketData datum : map ) {
+                    pstrs.add( String.format("%d", datum.m_packetID ) );
+                }
+                Log.d( TAG, "noteAck(fromUDP=%b): Got ack for %d; there are %d unacked packets: %s",
+                       fromUDP, packetID, map.size(), TextUtils.join( ",", pstrs ) );
+            }
         }
+
+        // If we get an ACK, things are working, even if it's not found above
+        // (which would be the case for an ACK sent via web, which we don't
+        // save.)
+        ConnStatusHandler.updateStatus( this, null,
+                                        CommsConnType.COMMS_CONN_RELAY,
+                                        true );
     }
 
     // Called from any thread
@@ -1247,7 +1483,7 @@ public class RelayService extends XWService
             registerWithRelay();
         } else {
             stopUDPThreadsIf();
-            startFetchThreadIf();
+            startFetchThreadIfNotUDP();
         }
     }
 
@@ -1334,7 +1570,7 @@ public class RelayService extends XWService
             result = figureBackoffSeconds();
         }
 
-        Log.d( TAG, "getMaxIntervalSeconds() => %d", result );
+        Log.d( TAG, "getMaxIntervalSeconds() => %d", result ); // WFT? went from 40 to 1000
         return result;
     }
 
@@ -1370,7 +1606,8 @@ public class RelayService extends XWService
     private boolean shouldMaintainConnection()
     {
         boolean result = relayEnabled( this )
-            && (XWApp.GCM_IGNORED || !s_gcmWorking);
+            && (!s_gcmWorking || XWPrefs.getIgnoreGCM( this ));
+
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;
@@ -1396,18 +1633,19 @@ public class RelayService extends XWService
                 long now = Utils.getCurSeconds();
                 if ( s_curNextTimer <= now ) {
                     if ( 0 == s_curBackoff ) {
-                        s_curBackoff = 15;
+                        s_curBackoff = INITIAL_BACKOFF;
+                    } else {
+                        s_curBackoff = Math.min( 2 * s_curBackoff, result );
                     }
-                    s_curBackoff = Math.min( 2 * s_curBackoff, result );
                     s_curNextTimer += s_curBackoff;
                 }
 
                 diff = s_curNextTimer - now;
             }
             Assert.assertTrue( diff < Integer.MAX_VALUE );
-            Log.d( TAG, "figureBackoffSeconds() => %d", diff );
-            result =  (int)diff;
+            result = (int)diff;
         }
+        // Log.d( TAG, "figureBackoffSeconds() => %d", result );
         return result;
     }
 
@@ -1421,13 +1659,31 @@ public class RelayService extends XWService
     }
 
     private class PacketData {
-        public PacketData() { m_bas = null; }
+        public ByteArrayOutputStream m_bas;
+        public XWRelayReg m_cmd;
+        public byte[] m_header;
+        public int m_packetID;
+        private long m_created;
+        private long m_sentUDP;
+
+        private PacketData() {}
 
         public PacketData( ByteArrayOutputStream bas, XWRelayReg cmd )
         {
             m_bas = bas;
             m_cmd = cmd;
         }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "{cmd: %s; age: %d ms}", m_cmd,
+                                  System.currentTimeMillis() - m_created );
+        }
+
+        void setSentMS( long ms ) { m_sentUDP = ms; }
+        long getSentMS() { return m_sentUDP; }
+        boolean getForWeb() { return m_sentUDP != 0; }
 
         public int getLength()
         {
@@ -1441,13 +1697,13 @@ public class RelayService extends XWService
             return result;
         }
 
-        public DatagramPacket assemble()
+        public byte[] assemble()
         {
-            byte[] dest = new byte[getLength()];
-            System.arraycopy( m_header, 0, dest, 0, m_header.length );
+            byte[] data = new byte[getLength()];
+            System.arraycopy( m_header, 0, data, 0, m_header.length );
             byte[] basData = m_bas.toByteArray();
-            System.arraycopy( basData, 0, dest, m_header.length, basData.length );
-            return new DatagramPacket( dest, dest.length );
+            System.arraycopy( basData, 0, data, m_header.length, basData.length );
+            return data;
         }
 
         private void makeHeader()
@@ -1466,10 +1722,8 @@ public class RelayService extends XWService
                 Log.ex( TAG, ioe );
             }
         }
-
-        public ByteArrayOutputStream m_bas;
-        public XWRelayReg m_cmd;
-        public byte[] m_header;
-        public int m_packetID;
     }
+
+    // Exits only to exist, so instanceof can distinguish
+    private class EOQPacketData extends PacketData {}
 }

@@ -648,7 +648,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 {
     jstring jstr = 
 #ifdef XWFEATURE_BLUETOOTH
-# if defined VARIANT_xw4
+# if defined VARIANT_xw4 || defined VARIANT_xw4fdroid
         (*env)->NewStringUTF( env, XW_BT_UUID )
 # elif defined VARIANT_xw4d
         (*env)->NewStringUTF( env, XW_BT_UUID_DBG )
@@ -1673,8 +1673,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 {
     jboolean result;
     XWJNI_START_GLOBALS();
-    XP_ASSERT( state->game.comms );
-    XP_ASSERT( state->game.server );
 
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, globals->vtMgr,
                                               jstream );
@@ -1686,31 +1684,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         addrp = &addr;
     }
 
-    /* pthread_mutex_lock( &state->msgMutex ); */
-
-    ServerCtxt* server = state->game.server;
-    CommsMsgState commsState;
-    result = comms_checkIncomingStream( state->game.comms, stream, addrp, 
-                                        &commsState );
-    if ( result ) {
-        (void)server_do( server );
-
-        result = server_receiveMessage( server, stream );
-    }
-    comms_msgProcessed( state->game.comms, &commsState, !result );
-
-    /* pthread_mutex_unlock( &state->msgMutex ); */
-
-    if ( result ) {
-        /* in case MORE work's pending.  Multiple calls are required in at
-           least one case, where I'm a host handling client registration *AND*
-           I'm a robot.  Only one server_do and I'll never make that first
-           robot move.  That's because comms can't detect a duplicate initial
-           packet (in validateInitialMessage()). */
-        for ( int ii = 0; ii < 5; ++ii ) {
-            (void)server_do( server );
-        }
-    }
+    result = game_receiveMessage( &state->game, stream, addrp );
 
     stream_destroy( stream );
 

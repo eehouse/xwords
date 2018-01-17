@@ -550,7 +550,7 @@ public class BTService extends XWService {
             } else {
                 short len = is.readShort();
                 byte[] nliData = new byte[len];
-                is.read( nliData );
+                is.readFully( nliData );
                 nli = XwJNI.nliFromStream( nliData );
             }
 
@@ -573,26 +573,20 @@ public class BTService extends XWService {
                 int gameID = dis.readInt();
                 switch ( cmd ) {
                 case MESG_SEND:
-                    short len = dis.readShort();
-                    byte[] buffer = new byte[len];
-                    int nRead = dis.read( buffer, 0, len );
-                    if ( nRead == len ) {
-                        BluetoothDevice host = socket.getRemoteDevice();
-                        addAddr( host );
+                    byte[] buffer = new byte[dis.readShort()];
+                    dis.readFully( buffer );
+                    BluetoothDevice host = socket.getRemoteDevice();
+                    addAddr( host );
 
-                        CommsAddrRec addr = new CommsAddrRec( host.getName(),
-                                                              host.getAddress() );
-                        ReceiveResult rslt
-                            = BTService.this.receiveMessage( BTService.this,
-                                                             gameID, m_btMsgSink,
-                                                             buffer, addr );
+                    CommsAddrRec addr = new CommsAddrRec( host.getName(),
+                                                          host.getAddress() );
+                    ReceiveResult rslt
+                        = BTService.this.receiveMessage( BTService.this,
+                                                         gameID, m_btMsgSink,
+                                                         buffer, addr );
 
-                        result = rslt == ReceiveResult.GAME_GONE ?
-                            BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
-                    } else {
-                        Log.e( TAG, "receiveMessage(): read only %d of %d bytes",
-                               nRead, len );
-                    }
+                    result = rslt == ReceiveResult.GAME_GONE ?
+                        BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
                     break;
                 case MESG_GAMEGONE:
                     postEvent( MultiEvent.MESSAGE_NOGAME, gameID );

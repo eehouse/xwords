@@ -1,7 +1,7 @@
 #!/bin/bash
 set -u -e
 
-LOGDIR=$(basename $0)_logs
+LOGDIR=./$(basename $0)_logs
 APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
@@ -17,9 +17,9 @@ SAVE_GOOD=""
 MINDEVS=""
 MAXDEVS=""
 ONEPER=""
-RESIGN_RATIO=""
+RESIGN_PCT=0
 DROP_N=""
-MINRUN=2
+MINRUN=2		                # seconds
 ONE_PER_ROOM=""                 # don't run more than one device at a time per room
 USE_GTK=""
 UNDO_PCT=0
@@ -31,6 +31,7 @@ NAMES=(UNUSED Brynn Ariela Kati Eric)
 SEND_CHAT=''
 CORE_COUNT=$(ls core.* 2>/dev/null | wc -l)
 DUP_PACKETS=''
+HTTP_PCT=0
 
 declare -A PIDS
 declare -A APPS
@@ -43,7 +44,7 @@ declare -A LOGS
 declare -A MINEND
 declare -A ROOM_PIDS
 declare -a APPS_OLD=()
-declare -a DICTS=				# wants to be =() too?
+declare -a DICTS=()				# wants to be =() too?
 declare -A CHECKED_ROOMS
 
 function cleanup() {
@@ -194,9 +195,6 @@ build_cmds() {
         for NLOCALS in ${LOCALS[@]}; do
             DEV=$((DEV + 1))
             FILE="${LOGDIR}/GAME_${GAME}_${DEV}.sql3"
-            if [ $((RANDOM % 100)) -lt $UDP_PCT_START ]; then
-                FILE="$FILE --use-udp"
-            fi
             LOG=${LOGDIR}/${GAME}_${DEV}_LOG.txt
             > $LOG # clear the log
 
@@ -219,7 +217,13 @@ build_cmds() {
             PARAMS="$PARAMS --game-dict $DICT --relay-port $PORT --host $HOST "
             PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --db $FILE"
+			if [ $((RANDOM % 100)) -lt $UDP_PCT_START ]; then
+                PARAMS="$PARAMS --use-udp"
+            fi
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
+			if [ $((${RANDOM}%100)) -lt $HTTP_PCT ]; then
+				PARAMS="$PARAMS --use-http"
+			fi
             # PARAMS="$PARAMS --split-packets 2"
             if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
@@ -304,6 +308,21 @@ launch() {
 #      exec $CMD >/dev/null 2>>$LOG
 # }
 
+send_dead() {
+	ID=$1
+	DB=${FILES[$ID]}
+	while :; do
+		[ -f $DB ] || break		# it's gone
+		RES=$(echo 'select relayid, seed from games limit 1;' | sqlite3 -separator ' ' $DB || /bin/true)
+		[ -n "$RES" ] && break
+		sleep 0.2
+	done
+	RELAYID=$(echo $RES | awk '{print $1}')
+	SEED=$(echo $RES | awk '{print $2}')
+	JSON="[{\"relayID\":\"$RELAYID\", \"seed\":$SEED}]"
+	curl -G --data-urlencode params="$JSON" http://$HOST/xw4/relay.py/kill >/dev/null 2>&1
+}
+
 close_device() {
     ID=$1
     MVTO=$2
@@ -353,11 +372,11 @@ kill_from_log() {
 }
 
 maybe_resign() {
-    if [ "$RESIGN_RATIO" -gt 0 ]; then
+    if [ "$RESIGN_PCT" -gt 0 ]; then
         KEY=$1
         LOG=${LOGS[$KEY]}
         if grep -aq XWRELAY_ALLHERE $LOG; then
-            if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
+			if [ $((${RANDOM}%100)) -lt $RESIGN_PCT ]; then
                 echo "making $LOG $(connName $LOG) resign..."
                 kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || /bin/true
             fi
@@ -419,6 +438,7 @@ check_game() {
         for ID in $OTHERS $KEY; do
             echo -n "${ID}:${LOGS[$ID]}, "
             kill_from_log ${LOGS[$ID]} || /bin/true
+			send_dead $ID
             close_device $ID $DONEDIR "game over"
         done
         echo ""
@@ -458,10 +478,8 @@ update_ldevid() {
             if [ $RNUM -lt 30 ]; then        # upgrade or first run
                 CMD="--ldevid LINUX_TEST_$(printf %.5d ${KEY})_"
             fi
-        else
-            if [ $RNUM -lt 10 ]; then
-                CMD="${CMD}x"                             # give it a new local ID
-            fi
+        elif [ $RNUM -lt 10 ]; then
+            CMD="${CMD}x"                             # give it a new local ID
         fi
         ARGS_DEVID[$KEY]="$CMD"
     fi
@@ -508,7 +526,8 @@ run_cmds() {
         local KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
         ROOM=${ROOMS[$KEY]}
-        if [ 0 -eq ${PIDS[$KEY]} ]; then
+        PID=${PIDS[$KEY]}
+        if [ 0 -eq ${PID} ]; then
             if [ -n "$ONE_PER_ROOM" -a 0 -ne ${ROOM_PIDS[$ROOM]} ]; then
                 continue
             fi
@@ -522,10 +541,12 @@ run_cmds() {
             ROOM_PIDS[$ROOM]=$PID
             MINEND[$KEY]=$(($NOW + $MINRUN))
         else
-            PID=${PIDS[$KEY]}
             if [ -d /proc/$PID ]; then
                 SLEEP=$((${MINEND[$KEY]} - $NOW))
-                [ $SLEEP -gt 0 ] && sleep $SLEEP
+                if [ $SLEEP -gt 0 ]; then
+					sleep 1
+					continue
+				fi
                 kill $PID || /bin/true
                 wait $PID
             fi
@@ -594,6 +615,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
+    echo "    [--log-root]             # default: .                   \\" >&2
     echo "    [--dup-packets]          # send all packets twice       \\" >&2
     echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
@@ -601,6 +623,7 @@ function usage() {
     echo "    [--host <hostname>]                                     \\" >&2
     echo "    [--max-devs <int>]                                      \\" >&2
     echo "    [--min-devs <int>]                                      \\" >&2
+    echo "    [--min-run <int>]        # run each at least this long  \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
     echo "    [--new-app-args [arg*]]  # passed only to new app       \\" >&2
     echo "    [--num-games <int>]                                     \\" >&2
@@ -608,12 +631,14 @@ function usage() {
     echo "    [--old-app <path/to/app]*                               \\" >&2
     echo "    [--one-per]              # force one player per device  \\" >&2
     echo "    [--port <int>]                                          \\" >&2
-    echo "    [--resign-ratio <0 <= n <=1000 >                        \\" >&2
+    echo "    [--resign-pct <0 <= n <=100 >                           \\" >&2
+	echo "    [--no-timeout]           # run until all games done     \\" >&2
     echo "    [--seed <int>]                                          \\" >&2
     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
     echo "    [--udp-incr <pct>]                                      \\" >&2
     echo "    [--udp-start <pct>]      # default: $UDP_PCT_START                 \\" >&2
     echo "    [--undo-pct <int>]                                      \\" >&2
+    echo "    [--http-pct <0 <= n <=100>]                             \\" >&2
 
     exit 1
 }
@@ -647,6 +672,11 @@ while [ "$#" -gt 0 ]; do
             APPS_OLD[${#APPS_OLD[@]}]=$(getArg $*)
             shift
             ;;
+		--log-root)
+			[ -d $2 ] || usage "$1: no such directory $2"
+			LOGDIR=$2/$(basename $0)_logs
+			shift
+			;;
         --dup-packets)
             DUP_PACKETS=1
             ;;
@@ -671,6 +701,11 @@ while [ "$#" -gt 0 ]; do
             MAXDEVS=$(getArg $*)
             shift
             ;;
+		--min-run)
+			MINRUN=$(getArg $*)
+			[ $MINRUN -ge 2 -a $MINRUN -le 60 ] || usage "$1: n must be 2 <= n <= 60"
+			shift
+			;;
         --one-per)
             ONEPER=TRUE
             ;;
@@ -690,14 +725,23 @@ while [ "$#" -gt 0 ]; do
             UNDO_PCT=$(getArg $*)
             shift
             ;;
+        --http-pct)
+            HTTP_PCT=$(getArg $*)
+            [ $HTTP_PCT -ge 0 -a $HTTP_PCT -le 100 ] || usage "$1: n must be 0 <= n <= 100"
+            shift
+            ;;
         --send-chat)
             SEND_CHAT=$(getArg $*)
             shift
             ;;
-        --resign-ratio)
-            RESIGN_RATIO=$(getArg $*)
+        --resign-pct)
+            RESIGN_PCT=$(getArg $*)
+			[ $RESIGN_PCT -ge 0 -a $RESIGN_PCT -le 100 ] || usage "$1: n must be 0 <= n <= 100"
             shift
             ;;
+		--no-timeout)
+			TIMEOUT=0x7FFFFFFF
+			;;
         --help)
             usage
             ;;
@@ -709,7 +753,7 @@ done
 
 # Assign defaults
 #[ 0 -eq ${#DICTS[@]} ] && DICTS=(dict.xwd)
-[ 0 -eq ${#DICTS} ] && DICTS=(dict.xwd)
+[ 0 -eq ${#DICTS} ] && DICTS=(CollegeEng_2to8.xwd)
 [ -z "$APP_NEW" ] && APP_NEW=./obj_linux_memdbg/xwords
 [ -z "$MINDEVS" ] && MINDEVS=2
 [ -z "$MAXDEVS" ] && MAXDEVS=4
@@ -719,7 +763,7 @@ done
 [ -z "$PORT" ] && PORT=10997
 [ -z "$TIMEOUT" ] && TIMEOUT=$((NGAMES*60+500))
 [ -z "$SAVE_GOOD" ] && SAVE_GOOD=YES
-[ -z "$RESIGN_RATIO" -a "$NGAMES" -gt 1 ] && RESIGN_RATIO=1000 || RESIGN_RATIO=0
+# [ -z "$RESIGN_PCT" -a "$NGAMES" -gt 1 ] && RESIGN_RATIO=1000 || RESIGN_RATIO=0
 [ -z "$DROP_N" ] && DROP_N=0
 [ -z "$USE_GTK" ] && USE_GTK=FALSE
 [ -z "$UPGRADE_ODDS" ] && UPGRADE_ODDS=10
@@ -747,7 +791,8 @@ for FILE in $(ls $LOGDIR/*.{xwg,txt} 2>/dev/null); do
 done
 
 if [ -z "$RESUME" -a -d $LOGDIR ]; then
-    mv $LOGDIR /tmp/${LOGDIR}_$$
+	NEWNAME="$(basename $LOGDIR)_$$"
+    (cd $(dirname $LOGDIR) && mv $(basename $LOGDIR) /tmp/${NEWNAME})
 fi
 mkdir -p $LOGDIR
 
@@ -759,7 +804,7 @@ DEADDIR=$LOGDIR/dead
 mkdir -p $DEADDIR
 
 for VAR in NGAMES NROOMS USE_GTK TIMEOUT HOST PORT SAVE_GOOD \
-    MINDEVS MAXDEVS ONEPER RESIGN_RATIO DROP_N ALL_VIA_RQ SEED \
+    MINDEVS MAXDEVS ONEPER RESIGN_PCT DROP_N ALL_VIA_RQ SEED \
     APP_NEW; do
     echo "$VAR:" $(eval "echo \$${VAR}") 1>&2
 done

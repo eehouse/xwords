@@ -634,6 +634,8 @@ typedef enum {
     ,CMD_CHAT
     ,CMD_USEUDP
     ,CMD_NOUDP
+    ,CMD_USEHTTP
+    ,CMD_NOHTTPAUTO
     ,CMD_DROPSENDRELAY
     ,CMD_DROPRCVRELAY
     ,CMD_DROPSENDSMS
@@ -752,6 +754,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
     ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp (on by default)" }
     ,{ CMD_NOUDP, false, "no-use-udp", "connect to relay old-style, via tcp not udp" }
+    ,{ CMD_USEHTTP, false, "use-http", "use relay's new http interfaces rather than sockets" }
+    ,{ CMD_NOHTTPAUTO, false, "no-http-auto", "When http's on, don't periodically connect to relay (manual only)" }
 
     ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
@@ -973,6 +977,7 @@ linux_setupDevidParams( LaunchParams* params )
 static int
 linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
 {
+    XP_ASSERT( !cGlobals->params->useHTTP );
     struct sockaddr_in to_sock;
     struct hostent* host;
     int sock = cGlobals->relaySocket;
@@ -1174,6 +1179,7 @@ linux_relay_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         result = relaycon_send( cGlobals->params, buf, buflen, 
                                 clientToken, addrRec );
     } else {
+        XP_ASSERT( !cGlobals->params->useHTTP );
         int sock = cGlobals->relaySocket;
     
         if ( sock == -1 ) {
@@ -1552,8 +1558,8 @@ linuxChangeRoles( CommonGlobals* cGlobals )
 }
 #endif
 
-static unsigned int
-defaultRandomSeed()
+unsigned int
+makeRandomInt()
 {
     /* use kernel device rather than time() so can run multiple times/second
        without getting the same results. */
@@ -2028,7 +2034,7 @@ main( int argc, char** argv )
     XP_Bool isServer = XP_FALSE;
     // char* portNum = NULL;
     // char* hostName = "localhost";
-    unsigned int seed = defaultRandomSeed();
+    unsigned int seed = makeRandomInt();
     LaunchParams mainParams;
     XP_U16 nPlayerDicts = 0;
     XP_U16 robotCount = 0;
@@ -2284,6 +2290,7 @@ main( int argc, char** argv )
             break;
         case CMD_PLAYERNAME:
             index = mainParams.pgi.nPlayers++;
+            XP_ASSERT( index < MAX_NUM_PLAYERS );
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 0; /* means human */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
@@ -2292,6 +2299,7 @@ main( int argc, char** argv )
             break;
         case CMD_REMOTEPLAYER:
             index = mainParams.pgi.nPlayers++;
+            XP_ASSERT( index < MAX_NUM_PLAYERS );
             mainParams.pgi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
@@ -2302,6 +2310,7 @@ main( int argc, char** argv )
         case CMD_ROBOTNAME:
             ++robotCount;
             index = mainParams.pgi.nPlayers++;
+            XP_ASSERT( index < MAX_NUM_PLAYERS );
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 1; /* real smart by default */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
@@ -2398,6 +2407,12 @@ main( int argc, char** argv )
         case CMD_NOUDP:
             mainParams.useUdp = false;
             break;
+        case CMD_USEHTTP:
+            mainParams.useHTTP = true;
+            break;
+        case CMD_NOHTTPAUTO:
+            mainParams.noHTTPAuto = true;
+            break;
 
         case CMD_DROPSENDRELAY:
             mainParams.commsDisableds[COMMS_CONN_RELAY][1] = XP_TRUE;
@@ -2487,10 +2502,10 @@ main( int argc, char** argv )
             mainParams.dictDirs = g_slist_append( mainParams.dictDirs, "./" );
         }
 
-        if ( isServer ) {
-            if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
-                mainParams.pgi.serverRole = SERVER_STANDALONE;
-            } else {
+        if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
+            mainParams.pgi.serverRole = SERVER_STANDALONE;
+        } else if ( isServer ) {
+            if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) {
                 mainParams.pgi.serverRole = SERVER_ISSERVER;
             }
         } else {
@@ -2646,7 +2661,8 @@ main( int argc, char** argv )
         if ( mainParams.useCurses ) {
             if ( mainParams.needsNewGame ) {
                 /* curses doesn't have newgame dialog */
-                usage( argv[0], "game params required for curses version" );
+                usage( argv[0], "game params required for curses version, e.g. --name Eric --room MyRoom"
+                       " --remote-player --dict-dir ../ --game-dict CollegeEng_2to8.xwd");
             } else {
 #if defined PLATFORM_NCURSES
                 cursesmain( isServer, &mainParams );

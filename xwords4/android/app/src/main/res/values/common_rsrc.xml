@@ -36,7 +36,9 @@
 
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
+  <string name="key_relay_via_http_first">key_relay_via_http_first</string>
   <string name="key_update_url">key_update_url</string>
+  <string name="key_relay_url">key_relay_url</string>
   <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
@@ -111,6 +113,7 @@
   <string name="key_notagain_trading">key_notagain_trading</string>
   <string name="key_notagain_hidenewgamebuttons">key_notagain_hidenewgamebuttons</string>
   <string name="key_na_lookup">key_na_lookup</string>
+  <string name="key_na_archive">key_na_archive</string>
   <string name="key_na_browse">key_na_browse</string>
   <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
@@ -123,6 +126,8 @@
   <string name="key_enable_nfc_toself">key_enable_nfc_toself</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
   <string name="key_enable_relay_toself">key_enable_relay_toself</string>
+  <string name="key_ignore_gcm">key_ignore_gcm</string>
+  <string name="key_show_gcm">key_show_gcm</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_got_langdict">key_got_langdict</string>
@@ -149,6 +154,7 @@
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
+  <string name="default_relay_url">http://eehouse.org/xw4/relay.py</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 

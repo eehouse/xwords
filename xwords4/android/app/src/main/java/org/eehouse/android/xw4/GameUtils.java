@@ -482,14 +482,12 @@ public class GameUtils {
         if ( force ) {
             HashMap<Long,CommsConnTypeSet> games =
                 DBUtils.getGamesWithSendsPending( context );
-            if ( 0 < games.size() ) {
-                new ResendTask( context, games, filter, proc ).execute();
+            new ResendTask( context, games, filter, proc ).execute();
 
-                System.arraycopy( sendTimes, 0, /* src */
-                                  sendTimes, 1, /* dest */
-                                  sendTimes.length - 1 );
-                sendTimes[0] = now;
-            }
+            System.arraycopy( sendTimes, 0, /* src */
+                              sendTimes, 1, /* dest */
+                              sendTimes.length - 1 );
+            sendTimes[0] = now;
         }
     }
 
@@ -1196,7 +1194,7 @@ public class GameUtils {
                     for ( CommsConnType typ : conTypes ) {
                         switch ( typ ) {
                         case COMMS_CONN_RELAY:
-                            tellRelayDied( context, summary, informNow );
+                            // see below
                             break;
                         case COMMS_CONN_BT:
                             BTService.gameDied( context, addr.bt_btAddr, gameID );
@@ -1209,6 +1207,14 @@ public class GameUtils {
                             break;
                         }
                     }
+                }
+
+                // comms doesn't have a relay address for us until the game's
+                // in play (all devices registered, at least.) To enable
+                // deleting on relay half-games that we created but nobody
+                // joined, special-case this one.
+                if ( summary.inRelayGame() ) {
+                    tellRelayDied( context, summary, informNow );
                 }
             
                 gamePtr.release();
@@ -1251,7 +1257,7 @@ public class GameUtils {
         private HashMap<Long,CommsConnTypeSet> m_games;
         private ResendDoneProc m_doneProc;
         private CommsConnType m_filter;
-        private MultiMsgSink m_sink;
+        private int m_nSent = 0;
 
         public ResendTask( Context context, HashMap<Long,CommsConnTypeSet> games,
                            CommsConnType filter, ResendDoneProc proc )
@@ -1280,14 +1286,15 @@ public class GameUtils {
                 GameLock lock = new GameLock( rowid, false );
                 if ( lock.tryLock() ) {
                     CurGameInfo gi = new CurGameInfo( m_context );
-                    m_sink = new MultiMsgSink( m_context, rowid );
-                    GamePtr gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
+                    MultiMsgSink sink = new MultiMsgSink( m_context, rowid );
+                    GamePtr gamePtr = loadMakeGame( m_context, gi, sink, lock );
                     if ( null != gamePtr ) {
                         int nSent = XwJNI.comms_resendAll( gamePtr, true,
                                                            m_filter, false );
                         gamePtr.release();
                         Log.d( TAG, "ResendTask.doInBackground(): sent %d "
                                + "messages for rowid %d", nSent, rowid );
+                        m_nSent += sink.numSent();
                     } else {
                         Log.d( TAG, "ResendTask.doInBackground(): loadMakeGame()"
                                + " failed for rowid %d", rowid );
@@ -1312,8 +1319,7 @@ public class GameUtils {
         protected void onPostExecute( Void unused )
         {
             if ( null != m_doneProc ) {
-                int nSent = null == m_sink ? 0 : m_sink.numSent();
-                m_doneProc.onResendDone( m_context, nSent );
+                m_doneProc.onResendDone( m_context, m_nSent );
             }
         }
     }
