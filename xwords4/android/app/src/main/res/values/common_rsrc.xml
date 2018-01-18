@@ -147,6 +147,7 @@
 
   <!-- other -->
   <string name="default_host">eehouse.org</string>
+  <!-- <string name="default_host">10.0.3.2</string> -->
   <string name="xwords_nfc_mime">application/org.eehouse.android.xw4</string>
   <string name="invite_host">eehouse.org</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
@@ -155,6 +156,7 @@
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
   <string name="default_relay_url">http://eehouse.org/xw4/relay.py</string>
+  <!-- <string name="default_relay_url">http://10.0.3.2/xw4/relay.py</string> -->
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
