@@ -528,7 +528,10 @@ public class RelayService extends XWService
         // DbgUtils.logf( "startFetchThreadIfNotUDP()" );
         boolean handled = relayEnabled( this ) && !XWApp.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
+            Assert.assertFalse( BuildConfig.DEBUG ); // NOT using this now!
+
             m_fetchThread = new Thread( null, new Runnable() {
+                    @Override
                     public void run() {
                         fetchAndProcess();
                         m_fetchThread = null;
@@ -799,7 +802,7 @@ public class RelayService extends XWService
         return s_registered;
     }
 
-    private void requestMessagesImpl( XWRelayReg reg )
+    private void requestMessages()
     {
         try {
             DevIDType[] typp = new DevIDType[1];
@@ -808,25 +811,14 @@ public class RelayService extends XWService
                 ByteArrayOutputStream bas = new ByteArrayOutputStream();
                 DataOutputStream out = new DataOutputStream( bas );
                 writeVLIString( out, devid );
-                // Log.d( TAG, "requestMessagesImpl(): devid: %s; type: " + typp[0], devid );
-                postPacket( bas, reg );
+                postPacket( bas, XWRelayReg.XWPDEV_RQSTMSGS );
             } else {
-                Log.d(TAG, "requestMessagesImpl(): devid is null" );
+                Log.d(TAG, "requestMessages(): devid is null" );
             }
         } catch ( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
         }
     }
-
-    private void requestMessages()
-    {
-        requestMessagesImpl( XWRelayReg.XWPDEV_RQSTMSGS );
-    }
-
-    // private void sendKeepAlive()
-    // {
-    //     requestMessagesImpl( XWRelayReg.XWPDEV_KEEPALIVE );
-    // }
 
     private void sendMessage( long rowid, byte[] msg )
     {
@@ -971,6 +963,7 @@ public class RelayService extends XWService
 
     private void fetchAndProcess()
     {
+        Assert.assertFalse( BuildConfig.DEBUG );
         long[][] rowIDss = new long[1][];
         String[] relayIDs = DBUtils.getRelayIDs( this, rowIDss );
         if ( null != relayIDs && 0 < relayIDs.length ) {
@@ -1443,13 +1436,16 @@ public class RelayService extends XWService
             } else {
                 Log.w( TAG, "Weird: got ack %d but never sent", packetID );
             }
+
             if ( BuildConfig.DEBUG ) {
                 ArrayList<String> pstrs = new ArrayList<>();
                 for ( PacketData datum : map ) {
-                    pstrs.add( String.format("%d", datum.m_packetID ) );
+                    if ( 0 != datum.m_packetID ) {
+                        pstrs.add( String.format("%d", datum.m_packetID ) );
+                    }
                 }
                 Log.d( TAG, "noteAck(fromUDP=%b): Got ack for %d; there are %d unacked packets: %s",
-                       fromUDP, packetID, map.size(), TextUtils.join( ",", pstrs ) );
+                       fromUDP, packetID, pstrs.size(), TextUtils.join( ",", pstrs ) );
             }
         }
 
