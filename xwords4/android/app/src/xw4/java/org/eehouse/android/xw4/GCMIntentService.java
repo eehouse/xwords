@@ -34,6 +34,8 @@ import junit.framework.Assert;
 public class GCMIntentService extends GCMBaseIntentService {
     private static final String TAG = GCMIntentService.class.getSimpleName();
 
+    private Boolean m_toastGCM;
+
     public GCMIntentService()
     {
         super( BuildConfig.GCM_SENDER_ID );
@@ -67,14 +69,19 @@ public class GCMIntentService extends GCMBaseIntentService {
     protected void onMessage( Context context, Intent intent )
     {
         Log.d( TAG, "onMessage()" );
-        notifyRelayService( context, true );
 
-        String value;
-        boolean ignoreIt = XWApp.GCM_IGNORED;
-        if ( ignoreIt ) {
-            Log.d( TAG, "received GCM but ignoring it" );
+        if ( null == m_toastGCM ) {
+            m_toastGCM = new Boolean( XWPrefs.getToastGCM( context ) );
+        }
+
+        if ( XWPrefs.getIgnoreGCM( context ) ) {
+            String logMsg = "received GCM but ignoring it";
+            Log.d( TAG, logMsg );
+            DbgUtils.showf( context, logMsg );
         } else {
-            value = intent.getStringExtra( "checkUpdates" );
+            notifyRelayService( context, true );
+
+            String value = intent.getStringExtra( "checkUpdates" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
                 UpdateCheckReceiver.checkVersions( context, true );
             }
@@ -82,6 +89,9 @@ public class GCMIntentService extends GCMBaseIntentService {
             value = intent.getStringExtra( "getMoves" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
                 RelayService.timerFired( context );
+                if ( m_toastGCM ) {
+                    DbgUtils.showf( context, "onMessage(): got 'getMoves'" );
+                }
             }
 
             value = intent.getStringExtra( "msgs64" );
@@ -90,6 +100,11 @@ public class GCMIntentService extends GCMBaseIntentService {
                 try {
                     JSONArray msgs64 = new JSONArray( value );
                     String[] strs64 = new String[msgs64.length()];
+                    if ( m_toastGCM ) {
+                        DbgUtils.showf( context, "onMessage(): got %d msgs",
+                                        strs64.length );
+                    }
+
                     for ( int ii = 0; ii < strs64.length; ++ii ) {
                         strs64[ii] = msgs64.optString(ii);
                     }
@@ -100,6 +115,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                     }
                 } catch (org.json.JSONException jse ) {
                     Log.ex( TAG, jse );
+                    Assert.assertFalse( BuildConfig.DEBUG );
                 }
             }
 
@@ -145,10 +161,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     private void notifyRelayService( Context context, boolean working )
     {
-        if ( working && XWApp.GCM_IGNORED ) {
-            working = false;
+        if ( !XWPrefs.getIgnoreGCM( context ) ) {
+            RelayService.gcmConfirmed( context, working );
         }
-        RelayService.gcmConfirmed( context, working );
     }
-
 }

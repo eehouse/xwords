@@ -387,32 +387,6 @@ public class CommsTransport implements TransportProcs,
         return nSent;
     }
 
-    public void relayStatus( CommsRelayState newState )
-    {
-        Log.i( TAG, "relayStatus called; state=%s", newState.toString() );
-
-        switch( newState ) {
-        case COMMS_RELAYSTATE_UNCONNECTED:
-        case COMMS_RELAYSTATE_DENIED:
-        case COMMS_RELAYSTATE_CONNECT_PENDING:
-            ConnStatusHandler.updateStatus( m_context, null,
-                                            CommsConnType.COMMS_CONN_RELAY,
-                                            false );
-            break;
-        case COMMS_RELAYSTATE_CONNECTED:
-        case COMMS_RELAYSTATE_RECONNECTED:
-            ConnStatusHandler.updateStatusOut( m_context, null,
-                                               CommsConnType.COMMS_CONN_RELAY,
-                                               true );
-            break;
-        case COMMS_RELAYSTATE_ALLCONNECTED:
-            ConnStatusHandler.updateStatusIn( m_context, null,
-                                              CommsConnType.COMMS_CONN_RELAY,
-                                              true );
-            break;
-        }
-    }
-
     public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {

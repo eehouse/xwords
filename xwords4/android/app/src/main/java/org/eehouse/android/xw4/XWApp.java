@@ -39,7 +39,6 @@ public class XWApp extends Application {
     public static final boolean ATTACH_SUPPORTED = false;
     public static final boolean LOG_LIFECYLE = false;
     public static final boolean DEBUG_EXP_TIMERS = false;
-    public static final boolean GCM_IGNORED = false;
     public static final boolean UDP_ENABLED = true;
     public static final boolean SMS_INVITE_ENABLED = true;
     public static final boolean LOCUTILS_ENABLED = false;

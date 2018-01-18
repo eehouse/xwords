@@ -95,19 +95,8 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const XP_UCHAR* msgNo,
 }
 
 static void
-and_xport_relayStatus( void* closure, CommsRelayState newState )
+and_xport_relayStatus( void* XP_UNUSED(closure), CommsRelayState XP_UNUSED(newState) )
 {
-    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
-    if ( NULL != aprocs->jxport ) {
-        JNIEnv* env = ENVFORME( aprocs->ti );
-        const char* sig = "(L" PKG_PATH("jni/TransportProcs$CommsRelayState") ";)V";
-        jmethodID mid = getMethodID( env, aprocs->jxport, "relayStatus", sig );
-
-        jobject jenum = intToJEnum( env, newState, 
-                                    PKG_PATH("jni/TransportProcs$CommsRelayState") );
-        (*env)->CallVoidMethod( env, aprocs->jxport, mid, jenum );
-        deleteLocalRef( env, jenum );
-    }
 }
 
 static void

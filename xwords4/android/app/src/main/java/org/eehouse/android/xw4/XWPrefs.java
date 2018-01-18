@@ -67,6 +67,16 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_nfc_toself, false );
     }
 
+    public static boolean getIgnoreGCM( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_ignore_gcm, false );
+    }
+
+    public static boolean getToastGCM( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_show_gcm, false );
+    }
+
     public static boolean getRelayInviteToSelfEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_relay_toself, false );

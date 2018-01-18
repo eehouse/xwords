@@ -528,7 +528,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                 newMove->nTiles = 0;
                 canMove = XP_FALSE;
             }
-            result = XP_TRUE;
+            XP_ASSERT( result );
         }
 
         util_engineStopping( engine->util );

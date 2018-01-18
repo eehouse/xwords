@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 127
-def VERSION_NAME = '4.4.131'
+def VERSION_CODE_BASE = 128
+def VERSION_NAME = '4.4.132'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
 def BUILD_INFO_NAME = "build-info.txt"
@@ -201,6 +201,8 @@ dependencies {
 
     compile 'com.android.support:support-v4:23.4.0'
 
+    // 2.6.8 is probably as far forward as I can go without upping my
+    // min-supported SDK version
     xw4dCompile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
