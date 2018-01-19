@@ -781,7 +781,7 @@
     </plurals>
     <!-- Intro to the paragraph listing all of the tiles remaining -->
     <plurals name="strd_remains_expl_fmt">
-      <item quantity="other">%1$d tiles left in pool and all
+      <item quantity="other">%1$d tiles left in pool and hidden
       trays:\n</item>
     </plurals>
 

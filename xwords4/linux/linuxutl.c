@@ -332,7 +332,7 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     case STRD_REMAINS_HEADER:
         return (XP_UCHAR*)"%d tiles left in pool.";
     case STRD_REMAINS_EXPL:
-        return (XP_UCHAR*)"%d tiles left in pool and all tray[s]:\n";
+        return (XP_UCHAR*)"%d tiles left in pool and hidden trays:\n";
 
     case STRSD_RESIGNED:
         return "[Resigned] %s: %d";

@@ -3078,7 +3078,7 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
  */
 void
 server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
-                             XP_S16 XP_UNUSED(player) )
+                             XP_S16 player )
 {
     PoolContext* pool = server->pool;
     if ( !!pool ) {
@@ -3101,7 +3101,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
         stream_catString( stream, "\n\n" );
 
         XP_MEMSET( counts, 0, sizeof(counts) );
-        model_countAllTrayTiles( server->vol.model, counts, -1 );
+        model_countAllTrayTiles( server->vol.model, counts, player );
 
         for ( cntsBuf[0] = '\0', offset = 0, tile = 0; 
               offset < sizeof(cntsBuf); ) {
