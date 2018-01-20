@@ -375,8 +375,9 @@
     <string name="minutes_label">Minutes per player</string>
 
     <!-- title of popup used to select how "smart" (how capable) the
-    robot player will be. -->
-    <string name="robot_spinner_prompt">How smart is the robot player?</string>
+         robot player will be. Note that on newer version of Android
+         spinners no longer have titles: this won't show up. -->
+    <string name="robot_spinner_prompt">How smart should the robot player be?</string>
 
     <!-- Three possible choices presented in the popup above -->
     <string name="robot_smart">Smart robot</string>
