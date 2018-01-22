@@ -304,15 +304,13 @@ public class DictBrowseDelegate extends DelegateBase
     {
         boolean handled = false;
         switch( action ) {
-        case DELETE_DICT_ACTION:
-            // This comes in from parent
-            break;
         case FINISH_ACTION:
             handled = true;
             finish();
             break;
         default:
-            Assert.assertFalse( BuildConfig.DEBUG );
+            handled = super.onPosButton( action, params );
+            break;
         }
         return handled;
     }
