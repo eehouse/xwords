@@ -30,22 +30,20 @@ struct JNIUtilCtxt {
 };
 
 JNIUtilCtxt* 
-makeJNIUtil( MPFORMAL EnvThreadInfo* ti, jobject jniutls )
+makeJNIUtil( MPFORMAL JNIEnv* env, EnvThreadInfo* ti, jobject jniutls )
 {
     JNIUtilCtxt* ctxt = (JNIUtilCtxt*)XP_CALLOC( mpool, sizeof( *ctxt ) );
     ctxt->ti = ti;
-    JNIEnv* env = ENVFORME( ti );
     ctxt->jjniutil = (*env)->NewGlobalRef( env, jniutls );
     MPASSIGN( ctxt->mpool, mpool );
     return ctxt;
 }
 
 void
-destroyJNIUtil( JNIUtilCtxt** ctxtp )
+destroyJNIUtil( JNIEnv* env, JNIUtilCtxt** ctxtp )
 {
     JNIUtilCtxt* ctxt = *ctxtp;
     if ( !!ctxt ) {
-        JNIEnv* env = ENVFORME( ctxt->ti );
         (*env)->DeleteGlobalRef( env, ctxt->jjniutil );
         XP_FREE( ctxt->mpool, ctxt );
         *ctxtp = NULL;
