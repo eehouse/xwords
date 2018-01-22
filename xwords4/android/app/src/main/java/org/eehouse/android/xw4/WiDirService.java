@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
 /*
- * Copyright 2016 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2016 - 2018 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -105,7 +105,7 @@ public class WiDirService extends XWService {
     private static GroupInfoListener sGroupListener;
     private static WFDBroadcastReceiver sReceiver;
     // private static boolean sDiscoveryStarted;
-    private static boolean sDiscoveryRunning; // set via broadcast
+    private static boolean sDiscoveryRunning; // set via broadcast; unused
     private static boolean sEnabled;
     private static boolean sHavePermission;
     // These two kinda overlap...
@@ -647,9 +647,8 @@ public class WiDirService extends XWService {
                                                         WifiP2pDevice srcDevice) {
                         // Service has been discovered. My app?
                         if ( instanceName.equalsIgnoreCase( SERVICE_NAME ) ) {
-                            Log.d( TAG, "onBonjourServiceAvailable "
-                                   + instanceName + " with name "
-                                   + srcDevice.deviceName );
+                            Log.d( TAG, "onDnsSdServiceAvailable: %s with name %s",
+                                   instanceName, srcDevice.deviceName );
                             tryConnect( srcDevice );
                         }
                     }
@@ -737,8 +736,7 @@ public class WiDirService extends XWService {
                    macAddress );
 
             GameUtils.resendAllIf( XWApp.getContext(),
-                                   CommsConnType.COMMS_CONN_P2P,
-                                   false, false );
+                                   CommsConnType.COMMS_CONN_P2P );
         }
     }
 
@@ -1078,14 +1076,16 @@ public class WiDirService extends XWService {
         private WifiP2pManager mManager;
         private Channel mChannel;
 
-        public WFDBroadcastReceiver( WifiP2pManager manager, Channel channel ) {
+        public WFDBroadcastReceiver( WifiP2pManager manager, Channel channel )
+        {
             super();
             mManager = manager;
             mChannel = channel;
         }
 
         @Override
-        public void onReceive( Context context, Intent intent ) {
+        public void onReceive( Context context, Intent intent )
+        {
             if ( enabled() ) {
                 String action = intent.getAction();
                 Log.d( TAG, "got intent: " + intent.toString() );
@@ -1141,8 +1141,8 @@ public class WiDirService extends XWService {
 
         // WifiP2pManager.ConnectionInfoListener interface
         @Override
-        public void onConnectionInfoAvailable( final WifiP2pInfo info ) {
-
+        public void onConnectionInfoAvailable( final WifiP2pInfo info )
+        {
             // InetAddress from WifiP2pInfo struct.
             InetAddress groupOwnerAddress = info.groupOwnerAddress;
             String hostAddress = groupOwnerAddress.getHostAddress();
@@ -1166,12 +1166,13 @@ public class WiDirService extends XWService {
                 }
                 getMgr().requestGroupInfo( sChannel, sGroupListener );
             } else {
-                Assert.fail();
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
 
         @Override
-        public void onPeersAvailable( WifiP2pDeviceList peerList ) {
+        public void onPeersAvailable( WifiP2pDeviceList peerList )
+        {
             Log.d( TAG, "got list of %d peers",
                    peerList.getDeviceList().size() );
 
@@ -1197,14 +1198,6 @@ public class WiDirService extends XWService {
     }
 
     private class P2pMsgSink extends MultiMsgSink {
-
         public P2pMsgSink() { super( WiDirService.this ); }
-
-        // @Override
-        // public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
-        // {
-        //     return WiDirService
-        //         .sendPacket( m_context, addr.p2p_addr, gameID, buf );
-        // }
     }
 }

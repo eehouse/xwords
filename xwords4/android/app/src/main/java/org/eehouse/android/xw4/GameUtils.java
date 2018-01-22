@@ -438,6 +438,11 @@ public class GameUtils {
     }
 
     // force applies only to relay
+    public static void resendAllIf( Context context, CommsConnType filter )
+    {
+        resendAllIf( context, filter, false, false );
+    }
+
     public static void resendAllIf( Context context, CommsConnType filter,
                                     boolean force, boolean showUI )
     {
