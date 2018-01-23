@@ -962,7 +962,7 @@ public class DictsDelegate extends ListDelegateBase
         DwnldDelegate.downloadDictInBack( m_activity, lang, name, this );
     }
 
-    private void mkListAdapter()
+    private void resetLangs()
     {
         Set<String> langs = new HashSet<String>();
         langs.addAll( Arrays.asList(DictLangCache.listLangs( m_activity )) );
@@ -971,7 +971,11 @@ public class DictsDelegate extends ListDelegateBase
         }
         m_langs = langs.toArray( new String[langs.size()] );
         Arrays.sort( m_langs );
+    }
 
+    private void mkListAdapter()
+    {
+        resetLangs();
         m_adapter = new DictListAdapter( m_activity );
         setListAdapterKeepScroll( m_adapter );
 
@@ -1312,6 +1316,9 @@ public class DictsDelegate extends ListDelegateBase
 
         public FetchListTask( Context context )
         {
+            if ( null == m_langs ) {
+                resetLangs();
+            }
             m_context = context;
             startProgress( R.string.progress_title, R.string.remote_empty, this );
         }
