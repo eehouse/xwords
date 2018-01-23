@@ -2610,8 +2610,8 @@
 
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
-    <item quantity="one">One move sent</item>
-    <item quantity="other">%1$s moves sent</item>
+    <item quantity="one">One move resent</item>
+    <item quantity="other">%1$s moves resent</item>
   </plurals>
 
   <string name="invite_copied">Invitation ready to paste</string>
