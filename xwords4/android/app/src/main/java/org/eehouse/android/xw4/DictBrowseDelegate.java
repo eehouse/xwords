@@ -59,8 +59,6 @@ public class DictBrowseDelegate extends DelegateBase
     private int m_lang;
     private String m_name;
     private DictUtils.DictLoc m_loc;
-    private Spinner m_minSpinner;
-    private Spinner m_maxSpinner;
     private DBUtils.DictBrowseState m_browseState;
     private int m_minAvail;
     private int m_maxAvail;
@@ -284,10 +282,17 @@ public class DictBrowseDelegate extends DelegateBase
         // null text seems to have generated at least one google play report
         if ( null != text ) {
             int newval = Integer.parseInt( text.getText().toString() );
-            if ( parent == m_minSpinner ) {
-                setMinMax( newval, m_browseState.m_maxShown );
-            } else if ( parent == m_maxSpinner ) {
-                setMinMax( m_browseState.m_minShown, newval );
+            switch ( parent.getId() ) {
+            case R.id.wordlen_min:
+                if ( newval != m_browseState.m_minShown ) {
+                    setMinMax( newval, m_browseState.m_maxShown );
+                }
+                break;
+            case R.id.wordlen_max:
+                if ( newval != m_browseState.m_maxShown ) {
+                    setMinMax( m_browseState.m_minShown, newval );
+                }
+                break;
             }
         }
     }
@@ -352,11 +357,10 @@ public class DictBrowseDelegate extends DelegateBase
 
     private void setMinMax( int min, int max )
     {
-        // I can't make a second call to setListAdapter() work, nor
-        // does notifyDataSetChanged do anything toward refreshing the
-        // adapter/making it recognized a changed dataset.  So, as a
-        // workaround, relaunch the activity with different
-        // parameters.
+        // I can't make a second call to setListAdapter() work, nor does
+        // notifyDataSetChanged do anything toward refreshing the
+        // adapter/making it recognize a changed dataset.  So, as a
+        // workaround, relaunch the activity with different parameters.
         if ( m_browseState.m_minShown != min ||
              m_browseState.m_maxShown != max ) {
 
@@ -366,6 +370,8 @@ public class DictBrowseDelegate extends DelegateBase
             m_browseState.m_maxShown = max;
             m_browseState.m_prefix = getFindText();
             DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
+
+            setUpSpinners();
 
             initList();
         }
@@ -384,8 +390,11 @@ public class DictBrowseDelegate extends DelegateBase
         }
     }
 
-    private void makeAdapter( Spinner spinner, int min, int max, int cur )
+    private void makeSpinnerAdapter( int resID, int min, int max, int cur )
     {
+        Spinner spinner = (Spinner)findViewById( resID );
+        Assert.assertTrue( min <= max );
+
         int sel = -1;
         String[] nums = new String[max - min + 1];
         for ( int ii = 0; ii < nums.length; ++ii ) {
@@ -404,6 +413,7 @@ public class DictBrowseDelegate extends DelegateBase
                                          simple_spinner_dropdown_item );
         spinner.setAdapter( adapter );
         spinner.setSelection( sel );
+        spinner.setOnItemSelectedListener( this );
     }
 
     private void setUpSpinners()
@@ -412,15 +422,10 @@ public class DictBrowseDelegate extends DelegateBase
         // don't allow min to exceed max.  Do that by making the
         // current max the largest min allowed, and the current
         // min the smallest max allowed.
-        m_minSpinner = (Spinner)findViewById( R.id.wordlen_min );
-        makeAdapter( m_minSpinner, m_minAvail, m_browseState.m_maxShown,
-                     m_browseState.m_minShown );
-        m_minSpinner.setOnItemSelectedListener( this );
-
-        m_maxSpinner = (Spinner)findViewById( R.id.wordlen_max );
-        makeAdapter( m_maxSpinner, m_browseState.m_minShown,
-                     m_maxAvail, m_browseState.m_maxShown );
-        m_maxSpinner.setOnItemSelectedListener( this );
+        makeSpinnerAdapter( R.id.wordlen_min, m_minAvail,
+                            m_browseState.m_maxShown, m_browseState.m_minShown );
+        makeSpinnerAdapter( R.id.wordlen_max, m_browseState.m_minShown,
+                            m_maxAvail, m_browseState.m_maxShown );
     }
 
     private void initList()
