@@ -2084,7 +2084,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
 ////////////////////////////////////////////////////////////
 
 typedef struct _DictIterData {
-    EnvThreadInfo ti;
     JNIEnv* env;
     JNIUtilCtxt* jniutil;
     VTableMgr* vtMgr;
@@ -2115,8 +2114,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
                                      false );
     if ( !!dict ) {
         DictIterData* data = XP_CALLOC( state->mpool, sizeof(*data) );
-        map_init( MPPARM(state->mpool) &data->ti, env );
-        map_thread( &data->ti, env );
         data->env = env;
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(state->mpool) );
         data->jniutil = jniutil;
@@ -2153,15 +2150,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = data->mpool;
 #endif
-        map_thread( &data->ti, env );
 
         dict_unref( data->dict );
         destroyJNIUtil( env, &data->jniutil );
         freeIndices( data );
         vtmgr_destroy( MPPARM(mpool) data->vtMgr );
-        MAP_REMOVE( &data->ti, env );
-        XP_ASSERT( 0 == countUsed( &data->ti ) );
-        map_destroy( &data->ti );
         XP_FREE( mpool, data );
     }
 }
