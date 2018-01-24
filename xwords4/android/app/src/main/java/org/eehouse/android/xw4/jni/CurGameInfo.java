@@ -416,7 +416,7 @@ public class CurGameInfo implements Serializable {
     public String dictName( final LocalPlayer lp )
     {
         String dname = lp.dictName;
-        if ( null == dname ) {
+        if ( null == dname || 0 == dname.length() ) {
             dname = dictName;
         }
         return dname;
