@@ -90,7 +90,7 @@
   <string name="guest_name">(jugador visitant)</string>
   <string name="player_edit_title">Jugador</string>
   <string name="players_label_standalone">Jugadors</string>
-  <string name="players_label_host_fmt">Jugadors</string>
+  <string name="players_label_host_fmt">Jugadors (%1$d locals, %2$d remots)</string>
   <string name="button_add_player">Afegeix un jugador</string>
   <string name="button_juggle_players">Remena els jugadors</string>
   <string name="dicts_item_select">Estableix com a predeterminat</string>
@@ -112,14 +112,14 @@
   <string name="ringer_zoom">Zoom amb els botons de volum</string>
   <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum</string>
   <string name="hide_title">Amaga la capçalera</string>
-  <string name="hide_title_summary">Permet que el tauler sigui una mica més gran</string>
+  <string name="hide_title_summary">Ocultar el nom de la partida permet que el tauler sigui una mica més gran</string>
   <string name="phonies_ignore">Ignora-les</string>
   <string name="phonies_warn">Avisa\'m</string>
   <string name="phonies_disallow">No es poden jugar</string>
   <string name="menu_prefs">Preferències…</string>
   <string name="gamel_menu_dicts">Diccionaris…</string>
-  <string name="confirm_revert_colors">Esteu segur de voler reestablir tots tots els paràmetres de colors als seus valors predeterminats?</string>
-  <string name="confirm_revert_all">Esteu segur de voler reestablir totes les preferències als seus valors predeterminats?</string>
+  <string name="confirm_revert_colors">Esteu segur de voler restablir tots tots els paràmetres de colors als valors predeterminats?</string>
+  <string name="confirm_revert_all">Esteu segur de voler restablir totes les preferències als valors predeterminats?</string>
   <string name="prefs_defaults">Valors predeterminats per a partides noves</string>
   <string name="prefs_defaults_summary">Paràmetres predeterminats per a partides noves</string>
   <string name="prefs_appearance">Aspecte</string>
@@ -150,15 +150,15 @@
   <string name="relay_alert">Error en la connexió</string>
   <string name="msg_too_many">Esteu proveint més jugadors dels que espera l\'amfitrió.</string>
   <string name="msg_no_room">Cap amfitrió no ha registrat una sala amb aquest nom.</string>
-  <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o intentenu més tard.</string>
-  <string name="msg_lost_other">El repetidor ha perdut el contacte amb algun altre dispositiu durant aquesta partida.</string>
-  <string name="ids_badwords_fmt">Les paraules %1$s no es troben al diccionari.</string>
+  <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o torneu a intentar-ho més tard.</string>
+  <string name="msg_lost_other">El repetidor ha perdut el contacte amb un altre aparell durant la partida.</string>
+  <string name="ids_badwords_fmt">Les paraules %1$s no es troben al diccionari %2$s.</string>
   <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
   <string name="badwords_lost">  Torn perdut.</string>
   <string name="badwords_title">Les paraules no són vàlides</string>
   <string name="ids_endnow">Esteu segur de voler abandonar ara la partida?</string>
   <string name="force_title">Jugador/s remot/s</string>
-  <string name="force_expl">Un amfitrió ha de tenir com a mínim un jugador remot.</string>
+  <string name="force_expl">En una partida multiaparell ha d\'haver-hi almenys un jugador local i un altre remot, respecte aquest aparell. Comproveu els jugador en remot.</string>
   <string name="gameOver">Final de partida</string>
   <!-- <string name="moves_fmt">%1$d torns jugats</string> -->
   <!-- about dialog stuff -->
@@ -266,7 +266,7 @@ que connecti via el repetidor.</string>
 
     <string name="title_gamenet_config_fmt">Paràmetres de %1$s (en xarxa)</string>  
 
-    <string name="title_langs_list">Llengües (en base als diccionaris instal·lats)</string>
+    <string name="title_langs_list">Llengües (segons els diccionaris instal·lats)</string>
 
     <string name="game_locked">Paràmetres de bloqueig</string>
 
@@ -332,7 +332,7 @@ que connecti via el repetidor.</string>
     <string name="board_menu_game_resign">Rendició</string>
 
     <string name="str_robot_moved_fmt">"El robot %1$s ha fet aquesta jugada: "</string>
-    <string name="str_remote_moved_fmt">"El jugador remot %1$s ha fet aquesta jugada: "</string>
+    <string name="str_remote_moved_fmt">"El jugador remot %1$s ha fet la jugada: "</string>
     <string name="str_pass">passa\n</string>
     <string name="str_nonlocal_name_fmt">%1$s (remot)</string>
     <string name="vs_join">" vs. "</string>
@@ -341,8 +341,11 @@ que connecti via el repetidor.</string>
 	  <item quantity="other">Queden %1$d fitxes al sac.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-	  <item quantity="other">%1$d fitxes romanents al sac i als faristols:\n</item>
-    </plurals>
+	<item quantity="one">%1$d fitxes romanents al sac i als faristols ocults:
+\n
+\n</item>
+	<item quantity="other"></item>
+</plurals>
 
     <string name="confirm_undo_last">Esteu segur que voleu desfer l\'últim torn enviat? (No hi ha opció per a refer-lo.)</string>
 
