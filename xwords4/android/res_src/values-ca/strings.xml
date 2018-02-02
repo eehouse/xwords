@@ -344,7 +344,7 @@ que connecti via el repetidor.</string>
 	<item quantity="one">%1$d fitxes romanents al sac i als faristols ocults:
 \n
 \n</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     <string name="confirm_undo_last">Esteu segur que voleu desfer l\'últim torn enviat? (No hi ha opció per a refer-lo.)</string>
@@ -978,10 +978,8 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
   <string name="bt_resend_fmt">L\'enviament via Bluetooth a %1$s ha fallat, intent %3$d en %2$d segons.</string>
     <string name="bt_fail_fmt">Els enviaments via Bluetooth a %1$s han fallat moltes vegades. Torneu a obrir la partida per a intentar-ho altra vegada.</string>
         <string name="not_again_newselect">Tocar una partida l\'obre.
-
-També podeu tocar les icones a l\'esquerra per a seleccionar o treure partides,
- aleshores actuar en les partides seleccionades, p. e. suprimir-les, fent servir
- el menú o la barra d\'accions.</string>
+\n
+\nTambé podeu tocar les icones a l\'esquerra per a seleccionar o treure partides, i aleshores actuar en les partides seleccionades, p. e. suprimir-les, fent servir el menú o la barra d\'accions.</string>
 
     <string name="not_again_backclears">El botó enrere anul·la qualsevol selecció en comptes de sortir. Toqueu-lo una altra vegada per a sortir de l\'aplicació.</string>
 
