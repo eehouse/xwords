@@ -341,11 +341,8 @@ que connecti via el repetidor.</string>
 	  <item quantity="other">Queden %1$d fitxes al sac.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-	<item quantity="one">%1$d fitxes romanents al sac i als faristols ocults:
-\n
-\n</item>
-	<item quantity="other"></item>
-</plurals>
+	  <item quantity="other">%1$d fitxes romanents al sac i als faristols ocults:\n</item>
+    </plurals>
 
     <string name="confirm_undo_last">Esteu segur que voleu desfer l\'últim torn enviat? (No hi ha opció per a refer-lo.)</string>
 
