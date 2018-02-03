@@ -252,7 +252,7 @@ public class NetStateCache {
                             if ( s_netAvail ) {
                                 CommsConnType typ = CommsConnType
                                     .COMMS_CONN_RELAY;
-                                GameUtils.resendAllIf( context, typ, false, false );
+                                GameUtils.resendAllIf( context, typ );
                             }
                         }
                     };

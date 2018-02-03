@@ -438,6 +438,11 @@ public class GameUtils {
     }
 
     // force applies only to relay
+    public static void resendAllIf( Context context, CommsConnType filter )
+    {
+        resendAllIf( context, filter, false, false );
+    }
+
     public static void resendAllIf( Context context, CommsConnType filter,
                                     boolean force, boolean showUI )
     {
@@ -480,9 +485,7 @@ public class GameUtils {
         }
 
         if ( force ) {
-            HashMap<Long,CommsConnTypeSet> games =
-                DBUtils.getGamesWithSendsPending( context );
-            new ResendTask( context, games, filter, proc ).execute();
+            new ResendTask( context, filter, proc ).execute();
 
             System.arraycopy( sendTimes, 0, /* src */
                               sendTimes, 1, /* dest */
@@ -1259,11 +1262,10 @@ public class GameUtils {
         private CommsConnType m_filter;
         private int m_nSent = 0;
 
-        public ResendTask( Context context, HashMap<Long,CommsConnTypeSet> games,
-                           CommsConnType filter, ResendDoneProc proc )
+        public ResendTask( Context context, CommsConnType filter,
+                           ResendDoneProc proc )
         {
             m_context = context;
-            m_games = games;
             m_filter = filter;
             m_doneProc = proc;
         }
@@ -1271,6 +1273,8 @@ public class GameUtils {
         @Override
         protected Void doInBackground( Void... unused )
         {
+            m_games = DBUtils.getGamesWithSendsPending( m_context );
+
             Iterator<Long> iter = m_games.keySet().iterator();
             while ( iter.hasNext() ) {
                 long rowid = iter.next();

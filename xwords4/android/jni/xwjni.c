@@ -161,8 +161,9 @@ map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
     map_thread( ti, env );
 }
 
+#define MAP_REMOVE( ti, env ) map_remove((ti), (env), __func__)
 static void
-map_remove( EnvThreadInfo* ti, JNIEnv* env )
+map_remove( EnvThreadInfo* ti, JNIEnv* env, const char* func )
 {
     XP_Bool found = false;
 
@@ -172,9 +173,9 @@ map_remove( EnvThreadInfo* ti, JNIEnv* env )
         if ( found ) {
             XP_ASSERT( pthread_self() == ti->entries[ii].owner );
 #ifdef LOG_MAPPING
-            XP_LOGF( "%s: UNMAPPED env %p to thread %x", __func__,
+            XP_LOGF( "%s: UNMAPPED env %p to thread %x (from %s)", __func__,
                      ti->entries[ii].env,
-                     (int)ti->entries[ii].owner );
+                     (int)ti->entries[ii].owner, func );
 #endif   
             ti->entries[ii].env = NULL;
             ti->entries[ii].owner = 0;
@@ -688,7 +689,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
     jboolean result = false;
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
     map_thread( &state->ti, env );
-    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &state->ti, jniu );
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) env, &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
                                      jniutil, jname, jDictBytes, jpath, 
                                      NULL, check );
@@ -703,7 +704,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
         dict_unref( dict );
         result = true;
     }
-    destroyJNIUtil( &jniutil );
+    destroyJNIUtil( env, &jniutil );
 
     return result;
 }
@@ -799,7 +800,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_envDone
 ( JNIEnv* env, jclass C, int jniGlobalPtr )
 {
     JNIGlobalState* globalJNI = (JNIGlobalState*)jniGlobalPtr;
-    map_remove( &globalJNI->ti, env );
+    MAP_REMOVE( &globalJNI->ti, env );
 }
 
 JNIEXPORT void JNICALL
@@ -815,7 +816,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     globals->gi = gi;
     globals->util = makeUtil( MPPARM(mpool) ti, j_util, gi, 
                               globals );
-    globals->jniutil = makeJNIUtil( MPPARM(mpool) ti, jniu );
+    globals->jniutil = makeJNIUtil( MPPARM(mpool) env, ti, jniu );
     DrawCtx* dctx = NULL;
     if ( !!j_draw ) {
         dctx = makeDraw( MPPARM(mpool) ti, j_draw );
@@ -866,10 +867,10 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     destroyDraw( &globals->dctx );
     destroyXportProcs( &globals->xportProcs );
     destroyUtil( &globals->util );
-    destroyJNIUtil( &globals->jniutil );
+    destroyJNIUtil( env, &globals->jniutil );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
-    map_remove( &state->globalJNI->ti, env );
+    MAP_REMOVE( &state->globalJNI->ti, env );
     /* pthread_mutex_destroy( &state->msgMutex ); */
 
     XP_FREE( mpool, state );
@@ -891,7 +892,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
     globals->util = makeUtil( MPPARM(mpool) ti, jutil, globals->gi, globals);
-    globals->jniutil = makeJNIUtil( MPPARM(mpool) ti, jniu );
+    globals->jniutil = makeJNIUtil( MPPARM(mpool) env, ti, jniu );
     makeDicts( MPPARM(state->globalJNI->mpool) env, state->globalJNI->dictMgr, 
                globals->jniutil, &dict, &dicts, jdictNames, jdicts, jpaths, 
                jlang );
@@ -922,7 +923,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
         destroyDraw( &globals->dctx );
         destroyXportProcs( &globals->xportProcs );
         destroyUtil( &globals->util );
-        destroyJNIUtil( &globals->jniutil );
+        destroyJNIUtil( env, &globals->jniutil );
         destroyGI( MPPARM(mpool) &globals->gi );
     }
 
@@ -2083,7 +2084,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
 ////////////////////////////////////////////////////////////
 
 typedef struct _DictIterData {
-    JNIGlobalState* state;
     JNIEnv* env;
     JNIUtilCtxt* jniutil;
     VTableMgr* vtMgr;
@@ -2096,6 +2096,9 @@ typedef struct _DictIterData {
 #endif
 } DictIterData;
 
+static void makeIndex( DictIterData* data );
+static void freeIndices( DictIterData* data );
+
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jDictBytes, jstring jname, 
@@ -2103,15 +2106,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 {
     jint closure = 0;
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &state->ti, env );
-    DictIterData* data = XP_CALLOC( state->mpool, sizeof(*data) );
-    data->state = state;
-    data->env = env;
-    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &state->ti, jniu );
+
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) env,
+                                        &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
                                      jniutil, jname, jDictBytes, jpath, NULL, 
                                      false );
     if ( !!dict ) {
+        DictIterData* data = XP_CALLOC( state->mpool, sizeof(*data) );
+        data->env = env;
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(state->mpool) );
         data->jniutil = jniutil;
         data->dict = dict;
@@ -2121,56 +2124,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 #endif
         closure = (int)data;
     } else {
-        destroyJNIUtil( &jniutil );
-        XP_FREE( state->mpool, data );
+        destroyJNIUtil( env, &jniutil );
     }
     return closure;
 }
-
-static void
-freeIndices( DictIterData* data )
-{
-    IndexData* idata = &data->idata;
-    if ( !!idata->prefixes ) {
-        XP_FREE( data->mpool, idata->prefixes );
-        idata->prefixes = NULL;
-    }
-    if( !!idata->indices ) {
-        XP_FREE( data->mpool, idata->indices );
-        idata->indices = NULL;
-    }
-}
-
-static void
-makeIndex( DictIterData* data )
-{
-    XP_U16 nFaces = dict_numTileFaces( data->dict );
-    XP_U16 ii;
-    XP_U16 count;
-    for ( count = 1, ii = 0; ii < data->depth; ++ii ) {
-        count *= nFaces;
-    }
-
-    freeIndices( data );
-
-    IndexData* idata = &data->idata;
-    idata->prefixes = XP_MALLOC( data->mpool, count * data->depth 
-                                 * sizeof(*idata->prefixes) );
-    idata->indices = XP_MALLOC( data->mpool, 
-                                count * sizeof(*idata->indices) );
-    idata->count = count;
-
-    dict_makeIndex( &data->iter, data->depth, idata );
-    if ( 0 < idata->count ) {
-        idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
-                                      idata->count * data->depth *
-                                      sizeof(*idata->prefixes) );
-        idata->indices = XP_REALLOC( data->mpool, idata->indices,
-                                     idata->count * sizeof(*idata->indices) );
-    } else {
-        freeIndices( data );
-    }
-} /* makeIndex */
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1setMinMax
@@ -2193,11 +2150,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = data->mpool;
 #endif
+
         dict_unref( data->dict );
-        destroyJNIUtil( &data->jniutil );
+        destroyJNIUtil( env, &data->jniutil );
         freeIndices( data );
         vtmgr_destroy( MPPARM(mpool) data->vtMgr );
-        map_remove( &data->state->ti, env );
         XP_FREE( mpool, data );
     }
 }
@@ -2319,5 +2276,50 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getDesc
     }
     return result;
 }
+
+static void
+freeIndices( DictIterData* data )
+{
+    IndexData* idata = &data->idata;
+    if ( !!idata->prefixes ) {
+        XP_FREE( data->mpool, idata->prefixes );
+        idata->prefixes = NULL;
+    }
+    if( !!idata->indices ) {
+        XP_FREE( data->mpool, idata->indices );
+        idata->indices = NULL;
+    }
+}
+
+static void
+makeIndex( DictIterData* data )
+{
+    XP_U16 nFaces = dict_numTileFaces( data->dict );
+    XP_U16 ii;
+    XP_U16 count;
+    for ( count = 1, ii = 0; ii < data->depth; ++ii ) {
+        count *= nFaces;
+    }
+
+    freeIndices( data );
+
+    IndexData* idata = &data->idata;
+    idata->prefixes = XP_MALLOC( data->mpool, count * data->depth
+                                 * sizeof(*idata->prefixes) );
+    idata->indices = XP_MALLOC( data->mpool,
+                                count * sizeof(*idata->indices) );
+    idata->count = count;
+
+    dict_makeIndex( &data->iter, data->depth, idata );
+    if ( 0 < idata->count ) {
+        idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
+                                      idata->count * data->depth *
+                                      sizeof(*idata->prefixes) );
+        idata->indices = XP_REALLOC( data->mpool, idata->indices,
+                                     idata->count * sizeof(*idata->indices) );
+    } else {
+        freeIndices( data );
+    }
+} /* makeIndex */
 
 #endif  /* XWFEATURE_BOARDWORDS */

@@ -972,6 +972,9 @@ public class GamesListDelegate extends ListDelegateBase
 
         mkListAdapter();
         getListView().setOnItemLongClickListener( this );
+        // Only works if scroller's on left side, as it otherwise steals
+        // events from the expander arrow things
+        getListView().setFastScrollEnabled( true );
 
         NetUtils.informOfDeaths( m_activity );
 
