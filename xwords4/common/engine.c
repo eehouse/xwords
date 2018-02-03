@@ -261,14 +261,14 @@ initTray( EngineCtxt* engine, const Tile* tiles, XP_U16 numTiles )
 static XP_S16
 cmpMoves( PossibleMove* m1, PossibleMove* m2 )
 {
+    XP_S16 result;
     if ( m1->score == m2->score ) {
-        return XP_MEMCMP( &m1->moveInfo, &m2->moveInfo, 
-                          sizeof(*m1) - sizeof( m1->score ) );
-    } else if ( m1->score < m2->score ) {
-        return -1;
+        result = XP_MEMCMP( &m1->moveInfo, &m2->moveInfo,
+                            sizeof(*m1) - sizeof( m1->score ) );
     } else {
-        return 1;
+        result = m1->score < m2->score ?  -1 : 1;
     }
+    return result;
 } /* cmpMoves */
 #endif
 
