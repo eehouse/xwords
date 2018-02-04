@@ -305,7 +305,7 @@ public class GameListItem extends LinearLayout
                 TextView tview = (TextView)tmp.findViewById( R.id.item_name );
                 tview.setText( summary.summarizePlayer( m_context, ii ) );
                 tview = (TextView)tmp.findViewById( R.id.item_score );
-                tview.setText( String.format( "  %d", summary.scores[ii] ) );
+                tview.setText( String.format( "%d", summary.scores[ii] ) );
                 boolean thisHasTurn = summary.isNextToPlay( ii, isLocal );
                 if ( thisHasTurn ) {
                     haveATurn = true;
