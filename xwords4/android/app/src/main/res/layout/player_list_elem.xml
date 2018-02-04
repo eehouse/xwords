@@ -3,19 +3,25 @@
 <org.eehouse.android.xw4.ExpiringLinearLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
-    android:layout_width="fill_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:weightSum="1"
     >
   <TextView android:id="@+id/item_name"
             android:layout_width="wrap_content" 
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:gravity="left"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:layout_weight="1"
             />
   <TextView android:id="@+id/item_score"
-            android:layout_width="fill_parent" 
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:gravity="right"
+            android:singleLine="true"
+            android:layout_marginLeft="3dp"
             />
 </org.eehouse.android.xw4.ExpiringLinearLayout>
