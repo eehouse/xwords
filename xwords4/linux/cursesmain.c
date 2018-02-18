@@ -1372,8 +1372,8 @@ curses_util_getVTManager(XW_UtilCtxt* uc)
 
 static void
 curses_util_informNeedPassword( XW_UtilCtxt* XP_UNUSED(uc),
-                                XP_U16 playerNum,
-                                const XP_UCHAR* name )
+                                XP_U16 XP_UNUSED_DBG(playerNum),
+                                const XP_UCHAR* XP_UNUSED_DBG(name) )
 {
     XP_WARNF( "curses_util_informNeedPassword(num=%d, name=%s", playerNum, name );
 } /* curses_util_askPassword */
@@ -1391,7 +1391,7 @@ curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc),
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 static void
-curses_util_turnChanged( XW_UtilCtxt* XP_UNUSED(uc), XP_S16 newTurn )
+curses_util_turnChanged( XW_UtilCtxt* XP_UNUSED(uc), XP_S16 XP_UNUSED_DBG(newTurn) )
 {
     XP_LOGF( "%s(turn=%d)", __func__, newTurn );
 }
@@ -1725,7 +1725,7 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
 
 static void
 cursesGotForRow( void* closure, const CommsAddrRec* from,
-                 sqlite3_int64 rowid, const XP_U8* buf,
+                 sqlite3_int64 XP_UNUSED_DBG(rowid), const XP_U8* buf,
                  XP_U16 len )
 {
     LOG_FUNC();
