@@ -123,7 +123,6 @@ struct EngineCtxt {
 static void findMovesOneRow( EngineCtxt* engine );
 static Tile localGetBoardTile( EngineCtxt* engine, XP_U16 col, 
                                XP_U16 row, XP_Bool substBlank );
-static XP_Bool scoreQualifies( EngineCtxt* engine, XP_U16 score );
 static void findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 
                                 XP_U16 col, XP_U16 row ) ;
 static void figureCrosschecks( EngineCtxt* engine, XP_U16 col, 
@@ -1115,33 +1114,37 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
     XP_U16 ii;
 
     if ( blanksLeft == 0 ) {
-        XP_U16 score;
-        XP_U16 nTiles = posmove->moveInfo.nTiles;
+        /* Hack: When a single-tile move involves two words it'll be found by
+           both the horizontal and vertical passes. Since it's really the same
+           move both times we don't want both. It'd be better I think to
+           change the move comparison code to detect it as a duplicate, but
+           that's a lot of work. Instead, add a callback in the single-tile
+           vertical case to count words, and when the count it > 1 drop the
+           move.*/
         WordNotifierInfo* wiip = NULL;
         WordNotifierInfo wii;
-        XP_U16 wordCount = 0;
-        if ( 1 == nTiles ) {
+        XP_U16 singleTileWordCount = 0;
+        if ( !engine->searchHorizontal && 1 == posmove->moveInfo.nTiles ) {
             wii.proc = countWords;
-            wii.closure = &wordCount;
+            wii.closure = &singleTileWordCount;
             wiip = &wii;
         }
 
-        score = figureMoveScore( engine->model, engine->turn,
-                                 &posmove->moveInfo,
-                                 engine, (XWStreamCtxt*)NULL, wiip );
-#ifdef XWFEATURE_BONUSALL
-        if ( 0 != engine->allTilesBonus && 0 == engine->nTilesMax ) {
-            XP_LOGF( "%s: adding bonus: %d becoming %d", __func__, score ,
-                     score + engine->allTilesBonus );
-            score += engine->allTilesBonus;
-        }
-#endif
-        /* First, check that the score is even what we're interested in.  If
-           it is, then go to the expense of filling in a PossibleMove to be
-           compared in full */
-        if ( 1 == nTiles && 1 < wordCount && !engine->searchHorizontal ) {
+        XP_U16 score = figureMoveScore( engine->model, engine->turn,
+                                        &posmove->moveInfo,
+                                        engine, (XWStreamCtxt*)NULL, wiip );
+
+        if ( singleTileWordCount > 1  ) { /* only set by special-case code above */
+            XP_ASSERT( singleTileWordCount == 2 ); /* I think this is the limit */
             // XP_LOGF( "%s(): dropping", __func__ );
-        } else if ( scoreQualifies( engine, score ) ) {
+        } else {
+#ifdef XWFEATURE_BONUSALL
+            if ( 0 != engine->allTilesBonus && 0 == engine->nTilesMax ) {
+                XP_LOGF( "%s: adding bonus: %d becoming %d", __func__, score ,
+                         score + engine->allTilesBonus );
+                score += engine->allTilesBonus;
+            }
+#endif
             posmove->score = score;
             XP_MEMSET( &posmove->blankVals, 0, sizeof(posmove->blankVals) );
             for ( ii = 0; ii < usedBlanksCount; ++ii ) {
@@ -1341,43 +1344,6 @@ move_cache_empty( const EngineCtxt* engine )
     }
     return empty;
 }
-
-static XP_Bool
-scoreQualifies( EngineCtxt* engine, XP_U16 score )
-{
-    XP_Bool qualifies = XP_FALSE;
-    XP_Bool usePrev = engine->usePrev;
-    MoveIterationData* miData = &engine->miData;
-
-    if ( usePrev && score < miData->lastSeenMove.score ) {
-        /* drop it */
-    } else if ( !usePrev && score > miData->lastSeenMove.score
-         /* || (score < miData->lowestSavedScore) */ ) {
-        /* drop it */
-    } else {
-        XP_S16 ii;
-        PossibleMove* savedMoves = miData->savedMoves;
-        /* Look at each saved score, and return true as soon as one's found
-           with a lower or equal score to this.  <eeh> As an optimization,
-           consider remembering what the lowest score is *once there are
-           NUM_SAVED_ENGINE_MOVES moves in here* and doing a quick test on
-           that. Or better, keeping the list in sorted order. */
-        for ( ii = 0, savedMoves = miData->savedMoves;
-              ii < engine->nMovesToSave; ++ii, ++savedMoves ) {
-            if ( savedMoves->score == 0 ) { /* empty slot */
-                qualifies = XP_TRUE;
-            } else if ( usePrev && score <= savedMoves->score ) {
-                qualifies = XP_TRUE;
-                break;
-            } else if ( !usePrev && score >= savedMoves->score ) {
-                qualifies = XP_TRUE;
-                break;
-            }
-        }
-    }
-    //XP_LOGF( "%s(%d)->%d", __func__, score, qualifies );
-    return qualifies;
-} /* scoreQualifies */
 
 static array_edge*
 edge_from_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile ) 

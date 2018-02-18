@@ -615,9 +615,13 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
          * each time through in the debug case */
         if ( 0 ) { /* makes keeping parens balanced easier */
 #ifdef DEBUG
+            /* Always run in DEBUG case */
         } else if ( 1 ) {
 #else
-        } else if ( engine == NULL ) {
+            /* If notifyInfo is set, we're counting on the side-effect of its
+               proc getting called. So skip caching in that case even on
+               release builds. */
+        } else if ( engine == NULL || notifyInfo != NULL  ) {
 #endif
             Tile checkWordBuf[MAX_ROWS];
             Tile* curTile = checkWordBuf;
@@ -688,7 +692,8 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
 #else
         } else { /* non-debug case we know it's non-null */
 #endif
-            XP_ASSERT( nTiles==1 );
+            XP_ASSERT( nTiles == 1 );
+            XP_ASSERT( notifyInfo == NULL );
             XP_ASSERT( engine_getScoreCache( engine, movei->commonCoord ) 
                        == restScore );
             restScore = engine_getScoreCache( engine, movei->commonCoord );
