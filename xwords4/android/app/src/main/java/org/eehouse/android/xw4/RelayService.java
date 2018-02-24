@@ -267,51 +267,16 @@ public class RelayService extends XWService
     {
         Log.d( TAG, "receiveInvitation: got nli from %d: %s", srcDevID,
                nli.toString() );
-        if ( checkNotDupe( nli ) ) {
-            makeOrNotify( nli );
+        if ( !handleInvitation( nli, null, DictFetchOwner.OWNER_RELAY ) ) {
+            Log.d( TAG, "handleInvitation() failed" );
         }
     }
 
-    private void makeOrNotify( NetLaunchInfo nli )
+    @Override
+    void postNotification( String device, int gameID, long rowid )
     {
-        if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-            makeGame( nli );
-        } else {
-            Intent intent = MultiService
-                .makeMissingDictIntent( this, nli,
-                                        DictFetchOwner.OWNER_RELAY );
-            MultiService.postMissingDictNotification( this, intent,
-                                                      nli.gameID() );
-        }
-    }
-
-    private void makeGame( NetLaunchInfo nli )
-    {
-        long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
-        if ( (null == rowids || 0 == rowids.length)
-             || XWPrefs.getRelayInviteToSelfEnabled( this )) {
-
-            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-                long rowid = GameUtils.makeNewMultiGame( this, nli,
-                                                         new RelayMsgSink(),
-                                                         getUtilCtxt() );
-                if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-                    if ( null != nli.gameName && 0 < nli.gameName.length() ) {
-                        DBUtils.setName( this, rowid, nli.gameName );
-                    }
-                    String body = LocUtils.getString( this,
-                                                      R.string.new_relay_body );
-                    GameUtils.postInvitedNotification( this, nli.gameID(), body,
-                                                       rowid );
-                }
-            } else {
-                Intent intent = MultiService
-                    .makeMissingDictIntent( this, nli,
-                                            DictFetchOwner.OWNER_RELAY );
-                MultiService.postMissingDictNotification( this, intent,
-                                                          nli.gameID() );
-            }
-        }
+        String body = LocUtils.getString( this, R.string.new_relay_body );
+        GameUtils.postInvitedNotification( this, gameID, body, rowid );
     }
 
     // Exists to get incoming data onto the main thread

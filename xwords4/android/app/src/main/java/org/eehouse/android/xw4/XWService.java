@@ -27,6 +27,7 @@ import android.os.IBinder;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.JNIThread;
@@ -36,7 +37,7 @@ import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import java.util.HashSet;
 import java.util.Set;
 
-class XWService extends Service {
+abstract class XWService extends Service {
     private static final String TAG = XWService.class.getSimpleName();
     public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
 
@@ -72,7 +73,7 @@ class XWService extends Service {
 
     // Check that we aren't already processing an invitation with this
     // inviteID.
-    protected boolean checkNotDupe( NetLaunchInfo nli )
+    private boolean checkNotDupe( NetLaunchInfo nli )
     {
         String inviteID = nli.inviteID();
         boolean isDupe;
@@ -84,6 +85,40 @@ class XWService extends Service {
         }
         Log.d( TAG, "checkNotDupe('%s') => %b", inviteID, !isDupe );
         return !isDupe;
+    }
+
+    abstract void postNotification( String device, int gameID, long rowid );
+
+    protected boolean handleInvitation( NetLaunchInfo nli, String device,
+                                        DictFetchOwner dfo )
+    {
+        boolean success = false;
+        long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
+        if ( 0 == rowids.length
+             || ( rowids.length < nli.nPlayersT // will break for two-per-device game
+                  && XWPrefs.getSecondInviteAllowed( this ) ) ) {
+
+            if ( nli.isValid() && checkNotDupe( nli ) ) {
+
+                if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+                    long rowid = GameUtils.makeNewMultiGame( this, nli,
+                                                             getSink( 0 ),
+                                                             getUtilCtxt() );
+
+                    if ( null != nli.gameName && 0 < nli.gameName.length() ) {
+                        DBUtils.setName( this, rowid, nli.gameName );
+                    }
+
+                    postNotification( device, nli.gameID(), rowid );
+                } else {
+                    Intent intent = MultiService
+                        .makeMissingDictIntent( this, nli, dfo );
+                    MultiService.postMissingDictNotification( this, intent,
+                                                              nli.gameID() );
+                }
+            }
+        }
+        return success;
     }
 
     protected UtilCtxt getUtilCtxt()
@@ -128,8 +163,7 @@ class XWService extends Service {
             consumed = true;
             jniThread.receive( msg, addr ).release();
         } else {
-            GameUtils.BackMoveResult bmr =
-                new GameUtils.BackMoveResult();
+            GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
             if ( null == sink ) {
                 sink = getSink( rowid );
             }
