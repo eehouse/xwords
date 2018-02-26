@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -1233,19 +1232,18 @@ public class RelayService extends XWService
 
     }
 
-    private static class AsyncSender extends AsyncTask<Void, Void, Void> {
+    private static class AsyncSender extends Thread {
         private Context m_context;
         private HashMap<String,ArrayList<byte[]>> m_msgHash;
 
-        public AsyncSender( Context context,
-                            HashMap<String,ArrayList<byte[]>> msgHash )
+        AsyncSender( Context context, HashMap<String, ArrayList<byte[]>> msgHash )
         {
             m_context = context;
             m_msgHash = msgHash;
         }
 
         @Override
-        protected Void doInBackground( Void... ignored )
+        public void run()
         {
             // format: total msg lenth: 2
             //         number-of-relayIDs: 2
@@ -1292,9 +1290,9 @@ public class RelayService extends XWService
                     }
                     msgLen += thisLen;
                 }
+
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
-
                 Socket socket = NetUtils.makeProxySocket( m_context, 8000 );
                 if ( null != socket ) {
                     DataOutputStream outStream =
@@ -1310,15 +1308,14 @@ public class RelayService extends XWService
             } catch ( java.io.IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
-            return null;
-        } // doInBackground
+        } // run
     }
 
     private static void sendToRelay( Context context,
                                      HashMap<String,ArrayList<byte[]>> msgHash )
     {
         if ( null != msgHash ) {
-            new AsyncSender( context, msgHash ).execute();
+            new AsyncSender( context, msgHash ).start();
         } else {
             Log.w( TAG, "sendToRelay: null msgs" );
         }
