@@ -239,7 +239,8 @@ CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT,
            no cref.  So we test for that case and retry. */
 
         /* I'm now seeing an infinte loop here. Until it's tracked down, let's
-           assert out. */
+           assert out. Note that I've seen it here, not at any of the other
+           places where I'm replacing FOREVER loops with this test*/
         if ( ii > 5 ) {
             assert(0);
             break;
@@ -358,7 +359,12 @@ CRefMgr::getMakeCookieRef( const char* const connName, HostID hid, bool* isDead 
     int nPlayersT = 0;
     int nAlreadyHere = 0;
 
-    for ( ; ; ) {               /* for: see comment above */
+    for ( int ii = 0; ; ++ii ) {     /* for: see comment above */
+        if ( ii > 5 ) {
+            assert(0);
+            break;
+        }
+
         CookieID cid = m_db->FindGame( connName, hid, curCookie, sizeof(curCookie),
                                        &curLangCode, &nPlayersT, &nAlreadyHere,
                                        isDead );
@@ -397,7 +403,12 @@ CRefMgr::getMakeCookieRef( const AddrInfo::ClientToken clientToken, HostID srcID
     int nPlayersT = 0;
     int nAlreadyHere = 0;
 
-    for ( ; ; ) {               /* for: see comment above */
+    for ( int ii = 0; ; ++ii ) {     /* for: see comment above */
+        if ( ii > 5 ) {
+            assert(0);
+            break;
+        }
+
         char connName[MAX_CONNNAME_LEN+1] = {0};
         CookieID cid = m_db->FindGame( clientToken, srcID,
                                        connName, sizeof(connName),

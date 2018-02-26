@@ -1802,8 +1802,8 @@ handle_udp_packet( PacketThreadClosure* ptc )
                     handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
                     assert( ptr == end ); // DON'T CHECK THIS IN!!!
                 } else {
-                    logf( XW_LOGERROR, "%s: invalid scr for %s", __func__, 
-                          connName );
+                    logf( XW_LOGERROR, "%s: invalid scr for %s/%d", __func__,
+                          connName, hid );
                 }
             } else {
                 logf( XW_LOGERROR, "no clientToken found!!!" );
