@@ -220,7 +220,7 @@ CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT,
                            int langCode, int seed, int clientIndx, 
                            bool wantsPublic, bool makePublic, bool* seenSeed )
 {
-    CidInfo* cinfo;
+    CidInfo* cinfo = NULL;
 
     /* We have a cookie from a new connection or from a reconnect.  This may
        be the first time it's been seen, or there may be a game currently in
@@ -229,8 +229,8 @@ CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT,
        a new one.  Pass the connName which will be used if set, but if not set
        we'll be generating another later when the game is complete.
     */
-    for ( ; ; ) {
-        /* What's this for loop thing.  It's to fix a race condition.  One
+    for ( int ii = 0; ; ++ii ) {
+        /* What's this for loop thing?  It's to fix a race condition.  One
            thread has "claim" on cid <N>, which is in the DB.  Another comes
            into this function and looks it up in the DB, retrieving <N>, but
            progress is blocked inside getCookieRef_impl which calls Claim().
@@ -238,6 +238,12 @@ CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT,
            cref before calling Relinquish so that when Claim() returns there's
            no cref.  So we test for that case and retry. */
 
+        /* I'm now seeing an infinte loop here. Until it's tracked down, let's
+           assert out. */
+        if ( ii > 5 ) {
+            assert(0);
+            break;
+        }
 
         CookieID cid;
         char connNameBuf[MAX_CONNNAME_LEN+1] = {0};
@@ -295,7 +301,13 @@ CRefMgr::getMakeCookieRef( const char* connName, const char* cookie,
     CookieRef* cref = NULL;
     CidInfo* cinfo = NULL;
 
-    for ( ; ; ) {               /* for: see comment above */
+    for ( int ii = 0; ; ++ii ) {     /* for: see comment above */
+
+        if ( ii > 5 ) {
+            assert(0);
+            break;
+        }
+
         /* fetch these from DB */
         char curCookie[MAX_INVITE_LEN+1];
         int curLangCode;
