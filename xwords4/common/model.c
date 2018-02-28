@@ -1133,10 +1133,10 @@ juggleMoveIfDebug( MoveInfo* move )
         int last = nTiles - ii;
         int choice = XP_RANDOM() % last;
         move->tiles[ii] = tiles[choice];
-        XP_LOGF( "%s(): setting %d to %d", __func__, ii, choice );
+        // XP_LOGF( "%s(): setting %d to %d", __func__, ii, choice );
         if ( choice != --last ) {
             tiles[choice] = tiles[last];
-            XP_LOGF( "%s(): replacing %d with %d", __func__, choice, last );
+            // XP_LOGF( "%s(): replacing %d with %d", __func__, choice, last );
         }
     }
 }
