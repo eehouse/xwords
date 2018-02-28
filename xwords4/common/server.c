@@ -929,6 +929,7 @@ makeRobotMove( ServerCtxt* server )
             /* if canMove is false, this is a fake move, a pass */
 
             if ( canMove || NPASSES_OK(server) ) {
+                juggleMoveIfDebug( &newMove );
                 model_makeTurnFromMoveInfo( model, turn, &newMove );
                 XP_LOGF( "%s: robot making %d tile move", __func__, newMove.nTiles );
 

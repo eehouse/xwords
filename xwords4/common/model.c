@@ -1120,6 +1120,28 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
     return success;
 } /* model_makeTurnFromStream */
 
+#ifdef DEBUG
+void
+juggleMoveIfDebug( MoveInfo* move )
+{
+    XP_U16 nTiles = move->nTiles;
+    // XP_LOGF( "%s(): move len: %d", __func__, nTiles );
+    MoveInfoTile tiles[MAX_TRAY_TILES];
+    XP_MEMCPY( tiles, move->tiles, sizeof(tiles) );
+
+    for ( int ii = 0; ii < nTiles; ++ii ) {
+        int last = nTiles - ii;
+        int choice = XP_RANDOM() % last;
+        move->tiles[ii] = tiles[choice];
+        XP_LOGF( "%s(): setting %d to %d", __func__, ii, choice );
+        if ( choice != --last ) {
+            tiles[choice] = tiles[last];
+            XP_LOGF( "%s(): replacing %d with %d", __func__, choice, last );
+        }
+    }
+}
+#endif
+
 void
 model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
                             const MoveInfo* newMove )
@@ -1127,11 +1149,8 @@ model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
     XP_U16 col, row, ii;
     XP_U16* other;
     const MoveInfoTile* tinfo;
-    Tile blank;
-    XP_U16 numTiles;
-
-    blank = dict_getBlankTile( model_getDictionary( model ) );
-    numTiles = newMove->nTiles;
+    Tile blank = dict_getBlankTile( model_getDictionary( model ) );
+    XP_U16 numTiles = newMove->nTiles;
 
     col = row = newMove->commonCoord; /* just assign both */
     other = newMove->isHorizontal? &col: &row;

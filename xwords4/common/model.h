@@ -221,6 +221,12 @@ XP_Bool model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
                                  const MoveInfo* newMove );
 
+#ifdef DEBUG
+void juggleMoveIfDebug( MoveInfo* move );
+#else
+# define juggleMoveIfDebug(newMove)
+#endif
+
 void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
 XP_S16 model_getNMoves( const ModelCtxt* model );
 
