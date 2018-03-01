@@ -1686,15 +1686,7 @@ static XP_S16
 commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles, 
             XWStreamCtxt* stream, WordNotifierInfo* wni, XP_Bool useStack )
 {
-    XP_U16 ii;
-    PlayerCtxt* player;
-    PendingTile* pt;
     XP_S16 score = -1;
-    XP_Bool isHorizontal;
-    const Tile* newTilesP;
-    XP_U16 nTiles;
-
-    nTiles = newTiles->nTiles;
 
 #ifdef DEBUG
     XP_ASSERT( getCurrentMoveScoreIfLegal( model, turn, (XWStreamCtxt*)NULL,
@@ -1706,10 +1698,11 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
 
     clearLastMoveInfo( model );
 
-    player = &model->players[turn];
+    PlayerCtxt* player = &model->players[turn];
 
     if ( useStack ) {
         MoveInfo moveInfo = {0};
+        XP_Bool isHorizontal;
 #ifdef DEBUG
         XP_Bool inLine = 
 #endif
@@ -1720,19 +1713,16 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
         stack_addMove( model->vol.stack, turn, &moveInfo, newTiles );
     }
 
-    for ( ii = 0, pt=player->pendingTiles; ii < player->nPending; 
-          ++ii, ++pt ) {
-        XP_U16 col, row;
-        CellTile tile;
-        XP_U16 val;
-
-        col = pt->col;
-        row = pt->row;
-        tile = getModelTileRaw( model, col, row );
+    /* Where's it removed from tray? Need to assert there! */
+    for ( int ii = 0; ii < player->nPending; ++ii ) {
+        const PendingTile* pt = &player->pendingTiles[ii];
+        XP_U16 col = pt->col;
+        XP_U16 row = pt->row;
+        CellTile tile = getModelTileRaw( model, col, row );
 
         XP_ASSERT( (tile & TILE_PENDING_BIT) != 0 );
 
-        val = tile & TILE_VALUE_MASK;
+        XP_U16 val = tile & TILE_VALUE_MASK;
         if ( val > 1 ) { /* somebody else is using this square too! */
             putBackOtherPlayersTiles( model, turn, col, row );
         }
@@ -1753,17 +1743,18 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
     player->score += score;
 
     /* Why is this next loop necessary? */
-    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+    for ( int ii = 0; ii < model->nPlayers; ++ii ) {
         invalidateScore( model, ii );
     }
 
     player->nPending = 0;
     player->nUndone = 0;
 
-    newTilesP = newTiles->tiles;
-    while ( nTiles-- ) {
-        model_addPlayerTile( model, turn, -1, *newTilesP++ );
+    /* Move new tiles into tray */
+    for ( int ii = newTiles->nTiles - 1; ii >= 0; --ii ) {
+        model_addPlayerTile( model, turn, -1, newTiles->tiles[ii] );
     }
+
     return score;
 } /* commitTurn */
 
@@ -2064,14 +2055,12 @@ static void
 printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry, 
               void* p_closure )
 {
-    XWStreamCtxt* stream;
-    const XP_UCHAR* format;
-    XP_UCHAR buf[64];
-    XP_UCHAR traybuf[MAX_TRAY_TILES+1];
-    MovePrintClosure* closure = (MovePrintClosure*)p_closure;
-
     if ( entry->moveType != ASSIGN_TYPE ) {
-        stream = closure->stream;
+        const XP_UCHAR* format;
+        XP_UCHAR buf[64];
+        XP_UCHAR traybuf[MAX_TRAY_TILES+1];
+        MovePrintClosure* closure = (MovePrintClosure*)p_closure;
+        XWStreamCtxt* stream = closure->stream;
 
         XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%d:%d ", ++closure->nPrinted, 
                      entry->playerNum+1 );
@@ -2134,19 +2123,18 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
                const StackEntry* entry, XP_S16 XP_UNUSED(score),
                void* p_closure )
 {
-    MovePrintClosure* closure = (MovePrintClosure*)p_closure;
-    XWStreamCtxt* stream = closure->stream;
-    DictionaryCtxt* dict = closure->dict;
-    const XP_UCHAR* format;
-    XP_U16 nTiles;
-    XP_S16 totalScore;
-    XP_UCHAR buf[100];
-    XP_UCHAR traybuf1[MAX_TRAY_TILES+1];
-    XP_UCHAR traybuf2[MAX_TRAY_TILES+1];
-    const MoveInfo* mi;
-
     if ( entry->moveType != ASSIGN_TYPE ) {
-        totalScore = model_getPlayerScore( model, entry->playerNum );
+        MovePrintClosure* closure = (MovePrintClosure*)p_closure;
+        XWStreamCtxt* stream = closure->stream;
+        DictionaryCtxt* dict = closure->dict;
+        const XP_UCHAR* format;
+        XP_U16 nTiles;
+
+        XP_UCHAR buf[100];
+        XP_UCHAR traybuf1[MAX_TRAY_TILES+1];
+        XP_UCHAR traybuf2[MAX_TRAY_TILES+1];
+        const MoveInfo* mi;
+        XP_S16 totalScore = model_getPlayerScore( model, entry->playerNum );
 
         switch( entry->moveType ) {
         case TRADE_TYPE:
