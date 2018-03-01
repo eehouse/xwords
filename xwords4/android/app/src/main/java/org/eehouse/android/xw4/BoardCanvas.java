@@ -510,7 +510,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     public void score_pendingScore( Rect rect, int score, int playerNum,
                                     int curTurn, int flags )
     {
-        String text = score >= 0? String.format( "%d", score ) : "??";
+        Log.d( TAG, "pendingScore(playerNum=%d, curTurn=%d)",
+               playerNum, curTurn );
+
         int otherIndx = (0 == (flags & CELL_ISCURSOR))
             ? CommonPrefs.COLOR_BACKGRND : CommonPrefs.COLOR_FOCUS;
         ++rect.top;
@@ -522,6 +524,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
         m_fillPaint.setColor( playerColor );
 
+        String text = score >= 0? String.format( "%d", score ) : "??";
         rect.bottom -= rect.height() / 2;
         drawCentered( text, rect, null );
 
