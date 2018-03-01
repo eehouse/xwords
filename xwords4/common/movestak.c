@@ -316,10 +316,9 @@ void
 stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo, 
                const TrayTileSet* newTiles )
 {
-    StackEntry move;
-
-    move.playerNum = (XP_U8)turn;
-    move.moveType = MOVE_TYPE;
+    StackEntry move = {.playerNum = (XP_U8)turn,
+                       .moveType = MOVE_TYPE,
+    };
 
     XP_MEMCPY( &move.u.move.moveInfo, moveInfo, sizeof(move.u.move.moveInfo));
     move.u.move.newTiles = *newTiles;
@@ -330,10 +329,9 @@ stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo,
 void
 stack_addPhony( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo )
 {
-    StackEntry move;
-
-    move.playerNum = (XP_U8)turn;
-    move.moveType = PHONY_TYPE;
+    StackEntry move = {.playerNum = (XP_U8)turn,
+                       .moveType = PHONY_TYPE,
+    };
 
     XP_MEMCPY( &move.u.phony.moveInfo, moveInfo, 
                sizeof(move.u.phony.moveInfo));
@@ -345,10 +343,9 @@ void
 stack_addTrade( StackCtxt* stack, XP_U16 turn, 
                 const TrayTileSet* oldTiles, const TrayTileSet* newTiles )
 {
-    StackEntry move;
-
-    move.playerNum = (XP_U8)turn;
-    move.moveType = TRADE_TYPE;
+    StackEntry move = { .playerNum = (XP_U8)turn,
+                        .moveType = TRADE_TYPE,
+    };
 
     move.u.trade.oldTiles = *oldTiles;
     move.u.trade.newTiles = *newTiles;
@@ -359,10 +356,9 @@ stack_addTrade( StackCtxt* stack, XP_U16 turn,
 void
 stack_addAssign( StackCtxt* stack, XP_U16 turn, const TrayTileSet* tiles )
 {
-    StackEntry move;
-
-    move.playerNum = (XP_U8)turn;
-    move.moveType = ASSIGN_TYPE;
+    StackEntry move = { .playerNum = (XP_U8)turn,
+                        .moveType = ASSIGN_TYPE,
+    };
 
     move.u.assign.tiles = *tiles;
 

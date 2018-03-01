@@ -2070,66 +2070,63 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
     XP_UCHAR traybuf[MAX_TRAY_TILES+1];
     MovePrintClosure* closure = (MovePrintClosure*)p_closure;
 
-    if ( entry->moveType == ASSIGN_TYPE ) {
-        return;
-    }
+    if ( entry->moveType != ASSIGN_TYPE ) {
+        stream = closure->stream;
 
-    stream = closure->stream;
-
-    XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%d:%d ", ++closure->nPrinted, 
-                 entry->playerNum+1 );
-    printString( stream, (XP_UCHAR*)buf );
-
-    if ( entry->moveType == TRADE_TYPE ) {
-    } else {
-        XP_UCHAR letter[2] = {'\0','\0'};
-        XP_Bool isHorizontal = entry->u.move.moveInfo.isHorizontal;
-        XP_U16 col, row;
-        const MoveInfo* mi;
-        XP_Bool isPass = XP_FALSE;
-
-        if ( entry->moveType == PHONY_TYPE ) {
-            mi = &entry->u.phony.moveInfo;
-        } else {
-            mi = &entry->u.move.moveInfo;
-            if ( mi->nTiles == 0 ) {
-                isPass = XP_TRUE;
-            }
-        }
-
-        if ( isPass ) { 
-            format = util_getUserString( model->vol.util, STR_PASS );
-            XP_SNPRINTF( buf, VSIZE(buf), "%s", format );
-        } else {
-            if ( isHorizontal ) {
-                format = util_getUserString( model->vol.util, STRS_MOVE_ACROSS );
-            } else {
-                format = util_getUserString( model->vol.util, STRS_MOVE_DOWN );
-            }
-
-            row = mi->commonCoord;
-            col = mi->tiles[0].varCoord;
-            if ( !isHorizontal ) {
-                XP_U16 tmp = col; col = row; row = tmp;
-            }
-            letter[0] = 'A' + col;
-
-            XP_SNPRINTF( traybuf, sizeof(traybuf), (XP_UCHAR *)"%s%d", 
-                         letter, row + 1 );
-            XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
-        }
+        XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%d:%d ", ++closure->nPrinted, 
+                     entry->playerNum+1 );
         printString( stream, (XP_UCHAR*)buf );
-    }
 
-    if ( !closure->keepHidden ) {
-        format = util_getUserString( model->vol.util, STRS_TRAY_AT_START );
-        formatTray( model_getPlayerTiles( model, entry->playerNum ),
-                    closure->dict, (XP_UCHAR*)traybuf, sizeof(traybuf),
-                    XP_FALSE );
-        XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
-        printString( stream, buf );
-    }
+        if ( entry->moveType == TRADE_TYPE ) {
+        } else {
+            XP_UCHAR letter[2] = {'\0','\0'};
+            XP_Bool isHorizontal = entry->u.move.moveInfo.isHorizontal;
+            XP_U16 col, row;
+            const MoveInfo* mi;
+            XP_Bool isPass = XP_FALSE;
 
+            if ( entry->moveType == PHONY_TYPE ) {
+                mi = &entry->u.phony.moveInfo;
+            } else {
+                mi = &entry->u.move.moveInfo;
+                if ( mi->nTiles == 0 ) {
+                    isPass = XP_TRUE;
+                }
+            }
+
+            if ( isPass ) {
+                format = util_getUserString( model->vol.util, STR_PASS );
+                XP_SNPRINTF( buf, VSIZE(buf), "%s", format );
+            } else {
+                if ( isHorizontal ) {
+                    format = util_getUserString( model->vol.util, STRS_MOVE_ACROSS );
+                } else {
+                    format = util_getUserString( model->vol.util, STRS_MOVE_DOWN );
+                }
+
+                row = mi->commonCoord;
+                col = mi->tiles[0].varCoord;
+                if ( !isHorizontal ) {
+                    XP_U16 tmp = col; col = row; row = tmp;
+                }
+                letter[0] = 'A' + col;
+
+                XP_SNPRINTF( traybuf, sizeof(traybuf), (XP_UCHAR *)"%s%d",
+                             letter, row + 1 );
+                XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
+            }
+            printString( stream, (XP_UCHAR*)buf );
+        }
+
+        if ( !closure->keepHidden ) {
+            format = util_getUserString( model->vol.util, STRS_TRAY_AT_START );
+            formatTray( model_getPlayerTiles( model, entry->playerNum ),
+                        closure->dict, (XP_UCHAR*)traybuf, sizeof(traybuf),
+                        XP_FALSE );
+            XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
+            printString( stream, buf );
+        }
+    }
 } /* printMovePre */
 
 static void
@@ -2148,58 +2145,56 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
     XP_UCHAR traybuf2[MAX_TRAY_TILES+1];
     const MoveInfo* mi;
 
-    if ( entry->moveType == ASSIGN_TYPE ) {
-        return;
-    }
+    if ( entry->moveType != ASSIGN_TYPE ) {
+        totalScore = model_getPlayerScore( model, entry->playerNum );
 
-    totalScore = model_getPlayerScore( model, entry->playerNum );
+        switch( entry->moveType ) {
+        case TRADE_TYPE:
+            formatTray( (const TrayTileSet*)&entry->u.trade.oldTiles, 
+                        dict, traybuf1, sizeof(traybuf1), closure->keepHidden );
+            formatTray( (const TrayTileSet*) &entry->u.trade.newTiles, 
+                        dict, traybuf2, sizeof(traybuf2), closure->keepHidden );
 
-    switch( entry->moveType ) {
-    case TRADE_TYPE:
-        formatTray( (const TrayTileSet*)&entry->u.trade.oldTiles, 
-                    dict, traybuf1, sizeof(traybuf1), closure->keepHidden );
-        formatTray( (const TrayTileSet*) &entry->u.trade.newTiles, 
-                    dict, traybuf2, sizeof(traybuf2), closure->keepHidden );
+            format = util_getUserString( model->vol.util, STRSS_TRADED_FOR );
+            XP_SNPRINTF( buf, sizeof(buf), format, traybuf1, traybuf2 );
+            printString( stream, buf );
+            printString( stream, (XP_UCHAR*)XP_CR );
+            break;
 
-        format = util_getUserString( model->vol.util, STRSS_TRADED_FOR );
-        XP_SNPRINTF( buf, sizeof(buf), format, traybuf1, traybuf2 );
-        printString( stream, buf );
-        printString( stream, (XP_UCHAR*)XP_CR );
-        break;
-
-    case PHONY_TYPE:
-        format = util_getUserString( model->vol.util, STR_PHONY_REJECTED );
-        printString( stream, format );
-    case MOVE_TYPE:
-        format = util_getUserString( model->vol.util, STRD_CUMULATIVE_SCORE );
-        XP_SNPRINTF( buf, sizeof(buf), format, totalScore );
-        printString( stream, buf );
-
-        if ( entry->moveType == PHONY_TYPE ) {
-            mi = &entry->u.phony.moveInfo;
-        } else {
-            mi = &entry->u.move.moveInfo;
-        }
-        nTiles = mi->nTiles;
-        if ( nTiles > 0 ) {
+        case PHONY_TYPE:
+            format = util_getUserString( model->vol.util, STR_PHONY_REJECTED );
+            printString( stream, format );
+        case MOVE_TYPE:
+            format = util_getUserString( model->vol.util, STRD_CUMULATIVE_SCORE );
+            XP_SNPRINTF( buf, sizeof(buf), format, totalScore );
+            printString( stream, buf );
 
             if ( entry->moveType == PHONY_TYPE ) {
-                /* printString( stream, (XP_UCHAR*)"phony rejected " ); */
-            } else if ( !closure->keepHidden ) {
-                format = util_getUserString(model->vol.util, STRS_NEW_TILES);
-                XP_SNPRINTF( buf, sizeof(buf), format,
-                             formatTray( &entry->u.move.newTiles, dict, 
-                                         traybuf1, sizeof(traybuf1), 
-                                         XP_FALSE ) );
-                printString( stream, buf );
-                stream_catString( stream, (XP_UCHAR*)XP_CR );
+                mi = &entry->u.phony.moveInfo;
+            } else {
+                mi = &entry->u.move.moveInfo;
             }
+            nTiles = mi->nTiles;
+            if ( nTiles > 0 ) {
+
+                if ( entry->moveType == PHONY_TYPE ) {
+                    /* printString( stream, (XP_UCHAR*)"phony rejected " ); */
+                } else if ( !closure->keepHidden ) {
+                    format = util_getUserString(model->vol.util, STRS_NEW_TILES);
+                    XP_SNPRINTF( buf, sizeof(buf), format,
+                                 formatTray( &entry->u.move.newTiles, dict,
+                                             traybuf1, sizeof(traybuf1),
+                                             XP_FALSE ) );
+                    printString( stream, buf );
+                    stream_catString( stream, (XP_UCHAR*)XP_CR );
+                }
+            }
+
+            break;
         }
 
-        break;
+        printString( stream, (XP_UCHAR*)XP_CR );
     }
-
-    printString( stream, (XP_UCHAR*)XP_CR );
 } /* printMovePost */
 
 static void
