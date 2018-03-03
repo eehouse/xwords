@@ -970,7 +970,7 @@
     <string name="lmi_pass_fmt">%1$s hat gepasst (0 Punkte)</string>
     <plurals name="lmi_move_fmt">
 	<item quantity="one">%1$s hat %2$s gespielt im Wert von %3$d Punkten</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
     <plurals name="lmi_trade_fmt">
 	<item quantity="one">%1$s hat einen Spielstein getauscht</item>
@@ -1140,4 +1140,153 @@
 \n
 \nWenn Sie nie Wortlisten außerhalb von CrossWords herunterladen werden und keine bereits dort gespeichert haben, können Sie diese Berechtigung einfach ablehnen.</string>
 
-  </resources>
+  <string name="bonus_l2x_summary">2B</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l3x_summary">3B</string>
+    <string name="bonus_w3x_summary">3W</string>
+
+    <plurals name="strd_remains_header_fmt">
+	<item quantity="one">Noch %1$d Spielsteine im Säckchen.</item>
+	<item quantity="other"></item>
+</plurals>
+    <plurals name="strd_remains_expl_fmt">
+	<item quantity="one">Noch %1$d Spielsteine im Säckchen und den nicht gezeigten Ablagen:
+\n</item>
+	<item quantity="other"></item>
+</plurals>
+
+    <string name="peek_other">Spielsteine ansehen wenn nicht am Zug</string>
+    <string name="peek_other_summary">"Antippen von Namen auf der Punktetafel  zeigt die Spielsteine dieses Spielers"</string>
+    
+    <string name="hide_crosshairs_summary">Angetipptes Spielfeld nicht anzeigen</string>
+
+    <string name="relay_behavior_summary">Einstellungen zu Partien über Internet</string>
+    <string name="invite_choice_title">Spieler einladen: Wie?</string>
+    <string name="title_blank_picker">Spielstein für Joker wählen</string>
+    <string name="tile_tray_picker">Neue Spielsteine für Ablage wählen</string>
+
+    <string name="not_again_chat">"Dieser Button  öffnet den Bildschirm für Nachrichten zwischen Geräten in dieser Partie. Die Nachrichten werden behalten, bis Sie die Partie löschen, zu der sie gehören."</string>
+    <string name="not_again_values">Dieser Button ändert, ob Buchstaben oder deren Punktwerte auf gespielten Spielsteinen auf dem Brett angezeigt werden. Benutzen Sie ihn zur Erinnerung an die Spielsteinwerte.</string>
+    <string name="not_again_done">Antippen des „Pkt.“-Zählers am rechten Ende der Ablage ist der einfachste Weg, einen Zug abzuschließen.</string>
+
+    <string name="not_again_unlock">"Diese Partie wird gerade gespielt. Einige Einstellungen, z. B. die Anzahl der  Spieler, können nicht geändert werden, ohne sie neu zu starten. Wenn Sie diese Seite verlassen, haben Sie die Möglichkeit, die Änderungen zu verwerfen, um einen Neustart zu vermeiden."</string>
+
+    <string name="not_again_turnchanged">Der Spieler am Zug wird groß auf der Punktetafel dargestellt.
+\n
+\nHalten Sie Ihren Finger auf einen Namen auf der Punktetafel, um Details über den letzten Zug dieses Spielers anzuzeigen.</string>
+
+    <string name="not_again_newfrom">Eine neue Partie erzeugen, die bereit zum Spielen ist, mit allen Einstellungen aus dieser Partie. Das heißt, diese Partie als Vorlage verwenden.</string>
+
+    <string name="about_vers_fmt"></string>
+    <string name="bt_pick_addall_button">Alle gepaarten hinzufügen</string>
+      <string name="bt_pair_settings">Weitere paaren</string>
+
+      <string name="invite_progress_title">Verbinde …</string>
+    <string name="invite_progress_fmt">Sende Einladung an CrossWords auf %1$s</string>
+      <string name="summary_wait_host">Warte auf Verbindung[en]</string>
+      <string name="summary_wait_guest">Nicht verbunden</string>
+      <string name="summary_gameover">Partie beendet</string>
+      <string name="summary_conn">Partie läuft</string>
+      <plurals name="invite_bt_desc_fmt">
+	<item quantity="one">Bitte wählen Sie das Gerät, das Sie zu dieser Partie hinzufügen wollen.
+\n
+\nBenutzen Sie den Button „%2$s“, wenn Sie das Gerät nicht sehen, das Sie erwarten.</item>
+	<item quantity="other">"Bitte wählen Sie bis zu  %1$d Gerät(e), die Sie zu dieser Partie hinzufügen wollen.
+\n
+\nBenutzen Sie den Button „%2$s“, wenn Sie ein Gerät nicht sehen, das Sie erwarten."</item>
+</plurals>
+    <plurals name="warn_relay_games_fmt">
+	<item quantity="one">"
+\n
+\n(Wird von einer Partie benutzt.)"</item>
+	<item quantity="other">"
+\n
+\n(Wird von %1$d Partien benutzt.)"</item>
+</plurals>
+
+    <string name="str_placer_fmt" formatted="false">[Nr. %d] %s: %d</string>
+
+    <string name="inform_dict_download">" (Sie müssen es zuerst herunterladen.)"</string>
+    <string name="list_group_default">Neue Partien hier einstellen</string>
+    <string name="list_group_moveup">Nach oben verschieben</string>
+    <string name="square_tiles_summary">Auch wenn sie größer sein können</string>
+
+    <string name="summary_studyon">Hinzufügen und Anzeigen von Wörtern zum Merken anbieten</string>
+    <string name="loc_lang_local">%1$s (Ihre)</string>
+
+    <string name="loc_filters_all">Alle</string>
+    <string name="update_dicts_fmt">Es sind Aktualisierungen für mindestens eine installierte Wortliste verfügbar. Wollen Sie die neue(n) Version(en) von %1$s jetzt herunterladen?</string>
+
+    <string name="progress_title">Wird heruntergeladen</string>
+
+    <string name="dict_info_fmt">Wortanzahl: %1$d
+\nDownload-Größe: %2$dK
+\nHinweis: %3$s</string>
+    <string name="note_none">(Keiner)</string>
+    <string name="new_game">Neue Ein-Geräte-Partie</string>
+    <string name="disable_nag_solo_title">Erinnerungen für Solitair-Partien deaktivieren</string>
+
+  <string name="confirm_get_locdict_fmt">Ihr Gerät ist für %1$s eingerichtet. Wollen Sie eine Wortliste herunterladen, um CrossWords in %1$s zu spielen?</string>
+
+  <string name="advanced_summary">Dies sollten Sie nie brauchen …</string>
+  <string name="relay_host">Zwischenstation-Server</string>
+  <string name="relay_via_http_first">Zuerst Web-API verwenden</string>
+  <string name="relay_via_http_first_summary">(statt einer Ausweichlösung für ein spezielles Protokoll)</string>
+  <string name="dict_host">Wortlisten-Download-URL</string>
+  <string name="debug_features_summary">Menüeinträge usw. (nur Release-Builds)</string>
+  <string name="board_menu_game_showInvites">Einladungen zeigen</string>
+  <string name="netstats_title">Partie-Netzwerkstatistik</string>
+
+  <string name="git_rev_title">Version des Quellcodes</string>
+  <string name="devid_title">Geräte-ID (auf Zwischenstation)</string>
+  <string name="relay_port">Spiel-Port auf Zwischenstation</string>
+  <string name="proxy_port">Geräte-Port auf Zwischenstation</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
+  <string name="enable_dupes_title">Doppelte Einladungen annehmen</string>
+  <string name="xlations_locale">Pseudo-Locale zum Übersetzen</string>
+  <string name="enable_nfc_toself_title">NFC-Selbstverbindung aktivieren</string>
+  <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
+  <string name="enable_sms_toself_summary">Mobilfunk weglassen bei gleichen Nummern</string>
+
+  <string name="force_radio_title">Mobilfunk vortäuschen</string>
+  <string name="radio_name_real">Nicht vortäuschen</string>
+  <string name="radio_name_tablet">Tablet/kein Mobilfunk</string>
+  <string name="nfc_to_self">Über NFC an sich selbst senden?</string>
+
+  <string name="game_summary_field_npackets">Ausstehende Paketanzahl</string>
+  <string name="expl_update_url">Aktualisierung prüft URL</string>
+  <string name="expl_relay_url">URL für Zwischenstation-Web-API</string>
+
+  <string name="pref_group_sms_title">SMS-Zeug</string>
+  <string name="pref_group_sms_summary">Einstellungen zum Spielen über SMS</string>
+  <string name="pref_group_relay_title">Zwischenstation-Zeug</string>
+  <string name="pref_group_relay_summary">Einstellungen zum Spielen über Internez/Zwischenstation</string>
+  <string name="pref_group_l10n_title">Lokalisierungs-Zeug</string>
+  <string name="pref_group_l10n_summary">Einstellungen zur Lokalisierung aus der App heraus</string>
+  <string name="pref_item_update_summary">Builds zwischen Veröffentlichungen holen</string>
+
+  <string name="checking_title">Überprüfung</string>
+  <string name="enable_relay_toself_title">Zwischenstation-Einladungen an sich selbst aktivieren</string>
+  <string name="phone_state_rationale">Einige Smartphones können SMS-„Daten“-Nachrichten austauschen. CrossWords will Ihnen diese Option anbieten, braucht dazu aber Informationen über Ihr Gerät (um zu wissen, ob es ein Telefon ist und falls ja, was für eines).
+\n
+\nWenn Ihr Gerät keine Daten-SMS senden kann (z. B. weil es kein Telefon ist) oder Sie nie über SMS spielen wollen (z. B. weil für jede Nachricht eine Gebühr anfällt), können Sie diese Berechtigung dauerhaft ablehnen.</string>
+
+  <string name="phone_lookup_rationale">Für eine Revanchepartie über SMS benötigt CrossWords die Berechtigung, auf Ihre Telefonnummer zuzugreifen.</string>
+
+  <string name="phone_lookup_rationale_drop">Revanchepartien über SMS sind ohne diese Berechtigung nicht möglich.</string>
+  <string name="phone_lookup_rationale_others">Ohne diese Berechtigung wird die Revanche fortgesetzt, aber es wird eine Partie erzeugt, die nicht über SMS gespielt werden kann.</string>
+
+  <string name="contacts_rationale">CrossWords will auf Ihre Kontakte zugreifen, um Namen zu Telefonnumern anzuzeigen, die Ihnen Einladungen über SMS schicken. Wenn Sie diese Berechtigung nicht erteilen, können Sie trotzdem Einladungen empfangen, aber es wird nur die Telefonnummer des Absenders angezeigt.</string>
+
+  <string name="move_dict_rationale">Das Speichern einer Wortliste im Download-Bereich benötigt eine Berechtigung.</string>
+
+  <string name="remove_sms">SMS entfernen</string>
+  <string name="button_ask_again">Erneut fragen</string>
+  <string name="sms_send_failed">SMS-Versand fehlgeschlagen</string>
+  <string name="button_skip">Überspringen</string>
+
+  <string name="perms_rationale_title">Android-Berechtigungen</string>
+  <string name="toast_no_permission">Berechtigung nicht erteilt</string>
+
+</resources>
