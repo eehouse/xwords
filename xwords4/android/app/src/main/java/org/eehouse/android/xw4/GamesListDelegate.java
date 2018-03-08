@@ -2476,6 +2476,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void tryStartsFromIntent( Intent intent )
     {
+        Log.d( TAG, "tryStartsFromIntent(extras={%s})", DbgUtils.extrasToString( intent ) );
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
