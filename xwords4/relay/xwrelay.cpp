@@ -691,12 +691,14 @@ send_msg_via_udp( const AddrInfo* addr, AddrInfo::ClientToken clientToken,
         uint32_t asNetTok = htonl(clientToken);
         ssize_t nSent = send_via_udp( addr, packetIDP, XWPDEV_MSG, &asNetTok, 
                                       sizeof(asNetTok), buf, bufLen, NULL );
-        logf( XW_LOGINFO, "%s: sent %d bytes (plus header) on UDP socket, "
-              "token=%x(%d)", __func__, bufLen, clientToken, 
-              clientToken );
         result = 0 < nSent;
-        logf( XW_LOGINFO, "%s()=>%d", __func__, result );
+        if (result) {
+            logf( XW_LOGINFO, "%s: sent %d bytes (plus header) on UDP socket, "
+                  "token=%x(%d)", __func__, bufLen, clientToken,
+                  clientToken );
+        }
     }
+    // logf( XW_LOGINFO, "%s()=>%d", __func__, result );
     return result;
 }
 
