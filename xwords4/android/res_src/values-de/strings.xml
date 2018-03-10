@@ -1147,12 +1147,12 @@
 
     <plurals name="strd_remains_header_fmt">
 	<item quantity="one">Noch %1$d Spielsteine im Säckchen.</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
     <plurals name="strd_remains_expl_fmt">
 	<item quantity="one">Noch %1$d Spielsteine im Säckchen und den nicht gezeigten Ablagen:
 \n</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
 
     <string name="peek_other">Spielsteine ansehen wenn nicht am Zug</string>
@@ -1177,7 +1177,7 @@
 
     <string name="not_again_newfrom">Eine neue Partie erzeugen, die bereit zum Spielen ist, mit allen Einstellungen aus dieser Partie. Das heißt, diese Partie als Vorlage verwenden.</string>
 
-    <string name="about_vers_fmt"></string>
+    <string name="about_vers_fmt">CrossWords für Android, Version %1$s, Rev. %2$s, Build-Datum %3$s.</string>
     <string name="bt_pick_addall_button">Alle gepaarten hinzufügen</string>
       <string name="bt_pair_settings">Weitere paaren</string>
 
@@ -1289,4 +1289,8 @@
   <string name="perms_rationale_title">Android-Berechtigungen</string>
   <string name="toast_no_permission">Berechtigung nicht erteilt</string>
 
-</resources>
+<string name="bt_pick_clear_button">Markierte entfernen</string>
+    <string name="slmenu_clear_sel">Ausgewählte löschen</string>
+    <string name="slmenu_select_all">Alle auswählen</string>
+    <string name="slmenu_deselect_all">Auswahl aufheben</string>
+    </resources>
