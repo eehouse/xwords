@@ -125,7 +125,6 @@
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_enable_nfc_toself">key_enable_nfc_toself</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
-  <string name="key_enable_relay_toself">key_enable_relay_toself</string>
   <string name="key_ignore_gcm">key_ignore_gcm</string>
   <string name="key_show_gcm">key_show_gcm</string>
   <string name="key_nag_intervals">key_nag_intervals</string>

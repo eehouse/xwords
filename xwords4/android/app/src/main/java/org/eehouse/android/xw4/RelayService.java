@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -267,51 +266,16 @@ public class RelayService extends XWService
     {
         Log.d( TAG, "receiveInvitation: got nli from %d: %s", srcDevID,
                nli.toString() );
-        if ( checkNotDupe( nli ) ) {
-            makeOrNotify( nli );
+        if ( !handleInvitation( nli, null, DictFetchOwner.OWNER_RELAY ) ) {
+            Log.d( TAG, "handleInvitation() failed" );
         }
     }
 
-    private void makeOrNotify( NetLaunchInfo nli )
+    @Override
+    void postNotification( String device, int gameID, long rowid )
     {
-        if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-            makeGame( nli );
-        } else {
-            Intent intent = MultiService
-                .makeMissingDictIntent( this, nli,
-                                        DictFetchOwner.OWNER_RELAY );
-            MultiService.postMissingDictNotification( this, intent,
-                                                      nli.gameID() );
-        }
-    }
-
-    private void makeGame( NetLaunchInfo nli )
-    {
-        long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
-        if ( (null == rowids || 0 == rowids.length)
-             || XWPrefs.getRelayInviteToSelfEnabled( this )) {
-
-            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-                long rowid = GameUtils.makeNewMultiGame( this, nli,
-                                                         new RelayMsgSink(),
-                                                         getUtilCtxt() );
-                if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-                    if ( null != nli.gameName && 0 < nli.gameName.length() ) {
-                        DBUtils.setName( this, rowid, nli.gameName );
-                    }
-                    String body = LocUtils.getString( this,
-                                                      R.string.new_relay_body );
-                    GameUtils.postInvitedNotification( this, nli.gameID(), body,
-                                                       rowid );
-                }
-            } else {
-                Intent intent = MultiService
-                    .makeMissingDictIntent( this, nli,
-                                            DictFetchOwner.OWNER_RELAY );
-                MultiService.postMissingDictNotification( this, intent,
-                                                          nli.gameID() );
-            }
-        }
+        String body = LocUtils.getString( this, R.string.new_relay_body );
+        GameUtils.postInvitedNotification( this, gameID, body, rowid );
     }
 
     // Exists to get incoming data onto the main thread
@@ -1268,19 +1232,18 @@ public class RelayService extends XWService
 
     }
 
-    private static class AsyncSender extends AsyncTask<Void, Void, Void> {
+    private static class AsyncSender extends Thread {
         private Context m_context;
         private HashMap<String,ArrayList<byte[]>> m_msgHash;
 
-        public AsyncSender( Context context,
-                            HashMap<String,ArrayList<byte[]>> msgHash )
+        AsyncSender( Context context, HashMap<String, ArrayList<byte[]>> msgHash )
         {
             m_context = context;
             m_msgHash = msgHash;
         }
 
         @Override
-        protected Void doInBackground( Void... ignored )
+        public void run()
         {
             // format: total msg lenth: 2
             //         number-of-relayIDs: 2
@@ -1327,9 +1290,9 @@ public class RelayService extends XWService
                     }
                     msgLen += thisLen;
                 }
+
                 // Now open a real socket, write size and proto, and
                 // copy in the formatted buffer
-
                 Socket socket = NetUtils.makeProxySocket( m_context, 8000 );
                 if ( null != socket ) {
                     DataOutputStream outStream =
@@ -1345,15 +1308,14 @@ public class RelayService extends XWService
             } catch ( java.io.IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
-            return null;
-        } // doInBackground
+        } // run
     }
 
     private static void sendToRelay( Context context,
                                      HashMap<String,ArrayList<byte[]>> msgHash )
     {
         if ( null != msgHash ) {
-            new AsyncSender( context, msgHash ).execute();
+            new AsyncSender( context, msgHash ).start();
         } else {
             Log.w( TAG, "sendToRelay: null msgs" );
         }

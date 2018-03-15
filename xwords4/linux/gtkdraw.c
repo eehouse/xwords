@@ -1460,8 +1460,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
     dctx->drawing_area = drawing_area;
     dctx->globals = globals;
 
-    GdkWindow* window = gtk_widget_get_window(drawing_area);
-    XP_ASSERT( !!window );
+    XP_ASSERT( !!gtk_widget_get_window(drawing_area) );
 #ifdef USE_CAIRO
     /* dctx->cairo = gdk_cairo_create( window ); */
     /* XP_LOGF( "dctx->cairo=%p", dctx->cairo ); */
@@ -1514,6 +1513,7 @@ removeSurface( GtkDrawCtx* dctx )
     dctx->surface = NULL;
 }
 
+#ifdef DEBUG
 static cairo_status_t
 write_func( void *closure, const unsigned char *data,
             unsigned int length )
@@ -1522,16 +1522,19 @@ write_func( void *closure, const unsigned char *data,
     stream_putBytes( stream, data, length );
     return CAIRO_STATUS_SUCCESS;
 }
+#endif
 
 void
-getImage( GtkDrawCtx* dctx, XWStreamCtxt* stream )
+getImage( GtkDrawCtx* XP_UNUSED_DBG(dctx), XWStreamCtxt* XP_UNUSED_DBG(stream) )
 {
     LOG_FUNC();
     XP_ASSERT( !!dctx->surface );
+#ifdef DEBUG
     cairo_status_t status =
         cairo_surface_write_to_png_stream( dctx->surface,
                                            write_func, stream );
     XP_ASSERT( CAIRO_STATUS_SUCCESS == status );
+#endif
 }
 
 void

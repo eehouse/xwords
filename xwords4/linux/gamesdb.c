@@ -31,8 +31,8 @@ static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                            int len );
 #ifdef DEBUG
 static char* sqliteErr2str( int err );
-static void assertPrintResult( sqlite3* pDb, int result, int expect );
 #endif
+static void assertPrintResult( sqlite3* pDb, int result, int expect );
 
 sqlite3* 
 openGamesDB( const char* dbName )
@@ -590,17 +590,15 @@ sqliteErr2str( int err )
     }
         return "<unknown>";
 }
+#endif
 
 static void
-assertPrintResult( sqlite3* pDb, int result, int expect )
+assertPrintResult( sqlite3* pDb, int XP_UNUSED_DBG(result), int expect )
 {
     int code = sqlite3_errcode( pDb );
     XP_ASSERT( code == result ); /* do I need to pass it? */
     if ( code != expect ) {
-        const char* msg = sqlite3_errmsg( pDb );
-        XP_LOGF( "sqlite3 error: %s", msg );
+        XP_LOGF( "sqlite3 error: %s", sqlite3_errmsg( pDb ) );
         XP_ASSERT(0);
     }
 }
-
-#endif

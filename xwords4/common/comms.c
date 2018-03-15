@@ -2704,7 +2704,7 @@ logAddrs( const CommsCtxt* comms, const char* caller )
 #endif
 
 static void
-augmentChannelAddr( CommsCtxt* comms, AddressRecord * const rec, 
+augmentChannelAddr( CommsCtxt* XP_UNUSED_DBG(comms), AddressRecord * const rec,
                     const CommsAddrRec* addr, XWHostID hostID )
 {
     if ( !!addr ) {

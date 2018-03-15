@@ -2177,6 +2177,7 @@ board_requestHint( BoardCtxt* board,
             board_popTimerSave( board );
 
             if ( searchComplete && canMove ) {
+                juggleMoveIfDebug( &newMove );
                 model_makeTurnFromMoveInfo( model, selPlayer, &newMove);
             } else {
                 result = XP_FALSE;

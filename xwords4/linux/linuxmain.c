@@ -1242,7 +1242,7 @@ linux_reset( void* closure )
 #endif
 
 XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
+linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo),
             const CommsAddrRec* addrRec, CommsConnType conType, XP_U32 gameID, 
             void* closure )
 {

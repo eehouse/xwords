@@ -504,20 +504,7 @@ public class SMSService extends XWService {
             switch( cmd ) {
             case INVITE:
                 String nliData = dis.readUTF();
-                NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
-                if ( nli.isValid() && checkNotDupe( nli ) ) {
-                    if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-                        makeForInvite( phone, nli );
-                    } else {
-                        Intent intent = MultiService
-                            .makeMissingDictIntent( this, nli,
-                                                    DictFetchOwner.OWNER_SMS );
-                        MultiService.postMissingDictNotification( this, intent,
-                                                                  nli.gameID() );
-                    }
-                } else {
-                    Log.w( TAG, "invalid nli from: %s", nliData );
-                }
+                makeForInvite( phone, new NetLaunchInfo( this, nliData ) );
                 break;
             case DATA:
                 int gameID = dis.readInt();
@@ -632,7 +619,8 @@ public class SMSService extends XWService {
         return success;
     }
 
-    private void postNotification( String phone, int gameID, long rowid )
+    @Override
+    protected void postNotification( String phone, int gameID, long rowid )
     {
         String owner = Utils.phoneToContact( this, phone, true );
         String body = LocUtils.getString( this, R.string.new_name_body_fmt,
@@ -642,11 +630,9 @@ public class SMSService extends XWService {
 
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
-        long rowid = GameUtils.makeNewMultiGame( this, nli,
-                                                 new SMSMsgSink( this ),
-                                                 getUtilCtxt() );
-        postNotification( phone, nli.gameID(), rowid );
-        ackInvite( phone, nli.gameID() );
+        if ( handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS ) ) {
+            ackInvite( phone, nli.gameID() );
+        }
     }
 
     private PendingIntent makeStatusIntent( String msg )

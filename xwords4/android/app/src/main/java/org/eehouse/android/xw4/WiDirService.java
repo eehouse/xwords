@@ -762,17 +762,16 @@ public class WiDirService extends XWService {
         String nliData = intent.getStringExtra( KEY_NLI );
         NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
         String returnMac = intent.getStringExtra( KEY_SRC );
-        if ( checkNotDupe( nli ) ) {
-            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-                makeGame( nli, returnMac );
-            } else {
-                Intent dictIntent = MultiService
-                    .makeMissingDictIntent( this, nli,
-                                            DictFetchOwner.OWNER_P2P );
-                MultiService.postMissingDictNotification( this, dictIntent,
-                                                          nli.gameID() );
-            }
+
+        if ( !handleInvitation( nli, returnMac, DictFetchOwner.OWNER_P2P ) ) {
+            Log.d( TAG, "handleInvitation() failed" );
         }
+    }
+
+    @Override
+    void postNotification( String device, int gameID, long rowid )
+    {
+        Log.e( TAG, "postNotification() doing nothing" );
     }
 
     private void handleGameGone( Intent intent )

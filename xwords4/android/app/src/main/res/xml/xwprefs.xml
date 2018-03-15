@@ -393,11 +393,6 @@
     <PreferenceScreen android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
                       >
-      <CheckBoxPreference android:key="@string/key_enable_relay_toself"
-                          android:title="@string/enable_relay_toself_title"
-                          android:summary="@string/enable_relay_toself_summary"
-                          android:defaultValue="false"
-                          />
       <CheckBoxPreference android:key="@string/key_ignore_gcm"
                           android:title="@string/ignore_gcm_title"
                           android:summary="@string/ignore_gcm_summary"

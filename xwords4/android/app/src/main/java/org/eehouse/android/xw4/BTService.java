@@ -1095,56 +1095,25 @@ public class BTService extends XWService {
         m_sender = null;
     }
 
+    @Override
+    void postNotification( String device, int gameID, long rowid )
+    {
+        String body = LocUtils.getString( this, R.string.new_bt_body_fmt,
+                                          device );
+
+        GameUtils.postInvitedNotification( this, gameID, body, rowid );
+
+        postEvent( MultiEvent.BT_GAME_CREATED, rowid );
+    }
+
     private BTCmd makeOrNotify( NetLaunchInfo nli, String btName,
                                 String btAddr )
     {
         BTCmd result;
-        if ( checkNotDupe( nli ) ) {
-            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-                result = makeGame( nli, btName, btAddr );
-            } else {
-                Intent intent = MultiService
-                    .makeMissingDictIntent( this, nli,
-                                            DictFetchOwner.OWNER_BT );
-                // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
-                MultiService.postMissingDictNotification( this, intent,
-                                                          nli.gameID() );
-                result = BTCmd.INVITE_ACCPT; // ???
-            }
+        if ( handleInvitation( nli, btName, DictFetchOwner.OWNER_BT ) ) {
+            result = BTCmd.INVITE_ACCPT;
         } else {
             result = BTCmd.INVITE_DUP_INVITE; // dupe of rematch
-        }
-        return result;
-    }
-
-    private BTCmd makeGame( NetLaunchInfo nli, String sender,
-                            String senderAddress )
-    {
-        BTCmd result;
-        long[] rowids = DBUtils.getRowIDsFor( BTService.this, nli.gameID() );
-        if ( null == rowids || 0 == rowids.length ) {
-            CommsAddrRec addr = nli.makeAddrRec( BTService.this );
-            long rowid = GameUtils.makeNewMultiGame( BTService.this, nli,
-                                                     m_btMsgSink,
-                                                     getUtilCtxt() );
-            if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-                result = BTCmd.INVITE_FAILED;
-            } else {
-                if ( null != nli.gameName && 0 < nli.gameName.length() ) {
-                    DBUtils.setName( BTService.this, rowid, nli.gameName );
-                }
-                result = BTCmd.INVITE_ACCPT;
-                String body = LocUtils.getString( BTService.this,
-                                                  R.string.new_bt_body_fmt,
-                                                  sender );
-
-                GameUtils.postInvitedNotification( this, nli.gameID(), body,
-                                                   rowid );
-
-                postEvent( MultiEvent.BT_GAME_CREATED, rowid );
-            }
-        } else {
-            result = BTCmd.INVITE_DUPID;
         }
         return result;
     }

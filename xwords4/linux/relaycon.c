@@ -480,8 +480,9 @@ relayThread( void* arg )
         while ( !storage->relayTaskList ) {
             pthread_cond_wait( &storage->relayCondVar, &storage->relayMutex );
         }
-
+#ifdef DEBUG
         int len = g_slist_length( storage->relayTaskList );
+#endif
         gchar* strs = listTasks( storage->relayTaskList );
         GSList* head = storage->relayTaskList;
         storage->relayTaskList = g_slist_remove_link( storage->relayTaskList,
@@ -740,12 +741,16 @@ relaycon_cleanup( LaunchParams* params )
     RelayConStorage* storage = (RelayConStorage*)params->relayConStorage;
     if ( storage->params->useHTTP ) {
         pthread_mutex_lock( &storage->relayMutex );
+#ifdef DEBUG
         int nRelayTasks = g_slist_length( storage->relayTaskList );
+#endif
         gchar* taskStrs = listTasks( storage->relayTaskList );
         pthread_mutex_unlock( &storage->relayMutex );
 
         pthread_mutex_lock( &storage->gotDataMutex );
+#ifdef DEBUG
         int nDataTasks = g_slist_length( storage->gotDataTaskList );
+#endif
         gchar* gotStrs = listTasks( storage->gotDataTaskList );
         pthread_mutex_unlock( &storage->gotDataMutex );
 
@@ -905,17 +910,16 @@ onGotQueryData( RelayTask* task )
         if ( !!reply ) {
             CommsAddrRec addr = {0};
             addr_addType( &addr, COMMS_CONN_RELAY );
-
+#ifdef DEBUG
             GList* ids = g_hash_table_get_keys( task->u.query.map );
-            const char* xxx = ids->data;
-
+#endif
             json_object* jMsgs;
             if ( json_object_object_get_ex( reply, "msgs", &jMsgs ) ) {
                 /* Currently there's an array of arrays for each relayID (value) */
                 XP_LOGF( "%s: got result of len %d", __func__, json_object_object_length(jMsgs) );
                 XP_ASSERT( json_object_object_length(jMsgs) <= 1 );
                 json_object_object_foreach(jMsgs, relayID, arrOfArrOfMoves) {
-                    XP_ASSERT( 0 == strcmp( relayID, xxx ) );
+                    XP_ASSERT( 0 == strcmp( relayID, ids->data ) );
                     int len1 = json_object_array_length( arrOfArrOfMoves );
                     if ( len1 > 0 ) {
                         sqlite3_int64 rowid = *(sqlite3_int64*)g_hash_table_lookup( task->u.query.map, relayID );

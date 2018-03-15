@@ -1257,7 +1257,6 @@ public class GameUtils {
 
     private static class ResendTask extends AsyncTask<Void, Void, Void> {
         private Context m_context;
-        private HashMap<Long,CommsConnTypeSet> m_games;
         private ResendDoneProc m_doneProc;
         private CommsConnType m_filter;
         private int m_nSent = 0;
@@ -1273,15 +1272,16 @@ public class GameUtils {
         @Override
         protected Void doInBackground( Void... unused )
         {
-            m_games = DBUtils.getGamesWithSendsPending( m_context );
+            HashMap<Long,CommsConnTypeSet> games
+                = DBUtils.getGamesWithSendsPending( m_context );
 
-            Iterator<Long> iter = m_games.keySet().iterator();
+            Iterator<Long> iter = games.keySet().iterator();
             while ( iter.hasNext() ) {
                 long rowid = iter.next();
 
                 // If we're looking for a specific type, check
                 if ( null != m_filter ) {
-                    CommsConnTypeSet gameSet = m_games.get( rowid );
+                    CommsConnTypeSet gameSet = games.get( rowid );
                     if ( gameSet != null && ! gameSet.contains( m_filter ) ) {
                         continue;
                     }

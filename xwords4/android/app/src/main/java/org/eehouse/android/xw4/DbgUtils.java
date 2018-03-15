@@ -20,18 +20,24 @@
 
 package org.eehouse.android.xw4;
 
-
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.os.Bundle;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.text.format.Time;
+
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-import java.util.Formatter;
 
 public class DbgUtils {
     private static final String TAG = DbgUtils.class.getSimpleName();
@@ -117,21 +123,17 @@ public class DbgUtils {
         }
     }
 
-    // public static void printIntent( Intent intent )
-    // {
-    //     if ( s_doLog ) {
-    //         Bundle bundle = intent.getExtras();
-    //         ArrayList<String> al = new ArrayList<String>();
-    //         if ( null != bundle ) {
-    //             Set<String> keys = bundle.keySet();
-    //             Iterator<String> iter = keys.iterator();
-    //             while ( iter.hasNext() ) {
-    //                 al.add( iter.next() );
-    //             }
-    //         }
-    //         DbgUtils.logf( "intent extras: %s", TextUtils.join( ", ", al ) );
-    //     }
-    // }
+    static String extrasToString( Intent intent )
+    {
+        Bundle bundle = intent.getExtras();
+        ArrayList<String> al = new ArrayList<String>();
+        if ( null != bundle ) {
+            for ( String key : bundle.keySet() ) {
+                al.add( key + ":" + bundle.get(key) );
+            }
+        }
+        return TextUtils.join( ", ", al );
+    }
 
     public static void dumpCursor( Cursor cursor )
     {

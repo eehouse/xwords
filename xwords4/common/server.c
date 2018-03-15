@@ -929,6 +929,7 @@ makeRobotMove( ServerCtxt* server )
             /* if canMove is false, this is a fake move, a pass */
 
             if ( canMove || NPASSES_OK(server) ) {
+                juggleMoveIfDebug( &newMove );
                 model_makeTurnFromMoveInfo( model, turn, &newMove );
                 XP_LOGF( "%s: robot making %d tile move", __func__, newMove.nTiles );
 
@@ -1832,10 +1833,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 {
     XP_Bool ask;
     XP_U16 nSoFar = resultTiles->nTiles;
-    XP_U16 nLeft;
     PoolContext* pool = server->pool;
-    TrayTileSet oneTile;
-    PickInfo pi;
     const XP_UCHAR* curTray[MAX_TRAY_TILES];
 #ifdef FEATURE_TRAY_EDIT
     DictionaryCtxt* dict = model_getDictionary( server->vol.model );
@@ -1849,22 +1847,22 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     ask = XP_FALSE;
 #endif
     
-    nLeft = pool_getNTilesLeft( pool );
+    XP_U16 nLeft = pool_getNTilesLeft( pool );
     if ( nLeft < nToFetch ) {
         nToFetch = nLeft;
     }
 
-    oneTile.nTiles = 1;
-
-    pi.nTotal = nToFetch;
-    pi.thisPick = 0;
-    pi.curTiles = curTray;
+    TrayTileSet oneTile = {.nTiles = 1};
+    PickInfo pi = { .nTotal = nToFetch,
+                    .thisPick = 0,
+                    .curTiles = curTray,
+    };
 
     curTrayAsTexts( server, playerNum, tradedTiles, &pi.nCurTiles, curTray );
 
 #ifdef FEATURE_TRAY_EDIT        /* good compiler would note ask==0, but... */
     /* First ask until cancelled */
-    for ( ; ask && nSoFar < nToFetch;  ) {
+    while ( ask && nSoFar < nToFetch ) {
         const XP_UCHAR* texts[MAX_UNIQUE_TILES];
         Tile tiles[MAX_UNIQUE_TILES];
         XP_S16 chosen;
@@ -1901,12 +1899,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     /* Then fetch the rest without asking */
     if ( nSoFar < nToFetch ) {
         XP_U8 nLeft = nToFetch - nSoFar;
-        Tile tiles[MAX_TRAY_TILES];
-
-        pool_requestTiles( pool, tiles, &nLeft );
-
-        XP_MEMCPY( &resultTiles->tiles[nSoFar], tiles, 
-                   nLeft * sizeof(resultTiles->tiles[0]) );
+        pool_requestTiles( pool, &resultTiles->tiles[nSoFar], &nLeft );
         nSoFar += nLeft;
     }
    
@@ -2462,8 +2455,9 @@ server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
        if client, send to server.  */
     XP_ASSERT( turn >= 0 );
 
-    nTilesMoved = model_getCurrentMoveCount( model, turn );
     pool_removeTiles( server->pool, &newTiles );
+
+    nTilesMoved = model_getCurrentMoveCount( model, turn );
     fetchTiles( server, turn, nTilesMoved, NULL, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
