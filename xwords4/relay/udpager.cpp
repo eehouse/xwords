@@ -90,18 +90,23 @@ UDPAger::Refresh( const AddrInfo* addr )
 bool
 UDPAger::IsCurrent( const AddrInfo* addr )
 {
+    bool result;
+#if 0
+    result = false;
+#else
     const AddrInfo::AddrUnion* saddr = addr->saddr();
     uint32_t readWhen = addr->created();
 
     MutexLock ml( &m_addrTimeMapLock );
-    map<AddrInfo::AddrUnion, AgePair*>::const_iterator iter = 
-        m_addrTimeMap.find( *saddr ); 
+    map<AddrInfo::AddrUnion, AgePair*>::const_iterator iter =
+        m_addrTimeMap.find( *saddr );
     assert( m_addrTimeMap.end() != iter );
 
     AgePair* ap = iter->second;
-    bool result = readWhen >= ap->created();
+    result = readWhen >= ap->created();
+#endif
     if ( !result ) {
-        logf( XW_LOGINFO, "%s() => %d", __func__, result );
+        logf( XW_LOGINFO, "%s() => false", __func__ );
     }
     return result;
  }
