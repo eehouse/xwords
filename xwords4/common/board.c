@@ -3619,6 +3619,9 @@ replaceLastTile( BoardCtxt* board )
         XP_Bool isVertical;
         XP_Bool directionKnown = 
             model_getCurrentMoveIsVertical( board->model, turn, &isVertical );
+        if ( directionKnown && board->isFlipped ) {
+            isVertical = !isVertical;
+        }
 
         index = -1;
         model_getCurrentMoveTile( board->model, board->selPlayer, &index,
