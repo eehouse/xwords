@@ -340,8 +340,11 @@ que connecti via el repetidor.</string>
 	  <item quantity="other">Queden %1$d fitxes al sac.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-      <item quantity="other">%1$d fitxes romanents al sac i als faristols ocults:\n</item>
-    </plurals>
+	<item quantity="one">Hi ha %1$d fitxa romanent als faristols ocults:
+\n</item>
+	<item quantity="other">Hi ha %1$d fitxes romanents als faristols ocults:
+\n</item>
+</plurals>
 
     <string name="confirm_undo_last">Esteu segur que voleu desfer l\'últim torn enviat? (No hi ha opció per a refer-lo.)</string>
 
@@ -1060,8 +1063,8 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
   <string name="not_again_clip_expl_fmt">L\'opció «%1$s» copia un URL d\'invitació al porta-retalls. Enganxeu-lo a l\'aplicació desitjada i envieu-lo al vostre amic.</string>
 <string name="notify_chat_body_fmt">%1$s: %2$s</string>
     <plurals name="resent_msgs_fmt">
-	<item quantity="one">S\'ha enviat un missatge</item>
-	<item quantity="other">S\'han enviat %1$s missatges</item>
+	<item quantity="one">S\'ha tornat a enviar una jugada</item>
+	<item quantity="other">S\'han tornat a enviar %1$s jugades</item>
 </plurals>
 
   <string name="confirm_clear_chat">Esteu segur de voler suprimir tot l\'historial de conversa d\'aquesta partida?\n\n(Aquesta acció no és pot desfer.)</string>
