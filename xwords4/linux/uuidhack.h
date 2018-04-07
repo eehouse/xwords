@@ -20,6 +20,6 @@
 #ifndef _UUIDHACK_H_
 #define _UUIDHACK_H_
 
-void str2uuid( const char const* str, void* uuid, size_t uuidSize );
+void str2uuid( const char* str, void* uuid, size_t uuidSize );
 
 #endif
