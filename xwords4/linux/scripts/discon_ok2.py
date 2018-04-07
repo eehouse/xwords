@@ -272,7 +272,11 @@ class Device():
     def send_dead(self):
         JSON = json.dumps([{'relayID': self.relayID, 'seed': self.relaySeed}])
         url = 'http://%s/xw4/relay.py/kill' % (self.args.HOST)
-        req = requests.get(url, params = {'params' : JSON})
+        params = {'params' : JSON}
+        try:
+            req = requests.get(url, params = params) # failing
+        except requests.exceptions.ConnectionError:
+            print('got exception sending to', url, params, '; is relay.py running as apache module?')
 
     def getTilesCount(self):
         return {'index': self.indx, 'nTilesLeft': self.nTilesLeft,
