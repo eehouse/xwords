@@ -369,8 +369,14 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
         /* Assert not needed for long */
         XP_ASSERT( hash == stack_getHash( model->vol.stack, XP_TRUE )
                    || hash == stack_getHash( model->vol.stack, XP_FALSE ) );
+    } else {
+        XP_ASSERT( nEntries == stack_getNEntries(stack) );
     }
 
+#ifdef DEBUG_HASHING
+    XP_LOGF( "%s(%X) => %s (nEntries=%d)", __func__, hash, boolToStr(found),
+             nEntries );
+#endif
     return found;
 }
 

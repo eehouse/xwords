@@ -2119,7 +2119,7 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
         XP_ASSERT( version == server->nv.streamVersion );
         XP_U32 hash = model_getHash( server->vol.model );
 #ifdef DEBUG_HASHING
-        XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
+        XP_LOGF( "%s: adding hash %X", __func__, (unsigned int)hash );
 #endif
         stream_putU32( stream, hash );
     }
@@ -2164,6 +2164,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
               TrayTileSet* newTiles, TrayTileSet* tradedTiles, 
               XP_Bool* legalP )
 {
+    LOG_FUNC();
     XP_Bool success = XP_TRUE;
     XP_Bool legalMove = XP_TRUE;
     XP_Bool isTrade;
@@ -2171,15 +2172,17 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
-        success = model_hashMatches( server->vol.model, hashReceived )
-            || model_popToHash( server->vol.model, hashReceived, server->pool );
-        // XP_ASSERT( success );   /* I need to understand when this can fail */
+        success = model_hashMatches( server->vol.model, hashReceived );
+        if ( !success ) {
+            success = model_popToHash( server->vol.model, hashReceived, server->pool );
+        }
 #ifdef DEBUG_HASHING
         if ( success ) {
             XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
         } else {
             XP_LOGF( "%s: hash mismatch: %X not found",__func__, hashReceived );
         }
+        // XP_ASSERT( success );   /* I need to understand when this can fail */
 #endif
     }
 #endif
