@@ -9,6 +9,7 @@ import argparse, datetime, random, signal, subprocess, time
 # APP_NEW_PARAMS=""
 # NGAMES = 1
 g_UDP_PCT_START = 100
+gDeadLaunches = 0
 # UDP_PCT_INCR=10
 # UPGRADE_ODDS=""
 # NROOMS=""
@@ -104,10 +105,10 @@ g_NAMES = [None, 'Brynn', 'Ariela', 'Kati', 'Eric']
 
 def pick_ndevs(args):
     RNUM = random.randint(0, 99)
-    if RNUM > 90 and args.MAXDEVS >= 4:
-         NDEVS = 4
-    elif RNUM > 75 and args.MAXDEVS >= 3:
-         NDEVS = 3
+    if RNUM > 95 and args.MAXDEVS >= 4:
+        NDEVS = 4
+    elif RNUM > 90 and args.MAXDEVS >= 3:
+        NDEVS = 3
     else:
         NDEVS = 2
     if NDEVS < args.MINDEVS:
@@ -259,9 +260,11 @@ class Device():
         self.check_game()
 
     def handleAllDone(self):
+        global gDeadLaunches
         if self.allDone:
             self.moveFiles()
             self.send_dead()
+            gDeadLaunches += self.launchCount
         return self.allDone
 
     def moveFiles(self):
@@ -635,6 +638,7 @@ def build_cmds(args):
 # }
 
 def summarizeTileCounts(devs, endTime, state):
+    global gDeadLaunches
     shouldGoOn = True
     data = [dev.getTilesCount() for dev in devs]
     nDevs = len(data)
@@ -660,7 +664,7 @@ def summarizeTileCounts(devs, endTime, state):
         games[-1].append('{:0{width}d}'.format(datum['index'], width=colWidth))
     fmtData[0]['data'] = ['+'.join(game) for game in games]
 
-    nLaunches = 0
+    nLaunches = gDeadLaunches
     for datum in data:
         launchCount = datum['launchCount']
         nLaunches += launchCount
