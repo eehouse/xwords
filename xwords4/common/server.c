@@ -1987,10 +1987,15 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     XP_Bool moreToDo = XP_FALSE;
 
     if ( nxtTurn == PICK_NEXT ) {
-        XP_ASSERT( currentTurn >= 0 );
-        playerTilesLeft = model_getNumTilesTotal(server->vol.model, 
-                                                 currentTurn);
-        nxtTurn = (currentTurn+1) % nPlayers;
+        XP_ASSERT( server->nv.gameState == XWSTATE_INTURN );
+        if ( currentTurn >= 0 ) {
+            // XP_ASSERT( currentTurn >= 0 ); /* fired! */
+            playerTilesLeft = model_getNumTilesTotal( server->vol.model,
+                                                      currentTurn );
+            nxtTurn = (currentTurn+1) % nPlayers;
+        } else {
+            XP_LOGF( "%s(): turn == -1 so dropping", __func__ );
+        }
     } else {
         /* We're doing an undo, and so won't bother figuring out who the
            previous turn was or how many tiles he had: it's a sure thing he
@@ -2011,7 +2016,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
         if ( server->vol.gi->serverRole != SERVER_ISCLIENT ) {
             SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME );
             moreToDo = XP_TRUE;
-        } else {
+        } else if ( currentTurn >= 0 ) {
             XP_LOGF( "%s: Doing nothing; waiting for server to end game", 
                      __func__ );
             setTurn( server, -1 );
@@ -2375,7 +2380,8 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     XWStreamCtxt* mvStream = NULL;
     XWStreamCtxt* wordsStream = NULL;
 
-    moveOk = XWSTATE_INTURN == server->nv.gameState;
+    moveOk = XWSTATE_INTURN == server->nv.gameState
+        && server->nv.currentTurn >= 0;
     if ( moveOk ) {
         moveOk = readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
                                &tradedTiles, &isLegal ); /* modifies model */
