@@ -221,27 +221,28 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
     XP_U16 ii;
     XP_Bool isUTF8 = dict->isUTF8;
     XP_UCHAR* next = faces;
-    const gchar* bytes = (const gchar*)utf8;
+    const gchar* bytesIn = (const gchar*)utf8;
+    const gchar* bytesEnd = bytesIn + nBytes;
 
     for ( ii = 0; ii < nFaces; ++ii ) {
         ptrs[ii] = next;
         if ( isUTF8 ) {
             for ( ; ; ) {
-                gchar* cp = g_utf8_offset_to_pointer( bytes, 1 );
-                size_t len = cp - bytes;
-                XP_MEMCPY( next, bytes, len );
+                gchar* cp = g_utf8_offset_to_pointer( bytesIn, 1 );
+                size_t len = cp - bytesIn;
+                XP_MEMCPY( next, bytesIn, len );
                 next += len;
-                bytes += len;
-                if ( SYNONYM_DELIM != bytes[0] ) {
+                bytesIn += len;
+                if ( bytesIn >= bytesEnd || SYNONYM_DELIM != bytesIn[0] ) {
                     break;
                 }
-                ++bytes;        /* skip delimiter */
+                ++bytesIn;        /* skip delimiter */
                 *next++ = '\0';
             }
         } else {
-            XP_ASSERT( 0 == *bytes );
-            ++bytes;            /* skip empty */
-            *next++ = *bytes++;
+            XP_ASSERT( 0 == *bytesIn );
+            ++bytesIn;            /* skip empty */
+            *next++ = *bytesIn++;
         }
         XP_ASSERT( next < faces + nFaces + nBytes );
         *next++ = '\0';
