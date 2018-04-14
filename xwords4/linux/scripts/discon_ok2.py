@@ -225,7 +225,10 @@ class Device():
         # print('logReaderMain done, wrote lines:', nLines, 'to', self.logPath);
 
     def launch(self):
-        args = [self.app] + [str(p) for p in self.params]
+        args = []
+        if self.args.VALGRIND:
+            args += ['valgrind', '--leak-check=full']
+        args += [self.app] + [str(p) for p in self.params]
         if self.devID: args.extend( ' '.split(self.devID))
         self.launchCount += 1
         # self.logStream = open(self.logPath, flag)
@@ -846,6 +849,9 @@ def mkParser():
 
     parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 0, type = int)
+
+    parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
+                        action = 'store_true')
 
     return parser
 
