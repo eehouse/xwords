@@ -85,12 +85,12 @@ static void writeHeader( XWStreamCtxt* stream, SMS_CMD cmd );
 static void
 lock_queue( LinSMSData* storage )
 {
-    char lock[256];
-    snprintf( lock, sizeof(lock), "%s/%s", storage->myQueue, LOCK_FILE );
+    gchar* lock = g_strdup_printf( "%s/%s", storage->myQueue, LOCK_FILE );
     FILE* fp = fopen( lock, "w" );
     XP_ASSERT( !!fp );
     XP_ASSERT( NULL == storage->lock );
     storage->lock = fp;
+    g_free( lock );
 }
 
 static void
@@ -162,8 +162,7 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
 {
     LOG_FUNC();
     XP_S16 nRead = -1;
-    char path[256];
-    snprintf( path, sizeof(path), "%s/%s", storage->myQueue, name );
+    gchar* path = g_strdup_printf( "%s/%s", storage->myQueue, name );
 
     gchar* contents;
     gsize length;
@@ -173,6 +172,7 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
         g_file_get_contents( path, &contents, &length, NULL );
     XP_ASSERT( success );
     unlink( path );
+    g_free( path );
 
     char phone[32];
     int port;
