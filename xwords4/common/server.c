@@ -2537,7 +2537,7 @@ server_getCurrentTurn( ServerCtxt* server, XP_Bool* isLocal )
 {
     XP_S16 turn = server->nv.currentTurn;
     if ( NULL != isLocal && turn >= 0 ) {
-        *isLocal =  server->vol.gi->players[turn].isLocal;
+        *isLocal = server->vol.gi->players[turn].isLocal;
     }
     return turn;
 } /* server_getCurrentTurn */

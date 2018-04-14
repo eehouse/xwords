@@ -204,7 +204,7 @@ summarize( CommonGlobals* cGlobals )
     const XWGame* game = &cGlobals->game;
     XP_S16 nMoves = model_getNMoves( game->model );
     XP_Bool gameOver = server_getGameIsOver( game->server );
-    XP_Bool isLocal;
+    XP_Bool isLocal = -1;
     XP_S16 turn = server_getCurrentTurn( game->server, &isLocal );
     XP_U32 lastMoveTime = server_getLastMoveTime( game->server );
     XP_U16 seed = 0;

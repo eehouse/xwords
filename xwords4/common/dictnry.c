@@ -75,8 +75,8 @@ p_dict_unref( DictionaryCtxt* dict
 #endif
         pthread_mutex_unlock( &dict->mutex );
         if ( 0 == dict->refCount ) {
-            (*dict->destructor)( dict );
             pthread_mutex_destroy( &dict->mutex );
+            (*dict->destructor)( dict );
         }
     }
 }
