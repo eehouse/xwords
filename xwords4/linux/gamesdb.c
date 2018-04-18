@@ -312,6 +312,18 @@ listGames( sqlite3* pDb )
     return list;
 }
 
+static void
+dataKiller( gpointer data )
+{
+    g_free( data );
+}
+
+void
+freeGamesList( GSList* games )
+{
+    g_slist_free_full( games, dataKiller );
+}
+
 GHashTable*
 getRelayIDsToRowsMap( sqlite3* pDb )
 {

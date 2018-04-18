@@ -2682,6 +2682,9 @@ main( int argc, char** argv )
         freeParams( &mainParams );
     }
 
+    free( longopts );
+    g_slist_free( mainParams.dictDirs );
+
     XP_LOGF( "%s exiting main, returning %d", argv[0], result );
     return result;
 } /* main */

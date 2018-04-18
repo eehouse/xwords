@@ -227,7 +227,9 @@ class Device():
     def launch(self):
         args = []
         if self.args.VALGRIND:
-            args += ['valgrind', '--leak-check=full']
+            args += ['valgrind']
+            # args += ['--leak-check=full']
+            # args += ['--track-origins=yes']
         args += [self.app] + [str(p) for p in self.params]
         if self.devID: args.extend( ' '.split(self.devID))
         self.launchCount += 1

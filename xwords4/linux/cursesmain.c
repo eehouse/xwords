@@ -2069,7 +2069,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                     stream_destroy( stream );
                     stream = NULL;
                 }
-                g_slist_free( games );
+                freeGamesList( games );
             }
                 
         } else if ( !!params->fileName && file_exists( params->fileName ) ) {

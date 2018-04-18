@@ -843,7 +843,7 @@ makeRobotMove( ServerCtxt* server )
     XP_Bool searchComplete;
     XP_S16 turn;
     const TrayTileSet* tileSet;
-    MoveInfo newMove;
+    MoveInfo newMove = {0};
     ModelCtxt* model = server->vol.model;
     CurGameInfo* gi = server->vol.gi;
     XP_Bool timerEnabled = gi->timerEnabled;
