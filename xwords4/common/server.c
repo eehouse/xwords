@@ -1982,7 +1982,7 @@ static void
 nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 {
     XP_U16 nPlayers = server->vol.gi->nPlayers;
-    XP_U16 playerTilesLeft;
+    XP_U16 playerTilesLeft = 0;
     XP_S16 currentTurn = server->nv.currentTurn;
     XP_Bool moreToDo = XP_FALSE;
 
