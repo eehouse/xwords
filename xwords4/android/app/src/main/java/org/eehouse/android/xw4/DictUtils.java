@@ -60,7 +60,17 @@ public class DictUtils {
     }
 
     // keep in sync with loc_names string-array
-    public enum DictLoc { UNKNOWN, BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
+    public enum DictLoc {
+        UNKNOWN,
+        BUILT_IN,
+        INTERNAL,
+        EXTERNAL,
+        DOWNLOAD;
+        public boolean needsStoragePermission()
+        {
+            return this == DOWNLOAD;
+        }
+    };
     public static final String INVITED = "invited";
 
     private static DictAndLoc[] s_dictListCache = null;
