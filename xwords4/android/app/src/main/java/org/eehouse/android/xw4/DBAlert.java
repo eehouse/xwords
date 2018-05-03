@@ -132,7 +132,8 @@ public class DBAlert extends XWDialogFragment {
                                 Log.d( TAG, "null activity..." );
                             }
                         } catch ( IllegalStateException ex ) {
-                            Assert.assertFalse( BuildConfig.DEBUG );
+                            // Assert.assertFalse( BuildConfig.DEBUG );
+                            Log.e( TAG, "got ISE; dropping alert" );
                         }
                     }
                 } );

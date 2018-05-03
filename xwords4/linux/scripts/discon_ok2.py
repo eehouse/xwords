@@ -9,6 +9,7 @@ import argparse, datetime, random, signal, subprocess, time
 # APP_NEW_PARAMS=""
 # NGAMES = 1
 g_UDP_PCT_START = 100
+gDeadLaunches = 0
 # UDP_PCT_INCR=10
 # UPGRADE_ODDS=""
 # NROOMS=""
@@ -104,10 +105,10 @@ g_NAMES = [None, 'Brynn', 'Ariela', 'Kati', 'Eric']
 
 def pick_ndevs(args):
     RNUM = random.randint(0, 99)
-    if RNUM > 90 and args.MAXDEVS >= 4:
-         NDEVS = 4
-    elif RNUM > 75 and args.MAXDEVS >= 3:
-         NDEVS = 3
+    if RNUM > 95 and args.MAXDEVS >= 4:
+        NDEVS = 4
+    elif RNUM > 90 and args.MAXDEVS >= 3:
+        NDEVS = 3
     else:
         NDEVS = 2
     if NDEVS < args.MINDEVS:
@@ -224,7 +225,12 @@ class Device():
         # print('logReaderMain done, wrote lines:', nLines, 'to', self.logPath);
 
     def launch(self):
-        args = [self.app] + [str(p) for p in self.params]
+        args = []
+        if self.args.VALGRIND:
+            args += ['valgrind']
+            # args += ['--leak-check=full']
+            # args += ['--track-origins=yes']
+        args += [self.app] + [str(p) for p in self.params]
         if self.devID: args.extend( ' '.split(self.devID))
         self.launchCount += 1
         # self.logStream = open(self.logPath, flag)
@@ -259,9 +265,11 @@ class Device():
         self.check_game()
 
     def handleAllDone(self):
+        global gDeadLaunches
         if self.allDone:
             self.moveFiles()
             self.send_dead()
+            gDeadLaunches += self.launchCount
         return self.allDone
 
     def moveFiles(self):
@@ -272,7 +280,11 @@ class Device():
     def send_dead(self):
         JSON = json.dumps([{'relayID': self.relayID, 'seed': self.relaySeed}])
         url = 'http://%s/xw4/relay.py/kill' % (self.args.HOST)
-        req = requests.get(url, params = {'params' : JSON})
+        params = {'params' : JSON}
+        try:
+            req = requests.get(url, params = params) # failing
+        except requests.exceptions.ConnectionError:
+            print('got exception sending to', url, params, '; is relay.py running as apache module?')
 
     def getTilesCount(self):
         return {'index': self.indx, 'nTilesLeft': self.nTilesLeft,
@@ -631,6 +643,7 @@ def build_cmds(args):
 # }
 
 def summarizeTileCounts(devs, endTime, state):
+    global gDeadLaunches
     shouldGoOn = True
     data = [dev.getTilesCount() for dev in devs]
     nDevs = len(data)
@@ -656,7 +669,7 @@ def summarizeTileCounts(devs, endTime, state):
         games[-1].append('{:0{width}d}'.format(datum['index'], width=colWidth))
     fmtData[0]['data'] = ['+'.join(game) for game in games]
 
-    nLaunches = 0
+    nLaunches = gDeadLaunches
     for datum in data:
         launchCount = datum['launchCount']
         nLaunches += launchCount
@@ -838,6 +851,9 @@ def mkParser():
 
     parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 0, type = int)
+
+    parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
+                        action = 'store_true')
 
     return parser
 

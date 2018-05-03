@@ -1664,10 +1664,12 @@ onMsgAcked( bool acked, uint32_t packetID, void* data )
 static void
 retrieveMessages( DevID& devID, const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s()", __func__ );
     DBMgr* dbMgr = DBMgr::Get();
     vector<DBMgr::MsgInfo> msgs;
     dbMgr->GetStoredMessages( devID.asRelayID(), msgs );
+
+    logf( XW_LOGINFO, "%s(): found %d msgs for %d", __func__, msgs.size(),
+          devID.asRelayID() );
 
     vector<DBMgr::MsgInfo>::const_iterator iter;
     for ( iter = msgs.begin(); iter != msgs.end(); ++iter ) {
@@ -1688,7 +1690,9 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
             }
         }
 
-        if ( !success ) {
+        if ( success ) {
+            logf( XW_LOGINFO, "%s: success!", __func__ );
+        } else {
             logf( XW_LOGERROR, "%s: unable to send to devID %d", 
                   __func__, devID.asRelayID() );
             break;
@@ -1804,6 +1808,10 @@ handle_udp_packet( PacketThreadClosure* ptc )
                     handlePutMessage( scr, hid, &addr, end - ptr, &ptr, end );
                     assert( ptr == end ); // DON'T CHECK THIS IN!!!
                 } else {
+                    // This is likely happening when games connect whose
+                    // record in the DB's been removed, probably usually games
+                    // that were created before my old ISP shut down in fall
+                    // of 2017.
                     logf( XW_LOGERROR, "%s: invalid scr for %s/%d", __func__,
                           connName, hid );
                 }
@@ -1832,7 +1840,7 @@ handle_udp_packet( PacketThreadClosure* ptc )
         }
             
         case XWPDEV_KEEPALIVE:
-        case XWPDEV_RQSTMSGS: {
+        case XWPDEV_RQSTMSGS: { // here
             DevID devID( ID_TYPE_RELAY );
             if ( getVLIString( &ptr, end, devID.m_devIDString ) ) {
                 const AddrInfo* addr = ptc->addr();

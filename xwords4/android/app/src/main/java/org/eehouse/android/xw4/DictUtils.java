@@ -35,7 +35,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class DictUtils {
     private static final String TAG = DictUtils.class.getSimpleName();
@@ -60,7 +63,17 @@ public class DictUtils {
     }
 
     // keep in sync with loc_names string-array
-    public enum DictLoc { UNKNOWN, BUILT_IN, INTERNAL, EXTERNAL, DOWNLOAD };
+    public enum DictLoc {
+        UNKNOWN,
+        BUILT_IN,
+        INTERNAL,
+        EXTERNAL,
+        DOWNLOAD;
+        public boolean needsStoragePermission()
+        {
+            return this == DOWNLOAD;
+        }
+    };
     public static final String INVITED = "invited";
 
     private static DictAndLoc[] s_dictListCache = null;
@@ -118,9 +131,16 @@ public class DictUtils {
             return result;
         }
 
+        @Override
         public int compareTo( Object obj ) {
             DictAndLoc other = (DictAndLoc)obj;
             return name.compareTo( other.name );
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "%s:%s", name, loc );
         }
     }
 
@@ -131,20 +151,25 @@ public class DictUtils {
         // changes?
     }
 
-    public static boolean needsStoragePermission( DictLoc loc )
+    private static void addLogDup( Map<String, DictAndLoc> map, String path,
+                                   DictLoc loc )
     {
-        return DictLoc.DOWNLOAD == loc;
+        String name = removeDictExtn( new File(path).getName() );
+        if ( map.containsKey( name ) ) {
+            Log.d( TAG, "replacing info for %s with from %s", name, loc );
+        }
+        map.put( name, new DictAndLoc( name, loc ) );
     }
 
     private static void tryDir( Context context, File dir, boolean strict,
-                                DictLoc loc, ArrayList<DictAndLoc> al )
+                                DictLoc loc, Map<String, DictAndLoc> map )
     {
         if ( null != dir ) {
             String[] list = dir.list();
             if ( null != list ) {
                 for ( String file : list ) {
                     if ( isDict( context, file, strict? dir : null ) ) {
-                        al.add( new DictAndLoc( removeDictExtn( file ), loc ) );
+                        addLogDup( map, file, loc );
                     }
                 }
             }
@@ -162,29 +187,29 @@ public class DictUtils {
             || haveStorage != s_hadStorage;
 
         if ( permsChanged || null == s_dictListCache ) {
-            ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
+            Map<String, DictAndLoc> map = new HashMap<>();
 
             for ( String file : getAssets( context ) ) {
                 if ( isDict( context, file, null ) ) {
-                    al.add( new DictAndLoc( removeDictExtn( file ),
-                                            DictLoc.BUILT_IN ) );
+                    addLogDup( map, file, DictLoc.BUILT_IN );
                 }
             }
 
             for ( String file : context.fileList() ) {
                 if ( isDict( context, file, null ) ) {
-                    al.add( new DictAndLoc( removeDictExtn( file ),
-                                            DictLoc.INTERNAL ) );
+                    addLogDup( map, file, DictLoc.INTERNAL );
                 }
             }
 
-            tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, al );
+            tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, map );
             tryDir( context, getDownloadDir( context ), true,
-                    DictLoc.DOWNLOAD, al );
+                    DictLoc.DOWNLOAD, map );
 
+            Collection<DictAndLoc> dictSet = map.values();
             s_dictListCache =
-                al.toArray( new DictUtils.DictAndLoc[al.size()] );
+                dictSet.toArray( new DictUtils.DictAndLoc[dictSet.size()] );
             s_hadStorage = new Boolean( haveStorage );
+            // Log.d( TAG, "created map: %s", map );
         }
         return s_dictListCache;
     }
@@ -501,9 +526,11 @@ public class DictUtils {
 
         if ( success ) {
             File file = new File( tmpFile.getParent(), name );
-            tmpFile.renameTo( file );
+            success = tmpFile.renameTo( file );
+            Assert.assertTrue( success || !BuildConfig.DEBUG );
         }
 
+        // Log.d( TAG, "saveDict(%s/%s) => %b", name, loc, success );
         return success;
     }
 

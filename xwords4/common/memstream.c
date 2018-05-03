@@ -398,7 +398,7 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
     }
     hash = finishHash( hash );
 
-    LOG_RETURNF( "%X(%d:%d)", hash, len, bits );
+    LOG_RETURNF( "%X (nBytes=%d;nBits=%d)", hash, len, bits );
     return hash;
 } /* mem_stream_getHash */
 

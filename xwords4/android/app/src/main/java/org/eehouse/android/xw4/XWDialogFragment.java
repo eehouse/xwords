@@ -55,7 +55,6 @@ abstract class XWDialogFragment extends DialogFragment {
 
         if ( null != m_buttonMap ) {
             AlertDialog dialog = (AlertDialog)getDialog();
-            Assert.assertTrue( null != dialog || !BuildConfig.DEBUG );
             if ( null != dialog) {
                 for ( final int but : m_buttonMap.keySet() ) {
                     // final int fbut = but;

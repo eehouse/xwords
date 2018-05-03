@@ -662,7 +662,7 @@ public class DictsDelegate extends ListDelegateBase
 
     private void moveDicts( String[] selNames, DictLoc toLoc )
     {
-        if ( DictUtils.needsStoragePermission( toLoc ) ) {
+        if ( toLoc.needsStoragePermission() ) {
             tryGetPerms( Perm.STORAGE, R.string.move_dict_rationale,
                          Action.MOVE_CONFIRMED, selNames, toLoc );
         } else {

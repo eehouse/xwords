@@ -561,7 +561,7 @@ makeGamesWindow( GtkAppGlobals* apg )
             sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
             onNewData( apg, *rowid, XP_TRUE );
         }
-        g_slist_free( games );
+        freeGamesList( games );
     }
 
     GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );

@@ -2240,9 +2240,8 @@ public class BoardDelegate extends DelegateBase
             // see....
             try {
                 m_inviteAlert.dismiss();
-            } catch ( NullPointerException npe ) {
-                Log.ex( TAG, npe );
-                // Assert.assertFalse( BuildConfig.DEBUG );
+            } catch ( NullPointerException | IllegalStateException ex ) {
+                Log.ex( TAG, ex );
             }
             m_inviteAlert = null;
             m_haveStartedShowing = false;

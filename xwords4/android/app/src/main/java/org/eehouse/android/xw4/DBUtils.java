@@ -2032,7 +2032,8 @@ public class DBUtils {
                                       values, selection, null );
             if ( 0 == result ) {
                 values.put( DBHelper.DICTNAME, name );
-                s_db.insert( DBHelper.TABLE_NAME_DICTINFO, null, values );
+                long rowid = s_db.insert( DBHelper.TABLE_NAME_DICTINFO, null, values );
+                Assert.assertTrue( rowid > 0 || !BuildConfig.DEBUG );
             }
         }
     }
@@ -2043,7 +2044,7 @@ public class DBUtils {
         String[] columns = { DBHelper.LANGCODE,
                              DBHelper.WORDCOUNT,
                              DBHelper.MD5SUM,
-                             DBHelper.LOC };
+                             /*DBHelper.LOC*/ };
         String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -2058,6 +2059,9 @@ public class DBUtils {
                     cursor.getInt( cursor.getColumnIndex(DBHelper.WORDCOUNT));
                 result.md5Sum =
                     cursor.getString( cursor.getColumnIndex(DBHelper.MD5SUM));
+                // int loc = cursor.getInt(cursor.getColumnIndex(DBHelper.LOC));
+                // Log.d( TAG, "dictsGetInfo(): read sum %s/loc %d for %s", result.md5Sum,
+                //        loc, name );
              }
             cursor.close();
         }
@@ -2082,7 +2086,9 @@ public class DBUtils {
                                       values, selection, null );
             if ( 0 == result ) {
                 values.put( DBHelper.DICTNAME, dal.name );
-                s_db.insert( DBHelper.TABLE_NAME_DICTINFO, null, values );
+                long rowid = s_db.insert( DBHelper.TABLE_NAME_DICTINFO, null,
+                                          values );
+                Assert.assertTrue( rowid > 0 || !BuildConfig.DEBUG );
             }
         }
     }
@@ -2103,17 +2109,17 @@ public class DBUtils {
         }
     }
 
-    public static void dictsRemoveInfo( Context context,
-                                        DictUtils.DictAndLoc dal )
+    public static void dictsRemoveInfo( Context context, String name )
     {
-        String selection =
-            String.format( NAMELOC_FMT, DBHelper.DICTNAME,
-                           dal.name, DBHelper.LOC, dal.loc.ordinal() );
+        String selection = String.format( "%s=?", DBHelper.DICTNAME );
+        String[] args = { name };
 
         initDB( context );
         synchronized( s_dbHelper ) {
-            s_db.delete( DBHelper.TABLE_NAME_DICTINFO, selection, null );
-            s_db.delete( DBHelper.TABLE_NAME_DICTBROWSE, selection, null );
+            int removed = s_db.delete( DBHelper.TABLE_NAME_DICTINFO, selection, args );
+            // Log.d( TAG, "removed %d rows from %s", removed, DBHelper.TABLE_NAME_DICTINFO );
+            removed = s_db.delete( DBHelper.TABLE_NAME_DICTBROWSE, selection, args );
+            // Log.d( TAG, "removed %d rows from %s", removed, DBHelper.TABLE_NAME_DICTBROWSE );
         }
     }
 

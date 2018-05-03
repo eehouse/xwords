@@ -85,7 +85,7 @@ lbt_make( MPFORMAL XP_Bool amMaster )
 } /* lbt_make */
 
 static L2_RF_ADDR*
-getL2Addr( const CommsAddrRec const* addrP, L2_RF_ADDR* const saddr )
+getL2Addr( const CommsAddrRec* addrP, L2_RF_ADDR* const saddr )
 {
     LOG_FUNC();
     L2_RF_ADDR* result = NULL;

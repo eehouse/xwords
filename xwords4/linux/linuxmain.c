@@ -83,11 +83,15 @@ static int blocking_read( int fd, unsigned char* buf, const int len );
 XP_Bool
 file_exists( const char* fileName )
 {
-    struct stat statBuf;
+    XP_Bool exists = !!fileName;
+    if ( exists ) {
+        struct stat statBuf;
 
-    int statResult = stat( fileName, &statBuf );
-    // XP_LOGF( "%s(%s)=>%d", __func__, fileName, statResult == 0 );
-    return statResult == 0;
+        int statResult = stat( fileName, &statBuf );
+        // XP_LOGF( "%s(%s)=>%d", __func__, fileName, statResult == 0 );
+        exists = statResult == 0;
+    }
+    return exists;
 } /* file_exists */
 
 XWStreamCtxt*
@@ -2677,6 +2681,9 @@ main( int argc, char** argv )
 
         freeParams( &mainParams );
     }
+
+    free( longopts );
+    g_slist_free( mainParams.dictDirs );
 
     XP_LOGF( "%s exiting main, returning %d", argv[0], result );
     return result;

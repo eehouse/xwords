@@ -8,7 +8,7 @@ LIST_FILE=1
 
 usage() {
 	[ $# -gt 0 ] && echo "ERROR: $1"
-	echo "usage: $0 [--apk path/to/unsigned.apk]*"
+	echo "usage: $0 [--apk path/to/unsigned.apk]+"
 	}
 
 while [ $# -gt 0 ]; do
@@ -24,6 +24,8 @@ while [ $# -gt 0 ]; do
 	esac
 	shift
 done
+
+[ -z "$APKS" ] && usage "no apks provided"
 
 for APK in $APKS; do
 	if [ ${APK/-unsigned} == $APK ]; then

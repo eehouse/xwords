@@ -177,7 +177,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_STRINGSHASH, BuildConfig.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
-                // Log.d( TAG, "current update: %s", params.toString() );
+                // Log.d( TAG, "current update: %s", params );
                 new UpdateQueryTask( context, params, fromUI, pm,
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {

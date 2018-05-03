@@ -356,6 +356,8 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_UCHAR loc[rect->width+1];
     if ( !!letter ) {
         XP_MEMCPY( loc, letter, 1 + strlen(letter) );
+    } else {
+        XP_MEMSET( loc, '\0', sizeof(loc) );
     }
 
     if ( highlight ) {

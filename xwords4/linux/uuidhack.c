@@ -29,7 +29,7 @@
 #include <uuid/uuid.h>
 
 void 
-str2uuid( const char const* str, void* out, size_t uuidSize )
+str2uuid( const char* str, void* out, size_t uuidSize )
 {
     uuid_t uuid;
     int err = uuid_parse( str, uuid );

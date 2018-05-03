@@ -56,6 +56,9 @@ void summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
 GSList* listGames( sqlite3* dbp );
+/* free list and data allocated by above */
+void freeGamesList( GSList* games );
+
 /* Mapping of relayID -> rowid */
 GHashTable* getRelayIDsToRowsMap( sqlite3* pDb );
 
