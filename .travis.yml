@@ -9,7 +9,7 @@ android:
   components:
   - tools
   - platform-tools
-  - build-tools-23.0.3
+  - build-tools-27.0.3
   - android-23
 before_script:
 - export TERM=dumb
