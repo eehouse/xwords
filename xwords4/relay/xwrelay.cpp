@@ -1840,7 +1840,7 @@ handle_udp_packet( PacketThreadClosure* ptc )
         }
             
         case XWPDEV_KEEPALIVE:
-        case XWPDEV_RQSTMSGS: { // here
+        case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
             if ( getVLIString( &ptr, end, devID.m_devIDString ) ) {
                 const AddrInfo* addr = ptc->addr();
