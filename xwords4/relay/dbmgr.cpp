@@ -1135,7 +1135,7 @@ DBMgr::StoreMessage( const char* const connName, int destHid,
 
 void
 DBMgr::decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx, 
-                      int byteaIndex, uint8_t* buf, size_t* buflen )
+                      int byteaIndex, vector<uint8_t>& buf )
 {
     const char* from = NULL;
     if ( useB64 ) {
@@ -1146,22 +1146,19 @@ DBMgr::decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx,
         from = PQgetvalue( result, rowIndx, byteaIndex );
     }
 
-    size_t to_length;
     if ( useB64 ) {
         gsize out_len;
         guchar* txt = g_base64_decode( (const gchar*)from, &out_len );
-        to_length = out_len;
-        assert( to_length <= *buflen );
-        memcpy( buf, txt, to_length );
+        buf.insert( buf.end(), txt, txt + out_len );
+        assert( buf.size() == out_len );
         g_free( txt );
     } else {
-        uint8_t* bytes = PQunescapeBytea( (const uint8_t*)from, 
-                                                &to_length );
-        assert( to_length <= *buflen );
-        memcpy( buf, bytes, to_length );
+        size_t to_length;
+        uint8_t* bytes = PQunescapeBytea( (const uint8_t*)from, &to_length );
+        buf.insert( buf.end(), bytes, bytes + to_length );
+        assert( buf.size() == to_length );
         PQfreemem( bytes );
     }
-    *buflen = to_length;
 }
 
 void
@@ -1193,12 +1190,9 @@ DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs,
         bool hasConnname = connname != NULL && '\0' != connname[0];
         MsgInfo msg( id, token, hasConnname );
 
-        uint8_t buf[1024];
-        size_t buflen = sizeof(buf);
-        decodeMessage( result, m_useB64, ii, 1, 2, buf, &buflen );
+        decodeMessage( result, m_useB64, ii, 1, 2, msg.msg );
         size_t msglen = atoi( PQgetvalue( result, ii, 3 ) );
-        assert( 0 == msglen || buflen == msglen );
-        msg.msg.insert( msg.msg.end(), buf, &buf[buflen] );
+        assert( 0 == msglen || msg.msg.size() == msglen );
         msgs.push_back( msg );
     }
     PQclear( result );
