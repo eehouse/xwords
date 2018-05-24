@@ -151,7 +151,7 @@ write_callback(void *contents, size_t size, size_t nmemb, void* data)
         ws->curSize = 1L;
     }
 
-    XP_LOGF( "%s(size=%ld, nmemb=%ld)", __func__, size, nmemb );
+    XP_LOGF( "%s(size=%zd, nmemb=%zd)", __func__, size, nmemb );
     size_t oldLen = ws->curSize;
     const size_t newLength = size * nmemb;
     XP_ASSERT( (oldLen + newLength) > 0 );
