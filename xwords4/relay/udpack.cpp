@@ -35,16 +35,16 @@ UDPAckTrack::nextPacketID( XWRelayReg cmd )
 {
     uint32_t result = 0;
     if ( shouldAck( cmd ) ) {
-        result = get()->nextPacketIDImpl();
+        result = get()->nextPacketIDImpl( cmd );
         assert( PACKETID_NONE != result );
     }
     return result;
 }
 
-/* static*/ void
+/* static*/ string
 UDPAckTrack::recordAck( uint32_t packetID )
 {
-    get()->recordAckImpl( packetID );
+    return get()->recordAckImpl( packetID );
 }
 
 /* static */ bool
@@ -97,33 +97,37 @@ UDPAckTrack::ackLimit()
 }
 
 uint32_t
-UDPAckTrack::nextPacketIDImpl()
+UDPAckTrack::nextPacketIDImpl( XWRelayReg cmd )
 {
     MutexLock ml( &m_mutex );
     uint32_t result = ++m_nextID;
-    AckRecord record;
+    AckRecord record( cmd , result );
     m_pendings.insert( pair<uint32_t,AckRecord>(result, record) );
     return result;
 }
 
-void
+string
 UDPAckTrack::recordAckImpl( uint32_t packetID )
 {
+    string str;
     map<uint32_t, AckRecord>::iterator iter;
     MutexLock ml( &m_mutex );
     iter = m_pendings.find( packetID );
     if ( m_pendings.end() == iter ) {
         logf( XW_LOGERROR, "%s: packet ID %d not found", __func__, packetID );
     } else {
-        time_t took = time( NULL ) - iter->second.m_createTime;
+        AckRecord& rec = iter->second;
+        str = rec.toStr();
+        time_t took = time( NULL ) - rec.m_createTime;
         if ( 5 < took  ) {
-            logf( XW_LOGERROR, "%s: packet ID %d took %d seconds to get acked",
-                  __func__, packetID, took );
+            logf( XW_LOGERROR, "%s: packet %s took %d seconds to get acked",
+                  __func__, str.c_str(), took );
         }
 
         callProc( iter, true );
         m_pendings.erase( iter );
     }
+    return str;
 }
 
 bool
@@ -134,8 +138,8 @@ UDPAckTrack::setOnAckImpl( OnAckProc proc, uint32_t packetID, void* data )
         MutexLock ml( &m_mutex );
         map<uint32_t, AckRecord>::iterator iter = m_pendings.find( packetID );
         if ( m_pendings.end() != iter ) {
-            iter->second.proc = proc;
-            iter->second.data = data;
+            iter->second.m_proc = proc;
+            iter->second.m_data = data;
         }
     }
     return canAdd;
@@ -180,12 +184,12 @@ void
 UDPAckTrack::callProc( const map<uint32_t, AckRecord>::iterator iter, bool acked )
 {
     const AckRecord* record = &(iter->second);
-    OnAckProc proc = record->proc;
+    OnAckProc proc = record->m_proc;
     if ( NULL != proc ) {
         uint32_t packetID = iter->first;
         logf( XW_LOGINFO, "%s(packetID=%d, acked=%d, proc=%p)", __func__, 
               packetID, acked, proc );
-        (*proc)( acked, packetID, record->data );
+        (*proc)( acked, packetID, record->m_data );
     }
 }
 
@@ -195,15 +199,16 @@ UDPAckTrack::threadProc()
     for ( ; ; ) {
         time_t limit = ackLimit();
         sleep( limit / 2 );
-        vector<uint32_t> older;
+        vector<string> older;
         {
             MutexLock ml( &m_mutex );
             time_t now = time( NULL );
             map<uint32_t, AckRecord>::iterator iter;
             for ( iter = m_pendings.begin(); m_pendings.end() != iter; ) {
-                time_t took = now - iter->second.m_createTime;
+                AckRecord& rec = iter->second;
+                time_t took = now - rec.m_createTime;
                 if ( limit < took ) {
-                    older.push_back( iter->first );
+                    older.push_back( rec.toStr() );
                     callProc( iter, false );
                     m_pendings.erase( iter++ );
                 } else {
@@ -212,14 +217,14 @@ UDPAckTrack::threadProc()
             }
         }
         if ( 0 < older.size() ) {
-            StrWPF leaked;
-            vector<uint32_t>::const_iterator iter = older.begin();
+            string leaked;
+            vector<string>::const_iterator iter = older.begin();
             for ( ; ; ) {
-                leaked.catf( "%d", *iter );
+                leaked += iter->c_str();
                 if ( ++iter == older.end() ) {
                     break;
                 }
-                leaked.catf( ", " );
+                leaked += ", ";
             }
             logf( XW_LOGERROR, "%s: these packets leaked (were not ack'd "
                   "within %d seconds): %s", __func__, 

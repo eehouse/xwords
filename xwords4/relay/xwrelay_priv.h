@@ -69,6 +69,7 @@ int read_packet( int sock, uint8_t* buf, int buflen );
 void onMsgAcked( bool acked, uint32_t packetID, void* data );
 
 const char* cmdToStr( XWRELAY_Cmd cmd );
+const char* msgToStr( XWRelayReg msg );
 
 extern class ListenerMgr g_listeners;
 
