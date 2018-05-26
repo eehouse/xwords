@@ -2503,6 +2503,9 @@ server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
     } else {
         nextTurn( server, PICK_NEXT );
     }
+
+    XP_LOGF( "%s(): player %d now has %d tiles", __func__, turn,
+             model_getNumTilesInTray( model, turn ) );
     
     return XP_TRUE;
 } /* server_commitMove */

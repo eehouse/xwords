@@ -159,7 +159,8 @@ class Device():
     sHasLDevIDMap = {}
     sConnNamePat = re.compile('.*got_connect_cmd: connName: "([^"]+)".*$')
     sGameOverPat = re.compile('.*\[unused tiles\].*')
-    sTilesLeftPat = re.compile('.*pool_removeTiles: (\d+) tiles left in pool')
+    sTilesLeftPoolPat = re.compile('.*pool_removeTiles: (\d+) tiles left in pool')
+    sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     
     def __init__(self, args, game, indx, app, params, room, db, log, nInGame):
@@ -180,7 +181,8 @@ class Device():
         self.devID = ''
         self.launchCount = 0
         self.allDone = False    # when true, can be killed
-        self.nTilesLeft = None
+        self.nTilesLeftPool = None
+        self.nTilesLeftTray = None
         self.relayID = None
         self.relaySeed = 0
 
@@ -212,9 +214,13 @@ class Device():
                     match = Device.sGameOverPat.match(line)
                     if match: self.gameOver = True
 
-                # Check every line for tiles left
-                match = Device.sTilesLeftPat.match(line)
-                if match: self.nTilesLeft = int(match.group(1))
+                # Check every line for tiles left in pool
+                match = Device.sTilesLeftPoolPat.match(line)
+                if match: self.nTilesLeftPool = int(match.group(1))
+
+                # Check every line for tiles left in tray
+                match = Device.sTilesLeftTrayPat.match(line)
+                if match: self.nTilesLeftTray = int(match.group(1))
 
                 if not self.relayID:
                     match = Device.sRelayIDPat.match(line)
@@ -287,8 +293,11 @@ class Device():
             print('got exception sending to', url, params, '; is relay.py running as apache module?')
 
     def getTilesCount(self):
-        return {'index': self.indx, 'nTilesLeft': self.nTilesLeft,
-                'launchCount': self.launchCount, 'game': self.game,
+        return {'index': self.indx,
+                'nTilesLeftPool': self.nTilesLeftPool,
+                'nTilesLeftTray': self.nTilesLeftTray,
+                'launchCount': self.launchCount,
+                'game': self.game,
         }
 
     def update_ldevid(self):
@@ -675,13 +684,22 @@ def summarizeTileCounts(devs, endTime, state):
         nLaunches += launchCount
         fmtData[1]['data'].append('{:{width}d}'.format(launchCount, width=colWidth))
 
-        nTiles = datum['nTilesLeft']
-        fmtData[2]['data'].append(nTiles is None and ('-' * colWidth) or '{:{width}d}'.format(nTiles, width=colWidth))
-        if not nTiles is None: totalTiles += int(nTiles)
-
+        # Format tiles left. It's the number in the bag/pool until
+        # that drops to 0, then the number in the tray preceeded by
+        # '+'. Only the pool number is included in the totalTiles sum.
+        nTilesPool = datum['nTilesLeftPool']
+        nTilesTray = datum['nTilesLeftTray']
+        if nTilesPool is None and nTilesTray is None:
+            txt = ('-' * colWidth)
+        elif int(nTilesPool) == 0 and not nTilesTray is None:
+            txt = '+{:{width}d}'.format(nTilesTray, width=colWidth-1)
+        else:
+            txt = '{:{width}d}'.format(nTilesPool, width=colWidth)
+            totalTiles += int(nTilesPool)
+        fmtData[2]['data'].append(txt)
 
     print('')
-    print('devs left: {}; tiles left: {}; total launches: {}; {}/{}'
+    print('devs left: {}; bag tiles left: {}; total launches: {}; {}/{}'
           .format(nDevs, totalTiles, nLaunches, datetime.datetime.now(), endTime ))
     fmt = '{head:>%d} {data}' % headWidth
     for datum in fmtData: datum['data'] = ' '.join(datum['data'])
