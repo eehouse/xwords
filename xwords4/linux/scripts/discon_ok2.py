@@ -185,6 +185,7 @@ class Device():
         self.nTilesLeftTray = None
         self.relayID = None
         self.relaySeed = 0
+        self.locked = False
 
         with open(self.logPath, "w") as log:
             log.write('New cmdline: ' + self.app + ' ' + (' '.join([str(p) for p in self.params])))
@@ -199,6 +200,8 @@ class Device():
             for line in stderr.splitlines():
                 nLines += 1
                 log.write(line + os.linesep)
+
+                self.locked = True
 
                 # check for connname
                 if not self.connname:
@@ -227,6 +230,8 @@ class Device():
                     if match:
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
+
+                self.locked = False
 
         # print('logReaderMain done, wrote lines:', nLines, 'to', self.logPath);
 
@@ -293,6 +298,7 @@ class Device():
             print('got exception sending to', url, params, '; is relay.py running as apache module?')
 
     def getTilesCount(self):
+        assert not self.locked
         return {'index': self.indx,
                 'nTilesLeftPool': self.nTilesLeftPool,
                 'nTilesLeftTray': self.nTilesLeftTray,
