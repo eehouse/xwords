@@ -167,6 +167,9 @@ writeToDB( XWStreamCtxt* stream, void* closure )
 
     if ( newGame ) {         /* new row; need to insert blob first */
         cGlobals->selRow = selRow;
+        XP_LOGF( "%s(): new game at row %lld", __func__, selRow );
+    } else {
+        assert( selRow == cGlobals->selRow );
     }
 
     (*cGlobals->onSave)( cGlobals->onSaveClosure, selRow, newGame );
