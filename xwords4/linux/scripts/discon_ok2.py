@@ -698,7 +698,7 @@ def summarizeTileCounts(devs, endTime, state):
         if nTilesPool is None and nTilesTray is None:
             txt = ('-' * colWidth)
         elif int(nTilesPool) == 0 and not nTilesTray is None:
-            txt = '+{:{width}d}'.format(nTilesTray, width=colWidth-1)
+            txt = '{:+{width}d}'.format(nTilesTray, width=colWidth-1)
         else:
             txt = '{:{width}d}'.format(nTilesPool, width=colWidth)
             totalTiles += int(nTilesPool)
@@ -732,19 +732,21 @@ gDone = False
 def run_cmds(args, devs):
     nCores = countCores()
     endTime = datetime.datetime.now() + datetime.timedelta(minutes = args.TIMEOUT_MINS)
-    LOOPCOUNT = 0
     printState = {}
+    lastPrint = datetime.datetime.now()
 
     while len(devs) > 0 and not gDone:
         if countCores() > nCores:
             print('core file count increased; exiting')
             break
-        if datetime.datetime.now() > endTime:
+        now = datetime.datetime.now()
+        if now > endTime:
             print('outta time; outta here')
             break
 
-        LOOPCOUNT += 1
-        if 0 == LOOPCOUNT % 20:
+        # print stats every 5 seconds
+        if now - lastPrint > datetime.timedelta(seconds = 5):
+            lastPrint = now
             if not summarizeTileCounts(devs, endTime, printState):
                 print('no change in too long; exiting')
                 break
