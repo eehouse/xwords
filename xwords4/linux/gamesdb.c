@@ -187,8 +187,8 @@ addSnapshot( CommonGlobals* cGlobals )
         XWStreamCtxt* stream = make_simple_stream( cGlobals );
         getImage( dctx, stream );
         removeSurface( dctx );
-        writeBlobColumnStream( stream, cGlobals->pDb, cGlobals->selRow, "snap" );
-        // XP_ASSERT( cGlobals->selRow == newRow );
+        cGlobals->selRow = writeBlobColumnStream( stream, cGlobals->pDb,
+                                                   cGlobals->selRow, "snap" );
         stream_destroy( stream );
     }
 
