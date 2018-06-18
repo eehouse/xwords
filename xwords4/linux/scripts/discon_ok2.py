@@ -244,7 +244,6 @@ class Device():
         args += [self.app] + [str(p) for p in self.params]
         if self.devID: args.extend( ' '.split(self.devID))
         self.launchCount += 1
-        # self.logStream = open(self.logPath, flag)
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
         self.pid = self.proc.pid
@@ -768,20 +767,16 @@ def run_cmds(args, devs):
 #             PIDS[$KEY]=$PID
 #             ROOM_PIDS[$ROOM]=$PID
 #             MINEND[$KEY]=$(($NOW + $MINRUN))
-        elif not dev.minTimeExpired():
-            # print('sleeping...')
-            time.sleep(1.0)
-        else:
+        elif dev.minTimeExpired():
             dev.kill()
             if dev.handleAllDone():
                 devs.remove(dev)
-            # if g_DROP_N >= 0: dev.increment_drop()
-            #             update_ldevid $KEY
-
+        else:
+            time.sleep(1.0)
 
     # if we get here via a break, kill any remaining games
     if devs:
-        print('stopping %d remaining games' % (len(devs)))
+        print('stopping {} remaining games'.format(len(devs)))
         for dev in devs:
             if dev.running(): dev.kill()
 
