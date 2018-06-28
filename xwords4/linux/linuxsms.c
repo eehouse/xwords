@@ -248,9 +248,8 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
                   CommsAddrRec* addr )
 {
     LinSMSData* storage = getStorage( params );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool)
-                                            params->vtMgr, 
-                                            NULL, CHANNEL_NONE, NULL );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
     stream_setVersion( stream, CUR_STREAM_VERS );
     stream_putBytes( stream, buf, len );
 

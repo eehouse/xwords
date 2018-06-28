@@ -67,6 +67,12 @@ static StreamCtxVTable* make_vtable( MemStreamCtxt* stream );
  * top of the file (first executable code).
  */
 XWStreamCtxt* 
+mem_stream_make_raw( MPFORMAL VTableMgr* vtmgr )
+{
+    return mem_stream_make( MPPARM(mpool) vtmgr, NULL, 0, NULL );
+}
+
+XWStreamCtxt*
 mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure, 
                  XP_PlayerAddr channelNo, MemStreamCloseCallback onClose )
 {
