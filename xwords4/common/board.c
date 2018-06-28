@@ -1090,9 +1090,8 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
             XP_MEMSET( &bwl, 0, sizeof(bwl) );
             
             if ( !legal ) {
-                stream = mem_stream_make( MPPARM(board->mpool)
-                                          util_getVTManager(board->util), NULL,
-                                          CHANNEL_NONE, (MemStreamCloseCallback)NULL );
+                stream = mem_stream_make_raw( MPPARM(board->mpool)
+                                              util_getVTManager(board->util) );
 
                 const XP_UCHAR* str = util_getUserString(board->util,
                                                          STR_COMMIT_CONFIRM);
@@ -1319,10 +1318,8 @@ timerFiredForPen( BoardCtxt* board )
                                            NULL, NULL, NULL );
                 if ( listWords ) {
                     XWStreamCtxt* stream = 
-                        mem_stream_make( MPPARM(board->mpool) 
-                                         util_getVTManager(board->util), NULL,
-                                         CHANNEL_NONE,
-                                         (MemStreamCloseCallback)NULL );
+                        mem_stream_make_raw( MPPARM(board->mpool)
+                                             util_getVTManager(board->util) );
                     model_listWordsThrough( board->model, modelCol, modelRow, 
                                             stream );
                     util_cellSquareHeld( board->util, stream );

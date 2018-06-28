@@ -1136,10 +1136,8 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     newMsgElem->sendCount = 0;
 #endif
 
-    hdrStream = mem_stream_make( MPPARM(comms->mpool) 
-                                 util_getVTManager(comms->util),
-                                 NULL, 0, 
-                                 (MemStreamCloseCallback)NULL );
+    hdrStream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                     util_getVTManager(comms->util));
     stream_open( hdrStream );
 #if 0 < COMMS_VERSION
     stream_putU16( hdrStream, HAS_VERSION_FLAG );
@@ -2637,10 +2635,8 @@ logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
 {
     if ( !!addr ) {
         char buf[128];
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(comms->mpool) 
-                                                util_getVTManager(comms->util),
-                                                NULL, 0, 
-                                                (MemStreamCloseCallback)NULL );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                                    util_getVTManager(comms->util));
         snprintf( buf, sizeof(buf), TAGFMT() "called on %p from %s:\n", TAGPRMS,
                   addr, caller );
         stream_catString( stream, buf );
@@ -2942,10 +2938,8 @@ relay_msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 {
     XP_LOGF( "%s(cmd=%s, destID=%x)", __func__, relayCmdToStr(cmd), destID );
     XWStreamCtxt* stream;
-    stream = mem_stream_make( MPPARM(comms->mpool) 
-                              util_getVTManager(comms->util),
-                              NULL, 0, 
-                              (MemStreamCloseCallback)NULL );
+    stream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                  util_getVTManager(comms->util) );
     if ( stream != NULL ) {
         CommsAddrRec addr;
         stream_open( stream );

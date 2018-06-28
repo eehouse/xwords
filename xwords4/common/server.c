@@ -828,10 +828,8 @@ static XWStreamCtxt*
 mkServerStream( ServerCtxt* server )
 {
     XWStreamCtxt* stream;
-    stream = mem_stream_make( MPPARM(server->mpool) 
-                              util_getVTManager(server->vol.util), 
-                              NULL, CHANNEL_NONE, 
-                              (MemStreamCloseCallback)NULL );
+    stream = mem_stream_make_raw( MPPARM(server->mpool)
+                                  util_getVTManager(server->vol.util) );
     XP_ASSERT( !!stream );
     return stream;
 } /* mkServerStream */

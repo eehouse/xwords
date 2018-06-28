@@ -2195,9 +2195,9 @@ static void
 copyStack( const ModelCtxt* model, StackCtxt* destStack, 
            const StackCtxt* srcStack )
 {
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool)
-                                            util_getVTManager(model->vol.util),
-                                            NULL, 0, NULL );
+    XWStreamCtxt* stream =
+        mem_stream_make_raw( MPPARM(model->vol.mpool)
+                             util_getVTManager(model->vol.util) );
 
     stack_writeToStream( (StackCtxt*)srcStack, stream );
     stack_loadFromStream( destStack, stream );
