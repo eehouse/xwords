@@ -346,9 +346,8 @@ cursesShowFinalScores( CursesAppGlobals* globals )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MPPARM(globals->cGlobals.util->mpool)
-                              globals->cGlobals.params->vtMgr,
-                              globals, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MPPARM(globals->cGlobals.util->mpool)
+                                  globals->cGlobals.params->vtMgr );
     server_writeFinalScores( globals->cGlobals.game.server, stream );
 
     text = strFromStream( stream );
@@ -1413,9 +1412,8 @@ curses_util_remSelected( XW_UtilCtxt* uc )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MPPARM(globals->cGlobals.util->mpool)
-                              globals->cGlobals.params->vtMgr,
-                              globals, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MPPARM(globals->cGlobals.util->mpool)
+                                  globals->cGlobals.params->vtMgr );
     board_formatRemainingTiles( globals->cGlobals.game.board, stream );
 
     text = strFromStream( stream );
@@ -2056,9 +2054,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             GSList* games = listGames( params->pDb );
             if ( !!games ) {
                 XP_ASSERT( 1 == g_slist_length(games) ); /* for now */
-                stream = mem_stream_make( MEMPOOL params->vtMgr,
-                                          &g_globals.cGlobals, CHANNEL_NONE,
-                                          NULL );
+                stream = mem_stream_make_raw( MEMPOOL params->vtMgr);
                 sqlite3_int64 selRow = *(sqlite3_int64*)games->data;
                 /* XP_UCHAR buf[32]; */
                 /* XP_SNPRINTF( buf, sizeof(buf), "%lld", selRow ); */
@@ -2074,14 +2070,13 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 
         } else if ( !!params->fileName && file_exists( params->fileName ) ) {
             mpool_setTag( MEMPOOL "file" );
-            stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
-                                     &g_globals );
+            stream = streamFromFile( &g_globals.cGlobals, params->fileName );
 #ifdef USE_SQLITE
         } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
             XP_UCHAR buf[32];
             XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
             mpool_setTag( MEMPOOL buf );
-            stream = streamFromDB( &g_globals.cGlobals, &g_globals );
+            stream = streamFromDB( &g_globals.cGlobals );
 #endif
         }
 

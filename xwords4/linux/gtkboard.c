@@ -589,18 +589,17 @@ createOrLoadObjects( GtkGameGlobals* globals )
     setTransportProcs( &procs, globals );
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
-        stream = streamFromFile( cGlobals, params->fileName, globals );
+        stream = streamFromFile( cGlobals, params->fileName );
 #ifdef USE_SQLITE
     } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
         XP_UCHAR buf[32];
         XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
         mpool_setTag( MEMPOOL buf );
-        stream = streamFromDB( cGlobals, globals );
+        stream = streamFromDB( cGlobals );
 #endif
     } else if ( !!cGlobals->pDb && 0 <= cGlobals->selRow ) {
-        stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                  params->vtMgr, 
-                                  cGlobals, CHANNEL_NONE, NULL );
+        stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool) 
+                                      params->vtMgr );
         if ( !loadGame( stream, cGlobals->pDb, cGlobals->selRow ) ) {
             stream_destroy( stream );
             stream = NULL;
@@ -874,9 +873,8 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommsCtxt* comms = cGlobals->game.comms;
     if ( !!comms /*&& COMMS_CONN_NONE == comms_getConTypes( comms )*/ ) {
         /* If it has pending invite info, send the invitation! */
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                                cGlobals->params->vtMgr, 
-                                                cGlobals, CHANNEL_NONE, NULL );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr );
         if ( loadInviteAddrs( stream, cGlobals->pDb, cGlobals->selRow ) ) {
             CommsAddrRec addr = {0};
             addrFromStream( &addr, stream );
@@ -1647,9 +1645,8 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 
 #ifdef DEBUG
     {
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                                                cGlobals->params->vtMgr,
-                                                NULL, CHANNEL_NONE, NULL );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr );
         nli_saveToStream( &nli, stream );
         NetLaunchInfo tmp;
         nli_makeFromStream( &tmp, stream );
@@ -1934,9 +1931,8 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
     XP_UCHAR* text;
     const CommonGlobals* cGlobals = &globals->cGlobals;
 
-    stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                              cGlobals->params->vtMgr,
-                              NULL, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                  cGlobals->params->vtMgr );
     server_writeFinalScores( cGlobals->game.server, stream );
 
     text = strFromStream( stream );
@@ -2272,9 +2268,8 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MEMPOOL 
-                              globals->cGlobals.params->vtMgr,
-                              globals, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MEMPOOL
+                                  globals->cGlobals.params->vtMgr );
     board_formatRemainingTiles( globals->cGlobals.game.board, stream );
     text = strFromStream( stream );
     stream_destroy( stream );
@@ -2936,9 +2931,8 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     CommonGlobals* cGlobals = &globals->cGlobals;
     cGlobals->selRow = rowid;
     cGlobals->pDb = pDb;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                            params->vtMgr, cGlobals, 
-                                            CHANNEL_NONE, NULL );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                params->vtMgr );
     XP_Bool loaded = loadGame( stream, cGlobals->pDb, rowid );
     if ( loaded ) {
         if ( NULL == cGlobals->dict ) {

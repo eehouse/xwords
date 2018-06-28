@@ -64,9 +64,8 @@ void sendOnClose( XWStreamCtxt* stream, void* closure );
 
 void catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter );
 XP_Bool file_exists( const char* fileName );
-XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name, 
-                              void* closure );
-XWStreamCtxt* streamFromDB( CommonGlobals* cGlobals, void* closure );
+XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name );
+XWStreamCtxt* streamFromDB( CommonGlobals* cGlobals );
 void writeToFile( XWStreamCtxt* stream, void* closure );
 XP_Bool getDictPath( const LaunchParams *params, const char* name, 
                      char* result, int resultLen );

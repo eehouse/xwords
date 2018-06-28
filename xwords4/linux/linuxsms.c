@@ -367,8 +367,7 @@ linux_sms_invite( LaunchParams* params, const CurGameInfo* gi,
 {
     LOG_FUNC();
     XWStreamCtxt* stream;
-    stream = mem_stream_make( MPPARM(params->mpool) params->vtMgr,
-                              NULL, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MPPARM(params->mpool) params->vtMgr );
     writeHeader( stream, INVITE );
     stream_putU32( stream, gi->gameID );
     stringToStream( stream, gameName );
@@ -392,8 +391,8 @@ linux_sms_send( LaunchParams* params, const XP_U8* buf,
                 XP_U32 gameID )
 {
     XP_LOGF( "%s(len=%d)", __func__, buflen );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool) params->vtMgr,
-                                            NULL, CHANNEL_NONE, NULL );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
     writeHeader( stream, DATA );
     stream_putU32( stream, gameID );
     stream_putBytes( stream, buf, buflen );

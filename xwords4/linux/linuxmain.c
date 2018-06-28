@@ -95,7 +95,7 @@ file_exists( const char* fileName )
 } /* file_exists */
 
 XWStreamCtxt*
-streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
+streamFromFile( CommonGlobals* cGlobals, char* name )
 {
     XP_U8* buf;
     struct stat statBuf;
@@ -110,9 +110,8 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
     }
     fclose( f );
 
-    stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                              cGlobals->params->vtMgr, 
-                              closure, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                  cGlobals->params->vtMgr );
     stream_putBytes( stream, buf, statBuf.st_size );
     free( buf );
 
@@ -121,7 +120,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
 
 #ifdef USE_SQLITE
 XWStreamCtxt*
-streamFromDB( CommonGlobals* cGlobals, void* closure )
+streamFromDB( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
     XWStreamCtxt* stream = NULL;
@@ -139,9 +138,8 @@ streamFromDB( CommonGlobals* cGlobals, void* closure )
             XP_U8 buf[size];
             res = sqlite3_blob_read( ppBlob, buf, size, 0 );
             if ( SQLITE_OK == res ) {
-                stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                          params->vtMgr, 
-                                          closure, CHANNEL_NONE, NULL );
+                stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                              params->vtMgr  );
                 stream_putBytes( stream, buf, size );
             }
         }
@@ -398,8 +396,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
 {
     LOG_FUNC();
     LaunchParams* params = cGlobals->params;
-    XWStreamCtxt* stream = 
-        streamFromFile( cGlobals, params->fileName, cGlobals );
+    XWStreamCtxt* stream = streamFromFile( cGlobals, params->fileName );
 
 #ifdef DEBUG
     XP_Bool opened = 
@@ -431,9 +428,8 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
             XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
             break;
         }
-        stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                  params->vtMgr, cGlobals, CHANNEL_NONE, 
-                                  NULL );
+        stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                      params->vtMgr );
         stream_putBytes( stream, buf, len );
         (void)processMessage( cGlobals, stream, NULL, XP_TRUE );
         stream_destroy( stream );
@@ -447,8 +443,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
 {
     LOG_FUNC();
     LaunchParams* params = cGlobals->params;
-    XWStreamCtxt* stream = 
-        streamFromFile( cGlobals, params->fileName, cGlobals );
+    XWStreamCtxt* stream = streamFromFile( cGlobals, params->fileName );
 
 #ifdef DEBUG
     XP_Bool opened = 
@@ -483,9 +478,8 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                 XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
                 break;
             }
-            stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                      params->vtMgr, cGlobals, CHANNEL_NONE, 
-                                      NULL );
+            stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                          params->vtMgr );
             stream_putBytes( stream, buf, len );
             (void)processMessage( cGlobals, stream, NULL, XP_TRUE );
             stream_destroy( stream );
@@ -1434,9 +1428,8 @@ stream_from_msgbuf( CommonGlobals* globals, const unsigned char* bufPtr,
                     XP_U16 nBytes )
 {
     XWStreamCtxt* result;
-    result = mem_stream_make( MPPARM(globals->util->mpool)
-                              globals->params->vtMgr,
-                              globals, CHANNEL_NONE, NULL );
+    result = mem_stream_make_raw( MPPARM(globals->util->mpool)
+                                  globals->params->vtMgr );
     stream_putBytes( result, bufPtr, nBytes );
 
     return result;

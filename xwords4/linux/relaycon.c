@@ -332,9 +332,8 @@ relaycon_invite( LaunchParams* params, XP_U32 destDevID,
         indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, destDevID );
     }
 
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool) 
-                                            params->vtMgr, params, 
-                                            CHANNEL_NONE, NULL );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
     nli_saveToStream( invit, stream );
     XP_U16 len = stream_getSize( stream );
     indx += writeShort( &tmpbuf[indx], sizeof(tmpbuf) - indx, len );
@@ -679,9 +678,8 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
 #endif
                     getNetLong( &ptr );
                 XP_U16 len = getNetShort( &ptr );
-                XWStreamCtxt* stream = mem_stream_make( MPPARM(storage->params->mpool) 
-                                                        storage->params->vtMgr, storage,
-                                                        CHANNEL_NONE, NULL );
+                XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(storage->params->mpool)
+                                                            storage->params->vtMgr );
                 stream_putBytes( stream, ptr, len );
                 NetLaunchInfo invit;
                 XP_Bool success = nli_makeFromStream( &invit, stream );

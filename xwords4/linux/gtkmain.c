@@ -316,9 +316,8 @@ void
 make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 {
     // LaunchParams* params = apg->params;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                                            cGlobals->params->vtMgr,
-                                            NULL, CHANNEL_NONE, NULL );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                cGlobals->params->vtMgr );
 
     /* Create new game. But has no addressing info, so need to set that
        aside for later. */
@@ -340,9 +339,8 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
     /* If it's a multi-device game, save enough information with it than when
        opened it can invite the other device[s] join the rematch. */
     if ( !!comms ) {
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                                                cGlobals->params->vtMgr,
-                                                NULL, CHANNEL_NONE, NULL );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr );
         CommsAddrRec addr;
         comms_getAddr( comms, &addr );
         addrToStream( stream, &addr );

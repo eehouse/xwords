@@ -666,16 +666,6 @@ storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 msglen,
     return inUse;
 }
 
-XWStreamCtxt*
-make_simple_stream( CommonGlobals* cGlobals )
-{
-    XWStreamCtxt* stream =
-        mem_stream_make( MPPARM(cGlobals->util->mpool)
-                         cGlobals->params->vtMgr,
-                         cGlobals, CHANNEL_NONE, NULL );
-    return stream;
-}
-
 void
 writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
 {
@@ -688,7 +678,8 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
         guint nMsgs = g_slist_length( list );
         XP_ASSERT( 0 < nMsgs );
 
-        XWStreamCtxt* stream = make_simple_stream( cGlobals );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr );
         stream_putU16( stream, 1 ); /* number of relayIDs */
         stream_catString( stream, relayID );
         stream_putU8( stream, '\n' );

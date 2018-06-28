@@ -187,7 +187,8 @@ addSnapshot( CommonGlobals* cGlobals )
         addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
         board_drawSnapshot( board, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
 
-        XWStreamCtxt* stream = make_simple_stream( cGlobals );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr );
         getImage( dctx, stream );
         removeSurface( dctx );
         cGlobals->selRow = writeBlobColumnStream( stream, cGlobals->pDb,
