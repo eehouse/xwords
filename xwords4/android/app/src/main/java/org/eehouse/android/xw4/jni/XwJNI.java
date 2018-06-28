@@ -134,23 +134,30 @@ public class XwJNI {
     public static native boolean timerFired( GamePtr gamePtr, int why,
                                              int when, int handle );
 
-    // Stateless methods
-    public static native byte[] gi_to_stream( CurGameInfo gi );
-    public static native void gi_from_stream( CurGameInfo gi, byte[] stream );
+    public static byte[] gi_to_stream( CurGameInfo gi )
+    {
+        return gi_to_stream( getJNI().m_ptr, gi );
+    }
+
+    public static void gi_from_stream( CurGameInfo gi, byte[] stream )
+    {
+        gi_from_stream( getJNI().m_ptr, gi, stream );
+    }
+
     public static byte[] nliToStream( NetLaunchInfo nli )
     {
         nli.freezeAddrs();
-        return nli_to_stream( nli );
+        return nli_to_stream( getJNI().m_ptr, nli );
     }
-    private static native byte[] nli_to_stream( NetLaunchInfo nli );
+
     public static NetLaunchInfo nliFromStream( byte[] stream )
     {
         NetLaunchInfo nli = new NetLaunchInfo();
-        nli_from_stream( nli, stream );
+        nli_from_stream( getJNI().m_ptr, nli, stream );
         nli.unfreezeAddrs();
         return nli;
     }
-    private static native void nli_from_stream( NetLaunchInfo nli, byte[] stream );
+
     public static native void comms_getInitialAddr( CommsAddrRec addr,
                                                     String relayHost,
                                                     int relayPort );
@@ -470,7 +477,13 @@ public class XwJNI {
 
     // Private methods -- called only here
     private static native int initGlobals();
-    private static native void cleanGlobals( int globals );
+    private static native void cleanGlobals( int jniState );
+    private static native byte[] gi_to_stream( int jniState, CurGameInfo gi );
+    private static native void gi_from_stream( int jniState, CurGameInfo gi,
+                                               byte[] stream );
+    private static native byte[] nli_to_stream( int jniState, NetLaunchInfo nli );
+    private static native void nli_from_stream( int jniState, NetLaunchInfo nli,
+                                                byte[] stream );
     private static native int initJNI( int jniState, int seed, String tag );
     private static native void envDone( int globals );
     private static native void dict_ref( int dictPtr );
