@@ -57,6 +57,7 @@
 #include "main.h"
 #include "gamesdb.h"
 #include "linuxdict.h"
+#include "lindutil.h"
 #include "relaycon.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
@@ -910,6 +911,12 @@ linux_getDevIDRelay( LaunchParams* params )
     }
     LOG_RETURNF( "%d", result );
     return result;
+}
+
+XP_U32
+linux_getCurSeconds()
+{
+     return (XP_U32)time(NULL);//tv.tv_sec;
 }
 
 const XP_UCHAR*
@@ -1994,12 +2001,15 @@ initParams( LaunchParams* params )
     /* params->util->vtable->m_util_addrChange = linux_util_addrChange; */
     /* params->util->vtable->m_util_setIsServer = linux_util_setIsServer; */
 #endif
+
+    params->dutil = dutils_init( MPPARM(params->mpool) params->vtMgr, params );
 }
 
 static void
 freeParams( LaunchParams* params )
 {
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
+    dutils_free( &params->dutil );
     dmgr_destroy( params->dictMgr );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );

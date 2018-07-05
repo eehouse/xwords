@@ -531,7 +531,7 @@ setRoleStrings( NewGameCtx* ngc )
         strID = STR_TOTALPLAYERS;
     }
 
-    value.ng_cp = util_getUserString( ngc->util, strID );
+    value.ng_cp = dutil_getUserString( util_getDevUtilCtxt(ngc->util), strID );
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYHEADER, value );
 } /* setRoleStrings */
 

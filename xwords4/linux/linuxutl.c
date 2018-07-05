@@ -266,150 +266,12 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, XP_U16 nCols,
     return result;
 } /* linux_util_getSquareBonus */
 
-static XP_U32
-linux_util_getCurSeconds( XW_UtilCtxt* XP_UNUSED(uc) ) 
-{
-    return (XP_U32)time(NULL);//tv.tv_sec;
-} /* gtk_util_getCurSeconds */
-
-static const XP_UCHAR*
-linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
-{
-    switch( code ) {
-    case STRD_REMAINING_TILES_ADD:
-        return (XP_UCHAR*)"+ %d [all remaining tiles]";
-    case STRD_UNUSED_TILES_SUB:
-        return (XP_UCHAR*)"- %d [unused tiles]";
-    case STR_COMMIT_CONFIRM:
-        return (XP_UCHAR*)"Are you sure you want to commit the current move?\n";
-    case STRD_TURN_SCORE:
-        return (XP_UCHAR*)"Score for turn: %d\n";
-    case STR_BONUS_ALL:
-        return (XP_UCHAR*)"Bonus for using all tiles: 50\n";
-    case STR_LOCAL_NAME:
-        return (XP_UCHAR*)"%s";
-    case STR_NONLOCAL_NAME:
-        return (XP_UCHAR*)"%s (remote)";
-    case STRD_TIME_PENALTY_SUB:
-        return (XP_UCHAR*)" - %d [time]";
-        /* added.... */
-    case STRD_CUMULATIVE_SCORE:
-        return (XP_UCHAR*)"Cumulative score: %d\n";
-    case STRS_TRAY_AT_START:
-        return (XP_UCHAR*)"Tray at start: %s\n";
-    case STRS_MOVE_DOWN:
-        return (XP_UCHAR*)"move (from %s down)\n";
-    case STRS_MOVE_ACROSS:
-        return (XP_UCHAR*)"move (from %s across)\n";
-    case STRS_NEW_TILES:
-        return (XP_UCHAR*)"New tiles: %s\n";
-    case STRSS_TRADED_FOR:
-        return (XP_UCHAR*)"Traded %s for %s.";
-    case STR_PASS:
-        return (XP_UCHAR*)"pass\n";
-    case STR_PHONY_REJECTED:
-        return (XP_UCHAR*)"Illegal word in move; turn lost!\n";
-
-    case STRD_ROBOT_TRADED:
-        return (XP_UCHAR*)"%d tiles traded this turn.";
-    case STR_ROBOT_MOVED:
-        return (XP_UCHAR*)"The robot \"%s\" moved:\n";
-    case STRS_REMOTE_MOVED:
-        return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-    case STR_LOCALPLAYERS:
-        return (XP_UCHAR*)"Local players";
-    case STR_REMOTE:
-        return (XP_UCHAR*)"Remote";
-#endif
-    case STR_TOTALPLAYERS:
-        return (XP_UCHAR*)"Total players";
-
-    case STRS_VALUES_HEADER:
-        return (XP_UCHAR*)"%s counts/values:\n";
-
-    case STRD_REMAINS_HEADER:
-        return (XP_UCHAR*)"%d tiles left in pool.";
-    case STRD_REMAINS_EXPL:
-        return (XP_UCHAR*)"%d tiles left in pool and hidden trays:\n";
-
-    case STRSD_RESIGNED:
-        return "[Resigned] %s: %d";
-    case STRSD_WINNER:
-        return "[Winner] %s: %d";
-    case STRDSD_PLACER:
-        return "[#%d] %s: %d";
-
-    default:
-        return (XP_UCHAR*)"unknown code to linux_util_getUserString";
-    }
-} /* linux_util_getUserString */
-
-static const XP_UCHAR*
-linux_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 code, 
-                                  XP_U16 XP_UNUSED(quantity) )
-{
-    return linux_util_getUserString( uc, code );
-}
-
-#ifdef XWFEATURE_DEVID
-static const XP_UCHAR*
-linux_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
+static XW_DUtilCtxt*
+linux_util_getDevUtilCtxt( XW_UtilCtxt* uc )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    return linux_getDevID( cGlobals->params, typ );
+    return cGlobals->params->dutil;
 }
-
-static void
-linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ, 
-                             const XP_UCHAR* idRelay )
-{
-    /* Script discon_ok2.sh is grepping for these strings in logs, so don't
-       change them! */
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    switch( typ ) {
-    case ID_TYPE_NONE: /* error case */
-        XP_LOGF( "%s: id rejected", __func__ );
-        cGlobals->params->lDevID = NULL;
-        break;
-    case ID_TYPE_RELAY:
-        if ( !!cGlobals->pDb && 0 < strlen( idRelay ) ) {
-            XP_LOGF( "%s: new id: %s", __func__, idRelay );
-            db_store( cGlobals->pDb, KEY_RDEVID, idRelay );
-        }
-        break;
-    default:
-        XP_ASSERT(0);
-        break;
-    }
-}
-#endif
-
-#ifdef COMMS_CHECKSUM
-static XP_UCHAR*
-linux_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
-{
-    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
-    XP_U16 sumlen = 1 + strlen( sum );
-    XP_UCHAR* result = XP_MALLOC( uc->mpool, sumlen );
-    XP_MEMCPY( result, sum, sumlen );
-    g_free( sum );
-    return result;
-}
-#endif
-
-#ifdef XWFEATURE_SMS
-static XP_Bool 
-linux_util_phoneNumbersSame( XW_UtilCtxt* uc, const XP_UCHAR* p1,
-                             const XP_UCHAR* p2 )
-{
-    XP_USE( uc );
-    XP_Bool result = 0 == strcmp( p1, p2 );
-    XP_LOGF( "%s(%s, %s) => %d", __func__, p1, p2, result );
-    return result;
-}
-#endif
 
 void
 linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
@@ -421,19 +283,8 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 
     util->vtable->m_util_makeEmptyDict = linux_util_makeEmptyDict;
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
-    util->vtable->m_util_getCurSeconds = linux_util_getCurSeconds;
-    util->vtable->m_util_getUserString = linux_util_getUserString;
-    util->vtable->m_util_getUserQuantityString = linux_util_getUserQuantityString;
-#ifdef XWFEATURE_DEVID
-    util->vtable->m_util_getDevID = linux_util_getDevID;
-    util->vtable->m_util_deviceRegistered = linux_util_deviceRegistered;
-#endif
-#ifdef COMMS_CHECKSUM
-    util->vtable->m_util_md5sum = linux_util_md5sum;
-#endif
-#ifdef XWFEATURE_SMS
-    util->vtable->m_util_phoneNumbersSame = linux_util_phoneNumbersSame;
-#endif
+
+    util->vtable->m_util_getDevUtilCtxt = linux_util_getDevUtilCtxt;
 }
 
 void

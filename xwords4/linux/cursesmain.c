@@ -1362,13 +1362,6 @@ initClientSocket( CursesAppGlobals* globals, char* serverName )
 } /* initClientSocket */
 #endif
 
-static VTableMgr*
-curses_util_getVTManager(XW_UtilCtxt* uc)
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    return globals->cGlobals.params->vtMgr;
-} /* linux_util_getVTManager */
-
 static void
 curses_util_informNeedPassword( XW_UtilCtxt* XP_UNUSED(uc),
                                 XP_U16 XP_UNUSED_DBG(playerNum),
@@ -1462,7 +1455,6 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
 {
     util->vtable->m_util_userError = curses_util_userError;
 
-    util->vtable->m_util_getVTManager = curses_util_getVTManager;
     util->vtable->m_util_informNeedPassword = curses_util_informNeedPassword;
     util->vtable->m_util_yOffsetChange = curses_util_yOffsetChange;
 #ifdef XWFEATURE_TURNCHANGENOTIFY

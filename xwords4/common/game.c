@@ -80,7 +80,7 @@ makeGameID( XW_UtilCtxt* util )
     XP_U32 gameID = 0;
     assertUtilOK( util );
     while ( 0 == gameID ) {
-        gameID = util_getCurSeconds( util );
+        gameID = dutil_getCurSeconds( util_getDevUtilCtxt( util ) );
     }
     return gameID;
 }

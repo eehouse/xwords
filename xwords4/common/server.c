@@ -72,6 +72,7 @@ typedef struct ServerVolatiles {
     ModelCtxt* model;
     CommsCtxt* comms;
     XW_UtilCtxt* util;
+    XW_DUtilCtxt* dutil;
     CurGameInfo* gi;
     TurnChangeListener turnChangeListener;
     void* turnChangeData;
@@ -271,6 +272,7 @@ server_make( MPFORMAL ModelCtxt* model, CommsCtxt* comms, XW_UtilCtxt* util )
         result->vol.model = model;
         result->vol.comms = comms;
         result->vol.util = util;
+        result->vol.dutil = util_getDevUtilCtxt( util );
         result->vol.gi = util->gameInfo;
 
         initServer( result );
@@ -672,7 +674,7 @@ sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, const XP_UCHAR* msg,
 void
 server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from )
 {
-    XP_U32 timestamp = util_getCurSeconds( server->vol.util );
+    XP_U32 timestamp = dutil_getCurSeconds( server->vol.dutil );
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         sendChatTo( server, SERVER_DEVICE, msg, from, timestamp );
     } else {
@@ -829,7 +831,7 @@ mkServerStream( ServerCtxt* server )
 {
     XWStreamCtxt* stream;
     stream = mem_stream_make_raw( MPPARM(server->mpool)
-                                  util_getVTManager(server->vol.util) );
+                                  dutil_getVTManager(server->vol.dutil) );
     XP_ASSERT( !!stream );
     return stream;
 } /* mkServerStream */
@@ -847,11 +849,11 @@ makeRobotMove( ServerCtxt* server )
     XP_Bool timerEnabled = gi->timerEnabled;
     XP_Bool canMove;
     XP_U32 time = 0L; /* stupid compiler.... */
-    XW_UtilCtxt* util = server->vol.util;
+    XW_DUtilCtxt* dutil = server->vol.dutil;
     XP_Bool forceTrade = XP_FALSE;
     
     if ( timerEnabled ) {
-        time = util_getCurSeconds( util );
+        time = dutil_getCurSeconds( dutil );
     }
 
 #ifdef XWFEATURE_SLOW_ROBOT
@@ -915,8 +917,8 @@ makeRobotMove( ServerCtxt* server )
 
             if ( !!stream ) {
                 XP_UCHAR buf[64];
-                str = util_getUserQuantityString( util, STRD_ROBOT_TRADED, 
-                                                  MAX_TRAY_TILES );
+                str = dutil_getUserQuantityString( dutil, STRD_ROBOT_TRADED,
+                                                   MAX_TRAY_TILES );
                 XP_SNPRINTF( buf, sizeof(buf), str, MAX_TRAY_TILES );
 
                 stream_catString( stream, buf );
@@ -949,7 +951,7 @@ makeRobotMove( ServerCtxt* server )
 
     if ( timerEnabled ) {
         gi->players[turn].secondsUsed += 
-            (XP_U16)(util_getCurSeconds( util ) - time);
+            (XP_U16)(dutil_getCurSeconds( dutil ) - time);
     } else {
         XP_ASSERT( gi->players[turn].secondsUsed == 0 );
     }
@@ -1011,6 +1013,7 @@ showPrevScore( ServerCtxt* server )
 {
     if ( server->nv.showRobotScores ) { /* this can be changed between turns */
         XW_UtilCtxt* util = server->vol.util;
+        XW_DUtilCtxt* dutil = server->vol.dutil;
         XWStreamCtxt* stream;
         const XP_UCHAR* str;
         XP_UCHAR buf[128];
@@ -1023,9 +1026,9 @@ showPrevScore( ServerCtxt* server )
         lp = &gi->players[prevTurn];
 
         if ( LP_IS_LOCAL(lp) ) {
-            str = util_getUserString( util, STR_ROBOT_MOVED );
+            str = dutil_getUserString( dutil, STR_ROBOT_MOVED );
         } else {
-            str = util_getUserString( util, STRS_REMOTE_MOVED );
+            str = dutil_getUserString( dutil, STRS_REMOTE_MOVED );
         }
         XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
         str = buf;
@@ -2241,8 +2244,8 @@ makeTradeReportIf( ServerCtxt* server, const TrayTileSet* tradedTiles )
     if ( server->nv.showRobotScores ) {
         XP_UCHAR tradeBuf[64];
         const XP_UCHAR* tradeStr = 
-            util_getUserQuantityString( server->vol.util, STRD_ROBOT_TRADED,
-                                        tradedTiles->nTiles );
+            dutil_getUserQuantityString( server->vol.dutil, STRD_ROBOT_TRADED,
+                                         tradedTiles->nTiles );
         XP_SNPRINTF( tradeBuf, sizeof(tradeBuf), tradeStr, 
                      tradedTiles->nTiles );
         stream = mkServerStream( server );
@@ -2707,7 +2710,7 @@ setTurn( ServerCtxt* server, XP_S16 turn )
                || (!amServer(server) || (0 == server->nv.pendingRegistrations)));
     if ( server->nv.currentTurn != turn || 1 == server->vol.gi->nPlayers ) {
         server->nv.currentTurn = turn;
-        server->nv.lastMoveTime = util_getCurSeconds( server->vol.util );
+        server->nv.lastMoveTime = dutil_getCurSeconds( server->vol.dutil );
         callTurnChangeListener( server );
     }
 }
@@ -3026,8 +3029,8 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     Tile tile;
     XP_U16 nChars, nPrinted;
     XP_UCHAR buf[48];
-    const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
-                                              STRS_VALUES_HEADER );
+    const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil,
+                                               STRS_VALUES_HEADER );
     const XP_UCHAR* langName;
 
     XP_ASSERT( !!server->vol.model );
@@ -3097,9 +3100,9 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 
         XP_ASSERT( !!server->vol.model );
 
-        const XP_UCHAR* fmt = util_getUserQuantityString( server->vol.util, 
-                                                          STRD_REMAINS_HEADER, 
-                                                          nLeft );
+        const XP_UCHAR* fmt = dutil_getUserQuantityString( server->vol.dutil,
+                                                           STRD_REMAINS_HEADER,
+                                                           nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
         stream_catString( stream, buf );
         stream_catString( stream, "\n\n" );
@@ -3137,8 +3140,8 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
             XP_ASSERT( offset < sizeof(cntsBuf) );
         }
 
-        fmt = util_getUserQuantityString( server->vol.util, STRD_REMAINS_EXPL,
-                                          nLeft );
+        fmt = dutil_getUserQuantityString( server->vol.dutil, STRD_REMAINS_EXPL,
+                                           nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
         stream_catString( stream, buf );
 
@@ -3227,10 +3230,10 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
     XP_S16 quitter = server->nv.quitter;
     XP_Bool quitterDone = XP_FALSE;
     ModelCtxt* model = server->vol.model;
-    const XP_UCHAR* addString = util_getUserString( server->vol.util,
-                                                    STRD_REMAINING_TILES_ADD );
-    const XP_UCHAR* subString = util_getUserString( server->vol.util,
-                                                    STRD_UNUSED_TILES_SUB );
+    const XP_UCHAR* addString = dutil_getUserString( server->vol.dutil,
+                                                     STRD_REMAINING_TILES_ADD );
+    const XP_UCHAR* subString = dutil_getUserString( server->vol.dutil,
+                                                     STRD_UNUSED_TILES_SUB );
     XP_UCHAR* timeStr;
     CurGameInfo* gi = server->vol.gi;
     const XP_U16 nPlayers = gi->nPlayers;
@@ -3280,9 +3283,8 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
             XP_U16 penalty = player_timePenalty( gi, thisIndex );
             if ( penalty > 0 ) {
                 XP_SNPRINTF( timeBuf, sizeof(timeBuf), 
-                             util_getUserString( 
-                                                server->vol.util,
-                                                STRD_TIME_PENALTY_SUB ),
+                             dutil_getUserString( server->vol.dutil,
+                                                  STRD_TIME_PENALTY_SUB ),
                              penalty ); /* positive for formatting */
                 timeStr = timeBuf;
             }
@@ -3297,12 +3299,12 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 
         const XP_UCHAR* name = emptyStringIfNull(gi->players[thisIndex].name);
         if ( 0 == placeKey ) {
-            const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+            const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil,
                                                       STRDSD_PLACER );
             XP_SNPRINTF( buf, sizeof(buf), fmt, place,
                          name, scores.arr[thisIndex] );
         } else {
-            const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+            const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil,
                                                       placeKey );
             XP_SNPRINTF( buf, sizeof(buf), fmt, name,
                          scores.arr[thisIndex] );

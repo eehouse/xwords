@@ -51,6 +51,7 @@ typedef struct _RecordWordsInfo {
 } RecordWordsInfo;
 
 typedef struct ModelVolatiles {
+    XW_DUtilCtxt* dutil;
     XW_UtilCtxt* util;
     struct CurGameInfo* gi;
     DictionaryCtxt* dict;

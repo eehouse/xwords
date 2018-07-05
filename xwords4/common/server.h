@@ -30,20 +30,6 @@
 extern "C" {
 #endif
 
-enum {
-    PHONIES_IGNORE,
-    PHONIES_WARN,
-    PHONIES_DISALLOW
-};
-typedef XP_U8 XWPhoniesChoice;
-
-enum {
-    SERVER_STANDALONE,
-    SERVER_ISSERVER,
-    SERVER_ISCLIENT
-};
-typedef XP_U8 DeviceRole;
-
 /* typedef struct ServerCtxt ServerCtxt; */
 
 /* typedef struct ServerVtable { */

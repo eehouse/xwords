@@ -55,4 +55,6 @@ void setSquareBonuses( const CommonGlobals* cGlobals );
 # define setSquareBonuses( cg )
 #endif
 
+XP_U32 linux_getCurSeconds();
+
 #endif

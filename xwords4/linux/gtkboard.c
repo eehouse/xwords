@@ -1719,14 +1719,6 @@ gtkUserError( GtkGameGlobals* globals, const char* format, ... )
     va_end(ap);
 } /* gtkUserError */
 
-static VTableMgr*
-gtk_util_getVTManager(XW_UtilCtxt* uc)
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    return globals->cGlobals.params->vtMgr;
-} /* linux_util_getVTManager */
-
-
 static gint
 ask_blank( gpointer data )
 {
@@ -2565,7 +2557,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_userError = gtk_util_userError;
     util->vtable->m_util_notifyMove = gtk_util_notifyMove;
     util->vtable->m_util_notifyTrade = gtk_util_notifyTrade;
-    util->vtable->m_util_getVTManager = gtk_util_getVTManager;
     util->vtable->m_util_notifyPickTileBlank = gtk_util_notifyPickTileBlank;
     util->vtable->m_util_informNeedPickTiles = gtk_util_informNeedPickTiles;
     util->vtable->m_util_informNeedPassword = gtk_util_informNeedPassword;
