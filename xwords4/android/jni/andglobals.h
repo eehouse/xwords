@@ -26,15 +26,16 @@
 
 typedef struct _JNIState JNIState;
 
-typedef struct _AndGlobals {
+typedef struct _AndGameGlobals {
     VTableMgr* vtMgr;
     CurGameInfo* gi;
     DrawCtx* dctx;
     XW_UtilCtxt* util;
     struct JNIUtilCtxt* jniutil;
     TransportProcs* xportProcs;
+    XW_DUtilCtxt* dutil;
     JNIState* state;
-} AndGlobals;
+} AndGameGlobals;
 
 typedef struct _EnvThreadInfo EnvThreadInfo;
 

@@ -574,7 +574,7 @@ public class DictUtils {
         if ( ok && null != dir ) {
             String fullPath = new File( dir, file ).getPath();
             ok = XwJNI.dict_getInfo( null, removeDictExtn( file ), fullPath,
-                                     JNIUtilsImpl.get(context), true, null );
+                                     true, null );
         }
         return ok;
     }

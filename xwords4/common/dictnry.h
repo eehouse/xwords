@@ -44,8 +44,6 @@ extern "C" {
 #define DICT_HEADER_MASK 0x08
 #define DICT_SYNONYMS_MASK 0x10
 
-typedef XP_U8 XP_LangCode;
-
 typedef enum {
     INTRADE_MW_TEXT = BONUS_LAST
 } XWMiniTextType;

@@ -131,8 +131,8 @@ public class GameUtils {
 
         gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes, pairs.m_paths,
                                  gi.langName( context ), (UtilCtxt)null,
-                                 JNIUtilsImpl.get( context ), (DrawCtx)null,
-                                 CommonPrefs.get( context ), (TransportProcs)null );
+                                 (DrawCtx)null, CommonPrefs.get( context ),
+                                 (TransportProcs)null );
 
         if ( juggle ) {
             gi.juggle();
@@ -372,15 +372,13 @@ public class GameUtils {
                 gamePtr = XwJNI.initFromStream( rowid, stream, gi, dictNames,
                                                 pairs.m_bytes, pairs.m_paths,
                                                 langName, util,
-                                                JNIUtilsImpl.get( context ),
                                                 null,
                                                 CommonPrefs.get(context),
                                                 tp );
                 if ( null == gamePtr ) {
                     gamePtr = XwJNI.initNew( gi, dictNames,
                                              pairs.m_bytes, pairs.m_paths,
-                                             langName, (UtilCtxt)null,
-                                             JNIUtilsImpl.get(context), null,
+                                             langName, (UtilCtxt)null, null,
                                              CommonPrefs.get(context), null );
                 }
             }
@@ -1024,8 +1022,7 @@ public class GameUtils {
                 XwJNI.initFromStream( rowid, stream, gi, dictNames,
                                       pairs.m_bytes, pairs.m_paths,
                                       gi.langName( context ), null,
-                                      JNIUtilsImpl.get(context), null,
-                                      CommonPrefs.get( context ), null );
+                                      null, CommonPrefs.get( context ), null );
             // second time required as game_makeFromStream can overwrite
             gi.replaceDicts( context, newDict );
 
@@ -1075,8 +1072,7 @@ public class GameUtils {
                                             new CurGameInfo(context),
                                             dictNames, pairs.m_bytes,
                                             pairs.m_paths, langName,
-                                            null, JNIUtilsImpl.get(context),
-                                            null, cp, null );
+                                            null, null, cp, null );
             madeGame = null != gamePtr;
         }
 
@@ -1084,8 +1080,7 @@ public class GameUtils {
             Assert.assertNull( gamePtr );
             gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes,
                                      pairs.m_paths, langName, util,
-                                     JNIUtilsImpl.get(context), (DrawCtx)null,
-                                     cp, sink );
+                                     (DrawCtx)null, cp, sink );
         }
 
         if ( null != car ) {

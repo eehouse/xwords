@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-gradle.sh installXw4Debug"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
 /*
  * Copyright © 2009 - 2018 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -61,6 +61,8 @@ typedef struct _JNIGlobalState {
     EnvThreadInfo ti;
     DictMgrCtxt* dictMgr;
     VTableMgr* vtMgr;
+    XW_DUtilCtxt* dutil;
+    JNIUtilCtxt* jniutil;
     XP_Bool mpoolInUse;
     MPSLOT
 } JNIGlobalState;
@@ -276,15 +278,18 @@ getState( JNIEnv* env, GamePtrType gamePtr )
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
-( JNIEnv* env, jclass C )
+( JNIEnv* env, jclass C, jobject jdutil, jobject jniu )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make( NULL );
 #endif
     JNIGlobalState* state = (JNIGlobalState*)XP_CALLOC( mpool, sizeof(*state) );
     map_init( MPPARM(mpool) &state->ti, env );
-    state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
+    state->jniutil = makeJNIUtil( MPPARM(mpool) env, &state->ti, jniu );
     state->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
+    state->dutil = makeDUtil( MPPARM(mpool) &state->ti, jdutil, state->vtMgr,
+                              state->jniutil, NULL );
+    state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
     MPASSIGN( state->mpool, mpool );
     // LOG_RETURNF( "%p", state );
     return (jint)state;
@@ -292,18 +297,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
-( JNIEnv* env, jclass C, jint ptr )
+( JNIEnv* env, jclass C, jint jniGlobalPtr )
 {
     // LOG_FUNC();
-    if ( 0 != ptr ) {
-        JNIGlobalState* state = (JNIGlobalState*)ptr;
-        XP_ASSERT( ENVFORME(&state->ti) == env );
+    if ( 0 != jniGlobalPtr ) {
+        JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = getMPool( state );
 #endif
         XP_ASSERT( ENVFORME(&state->ti) == env );
         vtmgr_destroy( MPPARM(mpool) state->vtMgr );
         dmgr_destroy( state->dictMgr );
+        destroyDUtil( &state->dutil );
+        destroyJNIUtil( env, &state->jniutil );
         map_destroy( &state->ti );
         XP_FREE( mpool, state );
         mpool_destroy( mpool );
@@ -696,7 +702,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1unref
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jDictBytes, 
-  jstring jname, jstring jpath, jobject jniu, jboolean check, jobject jinfo )
+  jstring jname, jstring jpath, jboolean check, jobject jinfo )
 {
     jboolean result = false;
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
@@ -706,9 +712,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
     MemPoolCtx* mpool = getMPool( state );
 #endif
 
-    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(mpool) env, &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, state->dictMgr,
-                                     jniutil, jname, jDictBytes, jpath, 
+                                     state->jniutil, jname, jDictBytes, jpath,
                                      NULL, check );
     if ( NULL != dict ) {
         if ( NULL != jinfo ) {
@@ -721,7 +726,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
         dict_unref( dict );
         result = true;
     }
-    destroyJNIUtil( env, &jniutil );
 
     releaseMPool( state );
     return result;
@@ -760,7 +764,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTileValue
 struct _JNIState {
     XWGame game;
     JNIGlobalState* globalJNI;
-    AndGlobals globals;
+    AndGameGlobals globals;
     // pthread_mutex_t msgMutex;
     XP_U16 curSaveCount;
     XP_U16 lastSavedSize;
@@ -779,27 +783,26 @@ struct _JNIState {
 
 #define XWJNI_START_GLOBALS()                           \
     XWJNI_START()                                       \
-    AndGlobals* globals = &state->globals;              \
+    AndGameGlobals* globals = &state->globals;          \
 
 #define XWJNI_END()                                   \
     }                                                 \
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
-( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed, jstring jtag )
+( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed )
 {
     /* Why am I doing this twice? */
     /* struct timeval tv; */
     /* gettimeofday( &tv, NULL ); */
     /* srandom( tv.tv_sec ); */
 #ifdef MEM_DEBUG
-    const char* tag = (*env)->GetStringUTFChars( env, jtag, NULL );
-    MemPoolCtx* mpool = mpool_make( tag );
-    (*env)->ReleaseStringUTFChars( env, jtag, tag );
+    MemPoolCtx* mpool = ((JNIGlobalState*)jniGlobalPtr)->mpool;
 #endif
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
     state->globalJNI = (JNIGlobalState*)jniGlobalPtr;
-    AndGlobals* globals = &state->globals;
+    AndGameGlobals* globals = &state->globals;
+    globals->dutil = state->globalJNI->dutil;
     globals->state = (JNIState*)state;
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
@@ -825,8 +828,8 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject j_gi, 
   jobjectArray j_names, jobjectArray j_dicts, jobjectArray j_paths,
-  jstring j_lang, jobject j_util, jobject jniu, jobject j_draw, 
-  jobject j_cp, jobject j_procs )
+  jstring j_lang, jobject j_util, jobject j_draw, jobject j_cp,
+  jobject j_procs )
 {
     XWJNI_START_GLOBALS();
     EnvThreadInfo* ti = &state->globalJNI->ti;
@@ -834,7 +837,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     globals->gi = gi;
     globals->util = makeUtil( MPPARM(mpool) ti, j_util, gi, 
                               globals );
-    globals->jniutil = makeJNIUtil( MPPARM(mpool) env, ti, jniu );
+    globals->jniutil = state->globalJNI->jniutil;
     DrawCtx* dctx = NULL;
     if ( !!j_draw ) {
         dctx = makeDraw( MPPARM(mpool) ti, j_draw );
@@ -876,7 +879,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = state->mpool;
 #endif
-    AndGlobals* globals = &state->globals;
+    AndGameGlobals* globals = &state->globals;
 
     destroyGI( MPPARM(mpool) &globals->gi );
 
@@ -885,22 +888,19 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     destroyDraw( &globals->dctx );
     destroyXportProcs( &globals->xportProcs );
     destroyUtil( &globals->util );
-    destroyJNIUtil( env, &globals->jniutil );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
     MAP_REMOVE( &state->globalJNI->ti, env );
     /* pthread_mutex_destroy( &state->msgMutex ); */
 
     XP_FREE( mpool, state );
-    mpool_destroy( mpool );
 } /* game_dispose */
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jbyteArray jstream, jobject /*out*/jgi,
   jobjectArray jdictNames, jobjectArray jdicts, jobjectArray jpaths,
-  jstring jlang, jobject jutil, jobject jniu, jobject jdraw, jobject jcp,
-  jobject jprocs )
+  jstring jlang, jobject jutil, jobject jdraw, jobject jcp, jobject jprocs )
 {
     jboolean result;
     DictionaryCtxt* dict;
@@ -910,7 +910,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
     globals->util = makeUtil( MPPARM(mpool) ti, jutil, globals->gi, globals);
-    globals->jniutil = makeJNIUtil( MPPARM(mpool) env, ti, jniu );
+    globals->jniutil = state->globalJNI->jniutil;
     makeDicts( MPPARM(state->globalJNI->mpool) env, state->globalJNI->dictMgr, 
                globals->jniutil, &dict, &dicts, jdictNames, jdicts, jpaths, 
                jlang );
@@ -941,7 +941,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
         destroyDraw( &globals->dctx );
         destroyXportProcs( &globals->xportProcs );
         destroyUtil( &globals->util );
-        destroyJNIUtil( env, &globals->jniutil );
         destroyGI( MPPARM(mpool) &globals->gi );
     }
 
@@ -1574,7 +1573,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
 void
 and_send_on_close( XWStreamCtxt* stream, void* closure )
 {
-    AndGlobals* globals = (AndGlobals*)closure;
+    AndGameGlobals* globals = (AndGameGlobals*)closure;
     JNIState* state = (JNIState*)globals->state;
 
     XP_ASSERT( !!state->game.comms );
@@ -2120,29 +2119,25 @@ static void freeIndices( DictIterData* data );
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jDictBytes, jstring jname, 
-  jstring jpath, jobject jniu )
+  jstring jpath )
 {
     jint closure = 0;
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
 
-    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) env,
-                                        &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
-                                     jniutil, jname, jDictBytes, jpath, NULL, 
+                                     state->jniutil, jname, jDictBytes, jpath, NULL,
                                      false );
     if ( !!dict ) {
         DictIterData* data = XP_CALLOC( state->mpool, sizeof(*data) );
         data->env = env;
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(state->mpool) );
-        data->jniutil = jniutil;
+        data->jniutil = state->jniutil;
         data->dict = dict;
         data->depth = 2;
 #ifdef MEM_DEBUG
         data->mpool = state->mpool;
 #endif
         closure = (int)data;
-    } else {
-        destroyJNIUtil( env, &jniutil );
     }
     return closure;
 }
@@ -2170,7 +2165,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 #endif
 
         dict_unref( data->dict );
-        destroyJNIUtil( env, &data->jniutil );
         freeIndices( data );
         vtmgr_destroy( MPPARM(mpool) data->vtMgr );
         XP_FREE( mpool, data );

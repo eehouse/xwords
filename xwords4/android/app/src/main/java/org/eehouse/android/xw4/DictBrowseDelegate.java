@@ -175,8 +175,7 @@ public class DictBrowseDelegate extends DelegateBase
             String[] names = { name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, names );
             m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0],
-                                                  name, pairs.m_paths[0],
-                                                  JNIUtilsImpl.get(m_activity) );
+                                                  name, pairs.m_paths[0] );
 
             m_browseState = DBUtils.dictsGetOffset( m_activity, name, m_loc );
             boolean newState = null == m_browseState;

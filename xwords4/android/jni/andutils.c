@@ -689,7 +689,7 @@ jEnumToInt( JNIEnv* env, jobject jenum )
 }
 
 XWStreamCtxt*
-and_empty_stream( MPFORMAL AndGlobals* globals )
+and_empty_stream( MPFORMAL AndGameGlobals* globals )
 {
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             globals, 0, NULL );

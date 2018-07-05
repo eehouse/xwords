@@ -25,6 +25,7 @@ import android.content.Context;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.Utils;
 
@@ -41,14 +42,13 @@ public class JNIUtilsImpl implements JNIUtils {
     private static JNIUtilsImpl s_impl = null;
     private Context m_context;
 
-    private JNIUtilsImpl(){}
+    private JNIUtilsImpl(Context context) { m_context = context; }
 
-    public static JNIUtils get( Context context )
+    public static JNIUtils get()
     {
         if ( null == s_impl ) {
-            s_impl = new JNIUtilsImpl();
+            s_impl = new JNIUtilsImpl( XWApp.getContext() );
         }
-        s_impl.m_context = context;
         return s_impl;
     }
 
