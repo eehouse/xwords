@@ -403,6 +403,19 @@ public class XwJNI {
     public static native boolean comms_getAddrDisabled( GamePtr gamePtr, CommsConnType typ,
                                                         boolean send );
 
+    public static byte[][] smsproto_prepOutbound( byte[] buf, String phone, boolean forceNow,
+                                          /*out*/ int[] waitSecs )
+    {
+        int nowSeconds = (int)(System.currentTimeMillis() / 1000);
+        return smsproto_prepOutbound( getJNI().m_ptr, buf, phone, nowSeconds,
+                                      forceNow, waitSecs );
+    }
+
+    public static byte[][] smsproto_prepInbound( byte[] data, String fromPhone )
+    {
+        return smsproto_prepInbound( getJNI().m_ptr, data, fromPhone );
+    }
+
     // Dicts
     public static class DictWrapper {
         private int m_dictPtr;
@@ -488,6 +501,14 @@ public class XwJNI {
                                                 DictInfo info );
     private static native int dict_iter_init( int jniState, byte[] dict,
                                               String name, String path );
+
+    private static native byte[][] smsproto_prepOutbound( int jniState, byte[] buf,
+                                                          String phone, int nowSeconds,
+                                                          boolean forceNow,
+                                                          /*out*/int[] waitSecs );
+
+    private static native byte[][] smsproto_prepInbound( int jniState, byte[] data,
+                                                         String fromPhone );
 
     private static native boolean haveEnv( int jniState );
 }

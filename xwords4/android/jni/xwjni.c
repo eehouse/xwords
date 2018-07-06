@@ -34,6 +34,7 @@
 #include "dictiter.h"
 #include "dictmgr.h"
 #include "nli.h"
+#include "smsproto.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -60,6 +61,7 @@ struct _EnvThreadInfo {
 typedef struct _JNIGlobalState {
     EnvThreadInfo ti;
     DictMgrCtxt* dictMgr;
+    SMSProto* smsProto;
     VTableMgr* vtMgr;
     XW_DUtilCtxt* dutil;
     JNIUtilCtxt* jniutil;
@@ -290,6 +292,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
     state->dutil = makeDUtil( MPPARM(mpool) &state->ti, jdutil, state->vtMgr,
                               state->jniutil, NULL );
     state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
+    state->smsProto = smsproto_init( MPPARM( mpool ) state->dutil );
     MPASSIGN( state->mpool, mpool );
     // LOG_RETURNF( "%p", state );
     return (jint)state;
@@ -306,6 +309,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
         MemPoolCtx* mpool = getMPool( state );
 #endif
         XP_ASSERT( ENVFORME(&state->ti) == env );
+        smsproto_free( state->smsProto );
         vtmgr_destroy( MPPARM(mpool) state->vtMgr );
         dmgr_destroy( state->dictMgr );
         destroyDUtil( &state->dutil );
@@ -759,6 +763,81 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTileValue
 ( JNIEnv* env, jclass C, jint dictPtr, jint tile )
 {
     return dict_getTileValue( (DictionaryCtxt*)dictPtr, tile );
+}
+
+static jobjectArray
+msgArrayToByteArrays( JNIEnv* env, const SMSMsgArray* arr )
+{
+    jclass clas = (*env)->FindClass( env, "[B" );
+    jobjectArray result = (*env)->NewObjectArray( env, arr->nMsgs, clas, NULL );
+    for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
+        SMSMsg* msg = &arr->msgs[ii];
+        jbyteArray arr = makeByteArray( env, msg->len, (const jbyte*)msg->data );
+        (*env)->SetObjectArrayElement( env, result, ii, arr );
+        deleteLocalRef( env, arr );
+    }
+    return result;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
+( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jData,
+  jstring jToPhone, jint jNow, jboolean jForce, jintArray jWaitSecsArr )
+{
+    jobjectArray result = NULL;
+    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &state->ti, env );
+
+    jbyte* data = NULL;
+    int len = 0;
+    if ( NULL != jData ) {
+        len = (*env)->GetArrayLength( env, jData );
+        data = (*env)->GetByteArrayElements( env, jData, NULL );
+    }
+    const char* toPhone = (*env)->GetStringUTFChars( env, jToPhone, NULL );
+
+    XP_U16 waitSecs;
+    SMSMsgArray* arr = smsproto_prepOutbound( state->smsProto, (const XP_U8*)data,
+                                              len, toPhone, jForce, &waitSecs );
+    if ( !!arr ) {
+        result = msgArrayToByteArrays( env, arr );
+        smsproto_freeMsgArray( state->smsProto, arr );
+    }
+
+    setIntInArray( env, jWaitSecsArr, 0, waitSecs );
+
+    (*env)->ReleaseStringUTFChars( env, jToPhone, toPhone );
+    if ( NULL != jData ) {
+        (*env)->ReleaseByteArrayElements( env, jData, data, 0 );
+    }
+
+    return result;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
+( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jData,
+  jstring jFromPhone )
+{
+    jobjectArray result = NULL;
+    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &state->ti, env );
+
+    int len = (*env)->GetArrayLength( env, jData );
+    jbyte* data = (*env)->GetByteArrayElements( env, jData, NULL );
+    const char* fromPhone = (*env)->GetStringUTFChars( env, jFromPhone, NULL );
+
+    SMSMsgArray* arr = smsproto_prepInbound( state->smsProto, fromPhone,
+                                             (XP_U8*)data, len );
+    if ( !!arr ) {
+        result = msgArrayToByteArrays( env, arr );
+        smsproto_freeMsgArray( state->smsProto, arr );
+    }
+
+    (*env)->ReleaseStringUTFChars( env, jFromPhone, fromPhone );
+    (*env)->ReleaseByteArrayElements( env, jData, data, 0 );
+
+    return result;
 }
 
 struct _JNIState {
