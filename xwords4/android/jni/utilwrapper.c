@@ -459,6 +459,20 @@ and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 stringCode, XP_U16 qu
 }
 
 static void
+and_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* data )
+{
+    XP_LOGF( "%s() NOT IMPLEMENTED", __func__ );
+    // XP_ASSERT(0);
+}
+
+static void
+and_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key,XWStreamCtxt* inOut )
+{
+    XP_LOGF( "%s() NOT IMPLEMENTED", __func__ );
+    // XP_ASSERT(0);
+}
+
+static void
 and_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
                              XP_U16 turn, XP_Bool turnLost )
 {
@@ -809,6 +823,8 @@ makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
     SET_DPROC(getCurSeconds);
     SET_DPROC(getUserString);
     SET_DPROC(getUserQuantityString);
+    SET_DPROC(store);
+    SET_DPROC(load);
 # ifdef XWFEATURE_DEVID
     SET_DPROC(getDevID);
     SET_DPROC(deviceRegistered);

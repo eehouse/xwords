@@ -30,6 +30,9 @@ static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XP_U16 code
 static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code,
                                                           XP_U16 quantity );
 
+static void linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                               XWStreamCtxt* data );
+static void linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut );
 #ifdef XWFEATURE_SMS
 static XP_Bool  linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc,
                                               const XP_UCHAR* p1,
@@ -60,6 +63,8 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
+    SET_PROC(store);
+    SET_PROC(load);
 
 #ifdef XWFEATURE_SMS
     SET_PROC(phoneNumbersSame);
@@ -172,6 +177,22 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code,
                                    XP_U16 XP_UNUSED(quantity) )
 {
     return linux_dutil_getUserString( duc, code );
+}
+
+static void
+linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* data )
+{
+    XP_LOGF( "%s(key=%s)", __func__, key );
+    XP_USE( duc );
+    XP_USE( data );
+}
+
+static void
+linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut )
+{
+    XP_LOGF( "%s(key=%s)", __func__, key );
+    XP_USE( duc );
+    XP_USE( inOut );
 }
 
 #ifdef XWFEATURE_SMS

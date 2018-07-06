@@ -33,6 +33,11 @@ typedef struct _DUtilVtable {
     const XP_UCHAR* (*m_dutil_getUserQuantityString)( XW_DUtilCtxt* duc,
                                                       XP_U16 stringCode,
                                                       XP_U16 quantity );
+    void (*m_dutil_store)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                           XWStreamCtxt* data );
+    /* Pass in an empty stream, and it'll be returned full */
+    void (*m_dutil_load)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                          XWStreamCtxt* inOut );
 #ifdef XWFEATURE_SMS
     XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, const XP_UCHAR* p1,
                                          const XP_UCHAR* p2 );
@@ -66,6 +71,11 @@ struct XW_DUtilCtxt {
     (duc)->vtable.m_dutil_getUserString((duc),(c))
 #define dutil_getUserQuantityString( duc, c, q )                \
     (duc)->vtable.m_dutil_getUserQuantityString((duc),(c),(q))
+
+#define dutil_stor(duc, k, v)                       \
+    (duc)->vtable.m_dutil_store((duc), (k), (v));
+#define dutil_load(uc, k, s)                        \
+    (duc)->vtable.m_dutil_load((duc), (k), (s));
 
 #ifdef XWFEATURE_SMS
 # define dutil_phoneNumbersSame(duc,p1,p2)                      \
