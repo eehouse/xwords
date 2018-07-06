@@ -1731,7 +1731,8 @@ curses_requestMsgs( gpointer data )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch( globals->cGlobals.pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    db_fetch_safe( globals->cGlobals.params->pDb, KEY_RDEVID, devIDBuf,
+                   sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( globals->cGlobals.params, devIDBuf );
     } else {
@@ -1763,13 +1764,13 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
-    sqlite3* pDb = cGlobals->pDb;
+    sqlite3* pDb = cGlobals->params->pDb;
     if ( !!devID ) {
         XP_LOGF( "%s(devID=%s)", __func__, devID );
 
         /* If we already have one, make sure it's the same! Else store. */
         gchar buf[64];
-        XP_Bool have = db_fetch( pDb, KEY_RDEVID, buf, sizeof(buf) )
+        XP_Bool have = db_fetch_safe( pDb, KEY_RDEVID, buf, sizeof(buf) )
             && 0 == strcmp( buf, devID );
         if ( !have ) {
             db_store( pDb, KEY_RDEVID, devID );
@@ -1994,9 +1995,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
         XP_Bool idIsNew = XP_TRUE;
         if ( !!params->dbName ) {
-            sqlite3* pDb = openGamesDB( params->dbName );
-            /* Gross that both need to be set, but they do. */
-            params->pDb = g_globals.cGlobals.pDb = pDb;
+            params->pDb = openGamesDB( params->dbName );
 
             /* Check if we have a local ID already.  If we do and it's
                changed, we care. */
@@ -2025,7 +2024,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         const gchar* myPhone = params->connInfo.sms.myPhone;
         if ( !!myPhone ) {
             db_store( params->pDb, KEY_SMSPHONE, myPhone );
-        } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+        } else if ( !myPhone && db_fetch_safe( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
             params->connInfo.sms.myPhone = myPhone = buf;
         }
         XP_U16 myPort = params->connInfo.sms.port;
@@ -2033,7 +2032,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         if ( 0 < myPort ) {
             sprintf( portbuf, "%d", myPort );
             db_store( params->pDb, KEY_SMSPORT, portbuf );
-        } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+        } else if ( db_fetch_safe( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
             params->connInfo.sms.port = myPort = atoi( portbuf );
         }
 
@@ -2231,7 +2230,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     endwin();
 
     if ( !!params->dbName ) {
-        closeGamesDB( g_globals.cGlobals.pDb );
+        closeGamesDB( params->pDb );
     }
     relaycon_cleanup( params );
 

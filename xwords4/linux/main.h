@@ -201,7 +201,6 @@ struct CommonGlobals {
     XP_U16 lastStreamSize;
     XP_U16 nMissing;
     XP_Bool manualFinal;        /* use asked for final scores */
-    sqlite3* pDb;
     sqlite3_int64 selRow;
 
     SocketAddedFunc socketAdded;

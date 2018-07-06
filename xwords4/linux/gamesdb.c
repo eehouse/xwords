@@ -27,8 +27,9 @@
 #define SNAP_WIDTH 150
 #define SNAP_HEIGHT 150
 
-static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
-                           int len );
+static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
+                              int* len );
+
 #ifdef DEBUG
 static char* sqliteErr2str( int err );
 #endif
@@ -160,7 +161,7 @@ writeToDB( XWStreamCtxt* stream, void* closure )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
     sqlite3_int64 selRow = cGlobals->selRow;
-    sqlite3* pDb = cGlobals->pDb;
+    sqlite3* pDb = cGlobals->params->pDb;
 
     XP_Bool newGame = -1 == selRow;
     selRow = writeBlobColumnStream( stream, pDb, selRow, "game" );
@@ -191,7 +192,7 @@ addSnapshot( CommonGlobals* cGlobals )
                                                     cGlobals->params->vtMgr );
         getImage( dctx, stream );
         removeSurface( dctx );
-        cGlobals->selRow = writeBlobColumnStream( stream, cGlobals->pDb,
+        cGlobals->selRow = writeBlobColumnStream( stream, cGlobals->params->pDb,
                                                    cGlobals->selRow, "snap" );
         stream_destroy( stream );
     }
@@ -268,8 +269,8 @@ summarize( CommonGlobals* cGlobals )
               cGlobals->selRow );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
-    int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
-    assertPrintResult( cGlobals->pDb, result, SQLITE_OK );
+    int result = sqlite3_prepare_v2( cGlobals->params->pDb, buf, -1, &stmt, NULL );
+    assertPrintResult( cGlobals->params->pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
         XP_LOGF( "sqlite3_step=>%s", sqliteErr2str( result ) );
@@ -341,7 +342,8 @@ getRelayIDsToRowsMap( sqlite3* pDb )
         case SQLITE_ROW:        /* have data */
         {
             XP_UCHAR relayID[32];
-            getColumnText( ppStmt, 0, relayID, VSIZE(relayID) );
+            int len = VSIZE(relayID);
+            getColumnText( ppStmt, 0, relayID, &len );
             gpointer key = g_strdup( relayID );
             sqlite3_int64* value = g_malloc( sizeof( value ) );
             *value = sqlite3_column_int64( ppStmt, 1 );
@@ -379,7 +381,8 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
     if ( SQLITE_ROW == result ) {
         success = XP_TRUE;
         int col = 0;
-        getColumnText( ppStmt, col++, gib->room, sizeof(gib->room) );
+        int len = sizeof(gib->room);
+        getColumnText( ppStmt, col++, gib->room, &len );
         gib->gameOver = 1 == sqlite3_column_int( ppStmt, col++ );
         gib->turn = sqlite3_column_int( ppStmt, col++ );
         gib->turnLocal = 1 == sqlite3_column_int( ppStmt, col++ );
@@ -387,10 +390,12 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->nTotal = sqlite3_column_int( ppStmt, col++ );
         gib->nMissing = sqlite3_column_int( ppStmt, col++ );
         gib->seed = sqlite3_column_int( ppStmt, col++ );
-        getColumnText( ppStmt, col++, gib->conn, sizeof(gib->conn) );
+        len = sizeof(gib->conn);
+        getColumnText( ppStmt, col++, gib->conn, &len );
         gib->gameID = sqlite3_column_int( ppStmt, col++ );
         gib->lastMoveTime = sqlite3_column_int( ppStmt, col++ );
-        getColumnText( ppStmt, col++, gib->relayID, sizeof(gib->relayID) );
+        len = sizeof(gib->relayID);
+        getColumnText( ppStmt, col++, gib->relayID, &len );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
 
 #ifdef PLATFORM_GTK
@@ -519,26 +524,40 @@ db_store( sqlite3* pDb, const gchar* key, const gchar* value )
     sqlite3_finalize( ppStmt );
 }
 
-XP_Bool
-db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
+FetchResult
+db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
 {
+    FetchResult result = NOT_THERE;
     char query[256];
     snprintf( query, sizeof(query),
               "SELECT value from pairs where key = '%s'", key );
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    XP_Bool found = SQLITE_OK == result;
+    int sqlResult = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    XP_Bool found = SQLITE_OK == sqlResult;
     if ( found ) {
         result = sqlite3_step( ppStmt );
         found = SQLITE_ROW == result;
         if ( found ) {
-            getColumnText( ppStmt, 0, buf, buflen );
-        } else {
+            if ( getColumnText( ppStmt, 0, buf, buflen ) ) {
+                result = SUCCESS;
+            } else {
+                result = BUFFER_TOO_SMALL;
+            }
+        } else if ( !!buf ) {
             buf[0] = '\0';
         }
     }
     sqlite3_finalize( ppStmt );
-    return found;
+    return result;
+}
+
+XP_Bool
+db_fetch_safe( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen )
+{
+    int tmp = buflen;
+    FetchResult result = db_fetch( dbp, key, buf, &tmp );
+    XP_ASSERT( result != BUFFER_TOO_SMALL );
+    return SUCCESS == result;
 }
 
 void
@@ -555,15 +574,19 @@ db_remove( sqlite3* pDb, const gchar* key )
     sqlite3_finalize( ppStmt );
 }
 
-static void
-getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
-               int XP_UNUSED_DBG(len) )
+static XP_Bool
+getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, int *len )
 {
-    const unsigned char* txt = sqlite3_column_text( ppStmt, iCol );
-    int needLen = sqlite3_column_bytes( ppStmt, iCol );
-    XP_ASSERT( needLen < len );
-    XP_MEMCPY( buf, txt, needLen );
-    buf[needLen] = '\0';
+    int colLen = sqlite3_column_bytes( ppStmt, iCol );
+
+    XP_Bool success = colLen < *len;
+    *len = colLen + 1;          /* sqlite does not store the null byte */
+    if ( success ) {
+        const unsigned char* colTxt = sqlite3_column_text( ppStmt, iCol );
+        XP_MEMCPY( buf, colTxt, colLen );
+        buf[colLen] = '\0';
+    }
+    return success;
 }
 
 #ifdef DEBUG

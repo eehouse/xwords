@@ -236,7 +236,7 @@ requestMsgsIdle( gpointer data )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch( cGlobals->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    db_fetch_safe( cGlobals->params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( cGlobals->params, devIDBuf );
     } else {
@@ -352,8 +352,9 @@ void
 saveGame( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
+    sqlite3* pDb = cGlobals->params->pDb;
     if ( !!cGlobals->game.model &&
-         (!!cGlobals->params->fileName || !!cGlobals->pDb) ) {
+         (!!cGlobals->params->fileName || !!pDb) ) {
         XP_Bool doSave = XP_TRUE;
         XP_Bool newGame = !file_exists( cGlobals->params->fileName )
             || -1 == cGlobals->selRow;
@@ -364,13 +365,12 @@ saveGame( CommonGlobals* cGlobals )
         }
 
         if ( doSave ) {
-            if ( !!cGlobals->pDb ) {
+            if ( !!pDb ) {
                 summarize( cGlobals );
             }
 
             XWStreamCtxt* outStream;
-            MemStreamCloseCallback onClose = !!cGlobals->pDb?
-                writeToDB : writeToFile;
+            MemStreamCloseCallback onClose = !!pDb? writeToDB : writeToFile;
             outStream = 
                 mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
                                        cGlobals->params->vtMgr, 
@@ -910,7 +910,7 @@ linux_getDevIDRelay( LaunchParams* params )
 {
     XP_U32 result = 0;
     gchar buf[32];
-    if ( db_fetch( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
+    if ( db_fetch_safe( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
         sscanf( buf, "%X", &result );
         XP_LOGF( "%s(): %s => %x", __func__, buf, result );
     }
@@ -934,12 +934,12 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     if ( !!params->lDevID ) {
         result = params->lDevID;
         *typ = ID_TYPE_LINUX;
-    } else if ( db_fetch( params->pDb, KEY_RDEVID, params->devIDStore, 
-                          sizeof(params->devIDStore) ) ) {
+    } else if ( db_fetch_safe( params->pDb, KEY_RDEVID, params->devIDStore,
+                               sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_RELAY;
-    } else if ( db_fetch( params->pDb, KEY_LDEVID, params->devIDStore, 
-                          sizeof(params->devIDStore) ) ) {
+    } else if ( db_fetch_safe( params->pDb, KEY_LDEVID, params->devIDStore,
+                               sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_LINUX;
     } else if ( !params->noAnonDevid ) {
@@ -953,8 +953,8 @@ void
 linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
 {
     gchar rDevIDBuf[64];
-    if ( !db_fetch( params->pDb, KEY_RDEVID, rDevIDBuf, 
-                    sizeof(rDevIDBuf) ) ) {
+    if ( !db_fetch_safe( params->pDb, KEY_RDEVID, rDevIDBuf,
+                         sizeof(rDevIDBuf) ) ) {
         rDevIDBuf[0] = '\0';
     }
     DevIDType typ = ID_TYPE_NONE;
@@ -970,7 +970,7 @@ linux_setupDevidParams( LaunchParams* params )
 {
     XP_Bool idIsNew = XP_TRUE;
     gchar oldLDevID[256];
-    if ( db_fetch( params->pDb, KEY_LDEVID, oldLDevID, sizeof(oldLDevID) )
+    if ( db_fetch_safe( params->pDb, KEY_LDEVID, oldLDevID, sizeof(oldLDevID) )
          && (!params->lDevID || 0 == strcmp( oldLDevID, params->lDevID )) ) {
         idIsNew = XP_FALSE;
     } else {

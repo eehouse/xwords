@@ -86,7 +86,7 @@ static void gtkShowFinalScores( const GtkGameGlobals* globals,
                                 XP_Bool ignoreTimeout );
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
                           XP_U32 devID, const XP_UCHAR* relayID, 
-                          const XP_UCHAR* phone );
+                          const CommsAddrRec* addrs );
 
 
 #define GTK_TRAY_HT_ROWS 3
@@ -597,10 +597,10 @@ createOrLoadObjects( GtkGameGlobals* globals )
         mpool_setTag( MEMPOOL buf );
         stream = streamFromDB( cGlobals );
 #endif
-    } else if ( !!cGlobals->pDb && 0 <= cGlobals->selRow ) {
+    } else if ( !!params->pDb && 0 <= cGlobals->selRow ) {
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool) 
                                       params->vtMgr );
-        if ( !loadGame( stream, cGlobals->pDb, cGlobals->selRow ) ) {
+        if ( !loadGame( stream, params->pDb, cGlobals->selRow ) ) {
             stream_destroy( stream );
             stream = NULL;
         }
@@ -875,7 +875,7 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         /* If it has pending invite info, send the invitation! */
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                     cGlobals->params->vtMgr );
-        if ( loadInviteAddrs( stream, cGlobals->pDb, cGlobals->selRow ) ) {
+        if ( loadInviteAddrs( stream, cGlobals->params->pDb, cGlobals->selRow ) ) {
             CommsAddrRec addr = {0};
             addrFromStream( &addr, stream );
             comms_setAddr( cGlobals->game.comms, &addr );
@@ -1620,21 +1620,21 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
 
     if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, devID, NULL, NULL );
+        send_invites( cGlobals, nPlayers, devID, NULL, &inviteAddr );
     }
 } /* handle_invite_button */
 
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               XP_U32 devID, const XP_UCHAR* relayID, 
-              const XP_UCHAR* phone )
+              const CommsAddrRec* addrs )
 {
     CommsAddrRec addr = {0};
     CommsCtxt* comms = cGlobals->game.comms;
     XP_ASSERT( comms );
     comms_getAddr( comms, &addr );
 
-    gint forceChannel = 0;  /* PENDING */
+    gint forceChannel = 1;  /* 1 is what Android does. Limits to two-device games */
 
     NetLaunchInfo nli = {0};
     nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
@@ -1655,11 +1655,13 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 #endif
 
-    if ( !!phone ) {
-        XP_ASSERT( 0 );         /* not implemented */
-        /* linux_sms_invite( cGlobals->params, gi, &addr, gameName, */
-        /*                   nPlayers, forceChannel,  */
-        /*                   inviteAddr.u.sms.phone, inviteAddr.u.sms.port ); */
+    if ( !!addrs->u.sms.phone ) {
+        gchar gameName[64];
+        snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
+
+        linux_sms_invite( cGlobals->params, cGlobals->gi, &addr, gameName,
+                          nPlayers, forceChannel,
+                          addrs->u.sms.phone, addrs->u.sms.port );
     }
     if ( 0 != devID || !!relayID ) {
         XP_ASSERT( 0 != devID || (!!relayID && !!relayID[0]) );
@@ -2921,10 +2923,9 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 
     CommonGlobals* cGlobals = &globals->cGlobals;
     cGlobals->selRow = rowid;
-    cGlobals->pDb = pDb;
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                 params->vtMgr );
-    XP_Bool loaded = loadGame( stream, cGlobals->pDb, rowid );
+    XP_Bool loaded = loadGame( stream, pDb, rowid );
     if ( loaded ) {
         if ( NULL == cGlobals->dict ) {
             cGlobals->dict = makeDictForStream( cGlobals, stream );

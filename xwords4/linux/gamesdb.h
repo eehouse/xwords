@@ -79,7 +79,11 @@ void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 #define KEY_WIN_LOC "WIN_LOC"
 
 void db_store( sqlite3* dbp, const gchar* key, const gchar* value );
-XP_Bool db_fetch( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen );
 void db_remove( sqlite3* dbp, const gchar* key );
+
+typedef enum { NOT_THERE, BUFFER_TOO_SMALL, SUCCESS } FetchResult;
+FetchResult db_fetch( sqlite3* dbp, const gchar* key, gchar* buf, gint* buflen );
+XP_Bool db_fetch_safe( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen );
+
 
 #endif

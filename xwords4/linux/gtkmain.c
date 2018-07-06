@@ -277,7 +277,6 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
         freeGlobals( globals );
     } else {
         GtkWidget* gameWindow = globals->window;
-        globals->cGlobals.pDb = apg->params->pDb;
         globals->cGlobals.selRow = -1;
         recordOpened( apg, globals );
         gtk_widget_show( gameWindow );
@@ -295,7 +294,6 @@ open_row( GtkAppGlobals* apg, sqlite3_int64 row, XP_Bool isNew )
         apg->params->needsNewGame = XP_FALSE;
         GtkGameGlobals* globals = malloc( sizeof(*globals) );
         initGlobals( globals, apg->params, NULL );
-        globals->cGlobals.pDb = apg->params->pDb;
         globals->cGlobals.selRow = row;
         recordOpened( apg, globals );
         gtk_widget_show( globals->window );
@@ -335,7 +333,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
     game_saveNewGame( MPPARM(cGlobals->util->mpool) &gi, 
                       cGlobals->util, &cGlobals->cp, stream );
 
-    sqlite3_int64 rowID = writeNewGameToDB( stream, cGlobals->pDb );
+    sqlite3_int64 rowID = writeNewGameToDB( stream, params->pDb );
     stream_destroy( stream );
     gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
 
@@ -365,7 +363,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
             }
             addrToStream( stream, &addrs[ii] );
         }
-        saveInviteAddrs( stream, cGlobals->pDb, rowID );
+        saveInviteAddrs( stream, params->pDb, rowID );
         stream_destroy( stream );
     }
 
@@ -407,7 +405,7 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
         deleteGame( params->pDb, rowid );
 
         XP_UCHAR devIDBuf[64] = {0};
-        db_fetch( params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+        db_fetch_safe( params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
         if ( '\0' != devIDBuf[0] ) {
             relaycon_deleted( params, devIDBuf, clientToken );
         } else {
@@ -502,7 +500,7 @@ trySetWinConfig( GtkAppGlobals* apg )
     int height = 400;
 
     gchar buf[64];
-    if ( db_fetch( apg->params->pDb, KEY_WIN_LOC, buf, sizeof(buf)) ) {
+    if ( db_fetch_safe( apg->params->pDb, KEY_WIN_LOC, buf, sizeof(buf)) ) {
         sscanf( buf, "%d:%d:%d:%d", &xx, &yy, &width, &height );
     }
 
@@ -685,7 +683,6 @@ relayInviteReceived( void* closure, NetLaunchInfo* invite )
         // globals->cGlobals.addr = *returnAddr;
 
         GtkWidget* gameWindow = globals->window;
-        globals->cGlobals.pDb = apg->params->pDb;
         globals->cGlobals.selRow = -1;
         recordOpened( apg, globals );
         gtk_widget_show( gameWindow );
@@ -731,7 +728,7 @@ requestMsgs( gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch( apg->params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    db_fetch_safe( apg->params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( apg->params, devIDBuf );
     } else {
@@ -776,7 +773,6 @@ smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName),
     globals->cGlobals.addr = *returnAddr;
 
     GtkWidget* gameWindow = globals->window;
-    globals->cGlobals.pDb = apg->params->pDb;
     globals->cGlobals.selRow = -1;
     recordOpened( apg, globals );
     gtk_widget_show( gameWindow );
@@ -910,7 +906,7 @@ gtkmain( LaunchParams* params )
         const gchar* myPhone = params->connInfo.sms.myPhone;
         if ( !!myPhone ) {
             db_store( params->pDb, KEY_SMSPHONE, myPhone );
-        } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+        } else if ( !myPhone && db_fetch_safe( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
             params->connInfo.sms.myPhone = myPhone = buf;
         }
         XP_U16 myPort = params->connInfo.sms.port;
@@ -918,7 +914,7 @@ gtkmain( LaunchParams* params )
         if ( 0 < myPort ) {
             sprintf( portbuf, "%d", myPort );
             db_store( params->pDb, KEY_SMSPORT, portbuf );
-        } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+        } else if ( db_fetch_safe( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
             params->connInfo.sms.port = myPort = atoi( portbuf );
         }
         if ( !!myPhone && 0 < myPort ) {
