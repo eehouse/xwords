@@ -258,20 +258,27 @@ void*
 mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file, 
                const char* func, XP_U32 lineNo )
 {
-    MemPoolEntry* entry = findEntryFor( mpool, ptr, (MemPoolEntry**)NULL );
-
-    if ( !entry ) {
-        XP_LOGF( "findEntryFor failed; called from %s, line %d",
-                 file, lineNo );
+    // XP_LOGF( "%s(func=%s, line=%d): newsize: %d", __func__, func, lineNo, newsize );
+    void* result;
+    if ( ptr == NULL ) {
+        result = mpool_alloc( mpool, newsize, file, func, lineNo );
     } else {
-        entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
-        XP_ASSERT( !!entry->ptr );
-        entry->fileName = file;
-        entry->func = func;
-        entry->lineNo = lineNo;
-        entry->size = newsize;
+        MemPoolEntry* entry = findEntryFor( mpool, ptr, (MemPoolEntry**)NULL );
+
+        if ( !entry ) {
+            XP_LOGF( "findEntryFor failed; called from %s, line %d",
+                     file, lineNo );
+        } else {
+            entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
+            XP_ASSERT( !!entry->ptr );
+            entry->fileName = file;
+            entry->func = func;
+            entry->lineNo = lineNo;
+            entry->size = newsize;
+        }
+        result = entry->ptr;
     }
-    return entry->ptr;
+    return result;
 } /* mpool_realloc */
 
 void

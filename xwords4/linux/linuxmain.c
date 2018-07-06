@@ -59,6 +59,7 @@
 #include "linuxdict.h"
 #include "lindutil.h"
 #include "relaycon.h"
+#include "smsproto.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -680,6 +681,7 @@ typedef enum {
     ,CMD_NHIDDENROWS
 #endif
     ,CMD_ASKTIME
+    ,CMD_SMSTEST
     ,N_CMDS
 } XwLinuxCmd;
 
@@ -808,6 +810,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ASKTIME, true, "ask-timeout", 
        "Wait this many ms before cancelling dialog (default 500 ms; 0 means forever)" }
 #endif
+    ,{ CMD_SMSTEST, false, "run-sms-test", "Run smsproto_runTests() on startup"}
 };
 
 static struct option* 
@@ -2503,6 +2506,10 @@ main( int argc, char** argv )
             mainParams.askTimeout = atoi(optarg);
             break;
 #endif
+        case CMD_SMSTEST:
+            mainParams.runSMSTest = XP_TRUE;
+            break;
+
         default:
             done = true;
             break;

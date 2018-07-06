@@ -28,7 +28,9 @@
 #include <fcntl.h>
 
 #include "linuxsms.h"
+#include "linuxutl.h"
 #include "strutils.h"
+#include "smsproto.h"
 #include "linuxmain.h"
 
 #define SMS_DIR "/tmp/xw_sms"
@@ -63,13 +65,15 @@ typedef struct _LinSMSData {
     const gchar* myPhone;
     const SMSProcs* procs;
     void* procClosure;
+    SMSProto* protoState;
 } LinSMSData;
 
-typedef enum { NONE, INVITE, DATA, DEATH, ACK, } SMS_CMD;
-#define SMS_PROTO_VERSION 0
-
-static LinSMSData* getStorage( LaunchParams* params );
-static void writeHeader( XWStreamCtxt* stream, SMS_CMD cmd );
+static void doSend( LaunchParams* params, const XP_U8* buf,
+                    XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port,
+                    XP_U32 gameID );
+static gboolean retrySend( gpointer data );
+static void sendOrRetry( LaunchParams* params, SMSMsgArray* arr, XP_U16 waitSecs,
+                         const XP_UCHAR* phone, XP_U16 port, XP_U32 gameID );
 static gint check_for_files( gpointer data );
 static gint check_for_files_once( gpointer data );
 
@@ -80,6 +84,14 @@ formatQueuePath( const XP_UCHAR* phone, XP_U16 port, XP_UCHAR* path,
     XP_ASSERT( 0 != port );
     snprintf( path, pathlen, "%s/%s_%d", SMS_DIR, phone, port );
 }
+
+typedef enum { NONE, INVITE, DATA, DEATH, ACK, } SMS_CMD;
+#define SMS_PROTO_VERSION 0
+
+
+static LinSMSData* getStorage( LaunchParams* params );
+static void writeHeader( XWStreamCtxt* stream, SMS_CMD cmd );
+
 
 static void
 lock_queue( LinSMSData* storage )
@@ -157,6 +169,7 @@ send_sms( LinSMSData* storage, XWStreamCtxt* stream,
 
     nSent = buflen;
 
+    LOG_RETURNF( "%d", nSent );
     return nSent;
 } /* linux_sms_send */
 
@@ -189,6 +202,7 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
         *strstr(eol, "\n" ) = '\0';
 
         XP_U16 inlen = strlen(eol);      /* skip \n */
+        XP_LOGF( "%s(): decoding message from file %s", __func__, name );
         XP_U8 out[inlen];
         XP_U16 outlen = sizeof(out);
         XP_Bool valid = smsToBin( out, &outlen, eol, inlen );
@@ -198,7 +212,8 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
             nRead = outlen;
             addr_setType( addr, COMMS_CONN_SMS );
             XP_STRNCPY( addr->u.sms.phone, phone, sizeof(addr->u.sms.phone) );
-            XP_LOGF( "%s: message came from phone: %s, port: %d", __func__, phone, port );
+            XP_LOGF( "%s: message came from phone: %s, port: %d", __func__,
+                     phone, port );
             addr->u.sms.port = port;
         }
     } else {
@@ -230,7 +245,7 @@ dispatch_invite( LinSMSData* storage, XP_U16 XP_UNUSED(proto),
     addrFromStream( addr, stream );
 
     (*storage->procs->inviteReceived)( storage->procClosure, gameName, 
-                                       gameID, dictLang, dictName, nPlayers, 
+                                       gameID, dictLang, dictName, nPlayers,
                                        nMissing, forceChannel, addr );
 }
 
@@ -238,13 +253,24 @@ static void
 dispatch_data( LinSMSData* storage, XP_U16 XP_UNUSED(proto), 
                XWStreamCtxt* stream, const CommsAddrRec* addr )
 {
+    LOG_FUNC();
+
     XP_U32 gameID = stream_getU32( stream );
     XP_U16 len = stream_getSize( stream );
     XP_U8 data[len];
     stream_getBytes( stream, data, len );
-    
-    (*storage->procs->msgReceived)( storage->procClosure, addr, gameID, 
-                                    data, len );
+
+    const XP_UCHAR* fromPhone = addr->u.sms.phone;
+    SMSMsgArray* arr = smsproto_prepInbound( storage->protoState, fromPhone,
+                                             data, len );
+    if ( NULL != arr ) {
+        for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {
+            SMSMsg* msg = &arr->msgs[ii];
+            (*storage->procs->msgReceived)( storage->procClosure, addr, gameID,
+                                            msg->data, msg->len );
+        }
+        smsproto_freeMsgArray( storage->protoState, arr );
+    }
 }
 
 static void
@@ -289,6 +315,7 @@ linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort,
     storage->myPort = myPort;
     storage->procs = procs;
     storage->procClosure = procClosure;
+    storage->protoState = smsproto_init( MPPARM(params->mpool) params->dutil );
 
     formatQueuePath( myPhone, myPort, storage->myQueue, sizeof(storage->myQueue) );
     XP_LOGF( "%s: my queue: %s", __func__, storage->myQueue );
@@ -334,6 +361,19 @@ linux_sms_send( LaunchParams* params, const XP_U8* buf,
                 XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port,
                 XP_U32 gameID )
 {
+    LinSMSData* storage = getStorage( params );
+    XP_U16 waitSecs;
+    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, buf, buflen,
+                                              phone, XP_TRUE, &waitSecs );
+    sendOrRetry( params, arr, waitSecs, phone, port, gameID );
+    return buflen;
+}
+
+static void
+doSend( LaunchParams* params, const XP_U8* buf,
+        XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port,
+        XP_U32 gameID )
+{
     XP_LOGF( "%s(len=%d)", __func__, buflen );
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );
@@ -342,12 +382,52 @@ linux_sms_send( LaunchParams* params, const XP_U8* buf,
     stream_putBytes( stream, buf, buflen );
 
     LinSMSData* storage = getStorage( params );
-    if ( 0 >= send_sms( storage, stream, phone, port ) ) {
-        buflen = -1;
-    }
+    (void)send_sms( storage, stream, phone, port );
     stream_destroy( stream );
+}
 
-    return buflen;
+typedef struct _RetryClosure {
+    LaunchParams* params;
+    XP_U16 port;
+    XP_U32 gameID;
+    XP_UCHAR phone[32];
+} RetryClosure;
+
+static void
+sendOrRetry( LaunchParams* params, SMSMsgArray* arr, XP_U16 waitSecs,
+             const XP_UCHAR* phone, XP_U16 port, XP_U32 gameID )
+{
+    if ( !!arr ) {
+        for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {
+            SMSMsg* msg = &arr->msgs[ii];
+            doSend( params, msg->data, msg->len, phone, port, gameID );
+        }
+
+        LinSMSData* storage = getStorage( params );
+        smsproto_freeMsgArray( storage->protoState, arr );
+    } else if ( waitSecs > 0 ) {
+        RetryClosure* closure = (RetryClosure*)XP_CALLOC( params->mpool,
+                                                          sizeof(*closure) );
+        closure->params = params;
+        XP_STRCAT( closure->phone, phone );
+        closure->port = port;
+        closure->gameID = gameID;
+        g_timeout_add_seconds( 5, retrySend, closure );
+    }
+}
+
+static gboolean
+retrySend( gpointer data )
+{
+    RetryClosure* closure = (RetryClosure*)data;
+    LinSMSData* storage = getStorage( closure->params );
+    XP_U16 waitSecs;
+    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, NULL, 0,
+                                              closure->phone, XP_TRUE, &waitSecs );
+    sendOrRetry( closure->params, arr, waitSecs, closure->phone,
+                 closure->port, closure->gameID );
+    XP_FREEP( closure->params->mpool, &closure );
+    return FALSE;
 }
 
 static gint
@@ -434,6 +514,8 @@ check_for_files_once( gpointer data )
 void
 linux_sms_cleanup( LaunchParams* params )
 {
+    LinSMSData* storage = getStorage( params );
+    smsproto_free( storage->protoState );
     XP_FREEP( params->mpool, &params->smsStorage );
 }
 

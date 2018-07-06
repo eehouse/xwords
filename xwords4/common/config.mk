@@ -48,6 +48,7 @@ COMMONSRC = \
 	$(COMMONDIR)/vtabmgr.c \
 	$(COMMONDIR)/dictmgr.c \
 	$(COMMONDIR)/dbgutil.c \
+	$(COMMONDIR)/smsproto.c \
 
 # PENDING: define this in terms of above!!!
 
@@ -85,5 +86,6 @@ COMMON5 = \
 	$(COMMONOBJDIR)/vtabmgr.o \
 	$(COMMONOBJDIR)/dictmgr.o \
 	$(COMMONOBJDIR)/dbgutil.o \
+	$(COMMONOBJDIR)/smsproto.o \
 
 COMMONOBJ = $(COMMON1) $(COMMON2) $(COMMON3) $(COMMON4) $(COMMON5)

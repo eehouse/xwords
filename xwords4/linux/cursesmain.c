@@ -64,6 +64,7 @@
 #include "linuxudp.h"
 #include "gamesdb.h"
 #include "relaycon.h"
+#include "smsproto.h"
 
 #ifdef CURSES_SMALL_SCREEN
 # define MENU_WINDOW_HEIGHT 1
@@ -1911,6 +1912,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.gi = &params->pgi;
     setupUtil( &g_globals.cGlobals );
     setupCursesUtilCallbacks( &g_globals, g_globals.cGlobals.util );
+
+    if ( params->runSMSTest ) {
+        smsproto_runTests(g_globals.cGlobals.util->mpool,
+                          g_globals.cGlobals.params->dutil );
+    }
 
     initFromParams( &g_globals.cGlobals, params );
 

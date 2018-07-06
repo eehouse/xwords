@@ -21,6 +21,7 @@
 #ifdef PLATFORM_GTK
 
 #include "strutils.h"
+#include "smsproto.h"
 #include "main.h"
 #include "gtkmain.h"
 #include "gamesdb.h"
@@ -863,6 +864,14 @@ gtkmain( LaunchParams* params )
     GtkAppGlobals apg = {0};
 
     g_globals_for_signal = &apg;
+
+    if ( params->runSMSTest ) {
+        CommonGlobals cGlobals = {.params = params };
+        setupUtil( &cGlobals );
+        smsproto_runTests( params->mpool, cGlobals.params->dutil );
+        linux_util_vt_destroy( cGlobals.util );
+        free( cGlobals.util );
+    }
 
     struct sigaction act = { .sa_handler = handle_sigintterm };
     sigaction( SIGINT, &act, NULL );
