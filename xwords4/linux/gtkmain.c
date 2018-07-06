@@ -26,6 +26,7 @@
 #include "gamesdb.h"
 #include "gtkboard.h"
 #include "linuxmain.h"
+#include "linuxutl.h"
 #include "relaycon.h"
 #include "linuxsms.h"
 #include "gtkask.h"
@@ -315,9 +316,10 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 void
 make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 {
-    // LaunchParams* params = apg->params;
+    LaunchParams* params = apg->params;
+    XP_ASSERT( params == cGlobals->params );
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                cGlobals->params->vtMgr );
+                                                params->vtMgr );
 
     /* Create new game. But has no addressing info, so need to set that
        aside for later. */
@@ -340,7 +342,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
        opened it can invite the other device[s] join the rematch. */
     if ( !!comms ) {
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                    cGlobals->params->vtMgr );
+                                                    params->vtMgr );
         CommsAddrRec addr;
         comms_getAddr( comms, &addr );
         addrToStream( stream, &addr );
@@ -480,7 +482,7 @@ setWindowTitle( GtkAppGlobals* apg )
 #ifdef XWFEATURE_SMS
     int len = strlen( title );
     snprintf( &title[len], VSIZE(title) - len, " (phone: %s, port: %d)", 
-              params->connInfo.sms.phone, params->connInfo.sms.port );
+              params->connInfo.sms.myPhone, params->connInfo.sms.port );
 #endif
 #ifdef XWFEATURE_RELAY
     XP_U32 relayID = linux_getDevIDRelay( params );
@@ -753,8 +755,9 @@ smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName),
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
-    XP_LOGF( "%s(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, nHere=%d)",
-             __func__, gameName, gameID, dictName, nPlayers, nHere );
+    XP_LOGF( "%s(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, "
+             "nHere=%d, forceChannel=%d)", __func__, gameName, gameID, dictName,
+             nPlayers, nHere, forceChannel );
 
     CurGameInfo gi = {0};
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
@@ -763,6 +766,7 @@ smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName),
     gi.gameID = gameID;
     gi.dictLang = dictLang;
     gi.forceChannel = forceChannel;
+    gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
     replaceStringIfDifferent( params->mpool, &gi.dictName, dictName );
 
     GtkGameGlobals* globals = malloc( sizeof(*globals) );
@@ -894,11 +898,11 @@ gtkmain( LaunchParams* params )
 
 #ifdef XWFEATURE_SMS
         gchar buf[32];
-        const gchar* myPhone = params->connInfo.sms.phone;
+        const gchar* myPhone = params->connInfo.sms.myPhone;
         if ( !!myPhone ) {
             db_store( params->pDb, KEY_SMSPHONE, myPhone );
         } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
-            params->connInfo.sms.phone = myPhone = buf;
+            params->connInfo.sms.myPhone = myPhone = buf;
         }
         XP_U16 myPort = params->connInfo.sms.port;
         gchar portbuf[8];

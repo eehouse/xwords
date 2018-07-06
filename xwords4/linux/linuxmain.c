@@ -651,6 +651,7 @@ typedef enum {
 #endif
 #ifdef XWFEATURE_SMS
     ,CMD_SMSNUMBER		/* SMS phone number */
+    ,CMD_SERVER_SMSNUMBER
     ,CMD_SMSPORT
 #endif
 #ifdef XWFEATURE_RELAY
@@ -774,6 +775,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 #endif
 #ifdef XWFEATURE_SMS
     ,{ CMD_SMSNUMBER, true, "sms-number", "this devices's sms phone number" }
+    ,{ CMD_SERVER_SMSNUMBER, true, "server-sms-number", "number this device should connect to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
 #ifdef XWFEATURE_RELAY
@@ -1300,9 +1302,15 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo
             comms_getAddr( cGlobals->game.comms, &addr );
             addrRec = &addr;
         }
+
+        // use serverphone if I'm a client, else hope one's provided (this is
+        // a reply)
+        const XP_UCHAR* phone = cGlobals->params->connInfo.sms.serverPhone;
+        if ( !phone ) {
+            phone = addrRec->u.sms.phone;
+        }
         nSent = linux_sms_send( cGlobals->params, buf, buflen, 
-                                addrRec->u.sms.phone, addrRec->u.sms.port,
-                                gameID );
+                                phone, addrRec->u.sms.port, gameID );
     }
         break;
 #endif
@@ -1950,7 +1958,7 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
 #ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
             addr_addType( addr, COMMS_CONN_SMS );
-            XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.phone,
+            XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.myPhone,
                         sizeof(addr->u.sms.phone) - 1 );
             addr->u.sms.port = params->connInfo.sms.port;
             break;
@@ -2275,7 +2283,11 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
-            mainParams.connInfo.sms.phone = optarg;
+            mainParams.connInfo.sms.myPhone = optarg;
+            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            break;
+        case CMD_SERVER_SMSNUMBER:
+            mainParams.connInfo.sms.serverPhone = optarg;
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
         case CMD_SMSPORT:

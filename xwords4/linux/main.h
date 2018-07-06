@@ -152,7 +152,8 @@ typedef struct LaunchParams {
 #endif
 #ifdef XWFEATURE_SMS
         struct {
-            const char* phone;
+            const char* myPhone;
+            const char* serverPhone;
             int port;
         } sms;
 #endif

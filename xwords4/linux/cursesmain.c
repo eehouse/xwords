@@ -2016,11 +2016,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
 #ifdef XWFEATURE_SMS
         gchar buf[32];
-        const gchar* myPhone = params->connInfo.sms.phone;
+        const gchar* myPhone = params->connInfo.sms.myPhone;
         if ( !!myPhone ) {
             db_store( params->pDb, KEY_SMSPHONE, myPhone );
         } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
-            params->connInfo.sms.phone = myPhone = buf;
+            params->connInfo.sms.myPhone = myPhone = buf;
         }
         XP_U16 myPort = params->connInfo.sms.port;
         gchar portbuf[8];
@@ -2128,7 +2128,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 # ifdef XWFEATURE_SMS
                 case COMMS_CONN_SMS:
                     addr_addType( &addr, COMMS_CONN_SMS );
-                    XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
+                    XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.myPhone,
                                 sizeof(addr.u.sms.phone) - 1 );
                     addr.u.sms.port = params->connInfo.sms.port;
                     break;
