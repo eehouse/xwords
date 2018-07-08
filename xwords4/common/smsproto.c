@@ -421,6 +421,7 @@ addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID, int indx,
     XP_ASSERT( msgIDRec->parts[indx].len == 0
                || msgIDRec->parts[indx].len == len ); /* replace with same ok */
     msgIDRec->parts[indx].len = len;
+    XP_FREEP( state->mpool, &msgIDRec->parts[indx].data ); /* in case non-null (replacement) */
     msgIDRec->parts[indx].data = XP_MALLOC( state->mpool, len );
     XP_MEMCPY( msgIDRec->parts[indx].data, data, len );
 }
@@ -825,6 +826,11 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
         smsproto_free( state ); /* give it a chance to store state */
         state = smsproto_init( mpool, dutil );
     }
+
+    /* Really bad to pass a different state than was created with, but now
+       since only mpool is used and it's the same for all states, let it
+       go. */
+    smsproto_freeMsgArray( state, arr ); /* give it a chance to store state */
 
     smsproto_free( state );
     LOG_RETURN_VOID();
