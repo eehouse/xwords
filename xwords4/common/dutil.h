@@ -72,9 +72,9 @@ struct XW_DUtilCtxt {
 #define dutil_getUserQuantityString( duc, c, q )                \
     (duc)->vtable.m_dutil_getUserQuantityString((duc),(c),(q))
 
-#define dutil_stor(duc, k, v)                       \
+#define dutil_store(duc, k, v)                      \
     (duc)->vtable.m_dutil_store((duc), (k), (v));
-#define dutil_load(uc, k, s)                        \
+#define dutil_load(duc, k, s)                       \
     (duc)->vtable.m_dutil_load((duc), (k), (s));
 
 #ifdef XWFEATURE_SMS

@@ -208,6 +208,8 @@ typedef enum {
     BONUS_LAST
 } XWBonusType;
 
+#define PERSIST_KEY(str) __FILE__ ":" str
+
 /* I need a way to communiate prefs to common/ code.  For now, though, I'll
  * leave storage of these values up to the platforms.  First, because I don't
  * want to deal with versioning in the common code.  Second, becuase they

@@ -23,6 +23,7 @@
 #include "util.h"
 #include "smsproto.h"
 #include "comtypes.h"
+#include "strutils.h"
 
 # define MAX_WAIT 5
 // # define MAX_MSG_LEN 50         /* for testing */
@@ -65,7 +66,7 @@ struct SMSProto {
     XW_DUtilCtxt* dutil;
     pthread_t creator;
     XP_U16 nNextID;
-
+    int lastStoredSize;
     XP_U16 nToPhones;
     ToPhoneRec* toPhoneRecs;
 
@@ -74,6 +75,8 @@ struct SMSProto {
 
     MPSLOT;
 };
+
+#define KEY_PARTIALS PERSIST_KEY("partials")
 
 static int nextMsgID( SMSProto* state );
 static SMSMsgArray* toMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld );
@@ -85,6 +88,8 @@ static void addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID,
                         int indx, int count, const XP_U8* data, XP_U16 len );
 static SMSMsgArray* completeMsgs( SMSProto* state, SMSMsgArray* arr,
                                   const XP_UCHAR* fromPhone, int msgID );
+static void savePartials( SMSProto* state );
+static void restorePartials( SMSProto* state );
 static void rmFromPhoneRec( SMSProto* state, int fromPhoneIndex );
 static void freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex,
                           int msgIDIndex );
@@ -104,6 +109,9 @@ smsproto_init( MPFORMAL XW_DUtilCtxt* dutil )
     state->dutil = dutil;
     // checkThread( state ); <-- Android's calling this on background thread now
     MPASSIGN( state->mpool, mpool );
+
+    restorePartials( state );
+
     return state;
 }
 
@@ -220,6 +228,7 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
         /*          __func__, len, fromPhone, proto, msgID, indx, count ); */
         addMessage( state, fromPhone, msgID, indx, count, data + offset, len - offset );
         result = completeMsgs( state, result, fromPhone, msgID );
+        savePartials( state );
     }
         break;
     case SMS_PROTO_VERSION_COMBO:
@@ -397,16 +406,20 @@ addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID, int indx,
             int count, const XP_U8* data, XP_U16 len )
 {
     XP_LOGF( "phone=%s, msgID=%d, %d/%d", fromPhone, msgID, indx, count );
-    int fromPhoneIndex, msgIDIndex; /* ignored */
+    XP_ASSERT( 0 < len );
+    int ignore;
     MsgIDRec* msgIDRec = getMsgIDRec( state, fromPhone, msgID, XP_TRUE,
-                                      &fromPhoneIndex, &msgIDIndex );
+                                      &ignore, &ignore );
     /* if it's new, fill in missing fields */
     if ( msgIDRec->count == 0 ) {
         msgIDRec->count = count;    /* in case it's new */
         msgIDRec->parts = XP_CALLOC( state->mpool, count * sizeof(*msgIDRec->parts));
+    } else {
+        XP_ASSERT( count == msgIDRec->count );
     }
 
-    XP_ASSERT( msgIDRec->parts[indx].len == 0 );
+    XP_ASSERT( msgIDRec->parts[indx].len == 0
+               || msgIDRec->parts[indx].len == len ); /* replace with same ok */
     msgIDRec->parts[indx].len = len;
     msgIDRec->parts[indx].data = XP_MALLOC( state->mpool, len );
     XP_MEMCPY( msgIDRec->parts[indx].data, data, len );
@@ -458,6 +471,84 @@ freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex, int msgIDIndex
     } else {
         rmFromPhoneRec( state, fromPhoneIndex );
     }
+}
+
+static void
+savePartials( SMSProto* state )
+{
+    checkThread( state );
+
+    XWStreamCtxt* stream
+        = mem_stream_make_raw( MPPARM(state->mpool)
+                               dutil_getVTManager(state->dutil) );
+    stream_putU8( stream, 0 );  /* version */
+
+    stream_putU8( stream, state->nFromPhones );
+    for ( int ii = 0; ii < state->nFromPhones; ++ii ) {
+        const FromPhoneRec* rec = &state->fromPhoneRecs[ii];
+        stringToStream( stream, rec->phone );
+        stream_putU8( stream, rec->nMsgIDs );
+        for ( int jj = 0; jj < rec->nMsgIDs; ++jj ) {
+            MsgIDRec* mir = &rec->msgIDRecs[jj];
+            stream_putU16( stream, mir->msgID );
+            stream_putU8( stream, mir->count );
+
+            /* There's an array here. It may be sparse. Save a len of 0 */
+            for ( int kk = 0; kk < mir->count; ++kk ) {
+                int len = mir->parts[kk].len;
+                stream_putU8( stream, len );
+                stream_putBytes( stream, mir->parts[kk].data, len );
+            }
+        }
+    }
+
+    XP_U16 newSize = stream_getSize( stream );
+    if ( state->lastStoredSize == 2 && newSize == 2 ) {
+        XP_LOGF( "%s(): not storing empty again", __func__ );
+    } else {
+        dutil_store( state->dutil, KEY_PARTIALS, stream );
+        state->lastStoredSize = newSize;
+    }
+
+    stream_destroy( stream );
+
+    LOG_RETURN_VOID();
+} /* savePartials */
+
+static void
+restorePartials( SMSProto* state )
+{
+    // LOG_FUNC();
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(state->mpool)
+                                                dutil_getVTManager(state->dutil) );
+    dutil_load( state->dutil, KEY_PARTIALS, stream );
+    if ( stream_getSize( stream ) >= 1 ) {
+        XP_ASSERT( 0 == stream_getU8( stream ) );
+        int nFromPhones = stream_getU8( stream );
+        for ( int ii = 0; ii < nFromPhones; ++ii ) {
+            XP_UCHAR phone[32];
+            (void)stringFromStreamHere( stream, phone, VSIZE(phone) );
+            int nMsgIDs = stream_getU8( stream );
+            XP_LOGF( "%s(): got %d message records for phone %s", __func__,
+                     nMsgIDs, phone );
+            for ( int jj = 0; jj < nMsgIDs; ++jj ) {
+                XP_U16 msgID = stream_getU16( stream );
+                int count = stream_getU8( stream );
+                XP_LOGF( "%s(): got %d records for msgID %d", __func__, count, msgID );
+                for ( int kk = 0; kk < count; ++kk ) {
+                    int len = stream_getU8( stream );
+                    if ( 0 < len ) {
+                        XP_U8 buf[len];
+                        stream_getBytes( stream, buf, len );
+                        addMessage( state, phone, msgID, kk, count, buf, len );
+                    }
+                }
+            }
+        }
+    }
+    stream_destroy( stream );
+
+    // LOG_RETURN_VOID();
 }
 
 static SMSMsgArray*
@@ -576,7 +667,7 @@ toMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld )
     }
 
     return result;
-}
+} /* toMsgs */
 
 static int
 nextMsgID( SMSProto* state )
@@ -715,6 +806,25 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
     SMSMsgArray* out = smsproto_prepInbound( state, "33333", arr->msgs[0].data, arr->msgs[0].len );
     XP_ASSERT( !out );
     smsproto_freeMsgArray( state, arr );
+
+
+    /* now a message that's unpacked across multiple sessions to test store/load */
+    XP_LOGF( "%s(): testing store/restore", __func__ );
+    arr = smsproto_prepOutbound( state, (XP_U8*)buf, 200, "33333", XP_TRUE, &waitSecs );
+    for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
+        SMSMsgArray* out = smsproto_prepInbound( state, "33333", arr->msgs[ii].data,
+                                                 arr->msgs[ii].len );
+        if ( !!out ) {
+            XP_ASSERT( out->nMsgs == 1);
+            XP_LOGF( "%s(): got the message on the %dth loop", __func__, ii );
+            XP_ASSERT( out->msgs[0].len == 200 );
+            XP_ASSERT( 0 == memcmp( out->msgs[0].data, buf, 200 ) );
+            smsproto_freeMsgArray( state, out );
+            break;
+        }
+        smsproto_free( state ); /* give it a chance to store state */
+        state = smsproto_init( mpool, dutil );
+    }
 
     smsproto_free( state );
     LOG_RETURN_VOID();

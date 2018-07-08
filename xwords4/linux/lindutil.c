@@ -180,19 +180,37 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code,
 }
 
 static void
-linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* data )
+linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
 {
-    XP_LOGF( "%s(key=%s)", __func__, key );
-    XP_USE( duc );
-    XP_USE( data );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    sqlite3* pDb = params->pDb;
+
+    gchar* b64 = g_base64_encode( stream_getPtr( stream ), stream_getSize( stream ) );
+    db_store( pDb, key, b64 );
+    g_free( b64 );
 }
 
 static void
 linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut )
 {
-    XP_LOGF( "%s(key=%s)", __func__, key );
-    XP_USE( duc );
-    XP_USE( inOut );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    sqlite3* pDb = params->pDb;
+
+    gint buflen = 0;
+    FetchResult res = db_fetch( pDb, key, NULL, &buflen );
+    if ( res == BUFFER_TOO_SMALL ) {
+        gchar buf[buflen];
+        res = db_fetch( pDb, key, buf, &buflen );
+        XP_ASSERT( res == SUCCESS );
+
+        gsize out_len;
+        guchar* txt = g_base64_decode( (const gchar*)buf, &out_len );
+
+        stream_putBytes( inOut, txt, out_len );
+        g_free( txt );
+    }
+
+    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(inOut) );
 }
 
 #ifdef XWFEATURE_SMS

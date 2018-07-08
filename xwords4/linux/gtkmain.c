@@ -861,14 +861,6 @@ gtkmain( LaunchParams* params )
 
     g_globals_for_signal = &apg;
 
-    if ( params->runSMSTest ) {
-        CommonGlobals cGlobals = {.params = params };
-        setupUtil( &cGlobals );
-        smsproto_runTests( params->mpool, cGlobals.params->dutil );
-        linux_util_vt_destroy( cGlobals.util );
-        free( cGlobals.util );
-    }
-
     struct sigaction act = { .sa_handler = handle_sigintterm };
     sigaction( SIGINT, &act, NULL );
     sigaction( SIGTERM, &act, NULL );
@@ -928,7 +920,13 @@ gtkmain( LaunchParams* params )
             XP_LOGF( "not activating SMS: I don't have a phone" );
         }
 
-
+        if ( params->runSMSTest ) {
+            CommonGlobals cGlobals = {.params = params };
+            setupUtil( &cGlobals );
+            smsproto_runTests( params->mpool, cGlobals.params->dutil );
+            linux_util_vt_destroy( cGlobals.util );
+            free( cGlobals.util );
+        }
 #endif
         makeGamesWindow( &apg );
     } else if ( !!params->dbFileName ) {

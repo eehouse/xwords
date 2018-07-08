@@ -497,6 +497,7 @@ loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 void
 deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
 {
+    XP_ASSERT( !!pDb );
     char query[256];
     snprintf( query, sizeof(query), "DELETE FROM games WHERE rowid = %lld", rowid );
     sqlite3_stmt* ppStmt;
@@ -511,10 +512,10 @@ deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
 void
 db_store( sqlite3* pDb, const gchar* key, const gchar* value )
 {
-    char buf[256];
-    snprintf( buf, sizeof(buf),
-              "INSERT OR REPLACE INTO pairs (key, value) VALUES ('%s', '%s')",
-              key, value );
+    XP_ASSERT( !!pDb );
+    gchar* buf =
+        g_strdup_printf( "INSERT OR REPLACE INTO pairs (key, value) VALUES ('%s', '%s')",
+                         key, value );
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
     assertPrintResult( pDb, result, SQLITE_OK );
@@ -522,11 +523,13 @@ db_store( sqlite3* pDb, const gchar* key, const gchar* value )
     assertPrintResult( pDb, result, SQLITE_DONE );
     XP_USE( result );
     sqlite3_finalize( ppStmt );
+    g_free( buf );
 }
 
 FetchResult
 db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
 {
+    XP_ASSERT( !!pDb );
     FetchResult result = NOT_THERE;
     char query[256];
     snprintf( query, sizeof(query),
@@ -552,10 +555,11 @@ db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
 }
 
 XP_Bool
-db_fetch_safe( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen )
+db_fetch_safe( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen )
 {
+    XP_ASSERT( !!pDb );
     int tmp = buflen;
-    FetchResult result = db_fetch( dbp, key, buf, &tmp );
+    FetchResult result = db_fetch( pDb, key, buf, &tmp );
     XP_ASSERT( result != BUFFER_TOO_SMALL );
     return SUCCESS == result;
 }
@@ -563,6 +567,7 @@ db_fetch_safe( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen )
 void
 db_remove( sqlite3* pDb, const gchar* key )
 {
+    XP_ASSERT( !!pDb );
     char query[256];
     snprintf( query, sizeof(query), "DELETE FROM pairs WHERE key = '%s'", key );
     sqlite3_stmt *ppStmt;
