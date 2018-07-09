@@ -185,7 +185,7 @@
 
     <plurals name="strd_remains_header_fmt">
 	<item quantity="one">%1$d flis igjen å trekke fra.</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
     <string name="button_revert_colors">Gjenopprett farger</string>
     <string name="confirm_revert_all">Er du sikker på at du ønsker å tilbakestille alle innstillingene til forvalg?</string>
@@ -567,7 +567,7 @@
 
     <plurals name="lmi_move_fmt">
 	<item quantity="one">%1$s spilte %2$s for %3$d poeng</item>
-	<item quantity="other"></item>
+	<item quantity="other"/>
 </plurals>
     <string name="lmi_phony_fmt">%1$s mistet en tur</string>
     <string name="default_language">Forvalgt språk</string>
@@ -642,4 +642,18 @@
   <string name="perms_rationale_title">Android-tilganger</string>
   <string name="toast_no_permission">Tilgang ikke gitt</string>
 
-</resources>
+<plurals name="confirm_seldeletes_fmt">
+	<item quantity="one">Er du sikker på at du ønsker å slette valgt spill? Denne handlingen kan ikke angres.</item>
+	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte spill? Denne handlingen kan ikke angres.</item>
+</plurals>
+
+    <plurals name="confirm_reset_fmt">
+	<item quantity="one">Er du sikker på at du ønsker å slette valgt spill? Denne handlingen kan ikke angres.
+\n
+\n(Tilbakestilling sletter alle trekk og all tilknyttet informasjon.)</item>
+	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte spill? Denne handlingen kan ikke angres.
+\n
+\n(Tilbakestilling sletter alle trekk og all tilknyttet informasjon.)</item>
+</plurals>
+
+    </resources>
