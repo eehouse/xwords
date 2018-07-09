@@ -26,6 +26,7 @@ import android.telephony.PhoneNumberUtils;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.XWApp;
+import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DevID;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Log;
@@ -210,7 +211,28 @@ public class DUtilCtxt {
         return same;
     }
 
-//         SET_DPROC(getCurSeconds);
-//     SET_DPROC(md5sum);
+    public void store( String key, byte[] data )
+    {
+        Log.d( TAG, "store(key=%s)", key );
 
+        if ( null == data ) {
+        } else {
+            DBUtils.setBytesFor( m_context, key, data );
+        }
+    }
+
+    public byte[] load( String key )
+    {
+        byte[] result = null;
+        int resultLen = 0;
+        Log.d( TAG, "load(key=%s)", key );
+
+        result = DBUtils.getBytesFor( m_context, key );
+        if ( result != null ) {
+            resultLen = result.length;
+        }
+
+        Log.d( TAG, "load(%s) returning %d bytes", key, resultLen );
+        return result;
+    }
 }
