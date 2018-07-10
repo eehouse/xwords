@@ -33,11 +33,11 @@ typedef struct _DUtilVtable {
     const XP_UCHAR* (*m_dutil_getUserQuantityString)( XW_DUtilCtxt* duc,
                                                       XP_U16 stringCode,
                                                       XP_U16 quantity );
-    void (*m_dutil_store)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+    void (*m_dutil_storeStream)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
                            XWStreamCtxt* data );
     /* Pass in an empty stream, and it'll be returned full */
-    void (*m_dutil_load)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
-                          XWStreamCtxt* inOut );
+    void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                                XWStreamCtxt* inOut );
     void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
                               const void* data, XP_U16 len );
     void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
@@ -76,12 +76,12 @@ struct XW_DUtilCtxt {
 #define dutil_getUserQuantityString( duc, c, q )                \
     (duc)->vtable.m_dutil_getUserQuantityString((duc),(c),(q))
 
-#define dutil_store(duc, k, v)                      \
-    (duc)->vtable.m_dutil_store((duc), (k), (v));
+#define dutil_storeStream(duc, k, s)                \
+    (duc)->vtable.m_dutil_storeStream((duc), (k), (s));
 #define dutil_storePtr(duc, k, p, l)                \
     (duc)->vtable.m_dutil_storePtr((duc), (k), (p), (l));
-#define dutil_load(duc, k, s)                       \
-    (duc)->vtable.m_dutil_load((duc), (k), (s));
+#define dutil_loadStream(duc, k, s)                 \
+    (duc)->vtable.m_dutil_loadStream((duc), (k), (s));
 #define dutil_loadPtr(duc, k, p, l)                 \
     (duc)->vtable.m_dutil_loadPtr((duc), (k), (p), (l));
 

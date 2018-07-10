@@ -512,7 +512,7 @@ savePartials( SMSProto* state )
     if ( state->lastStoredSize == 2 && newSize == 2 ) {
         XP_LOGF( "%s(): not storing empty again", __func__ );
     } else {
-        dutil_store( state->dutil, KEY_PARTIALS, stream );
+        dutil_storeStream( state->dutil, KEY_PARTIALS, stream );
         state->lastStoredSize = newSize;
     }
 
@@ -527,7 +527,7 @@ restorePartials( SMSProto* state )
     // LOG_FUNC();
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(state->mpool)
                                                 dutil_getVTManager(state->dutil) );
-    dutil_load( state->dutil, KEY_PARTIALS, stream );
+    dutil_loadStream( state->dutil, KEY_PARTIALS, stream );
     if ( stream_getSize( stream ) >= 1 ) {
         XP_ASSERT( 0 == stream_getU8( stream ) );
         int nFromPhones = stream_getU8( stream );

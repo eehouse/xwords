@@ -475,7 +475,8 @@ and_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 }
 
 static void
-and_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+and_dutil_storeStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                       XWStreamCtxt* stream )
 {
     const void* ptr = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
@@ -516,7 +517,7 @@ and_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 }
 
 static void
-and_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+and_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
 {
     AndDUtil* dutil = (AndDUtil*)duc;
     JNIEnv* env = ENVFORME( dutil->ti );
@@ -881,8 +882,8 @@ makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
     SET_DPROC(getCurSeconds);
     SET_DPROC(getUserString);
     SET_DPROC(getUserQuantityString);
-    SET_DPROC(store);
-    SET_DPROC(load);
+    SET_DPROC(storeStream);
+    SET_DPROC(loadStream);
     SET_DPROC(storePtr);
     SET_DPROC(loadPtr);
 # ifdef XWFEATURE_DEVID

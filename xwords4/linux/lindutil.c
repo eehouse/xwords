@@ -30,9 +30,10 @@ static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XP_U16 code
 static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code,
                                                           XP_U16 quantity );
 
-static void linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+static void linux_dutil_storeStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
                                XWStreamCtxt* data );
-static void linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut );
+static void linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                                    XWStreamCtxt* inOut );
 static void linux_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
                                   const void* data, XP_U16 len );
 static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
@@ -69,8 +70,8 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
-    SET_PROC(store);
-    SET_PROC(load);
+    SET_PROC(storeStream);
+    SET_PROC(loadStream);
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
 
@@ -188,7 +189,7 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code,
 }
 
 static void
-linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+linux_dutil_storeStream( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
 {
     const void* ptr = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
@@ -196,7 +197,8 @@ linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream 
 }
 
 static void
-linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut )
+linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                        XWStreamCtxt* stream )
 {
     XP_U16 len = 0;
     linux_dutil_loadPtr( duc, key, NULL, &len );
@@ -205,10 +207,10 @@ linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut )
 
     gsize out_len;
     guchar* txt = g_base64_decode( (const gchar*)buf, &out_len );
-    stream_putBytes( inOut, txt, out_len );
+    stream_putBytes( stream, txt, out_len );
     g_free( txt );
 
-    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(inOut) );
+    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(stream) );
 }
 
 static void
