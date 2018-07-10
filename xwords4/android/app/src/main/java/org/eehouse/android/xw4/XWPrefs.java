@@ -82,6 +82,11 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_sms_toself, false );
     }
 
+    public static boolean getSMSProtoEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_smsproto, false );
+    }
+
     public static boolean getHideNewgameButtons( Context context )
     {
         return getPrefsBoolean( context, R.string.key_hide_newgames,

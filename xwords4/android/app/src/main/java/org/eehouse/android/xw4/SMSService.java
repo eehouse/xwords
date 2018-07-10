@@ -452,11 +452,8 @@ public class SMSService extends XWService {
 
         byte[] data = bas.toByteArray();
 
-        boolean forceNow = cmd == SMS_CMD.INVITE || cmd == SMS_CMD.DATA;
-        // forceNow should always be true on first release since old code
-        // can't do the combined-messages stuff. Let's assert so we change
-        // when close to release.
-        Assert.assertTrue( BuildConfig.DEBUG );
+        boolean newSMSEnabled = XWPrefs.getSMSProtoEnabled( this );
+        boolean forceNow = !newSMSEnabled; // || cmd == SMS_CMD.INVITE;
         resendFor( phone, data, forceNow );
     }
 

@@ -2516,6 +2516,10 @@
   <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
   <string name="enable_nfc_toself_title">Enable NFC to self</string>
   <string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>
+
+  <string name="enable_smsproto_title">Use new/experimental SMS code</string>
+  <string name="enable_smsproto_summary">(Requires that opponent be using it too)</string>
+
   <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
   <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
 
