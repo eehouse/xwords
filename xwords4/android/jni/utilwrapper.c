@@ -459,12 +459,12 @@ and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 stringCode, XP_U16 qu
 }
 
 static void
-and_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+and_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                    const void* data, XP_U16 len )
 {
     DUTIL_CBK_HEADER( "store", "(Ljava/lang/String;[B)V" );
 
-    JNIEnv* env = ENVFORME( dutil->ti );
-    jbyteArray jdata = streamToBArray( env, stream );
+    jbyteArray jdata = makeByteArray( env, len, data );
     jstring jkey = (*env)->NewStringUTF( env, key );
 
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, jkey, jdata );
@@ -475,22 +475,59 @@ and_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
 }
 
 static void
-and_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+and_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
 {
-    DUTIL_CBK_HEADER("load", "(Ljava/lang/String;)[B");
+    const void* ptr = stream_getPtr( stream );
+    XP_U16 len = stream_getSize( stream );
+
+    and_dutil_storePtr( duc, key, ptr, len );
+}
+
+static jbyteArray
+loadToByteArray( XW_DUtilCtxt* duc, const XP_UCHAR* key )
+{
+    jbyteArray result = NULL;
+    DUTIL_CBK_HEADER( "load", "(Ljava/lang/String;)[B");
 
     jstring jkey = (*env)->NewStringUTF( env, key );
-    jbyteArray jvalue = (*env)->CallObjectMethod( env, dutil->jdutil,
-                                                  mid, jkey );
+    result = (*env)->CallObjectMethod( env, dutil->jdutil, mid, jkey );
+    deleteLocalRef( env, jkey );
+    DUTIL_CBK_TAIL();
+    return result;
+}
+
+static void
+and_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                   void* data, XP_U16* lenp )
+{
+    AndDUtil* dutil = (AndDUtil*)duc;
+    JNIEnv* env = ENVFORME( dutil->ti );
+    jbyteArray jvalue = loadToByteArray( duc, key );
+    if ( jvalue != NULL ) {
+        jsize len = (*env)->GetArrayLength( env, jvalue );
+        if ( len <= *lenp ) {
+            jbyte* jelems = (*env)->GetByteArrayElements( env, jvalue, NULL );
+            XP_MEMCPY( data, jelems, len );
+            (*env)->ReleaseByteArrayElements( env, jvalue, jelems, 0 );
+        }
+        *lenp = len;
+        deleteLocalRef( env, jvalue );
+    }
+}
+
+static void
+and_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+{
+    AndDUtil* dutil = (AndDUtil*)duc;
+    JNIEnv* env = ENVFORME( dutil->ti );
+    jbyteArray jvalue = loadToByteArray( duc, key );
     if ( jvalue != NULL ) {
         jbyte* jelems = (*env)->GetByteArrayElements( env, jvalue, NULL );
         jsize len = (*env)->GetArrayLength( env, jvalue );
         stream_putBytes( stream, jelems, len );
         (*env)->ReleaseByteArrayElements( env, jvalue, jelems, 0 );
+        deleteLocalRef( env, jvalue );
     }
-    deleteLocalRefs( env, jkey, jvalue, DELETE_NO_REF );
-
-    DUTIL_CBK_TAIL();
 }
 
 static void
@@ -846,6 +883,8 @@ makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
     SET_DPROC(getUserQuantityString);
     SET_DPROC(store);
     SET_DPROC(load);
+    SET_DPROC(storePtr);
+    SET_DPROC(loadPtr);
 # ifdef XWFEATURE_DEVID
     SET_DPROC(getDevID);
     SET_DPROC(deviceRegistered);

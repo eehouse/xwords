@@ -33,6 +33,12 @@ static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_
 static void linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key,
                                XWStreamCtxt* data );
 static void linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut );
+static void linux_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                                  const void* data, XP_U16 len );
+static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                                 void* data, XP_U16* lenp );
+
+
 #ifdef XWFEATURE_SMS
 static XP_Bool  linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc,
                                               const XP_UCHAR* p1,
@@ -65,6 +71,8 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(getUserQuantityString);
     SET_PROC(store);
     SET_PROC(load);
+    SET_PROC(storePtr);
+    SET_PROC(loadPtr);
 
 #ifdef XWFEATURE_SMS
     SET_PROC(phoneNumbersSame);
@@ -182,35 +190,66 @@ linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code,
 static void
 linux_dutil_store( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
 {
+    const void* ptr = stream_getPtr( stream );
+    XP_U16 len = stream_getSize( stream );
+    linux_dutil_storePtr( duc, key, ptr, len );
+}
+
+static void
+linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut )
+{
+    XP_U16 len = 0;
+    linux_dutil_loadPtr( duc, key, NULL, &len );
+    XP_U8 buf[len];
+    linux_dutil_loadPtr( duc, key, buf, &len );
+
+    gsize out_len;
+    guchar* txt = g_base64_decode( (const gchar*)buf, &out_len );
+    stream_putBytes( inOut, txt, out_len );
+    g_free( txt );
+
+    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(inOut) );
+}
+
+static void
+linux_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                      const void* data, XP_U16 len )
+{
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
-    gchar* b64 = g_base64_encode( stream_getPtr( stream ), stream_getSize( stream ) );
+    gchar* b64 = g_base64_encode( data, len);
     db_store( pDb, key, b64 );
     g_free( b64 );
 }
 
 static void
-linux_dutil_load( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* inOut )
+linux_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+                     void* data, XP_U16* lenp )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
     gint buflen = 0;
     FetchResult res = db_fetch( pDb, key, NULL, &buflen );
-    if ( res == BUFFER_TOO_SMALL ) {
-        gchar buf[buflen];
-        res = db_fetch( pDb, key, buf, &buflen );
+    if ( res == BUFFER_TOO_SMALL ) { /* expected: I passed 0 */
+        void* tmp = XP_MALLOC( duc->mpool, buflen );
+        res = db_fetch( pDb, key, tmp, &buflen );
         XP_ASSERT( res == SUCCESS );
 
         gsize out_len;
-        guchar* txt = g_base64_decode( (const gchar*)buf, &out_len );
-
-        stream_putBytes( inOut, txt, out_len );
+        guchar* txt = g_base64_decode( (const gchar*)tmp, &out_len );
+        if ( out_len <= *lenp ) {
+            XP_MEMCPY( data, txt, out_len );
+            *lenp = out_len;
+        }
+        XP_FREEP( duc->mpool, &tmp );
         g_free( txt );
+    } else {
+        *lenp = 0;              /* doesn't exist */
     }
 
-    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(inOut) );
+    XP_LOGF( "%s(key=%s) => len: %d", __func__, key, *lenp );
 }
 
 #ifdef XWFEATURE_SMS

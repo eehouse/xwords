@@ -77,6 +77,7 @@ struct SMSProto {
 };
 
 #define KEY_PARTIALS PERSIST_KEY("partials")
+#define KEY_NEXTID PERSIST_KEY("nextID")
 
 static int nextMsgID( SMSProto* state );
 static SMSMsgArray* toMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld );
@@ -109,6 +110,10 @@ smsproto_init( MPFORMAL XW_DUtilCtxt* dutil )
     state->dutil = dutil;
     // checkThread( state ); <-- Android's calling this on background thread now
     MPASSIGN( state->mpool, mpool );
+
+    XP_U16 siz = sizeof(state->nNextID);
+    dutil_loadPtr( state->dutil, KEY_NEXTID, &state->nNextID, &siz );
+    XP_LOGF( "%s(): loaded nextMsgID: %d", __func__, state->nNextID );
 
     restorePartials( state );
 
@@ -674,6 +679,8 @@ static int
 nextMsgID( SMSProto* state )
 {
     int result = ++state->nNextID % 0x000000FF;
+    dutil_storePtr( state->dutil, KEY_NEXTID, &state->nNextID,
+                    sizeof(state->nNextID) );
     LOG_RETURNF( "%d", result );
     return result;
 }
