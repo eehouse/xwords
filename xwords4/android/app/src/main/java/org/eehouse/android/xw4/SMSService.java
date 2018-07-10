@@ -440,6 +440,7 @@ public class SMSService extends XWService {
     private void send( SMS_CMD cmd, byte[] bytes, String phone )
         throws java.io.IOException
     {
+        Log.d( TAG, "send(%s, len=%d)", cmd, bytes.length );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream dos = new DataOutputStream( bas );
         dos.writeByte( SMS_PROTO_VERSION );

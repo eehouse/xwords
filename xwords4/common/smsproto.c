@@ -25,7 +25,7 @@
 #include "comtypes.h"
 #include "strutils.h"
 
-# define MAX_WAIT 5
+# define MAX_WAIT 3
 // # define MAX_MSG_LEN 50         /* for testing */
 # define MAX_LEN_BINARY 115
 /* PENDING: Might want to make SEND_NOW_SIZE smaller; might as well send now
@@ -174,17 +174,13 @@ smsproto_prepOutbound( SMSProto* state, const XP_U8* buf,
 
     /* rec will be non-null if there's something in it */
     XP_Bool doSend = XP_FALSE;
-    if (rec != NULL) {
-        if ( forceOld ) {
-            doSend = XP_TRUE;
-        } else if ( rec->totalSize > SEND_NOW_SIZE || nowSeconds - rec->createSeconds > MAX_WAIT ) {
-            doSend = XP_TRUE;
-        }
+    if ( rec != NULL ) {
+        doSend = forceOld
+            || rec->totalSize > SEND_NOW_SIZE
+            || MAX_WAIT <= nowSeconds - rec->createSeconds;
         /* other criteria? */
     }
 
-    /* Then, see if the array itself is old enough OR if it's been long enough
-       since the last was added */
     if ( doSend ) {
         result = toMsgs( state, rec, forceOld );
         freeForPhone( state, toPhone );
