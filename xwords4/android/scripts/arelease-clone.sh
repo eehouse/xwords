@@ -53,7 +53,7 @@ git checkout ${TAG}${BRANCH}
 cd ./xwords4/android/
 ./scripts/arelease.sh --apk-list $OUT_FILE
 mkdir -p /tmp/releases
-cp app/build/outputs/apk/*.apk /tmp/releases
+cp app/build/outputs/apk/xw4/release/*.apk /tmp/releases
 
 if [ -n "$XW_RELEASE_SCP_DEST" ]; then
 	cat $OUT_FILE | while read APK; do
