@@ -44,7 +44,7 @@ public class JNIUtilsImpl implements JNIUtils {
 
     private JNIUtilsImpl(Context context) { m_context = context; }
 
-    public static JNIUtils get()
+    public static synchronized JNIUtils get()
     {
         if ( null == s_impl ) {
             s_impl = new JNIUtilsImpl( XWApp.getContext() );

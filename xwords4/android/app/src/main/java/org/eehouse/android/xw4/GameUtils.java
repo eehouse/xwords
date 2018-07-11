@@ -912,6 +912,7 @@ public class GameUtils {
             m_gotMsg = false;
             m_gameOver = false;
         }
+
         @Override
         public void showChat( String msg, int fromIndx, String fromName, int tsSeconds )
         {
@@ -921,11 +922,14 @@ public class GameUtils {
             m_chat = msg;
             m_ts = tsSeconds;
         }
+
+        @Override
         public void turnChanged( int newTurn )
         {
             m_gotMsg = true;
         }
 
+        @Override
         public void notifyGameOver()
         {
             m_gameOver = true;

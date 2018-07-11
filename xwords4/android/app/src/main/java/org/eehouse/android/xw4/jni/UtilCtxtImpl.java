@@ -39,94 +39,114 @@ public class UtilCtxtImpl implements UtilCtxt {
         m_context = context;
     }
 
+    @Override
     public void requestTime() {
         subclassOverride( "requestTime" );
     }
 
+    @Override
     public void notifyPickTileBlank( int playerNum, int col, int row,
                                      String[] texts )
     {
         subclassOverride( "userPickTileBlank" );
     }
 
+    @Override
     public void informNeedPickTiles( boolean isInitial, int playerNum, int nToPick,
                                      String[] texts, int[] counts )
     {
         subclassOverride( "informNeedPickTiles" );
     }
 
+    @Override
     public void informNeedPassword( int player, String name )
     {
         subclassOverride( "informNeedPassword" );
     }
 
+    @Override
     public void turnChanged( int newTurn )
     {
         subclassOverride( "turnChanged" );
     }
 
+    @Override
     public boolean engineProgressCallback()
     {
         // subclassOverride( "engineProgressCallback" );
         return true;
     }
 
+    @Override
     public void setTimer( int why, int when, int handle )
     {
         subclassOverride( "setTimer" );
     }
 
+    @Override
     public void clearTimer( int why )
     {
         subclassOverride( "clearTimer" );
     }
 
+    @Override
     public void remSelected()
     {
         subclassOverride( "remSelected" );
     }
 
+    @Override
     public void setIsServer( boolean isServer )
     {
         subclassOverride( "setIsServer" );
     }
 
+    @Override
     public void bonusSquareHeld( int bonus )
     {
     }
 
+    @Override
     public void playerScoreHeld( int player )
     {
     }
 
+    @Override
     public void cellSquareHeld( String words )
     {
     }
 
+    @Override
     public void notifyMove( String query )
     {
         subclassOverride( "notifyMove" );
     }
+
+    @Override
     public void notifyTrade( String[] tiles )
     {
         subclassOverride( "notifyTrade" );
     }
 
+    @Override
     public void userError( int id )
     {
         subclassOverride( "userError" );
     }
 
+    @Override
     public void informMove( int turn, String expl, String words )
     {
         subclassOverride( "informMove" );
     }
 
+    @Override
     public void informUndo()
     {
         subclassOverride( "informUndo" );
     }
 
+    @Override
     public void informNetDict( int lang, String oldName,
                                String newName, String newSum,
                                CurGameInfo.XWPhoniesChoice phonies )
@@ -134,6 +154,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "informNetDict" );
     }
 
+    @Override
     public void informMissing( boolean isServer,
                                CommsConnTypeSet connTypes,
                                int nDevices, int nMissingPlayers )
@@ -143,11 +164,13 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     // Probably want to cache the fact that the game over notification
     // showed up and then display it next time game's opened.
+    @Override
     public void notifyGameOver()
     {
         subclassOverride( "notifyGameOver" );
     }
 
+    @Override
     public void notifyIllegalWords( String dict, String[] words, int turn,
                                     boolean turnLost )
     {
@@ -155,6 +178,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     // These need to go into some sort of chat DB, not dropped.
+    @Override
     public void showChat( String msg, int fromIndx, String fromName, int tsSeconds )
     {
         subclassOverride( "showChat" );

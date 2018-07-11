@@ -745,7 +745,6 @@ and_util_engineStopping( XW_UtilCtxt* uc )
 static XW_DUtilCtxt*
 and_util_getDevUtilCtxt( XW_UtilCtxt* uc )
 {
-    LOG_FUNC();
     AndGameGlobals* globals = (AndGameGlobals*)uc->closure;
     XP_ASSERT( !!globals->dutil );
     return globals->dutil;

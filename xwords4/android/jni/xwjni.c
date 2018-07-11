@@ -1,3 +1,4 @@
+
 /* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
 /*
  * Copyright © 2009 - 2018 by Eric House (xwords@eehouse.org).  All rights
@@ -71,18 +72,18 @@ typedef struct _JNIGlobalState {
 
 #ifdef MEM_DEBUG
 static MemPoolCtx*
-getMPool( JNIGlobalState* state )
+getMPool( JNIGlobalState* globalState )
 {
-    XP_ASSERT( !state->mpoolInUse );
-    state->mpoolInUse = XP_TRUE;
-    return state->mpool;
+    XP_ASSERT( !globalState->mpoolInUse );
+    globalState->mpoolInUse = XP_TRUE;
+    return globalState->mpool;
 }
 
 static void
-releaseMPool( JNIGlobalState* state )
+releaseMPool( JNIGlobalState* globalState )
 {
-    XP_ASSERT( state->mpoolInUse );
-    state->mpoolInUse = XP_FALSE;
+    XP_ASSERT( globalState->mpoolInUse );
+    globalState->mpoolInUse = XP_FALSE;
 }
 #else
 # define releaseMPool(s)
@@ -285,17 +286,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make( NULL );
 #endif
-    JNIGlobalState* state = (JNIGlobalState*)XP_CALLOC( mpool, sizeof(*state) );
-    map_init( MPPARM(mpool) &state->ti, env );
-    state->jniutil = makeJNIUtil( MPPARM(mpool) env, &state->ti, jniu );
-    state->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
-    state->dutil = makeDUtil( MPPARM(mpool) &state->ti, jdutil, state->vtMgr,
-                              state->jniutil, NULL );
-    state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
-    state->smsProto = smsproto_init( MPPARM( mpool ) state->dutil );
-    MPASSIGN( state->mpool, mpool );
-    // LOG_RETURNF( "%p", state );
-    return (jint)state;
+    JNIGlobalState* globalState = (JNIGlobalState*)XP_CALLOC( mpool,
+                                                              sizeof(*globalState) );
+    map_init( MPPARM(mpool) &globalState->ti, env );
+    globalState->jniutil = makeJNIUtil( MPPARM(mpool) env, &globalState->ti, jniu );
+    globalState->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
+    globalState->dutil = makeDUtil( MPPARM(mpool) &globalState->ti, jdutil,
+                                    globalState->vtMgr, globalState->jniutil, NULL );
+    globalState->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
+    globalState->smsProto = smsproto_init( MPPARM( mpool ) globalState->dutil );
+    MPASSIGN( globalState->mpool, mpool );
+    // LOG_RETURNF( "%p", globalState );
+    return (jint)globalState;
 }
 
 JNIEXPORT void JNICALL
@@ -304,18 +306,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
 {
     // LOG_FUNC();
     if ( 0 != jniGlobalPtr ) {
-        JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+        JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-        MemPoolCtx* mpool = getMPool( state );
+        MemPoolCtx* mpool = getMPool( globalState );
 #endif
-        XP_ASSERT( ENVFORME(&state->ti) == env );
-        smsproto_free( state->smsProto );
-        vtmgr_destroy( MPPARM(mpool) state->vtMgr );
-        dmgr_destroy( state->dictMgr );
-        destroyDUtil( &state->dutil );
-        destroyJNIUtil( env, &state->jniutil );
-        map_destroy( &state->ti );
-        XP_FREE( mpool, state );
+        XP_ASSERT( ENVFORME(&globalState->ti) == env );
+        smsproto_free( globalState->smsProto );
+        vtmgr_destroy( MPPARM(mpool) globalState->vtMgr );
+        dmgr_destroy( globalState->dictMgr );
+        destroyDUtil( &globalState->dutil );
+        destroyJNIUtil( env, &globalState->jniutil );
+        map_destroy( &globalState->ti );
+        XP_FREE( mpool, globalState );
         mpool_destroy( mpool );
     }
 }
@@ -562,12 +564,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jgi )
 {
     jbyteArray result;
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( state );
+    MemPoolCtx* mpool = getMPool( globalState );
 #endif
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) state->vtMgr,
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
                                             NULL, 0, NULL );
 
     game_saveToStream( NULL, gi, stream, 0 );
@@ -575,7 +577,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
 
     result = streamToBArray( env, stream );
     stream_destroy( stream );
-    releaseMPool( state );
+    releaseMPool( globalState );
     return result;
 }
 
@@ -583,12 +585,12 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jgi, jbyteArray jstream )
 {
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( state );
+    MemPoolCtx* mpool = getMPool( globalState );
 #endif
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env,
-                                              state->vtMgr, jstream );
+                                              globalState->vtMgr, jstream );
 
     CurGameInfo gi;
     XP_MEMSET( &gi, 0, sizeof(gi) );
@@ -602,7 +604,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
     gi_disposePlayerInfo( MPPARM(mpool) &gi );
 
     stream_destroy( stream );
-    releaseMPool( state );
+    releaseMPool( globalState );
 }
 
 JNIEXPORT jbyteArray JNICALL
@@ -610,23 +612,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject njli )
 {
     LOG_FUNC();
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( state );
+    MemPoolCtx* mpool = getMPool( globalState );
 #endif
 
     jbyteArray result;
     NetLaunchInfo nli = {0};
     loadNLI( env, &nli, njli );
     /* CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi ); */
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) state->vtMgr,
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
                                             NULL, 0, NULL );
 
     nli_saveToStream( &nli, stream );
 
     result = streamToBArray( env, stream );
     stream_destroy( stream );
-    releaseMPool( state );
+    releaseMPool( globalState );
     return result;
 }
 
@@ -635,12 +637,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jnli, jbyteArray jstream )
 {
     LOG_FUNC();
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( state );
+    MemPoolCtx* mpool = getMPool( globalState );
 #endif
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env,
-                                              state->vtMgr, jstream );
+                                              globalState->vtMgr, jstream );
 
     NetLaunchInfo nli = {0};
     if ( nli_makeFromStream( &nli, stream ) ) {
@@ -650,7 +652,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
     }
 
     stream_destroy( stream );
-    releaseMPool( state );
+    releaseMPool( globalState );
 }
 
 JNIEXPORT void JNICALL
@@ -709,15 +711,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
   jstring jname, jstring jpath, jboolean check, jobject jinfo )
 {
     jboolean result = false;
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &state->ti, env );
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &globalState->ti, env );
 
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( state );
+    MemPoolCtx* mpool = getMPool( globalState );
 #endif
 
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, state->dictMgr,
-                                     state->jniutil, jname, jDictBytes, jpath,
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globalState->dictMgr,
+                                     globalState->jniutil, jname, jDictBytes, jpath,
                                      NULL, check );
     if ( NULL != dict ) {
         if ( NULL != jinfo ) {
@@ -731,7 +733,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
         result = true;
     }
 
-    releaseMPool( state );
+    releaseMPool( globalState );
     return result;
 }
 
@@ -785,8 +787,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
   jstring jToPhone, jint jNow, jboolean jForce, jintArray jWaitSecsArr )
 {
     jobjectArray result = NULL;
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &state->ti, env );
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &globalState->ti, env );
 
     jbyte* data = NULL;
     int len = 0;
@@ -797,11 +799,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
     const char* toPhone = (*env)->GetStringUTFChars( env, jToPhone, NULL );
 
     XP_U16 waitSecs;
-    SMSMsgArray* arr = smsproto_prepOutbound( state->smsProto, (const XP_U8*)data,
+    SMSMsgArray* arr = smsproto_prepOutbound( globalState->smsProto, (const XP_U8*)data,
                                               len, toPhone, jForce, &waitSecs );
     if ( !!arr ) {
         result = msgArrayToByteArrays( env, arr );
-        smsproto_freeMsgArray( state->smsProto, arr );
+        smsproto_freeMsgArray( globalState->smsProto, arr );
     }
 
     setIntInArray( env, jWaitSecsArr, 0, waitSecs );
@@ -820,18 +822,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
   jstring jFromPhone )
 {
     jobjectArray result = NULL;
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &state->ti, env );
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &globalState->ti, env );
 
     int len = (*env)->GetArrayLength( env, jData );
     jbyte* data = (*env)->GetByteArrayElements( env, jData, NULL );
     const char* fromPhone = (*env)->GetStringUTFChars( env, jFromPhone, NULL );
 
-    SMSMsgArray* arr = smsproto_prepInbound( state->smsProto, fromPhone,
+    SMSMsgArray* arr = smsproto_prepInbound( globalState->smsProto, fromPhone,
                                              (XP_U8*)data, len );
     if ( !!arr ) {
         result = msgArrayToByteArrays( env, arr );
-        smsproto_freeMsgArray( state->smsProto, arr );
+        smsproto_freeMsgArray( globalState->smsProto, arr );
     }
 
     (*env)->ReleaseStringUTFChars( env, jFromPhone, fromPhone );
@@ -2145,8 +2147,8 @@ JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_haveEnv
 ( JNIEnv* env, jclass C, jint jniGlobalPtr )
 {
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
-    jboolean result = NULL != prvEnvForMe(&state->ti);
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+    jboolean result = NULL != prvEnvForMe(&globalState->ti);
     return result;
 }
 
@@ -2201,20 +2203,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
   jstring jpath )
 {
     jint closure = 0;
-    JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 
-    DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
-                                     state->jniutil, jname, jDictBytes, jpath, NULL,
-                                     false );
+    DictionaryCtxt* dict = makeDict( MPPARM(globalState->mpool) env,
+                                     globalState->dictMgr, globalState->jniutil,
+                                     jname, jDictBytes, jpath, NULL, false );
     if ( !!dict ) {
-        DictIterData* data = XP_CALLOC( state->mpool, sizeof(*data) );
+        DictIterData* data = XP_CALLOC( globalState->mpool, sizeof(*data) );
         data->env = env;
-        data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(state->mpool) );
-        data->jniutil = state->jniutil;
+        data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globalState->mpool) );
+        data->jniutil = globalState->jniutil;
         data->dict = dict;
         data->depth = 2;
 #ifdef MEM_DEBUG
-        data->mpool = state->mpool;
+        data->mpool = globalState->mpool;
 #endif
         closure = (int)data;
     }
