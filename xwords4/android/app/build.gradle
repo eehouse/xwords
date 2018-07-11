@@ -24,6 +24,7 @@ if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) {
 }
 repositories {
     maven { url 'https://maven.fabric.io/public' }
+    google()
 }
 
 android {
