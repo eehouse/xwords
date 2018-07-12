@@ -1,2 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="button_new_group">Dodaj grupę</string>
+
+    <string name="missing_player">(jeszcze nie tutaj...)</string>
+
+    </resources>
