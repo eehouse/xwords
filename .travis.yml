@@ -36,5 +36,4 @@ notifications:
   email:
     recipients:
     - xwords@eehouse.org
-    on_success: always
     on_failure: always
