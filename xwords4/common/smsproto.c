@@ -408,9 +408,20 @@ addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID, int indx,
 {
     XP_LOGF( "phone=%s, msgID=%d, %d/%d", fromPhone, msgID, indx, count );
     XP_ASSERT( 0 < len );
-    int ignore;
-    MsgIDRec* msgIDRec = getMsgIDRec( state, fromPhone, msgID, XP_TRUE,
-                                      &ignore, &ignore );
+    MsgIDRec* msgIDRec;
+    for ( ; ; ) {
+        int fromPhoneIndex;
+        int msgIDIndex;
+        msgIDRec = getMsgIDRec( state, fromPhone, msgID, XP_TRUE,
+                                &fromPhoneIndex, &msgIDIndex );
+
+        /* sanity check... */
+        if ( msgIDRec->count == 0 || msgIDRec->count == count ) {
+            break;
+        }
+        freeMsgIDRec( state, msgIDRec, fromPhoneIndex, msgIDIndex );
+    }
+
     /* if it's new, fill in missing fields */
     if ( msgIDRec->count == 0 ) {
         msgIDRec->count = count;    /* in case it's new */
