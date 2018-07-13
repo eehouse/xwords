@@ -34,6 +34,8 @@
 # define SMS_PROTO_VERSION 1
 # define SMS_PROTO_VERSION_COMBO 2
 
+# define PARTIALS_FORMAT 0
+
 typedef struct _MsgRec {
     XP_U32 createSeconds;
     SMSMsg msg;
@@ -427,8 +429,6 @@ addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID, int indx,
     if ( msgIDRec->count == 0 ) {
         msgIDRec->count = count;    /* in case it's new */
         msgIDRec->parts = XP_CALLOC( state->mpool, count * sizeof(*msgIDRec->parts));
-    } else {
-        XP_ASSERT( count == msgIDRec->count );
     }
 
     XP_ASSERT( msgIDRec->parts[indx].len == 0
@@ -495,7 +495,7 @@ savePartials( SMSProto* state )
     XWStreamCtxt* stream
         = mem_stream_make_raw( MPPARM(state->mpool)
                                dutil_getVTManager(state->dutil) );
-    stream_putU8( stream, 0 );  /* version */
+    stream_putU8( stream, PARTIALS_FORMAT );
 
     stream_putU8( stream, state->nFromPhones );
     for ( int ii = 0; ii < state->nFromPhones; ++ii ) {
@@ -532,12 +532,11 @@ savePartials( SMSProto* state )
 static void
 restorePartials( SMSProto* state )
 {
-    // LOG_FUNC();
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(state->mpool)
                                                 dutil_getVTManager(state->dutil) );
     dutil_loadStream( state->dutil, KEY_PARTIALS, stream );
-    if ( stream_getSize( stream ) >= 1 ) {
-        XP_ASSERT( 0 == stream_getU8( stream ) );
+    if ( stream_getSize( stream ) >= 1
+         && PARTIALS_FORMAT == stream_getU8( stream ) ) {
         int nFromPhones = stream_getU8( stream );
         for ( int ii = 0; ii < nFromPhones; ++ii ) {
             XP_UCHAR phone[32];
@@ -561,8 +560,6 @@ restorePartials( SMSProto* state )
         }
     }
     stream_destroy( stream );
-
-    // LOG_RETURN_VOID();
 }
 
 static SMSMsgArray*
