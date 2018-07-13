@@ -1173,4 +1173,26 @@ aparells seleccionats?</string>
 
     <string name="waiting_invite_title">S\'està esperant una resposta</string>
     <string name="relay_via_http_first">Usa primer les API Web</string>
-  </resources>
+  <string name="invited_msg">Aquesta partida s\'ha creat amb una invitació que heu rebut. Tan aviat com es pugui connectar amb el remitent i arribin els altres convidats, començarà la partida.</string>
+
+    <plurals name="msg_relay_waiting_fmt">
+	<item quantity="one">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant un jugador."</item>
+	<item quantity="other">"L\'aparell %1$d  s\'ha connectat al repetidor en la sala «%2$s». Està esperant %3$d jugadors."</item>
+</plurals>
+
+    <string name="bt_pair_settings">Aparella\'n més</string>
+
+      <plurals name="invite_relay_desc_fmt">
+	<item quantity="one">Comproveu l\'aparell que voleu convidar a la partida nova, després toqueu «%2$s».</item>
+	<item quantity="other">Comproveu els $1$d aparells que voleu convidar a la partida nova, després toqueu «%2$s».</item>
+</plurals>
+    <string name="invite_p2p_desc_extra">Només es mostren els aparells que són disponibles actualment. Si un aparell proper no es mostra, assegureu-vos que la WiFi és habilitada, que té el CrossWords instal·lat i que el joc via «WiFi Direct» és habilitat.</string>
+
+    <string name="empty_p2p_inviter">Ara mateix no hi ha cap aparell accessible via WiFiDirect que tingui el CrossWords instal·lat.</string>
+
+    <string name="empty_relay_inviter">La llista d\'aparell és buida. Useu el botó «Cerca partides» per a cerca les partides antigues amb els adversaris. Useu el botó «+» per a introduir la ID de l\'aparell directament.</string>
+    <plurals name="confirm_clear_sms_fmt">
+	<item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
+	<item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
+</plurals>
+    </resources>
