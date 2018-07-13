@@ -164,7 +164,14 @@ smsproto_prepOutbound( SMSProto* state, const XP_U8* buf,
                        XP_Bool forceOld, XP_U16* waitSecsP )
 {
     SMSMsgArray* result = NULL;
-    XP_LOGF( "%s(): len=%d, toPhone=%s", __func__, buflen, toPhone );
+
+#ifdef DEBUG
+    XP_UCHAR* checksum = dutil_md5sum( state->dutil, buf, buflen );
+    XP_LOGF( "%s(): len=%d, sum=%s, toPhone=%s", __func__, buflen,
+             checksum, toPhone );
+    XP_FREEP( state->mpool, &checksum );
+#endif
+
     checkThread( state );
     ToPhoneRec* rec = getForPhone( state, toPhone, !!buf );
 
@@ -606,7 +613,6 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
 static SMSMsgArray*
 toMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld )
 {
-    LOG_FUNC();
     SMSMsgArray* result = NULL;
 
     for ( XP_U16 ii = 0; ii < rec->nMsgs; ) {
