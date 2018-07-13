@@ -247,7 +247,8 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
         }
         break;
     default:
-        XP_ASSERT(0);
+        XP_LOGF( "%s(): unexpected proto %d", __func__, proto );
+        break;
     }
     XP_LOGF( "%s() => %p (len=%d)", __func__, result, (!!result) ? result->nMsgs : 0 );
     return result;
