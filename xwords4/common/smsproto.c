@@ -226,39 +226,53 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
     XP_LOGF( "%s(): len=%d, fromPhone=%s", __func__, len, fromPhone );
     checkThread( state );
 
-    SMSMsgArray* result = NULL;
-    int offset = 0;
-    int proto = data[offset++];
-    switch ( proto ) {
-    case SMS_PROTO_VERSION: {
-        int msgID = data[offset++];
-        int indx = data[offset++];
-        int count = data[offset++];
-        /* XP_LOGF( "%s(len=%d, fromPhone=%s)): proto=%d, id=%d, indx=%d of %d)", */
-        /*          __func__, len, fromPhone, proto, msgID, indx, count ); */
-        addMessage( state, fromPhone, msgID, indx, count, data + offset, len - offset );
-        result = completeMsgs( state, result, fromPhone, msgID );
-        savePartials( state );
-    }
-        break;
-    case SMS_PROTO_VERSION_COMBO:
-        while ( offset < len ) {
-            int oneLen = data[offset++];
-            int msgID = data[offset++];
-            SMSMsg msg = { .len = oneLen,
-                           .msgID = msgID,
-                           .data = XP_MALLOC( state->mpool, oneLen ),
-            };
-            XP_MEMCPY( msg.data, &data[offset], oneLen );
-            offset += oneLen;
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(state->mpool)
+                                                dutil_getVTManager(state->dutil) );
+    stream_putBytes( stream, data, len );
 
-            result = appendMsg( state, result, &msg );
+    SMSMsgArray* result = NULL;
+    XP_U8 proto;
+    if ( stream_gotU8( stream, &proto ) ) {
+        switch ( proto ) {
+        case SMS_PROTO_VERSION: {
+            XP_U8 msgID, indx, count;
+            if ( stream_gotU8( stream, &msgID )
+                 && stream_gotU8( stream, &indx )
+                 && stream_gotU8( stream, &count )
+                 && indx < count ) {
+                XP_U16 len = stream_getSize( stream );
+                XP_U8 buf[len];
+                stream_getBytes( stream, buf, len );
+                addMessage( state, fromPhone, msgID, indx, count, buf, len );
+                result = completeMsgs( state, result, fromPhone, msgID );
+                savePartials( state );
+            }
         }
-        break;
-    default:
-        XP_LOGF( "%s(): unexpected proto %d", __func__, proto );
-        break;
+            break;
+        case SMS_PROTO_VERSION_COMBO: {
+            XP_U8 oneLen, msgID;
+            while ( stream_gotU8( stream, &oneLen )
+                    && stream_gotU8( stream, &msgID ) ) {
+                XP_U8 buf[oneLen];
+                if ( stream_gotBytes( stream, buf, oneLen ) ) {
+                    SMSMsg msg = { .len = oneLen,
+                                   .msgID = msgID,
+                                   .data = XP_MALLOC( state->mpool, oneLen ),
+                    };
+                    XP_MEMCPY( msg.data, buf, oneLen );
+                    result = appendMsg( state, result, &msg );
+                }
+            }
+        }
+            break;
+        default:
+            XP_LOGF( "%s(): unexpected proto %d", __func__, proto );
+            break;
+        }
     }
+
+    stream_destroy( stream );
+
     XP_LOGF( "%s() => %p (len=%d)", __func__, result, (!!result) ? result->nMsgs : 0 );
     return result;
 }
