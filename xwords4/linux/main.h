@@ -59,6 +59,7 @@ typedef struct LaunchParams {
     char* dbName;
     sqlite3* pDb;               /* null unless opened */
     XP_U16 saveFailPct;
+    XP_U16 smsSendFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE
     char* dbFileName;

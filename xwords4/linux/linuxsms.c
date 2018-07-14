@@ -114,64 +114,74 @@ unlock_queue( LinSMSData* storage )
 }
 
 static XP_S16
-send_sms( LinSMSData* storage, XWStreamCtxt* stream, 
-          const XP_UCHAR* phone, XP_U16 port )
+write_fake_sms( LaunchParams* params, XWStreamCtxt* stream,
+                const XP_UCHAR* phone, XP_U16 port )
 {
-    const XP_U8* buf = stream_getPtr( stream );
-    XP_U16 buflen = stream_getSize( stream );
-    XP_LOGF( "%s(phone=%s, port=%d, len=%d)", __func__, phone,
-             port, buflen );
+    XP_S16 nSent;
+    XP_U16 pct = XP_RANDOM() % 100;
+    XP_Bool skipWrite = pct < params->smsSendFailPct;
 
-    XP_S16 nSent = -1;
-    XP_ASSERT( !!storage );
-    char path[256];
+    if ( skipWrite ) {
+        nSent = stream_getSize( stream );
+        XP_LOGF( "%s(): dropping sms msg of len %d to phone %s", __func__,
+                 nSent, phone );
+    } else {
+        LinSMSData* storage = getStorage( params );
+        const XP_U8* buf = stream_getPtr( stream );
+        XP_U16 buflen = stream_getSize( stream );
+        XP_LOGF( "%s(phone=%s, port=%d, len=%d)", __func__, phone,
+                 port, buflen );
 
-    lock_queue( storage );
+        XP_ASSERT( !!storage );
+        char path[256];
 
-#ifdef DEBUG
-    gchar* str64 = g_base64_encode( buf, buflen );
-#endif
-
-    formatQueuePath( phone, port, path, sizeof(path) );
-
-    /* Random-number-based name is fine, as we pick based on age. */
-    int rint = makeRandomInt();
-    g_mkdir_with_parents( path, 0777 ); /* just in case */
-    int len = strlen( path );
-    snprintf( &path[len], sizeof(path)-len, "/%u", rint );
-
-    XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
-    XP_U16 smslen = sizeof(sms);
-    binToSms( sms, &smslen, buf, buflen );
-    XP_ASSERT( smslen == strlen(sms) );
-    XP_LOGF( "%s: writing msg to %s", __func__, path );
+        lock_queue( storage );
 
 #ifdef DEBUG
-    XP_ASSERT( !strcmp( str64, sms ) );
-    g_free( str64 );
-
-    XP_U8 testout[buflen];
-    XP_U16 lenout = sizeof( testout );
-    XP_ASSERT( smsToBin( testout, &lenout, sms, smslen ) );
-    XP_ASSERT( lenout == buflen );
-    // valgrind doesn't like this; punting on figuring out
-    // XP_ASSERT( XP_MEMCMP( testout, buf, smslen ) );
+        gchar* str64 = g_base64_encode( buf, buflen );
 #endif
 
-    FILE* fp = fopen( path, "w" );
-    XP_ASSERT( !!fp );
-    (void)fprintf( fp, ADDR_FMT, storage->myPhone, storage->myPort );
-    (void)fprintf( fp, "%s\n", sms );
-    fclose( fp );
-    sync();
+        formatQueuePath( phone, port, path, sizeof(path) );
 
-    unlock_queue( storage );
+        /* Random-number-based name is fine, as we pick based on age. */
+        int rint = makeRandomInt();
+        g_mkdir_with_parents( path, 0777 ); /* just in case */
+        int len = strlen( path );
+        snprintf( &path[len], sizeof(path)-len, "/%u", rint );
 
-    nSent = buflen;
+        XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
+        XP_U16 smslen = sizeof(sms);
+        binToSms( sms, &smslen, buf, buflen );
+        XP_ASSERT( smslen == strlen(sms) );
+        XP_LOGF( "%s: writing msg to %s", __func__, path );
 
-    LOG_RETURNF( "%d", nSent );
+#ifdef DEBUG
+        XP_ASSERT( !strcmp( str64, sms ) );
+        g_free( str64 );
+
+        XP_U8 testout[buflen];
+        XP_U16 lenout = sizeof( testout );
+        XP_ASSERT( smsToBin( testout, &lenout, sms, smslen ) );
+        XP_ASSERT( lenout == buflen );
+        // valgrind doesn't like this; punting on figuring out
+        // XP_ASSERT( XP_MEMCMP( testout, buf, smslen ) );
+#endif
+
+        FILE* fp = fopen( path, "w" );
+        XP_ASSERT( !!fp );
+        (void)fprintf( fp, ADDR_FMT, storage->myPhone, storage->myPort );
+        (void)fprintf( fp, "%s\n", sms );
+        fclose( fp );
+        sync();
+
+        unlock_queue( storage );
+
+        nSent = buflen;
+
+        LOG_RETURNF( "%d", nSent );
+    }
     return nSent;
-} /* linux_sms_send */
+} /* write_fake_sms */
 
 static XP_S16
 decodeAndDelete( LinSMSData* storage, const gchar* name, 
@@ -350,8 +360,7 @@ linux_sms_invite( LaunchParams* params, const CurGameInfo* gi,
 
     addrToStream( stream, addr );
 
-    LinSMSData* storage = getStorage( params );
-    send_sms( storage, stream, toPhone, toPort );
+    write_fake_sms( params, stream, toPhone, toPort );
 
     stream_destroy( stream );
 }
@@ -381,8 +390,7 @@ doSend( LaunchParams* params, const XP_U8* buf,
     stream_putU32( stream, gameID );
     stream_putBytes( stream, buf, buflen );
 
-    LinSMSData* storage = getStorage( params );
-    (void)send_sms( storage, stream, phone, port );
+    (void)write_fake_sms( params, stream, phone, port );
     stream_destroy( stream );
 }
 

@@ -393,6 +393,8 @@ def build_cmds(args):
                     PARAMS += ['--use-udp']
             if args.ADD_SMS:
                 PARAMS += [ '--sms-number', PHONE_BASE + str(DEV - 1) ]
+                if args.SMS_FAIL_PCT > 0:
+                    PARAMS += [ '--sms-fail-pct', args.SMS_FAIL_PCT ]
                 if DEV > 1:
                     PARAMS += [ '--server-sms-number', PHONE_BASE + '0' ]
 
@@ -655,6 +657,7 @@ def mkParser():
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 0, type = int)
 
     parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
+    parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
     parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
 
     parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,

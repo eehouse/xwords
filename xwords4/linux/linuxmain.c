@@ -639,6 +639,7 @@ typedef enum {
     ,CMD_DROPSENDRELAY
     ,CMD_DROPRCVRELAY
     ,CMD_DROPSENDSMS
+    ,CMD_SMSFAILPCT
     ,CMD_DROPRCVSMS
     ,CMD_FORCECHANNEL
 
@@ -762,6 +763,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
     ,{ CMD_DROPSENDSMS, false, "drop-send-sms", "start new games with sms send disabled" }
+    ,{ CMD_SMSFAILPCT, true, "sms-fail-pct", "percent of sms sends, randomly chosen, never arrive" }
     ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
     ,{ CMD_FORCECHANNEL, true, "force-channel", "force (clients) to use this hostid/channel" }
 
@@ -2444,6 +2446,10 @@ main( int argc, char** argv )
             break;
         case CMD_DROPSENDSMS:
             mainParams.commsDisableds[COMMS_CONN_SMS][1] = XP_TRUE;
+            break;
+        case CMD_SMSFAILPCT:
+            mainParams.smsSendFailPct = atoi(optarg);
+            XP_ASSERT( mainParams.smsSendFailPct >= 0 && mainParams.smsSendFailPct <= 100 );
             break;
         case CMD_DROPRCVSMS:
             mainParams.commsDisableds[COMMS_CONN_SMS][0] = XP_TRUE;
