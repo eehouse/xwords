@@ -255,6 +255,7 @@ static void
 tilesArrayToTileSet( JNIEnv* env, jintArray jtiles, TrayTileSet* tset )
 {
     if ( jtiles != NULL ) {
+        XP_ASSERT( !!jtiles );
         jsize nTiles = (*env)->GetArrayLength( env, jtiles );
         int tmp[MAX_TRAY_TILES];
         getIntsFromArray( env, tmp, jtiles, nTiles, XP_FALSE );
@@ -547,6 +548,7 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 static XWStreamCtxt*
 streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 {
+    XP_ASSERT( !!jstream );
     int len = (*env)->GetArrayLength( env, jstream );
     XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) vtMgr,
                                                   len, NULL, 0, NULL );
@@ -825,20 +827,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
     map_thread( &globalState->ti, env );
 
-    int len = (*env)->GetArrayLength( env, jData );
-    jbyte* data = (*env)->GetByteArrayElements( env, jData, NULL );
-    const char* fromPhone = (*env)->GetStringUTFChars( env, jFromPhone, NULL );
+    if ( !!jData ) {
+        int len = (*env)->GetArrayLength( env, jData );
+        jbyte* data = (*env)->GetByteArrayElements( env, jData, NULL );
+        const char* fromPhone = (*env)->GetStringUTFChars( env, jFromPhone, NULL );
 
-    SMSMsgArray* arr = smsproto_prepInbound( globalState->smsProto, fromPhone,
-                                             (XP_U8*)data, len );
-    if ( !!arr ) {
-        result = msgArrayToByteArrays( env, arr );
-        smsproto_freeMsgArray( globalState->smsProto, arr );
+        SMSMsgArray* arr = smsproto_prepInbound( globalState->smsProto, fromPhone,
+                                                 (XP_U8*)data, len );
+        if ( !!arr ) {
+            result = msgArrayToByteArrays( env, arr );
+            smsproto_freeMsgArray( globalState->smsProto, arr );
+        }
+
+        (*env)->ReleaseStringUTFChars( env, jFromPhone, fromPhone );
+        (*env)->ReleaseByteArrayElements( env, jData, data, 0 );
+    } else {
+        XP_LOGF( "%s() => null (null input)", __func__ );
     }
-
-    (*env)->ReleaseStringUTFChars( env, jFromPhone, fromPhone );
-    (*env)->ReleaseByteArrayElements( env, jData, data, 0 );
-
     return result;
 }
 
