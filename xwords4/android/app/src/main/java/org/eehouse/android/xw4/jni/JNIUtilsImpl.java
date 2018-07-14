@@ -133,24 +133,28 @@ public class JNIUtilsImpl implements JNIUtils {
 
     public String getMD5SumFor( byte[] bytes )
     {
-        byte[] digest = null;
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] buf = new byte[128];
-            int nLeft = bytes.length;
-            int offset = 0;
-            while ( 0 < nLeft ) {
-                int len = Math.min( buf.length, nLeft );
-                System.arraycopy( bytes, offset, buf, 0, len );
-                md.update( buf, 0, len );
-                nLeft -= len;
-                offset += len;
+        String result = null;
+        if ( bytes != null ) {
+            byte[] digest = null;
+            try {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] buf = new byte[128];
+                int nLeft = bytes.length;
+                int offset = 0;
+                while ( 0 < nLeft ) {
+                    int len = Math.min( buf.length, nLeft );
+                    System.arraycopy( bytes, offset, buf, 0, len );
+                    md.update( buf, 0, len );
+                    nLeft -= len;
+                    offset += len;
+                }
+                digest = md.digest();
+            } catch ( java.security.NoSuchAlgorithmException nsae ) {
+                Log.ex( TAG, nsae );
             }
-            digest = md.digest();
-        } catch ( java.security.NoSuchAlgorithmException nsae ) {
-            Log.ex( TAG, nsae );
+            result = Utils.digestToString( digest );
         }
-        return Utils.digestToString( digest );
+        return result;
     }
 
     public String getMD5SumFor( String dictName, byte[] bytes )
