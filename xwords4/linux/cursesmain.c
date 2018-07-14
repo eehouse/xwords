@@ -1914,11 +1914,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     setupUtil( &g_globals.cGlobals );
     setupCursesUtilCallbacks( &g_globals, g_globals.cGlobals.util );
 
-    if ( params->runSMSTest ) {
-        smsproto_runTests(g_globals.cGlobals.util->mpool,
-                          g_globals.cGlobals.params->dutil );
-    }
-
     initFromParams( &g_globals.cGlobals, params );
 
 #ifdef XWFEATURE_RELAY
@@ -2043,6 +2038,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 .msgReceived = smsMsgReceivedCurses,
             };
             linux_sms_init( params, myPhone, myPort, &smsProcs, &g_globals.cGlobals );
+        }
+
+        if ( params->runSMSTest ) {
+            smsproto_runTests(g_globals.cGlobals.util->mpool,
+                              g_globals.cGlobals.params->dutil );
         }
 #endif
 
