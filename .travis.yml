@@ -11,6 +11,10 @@ android:
   - platform-tools
   - build-tools-27.0.3
   - android-26
+  licenses:
+  - android-sdk-preview-license-.+
+  - android-sdk-license-.+
+  - google-gdk-license-.+
 before_script:
 - export TERM=dumb
 - curl -L http://dl.google.com/android/ndk/android-ndk-r10e-linux-x86_64.bin -O
@@ -29,7 +33,7 @@ before_install:
 - sudo apt-get -qq update
 - sudo apt-get install -y python-lxml imagemagick
 script:
-- "./gradlew -PuseCrashlytics assXw4dDeb"
+- "./gradlew -PuseCrashlytics asXw4dDeb"
 - scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d app/build/outputs/apk/xw4d/debug/*.apk
   uploader@eehouse.org:XW4D_UPLOAD
 notifications:
