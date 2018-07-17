@@ -172,7 +172,7 @@ public class DwnldDelegate extends ListDelegateBase {
                 callListener( m_uri, true );
             } else if ( null != m_appFile ) {
                 // launch the installer
-                Intent intent = Utils.makeInstallIntent( m_appFile );
+                Intent intent = Utils.makeInstallIntent( m_activity, m_appFile );
                 startActivity( intent );
             } else {
                 // we failed at something....
@@ -473,5 +473,4 @@ public class DwnldDelegate extends ListDelegateBase {
         intent.putExtra( APK_EXTRA, url );
         return intent;
     }
-
 }

@@ -34,17 +34,16 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
-import android.text.ClipboardManager;
-
 import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.FileProvider;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
-
+import android.text.ClipboardManager;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -486,13 +485,16 @@ public class Utils {
         return null == s_appVersion? 0 : s_appVersion;
     }
 
-    public static Intent makeInstallIntent( File file )
+    public static Intent makeInstallIntent( Context context, File file )
     {
-        String withScheme = "file://" + file.getPath();
-        Uri uri = Uri.parse( withScheme );
+        Uri uri = FileProvider
+            .getUriForFile( context,
+                            BuildConfig.APPLICATION_ID + ".provider",
+                            file );
         Intent intent = new Intent( Intent.ACTION_VIEW );
         intent.setDataAndType( uri, XWConstants.APK_TYPE );
-        intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK
+                         | Intent.FLAG_GRANT_READ_URI_PERMISSION );
         return intent;
     }
 
@@ -501,7 +503,7 @@ public class Utils {
     {
         boolean result = false;
         PackageManager pm = context.getPackageManager();
-        Intent intent = makeInstallIntent( path );
+        Intent intent = makeInstallIntent( context, path );
         List<ResolveInfo> doers =
             pm.queryIntentActivities( intent,
                                       PackageManager.MATCH_DEFAULT_ONLY );

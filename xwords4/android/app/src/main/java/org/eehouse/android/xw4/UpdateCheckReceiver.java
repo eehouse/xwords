@@ -256,7 +256,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             m_dals = dals;
         }
 
-        @Override protected String doInBackground( Void... unused )
+        @Override
+        protected String doInBackground( Void... unused )
         {
             HttpURLConnection conn
                 = NetUtils.makeHttpUpdateConn( m_context, "getUpdates" );
@@ -267,7 +268,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             return json;
         }
 
-        @Override protected void onPostExecute( String json )
+        @Override
+        protected void onPostExecute( String json )
         {
             if ( null != json ) {
                 makeNotificationsIf( json, m_params );
