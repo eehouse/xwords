@@ -806,6 +806,11 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
             (void)comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
             break;
 #endif
+#if defined XWFEATURE_SMS
+        case COMMS_CONN_SMS:
+            (void)comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
+            break;
+#endif
         default:
             break;
         }
