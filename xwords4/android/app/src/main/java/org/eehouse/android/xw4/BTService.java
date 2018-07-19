@@ -1106,11 +1106,17 @@ public class BTService extends XWService {
         postEvent( MultiEvent.BT_GAME_CREATED, rowid );
     }
 
+    @Override
+    MultiMsgSink getSink( long rowid )
+    {
+        return m_btMsgSink;
+    }
+
     private BTCmd makeOrNotify( NetLaunchInfo nli, String btName,
                                 String btAddr )
     {
         BTCmd result;
-        if ( handleInvitation( nli, btName, DictFetchOwner.OWNER_BT ) ) {
+        if ( handleInvitation( nli, btName, DictFetchOwner.OWNER_BT ) ) { // here
             result = BTCmd.INVITE_ACCPT;
         } else {
             result = BTCmd.INVITE_DUP_INVITE; // dupe of rematch

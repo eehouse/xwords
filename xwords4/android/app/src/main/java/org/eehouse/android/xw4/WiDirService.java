@@ -774,6 +774,12 @@ public class WiDirService extends XWService {
         Log.e( TAG, "postNotification() doing nothing" );
     }
 
+    @Override
+    MultiMsgSink getSink( long rowid )
+    {
+        return m_sink;
+    }
+
     private void handleGameGone( Intent intent )
     {
         int gameID = intent.getIntExtra( KEY_GAMEID, 0 );

@@ -130,7 +130,7 @@ abstract class XWService extends Service {
     }
 
     // Meant to be overridden
-    protected MultiMsgSink getSink( long rowid ) { Assert.fail(); return null; }
+    abstract MultiMsgSink getSink( long rowid );
 
     protected ReceiveResult receiveMessage( Context context, int gameID,
                                             MultiMsgSink sink, byte[] msg,
