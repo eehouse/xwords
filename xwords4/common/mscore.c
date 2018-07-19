@@ -513,8 +513,8 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo,
         score += EMPTIED_TRAY_BONUS;
 
         if ( !!stream ) {
-            const XP_UCHAR* bstr = util_getUserString( model->vol.util, 
-                                                       STR_BONUS_ALL );
+            const XP_UCHAR* bstr = dutil_getUserString( model->vol.dutil,
+                                                        STR_BONUS_ALL );
             stream_catString( stream, bstr );
         }
     }
@@ -844,9 +844,9 @@ static void
 formatSummary( XWStreamCtxt* stream, const ModelCtxt* model, XP_U16 score )
 {
     XP_UCHAR buf[60];
-    XP_SNPRINTF(buf, sizeof(buf),
-                util_getUserString(model->vol.util, STRD_TURN_SCORE), 
-                score);
+    XP_SNPRINTF( buf, sizeof(buf),
+                 dutil_getUserString(model->vol.dutil, STRD_TURN_SCORE),
+                 score );
     XP_ASSERT( XP_STRLEN(buf) < sizeof(buf) );
     stream_catString( stream, buf );
 } /* formatSummary */

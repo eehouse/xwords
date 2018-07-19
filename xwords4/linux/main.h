@@ -32,6 +32,7 @@
 #include "game.h"
 #include "vtabmgr.h"
 #include "dictmgr.h"
+#include "dutil.h"
 
 typedef struct ServerInfo {
     XP_U16 nRemotePlayers;
@@ -58,6 +59,7 @@ typedef struct LaunchParams {
     char* dbName;
     sqlite3* pDb;               /* null unless opened */
     XP_U16 saveFailPct;
+    XP_U16 smsSendFailPct;
     const XP_UCHAR* playerDictNames[MAX_NUM_PLAYERS];
 #ifdef USE_SQLITE
     char* dbFileName;
@@ -77,6 +79,7 @@ typedef struct LaunchParams {
 #endif
     VTableMgr* vtMgr;
     DictMgrCtxt* dictMgr;
+    XW_DUtilCtxt* dutil;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
     XP_U16 gameSeed;
@@ -106,6 +109,7 @@ typedef struct LaunchParams {
     XP_Bool useCurses;
     XP_Bool useUdp;
     XP_Bool useHTTP;
+    XP_Bool runSMSTest;
     XP_Bool noHTTPAuto;
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
@@ -150,7 +154,8 @@ typedef struct LaunchParams {
 #endif
 #ifdef XWFEATURE_SMS
         struct {
-            const char* phone;
+            const char* myPhone;
+            const char* serverPhone;
             int port;
         } sms;
 #endif
@@ -197,7 +202,6 @@ struct CommonGlobals {
     XP_U16 lastStreamSize;
     XP_U16 nMissing;
     XP_Bool manualFinal;        /* use asked for final scores */
-    sqlite3* pDb;
     sqlite3_int64 selRow;
 
     SocketAddedFunc socketAdded;

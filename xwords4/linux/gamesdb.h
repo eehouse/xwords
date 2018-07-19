@@ -47,7 +47,7 @@ typedef struct _GameInfo {
 } GameInfo;
 
 sqlite3* openGamesDB( const char* dbName );
-void closeGamesDB( sqlite3* dbp );
+void closeGamesDB( sqlite3* pDb );
 
 void writeToDB( XWStreamCtxt* stream, void* closure );
 sqlite3_int64 writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb );
@@ -55,15 +55,15 @@ sqlite3_int64 writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb );
 void summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
-GSList* listGames( sqlite3* dbp );
+GSList* listGames( sqlite3* pDb );
 /* free list and data allocated by above */
 void freeGamesList( GSList* games );
 
 /* Mapping of relayID -> rowid */
 GHashTable* getRelayIDsToRowsMap( sqlite3* pDb );
 
-XP_Bool getGameInfo( sqlite3* dbp, sqlite3_int64 rowid, GameInfo* gib );
-void getRowsForGameID( sqlite3* dbp, XP_U32 gameID, sqlite3_int64* rowids, 
+XP_Bool getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib );
+void getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids, 
                        int* nRowIDs );
 XP_Bool loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
 void saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, 
@@ -78,8 +78,12 @@ void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 #define KEY_SMSPORT "SMSPORT"
 #define KEY_WIN_LOC "WIN_LOC"
 
-void db_store( sqlite3* dbp, const gchar* key, const gchar* value );
-XP_Bool db_fetch( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen );
-void db_remove( sqlite3* dbp, const gchar* key );
+void db_store( sqlite3* pDb, const gchar* key, const gchar* value );
+void db_remove( sqlite3* pDb, const gchar* key );
+
+typedef enum { NOT_THERE, BUFFER_TOO_SMALL, SUCCESS } FetchResult;
+FetchResult db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen );
+XP_Bool db_fetch_safe( sqlite3* pDb, const gchar* key, gchar* buf, gint buflen );
+
 
 #endif

@@ -225,6 +225,7 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/linuxutl.o \
 	$(BUILD_PLAT_DIR)/gamesdb.o \
 	$(BUILD_PLAT_DIR)/relaycon.o \
+	$(BUILD_PLAT_DIR)/lindutil.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
 LIBS = -lm -lpthread -luuid -lcurl -ljson-c $(GPROFFLAG)

@@ -2,6 +2,7 @@
 
 import re, os, sys, getopt, shutil, threading, requests, json, glob
 import argparse, datetime, random, signal, subprocess, time
+from shutil import rmtree
 
 # LOGDIR=./$(basename $0)_logs
 # APP_NEW=""
@@ -155,14 +156,14 @@ def player_params(args, NLOCALS, NPLAYERS, NAME_INDX):
 def logReaderStub(dev): dev.logReaderMain()
 
 class Device():
-    sConnnameMap = {}
     sHasLDevIDMap = {}
     sConnNamePat = re.compile('.*got_connect_cmd: connName: "([^"]+)".*$')
     sGameOverPat = re.compile('.*\[unused tiles\].*')
-    sTilesLeftPat = re.compile('.*pool_removeTiles: (\d+) tiles left in pool')
+    sTilesLeftPoolPat = re.compile('.*pool_removeTiles: (\d+) tiles left in pool')
+    sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     
-    def __init__(self, args, game, indx, app, params, room, db, log, nInGame):
+    def __init__(self, args, game, indx, app, params, room, peers, db, log, nInGame):
         self.game = game
         self.indx = indx
         self.args = args
@@ -176,13 +177,15 @@ class Device():
         self.nInGame = nInGame
         # runtime stuff; init now
         self.proc = None
-        self.connname = None
+        self.peers = peers
         self.devID = ''
         self.launchCount = 0
         self.allDone = False    # when true, can be killed
-        self.nTilesLeft = None
+        self.nTilesLeftPool = None
+        self.nTilesLeftTray = None
         self.relayID = None
         self.relaySeed = 0
+        self.locked = False
 
         with open(self.logPath, "w") as log:
             log.write('New cmdline: ' + self.app + ' ' + (' '.join([str(p) for p in self.params])))
@@ -198,29 +201,28 @@ class Device():
                 nLines += 1
                 log.write(line + os.linesep)
 
-                # check for connname
-                if not self.connname:
-                    match = Device.sConnNamePat.match(line)
-                    if match:
-                        self.connname = match.group(1)
-                        if not self.connname in Device.sConnnameMap:
-                            Device.sConnnameMap[self.connname] = set()
-                        Device.sConnnameMap[self.connname].add(self)
+                self.locked = True
 
                 # check for game over
                 if not self.gameOver:
                     match = Device.sGameOverPat.match(line)
                     if match: self.gameOver = True
 
-                # Check every line for tiles left
-                match = Device.sTilesLeftPat.match(line)
-                if match: self.nTilesLeft = int(match.group(1))
+                # Check every line for tiles left in pool
+                match = Device.sTilesLeftPoolPat.match(line)
+                if match: self.nTilesLeftPool = int(match.group(1))
+
+                # Check every line for tiles left in tray
+                match = Device.sTilesLeftTrayPat.match(line)
+                if match: self.nTilesLeftTray = int(match.group(1))
 
                 if not self.relayID:
                     match = Device.sRelayIDPat.match(line)
                     if match:
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
+
+                self.locked = False
 
         # print('logReaderMain done, wrote lines:', nLines, 'to', self.logPath);
 
@@ -233,7 +235,6 @@ class Device():
         args += [self.app] + [str(p) for p in self.params]
         if self.devID: args.extend( ' '.split(self.devID))
         self.launchCount += 1
-        # self.logStream = open(self.logPath, flag)
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
         self.pid = self.proc.pid
@@ -278,17 +279,22 @@ class Device():
         shutil.move(self.db, self.args.LOGDIR + '/done')
 
     def send_dead(self):
-        JSON = json.dumps([{'relayID': self.relayID, 'seed': self.relaySeed}])
-        url = 'http://%s/xw4/relay.py/kill' % (self.args.HOST)
-        params = {'params' : JSON}
-        try:
-            req = requests.get(url, params = params) # failing
-        except requests.exceptions.ConnectionError:
-            print('got exception sending to', url, params, '; is relay.py running as apache module?')
+        if self.args.ADD_RELAY:
+            JSON = json.dumps([{'relayID': self.relayID, 'seed': self.relaySeed}])
+            url = 'http://%s/xw4/relay.py/kill' % (self.args.HOST)
+            params = {'params' : JSON}
+            try:
+                req = requests.get(url, params = params) # failing
+            except requests.exceptions.ConnectionError:
+                print('got exception sending to', url, params, '; is relay.py running as apache module?')
 
     def getTilesCount(self):
-        return {'index': self.indx, 'nTilesLeft': self.nTilesLeft,
-                'launchCount': self.launchCount, 'game': self.game,
+        assert not self.locked
+        return {'index': self.indx,
+                'nTilesLeftPool': self.nTilesLeftPool,
+                'nTilesLeftTray': self.nTilesLeftTray,
+                'launchCount': self.launchCount,
+                'game': self.game,
         }
 
     def update_ldevid(self):
@@ -313,19 +319,17 @@ class Device():
 
     def check_game(self):
         if self.gameOver and not self.allDone:
-            allDone = False
-            if len(Device.sConnnameMap[self.connname]) == self.nInGame:
-                allDone = True
-                for dev in Device.sConnnameMap[self.connname]:
-                    if dev == self: continue
-                    if not dev.gameOver:
-                        allDone = False
-                        break
+            allDone = True
+            for dev in self.peers:
+                if dev == self: continue
+                if not dev.gameOver:
+                    allDone = False
+                    break
 
-                if allDone:
-                    for dev in Device.sConnnameMap[self.connname]:
-                        assert self.game == dev.game
-                        dev.allDone = True
+            if allDone:
+                for dev in self.peers:
+                    assert self.game == dev.game
+                    dev.allDone = True
 
             # print('Closing', self.connname, datetime.datetime.now())
             # for dev in Device.sConnnameMap[self.connname]:
@@ -360,8 +364,10 @@ def build_cmds(args):
     if not args.USE_GTK:
         PLAT_PARMS += ['--curses', '--close-stdin']
 
-    for GAME in range(1,  args.NGAMES + 1):
+    for GAME in range(1, args.NGAMES + 1):
+        peers = set()
         ROOM = 'ROOM_%.3d' % (GAME % args.NROOMS)
+        PHONE_BASE = '%.4d' % (GAME % args.NROOMS)
         NDEVS = pick_ndevs(args)
         LOCALS = figure_locals(args, NDEVS) # as array
         NPLAYERS = sum(LOCALS)
@@ -376,27 +382,27 @@ def build_cmds(args):
             DB = '{}/{:02d}_{:02d}_DB.sql3'.format(args.LOGDIR, GAME, DEV)
             LOG = '{}/{:02d}_{:02d}_LOG.txt'.format(args.LOGDIR, GAME, DEV)
 
-            BOARD_SIZE = ['--board-size', '15']
-            #             if [ 0 -lt ${#APPS_OLD[@]} ]; then
-            #                 # 50% chance of starting out with old app
-            #                 NAPPS=$((1+${#APPS_OLD[*]}))
-            #                 if [ 0 -lt $((RANDOM%$NAPPS)) ]; then
-            #                     APPS[$COUNTER]=${APPS_OLD[$((RANDOM%${#APPS_OLD[*]}))]}
-            #                     BOARD_SIZE="--board-size ${BOARD_SIZES_OLD[$((RANDOM%${#BOARD_SIZES_OLD[*]}))]}"
-            #                     NEW_ARGS[$COUNTER]=""
-            #                 fi
-            #             fi
-
             PARAMS = player_params(args, NLOCALS, NPLAYERS, DEV)
             PARAMS += PLAT_PARMS
-            PARAMS += BOARD_SIZE + ['--room', ROOM, '--trade-pct', args.TRADE_PCT, '--sort-tiles']
+            PARAMS += ['--board-size', '15', '--trade-pct', args.TRADE_PCT, '--sort-tiles']
+
+            # We SHOULD support having both SMS and relay working...
+            if args.ADD_RELAY:
+                PARAMS += [ '--relay-port', args.PORT, '--room', ROOM, '--host', args.HOST]
+                if random.randint(0,100) % 100 < g_UDP_PCT_START:
+                    PARAMS += ['--use-udp']
+            if args.ADD_SMS:
+                PARAMS += [ '--sms-number', PHONE_BASE + str(DEV - 1) ]
+                if args.SMS_FAIL_PCT > 0:
+                    PARAMS += [ '--sms-fail-pct', args.SMS_FAIL_PCT ]
+                if DEV > 1:
+                    PARAMS += [ '--server-sms-number', PHONE_BASE + '0' ]
+
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]
-            PARAMS += [ '--game-dict', DICT, '--relay-port', args.PORT, '--host', args.HOST]
+            PARAMS += [ '--game-dict', DICT]
             PARAMS += ['--slow-robot', '1:3', '--skip-confirm']
             PARAMS += ['--db', DB]
-            if random.randint(0,100) % 100 < g_UDP_PCT_START:
-                PARAMS += ['--use-udp']
 
             PARAMS += ['--drop-nth-packet', g_DROP_N]
             if random.randint(0, 100) < args.HTTP_PCT:
@@ -417,230 +423,20 @@ def build_cmds(args):
             # it isn't a priority.
             # PARAMS += ['--seed', args.SEED]
             PARAMS += PUBLIC
-            if  DEV > 1: 
+            if DEV > 1:
                 PARAMS += ['--force-channel', DEV - 1]
             else:
                 PARAMS += ['--server']
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device(args, GAME, COUNTER, args.APP_NEW, PARAMS, ROOM, DB, LOG, len(LOCALS))
+            dev = Device(args, GAME, COUNTER, args.APP_NEW, PARAMS, ROOM, peers, DB, LOG, len(LOCALS))
+            peers.add(dev)
             dev.update_ldevid()
             devs.append(dev)
 
             COUNTER += 1
     return devs
-
-# read_resume_cmds() {
-#     COUNTER=0
-#     for LOG in $(ls $LOGDIR/*.txt); do
-#         echo "need to parse cmd and deal with changes"
-#         exit 1
-#         CMD=$(head -n 1 $LOG)
-
-#         ARGS[$COUNTER]=$CMD
-#         LOGS[$COUNTER]=$LOG
-#         PIDS[$COUNTER]=0
-
-#         set $CMD
-#         while [ $# -gt 0 ]; do
-#             case $1 in
-#                 --file)
-#                     FILES[$COUNTER]=$2
-#                     shift
-#                     ;;
-#                 --room)
-#                     ROOMS[$COUNTER]=$2
-#                     shift
-#                     ;;
-#             esac
-#             shift
-#         done
-#         COUNTER=$((COUNTER+1))
-#     done
-#     ROOM_PIDS[$ROOM]=0
-# }
-
-# launch() {
-#     KEY=$1
-#     LOG=${LOGS[$KEY]}
-#     APP="${APPS[$KEY]}"
-# 	if [ -z "$APP" ]; then
-# 		echo "error: no app set"
-# 		exit 1
-# 	fi
-#     PARAMS="${NEW_ARGS[$KEY]} ${ARGS[$KEY]} ${ARGS_DEVID[$KEY]}"
-#     exec $APP $PARAMS >/dev/null 2>>$LOG
-# }
-
-# # launch_via_rq() {
-# #      KEY=$1
-# #      RELAYID=$2
-# #      PIPE=${PIPES[$KEY]}
-# #      ../relay/rq -f $RELAYID -o $PIPE &
-# #      CMD="${CMDS[$KEY]}"
-# #      exec $CMD >/dev/null 2>>$LOG
-# # }
-
-# send_dead() {
-# 	ID=$1
-# 	DB=${FILES[$ID]}
-# 	while :; do
-# 		[ -f $DB ] || break		# it's gone
-# 		RES=$(echo 'select relayid, seed from games limit 1;' | sqlite3 -separator ' ' $DB || /bin/true)
-# 		[ -n "$RES" ] && break
-# 		sleep 0.2
-# 	done
-# 	RELAYID=$(echo $RES | awk '{print $1}')
-# 	SEED=$(echo $RES | awk '{print $2}')
-# 	JSON="[{\"relayID\":\"$RELAYID\", \"seed\":$SEED}]"
-# 	curl -G --data-urlencode params="$JSON" http://$HOST/xw4/relay.py/kill >/dev/null 2>&1
-# }
-
-# close_device() {
-#     ID=$1
-#     MVTO=$2
-#     REASON="$3"
-#     PID=${PIDS[$ID]}
-#     if [ $PID -ne 0 ]; then
-#         kill ${PIDS[$ID]} 2>/dev/null
-#         wait ${PIDS[$ID]}
-#         ROOM=${ROOMS[$ID]}
-#         [ ${ROOM_PIDS[$ROOM]} -eq $PID ] && ROOM_PIDS[$ROOM]=0
-#     fi
-#     unset PIDS[$ID]
-#     unset ARGS[$ID]
-#     echo "closing game: $REASON" >> ${LOGS[$ID]}
-#     if [ -n "$MVTO" ]; then
-#         [ -f "${FILES[$ID]}" ] && mv ${FILES[$ID]} $MVTO
-#         mv ${LOGS[$ID]} $MVTO
-#     else
-#         rm -f ${FILES[$ID]}
-#         rm -f ${LOGS[$ID]}
-#     fi
-#     unset FILES[$ID]
-#     unset LOGS[$ID]
-#     unset ROOMS[$ID]
-#     unset APPS[$ID]
-#     unset ARGS_DEVID[$ID]
-
-#     COUNT=${#ARGS[*]}
-#     echo "$COUNT devices left playing..."
-# }
-
-# OBITS=""
-
-# kill_from_log() {
-#     LOG=$1
-#     RELAYID=$(./scripts/relayID.sh --long $LOG)
-#     if [ -n "$RELAYID" ]; then
-#         OBITS="$OBITS -d $RELAYID"
-#         if [ 0 -eq $(($RANDOM%2)) ]; then
-#             ../relay/rq -a $HOST $OBITS 2>/dev/null || /bin/true
-#             OBITS=""
-#         fi
-#         return 0                # success
-#     fi
-#     echo "unable to send kill command for $LOG"
-#     return 1
-# }
-
-# maybe_resign() {
-#     if [ "$RESIGN_PCT" -gt 0 ]; then
-#         KEY=$1
-#         LOG=${LOGS[$KEY]}
-#         if grep -aq XWRELAY_ALLHERE $LOG; then
-# 			if [ $((${RANDOM}%100)) -lt $RESIGN_PCT ]; then
-#                 echo "making $LOG $(connName $LOG) resign..."
-#                 kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || /bin/true
-#             fi
-#         fi
-#     fi
-# }
-
-# try_upgrade() {
-#     KEY=$1
-#     if [ 0 -lt ${#APPS_OLD[@]} ]; then
-#         if [ $APP_NEW != "${APPS[$KEY]}" ]; then
-#             # one in five chance of upgrading
-#             if [ 0 -eq $((RANDOM % UPGRADE_ODDS)) ]; then
-#                 APPS[$KEY]=$APP_NEW
-#                 NEW_ARGS[$KEY]="$APP_NEW_PARAMS"
-#                 print_cmdline $KEY
-#             fi
-#         fi
-#     fi
-# }
-
-# try_upgrade_upd() {
-#     KEY=$1
-#     CMD=${ARGS[$KEY]}
-#     if [ "${CMD/--use-udp/}" = "${CMD}" ]; then
-#         if [ $((RANDOM % 100)) -lt $UDP_PCT_INCR ]; then
-#             ARGS[$KEY]="$CMD --use-udp"
-#             echo -n "$(date +%r): "
-#             echo "upgrading key $KEY to use UDP"
-#         fi
-#     fi
-# }
-
-# check_game() {
-#     KEY=$1
-#     LOG=${LOGS[$KEY]}
-#     CONNNAME="$(connName $LOG)"
-#     OTHERS=""
-#     if [ -n "$CONNNAME" ]; then
-#         if grep -aq '\[unused tiles\]' $LOG ; then
-#             for INDX in ${!LOGS[*]}; do
-#                 [ $INDX -eq $KEY ] && continue
-#                 ALOG=${LOGS[$INDX]}
-#                 CONNNAME2="$(connName $ALOG)"
-#                 if [ "$CONNNAME2" = "$CONNNAME" ]; then
-#                     if ! grep -aq '\[unused tiles\]' $ALOG; then
-#                         OTHERS=""
-#                         break
-#                     fi
-#                     OTHERS="$OTHERS $INDX"
-#                 fi
-#             done
-#         fi
-#     fi
-
-#     if [ -n "$OTHERS" ]; then
-#         echo -n "Closing $CONNNAME [$(date)]: "
-#         # kill_from_logs $OTHERS $KEY
-#         for ID in $OTHERS $KEY; do
-#             echo -n "${ID}:${LOGS[$ID]}, "
-#             kill_from_log ${LOGS[$ID]} || /bin/true
-# 			send_dead $ID
-#             close_device $ID $DONEDIR "game over"
-#         done
-#         echo ""
-#         # XWRELAY_ERROR_DELETED may be old
-#     elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
-#         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-#         kill_from_log $LOG || /bin/true
-#         close_device $KEY $DEADDIR "other resigned"
-#     elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
-#         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-#         kill_from_log $LOG || /bin/true
-#         close_device $KEY $DEADDIR "other resigned"
-#     else
-#         maybe_resign $KEY
-#     fi
-# }
-
-# increment_drop() {
-#     KEY=$1
-#     CMD=${ARGS[$KEY]}
-#     if [ "$CMD" != "${CMD/drop-nth-packet//}" ]; then
-#         DROP_N=$(echo $CMD | sed 's,^.*drop-nth-packet \(-*[0-9]*\) .*$,\1,')
-#         if [ $DROP_N -gt 0 ]; then
-#             NEXT_N=$((DROP_N+1))
-#             ARGS[$KEY]=$(echo $CMD | sed "s,^\(.*drop-nth-packet \)$DROP_N\(.*\)$,\1$NEXT_N\2,")
-#         fi
-#     fi
-# }
 
 def summarizeTileCounts(devs, endTime, state):
     global gDeadLaunches
@@ -675,13 +471,22 @@ def summarizeTileCounts(devs, endTime, state):
         nLaunches += launchCount
         fmtData[1]['data'].append('{:{width}d}'.format(launchCount, width=colWidth))
 
-        nTiles = datum['nTilesLeft']
-        fmtData[2]['data'].append(nTiles is None and ('-' * colWidth) or '{:{width}d}'.format(nTiles, width=colWidth))
-        if not nTiles is None: totalTiles += int(nTiles)
-
+        # Format tiles left. It's the number in the bag/pool until
+        # that drops to 0, then the number in the tray preceeded by
+        # '+'. Only the pool number is included in the totalTiles sum.
+        nTilesPool = datum['nTilesLeftPool']
+        nTilesTray = datum['nTilesLeftTray']
+        if nTilesPool is None and nTilesTray is None:
+            txt = ('-' * colWidth)
+        elif int(nTilesPool) == 0 and not nTilesTray is None:
+            txt = '{:+{width}d}'.format(nTilesTray, width=colWidth-1)
+        else:
+            txt = '{:{width}d}'.format(nTilesPool, width=colWidth)
+            totalTiles += int(nTilesPool)
+        fmtData[2]['data'].append(txt)
 
     print('')
-    print('devs left: {}; tiles left: {}; total launches: {}; {}/{}'
+    print('devs left: {}; bag tiles left: {}; total launches: {}; {}/{}'
           .format(nDevs, totalTiles, nLaunches, datetime.datetime.now(), endTime ))
     fmt = '{head:>%d} {data}' % headWidth
     for datum in fmtData: datum['data'] = ' '.join(datum['data'])
@@ -708,19 +513,21 @@ gDone = False
 def run_cmds(args, devs):
     nCores = countCores()
     endTime = datetime.datetime.now() + datetime.timedelta(minutes = args.TIMEOUT_MINS)
-    LOOPCOUNT = 0
     printState = {}
+    lastPrint = datetime.datetime.now()
 
     while len(devs) > 0 and not gDone:
         if countCores() > nCores:
             print('core file count increased; exiting')
             break
-        if datetime.datetime.now() > endTime:
+        now = datetime.datetime.now()
+        if now > endTime:
             print('outta time; outta here')
             break
 
-        LOOPCOUNT += 1
-        if 0 == LOOPCOUNT % 20:
+        # print stats every 5 seconds
+        if now - lastPrint > datetime.timedelta(seconds = 5):
+            lastPrint = now
             if not summarizeTileCounts(devs, endTime, printState):
                 print('no change in too long; exiting')
                 break
@@ -742,20 +549,16 @@ def run_cmds(args, devs):
 #             PIDS[$KEY]=$PID
 #             ROOM_PIDS[$ROOM]=$PID
 #             MINEND[$KEY]=$(($NOW + $MINRUN))
-        elif not dev.minTimeExpired():
-            # print('sleeping...')
-            time.sleep(1.0)
-        else:
+        elif dev.minTimeExpired():
             dev.kill()
             if dev.handleAllDone():
                 devs.remove(dev)
-            # if g_DROP_N >= 0: dev.increment_drop()
-            #             update_ldevid $KEY
-
+        else:
+            time.sleep(1.0)
 
     # if we get here via a break, kill any remaining games
     if devs:
-        print('stopping %d remaining games' % (len(devs)))
+        print('stopping {} remaining games'.format(len(devs)))
         for dev in devs:
             if dev.running(): dev.kill()
 
@@ -828,6 +631,7 @@ def mkParser():
                         help = 'No game will have fewer devices than this')
     parser.add_argument('--max-devs', dest = 'MAXDEVS', type = int, default = 4,
                         help = 'No game will have more devices than this')
+
     parser.add_argument('--min-run', dest = 'MINRUN', type = int, default = 2,
                         help = 'Keep each run alive at least this many seconds')
     # #     echo "    [--new-app <path/to/app]                                \\" >&2
@@ -851,6 +655,10 @@ def mkParser():
 
     parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
     parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 0, type = int)
+
+    parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
+    parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
+    parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
 
     parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
                         action = 'store_true')
@@ -1058,6 +866,10 @@ def main():
     signal.signal(signal.SIGINT, termHandler)
 
     args = parseArgs()
+    # Hack: old files confuse things. Remove is simple fix good for now
+    if args.ADD_SMS:
+        try: rmtree('/tmp/xw_sms')
+        except: None
     devs = build_cmds(args)
     nDevs = len(devs)
     run_cmds(args, devs)

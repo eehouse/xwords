@@ -86,7 +86,7 @@ static void gtkShowFinalScores( const GtkGameGlobals* globals,
                                 XP_Bool ignoreTimeout );
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
                           XP_U32 devID, const XP_UCHAR* relayID, 
-                          const XP_UCHAR* phone );
+                          const CommsAddrRec* addrs );
 
 
 #define GTK_TRAY_HT_ROWS 3
@@ -589,19 +589,18 @@ createOrLoadObjects( GtkGameGlobals* globals )
     setTransportProcs( &procs, globals );
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
-        stream = streamFromFile( cGlobals, params->fileName, globals );
+        stream = streamFromFile( cGlobals, params->fileName );
 #ifdef USE_SQLITE
     } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
         XP_UCHAR buf[32];
         XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
         mpool_setTag( MEMPOOL buf );
-        stream = streamFromDB( cGlobals, globals );
+        stream = streamFromDB( cGlobals );
 #endif
-    } else if ( !!cGlobals->pDb && 0 <= cGlobals->selRow ) {
-        stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                  params->vtMgr, 
-                                  cGlobals, CHANNEL_NONE, NULL );
-        if ( !loadGame( stream, cGlobals->pDb, cGlobals->selRow ) ) {
+    } else if ( !!params->pDb && 0 <= cGlobals->selRow ) {
+        stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool) 
+                                      params->vtMgr );
+        if ( !loadGame( stream, params->pDb, cGlobals->selRow ) ) {
             stream_destroy( stream );
             stream = NULL;
         }
@@ -874,10 +873,9 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommsCtxt* comms = cGlobals->game.comms;
     if ( !!comms /*&& COMMS_CONN_NONE == comms_getConTypes( comms )*/ ) {
         /* If it has pending invite info, send the invitation! */
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                                cGlobals->params->vtMgr, 
-                                                cGlobals, CHANNEL_NONE, NULL );
-        if ( loadInviteAddrs( stream, cGlobals->pDb, cGlobals->selRow ) ) {
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr );
+        if ( loadInviteAddrs( stream, cGlobals->params->pDb, cGlobals->selRow ) ) {
             CommsAddrRec addr = {0};
             addrFromStream( &addr, stream );
             comms_setAddr( cGlobals->game.comms, &addr );
@@ -1622,21 +1620,21 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
 
     if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, devID, NULL, NULL );
+        send_invites( cGlobals, nPlayers, devID, NULL, &inviteAddr );
     }
 } /* handle_invite_button */
 
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               XP_U32 devID, const XP_UCHAR* relayID, 
-              const XP_UCHAR* phone )
+              const CommsAddrRec* addrs )
 {
     CommsAddrRec addr = {0};
     CommsCtxt* comms = cGlobals->game.comms;
     XP_ASSERT( comms );
     comms_getAddr( comms, &addr );
 
-    gint forceChannel = 0;  /* PENDING */
+    gint forceChannel = 1;  /* 1 is what Android does. Limits to two-device games */
 
     NetLaunchInfo nli = {0};
     nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
@@ -1647,9 +1645,8 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 
 #ifdef DEBUG
     {
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                                                cGlobals->params->vtMgr,
-                                                NULL, CHANNEL_NONE, NULL );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr );
         nli_saveToStream( &nli, stream );
         NetLaunchInfo tmp;
         nli_makeFromStream( &tmp, stream );
@@ -1658,11 +1655,13 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 #endif
 
-    if ( !!phone ) {
-        XP_ASSERT( 0 );         /* not implemented */
-        /* linux_sms_invite( cGlobals->params, gi, &addr, gameName, */
-        /*                   nPlayers, forceChannel,  */
-        /*                   inviteAddr.u.sms.phone, inviteAddr.u.sms.port ); */
+    if ( !!addrs->u.sms.phone ) {
+        gchar gameName[64];
+        snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
+
+        linux_sms_invite( cGlobals->params, cGlobals->gi, &addr, gameName,
+                          nPlayers, forceChannel,
+                          addrs->u.sms.phone, addrs->u.sms.port );
     }
     if ( 0 != devID || !!relayID ) {
         XP_ASSERT( 0 != devID || (!!relayID && !!relayID[0]) );
@@ -1721,14 +1720,6 @@ gtkUserError( GtkGameGlobals* globals, const char* format, ... )
 
     va_end(ap);
 } /* gtkUserError */
-
-static VTableMgr*
-gtk_util_getVTManager(XW_UtilCtxt* uc)
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    return globals->cGlobals.params->vtMgr;
-} /* linux_util_getVTManager */
-
 
 static gint
 ask_blank( gpointer data )
@@ -1934,9 +1925,8 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
     XP_UCHAR* text;
     const CommonGlobals* cGlobals = &globals->cGlobals;
 
-    stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                              cGlobals->params->vtMgr,
-                              NULL, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                  cGlobals->params->vtMgr );
     server_writeFinalScores( cGlobals->game.server, stream );
 
     text = strFromStream( stream );
@@ -2272,9 +2262,8 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make( MEMPOOL 
-                              globals->cGlobals.params->vtMgr,
-                              globals, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MEMPOOL
+                                  globals->cGlobals.params->vtMgr );
     board_formatRemainingTiles( globals->cGlobals.game.board, stream );
     text = strFromStream( stream );
     stream_destroy( stream );
@@ -2570,7 +2559,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_userError = gtk_util_userError;
     util->vtable->m_util_notifyMove = gtk_util_notifyMove;
     util->vtable->m_util_notifyTrade = gtk_util_notifyTrade;
-    util->vtable->m_util_getVTManager = gtk_util_getVTManager;
     util->vtable->m_util_notifyPickTileBlank = gtk_util_notifyPickTileBlank;
     util->vtable->m_util_informNeedPickTiles = gtk_util_informNeedPickTiles;
     util->vtable->m_util_informNeedPassword = gtk_util_informNeedPassword;
@@ -2935,11 +2923,9 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 
     CommonGlobals* cGlobals = &globals->cGlobals;
     cGlobals->selRow = rowid;
-    cGlobals->pDb = pDb;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                            params->vtMgr, cGlobals, 
-                                            CHANNEL_NONE, NULL );
-    XP_Bool loaded = loadGame( stream, cGlobals->pDb, rowid );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                params->vtMgr );
+    XP_Bool loaded = loadGame( stream, pDb, rowid );
     if ( loaded ) {
         if ( NULL == cGlobals->dict ) {
             cGlobals->dict = makeDictForStream( cGlobals, stream );

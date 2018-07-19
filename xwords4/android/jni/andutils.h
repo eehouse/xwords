@@ -31,7 +31,7 @@
 
 /* callback for streams */
 void and_send_on_close( XWStreamCtxt* stream, void* closure );
-XWStreamCtxt* and_empty_stream( MPFORMAL AndGlobals* globals );
+XWStreamCtxt* and_empty_stream( MPFORMAL AndGameGlobals* globals );
 
 typedef struct _SetInfo {
     const char* name; 

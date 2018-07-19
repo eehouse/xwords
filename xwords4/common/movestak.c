@@ -120,9 +120,7 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
         stack->highWaterMark = stream_getU16( stream );
         stack->nEntries = stream_getU16( stream );
         stack->top = stream_getU32( stream );
-        stack->data = mem_stream_make( MPPARM(stack->mpool) stack->vtmgr,
-                                       NULL, 0,
-                                       (MemStreamCloseCallback)NULL );
+        stack->data = mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
 
         stream_getFromStream( stack->data, stream, nBytes );
     } else {
@@ -164,8 +162,8 @@ StackCtxt*
 stack_copy( const StackCtxt* stack )
 {
     StackCtxt* newStack = NULL;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(stack->mpool)
-                                            stack->vtmgr, NULL, 0, NULL );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(stack->mpool)
+                                                stack->vtmgr );
     stack_writeToStream( stack, stream );
 
     newStack = stack_make( MPPARM(stack->mpool) stack->vtmgr );
@@ -184,8 +182,7 @@ pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
     XWStreamCtxt* stream = stack->data;
 
     if ( !stream ) {
-        stream = mem_stream_make( MPPARM(stack->mpool) stack->vtmgr, NULL, 0,
-                                  (MemStreamCloseCallback)NULL );
+        stream = mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
         stack->data = stream;
     }
 

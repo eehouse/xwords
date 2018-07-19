@@ -179,6 +179,26 @@ stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
     stream_putBytes( stream, str, len );
 } /* putStringToStream */
 
+XP_Bool
+stream_gotU8( XWStreamCtxt* stream, XP_U8* ptr )
+{
+    XP_Bool success = sizeof(*ptr) <= stream_getSize( stream );
+    if ( success ) {
+        *ptr = stream_getU8( stream );
+    }
+    return success;
+}
+
+XP_Bool
+stream_gotBytes( XWStreamCtxt* stream, void* ptr, XP_U16 len )
+{
+    XP_Bool success = len <= stream_getSize( stream );
+    if ( success ) {
+        stream_getBytes( stream, ptr, len );
+    }
+    return success;
+}
+
 /*****************************************************************************
  *
  ****************************************************************************/

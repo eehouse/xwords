@@ -237,7 +237,7 @@ makeSMSPage( GtkInviteState* state, PageData* data )
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );
     const gchar* phone = hasSMS ?
-        state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
+        state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.myPhone;
     GtkWidget* hbox = makeLabeledField( "Invitee phone", &state->smsphone, phone );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 

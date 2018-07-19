@@ -212,7 +212,6 @@ public class JNIThread extends Thread {
             }
 
             CommonPrefs cp = CommonPrefs.get( context );
-            JNIUtils jniUtils = JNIUtilsImpl.get( context );
 
             // Assert.assertNull( m_jniGamePtr ); // fired!!
             if ( null != m_jniGamePtr ) {
@@ -224,15 +223,13 @@ public class JNIThread extends Thread {
                                                      dictNames, pairs.m_bytes,
                                                      pairs.m_paths,
                                                      m_gi.langName( m_context ),
-                                                     utils, jniUtils,
-                                                     null, cp, m_xport );
+                                                     utils, null, cp, m_xport );
             }
             if ( null == m_jniGamePtr ) {
                 m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
                                               pairs.m_paths,
                                               m_gi.langName(m_context),
-                                              utils, jniUtils, null, cp,
-                                              m_xport );
+                                              utils, null, cp, m_xport );
             }
             Assert.assertNotNull( m_jniGamePtr );
             m_lastSavedState = Arrays.hashCode( stream );

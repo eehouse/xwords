@@ -25,8 +25,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
@@ -131,8 +131,8 @@ public class GameUtils {
 
         gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes, pairs.m_paths,
                                  gi.langName( context ), (UtilCtxt)null,
-                                 JNIUtilsImpl.get( context ), (DrawCtx)null,
-                                 CommonPrefs.get( context ), (TransportProcs)null );
+                                 (DrawCtx)null, CommonPrefs.get( context ),
+                                 (TransportProcs)null );
 
         if ( juggle ) {
             gi.juggle();
@@ -372,15 +372,13 @@ public class GameUtils {
                 gamePtr = XwJNI.initFromStream( rowid, stream, gi, dictNames,
                                                 pairs.m_bytes, pairs.m_paths,
                                                 langName, util,
-                                                JNIUtilsImpl.get( context ),
                                                 null,
                                                 CommonPrefs.get(context),
                                                 tp );
                 if ( null == gamePtr ) {
                     gamePtr = XwJNI.initNew( gi, dictNames,
                                              pairs.m_bytes, pairs.m_paths,
-                                             langName, (UtilCtxt)null,
-                                             JNIUtilsImpl.get(context), null,
+                                             langName, (UtilCtxt)null, null,
                                              CommonPrefs.get(context), null );
                 }
             }
@@ -485,12 +483,12 @@ public class GameUtils {
         }
 
         if ( force ) {
-            new ResendTask( context, filter, proc ).execute();
-
             System.arraycopy( sendTimes, 0, /* src */
                               sendTimes, 1, /* dest */
                               sendTimes.length - 1 );
             sendTimes[0] = now;
+
+            new Resender( context, filter, proc ).start();
         }
     }
 
@@ -914,6 +912,7 @@ public class GameUtils {
             m_gotMsg = false;
             m_gameOver = false;
         }
+
         @Override
         public void showChat( String msg, int fromIndx, String fromName, int tsSeconds )
         {
@@ -923,11 +922,14 @@ public class GameUtils {
             m_chat = msg;
             m_ts = tsSeconds;
         }
+
+        @Override
         public void turnChanged( int newTurn )
         {
             m_gotMsg = true;
         }
 
+        @Override
         public void notifyGameOver()
         {
             m_gameOver = true;
@@ -1024,8 +1026,7 @@ public class GameUtils {
                 XwJNI.initFromStream( rowid, stream, gi, dictNames,
                                       pairs.m_bytes, pairs.m_paths,
                                       gi.langName( context ), null,
-                                      JNIUtilsImpl.get(context), null,
-                                      CommonPrefs.get( context ), null );
+                                      null, CommonPrefs.get( context ), null );
             // second time required as game_makeFromStream can overwrite
             gi.replaceDicts( context, newDict );
 
@@ -1075,8 +1076,7 @@ public class GameUtils {
                                             new CurGameInfo(context),
                                             dictNames, pairs.m_bytes,
                                             pairs.m_paths, langName,
-                                            null, JNIUtilsImpl.get(context),
-                                            null, cp, null );
+                                            null, null, cp, null );
             madeGame = null != gamePtr;
         }
 
@@ -1084,8 +1084,7 @@ public class GameUtils {
             Assert.assertNull( gamePtr );
             gamePtr = XwJNI.initNew( gi, dictNames, pairs.m_bytes,
                                      pairs.m_paths, langName, util,
-                                     JNIUtilsImpl.get(context), (DrawCtx)null,
-                                     cp, sink );
+                                     (DrawCtx)null, cp, sink );
         }
 
         if ( null != car ) {
@@ -1255,23 +1254,27 @@ public class GameUtils {
         return result;
     }
 
-    private static class ResendTask extends AsyncTask<Void, Void, Void> {
+    private static class Resender extends Thread {
         private Context m_context;
         private ResendDoneProc m_doneProc;
         private CommsConnType m_filter;
-        private int m_nSent = 0;
+        private Handler m_handler;
 
-        public ResendTask( Context context, CommsConnType filter,
-                           ResendDoneProc proc )
+        public Resender( Context context, CommsConnType filter,
+                         ResendDoneProc proc )
         {
             m_context = context;
             m_filter = filter;
             m_doneProc = proc;
+            if ( null != proc ) {
+                m_handler = new Handler();
+            }
         }
 
         @Override
-        protected Void doInBackground( Void... unused )
+        public void run()
         {
+            int nSentTotal = 0;
             HashMap<Long,CommsConnTypeSet> games
                 = DBUtils.getGamesWithSendsPending( m_context );
 
@@ -1296,11 +1299,11 @@ public class GameUtils {
                         int nSent = XwJNI.comms_resendAll( gamePtr, true,
                                                            m_filter, false );
                         gamePtr.release();
-                        Log.d( TAG, "ResendTask.doInBackground(): sent %d "
+                        Log.d( TAG, "Resender.doInBackground(): sent %d "
                                + "messages for rowid %d", nSent, rowid );
-                        m_nSent += sink.numSent();
+                        nSentTotal += sink.numSent();
                     } else {
-                        Log.d( TAG, "ResendTask.doInBackground(): loadMakeGame()"
+                        Log.d( TAG, "Resender.doInBackground(): loadMakeGame()"
                                + " failed for rowid %d", rowid );
                     }
                     lock.unlock();
@@ -1311,19 +1314,21 @@ public class GameUtils {
                                           false, false );
                         jniThread.release();
                     } else {
-                        Log.w( TAG, "ResendTask.doInBackground: unable to unlock %d",
+                        Log.w( TAG, "Resender.doInBackground: unable to unlock %d",
                                rowid );
                     }
                 }
             }
-            return null;
-        }
 
-        @Override
-        protected void onPostExecute( Void unused )
-        {
             if ( null != m_doneProc ) {
-                m_doneProc.onResendDone( m_context, m_nSent );
+                final int fSentTotal = nSentTotal;
+                m_handler
+                    .post( new Runnable() {
+                            @Override
+                            public void run() {
+                                m_doneProc.onResendDone( m_context, fSentTotal );
+                            }
+                        });
             }
         }
     }

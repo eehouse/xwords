@@ -166,7 +166,8 @@ class DBMgr {
     int getCountWhere( const char* table, string& test );
     void RemoveStoredMessages( string& msgIDs );
     void decodeMessage( PGresult* result, bool useB64, int rowIndx, int b64indx, 
-                        int byteaIndex, uint8_t* buf, size_t* buflen );
+                        int byteaIndex, vector<uint8_t>& buf );
+
     void storedMessagesImpl( string query, vector<DBMgr::MsgInfo>& msgs, 
                              bool nullConnnameOK );
     int CountStoredMessages( const char* const connName, int hid );

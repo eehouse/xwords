@@ -54,7 +54,7 @@ fi
 
 if [ -z "$FILES" ]; then
     do_build
-	for f in $(dirname $0)/../app/build/outputs/apk/*-unsigned-*.apk; do
+	for f in $(dirname $0)/../app/build/outputs/apk/xw4/release/*-unsigned-*.apk; do
 		$(dirname $0)/sign-align.sh --apk $f
 	done
 fi

@@ -371,7 +371,7 @@ static XP_Bool
 drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlanks )
 {
     XP_Bool success = XP_TRUE;
-    XP_Rect cellRect;
+    XP_Rect cellRect = {0};
     Tile tile;
     XP_Bool isBlank, isEmpty, recent, pending = XP_FALSE;
     XWBonusType bonus;

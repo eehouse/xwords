@@ -166,6 +166,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 
         result->draw = draw;
         result->util = util;
+        result->dutil = util_getDevUtilCtxt( util );
         result->gi = util->gameInfo;
         XP_ASSERT( !!result->gi );
 
@@ -1090,12 +1091,11 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
             XP_MEMSET( &bwl, 0, sizeof(bwl) );
             
             if ( !legal ) {
-                stream = mem_stream_make( MPPARM(board->mpool)
-                                          util_getVTManager(board->util), NULL,
-                                          CHANNEL_NONE, (MemStreamCloseCallback)NULL );
+                stream = mem_stream_make_raw( MPPARM(board->mpool)
+                                              dutil_getVTManager(board->dutil) );
 
-                const XP_UCHAR* str = util_getUserString(board->util,
-                                                         STR_COMMIT_CONFIRM);
+                const XP_UCHAR* str = dutil_getUserString( board->dutil,
+                                                           STR_COMMIT_CONFIRM );
                 stream_catString( stream, str );
 
                 XP_Bool warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
@@ -1319,10 +1319,8 @@ timerFiredForPen( BoardCtxt* board )
                                            NULL, NULL, NULL );
                 if ( listWords ) {
                     XWStreamCtxt* stream = 
-                        mem_stream_make( MPPARM(board->mpool) 
-                                         util_getVTManager(board->util), NULL,
-                                         CHANNEL_NONE,
-                                         (MemStreamCloseCallback)NULL );
+                        mem_stream_make_raw( MPPARM(board->mpool)
+                                             dutil_getVTManager(board->dutil) );
                     model_listWordsThrough( board->model, modelCol, modelRow, 
                                             stream );
                     util_cellSquareHeld( board->util, stream );
@@ -1428,7 +1426,7 @@ board_pushTimerSave( BoardCtxt* board )
 {
     if ( board->gi->timerEnabled ) {
         if ( board->timerSaveCount++ == 0 ) {
-            board->timerStoppedTime = util_getCurSeconds( board->util );
+            board->timerStoppedTime = dutil_getCurSeconds( board->dutil );
 #ifdef DEBUG
             board->timerStoppedTurn = server_getCurrentTurn( board->server,
                                                              NULL );
@@ -1451,7 +1449,7 @@ board_popTimerSave( BoardCtxt* board )
             XP_ASSERT( board->timerStoppedTurn == turn );
 
             if ( --board->timerSaveCount == 0 && turn >= 0 ) {
-                XP_U32 curTime = util_getCurSeconds( board->util );
+                XP_U32 curTime = dutil_getCurSeconds( board->dutil );
                 XP_U32 elapsed;
 
                 XP_ASSERT( board->timerStoppedTime != 0 );

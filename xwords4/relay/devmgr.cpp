@@ -57,8 +57,7 @@ DevMgr::rememberDevice( DevIDRelay devid, const AddrInfo::AddrUnion* saddr )
         pair<map<DevIDRelay,UDPAddrRec>::iterator, bool> result = 
             m_devAddrMap.insert( pair<DevIDRelay,UDPAddrRec>( devid, rec ) );
         if ( !result.second ) {
-            logf( XW_LOGINFO, "%s: replacing address for %d; was %s, now %s",
-                  __func__, devid, result.first->second, rec );
+            logf( XW_LOGINFO, "%s: replacing address for %d", __func__, devid );
             result.first->second = rec;
         }
 

@@ -1702,7 +1702,7 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
     }
 }
 
-static const char*
+const char*
 msgToStr( XWRelayReg msg )
 {
     const char* str;
@@ -1840,7 +1840,7 @@ handle_udp_packet( PacketThreadClosure* ptc )
         }
             
         case XWPDEV_KEEPALIVE:
-        case XWPDEV_RQSTMSGS: { // here
+        case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
             if ( getVLIString( &ptr, end, devID.m_devIDString ) ) {
                 const AddrInfo* addr = ptc->addr();
@@ -1855,8 +1855,8 @@ handle_udp_packet( PacketThreadClosure* ptc )
         case XWPDEV_ACK: {
             uint32_t packetID;
             if ( vli2un( &ptr, end, &packetID ) ) {
-                logf( XW_LOGINFO, "%s: got ack for packet %d", __func__, packetID );
-                UDPAckTrack::recordAck( packetID );
+                string str = UDPAckTrack::recordAck( packetID );
+                logf( XW_LOGINFO, "%s: got ack for packet %s", __func__, str.c_str() );
             }
             break;
         }

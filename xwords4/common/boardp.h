@@ -139,6 +139,7 @@ struct BoardCtxt {
     ModelCtxt* model;
     ServerCtxt* server;
     DrawCtx* draw;
+    XW_DUtilCtxt* dutil;
     XW_UtilCtxt* util;
 
     struct CurGameInfo* gi;

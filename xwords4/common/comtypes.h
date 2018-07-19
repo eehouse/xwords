@@ -129,6 +129,22 @@ typedef enum {
     OBJ_TRAY
 } BoardObjectType;
 
+enum {
+    SERVER_STANDALONE,
+    SERVER_ISSERVER,
+    SERVER_ISCLIENT
+};
+typedef XP_U8 DeviceRole;
+
+enum {
+    PHONIES_IGNORE,
+    PHONIES_WARN,
+    PHONIES_DISALLOW
+};
+typedef XP_U8 XWPhoniesChoice;
+
+typedef XP_U8 XP_LangCode;
+
 /* I'm going to try putting all forward "class" decls in the same file */
 typedef struct BoardCtxt BoardCtxt;
 typedef struct CommMgrCtxt CommMgrCtxt;
@@ -144,6 +160,7 @@ typedef struct XWStreamCtxt XWStreamCtxt;
 typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
+typedef struct XW_DUtilCtxt XW_DUtilCtxt;
 
 /* Low two bits treated as channel, third as short-term flag indicating
  * sender's role; rest can be random to aid detection of duplicate packets. */
@@ -190,6 +207,8 @@ typedef enum {
 
     BONUS_LAST
 } XWBonusType;
+
+#define PERSIST_KEY(str) __FILE__ ":" str
 
 /* I need a way to communiate prefs to common/ code.  For now, though, I'll
  * leave storage of these values up to the platforms.  First, because I don't

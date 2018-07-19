@@ -108,6 +108,7 @@ model_make( MPFORMAL DictionaryCtxt* dict, const PlayerDicts* dicts,
         MPASSIGN(result->vol.mpool, mpool);
 
         result->vol.util = util;
+        result->vol.dutil = util_getDevUtilCtxt( util );
         result->vol.wni.proc = recordWord;
         result->vol.wni.closure = &result->vol.rwi;
 
@@ -295,7 +296,7 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
         stack_init( model->vol.stack );
     } else {
         model->vol.stack = stack_make( MPPARM(model->vol.mpool)
-                                       util_getVTManager(model->vol.util));
+                                       dutil_getVTManager(model->vol.dutil));
     }
 } /* model_setSize */
 
@@ -2090,13 +2091,13 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
             }
 
             if ( isPass ) {
-                format = util_getUserString( model->vol.util, STR_PASS );
+                format = dutil_getUserString( model->vol.dutil, STR_PASS );
                 XP_SNPRINTF( buf, VSIZE(buf), "%s", format );
             } else {
                 if ( isHorizontal ) {
-                    format = util_getUserString( model->vol.util, STRS_MOVE_ACROSS );
+                    format = dutil_getUserString( model->vol.dutil, STRS_MOVE_ACROSS );
                 } else {
-                    format = util_getUserString( model->vol.util, STRS_MOVE_DOWN );
+                    format = dutil_getUserString( model->vol.dutil, STRS_MOVE_DOWN );
                 }
 
                 row = mi->commonCoord;
@@ -2114,7 +2115,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
         }
 
         if ( !closure->keepHidden ) {
-            format = util_getUserString( model->vol.util, STRS_TRAY_AT_START );
+            format = dutil_getUserString( model->vol.dutil, STRS_TRAY_AT_START );
             formatTray( model_getPlayerTiles( model, entry->playerNum ),
                         closure->dict, (XP_UCHAR*)traybuf, sizeof(traybuf),
                         XP_FALSE );
@@ -2149,17 +2150,17 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
             formatTray( (const TrayTileSet*) &entry->u.trade.newTiles, 
                         dict, traybuf2, sizeof(traybuf2), closure->keepHidden );
 
-            format = util_getUserString( model->vol.util, STRSS_TRADED_FOR );
+            format = dutil_getUserString( model->vol.dutil, STRSS_TRADED_FOR );
             XP_SNPRINTF( buf, sizeof(buf), format, traybuf1, traybuf2 );
             printString( stream, buf );
             printString( stream, (XP_UCHAR*)XP_CR );
             break;
 
         case PHONY_TYPE:
-            format = util_getUserString( model->vol.util, STR_PHONY_REJECTED );
+            format = dutil_getUserString( model->vol.dutil, STR_PHONY_REJECTED );
             printString( stream, format );
         case MOVE_TYPE:
-            format = util_getUserString( model->vol.util, STRD_CUMULATIVE_SCORE );
+            format = dutil_getUserString( model->vol.dutil, STRD_CUMULATIVE_SCORE );
             XP_SNPRINTF( buf, sizeof(buf), format, totalScore );
             printString( stream, buf );
 
@@ -2174,7 +2175,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
                 if ( entry->moveType == PHONY_TYPE ) {
                     /* printString( stream, (XP_UCHAR*)"phony rejected " ); */
                 } else if ( !closure->keepHidden ) {
-                    format = util_getUserString(model->vol.util, STRS_NEW_TILES);
+                    format = dutil_getUserString( model->vol.dutil, STRS_NEW_TILES );
                     XP_SNPRINTF( buf, sizeof(buf), format,
                                  formatTray( &entry->u.move.newTiles, dict,
                                              traybuf1, sizeof(traybuf1),
@@ -2195,9 +2196,9 @@ static void
 copyStack( const ModelCtxt* model, StackCtxt* destStack, 
            const StackCtxt* srcStack )
 {
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool)
-                                            util_getVTManager(model->vol.util),
-                                            NULL, 0, NULL );
+    XWStreamCtxt* stream =
+        mem_stream_make_raw( MPPARM(model->vol.mpool)
+                             dutil_getVTManager(model->vol.dutil) );
 
     stack_writeToStream( (StackCtxt*)srcStack, stream );
     stack_loadFromStream( destStack, stream );

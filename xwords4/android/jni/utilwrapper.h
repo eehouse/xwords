@@ -25,10 +25,17 @@
 
 #include "game.h"
 #include "util.h"
+#include "dutil.h"
 #include "andglobals.h"
+#include "jniutlswrapper.h"
+
+XW_DUtilCtxt* makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject j_dutil,
+                         VTableMgr* vtMgr, JNIUtilCtxt* jniutil,
+                         void* closure );
+void destroyDUtil( XW_DUtilCtxt** dutilp );
 
 XW_UtilCtxt* makeUtil( MPFORMAL EnvThreadInfo* ti, jobject j_util,
-                       CurGameInfo* gi, AndGlobals* globals );
+                       CurGameInfo* gi, AndGameGlobals* globals );
 void destroyUtil( XW_UtilCtxt** util );
 
 bool utilTimerFired( XW_UtilCtxt* util, XWTimerReason why, int handle );

@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2018 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -26,9 +26,8 @@
 #include "dawg.h"
 #include "model.h"
 #include "board.h"
-#include "mempool.h"
-#include "vtabmgr.h"
 #include "comms.h"
+#include "dutil.h"
 
 #include "xwrelay.h"
 
@@ -87,8 +86,6 @@ typedef XP_Bool (*XWTimerProc)( void* closure, XWTimerReason why );
  */
 typedef struct UtilVtable {
     
-    VTableMgr* (*m_util_getVTManager)(XW_UtilCtxt* uc);
-
 #ifndef XWFEATURE_STANDALONE_ONLY
     XWStreamCtxt* (*m_util_makeStreamFromAddr )(XW_UtilCtxt* uc,
                                                 XP_PlayerAddr channelNo );
@@ -144,20 +141,7 @@ typedef struct UtilVtable {
     void (*m_util_requestTime)( XW_UtilCtxt* uc );
 
     XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc );
-
-    XP_U32 (*m_util_getCurSeconds)( XW_UtilCtxt* uc );
-#ifdef XWFEATURE_DEVID
-    const XP_UCHAR* (*m_util_getDevID)( XW_UtilCtxt* uc, DevIDType* typ );
-    void (*m_util_deviceRegistered)( XW_UtilCtxt* uc, DevIDType typ, 
-                                     const XP_UCHAR* idRelay );
-#endif
     DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc );
-
-    const XP_UCHAR* (*m_util_getUserString)( XW_UtilCtxt* uc, 
-                                             XP_U16 stringCode );
-    const XP_UCHAR* (*m_util_getUserQuantityString)( XW_UtilCtxt* uc, 
-                                                     XP_U16 stringCode,
-                                                     XP_U16 quantity );
 
     void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, BadWordInfo* bwi,
                                        XP_U16 turn, XP_Bool turnLost );
@@ -170,11 +154,6 @@ typedef struct UtilVtable {
 #endif
 #ifdef XWFEATURE_BOARDWORDS
     void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWStreamCtxt* words );
-#endif
-
-#ifdef XWFEATURE_SMS
-    XP_Bool (*m_util_phoneNumbersSame)( XW_UtilCtxt* uc, const XP_UCHAR* p1,
-                                        const XP_UCHAR* p2 );
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -201,9 +180,7 @@ typedef struct UtilVtable {
     void (*m_util_engineStopping)( XW_UtilCtxt* uc );
 #endif
 
-#ifdef COMMS_CHECKSUM
-    XP_UCHAR* (*m_util_md5sum)( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len );
-#endif
+    XW_DUtilCtxt* (*m_util_getDevUtilCtxt)( XW_UtilCtxt* uc );
 
 } UtilVtable;
 
@@ -216,9 +193,6 @@ struct XW_UtilCtxt {
     void* closure;
     MPSLOT
 };
-
-#define util_getVTManager(uc) \
-         (uc)->vtable->m_util_getVTManager((uc))
 
 #define util_makeStreamFromAddr(uc,a) \
          (uc)->vtable->m_util_makeStreamFromAddr((uc),(a))
@@ -286,23 +260,8 @@ struct XW_UtilCtxt {
 #define util_altKeyDown( uc ) \
          (uc)->vtable->m_util_altKeyDown((uc))
 
-#define util_getCurSeconds(uc) \
-         (uc)->vtable->m_util_getCurSeconds((uc))
-
-#ifdef XWFEATURE_DEVID
-# define util_getDevID( uc, t )                     \
-         (uc)->vtable->m_util_getDevID((uc),(t))
-# define util_deviceRegistered( uc, typ, id )                       \
-         (uc)->vtable->m_util_deviceRegistered( (uc), (typ), (id) )
-#endif
-
 #define util_makeEmptyDict( uc ) \
          (uc)->vtable->m_util_makeEmptyDict((uc))
-
-#define util_getUserString( uc, c ) \
-         (uc)->vtable->m_util_getUserString((uc),(c))
-#define util_getUserQuantityString( uc, c, q )            \
-         (uc)->vtable->m_util_getUserQuantityString((uc),(c),(q))
 
 #define util_notifyIllegalWords( uc, w, p, b ) \
          (uc)->vtable->m_util_notifyIllegalWords((uc),(w),(p),(b))
@@ -319,10 +278,6 @@ struct XW_UtilCtxt {
 #ifdef XWFEATURE_BOARDWORDS
 #define util_cellSquareHeld(uc, s)                      \
     (uc)->vtable->m_util_cellSquareHeld( (uc), (s) )
-#endif
-#ifdef XWFEATURE_SMS
-#define util_phoneNumbersSame(uc,p1,p2)                                 \
-    (uc)->vtable->m_util_phoneNumbersSame( (uc), (p1), (p2) )
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -355,8 +310,7 @@ struct XW_UtilCtxt {
 # define util_engineStopping( uc )
 # endif
 
-#ifdef COMMS_CHECKSUM
-# define util_md5sum( uc, p, l ) (uc)->vtable->m_util_md5sum((uc), (p), (l))
-#endif
+# define util_getDevUtilCtxt(uc) \
+    (uc)->vtable->m_util_getDevUtilCtxt( (uc) )
 
 #endif

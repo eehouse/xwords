@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 132
-def VERSION_NAME = '4.4.136'
+def VERSION_CODE_BASE = 133
+def VERSION_NAME = '4.4.137'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
 def BUILD_INFO_NAME = "build-info.txt"
@@ -24,6 +24,7 @@ if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) {
 }
 repositories {
     maven { url 'https://maven.fabric.io/public' }
+    google()
 }
 
 android {
@@ -32,7 +33,7 @@ android {
     buildToolsVersion '27.0.3'
     defaultConfig {
         minSdkVersion 8
-        targetSdkVersion 23
+        targetSdkVersion 26
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
     }

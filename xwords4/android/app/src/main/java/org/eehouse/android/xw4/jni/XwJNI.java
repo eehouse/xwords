@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2018 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -97,7 +97,7 @@ public class XwJNI {
     private int m_ptr;
     private XwJNI()
     {
-        m_ptr = initGlobals();
+        m_ptr = initGlobals( new DUtilCtxt(), JNIUtilsImpl.get() );
     }
 
     public static void cleanGlobals()
@@ -134,23 +134,30 @@ public class XwJNI {
     public static native boolean timerFired( GamePtr gamePtr, int why,
                                              int when, int handle );
 
-    // Stateless methods
-    public static native byte[] gi_to_stream( CurGameInfo gi );
-    public static native void gi_from_stream( CurGameInfo gi, byte[] stream );
+    public static byte[] gi_to_stream( CurGameInfo gi )
+    {
+        return gi_to_stream( getJNI().m_ptr, gi );
+    }
+
+    public static void gi_from_stream( CurGameInfo gi, byte[] stream )
+    {
+        gi_from_stream( getJNI().m_ptr, gi, stream );
+    }
+
     public static byte[] nliToStream( NetLaunchInfo nli )
     {
         nli.freezeAddrs();
-        return nli_to_stream( nli );
+        return nli_to_stream( getJNI().m_ptr, nli );
     }
-    private static native byte[] nli_to_stream( NetLaunchInfo nli );
+
     public static NetLaunchInfo nliFromStream( byte[] stream )
     {
         NetLaunchInfo nli = new NetLaunchInfo();
-        nli_from_stream( nli, stream );
+        nli_from_stream( getJNI().m_ptr, nli, stream );
         nli.unfreezeAddrs();
         return nli;
     }
-    private static native void nli_from_stream( NetLaunchInfo nli, byte[] stream );
+
     public static native void comms_getInitialAddr( CommsAddrRec addr,
                                                     String relayHost,
                                                     int relayPort );
@@ -160,8 +167,7 @@ public class XwJNI {
     private static GamePtr initJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
-        String tag = String.format( "%d", rowid );
-        int ptr = initJNI( getJNI().m_ptr, seed, tag );
+        int ptr = initJNI( getJNI().m_ptr, seed );
         GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }
@@ -170,13 +176,13 @@ public class XwJNI {
         initFromStream( long rowid, byte[] stream, CurGameInfo gi,
                         String[] dictNames, byte[][] dictBytes,
                         String[] dictPaths, String langName,
-                        UtilCtxt util, JNIUtils jniu, DrawCtx draw,
+                        UtilCtxt util, DrawCtx draw,
                         CommonPrefs cp, TransportProcs procs )
 
     {
         GamePtr gamePtr = initJNI( rowid );
         if ( game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
-                                  dictPaths, langName, util, jniu, draw,
+                                  dictPaths, langName, util, draw,
                                   cp, procs ) ) {
             gamePtr.retain();
         } else {
@@ -189,12 +195,11 @@ public class XwJNI {
     public static synchronized GamePtr
         initNew( CurGameInfo gi, String[] dictNames, byte[][] dictBytes,
                  String[] dictPaths, String langName, UtilCtxt util,
-                 JNIUtils jniu, DrawCtx draw, CommonPrefs cp,
-                 TransportProcs procs )
+                 DrawCtx draw, CommonPrefs cp, TransportProcs procs )
     {
         GamePtr gamePtr = initJNI( 0 );
         game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths,
-                          langName, util, jniu, draw, cp, procs );
+                          langName, util, draw, cp, procs );
         return gamePtr.retain();
     }
 
@@ -211,7 +216,6 @@ public class XwJNI {
                                                  String[] dictPaths,
                                                  String langName,
                                                  UtilCtxt util,
-                                                 JNIUtils jniu,
                                                  DrawCtx draw, CommonPrefs cp,
                                                  TransportProcs procs );
 
@@ -223,7 +227,6 @@ public class XwJNI {
                                                       String[] dictPaths,
                                                       String langName,
                                                       UtilCtxt util,
-                                                      JNIUtils jniu,
                                                       DrawCtx draw,
                                                       CommonPrefs cp,
                                                       TransportProcs procs );
@@ -400,6 +403,19 @@ public class XwJNI {
     public static native boolean comms_getAddrDisabled( GamePtr gamePtr, CommsConnType typ,
                                                         boolean send );
 
+    public static byte[][] smsproto_prepOutbound( byte[] buf, String phone, boolean forceNow,
+                                          /*out*/ int[] waitSecs )
+    {
+        int nowSeconds = (int)(System.currentTimeMillis() / 1000);
+        return smsproto_prepOutbound( getJNI().m_ptr, buf, phone, nowSeconds,
+                                      forceNow, waitSecs );
+    }
+
+    public static byte[][] smsproto_prepInbound( byte[] data, String fromPhone )
+    {
+        return smsproto_prepInbound( getJNI().m_ptr, data, fromPhone );
+    }
+
     // Dicts
     public static class DictWrapper {
         private int m_dictPtr;
@@ -439,12 +455,10 @@ public class XwJNI {
 
     public static native boolean dict_tilesAreSame( int dict1, int dict2 );
     public static native String[] dict_getChars( int dict );
-    public static boolean dict_getInfo( byte[] dict, String name,
-                                        String path, JNIUtils jniu,
+    public static boolean dict_getInfo( byte[] dict, String name, String path,
                                         boolean check, DictInfo info )
     {
-        return dict_getInfo( getJNI().m_ptr, dict, name, path, jniu,
-                             check, info );
+        return dict_getInfo( getJNI().m_ptr, dict, name, path, check, info );
     }
 
     public static native int dict_getTileValue( int dictPtr, int tile );
@@ -452,9 +466,9 @@ public class XwJNI {
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
     public static int dict_iter_init( byte[] dict, String name,
-                                      String path, JNIUtils jniu )
+                                      String path )
     {
-        return dict_iter_init( getJNI().m_ptr, dict, name, path, jniu );
+        return dict_iter_init( getJNI().m_ptr, dict, name, path );
     }
     public static native void dict_iter_setMinMax( int closure,
                                                    int min, int max );
@@ -469,19 +483,32 @@ public class XwJNI {
     public static native String dict_iter_getDesc( int closure );
 
     // Private methods -- called only here
-    private static native int initGlobals();
-    private static native void cleanGlobals( int globals );
-    private static native int initJNI( int jniState, int seed, String tag );
+    private static native int initGlobals(DUtilCtxt dutil, JNIUtils jniu);
+    private static native void cleanGlobals( int jniState );
+    private static native byte[] gi_to_stream( int jniState, CurGameInfo gi );
+    private static native void gi_from_stream( int jniState, CurGameInfo gi,
+                                               byte[] stream );
+    private static native byte[] nli_to_stream( int jniState, NetLaunchInfo nli );
+    private static native void nli_from_stream( int jniState, NetLaunchInfo nli,
+                                                byte[] stream );
+    private static native int initJNI( int jniState, int seed );
     private static native void envDone( int globals );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
     private static native boolean dict_getInfo( int jniState, byte[] dict,
                                                 String name, String path,
-                                                JNIUtils jniu, boolean check,
+                                                boolean check,
                                                 DictInfo info );
     private static native int dict_iter_init( int jniState, byte[] dict,
-                                              String name, String path,
-                                              JNIUtils jniu );
+                                              String name, String path );
+
+    private static native byte[][] smsproto_prepOutbound( int jniState, byte[] buf,
+                                                          String phone, int nowSeconds,
+                                                          boolean forceNow,
+                                                          /*out*/int[] waitSecs );
+
+    private static native byte[][] smsproto_prepInbound( int jniState, byte[] data,
+                                                         String fromPhone );
 
     private static native boolean haveEnv( int jniState );
 }

@@ -34,7 +34,7 @@ import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
+import org.eehouse.android.xw4.jni.DUtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 

@@ -25,6 +25,7 @@
 #include "comms.h"
 
 #include "util.h"
+#include "dutil.h"
 #include "game.h"
 #include "xwstream.h"
 #include "memstream.h"
@@ -100,6 +101,7 @@ typedef struct AddressRecord {
 
 struct CommsCtxt {
     XW_UtilCtxt* util;
+    XW_DUtilCtxt* dutil;
 
     XP_U32 connID;             /* set from gameID: 0 means ignore; otherwise
                                   must match.  Set by server. */
@@ -353,8 +355,7 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 #endif
             )
 {
-    CommsCtxt* comms = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*comms) );
-    XP_MEMSET( comms, 0, sizeof(*comms) );
+    CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( mpool, sizeof(*comms) );
 #ifdef DEBUG
     comms->tag = mpool_getTag(mpool);
     XP_LOGF( TAGFMT(isServer=%d; forceChannel=%d), TAGPRMS, isServer, forceChannel );
@@ -372,7 +373,9 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
         comms->xportFlags = comms->procs.flags;
 #endif
     }
+    comms->dutil = util_getDevUtilCtxt( util );
     comms->util = util;
+    comms->dutil = util_getDevUtilCtxt( util );
 
 #ifdef XWFEATURE_RELAY
     init_relay( comms, nPlayersHere, nPlayersTotal );
@@ -722,7 +725,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
         stream_getBytes( stream, msg->msg, msg->len );
 #ifdef COMMS_CHECKSUM
-        msg->checksum = util_md5sum( comms->util, msg->msg, msg->len );
+        msg->checksum = dutil_md5sum( comms->dutil, msg->msg, msg->len );
 #endif
         msg->next = (MsgQueueElem*)NULL;
         *prevsQueueNext = comms->msgQueueTail = msg;
@@ -800,6 +803,11 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
         case COMMS_CONN_IP_DIRECT:
             /* This will only work on host side when there's a single guest! */
             (void)send_via_bt_or_ip( comms, BTIPMSG_RESET, CHANNEL_NONE, typ, NULL, 0, NULL );
+            (void)comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
+            break;
+#endif
+#if defined XWFEATURE_SMS
+        case COMMS_CONN_SMS:
             (void)comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
             break;
 #endif
@@ -973,7 +981,6 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
     setDoHeartbeat( comms );
 #endif
     sendConnect( comms, XP_TRUE );
-
 } /* comms_setAddr */
 
 void
@@ -1136,10 +1143,8 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     newMsgElem->sendCount = 0;
 #endif
 
-    hdrStream = mem_stream_make( MPPARM(comms->mpool) 
-                                 util_getVTManager(comms->util),
-                                 NULL, 0, 
-                                 (MemStreamCloseCallback)NULL );
+    hdrStream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                     dutil_getVTManager(comms->dutil));
     stream_open( hdrStream );
 #if 0 < COMMS_VERSION
     stream_putU16( hdrStream, HAS_VERSION_FLAG );
@@ -1168,8 +1173,8 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     }
 
 #ifdef COMMS_CHECKSUM
-    newMsgElem->checksum = util_md5sum( comms->util, newMsgElem->msg, 
-                                        newMsgElem->len );
+    newMsgElem->checksum = dutil_md5sum( comms->dutil, newMsgElem->msg,
+                                         newMsgElem->len );
 #endif
     return newMsgElem;
 } /* makeElemWithID */
@@ -1508,7 +1513,7 @@ comms_resendAll( CommsCtxt* comms, CommsConnType filter, XP_Bool force )
     XP_Bool success = XP_TRUE;
     XP_ASSERT( !!comms );
 
-    XP_U32 now = util_getCurSeconds( comms->util );
+    XP_U32 now = dutil_getCurSeconds( comms->dutil );
     if ( !force && (now < comms->nextResend) ) {
         XP_LOGF( "%s: aborting: %d seconds left in backoff", __func__, 
                  comms->nextResend - now );
@@ -1664,7 +1669,7 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     }
     if ( ID_TYPE_NONE == typ    /* error case */
          || '\0' != devID[0] ) /* new info case */ {
-        util_deviceRegistered( comms->util, typ, devID );
+        dutil_deviceRegistered( comms->dutil, typ, devID );
     }
 #endif
 
@@ -1845,7 +1850,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 static void
 noteHBReceived( CommsCtxt* comms/* , const CommsAddrRec* addr */ )
 {
-    comms->lastMsgRcvdTime = util_getCurSeconds( comms->util );
+    comms->lastMsgRcvdTime = dutil_getCurSeconds( comms->dutil );
     setHeartbeatTimer( comms );
 }
 #else
@@ -1976,11 +1981,14 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
                 break;
             case COMMS_CONN_SMS:
 #ifdef XWFEATURE_SMS
-                if ( util_phoneNumbersSame( comms->util, addr->u.sms.phone, 
-                                            rec->addr.u.sms.phone )
-                     && addr->u.sms.port == rec->addr.u.sms.port ) {
-                    matched = XP_TRUE;
-                    XP_ASSERT( 0 );
+                {
+                    XW_DUtilCtxt* duc = util_getDevUtilCtxt( comms->util );
+                    if ( dutil_phoneNumbersSame( duc, addr->u.sms.phone,
+                                                 rec->addr.u.sms.phone )
+                         && addr->u.sms.port == rec->addr.u.sms.port ) {
+                        matched = XP_TRUE;
+                        XP_ASSERT( 0 );
+                    }
                 }
 #endif
                 break;
@@ -2227,7 +2235,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 XP_U16 len = stream_getSize( stream );
                 // stream_getPtr pts at base, but sum excludes relay header
                 const XP_U8* ptr = initialLen - len + stream_getPtr( stream );
-                XP_UCHAR* sum = util_md5sum( comms->util, ptr, len );
+                XP_UCHAR* sum = dutil_md5sum( comms->dutil, ptr, len );
                 XP_LOGF( TAGFMT() "got message of len %d with sum %s",
                          TAGPRMS, len, sum );
                 XP_FREE( comms->mpool, sum );
@@ -2433,7 +2441,7 @@ heartbeat_checks( CommsCtxt* comms )
 
     do {
         if ( comms->lastMsgRcvdTime > 0 ) {
-            XP_U32 now = util_getCurSeconds( comms->util );
+            XP_U32 now = dutil_getCurSeconds( comms->dutil );
             XP_U32 tooLongAgo = now - (HB_INTERVAL * 2);
             if ( comms->lastMsgRcvdTime < tooLongAgo ) {
                 XP_LOGF( "%s: calling reset proc; last was %ld secs too long "
@@ -2637,10 +2645,8 @@ logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
 {
     if ( !!addr ) {
         char buf[128];
-        XWStreamCtxt* stream = mem_stream_make( MPPARM(comms->mpool) 
-                                                util_getVTManager(comms->util),
-                                                NULL, 0, 
-                                                (MemStreamCloseCallback)NULL );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                                    dutil_getVTManager(comms->dutil));
         snprintf( buf, sizeof(buf), TAGFMT() "called on %p from %s:\n", TAGPRMS,
                   addr, caller );
         stream_catString( stream, buf );
@@ -2942,10 +2948,8 @@ relay_msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 {
     XP_LOGF( "%s(cmd=%s, destID=%x)", __func__, relayCmdToStr(cmd), destID );
     XWStreamCtxt* stream;
-    stream = mem_stream_make( MPPARM(comms->mpool) 
-                              util_getVTManager(comms->util),
-                              NULL, 0, 
-                              (MemStreamCloseCallback)NULL );
+    stream = mem_stream_make_raw( MPPARM(comms->mpool)
+                                  dutil_getVTManager(comms->dutil) );
     if ( stream != NULL ) {
         CommsAddrRec addr;
         stream_open( stream );
@@ -3200,7 +3204,7 @@ putDevID( const CommsCtxt* comms, XWStreamCtxt* stream )
 {
 # if XWRELAY_PROTO_VERSION >= XWRELAY_PROTO_VERSION_CLIENTID
     DevIDType typ;
-    const XP_UCHAR* devID = util_getDevID( comms->util, &typ );
+    const XP_UCHAR* devID = dutil_getDevID( comms->dutil, &typ );
     XP_ASSERT( ID_TYPE_NONE <= typ && typ < ID_TYPE_NTYPES );
     stream_putU8( stream, typ );
     if ( ID_TYPE_NONE != typ ) {

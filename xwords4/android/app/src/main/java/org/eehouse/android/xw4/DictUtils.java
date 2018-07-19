@@ -151,14 +151,16 @@ public class DictUtils {
         // changes?
     }
 
-    private static void addLogDup( Map<String, DictAndLoc> map, String path,
-                                   DictLoc loc )
+    private static void addLogDupIf( Context context, Map<String, DictAndLoc> map,
+                                     String path, File dir, DictLoc loc )
     {
-        String name = removeDictExtn( new File(path).getName() );
-        if ( map.containsKey( name ) ) {
-            Log.d( TAG, "replacing info for %s with from %s", name, loc );
+        if ( isDict( context, path, dir ) ) {
+            String name = removeDictExtn( new File(path).getName() );
+            if ( map.containsKey( name ) ) {
+                Log.d( TAG, "replacing info for %s with from %s", name, loc );
+            }
+            map.put( name, new DictAndLoc( name, loc ) );
         }
-        map.put( name, new DictAndLoc( name, loc ) );
     }
 
     private static void tryDir( Context context, File dir, boolean strict,
@@ -168,9 +170,7 @@ public class DictUtils {
             String[] list = dir.list();
             if ( null != list ) {
                 for ( String file : list ) {
-                    if ( isDict( context, file, strict? dir : null ) ) {
-                        addLogDup( map, file, loc );
-                    }
+                    addLogDupIf( context, map, file, strict? dir : null, loc );
                 }
             }
         }
@@ -190,15 +190,11 @@ public class DictUtils {
             Map<String, DictAndLoc> map = new HashMap<>();
 
             for ( String file : getAssets( context ) ) {
-                if ( isDict( context, file, null ) ) {
-                    addLogDup( map, file, DictLoc.BUILT_IN );
-                }
+                addLogDupIf( context, map, file, null, DictLoc.BUILT_IN );
             }
 
             for ( String file : context.fileList() ) {
-                if ( isDict( context, file, null ) ) {
-                    addLogDup( map, file, DictLoc.INTERNAL );
-                }
+                addLogDupIf( context, map, file, null, DictLoc.INTERNAL );
             }
 
             tryDir( context, getSDDir( context ), false, DictLoc.EXTERNAL, map );
@@ -578,7 +574,7 @@ public class DictUtils {
         if ( ok && null != dir ) {
             String fullPath = new File( dir, file ).getPath();
             ok = XwJNI.dict_getInfo( null, removeDictExtn( file ), fullPath,
-                                     JNIUtilsImpl.get(context), true, null );
+                                     true, null );
         }
         return ok;
     }

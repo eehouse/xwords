@@ -60,49 +60,9 @@ public interface UtilCtxt {
     void remSelected();
     void setIsServer( boolean isServer );
 
-    // Possible values for typ[0], these must match enum in xwrelay.sh
-    public enum DevIDType { ID_TYPE_NONE
-            , ID_TYPE_RELAY
-            , ID_TYPE_LINUX
-            , ID_TYPE_ANDROID_GCM
-            , ID_TYPE_ANDROID_OTHER
-            , ID_TYPE_ANON
-            }
-
-    String getDevID( /*out*/ byte[] typ );
-    void deviceRegistered( DevIDType devIDType, String idRelay );
-
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( int player );
     void cellSquareHeld( String words );
-
-    static final int STRD_ROBOT_TRADED =                  1;
-    static final int STR_ROBOT_MOVED =                    2;
-    static final int STRS_VALUES_HEADER =                 3;
-    static final int STRD_REMAINING_TILES_ADD =           4;
-    static final int STRD_UNUSED_TILES_SUB =              5;
-    static final int STRS_REMOTE_MOVED =                  6;
-    static final int STRD_TIME_PENALTY_SUB =              7;
-    static final int STR_PASS =                           8;
-    static final int STRS_MOVE_ACROSS =                   9;
-    static final int STRS_MOVE_DOWN =                    10;
-    static final int STRS_TRAY_AT_START =                11;
-    static final int STRSS_TRADED_FOR =                  12;
-    static final int STR_PHONY_REJECTED =                13;
-    static final int STRD_CUMULATIVE_SCORE =             14;
-    static final int STRS_NEW_TILES =                    15;
-    static final int STR_COMMIT_CONFIRM =                16;
-    static final int STR_BONUS_ALL =                     17;
-    static final int STRD_TURN_SCORE =                   18;
-    static final int STRD_REMAINS_HEADER =               19;
-    static final int STRD_REMAINS_EXPL =                 20;
-    static final int STRSD_RESIGNED =                    21;
-    static final int STRSD_WINNER =                      22;
-    static final int STRDSD_PLACER  =                    23;
-
-
-    String getUserString( int stringCode );
-    String getUserQuantityString( int stringCode, int quantity );
 
     void notifyMove( String query );
     void notifyTrade( String[] tiles );
@@ -146,6 +106,4 @@ public interface UtilCtxt {
                              boolean turnLost );
 
     void showChat( String msg, int fromIndx, String fromName, int tsSeconds );
-
-    boolean phoneNumbersSame( String num1, String num2 );
 }

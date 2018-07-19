@@ -32,6 +32,8 @@ extern "C" {
 typedef void (*MemStreamCloseCallback)( XWStreamCtxt* stream, 
                                         void* closure );
 
+XWStreamCtxt* mem_stream_make_raw( MPFORMAL VTableMgr* vtmgr);
+
 XWStreamCtxt* mem_stream_make( MPFORMAL VTableMgr* vtmgr, 
                                void* closure, 
                                XP_PlayerAddr addr,    /* should be in a

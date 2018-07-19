@@ -57,7 +57,9 @@
 #include "main.h"
 #include "gamesdb.h"
 #include "linuxdict.h"
+#include "lindutil.h"
 #include "relaycon.h"
+#include "smsproto.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -95,7 +97,7 @@ file_exists( const char* fileName )
 } /* file_exists */
 
 XWStreamCtxt*
-streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
+streamFromFile( CommonGlobals* cGlobals, char* name )
 {
     XP_U8* buf;
     struct stat statBuf;
@@ -110,9 +112,8 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
     }
     fclose( f );
 
-    stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                              cGlobals->params->vtMgr, 
-                              closure, CHANNEL_NONE, NULL );
+    stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                  cGlobals->params->vtMgr );
     stream_putBytes( stream, buf, statBuf.st_size );
     free( buf );
 
@@ -121,7 +122,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
 
 #ifdef USE_SQLITE
 XWStreamCtxt*
-streamFromDB( CommonGlobals* cGlobals, void* closure )
+streamFromDB( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
     XWStreamCtxt* stream = NULL;
@@ -139,9 +140,8 @@ streamFromDB( CommonGlobals* cGlobals, void* closure )
             XP_U8 buf[size];
             res = sqlite3_blob_read( ppBlob, buf, size, 0 );
             if ( SQLITE_OK == res ) {
-                stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                          params->vtMgr, 
-                                          closure, CHANNEL_NONE, NULL );
+                stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                              params->vtMgr  );
                 stream_putBytes( stream, buf, size );
             }
         }
@@ -236,7 +236,7 @@ requestMsgsIdle( gpointer data )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)data;
     XP_UCHAR devIDBuf[64] = {0};
-    db_fetch( cGlobals->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
+    db_fetch_safe( cGlobals->params->pDb, KEY_RDEVID, devIDBuf, sizeof(devIDBuf) );
     if ( '\0' != devIDBuf[0] ) {
         relaycon_requestMsgs( cGlobals->params, devIDBuf );
     } else {
@@ -352,8 +352,9 @@ void
 saveGame( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
+    sqlite3* pDb = cGlobals->params->pDb;
     if ( !!cGlobals->game.model &&
-         (!!cGlobals->params->fileName || !!cGlobals->pDb) ) {
+         (!!cGlobals->params->fileName || !!pDb) ) {
         XP_Bool doSave = XP_TRUE;
         XP_Bool newGame = !file_exists( cGlobals->params->fileName )
             || -1 == cGlobals->selRow;
@@ -364,13 +365,12 @@ saveGame( CommonGlobals* cGlobals )
         }
 
         if ( doSave ) {
-            if ( !!cGlobals->pDb ) {
+            if ( !!pDb ) {
                 summarize( cGlobals );
             }
 
             XWStreamCtxt* outStream;
-            MemStreamCloseCallback onClose = !!cGlobals->pDb?
-                writeToDB : writeToFile;
+            MemStreamCloseCallback onClose = !!pDb? writeToDB : writeToFile;
             outStream = 
                 mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
                                        cGlobals->params->vtMgr, 
@@ -398,8 +398,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
 {
     LOG_FUNC();
     LaunchParams* params = cGlobals->params;
-    XWStreamCtxt* stream = 
-        streamFromFile( cGlobals, params->fileName, cGlobals );
+    XWStreamCtxt* stream = streamFromFile( cGlobals, params->fileName );
 
 #ifdef DEBUG
     XP_Bool opened = 
@@ -431,9 +430,8 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
             XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
             break;
         }
-        stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                  params->vtMgr, cGlobals, CHANNEL_NONE, 
-                                  NULL );
+        stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                      params->vtMgr );
         stream_putBytes( stream, buf, len );
         (void)processMessage( cGlobals, stream, NULL, XP_TRUE );
         stream_destroy( stream );
@@ -447,8 +445,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
 {
     LOG_FUNC();
     LaunchParams* params = cGlobals->params;
-    XWStreamCtxt* stream = 
-        streamFromFile( cGlobals, params->fileName, cGlobals );
+    XWStreamCtxt* stream = streamFromFile( cGlobals, params->fileName );
 
 #ifdef DEBUG
     XP_Bool opened = 
@@ -483,9 +480,8 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                 XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
                 break;
             }
-            stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
-                                      params->vtMgr, cGlobals, CHANNEL_NONE, 
-                                      NULL );
+            stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                          params->vtMgr );
             stream_putBytes( stream, buf, len );
             (void)processMessage( cGlobals, stream, NULL, XP_TRUE );
             stream_destroy( stream );
@@ -643,6 +639,7 @@ typedef enum {
     ,CMD_DROPSENDRELAY
     ,CMD_DROPRCVRELAY
     ,CMD_DROPSENDSMS
+    ,CMD_SMSFAILPCT
     ,CMD_DROPRCVSMS
     ,CMD_FORCECHANNEL
 
@@ -656,6 +653,7 @@ typedef enum {
 #endif
 #ifdef XWFEATURE_SMS
     ,CMD_SMSNUMBER		/* SMS phone number */
+    ,CMD_SERVER_SMSNUMBER
     ,CMD_SMSPORT
 #endif
 #ifdef XWFEATURE_RELAY
@@ -684,6 +682,7 @@ typedef enum {
     ,CMD_NHIDDENROWS
 #endif
     ,CMD_ASKTIME
+    ,CMD_SMSTEST
     ,N_CMDS
 } XwLinuxCmd;
 
@@ -764,6 +763,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
     ,{ CMD_DROPSENDSMS, false, "drop-send-sms", "start new games with sms send disabled" }
+    ,{ CMD_SMSFAILPCT, true, "sms-fail-pct", "percent of sms sends, randomly chosen, never arrive" }
     ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
     ,{ CMD_FORCECHANNEL, true, "force-channel", "force (clients) to use this hostid/channel" }
 
@@ -779,6 +779,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 #endif
 #ifdef XWFEATURE_SMS
     ,{ CMD_SMSNUMBER, true, "sms-number", "this devices's sms phone number" }
+    ,{ CMD_SERVER_SMSNUMBER, true, "server-sms-number", "number this device should connect to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
 #ifdef XWFEATURE_RELAY
@@ -811,6 +812,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ASKTIME, true, "ask-timeout", 
        "Wait this many ms before cancelling dialog (default 500 ms; 0 means forever)" }
 #endif
+    ,{ CMD_SMSTEST, false, "run-sms-test", "Run smsproto_runTests() on startup"}
 };
 
 static struct option* 
@@ -910,12 +912,18 @@ linux_getDevIDRelay( LaunchParams* params )
 {
     XP_U32 result = 0;
     gchar buf[32];
-    if ( db_fetch( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
+    if ( db_fetch_safe( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
         sscanf( buf, "%X", &result );
         XP_LOGF( "%s(): %s => %x", __func__, buf, result );
     }
     LOG_RETURNF( "%d", result );
     return result;
+}
+
+XP_U32
+linux_getCurSeconds()
+{
+     return (XP_U32)time(NULL);//tv.tv_sec;
 }
 
 const XP_UCHAR*
@@ -928,12 +936,12 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     if ( !!params->lDevID ) {
         result = params->lDevID;
         *typ = ID_TYPE_LINUX;
-    } else if ( db_fetch( params->pDb, KEY_RDEVID, params->devIDStore, 
-                          sizeof(params->devIDStore) ) ) {
+    } else if ( db_fetch_safe( params->pDb, KEY_RDEVID, params->devIDStore,
+                               sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_RELAY;
-    } else if ( db_fetch( params->pDb, KEY_LDEVID, params->devIDStore, 
-                          sizeof(params->devIDStore) ) ) {
+    } else if ( db_fetch_safe( params->pDb, KEY_LDEVID, params->devIDStore,
+                               sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
         *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_LINUX;
     } else if ( !params->noAnonDevid ) {
@@ -947,8 +955,8 @@ void
 linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
 {
     gchar rDevIDBuf[64];
-    if ( !db_fetch( params->pDb, KEY_RDEVID, rDevIDBuf, 
-                    sizeof(rDevIDBuf) ) ) {
+    if ( !db_fetch_safe( params->pDb, KEY_RDEVID, rDevIDBuf,
+                         sizeof(rDevIDBuf) ) ) {
         rDevIDBuf[0] = '\0';
     }
     DevIDType typ = ID_TYPE_NONE;
@@ -964,7 +972,7 @@ linux_setupDevidParams( LaunchParams* params )
 {
     XP_Bool idIsNew = XP_TRUE;
     gchar oldLDevID[256];
-    if ( db_fetch( params->pDb, KEY_LDEVID, oldLDevID, sizeof(oldLDevID) )
+    if ( db_fetch_safe( params->pDb, KEY_LDEVID, oldLDevID, sizeof(oldLDevID) )
          && (!params->lDevID || 0 == strcmp( oldLDevID, params->lDevID )) ) {
         idIsNew = XP_FALSE;
     } else {
@@ -1299,9 +1307,15 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo
             comms_getAddr( cGlobals->game.comms, &addr );
             addrRec = &addr;
         }
+
+        // use serverphone if I'm a client, else hope one's provided (this is
+        // a reply)
+        const XP_UCHAR* phone = cGlobals->params->connInfo.sms.serverPhone;
+        if ( !phone ) {
+            phone = addrRec->u.sms.phone;
+        }
         nSent = linux_sms_send( cGlobals->params, buf, buflen, 
-                                addrRec->u.sms.phone, addrRec->u.sms.port,
-                                gameID );
+                                phone, addrRec->u.sms.port, gameID );
     }
         break;
 #endif
@@ -1434,9 +1448,8 @@ stream_from_msgbuf( CommonGlobals* globals, const unsigned char* bufPtr,
                     XP_U16 nBytes )
 {
     XWStreamCtxt* result;
-    result = mem_stream_make( MPPARM(globals->util->mpool)
-                              globals->params->vtMgr,
-                              globals, CHANNEL_NONE, NULL );
+    result = mem_stream_make_raw( MPPARM(globals->util->mpool)
+                                  globals->params->vtMgr );
     stream_putBytes( result, bufPtr, nBytes );
 
     return result;
@@ -1950,7 +1963,7 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
 #ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
             addr_addType( addr, COMMS_CONN_SMS );
-            XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.phone,
+            XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.myPhone,
                         sizeof(addr->u.sms.phone) - 1 );
             addr->u.sms.port = params->connInfo.sms.port;
             break;
@@ -2001,12 +2014,15 @@ initParams( LaunchParams* params )
     /* params->util->vtable->m_util_addrChange = linux_util_addrChange; */
     /* params->util->vtable->m_util_setIsServer = linux_util_setIsServer; */
 #endif
+
+    params->dutil = dutils_init( MPPARM(params->mpool) params->vtMgr, params );
 }
 
 static void
 freeParams( LaunchParams* params )
 {
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
+    dutils_free( &params->dutil );
     dmgr_destroy( params->dictMgr );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
@@ -2272,7 +2288,11 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
-            mainParams.connInfo.sms.phone = optarg;
+            mainParams.connInfo.sms.myPhone = optarg;
+            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            break;
+        case CMD_SERVER_SMSNUMBER:
+            mainParams.connInfo.sms.serverPhone = optarg;
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
         case CMD_SMSPORT:
@@ -2427,6 +2447,10 @@ main( int argc, char** argv )
         case CMD_DROPSENDSMS:
             mainParams.commsDisableds[COMMS_CONN_SMS][1] = XP_TRUE;
             break;
+        case CMD_SMSFAILPCT:
+            mainParams.smsSendFailPct = atoi(optarg);
+            XP_ASSERT( mainParams.smsSendFailPct >= 0 && mainParams.smsSendFailPct <= 100 );
+            break;
         case CMD_DROPRCVSMS:
             mainParams.commsDisableds[COMMS_CONN_SMS][0] = XP_TRUE;
             break;
@@ -2488,6 +2512,10 @@ main( int argc, char** argv )
             mainParams.askTimeout = atoi(optarg);
             break;
 #endif
+        case CMD_SMSTEST:
+            mainParams.runSMSTest = XP_TRUE;
+            break;
+
         default:
             done = true;
             break;

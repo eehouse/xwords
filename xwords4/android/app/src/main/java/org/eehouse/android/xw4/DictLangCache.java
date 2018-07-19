@@ -486,7 +486,6 @@ public class DictLangCache {
             info = new DictInfo();
             if ( XwJNI.dict_getInfo( pairs.m_bytes[0], dal.name,
                                      pairs.m_paths[0],
-                                     JNIUtilsImpl.get( context ),
                                      DictLoc.DOWNLOAD == dal.loc,
                                      info ) ) {
 

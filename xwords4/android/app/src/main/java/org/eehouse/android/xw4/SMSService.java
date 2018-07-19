@@ -1,6 +1,6 @@
-/* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2010 - 2018 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -40,6 +40,7 @@ import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.ByteArrayInputStream;
@@ -55,19 +56,11 @@ import java.util.Set;
 public class SMSService extends XWService {
     private static final String TAG = SMSService.class.getSimpleName();
 
-    private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
-    private static final int MAX_SMS_LEN = 140; // ??? differs by network
-    private static final int KITKAT = 19;
-
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
 
-    private static final int SMS_PROTO_VERSION_ORIG = 0;
     private static final int SMS_PROTO_VERSION_WITHPORT = 1;
     private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_WITHPORT;
-    private static final int MAX_LEN_TEXT = 100;
-    private static final int MAX_LEN_BINARY = 100;
-    private static final int MAX_MSG_COUNT = 16; // 1.6K enough? Should be....
     private enum SMSAction { _NONE,
                              INVITE,
                              SEND,
@@ -75,6 +68,7 @@ public class SMSService extends XWService {
                              ADDED_MISSING,
                              STOP_SELF,
                              HANDLEDATA,
+                             RESEND,
     };
 
     private static final String CMD_STR = "CMD";
@@ -98,8 +92,6 @@ public class SMSService extends XWService {
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
-    private static Map<String, HashMap <Integer, MsgStore>> s_partialMsgs
-        = new HashMap<String, HashMap <Integer, MsgStore>>();
     private static Set<Integer> s_sentDied = new HashSet<Integer>();
 
     public static class SMSPhoneInfo {
@@ -366,6 +358,9 @@ public class SMSService extends XWService {
                     phone = intent.getStringExtra( PHONE );
                     sendDiedPacket( phone, gameID );
                     break;
+                case RESEND:
+                    phone = intent.getStringExtra( PHONE );
+                    resendFor( phone, null, false );
                 }
             }
 
@@ -434,18 +429,18 @@ public class SMSService extends XWService {
             dos.writeInt( gameID );
             dos.write( bytes, 0, bytes.length );
             dos.flush();
-            if ( send( SMS_CMD.DATA, bas.toByteArray(), phone ) ) {
-                nSent = bytes.length;
-            }
+            send( SMS_CMD.DATA, bas.toByteArray(), phone );
+            nSent = bytes.length;
         } catch ( java.io.IOException ioe ) {
             Log.ex( TAG, ioe );
         }
         return nSent;
     }
 
-    private boolean send( SMS_CMD cmd, byte[] bytes, String phone )
+    private void send( SMS_CMD cmd, byte[] bytes, String phone )
         throws java.io.IOException
     {
+        Log.d( TAG, "send(%s, len=%d)", cmd, bytes.length );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream dos = new DataOutputStream( bas );
         dos.writeByte( SMS_PROTO_VERSION );
@@ -457,42 +452,44 @@ public class SMSService extends XWService {
         dos.flush();
 
         byte[] data = bas.toByteArray();
-        byte[][] msgs = breakAndEncode( data );
-        boolean result = null != msgs && sendBuffers( msgs, phone );
-        return result;
+
+        boolean newSMSEnabled = XWPrefs.getSMSProtoEnabled( this );
+        boolean forceNow = !newSMSEnabled; // || cmd == SMS_CMD.INVITE;
+        resendFor( phone, data, forceNow );
     }
 
-    private byte[][] breakAndEncode( byte msg[] ) throws java.io.IOException
+    private void resendFor( String phone, byte[] data, boolean forceNow )
     {
-        byte[][] result = null;
-        int count = (msg.length + (MAX_LEN_BINARY-1)) / MAX_LEN_BINARY;
-        if ( count < MAX_MSG_COUNT ) {
-            result = new byte[count][];
-            int msgID = ++s_nSent % 0x000000FF;
-
-            int start = 0;
-            int end = 0;
-            for ( int ii = 0; ii < count; ++ii ) {
-                int len = msg.length - end;
-                if ( len > MAX_LEN_BINARY ) {
-                    len = MAX_LEN_BINARY;
-                }
-                end += len;
-                byte[] part = new byte[4 + len];
-                part[0] = (byte)SMS_PROTO_VERSION;
-                part[1] = (byte)msgID;
-                part[2] = (byte)ii;
-                part[3] = (byte)count;
-                System.arraycopy( msg, start, part, 4, len );
-
-                result[ii] = part;
-                start = end;
-            }
-        } else {
-            Log.w( TAG, "breakAndEncode(): msg count %d too large; dropping",
-                   count );
+        int[] waitSecs = { 0 };
+        byte[][] msgs = XwJNI.smsproto_prepOutbound( data, phone, forceNow, waitSecs );
+        if ( null != msgs ) {
+            sendBuffers( msgs, phone );
         }
-        return result;
+        if ( waitSecs[0] > 0 ) {
+            Assert.assertFalse( forceNow );
+            postResend( phone, waitSecs[0] );
+        }
+    }
+
+    private void postResend( final String phone, final int waitSecs )
+    {
+        Log.d( TAG, "postResend" );
+        new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep( waitSecs * 1000 );
+
+                        Log.d( TAG, "postResend.run()" );
+                        Intent intent = getIntentTo( SMSService.this,
+                                                     SMSAction.RESEND );
+                        intent.putExtra( PHONE, phone );
+                        startService( intent );
+                    } catch ( InterruptedException ie ) {
+                        Log.e( TAG, ie.getMessage() );
+                    }
+                }
+            } ).start();
     }
 
     private void receive( SMS_CMD cmd, byte[] data, String phone )
@@ -534,51 +531,18 @@ public class SMSService extends XWService {
 
     private void receiveBuffer( byte[] buffer, String senderPhone )
     {
-        byte proto = buffer[0];
-        int id = buffer[1];
-        int index = buffer[2];
-        int count = buffer[3];
-        byte[] rest = new byte[buffer.length - 4];
-        System.arraycopy( buffer, 4, rest, 0, rest.length );
-        if ( tryAssemble( senderPhone, id, index, count, rest ) ) {
-            postEvent( MultiEvent.SMS_RECEIVE_OK );
-        } else {
-            // Will see this when don't have SMS permission
-            Log.w( TAG, "receiveBuffer(): bogus message from phone %s",
-                   senderPhone );
-        }
-    }
-
-    private boolean tryAssemble( String senderPhone, int id, int index,
-                                 int count, byte[] msg )
-    {
-        boolean success = true;
-        if ( index == 0 && count == 1 ) { // most common case
-            success = disAssemble( senderPhone, msg );
-        } else if ( count > 0 && count < MAX_MSG_COUNT && index < count ) {
-            // required?  Should always be in main thread.
-            synchronized( s_partialMsgs ) {
-                HashMap<Integer, MsgStore> perPhone =
-                    s_partialMsgs.get( senderPhone );
-                if ( null == perPhone ) {
-                    perPhone = new HashMap <Integer, MsgStore>();
-                    s_partialMsgs.put( senderPhone, perPhone );
-                }
-                MsgStore store = perPhone.get( id );
-                if ( null == store ) {
-                    store = new MsgStore( id, count, false );
-                    perPhone.put( id, store );
-                }
-
-                if ( store.add( index, msg ).isComplete() ) {
-                    success = disAssemble( senderPhone, store.messageData() );
-                    perPhone.remove( id );
+        byte[][] msgs = XwJNI.smsproto_prepInbound( buffer, senderPhone );
+        if ( null != msgs ) {
+            for ( byte[] msg : msgs ) {
+                if ( !disAssemble( senderPhone, msg ) ) {
+                    Log.e( TAG, "failed on message from %s", senderPhone );
                 }
             }
+            postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
-            success = false;
+            Log.w( TAG, "receiveBuffer(): bogus or incomplete message from phone %s",
+                   senderPhone );
         }
-        return success;
     }
 
     private boolean disAssemble( String senderPhone, byte[] fullMsg )
@@ -685,7 +649,7 @@ public class SMSService extends XWService {
             Log.i( TAG, "dropping because SMS disabled" );
         }
 
-        if ( showToasts( this ) && success && (0 == (s_nSent % 5)) ) {
+        if ( showToasts( this ) && success && (0 == (++s_nSent % 5)) ) {
             DbgUtils.showf( this, "Sent msg %d", s_nSent );
         }
 
@@ -775,72 +739,6 @@ public class SMSService extends XWService {
         public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
         {
             return sendPacket( addr.sms_phone, gameID, buf );
-        }
-    }
-
-    private class MsgStore {
-        String[] m_msgsText;
-        byte[][] m_msgsData;
-        int m_msgID;
-        int m_haveCount;
-        int m_fullLength;
-
-        public MsgStore( int id, int count, boolean usingStrings )
-        {
-            m_msgID = id;
-            if ( usingStrings ) {
-                m_msgsText = new String[count];
-            } else {
-                m_msgsData = new byte[count][];
-            }
-            m_fullLength = 0;
-        }
-
-        public MsgStore add( int index, String msg )
-        {
-            if ( null == m_msgsText[index] ) {
-                ++m_haveCount;
-                m_fullLength += msg.length();
-            }
-            m_msgsText[index] = msg;
-            return this;
-        }
-
-        public MsgStore add( int index, byte[] msg )
-        {
-            if ( null == m_msgsData[index] ) {
-                ++m_haveCount;
-                m_fullLength += msg.length;
-            }
-            m_msgsData[index] = msg;
-            return this;
-        }
-
-        public boolean isComplete()
-        {
-            int count = null != m_msgsText ? m_msgsText.length : m_msgsData.length;
-            boolean complete = count == m_haveCount;
-            return complete;
-        }
-
-        public String messageText()
-        {
-            StringBuffer sb = new StringBuffer(m_fullLength);
-            for ( String msg : m_msgsText ) {
-                sb.append( msg );
-            }
-            return sb.toString();
-        }
-
-        public byte[] messageData()
-        {
-            byte[] result = new byte[m_fullLength];
-            int indx = 0;
-            for ( byte[] msg : m_msgsData ) {
-                System.arraycopy( msg, 0, result, indx, msg.length );
-                indx += msg.length;
-            }
-            return result;
         }
     }
 }
