@@ -1183,7 +1183,9 @@ public class GameUtils {
                                   boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
-        if ( DeviceRole.SERVER_STANDALONE != summary.serverRole ) {
+        if ( null == summary ) {
+            Log.e( TAG, "tellDied(): can't get summary" );
+        } else if ( DeviceRole.SERVER_STANDALONE != summary.serverRole ) {
             int gameID = summary.gameID;
 
             GamePtr gamePtr = loadMakeGame( context, lock );
