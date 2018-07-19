@@ -279,7 +279,7 @@ public class DictBrowseDelegate extends DelegateBase
     {
         TextView text = (TextView)view;
         // null text seems to have generated at least one google play report
-        if ( null != text ) {
+        if ( null != text && null != m_browseState ) {
             int newval = Integer.parseInt( text.getText().toString() );
             switch ( parent.getId() ) {
             case R.id.wordlen_min:
