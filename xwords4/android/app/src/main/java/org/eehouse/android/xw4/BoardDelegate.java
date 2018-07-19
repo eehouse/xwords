@@ -1257,12 +1257,14 @@ public class BoardDelegate extends DelegateBase
     @SuppressWarnings("fallthrough")
     public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
+        boolean doStopProgress = false;
         switch( event ) {
         case MESSAGE_ACCEPTED:
         case MESSAGE_REFUSED:
             ConnStatusHandler.
                 updateStatusIn( m_activity, this, CommsConnType.COMMS_CONN_BT,
                                 MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
+            doStopProgress = true;
             break;
         case MESSAGE_NOGAME:
             int gameID = (Integer)args[0];
@@ -1285,10 +1287,7 @@ public class BoardDelegate extends DelegateBase
             Log.w( TAG, "failed to create game" );
             break;
         case NEWGAME_DUP_REJECTED:
-            if ( m_progressShown ) {
-                m_progressShown = false;
-                stopProgress();     // in case it's a BT invite
-            }
+            doStopProgress = true;
             final String msg =
                 getString( R.string.err_dup_invite_fmt, (String)args[0] );
             post( new Runnable() {
@@ -1311,12 +1310,14 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            if ( m_progressShown ) {
-                m_progressShown = false;
-                stopProgress();     // in case it's a BT invite
-            }
+            doStopProgress = true; // in case it's a BT invite
             super.eventOccurred( event, args );
             break;
+        }
+
+        if ( doStopProgress && m_progressShown ) {
+            m_progressShown = false;
+            stopProgress();
         }
     }
 
