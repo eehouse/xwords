@@ -41,6 +41,8 @@ import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.XwJNI.SMSProtoMsg;
+import org.eehouse.android.xw4.jni.XwJNI.SMS_CMD;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.ByteArrayInputStream;
@@ -81,10 +83,6 @@ public class SMSService extends XWService {
         SMSService.class.getName() + "_PHONES";
 
     private static Boolean s_showToasts = null;
-
-    // All messages are base64-encoded byte arrays.  The first byte is
-    // always one of these.  What follows depends.
-    private enum SMS_CMD { NONE, INVITE, DATA, DEATH, ACK, };
 
     private BroadcastReceiver m_sentReceiver;
     private BroadcastReceiver m_receiveReceiver;
@@ -360,7 +358,7 @@ public class SMSService extends XWService {
                     break;
                 case RESEND:
                     phone = intent.getStringExtra( PHONE );
-                    resendFor( phone, null, false );
+                    resendFor( phone );
                 }
             }
 
@@ -377,98 +375,62 @@ public class SMSService extends XWService {
 
     private void inviteRemote( String phone, String nliData )
     {
-        Log.i( TAG, "inviteRemote()" );
-        ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream dos = new DataOutputStream( bas );
         try {
-            dos.writeUTF( nliData );
-            dos.flush();
-
-            send( SMS_CMD.INVITE, bas.toByteArray(), phone );
-        } catch ( java.io.IOException ioe ) {
-            Log.ex( TAG, ioe );
+            byte[] asBytes = nliData.getBytes( "UTF-8" );
+            resendFor( phone, SMS_CMD.INVITE, 0, asBytes, true );
+        } catch ( java.io.UnsupportedEncodingException uee ) {
+            Log.ex( TAG, uee );
         }
     }
 
     private void ackInvite( String phone, int gameID )
     {
-        ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream dos = new DataOutputStream( bas );
-        try {
-            dos.writeInt( gameID );
-            dos.flush();
-
-            send( SMS_CMD.ACK, bas.toByteArray(), phone );
-        } catch ( java.io.IOException ioe ) {
-            Log.ex( TAG, ioe );
-        }
+        resendFor( phone, SMS_CMD.ACK_INVITE, gameID, null );
     }
 
     private void sendDiedPacket( String phone, int gameID )
     {
         if ( !s_sentDied.contains(gameID) ) {
-            ByteArrayOutputStream bas = new ByteArrayOutputStream( 32 );
-            DataOutputStream dos = new DataOutputStream( bas );
-            try {
-                dos.writeInt( gameID );
-                dos.flush();
-                send( SMS_CMD.DEATH, bas.toByteArray(), phone );
-                s_sentDied.add( gameID );
-            } catch ( java.io.IOException ioe ) {
-                Log.ex( TAG, ioe );
-            }
+            resendFor( phone, SMS_CMD.DEATH, gameID, null );
         }
     }
 
     public int sendPacket( String phone, int gameID, byte[] bytes )
     {
-        int nSent = -1;
-        ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream dos = new DataOutputStream( bas );
-        try {
-            dos.writeInt( gameID );
-            dos.write( bytes, 0, bytes.length );
-            dos.flush();
-            send( SMS_CMD.DATA, bas.toByteArray(), phone );
-            nSent = bytes.length;
-        } catch ( java.io.IOException ioe ) {
-            Log.ex( TAG, ioe );
-        }
-        return nSent;
+        resendFor( phone, SMS_CMD.DATA, gameID, bytes );
+        return bytes.length;
     }
 
-    private void send( SMS_CMD cmd, byte[] bytes, String phone )
-        throws java.io.IOException
+    private void sendOrRetry( byte[][] msgs, String toPhone, int waitSecs )
     {
-        Log.d( TAG, "send(%s, len=%d)", cmd, bytes.length );
-        ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream dos = new DataOutputStream( bas );
-        dos.writeByte( SMS_PROTO_VERSION );
-        if ( SMS_PROTO_VERSION_WITHPORT <= SMS_PROTO_VERSION ) {
-            dos.writeShort( getNBSPort() );
+        if ( null != msgs ) {
+            sendBuffers( msgs, toPhone );
         }
-        dos.writeByte( cmd.ordinal() );
-        dos.write( bytes, 0, bytes.length );
-        dos.flush();
+        if ( waitSecs > 0 ) {
+            postResend( toPhone, waitSecs );
+        }
+    }
 
-        byte[] data = bas.toByteArray();
-
+    private void resendFor( String toPhone, SMS_CMD cmd, int gameID, byte[] data )
+    {
         boolean newSMSEnabled = XWPrefs.getSMSProtoEnabled( this );
         boolean forceNow = !newSMSEnabled; // || cmd == SMS_CMD.INVITE;
-        resendFor( phone, data, forceNow );
+        resendFor( toPhone, cmd, gameID, data, forceNow );
     }
 
-    private void resendFor( String phone, byte[] data, boolean forceNow )
+    private void resendFor( String toPhone )
+    {
+        resendFor( toPhone, SMS_CMD.NONE, 0, null, false );
+    }
+
+    private void resendFor( String toPhone, SMS_CMD cmd, int gameID, byte[] data,
+                            boolean forceNow )
     {
         int[] waitSecs = { 0 };
-        byte[][] msgs = XwJNI.smsproto_prepOutbound( data, phone, forceNow, waitSecs );
-        if ( null != msgs ) {
-            sendBuffers( msgs, phone );
-        }
-        if ( waitSecs[0] > 0 ) {
-            Assert.assertFalse( forceNow );
-            postResend( phone, waitSecs[0] );
-        }
+        byte[][] msgs = XwJNI.smsproto_prepOutbound( cmd, gameID, data, toPhone,
+                                                     getNBSPort(), forceNow,
+                                                     waitSecs );
+        sendOrRetry( msgs, toPhone, waitSecs[0] );
     }
 
     private void postResend( final String phone, final int waitSecs )
@@ -492,95 +454,44 @@ public class SMSService extends XWService {
             } ).start();
     }
 
-    private void receive( SMS_CMD cmd, byte[] data, String phone )
+    private void receive( SMSProtoMsg msg, String phone )
     {
-        Log.i( TAG, "receive(cmd=%s)", cmd.toString() );
-        DataInputStream dis =
-            new DataInputStream( new ByteArrayInputStream(data) );
-        try {
-            switch( cmd ) {
-            case INVITE:
-                String nliData = dis.readUTF();
-                makeForInvite( phone, new NetLaunchInfo( this, nliData ) );
-                break;
-            case DATA:
-                int gameID = dis.readInt();
-                byte[] rest = new byte[dis.available()];
-                dis.readFully( rest );
-                if ( feedMessage( gameID, rest, new CommsAddrRec( phone ) ) ) {
-                    SMSResendReceiver.resetTimer( this );
-                }
-                break;
-            case DEATH:
-                gameID = dis.readInt();
-                postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
-                break;
-            case ACK:
-                gameID = dis.readInt();
-                postEvent( MultiEvent.NEWGAME_SUCCESS,
-                                     gameID );
-                break;
-            default:
-                Log.w( TAG, "unexpected cmd %s", cmd.toString() );
-                break;
+        Log.i( TAG, "receive(cmd=%s)", msg.cmd );
+        switch( msg.cmd ) {
+        case INVITE:
+            NetLaunchInfo nli = new NetLaunchInfo( this, new String(msg.data) );
+            makeForInvite( phone, nli );
+            break;
+        case DATA:
+            if ( feedMessage( msg.gameID, msg.data, new CommsAddrRec( phone ) ) ) {
+                SMSResendReceiver.resetTimer( this );
             }
-        } catch ( java.io.IOException ioe ) {
-            Log.ex( TAG, ioe );
+            break;
+        case DEATH:
+            postEvent( MultiEvent.MESSAGE_NOGAME, msg.gameID );
+            break;
+        case ACK_INVITE:
+            postEvent( MultiEvent.NEWGAME_SUCCESS, msg.gameID );
+            break;
+        default:
+            Log.w( TAG, "unexpected cmd %s", msg.cmd );
+            Assert.assertFalse( BuildConfig.DEBUG );
+            break;
         }
     }
 
     private void receiveBuffer( byte[] buffer, String senderPhone )
     {
-        byte[][] msgs = XwJNI.smsproto_prepInbound( buffer, senderPhone );
+        SMSProtoMsg[] msgs = XwJNI.smsproto_prepInbound( buffer, senderPhone );
         if ( null != msgs ) {
-            for ( byte[] msg : msgs ) {
-                if ( !disAssemble( senderPhone, msg ) ) {
-                    Log.e( TAG, "failed on message from %s", senderPhone );
-                }
+            for ( SMSProtoMsg msg : msgs ) {
+                receive( msg, senderPhone );
             }
             postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
             Log.w( TAG, "receiveBuffer(): bogus or incomplete message from phone %s",
                    senderPhone );
         }
-    }
-
-    private boolean disAssemble( String senderPhone, byte[] fullMsg )
-    {
-        boolean success = false;
-        DataInputStream dis =
-            new DataInputStream( new ByteArrayInputStream(fullMsg) );
-        try {
-            byte proto = dis.readByte();
-            short myPort = getNBSPort();
-            short gotPort;
-            if ( SMS_PROTO_VERSION_WITHPORT > proto ) {
-                gotPort = myPort;
-            } else {
-                gotPort = dis.readShort();
-            }
-            if ( SMS_PROTO_VERSION < proto ) {
-                Log.w( TAG, "SMSService.disAssemble: bad proto %d from %s;"
-                       + " dropping", proto, senderPhone );
-                postEvent( MultiEvent.BAD_PROTO_SMS, senderPhone );
-            } else if ( gotPort != myPort ) {
-                Log.d( TAG, "disAssemble(): received on port %d"
-                       + " but expected %d", gotPort, myPort );
-            } else {
-                SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
-                byte[] rest = new byte[dis.available()];
-                dis.readFully( rest );
-                receive( cmd, rest, senderPhone );
-                success = true;
-            }
-        } catch ( java.io.IOException ioe ) {
-            Log.ex( TAG, ioe );
-        } catch ( ArrayIndexOutOfBoundsException oob ) {
-            // enum this older code doesn't know about, or just another app's
-            // message; drop it
-            Log.w( TAG, "disAssemble: dropping message with too-new enum" );
-        }
-        return success;
     }
 
     @Override

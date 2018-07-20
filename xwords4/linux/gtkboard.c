@@ -1659,8 +1659,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
 
-        linux_sms_invite( cGlobals->params, cGlobals->gi, &addr, gameName,
-                          nPlayers, forceChannel,
+        linux_sms_invite( cGlobals->params, &nli,
                           addrs->u.sms.phone, addrs->u.sms.port );
     }
     if ( 0 != devID || !!relayID ) {

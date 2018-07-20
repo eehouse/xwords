@@ -77,6 +77,7 @@ void nli_makeAddrRec( const NetLaunchInfo* invit, CommsAddrRec* addr );
 
 void nli_setDevID( NetLaunchInfo* invit, XP_U32 devID );
 void nli_setInviteID( NetLaunchInfo* invit, const XP_UCHAR* inviteID );
+void nli_setGameName( NetLaunchInfo* invit, const XP_UCHAR* gameName );
 
 
 #endif

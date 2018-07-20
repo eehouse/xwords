@@ -403,15 +403,22 @@ public class XwJNI {
     public static native boolean comms_getAddrDisabled( GamePtr gamePtr, CommsConnType typ,
                                                         boolean send );
 
-    public static byte[][] smsproto_prepOutbound( byte[] buf, String phone, boolean forceNow,
-                                          /*out*/ int[] waitSecs )
-    {
-        int nowSeconds = (int)(System.currentTimeMillis() / 1000);
-        return smsproto_prepOutbound( getJNI().m_ptr, buf, phone, nowSeconds,
-                                      forceNow, waitSecs );
+    public enum SMS_CMD { NONE, INVITE, DATA, DEATH, ACK_INVITE, };
+    public static class SMSProtoMsg {
+        public SMS_CMD cmd;
+        public int gameID;
+        public byte[] data;            // other cases
     }
 
-    public static byte[][] smsproto_prepInbound( byte[] data, String fromPhone )
+    public static byte[][]
+        smsproto_prepOutbound( SMS_CMD cmd, int gameID, byte[] buf, String phone,
+                               int port, boolean forceNow, /*out*/ int[] waitSecs )
+    {
+        return smsproto_prepOutbound( getJNI().m_ptr, cmd, gameID, buf, phone,
+                                      port, forceNow, waitSecs );
+    }
+    
+    public static SMSProtoMsg[] smsproto_prepInbound( byte[] data, String fromPhone )
     {
         return smsproto_prepInbound( getJNI().m_ptr, data, fromPhone );
     }
@@ -502,13 +509,14 @@ public class XwJNI {
     private static native int dict_iter_init( int jniState, byte[] dict,
                                               String name, String path );
 
-    private static native byte[][] smsproto_prepOutbound( int jniState, byte[] buf,
-                                                          String phone, int nowSeconds,
-                                                          boolean forceNow,
-                                                          /*out*/int[] waitSecs );
+    private static native byte[][]
+        smsproto_prepOutbound( int jniState, SMS_CMD cmd, int gameID, byte[] buf,
+                               String phone, int port, boolean forceNow,
+                               /*out*/int[] waitSecs );
 
-    private static native byte[][] smsproto_prepInbound( int jniState, byte[] data,
-                                                         String fromPhone );
+    private static native SMSProtoMsg[] smsproto_prepInbound( int jniState,
+                                                              byte[] data,
+                                                              String fromPhone );
 
     private static native boolean haveEnv( int jniState );
 }

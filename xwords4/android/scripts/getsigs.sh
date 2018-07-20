@@ -3,24 +3,31 @@
 set -e -u
 
 NODE=xw4
+VARIANT=xw4
 CLASSPATH=${CLASSPATH:-""}
 
 usage() {
     [ $# -gt 0 ] && echo "Error: $1"
-    echo "usage: $0 "
+    echo "usage: $0 [--variant xw4|xw4d]"
     exit 1
 }
 while [ $# -gt 0 ]; do
 	case $1 in
-		--help) usage
-				;;
-		*) usage "unexpected flag $1"
-		   ;;
+		--help)
+			usage
+			;;
+		--variant)
+			VARIANT=$2
+			shift
+			;;
+		*)
+			usage "unexpected flag $1"
+			;;
 	esac
 	shift
 done
 
-cd $(dirname $0)/../app/build/intermediates/classes/${NODE}/debug
+cd $(dirname $0)/../app/build/intermediates/classes/${VARIANT}/debug
 
 javah -o /tmp/javah$$.txt org.eehouse.android.${NODE}.jni.XwJNI
 javap -s org.eehouse.android.${NODE}.jni.XwJNI

@@ -44,22 +44,43 @@
 
 #include "xptypes.h"
 #include "mempool.h" /* debug only */
+#include "nli.h"
 
 typedef struct SMSProto SMSProto;
 
-typedef struct _SMSMsg {
+typedef enum { NONE, INVITE, DATA, DEATH, ACK_INVITE, } SMS_CMD;
+
+/* Unpacked/local format with relevant fields exposed */
+typedef struct _SMSMsgLoc {
+    // XP_U16 msgID;
+    SMS_CMD cmd;
+    XP_U32 gameID;
     XP_U16 len;
-    XP_U16 msgID;
+    XP_U8* data; // will be NetLaunchInfo* if cmd == INVITE
+} SMSMsgLoc;
+
+/* Flattened format suitable for transmission over wire. Encapsulates Loc
+   format data */
+typedef struct _SMSMsgNet {
+    // XP_U16 msgID;
+    XP_U16 len;
     XP_U8* data;
-} SMSMsg;
+} SMSMsgNet;
+
+typedef enum { FORMAT_NONE, FORMAT_LOC, FORMAT_NET } SMS_FORMAT;
 
 typedef struct _SMSMsgArray {
     XP_U16 nMsgs;
-    SMSMsg* msgs;
+    SMS_FORMAT format;
+    union {
+        SMSMsgNet* msgsNet;
+        SMSMsgLoc* msgsLoc;
+    } u;
 } SMSMsgArray;
 
 struct SMSProto* smsproto_init( MPFORMAL XW_DUtilCtxt* dutil );
 void smsproto_free( SMSProto* state );
+
 
 /* Return ptr to structure if one's ready to be sent, otherwise null. Caller *
  * should interpret null as meaning it's meant to call again. To support that,
@@ -68,8 +89,10 @@ void smsproto_free( SMSProto* state );
  * When send() returns a non-null value, that value must be passed to
  * freeMsgArray() or there will be leakage.
 */
-SMSMsgArray* smsproto_prepOutbound( SMSProto* state, const XP_U8* buf,
-                                    XP_U16 buflen, const XP_UCHAR* toPhone,
+
+SMSMsgArray* smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd,
+                                    XP_U32 gameID, const void* buf, XP_U16 buflen,
+                                    const XP_UCHAR* toPhone, int port,
                                     XP_Bool forceOld, XP_U16* waitSecs );
 
 /* When a message is received, pass it in for reassambly. Non-null return

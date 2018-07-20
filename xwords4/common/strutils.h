@@ -57,6 +57,8 @@ XP_U16 stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len );
 void stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str );
 
 XP_Bool stream_gotU8( XWStreamCtxt* stream, XP_U8* ptr );
+XP_Bool stream_gotU32( XWStreamCtxt* stream, XP_U32* ptr );
+XP_Bool stream_gotU16( XWStreamCtxt* stream, XP_U16* ptr );
 XP_Bool stream_gotBytes( XWStreamCtxt* stream, void* ptr, XP_U16 len );
 
 XP_UCHAR* p_copyString( MPFORMAL const XP_UCHAR* instr 

@@ -23,12 +23,10 @@
 #ifdef XWFEATURE_SMS
 
 #include "main.h"
+#include "nli.h"
 
 typedef struct _SMSProcs {
-    void (*inviteReceived)( void* closure, const XP_UCHAR* gameName, 
-                            XP_U32 gameID, XP_U16 dictLang, 
-                            const XP_UCHAR* dictName, XP_U16 nPlayers, 
-                            XP_U16 nHere, XP_U16 forceChannel,
+    void (*inviteReceived)( void* closure, const NetLaunchInfo* nli,
                             const CommsAddrRec* returnAddr );
     void (*msgReceived)( void* closure, const CommsAddrRec* from, XP_U32 gameID,
                          const XP_U8* buf, XP_U16 len );
@@ -45,9 +43,7 @@ void linux_sms_init( LaunchParams* params, const gchar* phone,
 XP_S16 linux_sms_send( LaunchParams* params, const XP_U8* buf,
                        XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port, 
                        XP_U32 gameID );
-void linux_sms_invite( LaunchParams* params, const CurGameInfo* info, 
-                       const CommsAddrRec* addr, const gchar* gameName, 
-                       XP_U16 nMissing, int forceChannel,
+void linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
                        const gchar* phone, int port );
 void linux_sms_cleanup( LaunchParams* params );
 
