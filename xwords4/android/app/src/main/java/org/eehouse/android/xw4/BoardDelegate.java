@@ -136,6 +136,7 @@ public class BoardDelegate extends DelegateBase
             m_when = when;
             m_handle = handle;
         }
+        @Override
         public void run() {
             m_timers[m_why] = null;
             if ( null != m_jniThread ) {
@@ -1117,6 +1118,7 @@ public class BoardDelegate extends DelegateBase
 
         case ENABLE_SMS_DO:
             post( new Runnable() {
+                    @Override
                     public void run() {
                         retrySMSInvites( params );
                     }
@@ -1164,6 +1166,7 @@ public class BoardDelegate extends DelegateBase
         case ENABLE_RELAY_DO_OR:
             if ( m_dropOnDismiss ) {
                 postDelayed( new Runnable() {
+                        @Override
                         public void run() {
                             askDropRelay();
                         }
@@ -1270,6 +1273,7 @@ public class BoardDelegate extends DelegateBase
             int gameID = (Integer)args[0];
             if ( gameID == m_gi.gameID ) {
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             showDialogFragment( DlgID.DLG_DELETED );
                         }
@@ -1291,6 +1295,7 @@ public class BoardDelegate extends DelegateBase
             final String msg =
                 getString( R.string.err_dup_invite_fmt, (String)args[0] );
             post( new Runnable() {
+                    @Override
                     public void run() {
                         makeOkOnlyBuilder( msg ).show();
                     }
@@ -1329,6 +1334,7 @@ public class BoardDelegate extends DelegateBase
                                final boolean allHere, final int nMissing )
     {
         runOnUiThread( new Runnable() {
+                @Override
                 public void run() {
                     handleConndMessage( room, devOrder, allHere, nMissing ); // from here too
                 }
@@ -1382,6 +1388,7 @@ public class BoardDelegate extends DelegateBase
             final int strIDf = strID;
             final DlgID dlgIDf = dlgID;
             post( new Runnable() {
+                    @Override
                     public void run() {
                         showDialogFragment( dlgIDf, R.string.relay_alert,
                                             getString( strIDf ) );
@@ -1398,6 +1405,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( success ) {
             post( new Runnable() {
+                    @Override
                     public void run() {
                         setGotGameDict( name );
                     }
@@ -1453,6 +1461,7 @@ public class BoardDelegate extends DelegateBase
     public void invalidateParent()
     {
         runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     m_view.invalidate();
                 }
@@ -1463,6 +1472,7 @@ public class BoardDelegate extends DelegateBase
     {
         final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
         post( new Runnable() {
+                @Override
                 public void run() {
                     if ( null == msg ) {
                         askNoAddrsDelete();
@@ -1628,6 +1638,7 @@ public class BoardDelegate extends DelegateBase
         public void requestTime()
         {
             runOnUiThread( new Runnable() {
+                    @Override
                     public void run() {
                         if ( null != m_jniThread ) {
                             m_jniThread.handleBkgrnd( JNICmd.CMD_DO );
@@ -1679,6 +1690,7 @@ public class BoardDelegate extends DelegateBase
             if ( 0 != id ) {
                 final String bonusStr = getString( id );
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             showToast( bonusStr );
                         }
@@ -1697,6 +1709,7 @@ public class BoardDelegate extends DelegateBase
             }
             final String text = expl;
             post( new Runnable() {
+                    @Override
                     public void run() {
                         showToast( text );
                     }
@@ -1707,6 +1720,7 @@ public class BoardDelegate extends DelegateBase
         public void cellSquareHeld( final String words )
         {
             post( new Runnable() {
+                    @Override
                     public void run() {
                         launchLookup( wordsToArray( words ), m_gi.dictLang );
                     }
@@ -1788,6 +1802,7 @@ public class BoardDelegate extends DelegateBase
             if ( 0 <= newTurn ) {
                 m_mySIS.nMissing = 0;
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             makeNotAgainBuilder( R.string.not_again_turnchanged,
                                                  R.string.key_notagain_turnchanged )
@@ -1880,6 +1895,7 @@ public class BoardDelegate extends DelegateBase
                 if ( asToast ) {
                     final int residf = resid;
                     runOnUiThread( new Runnable() {
+                            @Override
                             public void run() {
                                 showToast( residf );
                             }
@@ -2022,6 +2038,7 @@ public class BoardDelegate extends DelegateBase
                               String fromPlayer, final int tsSeconds )
         {
             runOnUiThread( new Runnable() {
+                    @Override
                     public void run() {
                         DBUtils.appendChatHistory( m_activity, m_rowid, msg,
                                                    fromIndx, tsSeconds );
@@ -2544,6 +2561,7 @@ public class BoardDelegate extends DelegateBase
         if ( keepOn ) {
             if ( null == m_screenTimer ) {
                 m_screenTimer = new Runnable() {
+                        @Override
                         public void run() {
                             if ( null != m_view ) {
                                 m_view.setKeepScreenOn( false );
