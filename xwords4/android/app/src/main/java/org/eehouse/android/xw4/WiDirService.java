@@ -760,7 +760,7 @@ public class WiDirService extends XWService {
     {
         Log.d( TAG, "handleGotInvite()" );
         String nliData = intent.getStringExtra( KEY_NLI );
-        NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
+        NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, nliData );
         String returnMac = intent.getStringExtra( KEY_SRC );
 
         if ( !handleInvitation( nli, returnMac, DictFetchOwner.OWNER_P2P ) ) {

@@ -149,7 +149,8 @@ public class MultiService {
     {
         Assert.assertTrue( isMissingDictIntent( intent ) );
         String nliData = intent.getStringExtra( NLI_DATA );
-        NetLaunchInfo nli = new NetLaunchInfo( context, nliData );
+        NetLaunchInfo nli = NetLaunchInfo.makeFrom( context, nliData );
+        Assert.assertTrue( nli != null || !BuildConfig.DEBUG );
         return nli;
     }
 

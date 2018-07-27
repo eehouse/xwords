@@ -376,10 +376,15 @@ public class SMSService extends XWService {
     private void inviteRemote( String phone, String nliData )
     {
         try {
-            byte[] asBytes = nliData.getBytes( "UTF-8" );
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+            DataOutputStream das = new DataOutputStream( bas );
+            das.writeUTF( nliData );
+            byte[] asBytes = bas.toByteArray();
             resendFor( phone, SMS_CMD.INVITE, 0, asBytes, true );
         } catch ( java.io.UnsupportedEncodingException uee ) {
             Log.ex( TAG, uee );
+        } catch ( java.io.IOException ioe ) {
+            Log.ex( TAG, ioe );
         }
     }
 
@@ -459,8 +464,7 @@ public class SMSService extends XWService {
         Log.i( TAG, "receive(cmd=%s)", msg.cmd );
         switch( msg.cmd ) {
         case INVITE:
-            NetLaunchInfo nli = new NetLaunchInfo( this, new String(msg.data) );
-            makeForInvite( phone, nli );
+            makeForInvite( phone, msg.data );
             break;
         case DATA:
             if ( feedMessage( msg.gameID, msg.data, new CommsAddrRec( phone ) ) ) {
@@ -502,6 +506,23 @@ public class SMSService extends XWService {
         String body = LocUtils.getString( this, R.string.new_name_body_fmt,
                                           owner );
         GameUtils.postInvitedNotification( this, gameID, body, rowid );
+    }
+
+    private void makeForInvite( String phone, byte[] data )
+    {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream( data );
+            DataInputStream dis = new DataInputStream( bais );
+            String nliData = dis.readUTF();
+            NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, nliData );
+            if ( null != nli ) {
+                makeForInvite( phone, nli );
+            } else {
+                Log.e( TAG, "null nli; bad data?" );
+            }
+        } catch ( java.io.IOException ioe ) {
+            Log.ex( TAG, ioe );
+        }
     }
 
     private void makeForInvite( String phone, NetLaunchInfo nli )
