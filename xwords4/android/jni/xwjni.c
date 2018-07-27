@@ -850,7 +850,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
 
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jData, jstring jFromPhone )
+( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jData,
+  jstring jFromPhone, jint jWantPort )
 {
     jobjectArray result = NULL;
 
@@ -863,7 +864,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
         const char* fromPhone = (*env)->GetStringUTFChars( env, jFromPhone, NULL );
 
         SMSMsgArray* arr = smsproto_prepInbound( globalState->smsProto, fromPhone,
-                                                 (XP_U8*)data, len );
+                                                 jWantPort, (XP_U8*)data, len );
         if ( !!arr ) {
             result = msgArrayToJMsgArray( env, arr );
             smsproto_freeMsgArray( globalState->smsProto, arr );

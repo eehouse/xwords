@@ -418,9 +418,10 @@ public class XwJNI {
                                       port, forceNow, waitSecs );
     }
     
-    public static SMSProtoMsg[] smsproto_prepInbound( byte[] data, String fromPhone )
+    public static SMSProtoMsg[] smsproto_prepInbound( byte[] data,
+                                                      String fromPhone, int wantPort )
     {
-        return smsproto_prepInbound( getJNI().m_ptr, data, fromPhone );
+        return smsproto_prepInbound( getJNI().m_ptr, data, fromPhone, wantPort );
     }
 
     // Dicts
@@ -516,7 +517,8 @@ public class XwJNI {
 
     private static native SMSProtoMsg[] smsproto_prepInbound( int jniState,
                                                               byte[] data,
-                                                              String fromPhone );
+                                                              String fromPhone,
+                                                              int wantPort);
 
     private static native boolean haveEnv( int jniState );
 }

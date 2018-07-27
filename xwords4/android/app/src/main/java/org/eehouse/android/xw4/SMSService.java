@@ -482,7 +482,8 @@ public class SMSService extends XWService {
 
     private void receiveBuffer( byte[] buffer, String senderPhone )
     {
-        SMSProtoMsg[] msgs = XwJNI.smsproto_prepInbound( buffer, senderPhone );
+        SMSProtoMsg[] msgs = XwJNI.smsproto_prepInbound( buffer, senderPhone,
+                                                         getNBSPort() );
         if ( null != msgs ) {
             for ( SMSProtoMsg msg : msgs ) {
                 receive( msg, senderPhone );
