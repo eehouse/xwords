@@ -27,8 +27,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+
 import java.util.Iterator;
 
 import org.json.JSONException;
@@ -135,6 +140,20 @@ public class NetLaunchInfo implements Serializable {
             nli = new NetLaunchInfo( context, data );
         } catch ( JSONException jse ) {
             Log.ex( TAG, jse );
+        }
+        return nli;
+    }
+
+    public static NetLaunchInfo makeFrom( Context context, byte[] data )
+    {
+        NetLaunchInfo nli = null;
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream( data );
+            DataInputStream dis = new DataInputStream( bais );
+            String nliData = dis.readUTF();
+            nli = NetLaunchInfo.makeFrom( context, nliData );
+        } catch ( java.io.IOException ex ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
         }
         return nli;
     }
@@ -593,6 +612,20 @@ public class NetLaunchInfo implements Serializable {
     public String toString()
     {
         return makeLaunchJSON();
+    }
+
+    public byte[] asByteArray()
+    {
+        byte[] result = null;
+        try {
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+            DataOutputStream das = new DataOutputStream( bas );
+            das.writeUTF( makeLaunchJSON() );
+            result = bas.toByteArray();
+        } catch ( java.io.IOException ex ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
+        }
+        return result;
     }
 
     public static void putExtras( Intent intent, int gameID, String btAddr )
