@@ -485,7 +485,7 @@ public class SMSService extends XWService {
             }
             postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
-            Log.w( TAG, "receiveBuffer(): bogus or incomplete message from phone %s",
+            Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
                    senderPhone );
         }
     }
@@ -501,8 +501,8 @@ public class SMSService extends XWService {
 
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
-        if ( nli != null &&
-             handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS ) ) {
+        if ( nli != null ) {
+            handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
             ackInvite( phone, nli.gameID() );
         }
     }
