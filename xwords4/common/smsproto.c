@@ -353,8 +353,8 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
         }
             break;
         default:
+            /* Don't assert! happens all the time */
             XP_LOGF( "%s(): unexpected proto %d", __func__, proto );
-            XP_ASSERT( 0 );
             break;
         }
     }
