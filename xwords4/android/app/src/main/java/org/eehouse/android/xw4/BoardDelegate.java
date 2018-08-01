@@ -115,7 +115,7 @@ public class BoardDelegate extends DelegateBase
     private BoardUtilCtxt m_utils;
     private boolean m_gameOver = false;
 
-    private JNIThread m_jniThread;
+    private volatile JNIThread m_jniThread;
     private JNIThread m_jniThreadRef;
     private JNIThread.GameStateInfo m_gsi;
 
@@ -1817,7 +1817,9 @@ public class BoardDelegate extends DelegateBase
         @Override
         public boolean engineProgressCallback()
         {
-            return ! m_jniThread.busy();
+            // return true if engine should keep going
+            JNIThread jnit = m_jniThread;
+            return jnit != null && !jnit.busy();
         }
 
         @Override
