@@ -223,7 +223,7 @@ task copyStrings(type: Exec) {
 
 task ndkSetup(type: Exec) {
     workingDir '../'
-    commandLine "./scripts/ndksetup.sh", "--with-clang"
+    commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
 }
 
 task myPreBuild(dependsOn: ['ndkSetup', 'mkImages', 'copyStrings', 'mkXml']) {
