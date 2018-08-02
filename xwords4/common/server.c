@@ -79,6 +79,7 @@ typedef struct ServerVolatiles {
     GameOverListener gameOverListener;
     void* gameOverData;
     XP_Bool showPrevMove;
+    XP_Bool pickTilesCalled[MAX_NUM_PLAYERS];
 } ServerVolatiles;
 
 typedef struct ServerNonvolatiles {
@@ -1062,6 +1063,8 @@ server_tilesPicked( ServerCtxt* server, XP_U16 player,
                     const TrayTileSet* newTilesP )
 {
     XP_ASSERT( 0 == model_getNumTilesInTray( server->vol.model, player ) );
+    XP_ASSERT( server->vol.pickTilesCalled[player] );
+    server->vol.pickTilesCalled[player] = XP_FALSE;
 
     TrayTileSet newTiles = *newTilesP;
     pool_removeTiles( server->pool, &newTiles );
@@ -1089,12 +1092,19 @@ informNeedPickTiles( ServerCtxt* server, XP_Bool initial, XP_U16 turn,
     XP_Bool asking = nToPick > 0;
 
     if ( asking ) {
-        for ( Tile tile = 0; tile < nFaces; ++tile ) {
-            faces[tile] = dict_getTileString( dict, tile );
-            counts[tile] = pool_getNTilesLeftFor( server->pool, tile );
+        /* We need to make sure we only call util_informNeedPickTiles once
+           without it returning. Even if server_do() is called a lot. */
+        if ( server->vol.pickTilesCalled[turn] ) {
+            XP_LOGF( "%s(): already asking for %d", __func__, turn );
+        } else {
+            server->vol.pickTilesCalled[turn] = XP_TRUE;
+            for ( Tile tile = 0; tile < nFaces; ++tile ) {
+                faces[tile] = dict_getTileString( dict, tile );
+                counts[tile] = pool_getNTilesLeftFor( server->pool, tile );
+            }
+            util_informNeedPickTiles( server->vol.util, initial, turn,
+                                      nToPick, nFaces, faces, counts );
         }
-        util_informNeedPickTiles( server->vol.util, initial, turn,
-                                  nToPick, nFaces, faces, counts );
     }
     return asking;
 }
@@ -1923,6 +1933,7 @@ makePoolOnce( ServerCtxt* server )
 static XP_Bool
 assignTilesToAll( ServerCtxt* server )
 {
+    LOG_FUNC();
     XP_Bool allDone = XP_TRUE;
     XP_U16 numAssigned;
     XP_U16 ii;
@@ -1962,6 +1973,7 @@ assignTilesToAll( ServerCtxt* server )
         }
         sortTilesIf( server, ii );
     }
+    LOG_RETURNF( "%d", allDone );
     return allDone;
 } /* assignTilesToAll */
 
@@ -2466,6 +2478,7 @@ server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
     XP_ASSERT( turn >= 0 );
 
     pool_removeTiles( server->pool, &newTiles );
+    server->vol.pickTilesCalled[turn] = XP_FALSE;
 
     nTilesMoved = model_getCurrentMoveCount( model, turn );
     fetchTiles( server, turn, nTilesMoved, NULL, &newTiles );
