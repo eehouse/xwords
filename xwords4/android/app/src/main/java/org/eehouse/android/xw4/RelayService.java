@@ -397,7 +397,7 @@ public class RelayService extends XWService
                 case GOT_INVITE:
                     int srcDevID = intent.getIntExtra( INVITE_FROM, 0 );
                     NetLaunchInfo nli
-                        = new NetLaunchInfo( this, intent.getStringExtra(NLI_DATA) );
+                        = NetLaunchInfo.makeFrom( this, intent.getStringExtra(NLI_DATA) );
                     receiveInvitation( srcDevID, nli );
                     break;
                 case SEND:
@@ -820,7 +820,7 @@ public class RelayService extends XWService
         Log.d( TAG, "sendInvitation(%d->%d/%s [%s])", srcDevID, destDevID,
                relayID, nliStr );
 
-        NetLaunchInfo nli = new NetLaunchInfo( this, nliStr );
+        NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, nliStr );
         byte[] nliData = XwJNI.nliToStream( nli );
         if ( BuildConfig.DEBUG ) {
             NetLaunchInfo tmp = XwJNI.nliFromStream( nliData );

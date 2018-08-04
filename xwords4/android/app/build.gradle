@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 133
-def VERSION_NAME = '4.4.137'
+def VERSION_CODE_BASE = 135
+def VERSION_NAME = '4.4.139'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
 def BUILD_INFO_NAME = "build-info.txt"
@@ -33,7 +33,7 @@ android {
     buildToolsVersion '27.0.3'
     defaultConfig {
         minSdkVersion 8
-        targetSdkVersion 26
+        targetSdkVersion 23
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
     }
@@ -92,7 +92,6 @@ android {
         }
         xw4d {
             dimension "variant"
-            minSdkVersion 8
             applicationId "org.eehouse.android.xw4dbg"
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
@@ -223,7 +222,7 @@ task copyStrings(type: Exec) {
 
 task ndkSetup(type: Exec) {
     workingDir '../'
-    commandLine "./scripts/ndksetup.sh", "--with-clang"
+    commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
 }
 
 task myPreBuild(dependsOn: ['ndkSetup', 'mkImages', 'copyStrings', 'mkXml']) {

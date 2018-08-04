@@ -772,10 +772,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTileValue
 static jobjectArray
 msgArrayToByteArrays( JNIEnv* env, const SMSMsgArray* arr )
 {
+    XP_ASSERT( arr->format == FORMAT_NET );
     jclass clas = (*env)->FindClass( env, "[B" );
     jobjectArray result = (*env)->NewObjectArray( env, arr->nMsgs, clas, NULL );
     for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
-        SMSMsg* msg = &arr->msgs[ii];
+        SMSMsgNet* msg = &arr->u.msgsNet[ii];
         jbyteArray arr = makeByteArray( env, msg->len, (const jbyte*)msg->data );
         (*env)->SetObjectArrayElement( env, result, ii, arr );
         deleteLocalRef( env, arr );
@@ -783,15 +784,43 @@ msgArrayToByteArrays( JNIEnv* env, const SMSMsgArray* arr )
     return result;
 }
 
+static jobjectArray
+msgArrayToJMsgArray( JNIEnv* env, const SMSMsgArray* arr )
+{
+    XP_ASSERT( arr->format == FORMAT_LOC );
+    jclass clas = (*env)->FindClass( env, PKG_PATH("jni/XwJNI$SMSProtoMsg") );
+    jobjectArray result = (*env)->NewObjectArray( env, arr->nMsgs, clas, NULL );
+
+    jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
+    for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
+        jobject jmsg = (*env)->NewObject( env, clas, initId );
+
+        const SMSMsgLoc* msgsLoc = &arr->u.msgsLoc[ii];
+        intToJenumField( env, jmsg, msgsLoc->cmd, "cmd", PKG_PATH("jni/XwJNI$SMS_CMD") );
+        setInt( env, jmsg, "gameID", msgsLoc->gameID );
+
+        jbyteArray arr = makeByteArray( env, msgsLoc->len,
+                                        (const jbyte*)msgsLoc->data );
+        setObject( env, jmsg, "data", "[B", arr );
+        deleteLocalRef( env, arr );
+        
+        (*env)->SetObjectArrayElement( env, result, ii, jmsg );
+        deleteLocalRef( env, jmsg );
+    }
+    return result;
+}
+
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jData,
-  jstring jToPhone, jint jNow, jboolean jForce, jintArray jWaitSecsArr )
+( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jCmd, jint jGameID,
+  jbyteArray jData, jstring jToPhone, jint jPort, jboolean jForce,
+  jintArray jWaitSecsArr )
 {
     jobjectArray result = NULL;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
     map_thread( &globalState->ti, env );
 
+    SMS_CMD cmd = jEnumToInt( env, jCmd );
     jbyte* data = NULL;
     int len = 0;
     if ( NULL != jData ) {
@@ -801,8 +830,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
     const char* toPhone = (*env)->GetStringUTFChars( env, jToPhone, NULL );
 
     XP_U16 waitSecs;
-    SMSMsgArray* arr = smsproto_prepOutbound( globalState->smsProto, (const XP_U8*)data,
-                                              len, toPhone, jForce, &waitSecs );
+    SMSMsgArray* arr = smsproto_prepOutbound( globalState->smsProto, cmd, jGameID,
+                                              (const XP_U8*)data, len, 
+                                              toPhone, jPort, jForce, &waitSecs );
     if ( !!arr ) {
         result = msgArrayToByteArrays( env, arr );
         smsproto_freeMsgArray( globalState->smsProto, arr );
@@ -821,21 +851,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
 ( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jData,
-  jstring jFromPhone )
+  jstring jFromPhone, jint jWantPort )
 {
     jobjectArray result = NULL;
-    JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &globalState->ti, env );
 
     if ( !!jData ) {
+        JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+        map_thread( &globalState->ti, env );
+
         int len = (*env)->GetArrayLength( env, jData );
         jbyte* data = (*env)->GetByteArrayElements( env, jData, NULL );
         const char* fromPhone = (*env)->GetStringUTFChars( env, jFromPhone, NULL );
 
         SMSMsgArray* arr = smsproto_prepInbound( globalState->smsProto, fromPhone,
-                                                 (XP_U8*)data, len );
+                                                 jWantPort, (XP_U8*)data, len );
         if ( !!arr ) {
-            result = msgArrayToByteArrays( env, arr );
+            result = msgArrayToJMsgArray( env, arr );
             smsproto_freeMsgArray( globalState->smsProto, arr );
         }
 

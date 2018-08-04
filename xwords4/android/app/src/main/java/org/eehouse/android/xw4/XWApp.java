@@ -71,8 +71,6 @@ public class XWApp extends Application {
         Log.i( TAG, "onCreate(); git_rev=%s", getString( R.string.git_rev ) );
         DbgUtils.logEnable( this );
 
-        ConnStatusHandler.loadState( this );
-
         OnBootReceiver.startTimers( this );
 
         boolean mustCheck = Utils.firstBootThisVersion( this );

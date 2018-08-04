@@ -115,7 +115,7 @@ public class BoardDelegate extends DelegateBase
     private BoardUtilCtxt m_utils;
     private boolean m_gameOver = false;
 
-    private JNIThread m_jniThread;
+    private volatile JNIThread m_jniThread;
     private JNIThread m_jniThreadRef;
     private JNIThread.GameStateInfo m_gsi;
 
@@ -136,6 +136,7 @@ public class BoardDelegate extends DelegateBase
             m_when = when;
             m_handle = handle;
         }
+        @Override
         public void run() {
             m_timers[m_why] = null;
             if ( null != m_jniThread ) {
@@ -1117,6 +1118,7 @@ public class BoardDelegate extends DelegateBase
 
         case ENABLE_SMS_DO:
             post( new Runnable() {
+                    @Override
                     public void run() {
                         retrySMSInvites( params );
                     }
@@ -1164,6 +1166,7 @@ public class BoardDelegate extends DelegateBase
         case ENABLE_RELAY_DO_OR:
             if ( m_dropOnDismiss ) {
                 postDelayed( new Runnable() {
+                        @Override
                         public void run() {
                             askDropRelay();
                         }
@@ -1171,6 +1174,16 @@ public class BoardDelegate extends DelegateBase
             }
             break;
         case DELETE_AND_EXIT:
+            finish();
+            break;
+
+        case BLANK_PICKED:
+        case TRAY_PICKED:
+            // If the user cancels the tile picker the common code doesn't
+            // know, and won't put it up again as long as this game remains
+            // loaded. There might be a way to fix that, but the safest thing
+            // to do for now is to close. User will have to begin the process
+            // of committing turn again on re-launching the game.
             finish();
             break;
 
@@ -1257,17 +1270,20 @@ public class BoardDelegate extends DelegateBase
     @SuppressWarnings("fallthrough")
     public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
+        boolean doStopProgress = false;
         switch( event ) {
         case MESSAGE_ACCEPTED:
         case MESSAGE_REFUSED:
             ConnStatusHandler.
                 updateStatusIn( m_activity, this, CommsConnType.COMMS_CONN_BT,
                                 MultiService.MultiEvent.MESSAGE_ACCEPTED == event);
+            doStopProgress = true;
             break;
         case MESSAGE_NOGAME:
             int gameID = (Integer)args[0];
             if ( gameID == m_gi.gameID ) {
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             showDialogFragment( DlgID.DLG_DELETED );
                         }
@@ -1285,13 +1301,11 @@ public class BoardDelegate extends DelegateBase
             Log.w( TAG, "failed to create game" );
             break;
         case NEWGAME_DUP_REJECTED:
-            if ( m_progressShown ) {
-                m_progressShown = false;
-                stopProgress();     // in case it's a BT invite
-            }
+            doStopProgress = true;
             final String msg =
                 getString( R.string.err_dup_invite_fmt, (String)args[0] );
             post( new Runnable() {
+                    @Override
                     public void run() {
                         makeOkOnlyBuilder( msg ).show();
                     }
@@ -1311,12 +1325,14 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            if ( m_progressShown ) {
-                m_progressShown = false;
-                stopProgress();     // in case it's a BT invite
-            }
+            doStopProgress = true; // in case it's a BT invite
             super.eventOccurred( event, args );
             break;
+        }
+
+        if ( doStopProgress && m_progressShown ) {
+            m_progressShown = false;
+            stopProgress();
         }
     }
 
@@ -1328,6 +1344,7 @@ public class BoardDelegate extends DelegateBase
                                final boolean allHere, final int nMissing )
     {
         runOnUiThread( new Runnable() {
+                @Override
                 public void run() {
                     handleConndMessage( room, devOrder, allHere, nMissing ); // from here too
                 }
@@ -1381,6 +1398,7 @@ public class BoardDelegate extends DelegateBase
             final int strIDf = strID;
             final DlgID dlgIDf = dlgID;
             post( new Runnable() {
+                    @Override
                     public void run() {
                         showDialogFragment( dlgIDf, R.string.relay_alert,
                                             getString( strIDf ) );
@@ -1397,6 +1415,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( success ) {
             post( new Runnable() {
+                    @Override
                     public void run() {
                         setGotGameDict( name );
                     }
@@ -1452,6 +1471,7 @@ public class BoardDelegate extends DelegateBase
     public void invalidateParent()
     {
         runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     m_view.invalidate();
                 }
@@ -1462,6 +1482,7 @@ public class BoardDelegate extends DelegateBase
     {
         final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
         post( new Runnable() {
+                @Override
                 public void run() {
                     if ( null == msg ) {
                         askNoAddrsDelete();
@@ -1627,6 +1648,7 @@ public class BoardDelegate extends DelegateBase
         public void requestTime()
         {
             runOnUiThread( new Runnable() {
+                    @Override
                     public void run() {
                         if ( null != m_jniThread ) {
                             m_jniThread.handleBkgrnd( JNICmd.CMD_DO );
@@ -1678,6 +1700,7 @@ public class BoardDelegate extends DelegateBase
             if ( 0 != id ) {
                 final String bonusStr = getString( id );
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             showToast( bonusStr );
                         }
@@ -1696,6 +1719,7 @@ public class BoardDelegate extends DelegateBase
             }
             final String text = expl;
             post( new Runnable() {
+                    @Override
                     public void run() {
                         showToast( text );
                     }
@@ -1706,6 +1730,7 @@ public class BoardDelegate extends DelegateBase
         public void cellSquareHeld( final String words )
         {
             post( new Runnable() {
+                    @Override
                     public void run() {
                         launchLookup( wordsToArray( words ), m_gi.dictLang );
                     }
@@ -1744,19 +1769,25 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
+        private void startTP( final Action action,
+                              final TilePickAlert.TilePickState tps )
+        {
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        show( TilePickAlert.newInstance( action, tps ) );
+                    }
+                } );
+        }
+
         // This is supposed to be called from the jni thread
         @Override
         public void notifyPickTileBlank( int playerNum, int col, int row,
                                          String[] texts )
         {
-            final TilePickAlert.TilePickState tps =
+            TilePickAlert.TilePickState tps =
                 new TilePickAlert.TilePickState( playerNum, texts, col, row );
-            runOnUiThread( new Runnable() {
-                    @Override
-                    public void run() {
-                        show( TilePickAlert.newInstance( Action.BLANK_PICKED, tps ) );
-                    }
-                } );
+            startTP( Action.BLANK_PICKED, tps );
         }
 
         @Override
@@ -1764,15 +1795,10 @@ public class BoardDelegate extends DelegateBase
                                          int playerNum, int nToPick,
                                          String[] texts, int[] counts )
         {
-            final TilePickAlert.TilePickState tps
+            TilePickAlert.TilePickState tps
                 = new TilePickAlert.TilePickState( isInitial, playerNum, nToPick,
                                                    texts, counts );
-            runOnUiThread( new Runnable() {
-                    @Override
-                    public void run() {
-                        show( TilePickAlert.newInstance( Action.TRAY_PICKED, tps ) );
-                    }
-                } );
+            startTP( Action.TRAY_PICKED, tps );
         }
 
         @Override
@@ -1787,6 +1813,7 @@ public class BoardDelegate extends DelegateBase
             if ( 0 <= newTurn ) {
                 m_mySIS.nMissing = 0;
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             makeNotAgainBuilder( R.string.not_again_turnchanged,
                                                  R.string.key_notagain_turnchanged )
@@ -1801,7 +1828,9 @@ public class BoardDelegate extends DelegateBase
         @Override
         public boolean engineProgressCallback()
         {
-            return ! m_jniThread.busy();
+            // return true if engine should keep going
+            JNIThread jnit = m_jniThread;
+            return jnit != null && !jnit.busy();
         }
 
         @Override
@@ -1879,6 +1908,7 @@ public class BoardDelegate extends DelegateBase
                 if ( asToast ) {
                     final int residf = resid;
                     runOnUiThread( new Runnable() {
+                            @Override
                             public void run() {
                                 showToast( residf );
                             }
@@ -2021,6 +2051,7 @@ public class BoardDelegate extends DelegateBase
                               String fromPlayer, final int tsSeconds )
         {
             runOnUiThread( new Runnable() {
+                    @Override
                     public void run() {
                         DBUtils.appendChatHistory( m_activity, m_rowid, msg,
                                                    fromIndx, tsSeconds );
@@ -2543,6 +2574,7 @@ public class BoardDelegate extends DelegateBase
         if ( keepOn ) {
             if ( null == m_screenTimer ) {
                 m_screenTimer = new Runnable() {
+                        @Override
                         public void run() {
                             if ( null != m_view ) {
                                 m_view.setKeepScreenOn( false );

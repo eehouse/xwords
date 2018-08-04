@@ -1,7 +1,7 @@
-/* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
 /*
- * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2018 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -27,8 +27,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+
 import java.util.Iterator;
 
 import org.json.JSONException;
@@ -90,7 +95,7 @@ public class NetLaunchInfo implements Serializable {
         inviteID = GameUtils.formatGameID( Utils.nextRandomInt() );
     }
 
-    public NetLaunchInfo( Context context, String data )
+    private NetLaunchInfo( Context context, String data ) throws JSONException
     {
         init( context, data );
     }
@@ -124,6 +129,31 @@ public class NetLaunchInfo implements Serializable {
             if ( !nli.isValid() ) {
                 nli = null;
             }
+        }
+        return nli;
+    }
+
+    public static NetLaunchInfo makeFrom( Context context, String data )
+    {
+        NetLaunchInfo nli = null;
+        try {
+            nli = new NetLaunchInfo( context, data );
+        } catch ( JSONException jse ) {
+            Log.ex( TAG, jse );
+        }
+        return nli;
+    }
+
+    public static NetLaunchInfo makeFrom( Context context, byte[] data )
+    {
+        NetLaunchInfo nli = null;
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream( data );
+            DataInputStream dis = new DataInputStream( bais );
+            String nliData = dis.readUTF();
+            nli = NetLaunchInfo.makeFrom( context, nliData );
+        } catch ( java.io.IOException ex ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
         }
         return nli;
     }
@@ -422,63 +452,58 @@ public class NetLaunchInfo implements Serializable {
         return result;
     }
 
-    private void init( Context context, String data )
+    private void init( Context context, String data ) throws JSONException
     {
         CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
-        try {
-            JSONObject json = new JSONObject( data );
+        JSONObject json = new JSONObject( data );
 
-            int flags = json.optInt(ADDRS_KEY, -1);
-            boolean hasAddrs = -1 != flags;
-            m_addrs = hasAddrs ?
-                new CommsConnTypeSet( flags ) : new CommsConnTypeSet();
+        int flags = json.optInt(ADDRS_KEY, -1);
+        boolean hasAddrs = -1 != flags;
+        m_addrs = hasAddrs ?
+            new CommsConnTypeSet( flags ) : new CommsConnTypeSet();
 
-            lang = json.optInt( MultiService.LANG, -1 );
-            forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
-            dict = json.optString( MultiService.DICT );
-            gameName = json.optString( MultiService.GAMENAME );
-            nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
-            nPlayersH = json.optInt( MultiService.NPLAYERSH, 1 ); // absent ok
-            gameID = json.optInt( MultiService.GAMEID, 0 );
+        lang = json.optInt( MultiService.LANG, -1 );
+        forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
+        dict = json.optString( MultiService.DICT );
+        gameName = json.optString( MultiService.GAMENAME );
+        nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
+        nPlayersH = json.optInt( MultiService.NPLAYERSH, 1 ); // absent ok
+        gameID = json.optInt( MultiService.GAMEID, 0 );
 
-            // Try each type
-            for ( CommsConnType typ : supported.getTypes() ) {
-                if ( hasAddrs && !m_addrs.contains( typ ) ) {
-                    continue;
-                }
-                boolean doAdd;
-                switch ( typ ) {
-                case COMMS_CONN_BT:
-                    btAddress = json.optString( MultiService.BT_ADDRESS );
-                    btName = json.optString( MultiService.BT_NAME );
-                    doAdd = !hasAddrs && !btAddress.isEmpty();
-                    break;
-                case COMMS_CONN_RELAY:
-                    room = json.getString( MultiService.ROOM );
-                    inviteID = json.optString( MultiService.INVITEID );
-                    doAdd = !hasAddrs && !room.isEmpty();
-                    break;
-                case COMMS_CONN_SMS:
-                    phone = json.optString( PHONE_KEY );
-                    isGSM = json.optBoolean( GSM_KEY, false );
-                    osVers = json.optInt( OSVERS_KEY, 0 );
-                    doAdd = !hasAddrs && !phone.isEmpty();
-                    break;
-                case COMMS_CONN_P2P:
-                    p2pMacAddress = json.optString( P2P_MAC_KEY );
-                    doAdd = !hasAddrs && null != p2pMacAddress;
-                    break;
-                default:
-                    doAdd = false;
-                    Assert.fail();
-                }
-                if ( doAdd ) {
-                    m_addrs.add( typ );
-                }
+        // Try each type
+        for ( CommsConnType typ : supported.getTypes() ) {
+            if ( hasAddrs && !m_addrs.contains( typ ) ) {
+                continue;
             }
-
-        } catch ( JSONException jse ) {
-            Log.ex( TAG, jse );
+            boolean doAdd;
+            switch ( typ ) {
+            case COMMS_CONN_BT:
+                btAddress = json.optString( MultiService.BT_ADDRESS );
+                btName = json.optString( MultiService.BT_NAME );
+                doAdd = !hasAddrs && !btAddress.isEmpty();
+                break;
+            case COMMS_CONN_RELAY:
+                room = json.getString( MultiService.ROOM );
+                inviteID = json.optString( MultiService.INVITEID );
+                doAdd = !hasAddrs && !room.isEmpty();
+                break;
+            case COMMS_CONN_SMS:
+                phone = json.optString( PHONE_KEY );
+                isGSM = json.optBoolean( GSM_KEY, false );
+                osVers = json.optInt( OSVERS_KEY, 0 );
+                doAdd = !hasAddrs && !phone.isEmpty();
+                break;
+            case COMMS_CONN_P2P:
+                p2pMacAddress = json.optString( P2P_MAC_KEY );
+                doAdd = !hasAddrs && null != p2pMacAddress;
+                break;
+            default:
+                doAdd = false;
+                Assert.fail();
+            }
+            if ( doAdd ) {
+                m_addrs.add( typ );
+            }
         }
 
         removeUnsupported( supported );
@@ -587,6 +612,20 @@ public class NetLaunchInfo implements Serializable {
     public String toString()
     {
         return makeLaunchJSON();
+    }
+
+    public byte[] asByteArray()
+    {
+        byte[] result = null;
+        try {
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+            DataOutputStream das = new DataOutputStream( bas );
+            das.writeUTF( makeLaunchJSON() );
+            result = bas.toByteArray();
+        } catch ( java.io.IOException ex ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
+        }
+        return result;
     }
 
     public static void putExtras( Intent intent, int gameID, String btAddr )

@@ -190,6 +190,26 @@ stream_gotU8( XWStreamCtxt* stream, XP_U8* ptr )
 }
 
 XP_Bool
+stream_gotU16( XWStreamCtxt* stream, XP_U16* ptr )
+{
+    XP_Bool success = sizeof(*ptr) <= stream_getSize( stream );
+    if ( success ) {
+        *ptr = stream_getU16( stream );
+    }
+    return success;
+}
+
+XP_Bool
+stream_gotU32( XWStreamCtxt* stream, XP_U32* ptr )
+{
+    XP_Bool success = sizeof(*ptr) <= stream_getSize( stream );
+    if ( success ) {
+        *ptr = stream_getU32( stream );
+    }
+    return success;
+}
+
+XP_Bool
 stream_gotBytes( XWStreamCtxt* stream, void* ptr, XP_U16 len )
 {
     XP_Bool success = len <= stream_getSize( stream );

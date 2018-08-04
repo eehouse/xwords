@@ -760,7 +760,7 @@ public class WiDirService extends XWService {
     {
         Log.d( TAG, "handleGotInvite()" );
         String nliData = intent.getStringExtra( KEY_NLI );
-        NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
+        NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, nliData );
         String returnMac = intent.getStringExtra( KEY_SRC );
 
         if ( !handleInvitation( nli, returnMac, DictFetchOwner.OWNER_P2P ) ) {
@@ -772,6 +772,12 @@ public class WiDirService extends XWService {
     void postNotification( String device, int gameID, long rowid )
     {
         Log.e( TAG, "postNotification() doing nothing" );
+    }
+
+    @Override
+    MultiMsgSink getSink( long rowid )
+    {
+        return m_sink;
     }
 
     private void handleGameGone( Intent intent )

@@ -365,7 +365,7 @@ public class BTService extends XWService {
                     break;
                 case INVITE:
                     String jsonData = intent.getStringExtra( GAMEDATA_KEY );
-                    NetLaunchInfo nli = new NetLaunchInfo( this, jsonData );
+                    NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, jsonData );
                     Log.i( TAG, "onStartCommand: nli: %s", nli.toString() );
                     String btAddr = intent.getStringExtra( ADDR_KEY );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
@@ -545,7 +545,7 @@ public class BTService extends XWService {
             NetLaunchInfo nli;
             if ( BT_PROTO_JSONS == proto ) {
                 String asJson = is.readUTF();
-                nli = new NetLaunchInfo( BTService.this, asJson );
+                nli = NetLaunchInfo.makeFrom( BTService.this, asJson );
             } else {
                 short len = is.readShort();
                 byte[] nliData = new byte[len];
@@ -1106,11 +1106,17 @@ public class BTService extends XWService {
         postEvent( MultiEvent.BT_GAME_CREATED, rowid );
     }
 
+    @Override
+    MultiMsgSink getSink( long rowid )
+    {
+        return m_btMsgSink;
+    }
+
     private BTCmd makeOrNotify( NetLaunchInfo nli, String btName,
                                 String btAddr )
     {
         BTCmd result;
-        if ( handleInvitation( nli, btName, DictFetchOwner.OWNER_BT ) ) {
+        if ( handleInvitation( nli, btName, DictFetchOwner.OWNER_BT ) ) { // here
             result = BTCmd.INVITE_ACCPT;
         } else {
             result = BTCmd.INVITE_DUP_INVITE; // dupe of rematch

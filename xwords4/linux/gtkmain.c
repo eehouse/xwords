@@ -746,26 +746,29 @@ gtkNoticeRcvd( void* closure )
 }
 
 static void
-smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName), 
-                   XP_U32 gameID, XP_U16 dictLang, const XP_UCHAR* dictName,
-                   XP_U16 nPlayers, XP_U16 nHere, XP_U16 forceChannel,
+/* smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName),  */
+/*                    XP_U32 gameID, XP_U16 dictLang, const XP_UCHAR* dictName, */
+/*                    XP_U16 nPlayers, XP_U16 nHere, XP_U16 forceChannel, */
+/*                    const CommsAddrRec* returnAddr ) */
+smsInviteReceived( void* closure, const NetLaunchInfo* nli,
                    const CommsAddrRec* returnAddr )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
     XP_LOGF( "%s(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, "
-             "nHere=%d, forceChannel=%d)", __func__, gameName, gameID, dictName,
-             nPlayers, nHere, forceChannel );
+             "nHere=%d, forceChannel=%d)", __func__, nli->gameName,
+             nli->gameID, nli->dict, nli->nPlayersT,
+             nli->nPlayersH, nli->forceChannel );
 
     CurGameInfo gi = {0};
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
 
-    gi_setNPlayers( &gi, nPlayers, nHere );
-    gi.gameID = gameID;
-    gi.dictLang = dictLang;
-    gi.forceChannel = forceChannel;
+    gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH );
+    gi.gameID = nli->gameID;
+    gi.dictLang = nli->lang;
+    gi.forceChannel = nli->forceChannel;
     gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
-    replaceStringIfDifferent( params->mpool, &gi.dictName, dictName );
+    replaceStringIfDifferent( params->mpool, &gi.dictName, nli->dict );
 
     GtkGameGlobals* globals = malloc( sizeof(*globals) );
     params->needsNewGame = XP_FALSE;
