@@ -453,7 +453,7 @@ public class DBUtils {
         public long m_rowid;
         private ArrayList<InviteMeans> m_means;
         private ArrayList<String> m_targets;
-        private ArrayList<Timestamp> m_timestamps;
+        private ArrayList<Date> m_timestamps;
         private int m_cachedCount = 0;
 
         @Override
@@ -476,10 +476,10 @@ public class DBUtils {
             m_rowid = rowID;
             m_means = new ArrayList<InviteMeans>();
             m_targets = new ArrayList<String>();
-            m_timestamps = new ArrayList<Timestamp>();
+            m_timestamps = new ArrayList<Date>();
         }
 
-        private void addEntry( InviteMeans means, String target, Timestamp ts )
+        private void addEntry( InviteMeans means, String target, Date ts )
         {
             m_means.add( means );
             m_targets.add( target );
@@ -586,7 +586,10 @@ public class DBUtils {
     {
         SentInvitesInfo result = new SentInvitesInfo( rowid );
 
-        String[] columns = { DBHelper.MEANS, DBHelper.TIMESTAMP, DBHelper.TARGET };
+        String[] columns = { DBHelper.MEANS, DBHelper.TARGET,
+                             " (strftime('%s', " + DBHelper.TIMESTAMP
+                             + ") * 1000) AS " + DBHelper.TIMESTAMP,
+        };
         String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
         String orderBy = DBHelper.TIMESTAMP + " DESC";
 
@@ -600,7 +603,7 @@ public class DBUtils {
 
                 while ( cursor.moveToNext() ) {
                     InviteMeans means = InviteMeans.values()[cursor.getInt( indxMns )];
-                    Timestamp ts = Timestamp.valueOf(cursor.getString(indxTS));
+                    Date ts = new Date(cursor.getLong(indxTS));
                     String target = cursor.getString( indxTrgt );
                     result.addEntry( means, target, ts );
                 }
