@@ -397,8 +397,7 @@ des parties à %1$d joueurs en %2$s.</string>
     <!-- title of popup used to select how "smart" (how capable) the
     robot player will be. -->
     <!--<string name="robot_spinner_prompt">How smart is the robot player?</string>-->
-    <string name="robot_spinner_prompt">Quel est le degré d\'intelligence du
-joueur robot ?</string>
+    <string name="robot_spinner_prompt">Quel devrait être le degré d\'intelligence du joueur robot ?</string>
 
     <!-- Three possible choices presented in the popup above -->
     <!--<string name="robot_smart">Smart robot</string>-->
@@ -880,11 +879,11 @@ restants]</string>
     <!--<string name="strd_remains_expl_fmt">%1$d jetons restants dans le sac et
 tous les chevalets :\n</string>-->
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">%d jeton restant dans le sac et tous les
-        chevalets :\n</item>
-        <item quantity="other">%d jetons restants dans le sac et tous
-        les chevalets :\n</item>
-    </plurals>
+	<item quantity="one">Un jeton restant dans les chevalets cachés :
+\n</item>
+	<item quantity="other">%d jetons restants dans le sac et les chevalets cachés :
+\n</item>
+</plurals>
 
     <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
@@ -2082,7 +2081,7 @@ rév. %2$s, compilé le %3$s.</string>
     <!--<string name="about_copyright">Copyright (C) 1998-2015 by Eric
         House. This free/open source software is released under the GNU Public
         License.</string>-->
-    <string name="about_copyright">Copyright (C) 1998-2016 par Eric House. Ce logiciel libre/open source est sous la Licence Publique GNU.</string>
+    <string name="about_copyright">Copyright (C) 1998-2018 par Eric House. Ce logiciel libre/open source est sous la Licence Publique GNU.</string>
 
     <!-- Another paragraph in the about dialog -->
     <!--<string name="about_web">For a manual or sourcecode see:
@@ -3389,8 +3388,8 @@ pour la langue</string>
   <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
 
   <plurals name="resent_msgs_fmt">
-	<item quantity="one">Un coup envoyé</item>
-	<item quantity="other">%1$s coups envoyés</item>
+	<item quantity="one">Un coup renvoyé</item>
+	<item quantity="other">%1$s coups renvoyés</item>
 </plurals>
 
   <string name="invite_choice_clip">Je choisirai</string>
@@ -3599,5 +3598,11 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
   <string name="phone_lookup_rationale_others">Sans cette permission, la revanche continuera mais créera une partie qui ne peut pas être jouée par SMS.</string>
 
   <string name="move_dict_rationale">Enregistrer une liste de mots dans l\'espace de Téléchargements nécessite la permission.</string>
+
+  <string name="relay_via_http_first">Utiliser les API web en premier</string>
+  <string name="enable_smsproto_title">Utiliser le code SMS expérimental/nouveau</string>
+  <string name="enable_smsproto_summary">(Nécessite que l\'adversaire l\'utilise aussi)</string>
+
+  <string name="expl_relay_url">URL pour l\'API de relai web</string>
 
   </resources>
