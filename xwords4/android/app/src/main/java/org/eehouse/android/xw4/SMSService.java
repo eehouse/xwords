@@ -77,7 +77,7 @@ public class SMSService extends XWService {
     private static final String BUFFER = "BUFFER";
     private static final String BINBUFFER = "BINBUFFER";
     private static final String PHONE = "PHONE";
-    private static final String GAMEDATA_STR = "GD";
+    private static final String GAMEDATA_BA = "GD";
 
     private static final String PHONE_RECS_KEY =
         SMSService.class.getName() + "_PHONES";
@@ -193,9 +193,9 @@ public class SMSService extends XWService {
     {
         Intent intent = getIntentTo( context, SMSAction.INVITE );
         intent.putExtra( PHONE, phone );
-        String asString = nli.toString();
-        Log.w( TAG, "inviteRemote(%s, '%s')", phone, asString );
-        intent.putExtra( GAMEDATA_STR, asString );
+        Log.w( TAG, "inviteRemote(%s, '%s')", phone, nli );
+        byte[] data = nli.asByteArray();
+        intent.putExtra( GAMEDATA_BA, data );
         context.startService( intent );
     }
 
@@ -337,7 +337,8 @@ public class SMSService extends XWService {
                     break;
                 case INVITE:
                     phone = intent.getStringExtra( PHONE );
-                    inviteRemote( phone, intent.getStringExtra( GAMEDATA_STR ) );
+                    buffer = intent.getByteArrayExtra( GAMEDATA_BA );
+                    inviteRemote( phone, buffer );
                     break;
                 case ADDED_MISSING:
                     NetLaunchInfo nli
@@ -373,14 +374,9 @@ public class SMSService extends XWService {
         return result;
     } // onStartCommand
 
-    private void inviteRemote( String phone, String nliData )
+    private void inviteRemote( String phone, byte[] asBytes )
     {
-        try {
-            byte[] asBytes = nliData.getBytes( "UTF-8" );
-            resendFor( phone, SMS_CMD.INVITE, 0, asBytes, true );
-        } catch ( java.io.UnsupportedEncodingException uee ) {
-            Log.ex( TAG, uee );
-        }
+        resendFor( phone, SMS_CMD.INVITE, 0, asBytes, true );
     }
 
     private void ackInvite( String phone, int gameID )
@@ -459,8 +455,7 @@ public class SMSService extends XWService {
         Log.i( TAG, "receive(cmd=%s)", msg.cmd );
         switch( msg.cmd ) {
         case INVITE:
-            NetLaunchInfo nli = new NetLaunchInfo( this, new String(msg.data) );
-            makeForInvite( phone, nli );
+            makeForInvite( phone, NetLaunchInfo.makeFrom( this, msg.data ) );
             break;
         case DATA:
             if ( feedMessage( msg.gameID, msg.data, new CommsAddrRec( phone ) ) ) {
@@ -482,14 +477,15 @@ public class SMSService extends XWService {
 
     private void receiveBuffer( byte[] buffer, String senderPhone )
     {
-        SMSProtoMsg[] msgs = XwJNI.smsproto_prepInbound( buffer, senderPhone );
+        SMSProtoMsg[] msgs = XwJNI.smsproto_prepInbound( buffer, senderPhone,
+                                                         getNBSPort() );
         if ( null != msgs ) {
             for ( SMSProtoMsg msg : msgs ) {
                 receive( msg, senderPhone );
             }
             postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
-            Log.w( TAG, "receiveBuffer(): bogus or incomplete message from phone %s",
+            Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
                    senderPhone );
         }
     }
@@ -505,7 +501,8 @@ public class SMSService extends XWService {
 
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
-        if ( handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS ) ) {
+        if ( nli != null ) {
+            handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
             ackInvite( phone, nli.gameID() );
         }
     }

@@ -115,7 +115,7 @@ public class BoardDelegate extends DelegateBase
     private BoardUtilCtxt m_utils;
     private boolean m_gameOver = false;
 
-    private JNIThread m_jniThread;
+    private volatile JNIThread m_jniThread;
     private JNIThread m_jniThreadRef;
     private JNIThread.GameStateInfo m_gsi;
 
@@ -1177,6 +1177,16 @@ public class BoardDelegate extends DelegateBase
             finish();
             break;
 
+        case BLANK_PICKED:
+        case TRAY_PICKED:
+            // If the user cancels the tile picker the common code doesn't
+            // know, and won't put it up again as long as this game remains
+            // loaded. There might be a way to fix that, but the safest thing
+            // to do for now is to close. User will have to begin the process
+            // of committing turn again on re-launching the game.
+            finish();
+            break;
+
         default:
             handled = false;
         }
@@ -1759,19 +1769,25 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
+        private void startTP( final Action action,
+                              final TilePickAlert.TilePickState tps )
+        {
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        show( TilePickAlert.newInstance( action, tps ) );
+                    }
+                } );
+        }
+
         // This is supposed to be called from the jni thread
         @Override
         public void notifyPickTileBlank( int playerNum, int col, int row,
                                          String[] texts )
         {
-            final TilePickAlert.TilePickState tps =
+            TilePickAlert.TilePickState tps =
                 new TilePickAlert.TilePickState( playerNum, texts, col, row );
-            runOnUiThread( new Runnable() {
-                    @Override
-                    public void run() {
-                        show( TilePickAlert.newInstance( Action.BLANK_PICKED, tps ) );
-                    }
-                } );
+            startTP( Action.BLANK_PICKED, tps );
         }
 
         @Override
@@ -1779,15 +1795,10 @@ public class BoardDelegate extends DelegateBase
                                          int playerNum, int nToPick,
                                          String[] texts, int[] counts )
         {
-            final TilePickAlert.TilePickState tps
+            TilePickAlert.TilePickState tps
                 = new TilePickAlert.TilePickState( isInitial, playerNum, nToPick,
                                                    texts, counts );
-            runOnUiThread( new Runnable() {
-                    @Override
-                    public void run() {
-                        show( TilePickAlert.newInstance( Action.TRAY_PICKED, tps ) );
-                    }
-                } );
+            startTP( Action.TRAY_PICKED, tps );
         }
 
         @Override
@@ -1817,7 +1828,9 @@ public class BoardDelegate extends DelegateBase
         @Override
         public boolean engineProgressCallback()
         {
-            return ! m_jniThread.busy();
+            // return true if engine should keep going
+            JNIThread jnit = m_jniThread;
+            return jnit != null && !jnit.busy();
         }
 
         @Override

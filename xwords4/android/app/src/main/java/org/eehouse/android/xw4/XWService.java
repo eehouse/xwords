@@ -89,6 +89,7 @@ abstract class XWService extends Service {
 
     abstract void postNotification( String device, int gameID, long rowid );
 
+    // Return true if able to start game only
     protected boolean handleInvitation( NetLaunchInfo nli, String device,
                                         DictFetchOwner dfo )
     {
@@ -110,6 +111,7 @@ abstract class XWService extends Service {
                     }
 
                     postNotification( device, nli.gameID(), rowid );
+                    success = true;
                 } else {
                     Intent intent = MultiService
                         .makeMissingDictIntent( this, nli, dfo );
@@ -118,6 +120,7 @@ abstract class XWService extends Service {
                 }
             }
         }
+        Log.d( TAG, "handleInvitation() => %b", success );
         return success;
     }
 

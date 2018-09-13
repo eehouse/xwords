@@ -144,6 +144,18 @@ public class TilePickAlert extends XWDialogFragment
         }
     }
 
+    @Override
+    public void onCancel( DialogInterface dialog )
+    {
+        super.onCancel( dialog );
+
+        Activity activity = getActivity();
+        if ( activity instanceof DlgClickNotify ) {
+            DlgClickNotify notify = (DlgClickNotify)activity;
+            notify.onDismissed( m_action );
+        }
+    }
+
     private void onDone()
     {
         Activity activity = getActivity();

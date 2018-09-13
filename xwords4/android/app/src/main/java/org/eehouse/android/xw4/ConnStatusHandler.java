@@ -126,8 +126,6 @@ public class ConnStatusHandler {
 
     private ConnStatusHandler() {}
 
-    private static HashMap<CommsConnType,SuccessRecord[]> s_records =
-        new HashMap<CommsConnType,SuccessRecord[]>();
     private static boolean s_needsSave = false;
 
     public static void setRect( int left, int top, int right, int bottom )
@@ -184,7 +182,7 @@ public class ConnStatusHandler {
                                               typ.longName( context ), did ) );
 
                     // For sends we list failures too.
-                    SuccessRecord record = recordFor( typ, false );
+                    SuccessRecord record = recordFor( context, typ, false );
                     tmp = LocUtils.getString( context, record.successNewer?
                                               R.string.connstat_succ :
                                               R.string.connstat_unsucc );
@@ -214,7 +212,7 @@ public class ConnStatusHandler {
                     }
                     sb.append( "\n" );
 
-                    record = recordFor( typ, true );
+                    record = recordFor( context, typ, true );
                     if ( record.haveSuccess() ) {
                         sb.append( LocUtils.getString( context,
                                                        R.string.connstat_lastreceipt_fmt,
@@ -264,7 +262,7 @@ public class ConnStatusHandler {
         }
 
         synchronized( ConnStatusHandler.class ) {
-            SuccessRecord record = recordFor( connType, isIn );
+            SuccessRecord record = recordFor( context, connType, isIn );
             record.update( success );
         }
         invalidateParent();
@@ -306,14 +304,14 @@ public class ConnStatusHandler {
 
                 // Do the background coloring and arrow. Top half first
                 scratchR.bottom -= (2 * quarterHeight);
-                fillHalf( canvas, scratchR, connTypes, enabled, false );
+                fillHalf( context, canvas, scratchR, connTypes, enabled, false );
                 scratchR.bottom -= quarterHeight;
                 drawArrow( canvas, res, scratchR, false );
 
                 // bottom half and arrow
                 scratchR.top = s_rect.top + (2 * quarterHeight);
                 scratchR.bottom = s_rect.bottom;
-                fillHalf( canvas, scratchR, connTypes, enabled, true );
+                fillHalf( context, canvas, scratchR, connTypes, enabled, true );
                 scratchR.top += quarterHeight;
                 drawArrow( canvas, res, scratchR, true );
 
@@ -332,11 +330,11 @@ public class ConnStatusHandler {
         }
     }
 
-    private static void fillHalf( Canvas canvas, Rect rect,
+    private static void fillHalf( Context context, Canvas canvas, Rect rect,
                                   CommsConnTypeSet connTypes, boolean enabled,
                                   boolean isIn )
     {
-        enabled = enabled && null != newestSuccess( connTypes, isIn );
+        enabled = enabled && null != newestSuccess( context, connTypes, isIn );
         s_fillPaint.setColor( enabled ? XWApp.GREEN : XWApp.RED );
         canvas.drawRect( rect, s_fillPaint );
     }
@@ -359,19 +357,23 @@ public class ConnStatusHandler {
     // This gets rid of lint warning, but I don't like it as it
     // effects the whole method.
     // @SuppressWarnings("unchecked")
-    public static void loadState( Context context )
+    private static HashMap<CommsConnType,SuccessRecord[]> s_records;
+    private static HashMap<CommsConnType,SuccessRecord[]> getRecords( Context context )
     {
         synchronized( ConnStatusHandler.class ) {
-            s_records = null;
-            String as64 = XWPrefs.getPrefsString( context,
-                                                  R.string.key_connstat_data );
-            if ( null != as64 && 0 < as64.length() ) {
-                s_records = (HashMap<CommsConnType,SuccessRecord[]>)Utils.string64ToSerializable(as64);
-            }
-            if ( null == s_records ) {
-                s_records = new HashMap<CommsConnType,SuccessRecord[]>();
+            if ( s_records == null ) {
+                String as64 = XWPrefs.getPrefsString( context,
+                                                      R.string.key_connstat_data );
+                if ( null != as64 && 0 < as64.length() ) {
+                    s_records = (HashMap<CommsConnType,SuccessRecord[]>)Utils.
+                        string64ToSerializable(as64);
+                }
+                if ( null == s_records ) {
+                    s_records = new HashMap<CommsConnType,SuccessRecord[]>();
+                }
             }
         }
+        return s_records;
     }
 
     private static void saveState( final Context context,
@@ -440,7 +442,8 @@ public class ConnStatusHandler {
         icon.draw( canvas );
     }
 
-    private static SuccessRecord newestSuccess( CommsConnTypeSet connTypes,
+    private static SuccessRecord newestSuccess( Context context,
+                                                CommsConnTypeSet connTypes,
                                                 boolean isIn )
     {
         SuccessRecord result = null;
@@ -448,7 +451,7 @@ public class ConnStatusHandler {
             Iterator<CommsConnType> iter = connTypes.iterator();
             while ( iter.hasNext() ) {
                 CommsConnType connType = iter.next();
-                SuccessRecord record = recordFor( connType, isIn );
+                SuccessRecord record = recordFor( context, connType, isIn );
                 if ( record.successNewer ) {
                     if ( null == result || result.lastSuccess < record.lastSuccess ) {
                         result = record;
@@ -459,14 +462,16 @@ public class ConnStatusHandler {
         return result;
     }
 
-    private static SuccessRecord recordFor( CommsConnType connType, boolean isIn )
+    private static SuccessRecord recordFor( Context context,
+                                            CommsConnType connType,
+                                            boolean isIn )
     {
-        SuccessRecord[] records = s_records.get( connType );
+        SuccessRecord[] records = getRecords( context ).get( connType );
         if ( null == records ) {
             records = new SuccessRecord[] { new SuccessRecord(),
                                             new SuccessRecord(),
             };
-            s_records.put( connType, records );
+            getRecords( context ).put( connType, records );
         }
         return records[isIn?0:1];
     }
@@ -474,7 +479,7 @@ public class ConnStatusHandler {
     private static void doSave( Context context )
     {
         synchronized( ConnStatusHandler.class ) {
-            String as64 = Utils.serializableToString64( s_records );
+            String as64 = Utils.serializableToString64( getRecords( context ) );
             XWPrefs.setPrefsString( context, R.string.key_connstat_data,
                                     as64 );
             s_needsSave = false;

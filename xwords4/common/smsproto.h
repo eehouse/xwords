@@ -98,7 +98,7 @@ SMSMsgArray* smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd,
 /* When a message is received, pass it in for reassambly. Non-null return
    means one or more messages is ready for consumption. */
 SMSMsgArray* smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
-                                   const XP_U8* data, XP_U16 len );
+                                   XP_U16 wantPort, const XP_U8* data, XP_U16 len );
 
 void smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr );
 

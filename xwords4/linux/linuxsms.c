@@ -233,7 +233,7 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
     LinSMSData* storage = getStorage( params );
     const XP_UCHAR* fromPhone = addr->u.sms.phone;
     SMSMsgArray* arr = smsproto_prepInbound( storage->protoState, fromPhone,
-                                             buf, len );
+                                             storage->myPort, buf, len );
     if ( NULL != arr ) {
         XP_ASSERT( arr->format == FORMAT_LOC );
         for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {

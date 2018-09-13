@@ -2260,7 +2260,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String data = NFCUtils.getFromIntent( intent );
         if ( null != data ) {
-            NetLaunchInfo nli = new NetLaunchInfo( m_activity, data );
+            NetLaunchInfo nli = NetLaunchInfo.makeFrom( m_activity, data );
             if ( nli.isValid() ) {
                 startNewNetGame( nli );
             }
