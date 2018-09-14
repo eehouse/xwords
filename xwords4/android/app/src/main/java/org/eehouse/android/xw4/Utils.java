@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
@@ -38,6 +39,7 @@ import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
@@ -80,6 +82,8 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
     public static final int TURN_COLOR = 0x7F00FF00;
+
+    private static final String CHANNEL_ID = BuildConfig.APPLICATION_ID + "_channel_id";
 
     private static final String DB_PATH = "XW_GAMES";
     private static final String HIDDEN_PREFS = "xwprefs_hidden";
@@ -236,6 +240,8 @@ public class Utils {
                                          String title, String body,
                                          int id )
     {
+        makeNotificationChannel( context );
+
         /* nextRandomInt: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
            one way to avoid getting the same PendingIntent for similar
@@ -254,9 +260,10 @@ public class Utils {
             defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        Notification notification = new NotificationCompat.Builder( context )
+        Notification notification = new NotificationCompat.Builder( context, CHANNEL_ID )
             .setContentIntent( pi )
             .setSmallIcon( R.drawable.notify )
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             //.setTicker(body)
             //.setWhen(time)
             .setAutoCancel( true )
@@ -611,4 +618,25 @@ public class Utils {
         }
     }
 
+    private static boolean sChannelMade = false;
+    private static void makeNotificationChannel( Context context )
+    {
+        if ( !sChannelMade ) {
+            sChannelMade = true;
+            if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
+                NotificationManager notMgr = (NotificationManager)
+                    context.getSystemService( Context.NOTIFICATION_SERVICE );
+
+                String channelDescription = "XWORDS Default Channel";
+                NotificationChannel channel = notMgr.getNotificationChannel( CHANNEL_ID );
+                if ( channel == null ) {
+                    channel = new NotificationChannel( CHANNEL_ID, channelDescription,
+                                                       NotificationManager.IMPORTANCE_LOW );
+                    // channel.setLightColor(Color.GREEN);
+                    channel.enableVibration( true );
+                    notMgr.createNotificationChannel( channel );
+                }
+            }
+        }
+    }
 }
