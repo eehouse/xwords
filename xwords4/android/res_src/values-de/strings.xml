@@ -1102,8 +1102,8 @@
   <string name="show_gcm_title">GCM-Empfang anzeigen</string>
 
   <plurals name="resent_msgs_fmt">
-	<item quantity="one">Ein Zug gesendet</item>
-	<item quantity="other">%1$s Züge gesendet</item>
+	<item quantity="one">Ein Zug neu gesendet</item>
+	<item quantity="other">%1$s Züge neu gesendet</item>
 </plurals>
 
   <string name="invite_copied">Einladung bereit zum Einfügen</string>
@@ -1293,4 +1293,7 @@
     <string name="slmenu_clear_sel">Ausgewählte löschen</string>
     <string name="slmenu_select_all">Alle auswählen</string>
     <string name="slmenu_deselect_all">Auswahl aufheben</string>
-    </resources>
+    <string name="enable_smsproto_title">Neuen/experimentellen SMS-Code benutzen</string>
+  <string name="enable_smsproto_summary">(Muss auch vom Gegner benutzt werden)</string>
+
+  </resources>
