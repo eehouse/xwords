@@ -227,7 +227,7 @@ public class BTService extends XWService {
     public static void startService( Context context )
     {
         if ( XWApp.BTSUPPORTED ) {
-            context.startService( new Intent( context, BTService.class ) );
+            startService( context, new Intent( context, BTService.class ) );
         }
     }
 
@@ -235,20 +235,20 @@ public class BTService extends XWService {
     {
         Intent intent = getIntentTo( context, BTAction.RADIO );
         intent.putExtra( RADIO_KEY, cameOn );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void clearDevices( Context context, String[] btAddrs )
     {
         Intent intent = getIntentTo( context, BTAction.CLEAR );
         intent.putExtra( CLEAR_KEY, btAddrs );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void scan( Context context )
     {
         Intent intent = getIntentTo( context, BTAction.SCAN );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void pingHost( Context context, String hostAddr, int gameID )
@@ -257,7 +257,7 @@ public class BTService extends XWService {
         Intent intent = getIntentTo( context, BTAction.PINGHOST );
         intent.putExtra( ADDR_KEY, hostAddr );
         intent.putExtra( GAMEID_KEY, gameID );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void inviteRemote( Context context, String btAddr,
@@ -269,7 +269,7 @@ public class BTService extends XWService {
         intent.putExtra( GAMEDATA_KEY, nliData );
         intent.putExtra( ADDR_KEY, btAddr );
 
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void gotGameViaNFC( Context context, NetLaunchInfo bli )
@@ -282,7 +282,7 @@ public class BTService extends XWService {
         intent.putExtra( BT_NAME_KEY, bli.btName );
         intent.putExtra( BT_ADDRESS_KEY, bli.btAddress );
 
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static int enqueueFor( Context context, byte[] buf,
@@ -296,7 +296,7 @@ public class BTService extends XWService {
             intent.putExtra( MSG_KEY, buf );
             intent.putExtra( ADDR_KEY, btAddr );
             intent.putExtra( GAMEID_KEY, gameID );
-            context.startService( intent );
+            startService( context, intent );
             nSent = buf.length;
         }
 
@@ -312,6 +312,11 @@ public class BTService extends XWService {
         Intent intent = getIntentTo( context, BTAction.REMOVE );
         intent.putExtra( GAMEID_KEY, gameID );
         intent.putExtra( ADDR_KEY, btAddr );
+        startService( context, intent );
+    }
+
+    private static void startService( Context context, Intent intent )
+    {
         context.startService( intent );
     }
 
