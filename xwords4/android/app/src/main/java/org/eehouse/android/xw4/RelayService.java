@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
+import android.support.v4.app.JobIntentService;
 import android.text.TextUtils;
 
 import junit.framework.Assert;
@@ -192,13 +193,25 @@ public class RelayService extends XWService
     {
         Log.i( TAG, "startService()" );
         Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
-        context.startService( intent );
+        startService( context, intent );
+    }
+
+    private static void startService( Context context, Intent intent )
+    {
+        Log.d( TAG, "startService(%s)", intent );
+
+        if ( false ) {
+            // requires asking for Manifest.permission.FOREGROUND_SERVICE
+            context.startForegroundService( intent );
+        } else {
+            JobIntentService.enqueueWork( context, RelayService.class, 1112, intent );
+        }
     }
 
     private static void stopService( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.STOP );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void inviteRemote( Context context, int destDevID,
@@ -206,7 +219,7 @@ public class RelayService extends XWService
     {
         int myDevID = DevID.getRelayDevIDInt( context );
         if ( 0 != myDevID ) {
-            context.startService( getIntentTo( context, MsgCmds.INVITE )
+            startService( context, getIntentTo( context, MsgCmds.INVITE )
                                   .putExtra( DEV_ID_SRC, myDevID )
                                   .putExtra( DEV_ID_DEST, destDevID )
                                   .putExtra( RELAY_ID, relayID )
@@ -217,13 +230,13 @@ public class RelayService extends XWService
     public static void reset( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.RESET );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void timerFired( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.TIMER_FIRED );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static int sendPacket( Context context, long rowid, byte[] msg )
@@ -234,7 +247,7 @@ public class RelayService extends XWService
             Intent intent = getIntentTo( context, MsgCmds.SEND )
                 .putExtra( ROWID, rowid )
                 .putExtra( BINBUFFER, msg );
-            context.startService( intent );
+            startService( context, intent );
             result = msg.length;
         } else {
             Log.w( TAG, "sendPacket: network down" );
@@ -251,7 +264,7 @@ public class RelayService extends XWService
                 .putExtra( ROWID, rowid )
                 .putExtra( RELAY_ID, relayID )
                 .putExtra( BINBUFFER, msg );
-            context.startService( intent );
+            startService( context, intent );
             result = msg.length;
         }
         return result;
@@ -287,7 +300,7 @@ public class RelayService extends XWService
             Intent intent = getIntentTo( context, MsgCmds.RECEIVE )
                 .putExtra( ROWID, rowid )
                 .putExtra( BINBUFFER, msg );
-            context.startService( intent );
+            startService( context, intent );
         } else {
             Log.w( TAG, "postData(): Dropping message for rowid %d:"
                    + " not on device", rowid );
@@ -305,14 +318,14 @@ public class RelayService extends XWService
         Intent intent = getIntentTo( context, MsgCmds.PROCESS_GAME_MSGS )
             .putExtra( MSGS_ARR, msgs64 )
             .putExtra( RELAY_ID, relayId );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void processDevMsgs( Context context, String[] msgs64 )
     {
         Intent intent = getIntentTo( context, MsgCmds.PROCESS_DEV_MSGS )
             .putExtra( MSGS_ARR, msgs64 );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     private static Intent getIntentTo( Context context, MsgCmds cmd )
@@ -356,94 +369,7 @@ public class RelayService extends XWService
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
-        Integer result = null;
-        if ( null != intent ) {
-            MsgCmds cmd;
-            try {
-                cmd = MsgCmds.values()[intent.getIntExtra( CMD_STR, -1 )];
-            } catch (Exception ex) { // OOB most likely
-                cmd = null;
-            }
-            if ( null != cmd ) {
-                // Log.d( TAG, "onStartCommand(): cmd=%s", cmd.toString() );
-                switch( cmd ) {
-                case PROCESS_GAME_MSGS:
-                    String[] relayIDs = new String[1];
-                    relayIDs[0] = intent.getStringExtra( RELAY_ID );
-                    long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
-                    if ( 0 < rowIDs.length ) {
-                        byte[][][] msgs = expandMsgsArray( intent );
-                        process( msgs, rowIDs, relayIDs );
-                    }
-                    break;
-                case PROCESS_DEV_MSGS:
-                    byte[][][] msgss = expandMsgsArray( intent );
-                    for ( byte[][] msgs : msgss ) {
-                        for ( byte[] msg : msgs ) {
-                            gotPacket( msg, true, false );
-                        }
-                    }
-                    break;
-                case UDP_CHANGED:
-                    startThreads();
-                    break;
-                case RESET:
-                    stopThreads();
-                    startThreads();
-                    break;
-                case UPGRADE:
-                    UpdateCheckReceiver.checkVersions( this, false );
-                    break;
-                case GOT_INVITE:
-                    int srcDevID = intent.getIntExtra( INVITE_FROM, 0 );
-                    NetLaunchInfo nli
-                        = NetLaunchInfo.makeFrom( this, intent.getStringExtra(NLI_DATA) );
-                    receiveInvitation( srcDevID, nli );
-                    break;
-                case SEND:
-                case RECEIVE:
-                case SENDNOCONN:
-                    startUDPThreadsIfNot();
-                    long rowid = intent.getLongExtra( ROWID, -1 );
-                    byte[] msg = intent.getByteArrayExtra( BINBUFFER );
-                    if ( MsgCmds.SEND == cmd ) {
-                        sendMessage( rowid, msg );
-                    } else if ( MsgCmds.SENDNOCONN == cmd ) {
-                        String relayID = intent.getStringExtra( RELAY_ID );
-                        sendNoConnMessage( rowid, relayID, msg );
-                    } else {
-                        receiveMessage( this, rowid, null, msg, s_addr );
-                    }
-                    break;
-                case INVITE:
-                    startUDPThreadsIfNot();
-                    srcDevID = intent.getIntExtra( DEV_ID_SRC, 0 );
-                    int destDevID = intent.getIntExtra( DEV_ID_DEST, 0 );
-                    String relayID = intent.getStringExtra( RELAY_ID );
-                    String nliData = intent.getStringExtra( NLI_DATA );
-                    sendInvitation( srcDevID, destDevID, relayID, nliData );
-                    break;
-                case TIMER_FIRED:
-                    if ( !NetStateCache.netAvail( this ) ) {
-                        Log.w( TAG, "not connecting: no network" );
-                    } else if ( startFetchThreadIfNotUDP() ) {
-                        // do nothing
-                    } else if ( registerWithRelayIfNot() ) {
-                        requestMessages();
-                    }
-                    RelayReceiver.setTimer( this );
-                    break;
-                case STOP:
-                    stopThreads();
-                    stopSelf();
-                    break;
-                default:
-                    Assert.fail();
-                }
-
-                result = Service.START_STICKY;
-            }
-        }
+        Integer result = handleCommand( intent );
 
         if ( null == result ) {
             result = Service.START_STICKY_COMPATIBILITY;
@@ -465,10 +391,108 @@ public class RelayService extends XWService
         super.onDestroy();
     }
 
+    @Override
+    protected void onHandleWork( Intent intent )
+    {
+        Log.e( TAG, "onHandleWork(%s)", intent );
+        handleCommand( intent );
+    }
+
     // NetStateCache.StateChangedIf interface
     public void onNetAvail( boolean nowAvailable )
     {
         startService( this ); // bad name: will *stop* threads too
+    }
+
+    private Integer handleCommand( Intent intent )
+    {
+        Integer result = null;
+        MsgCmds cmd;
+        try {
+            cmd = MsgCmds.values()[intent.getIntExtra( CMD_STR, -1 )];
+        } catch (Exception ex) { // OOB most likely
+            cmd = null;
+        }
+        if ( null != cmd ) {
+            // Log.d( TAG, "onStartCommand(): cmd=%s", cmd.toString() );
+            switch( cmd ) {
+            case PROCESS_GAME_MSGS:
+                String[] relayIDs = new String[1];
+                relayIDs[0] = intent.getStringExtra( RELAY_ID );
+                long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
+                if ( 0 < rowIDs.length ) {
+                    byte[][][] msgs = expandMsgsArray( intent );
+                    process( msgs, rowIDs, relayIDs );
+                }
+                break;
+            case PROCESS_DEV_MSGS:
+                byte[][][] msgss = expandMsgsArray( intent );
+                for ( byte[][] msgs : msgss ) {
+                    for ( byte[] msg : msgs ) {
+                        gotPacket( msg, true, false );
+                    }
+                }
+                break;
+            case UDP_CHANGED:
+                startThreads();
+                break;
+            case RESET:
+                stopThreads();
+                startThreads();
+                break;
+            case UPGRADE:
+                UpdateCheckReceiver.checkVersions( this, false );
+                break;
+            case GOT_INVITE:
+                int srcDevID = intent.getIntExtra( INVITE_FROM, 0 );
+                NetLaunchInfo nli
+                    = NetLaunchInfo.makeFrom( this, intent.getStringExtra(NLI_DATA) );
+                receiveInvitation( srcDevID, nli );
+                break;
+            case SEND:
+            case RECEIVE:
+            case SENDNOCONN:
+                startUDPThreadsIfNot();
+                long rowid = intent.getLongExtra( ROWID, -1 );
+                byte[] msg = intent.getByteArrayExtra( BINBUFFER );
+                if ( MsgCmds.SEND == cmd ) {
+                    sendMessage( rowid, msg );
+                } else if ( MsgCmds.SENDNOCONN == cmd ) {
+                    String relayID = intent.getStringExtra( RELAY_ID );
+                    sendNoConnMessage( rowid, relayID, msg );
+                } else {
+                    receiveMessage( this, rowid, null, msg, s_addr );
+                }
+                break;
+            case INVITE:
+                startUDPThreadsIfNot();
+                srcDevID = intent.getIntExtra( DEV_ID_SRC, 0 );
+                int destDevID = intent.getIntExtra( DEV_ID_DEST, 0 );
+                String relayID = intent.getStringExtra( RELAY_ID );
+                String nliData = intent.getStringExtra( NLI_DATA );
+                sendInvitation( srcDevID, destDevID, relayID, nliData );
+                break;
+            case TIMER_FIRED:
+                if ( !NetStateCache.netAvail( this ) ) {
+                    Log.w( TAG, "not connecting: no network" );
+                } else if ( startFetchThreadIfNotUDP() ) {
+                    // do nothing
+                } else if ( registerWithRelayIfNot() ) {
+                    requestMessages();
+                }
+                RelayReceiver.setTimer( this );
+                break;
+            case STOP:
+                stopThreads();
+                stopSelf();
+                break;
+            default:
+                Assert.fail();
+            }
+
+            result = Service.START_STICKY;
+        }
+        return result;
     }
 
     private void setupNotifications( String[] relayIDs, BackMoveResult[] bmrs,

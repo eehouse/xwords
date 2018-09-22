@@ -54,17 +54,21 @@ public class NetStateCache {
 
     public static void register( Context context, StateChangedIf proc )
     {
-        initIfNot( context );
-        synchronized( s_ifs ) {
-            s_ifs.add( proc );
+        if ( Utils.isOnUIThread() ) {
+            initIfNot( context );
+            synchronized( s_ifs ) {
+                s_ifs.add( proc );
+            }
         }
     }
 
     public static void unregister( Context context, StateChangedIf proc )
     {
-        initIfNot( context );
-        synchronized( s_ifs ) {
-            s_ifs.remove( proc );
+        if ( Utils.isOnUIThread() ) {
+            initIfNot( context );
+            synchronized( s_ifs ) {
+                s_ifs.remove( proc );
+            }
         }
     }
 

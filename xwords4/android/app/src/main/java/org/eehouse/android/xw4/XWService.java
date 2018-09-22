@@ -23,7 +23,9 @@ package org.eehouse.android.xw4;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.app.JobIntentService;
 
 import junit.framework.Assert;
 
@@ -37,7 +39,7 @@ import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import java.util.HashSet;
 import java.util.Set;
 
-abstract class XWService extends Service {
+abstract class XWService extends JobIntentService {
     private static final String TAG = XWService.class.getSimpleName();
     public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
 
@@ -46,10 +48,21 @@ abstract class XWService extends Service {
 
     private UtilCtxt m_utilCtxt;
 
+    // @Override
+    // public IBinder onBind( Intent intent )
+    // {
+    //     IBinder result = null;
+    //     if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
+    //         result = super.onBind( intent );
+    //     }
+    //     return result;
+    // }
+
     @Override
-    public IBinder onBind( Intent intent )
+    protected void onHandleWork(Intent intent)
     {
-        return null;
+        Log.e( TAG, "%s.onHandleWork(%s); dropping!!!", getClass().getSimpleName(),
+               intent );
     }
 
     public final static void setListener( MultiService.MultiEventListener li )

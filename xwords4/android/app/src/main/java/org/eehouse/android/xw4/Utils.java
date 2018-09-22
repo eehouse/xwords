@@ -40,6 +40,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Looper;
 import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
@@ -531,6 +532,11 @@ public class Utils {
         boolean result = "com.google.android.feedback".equals( installer )
             || "com.android.vending".equals( installer );
         return result;
+    }
+
+    public static boolean isOnUIThread()
+    {
+        return Looper.getMainLooper().equals(Looper.myLooper());
     }
 
     public static String base64Encode( byte[] in )

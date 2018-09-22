@@ -29,6 +29,7 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.JobIntentService;
 
 import junit.framework.Assert;
 
@@ -228,6 +229,8 @@ public class BTService extends XWService {
     {
         if ( XWApp.BTSUPPORTED ) {
             startService( context, new Intent( context, BTService.class ) );
+            // didn't help
+            // startService( context, new Intent( /*context, BTService.class*/ ) );
         }
     }
 
@@ -317,12 +320,19 @@ public class BTService extends XWService {
 
     private static void startService( Context context, Intent intent )
     {
-        context.startService( intent );
+        Log.d( TAG, "startService(%s)", intent );
+
+        if ( false ) {
+            // requires asking for Manifest.permission.FOREGROUND_SERVICE
+            context.startForegroundService( intent );
+        } else {
+            JobIntentService.enqueueWork( context, BTService.class, 1111, intent );
+        }
     }
 
     private static Intent getIntentTo( Context context, BTAction cmd )
     {
-        Intent intent = new Intent( context, BTService.class );
+        Intent intent = new Intent( /*context, BTService.class*/ );
         intent.putExtra( CMD_KEY, cmd.ordinal() );
         return intent;
     }
@@ -347,6 +357,11 @@ public class BTService extends XWService {
 
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
+    {
+        return handleCommand( intent );
+    }
+
+    private int handleCommand( Intent intent )
     {
         int result;
         if ( XWApp.BTSUPPORTED && null != intent ) {
@@ -433,7 +448,14 @@ public class BTService extends XWService {
             result = Service.START_STICKY_COMPATIBILITY;
         }
         return result;
-    } // onStartCommand()
+    } // handleCommand()
+
+    @Override
+    protected void onHandleWork( Intent intent )
+    {
+        Log.e( TAG, "onHandleWork(%s)", intent );
+        /*(void)*/handleCommand( intent );
+    }
 
     private class BTListenerThread extends Thread {
         private BluetoothServerSocket m_serverSocket;

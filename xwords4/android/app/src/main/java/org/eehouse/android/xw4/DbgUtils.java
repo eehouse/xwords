@@ -25,7 +25,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.text.format.Time;
 
@@ -103,7 +102,7 @@ public class DbgUtils {
 
     public static void assertOnUIThread()
     {
-        Assert.assertTrue( Looper.getMainLooper().equals(Looper.myLooper()) );
+        Assert.assertTrue( Utils.isOnUIThread() );
     }
 
     public static void printStack( String tag, StackTraceElement[] trace )

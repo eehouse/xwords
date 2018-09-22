@@ -46,7 +46,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     private static final float MIN_FONT_DIPS = 10.0f;
     private static final int MULTI_INACTIVE = -1;
-    private static final int VERSION_CODES_N = 24; // until we're building on SDK 24...
 
     private static boolean s_isFirstDraw;
     private static int s_curGameID;
@@ -205,7 +204,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         synchronized( this ) {
             if ( layoutBoardOnce() && m_measuredFromDims ) {
                 Bitmap bitmap = s_bitmap;
-                if ( Build.VERSION.SDK_INT >= VERSION_CODES_N ) {
+                if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ) {
                     bitmap = Bitmap.createBitmap(bitmap);
                 }
                 canvas.drawBitmap( bitmap, 0, 0, new Paint() );
