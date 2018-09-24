@@ -656,4 +656,39 @@
 \n(Tilbakestilling sletter alle trekk og all tilknyttet informasjon.)</item>
 </plurals>
 
+    <string name="players_label_host_fmt">Spillere (%1$d lokale, %2$d eksterne)</string>
+
+    <string name="phonies_spinner_prompt">Hvordan \"ønskeord\" skal behandles (altså dem som ikke finnes i ordlisten)</string>
+
+    <string name="phonies_ignore">Ingorer ønskeord</string>
+    <string name="phonies_warn">Advar hvis ønskeord</string>
+    <string name="phonies_disallow">Ikke tillat ønskeord</string>
+
+    <string name="str_reg_server_sans_remote">Minst én spiller må merkes \"ekstern\" for å starte spill som vert.</string>
+
+    <string name="guest_name">(Ekstern)</string>
+
+    <string name="confirm_save">Dette spillet pågår. Hvis du lagrer disse endringene må det startes på ny. Ønsker du å lagre disse endringene?</string>
+    <string name="force_title">Ekstern[e]</string>
+    <string name="force_expl">I et spill med flere enheter må det være minst én lokal spiller, og én fra en annen enhet. Sjekk eksterne spillere.</string>
+    
+    <string name="forced_consistent">Endret førstespiller.</string>
+
+    <string name="remote_label">Ekstern spiller</string>
+
+    <string name="bonus_l2x_summary">2B</string>
+    <string name="bonus_w2x_summary">2V</string>
+    <string name="bonus_l3x_summary">3B</string>
+    <string name="bonus_w3x_summary">3O</string>
+
+    <plurals name="invite_msg_fmt">
+	<item quantity="one">Dette spiller venter på %1$d ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede.</item>
+	<item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede.</item>
+</plurals>
+    <plurals name="invite_sent_fmt">
+	<item quantity="one">Du har allerede invitert en ekstern spiller til dette spillet. Vi venter på at vedkommende skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
+	<item quantity="other">Du har allerede sendt %1$d unike invitasjoner til dette spillet. Vi venter på %2$d av de inviterte skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
+</plurals>
+    <string name="invited_msg">Dette spillet ble opprettet fra en invitasjon du mottok. Det vil begynne så snart det kan koble til senderen og en annen invitert har ankommet.</string>
+
     </resources>
