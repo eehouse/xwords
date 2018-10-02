@@ -1165,7 +1165,7 @@
     <string name="title_blank_picker">Spielstein für Joker wählen</string>
     <string name="tile_tray_picker">Neue Spielsteine für Ablage wählen</string>
 
-    <string name="not_again_chat">"Dieser Button  öffnet den Bildschirm für Nachrichten zwischen Geräten in dieser Partie. Die Nachrichten werden behalten, bis Sie die Partie löschen, zu der sie gehören."</string>
+    <string name="not_again_chat">Dieser Button öffnet den Bildschirm für Nachrichten zwischen Geräten in dieser Partie. Die Nachrichten werden behalten, bis Sie die Partie löschen, zu der sie gehören.</string>
     <string name="not_again_values">Dieser Button ändert, ob Buchstaben oder deren Punktwerte auf gespielten Spielsteinen auf dem Brett angezeigt werden. Benutzen Sie ihn zur Erinnerung an die Spielsteinwerte.</string>
     <string name="not_again_done">Antippen des „Pkt.“-Zählers am rechten Ende der Ablage ist der einfachste Weg, einen Zug abzuschließen.</string>
 
