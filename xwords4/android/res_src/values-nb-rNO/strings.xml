@@ -543,7 +543,7 @@
 
     <string name="dict_on_server">Trykk for detaljer</string>
     <plurals name="lang_name_fmt">
-	<item quantity="one">%1$s (%2$d ordlister)</item>
+	<item quantity="one">%1$s (%2$d ordliste)</item>
 	<item quantity="other">%1$s (%2$d ordlister)</item>
 </plurals>
 
@@ -682,8 +682,8 @@
     <string name="bonus_w3x_summary">3O</string>
 
     <plurals name="invite_msg_fmt">
-	<item quantity="one">Dette spiller venter på %1$d ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede.</item>
-	<item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede.</item>
+	<item quantity="one">Dette spiller venter på én ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
+	<item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
 </plurals>
     <plurals name="invite_sent_fmt">
 	<item quantity="one">Du har allerede invitert en ekstern spiller til dette spillet. Vi venter på at vedkommende skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
@@ -707,7 +707,7 @@
     <string name="pts">p.</string>
 
     <plurals name="msg_relay_waiting_fmt">
-	<item quantity="one">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på %3$d spillere.</item>
+	<item quantity="one">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på én spiller.</item>
 	<item quantity="other">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på %3$d spillere.</item>
 </plurals>
 
@@ -774,7 +774,7 @@
 
     <string name="prefs_behavior_summary">Instillinger for programoppførsel</string>
 
-    <string name="explain_robot_summary">Viser poengsumssammendrag etter hver robot- eller -tur annensteds fra.</string>
+    <string name="explain_robot_summary">Viser poengsumssammendrag etter hver robot- eller -tur annensteds fra</string>
 
     <string name="skip_confirm_turn">Hopp over bekreftelsestur</string>
     <string name="skip_confirm_turn_summary">IKKE vis poengsum etter hver mennesketur</string>
@@ -1101,5 +1101,202 @@
   <string name="phone_lookup_rationale_others">Uten tilgangen vil omkampen fortsette, men i et spill som ikke kan utspilles via SMS.</string>
 
   <string name="move_dict_rationale">Lagring av ordliste i nedlastingsområdet krever tilgang.</string>
+
+  <string name="title_blank_picker">Velg flis for blank</string>
+    <string name="not_again_chat">Denne knappen åpner skjermen for meldingsforsendelse mellom enheter i dette spillet. Meldinger vil bli behold til du sletter spillet som inneholder dem.</string>
+    <string name="not_again_values">Denne knappen endrer hvorvidt brettet viser bokstaver på plasserte flis, eller deres poengverdier. Bruk det for å minne deg på hva en flis er verdt.</string>
+    <string name="not_again_done">Å trykke på \"p.\"-telleverket som vises på høyresiden av stativet er den enkleste måten å sende inn et trekk.</string>
+
+    <string name="not_again_unlock">Dette spillet er underveis. Noen innstillinger, f.eks. antall spillere, kan ikke endres uten å starte det på ny. Når du forlater denne siden vil du få muligheten til å forkaste endringer for å unngå omstart.</string>
+
+    <string name="not_again_conndfirst">Du har koblet til og startet et spill i et nytt rom. Når de gjenstående enhetene har tatt del i rommet ditt og CrossWords har tildelt dem flis, kan spillet begynne.</string>
+
+    <string name="not_again_conndmid">Du har koblet til og tatt del i et spill på relé-et. Du vil få en merknad når gjenstående enhet[er] har tatt del i ditt rom og spillet kan begynne.</string>
+
+    <string name="not_again_arrow">Flytting av flis til brettet:
+\nDu kan dra flis mellom stativet og brettet, eller du kan trykke på en tom rute for å plassere bordpilen. Stativflis du trykker på vil erstatte pilen (noe som flytter den en rute i den retningen den peker). Trykk på pilen én gang for å endre dens retning; én gang til for å skjule den. En avkryssningsboks i utseendedelen av innstillingene skjuler den permanent.</string>
+
+    <string name="not_again_turnchanged">Spilleren hvis tur det er vises i storskala på poengtavlen.
+\n
+\nHolde en finger på et navn i poengtavlen for å hente detaljene om spillerens nyligste trekk.</string>
+
+    <string name="not_again_newfrom">Opprett ny klart-til-spill runde med alle innstillingene fra denne. Altå behandle dette spillet som en mal.</string>
+
+    <string name="not_again_archive">Arkiver bruker en spesiell gruppe kalt \"Arkiv\" for å lagre fullførte spill du ønsker å beholde. Og, siden sletting av et helt arkiv er enkelt, er akrivering også en flott måte å merke spill for sletting - hvis det er det du foretrekker å gjøre.
+\n
+\n(Sletting av arkivgruppen er trygt fordi den vil bli gjenopprettet igjen når det trengs.)</string>
+
+      <string name="pick_faceup">Plukk flis med bokstavene avdekt</string>
+
+    <plurals name="invite_p2p_desc_fmt">
+	<item quantity="one">Velg navnet på Wi-Fi Direct-enheten du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
+	<item quantity="other">Velg navnet på Wi-Fi Direct-enhetene du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
+</plurals>
+
+    <string name="invite_p2p_desc_extra">Kun spillere som er tilgjengelig vises. Hvis en enhet i nærheten ikke vises, forsikre deg om at Wi-Fi er slått på, og at CrossWords er installert, og at spill via Wi-Fi Direct er påslått.</string>
+
+    <string name="empty_relay_inviter">Listen over enheter er tom. Bruk \"Skann spill\"-knappen for å skanne dine gamle spill for motstandere. Bruk \"+\"knappen for å skrive inn enhets-ID-er direkte.</string>
+    <plurals name="confirm_clear_relay_fmt">
+	<item quantity="one">Er du sikker på at du ønsker å slette valgt relé-ID-opptak?</item>
+	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte relé-ID-opptak?</item>
+</plurals>
+
+    <string name="warn_unlimited">Er du sikker på at dette nummeret er på en konto med ubegrenset SMS? Trykk \"Avbryt\" hvis du ikke er sikker.</string>
+
+    <string name="menu_flip">Flipp brettet</string>
+    <string name="connstat_net_noaddr">Dette nettverksspillet mangler en måte å koble til på, og kan derfor ikke spilles.
+\n
+\n(Det ble antagelig opprettet fra en invitasjon som ikke spesifiserte noen måte å koble til som din enhet støtter, eller så har du nylig fjernet dets siste måte å koble til på.)</string>
+    <string name="confirm_sms_expl">Advarsel: Denne funksjonen er ment for telefoner med ubegrensede tekstplaner. Når du skrur det på vil dusinvis med tekstmeldinger bli sendt (usynlig) for hvert spill. Hvis du ikke har ubegrenset abonnement vil din tilbyder kanskje belaste deg for hver enkelt melding!
+\n
+\nØnsker du å skru på spill via SMS?</string>
+    <string name="warn_bt_disabled">Blåtann er skrudd av på denne enheten. Ingen trekk vil bli sendt via Blåtann.
+\n
+\nDu kan skru på Blåtann nå, eller senere.</string>
+
+    <string name="warn_relay_disabled">Relé-spill er avskrudd på denne enheten. Ingen trekk vil bli sendt eller mottatt via relé-et.</string>
+
+    <plurals name="warn_relay_games_fmt">
+	<item quantity="one">"
+\n
+\n(Du har ett spill som benytter det.)"</item>
+	<item quantity="other">"
+\n
+\n(Du har %1$d spill som benytter det.)"</item>
+</plurals>
+
+    <string name="invite_dict_missing_body_fmt">%1$s har inviter deg til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten, eller avslå invitasjonen?</string>
+    <string name="invite_dict_missing_body_noname_fmt">Du har blitt invitert til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten?</string>
+    <plurals name="groups_confirm_del_fmt">
+	<item quantity="one">Er du sikker på at du ønsker å slette valgt gruppe?</item>
+	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgt[e] gruppe[r]?</item>
+</plurals>
+    <plurals name="groups_confirm_del_games_fmt">
+	<item quantity="one">"
+\n
+\n(Ett spill vil også bli slettet.)"</item>
+	<item quantity="other">"
+\n
+\n(%1$d spill vil også bli slettet.)"</item>
+</plurals>
+
+    <string name="square_tiles">Kvadratiske stativflis</string>
+    <string name="not_again_newselect">Å trykke på et spill vil åpne det.
+\n
+\nDu kan trykke på ikonene til venstre istedenfor, for å velge eller fravelge spill, for så å utføre handlinger på valgte spill, f.eks. for å slette dem, ved bruk av menyen eller \"handlingsfeltet\".</string>
+
+    <string name="not_again_backclears">Tilbake-knappen tømmer et utvalg istedenfor å avslutte. Trykk igjen for å avslutte programmet.</string>
+
+    <string name="dropped_dupe">Invitasjon mottatt, men ignorert: Den har allerede blitt brukt for å opprette et spill.</string>
+    <string name="pct_suffix">" p."</string>
+
+    <plurals name="confirm_studylist_clear_fmt">
+	<item quantity="one">Er du sikker på at du ønsker å slette valgt ord?
+\n
+\n(Denne handlingen kan ikke angres.)</item>
+	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte ord?
+\n
+\n(Denne handlingen kan ikke angres.)</item>
+</plurals>
+    <string name="not_again_studycopy">De valgte ordene vil kopieres inn i systemutklippstavlen. Du kan lime dem inn i ethvert program som støtter innliming av tekst, f.eks. et e-postprogram.</string>
+
+    <string name="loc_fmts_mismatch">Ulovlig oversettelse: En oversatt streng må ha samme formatspesifikatorer (f.eks. %1$s) som original.</string>
+    <string name="not_again_fmt_expl">Denne strenger har spesielle formatspesifikatorer (f.eks. %1$s). Forsikre deg om at oversettelsen har de somme som originalen.
+\n
+\n(Du vil ikke kunne lagre den med mindre det er tilfelle.)</string>
+
+    <string name="update_dicts_fmt">Oppdateringer er tilgjengelig for én eller flere installerte ordlister. Ønsker du å laste ned ny[e] versjon[er] av %1$s nå?</string>
+
+    <string name="not_again_dicts">Denne skjermen lar deg installere nye ordlister og vise dem du allerede har.
+\n
+\nHvilke ordlister du har installert bestemmer:
+\n• Hvilke språk du kan spille med.
+\n• Hvor smart robotspilleren er.
+\n• Hvilke ord som er lovlige.
+\n
+\nSjekk \"Vis nedlastbare\"-boksen på toppen for å se hva som er tilgjengelig.</string>
+
+    <string name="bt_no_devs">Du har ikke noen parrede Blåtannsenheter (eller så er blåtann slått av). Ønsker du å åpne innstillingene i Android for å gjøre det?
+\n
+\n(Det kan hende du trenger å åpne det på enheten du ønsker å tilknytte.)</string>
+	<string name="app_not_found_fmt">Kunne ikke koble til via Blåtann til CrossWords på enheten %1$s. Sjekk om enheten er i Blåtannsrekkeveidde, og at CrossWords er installert på den.</string>
+
+	<string name="not_again_hidenewgamebuttons">De to knappene på bunnen av denne skjermen og de to første elementene i dens handlingsfelt (eller meny), gjør samme ting. Hvis du ønsker det kan du skjule knappene for å gjøre flere spill synlige.
+\n
+\n(Hvis du senere ønsker å vise knappene igjen, gå til utseendedelen av programinnstillingene.)</string>
+
+    <string name="invite_stays">(Dette dialogvinduet vil forbli oppe til alle spillere annensteds fra har koblet til. Du kan lukke spillet hvis du forventer at dette tar sin tid. Spillere annensteds fra vil fremdeles kunne koble til, og du vil få beskjed om når så har skjedd.)</string>
+
+    <string name="nfc_just_tap">For å invitere via NFC, trykk baksiden av denne enheten opp mot den du ønsker å invitere, når spillet er åpent.</string>
+
+    <string name="warn_no_comms">Nettverksspill må ha minst én måte å kommunisere på. Hvis du ikke har noen forvalgt tilkoblingsvalg, vil hvert nye nettverksspill måtte settes opp manuelt.</string>
+
+    <string name="config_no_connvia">Dette spillet har ingen måte å koble til på, og kan ikke lagres. Ønsker du å forkaste dine endringer, eller redigere det for å gi det en måte å koble til på?</string>
+    <string name="rematch_msg">Dette spillet er vertskap for en omkamp, og har sendt en invitasjon. Du vil se denne meldingen til det har blitt godtatt.</string>
+
+    <string name="disable_nag_summary">Ikke send meg en merknad, uansett hvor lenge det har vært min tur</string>
+    <string name="disable_nag_solo_title">Skru av enspillersmerknader</string>
+
+  <string name="confirm_get_locdict_fmt">Din enhet er satt opp for %1$s. Ønsker du å laste ned en ordliste slik at du kan spille CrossWords i %1$s?</string>
+
+  <string name="enable_sms_toself_summary">Hopp over radio når telefonnumrene er de samme</string>
+
+  <string name="radio_name_tablet">Nettbrett/ingen radio</string>
+  <string name="expl_update_url">Nettadresse for oppgraderingssjekk</string>
+  <string name="pref_group_sms_summary">Innstillinger i tilknytning til spill-via-SMS</string>
+  <string name="pref_group_relay_summary">Innstillinger i tilknytning til spill via Internett/relé</string>
+  <string name="pref_group_l10n_summary">Innstillinger i tilknytning til lokalisering inne i programmet</string>
+  <string name="pref_item_update_title">Oppdater mellom utgivelser</string>
+  <string name="pref_item_update_summary">Hent mellombygg</string>
+
+  <string name="no_relay_conn">Dette spillet er satt opp til å bruke relé-et (Internett) for kommunikasjon, men har ikke kunnet koble til.
+\n
+\nPrøv å åpne spillet igjen etter at disse vilkårene har endret seg.</string>
+
+  <string name="drop_relay_warning_fmt">(Dette spillet kan også koble til via %1$s, slik at du kan sette opp spillet uten en relétilkobling.)</string>
+
+  <string name="confirm_drop_relay">Er du sikker på at du vil utelate dette spillets mulighet til å kommunisere via relé-et?</string>
+
+  <string name="wifi_warning">" For eksempel, kan det hende du vil være på et forskjellig Wi-Fi-nettverk."</string>
+
+  <string name="not_again_comms_relay">\"Relé-et\" er en tjener på Internett som sender meldinger mellom enheter som kjører CrossWords. Det fungerer når du har en fungerende internettilknytning, men kan være problematisk på begrensede Wi-Fi-nettverk.</string>
+
+  <string name="not_again_comms_sms">Spill via SMS bruker samme teknologi som \"teksting\". Selv om meldingene er usynlig for deg, vil din tilbyder anse dem som SMS, så du bør unngå denne funksjonen med mindre du har ubegrenset SMS (eller budsjettet). Merk at Android kun støtter denne funksjonen på enheter på en GSM-tilbyder.</string>
+
+  <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
+
+  <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>
+
+  <string name="not_again_rematch_two_only">Omkamp er begrenset til to-personersspill nå, fordi det er vanskeligere med flere enheter, og fordi spill med mer en to spillere er sjeldent. La det komme til kjenne hvis dette er en feilaktig begrensning.</string>
+
+  <string name="ignore_gcm_summary">Imiter livet uten en Google-konto</string>
+
+  <string name="not_again_clip_expl_fmt">Valget \"%1$s\" kopierer en invitasjonsnettadresse til utklippstavlen. Lim det inn i ønsket program og send det til din venn.</string>
+
+  <string name="confirm_clear_chat">Er du sikker på at du ønsker å slette all sludrehistorikk for dette spillet?
+\n
+\n(Denne handlingen kan ikke endres.)</string>
+
+  <string name="not_again_dfltname_fmt">Du bruker forvalgt spillernavn \"%1$s\". Ønsker du å personalisere med ditt eget navn før du oppretter dette spillet?</string>
+
+  <string name="missing_perms">Dette spillet er satt opp for kommunikasjon via SMS, men CrossWords mangler tilgangen. Du kan åpne spillet, men det kan hende du ikke vil kunne sende eller motta trekk.
+\n
+\nDu kan gjenåpne det for å bli spurt om tilgang igjen. Eller du kan fjerne SMS-kommunikasjonsinnstillingen.</string>
+
+  <string name="download_rationale">CrossWords trenger tilgang til midlertidig lagring for å beholde det du er i ferd med å laste ned.</string>
+
+  <string name="sms_invite_rationale">CrossWords trenger tilgang for å sende invitasjon via SMS.</string>
+
+  <string name="dicts_storage_rationale">CrossWords kan lagre og lese ordlister i din enhets nedlastingsområde, men det trenger tilgang til dem der.
+\n
+\nDu kan trygt nekte denne tilgangen hvis du aldri laster ned ordlister, bortsett fra inne i CrossWords, og ikke har lagret noen der tidligere.</string>
+
+  <string name="phone_state_rationale">Noen telefoner kan utveksle SMS- \"data\"-meldinger. CrossWords ønsker å tilby deg dette valget, men trenger å spørre din enhet om seg selv først (for å lære hvorvidt det er en telefon, og om så er tilfelle, hva som skal skrives).
+\n
+\nHvis din enhet ikke kan sende data-SMS (f.eks. fordi det ikke er en telefon), eller du aldri ønsker å spille via SMS (f.eks. fordi du betaler for hver melding), er det trygt å nekte denne tilgangen permanent.</string>
+
+  <string name="phone_lookup_rationale">For omkamp i et spill som bruker SMS trenger CrossWords tilgang til ditt telefonnummer.</string>
+
+  <string name="contacts_rationale">CrossWords ønsker tilgang til dine kontakter for å tilknytte navn til telefonnumrene som sender deg invitasjoner via SMS. Du vil fremdeles kunne motta invitasjoner hvis du ikke innvilger denne tilgangen, men kun avsenderens telefonnummer vil bli vist.</string>
 
   </resources>
