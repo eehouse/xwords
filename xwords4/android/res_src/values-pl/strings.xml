@@ -3,4 +3,11 @@
 
     <string name="missing_player">(jeszcze nie tutaj...)</string>
 
+    <string name="summary_relay_gameover_fmt">Koniec gry w pokoju \"%1$s\"</string>
+
+    <string name="summary_invites_out">Zaproszeni Gracze</string>
+    <string name="gameOver">Koniec gry</string>
+    <string name="button_delete">Usuń</string>
+    <string name="menu_prefs">Ustawienia aplikacji…</string>
+
     </resources>
