@@ -10,4 +10,8 @@
     <string name="button_delete">Usuń</string>
     <string name="menu_prefs">Ustawienia aplikacji…</string>
 
+    <string name="summary_invites_out_fmt">Gracze zaproszeni do pokoju \"%1$s\"</string>
+
+    <string name="board_menu_file_about">O CrossWords…</string>
+
     </resources>
