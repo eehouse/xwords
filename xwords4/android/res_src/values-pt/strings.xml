@@ -397,7 +397,7 @@
          only make sense where there's more than one local human
          player on a device, so they are infrequently used in network
          games as well. -->
-  <string name="password_label">Senha</string>
+  <string name="password_label">Palvra-passe</string>
   <!--
        ############################################################
        # :Screens:
@@ -1207,7 +1207,7 @@
        ############################################################
        -->
   <!-- Text of dialog.  Player name is substituted -->
-  <string name="msg_ask_password_fmt">Senha para \"%1$s\":</string>
+  <string name="msg_ask_password_fmt">Palavra-passe para \"%1$s\":</string>
   <!-- used to create default names of games (when user has not
          named them.) -->
   <string name="game_fmt">Jogo %1$d</string>
