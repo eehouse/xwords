@@ -21,6 +21,8 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass.Device.Major;
@@ -29,7 +31,8 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.JobIntentService;
+import android.os.Build;
+import android.support.v4.app.NotificationCompat;
 
 import junit.framework.Assert;
 
@@ -66,6 +69,8 @@ public class BTService extends XWService {
     private static final int BT_PROTO = BT_PROTO_JSONS; // change in a release or two
 
     private enum BTAction { _NONE,
+                            START_FOREGROUND,
+                            START_BACKGROUND,
                             SCAN,
                             INVITE,
                             SEND,
@@ -92,6 +97,8 @@ public class BTService extends XWService {
     private static final String NHE_KEY = "HER";
     private static final String BT_NAME_KEY = "BT_NAME";
     private static final String BT_ADDRESS_KEY = "BT_ADDRESS";
+
+    private static Boolean sInForeground;
 
     private enum BTCmd {
         BAD_PROTO,
@@ -225,12 +232,33 @@ public class BTService extends XWService {
         return result;
     }
 
+    private static void onAppStateChange( Context context, boolean inForeground )
+    {
+        if ( sInForeground == null || sInForeground != inForeground ) {
+            sInForeground = inForeground;
+
+            Intent intent =
+                getIntentTo( context,
+                             inForeground ? BTAction.START_FOREGROUND
+                             : BTAction.START_BACKGROUND );
+            startService( context, intent );
+        }
+    }
+
+    static void onAppToForeground( Context context )
+    {
+        onAppStateChange( context, true );
+    }
+
+    static void onAppToBackground( Context context )
+    {
+        onAppStateChange( context, false );
+    }
+
     public static void startService( Context context )
     {
         if ( XWApp.BTSUPPORTED ) {
             startService( context, new Intent( context, BTService.class ) );
-            // didn't help
-            // startService( context, new Intent( /*context, BTService.class*/ ) );
         }
     }
 
@@ -322,17 +350,26 @@ public class BTService extends XWService {
     {
         Log.d( TAG, "startService(%s)", intent );
 
-        if ( false ) {
-            // requires asking for Manifest.permission.FOREGROUND_SERVICE
+        if ( ! sInForeground && canRunForegroundService() ) {
             context.startForegroundService( intent );
-        } else {
-            JobIntentService.enqueueWork( context, BTService.class, 1111, intent );
+        } else if ( sInForeground || Build.VERSION.SDK_INT < Build.VERSION_CODES.O ) {
+            context.startService( intent );
         }
+    }
+
+    // We can run a foreground service IIF the OS version is recent enough AND
+    // user hasn't said not to do it.
+    private static boolean canRunForegroundService()
+    {
+        // added in API level 26
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+            // && Prefs.runForegroundServiceEnabled( context, true )
+            ;
     }
 
     private static Intent getIntentTo( Context context, BTAction cmd )
     {
-        Intent intent = new Intent( /*context, BTService.class*/ );
+        Intent intent = new Intent( context, BTService.class );
         intent.putExtra( CMD_KEY, cmd.ordinal() );
         return intent;
     }
@@ -358,7 +395,13 @@ public class BTService extends XWService {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
-        return handleCommand( intent );
+        int result = handleCommand( intent );
+
+        if ( Service.START_STICKY == result && !sInForeground ) {
+            startForeground();
+        }
+
+        return result;
     }
 
     private int handleCommand( Intent intent )
@@ -375,6 +418,12 @@ public class BTService extends XWService {
                 BTAction cmd = BTAction.values()[ordinal];
                 Log.i( TAG, "onStartCommand; cmd=%s", cmd.toString() );
                 switch( cmd ) {
+                case START_FOREGROUND:
+                    stopForeground( true ); // Kill the notification
+                    // FALLTHRU
+                case START_BACKGROUND:
+                    break;
+
                 case CLEAR:
                     String[] btAddrs = intent.getStringArrayExtra( CLEAR_KEY );
                     clearDevs( btAddrs );
@@ -450,11 +499,21 @@ public class BTService extends XWService {
         return result;
     } // handleCommand()
 
-    @Override
-    protected void onHandleWork( Intent intent )
+    private void startForeground()
     {
-        Log.e( TAG, "onHandleWork(%s)", intent );
-        /*(void)*/handleCommand( intent );
+        Intent notifIntent = GamesListDelegate.makeBackgroundIntent( this );
+        PendingIntent pendIntent = PendingIntent
+            .getActivity(this, Utils.nextRandomInt(), notifIntent, PendingIntent.FLAG_ONE_SHOT);
+        Notification notification =
+            new NotificationCompat.Builder(this, Utils.CHANNEL_ID)
+            .setSmallIcon( R.drawable.notify )
+            .setContentTitle( BTService.class.getSimpleName() )
+            .setContentText("listening for bluetooth messages...")
+            .setContentIntent(pendIntent)
+            .build();
+
+        Log.d( TAG, "calling startForeground()" );
+        startForeground( 1337, notification );
     }
 
     private class BTListenerThread extends Thread {

@@ -84,7 +84,7 @@ public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
     public static final int TURN_COLOR = 0x7F00FF00;
 
-    private static final String CHANNEL_ID = BuildConfig.APPLICATION_ID + "_channel_id";
+    static final String CHANNEL_ID = BuildConfig.APPLICATION_ID + "_channel_id";
 
     private static final String DB_PATH = "XW_GAMES";
     private static final String HIDDEN_PREFS = "xwprefs_hidden";

@@ -179,15 +179,16 @@
     <activity android:name=".loc.LocItemEditActivity"
               />
 
-    <service android:name="RelayService"
-             android:permission="android.permission.BIND_JOB_SERVICE"
-             android:exported="false"
-             />
     <service android:name="BTService"
              android:permission="android.permission.BIND_JOB_SERVICE"
              android:exported="false"
              />
-    <service android:name="SMSService"/>
+    <service android:name="SMSService"
+             android:exported="false"
+             />
+    <service android:name="RelayService"
+             android:exported="false"
+             />
 
     <receiver android:name=".MountEventReceiver">
         <intent-filter>

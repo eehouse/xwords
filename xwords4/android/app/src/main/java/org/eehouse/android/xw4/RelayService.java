@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
-import android.support.v4.app.JobIntentService;
 import android.text.TextUtils;
 
 import junit.framework.Assert;
@@ -201,10 +200,9 @@ public class RelayService extends XWService
         Log.d( TAG, "startService(%s)", intent );
 
         if ( false ) {
-            // requires asking for Manifest.permission.FOREGROUND_SERVICE
             context.startForegroundService( intent );
         } else {
-            JobIntentService.enqueueWork( context, RelayService.class, 1112, intent );
+            context.startService( intent );
         }
     }
 
@@ -389,13 +387,6 @@ public class RelayService extends XWService
         }
         stopThreads();
         super.onDestroy();
-    }
-
-    @Override
-    protected void onHandleWork( Intent intent )
-    {
-        Log.e( TAG, "onHandleWork(%s)", intent );
-        handleCommand( intent );
     }
 
     // NetStateCache.StateChangedIf interface

@@ -94,16 +94,23 @@ public class XWApp extends Application implements LifecycleObserver {
         }
         UpdateCheckReceiver.restartTimer( this );
 
-        BTService.startService( this );
         RelayService.startService( this );
         GCMIntentService.init( this );
         WiDirWrapper.init( this );
     }
 
     @OnLifecycleEvent(ON_ANY)
-    public void onAny(LifecycleOwner source, Lifecycle.Event event)
+    public void onAny( LifecycleOwner source,  Lifecycle.Event event )
     {
-        Log.d( TAG, "onAny(%s, %s)", source, event );
+        Log.d( TAG, "onAny(%s)", event );
+        switch( event ) {
+        case ON_RESUME:
+            BTService.onAppToForeground( this );
+            break;
+        case ON_STOP:
+            BTService.onAppToBackground( this );
+            break;
+        }
     }
 
     // This is called on emulator only, but good for ensuring no memory leaks

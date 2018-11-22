@@ -2665,6 +2665,12 @@ public class GamesListDelegate extends ListDelegateBase
         return intent;
     }
 
+    public static Intent makeBackgroundIntent( Context context )
+    {
+        Intent intent = makeSelfIntent( context );
+        return intent;
+    }
+
     public static Intent makeRowidIntent( Context context, long rowid )
     {
         Intent intent = makeSelfIntent( context );
