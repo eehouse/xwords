@@ -21,6 +21,11 @@
 package org.eehouse.android.xw4;
 
 import android.app.Application;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.OnLifecycleEvent;
+import android.arch.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
@@ -32,7 +37,9 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-public class XWApp extends Application {
+import static android.arch.lifecycle.Lifecycle.Event.ON_ANY;
+
+public class XWApp extends Application implements LifecycleObserver {
     private static final String TAG = XWApp.class.getSimpleName();
 
     public static final boolean BTSUPPORTED = true;
@@ -65,6 +72,8 @@ public class XWApp extends Application {
         Assert.assertTrue( s_context == s_context.getApplicationContext() );
         super.onCreate();
 
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
+
         // This one line should always get logged even if logging is
         // off -- because logging is on by default until logEnable is
         // called.
@@ -89,6 +98,12 @@ public class XWApp extends Application {
         RelayService.startService( this );
         GCMIntentService.init( this );
         WiDirWrapper.init( this );
+    }
+
+    @OnLifecycleEvent(ON_ANY)
+    public void onAny(LifecycleOwner source, Lifecycle.Event event)
+    {
+        Log.d( TAG, "onAny(%s, %s)", source, event );
     }
 
     // This is called on emulator only, but good for ensuring no memory leaks
