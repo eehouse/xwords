@@ -1360,6 +1360,10 @@ public class GamesListDelegate extends ListDelegateBase
                                      true );
             break;
 
+        case DISABLE_BT_BACK:
+            XWPrefs.setBTBackgroundEnabled( m_activity, false );
+            break;
+
         default:
             handled = super.onPosButton( action, params );
         }
@@ -2271,9 +2275,11 @@ public class GamesListDelegate extends ListDelegateBase
     private void tryBackgroundIntent( Intent intent )
     {
         if ( intent.getBooleanExtra( BACKGROUND_EXTRA, false ) ) {
+            ActionPair pair = new ActionPair( Action.DISABLE_BT_BACK,
+                                              R.string.disable_bt_back );
             makeNotAgainBuilder( R.string.not_again_btservice,
-                                 R.string.key_notagain_btservice,
-                                 Action.OPEN_GAME )
+                                 R.string.key_notagain_btservice )
+                .setActionPair( pair )
                 .show();
         }
     }

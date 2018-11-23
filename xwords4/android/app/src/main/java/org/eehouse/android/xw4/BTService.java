@@ -351,7 +351,9 @@ public class BTService extends XWService {
         Log.d( TAG, "startService(%s)", intent );
 
         if ( ! sInForeground && canRunForegroundService() ) {
-            context.startForegroundService( intent );
+            if ( XWPrefs.getBTBackgroundEnabled( context ) ) {
+                context.startForegroundService( intent );
+            }
         } else if ( sInForeground || Build.VERSION.SDK_INT < Build.VERSION_CODES.O ) {
             context.startService( intent );
         }
