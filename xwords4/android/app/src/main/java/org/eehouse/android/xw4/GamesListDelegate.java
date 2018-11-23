@@ -86,6 +86,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
+    private static final String BACKGROUND_EXTRA = "bkgrnd";
     private static final String GAMEID_EXTRA = "gameid";
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
     private static final String REMATCH_DICT_EXTRA = "rm_dict";
@@ -2267,6 +2268,16 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
+    private void tryBackgroundIntent( Intent intent )
+    {
+        if ( intent.getBooleanExtra( BACKGROUND_EXTRA, false ) ) {
+            makeNotAgainBuilder( R.string.not_again_btservice,
+                                 R.string.key_notagain_btservice,
+                                 Action.OPEN_GAME )
+                .show();
+        }
+    }
+
     private void askDefaultName()
     {
         String name = CommonPrefs.getDefaultPlayerName( m_activity, 0, true );
@@ -2481,6 +2492,7 @@ public class GamesListDelegate extends ListDelegateBase
         startRematch( intent );
         tryAlert( intent );
         tryNFCIntent( intent );
+        tryBackgroundIntent( intent );
     }
 
     private void doOpenGame( Object[] params )
@@ -2668,6 +2680,7 @@ public class GamesListDelegate extends ListDelegateBase
     public static Intent makeBackgroundIntent( Context context )
     {
         Intent intent = makeSelfIntent( context );
+        intent.putExtra( BACKGROUND_EXTRA, true );
         return intent;
     }
 
