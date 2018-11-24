@@ -77,6 +77,8 @@ public class RelayService extends XWService
 
     private static final String CMD_STR = "CMD";
 
+    private static Boolean sInForeground;
+
     private static enum MsgCmds { INVALID,
                                   PROCESS_GAME_MSGS,
                                   PROCESS_DEV_MSGS,
@@ -188,6 +190,11 @@ public class RelayService extends XWService
         enabledChanged( context );
     }
 
+    private static boolean inForeground()
+    {
+        return sInForeground != null && sInForeground;
+    }
+
     public static void startService( Context context )
     {
         Log.i( TAG, "startService()" );
@@ -199,10 +206,10 @@ public class RelayService extends XWService
     {
         Log.d( TAG, "startService(%s)", intent );
 
-        if ( false ) {
-            context.startForegroundService( intent );
-        } else {
+        if ( inForeground() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O ) {
             context.startService( intent );
+        } else {
+            Log.d( TAG, "startService(); not starting" );
         }
     }
 

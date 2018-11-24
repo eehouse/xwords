@@ -234,7 +234,8 @@ public class BTService extends XWService {
 
     private static void onAppStateChange( Context context, boolean inForeground )
     {
-        if ( sInForeground == null || sInForeground != inForeground ) {
+        Log.d( TAG, "onAppStateChange(inForeground=%b)", inForeground );
+        if ( null == sInForeground || inForeground() != inForeground ) {
             sInForeground = inForeground;
 
             Intent intent =
@@ -243,6 +244,11 @@ public class BTService extends XWService {
                              : BTAction.START_BACKGROUND );
             startService( context, intent );
         }
+    }
+
+    private static boolean inForeground()
+    {
+        return sInForeground != null && sInForeground;
     }
 
     static void onAppToForeground( Context context )
@@ -348,14 +354,17 @@ public class BTService extends XWService {
 
     private static void startService( Context context, Intent intent )
     {
-        Log.d( TAG, "startService(%s)", intent );
+        boolean inForeground = inForeground();
+        Log.d( TAG, "startService(%s); inForeground = %b", intent, inForeground );
 
-        if ( ! sInForeground && canRunForegroundService() ) {
+        if ( ! inForeground && canRunForegroundService() ) {
             if ( XWPrefs.getBTBackgroundEnabled( context ) ) {
                 context.startForegroundService( intent );
             }
-        } else if ( sInForeground || Build.VERSION.SDK_INT < Build.VERSION_CODES.O ) {
+        } else if ( inForeground || Build.VERSION.SDK_INT < Build.VERSION_CODES.O ) {
             context.startService( intent );
+        } else {
+            Log.d( TAG, "startService(); not starting" );
         }
     }
 
@@ -399,7 +408,7 @@ public class BTService extends XWService {
     {
         int result = handleCommand( intent );
 
-        if ( Service.START_STICKY == result && !sInForeground ) {
+        if ( Service.START_STICKY == result && ! inForeground() ) {
             startForeground();
         }
 
@@ -514,7 +523,7 @@ public class BTService extends XWService {
             .setContentIntent(pendIntent)
             .build();
 
-        Log.d( TAG, "calling startForeground()" );
+        Log.d( TAG, "calling service.startForeground()" );
         startForeground( 1337, notification );
     }
 
