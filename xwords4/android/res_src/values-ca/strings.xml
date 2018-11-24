@@ -1195,4 +1195,35 @@ aparells seleccionats?</string>
 	<item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
 	<item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
 </plurals>
-    </resources>
+    <plurals name="invite_p2p_desc_fmt">
+	<item quantity="one">Seleccioneu el nom de l\'aparell WiFiDirect que voleu convidar a la partida nova, després toqueu «%2$s».</item>
+	<item quantity="other">Seleccioneu els noms dels aparells WiFiDirect que voleu convidar a la partida nova, després toqueu «%2$s».</item>
+</plurals>
+
+    <plurals name="confirm_clear_relay_fmt">
+	<item quantity="one">Esteu segur de voler suprimir el registre RelayID seleccionat?</item>
+	<item quantity="other">Esteu segur de voler suprimir els registres RelayID seleccionats?</item>
+</plurals>
+
+    <string name="invites_net_fmt">S\'han enviat les invitacions per a la partida connectada via %1$s:</string>
+    <string name="warn_relay_disabled">El joc via repetidor es troba inhabilitat en aquest aparell. No s\'enviarà ni rebrà cap moviment via el repetidor.</string>
+
+    <string name="warn_relay_later">Podeu activar el joc via repetidor ara, o més tard.</string>
+    <string name="warn_relay_remove">Podeu activar el joc via repetidor ara, o suprimir-lo d\'aquesta partida.</string>
+
+    <string name="warn_relay_havegames">Esteu segur de voler desactivar el joc via repetidor?</string>
+
+    <string name="force_tablet_tablet">Força la disposició de tauleta</string>
+    <string name="force_tablet_phone">Força la disposició de telèfon</string>
+
+    <string name="devid_title">ID de l\'aparell (en el repetidor)</string>
+  <string name="gamel_menu_writegit">Copia la informació git al porta-retalls</string>
+  <string name="expl_relay_url">URL per a l\'API web del repetidor</string>
+
+  <string name="not_again_comms_p2p">Usa WiFi Direct per a jugar contra aparells propers amb WiFi Direct i el CrossWords instal·lat.</string>
+
+  <string name="ignore_gcm_title">Ignora els missatges GCM entrants</string>
+  <string name="show_sms_title">Mostra els missatges SMS enviats i rebuts</string>
+  <string name="rel_invite_title">Títol de la invitació per repetidor</string>
+  <string name="fetching_from_relay">Recupera les partides del repetidor</string>
+  </resources>

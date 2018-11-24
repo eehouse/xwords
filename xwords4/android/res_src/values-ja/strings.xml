@@ -1318,4 +1318,17 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="duplicate_group_name_fmt">グループ \"%1$s\" は既に存在します。</string>
 
     <string name="gamel_menu_writegit">Git の情報をクリップボードにコピー</string>
+  <string name="relay_via_http_first">Web API から使用する</string>
+  <string name="relay_via_http_first_summary">(カスタムプロトコルからのフォールバックとして)</string>
+  <string name="enable_smsproto_title">新しい/実験的な SMS コードを使用する</string>
+  <string name="enable_smsproto_summary">(相手も使用する必要があります)</string>
+
+  <string name="expl_relay_url">Web API をリレーする URL</string>
+
+  <string name="ignore_gcm_title">受信した GCM メッセージを無視する</string>
+  <string name="ignore_gcm_summary">Google カウントを使用しないで同様のことを行います</string>
+
+  <string name="show_sms_title">SMS 送信、受信を表示する</string>
+  <string name="show_gcm_title">GCM の受信を表示する</string>
+
   </resources>
