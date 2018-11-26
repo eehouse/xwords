@@ -1150,9 +1150,9 @@
 	<item quantity="other"/>
 </plurals>
     <plurals name="strd_remains_expl_fmt">
-	<item quantity="one">Noch %1$d Spielsteine im Säckchen und den nicht gezeigten Ablagen:
+	<item quantity="one">Noch %1$d Spielstein in den nicht gezeigten Ablagen: 
 \n</item>
-	<item quantity="other"/>
+	<item quantity="other">"Noch %1$d Spielsteine im Säckchen und den nicht gezeigten Ablagen: "</item>
 </plurals>
 
     <string name="peek_other">Spielsteine ansehen wenn nicht am Zug</string>
@@ -1296,4 +1296,9 @@
     <string name="enable_smsproto_title">Neuen/experimentellen SMS-Code benutzen</string>
   <string name="enable_smsproto_summary">(Muss auch vom Gegner benutzt werden)</string>
 
+  <string name="button_move">Verschieben</string>
+    <string name="loc_filters_screen">Neuester Bildschirm</string>
+    <string name="loc_filters_menu">Aktuelles Menü</string>
+    <string name="game_summary_field_rowid">rowid</string>
+  <string name="game_summary_field_gameid">gameid</string>
   </resources>
