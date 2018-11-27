@@ -230,6 +230,7 @@ task copyStrings(type: Exec) {
 
 task ndkSetup(type: Exec) {
     workingDir '../'
+    // remove ', "--arm-only"' for Genymotion builds
     commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
 }
 
