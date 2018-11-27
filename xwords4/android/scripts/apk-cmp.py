@@ -105,7 +105,7 @@ def compare( apks, apkData, indices ):
                 printDiff( apks, key )
             index += 1
     if 0 != same:
-        print "(skipped {same} files)".format(same=same)
+        print "({same} identical files skipped)".format(same=same)
 
 def main():
     apks = []
