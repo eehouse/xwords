@@ -231,7 +231,12 @@ task copyStrings(type: Exec) {
 task ndkSetup(type: Exec) {
     workingDir '../'
     // remove ', "--arm-only"' for Genymotion builds
-    commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
+
+    // I'm putting ARM back for a while. It's too much trouble having
+    // builds, including those built by travis, that don't run on the
+    // emulator. Maybe remove this change before each release?
+    commandLine "./scripts/ndksetup.sh", "--with-clang"
+    // commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
 }
 
 task myPreBuild(dependsOn: ['ndkSetup', 'mkImages', 'copyStrings', 'mkXml']) {
