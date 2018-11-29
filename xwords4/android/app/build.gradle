@@ -23,8 +23,8 @@ if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) {
     apply plugin: 'io.fabric'
 }
 repositories {
-    maven { url 'https://maven.fabric.io/public' }
     google()
+    maven { url 'https://maven.fabric.io/public' }
 }
 
 android {
