@@ -264,7 +264,6 @@ public class Utils {
         Notification notification = new NotificationCompat.Builder( context, CHANNEL_ID )
             .setContentIntent( pi )
             .setSmallIcon( R.drawable.notify )
-            .setPriority(NotificationCompat.PRIORITY_LOW)
             //.setTicker(body)
             //.setWhen(time)
             .setAutoCancel( true )
