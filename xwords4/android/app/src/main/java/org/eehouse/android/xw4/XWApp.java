@@ -106,9 +106,11 @@ public class XWApp extends Application implements LifecycleObserver {
         switch( event ) {
         case ON_RESUME:
             BTService.onAppToForeground( this );
+            RelayService.onAppToForeground( this );
             break;
         case ON_STOP:
             BTService.onAppToBackground( this );
+            RelayService.onAppToBackground( this );
             break;
         }
     }

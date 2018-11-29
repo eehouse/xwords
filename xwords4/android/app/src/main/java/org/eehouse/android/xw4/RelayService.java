@@ -192,7 +192,32 @@ public class RelayService extends XWService
 
     private static boolean inForeground()
     {
-        return sInForeground != null && sInForeground;
+        boolean result = sInForeground != null && sInForeground;
+        Log.d( TAG, "inForeground() => %b", result );
+        return result;
+    }
+
+    private static void onAppStateChange( Context context, boolean inForeground )
+    {
+        Log.d( TAG, "onAppStateChange(inForeground=%b)", inForeground );
+        if ( null == sInForeground || inForeground() != inForeground ) {
+            sInForeground = inForeground;
+            // Intent intent =
+            //     getIntentTo( context,
+            //                  inForeground ? BTAction.START_FOREGROUND
+            //                  : BTAction.START_BACKGROUND );
+            // startService( context, intent );
+        }
+    }
+
+    static void onAppToForeground( Context context )
+    {
+        onAppStateChange( context, true );
+    }
+
+    static void onAppToBackground( Context context )
+    {
+        onAppStateChange( context, false );
     }
 
     public static void startService( Context context )
