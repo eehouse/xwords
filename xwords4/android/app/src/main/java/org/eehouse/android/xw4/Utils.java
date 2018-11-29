@@ -84,7 +84,7 @@ public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
     public static final int TURN_COLOR = 0x7F00FF00;
 
-    static final String CHANNEL_ID = BuildConfig.APPLICATION_ID + "_channel_id";
+    private static final String _CHANNEL_ID = BuildConfig.APPLICATION_ID + "_channel_id";
 
     private static final String DB_PATH = "XW_GAMES";
     private static final String HIDDEN_PREFS = "xwprefs_hidden";
@@ -241,8 +241,6 @@ public class Utils {
                                          String title, String body,
                                          int id )
     {
-        makeNotificationChannel( context );
-
         /* nextRandomInt: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
            one way to avoid getting the same PendingIntent for similar
@@ -261,7 +259,8 @@ public class Utils {
             defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        Notification notification = new NotificationCompat.Builder( context, CHANNEL_ID )
+        Notification notification =
+            new NotificationCompat.Builder( context, getChannelId(context) )
             .setContentIntent( pi )
             .setSmallIcon( R.drawable.notify )
             //.setTicker(body)
@@ -624,7 +623,7 @@ public class Utils {
     }
 
     private static boolean sChannelMade = false;
-    private static void makeNotificationChannel( Context context )
+    static String getChannelId( Context context )
     {
         if ( !sChannelMade ) {
             sChannelMade = true;
@@ -633,9 +632,9 @@ public class Utils {
                     context.getSystemService( Context.NOTIFICATION_SERVICE );
 
                 String channelDescription = "XWORDS Default Channel";
-                NotificationChannel channel = notMgr.getNotificationChannel( CHANNEL_ID );
+                NotificationChannel channel = notMgr.getNotificationChannel( _CHANNEL_ID );
                 if ( channel == null ) {
-                    channel = new NotificationChannel( CHANNEL_ID, channelDescription,
+                    channel = new NotificationChannel( _CHANNEL_ID, channelDescription,
                                                        NotificationManager.IMPORTANCE_LOW );
                     // channel.setLightColor(Color.GREEN);
                     channel.enableVibration( true );
@@ -643,5 +642,6 @@ public class Utils {
                 }
             }
         }
+        return _CHANNEL_ID;
     }
 }
