@@ -214,6 +214,8 @@ public class WiDirService extends XWService {
             sHavePermission = false;
         } catch ( SecurityException se ) {               // perm not in manifest
             sHavePermission = false;
+        } catch ( NullPointerException npe ) { // Seeing this on Oreo emulator
+            sHavePermission = false;
         }
     }
 
