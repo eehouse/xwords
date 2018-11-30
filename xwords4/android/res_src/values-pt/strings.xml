@@ -1774,4 +1774,14 @@
 	<item quantity="other">Você tem certeza que deseja apagar as listas de palavras %1$s?</item>
 </plurals>
 
+    <string name="download_more">Descarregar mais…</string>
+
+    <string name="set_default_message_fmt">Para quais jogadores deve a list de palavras %1$s ser o predefinição para os jogos novos\? (O idioma de %2$s será a predefinição para ambos.)</string>
+
+    <string name="connect_label_fmt">Conexão (através de %1$s)</string>
+
+    <plurals name="invite_msg_fmt">
+	<item quantity="one">Este jogo está aguardando %1$d jogador remoto. Gostaria de convidar alguém para se juntar -- supondo que você ainda não o fez\?</item>
+	<item quantity="other">Este jogo está aguardando %1$d jogadores remotos. Gostaria de convidar alguém para se juntar -- supondo que você ainda não o fez\?</item>
+</plurals>
     </resources>
