@@ -56,6 +56,25 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+// Notes on running under Oreo
+//
+// The goal is to be running only when useful: when user wants to play via
+// BT. Ideally we'd not run the foreground service when BT is turned off, but
+// there's no way to be notified of its being turned on without installing a
+// receiver. So *something* has to be running, whether it's listening on a BT
+// socket or hosting the receiver. Might as well be the socket listener. Users
+// who want the service not running when BT's off can turn it off via app
+// preferences. When they try to start a BT game we can note the preference
+// and suggest they change it. And when an invitation sent is not received the
+// sender can be told to suggest to his opponent to turn on the preference.
+//
+// When there's no BT adapter at all (Emulator case) there's no point in
+// starting the service. Let's catch that early.
+//
+// Note also that we need to be careful to NEVER call stopSelf() after calling
+// startForegroundService() until AFTER calling startForeground(). Doing so
+// will cause a crash.
+
 public class BTService extends XWService {
     private static final String TAG = BTService.class.getSimpleName();
     private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
@@ -169,6 +188,7 @@ public class BTService extends XWService {
     private BTMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
+    private Notification m_notification; // make once use many
     private static int s_errCount = 0;
 
     public static boolean BTAvailable()
@@ -388,6 +408,8 @@ public class BTService extends XWService {
     @Override
     public void onCreate()
     {
+        startForegroundIf();
+
         BluetoothAdapter adapter = XWApp.BTSUPPORTED
             ? BluetoothAdapter.getDefaultAdapter() : null;
         if ( null != adapter && adapter.isEnabled() ) {
@@ -406,11 +428,9 @@ public class BTService extends XWService {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
-        int result = handleCommand( intent );
+        startForegroundIf();
 
-        if ( Service.START_STICKY == result && ! inForeground() ) {
-            startForeground();
-        }
+        int result = handleCommand( intent );
 
         return result;
     }
@@ -510,21 +530,30 @@ public class BTService extends XWService {
         return result;
     } // handleCommand()
 
-    private void startForeground()
+    private void startForegroundIf()
     {
-        Intent notifIntent = GamesListDelegate.makeBackgroundIntent( this );
-        PendingIntent pendIntent = PendingIntent
-            .getActivity(this, Utils.nextRandomInt(), notifIntent, PendingIntent.FLAG_ONE_SHOT);
-        Notification notification =
-            new NotificationCompat.Builder( this, Utils.getChannelId(this) )
-            .setSmallIcon( R.drawable.notify_btservice )
-            .setContentTitle( BTService.class.getSimpleName() )
-            .setContentText("listening for bluetooth messages...")
-            .setContentIntent(pendIntent)
-            .build();
+        if ( ! inForeground() ) {
+            Log.d( TAG, "startForegroundIf(): starting" );
 
-        Log.d( TAG, "calling service.startForeground()" );
-        startForeground( 1337, notification );
+            if ( null == m_notification ) {
+                Intent notifIntent = GamesListDelegate.makeBackgroundIntent( this );
+                PendingIntent pendIntent = PendingIntent
+                    .getActivity( this, Utils.nextRandomInt(), notifIntent,
+                                  PendingIntent.FLAG_ONE_SHOT );
+                m_notification =
+                    new NotificationCompat.Builder( this, Utils.getChannelId(this) )
+                    .setSmallIcon( R.drawable.notify_btservice )
+                    .setContentTitle( BTService.class.getSimpleName() )
+                    .setContentText("listening for bluetooth messages...")
+                    .setContentIntent(pendIntent)
+                    .build();
+            }
+
+            Log.d( TAG, "calling service.startForeground()" );
+            startForeground( R.string.app_name, m_notification );
+        } else {
+            Log.d( TAG, "startForegroundIf(): NOT starting" );
+        }
     }
 
     private class BTListenerThread extends Thread {
