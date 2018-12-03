@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
 
 import org.json.JSONArray;
 import org.json.JSONException;

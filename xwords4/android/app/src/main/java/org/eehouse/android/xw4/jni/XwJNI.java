@@ -24,8 +24,7 @@ import android.graphics.Rect;
 
 import java.util.Arrays;
 
-import junit.framework.Assert;
-
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Utils;

@@ -69,7 +69,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-import junit.framework.Assert;
 
 public class WiDirService extends XWService {
     private static final String TAG = WiDirService.class.getSimpleName();

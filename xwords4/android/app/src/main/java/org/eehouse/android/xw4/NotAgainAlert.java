@@ -30,7 +30,6 @@ import android.support.v4.app.DialogFragment;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

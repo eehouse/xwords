@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import junit.framework.Assert;
 
 import java.util.HashMap;
 

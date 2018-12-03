@@ -30,7 +30,6 @@ import android.widget.TextView;
 import java.util.Iterator;
 import java.util.Map;
 
-import junit.framework.Assert;
 
 public class WiDirInviteDelegate extends InviteDelegate
     implements WiDirService.DevSetListener {

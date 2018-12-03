@@ -33,7 +33,6 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;

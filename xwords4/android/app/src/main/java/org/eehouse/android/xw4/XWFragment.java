@@ -36,7 +36,6 @@ import android.widget.ListView;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
 
 abstract class XWFragment extends Fragment implements Delegator {
     private static final String TAG = XWFragment.class.getSimpleName();

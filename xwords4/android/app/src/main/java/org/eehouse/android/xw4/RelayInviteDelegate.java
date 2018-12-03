@@ -52,7 +52,6 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 

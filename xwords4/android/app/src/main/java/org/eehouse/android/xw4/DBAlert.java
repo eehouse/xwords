@@ -34,7 +34,6 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.Serializable;
 
-import junit.framework.Assert;
 
 public class DBAlert extends XWDialogFragment {
     private static final String TAG = DBAlert.class.getSimpleName();

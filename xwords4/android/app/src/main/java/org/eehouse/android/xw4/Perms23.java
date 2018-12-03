@@ -38,7 +38,6 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-import junit.framework.Assert;
     
 public class Perms23 {
     private static final String TAG = Perms23.class.getSimpleName();

@@ -31,7 +31,6 @@ import android.widget.Button;
 
 import java.io.Serializable;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;

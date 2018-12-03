@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;

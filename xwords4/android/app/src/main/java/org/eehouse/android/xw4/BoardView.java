@@ -31,7 +31,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.BoardDims;
 import org.eehouse.android.xw4.jni.BoardHandler;

@@ -22,8 +22,7 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 
-import junit.framework.Assert;
-
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.Log;

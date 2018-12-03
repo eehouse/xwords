@@ -34,7 +34,6 @@ import android.view.View;
 
 import java.io.Serializable;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 

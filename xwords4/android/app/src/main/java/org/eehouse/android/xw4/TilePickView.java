@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
 
 public class TilePickView extends LinearLayout {
     private static final String TAG = TilePickView.class.getSimpleName();

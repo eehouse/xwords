@@ -29,7 +29,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 

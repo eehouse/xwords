@@ -27,7 +27,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.NeedsNagInfo;
 import org.eehouse.android.xw4.jni.GameSummary;

@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;

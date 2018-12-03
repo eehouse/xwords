@@ -42,8 +42,8 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import junit.framework.Assert;
 
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.Log;

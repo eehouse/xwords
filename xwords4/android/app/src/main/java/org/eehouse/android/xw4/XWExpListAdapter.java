@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.view.View;
 import android.view.ViewGroup;
 
-import junit.framework.Assert;
 
 import java.util.Arrays;
 import java.util.HashMap;

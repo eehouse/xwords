@@ -30,7 +30,6 @@ import android.widget.LinearLayout;
 
 import java.util.Map;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;

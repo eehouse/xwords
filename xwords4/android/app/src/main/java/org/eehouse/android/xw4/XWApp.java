@@ -35,7 +35,6 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.UUID;
 
-import junit.framework.Assert;
 
 import static android.arch.lifecycle.Lifecycle.Event.ON_ANY;
 

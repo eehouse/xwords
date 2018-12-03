@@ -74,7 +74,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
