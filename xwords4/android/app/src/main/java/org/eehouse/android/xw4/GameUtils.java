@@ -31,7 +31,6 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;

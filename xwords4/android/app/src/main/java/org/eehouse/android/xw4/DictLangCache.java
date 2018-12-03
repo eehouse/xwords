@@ -25,7 +25,6 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.widget.ArrayAdapter;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.DictUtils.DictLoc;

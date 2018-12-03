@@ -27,7 +27,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.GameUtils.BackMoveResult;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;

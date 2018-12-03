@@ -29,7 +29,6 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.graphics.Rect;
 
-import junit.framework.Assert;
 
 public class BoardContainer extends ViewGroup {
     private static final String TAG = BoardContainer.class.getSimpleName();

@@ -35,7 +35,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import junit.framework.Assert;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

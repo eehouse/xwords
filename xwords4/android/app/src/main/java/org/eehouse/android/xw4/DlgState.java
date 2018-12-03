@@ -32,7 +32,6 @@ import java.util.List;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 
-import junit.framework.Assert;
 
 public class DlgState implements Parcelable {
     private static final String TAG = DlgState.class.getSimpleName();

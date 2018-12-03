@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import java.io.Serializable;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

@@ -31,7 +31,6 @@ import android.widget.TextView;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
-import junit.framework.Assert;
 
 public class DisablesItem extends LinearLayout {
     private CommsConnType m_type;

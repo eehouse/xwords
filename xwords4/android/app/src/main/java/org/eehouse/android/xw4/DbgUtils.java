@@ -33,7 +33,6 @@ import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

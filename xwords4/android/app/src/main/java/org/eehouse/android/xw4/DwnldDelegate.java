@@ -34,7 +34,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import junit.framework.Assert;
 
 import java.io.File;
 import java.io.FileOutputStream;

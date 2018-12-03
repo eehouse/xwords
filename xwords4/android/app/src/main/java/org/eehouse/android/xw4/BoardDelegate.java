@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;

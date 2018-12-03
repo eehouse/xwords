@@ -32,7 +32,6 @@ import android.provider.Settings;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;

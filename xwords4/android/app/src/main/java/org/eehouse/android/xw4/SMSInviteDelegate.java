@@ -36,7 +36,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;

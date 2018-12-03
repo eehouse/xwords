@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;

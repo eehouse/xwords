@@ -36,7 +36,6 @@ import android.preference.PreferenceScreen;
 import android.view.View;
 import android.widget.Button;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;

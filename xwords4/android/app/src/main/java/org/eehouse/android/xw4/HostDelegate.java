@@ -26,7 +26,6 @@ import android.content.Intent;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-import junit.framework.Assert;
 
 class HostDelegate extends DelegateBase {
     private static final String ACTION = "ACTION";

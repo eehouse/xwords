@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.Random;
 import org.json.JSONObject;
 
-import junit.framework.Assert;
 
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.DictLangCache;
 import org.eehouse.android.xw4.DictUtils;

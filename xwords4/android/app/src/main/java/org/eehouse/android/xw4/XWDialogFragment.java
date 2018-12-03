@@ -30,7 +30,6 @@ import android.view.View;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
 
 abstract class XWDialogFragment extends DialogFragment {
     private static final String TAG = XWDialogFragment.class.getSimpleName();

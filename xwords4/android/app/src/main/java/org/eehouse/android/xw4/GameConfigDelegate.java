@@ -45,7 +45,6 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter;
 import org.eehouse.android.xw4.DlgDelegate.Action;
