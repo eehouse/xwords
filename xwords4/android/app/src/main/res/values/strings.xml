@@ -2029,8 +2029,6 @@
     <string name="title_enable_p2p">Enable WiFi Direct</string>
     <string name="summary_enable_p2p">Experimental, uses lots of battery</string>
 
-    <string name="title_btback_enabled">Enable background Bluetooth</string>
-    <string name="summary_btback_enabled">Always listen for Bluetooth messages</string>
     <string name="bkng_notify_text">Accepting Bluetooth messages…</string>
 
     <!--  -->
@@ -2655,8 +2653,6 @@
   Background Listener\" preference. CrossWords will still receive
   Bluetooth moves and invitations while in the foreground, but any
   sent while it\'s in the background will be lost.</string>
-
-  <string name="disable_bt_back">Disable Background</string>
 
   <string name="no_invites">This game has sent no invitations</string>
 

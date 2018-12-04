@@ -51,16 +51,6 @@ public class XWPrefs {
         setPrefsBoolean( context, R.string.key_enable_sms, enabled );
     }
 
-    public static void setBTBackgroundEnabled( Context context, boolean enabled )
-    {
-        setPrefsBoolean( context, R.string.key_btback_enabled, enabled );
-    }
-
-    public static boolean getBTBackgroundEnabled( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_btback_enabled, true );
-    }
-
     public static boolean getDebugEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_debug, false );
