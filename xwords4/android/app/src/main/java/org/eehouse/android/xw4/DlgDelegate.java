@@ -56,7 +56,6 @@ public class DlgDelegate {
         SET_HIDE_NEWGAME_BUTTONS,
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,
-        DISABLE_BT_BACK,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
