@@ -542,9 +542,8 @@ public class BTService extends XWService {
                 m_notification =
                     new NotificationCompat.Builder( this, Utils.getChannelId(this) )
                     .setSmallIcon( R.drawable.notify_btservice )
-                    .setContentTitle( BTService.class.getSimpleName() )
-                    .setContentText("listening for bluetooth messages...")
-                    .setContentIntent(pendIntent)
+                    .setContentText( getString(R.string.bkng_notify_text) )
+                    .setContentIntent( pendIntent )
                     .build();
             }
 

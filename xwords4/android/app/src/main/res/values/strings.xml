@@ -2028,6 +2028,7 @@
 
     <string name="title_btback_enabled">Enable background Bluetooth</string>
     <string name="summary_btback_enabled">Always listen for Bluetooth messages</string>
+    <string name="bkng_notify_text">Accepting Bluetooth messages…</string>
 
     <!--  -->
     <string name="confirm_sms_title">Confirm your SMS plan</string>
