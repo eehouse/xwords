@@ -1814,11 +1814,11 @@
     <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
 
       <!-- In the Bluetooth invite device dialog -->
-    <string name="bt_pick_addall_button">Add all Paired</string>
       <!--  -->
     <string name="bt_pick_clear_button">Remove checked</string>
     <!--  -->
     <string name="bt_pair_settings">Pair More</string>
+    <string name="button_scan">Rescan</string>
 
       <!--  -->
     <string name="invite_progress_title">Connecting...</string>
@@ -1837,7 +1837,6 @@
     <string name="new_bt_body_fmt">A player on the device %1$s wants to start a game</string>
     <string name="new_relay_body">Tap to open the new game</string>
 
-
       <!--  -->
     <string name="bt_bad_proto_fmt">The version of CrossWords on
     \"%1$s\" is incompatible with this one for play using
@@ -1850,13 +1849,17 @@
     continue.</string>
 
     <!--  -->
-    <plurals name="invite_bt_desc_fmt">
-      <item quantity="one">Please check the device
-      you want to include in this game.\n\nUse the \"%2$s\"
-      button if you don\'t see the device you expect.</item>
-      <item quantity="other">Please check up to %1$d device[s]
-      you want to include in this game.\n\nUse the \"%2$s\"
-      button if you don\'t see a device you expect.</item>
+    <plurals name="invite_bt_desc_fmt_2">
+      <item quantity="one">Please check the device you want to include
+      in this game.\n\n(The list is of devices you\'ve paired and on
+      which CrossWords is currently running.)</item>
+      <item quantity="other">Please check up to %1$d device[s] you
+      want to include in this game.\n\n(The list is of devices you\'ve
+      paired and on which CrossWords is currently running.)</item>
+    </plurals>
+    <plurals name="bt_scan_progress_fmt">
+      <item quantity="one">Scanning for CrossWords</item>
+      <item quantity="other">Scanning for CrossWords on %1$d paired devices.</item>
     </plurals>
     <!--  -->
     <string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry
