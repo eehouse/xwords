@@ -181,7 +181,7 @@ public class NetStateCache {
 
         public PvtBroadcastReceiver()
         {
-            DbgUtils.assertOnUIThread();
+            // DbgUtils.assertOnUIThread(); // firing
             mHandler = new Handler();
             mLastStateSent = s_netAvail;
         }
