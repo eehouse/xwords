@@ -5,18 +5,13 @@
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               >
-  <Button android:id="@+id/button_add"
-          android:text="@string/bt_pick_addall_button"
+  <Button android:id="@+id/button_scan"
+          android:text="@string/button_scan"
           style="@style/evenly_spaced_horizontal"
           />
 
   <Button android:id="@+id/button_settings"
           android:text="@string/bt_pair_settings"
-          style="@style/evenly_spaced_horizontal"
-          />
-
-  <Button android:id="@+id/button_clear"
-          android:text="@string/bt_pick_clear_button"
           style="@style/evenly_spaced_horizontal"
           />
 </LinearLayout>

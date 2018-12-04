@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -35,12 +36,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
-    private static final int[] BUTTONIDS = { R.id.button_add,
+    private static final String TAG = BTInviteDelegate.class.getSimpleName();
+    private static final int[] BUTTONIDS = { R.id.button_scan,
                                              R.id.button_settings,
-                                             R.id.button_clear,
     };
     private Activity m_activity;
     private TwoStringPair[] m_pairs;
+    private ProgressDialog m_progress;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
@@ -67,27 +69,24 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        String msg = getString( R.string.bt_pick_addall_button );
-        msg = getQuantityString( R.plurals.invite_bt_desc_fmt, m_nMissing,
-                                 m_nMissing, msg );
+        String msg = getQuantityString( R.plurals.invite_bt_desc_fmt_2, m_nMissing,
+                                        m_nMissing );
         super.init( msg, 0 );
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
         BTService.clearDevices( m_activity, null ); // will return names
+
+        scan();
     }
 
     @Override
     protected void onBarButtonClicked( int id )
     {
         switch( id ) {
-        case R.id.button_add:
+        case R.id.button_scan:
             scan();
             break;
         case R.id.button_settings:
             BTService.openBTSettings( m_activity );
-            break;
-        case R.id.button_clear:
-            removeSelected();
-            clearChecked();
             break;
         }
     }
@@ -101,6 +100,7 @@ public class BTInviteDelegate extends InviteDelegate {
             post( new Runnable() {
                     public void run() {
                         synchronized( BTInviteDelegate.this ) {
+                            m_progress.cancel();
 
                             m_pairs = null;
                             if ( 0 < args.length ) {
@@ -143,6 +143,8 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
+            String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
+            m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
             BTService.scan( m_activity );
         } else {
             makeConfirmThenBuilder( R.string.bt_no_devs,

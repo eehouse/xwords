@@ -183,7 +183,6 @@ public class BTService extends XWService {
     }
 
     private BluetoothAdapter m_adapter;
-    private Set<String> m_addrs;
     private BTMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
@@ -415,7 +414,6 @@ public class BTService extends XWService {
             m_adapter = adapter;
             Log.i( TAG, "onCreate(); bt name = %s; bt addr = %s",
                    adapter.getName(), adapter.getAddress() );
-            initAddrs();
             startListener();
             startSender();
         } else {
@@ -456,8 +454,6 @@ public class BTService extends XWService {
 
                 case CLEAR:
                     String[] btAddrs = intent.getStringArrayExtra( CLEAR_KEY );
-                    clearDevs( btAddrs );
-                    sendNames();
                     break;
                 case SCAN:
                     m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
@@ -572,7 +568,6 @@ public class BTService extends XWService {
             while ( null != m_serverSocket && m_adapter.isEnabled() ) {
                 try {
                     BluetoothSocket socket = m_serverSocket.accept(); // blocks
-                    addAddr( socket );
                     DataInputStream inStream =
                         new DataInputStream( socket.getInputStream() );
 
@@ -678,8 +673,6 @@ public class BTService extends XWService {
             }
 
             BluetoothDevice host = socket.getRemoteDevice();
-            addAddr( host );
-
             result = makeOrNotify( nli, host.getName(), host.getAddress() );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
@@ -699,7 +692,6 @@ public class BTService extends XWService {
                     byte[] buffer = new byte[dis.readShort()];
                     dis.readFully( buffer );
                     BluetoothDevice host = socket.getRemoteDevice();
-                    addAddr( host );
 
                     CommsAddrRec addr = new CommsAddrRec( host.getName(),
                                                           host.getAddress() );
@@ -731,35 +723,6 @@ public class BTService extends XWService {
         } // receiveMessage
     } // class BTListenerThread
 
-    private void addAddr( BluetoothSocket socket )
-    {
-        addAddr( socket.getRemoteDevice() );
-    }
-
-    private void addAddr( BluetoothDevice dev )
-    {
-        addAddr( dev.getAddress(), dev.getName() );
-    }
-
-    private void addAddr( String btAddr, String btName )
-    {
-        boolean save = false;
-        synchronized( m_addrs ) {
-            save = !m_addrs.contains( btAddr );
-            if ( save ) {
-                m_addrs.add( btAddr );
-            }
-        }
-        if ( save ) {
-            saveAddrs();
-        }
-    }
-
-    private boolean haveAddr( String btAddr )
-    {
-        return m_addrs.contains( btAddr );
-    }
-
     private static Map<String, String> s_namesToAddrs;
     private static String getSafeAddr( CommsAddrRec addr )
     {
@@ -784,18 +747,6 @@ public class BTService extends XWService {
             btAddr = s_namesToAddrs.get( btName );
         }
         return btAddr;
-    }
-
-    private void clearDevs( String[] btAddrs )
-    {
-        if ( null != btAddrs ) {
-            synchronized( m_addrs ) {
-                for ( String btAddr : btAddrs ) {
-                    m_addrs.remove( btAddr );
-                }
-            }
-        }
-        saveAddrs();
     }
 
     private class BTSenderThread extends Thread {
@@ -836,15 +787,15 @@ public class BTService extends XWService {
                     switch( elem.m_cmd ) {
                     case PING:
                         if ( null == elem.m_btAddr ) {
-                            sendPings( MultiEvent.HOST_PONGED );
+                            sendPings( MultiEvent.HOST_PONGED, null );
                         } else {
                             sendPing( elem.m_btAddr, elem.m_gameID );
                         }
                         break;
                     case SCAN:
-                        addAllToNames();
-                        sendNames();
-                        saveAddrs();
+                        Set<BluetoothDevice> devs = new HashSet<>();
+                        sendPings( null, devs );
+                        sendNames( devs );
                         break;
                     case INVITE:
                         sendInvite( elem );
@@ -870,18 +821,17 @@ public class BTService extends XWService {
             }
         } // run
 
-        private void sendPings( MultiEvent event )
+        private void sendPings( MultiEvent event, Set<BluetoothDevice> addrs )
         {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
             // DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
             for ( BluetoothDevice dev : pairedDevs ) {
                 String btAddr = dev.getAddress();
-                if ( haveAddr( btAddr ) ) {
-                    continue;
-                }
 
                 if ( sendPing( dev, 0 ) ) { // did we get a reply?
-                    addAddr( dev );
+                    if ( null != addrs ) {
+                        addrs.add( dev );
+                    }
                     if ( null != event ) {
                         postEvent( event, dev.getName() );
                     }
@@ -927,6 +877,7 @@ public class BTService extends XWService {
             }
             updateStatusOut( sendWorking );
             updateStatusIn( receiveWorking );
+            Log.d( TAG, "sendPing(%s) => %b", dev, gotReply );
             return gotReply;
         } // sendPing
 
@@ -1130,58 +1081,19 @@ public class BTService extends XWService {
             }
             return found;
         }
-
     } // class BTSenderThread
 
-    private void addAllToNames()
+    private void sendNames( Set<BluetoothDevice> devs )
     {
-        Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
-        synchronized( m_addrs ) {
-            for ( BluetoothDevice dev : pairedDevs ) {
-                int clazz = dev.getBluetoothClass().getMajorDeviceClass();
-                if ( Major.PHONE == clazz
-                     || (XWApp.BT_SCAN_COMPUTERS && Major.COMPUTER == clazz) ) {
-                    m_addrs.add( dev.getAddress() );
-                }
-            }
-        }
-    }
-
-    private void sendNames()
-    {
-        String[] btAddrs = getAddrs();
-        int size = btAddrs.length;
-        String[] btNames = new String[size];
-        for ( int ii = 0; ii < size; ++ii ) {
+        String[] btNames = new String[devs.size()];
+        String[] btAddrs = new String[devs.size()];
+        int ii = 0;
+        for ( BluetoothDevice dev : devs ) {
+            btAddrs[ii] = dev.getAddress();
             btNames[ii] = nameForAddr( m_adapter, btAddrs[ii] );
+            ++ii;
         }
         postEvent( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
-    }
-
-    private void initAddrs()
-    {
-        m_addrs = new HashSet<String>();
-
-        String[] addrs = XWPrefs.getBTAddresses( this );
-        if ( null != addrs ) {
-            for ( String btAddr : addrs ) {
-                m_addrs.add( btAddr );
-            }
-        }
-    }
-
-    private String[] getAddrs()
-    {
-        String[] addrs;
-        synchronized( m_addrs ) {
-            addrs = m_addrs.toArray( new String[m_addrs.size()] );
-        }
-        return addrs;
-    }
-
-    private void saveAddrs()
-    {
-        XWPrefs.setBTAddresses( this, getAddrs() );
     }
 
     private void startListener()
