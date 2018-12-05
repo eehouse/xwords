@@ -600,10 +600,6 @@ public class DelegateBase implements DlgClickNotify,
     {
         int fmtId = 0;
         switch( event ) {
-        case BT_ERR_COUNT:
-            int count = (Integer)args[0];
-            Log.i( TAG, "Bluetooth error count: %d", count );
-            break;
         case BAD_PROTO_BT:
             fmtId = R.string.bt_bad_proto_fmt;
             break;

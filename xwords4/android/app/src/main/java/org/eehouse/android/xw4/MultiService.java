@@ -87,7 +87,6 @@ public class MultiService {
                              SMS_SEND_FAILED_NOPERMISSION,
 
                              BT_GAME_CREATED,
-                             BT_ERR_COUNT,
 
                              RELAY_ALERT,
     };
