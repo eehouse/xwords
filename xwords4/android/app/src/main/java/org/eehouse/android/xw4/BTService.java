@@ -1131,13 +1131,16 @@ public class BTService extends XWService {
 
     private void stopListener()
     {
-        m_listener.stopListening();
-        try {
-            m_listener.join( 100 );
-        } catch ( InterruptedException ie ) {
-            Log.ex( TAG, ie );
+        BTListenerThread listener = m_listener;
+        if ( listener != null ) {
+            m_listener = null;
+            listener.stopListening();
+            try {
+                listener.join( 100 );
+            } catch ( InterruptedException ie ) {
+                Log.ex( TAG, ie );
+            }
         }
-        m_listener = null;
     }
 
     private void stopSender()
