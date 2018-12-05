@@ -2394,7 +2394,7 @@ public class DBUtils {
 
     public static void setIntFor( Context context, String key, int value )
     {
-        // Log.df( "DBUtils.setIntFor(key=%s, val=%d)", key, value );
+        // Log.d( TAG, "DBUtils.setIntFor(key=%s, val=%d)", key, value );
         String asStr = String.format( "%d", value );
         setStringFor( context, key, asStr );
     }
@@ -2405,7 +2405,7 @@ public class DBUtils {
         if ( null != asStr ) {
             dflt = Integer.parseInt( asStr );
         }
-        // Log.df( "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
+        // Log.d( TAG, "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
         return dflt;
     }
 
