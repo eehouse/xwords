@@ -548,14 +548,24 @@ public class BTService extends XWService {
         }
     }
 
-    private class BTListenerThread extends Thread {
+    private static class BTListenerThread extends Thread {
         private BluetoothServerSocket m_serverSocket;
+        private Context mContext;
+        private BTService mService;
+
+        BTListenerThread( Context context, BTService service )
+        {
+            mContext = context;
+            mService = service;
+        }
 
         @Override
         public void run() {     // receive thread
+            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            String appName = XWApp.getAppName( mContext );
+
             try {
-                String appName = XWApp.getAppName( BTService.this );
-                m_serverSocket = m_adapter.
+                m_serverSocket = adapter.
                     listenUsingRfcommWithServiceRecord( appName,
                                                         XWApp.getAppUUID() );
             } catch ( IOException ioe ) {
@@ -563,7 +573,7 @@ public class BTService extends XWService {
                 logIOE( ioe );
             }
 
-            while ( null != m_serverSocket && m_adapter.isEnabled() ) {
+            while ( null != m_serverSocket && adapter.isEnabled() ) {
                 try {
                     BluetoothSocket socket = m_serverSocket.accept(); // blocks
                     DataInputStream inStream =
@@ -591,7 +601,7 @@ public class BTService extends XWService {
                             Log.e( TAG, "unexpected msg %s", cmd.toString());
                             break;
                         }
-                        updateStatusIn( true );
+                        mService.updateStatusIn( true );
                     } else {
                         DataOutputStream os =
                             new DataOutputStream( socket.getOutputStream() );
@@ -599,7 +609,7 @@ public class BTService extends XWService {
                         os.flush();
                         socket.close();
 
-                        sendBadProto( socket );
+                        mService.sendBadProto( socket );
                     }
                 } catch ( IOException ioe ) {
                     Log.w( TAG, "trying again..." );
@@ -643,7 +653,7 @@ public class BTService extends XWService {
         {
             DataInputStream inStream = new DataInputStream( socket.getInputStream() );
             int gameID = inStream.readInt();
-            boolean deleted = 0 != gameID && !DBUtils.haveGame( BTService.this, gameID );
+            boolean deleted = 0 != gameID && !DBUtils.haveGame( mContext, gameID );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( BTCmd.PONG.ordinal() );
@@ -651,7 +661,7 @@ public class BTService extends XWService {
             os.flush();
 
             socket.close();
-            updateStatusOut( true );
+            mService.updateStatusOut( true );
         }
 
         private void receiveInvitation( byte proto, DataInputStream is,
@@ -662,7 +672,7 @@ public class BTService extends XWService {
             NetLaunchInfo nli;
             if ( BT_PROTO_JSONS == proto ) {
                 String asJson = is.readUTF();
-                nli = NetLaunchInfo.makeFrom( BTService.this, asJson );
+                nli = NetLaunchInfo.makeFrom( mContext, asJson );
             } else {
                 short len = is.readShort();
                 byte[] nliData = new byte[len];
@@ -671,7 +681,7 @@ public class BTService extends XWService {
             }
 
             BluetoothDevice host = socket.getRemoteDevice();
-            result = makeOrNotify( nli, host.getName(), host.getAddress() );
+            result = mService.makeOrNotify( nli, host.getName(), host.getAddress() );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( result.ordinal() );
@@ -694,15 +704,15 @@ public class BTService extends XWService {
                     CommsAddrRec addr = new CommsAddrRec( host.getName(),
                                                           host.getAddress() );
                     ReceiveResult rslt
-                        = BTService.this.receiveMessage( BTService.this,
-                                                         gameID, m_btMsgSink,
-                                                         buffer, addr );
+                        = mService.receiveMessage( mContext,
+                                                   gameID, mService.m_btMsgSink,
+                                                   buffer, addr );
 
                     result = rslt == ReceiveResult.GAME_GONE ?
                         BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
                     break;
                 case MESG_GAMEGONE:
-                    postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                    mService.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
                     result = BTCmd.MESG_ACCPT;
                     break;
                 default:
@@ -1097,7 +1107,7 @@ public class BTService extends XWService {
     private void startListener()
     {
         m_btMsgSink = new BTMsgSink();
-        m_listener = new BTListenerThread();
+        m_listener = new BTListenerThread( this, this );
         m_listener.start();
     }
 
@@ -1180,13 +1190,10 @@ public class BTService extends XWService {
         return dos;
     }
 
-    private void logIOE( IOException ioe )
+    private static void logIOE( IOException ioe )
     {
         Log.ex( TAG, ioe );
         ++s_errCount;
-        // if ( 0 == s_errCount % 10 ) {
-            postEvent( MultiEvent.BT_ERR_COUNT, s_errCount );
-            // }
     }
 
     private void sendBadProto( BluetoothSocket socket )
