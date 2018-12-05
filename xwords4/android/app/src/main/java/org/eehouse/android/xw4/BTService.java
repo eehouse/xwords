@@ -32,8 +32,9 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
-
 
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
@@ -77,6 +78,8 @@ import java.util.concurrent.TimeUnit;
 public class BTService extends XWService {
     private static final String TAG = BTService.class.getSimpleName();
     private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
+    private static final String KEY_KEEPALIVE_UNTIL_SECS = "keep_secs";
+    private static int DEFAULT_KEEPALIVE_SECONDS = 60 * 1; // 1 minute for testing; maybe 15 on ship?
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
@@ -187,6 +190,8 @@ public class BTService extends XWService {
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
     private Notification m_notification; // make once use many
+    private Handler mHandler;
+
     private static int s_errCount = 0;
 
     public static boolean BTAvailable()
@@ -266,7 +271,9 @@ public class BTService extends XWService {
 
     private static boolean inForeground()
     {
-        return sInForeground != null && sInForeground;
+        boolean result = sInForeground != null && sInForeground;
+        // Log.d( TAG, "inForeground() => %b", result );
+        return result;
     }
 
     static void onAppToForeground( Context context )
@@ -404,6 +411,7 @@ public class BTService extends XWService {
     @Override
     public void onCreate()
     {
+        mHandler = new Handler();
         startForegroundIf();
 
         BluetoothAdapter adapter = XWApp.BTSUPPORTED
@@ -446,8 +454,10 @@ public class BTService extends XWService {
                 switch( cmd ) {
                 case START_FOREGROUND:
                     stopForeground( true ); // Kill the notification
-                    // FALLTHRU
+                    break;
                 case START_BACKGROUND:
+                    noteLastUsed( this );   // prevent timer from killing immediately
+                    setTimeoutTimer();
                     break;
 
                 case CLEAR:
@@ -581,6 +591,7 @@ public class BTService extends XWService {
 
                     byte proto = inStream.readByte();
                     BTCmd cmd = BTCmd.values()[inStream.readByte()];
+                    Log.d( TAG, "BTListenerThread() got %s", cmd );
                     if ( protoOK( proto, cmd ) ) {
                         switch( cmd ) {
                         case PING:
@@ -602,6 +613,7 @@ public class BTService extends XWService {
                             break;
                         }
                         mService.updateStatusIn( true );
+                        noteLastUsed( mContext );
                     } else {
                         DataOutputStream os =
                             new DataOutputStream( socket.getOutputStream() );
@@ -1188,6 +1200,48 @@ public class BTService extends XWService {
             // logIOE( ioe );
         }
         return dos;
+    }
+
+    private static void noteLastUsed( Context context )
+    {
+        Log.d( TAG, "noteLastUsed(" + context + ")" );
+        synchronized (BTService.class) {
+            int nowSecs = (int)(SystemClock.uptimeMillis() / 1000);
+            int newKeepSecs = nowSecs + DEFAULT_KEEPALIVE_SECONDS;
+            DBUtils.setIntFor( context, KEY_KEEPALIVE_UNTIL_SECS, newKeepSecs );
+        }
+    }
+
+    private void setTimeoutTimer()
+    {
+        DbgUtils.assertOnUIThread();
+
+        if ( inForeground() ) {
+            // Let the timer die if we're in the foreground!
+            Log.d( TAG, "setTimeoutTimer(): in foreground; not resetting timer" );
+        } else {
+            long dieTimeMillis;
+            synchronized (BTService.class) {
+                dieTimeMillis = 1000 * DBUtils.getIntFor( this, KEY_KEEPALIVE_UNTIL_SECS, 0 );
+            }
+            long nowMillis = SystemClock.uptimeMillis();
+
+            if ( dieTimeMillis <= nowMillis ) {
+                Log.d( TAG, "setTimeoutTimer(): killing the thing" );
+                stopListener();
+                stopForeground(true);
+            } else {
+                mHandler.removeCallbacksAndMessages( this );
+                mHandler.postAtTime( new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d( TAG, "timeout timer fired" );
+                            setTimeoutTimer();
+                        }
+                    }, this, dieTimeMillis );
+                Log.d( TAG, "setTimeoutTimer(): set for %dms from now", dieTimeMillis - nowMillis );
+            }
+        }
     }
 
     private static void logIOE( IOException ioe )
