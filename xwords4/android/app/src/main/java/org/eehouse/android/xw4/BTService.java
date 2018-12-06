@@ -969,15 +969,20 @@ public class BTService extends XWService {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
             // DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
             for ( BluetoothDevice dev : pairedDevs ) {
-                String btAddr = dev.getAddress();
-
-                if ( sendPing( dev, 0 ) ) { // did we get a reply?
-                    if ( null != addrs ) {
-                        addrs.add( dev );
+                // Skip things that can't host an Android app
+                int clazz = dev.getBluetoothClass().getMajorDeviceClass();
+                if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
+                    if ( sendPing( dev, 0 ) ) { // did we get a reply?
+                        if ( null != addrs ) {
+                            addrs.add( dev );
+                        }
+                        if ( null != event ) {
+                            postEvent( event, dev.getName() );
+                        }
                     }
-                    if ( null != event ) {
-                        postEvent( event, dev.getName() );
-                    }
+                } else {
+                    Log.d( TAG, "skipping %s; not an android device!",
+                           dev.getName() );
                 }
             }
         }
