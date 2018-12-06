@@ -274,9 +274,13 @@ public class GameUtils {
 
     public static void deleteGame( Context context, GameLock lock, boolean informNow )
     {
-        tellDied( context, lock, informNow );
-        Utils.cancelNotification( context, (int)lock.getRowid() );
-        DBUtils.deleteGame( context, lock );
+        if ( null != lock ) {
+            tellDied( context, lock, informNow );
+            Utils.cancelNotification( context, (int)lock.getRowid() );
+            DBUtils.deleteGame( context, lock );
+        } else {
+            Log.e( TAG, "deleteGame(): null lock; doing nothing" );
+        }
     }
 
     public static boolean deleteGame( Context context, long rowid,
