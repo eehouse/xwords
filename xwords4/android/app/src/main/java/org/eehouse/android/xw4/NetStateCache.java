@@ -181,8 +181,6 @@ public class NetStateCache {
 
         public PvtBroadcastReceiver()
         {
-            // DbgUtils.assertOnUIThread(); // firing
-            mHandler = new Handler();
             mLastStateSent = s_netAvail;
         }
 
@@ -190,6 +188,11 @@ public class NetStateCache {
         public void onReceive( Context context, Intent intent )
         {
             DbgUtils.assertOnUIThread();
+
+            if ( null == mHandler ) {
+                DbgUtils.assertOnUIThread();
+                mHandler = new Handler();
+            }
 
             if ( intent.getAction().
                  equals( ConnectivityManager.CONNECTIVITY_ACTION)) {
