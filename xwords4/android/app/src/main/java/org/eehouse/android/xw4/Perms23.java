@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -43,14 +44,15 @@ public class Perms23 {
     private static final String TAG = Perms23.class.getSimpleName();
     
     public static enum Perm {
-        READ_PHONE_STATE("android.permission.READ_PHONE_STATE"),
-        STORAGE("android.permission.WRITE_EXTERNAL_STORAGE"),
-        SEND_SMS("android.permission.SEND_SMS"),
-        READ_CONTACTS("android.permission.READ_CONTACTS")
-        ;
+        READ_PHONE_STATE(Manifest.permission.READ_PHONE_STATE),
+        STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        SEND_SMS(Manifest.permission.SEND_SMS),
+        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
+        READ_CONTACTS(Manifest.permission.READ_CONTACTS);
 
         private String m_str;
         private Perm(String str) { m_str = str; }
+
         public String getString() { return m_str; }
         public static Perm getFor( String str ) {
             Perm result = null;
@@ -261,6 +263,7 @@ public class Perms23 {
     {
         // Log.d( TAG, "gotPermissionResult(%s)", perms.toString() );
         Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
+        boolean shouldResend = false;
         for ( int ii = 0; ii < perms.length; ++ii ) {
             Perm perm = Perm.getFor( perms[ii] );
             boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
@@ -269,14 +272,18 @@ public class Perms23 {
             // Hack. If SMS has been granted, resend all moves. This should be
             // replaced with an api allowing listeners to register
             // Perm-by-Perm, but I'm in a hurry.
-            if ( granted && perm == Perm.SEND_SMS ) {
-                GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS,
-                                       true, true );
+            if ( granted && (perm == Perm.SEND_SMS || perm == Perm.RECEIVE_SMS) ) {
+                shouldResend = true;
             }
 
             // Log.d( TAG, "calling %s.onPermissionResult(%s, %b)",
             //                record.cbck.getClass().getSimpleName(), perm.toString(),
             //                granted );
+        }
+
+        if ( shouldResend ) {
+            GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS,
+                                   true, true );
         }
 
         PermCbck cbck = s_map.remove( code );
@@ -290,6 +297,7 @@ public class Perms23 {
         String permString = perm.getString();
         boolean result = PackageManager.PERMISSION_GRANTED
             == ContextCompat.checkSelfPermission( XWApp.getContext(), permString );
+        // Log.d( TAG, "havePermission(%s) => %b", permString, result );
         return result;
     }
 
