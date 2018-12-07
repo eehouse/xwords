@@ -174,7 +174,7 @@ public class SMSService extends XWService {
     public static void stopService( Context context )
     {
         Intent intent = getIntentTo( context, SMSAction.STOP_SELF );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     // NBS case
@@ -184,7 +184,7 @@ public class SMSService extends XWService {
         Intent intent = getIntentTo( context, SMSAction.HANDLEDATA );
         intent.putExtra( BUFFER, buffer );
         intent.putExtra( PHONE, phone );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void inviteRemote( Context context, String phone,
@@ -195,7 +195,7 @@ public class SMSService extends XWService {
         Log.w( TAG, "inviteRemote(%s, '%s')", phone, nli );
         byte[] data = nli.asByteArray();
         intent.putExtra( GAMEDATA_BA, data );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static int sendPacket( Context context, String phone,
@@ -207,7 +207,7 @@ public class SMSService extends XWService {
             intent.putExtra( PHONE, phone );
             intent.putExtra( MultiService.GAMEID, gameID );
             intent.putExtra( BINBUFFER, binmsg );
-            context.startService( intent );
+            startService( context, intent );
             nSent = binmsg.length;
         } else {
             Log.i( TAG, "sendPacket: dropping because SMS disabled" );
@@ -220,14 +220,14 @@ public class SMSService extends XWService {
         Intent intent = getIntentTo( context, SMSAction.REMOVE );
         intent.putExtra( PHONE, phone );
         intent.putExtra( MultiService.GAMEID, gameID );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static void onGameDictDownload( Context context, Intent intentOld )
     {
         Intent intent = getIntentTo( context, SMSAction.ADDED_MISSING );
         intent.fillIn( intentOld, 0 );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static String fromPublicFmt( String msg )
@@ -253,6 +253,12 @@ public class SMSService extends XWService {
             }
         }
         return result;
+    }
+
+    private static void startService( Context context, Intent intent )
+    {
+        Log.d( TAG, "startService(%s)", intent );
+        context.startService( intent );
     }
 
     private static Intent getIntentTo( Context context, SMSAction cmd )
@@ -311,6 +317,7 @@ public class SMSService extends XWService {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
+        // Log.d( TAG, "onStartCommand(%s)", intent );
         int result = Service.START_NOT_STICKY;
         if ( null != intent ) {
             int ordinal = intent.getIntExtra( CMD_STR, -1 );
