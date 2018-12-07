@@ -23,21 +23,23 @@ package org.eehouse.android.xw4;
 import java.util.Formatter;
 
 public class Log {
+    private static final String PRE_TAG = BuildConfig.FLAVOR + ":";
+
     public static void d( String tag, String fmt, Object... args ) {
         String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.d( tag, str );
+        android.util.Log.d( PRE_TAG + tag, str );
     }
     public static void w( String tag, String fmt, Object... args ) {
         String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.w( tag, str );
+        android.util.Log.w( PRE_TAG + tag, str );
     }
     public static void e( String tag, String fmt, Object... args ) {
         String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.e( tag, str );
+        android.util.Log.e( PRE_TAG + tag, str );
     }
     public static void i( String tag, String fmt, Object... args ) {
         String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.i( tag, str );
+        android.util.Log.i( PRE_TAG + tag, str );
     }
 
     public static void ex( String tag, Exception exception )
@@ -45,5 +47,4 @@ public class Log {
         w( tag, "Exception: %s", exception.toString() );
         DbgUtils.printStack( tag, exception.getStackTrace() );
     }
-
 }
