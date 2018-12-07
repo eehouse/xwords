@@ -33,15 +33,15 @@ import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 abstract class XWService extends Service {
     private static final String TAG = XWService.class.getSimpleName();
     public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
 
     protected static MultiService s_srcMgr = null;
-    private static Set<String> s_seen = new HashSet<String>();
+    private static Map<String, Long> s_seen = new HashMap<>();
 
     private UtilCtxt m_utilCtxt;
 
@@ -72,18 +72,20 @@ abstract class XWService extends Service {
 
     // Check that we aren't already processing an invitation with this
     // inviteID.
+    private static final long SEEN_INTERVAL_MS = 1000 * 5;
     private boolean checkNotDupe( NetLaunchInfo nli )
     {
         String inviteID = nli.inviteID();
-        boolean isDupe;
         synchronized( s_seen ) {
-            isDupe = s_seen.contains( inviteID );
-            if ( !isDupe ) {
-                s_seen.add( inviteID );
+            long now = System.currentTimeMillis();
+            Long lastSeen = s_seen.get( inviteID );
+            boolean seen = null != lastSeen && lastSeen + SEEN_INTERVAL_MS > now;
+            if ( !seen ) {
+                s_seen.put( inviteID, now );
             }
+            Log.d( TAG, "checkNotDupe('%s') => %b", inviteID, !seen );
+            return !seen;
         }
-        Log.d( TAG, "checkNotDupe('%s') => %b", inviteID, !isDupe );
-        return !isDupe;
     }
 
     abstract void postNotification( String device, int gameID, long rowid );
