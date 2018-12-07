@@ -23,7 +23,7 @@ package org.eehouse.android.xw4;
 import java.util.Formatter;
 
 public class Log {
-    private static final String PRE_TAG = BuildConfig.FLAVOR + ":";
+    private static final String PRE_TAG = BuildConfig.FLAVOR + "-";
 
     public static void d( String tag, String fmt, Object... args ) {
         String str = new Formatter().format( fmt, args ).toString();
