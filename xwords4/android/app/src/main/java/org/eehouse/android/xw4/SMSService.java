@@ -86,6 +86,7 @@ public class SMSService extends XWService {
     private BroadcastReceiver m_sentReceiver;
     private BroadcastReceiver m_receiveReceiver;
     private OnSharedPreferenceChangeListener m_prefsListener;
+    private SMSServiceHelper mHelper;
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
@@ -278,14 +279,9 @@ public class SMSService extends XWService {
     }
 
     @Override
-    protected MultiMsgSink getSink( long rowid )
-    {
-        return new SMSMsgSink( this );
-    }
-
-    @Override
     public void onCreate()
     {
+        mHelper = new SMSServiceHelper( this );
         if ( Utils.deviceSupportsSMS( this ) ) {
             registerReceivers();
         } else {
@@ -469,10 +465,10 @@ public class SMSService extends XWService {
             }
             break;
         case DEATH:
-            postEvent( MultiEvent.MESSAGE_NOGAME, msg.gameID );
+            mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, msg.gameID );
             break;
         case ACK_INVITE:
-            postEvent( MultiEvent.NEWGAME_SUCCESS, msg.gameID );
+            mHelper.postEvent( MultiEvent.NEWGAME_SUCCESS, msg.gameID );
             break;
         default:
             Log.w( TAG, "unexpected cmd %s", msg.cmd );
@@ -489,26 +485,17 @@ public class SMSService extends XWService {
             for ( SMSProtoMsg msg : msgs ) {
                 receive( msg, senderPhone );
             }
-            postEvent( MultiEvent.SMS_RECEIVE_OK );
+            mHelper.postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
             Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
                    senderPhone );
         }
     }
 
-    @Override
-    protected void postNotification( String phone, int gameID, long rowid )
-    {
-        String owner = Utils.phoneToContact( this, phone, true );
-        String body = LocUtils.getString( this, R.string.new_name_body_fmt,
-                                          owner );
-        GameUtils.postInvitedNotification( this, gameID, body, rowid );
-    }
-
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
         if ( nli != null ) {
-            handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
+            mHelper.handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
             ackInvite( phone, nli.gameID() );
         }
     }
@@ -554,7 +541,7 @@ public class SMSService extends XWService {
                 } catch ( NullPointerException npe ) {
                     Assert.fail();      // shouldn't be trying to do this!!!
                 } catch ( java.lang.SecurityException se ) {
-                    postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
+                    mHelper.postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
                 } catch ( Exception ee ) {
                     Log.ex( TAG, ee );
                 }
@@ -575,11 +562,12 @@ public class SMSService extends XWService {
 
     private boolean feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
     {
-        ReceiveResult rslt = receiveMessage( this, gameID, null, msg, addr );
-        if ( ReceiveResult.GAME_GONE == rslt ) {
+        XWServiceHelper.ReceiveResult rslt = mHelper
+            .receiveMessage( this, gameID, null, msg, addr );
+        if ( XWServiceHelper.ReceiveResult.GAME_GONE == rslt ) {
             sendDiedPacket( addr.sms_phone, gameID );
         }
-        return rslt == ReceiveResult.OK;
+        return rslt == XWServiceHelper.ReceiveResult.OK;
     }
 
     private void registerReceivers()
@@ -590,15 +578,15 @@ public class SMSService extends XWService {
                 {
                     switch ( getResultCode() ) {
                     case Activity.RESULT_OK:
-                        postEvent( MultiEvent.SMS_SEND_OK );
+                        mHelper.postEvent( MultiEvent.SMS_SEND_OK );
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        postEvent( MultiEvent.SMS_SEND_FAILED_NORADIO );
+                        mHelper.postEvent( MultiEvent.SMS_SEND_FAILED_NORADIO );
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
                     default:
                         Log.w( TAG, "FAILURE!!!" );
-                        postEvent( MultiEvent.SMS_SEND_FAILED );
+                        mHelper.postEvent( MultiEvent.SMS_SEND_FAILED );
                         break;
                     }
                 }
@@ -653,6 +641,30 @@ public class SMSService extends XWService {
         public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
         {
             return sendPacket( addr.sms_phone, gameID, buf );
+        }
+    }
+
+    private class SMSServiceHelper extends XWServiceHelper {
+        private Service mService;
+
+        SMSServiceHelper( Service service ) {
+            super( service );
+            mService = service;
+        }
+
+        @Override
+        protected MultiMsgSink getSink( long rowid )
+        {
+            return new SMSMsgSink( SMSService.this );
+        }
+
+        @Override
+        protected void postNotification( String phone, int gameID, long rowid )
+        {
+            String owner = Utils.phoneToContact( mService, phone, true );
+            String body = LocUtils.getString( mService, R.string.new_name_body_fmt,
+                                              owner );
+            GameUtils.postInvitedNotification( mService, gameID, body, rowid );
         }
     }
 }

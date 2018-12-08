@@ -143,14 +143,14 @@ public class DelegateBase implements DlgClickNotify,
     protected void onResume()
     {
         m_isVisible = true;
-        XWService.setListener( this );
+        XWServiceHelper.setListener( this );
         runIfVisible();
     }
 
     protected void onPause()
     {
         m_isVisible = false;
-        XWService.setListener( null );
+        XWServiceHelper.setListener( null );
     }
 
     protected DelegateBase curThis()

@@ -25,8 +25,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
+import android.support.v4.app.JobIntentService;
 import android.text.TextUtils;
-
 
 import org.eehouse.android.xw4.GameUtils.BackMoveResult;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
@@ -62,7 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class RelayService extends XWService
+public class RelayService extends JobIntentService
     implements NetStateCache.StateChangedIf {
     private static final String TAG = RelayService.class.getSimpleName();
     private static final int MAX_SEND = 1024;
@@ -121,6 +121,7 @@ public class RelayService extends XWService
     private long m_lastGamePacketReceived;
     private int m_nativeFailScore;
     private boolean m_skipUPDSet;
+    private RelayServiceHelper mHelper;
     private static DevIDType s_curType = DevIDType.ID_TYPE_NONE;
     private static long s_regStartTime = 0;
 
@@ -221,20 +222,17 @@ public class RelayService extends XWService
 
     public static void startService( Context context )
     {
-        Log.i( TAG, "startService()" );
         Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
         startService( context, intent );
     }
 
+    // Must use the same lobID for all work enqueued for the same class
+    private final static int sJobID = RelayService.class.hashCode();
+
     private static void startService( Context context, Intent intent )
     {
-        Log.d( TAG, "startService(%s)", intent );
-
-        if ( inForeground() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O ) {
-            context.startService( intent );
-        } else {
-            Log.d( TAG, "startService(); not starting" );
-        }
+        Log.d( TAG, "startService(%s) (calling enqueueWork())", intent );
+        enqueueWork( context, RelayService.class, sJobID, intent );
     }
 
     private static void stopService( Context context )
@@ -308,16 +306,9 @@ public class RelayService extends XWService
     {
         Log.d( TAG, "receiveInvitation: got nli from %d: %s", srcDevID,
                nli.toString() );
-        if ( !handleInvitation( nli, null, DictFetchOwner.OWNER_RELAY ) ) {
+        if ( !mHelper.handleInvitation( nli, null, DictFetchOwner.OWNER_RELAY ) ) {
             Log.d( TAG, "handleInvitation() failed" );
         }
-    }
-
-    @Override
-    void postNotification( String device, int gameID, long rowid )
-    {
-        String body = LocUtils.getString( this, R.string.new_relay_body );
-        GameUtils.postInvitedNotification( this, gameID, body, rowid );
     }
 
     // Exists to get incoming data onto the main thread
@@ -365,15 +356,11 @@ public class RelayService extends XWService
     }
 
     @Override
-    protected MultiMsgSink getSink( long rowid )
-    {
-        return new RelayMsgSink().setRowID( rowid );
-    }
-
-    @Override
     public void onCreate()
     {
+        Log.d( TAG, "onCreate()" );
         super.onCreate();
+        mHelper = new RelayServiceHelper( this );
         m_lastGamePacketReceived =
             XWPrefs.getPrefsLong( this, R.string.key_last_packet,
                                   Utils.getCurSeconds() );
@@ -398,6 +385,8 @@ public class RelayService extends XWService
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
+        Log.d( TAG, "onStartCommand(%s)", intent );
+        super.onStartCommand( intent, flags, startId );
         Integer result = handleCommand( intent );
 
         if ( null == result ) {
@@ -407,6 +396,13 @@ public class RelayService extends XWService
         NetStateCache.register( this, this );
         resetExitTimer();
         return result;
+    }
+
+    @Override
+    public void onHandleWork( Intent intent )
+    {
+        Log.d( TAG, "onHandleWork(%s)", intent );
+        /*void*/ handleCommand( intent );
     }
 
     @Override
@@ -436,7 +432,7 @@ public class RelayService extends XWService
             cmd = null;
         }
         if ( null != cmd ) {
-            // Log.d( TAG, "onStartCommand(): cmd=%s", cmd.toString() );
+            Log.d( TAG, "onStartCommand(): cmd=%s", cmd.toString() );
             switch( cmd ) {
             case PROCESS_GAME_MSGS:
                 String[] relayIDs = new String[1];
@@ -483,7 +479,7 @@ public class RelayService extends XWService
                     String relayID = intent.getStringExtra( RELAY_ID );
                     sendNoConnMessage( rowid, relayID, msg );
                 } else {
-                    receiveMessage( this, rowid, null, msg, s_addr );
+                    mHelper.receiveMessage( this, rowid, null, msg, s_addr );
                 }
                 break;
             case INVITE:
@@ -621,8 +617,6 @@ public class RelayService extends XWService
 
     private void stopUDPThreadsIf()
     {
-        DbgUtils.assertOnUIThread();
-
         UDPThreads threads = m_UDPThreadsRef.getAndSet( null );
         if ( null != threads ) {
             threads.stop();
@@ -648,7 +642,7 @@ public class RelayService extends XWService
                     Log.i( TAG, "relay unvailable for another %d seconds",
                            unavail );
                     String str = getVLIString( dis );
-                    postEvent( MultiEvent.RELAY_ALERT, str );
+                    mHelper.postEvent( MultiEvent.RELAY_ALERT, str );
                     break;
                 case XWPDEV_ALERT:
                     str = getVLIString( dis );
@@ -999,7 +993,7 @@ public class RelayService extends XWService
                     long rowid = rowIDs[ii];
                     sink.setRowID( rowid );
                     for ( byte[] msg : forOne ) {
-                        receiveMessage( this, rowid, sink, msg, s_addr );
+                        mHelper.receiveMessage( this, rowid, sink, msg, s_addr );
                     }
                 }
             }
@@ -1725,6 +1719,28 @@ public class RelayService extends XWService
             } catch ( java.io.IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
+        }
+    }
+
+    private class RelayServiceHelper extends XWServiceHelper {
+
+        private Service mService;
+        RelayServiceHelper( Service service ) {
+            super( service );
+            mService = service;
+        }
+
+        @Override
+        protected MultiMsgSink getSink( long rowid )
+        {
+            return new RelayMsgSink().setRowID( rowid );
+        }
+
+        @Override
+        void postNotification( String device, int gameID, long rowid )
+        {
+            String body = LocUtils.getString( mService, R.string.new_relay_body );
+            GameUtils.postInvitedNotification( mService, gameID, body, rowid );
         }
     }
 

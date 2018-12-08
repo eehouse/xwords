@@ -191,6 +191,7 @@ public class BTService extends XWService {
     private BTSenderThread m_sender;
     private Notification m_notification; // make once use many
     private Handler mHandler;
+    private BTServiceHelper mHelper;
 
     private static int s_errCount = 0;
 
@@ -418,6 +419,8 @@ public class BTService extends XWService {
         Log.d( TAG, "%s.onCreate()", this );
         super.onCreate();
 
+        mHelper = new BTServiceHelper( this );
+
         m_btMsgSink = new BTMsgSink();
         mHandler = new Handler();
         startForegroundIf();
@@ -522,7 +525,7 @@ public class BTService extends XWService {
                     boolean cameOn = intent.getBooleanExtra( RADIO_KEY, false );
                     MultiEvent evt = cameOn? MultiEvent.BT_ENABLED
                         : MultiEvent.BT_DISABLED;
-                    postEvent( evt );
+                    mHelper.postEvent( evt );
                     if ( cameOn ) {
                         GameUtils.resendAllIf( this, CommsConnType.COMMS_CONN_BT );
                     } else {
@@ -581,6 +584,7 @@ public class BTService extends XWService {
         private BluetoothServerSocket m_serverSocket;
         private Context mContext;
         private BTService mService;
+        private BTServiceHelper mHelper;
         private volatile Thread mTimerThread;
 
         private BTListenerThread( Context context, BTService service )
@@ -595,7 +599,8 @@ public class BTService extends XWService {
             }
         }
 
-        static void startYourself( Context context, BTService service )
+        static void startYourself( Context context, BTService service,
+                                   BTServiceHelper helper )
         {
             Log.d( TAG, "startYourself(%s, %s)", context, service );
             DbgUtils.assertOnUIThread();
@@ -604,7 +609,7 @@ public class BTService extends XWService {
                     s_listener[0] = new BTListenerThread( context, service );
                     s_listener[0].start();
                 } else if ( null != service ) {
-                    s_listener[0].setService( context, service );
+                    s_listener[0].setService( context, service, helper );
                 }
             }
         }
@@ -612,7 +617,7 @@ public class BTService extends XWService {
         static void startYourself( Context context )
         {
             DbgUtils.assertOnUIThread();
-            startYourself( context, null );
+            startYourself( context, null, null );
         }
 
         static void stopYourself( BTListenerThread self )
@@ -634,11 +639,12 @@ public class BTService extends XWService {
             }
         }
 
-        void setService( Context context, BTService service )
+        void setService( Context context, BTService service, BTServiceHelper helper )
         {
             if ( null == mService ) {
                 Log.d( TAG, "setService(): we didn't have one before. Do something!!!" );
                 mService = service;
+                mHelper = helper;
                 Assert.assertNotNull( context );
                 mContext = context; // Use Service instead of Receiver (possibly)
             } else {
@@ -838,16 +844,16 @@ public class BTService extends XWService {
 
                     CommsAddrRec addr = new CommsAddrRec( host.getName(),
                                                           host.getAddress() );
-                    ReceiveResult rslt
-                        = mService.receiveMessage( mContext,
-                                                   gameID, mService.m_btMsgSink,
-                                                   buffer, addr );
+                    XWServiceHelper.ReceiveResult rslt
+                        = mHelper.receiveMessage( mContext,
+                                                  gameID, mService.m_btMsgSink,
+                                                  buffer, addr );
 
-                    result = rslt == ReceiveResult.GAME_GONE ?
+                    result = rslt == XWServiceHelper.ReceiveResult.GAME_GONE ?
                         BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
                     break;
                 case MESG_GAMEGONE:
-                    mService.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                    mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
                     result = BTCmd.MESG_ACCPT;
                     break;
                 default:
@@ -977,7 +983,7 @@ public class BTService extends XWService {
                             addrs.add( dev );
                         }
                         if ( null != event ) {
-                            postEvent( event, dev.getName() );
+                            mHelper.postEvent( event, dev.getName() );
                         }
                     }
                 } else {
@@ -1010,7 +1016,7 @@ public class BTService extends XWService {
                         } else {
                             gotReply = BTCmd.PONG == reply;
                             if ( gotReply && is.readBoolean() ) {
-                                postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                                mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
                             }
                         }
 
@@ -1064,20 +1070,24 @@ public class BTService extends XWService {
                     }
 
                     if ( null == reply ) {
-                        postEvent( MultiEvent.APP_NOT_FOUND_BT, dev.getName() );
+                        mHelper.postEvent( MultiEvent.APP_NOT_FOUND_BT,
+                                           dev.getName() );
                     } else {
                         switch ( reply ) {
                         case BAD_PROTO:
                             sendBadProto( socket );
                             break;
                         case INVITE_ACCPT:
-                            postEvent( MultiEvent.NEWGAME_SUCCESS, elem.m_gameID );
+                            mHelper.postEvent( MultiEvent.NEWGAME_SUCCESS,
+                                               elem.m_gameID );
                             break;
                         case INVITE_DUPID:
-                            postEvent( MultiEvent.NEWGAME_DUP_REJECTED, dev.getName() );
+                            mHelper.postEvent( MultiEvent.NEWGAME_DUP_REJECTED,
+                                               dev.getName() );
                             break;
                         default:
-                            postEvent( MultiEvent.NEWGAME_FAILURE, elem.m_gameID );
+                            mHelper.postEvent( MultiEvent.NEWGAME_FAILURE,
+                                               elem.m_gameID );
                             break;
                         }
                     }
@@ -1160,10 +1170,10 @@ public class BTService extends XWService {
 
             if ( null != evt ) {
                 String btName = nameForAddr( m_adapter, elem.m_btAddr );
-                postEvent( evt, elem.m_gameID, 0, btName );
+                mHelper.postEvent( evt, elem.m_gameID, 0, btName );
                 if ( ! success ) {
                     int failCount = elem.incrFailCount();
-                    postEvent( MultiEvent.MESSAGE_RESEND, btName,
+                    mHelper.postEvent( MultiEvent.MESSAGE_RESEND, btName,
                                 RESEND_TIMEOUT, failCount );
                 }
             }
@@ -1183,7 +1193,7 @@ public class BTService extends XWService {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
                         String btName = nameForAddr( m_adapter, elem.m_btAddr );
-                        postEvent( MultiEvent.MESSAGE_FAILOUT, btName );
+                        mHelper.postEvent( MultiEvent.MESSAGE_FAILOUT, btName );
                         iter.remove();
                     }
                 }
@@ -1241,12 +1251,13 @@ public class BTService extends XWService {
             btNames[ii] = nameForAddr( m_adapter, btAddrs[ii] );
             ++ii;
         }
-        postEvent( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
+        mHelper.postEvent( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
     }
 
     private void startListener()
     {
-        BTListenerThread.startYourself( this, this );
+        Assert.assertNotNull( mHelper );
+        BTListenerThread.startYourself( this, this, mHelper );
     }
 
     private void startSender()
@@ -1271,28 +1282,12 @@ public class BTService extends XWService {
         m_sender = null;
     }
 
-    @Override
-    void postNotification( String device, int gameID, long rowid )
-    {
-        String body = LocUtils.getString( this, R.string.new_bt_body_fmt,
-                                          device );
-
-        GameUtils.postInvitedNotification( this, gameID, body, rowid );
-
-        postEvent( MultiEvent.BT_GAME_CREATED, rowid );
-    }
-
-    @Override
-    MultiMsgSink getSink( long rowid )
-    {
-        return m_btMsgSink;
-    }
-
     private BTCmd makeOrNotify( NetLaunchInfo nli, String btName,
                                 String btAddr )
     {
         BTCmd result;
-        if ( handleInvitation( nli, btName, DictFetchOwner.OWNER_BT ) ) { // here
+        if ( mHelper.handleInvitation( nli, btName,
+                                       DictFetchOwner.OWNER_BT ) ) {
             result = BTCmd.INVITE_ACCPT;
         } else {
             result = BTCmd.INVITE_DUP_INVITE; // dupe of rematch
@@ -1380,7 +1375,8 @@ public class BTService extends XWService {
 
     private void sendBadProto( BluetoothSocket socket )
     {
-        postEvent( MultiEvent.BAD_PROTO_BT, socket.getRemoteDevice().getName() );
+        mHelper.postEvent( MultiEvent.BAD_PROTO_BT,
+                           socket.getRemoteDevice().getName() );
     }
 
     private void updateStatusOut( boolean success )
@@ -1444,6 +1440,32 @@ public class BTService extends XWService {
                 }
             }
             return nSent;
+        }
+    }
+
+    private class BTServiceHelper extends XWServiceHelper {
+        private Service mService;
+
+        BTServiceHelper( Service service ) {
+            super( service );
+            mService = service;
+        }
+
+        @Override
+        MultiMsgSink getSink( long rowid )
+        {
+            return m_btMsgSink;
+        }
+
+        @Override
+        void postNotification( String device, int gameID, long rowid )
+        {
+            String body = LocUtils.getString( mService, R.string.new_bt_body_fmt,
+                                              device );
+
+            GameUtils.postInvitedNotification( mService, gameID, body, rowid );
+
+            postEvent( MultiEvent.BT_GAME_CREATED, rowid );
         }
     }
 }
