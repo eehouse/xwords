@@ -101,7 +101,12 @@ public class DbgUtils {
 
     public static void assertOnUIThread()
     {
-        Assert.assertTrue( Utils.isOnUIThread() );
+        assertOnUIThread( true );
+    }
+
+    public static void assertOnUIThread( boolean isOnThread )
+    {
+        Assert.assertTrue( isOnThread == Utils.isOnUIThread() );
     }
 
     public static void printStack( String tag, StackTraceElement[] trace )
