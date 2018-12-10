@@ -76,8 +76,6 @@ public class RelayService extends JobIntentService
 
     private static final String CMD_STR = "CMD";
 
-    private static Boolean sInForeground;
-
     private static enum MsgCmds { INVALID,
                                   PROCESS_GAME_MSGS,
                                   PROCESS_DEV_MSGS,
@@ -192,55 +190,36 @@ public class RelayService extends JobIntentService
         enabledChanged( context );
     }
 
-    private static boolean inForeground()
-    {
-        boolean result = sInForeground != null && sInForeground;
-        Log.d( TAG, "inForeground() => %b", result );
-        return result;
-    }
-
-    private static void onAppStateChange( Context context, boolean inForeground )
-    {
-        Log.d( TAG, "onAppStateChange(inForeground=%b)", inForeground );
-        if ( null == sInForeground || inForeground() != inForeground ) {
-            sInForeground = inForeground;
-            // Intent intent =
-            //     getIntentTo( context,
-            //                  inForeground ? BTAction.START_FOREGROUND
-            //                  : BTAction.START_BACKGROUND );
-            // startService( context, intent );
-        }
-    }
-
-    static void onAppToForeground( Context context )
-    {
-        onAppStateChange( context, true );
-    }
-
-    static void onAppToBackground( Context context )
-    {
-        onAppStateChange( context, false );
-    }
-
     public static void startService( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     // Must use the same lobID for all work enqueued for the same class
     private final static int sJobID = RelayService.class.hashCode();
 
-    private static void startService( Context context, Intent intent )
+    private static void enqueueWork( Context context, Intent intent )
     {
-        Log.d( TAG, "startService(%s) (calling enqueueWork())", intent );
+        Log.d( TAG, "calling enqueueWork(cmd=%s)", cmdFrom( intent ) );
         enqueueWork( context, RelayService.class, sJobID, intent );
+    }
+
+    private static MsgCmds cmdFrom( Intent intent )
+    {
+        MsgCmds cmd;
+        try {
+            cmd = MsgCmds.values()[intent.getIntExtra( CMD_STR, -1 )];
+        } catch (Exception ex) { // OOB most likely
+            cmd = null;
+        }
+        return cmd;
     }
 
     private static void stopService( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.STOP );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static void inviteRemote( Context context, int destDevID,
@@ -248,7 +227,7 @@ public class RelayService extends JobIntentService
     {
         int myDevID = DevID.getRelayDevIDInt( context );
         if ( 0 != myDevID ) {
-            startService( context, getIntentTo( context, MsgCmds.INVITE )
+            enqueueWork( context, getIntentTo( context, MsgCmds.INVITE )
                                   .putExtra( DEV_ID_SRC, myDevID )
                                   .putExtra( DEV_ID_DEST, destDevID )
                                   .putExtra( RELAY_ID, relayID )
@@ -259,13 +238,13 @@ public class RelayService extends JobIntentService
     public static void reset( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.RESET );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static void timerFired( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.TIMER_FIRED );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static int sendPacket( Context context, long rowid, byte[] msg )
@@ -276,7 +255,7 @@ public class RelayService extends JobIntentService
             Intent intent = getIntentTo( context, MsgCmds.SEND )
                 .putExtra( ROWID, rowid )
                 .putExtra( BINBUFFER, msg );
-            startService( context, intent );
+            enqueueWork( context, intent );
             result = msg.length;
         } else {
             Log.w( TAG, "sendPacket: network down" );
@@ -293,7 +272,7 @@ public class RelayService extends JobIntentService
                 .putExtra( ROWID, rowid )
                 .putExtra( RELAY_ID, relayID )
                 .putExtra( BINBUFFER, msg );
-            startService( context, intent );
+            enqueueWork( context, intent );
             result = msg.length;
         }
         return result;
@@ -322,7 +301,7 @@ public class RelayService extends JobIntentService
             Intent intent = getIntentTo( context, MsgCmds.RECEIVE )
                 .putExtra( ROWID, rowid )
                 .putExtra( BINBUFFER, msg );
-            startService( context, intent );
+            enqueueWork( context, intent );
         } else {
             Log.w( TAG, "postData(): Dropping message for rowid %d:"
                    + " not on device", rowid );
@@ -340,20 +319,20 @@ public class RelayService extends JobIntentService
         Intent intent = getIntentTo( context, MsgCmds.PROCESS_GAME_MSGS )
             .putExtra( MSGS_ARR, msgs64 )
             .putExtra( RELAY_ID, relayId );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static void processDevMsgs( Context context, String[] msgs64 )
     {
         Intent intent = getIntentTo( context, MsgCmds.PROCESS_DEV_MSGS )
             .putExtra( MSGS_ARR, msgs64 );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     private static Intent getIntentTo( Context context, MsgCmds cmd )
     {
-        Intent intent = new Intent( context, RelayService.class );
-        intent.putExtra( CMD_STR, cmd.ordinal() );
+        Intent intent = new Intent( context, RelayService.class )
+            .putExtra( CMD_STR, cmd.ordinal() );
         return intent;
     }
 
@@ -370,7 +349,7 @@ public class RelayService extends JobIntentService
         m_handler = new Handler();
         m_onInactivity = new Runnable() {
                 public void run() {
-                    Log.d( TAG, "m_onInactivity fired" );
+                    // Log.d( TAG, "m_onInactivity fired" );
                     if ( !shouldMaintainConnection() ) {
                         NetStateCache.unregister( RelayService.this,
                                                   RelayService.this );
@@ -390,8 +369,8 @@ public class RelayService extends JobIntentService
     @Override
     public void onHandleWork( Intent intent )
     {
-        Log.d( TAG, "onHandleWork(%s)", intent );
         DbgUtils.assertOnUIThread( false );
+        Log.d( TAG, "%s.onHandleWork(cmd=%s)", this, cmdFrom( intent ) );
         handleCommand( intent );
         resetExitTimer();
     }
@@ -418,12 +397,7 @@ public class RelayService extends JobIntentService
 
     private void handleCommand( Intent intent )
     {
-        MsgCmds cmd;
-        try {
-            cmd = MsgCmds.values()[intent.getIntExtra( CMD_STR, -1 )];
-        } catch (Exception ex) { // OOB most likely
-            cmd = null;
-        }
+        MsgCmds cmd = cmdFrom( intent );
         if ( null != cmd ) {
             Log.d( TAG, "handleCommand(): cmd=%s", cmd.toString() );
             switch( cmd ) {
@@ -595,8 +569,8 @@ public class RelayService extends JobIntentService
     
     private void noteSent( PacketData packet, boolean fromUDP )
     {
-        Log.d( TAG, "Sent (fromUDP=%b) packet: cmd=%s, id=%d",
-               fromUDP, packet.m_cmd.toString(), packet.m_packetID );
+        // Log.d( TAG, "Sent (fromUDP=%b) packet: cmd=%s, id=%d",
+        //        fromUDP, packet.m_cmd.toString(), packet.m_packetID );
         if ( fromUDP || packet.m_cmd != XWRelayReg.XWPDEV_ACK ) {
             List<PacketData> list = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
             synchronized( list ) {
@@ -609,15 +583,15 @@ public class RelayService extends JobIntentService
     {
         long nowMS = System.currentTimeMillis();
         List<PacketData> map = fromUDP ? s_packetsSentUDP : s_packetsSentWeb;
-        Log.d( TAG, "noteSent(fromUDP=%b): adding %d; size before: %d",
-               fromUDP, packets.size(), map.size() );
+        // Log.d( TAG, "noteSent(fromUDP=%b): adding %d; size before: %d",
+        //        fromUDP, packets.size(), map.size() );
         for ( PacketData packet : packets ) {
             if ( fromUDP ) {
                 packet.setSentMS( nowMS );
             }
             noteSent( packet, fromUDP );
         }
-        Log.d( TAG, "noteSent(fromUDP=%b): size after: %d", fromUDP, map.size() );
+        // Log.d( TAG, "noteSent(fromUDP=%b): size after: %d", fromUDP, map.size() );
     }
 
     // MIGHT BE Running on reader thread
@@ -684,20 +658,20 @@ public class RelayService extends JobIntentService
                     break;
                 case XWPDEV_UPGRADE:
                     intent = getIntentTo( this, MsgCmds.UPGRADE );
-                    startService( this, intent );
+                    enqueueWork( this, intent );
                     break;
                 case XWPDEV_GOTINVITE:
                     resetBackoff = true;
-                    intent = getIntentTo( this, MsgCmds.GOT_INVITE );
                     int srcDevID = dis.readInt();
                     byte[] nliData = new byte[dis.readShort()];
                     dis.readFully( nliData );
                     NetLaunchInfo nli = XwJNI.nliFromStream( nliData );
-                    intent.putExtra( INVITE_FROM, srcDevID );
                     String asStr = nli.toString();
                     Log.d( TAG, "got invitation: %s", asStr );
-                    intent.putExtra( NLI_DATA, asStr );
-                    startService( this, intent );
+                    intent = getIntentTo( this, MsgCmds.GOT_INVITE )
+                        .putExtra( INVITE_FROM, srcDevID )
+                        .putExtra( NLI_DATA, asStr );
+                    enqueueWork( this, intent );
                     break;
                 case XWPDEV_ACK:
                     noteAck( vli2un( dis ), fromUDP );
@@ -1168,9 +1142,10 @@ public class RelayService extends JobIntentService
 
         private int sendViaWeb( List<PacketData> packets )
         {
-            Log.d( TAG, "sendViaWeb(): sending %d at once", packets.size() );
             int sentLen = 0;
             if ( packets.size() > 0 ) {
+                Log.d( TAG, "sendViaWeb(): sending %d at once", packets.size() );
+
                 final RelayService service = getService();
                 HttpURLConnection conn = NetUtils
                     .makeHttpRelayConn( service, "post" );
@@ -1480,7 +1455,7 @@ public class RelayService extends JobIntentService
                 Log.w( TAG, "Weird: got ack %d but never sent", packetID );
             }
 
-            if ( BuildConfig.DEBUG ) {
+            if ( false && BuildConfig.DEBUG ) {
                 ArrayList<String> pstrs = new ArrayList<>();
                 for ( PacketData datum : map ) {
                     if ( 0 != datum.m_packetID ) {
@@ -1503,7 +1478,7 @@ public class RelayService extends JobIntentService
     // Called from any thread
     private void resetExitTimer()
     {
-        Log.d( TAG, "resetExitTimer()" );
+        // Log.d( TAG, "resetExitTimer()" );
         m_handler.removeCallbacks( m_onInactivity );
 
         // UDP socket's no good as a return address after several
@@ -1611,7 +1586,8 @@ public class RelayService extends JobIntentService
             result = figureBackoffSeconds();
         }
 
-        Log.d( TAG, "getMaxIntervalSeconds() => %d", result ); // WFT? went from 40 to 1000
+        // WFT? went from 40 to 1000
+        // Log.d( TAG, "getMaxIntervalSeconds() => %d", result );
         return result;
     }
 
@@ -1753,8 +1729,8 @@ public class RelayService extends JobIntentService
             try {
                 m_packetID = nextPacketID( m_cmd );
                 DataOutputStream out = new DataOutputStream( bas );
-                Log.d( TAG, "makeHeader(): building packet with cmd %s",
-                       m_cmd.toString() );
+                // Log.d( TAG, "makeHeader(): building packet with cmd %s",
+                //        m_cmd.toString() );
                 out.writeByte( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() );
                 un2vli( m_packetID, out );
                 out.writeByte( m_cmd.ordinal() );
