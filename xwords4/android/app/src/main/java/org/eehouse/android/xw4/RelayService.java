@@ -104,6 +104,7 @@ public class RelayService extends JobIntentService
 
     private static List<PacketData> s_packetsSentUDP = new ArrayList<>();
     private static List<PacketData> s_packetsSentWeb = new ArrayList<>();
+    private static final PacketData sEOQPacket = new PacketData();
     private static AtomicInteger s_nextPacketID = new AtomicInteger();
     private static boolean s_gcmWorking = false;
     private static boolean s_registered = false;
@@ -1071,7 +1072,7 @@ public class RelayService extends JobIntentService
 
         void stop()
         {
-            m_queue.add( new EOQPacketData() ); // will kill the writer thread
+            m_queue.add( sEOQPacket ); // will kill the writer thread
         }
 
         void add( PacketData packet )
@@ -1125,7 +1126,7 @@ public class RelayService extends JobIntentService
                                 for ( outData = m_queue.poll(ts, TimeUnit.SECONDS);
                                       null != outData;
                                       outData = m_queue.poll() ) {         // doesn't block
-                                    if ( outData instanceof EOQPacketData ) {
+                                    if ( outData == sEOQPacket ) {
                                         gotEOQ = true;
                                         break;
                                     } else if ( skipNativeSend() || outData.getForWeb() ) {
@@ -1179,7 +1180,7 @@ public class RelayService extends JobIntentService
                     try {
                         JSONArray dataArray = new JSONArray();
                         for ( PacketData packet : packets ) {
-                            Assert.assertFalse( packet instanceof EOQPacketData );
+                            Assert.assertFalse( packet == sEOQPacket );
                             byte[] datum = packet.assemble();
                             dataArray.put( Utils.base64Encode(datum) );
                             sentLen += datum.length;
@@ -1785,8 +1786,4 @@ public class RelayService extends JobIntentService
             GameUtils.postInvitedNotification( mService, gameID, body, rowid );
         }
     }
-
-    // Exits only to exist, so instanceof can distinguish
-    // Can this be replaced by a final Object tested with ==?
-    private static class EOQPacketData extends PacketData {}
 }
