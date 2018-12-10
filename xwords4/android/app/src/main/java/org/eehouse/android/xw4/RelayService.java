@@ -1003,88 +1003,28 @@ public class RelayService extends JobIntentService
         private Thread m_UDPReadThread;
         private Thread m_UDPWriteThread;
         private RelayService[] mServiceHolder = {null};
-        private AtomicInteger mHaveServiceCount = new AtomicInteger();
-
-        // Here's the problem: In the Oreo world, RelayService instances come
-        // and go, typically lasting only long enough to disptach a single
-        // onHandleWork() call. So the UDPThreads instance is now a static
-        // singleton that lasts a really long time, across the lives of
-        // hundreds of RelayService instances. It and its threads, however,
-        // have to make calls on RelayService instances. So I need a way to
-        // block them when there's no instance available AND to block
-        // onDestroy() returning until all references to the current instance
-        // have been forgotten.
-        //
-        // The solution is to set and clear the instance through
-        // [un]setService().  And to wrap the code inside that needs
-        // references in a AutoCloseable that when instantiated blocks when
-        // the instance is null. Thus when setService() is called with a new
-        // instance, all the requests for an instance are unblocked and each
-        // of them increments a counter. When the AutoCloseable's close() is
-        // called, the counter is decremented. unsetService() waits until that
-        // counter is 0 (and so the close() method calls notifyAll() when the
-        // counter's dropped to 0.)
-        //
-        // It works like this: the threads run. When they need a reference to
-        // the current RelayService they block until there's one
-        // available. They're able to get the reference as long as it's
-        // non-null, but once it's null they start to block again. Once the
-        // last that didn't block finishes with its instance unsetService()
-        // returns (and so onDestroy() can as well.) This clears it so the OS
-        // can create another RelayService instance that will eventually get
-        // passed to setService() again.
-
-        private class ServiceWrapper implements AutoCloseable {
-            private final RelayService mService;
-            ServiceWrapper( RelayService service ) { mService = service; }
-
-            RelayService get() { return mService; }
-
-            @Override
-            public void close()
-            {
-                synchronized ( mServiceHolder ) {
-                    int newVal = mHaveServiceCount.decrementAndGet();
-                    Log.d( TAG, "close(): count now %d", newVal );
-                    if ( 0 == newVal ) {
-                        mServiceHolder.notifyAll();
-                    }
-                }
-            }
-        }
 
         void setService( RelayService service )
         {
             synchronized ( mServiceHolder ) {
                 mServiceHolder[0] = service;
+                // unblock waiters for non-null Service
                 mServiceHolder.notifyAll();
             }
         }
 
-        // When service is cleared, DO NOT RETURN until all threads using the
-        // old value of the service have relinquished it. This is called from
-        // onDestroy(), and once onDestroy() had returned nobody should
-        // reference its RelayService instance again.
+        // It will be a few milliseconds before all threads using the current
+        // Service instance are done. Blocking the UI thread here until that
+        // happened make for a laggy UI, so I'm going to see if we can
+        // continue to use the instance for a short while after returning.
         void unsetService()
         {
-            Log.d( TAG, "unsetService()" );
             synchronized ( mServiceHolder ) {
                 mServiceHolder[0] = null;
-                // Now block until the used count drops to 0
-                while ( mHaveServiceCount.get() > 0 ) {
-                    try {
-                        mServiceHolder.wait();
-                    } catch (InterruptedException ie) {
-                        Log.e( TAG, "wait() threw: %s", ie.getMessage() );
-                        // Assert.assertFalse( BuildConfig.DEBUG );
-                    }
-                }
             }
-            Log.d( TAG, "unsetService() DONE" );
         }
 
-        // called by various threads that need to run
-        private ServiceWrapper acquireWrapper()
+        private RelayService getService()
         {
             synchronized ( mServiceHolder ) {
                 while ( null == mServiceHolder[0] ) {
@@ -1092,13 +1032,10 @@ public class RelayService extends JobIntentService
                         mServiceHolder.wait();
                     } catch (InterruptedException ie) {
                         Log.e( TAG, "wait() threw: %s", ie.getMessage() );
-                        // InterruptedException is how we get unblocked!
                         // Assert.assertFalse( BuildConfig.DEBUG );
                     }
                 }
-                int newVal = mHaveServiceCount.incrementAndGet();
-                Log.d( TAG, "acquireWrapper(): count now %d", newVal );
-                return new ServiceWrapper( mServiceHolder[0] );
+                return mServiceHolder[0];
             }
         }
 
@@ -1117,10 +1054,9 @@ public class RelayService extends JobIntentService
                                 new DatagramPacket( buf, buf.length );
                             try {
                                 m_UDPSocket.receive( packet );
-                                try (ServiceWrapper wrapper = acquireWrapper() ) {
-                                    wrapper.get().resetExitTimer();
-                                    wrapper.get().gotPacket( packet );
-                                }
+                                final RelayService service = getService();
+                                service.resetExitTimer();
+                                service.gotPacket( packet );
                             } catch ( java.io.InterruptedIOException iioe ) {
                                 // DbgUtils.logf( "FYI: udp receive timeout" );
                             } catch( java.io.IOException ioe ) {
@@ -1148,10 +1084,10 @@ public class RelayService extends JobIntentService
             if ( null == m_UDPSocket ) {
                 int port;
                 String host;
-                try ( ServiceWrapper wrapper = acquireWrapper() ) {
-                    port = XWPrefs.getDefaultRelayPort( wrapper.get() );
-                    host = XWPrefs.getDefaultRelayHost( wrapper.get() );
-                }
+                final RelayService service = getService();
+                port = XWPrefs.getDefaultRelayPort( service );
+                host = XWPrefs.getDefaultRelayHost( service );
+
                 try {
                     m_UDPSocket = new DatagramSocket();
                     m_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
@@ -1206,9 +1142,8 @@ public class RelayService extends JobIntentService
                             sendViaWeb( dataListWeb );
                             sendViaUDP( dataListUDP );
 
-                            try ( ServiceWrapper wrapper = acquireWrapper() ) {
-                                wrapper.get().resetExitTimer();
-                            }
+                            getService().resetExitTimer();
+
                             runUDPAckTimer();
 
                             ConnStatusHandler.showSuccessOut();
@@ -1235,52 +1170,50 @@ public class RelayService extends JobIntentService
             Log.d( TAG, "sendViaWeb(): sending %d at once", packets.size() );
             int sentLen = 0;
             if ( packets.size() > 0 ) {
-                try ( ServiceWrapper wrapper = acquireWrapper() ) {
-                    RelayService service = wrapper.get();
-                    HttpURLConnection conn = NetUtils
-                        .makeHttpRelayConn( service, "post" );
-                    if ( null == conn ) {
-                        Log.e( TAG, "sendViaWeb(): null conn for POST" );
-                    } else {
-                        try {
-                            JSONArray dataArray = new JSONArray();
-                            for ( PacketData packet : packets ) {
-                                Assert.assertFalse( packet instanceof EOQPacketData );
-                                byte[] datum = packet.assemble();
-                                dataArray.put( Utils.base64Encode(datum) );
-                                sentLen += datum.length;
-                            }
-                            JSONObject params = new JSONObject();
-                            params.put( "data", dataArray );
-
-                            String result = NetUtils.runConn( conn, params );
-                            boolean succeeded = null != result;
-                            if ( succeeded ) {
-                                Log.d( TAG, "sendViaWeb(): POST(%s) => %s", params, result );
-                                JSONObject resultObj = new JSONObject( result );
-                                JSONArray resData = resultObj.getJSONArray( "data" );
-                                int nReplies = resData.length();
-                                // Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
-
-                                service
-                                    .noteSent( packets, false ); // before we process the acks below :-)
-
-                                for ( int ii = 0; ii < nReplies; ++ii ) {
-                                    byte[] datum = Utils.base64Decode( resData.getString( ii ) );
-                                    // PENDING: skip ack or not
-                                    service.gotPacket( datum, false, false );
-                                }
-                            } else {
-                                Log.e( TAG, "sendViaWeb(): failed result for POST" );
-
-                            }
-
-                            ConnStatusHandler.updateStatus( service, null,
-                                                            CommsConnType.COMMS_CONN_RELAY,
-                                                            succeeded );
-                        } catch ( JSONException ex ) {
-                            Assert.assertFalse( BuildConfig.DEBUG );
+                final RelayService service = getService();
+                HttpURLConnection conn = NetUtils
+                    .makeHttpRelayConn( service, "post" );
+                if ( null == conn ) {
+                    Log.e( TAG, "sendViaWeb(): null conn for POST" );
+                } else {
+                    try {
+                        JSONArray dataArray = new JSONArray();
+                        for ( PacketData packet : packets ) {
+                            Assert.assertFalse( packet instanceof EOQPacketData );
+                            byte[] datum = packet.assemble();
+                            dataArray.put( Utils.base64Encode(datum) );
+                            sentLen += datum.length;
                         }
+                        JSONObject params = new JSONObject();
+                        params.put( "data", dataArray );
+
+                        String result = NetUtils.runConn( conn, params );
+                        boolean succeeded = null != result;
+                        if ( succeeded ) {
+                            Log.d( TAG, "sendViaWeb(): POST(%s) => %s", params, result );
+                            JSONObject resultObj = new JSONObject( result );
+                            JSONArray resData = resultObj.getJSONArray( "data" );
+                            int nReplies = resData.length();
+                            // Log.d( TAG, "sendViaWeb(): got %d replies", nReplies );
+
+                            service
+                                .noteSent( packets, false ); // before we process the acks below :-)
+
+                            for ( int ii = 0; ii < nReplies; ++ii ) {
+                                byte[] datum = Utils.base64Decode( resData.getString( ii ) );
+                                // PENDING: skip ack or not
+                                service.gotPacket( datum, false, false );
+                            }
+                        } else {
+                            Log.e( TAG, "sendViaWeb(): failed result for POST" );
+
+                        }
+
+                        ConnStatusHandler.updateStatus( service, null,
+                                                        CommsConnType.COMMS_CONN_RELAY,
+                                                        succeeded );
+                    } catch ( JSONException ex ) {
+                        Assert.assertFalse( BuildConfig.DEBUG );
                     }
                 }
             }
@@ -1292,47 +1225,45 @@ public class RelayService extends JobIntentService
             int sentLen = 0;
 
             if ( packets.size() > 0 ) {
-                try ( ServiceWrapper wrapper = acquireWrapper() ) {
-                    RelayService service = wrapper.get();
-                    service.noteSent( packets, true );
-                    for ( PacketData packet : packets ) {
-                        boolean getOut = true;
-                        byte[] data = packet.assemble();
-                        try {
-                            DatagramPacket udpPacket = new DatagramPacket( data, data.length );
-                            m_UDPSocket.send( udpPacket );
+                final RelayService service = getService();
+                service.noteSent( packets, true );
+                for ( PacketData packet : packets ) {
+                    boolean getOut = true;
+                    byte[] data = packet.assemble();
+                    try {
+                        DatagramPacket udpPacket = new DatagramPacket( data, data.length );
+                        m_UDPSocket.send( udpPacket );
 
-                            sentLen += udpPacket.getLength();
-                            // packet.setSentMS( nowMS );
-                            getOut = false;
-                        } catch ( java.net.SocketException se ) {
-                            Log.ex( TAG, se );
-                            Log.i( TAG, "Restarting threads to force new socket" );
-                            ConnStatusHandler.updateStatusOut( service, null,
-                                                               CommsConnType.COMMS_CONN_RELAY,
-                                                               true );
+                        sentLen += udpPacket.getLength();
+                        // packet.setSentMS( nowMS );
+                        getOut = false;
+                    } catch ( java.net.SocketException se ) {
+                        Log.ex( TAG, se );
+                        Log.i( TAG, "Restarting threads to force new socket" );
+                        ConnStatusHandler.updateStatusOut( service, null,
+                                                           CommsConnType.COMMS_CONN_RELAY,
+                                                           true );
 
-                            service.m_handler.post( new Runnable() {
-                                    public void run() {
-                                        Assert.assertFalse( BuildConfig.DEBUG );
-                                        // stopUDPThreadsIf();
-                                    }
-                                } );
-                            break;
-                        } catch ( java.io.IOException ioe ) {
-                            Log.ex( TAG, ioe );
-                        } catch ( NullPointerException npe ) {
-                            Log.w( TAG, "network problem; dropping packet" );
-                        }
-                        if ( getOut ) {
-                            break;
-                        }
+                        service.m_handler.post( new Runnable() {
+                                public void run() {
+                                    Assert.assertFalse( BuildConfig.DEBUG );
+                                    // stopUDPThreadsIf();
+                                }
+                            } );
+                        break;
+                    } catch ( java.io.IOException ioe ) {
+                        Log.ex( TAG, ioe );
+                    } catch ( NullPointerException npe ) {
+                        Log.w( TAG, "network problem; dropping packet" );
                     }
-
-                    ConnStatusHandler.updateStatus( service, null,
-                                                    CommsConnType.COMMS_CONN_RELAY,
-                                                    sentLen > 0 );
+                    if ( getOut ) {
+                        break;
+                    }
                 }
+
+                ConnStatusHandler.updateStatus( service, null,
+                                                CommsConnType.COMMS_CONN_RELAY,
+                                                sentLen > 0 );
             }
 
             return sentLen;
