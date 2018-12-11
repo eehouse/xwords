@@ -126,6 +126,12 @@ public class DbgUtils {
         }
     }
 
+    public static void printStack( String tag, Exception ex )
+    {
+        String stackTrace = android.util.Log.getStackTraceString(ex);
+        Log.d( tag, stackTrace );
+    }
+
     static String extrasToString( Intent intent )
     {
         Bundle bundle = intent.getExtras();
