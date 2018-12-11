@@ -1076,22 +1076,20 @@ public class BTService extends XWService {
                     if ( null != os ) {
                         os.writeInt( gameID );
                         os.flush();
-                        Thread killer = killSocketIn( socket, 5 );
-
-                        DataInputStream is =
-                            new DataInputStream( socket.getInputStream() );
-                        BTCmd reply = BTCmd.values()[is.readByte()];
-                        if ( BTCmd.BAD_PROTO == reply ) {
-                            sendBadProto( socket );
-                        } else {
-                            gotReply = BTCmd.PONG == reply;
-                            if ( gotReply && is.readBoolean() ) {
-                                mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                        try ( KillerIn killer = new KillerIn( socket, 5 ) ) {
+                            DataInputStream is =
+                                new DataInputStream( socket.getInputStream() );
+                            BTCmd reply = BTCmd.values()[is.readByte()];
+                            if ( BTCmd.BAD_PROTO == reply ) {
+                                sendBadProto( socket );
+                            } else {
+                                gotReply = BTCmd.PONG == reply;
+                                if ( gotReply && is.readBoolean() ) {
+                                    mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                                }
                             }
                         }
-
                         receiveWorking = true;
-                        killer.interrupt();
                         sendWorking = true;
                     }
                     socket.close();
@@ -1210,12 +1208,13 @@ public class BTService extends XWService {
                             }
 
                             outStream.flush();
-                            Thread killer = killSocketIn( socket );
 
-                            DataInputStream inStream =
-                                new DataInputStream( socket.getInputStream() );
-                            BTCmd reply = BTCmd.values()[inStream.readByte()];
-                            killer.interrupt();
+                            BTCmd reply;
+                            try ( KillerIn killer = new KillerIn( socket, 10 ) ) {
+                                DataInputStream inStream =
+                                    new DataInputStream( socket.getInputStream() );
+                                reply = BTCmd.values()[inStream.readByte()];
+                            }
                             success = true;
 
                             switch ( reply ) {
@@ -1466,21 +1465,16 @@ public class BTService extends XWService {
             .updateStatusIn( this, null, CommsConnType.COMMS_CONN_BT, success );
     }
 
-    private Thread killSocketIn( final BluetoothSocket socket )
-    {
-        return killSocketIn( socket, 10 );
-    }
-
-    private Thread killSocketIn( final BluetoothSocket socket, int seconds )
-    {
-        final int millis = seconds * 1000;
-        Thread thread = new Thread( new Runnable() {
+    private class KillerIn implements AutoCloseable {
+        private final Thread mThread;
+        KillerIn( final BluetoothSocket socket, final int seconds )
+        {
+            mThread = new Thread( new Runnable() {
                 public void run() {
                     try {
-                        Thread.sleep( millis );
+                        Thread.sleep( 1000 * seconds );
                     } catch ( InterruptedException ie ) {
-                        Log.w( TAG, "killSocketIn: killed by owner" );
-                        return;
+                        Log.w( TAG, "KillerIn: killed by owner" );
                     }
                     try {
                         socket.close();
@@ -1488,9 +1482,15 @@ public class BTService extends XWService {
                         Log.ex( TAG, ioe );
                     }
                 }
-            } );
-        thread.start();
-        return thread;
+                });
+            mThread.start();
+        }
+
+        @Override
+        public void close()
+        {
+            mThread.interrupt();
+        }
     }
 
     private class BTMsgSink extends MultiMsgSink {
