@@ -999,16 +999,11 @@ public class RelayService extends JobIntentService
             }
         }
 
-        private RelayService getService()
+        private RelayService getService() throws InterruptedException
         {
             synchronized ( mServiceHolder ) {
                 while ( null == mServiceHolder[0] ) {
-                    try {
-                        mServiceHolder.wait();
-                    } catch (InterruptedException ie) {
-                        Log.e( TAG, "wait() threw: %s", ie.getMessage() );
-                        // Assert.assertFalse( BuildConfig.DEBUG );
-                    }
+                    mServiceHolder.wait();
                 }
                 return mServiceHolder[0];
             }
@@ -1018,25 +1013,30 @@ public class RelayService extends JobIntentService
         {
             m_UDPReadThread = new Thread( null, new Runnable() {
                     public void run() {
+                        try {
+                            connectSocket(); // block until this is done
+                            startWriteThread();
 
-                        connectSocket(); // block until this is done
-                        startWriteThread();
-
-                        Log.i( TAG, "read thread running" );
-                        byte[] buf = new byte[1024];
-                        for ( ; ; ) {
-                            DatagramPacket packet =
-                                new DatagramPacket( buf, buf.length );
-                            try {
-                                m_UDPSocket.receive( packet );
-                                final RelayService service = getService();
-                                service.resetExitTimer();
-                                service.gotPacket( packet );
-                            } catch ( java.io.InterruptedIOException iioe ) {
-                                // DbgUtils.logf( "FYI: udp receive timeout" );
-                            } catch( java.io.IOException ioe ) {
-                                break;
+                            Log.i( TAG, "read thread running" );
+                            byte[] buf = new byte[1024];
+                            for ( ; ; ) {
+                                DatagramPacket packet =
+                                    new DatagramPacket( buf, buf.length );
+                                try {
+                                    m_UDPSocket.receive( packet );
+                                    final RelayService service = getService();
+                                    service.resetExitTimer();
+                                    service.gotPacket( packet );
+                                } catch ( java.io.InterruptedIOException iioe ) {
+                                    // DbgUtils.logf( "FYI: udp receive timeout" );
+                                } catch( java.io.IOException ioe ) {
+                                    break;
+                                }
                             }
+
+                        } catch ( InterruptedException ie ) {
+                            Log.d( TAG, "exiting on interrupt: %s",
+                                   ie.getMessage() );
                         }
                         Log.i( TAG, "read thread exiting" );
                     }
@@ -1054,7 +1054,7 @@ public class RelayService extends JobIntentService
             m_queue.add( packet );
         }
 
-        private void connectSocket()
+        private void connectSocket() throws InterruptedException
         {
             if ( null == m_UDPSocket ) {
                 int port;
@@ -1109,19 +1109,19 @@ public class RelayService extends JobIntentService
                                         dataListUDP.add( outData );
                                     }
                                 }
+
+                                sendViaWeb( dataListWeb );
+                                sendViaUDP( dataListUDP );
+
+                                getService().resetExitTimer();
+
+                                runUDPAckTimer();
+
+                                ConnStatusHandler.showSuccessOut();
                             } catch ( InterruptedException ie ) {
                                 Log.w( TAG, "write thread killed" );
                                 break;
                             }
-
-                            sendViaWeb( dataListWeb );
-                            sendViaUDP( dataListUDP );
-
-                            getService().resetExitTimer();
-
-                            runUDPAckTimer();
-
-                            ConnStatusHandler.showSuccessOut();
                         }
 
                         Log.i( TAG, "write thread killing read thread" );
@@ -1140,7 +1140,7 @@ public class RelayService extends JobIntentService
             m_UDPWriteThread.start();
         }
 
-        private int sendViaWeb( List<PacketData> packets )
+        private int sendViaWeb( List<PacketData> packets ) throws InterruptedException
         {
             int sentLen = 0;
             if ( packets.size() > 0 ) {
@@ -1196,7 +1196,7 @@ public class RelayService extends JobIntentService
             return sentLen;
         }
 
-        private int sendViaUDP( List<PacketData> packets )
+        private int sendViaUDP( List<PacketData> packets ) throws InterruptedException
         {
             int sentLen = 0;
 
