@@ -182,20 +182,20 @@ public class SMSService extends XWService {
     public static void handleFrom( Context context, byte[] buffer,
                                    String phone )
     {
-        Intent intent = getIntentTo( context, SMSAction.HANDLEDATA );
-        intent.putExtra( BUFFER, buffer );
-        intent.putExtra( PHONE, phone );
+        Intent intent = getIntentTo( context, SMSAction.HANDLEDATA )
+            .putExtra( BUFFER, buffer )
+            .putExtra( PHONE, phone );
         startService( context, intent );
     }
 
     public static void inviteRemote( Context context, String phone,
                                      NetLaunchInfo nli )
     {
-        Intent intent = getIntentTo( context, SMSAction.INVITE );
-        intent.putExtra( PHONE, phone );
         Log.w( TAG, "inviteRemote(%s, '%s')", phone, nli );
         byte[] data = nli.asByteArray();
-        intent.putExtra( GAMEDATA_BA, data );
+        Intent intent = getIntentTo( context, SMSAction.INVITE )
+            .putExtra( PHONE, phone )
+            .putExtra( GAMEDATA_BA, data );
         startService( context, intent );
     }
 
@@ -204,10 +204,10 @@ public class SMSService extends XWService {
     {
         int nSent = -1;
         if ( XWPrefs.getSMSEnabled( context ) ) {
-            Intent intent = getIntentTo( context, SMSAction.SEND );
-            intent.putExtra( PHONE, phone );
-            intent.putExtra( MultiService.GAMEID, gameID );
-            intent.putExtra( BINBUFFER, binmsg );
+            Intent intent = getIntentTo( context, SMSAction.SEND )
+                .putExtra( PHONE, phone )
+                .putExtra( MultiService.GAMEID, gameID )
+                .putExtra( BINBUFFER, binmsg );
             startService( context, intent );
             nSent = binmsg.length;
         } else {
@@ -218,9 +218,9 @@ public class SMSService extends XWService {
 
     public static void gameDied( Context context, int gameID, String phone )
     {
-        Intent intent = getIntentTo( context, SMSAction.REMOVE );
-        intent.putExtra( PHONE, phone );
-        intent.putExtra( MultiService.GAMEID, gameID );
+        Intent intent = getIntentTo( context, SMSAction.REMOVE )
+            .putExtra( PHONE, phone )
+            .putExtra( MultiService.GAMEID, gameID );
         startService( context, intent );
     }
 
@@ -264,8 +264,8 @@ public class SMSService extends XWService {
 
     private static Intent getIntentTo( Context context, SMSAction cmd )
     {
-        Intent intent = new Intent( context, SMSService.class );
-        intent.putExtra( CMD_STR, cmd.ordinal() );
+        Intent intent = new Intent( context, SMSService.class )
+            .putExtra( CMD_STR, cmd.ordinal() );
         return intent;
     }
 
