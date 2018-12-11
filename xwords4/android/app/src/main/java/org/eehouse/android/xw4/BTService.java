@@ -80,7 +80,7 @@ public class BTService extends XWService {
     private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
     private static final String KEY_KEEPALIVE_UNTIL_SECS = "keep_secs";
     // half minute for testing; maybe 15 on ship? Or make it a debug config.
-    private static int DEFAULT_KEEPALIVE_SECONDS = 30;
+    private static int DEFAULT_KEEPALIVE_SECONDS = 15 * 60;
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
@@ -91,6 +91,7 @@ public class BTService extends XWService {
     private static final int BT_PROTO = BT_PROTO_JSONS; // change in a release or two
 
     private enum BTAction { _NONE,
+                            CANCEL_SERVICE,
                             START_FOREGROUND,
                             START_BACKGROUND,
                             SCAN,
@@ -265,7 +266,7 @@ public class BTService extends XWService {
             startService( context,
                           getIntentTo( context,
                                        inForeground ? BTAction.START_FOREGROUND
-                                       : BTAction.START_BACKGROUND ) );;
+                                       : BTAction.START_BACKGROUND ) );
         }
     }
 
@@ -297,6 +298,12 @@ public class BTService extends XWService {
     {
         Log.d( TAG, "onACLConnected()" );
         BTListenerThread.startYourself( context );
+    }
+
+    public static void stopBackground( Context context )
+    {
+        startService( context,
+                      getIntentTo( context, BTAction.CANCEL_SERVICE ) );
     }
 
     public static void radioChanged( Context context, boolean cameOn )
@@ -471,6 +478,7 @@ public class BTService extends XWService {
                 BTAction cmd = BTAction.values()[ordinal];
                 Log.i( TAG, "handleCommand; cmd=%s", cmd.toString() );
                 switch( cmd ) {
+                case CANCEL_SERVICE:
                 case START_FOREGROUND:
                     stopForeground( true ); // Kill the notification
                     break;
@@ -563,11 +571,19 @@ public class BTService extends XWService {
                 PendingIntent pendIntent = PendingIntent
                     .getActivity( this, Utils.nextRandomInt(), notifIntent,
                                   PendingIntent.FLAG_ONE_SHOT );
+
+                Intent stopIntent = new Intent(this, BTReceiver.class);
+                stopIntent.setAction( BTReceiver.ACTION_STOP_BT );
+                PendingIntent stopPI =
+                    PendingIntent.getBroadcast(this, 0, stopIntent, 0);
+
                 m_notification =
                     new NotificationCompat.Builder( this, Utils.getChannelId(this) )
                     .setSmallIcon( R.drawable.notify_btservice )
                     .setContentText( getString(R.string.bkng_notify_text) )
                     .setContentIntent( pendIntent )
+                    .addAction( R.drawable.notify_btservice,
+                                getString(R.string.bkng_stop_text), stopPI )
                     .build();
             }
 

@@ -2270,8 +2270,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void tryBackgroundIntent( Intent intent )
     {
         if ( intent.getBooleanExtra( BACKGROUND_EXTRA, false ) ) {
-            makeNotAgainBuilder( R.string.not_again_btservice,
-                                 R.string.key_notagain_btservice )
+            makeOkOnlyBuilder( R.string.btservice_expl )
                 .show();
         }
     }

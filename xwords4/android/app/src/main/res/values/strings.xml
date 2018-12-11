@@ -2030,6 +2030,7 @@
     <string name="summary_enable_p2p">Experimental, uses lots of battery</string>
 
     <string name="bkng_notify_text">Accepting Bluetooth messages…</string>
+    <string name="bkng_stop_text">Stop</string>
 
     <!--  -->
     <string name="confirm_sms_title">Confirm your SMS plan</string>
@@ -2646,13 +2647,11 @@
   player name \"%1$s\". Would you like to personalize with your own
   name before you create this game?</string>
 
-  <string name="not_again_btservice">This notification is present
-  whenever CrossWords is ready to receive Bluetooth messages in the
-  background. This readiness has a slight impact on battery. If you
-  don\'t want to listen in the background disable the \"Enable
-  Background Listener\" preference. CrossWords will still receive
-  Bluetooth moves and invitations while in the foreground, but any
-  sent while it\'s in the background will be lost.</string>
+  <string name="btservice_expl">This notification is present whenever
+  CrossWords is running in the background to accept Bluetooth messages.
+  Because messages come in clusters, it usually runs for
+  about 15 minutes after the last message is received.
+  </string>
 
   <string name="no_invites">This game has sent no invitations</string>
 

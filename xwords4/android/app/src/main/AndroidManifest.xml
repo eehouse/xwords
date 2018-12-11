@@ -211,6 +211,9 @@
       <intent-filter>
         <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
       </intent-filter>
+      <intent-filter>
+        <action android:name="org.eehouse.android.ACTION_STOP_BT" />
+      </intent-filter>
     </receiver>
 
     <receiver android:name="SMSReceiver" >
