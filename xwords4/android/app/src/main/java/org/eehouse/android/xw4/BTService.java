@@ -599,14 +599,13 @@ public class BTService extends XWService {
         private static BTListenerThread[] s_listener = {null};
         private BluetoothServerSocket m_serverSocket;
         private Context mContext;
-        private BTService mService;
-        private BTServiceHelper mHelper;
+        private BTService[] mServiceHolder = { null };
         private volatile Thread mTimerThread;
 
         private BTListenerThread( Context context, BTService service )
         {
             mContext = context;
-            mService = service;
+            mServiceHolder[0] = service;
 
             // Started without a BTService instance? Run for only a little
             // while
@@ -615,8 +614,7 @@ public class BTService extends XWService {
             }
         }
 
-        static void startYourself( Context context, BTService service,
-                                   BTServiceHelper helper )
+        static void startYourself( Context context, BTService service )
         {
             Log.d( TAG, "startYourself(%s, %s)", context, service );
             DbgUtils.assertOnUIThread();
@@ -625,7 +623,7 @@ public class BTService extends XWService {
                     s_listener[0] = new BTListenerThread( context, service );
                     s_listener[0].start();
                 } else if ( null != service ) {
-                    s_listener[0].setService( context, service, helper );
+                    s_listener[0].setService( context, service );
                 }
             }
         }
@@ -633,7 +631,7 @@ public class BTService extends XWService {
         static void startYourself( Context context )
         {
             DbgUtils.assertOnUIThread();
-            startYourself( context, null, null );
+            startYourself( context, null );
         }
 
         static void stopYourself( BTListenerThread self )
@@ -655,16 +653,20 @@ public class BTService extends XWService {
             }
         }
 
-        void setService( Context context, BTService service, BTServiceHelper helper )
+        void setService( Context context, BTService service )
         {
-            if ( null == mService ) {
-                Log.d( TAG, "setService(): we didn't have one before. Do something!!!" );
-                mService = service;
-                mHelper = helper;
-                Assert.assertNotNull( context );
-                mContext = context; // Use Service instead of Receiver (possibly)
-            } else {
-                Assert.assertTrue( service == mService );
+            synchronized ( mServiceHolder ) {
+                if ( null == mServiceHolder[0] ) {
+                    Log.d( TAG, "setService(): setting. notifying all!!!" );
+                    Assert.assertNotNull( context );
+                    mContext = context; // Use Service instead of Receiver (possibly)
+                    mServiceHolder[0] = service;
+                    if ( service != null ) {
+                        mServiceHolder.notifyAll();
+                    }
+                } else {
+                    Assert.assertTrue( service == mServiceHolder[0] );
+                }
             }
         }
 
@@ -672,13 +674,18 @@ public class BTService extends XWService {
         {
             stopKillTimer();
 
-            if (! inForeground() ) {
-                startService( mContext,
-                              getIntentTo( mContext,
-                                           BTAction.START_BACKGROUND ) );
-            } else {
-                // Will be a race condition maybe?
-                Assert.assertFalse( BuildConfig.DEBUG );
+            startService( mContext,
+                          getIntentTo( mContext,
+                                       BTAction.START_BACKGROUND ) );
+        }
+
+        private BTService blockForService() throws InterruptedException
+        {
+            synchronized( mServiceHolder ) {
+                while ( mServiceHolder[0] == null ) {
+                    mServiceHolder.wait();
+                }
+                return mServiceHolder[0];
             }
         }
 
@@ -694,7 +701,7 @@ public class BTService extends XWService {
                             Thread.sleep( 10 * 1000 );
                             stopYourself( BTListenerThread.this );
                         } catch (InterruptedException ie) {
-                            Log.e( TAG, "timer thread interrupted; exiting" );
+                            Log.e( TAG, "kill timer thread exiting; we're live!" );
                         }
                     }
                 } );
@@ -733,40 +740,16 @@ public class BTService extends XWService {
                     BTCmd cmd = BTCmd.values()[inStream.readByte()];
                     Log.d( TAG, "BTListenerThread() got %s", cmd );
                     if ( protoOK( proto, cmd ) ) {
-                        if ( null == mService ) {
-                            Log.d( TAG, "dropping packet; starting service" );
+                        if ( null == mServiceHolder[0] ) {
                             startTheService();
-                        } else {
-                            switch( cmd ) {
-                            case PING:
-                                receivePing( socket );
-                                break;
-                            case INVITE:
-                                receiveInvitation( proto, inStream, socket );
-                                break;
-                            case MESG_SEND:
-                                receiveMessage( cmd, inStream, socket );
-                                break;
-
-                            case MESG_GAMEGONE:
-                                receiveMessage( cmd, inStream, socket );
-                                break;
-
-                            default:
-                                Log.e( TAG, "unexpected msg %s", cmd.toString());
-                                break;
-                            }
-                            mService.updateStatusIn( true );
-                            noteLastUsed( mContext );
                         }
+                        processWhenReady( socket, proto, inStream, cmd );
                     } else {
                         DataOutputStream os =
                             new DataOutputStream( socket.getOutputStream() );
                         os.writeByte( BTCmd.BAD_PROTO.ordinal() );
                         os.flush();
                         socket.close();
-
-                        mService.sendBadProto( socket );
                     }
                 } catch ( IOException ioe ) {
                     Log.w( TAG, "trying again..." );
@@ -787,6 +770,75 @@ public class BTService extends XWService {
             }
         } // run()
 
+        private static class InPacket {
+            BluetoothSocket mSocket;
+            byte mProto;
+            DataInputStream mInStream;
+            BTCmd mCmd;
+
+            InPacket( BluetoothSocket socket, byte proto,
+                      DataInputStream inStream, BTCmd cmd )
+            {
+                mSocket = socket;
+                mProto = proto;
+                mInStream = inStream;
+                mCmd = cmd;
+            }
+        }
+
+        private LinkedBlockingQueue<InPacket> mInQueue = new LinkedBlockingQueue<>();
+
+        private Thread mIgnored;
+        private void processWhenReady( BluetoothSocket socket, byte proto,
+                                       DataInputStream inStream, BTCmd cmd )
+        {
+            if ( mIgnored == null ) {
+                mIgnored = new Thread( new Runnable() {
+                        @Override
+                        public void run() {
+                            for ( ; ; ) {
+                                try {
+                                    InPacket elem = mInQueue.take();
+                                    BTService service = blockForService();
+                                    BTCmd cmd = elem.mCmd; // fired
+                                    switch( cmd ) {
+                                    case PING:
+                                        receivePing( service, elem.mSocket );
+                                        break;
+                                    case INVITE:
+                                        receiveInvitation( service, elem.mProto,
+                                                           elem.mInStream, elem.mSocket );
+                                        break;
+                                    case MESG_SEND:
+                                        receiveMessage( service, cmd, elem.mInStream,
+                                                        elem.mSocket );
+                                        break;
+
+                                    case MESG_GAMEGONE:
+                                        receiveMessage( service, cmd, elem.mInStream,
+                                                        elem.mSocket );
+                                        break;
+
+                                    default:
+                                        Log.e( TAG, "unexpected msg %s", cmd.toString());
+                                        break;
+                                    }
+
+                                    service.updateStatusIn( true );
+                                    noteLastUsed( service );
+                                } catch (IOException | InterruptedException ex) {
+                                    DbgUtils.printStack( TAG, ex );
+                                    break;
+                                }
+                            }
+                        }
+                    } );
+                mIgnored.start();
+            }
+
+            mInQueue.add( new InPacket( socket, proto, inStream, cmd ) );
+        }
+
         public void stopListening()
         {
             if ( null != m_serverSocket ) {
@@ -806,7 +858,7 @@ public class BTService extends XWService {
             return ok;
         }
 
-        private void receivePing( BluetoothSocket socket ) throws IOException
+        private void receivePing( BTService service, BluetoothSocket socket ) throws IOException
         {
             DataInputStream inStream = new DataInputStream( socket.getInputStream() );
             int gameID = inStream.readInt();
@@ -818,11 +870,11 @@ public class BTService extends XWService {
             os.flush();
 
             socket.close();
-            mService.updateStatusOut( true );
+            service.updateStatusOut( true );
         }
 
-        private void receiveInvitation( byte proto, DataInputStream is,
-                                        BluetoothSocket socket )
+        private void receiveInvitation( BTService service, byte proto,
+                                        DataInputStream is, BluetoothSocket socket )
             throws IOException
         {
             BTCmd result;
@@ -838,7 +890,8 @@ public class BTService extends XWService {
             }
 
             BluetoothDevice host = socket.getRemoteDevice();
-            result = mService.makeOrNotify( nli, host.getName(), host.getAddress() );
+            result = service
+                .makeOrNotify( nli, host.getName(), host.getAddress() );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( result.ordinal() );
@@ -847,7 +900,8 @@ public class BTService extends XWService {
             socket.close();
         } // receiveInvitation
 
-        private void receiveMessage( BTCmd cmd, DataInputStream dis, BluetoothSocket socket )
+        private void receiveMessage( BTService service, BTCmd cmd,
+                                     DataInputStream dis, BluetoothSocket socket )
         {
             try {
                 BTCmd result = null;
@@ -861,15 +915,15 @@ public class BTService extends XWService {
                     CommsAddrRec addr = new CommsAddrRec( host.getName(),
                                                           host.getAddress() );
                     XWServiceHelper.ReceiveResult rslt
-                        = mHelper.receiveMessage( mContext,
-                                                  gameID, mService.m_btMsgSink,
-                                                  buffer, addr );
+                        = service.mHelper.receiveMessage( mContext, gameID,
+                                                          service.m_btMsgSink,
+                                                          buffer, addr );
 
                     result = rslt == XWServiceHelper.ReceiveResult.GAME_GONE ?
                         BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
                     break;
                 case MESG_GAMEGONE:
-                    mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                    service.mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
                     result = BTCmd.MESG_ACCPT;
                     break;
                 default:
@@ -1043,11 +1097,12 @@ public class BTService extends XWService {
                     socket.close();
                 }
             } catch ( IOException ioe ) {
-                logIOE( ioe );
+                Log.e( TAG, "sendPing() failure; %s", ioe.getMessage() );
+                DbgUtils.printStack( TAG, ioe );
             }
             updateStatusOut( sendWorking );
             updateStatusIn( receiveWorking );
-            Log.d( TAG, "sendPing(%s) => %b", dev, gotReply );
+            Log.d( TAG, "sendPing(%s) => %b", dev.getName(), gotReply );
             return gotReply;
         } // sendPing
 
@@ -1273,7 +1328,7 @@ public class BTService extends XWService {
     private void startListener()
     {
         Assert.assertNotNull( mHelper );
-        BTListenerThread.startYourself( this, this, mHelper );
+        BTListenerThread.startYourself( this, this );
     }
 
     private void startSender()
@@ -1314,29 +1369,34 @@ public class BTService extends XWService {
     private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )
     {
         String name = socket.getRemoteDevice().getName();
+        Log.w( TAG, "connect(%s) starting", name );
         // DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
         // Docs say always call cancelDiscovery before trying to connect
         m_adapter.cancelDiscovery();
 
-        DataOutputStream dos;
-        try {
-            for ( int ii = 0; ii < 3; ++ii ) {
-                try {
-                    socket.connect();
+        DataOutputStream dos = null;
+
+        // Try for 8 seconds. Some devices take a long time to get ACL conn
+        // ACTION
+        for ( long end = 10000 + System.currentTimeMillis(); ; ) {
+            try {
+                socket.connect();
+                Log.i( TAG, "connect(%s) succeeded", name );
+                dos = new DataOutputStream( socket.getOutputStream() );
+                dos.writeByte( BT_PROTO );
+                dos.writeByte( cmd.ordinal() );
+                break;          // success!!!
+            } catch (IOException ioe) {
+                if ( System.currentTimeMillis() > end ) {
                     break;
-                } catch (IOException ioe) {
-                    Thread.sleep( 2000 );
-                    Log.d( TAG, "ioe on connect(); trying again" );
+                }
+                Log.d( TAG, "connect(%s) trying again", name );
+                try {
+                    Thread.sleep( 1000 );
+                } catch ( InterruptedException ex ) {
+                    break;
                 }
             }
-            dos = new DataOutputStream( socket.getOutputStream() );
-            dos.writeByte( BT_PROTO );
-            dos.writeByte( cmd.ordinal() );
-            Log.i( TAG, "connect() to %s successful", name );
-        } catch ( IOException | InterruptedException ioe ) {
-            dos = null;
-            Log.w( TAG, "BTService.connect() to %s failed", name );
-            // logIOE( ioe );
         }
         return dos;
     }
@@ -1374,7 +1434,6 @@ public class BTService extends XWService {
                 mHandler.postAtTime( new Runnable() {
                         @Override
                         public void run() {
-                            Log.d( TAG, "timeout timer fired" );
                             setTimeoutTimer();
                         }
                     }, this, dieTimeMillis );
