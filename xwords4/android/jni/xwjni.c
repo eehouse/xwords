@@ -269,15 +269,21 @@ tilesArrayToTileSet( JNIEnv* env, jintArray jtiles, TrayTileSet* tset )
 
 #ifdef GAMEPTR_IS_OBJECT
 static JNIState*
-getState( JNIEnv* env, GamePtrType gamePtr )
+getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
 {
-    XP_ASSERT( NULL != gamePtr );
+#ifdef DEBUG
+    if ( NULL == gamePtr ) {
+        XP_LOGF( "ERROR: getState() called from %s() with null gamePtr",
+                 func );
+    }
+#endif
+    XP_ASSERT( NULL != gamePtr ); /* fired */
     jmethodID mid = getMethodID( env, gamePtr, "ptr", "()I" );
     XP_ASSERT( !!mid );
     return (JNIState*)(*env)->CallIntMethod( env, gamePtr, mid );
 }
 #else
-# define getState( env, gamePtr ) ((JNIState*)(gamePtr))
+# define getState( env, gamePtr, func ) ((JNIState*)(gamePtr))
 #endif
 
 JNIEXPORT jint JNICALL
@@ -891,12 +897,12 @@ struct _JNIState {
     MPSLOT
 };
 
-#define XWJNI_START() {                                 \
-    JNIState* state = getState( env, gamePtr );         \
-    MPSLOT;                                             \
-    MPASSIGN( mpool, state->mpool);                     \
-    XP_ASSERT( !!state->globalJNI );                    \
-    map_thread( &state->globalJNI->ti, env );           \
+#define XWJNI_START() {                                     \
+    JNIState* state = getState( env, gamePtr, __func__ );   \
+    MPSLOT;                                                 \
+    MPASSIGN( mpool, state->mpool);                         \
+    XP_ASSERT( !!state->globalJNI );                        \
+    map_thread( &state->globalJNI->ti, env );               \
 
 #define XWJNI_START_GLOBALS()                           \
     XWJNI_START()                                       \
@@ -990,7 +996,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 ( JNIEnv* env, jclass claz, GamePtrType gamePtr )
 {
-    JNIState* state = getState( env, gamePtr );
+    JNIState* state = getState( env, gamePtr, __func__ );
     LOG_FUNC();
 
 #ifdef MEM_DEBUG
