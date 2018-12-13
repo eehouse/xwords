@@ -760,14 +760,7 @@ public class BTService extends XWService {
                 }
             }
 
-            if ( null != m_serverSocket ) {
-                try {
-                    m_serverSocket.close();
-                } catch ( IOException ioe ) {
-                    logIOE( ioe );
-                }
-                m_serverSocket = null;
-            }
+            closeServerSocket();
         } // run()
 
         private static class InPacket {
@@ -841,6 +834,12 @@ public class BTService extends XWService {
 
         public void stopListening()
         {
+            closeServerSocket();
+            interrupt();
+        }
+
+        private synchronized void closeServerSocket()
+        {
             if ( null != m_serverSocket ) {
                 try {
                     m_serverSocket.close();
@@ -849,7 +848,6 @@ public class BTService extends XWService {
                 }
                 m_serverSocket = null;
             }
-            interrupt();
         }
 
         private boolean protoOK( byte proto, BTCmd cmd )
