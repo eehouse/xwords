@@ -698,7 +698,7 @@ public class BTService extends XWService {
                         try {
                             // Give legitimate caller 10 seconds to retry with
                             // a packet that we'll recognize.
-                            Thread.sleep( 10 * 1000 );
+                            Thread.sleep( 20 * 1000 );
                             stopYourself( BTListenerThread.this );
                         } catch (InterruptedException ie) {
                             Log.e( TAG, "kill timer thread exiting; we're live!" );
@@ -1041,12 +1041,25 @@ public class BTService extends XWService {
         private void sendPings( MultiEvent event, Set<BluetoothDevice> addrs )
         {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
-            // DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
+            Map<BluetoothDevice, PingThread> threads = new HashMap<>();
             for ( BluetoothDevice dev : pairedDevs ) {
                 // Skip things that can't host an Android app
                 int clazz = dev.getBluetoothClass().getMajorDeviceClass();
                 if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
-                    if ( sendPing( dev, 0 ) ) { // did we get a reply?
+                    PingThread thread = new PingThread(dev);
+                    thread.start();
+                    threads.put( dev, thread );
+                } else {
+                    Log.d( TAG, "skipping %s; not an android device!",
+                           dev.getName() );
+                }
+            }
+
+            for ( BluetoothDevice dev : threads.keySet() ) {
+                PingThread thread = threads.get( dev );
+                try {
+                    thread.join();
+                    if ( thread.gotResponse() ) {
                         if ( null != addrs ) {
                             addrs.add( dev );
                         }
@@ -1054,11 +1067,24 @@ public class BTService extends XWService {
                             mHelper.postEvent( event, dev.getName() );
                         }
                     }
-                } else {
-                    Log.d( TAG, "skipping %s; not an android device!",
-                           dev.getName() );
+                } catch ( InterruptedException ex ) {
+                    Assert.assertFalse( BuildConfig.DEBUG );
                 }
             }
+        }
+
+        private class PingThread extends Thread {
+            private boolean mGotResponse;
+            private BluetoothDevice mDev;
+
+            PingThread(BluetoothDevice dev) { mDev = dev; }
+
+            @Override
+            public void run() {
+                mGotResponse = sendPing( mDev, 0 );
+            }
+
+            boolean gotResponse() { return mGotResponse; }
         }
 
         private boolean sendPing( BluetoothDevice dev, int gameID )
@@ -1375,7 +1401,7 @@ public class BTService extends XWService {
 
         // Try for 8 seconds. Some devices take a long time to get ACL conn
         // ACTION
-        for ( long end = 10000 + System.currentTimeMillis(); ; ) {
+        for ( long end = 20000 + System.currentTimeMillis(); ; ) {
             try {
                 socket.connect();
                 Log.i( TAG, "connect(%s) succeeded", name );
