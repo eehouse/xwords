@@ -99,18 +99,7 @@ public class BTInviteDelegate extends InviteDelegate {
         case SCAN_DONE:
             post( new Runnable() {
                     public void run() {
-                        synchronized( BTInviteDelegate.this ) {
-                            m_progress.cancel();
-
-                            m_pairs = null;
-                            if ( 0 < args.length ) {
-                                m_pairs = TwoStringPair.make( (String[])(args[0]),
-                                                              (String[])(args[1]) );
-                            }
-
-                            updateListAdapter( m_pairs );
-                            tryEnable();
-                        }
+                        processScanResults( (String[])args[0], (String[])args[1] );
                     }
                 } );
             break;
@@ -145,13 +134,28 @@ public class BTInviteDelegate extends InviteDelegate {
         if ( 0 < count ) {
             String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
             m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
-            BTService.scan( m_activity );
+            BTService.scan( m_activity, 5000 );
         } else {
             makeConfirmThenBuilder( R.string.bt_no_devs,
                                     Action.OPEN_BT_PREFS_ACTION )
                 .setPosButton( R.string.button_go_settings )
                 .show();
         }
+    }
+
+    private void processScanResults( String[] btNames, String[] btAddrs )
+    {
+        DbgUtils.assertOnUIThread();
+
+        m_progress.cancel();
+
+        m_pairs = null;
+        if ( 0 < btNames.length ) {
+            m_pairs = TwoStringPair.make( btNames, btAddrs );
+        }
+
+        updateListAdapter( m_pairs );
+        tryEnable();
     }
 
     // @Override

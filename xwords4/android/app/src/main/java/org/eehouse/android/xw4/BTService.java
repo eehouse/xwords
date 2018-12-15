@@ -85,6 +85,7 @@ public class BTService extends XWService {
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
+    private static final int CONNECT_TIMEOUT_MS = 10000;
 
     private static final int BT_PROTO_ORIG = 0;
     private static final int BT_PROTO_JSONS = 1; // using jsons instead of lots of fields
@@ -109,6 +110,7 @@ public class BTService extends XWService {
     private static final String MSG_KEY = "MSG";
     private static final String GAMENAME_KEY = "NAM";
     private static final String ADDR_KEY = "ADR";
+    private static final String SCAN_TIMEOUT_KEY = "SCAN_TIMEOUT";
     private static final String RADIO_KEY = "RDO";
     private static final String CLEAR_KEY = "CLR";
 
@@ -144,6 +146,7 @@ public class BTService extends XWService {
 
     private class BTQueueElem {
         int m_failCount;
+        int m_timeout;
         // These should perhaps be in some subclasses....
         BTCmd m_cmd;
         byte[] m_msg;
@@ -156,6 +159,11 @@ public class BTService extends XWService {
         NetLaunchInfo m_nli;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
+        public BTQueueElem( BTCmd cmd, int timeout )
+        {
+            this(cmd);
+            m_timeout = timeout;
+        }
 
         public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, int gameID ) {
             this( cmd );
@@ -321,9 +329,11 @@ public class BTService extends XWService {
         startService( context, intent );
     }
 
-    public static void scan( Context context )
+    public static void scan( Context context, int timeoutMS )
     {
-        startService( context, getIntentTo( context, BTAction.SCAN ) );
+        Intent intenet = getIntentTo( context, BTAction.SCAN )
+            .putExtra( SCAN_TIMEOUT_KEY, timeoutMS );
+        startService( context, intenet );
     }
 
     public static void pingHost( Context context, String hostAddr, int gameID )
@@ -493,7 +503,8 @@ public class BTService extends XWService {
                     String[] btAddrs = intent.getStringArrayExtra( CLEAR_KEY );
                     break;
                 case SCAN:
-                    m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
+                    int timeout = intent.getIntExtra( SCAN_TIMEOUT_KEY, -1 );
+                    m_sender.add( new BTQueueElem( BTCmd.SCAN, timeout ) );
                     break;
                 case INVITE:
                     String jsonData = intent.getStringExtra( GAMEDATA_KEY );
@@ -1023,14 +1034,14 @@ public class BTService extends XWService {
                     switch( elem.m_cmd ) {
                     case PING:
                         if ( null == elem.m_btAddr ) {
-                            sendPings( MultiEvent.HOST_PONGED, null );
+                            sendPings( MultiEvent.HOST_PONGED, null, CONNECT_TIMEOUT_MS );
                         } else {
-                            sendPing( elem.m_btAddr, elem.m_gameID );
+                            sendPing( elem.m_btAddr, elem.m_gameID, CONNECT_TIMEOUT_MS );
                         }
                         break;
                     case SCAN:
                         Set<BluetoothDevice> devs = new HashSet<>();
-                        sendPings( null, devs );
+                        sendPings( null, devs, elem.m_timeout );
                         sendNames( devs );
                         break;
                     case INVITE:
@@ -1057,7 +1068,8 @@ public class BTService extends XWService {
             }
         } // run
 
-        private void sendPings( MultiEvent event, Set<BluetoothDevice> addrs )
+        private void sendPings( MultiEvent event, Set<BluetoothDevice> addrs,
+                                int timeout )
         {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
             Map<BluetoothDevice, PingThread> threads = new HashMap<>();
@@ -1065,7 +1077,7 @@ public class BTService extends XWService {
                 // Skip things that can't host an Android app
                 int clazz = dev.getBluetoothClass().getMajorDeviceClass();
                 if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
-                    PingThread thread = new PingThread(dev);
+                    PingThread thread = new PingThread( dev, timeout );
                     thread.start();
                     threads.put( dev, thread );
                 } else {
@@ -1095,18 +1107,22 @@ public class BTService extends XWService {
         private class PingThread extends Thread {
             private boolean mGotResponse;
             private BluetoothDevice mDev;
+            private int mTimeout;
 
-            PingThread(BluetoothDevice dev) { mDev = dev; }
+            PingThread(BluetoothDevice dev, int timeout)
+            {
+                mDev = dev; mTimeout = timeout;
+            }
 
             @Override
             public void run() {
-                mGotResponse = sendPing( mDev, 0 );
+                mGotResponse = sendPing( mDev, 0, mTimeout );
             }
 
             boolean gotResponse() { return mGotResponse; }
         }
 
-        private boolean sendPing( BluetoothDevice dev, int gameID )
+        private boolean sendPing( BluetoothDevice dev, int gameID, int timeout )
         {
             boolean gotReply = false;
             boolean sendWorking = false;
@@ -1115,7 +1131,7 @@ public class BTService extends XWService {
                 BluetoothSocket socket =
                     dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                 if ( null != socket ) {
-                    DataOutputStream os = connect( socket, BTCmd.PING );
+                    DataOutputStream os = connect( socket, BTCmd.PING, timeout );
                     if ( null != os ) {
                         os.writeInt( gameID );
                         os.flush();
@@ -1147,11 +1163,11 @@ public class BTService extends XWService {
             return gotReply;
         } // sendPing
 
-        private boolean sendPing( String btAddr, int gameID )
+        private boolean sendPing( String btAddr, int gameID, int timeout )
         {
             boolean success = false;
             BluetoothDevice dev = m_adapter.getRemoteDevice( btAddr );
-            success = sendPing( dev, gameID );
+            success = sendPing( dev, gameID, timeout );
             return success;
         }
 
@@ -1410,6 +1426,12 @@ public class BTService extends XWService {
 
     private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )
     {
+        return connect( socket, cmd, 20000 );
+    }
+
+    private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd,
+                                      int timeout )
+    {
         String name = socket.getRemoteDevice().getName();
         Log.w( TAG, "connect(%s) starting", name );
         // DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
@@ -1420,8 +1442,9 @@ public class BTService extends XWService {
 
         // Try for 8 seconds. Some devices take a long time to get ACL conn
         // ACTION
-        for ( long end = 20000 + System.currentTimeMillis(); ; ) {
+        for ( long end = timeout + System.currentTimeMillis(); ; ) {
             try {
+                Log.d( TAG, "trying connect(%s) ", name );
                 socket.connect();
                 Log.i( TAG, "connect(%s) succeeded", name );
                 dos = new DataOutputStream( socket.getOutputStream() );
@@ -1432,7 +1455,6 @@ public class BTService extends XWService {
                 if ( System.currentTimeMillis() > end ) {
                     break;
                 }
-                Log.d( TAG, "connect(%s) trying again", name );
                 try {
                     Thread.sleep( 1000 );
                 } catch ( InterruptedException ex ) {
