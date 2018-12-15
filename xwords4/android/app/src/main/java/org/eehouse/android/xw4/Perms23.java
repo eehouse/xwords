@@ -237,7 +237,8 @@ public class Perms23 {
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
         Context context = XWApp.getContext();
-        String msg = LocUtils.getString( context, rationaleId );
+        String msg = rationaleId == 0
+            ? null : LocUtils.getString( context, rationaleId );
         tryGetPerms( delegate, perm, msg, action, params );
     }
 

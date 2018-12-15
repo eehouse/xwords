@@ -987,6 +987,16 @@ public class GamesListDelegate extends ListDelegateBase
             } );
 
         updateField();
+
+        // RECEIVE_SMS is required now (Oreo/SDK_26) but wasn't
+        // before. There's logic elsewhere to ask for it AND SEND_SMS, but if
+        // the user's already granted SEND_SMS we can get RECEIVE_SMS just by
+        // asking (OS will grant without user interaction) since they're in
+        // the same group. So just do it now.  This code can be removed
+        // later...
+        if ( Perms23.havePermission( Perm.SEND_SMS ) ) {
+            Perms23.tryGetPerms( this, Perm.RECEIVE_SMS, 0, Action.SKIP_CALLBACK );
+        }
     } // init
 
     @Override
