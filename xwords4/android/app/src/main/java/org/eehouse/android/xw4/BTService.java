@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
@@ -238,7 +239,7 @@ public class BTService extends XWService {
     public static void openBTSettings( Activity activity )
     {
         Intent intent = new Intent();
-        intent.setAction( android.provider.Settings.ACTION_BLUETOOTH_SETTINGS );
+        intent.setAction( Settings.ACTION_BLUETOOTH_SETTINGS );
         activity.startActivity( intent );
     }
 
@@ -572,19 +573,36 @@ public class BTService extends XWService {
                     .getActivity( this, Utils.nextRandomInt(), notifIntent,
                                   PendingIntent.FLAG_ONE_SHOT );
 
-                Intent stopIntent = new Intent(this, BTReceiver.class);
-                stopIntent.setAction( BTReceiver.ACTION_STOP_BT );
-                PendingIntent stopPI =
-                    PendingIntent.getBroadcast(this, 0, stopIntent, 0);
-
                 String channelID = Channels.getChannelID( this, Channels.ID.FOREGROUND );
                 NotificationCompat.Builder builder =
                     new NotificationCompat.Builder( this, channelID )
                     .setSmallIcon( R.drawable.notify_btservice )
                     .setContentText( getString(R.string.bkng_notify_text) )
                     .setContentIntent( pendIntent )
-                    .addAction( R.drawable.notify_btservice,
+                    ;
+
+                // Add button to kill the foreground service
+                Intent stopIntent = new Intent( this, BTReceiver.class );
+                stopIntent.setAction( BTReceiver.ACTION_STOP_BT );
+                PendingIntent stopPI =
+                    PendingIntent.getBroadcast(this, 0, stopIntent, 0);
+                builder.addAction( R.drawable.notify_btservice,
                                 getString(R.string.bkng_stop_text), stopPI );
+
+                // If supported, button to take user to settings (to make
+                // notification less annoying perhaps)
+                if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
+                    Intent hideIntent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                        .putExtra( Settings.EXTRA_APP_PACKAGE, getPackageName() )
+                        .putExtra( Settings.EXTRA_CHANNEL_ID, channelID )
+                        ;
+                    PendingIntent hidePI =
+                        PendingIntent.getActivity( this, 0, hideIntent, 0 );
+                    builder.addAction( R.drawable.notify_btservice,
+                                       getString(R.string.bkng_settings_text),
+                                       hidePI );
+                }
+
                 m_notification = builder.build();
             }
 

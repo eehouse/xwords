@@ -2031,6 +2031,7 @@
 
     <string name="bkng_notify_text">Accepting Bluetooth messages…</string>
     <string name="bkng_stop_text">Stop</string>
+    <string name="bkng_settings_text">Settings</string>
 
     <!--  -->
     <string name="confirm_sms_title">Confirm your SMS plan</string>
@@ -2728,7 +2729,7 @@
   <string name="toast_no_permission">Permission not granted</string>
 
   <!-- Explanation in settings for always-on BT notification -->
-  <string name="foreground_channel_expl">Ready-for-bluetooth</string>
+  <string name="foreground_channel_expl">Accepting Bluetooth in background</string>
   <!-- Explanation in settings for traditional move-arrived notification -->
   <string name="gameevent_channel_expl">In-game events</string>
 </resources>
