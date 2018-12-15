@@ -152,6 +152,10 @@ public class BTInviteDelegate extends InviteDelegate {
         m_pairs = null;
         if ( 0 < btNames.length ) {
             m_pairs = TwoStringPair.make( btNames, btAddrs );
+        } else {
+            makeNotAgainBuilder( R.string.not_again_emptybtscan,
+                                 R.string.key_notagain_emptybtscan )
+                .show();
         }
 
         updateListAdapter( m_pairs );

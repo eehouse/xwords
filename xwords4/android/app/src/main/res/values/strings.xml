@@ -2732,4 +2732,10 @@
   <string name="foreground_channel_expl">Accepting Bluetooth in background</string>
   <!-- Explanation in settings for traditional move-arrived notification -->
   <string name="gameevent_channel_expl">In-game events</string>
+
+  <string name="not_again_emptybtscan">If a scan doesn\'t find the device you expect:\n
+  • First, just try again\n
+  • Make sure Bluetooth is on on the other device\n
+  • Launch CrossWords on the other device\n
+  </string>
 </resources>
