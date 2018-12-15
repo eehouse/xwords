@@ -577,14 +577,15 @@ public class BTService extends XWService {
                 PendingIntent stopPI =
                     PendingIntent.getBroadcast(this, 0, stopIntent, 0);
 
-                m_notification =
-                    new NotificationCompat.Builder( this, Utils.getChannelId(this) )
+                String channelID = Channels.getChannelID( this, Channels.ID.FOREGROUND );
+                NotificationCompat.Builder builder =
+                    new NotificationCompat.Builder( this, channelID )
                     .setSmallIcon( R.drawable.notify_btservice )
                     .setContentText( getString(R.string.bkng_notify_text) )
                     .setContentIntent( pendIntent )
                     .addAction( R.drawable.notify_btservice,
-                                getString(R.string.bkng_stop_text), stopPI )
-                    .build();
+                                getString(R.string.bkng_stop_text), stopPI );
+                m_notification = builder.build();
             }
 
             Log.d( TAG, "calling service.startForeground()" );

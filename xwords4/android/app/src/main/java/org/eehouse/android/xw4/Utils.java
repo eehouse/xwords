@@ -83,8 +83,6 @@ public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
     public static final int TURN_COLOR = 0x7F00FF00;
 
-    private static final String _CHANNEL_ID = BuildConfig.APPLICATION_ID + "_channel_id";
-
     private static final String DB_PATH = "XW_GAMES";
     private static final String HIDDEN_PREFS = "xwprefs_hidden";
     private static final String FIRST_VERSION_KEY = "FIRST_VERSION_KEY";
@@ -258,8 +256,9 @@ public class Utils {
             defaults |= Notification.DEFAULT_VIBRATE;
         }
 
+        String channelID = Channels.getChannelID( context, Channels.ID.GAME_EVENT );
         Notification notification =
-            new NotificationCompat.Builder( context, getChannelId(context) )
+            new NotificationCompat.Builder( context, channelID )
             .setContentIntent( pi )
             .setSmallIcon( R.drawable.notify )
             //.setTicker(body)
@@ -619,28 +618,5 @@ public class Utils {
                 editor.commit();
             }
         }
-    }
-
-    private static boolean sChannelMade = false;
-    static String getChannelId( Context context )
-    {
-        if ( !sChannelMade ) {
-            sChannelMade = true;
-            if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
-                NotificationManager notMgr = (NotificationManager)
-                    context.getSystemService( Context.NOTIFICATION_SERVICE );
-
-                String channelDescription = "XWORDS Default Channel";
-                NotificationChannel channel = notMgr.getNotificationChannel( _CHANNEL_ID );
-                if ( channel == null ) {
-                    channel = new NotificationChannel( _CHANNEL_ID, channelDescription,
-                                                       NotificationManager.IMPORTANCE_LOW );
-                    // channel.setLightColor(Color.GREEN);
-                    channel.enableVibration( true );
-                    notMgr.createNotificationChannel( channel );
-                }
-            }
-        }
-        return _CHANNEL_ID;
     }
 }
