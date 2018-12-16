@@ -1231,14 +1231,14 @@ public class GamesListDelegate extends ListDelegateBase
                                final Object ... args )
     {
         switch( event ) {
-        case HOST_PONGED:
-            post( new Runnable() {
-                    public void run() {
-                        DbgUtils.showf( m_activity,
-                                        "Pong from %s", args[0].toString() );
-                    }
-                });
-            break;
+        // case HOST_PONGED:
+        //     post( new Runnable() {
+        //             public void run() {
+        //                 DbgUtils.showf( m_activity,
+        //                                 "Pong from %s", args[0].toString() );
+        //             }
+        //         });
+        //     break;
         case BT_GAME_CREATED:
             post( new Runnable() {
                     public void run() {

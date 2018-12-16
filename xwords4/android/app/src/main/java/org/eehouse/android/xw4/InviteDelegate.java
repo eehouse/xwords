@@ -36,12 +36,12 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
 
 abstract class InviteDelegate extends ListDelegateBase
     implements View.OnClickListener,
@@ -67,6 +67,19 @@ abstract class InviteDelegate extends ListDelegateBase
             for ( int ii = 0; ii < pairs.length; ++ii ) {
                 pairs[ii] = new TwoStringPair( names[ii], addrs[ii] );
             }
+            return pairs;
+        }
+
+        public static TwoStringPair[] add( TwoStringPair[] pairs, String name,
+                                           String addr )
+        {
+            if ( null == pairs ) {
+                pairs = new TwoStringPair[0];
+            }
+
+            pairs = Arrays.copyOfRange( pairs, 0, pairs.length + 1 );
+            pairs[pairs.length-1] = new TwoStringPair( name, addr );
+
             return pairs;
         }
 

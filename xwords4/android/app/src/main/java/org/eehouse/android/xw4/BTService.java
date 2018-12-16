@@ -82,6 +82,7 @@ public class BTService extends XWService {
     private static final String KEY_KEEPALIVE_UNTIL_SECS = "keep_secs";
     // half minute for testing; maybe 15 on ship? Or make it a debug config.
     private static int DEFAULT_KEEPALIVE_SECONDS = 15 * 60;
+    private static int CONNECT_SLEEP_MS = 1000;
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
@@ -317,15 +318,15 @@ public class BTService extends XWService {
 
     public static void radioChanged( Context context, boolean cameOn )
     {
-        Intent intent = getIntentTo( context, BTAction.RADIO );
-        intent.putExtra( RADIO_KEY, cameOn );
+        Intent intent = getIntentTo( context, BTAction.RADIO )
+            .putExtra( RADIO_KEY, cameOn );
         startService( context, intent );
     }
 
     public static void clearDevices( Context context, String[] btAddrs )
     {
-        Intent intent = getIntentTo( context, BTAction.CLEAR );
-        intent.putExtra( CLEAR_KEY, btAddrs );
+        Intent intent = getIntentTo( context, BTAction.CLEAR )
+            .putExtra( CLEAR_KEY, btAddrs );
         startService( context, intent );
     }
 
@@ -339,9 +340,9 @@ public class BTService extends XWService {
     public static void pingHost( Context context, String hostAddr, int gameID )
     {
         Assert.assertTrue( null != hostAddr && 0 < hostAddr.length() );
-        Intent intent = getIntentTo( context, BTAction.PINGHOST );
-        intent.putExtra( ADDR_KEY, hostAddr );
-        intent.putExtra( GAMEID_KEY, gameID );
+        Intent intent = getIntentTo( context, BTAction.PINGHOST )
+            .putExtra( ADDR_KEY, hostAddr )
+            .putExtra( GAMEID_KEY, gameID );
         startService( context, intent );
     }
 
@@ -349,24 +350,23 @@ public class BTService extends XWService {
                                      NetLaunchInfo nli )
     {
         Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
-        Intent intent = getIntentTo( context, BTAction.INVITE );
         String nliData = nli.toString();
-        intent.putExtra( GAMEDATA_KEY, nliData );
-        intent.putExtra( ADDR_KEY, btAddr );
-
+        Intent intent = getIntentTo( context, BTAction.INVITE )
+            .putExtra( GAMEDATA_KEY, nliData )
+            .putExtra( ADDR_KEY, btAddr );
         startService( context, intent );
     }
 
     public static void gotGameViaNFC( Context context, NetLaunchInfo bli )
     {
-        Intent intent = getIntentTo( context, BTAction.NFCINVITE );
-        intent.putExtra( GAMEID_KEY, bli.gameID() );
-        intent.putExtra( DICT_KEY, bli.dict );
-        intent.putExtra( LANG_KEY, bli.lang );
-        intent.putExtra( NTO_KEY, bli.nPlayersT );
-        intent.putExtra( BT_NAME_KEY, bli.btName );
-        intent.putExtra( BT_ADDRESS_KEY, bli.btAddress );
-
+        Intent intent = getIntentTo( context, BTAction.NFCINVITE )
+            .putExtra( GAMEID_KEY, bli.gameID() )
+            .putExtra( DICT_KEY, bli.dict )
+            .putExtra( LANG_KEY, bli.lang )
+            .putExtra( NTO_KEY, bli.nPlayersT )
+            .putExtra( BT_NAME_KEY, bli.btName )
+            .putExtra( BT_ADDRESS_KEY, bli.btAddress )
+            ;
         startService( context, intent );
     }
 
@@ -1034,15 +1034,14 @@ public class BTService extends XWService {
                     switch( elem.m_cmd ) {
                     case PING:
                         if ( null == elem.m_btAddr ) {
-                            sendPings( MultiEvent.HOST_PONGED, null, CONNECT_TIMEOUT_MS );
+                            sendPings( MultiEvent.HOST_PONGED, CONNECT_TIMEOUT_MS );
                         } else {
                             sendPing( elem.m_btAddr, elem.m_gameID, CONNECT_TIMEOUT_MS );
                         }
                         break;
                     case SCAN:
-                        Set<BluetoothDevice> devs = new HashSet<>();
-                        sendPings( null, devs, elem.m_timeout );
-                        sendNames( devs );
+                        sendPings( MultiEvent.HOST_PONGED, elem.m_timeout );
+                        mHelper.postEvent( MultiEvent.SCAN_DONE );
                         break;
                     case INVITE:
                         sendInvite( elem );
@@ -1068,8 +1067,7 @@ public class BTService extends XWService {
             }
         } // run
 
-        private void sendPings( MultiEvent event, Set<BluetoothDevice> addrs,
-                                int timeout )
+        private void sendPings( MultiEvent event, int timeout )
         {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
             Map<BluetoothDevice, PingThread> threads = new HashMap<>();
@@ -1077,9 +1075,9 @@ public class BTService extends XWService {
                 // Skip things that can't host an Android app
                 int clazz = dev.getBluetoothClass().getMajorDeviceClass();
                 if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
-                    PingThread thread = new PingThread( dev, timeout );
-                    thread.start();
+                    PingThread thread = new PingThread( dev, timeout, event );
                     threads.put( dev, thread );
+                    thread.start();
                 } else {
                     Log.d( TAG, "skipping %s; not an android device!",
                            dev.getName() );
@@ -1090,14 +1088,6 @@ public class BTService extends XWService {
                 PingThread thread = threads.get( dev );
                 try {
                     thread.join();
-                    if ( thread.gotResponse() ) {
-                        if ( null != addrs ) {
-                            addrs.add( dev );
-                        }
-                        if ( null != event ) {
-                            mHelper.postEvent( event, dev.getName() );
-                        }
-                    }
                 } catch ( InterruptedException ex ) {
                     Assert.assertFalse( BuildConfig.DEBUG );
                 }
@@ -1108,15 +1098,19 @@ public class BTService extends XWService {
             private boolean mGotResponse;
             private BluetoothDevice mDev;
             private int mTimeout;
+            private MultiEvent mEvent;
 
-            PingThread(BluetoothDevice dev, int timeout)
+            PingThread(BluetoothDevice dev, int timeout, MultiEvent event)
             {
-                mDev = dev; mTimeout = timeout;
+                mDev = dev; mTimeout = timeout; mEvent = event;
             }
 
             @Override
             public void run() {
                 mGotResponse = sendPing( mDev, 0, mTimeout );
+                if ( mGotResponse && null != mEvent) {
+                    mHelper.postEvent( mEvent, mDev );
+                }
             }
 
             boolean gotResponse() { return mGotResponse; }
@@ -1370,19 +1364,6 @@ public class BTService extends XWService {
         }
     } // class BTSenderThread
 
-    private void sendNames( Set<BluetoothDevice> devs )
-    {
-        String[] btNames = new String[devs.size()];
-        String[] btAddrs = new String[devs.size()];
-        int ii = 0;
-        for ( BluetoothDevice dev : devs ) {
-            btAddrs[ii] = dev.getAddress();
-            btNames[ii] = nameForAddr( m_adapter, btAddrs[ii] );
-            ++ii;
-        }
-        mHelper.postEvent( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
-    }
-
     private void startListener()
     {
         Assert.assertNotNull( mHelper );
@@ -1440,8 +1421,8 @@ public class BTService extends XWService {
 
         DataOutputStream dos = null;
 
-        // Try for 8 seconds. Some devices take a long time to get ACL conn
-        // ACTION
+        // Retry for some time. Some devices take a long time to generate and
+        // broadcast ACL conn ACTION
         for ( long end = timeout + System.currentTimeMillis(); ; ) {
             try {
                 Log.d( TAG, "trying connect(%s) ", name );
@@ -1452,11 +1433,11 @@ public class BTService extends XWService {
                 dos.writeByte( cmd.ordinal() );
                 break;          // success!!!
             } catch (IOException ioe) {
-                if ( System.currentTimeMillis() > end ) {
+                if ( CONNECT_SLEEP_MS + System.currentTimeMillis() > end ) {
                     break;
                 }
                 try {
-                    Thread.sleep( 1000 );
+                    Thread.sleep( CONNECT_SLEEP_MS );
                 } catch ( InterruptedException ex ) {
                     break;
                 }

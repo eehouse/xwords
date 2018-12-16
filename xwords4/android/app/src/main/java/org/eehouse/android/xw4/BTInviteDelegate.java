@@ -23,11 +23,11 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -99,7 +99,21 @@ public class BTInviteDelegate extends InviteDelegate {
         case SCAN_DONE:
             post( new Runnable() {
                     public void run() {
-                        processScanResults( (String[])args[0], (String[])args[1] );
+                        m_progress.cancel();
+
+                        if ( null == m_pairs || m_pairs.length == 0 ) {
+                            makeNotAgainBuilder( R.string.not_again_emptybtscan,
+                                                 R.string.key_notagain_emptybtscan )
+                                .show();
+                        }
+                    }
+                } );
+            break;
+        case HOST_PONGED:
+            post( new Runnable() {
+                    @Override
+                    public void run() {
+                        processScanResult( (BluetoothDevice)args[0] );
                     }
                 } );
             break;
@@ -132,8 +146,12 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
+            m_pairs = null;
+            updateListAdapter( null );
+
             String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
             m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
+
             BTService.scan( m_activity, 5000 );
         } else {
             makeConfirmThenBuilder( R.string.bt_no_devs,
@@ -143,26 +161,16 @@ public class BTInviteDelegate extends InviteDelegate {
         }
     }
 
-    private void processScanResults( String[] btNames, String[] btAddrs )
+    private void processScanResult( BluetoothDevice dev )
     {
         DbgUtils.assertOnUIThread();
 
-        m_progress.cancel();
-
-        m_pairs = null;
-        if ( 0 < btNames.length ) {
-            m_pairs = TwoStringPair.make( btNames, btAddrs );
-        } else {
-            makeNotAgainBuilder( R.string.not_again_emptybtscan,
-                                 R.string.key_notagain_emptybtscan )
-                .show();
-        }
+        m_pairs = TwoStringPair.add( m_pairs, dev.getAddress(), dev.getName() );
 
         updateListAdapter( m_pairs );
         tryEnable();
     }
 
-    // @Override
     private void removeSelected()
     {
         Set<InviterItem> checked = getChecked();
