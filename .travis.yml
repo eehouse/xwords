@@ -36,7 +36,6 @@ before_install:
 - sudo apt-get -qq update
 - sudo apt-get install -y python-lxml imagemagick
 script:
-- git describe --tags --dirty
 - "./gradlew -PuseCrashlytics asXw4dDeb"
 - scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d app/build/outputs/apk/xw4d/debug/*.apk
   uploader@eehouse.org:XW4D_UPLOAD
