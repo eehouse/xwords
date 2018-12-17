@@ -10,6 +10,14 @@ boolean forFDroid = hasProperty('forFDroid')
 // Get the git revision we're using. Since fdroid modifies files as
 // part of its build process -dirty will always be added, confusing
 // users. So add that for the non-fdroid case.
+def TEST = "which git"
+TEST = TEST.execute().text.trim()
+print "TEST: ${TEST}\n"
+
+def TEST2 = "pwd"
+TEST2 = TEST2.execute().text.trim()
+print "TEST2: ${TEST2}\n"
+
 def GITCMD = "git describe --tags"
 if (! forFDroid) {
     GITCMD += " --dirty"
