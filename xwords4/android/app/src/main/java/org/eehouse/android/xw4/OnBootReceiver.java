@@ -30,12 +30,18 @@ public class OnBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        if ( null != intent
-             && null != intent.getAction()
-             && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            Log.d( TAG, "got ACTION_BOOT_COMPLETED" );
-            startTimers( context );
-            BTService.onAppToBackground( context );
+        if ( null != intent ) {
+            String action = intent.getAction();
+            Log.d( TAG, "got %s", action );
+            switch( action ) {
+            case Intent.ACTION_BOOT_COMPLETED:
+            case Intent.ACTION_MY_PACKAGE_REPLACED:
+                startTimers( context );
+                // Let's not put up the foreground service notification on
+                // boot. Too likely to annoy.
+                // BTService.onAppToBackground( context );
+                break;
+            }
         }
     }
 
