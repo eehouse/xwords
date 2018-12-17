@@ -222,7 +222,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         final int height = getHeight();
         boolean layoutDone = width == m_layoutWidth && height == m_layoutHeight;
         if ( layoutDone ) {
-            Log.d( TAG, "layoutBoardOnce(): layoutDone true" );
+            // Log.d( TAG, "layoutBoardOnce(): layoutDone true" );
         } else if ( null == m_gi ) {
             // nothing to do either
             Log.d( TAG, "layoutBoardOnce(): no m_gi" );
@@ -281,7 +281,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             m_layoutHeight = height;
             layoutDone = true;
         }
-        Log.d( TAG, "layoutBoardOnce()=>%b", layoutDone );
+        // Log.d( TAG, "layoutBoardOnce()=>%b", layoutDone );
         return layoutDone;
     } // layoutBoardOnce
 
