@@ -35,8 +35,8 @@ before_install:
 - sudo apt-get install -y python-lxml imagemagick
 script:
 - "./gradlew -PuseCrashlytics asXw4dDeb"
-- NAME=$(find app/build/outputs/apk/xw4d/debug -name '*.apk')
-- scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d $NAME uploader@eehouse.org:XW4D_UPLOAD/$(basename $NAME)
+- scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d app/build/outputs/apk/xw4d/debug/*.apk
+  uploader@eehouse.org:XW4D_UPLOAD
 notifications:
   email:
     recipients:

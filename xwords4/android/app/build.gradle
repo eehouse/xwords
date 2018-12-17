@@ -10,11 +10,12 @@ boolean forFDroid = hasProperty('forFDroid')
 // Get the git revision we're using. Since fdroid modifies files as
 // part of its build process -dirty will always be added, confusing
 // users. So add that for the non-fdroid case.
-def GITREV = "git describe --tags"
+def GITCMD = "git describe --tags"
 if (! forFDroid) {
-    GITREV += " --dirty"
+    GITCMD += " --dirty"
 }
-GITREV = GITREV.execute().text.trim()
+def GITREV = GITCMD.execute().text.trim()
+print "GITREV: ${GITREV}\n"
 
 apply plugin: 'com.android.application'
 
