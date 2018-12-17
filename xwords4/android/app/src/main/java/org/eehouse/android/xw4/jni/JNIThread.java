@@ -750,8 +750,8 @@ public class JNIThread extends Thread {
     public void handle( JNICmd cmd, Object... args )
     {
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
-            Log.w( TAG, "NOT adding %s to stopped thread!!!", cmd.toString() );
-            DbgUtils.printStack( TAG );
+            Log.w( TAG, "handle(%s): NOT adding to stopped thread!!!", cmd );
+            // DbgUtils.printStack( TAG );
         } else {
             m_queue.add( new QueueElem( cmd, true, args ) );
         }

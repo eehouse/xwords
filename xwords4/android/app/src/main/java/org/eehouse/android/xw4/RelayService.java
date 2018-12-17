@@ -399,7 +399,7 @@ public class RelayService extends JobIntentService
     {
         MsgCmds cmd = cmdFrom( intent );
         if ( null != cmd ) {
-            Log.d( TAG, "handleCommand(): cmd=%s", cmd.toString() );
+            // Log.d( TAG, "handleCommand(): cmd=%s", cmd.toString() );
             switch( cmd ) {
             case PROCESS_GAME_MSGS:
                 String[] relayIDs = new String[1];
@@ -606,7 +606,7 @@ public class RelayService extends JobIntentService
                 if ( !skipAck ) {
                     sendAckIf( header );
                 }
-                Log.d( TAG, "gotPacket(): cmd=%s", header.m_cmd.toString() );
+                Log.d( TAG, "%s.gotPacket(): cmd=%s", this, header.m_cmd.toString() );
                 switch ( header.m_cmd ) {
                 case XWPDEV_UNAVAIL:
                     int unavail = dis.readInt();

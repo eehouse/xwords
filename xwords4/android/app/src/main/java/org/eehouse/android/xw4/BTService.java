@@ -1520,7 +1520,7 @@ public class BTService extends XWService {
                     try {
                         Thread.sleep( 1000 * seconds );
                     } catch ( InterruptedException ie ) {
-                        Log.w( TAG, "KillerIn: killed by owner" );
+                        // Log.d( TAG, "KillerIn: killed by owner" );
                     }
                     try {
                         socket.close();
