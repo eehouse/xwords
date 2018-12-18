@@ -216,23 +216,29 @@ public class JNIThread extends Thread {
             if ( null != m_jniGamePtr ) {
                 Log.d( TAG, "configure(): m_jniGamePtr not null; that ok?" );
             }
-            m_jniGamePtr = null;
-            if ( null != stream ) {
-                m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi,
-                                                     dictNames, pairs.m_bytes,
-                                                     pairs.m_paths,
-                                                     m_gi.langName( m_context ),
-                                                     utils, null, cp, m_xport );
+
+            synchronized ( this ) {
+                m_jniGamePtr = null;
+                if ( null != stream ) {
+                    m_jniGamePtr = XwJNI.initFromStream( m_rowid, stream, m_gi,
+                                                         dictNames, pairs.m_bytes,
+                                                         pairs.m_paths,
+                                                         m_gi.langName( m_context ),
+                                                         utils, null, cp, m_xport );
+                }
+                if ( null == m_jniGamePtr ) {
+                    m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
+                                                  pairs.m_paths,
+                                                  m_gi.langName(m_context),
+                                                  utils, null, cp, m_xport );
+                }
+                Assert.assertNotNull( m_jniGamePtr );
+                notifyAll();
             }
-            if ( null == m_jniGamePtr ) {
-                m_jniGamePtr = XwJNI.initNew( m_gi, dictNames, pairs.m_bytes,
-                                              pairs.m_paths,
-                                              m_gi.langName(m_context),
-                                              utils, null, cp, m_xport );
-            }
-            Assert.assertNotNull( m_jniGamePtr );
+
             m_lastSavedState = Arrays.hashCode( stream );
         }
+        Log.d( TAG, "configure() => %b", success );
         return success;
     }
 
@@ -417,13 +423,24 @@ public class JNIThread extends Thread {
     }
 
     @SuppressWarnings("fallthrough")
+    @Override
     public void run()
     {
+        Log.d( TAG, "run() starting" );
         boolean[] barr = new boolean[2]; // scratch boolean
         for ( ; ; ) {
             synchronized ( this ) {
                 if ( m_stopped ) {
                     break;
+                } else if ( null == m_jniGamePtr ) {
+                    try {
+                        wait();
+                    } catch ( InterruptedException iex ) {
+                        Log.d( TAG, "exiting run() on interrupt: %s",
+                               iex.getMessage() );
+                        break;
+                    }
+                    continue;
                 }
             }
 
@@ -728,6 +745,7 @@ public class JNIThread extends Thread {
             m_jniGamePtr.release();
             m_jniGamePtr = null;
         }
+        Log.d( TAG, "run() finished" );
     } // run
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
@@ -815,7 +833,6 @@ public class JNIThread extends Thread {
             result = s_instances.get( rowid );
             if ( null == result && makeNew ) {
                 result = new JNIThread( new GameLock( rowid, true ).lock() );
-                Assert.assertNotNull( result );
                 s_instances.put( rowid, result );
             }
             if ( null != result ) {
