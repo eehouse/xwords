@@ -32,9 +32,6 @@ import java.util.Stack;
 public class GameLock implements AutoCloseable {
     private static final String TAG = GameLock.class.getSimpleName();
 
-    public interface GotLock {
-        void onGotLock( GameLock lock );
-    }
     private static final boolean DEBUG_LOCKS = false;
     // private static final long ASSERT_TIME = 2000;
     private static final long THROW_TIME = 1000;
