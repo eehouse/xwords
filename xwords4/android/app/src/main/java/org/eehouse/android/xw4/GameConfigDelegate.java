@@ -537,14 +537,13 @@ public class GameConfigDelegate extends DelegateBase
             m_giOrig = new CurGameInfo( m_activity );
 
             GameLock gameLock = null;
-            XwJNI.GamePtr gamePtr;
+            XwJNI.GamePtr gamePtr = null;
             if ( null == m_jniThread ) {
-                try {
-                    gameLock = GameLock.getFor( m_rowid ).lockRO();
-                } catch (InterruptedException iex) {
-                    Assert.assertFalse( BuildConfig.DEBUG );
+                gameLock = GameLock.getFor( m_rowid ).tryLockRO();
+                if ( null != gameLock ) {
+                    gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig,
+                                                      gameLock );
                 }
-                gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
             } else {
                 gameLock = m_jniThread.getLock();
                 gamePtr = m_jniThread.getGamePtr();
@@ -1234,18 +1233,14 @@ public class GameConfigDelegate extends DelegateBase
     private void applyChanges( boolean forceNew )
     {
         if ( !isFinishing() ) {
-            try {
-                GameLock gameLock = m_jniThread == null
-                    ? GameLock.getFor( m_rowid ).lock()
-                    : m_jniThread.getLock();
-                GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
-                                        gameLock, forceNew );
-                DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
-                if ( null == m_jniThread ) {
-                    gameLock.unlock();
-                }
-            } catch (InterruptedException iex) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+            GameLock gameLock = m_jniThread == null
+                ? GameLock.getFor( m_rowid ).tryLock()
+                : m_jniThread.getLock();
+            GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
+                                    gameLock, forceNew );
+            DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
+            if ( null == m_jniThread ) {
+                gameLock.unlock();
             }
         }
     }
