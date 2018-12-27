@@ -1829,11 +1829,11 @@ public class GamesListDelegate extends ListDelegateBase
                                 GameUtils.savedGame( self, selRowIDs[0] );
                             long groupID = XWPrefs
                                 .getDefaultNewGameGroup( self );
-                            GameLock lock =
-                                GameUtils.saveNewGame( self, stream, groupID );
-                            DBUtils.saveSummary( self, lock, smry );
-                            m_mySIS.selGames.add( lock.getRowid() );
-                            lock.unlock();
+                            try ( GameLock lock =
+                                  GameUtils.saveNewGame( self, stream, groupID ) ) {
+                                DBUtils.saveSummary( self, lock, smry );
+                                m_mySIS.selGames.add( lock.getRowid() );
+                            }
                             mkListAdapter();
                         }
                     });
@@ -2033,9 +2033,7 @@ public class GamesListDelegate extends ListDelegateBase
         try {
             hasDicts = GameUtils.gameDictsHere( m_activity, rowid, missingNames,
                                                 missingLang );
-        } catch ( GameUtils.NoSuchGameException nsge ) {
-            hasDicts = true;    // irrelevant question
-        } catch ( GameLock.GameLockedException gle ) {
+        } catch ( GameLock.GameLockedException | GameUtils.NoSuchGameException ex ) {
             hasDicts = true;    // irrelevant question
         }
 

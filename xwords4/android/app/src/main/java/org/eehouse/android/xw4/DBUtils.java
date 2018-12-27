@@ -366,22 +366,27 @@ public class DBUtils {
     public static void addRematchInfo( Context context, long rowid, String btAddr,
                                        String phone, String relayID, String p2pAddr )
     {
-        GameLock lock = new GameLock( rowid, true ).lock();
-        GameSummary summary = getSummary( context, lock );
-        if ( null != btAddr ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+        try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
+            Assert.assertNotNull( lock );
+            if ( null != lock ) {
+                GameSummary summary = getSummary( context, lock );
+                if ( null != btAddr ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+                }
+                if ( null != phone ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
+                }
+                if ( null != relayID ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+                }
+                if ( null != p2pAddr ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr );
+                }
+                saveSummary( context, lock, summary );
+            } else {
+                Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
+            }
         }
-        if ( null != phone ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
-        }
-        if ( null != relayID ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
-        }
-        if ( null != p2pAddr ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr );
-        }
-        saveSummary( context, lock, summary );
-        lock.unlock();
     }
 
     public static int countGamesUsingLang( Context context, int lang )
@@ -1052,7 +1057,8 @@ public class DBUtils {
 
             setCached( rowid, null ); // force reread
 
-            lock = new GameLock( rowid, true ).lock();
+            lock = GameLock.getFor( rowid ).tryLock();
+            Assert.assertNotNull( lock );
             notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
 
@@ -1113,14 +1119,14 @@ public class DBUtils {
 
     public static void deleteGame( Context context, long rowid )
     {
-        GameLock lock = new GameLock( rowid, true ).lock( 300 );
-        if ( null != lock ) {
-            deleteGame( context, lock );
-            lock.unlock();
-        } else {
-            Log.e( TAG, "deleteGame: unable to lock rowid %d", rowid );
-            if ( BuildConfig.DEBUG ) {
-                Assert.fail();
+        try ( GameLock lock = GameLock.getFor( rowid ).lock( 300 ) ) {
+            if ( null != lock ) {
+                deleteGame( context, lock );
+            } else {
+                Log.e( TAG, "deleteGame: unable to lock rowid %d", rowid );
+                if ( BuildConfig.DEBUG ) {
+                    Assert.fail();
+                }
             }
         }
     }

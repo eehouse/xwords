@@ -35,6 +35,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.XWPrefs;
@@ -832,8 +833,14 @@ public class JNIThread extends Thread {
         synchronized( s_instances ) {
             result = s_instances.get( rowid );
             if ( null == result && makeNew ) {
-                result = new JNIThread( new GameLock( rowid, true ).lock() );
-                s_instances.put( rowid, result );
+                DbgUtils.assertOnUIThread(); // can't use GameLock.lock()
+                if ( true /*test done*/ || (0 != Utils.nextRandomInt() % 3) ) {
+                    GameLock lock = GameLock.getFor( rowid ).tryLock();
+                    if ( lock != null ) {
+                        result = new JNIThread( lock );
+                        s_instances.put( rowid, result );
+                    }
+                }
             }
             if ( null != result ) {
                 result.retain_sync();

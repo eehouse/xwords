@@ -20,178 +20,218 @@
 
 package org.eehouse.android.xw4;
 
-
+import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 // Implements read-locks and write-locks per game.  A read lock is
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
-public class GameLock {
+public class GameLock implements AutoCloseable {
     private static final String TAG = GameLock.class.getSimpleName();
+
+    public interface GotLock {
+        void onGotLock( GameLock lock );
+    }
     private static final boolean DEBUG_LOCKS = false;
-    private static final boolean THROW_ON_LOCKED = true;
-    private static final int SLEEP_TIME = 100;
-    private static final long ASSERT_TIME = 2000;
+    // private static final long ASSERT_TIME = 2000;
     private static final long THROW_TIME = 1000;
     private long m_rowid;
-    private boolean m_isForWrite;
-    private int m_lockCount;
-    private Thread m_ownerThread;
-    private StackTraceElement[] m_lockTrace;
+    private Stack<Owner> mOwners = new Stack<>();
+    private boolean mReadOnly;
 
-    static {
-        Assert.assertTrue( THROW_TIME <= ASSERT_TIME );
+    private static class Owner {
+        Thread mThread;
+        String mTrace;
+
+        Owner()
+        {
+            mThread = Thread.currentThread();
+            // mTrace = mThread.getStackTrace();
+            mTrace = android.util.Log.getStackTraceString(new Exception());
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "Owner: {%s/%s}", mThread, mTrace );
+        }
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("{this: %H; rowid: %d; count: %d; ro: %b}",
+                             this, m_rowid, mOwners.size(), mReadOnly);
     }
 
     public static class GameLockedException extends RuntimeException {}
 
-    private static HashMap<Long, GameLock>
-        s_locks = new HashMap<Long,GameLock>();
-
-    public GameLock( long rowid, boolean isForWrite )
+    private static Map<Long, WeakReference<GameLock>> sLockMap = new HashMap<>();
+    public static GameLock getFor( long rowid )
     {
-        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
-        m_rowid = rowid;
-        m_isForWrite = isForWrite;
-        m_lockCount = 0;
-        if ( DEBUG_LOCKS ) {
-            Log.i( TAG, "GameLock(rowid:%d,isForWrite:%b)=>this: %H",
-                   rowid, isForWrite, this );
-            DbgUtils.printStack( TAG );
-        }
-    }
-
-    // This could be written to allow multiple read locks.  Let's
-    // see if not doing that causes problems.
-    public boolean tryLock()
-    {
-        return null == tryLockImpl(); // unowned?
-    }
-
-    private GameLock tryLockImpl()
-    {
-        GameLock owner = null;
-        boolean gotIt = false;
-        synchronized( s_locks ) {
-            owner = s_locks.get( m_rowid );
-            if ( null == owner ) { // unowned
-                Assert.assertTrue( 0 == m_lockCount );
-                s_locks.put( m_rowid, this );
-                if ( BuildConfig.DEBUG ) {
-                    m_ownerThread = Thread.currentThread();
-                }
-                ++m_lockCount;
-                gotIt = true;
-
-                if ( DEBUG_LOCKS ) {
-                    StackTraceElement[] trace
-                        = Thread.currentThread().getStackTrace();
-                    m_lockTrace = new StackTraceElement[trace.length];
-                    System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
-                }
-            } else if ( this == owner && ! m_isForWrite ) {
-                if ( DEBUG_LOCKS ) {
-                    Log.i( TAG, "tryLock(): incrementing lock count" );
-                }
-                Assert.assertTrue( 0 == m_lockCount );
-                ++m_lockCount;
-                gotIt = true;
-                owner = null;
-            } else if ( DEBUG_LOCKS ) {
-                Log.i( TAG, "tryLock(): rowid %d already held by lock %H",
-                       m_rowid, owner );
+        GameLock result = null;
+        synchronized ( sLockMap ) {
+            if ( sLockMap.containsKey( rowid ) ) {
+                result = sLockMap.get( rowid ).get();
+            }
+            if ( null == result ) {
+                result = new GameLock( rowid );
+                sLockMap.put( rowid, new WeakReference(result) );
             }
         }
-        if ( DEBUG_LOCKS ) {
-            Log.i( TAG, "tryLock %H (rowid=%d) => %b", this, m_rowid, gotIt );
-        }
-        return owner;
+        return result;
     }
 
-    // Wait forever (but may assert if too long)
-    public GameLock lock()
+    private GameLock( long rowid ) { m_rowid = rowid; }
+
+    // We grant a lock IFF:
+    // * Count is 0
+    // OR
+    // * existing locks are ReadOnly and this request is readOnly
+    // OR
+    // * the requesting thread already holds the lock
+    private GameLock tryLockImpl( boolean readOnly )
     {
-        return this.lock( 0 );
+        GameLock result = null;
+        synchronized ( mOwners ) {
+            if ( DEBUG_LOCKS ) {
+                Log.d( TAG, "%s.tryLockImpl(ro=%b)", this, readOnly );
+            }
+            // Thread thisThread = Thread.currentThread();
+            boolean grant = false;
+            if ( mOwners.empty() ) {
+                grant = true;
+            } else if ( mReadOnly && readOnly ) {
+                grant = true;
+            // } else if ( thisThread == mOwnerThread ) {
+            //     grant = true;
+            }
+
+            if ( grant ) {
+                mOwners.push( new Owner() );
+                mReadOnly = readOnly;
+                result = this;
+            }
+            if ( DEBUG_LOCKS ) {
+                Log.d( TAG, "%s.tryLockImpl(ro=%b) => %s", this, readOnly, result );
+                if ( null == result ) {
+                    Log.d( TAG, "Unable to lock; cur owner: %s; would-be owner: %s",
+                           mOwners.peek(), new Owner() );
+                }
+            }
+        }
+        return result;
+    }
+    
+    // // This could be written to allow multiple read locks.  Let's
+    // // see if not doing that causes problems.
+    public GameLock tryLock()
+    {
+        return tryLockImpl( false );
+    }
+
+    public GameLock tryLockRO()
+    {
+        return tryLockImpl( true );
+    }
+
+    private GameLock lockImpl( long timeoutMS, boolean readOnly ) throws InterruptedException
+    {
+        long startMS = System.currentTimeMillis();
+        long endMS = startMS + timeoutMS;
+        synchronized ( mOwners ) {
+            while ( null == tryLockImpl( readOnly ) ) {
+                long now = System.currentTimeMillis();
+                if ( now >= endMS ) {
+                    throw new GameLockedException();
+                }
+                mOwners.wait( endMS - now );
+            }
+        }
+
+        if ( DEBUG_LOCKS ) {
+            long tookMS = System.currentTimeMillis() - startMS;
+            Log.d( TAG, "%s.lockImpl() returning after %d ms", this, tookMS );
+        }
+        return this;
+    }
+
+    public GameLock lock() throws InterruptedException
+    {
+        if ( BuildConfig.DEBUG ) {
+            DbgUtils.assertOnUIThread( false );
+        }
+        return lockImpl( Long.MAX_VALUE, false );
+    }
+
+    public GameLock lockRO() throws InterruptedException
+    {
+        if ( BuildConfig.DEBUG ) {
+            DbgUtils.assertOnUIThread( false );
+        }
+        return lockImpl( Long.MAX_VALUE, true );
     }
 
     // Version that's allowed to return null -- if maxMillis > 0
     public GameLock lock( long maxMillis )
     {
-        GameLock result = null;
-        Assert.assertTrue( maxMillis <= ASSERT_TIME );
         Assert.assertTrue( maxMillis <= THROW_TIME );
-        long sleptTime = 0;
-
+        GameLock result = null;
+        try {
+            result = lockImpl( maxMillis, false );
+        } catch (InterruptedException ex) {
+            Log.d( TAG, "lock(): got %s", ex.getMessage() );
+        }
         if ( DEBUG_LOCKS ) {
-            Log.i( TAG, "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid,
-                   maxMillis );
+            Log.d( TAG, "%s.lock(%d) => %s", this, maxMillis, result );
         }
-
-        for ( ; ; ) {
-            GameLock curOwner = tryLockImpl();
-            if ( null == curOwner ) {
-                result = this;
-                break;
-            }
-            if ( DEBUG_LOCKS ) {
-                Log.i( TAG, "lock() %H failed; sleeping", this );
-                if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= ASSERT_TIME ) {
-                    Log.i( TAG, "lock %H seeking stack:", curOwner );
-                    DbgUtils.printStack( TAG, curOwner.m_lockTrace );
-                    Log.i( TAG, "lock %H seeking stack:", this );
-                    DbgUtils.printStack( TAG );
-                }
-            }
-            try {
-                Thread.sleep( SLEEP_TIME ); // milliseconds
-                sleptTime += SLEEP_TIME;
-            } catch( InterruptedException ie ) {
-                Log.ex( TAG, ie );
-                break;
-            }
-
-            if ( DEBUG_LOCKS ) {
-                Log.i( TAG, "lock() %H awake; "
-                               + "sleptTime now %d millis", this, sleptTime );
-            }
-
-            if ( 0 < maxMillis && sleptTime >= maxMillis ) {
-                break;
-            } else if ( THROW_ON_LOCKED && sleptTime >= THROW_TIME ) {
-                throw new GameLockedException();
-            } else if ( sleptTime >= ASSERT_TIME ) {
-                if ( DEBUG_LOCKS ) {
-                    Log.i( TAG, "lock %H overlocked", this );
-                }
-                Assert.fail();
-            }
-        }
-        // DbgUtils.logf( "GameLock.lock(%s) done", m_path );
         return result;
+    }
+
+    public GameLock lockRO( long maxMillis )
+    {
+        Assert.assertTrue( maxMillis <= THROW_TIME );
+        GameLock lock = null;
+        try {
+            lock = lockImpl( maxMillis, true );
+        } catch ( InterruptedException ex ) {
+        }
+        return lock;
     }
 
     public void unlock()
     {
-        // DbgUtils.logf( "GameLock.unlock(%s)", m_path );
-        synchronized( s_locks ) {
-            Assert.assertTrue( this == s_locks.get(m_rowid) );
-            // Need to get this working before can switch to using ReentrantLock
-            // if ( BuildConfig.DEBUG ) {
-            //     Assert.assertTrue( Thread.currentThread().equals(m_ownerThread) );
-            // }
-            if ( 1 == m_lockCount ) {
-                s_locks.remove( m_rowid );
-            } else {
-                Assert.assertTrue( !m_isForWrite );
-            }
-            --m_lockCount;
-
+        synchronized ( mOwners ) {
             if ( DEBUG_LOCKS ) {
-                Log.i( TAG, "unlock: this: %H (rowid:%d) unlocked", this, m_rowid );
+                Log.d( TAG, "%s.unlock()", this );
+            }
+            Thread oldThread = mOwners.pop().mThread;
+
+            // It's ok for different threads to hold the same RO lock
+            if ( !mReadOnly && oldThread != Thread.currentThread() ) {
+                Log.e( TAG, "unlock(): unequal threads: %s => %s", oldThread,
+                       Thread.currentThread() );
+                Assert.fail();
+            }
+            
+            if ( mOwners.empty() ) {
+                mOwners.notifyAll();
+            }
+            if ( DEBUG_LOCKS ) {
+                Log.d( TAG, "%s.unlock() DONE", this );
             }
         }
     }
 
+    @Override
+    public void close()
+    {
+        unlock();
+    }
+    
     public long getRowid()
     {
         return m_rowid;
@@ -200,9 +240,9 @@ public class GameLock {
     // used only for asserts
     public boolean canWrite()
     {
-        boolean result = m_isForWrite && 1 == m_lockCount;
+        boolean result = !mReadOnly; // && 1 == mLockCount[0];
         if ( !result ) {
-            Log.w( TAG, "canWrite(): %H, returning false", this );
+            Log.w( TAG, "%s.canWrite(): => false", this );
         }
         return result;
     }

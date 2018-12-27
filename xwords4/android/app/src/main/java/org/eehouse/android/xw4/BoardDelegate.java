@@ -587,17 +587,21 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
+        // getRetained() can in threory fail to get the lock and so will
+        // return null. Let m_jniThreadRef stay null in that case; doResume()
+        // will finish() in that case.
         m_jniThreadRef = JNIThread.getRetained( m_rowid, true );
+        if ( null != m_jniThreadRef ) {
+            // see http://stackoverflow.com/questions/680180/where-to-stop- \
+            // destroy-threads-in-android-service-class
+            m_jniThreadRef.setDaemonOnce( true );
+            m_jniThreadRef.startOnce();
 
-        // see http://stackoverflow.com/questions/680180/where-to-stop- \
-        // destroy-threads-in-android-service-class
-        m_jniThreadRef.setDaemonOnce( true ); // firing
-        m_jniThreadRef.startOnce();
+            NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
 
-        NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
-
-        setBackgroundColor();
-        setKeepScreenOn();
+            setBackgroundColor();
+            setKeepScreenOn();
+        }
     } // init
 
     @Override
@@ -2067,9 +2071,9 @@ public class BoardDelegate extends DelegateBase
 
     private void doResume( boolean isStart )
     {
-        boolean success = true;
+        boolean success = null != m_jniThreadRef;
         boolean firstStart = null == m_handler;
-        if ( firstStart ) {
+        if ( success && firstStart ) {
             m_handler = new Handler();
 
             success = m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
@@ -2777,12 +2781,12 @@ public class BoardDelegate extends DelegateBase
             summary = thread.getSummary();
             gi = thread.getGI();
         } else {
-            GameLock lock = new GameLock( rowID, false );
-            if ( lock.tryLock() ) {
-                summary = DBUtils.getSummary( activity, lock );
-                gi = new CurGameInfo( activity );
-                gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
-                lock.unlock();
+            try ( GameLock lock = GameLock.getFor( rowID ).tryLockRO() ) {
+                if ( null != lock ) {
+                    summary = DBUtils.getSummary( activity, lock );
+                    gi = new CurGameInfo( activity );
+                    gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+                }
             }
         }
 

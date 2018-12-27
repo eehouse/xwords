@@ -75,7 +75,7 @@ abstract class XWServiceHelper {
     {
         boolean allConsumed = true;
         boolean[] isLocalP = new boolean[1];
-        JNIThread jniThread = JNIThread.getRetained( rowid, false );
+        JNIThread jniThread = JNIThread.getRetained( rowid );
         boolean consumed = false;
         if ( null != jniThread ) {
             consumed = true;
