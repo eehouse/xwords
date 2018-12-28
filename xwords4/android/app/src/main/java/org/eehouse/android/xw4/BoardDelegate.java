@@ -1485,7 +1485,11 @@ public class BoardDelegate extends DelegateBase
 
     public void onStatusClicked()
     {
-        final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
+        CommsAddrRec addr = new CommsAddrRec();
+        XwJNI.comms_getAddr( m_jniGamePtr, addr );
+
+        final String msg = ConnStatusHandler
+            .getStatusText( m_activity, m_connTypes, addr );
         post( new Runnable() {
                 @Override
                 public void run() {

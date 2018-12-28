@@ -35,6 +35,7 @@ import android.text.format.Time;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -163,7 +164,9 @@ public class ConnStatusHandler {
         return s_downOnMe && s_rect.contains( xx, yy );
     }
 
-    public static String getStatusText( Context context, CommsConnTypeSet connTypes )
+    public static String getStatusText( Context context,
+                                        CommsConnTypeSet connTypes,
+                                        CommsAddrRec addr )
     {
         String msg;
         if ( null == connTypes || 0 == connTypes.size() ) {
@@ -176,9 +179,12 @@ public class ConnStatusHandler {
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
-                    String did = addDebugInfo( context, typ );
-                    sb.append( String.format( "\n\n*** %s %s***\n",
-                                              typ.longName( context ), did ) );
+                    sb.append( String.format( "\n\n*** %s ", typ.longName( context ) ) );
+                    String did = addDebugInfo( context, addr, typ );
+                    if ( null != did ) {
+                        sb.append( did ).append( " " );
+                    }
+                    sb.append( "***\n" );
 
                     // For sends we list failures too.
                     SuccessRecord record = recordFor( context, typ, false );
@@ -532,23 +538,35 @@ public class ConnStatusHandler {
         return result;
     }
 
-    private static String addDebugInfo( Context context, CommsConnType typ )
+    private static String addDebugInfo( Context context, CommsAddrRec addr,
+                                        CommsConnType typ )
     {
-        String result = "";
+        String result = null;
         if ( BuildConfig.DEBUG ) {
             switch ( typ ) {
             case COMMS_CONN_RELAY:
-                result = String.format( "(DevID: %d; host: %s) ",
+                result = String.format( "DevID: %d; host: %s",
                                         DevID.getRelayDevIDInt(context),
                                         XWPrefs.getDefaultRelayHost(context) );
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();
                 break;
+            case COMMS_CONN_BT:
+                result = addr.bt_hostName;
+                break;
+            case COMMS_CONN_SMS:
+                result = addr.sms_phone;
+                break;
             default:
                 break;
             }
         }
+
+        if ( null != result ) {
+            result = "(" + result + ")";
+        }
+
         return result;
     }
 }
