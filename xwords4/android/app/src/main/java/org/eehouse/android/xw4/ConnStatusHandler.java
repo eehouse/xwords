@@ -553,10 +553,14 @@ public class ConnStatusHandler {
                 result = WiDirService.formatNetStateInfo();
                 break;
             case COMMS_CONN_BT:
-                result = addr.bt_hostName;
+                if ( null != addr ) {
+                    result = addr.bt_hostName;
+                }
                 break;
             case COMMS_CONN_SMS:
-                result = addr.sms_phone;
+                if ( null != addr ) {
+                    result = addr.sms_phone;
+                }
                 break;
             default:
                 break;
