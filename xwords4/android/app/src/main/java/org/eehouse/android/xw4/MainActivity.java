@@ -137,8 +137,8 @@ public class MainActivity extends XWActivity
                     }
                 } );
             if ( BuildConfig.DEBUG ) {
-                DbgUtils.showf( this, "Putting off handling intent; %d waiting",
-                                m_runWhenSafe.size() );
+                Log.d( TAG, "Putting off handling intent; %d waiting",
+                       m_runWhenSafe.size() );
             }
             handled = true;
         }
