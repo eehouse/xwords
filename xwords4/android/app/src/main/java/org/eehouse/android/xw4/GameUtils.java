@@ -1007,6 +1007,8 @@ public class GameUtils {
                         }
                     }
                 }
+            } catch ( GameLock.GameLockedException gle ) {
+                Log.e( TAG, "feedMessage(): game locked; dropping message" );
             }
         }
         return draw;

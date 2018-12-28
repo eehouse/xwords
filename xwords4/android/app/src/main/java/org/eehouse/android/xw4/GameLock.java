@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import android.support.annotation.NonNull;
+
 // Implements read-locks and write-locks per game.  A read lock is
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
@@ -156,24 +158,30 @@ public class GameLock implements AutoCloseable {
         return this;
     }
 
+    @NonNull
     public GameLock lock() throws InterruptedException
     {
         if ( BuildConfig.DEBUG ) {
             DbgUtils.assertOnUIThread( false );
         }
-        return lockImpl( Long.MAX_VALUE, false );
+        GameLock result = lockImpl( Long.MAX_VALUE, false );
+        Assert.assertNotNull( result );
+        return result;
     }
 
-    public GameLock lockRO() throws InterruptedException
-    {
-        if ( BuildConfig.DEBUG ) {
-            DbgUtils.assertOnUIThread( false );
-        }
-        return lockImpl( Long.MAX_VALUE, true );
-    }
+    // @NonNull
+    // public GameLock lockRO() throws InterruptedException
+    // {
+    //     if ( BuildConfig.DEBUG ) {
+    //         DbgUtils.assertOnUIThread( false );
+    //     }
+    //     GameLock result = lockImpl( Long.MAX_VALUE, true );
+    //     Assert.assertNotNull( result );
+    //     return result;
+    // }
 
     // Version that's allowed to return null -- if maxMillis > 0
-    public GameLock lock( long maxMillis )
+    public GameLock lock( long maxMillis ) throws GameLockedException
     {
         Assert.assertTrue( maxMillis <= THROW_TIME );
         GameLock result = null;
