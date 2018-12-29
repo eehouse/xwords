@@ -128,7 +128,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     @Override
-    public void userError( int id )
+    public void userError( UtilErrID id )
     {
         subclassOverride( "userError" );
     }

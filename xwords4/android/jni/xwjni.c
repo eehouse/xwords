@@ -1535,6 +1535,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1tilesPicked
     XWJNI_END();
 }
 
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1countTilesInPool
+( JNIEnv* env, jclass C, GamePtrType gamePtr )
+{
+    jint result;
+    XWJNI_START();
+    result = server_countTilesInPool( state->game.server );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1resetEngine
 (JNIEnv* env, jclass C, GamePtrType gamePtr )

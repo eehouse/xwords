@@ -631,7 +631,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void onStop()
     {
-        if ( isFinishing() ) {
+        if ( isFinishing() && null != m_jniThreadRef ) {
             m_jniThreadRef.release();
             m_jniThreadRef = null;
         }
@@ -1858,50 +1858,56 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void userError( int code )
+        public void userError( UtilErrID code )
         {
             int resid = 0;
             boolean asToast = false;
+            String msg = null;
             switch( code ) {
-            case UtilCtxt.ERR_TILES_NOT_IN_LINE:
+            case ERR_TILES_NOT_IN_LINE:
                 resid = R.string.str_tiles_not_in_line;
                 break;
-            case UtilCtxt.ERR_NO_EMPTIES_IN_TURN:
+            case ERR_NO_EMPTIES_IN_TURN:
                 resid = R.string.str_no_empties_in_turn;
                 break;
-            case UtilCtxt.ERR_TWO_TILES_FIRST_MOVE:
+            case ERR_TWO_TILES_FIRST_MOVE:
                 resid = R.string.str_two_tiles_first_move;
                 break;
-            case UtilCtxt.ERR_TILES_MUST_CONTACT:
+            case ERR_TILES_MUST_CONTACT:
                 resid = R.string.str_tiles_must_contact;
                 break;
-            case UtilCtxt.ERR_NOT_YOUR_TURN:
+            case ERR_NOT_YOUR_TURN:
                 resid = R.string.str_not_your_turn;
                 break;
-            case UtilCtxt.ERR_NO_PEEK_ROBOT_TILES:
+            case ERR_NO_PEEK_ROBOT_TILES:
                 resid = R.string.str_no_peek_robot_tiles;
                 break;
-            case UtilCtxt.ERR_NO_EMPTY_TRADE:
+            case ERR_NO_EMPTY_TRADE:
                 // This should not be possible as the button's
                 // disabled when no tiles selected.
                 Assert.fail();
                 break;
-            case UtilCtxt.ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
+            case ERR_TOO_MANY_TRADE:
+                int nLeft = XwJNI.server_countTilesInPool( m_jniGamePtr );
+                msg = getQuantityString( R.plurals.too_many_trade_fmt,
+                                         nLeft, nLeft );
+                break;
+            case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
                 resid = R.string.str_too_few_tiles_left_to_trade;
                 break;
-            case UtilCtxt.ERR_CANT_UNDO_TILEASSIGN:
+            case ERR_CANT_UNDO_TILEASSIGN:
                 resid = R.string.str_cant_undo_tileassign;
                 break;
-            case UtilCtxt.ERR_CANT_HINT_WHILE_DISABLED:
+            case ERR_CANT_HINT_WHILE_DISABLED:
                 resid = R.string.str_cant_hint_while_disabled;
                 break;
-            case UtilCtxt.ERR_NO_PEEK_REMOTE_TILES:
+            case ERR_NO_PEEK_REMOTE_TILES:
                 resid = R.string.str_no_peek_remote_tiles;
                 break;
-            case UtilCtxt.ERR_REG_UNEXPECTED_USER:
+            case ERR_REG_UNEXPECTED_USER:
                 resid = R.string.str_reg_unexpected_user;
                 break;
-            case UtilCtxt.ERR_SERVER_DICT_WINS:
+            case ERR_SERVER_DICT_WINS:
                 resid = R.string.str_server_dict_wins;
                 break;
             case ERR_REG_SERVER_SANS_REMOTE:
@@ -1913,17 +1919,21 @@ public class BoardDelegate extends DelegateBase
                 break;
             }
 
-            if ( resid != 0 ) {
+            if ( null == msg && resid != 0 ) {
+                msg = getString( resid );
+            }
+
+            if ( null != msg ) {
                 if ( asToast ) {
-                    final int residf = resid;
+                    final String msgf = msg;
                     runOnUiThread( new Runnable() {
                             @Override
                             public void run() {
-                                showToast( residf );
+                                showToast( msgf );
                             }
                         } );
                 } else {
-                    nonBlockingDialog( DlgID.DLG_OKONLY, getString( resid ) );
+                    nonBlockingDialog( DlgID.DLG_OKONLY, msg );
                 }
             }
         } // userError

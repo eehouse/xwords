@@ -364,6 +364,7 @@ public class XwJNI {
     public static native void server_handleUndo( GamePtr gamePtr );
     public static native boolean server_do( GamePtr gamePtr );
     public static native void server_tilesPicked( GamePtr gamePtr, int player, int[] tiles );
+    public static native int server_countTilesInPool( GamePtr gamePtr );
 
     public static native String server_formatDictCounts( GamePtr gamePtr, int nCols );
     public static native boolean server_getGameIsOver( GamePtr gamePtr );
