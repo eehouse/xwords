@@ -1655,7 +1655,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 #endif
 
-    if ( !!addrs->u.sms.phone ) {
+    if ( '\0' != addrs->u.sms.phone[0] && 0 < addrs->u.sms.port ) {
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
 
