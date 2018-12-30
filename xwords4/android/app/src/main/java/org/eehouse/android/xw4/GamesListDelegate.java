@@ -2104,7 +2104,8 @@ public class GamesListDelegate extends ListDelegateBase
             boolean haveDict;
             try {
                 haveDict = GameUtils.gameDictsHere( m_activity, rowid );
-            } catch ( GameLock.GameLockedException gle ) {
+            } catch ( GameLock.GameLockedException
+                      | GameUtils.NoSuchGameException gle ) {
                 haveDict = true;
             }
             if ( haveDict ) {
