@@ -1323,7 +1323,7 @@
               pool, so you can wind up selecting more than are
               available. You get this error message in that case. -->
     <plurals name="too_many_trade_fmt">
-      <item quantity="one">Too many tiles selected. Please select only 1</item>
+      <item quantity="one">Too many tiles selected. Please select only one.</item>
       <item quantity="other">Too many tiles selected. Please select no more than %1$d.</item>
     </plurals>
 
