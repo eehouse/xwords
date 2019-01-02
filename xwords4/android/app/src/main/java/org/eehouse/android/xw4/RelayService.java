@@ -1222,8 +1222,7 @@ public class RelayService extends JobIntentService
 
                         service.m_handler.post( new Runnable() {
                                 public void run() {
-                                    Assert.assertFalse( BuildConfig.DEBUG );
-                                    // stopUDPThreadsIf();
+                                    service.stopUDPThreads();
                                 }
                             } );
                         break;
