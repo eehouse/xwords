@@ -192,9 +192,11 @@ public class Perms23 {
                     } );
             }
             builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
+                    @Override
                     public void onPermissionResult( Map<Perm, Boolean> perms ) {
                         if ( Action.SKIP_CALLBACK != m_action ) {
-                            if ( perms.get( m_perm ) ) {
+                            Boolean got = perms.get( m_perm );
+                            if ( null != got && got ) {
                                 m_delegate.onPosButton( m_action, m_params );
                             } else {
                                 m_delegate.onNegButton( m_action, m_params );
@@ -302,12 +304,11 @@ public class Perms23 {
         return result;
     }
 
-    // This is probably overkill as the OS only allows one permission request
-    // at a time
+    // If two permission requests are made in a row the map may contain more
+    // than one entry.
     private static int s_nextRecord = 0;
     private static int register( PermCbck cbck )
     {
-        Assert.assertTrue( !BuildConfig.DEBUG || 0 == s_map.size() );
         DbgUtils.assertOnUIThread();
         int code = ++s_nextRecord;
         s_map.put( code, cbck );
