@@ -326,7 +326,7 @@ public class DictLangCache {
     public static void inval( final Context context, String name,
                               DictLoc loc, boolean added )
     {
-        DBUtils.dictsRemoveInfo( context, name );
+        DBUtils.dictsRemoveInfo( context, DictUtils.removeDictExtn( name ) );
 
         if ( added ) {
             DictAndLoc dal = new DictAndLoc( name, loc );

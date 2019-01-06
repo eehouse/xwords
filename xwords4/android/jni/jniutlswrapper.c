@@ -103,6 +103,15 @@ and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
     jstring result = 
         (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jname, jbytes );
     deleteLocalRefs( env, jname, jbytes, DELETE_NO_REF );
+
+#ifdef DEBUG
+    if ( !!result ) {
+        const char* chars = (*env)->GetStringUTFChars( env, result, NULL );
+        XP_LOGF( "%s(%s, len=%d) => %s", __func__, name, len, chars );
+        (*env)->ReleaseStringUTFChars( env, result, chars );
+    }
+#endif
+
     return result;
 }
 
