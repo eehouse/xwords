@@ -37,6 +37,7 @@ import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
     private static final String TAG = BTInviteDelegate.class.getSimpleName();
+    private static final String KEY_PAIRS = TAG + "_pairs";
     private static final int[] BUTTONIDS = { R.id.button_scan,
                                              R.id.button_settings,
     };
@@ -74,7 +75,12 @@ public class BTInviteDelegate extends InviteDelegate {
         super.init( msg, 0 );
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
 
-        scan();
+        m_pairs = loadPairs();
+        if ( m_pairs == null || m_pairs.length == 0 ) {
+            scan();
+        } else {
+            updateListAdapter( m_pairs );
+        }
     }
 
     @Override
@@ -165,9 +171,27 @@ public class BTInviteDelegate extends InviteDelegate {
         DbgUtils.assertOnUIThread();
 
         m_pairs = TwoStringPair.add( m_pairs, dev.getAddress(), dev.getName() );
+        storePairs( m_pairs );
 
         updateListAdapter( m_pairs );
         tryEnable();
+    }
+
+    private TwoStringPair[] loadPairs()
+    {
+        TwoStringPair[] pairs = null;
+        try {
+            String str64 = DBUtils.getStringFor( m_activity, KEY_PAIRS, null );
+            pairs = (TwoStringPair[])Utils.string64ToSerializable( str64 );
+        } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
+        return pairs;
+    }
+
+    private void storePairs( TwoStringPair[] pairs )
+    {
+        String str64 = pairs == null
+            ? "" : Utils.serializableToString64( pairs );
+        DBUtils.setStringFor( m_activity, KEY_PAIRS, str64 );
     }
 
     // DlgDelegate.DlgClickNotify interface

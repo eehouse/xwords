@@ -36,6 +36,8 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +55,7 @@ abstract class InviteDelegate extends ListDelegateBase
         String getDev();        // the string that identifies this item in results
     }
 
-    protected static class TwoStringPair implements InviterItem {
+    protected static class TwoStringPair implements InviterItem, Serializable {
         public String str1;
         public String str2;
 
