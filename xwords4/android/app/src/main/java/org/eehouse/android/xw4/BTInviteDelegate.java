@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
 /*
- * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -34,6 +34,8 @@ import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -53,11 +55,47 @@ public class BTInviteDelegate extends InviteDelegate {
         HashMap<String, Long> stamps = new HashMap<>();
 
         void add( BluetoothDevice dev ) {
-            pairs = TwoStringPair.add( pairs, dev.getAddress(), dev.getName() );
-            stamps.put( dev.getName(), System.currentTimeMillis() );
+            String devName = dev.getName();
+            Log.d( TAG, "add(%s)", devName );
+            // If it's already there, update it. Otherwise create new
+            boolean alreadyHave = false;
+            if ( null != pairs ) {
+                for ( TwoStringPair pair : pairs ) {
+                    alreadyHave = pair.str2.equals(devName);
+                    if ( alreadyHave ) {
+                        break;
+                    }
+                }
+            }
+            if ( !alreadyHave ) {
+                pairs = TwoStringPair.add( pairs, dev.getAddress(), devName );
+            }
+            stamps.put( devName, System.currentTimeMillis() );
+            sort();
         }
 
         boolean empty() { return pairs == null || pairs.length == 0; }
+
+        private void sort()
+        {
+            Arrays.sort( pairs, new Comparator<TwoStringPair>() {
+                    @Override
+                    public int compare( TwoStringPair rec1, TwoStringPair rec2 ) {
+                        long val1 = stamps.get( rec1.str2 );
+                        long val2 = stamps.get( rec2.str2 );
+                        return (int)(val2 - val1);
+                    }
+                });
+        }
+
+        void hackOneIn()
+        {
+            String name = "Faker";
+            if ( !stamps.containsKey(name) ) {
+                pairs = TwoStringPair.add( pairs, "00:00:00:00:00:00", name );
+                stamps.put( name, System.currentTimeMillis() );
+            }
+        }
     }
     private Persisted mPersisted;
 
@@ -87,8 +125,10 @@ public class BTInviteDelegate extends InviteDelegate {
     protected void init( Bundle savedInstanceState )
     {
         String msg = getQuantityString( R.plurals.invite_bt_desc_fmt_2, m_nMissing,
-                                        m_nMissing );
+                                        m_nMissing )
+            + getString( R.string.invite_bt_desc_postscript );
         super.init( msg, 0 );
+
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
 
         load();
@@ -173,9 +213,6 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
-            mPersisted.pairs = null;
-            updateListAdapter( null );
-
             String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
             m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
 
@@ -208,6 +245,12 @@ public class BTInviteDelegate extends InviteDelegate {
 
         if ( null == mPersisted ) {
             mPersisted = new Persisted();
+        }
+
+        if ( BuildConfig.DEBUG ) {
+            // For testing, let's make there always be something that never
+            // responds to scans so we can see how it ages.
+            mPersisted.hackOneIn();
         }
     }
 
