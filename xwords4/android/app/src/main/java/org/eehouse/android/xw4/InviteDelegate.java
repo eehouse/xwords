@@ -85,6 +85,26 @@ abstract class InviteDelegate extends ListDelegateBase
             return pairs;
         }
 
+        public static TwoStringPair[] remove( TwoStringPair[] pairs, InviterItem dead )
+        {
+            int pos = -1;
+            for ( int ii = 0; ii < pairs.length; ++ii ) {
+                TwoStringPair pair = pairs[ii];
+                if ( pair.equals(dead) ) {
+                    pos = ii;
+                    break;
+                }
+            }
+
+            TwoStringPair[] newPairs = new TwoStringPair[pairs.length - 1];
+            // lower range
+            System.arraycopy(pairs, 0, newPairs, 0, pos );
+            // upper range
+            System.arraycopy(pairs, pos + 1, newPairs, pos, newPairs.length - pos );
+
+            return newPairs;
+        }
+
         public String getDev() { return str1; }
 
         public boolean equals( InviterItem item )
@@ -167,6 +187,8 @@ abstract class InviteDelegate extends ListDelegateBase
         for ( int id : buttonBarItemIds ) {
             bar.findViewById( id ).setOnClickListener( listener );
         }
+
+        tryEnable();
     }
 
     protected void updateListAdapter( InviterItem[] items )

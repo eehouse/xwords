@@ -14,4 +14,9 @@
           android:text="@string/bt_pair_settings"
           style="@style/evenly_spaced_horizontal"
           />
+
+  <Button android:id="@+id/button_clear"
+          android:text="@string/bt_pick_clear_button"
+          style="@style/evenly_spaced_horizontal"
+          />
 </LinearLayout>

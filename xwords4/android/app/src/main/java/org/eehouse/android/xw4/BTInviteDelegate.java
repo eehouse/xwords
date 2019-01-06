@@ -45,6 +45,7 @@ public class BTInviteDelegate extends InviteDelegate {
     private static final String KEY_PERSIST = TAG + "_persist";
     private static final int[] BUTTONIDS = { R.id.button_scan,
                                              R.id.button_settings,
+                                             R.id.button_clear,
     };
     private Activity m_activity;
     private ProgressDialog m_progress;
@@ -72,6 +73,15 @@ public class BTInviteDelegate extends InviteDelegate {
             }
             stamps.put( devName, System.currentTimeMillis() );
             sort();
+        }
+
+        void remove(final Set<InviterItem> checked)
+        {
+            for ( InviterItem item : checked ) {
+                TwoStringPair pair = (TwoStringPair)item;
+                stamps.remove( pair.str2 );
+                pairs = TwoStringPair.remove( pairs, pair );
+            }
         }
 
         boolean empty() { return pairs == null || pairs.length == 0; }
@@ -148,6 +158,14 @@ public class BTInviteDelegate extends InviteDelegate {
             break;
         case R.id.button_settings:
             BTService.openBTSettings( m_activity );
+            break;
+        case R.id.button_clear:
+            mPersisted.remove( getChecked() );
+            store();
+
+            clearChecked();
+            updateListAdapter( mPersisted.pairs );
+            tryEnable();
             break;
         }
     }

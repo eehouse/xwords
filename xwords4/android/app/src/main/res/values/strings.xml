@@ -1821,11 +1821,14 @@
 
     <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
 
-      <!-- In the Bluetooth invite device dialog -->
-      <!--  -->
-    <string name="bt_pick_clear_button">Remove checked</string>
-    <!--  -->
+    <!-- In invitation dialogs, button to remove checked items -->
+    <string name="bt_pick_clear_button">Remove</string>
+
+    <!-- In the Bluetooth invite device dialog, to launch Andorid BT
+         settings pair new device -->
     <string name="bt_pair_settings">Pair More</string>
+    <!-- In the Bluetooth invite device dialog, kick off a new scan of
+         nearby devices -->
     <string name="button_scan">Rescan</string>
 
       <!--  -->
