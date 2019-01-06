@@ -127,7 +127,6 @@ and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         (*env)->ExceptionClear(env);
         XP_LOGF( "exception found" );
     }
-
     UTIL_CBK_TAIL();
 }
 
