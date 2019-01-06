@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, re, json, subprocess, glob, os
+import shelve, hashlib, sys, re, json, subprocess, glob, os
 import struct, random, string, psycopg2, zipfile
 import mk_for_download, mygit
 import xwconfig
@@ -87,15 +87,6 @@ g_langs = {'English' : 'en',
            'Italian' : 'it',
 }
 
-logging.basicConfig(level=logging.DEBUG
-        ,format='%(asctime)s [[%(levelname)s]] %(message)s'
-        ,datefmt='%d %b %y %H:%M'
-        ,filename='/tmp/info_py.log')
-#        ,filemode='w')
-
-# This seems to be required to prime the pump somehow.
-# logging.debug( "loaded...." )
-
 def languageCodeFor( lang ):
     result = ''
     if lang in g_langs: result = g_langs[lang]
@@ -110,7 +101,9 @@ def getInternalSum( filePath ):
                              '-dict', filePath ],
                             stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE)
-    return proc.communicate()[0].strip()
+    results = proc.communicate()
+    # apache.log_error(filePath + ': ' + results[1].strip())
+    return results[0].strip()
 
 def md5Checksums( sums, filePath ):
     if not filePath.endswith(k_suffix): filePath += k_suffix
@@ -128,11 +121,11 @@ def md5Checksums( sums, filePath ):
 
             sums[filePath] = [ md5.hexdigest(), 
                                getInternalSum( filePath ) ]
-            logging.debug( "figured sum for %s: %s" % (filePath, 
+            apache.log_error( "figured sum for %s: %s" % (filePath, 
                                                        sums[filePath] ) )
             result = sums[filePath]
         except:
-            # logging.debug( "Unexpected error: " + sys.exc_info()[0] )
+            # apache.log_error( "Unexpected error: " + sys.exc_info()[0] )
             result = None
     return result
 
@@ -148,7 +141,7 @@ def openShelf():
         if not k_SUMS in s_shelf: s_shelf[k_SUMS] = {}
         if not k_COUNT in s_shelf: s_shelf[k_COUNT] = 0
     s_shelf[k_COUNT] += 1
-    # logging.debug( "Count now %d" % s_shelf[k_COUNT] )
+    # apache.log_error( "Count now %d" % s_shelf[k_COUNT] )
 
 def closeShelf():
     global s_shelf
@@ -246,7 +239,7 @@ def getVariantDir( name ):
     splits = string.split( name, '.' )
     last = splits[-1]
     if not last == 'xw4': result = last + '/'
-    # logging.debug( 'getVariantDir(' + name + ") => " + result )
+    # apache.log_error( 'getVariantDir(' + name + ") => " + result )
     return result
 
 # public, but deprecated
@@ -254,20 +247,20 @@ def curVersion( req, name, avers = 41, gvers = None, installer = None ):
     global k_versions
     result = { k_SUCCESS : True }
     if apacheAvailable:
-        logging.debug( 'IP address of requester is %s' 
+        apache.log_error( 'IP address of requester is %s'
                        % req.get_remote_host(apache.REMOTE_NAME) )
 
-    logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
+    apache.log_error( "name: %s; avers: %s; installer: %s; gvers: %s"
                    % (name, avers, installer, gvers) )
     if name in k_versions:
         versions = k_versions[name]
         if versions[k_AVERS] > int(avers):
-            logging.debug( avers + " is old" )
+            apache.log_error( avers + " is old" )
             result[k_URL] = k_urlbase + '/' + versions[k_URL]
         else:
-            logging.debug(name + " is up-to-date")
+            apache.log_error(name + " is up-to-date")
     else:
-        logging.debug( 'Error: bad name ' + name )
+        apache.log_error( 'Error: bad name ' + name )
     return json.dumps( result )
 
 # public, but deprecated
@@ -285,7 +278,7 @@ def dictVersion( req, name, lang, md5sum ):
         if not md5sum in dictSums[path]:
             result[k_URL] = k_urlbase + "/and_wordlists/" + path
     else:
-        logging.debug( path + " not known" )
+        apache.log_error( path + " not known" )
     closeShelf()
     return json.dumps( result )
 
@@ -303,10 +296,10 @@ def getApp( params, name = None, debug = False):
                 apk = apks[0]
                 curApk = params[k_GVERS] + '.apk'
                 if curApk in apk:
-                    logging.debug( "already have " + curApk )
+                    apache.log_error( "already have " + curApk )
                 else:
                     url = k_urlbase + '/' + k_apkDir + variantDir + apk[len(dir):]
-                    logging.debug("url: " + url)
+                    apache.log_error("url: " + url)
                     result = {k_URL: url}
         elif k_DEVOK in params and params[k_DEVOK]:
             apks = getOrderedApks( k_filebase + k_apkDir, name, False )
@@ -315,18 +308,18 @@ def getApp( params, name = None, debug = False):
                 # Does path NOT contain name of installed file
                 curApk = params[k_GVERS] + '.apk'
                 if curApk in apk:
-                    logging.debug( "already have " + curApk )
+                    apache.log_error( "already have " + curApk )
                 else:
                     url = k_urlbase + '/' + apk[len(k_filebase):]
                     result = {k_URL: url}
-                    logging.debug( result )
+                    apache.log_error( result )
                     
         elif k_AVERS in params:
             vers = params[k_AVERS]
             if k_INSTALLER in params: installer = params[k_INSTALLER]
             else: installer = ''
 
-            logging.debug( "name: %s; installer: %s; gvers: %s"
+            apache.log_error( "name: %s; installer: %s; gvers: %s"
                            % (name, installer, vers) )
             print "name: %s; installer: %s; vers: %s" % (name, installer, vers)
             dir = k_filebase + k_apkDir + 'rel/'
@@ -335,11 +328,11 @@ def getApp( params, name = None, debug = False):
                 apk = apk[len(k_filebase):] # strip fs path
                 result = {k_URL: k_urlbase + '/' + apk}
             else:
-                logging.debug(name + " is up-to-date")
+                apache.log_error(name + " is up-to-date")
         else:
-            logging.debug( 'Error: bad name ' + name )
+            apache.log_error( 'Error: bad name ' + name )
     else:
-        logging.debug( 'missing param' )
+        apache.log_error( 'missing param' )
     return result
 
 def getStats( path ):
@@ -434,7 +427,7 @@ def getDicts( params ):
                         k_INDEX : index, k_ISUM: dictSums[path][1] }
                 result.append( cur )
         else:
-            logging.debug( path + " not known" )
+            apache.log_error( path + " not known" )
 
     closeShelf()
     if 0 == len(result): result = None
@@ -442,16 +435,16 @@ def getDicts( params ):
 
 def variantFor( name ):
     if name == 'xw4': result = 'XWords4'
-    logging.debug( 'variantFor(%s)=>%s' % (name, result))
+    apache.log_error( 'variantFor(%s)=>%s' % (name, result))
     return result
 
 def getXlate( params, name, stringsHash ):
     result = []
     path = xwconfig.k_REPOPATH
-    logging.debug('creating repo with path ' + path)
+    apache.log_error('creating repo with path ' + path)
     repo = mygit.GitRepo( path )
-    logging.debug( "getXlate: %s, hash=%s" % (json.dumps(params), stringsHash) )
-    # logging.debug( 'status: ' + repo.status() )
+    apache.log_error( "getXlate: %s, hash=%s" % (json.dumps(params), stringsHash) )
+    # apache.log_error( 'status: ' + repo.status() )
 
     # reduce org.eehouse.anroid.xxx to xxx, then turn it into a
     # variant and get the contents of the R.java file
@@ -466,7 +459,7 @@ def getXlate( params, name, stringsHash ):
     # the revision BEFORE the revision that changed R.java
 
     head = repo.getHeadRev()
-    logging.debug('head = %s' % head)
+    apache.log_error('head = %s' % head)
     rjavarevs = repo.getRevsBetween(head, stringsHash, rPath)
     if rjavarevs:
         assert( 1 >= len(rjavarevs) )
@@ -477,7 +470,7 @@ def getXlate( params, name, stringsHash ):
             firstPossible = rjavarevs[-2] + '^'
             # get actual number for rev^
             firstPossible = repo.getRevsBetween( firstPossible, firstPossible )[0]
-        logging.debug('firstPossible: %s' % firstPossible)
+        apache.log_error('firstPossible: %s' % firstPossible)
 
         for entry in params:
             curVers = entry[k_XLATEVERS]
@@ -493,7 +486,7 @@ def getXlate( params, name, stringsHash ):
                                           } )
 
     if 0 == len(result): result = None
-    logging.debug( "getXlate=>%s" % (json.dumps(result)) )
+    apache.log_error( "getXlate=>%s" % (json.dumps(result)) )
     return result
 
 def init():
@@ -549,7 +542,7 @@ def opponentIDsFor( req, params ):
 def getUpdates( req, params ):
     result = { k_SUCCESS : True }
     appResult = None
-    logging.debug( "getUpdates: got params: %s" % params )
+    apache.log_error( "getUpdates: got params: %s" % params )
     asJson = json.loads( params )
     if k_APP in asJson:
         name = None
@@ -564,15 +557,15 @@ def getUpdates( req, params ):
 
     # Let's not upgrade strings at the same time as we're upgrading the app
     # if appResult:
-    #     logging.debug( 'skipping xlation upgrade because app being updated' )
+    #     apache.log_error( 'skipping xlation upgrade because app being updated' )
     # elif k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
     #     xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
     #     if xlateResult:
-    #         logging.debug( xlateResult )
+    #         apache.log_error( xlateResult )
     #         result[k_XLATEINFO] = xlateResult;
         
     result = json.dumps( result )
-    # logging.debug( result )
+    # apache.log_error( result )
     return result
 
 def clearShelf():

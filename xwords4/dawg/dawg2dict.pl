@@ -35,6 +35,7 @@ my $gDoRaw = 0;
 my $gDoJSON = 0;
 my $gFileType;
 my $gNodeSize;
+my $gIsUTF;
 
 use Fcntl 'SEEK_CUR';
 
@@ -98,9 +99,12 @@ sub readXWDFaces($$$) {
     $nRead = sysread( $fh, $buf, 1 );
     $nBytes = unpack( 'c', $buf );
     printf STDERR "nBytes of faces: %d\n", $nBytes;
-    $nRead = sysread( $fh, $buf, 1 );
-    $nChars = unpack( 'c', $buf );
-    printf STDERR "nChars of faces: %d\n", $nChars;
+
+	if ( $gIsUTF ) {
+		$nRead = sysread( $fh, $buf, 1 );
+		$nChars = unpack( 'c', $buf );
+		printf STDERR "nChars of faces: %d\n", $nChars;
+	}
 
     # At this point $fh is pointing at the start of data
     if ( $gSumOnly ) {
@@ -224,13 +228,17 @@ sub nodeSizeFromFlags($$) {
 
 	$flags = $flags & ~DICT_SYNONYMS_MASK;
 
+	my $nodeSize;
     if ( $flags == 2 || $flags == 4 ) {
-        return 3;
+        $nodeSize = 3;
     } elsif ( $flags == 3 || $flags == 5 ) {
-        return 4;
+		$nodeSize = 4;
     } else {
         die "invalid dict flags $flags";
     }
+	my $isUTF = $flags == 4 || $flags == 5;
+
+	return ( $nodeSize, $isUTF );
 } # nodeSizeFromFlags
 
 sub mergeSpecials($$) {
@@ -268,7 +276,7 @@ sub prepXWD($$$$) {
     my $nRead = sysread( $fh, $buf, 2 );
     my $flags = unpack( "n", $buf );
 
-    $gNodeSize = nodeSizeFromFlags( $fh, $flags );
+    ($gNodeSize, $gIsUTF) = nodeSizeFromFlags( $fh, $flags );
 
     my $nSpecials;
     my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials ); # does checksum
