@@ -67,31 +67,31 @@ public interface UtilCtxt {
     void notifyMove( String query );
     void notifyTrade( String[] tiles );
 
-    // Must be kept in sync with enum in common/util.h
-    enum UtilErrID {
-        ERR_NONE,                   /* 0 is special case */
-        ERR_TILES_NOT_IN_LINE,   /* scoring a move where tiles aren't in line */
-        ERR_NO_EMPTIES_IN_TURN,
-        ERR_TWO_TILES_FIRST_MOVE,
-        ERR_TILES_MUST_CONTACT,
-        ERR_TOO_FEW_TILES_LEFT_TO_TRADE,
-        ERR_NOT_YOUR_TURN,
-        ERR_NO_PEEK_ROBOT_TILES,
-        ERR_SERVER_DICT_WINS,
-        ERR_NO_PEEK_REMOTE_TILES,
-        ERR_REG_UNEXPECTED_USER, /* server asked to register too many remote
-                                    users */
-        ERR_REG_SERVER_SANS_REMOTE,
-        STR_NEED_BT_HOST_ADDR,
-        ERR_NO_EMPTY_TRADE,
-        ERR_TOO_MANY_TRADE,
-        ERR_CANT_UNDO_TILEASSIGN,
-        ERR_CANT_HINT_WHILE_DISABLED,
-        ERR_NO_HINT_FOUND,          /* not really an error... */
-    };
+    // These can't be an ENUM! The set is open-ended, with arbitrary values
+    // added to ERR_RELAY_BASE, so no way to create an enum from an int in the
+    // jni world. int has to be passed into userError(). Trust me: I
+    // tried. :-)
+    static final int ERR_NONE = 0;
+    static final int ERR_TILES_NOT_IN_LINE = 1;
+    static final int ERR_NO_EMPTIES_IN_TURN = 2;
+    static final int ERR_TWO_TILES_FIRST_MOVE = 3;
+    static final int ERR_TILES_MUST_CONTACT = 4;
+    static final int ERR_TOO_FEW_TILES_LEFT_TO_TRADE = 5;
+    static final int ERR_NOT_YOUR_TURN = 6;
+    static final int ERR_NO_PEEK_ROBOT_TILES = 7;
+    static final int ERR_SERVER_DICT_WINS = 8;
+    static final int ERR_NO_PEEK_REMOTE_TILES = 9;
+    static final int ERR_REG_UNEXPECTED_USER = 10;
+    static final int ERR_REG_SERVER_SANS_REMOTE = 11;
+    static final int STR_NEED_BT_HOST_ADDR = 12;
+    static final int ERR_NO_EMPTY_TRADE = 13;
+    static final int ERR_TOO_MANY_TRADE = 14;
+    static final int ERR_CANT_UNDO_TILEASSIGN = 15;
+    static final int ERR_CANT_HINT_WHILE_DISABLED = 16;
+    static final int ERR_NO_HINT_FOUND = 17;
 
-    static final int ERR_RELAY_BASE = 17;
-    void userError( UtilErrID id );
+    static final int ERR_RELAY_BASE = 18;
+    void userError( int id );
 
     void informMove( int turn, String expl, String words );
     void informUndo();

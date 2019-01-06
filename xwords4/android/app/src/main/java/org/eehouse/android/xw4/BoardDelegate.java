@@ -1858,7 +1858,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void userError( UtilErrID code )
+        public void userError( int code )
         {
             int resid = 0;
             boolean asToast = false;

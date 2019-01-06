@@ -120,19 +120,13 @@ static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc),
 static void
 and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
-    UTIL_CBK_HEADER( "userError", "(L" PKG_PATH("jni/UtilCtxt$UtilErrID") ";)V" );
-
-    jobject idEnum = intToJEnum( env, id,
-                                 PKG_PATH("jni/UtilCtxt$UtilErrID") );
-
-    (*env)->CallVoidMethod( env, util->jutil, mid, idEnum );
+    UTIL_CBK_HEADER( "userError", "(I)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, id );
     if ((*env)->ExceptionOccurred(env)) {
         (*env)->ExceptionDescribe(env);
         (*env)->ExceptionClear(env);
         XP_LOGF( "exception found" );
     }
-
-    deleteLocalRef( env, idEnum );
 
     UTIL_CBK_TAIL();
 }
