@@ -2462,7 +2462,7 @@
     <string name="waiting_invite_title">Waiting for response</string>
     <string name="waiting_rematch_title">Rematch in progress</string>
     <!-- Button for alert with title above -->
-    <string name="button_wait">Wait</string>
+    <string name="button_close">Close</string>
     <string name="button_reinvite">Re-invite</string>
 
     <string name="invite_stays">(This dialog will stay up until all

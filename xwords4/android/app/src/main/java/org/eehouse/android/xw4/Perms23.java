@@ -31,6 +31,7 @@ import android.support.v4.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -81,6 +82,12 @@ public class Perms23 {
             m_perms.addAll( perms );
         }
 
+        public Builder( Perm[] perms ) {
+            for ( Perm perm : perms ) {
+                m_perms.add( perm );
+            }
+        }
+
         public Builder( Perm perm ) {
             m_perms.add( perm );
         }
@@ -129,7 +136,7 @@ public class Perms23 {
 
             if ( haveAll ) {
                 if ( null != cbck ) {
-                    Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
+                    Map<Perm, Boolean> map = new HashMap<>();
                     for ( Perm perm : m_perms ) {
                         map.put( perm, true );
                     }
@@ -150,36 +157,37 @@ public class Perms23 {
 
     private static class QueryInfo {
         private Action m_action;
-        private Perm m_perm;
+        private Perm[] m_perms;
         private DelegateBase m_delegate;
         private String m_rationaleMsg;
         private Object[] m_params;
 
         private QueryInfo( DelegateBase delegate, Action action,
-                           Perm perm, String msg, Object[] params ) {
+                           Perm[] perms, String msg, Object[] params ) {
             m_delegate = delegate;
             m_action = action;
-            m_perm = perm;
+            m_perms = perms;
             m_rationaleMsg = msg;
             m_params = params;
         }
 
         private QueryInfo( DelegateBase delegate, Object[] params )
         {
-            this( delegate, (Action)params[0], (Perm)params[1], (String)params[2],
+            this( delegate, (Action)params[0], (Perm[])params[1], (String)params[2],
                   (Object[])params[3] );
         }
 
         private Object[] getParams()
         {
-            return new Object[] { m_action, m_perm, m_rationaleMsg, m_params };
+            return new Object[] { m_action, m_perms, m_rationaleMsg, m_params };
         }
 
         private void doIt( boolean showRationale )
         {
-            Builder builder = new Builder( m_perm );
+            Builder builder = new Builder( m_perms );
             if ( showRationale && null != m_rationaleMsg ) {
                 builder.setOnShowRationale( new OnShowRationale() {
+                        @Override
                         public void onShouldShowRationale( Set<Perm> perms ) {
                             m_delegate.makeConfirmThenBuilder( m_rationaleMsg,
                                                                Action.PERMS_QUERY )
@@ -195,8 +203,18 @@ public class Perms23 {
                     @Override
                     public void onPermissionResult( Map<Perm, Boolean> perms ) {
                         if ( Action.SKIP_CALLBACK != m_action ) {
-                            Boolean got = perms.get( m_perm );
-                            if ( null != got && got ) {
+                            Set<Perm> keys = perms.keySet();
+
+                            // We need all the sought perms to have been granted
+                            boolean allGood = keys.size() == m_params.length;
+                            for ( Iterator<Perm> iter = keys.iterator();
+                                  allGood && iter.hasNext(); ) {
+                                if ( !perms.get(iter.next()) ) {
+                                    allGood = false;
+                                }
+                            }
+
+                            if ( allGood ) {
                                 m_delegate.onPosButton( m_action, m_params );
                             } else {
                                 m_delegate.onNegButton( m_action, m_params );
@@ -234,23 +252,36 @@ public class Perms23 {
      * Request permissions, giving rationale once, then call with action and
      * either positive or negative, the former if permission granted.
      */
-    public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
+    public static void tryGetPerms( DelegateBase delegate, Perm[] perms, int rationaleId,
                                     final Action action, Object... params )
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
         Context context = XWApp.getContext();
         String msg = rationaleId == 0
             ? null : LocUtils.getString( context, rationaleId );
-        tryGetPerms( delegate, perm, msg, action, params );
+        tryGetPerms( delegate, perms, msg, action, params );
+    }
+
+    public static void tryGetPerms( DelegateBase delegate, Perm[] perms,
+                                    String rationaleMsg, final Action action,
+                                    Object... params )
+    {
+        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
+        new QueryInfo( delegate, action, perms, rationaleMsg, params )
+            .doIt( true );
     }
 
     public static void tryGetPerms( DelegateBase delegate, Perm perm,
                                     String rationaleMsg, final Action action,
                                     Object... params )
     {
-        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
-        new QueryInfo( delegate, action, perm, rationaleMsg, params )
-            .doIt( true );
+        tryGetPerms( delegate, new Perm[]{ perm }, rationaleMsg, action, params );
+    }
+
+    public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
+                                    final Action action, Object... params )
+    {
+        tryGetPerms( delegate, new Perm[]{perm}, rationaleId, action, params );
     }
 
     public static void onGotPermsAction( DelegateBase delegate, boolean positive,

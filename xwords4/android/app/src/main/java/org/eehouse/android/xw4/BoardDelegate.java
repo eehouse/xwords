@@ -535,7 +535,7 @@ public class BoardDelegate extends DelegateBase
                             finish();
                         }
                     };
-                alert.setNoDismissListenerNeg( ab, R.string.button_wait, lstnr );
+                alert.setNoDismissListenerNeg( ab, R.string.button_close, lstnr );
             }
 
             dialog = ab.create();
@@ -1220,9 +1220,9 @@ public class BoardDelegate extends DelegateBase
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS:
-                Perms23.tryGetPerms( this, Perm.SEND_SMS, R.string.sms_invite_rationale,
-                                     Action.INVITE_SMS, m_mySIS.nMissing, info );
-                Perms23.tryGetPerms( this, Perm.RECEIVE_SMS, R.string.sms_invite_rationale,
+                Perms23.tryGetPerms( this, new Perm[] { Perm.SEND_SMS,
+                                                        Perm.RECEIVE_SMS },
+                                     R.string.sms_invite_rationale,
                                      Action.INVITE_SMS, m_mySIS.nMissing, info );
                 break;
             case RELAY:
