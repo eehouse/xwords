@@ -2408,6 +2408,9 @@
 	within Bluetooth range and that CrossWords is installed on
 	it.</string>
 
+    <!-- How long ago did we last see a BT device via scan -->
+    <string name="bt_scan_age_fmt">Last scan response: %1$s</string>
+
 	<!-- label within default wordlists in app preferences -->
 	<string name="default_language">Default language</string>
 

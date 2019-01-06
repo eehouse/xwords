@@ -26,24 +26,40 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.Button;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
     private static final String TAG = BTInviteDelegate.class.getSimpleName();
-    private static final String KEY_PAIRS = TAG + "_pairs";
+    private static final String KEY_PERSIST = TAG + "_persist";
     private static final int[] BUTTONIDS = { R.id.button_scan,
                                              R.id.button_settings,
     };
     private Activity m_activity;
-    private TwoStringPair[] m_pairs;
     private ProgressDialog m_progress;
+
+    private static class Persisted implements Serializable {
+        TwoStringPair[] pairs;
+        // HashMap: m_stamps is serialized, so can't be abstract type
+        HashMap<String, Long> stamps = new HashMap<>();
+
+        void add( BluetoothDevice dev ) {
+            pairs = TwoStringPair.add( pairs, dev.getAddress(), dev.getName() );
+            stamps.put( dev.getName(), System.currentTimeMillis() );
+        }
+
+        boolean empty() { return pairs == null || pairs.length == 0; }
+    }
+    private Persisted mPersisted;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
@@ -75,11 +91,11 @@ public class BTInviteDelegate extends InviteDelegate {
         super.init( msg, 0 );
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
 
-        m_pairs = loadPairs();
-        if ( m_pairs == null || m_pairs.length == 0 ) {
+        load();
+        if ( mPersisted.empty() ) {
             scan();
         } else {
-            updateListAdapter( m_pairs );
+            updateListAdapter( mPersisted.pairs );
         }
     }
 
@@ -106,7 +122,7 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void run() {
                         m_progress.cancel();
 
-                        if ( null == m_pairs || m_pairs.length == 0 ) {
+                        if ( mPersisted.empty() ) {
                             makeNotAgainBuilder( R.string.not_again_emptybtscan,
                                                  R.string.key_notagain_emptybtscan )
                                 .show();
@@ -130,10 +146,16 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
-        TwoStrsItem item = (TwoStrsItem)child;
-        TwoStringPair pair = (TwoStringPair)data;
-        // null: we don't display mac address
-        ((TwoStrsItem)child).setStrings( pair.str2, null );
+        String devName = ((TwoStringPair)data).str2;
+
+        String msg = null;
+        if ( mPersisted.stamps.containsKey( devName ) ) {
+            long lastSeenMS = mPersisted.stamps.get( devName );
+            CharSequence elapsed = DateUtils.getRelativeTimeSpanString( lastSeenMS );
+            msg = getString( R.string.bt_scan_age_fmt, elapsed );
+        }
+
+        ((TwoStrsItem)child).setStrings( devName, msg );
     }
 
     @Override
@@ -151,7 +173,7 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
-            m_pairs = null;
+            mPersisted.pairs = null;
             updateListAdapter( null );
 
             String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
@@ -170,28 +192,30 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         DbgUtils.assertOnUIThread();
 
-        m_pairs = TwoStringPair.add( m_pairs, dev.getAddress(), dev.getName() );
-        storePairs( m_pairs );
+        mPersisted.add( dev );
+        store();
 
-        updateListAdapter( m_pairs );
+        updateListAdapter( mPersisted.pairs );
         tryEnable();
     }
 
-    private TwoStringPair[] loadPairs()
+    private void load()
     {
-        TwoStringPair[] pairs = null;
         try {
-            String str64 = DBUtils.getStringFor( m_activity, KEY_PAIRS, null );
-            pairs = (TwoStringPair[])Utils.string64ToSerializable( str64 );
+            String str64 = DBUtils.getStringFor( m_activity, KEY_PERSIST, null );
+            mPersisted = (Persisted)Utils.string64ToSerializable( str64 );
         } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
-        return pairs;
+
+        if ( null == mPersisted ) {
+            mPersisted = new Persisted();
+        }
     }
 
-    private void storePairs( TwoStringPair[] pairs )
+    private void store()
     {
-        String str64 = pairs == null
-            ? "" : Utils.serializableToString64( pairs );
-        DBUtils.setStringFor( m_activity, KEY_PAIRS, str64 );
+        String str64 = mPersisted == null
+            ? "" : Utils.serializableToString64( mPersisted );
+        DBUtils.setStringFor( m_activity, KEY_PERSIST, str64 );
     }
 
     // DlgDelegate.DlgClickNotify interface
