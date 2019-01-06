@@ -101,7 +101,6 @@ public class BTService extends XWService {
                             INVITE,
                             SEND,
                             RADIO,
-                            CLEAR,
                             REMOVE,
                             NFCINVITE,
                             PINGHOST,
@@ -113,7 +112,6 @@ public class BTService extends XWService {
     private static final String ADDR_KEY = "ADR";
     private static final String SCAN_TIMEOUT_KEY = "SCAN_TIMEOUT";
     private static final String RADIO_KEY = "RDO";
-    private static final String CLEAR_KEY = "CLR";
 
     private static final String GAMEID_KEY = "GMI";
     private static final String GAMEDATA_KEY = "GD";
@@ -323,13 +321,6 @@ public class BTService extends XWService {
         startService( context, intent );
     }
 
-    public static void clearDevices( Context context, String[] btAddrs )
-    {
-        Intent intent = getIntentTo( context, BTAction.CLEAR )
-            .putExtra( CLEAR_KEY, btAddrs );
-        startService( context, intent );
-    }
-
     public static void scan( Context context, int timeoutMS )
     {
         Intent intenet = getIntentTo( context, BTAction.SCAN )
@@ -499,9 +490,6 @@ public class BTService extends XWService {
                     setTimeoutTimer();
                     break;
 
-                case CLEAR:
-                    String[] btAddrs = intent.getStringArrayExtra( CLEAR_KEY );
-                    break;
                 case SCAN:
                     int timeout = intent.getIntExtra( SCAN_TIMEOUT_KEY, -1 );
                     m_sender.add( new BTQueueElem( BTCmd.SCAN, timeout ) );

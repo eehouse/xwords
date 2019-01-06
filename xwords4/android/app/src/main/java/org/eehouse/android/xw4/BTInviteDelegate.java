@@ -73,7 +73,6 @@ public class BTInviteDelegate extends InviteDelegate {
                                         m_nMissing );
         super.init( msg, 0 );
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
-        BTService.clearDevices( m_activity, null ); // will return names
 
         scan();
     }
@@ -169,18 +168,6 @@ public class BTInviteDelegate extends InviteDelegate {
 
         updateListAdapter( m_pairs );
         tryEnable();
-    }
-
-    private void removeSelected()
-    {
-        Set<InviterItem> checked = getChecked();
-        String[] devs = new String[checked.size()];
-        Iterator<InviterItem> iter = checked.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            TwoStringPair pair = (TwoStringPair)iter.next();
-            devs[ii] = pair.str1;
-        }
-        BTService.clearDevices( m_activity, devs );
     }
 
     // DlgDelegate.DlgClickNotify interface
