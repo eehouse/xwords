@@ -463,7 +463,7 @@ public class RelayInviteDelegate extends InviteDelegate {
             });
 
         addSelf();
-        updateListAdapter( m_devIDRecs.toArray( new DevIDRec[m_devIDRecs.size()] ) );
+        updateListAdapter( m_devIDRecs );
         tryEnable();
     }
 

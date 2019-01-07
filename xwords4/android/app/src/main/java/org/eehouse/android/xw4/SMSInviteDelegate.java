@@ -298,7 +298,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                 }
             });
 
-        updateListAdapter( m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
+        updateListAdapter( m_phoneRecs );
         tryEnable();
     }
 

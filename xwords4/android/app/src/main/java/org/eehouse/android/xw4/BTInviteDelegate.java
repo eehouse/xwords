@@ -34,10 +34,10 @@ import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class BTInviteDelegate extends InviteDelegate {
@@ -51,7 +51,7 @@ public class BTInviteDelegate extends InviteDelegate {
     private ProgressDialog m_progress;
 
     private static class Persisted implements Serializable {
-        TwoStringPair[] pairs;
+        List<TwoStringPair> pairs;
         // HashMap: m_stamps is serialized, so can't be abstract type
         HashMap<String, Long> stamps = new HashMap<>();
 
@@ -75,20 +75,20 @@ public class BTInviteDelegate extends InviteDelegate {
             sort();
         }
 
-        void remove(final Set<InviterItem> checked)
+        void remove(final Set<? extends InviterItem> checked)
         {
             for ( InviterItem item : checked ) {
                 TwoStringPair pair = (TwoStringPair)item;
                 stamps.remove( pair.str2 );
-                pairs = TwoStringPair.remove( pairs, pair );
+                TwoStringPair.remove( pairs, pair );
             }
         }
 
-        boolean empty() { return pairs == null || pairs.length == 0; }
+        boolean empty() { return pairs == null || pairs.size() == 0; }
 
         private void sort()
         {
-            Arrays.sort( pairs, new Comparator<TwoStringPair>() {
+            Collections.sort( pairs, new Comparator<TwoStringPair>() {
                     @Override
                     public int compare( TwoStringPair rec1, TwoStringPair rec2 ) {
                         long val1 = stamps.get( rec1.str2 );

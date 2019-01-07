@@ -38,10 +38,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,46 +65,21 @@ abstract class InviteDelegate extends ListDelegateBase
             this.str1 = str1; this.str2 = str2;
         }
 
-        public static TwoStringPair[] make( String[] names, String[] addrs )
-        {
-            TwoStringPair[] pairs = new TwoStringPair[names.length];
-            for ( int ii = 0; ii < pairs.length; ++ii ) {
-                pairs[ii] = new TwoStringPair( names[ii], addrs[ii] );
-            }
-            return pairs;
-        }
-
-        public static TwoStringPair[] add( TwoStringPair[] pairs, String name,
-                                           String addr )
+        public static List<TwoStringPair> add( List<TwoStringPair> pairs, String name,
+                                               String addr )
         {
             if ( null == pairs ) {
-                pairs = new TwoStringPair[0];
+                pairs = new ArrayList<>();
             }
 
-            pairs = Arrays.copyOfRange( pairs, 0, pairs.length + 1 );
-            pairs[pairs.length-1] = new TwoStringPair( name, addr );
+            pairs.add( new TwoStringPair( name, addr ) );
 
             return pairs;
         }
 
-        public static TwoStringPair[] remove( TwoStringPair[] pairs, InviterItem dead )
+        public static void remove( List<TwoStringPair> pairs, InviterItem dead )
         {
-            int pos = -1;
-            for ( int ii = 0; ii < pairs.length; ++ii ) {
-                TwoStringPair pair = pairs[ii];
-                if ( pair.equals(dead) ) {
-                    pos = ii;
-                    break;
-                }
-            }
-
-            TwoStringPair[] newPairs = new TwoStringPair[pairs.length - 1];
-            // lower range
-            System.arraycopy(pairs, 0, newPairs, 0, pos );
-            // upper range
-            System.arraycopy(pairs, pos + 1, newPairs, pos, newPairs.length - pos );
-
-            return newPairs;
+            pairs.remove(dead);
         }
 
         public String getDev() { return str1; }
@@ -191,12 +168,13 @@ abstract class InviteDelegate extends ListDelegateBase
         tryEnable();
     }
 
-    protected void updateListAdapter( InviterItem[] items )
+    protected void updateListAdapter( List<? extends InviterItem> items )
     {
         updateListAdapter( R.layout.two_strs_item, items );
     }
 
-    protected void updateListAdapter( int itemId, InviterItem[] items )
+    protected void updateListAdapter( int itemId,
+                                      List<? extends InviterItem> items )
     {
         updateChecked( items );
         m_adapter = new InviteItemsAdapter( itemId, items );
@@ -282,7 +260,7 @@ abstract class InviteDelegate extends ListDelegateBase
     protected void clearChecked() { m_checked.clear(); }
 
     // Figure which previously-checked items belong in the new set.
-    private void updateChecked( InviterItem[] newItems )
+    private void updateChecked( List<? extends InviterItem> newItems )
     {
         Set<InviterItem> old = new HashSet<InviterItem>();
         old.addAll( m_checked );
@@ -318,11 +296,13 @@ abstract class InviteDelegate extends ListDelegateBase
         private InviterItem[] m_items;
         private int m_itemId;
 
-        public InviteItemsAdapter( int itemID, InviterItem[] items )
+        public InviteItemsAdapter( int itemID, List<? extends InviterItem> items )
         {
-            super( null == items? 0 : items.length );
+            super( null == items? 0 : items.size() );
             m_itemId = itemID;
-            m_items = items;
+            if ( null != items ) {
+                m_items = items.toArray( new InviterItem[items.size()] );
+            }
             // m_items = new LinearLayout[getCount()];
         }
 
