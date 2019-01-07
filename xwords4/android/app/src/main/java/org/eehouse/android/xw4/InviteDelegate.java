@@ -58,41 +58,24 @@ abstract class InviteDelegate extends ListDelegateBase
     }
 
     protected static class TwoStringPair implements InviterItem, Serializable {
-        public String str1;
+        private String mDev;
         public String str2;
 
-        public TwoStringPair( String str1, String str2 ) {
-            this.str1 = str1; this.str2 = str2;
+        public TwoStringPair( String dev, String str2 ) {
+            mDev = dev; this.str2 = str2;
         }
 
-        public static List<TwoStringPair> add( List<TwoStringPair> pairs, String name,
-                                               String addr )
-        {
-            if ( null == pairs ) {
-                pairs = new ArrayList<>();
-            }
-
-            pairs.add( new TwoStringPair( name, addr ) );
-
-            return pairs;
-        }
-
-        public static void remove( List<TwoStringPair> pairs, InviterItem dead )
-        {
-            pairs.remove(dead);
-        }
-
-        public String getDev() { return str1; }
+        public String getDev() { return mDev; }
 
         public boolean equals( InviterItem item )
         {
             boolean result = false;
             if ( null != item ) {
                 TwoStringPair pair = (TwoStringPair)item;
-                result = str1.equals( pair.str1 )
+                result = mDev.equals( pair.mDev )
                     && ((null == str2 && null == pair.str2)
                         || str2.equals( pair.str2 ) );
-                Log.d( TAG, "%s.equals(%s) => %b", str1, pair.str1, result );
+                Log.d( TAG, "%s.equals(%s) => %b", mDev, pair.mDev, result );
             }
             return result;
         }

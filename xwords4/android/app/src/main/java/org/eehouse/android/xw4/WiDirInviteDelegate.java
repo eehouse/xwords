@@ -81,7 +81,7 @@ public class WiDirInviteDelegate extends InviteDelegate
     protected void onChildAdded( View child, InviterItem data )
     {
         TwoStringPair pair = (TwoStringPair)data;
-        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
+        ((TwoStrsItem)child).setStrings( pair.str2, pair.getDev() );
     }
 
     @Override
@@ -89,7 +89,7 @@ public class WiDirInviteDelegate extends InviteDelegate
     {
         for ( int ii = 0; ii < selected.length; ++ii ) {
             TwoStringPair pair = (TwoStringPair)selected[ii];
-            devs[ii] = pair.str1;
+            devs[ii] = pair.getDev();
         }
     }
 

@@ -34,6 +34,7 @@ import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,12 +56,12 @@ public class BTInviteDelegate extends InviteDelegate {
         // HashMap: m_stamps is serialized, so can't be abstract type
         HashMap<String, Long> stamps = new HashMap<>();
 
-        void add( BluetoothDevice dev ) {
-            String devName = dev.getName();
-            Log.d( TAG, "add(%s)", devName );
+        void add( String devAddress, String devName ) {
             // If it's already there, update it. Otherwise create new
             boolean alreadyHave = false;
-            if ( null != pairs ) {
+            if ( null == pairs ) {
+                pairs = new ArrayList<>();
+            } else {
                 for ( TwoStringPair pair : pairs ) {
                     alreadyHave = pair.str2.equals(devName);
                     if ( alreadyHave ) {
@@ -68,8 +69,9 @@ public class BTInviteDelegate extends InviteDelegate {
                     }
                 }
             }
+
             if ( !alreadyHave ) {
-                pairs = TwoStringPair.add( pairs, dev.getAddress(), devName );
+                pairs.add( new TwoStringPair( devAddress, devName ) );
             }
             stamps.put( devName, System.currentTimeMillis() );
             sort();
@@ -80,7 +82,7 @@ public class BTInviteDelegate extends InviteDelegate {
             for ( InviterItem item : checked ) {
                 TwoStringPair pair = (TwoStringPair)item;
                 stamps.remove( pair.str2 );
-                TwoStringPair.remove( pairs, pair );
+                pairs.remove( pair );
             }
         }
 
@@ -102,8 +104,7 @@ public class BTInviteDelegate extends InviteDelegate {
         {
             String name = "Faker";
             if ( !stamps.containsKey(name) ) {
-                pairs = TwoStringPair.add( pairs, "00:00:00:00:00:00", name );
-                stamps.put( name, System.currentTimeMillis() );
+                add( "00:00:00:00:00:00", name );
             }
         }
     }
@@ -247,7 +248,7 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         DbgUtils.assertOnUIThread();
 
-        mPersisted.add( dev );
+        mPersisted.add( dev.getAddress(), dev.getName() );
         store();
 
         updateListAdapter( mPersisted.pairs );
