@@ -99,14 +99,6 @@ public class BTInviteDelegate extends InviteDelegate {
                     }
                 });
         }
-
-        void hackOneIn()
-        {
-            String name = "Faker";
-            if ( !stamps.containsKey(name) ) {
-                add( "00:00:00:00:00:00", name );
-            }
-        }
     }
     private Persisted mPersisted;
 
@@ -230,6 +222,10 @@ public class BTInviteDelegate extends InviteDelegate {
 
     private void scan()
     {
+        if ( BuildConfig.DEBUG && Utils.nextRandomInt() % 5 == 0 ) {
+            mPersisted.add( "00:00:00:00:00:00", "Do Not Invite Me" );
+        }
+
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
             String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
@@ -264,12 +260,6 @@ public class BTInviteDelegate extends InviteDelegate {
 
         if ( null == mPersisted ) {
             mPersisted = new Persisted();
-        }
-
-        if ( BuildConfig.DEBUG ) {
-            // For testing, let's make there always be something that never
-            // responds to scans so we can see how it ages.
-            mPersisted.hackOneIn();
         }
     }
 
