@@ -59,7 +59,6 @@ typedef enum {
     ERR_NO_HINT_FOUND,          /* not really an error... */
 
     ERR_RELAY_BASE,
-    ERR_RELAY_END = ERR_RELAY_BASE + XWRELAY_ERROR_LASTERR
 } UtilErrID;
 
 #define PICKER_PICKALL -1
