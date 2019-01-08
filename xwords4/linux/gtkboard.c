@@ -635,7 +635,11 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #endif
         game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                           cGlobals->util, (DrawCtx*)globals->draw,
-                          &cGlobals->cp, &procs, params->gameSeed );
+                          &cGlobals->cp, &procs
+#ifdef SET_GAMESEED
+                          , params->gameSeed
+#endif
+                          );
 
         // addr.conType = params->conType;
         CommsConnType typ;
