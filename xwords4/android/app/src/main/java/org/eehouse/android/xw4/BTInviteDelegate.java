@@ -203,8 +203,10 @@ public class BTInviteDelegate extends InviteDelegate {
 
         String msg = null;
         if ( mPersisted.stamps.containsKey( devName ) ) {
-            long lastSeenMS = mPersisted.stamps.get( devName );
-            CharSequence elapsed = DateUtils.getRelativeTimeSpanString( lastSeenMS );
+            CharSequence elapsed = DateUtils
+                .getRelativeTimeSpanString( mPersisted.stamps.get( devName ),
+                                            System.currentTimeMillis(),
+                                            DateUtils.SECOND_IN_MILLIS );
             msg = getString( R.string.bt_scan_age_fmt, elapsed );
         }
 
