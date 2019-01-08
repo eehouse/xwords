@@ -590,7 +590,7 @@ public class BoardDelegate extends DelegateBase
         // getRetained() can in threory fail to get the lock and so will
         // return null. Let m_jniThreadRef stay null in that case; doResume()
         // will finish() in that case.
-        m_jniThreadRef = JNIThread.getRetained( m_rowid, true );
+        m_jniThreadRef = JNIThread.getRetained( m_activity, m_rowid, true );
         if ( null != m_jniThreadRef ) {
             // see http://stackoverflow.com/questions/680180/where-to-stop- \
             // destroy-threads-in-android-service-class
@@ -2787,7 +2787,7 @@ public class BoardDelegate extends DelegateBase
         GamePtr gamePtr = null;
         GameSummary summary = null;
         CurGameInfo gi = null;
-        JNIThread thread = JNIThread.getRetained( rowID );
+        JNIThread thread = JNIThread.getRetained( activity, rowID );
         if ( null != thread ) {
             gamePtr = thread.getGamePtr().retain();
             summary = thread.getSummary();
@@ -2798,6 +2798,9 @@ public class BoardDelegate extends DelegateBase
                     summary = DBUtils.getSummary( activity, lock );
                     gi = new CurGameInfo( activity );
                     gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+                } else {
+                    DbgUtils.toastNoLock( TAG, activity,
+                                          "setupRematchFor(%d)", rowID );
                 }
             }
         }

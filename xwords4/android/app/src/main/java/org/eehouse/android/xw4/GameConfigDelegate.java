@@ -483,7 +483,7 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     protected void onResume()
     {
-        m_jniThread = JNIThread.getRetained( m_rowid );
+        m_jniThread = JNIThread.getRetained( m_activity, m_rowid );
         super.onResume();
         loadGame();
     }

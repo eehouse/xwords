@@ -130,7 +130,7 @@ public class ChatDelegate extends DelegateBase {
     protected void onResume()
     {
         super.onResume();
-        m_jniThreadRef = JNIThread.getRetained( m_rowid );
+        m_jniThreadRef = JNIThread.getRetained( m_activity, m_rowid );
         if ( null == m_jniThreadRef ) {
             Log.w( TAG, "onResume(): m_jniThreadRef null; exiting" );
             finish();

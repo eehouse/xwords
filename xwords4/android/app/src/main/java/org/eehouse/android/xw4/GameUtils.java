@@ -168,7 +168,8 @@ public class GameUtils {
                 Utils.cancelNotification( context, (int)rowidIn );
                 success = true;
             } else {
-                Log.w( TAG, "resetGame: unable to open rowid %d", rowidIn );
+                DbgUtils.toastNoLock( TAG, context, "resetGame(): rowid %d",
+                                      rowidIn );
             }
         }
         return success;
@@ -218,7 +219,7 @@ public class GameUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        JNIThread thread = JNIThread.getRetained( rowid );
+        JNIThread thread = JNIThread.getRetained( context, rowid );
         GameLock lock = null;
         if ( null != thread ) {
             lock = thread.getLock();
@@ -251,7 +252,7 @@ public class GameUtils {
         long rowid = DBUtils.ROWID_NOTFOUND;
         GameLock lockSrc = null;
 
-        JNIThread thread = JNIThread.getRetained( rowidIn );
+        JNIThread thread = JNIThread.getRetained( context, rowidIn );
         if ( null != thread ) {
             lockSrc = thread.getLock();
         } else {
@@ -296,7 +297,8 @@ public class GameUtils {
                 deleteGame( context, lock, informNow );
                 success = true;
             } else {
-                Log.w( TAG, "deleteGame: unable to delete rowid %d", rowid );
+                DbgUtils.toastNoLock( TAG, context, "deleteGame(): rowid %d",
+                                      rowid );
                 success = false;
             }
         }
@@ -1008,7 +1010,8 @@ public class GameUtils {
                     }
                 }
             } catch ( GameLock.GameLockedException gle ) {
-                Log.e( TAG, "feedMessage(): game locked; dropping message" );
+                DbgUtils.toastNoLock( TAG, context, "feedMessage(): dropping message "
+                                      + " for %d", rowid );
             }
         }
         return draw;
@@ -1048,7 +1051,8 @@ public class GameUtils {
                 summarizeAndRelease( context, lock, gamePtr, gi );
 
             } else {
-                Log.w( TAG, "replaceDicts: unable to open rowid %d", rowid );
+                DbgUtils.toastNoLock( TAG, context, "replaceDicts(): rowid %d",
+                                      rowid );
             }
         }
         return success;
@@ -1322,7 +1326,7 @@ public class GameUtils {
                                    + " failed for rowid %d", rowid );
                         }
                     } else {
-                        JNIThread jniThread = JNIThread.getRetained( rowid );
+                        JNIThread jniThread = JNIThread.getRetained( m_context, rowid );
                         if ( null != jniThread ) {
                             jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false,
                                               false, false );

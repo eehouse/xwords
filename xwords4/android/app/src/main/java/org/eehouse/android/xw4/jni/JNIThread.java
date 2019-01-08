@@ -822,12 +822,12 @@ public class JNIThread extends Thread {
         }
     }
 
-    public static JNIThread getRetained( long rowid )
+    public static JNIThread getRetained( Context context, long rowid )
     {
-        return getRetained( rowid, false );
+        return getRetained( context, rowid, false );
     }
 
-    public static JNIThread getRetained( long rowid, boolean makeNew )
+    public static JNIThread getRetained( Context context, long rowid, boolean makeNew )
     {
         JNIThread result = null;
         synchronized( s_instances ) {
@@ -839,6 +839,8 @@ public class JNIThread extends Thread {
                     if ( lock != null ) {
                         result = new JNIThread( lock );
                         s_instances.put( rowid, result );
+                    } else {
+                        DbgUtils.toastNoLock( TAG, context, "getRetained(%d)", rowid );
                     }
                 }
             }
