@@ -77,6 +77,12 @@ public class WiDirInviteDelegate extends InviteDelegate
         WiDirService.unregisterDevSetListener( this );
     }
 
+    protected void onBarButtonClicked( int id )
+    {
+        // not implemented yet as there's no bar button
+        Assert.assertFalse( BuildConfig.DEBUG );
+    }
+
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {

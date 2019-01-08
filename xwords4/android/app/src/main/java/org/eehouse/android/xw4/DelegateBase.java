@@ -159,6 +159,7 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_isVisible = false;
         XWServiceHelper.setListener( null );
+        m_dlgDelegate.onPausing();
     }
 
     protected DelegateBase curThis()

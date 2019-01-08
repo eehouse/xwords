@@ -326,6 +326,11 @@ public class DlgDelegate {
         m_handler = new Handler();
     }
 
+    void onPausing()
+    {
+        stopProgress();
+    }
+
     private void showOKOnlyDialogThen( String msg, Action action,
                                        Object[] params, int titleId )
     {

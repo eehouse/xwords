@@ -171,13 +171,7 @@ abstract class InviteDelegate extends ListDelegateBase
         }
     }
 
-    protected void onBarButtonClicked( int id )
-    {
-        Assert.fail();          // subclass must implement
-    }
-
-    // Subclasses can do something here
-    protected void addToButtonBar( FrameLayout container ) {}
+    abstract void onBarButtonClicked( int id );
 
     ////////////////////////////////////////
     // View.OnClickListener
