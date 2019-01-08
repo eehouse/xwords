@@ -2246,7 +2246,12 @@ public class GamesListDelegate extends ListDelegateBase
                 int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
                 String json = extras.getString( REMATCH_PREFS_EXTRA );
 
+                // Don't save rematch in Archive group
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
+                if ( groupID == DBUtils.getArchiveGroup( m_activity ) ) {
+                    groupID = XWPrefs.getDefaultNewGameGroup( m_activity );
+                }
+
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,

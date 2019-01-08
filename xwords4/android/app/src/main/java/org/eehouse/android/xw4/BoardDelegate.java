@@ -2650,9 +2650,7 @@ public class BoardDelegate extends DelegateBase
 
     private boolean inArchiveGroup()
     {
-        String archiveName = LocUtils
-            .getString( m_activity, R.string.group_name_archive );
-        long archiveGroup = DBUtils.getGroup( m_activity, archiveName );
+        long archiveGroup = DBUtils.getArchiveGroup( m_activity );
         long curGroup = DBUtils.getGroupForGame( m_activity, m_rowid );
         return curGroup == archiveGroup;
     }

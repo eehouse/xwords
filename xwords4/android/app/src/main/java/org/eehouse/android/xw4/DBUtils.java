@@ -1791,6 +1791,14 @@ public class DBUtils {
         invalGroupsCache();
     }
 
+    public static long getArchiveGroup( Context context )
+    {
+        String archiveName = LocUtils
+            .getString( context, R.string.group_name_archive );
+        long archiveGroup = getGroup( context, archiveName );
+        return archiveGroup;
+    }
+
     // Change group id of a game
     public static void moveGame( Context context, long rowid, long groupID )
     {
