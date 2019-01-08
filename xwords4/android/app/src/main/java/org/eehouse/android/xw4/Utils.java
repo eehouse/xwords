@@ -577,7 +577,7 @@ public class Utils {
 
     public static void testSerialization( Serializable obj )
     {
-        if ( BuildConfig.DEBUG ) {
+        if ( false && BuildConfig.DEBUG ) {
             String as64 = serializableToString64( obj );
             Object other = string64ToSerializable( as64 );
             Assert.assertTrue( other.equals( obj ) );
