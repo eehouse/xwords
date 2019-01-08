@@ -48,6 +48,8 @@ public class BTInviteDelegate extends InviteDelegate {
                                              R.id.button_settings,
                                              R.id.button_clear,
     };
+    private static final boolean ENABLE_FAKER = false;
+
     private Activity m_activity;
     private ProgressDialog m_progress;
 
@@ -222,7 +224,7 @@ public class BTInviteDelegate extends InviteDelegate {
 
     private void scan()
     {
-        if ( BuildConfig.DEBUG && Utils.nextRandomInt() % 5 == 0 ) {
+        if ( ENABLE_FAKER && Utils.nextRandomInt() % 5 == 0 ) {
             mPersisted.add( "00:00:00:00:00:00", "Do Not Invite Me" );
         }
 
