@@ -22,12 +22,15 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -40,7 +43,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
@@ -48,6 +50,12 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
 import org.eehouse.android.xw4.DlgDelegate.OkOnlyBuilder;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.lang.ref.WeakReference;
@@ -414,10 +422,44 @@ public class DelegateBase implements DlgClickNotify,
 
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
+        Dialog dialog = null;
         DlgID dlgID = alert.getDlgID();
-        Log.d( TAG, "%s.makeDialog(): not handling %s", getClass().getSimpleName(),
-               dlgID.toString() );
-        return null;
+        switch ( dlgID ) {
+        case DLG_CONNSTAT: {
+            AlertDialog.Builder ab = makeAlertBuilder();
+            GameSummary summary = (GameSummary)params[0];
+            int title = (Integer)params[1];
+            String msg = (String)params[2];
+            final CommsConnTypeSet conTypes = summary.conTypes;
+            ab.setTitle( title )
+                .setMessage( msg )
+                .setPositiveButton( android.R.string.ok, null );
+            if ( BuildConfig.DEBUG && null != conTypes
+                 && (conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+                     || conTypes.contains( CommsConnType.COMMS_CONN_P2P )) ) {
+                OnClickListener lstnr = new OnClickListener() {
+                        public void onClick( DialogInterface dlg,
+                                             int whichButton ) {
+                            NetStateCache.reset( m_activity );
+                            if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                                RelayService.reset( getActivity() );
+                            }
+                            if ( conTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+                                WiDirService.reset( getActivity() );
+                            }
+                        }
+                    };
+                ab.setNegativeButton( R.string.button_reconnect, lstnr );
+            }
+            dialog = ab.create();
+        }
+            break;
+        default:
+            Log.d( TAG, "%s.makeDialog(): not handling %s", getClass().getSimpleName(),
+                   dlgID.toString() );
+            break;
+        }
+        return dialog;
     }
 
     protected void showDialogFragment( final DlgID dlgID, final Object... params )
@@ -591,6 +633,53 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_visibleProcs.add( proc );
         runIfVisible();
+    }
+
+    public void onStatusClicked( GamePtr gamePtr )
+    {
+        Context context = getActivity();
+        CommsAddrRec[] addrs = XwJNI.comms_getAddrs( gamePtr );
+        CommsAddrRec addr = null != addrs && 0 < addrs.length ? addrs[0] : null;
+        final GameSummary summary = GameUtils.getSummary( context, gamePtr.getRowid(), 1 );
+        if ( null != summary ) {
+            final String msg = ConnStatusHandler
+                .getStatusText( context, summary.conTypes, addr );
+
+            post( new Runnable() {
+                    @Override
+                    public void run() {
+                        if ( null == msg ) {
+                            askNoAddrsDelete();
+                        } else {
+                            showDialogFragment( DlgID.DLG_CONNSTAT, summary,
+                                                R.string.info_title, msg );
+                        }
+                    }
+                } );
+        }
+    }
+
+    public void onStatusClicked( long rowid )
+    {
+        Log.d( TAG, "onStatusClicked(%d)", rowid );
+        try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+            if ( null != lock ) {
+                GamePtr gamePtr = GameUtils.loadMakeGame( getActivity(), lock );
+                if ( null != gamePtr ) {
+                    onStatusClicked( gamePtr );
+                    gamePtr.release();
+                }
+            }
+        }
+    }
+
+    protected void askNoAddrsDelete()
+    {
+        makeConfirmThenBuilder( R.string.connstat_net_noaddr,
+                                Action.DELETE_AND_EXIT )
+            .setPosButton( R.string.list_item_delete )
+            .setNegButton( R.string.button_close_game )
+            .show();
     }
 
     //////////////////////////////////////////////////

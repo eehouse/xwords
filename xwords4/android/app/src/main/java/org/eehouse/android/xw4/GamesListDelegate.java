@@ -1671,9 +1671,11 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = BoardDelegate.rematchSupported( m_activity, rowID );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
-                enable = item.getSummary().isMultiGame()
+                boolean isMultiGame = item.getSummary().isMultiGame();
+                enable = isMultiGame
                     && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
+                Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
 
                 enable = !m_launchedGames.contains( rowID );
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
@@ -1846,6 +1848,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_game_rename:
             showDialogFragment( DlgID.RENAME_GAME, selRowIDs[0] );
+            break;
+
+        case R.id.games_game_netstats:
+            onStatusClicked( selRowIDs[0] );
             break;
 
             // DEBUG only

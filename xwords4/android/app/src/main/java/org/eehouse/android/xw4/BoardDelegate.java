@@ -187,16 +187,14 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case GAME_OVER:
-        case DLG_CONNSTAT: {
+        case GAME_OVER: {
             GameSummary summary = (GameSummary)params[0];
             int title = (Integer)params[1];
             String msg = (String)params[2];
             ab.setTitle( title )
                 .setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
-            if ( DlgID.GAME_OVER == dlgID
-                        && rematchSupported( m_activity, true, summary ) ) {
+            if ( rematchSupported( m_activity, true, summary ) ) {
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg,
                                              int whichButton ) {
@@ -215,25 +213,6 @@ public class BoardDelegate extends DelegateBase
                         };
                     ab.setNeutralButton( R.string.button_archive, lstnr );
                 }
-
-            } else if ( DlgID.DLG_CONNSTAT == dlgID
-                        && BuildConfig.DEBUG && null != m_connTypes
-                        && (m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
-                            || m_connTypes.contains( CommsConnType.COMMS_CONN_P2P )) ) {
-
-                lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dlg,
-                                             int whichButton ) {
-                            NetStateCache.reset( m_activity );
-                            if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                                RelayService.reset( m_activity );
-                            }
-                            if ( m_connTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
-                                WiDirService.reset( m_activity );
-                            }
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_reconnect, lstnr );
             }
             dialog = ab.create();
         }
@@ -1473,6 +1452,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // ConnStatusHandler.ConnStatusCBacks
     //////////////////////////////////////////////////
+    @Override
     public void invalidateParent()
     {
         runOnUiThread(new Runnable() {
@@ -1483,26 +1463,13 @@ public class BoardDelegate extends DelegateBase
             });
     }
 
+    @Override
     public void onStatusClicked()
     {
-        CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
-        CommsAddrRec addr = null != addrs && 0 < addrs.length ? addrs[0] : null;
-        final String msg = ConnStatusHandler
-            .getStatusText( m_activity, m_connTypes, addr );
-
-        post( new Runnable() {
-                @Override
-                public void run() {
-                    if ( null == msg ) {
-                        askNoAddrsDelete();
-                    } else {
-                        showDialogFragment( DlgID.DLG_CONNSTAT, null,
-                                            R.string.info_title, msg );
-                    }
-                }
-            } );
+        onStatusClicked( m_jniGamePtr );
     }
 
+    @Override
     public Handler getHandler()
     {
         return m_handler;
@@ -1513,15 +1480,6 @@ public class BoardDelegate extends DelegateBase
         GameUtils.deleteGame( m_activity, m_gameLock, false );
         waitCloseGame( false );
         finish();
-    }
-
-    private void askNoAddrsDelete()
-    {
-        makeConfirmThenBuilder( R.string.connstat_net_noaddr,
-                                Action.DELETE_AND_EXIT )
-            .setPosButton( R.string.list_item_delete )
-            .setNegButton( R.string.button_close_game )
-            .show();
     }
 
     private void askDropRelay()

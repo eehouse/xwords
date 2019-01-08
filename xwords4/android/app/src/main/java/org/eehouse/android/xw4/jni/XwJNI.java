@@ -58,6 +58,8 @@ public class XwJNI {
             return this;
         }
 
+        public long getRowid() { return m_rowid; }
+
         // Force (via an assert in finalize() below) that this is called. It's
         // better if jni stuff isn't being done on the finalizer thread
         public synchronized void release()
