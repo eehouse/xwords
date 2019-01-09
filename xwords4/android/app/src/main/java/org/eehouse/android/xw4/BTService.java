@@ -1171,12 +1171,13 @@ public class BTService extends XWService {
                             outStream.writeShort( nliData.length );
                             outStream.write( nliData, 0, nliData.length );
                         }
-                        Log.i( TAG, "<eeh>sending invite" );
+                        Log.i( TAG, "sending invite" );
                         outStream.flush();
 
                         DataInputStream inStream =
                             new DataInputStream( socket.getInputStream() );
                         reply = BTCmd.values()[inStream.readByte()];
+                        Log.i( TAG, "got invite reply: %s", reply );
                     }
 
                     if ( null == reply ) {
