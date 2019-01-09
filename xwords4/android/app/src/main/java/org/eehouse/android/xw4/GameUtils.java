@@ -658,57 +658,6 @@ public class GameUtils {
         return rowid;
     }
 
-    public static long makeNewGame( Context context, MultiMsgSink sink,
-                                    int gameID, CommsAddrRec addr, int lang,
-                                    String dict, int nPlayersT,
-                                    int nPlayersH, int forceChannel,
-                                    String gameName )
-    {
-        return makeNewGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr,
-                            lang, dict, nPlayersT, nPlayersH, forceChannel,
-                            gameName );
-    }
-
-    public static long makeNewGame( Context context, int gameID,
-                                    CommsAddrRec addr, int lang,
-                                    String dict, int nPlayersT,
-                                    int nPlayersH, int forceChannel,
-                                    String gameName )
-    {
-        return makeNewGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr,
-                            lang, dict, nPlayersT, nPlayersH, forceChannel,
-                            gameName );
-    }
-
-    public static long makeNewGame( Context context, long groupID,  int gameID,
-                                    CommsAddrRec addr, int lang, String dict,
-                                    int nPlayersT, int nPlayersH,
-                                    int forceChannel, String gameName )
-    {
-        return makeNewGame( context, null, groupID, gameID, addr, lang, dict,
-                            nPlayersT, nPlayersH, forceChannel, gameName );
-    }
-
-    public static long makeNewGame( Context context, MultiMsgSink sink,
-                                    long groupID,  int gameID, CommsAddrRec addr,
-                                    int lang, String dict,
-                                    int nPlayersT, int nPlayersH,
-                                    int forceChannel, String gameName )
-    {
-        long rowid = DBUtils.ROWID_NOTFOUND;
-        int[] langa = { lang };
-        String[] dicta = { dict };
-        boolean isHost = null == addr;
-        if ( isHost ) {
-            addr = new CommsAddrRec( null, null );
-        }
-        String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, sink, (UtilCtxt)null, groupID, addr,
-                                 langa, dicta, null, nPlayersT, nPlayersH,
-                                 forceChannel, inviteID, gameID, gameName,
-                                 isHost );
-    }
-
     // @SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi" })
     // @SuppressWarnings("deprecation")
     // @TargetApi(11)
