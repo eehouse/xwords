@@ -135,17 +135,26 @@ abstract class XWServiceHelper {
                 // for duplicates! forceChannel's hard to dig up, but works
                 for ( int ii = 0; success && ii < rowids.length; ++ii ) {
                     long rowid = rowids[ii];
+                    CurGameInfo gi = null;
                     try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
                         // drop invite if can't open game; likely a dupe!
-                        success = null != lock;
-                        if ( success ) {
-                            CurGameInfo gi = new CurGameInfo( mService );
+                        if ( null != lock ) {
+                            gi = new CurGameInfo( mService );
                             GamePtr gamePtr = GameUtils
                                 .loadMakeGame( mService, gi, lock );
-                            success = gi.forceChannel != nli.forceChannel;
                             gamePtr.release();
                         }
                     }
+
+                    if ( null == gi ) {
+                        // locked. Maybe it's open?
+                        JNIThread thread = JNIThread.getRetained( mService, rowid );
+                        if ( null != thread ) {
+                            gi = thread.getGI();
+                            thread.release( false );
+                        }
+                    }
+                    success = null != gi && gi.forceChannel != nli.forceChannel;
                 }
             } else {
                 success = false;
