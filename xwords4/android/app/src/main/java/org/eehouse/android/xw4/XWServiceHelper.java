@@ -27,13 +27,14 @@ import android.content.Intent;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 
 import java.util.HashMap;
 import java.util.Map;
-
 
 abstract class XWServiceHelper {
     private static final String TAG = XWServiceHelper.class.getSimpleName();  
@@ -121,14 +122,36 @@ abstract class XWServiceHelper {
     protected boolean handleInvitation( NetLaunchInfo nli, String device,
                                         DictFetchOwner dfo )
     {
-        boolean success = false;
-        long[] rowids = DBUtils.getRowIDsFor( mService, nli.gameID() );
-        if ( 0 == rowids.length
-             || ( rowids.length < nli.nPlayersT // will break for two-per-device game
-                  && XWPrefs.getSecondInviteAllowed( mService ) ) ) {
+        boolean success = nli.isValid() && checkNotInFlight( nli );
+        if ( success ) {
+            long[] rowids = DBUtils.getRowIDsFor( mService, nli.gameID() );
+            if ( 0 == rowids.length ) {
+                // cool: we're good
+            } else if ( rowids.length < nli.nPlayersT ) {
+                success = XWPrefs.getSecondInviteAllowed( mService );
 
-            if ( nli.isValid() && checkNotDupe( nli ) ) {
+                // Allowing a second game allows the common testing action of
+                // sending invitation to myself. But we still need to check
+                // for duplicates! forceChannel's hard to dig up, but works
+                for ( int ii = 0; success && ii < rowids.length; ++ii ) {
+                    long rowid = rowids[ii];
+                    try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+                        // drop invite if can't open game; likely a dupe!
+                        success = null != lock;
+                        if ( success ) {
+                            CurGameInfo gi = new CurGameInfo( mService );
+                            GamePtr gamePtr = GameUtils
+                                .loadMakeGame( mService, gi, lock );
+                            success = gi.forceChannel != nli.forceChannel;
+                            gamePtr.release();
+                        }
+                    }
+                }
+            } else {
+                success = false;
+            }
 
+            if ( success ) {
                 if ( DictLangCache.haveDict( mService, nli.lang, nli.dict ) ) {
                     long rowid = GameUtils.makeNewMultiGame( mService, nli,
                                                              getSink( 0 ),
@@ -139,12 +162,12 @@ abstract class XWServiceHelper {
                     }
 
                     postNotification( device, nli.gameID(), rowid );
-                    success = true;
                 } else {
                     Intent intent = MultiService
                         .makeMissingDictIntent( mService, nli, dfo );
                     MultiService.postMissingDictNotification( mService, intent,
                                                               nli.gameID() );
+                    success = false;
                 }
             }
         }
@@ -163,20 +186,21 @@ abstract class XWServiceHelper {
     
     // Check that we aren't already processing an invitation with this
     // inviteID.
-    private static final long SEEN_INTERVAL_MS = 1000 * 5;
+    private static final long SEEN_INTERVAL_MS = 1000 * 2;
     private static Map<String, Long> s_seen = new HashMap<>();
-    private boolean checkNotDupe( NetLaunchInfo nli )
+    private boolean checkNotInFlight( NetLaunchInfo nli )
     {
+        boolean inProcess;
         String inviteID = nli.inviteID();
         synchronized( s_seen ) {
             long now = System.currentTimeMillis();
             Long lastSeen = s_seen.get( inviteID );
-            boolean seen = null != lastSeen && lastSeen + SEEN_INTERVAL_MS > now;
-            if ( !seen ) {
+            inProcess = null != lastSeen && lastSeen + SEEN_INTERVAL_MS > now;
+            if ( !inProcess ) {
                 s_seen.put( inviteID, now );
             }
-            Log.d( TAG, "checkNotDupe('%s') => %b", inviteID, !seen );
-            return !seen;
         }
+        Log.d( TAG, "checkNotInFlight('%s') => %b", inviteID, !inProcess );
+        return !inProcess;
     }
 }
