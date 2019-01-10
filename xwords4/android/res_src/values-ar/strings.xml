@@ -73,7 +73,6 @@
 	<string name="invite_choice_bt">البلوتوث</string>
 	<string name="invite_choice_title">دعوة اللاعبين: كيف؟</string>
     <string name="invite_chooser_fmt">إرسال الدعوة بواسطة %1$s</string>
-    <string name="chat_local_id"></string>
     <string name="chat_send">إرسال</string>
     <string name="downloading_dict_fmt">تنزيل %1$s…</string>
 
