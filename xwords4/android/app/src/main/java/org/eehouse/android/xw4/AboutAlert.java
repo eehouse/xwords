@@ -33,7 +33,6 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Date;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

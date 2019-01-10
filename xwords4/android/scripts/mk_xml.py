@@ -95,8 +95,8 @@ def printStrings( pairs, outfile, target ):
 package org.eehouse.android.xw4.loc;
 
 import android.content.Context;
-import junit.framework.Assert;
 
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Log;
 

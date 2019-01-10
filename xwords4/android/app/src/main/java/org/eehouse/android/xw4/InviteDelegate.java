@@ -36,13 +36,16 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.Assert;
 
 abstract class InviteDelegate extends ListDelegateBase
     implements View.OnClickListener,
@@ -54,34 +57,25 @@ abstract class InviteDelegate extends ListDelegateBase
         String getDev();        // the string that identifies this item in results
     }
 
-    protected static class TwoStringPair implements InviterItem {
-        public String str1;
+    protected static class TwoStringPair implements InviterItem, Serializable {
+        private String mDev;
         public String str2;
 
-        public TwoStringPair( String str1, String str2 ) {
-            this.str1 = str1; this.str2 = str2;
+        public TwoStringPair( String dev, String str2 ) {
+            mDev = dev; this.str2 = str2;
         }
 
-        public static TwoStringPair[] make( String[] names, String[] addrs )
-        {
-            TwoStringPair[] pairs = new TwoStringPair[names.length];
-            for ( int ii = 0; ii < pairs.length; ++ii ) {
-                pairs[ii] = new TwoStringPair( names[ii], addrs[ii] );
-            }
-            return pairs;
-        }
-
-        public String getDev() { return str1; }
+        public String getDev() { return mDev; }
 
         public boolean equals( InviterItem item )
         {
             boolean result = false;
             if ( null != item ) {
                 TwoStringPair pair = (TwoStringPair)item;
-                result = str1.equals( pair.str1 )
+                result = mDev.equals( pair.mDev )
                     && ((null == str2 && null == pair.str2)
                         || str2.equals( pair.str2 ) );
-                Log.d( TAG, "%s.equals(%s) => %b", str1, pair.str1, result );
+                Log.d( TAG, "%s.equals(%s) => %b", mDev, pair.mDev, result );
             }
             return result;
         }
@@ -153,14 +147,17 @@ abstract class InviteDelegate extends ListDelegateBase
         for ( int id : buttonBarItemIds ) {
             bar.findViewById( id ).setOnClickListener( listener );
         }
+
+        tryEnable();
     }
 
-    protected void updateListAdapter( InviterItem[] items )
+    protected void updateListAdapter( List<? extends InviterItem> items )
     {
         updateListAdapter( R.layout.two_strs_item, items );
     }
 
-    protected void updateListAdapter( int itemId, InviterItem[] items )
+    protected void updateListAdapter( int itemId,
+                                      List<? extends InviterItem> items )
     {
         updateChecked( items );
         m_adapter = new InviteItemsAdapter( itemId, items );
@@ -174,13 +171,7 @@ abstract class InviteDelegate extends ListDelegateBase
         }
     }
 
-    protected void onBarButtonClicked( int id )
-    {
-        Assert.fail();          // subclass must implement
-    }
-
-    // Subclasses can do something here
-    protected void addToButtonBar( FrameLayout container ) {}
+    abstract void onBarButtonClicked( int id );
 
     ////////////////////////////////////////
     // View.OnClickListener
@@ -246,7 +237,7 @@ abstract class InviteDelegate extends ListDelegateBase
     protected void clearChecked() { m_checked.clear(); }
 
     // Figure which previously-checked items belong in the new set.
-    private void updateChecked( InviterItem[] newItems )
+    private void updateChecked( List<? extends InviterItem> newItems )
     {
         Set<InviterItem> old = new HashSet<InviterItem>();
         old.addAll( m_checked );
@@ -282,11 +273,13 @@ abstract class InviteDelegate extends ListDelegateBase
         private InviterItem[] m_items;
         private int m_itemId;
 
-        public InviteItemsAdapter( int itemID, InviterItem[] items )
+        public InviteItemsAdapter( int itemID, List<? extends InviterItem> items )
         {
-            super( null == items? 0 : items.length );
+            super( null == items? 0 : items.size() );
             m_itemId = itemID;
-            m_items = items;
+            if ( null != items ) {
+                m_items = items.toArray( new InviterItem[items.size()] );
+            }
             // m_items = new LinearLayout[getCount()];
         }
 

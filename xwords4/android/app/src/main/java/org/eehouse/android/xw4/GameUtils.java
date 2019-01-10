@@ -31,7 +31,6 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -93,9 +92,12 @@ public class GameUtils {
 
     public static byte[] savedGame( Context context, long rowid )
     {
-        GameLock lock = new GameLock( rowid, false ).lock();
-        byte[] result = savedGame( context, lock );
-        lock.unlock();
+        byte[] result = null;
+        try (GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+            if ( null != lock ) {
+                result = savedGame( context, lock );
+            }
+        }
 
         if ( null == result ) {
             throw new NoSuchGameException();
@@ -145,7 +147,7 @@ public class GameUtils {
         if ( null == lockDest ) {
             long groupID = DBUtils.getGroupForGame( context, lockSrc.getRowid() );
             long rowid = saveNewGame( context, gamePtr, gi, groupID );
-            lockDest = new GameLock( rowid, true ).lock();
+            lockDest = GameLock.getFor( rowid ).tryLock();
         } else {
             saveGame( context, gamePtr, gi, lockDest, true );
         }
@@ -158,16 +160,17 @@ public class GameUtils {
     public static boolean resetGame( Context context, long rowidIn )
     {
         boolean success = false;
-        GameLock lock = new GameLock( rowidIn, true ).lock( 500 );
-        if ( null != lock ) {
-            tellDied( context, lock, true );
-            resetGame( context, lock, lock, false );
-            lock.unlock();
+        try ( GameLock lock = GameLock.getFor( rowidIn ).lock( 500 ) ) {
+            if ( null != lock ) {
+                tellDied( context, lock, true );
+                resetGame( context, lock, lock, false );
 
-            Utils.cancelNotification( context, (int)rowidIn );
-            success = true;
-        } else {
-            Log.w( TAG, "resetGame: unable to open rowid %d", rowidIn );
+                Utils.cancelNotification( context, (int)rowidIn );
+                success = true;
+            } else {
+                DbgUtils.toastNoLock( TAG, context, "resetGame(): rowid %d",
+                                      rowidIn );
+            }
         }
         return success;
     }
@@ -216,13 +219,13 @@ public class GameUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        JNIThread thread = JNIThread.getRetained( rowid );
+        JNIThread thread = JNIThread.getRetained( context, rowid );
         GameLock lock = null;
         if ( null != thread ) {
             lock = thread.getLock();
         } else {
             try {
-                lock = new GameLock( rowid, false ).lock( maxMillis );
+                lock = GameLock.getFor( rowid ).lockRO( maxMillis );
             } catch ( GameLock.GameLockedException gle ) {
                 Log.ex( TAG, gle );
             }
@@ -249,11 +252,11 @@ public class GameUtils {
         long rowid = DBUtils.ROWID_NOTFOUND;
         GameLock lockSrc = null;
 
-        JNIThread thread = JNIThread.getRetained( rowidIn, false );
+        JNIThread thread = JNIThread.getRetained( context, rowidIn );
         if ( null != thread ) {
             lockSrc = thread.getLock();
         } else {
-            lockSrc = new GameLock( rowidIn, false ).lock( 300 );
+            lockSrc = GameLock.getFor( rowidIn ).lockRO( 300 );
         }
 
         if ( null != lockSrc ) {
@@ -275,9 +278,13 @@ public class GameUtils {
 
     public static void deleteGame( Context context, GameLock lock, boolean informNow )
     {
-        tellDied( context, lock, informNow );
-        Utils.cancelNotification( context, (int)lock.getRowid() );
-        DBUtils.deleteGame( context, lock );
+        if ( null != lock ) {
+            tellDied( context, lock, informNow );
+            Utils.cancelNotification( context, (int)lock.getRowid() );
+            DBUtils.deleteGame( context, lock );
+        } else {
+            Log.e( TAG, "deleteGame(): null lock; doing nothing" );
+        }
     }
 
     public static boolean deleteGame( Context context, long rowid,
@@ -285,14 +292,15 @@ public class GameUtils {
     {
         boolean success;
         // does this need to be synchronized?
-        GameLock lock = new GameLock( rowid, true );
-        if ( lock.tryLock() ) {
-            deleteGame( context, lock, informNow );
-            lock.unlock();
-            success = true;
-        } else {
-            Log.w( TAG, "deleteGame: unable to delete rowid %d", rowid );
-            success = false;
+        try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
+            if ( null != lock ) {
+                deleteGame( context, lock, informNow );
+                success = true;
+            } else {
+                DbgUtils.toastNoLock( TAG, context, "deleteGame(): rowid %d",
+                                      rowid );
+                success = false;
+            }
         }
         return success;
     }
@@ -389,16 +397,16 @@ public class GameUtils {
     public static Bitmap loadMakeBitmap( Context context, long rowid )
     {
         Bitmap thumb = null;
-        GameLock lock = new GameLock( rowid, false );
-        if ( lock.tryLock() ) {
-            CurGameInfo gi = new CurGameInfo( context );
-            GamePtr gamePtr = loadMakeGame( context, gi, lock );
-            if ( null != gamePtr ) {
-                thumb = takeSnapshot( context, gamePtr, gi );
-                gamePtr.release();
-                DBUtils.saveThumbnail( context, lock, thumb );
+        try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+            if ( null != lock ) {
+                CurGameInfo gi = new CurGameInfo( context );
+                GamePtr gamePtr = loadMakeGame( context, gi, lock );
+                if ( null != gamePtr ) {
+                    thumb = takeSnapshot( context, gamePtr, gi );
+                    gamePtr.release();
+                    DBUtils.saveThumbnail( context, lock, thumb );
+                }
             }
-            lock.unlock();
         }
         return thumb;
     }
@@ -504,9 +512,10 @@ public class GameUtils {
                                     CurGameInfo gi, long groupID )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        GameLock lock = DBUtils.saveNewGame( context, stream, groupID, null );
-        long rowid = lock.getRowid();
-        lock.unlock();
+        long rowid;
+        try ( GameLock lock = DBUtils.saveNewGame( context, stream, groupID, null ) ) {
+            rowid = lock.getRowid();
+        }
         return rowid;
     }
 
@@ -537,10 +546,10 @@ public class GameUtils {
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameLock lock = DBUtils.saveNewGame( context, bytes, groupID,
-                                                 gameName );
-            rowid = lock.getRowid();
-            lock.unlock();
+            try ( GameLock lock = DBUtils.saveNewGame( context, bytes, groupID,
+                                                       gameName ) ) {
+                rowid = lock.getRowid();
+            }
         }
         return rowid;
     }
@@ -638,63 +647,15 @@ public class GameUtils {
         }
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-            GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, sink, gi, util, addr, null, lock, false );
-            lock.unlock();
+            // Use tryLock in case we're on UI thread. It's guaranteed to
+            // succeed because we just created the rowid.
+            try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
+                Assert.assertNotNull( lock );
+                applyChanges( context, sink, gi, util, addr, null, lock, false );
+            }
         }
 
         return rowid;
-    }
-
-    public static long makeNewGame( Context context, MultiMsgSink sink,
-                                    int gameID, CommsAddrRec addr, int lang,
-                                    String dict, int nPlayersT,
-                                    int nPlayersH, int forceChannel,
-                                    String gameName )
-    {
-        return makeNewGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr,
-                            lang, dict, nPlayersT, nPlayersH, forceChannel,
-                            gameName );
-    }
-
-    public static long makeNewGame( Context context, int gameID,
-                                    CommsAddrRec addr, int lang,
-                                    String dict, int nPlayersT,
-                                    int nPlayersH, int forceChannel,
-                                    String gameName )
-    {
-        return makeNewGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr,
-                            lang, dict, nPlayersT, nPlayersH, forceChannel,
-                            gameName );
-    }
-
-    public static long makeNewGame( Context context, long groupID,  int gameID,
-                                    CommsAddrRec addr, int lang, String dict,
-                                    int nPlayersT, int nPlayersH,
-                                    int forceChannel, String gameName )
-    {
-        return makeNewGame( context, null, groupID, gameID, addr, lang, dict,
-                            nPlayersT, nPlayersH, forceChannel, gameName );
-    }
-
-    public static long makeNewGame( Context context, MultiMsgSink sink,
-                                    long groupID,  int gameID, CommsAddrRec addr,
-                                    int lang, String dict,
-                                    int nPlayersT, int nPlayersH,
-                                    int forceChannel, String gameName )
-    {
-        long rowid = DBUtils.ROWID_NOTFOUND;
-        int[] langa = { lang };
-        String[] dicta = { dict };
-        boolean isHost = null == addr;
-        if ( isHost ) {
-            addr = new CommsAddrRec( null, null );
-        }
-        String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, sink, (UtilCtxt)null, groupID, addr,
-                                 langa, dicta, null, nPlayersT, nPlayersH,
-                                 forceChannel, inviteID, gameID, gameName,
-                                 isHost );
     }
 
     // @SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi" })
@@ -865,7 +826,7 @@ public class GameUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
 
-    public static Bundle makeLaunchExtras( long rowid, boolean invited )
+    private static Bundle makeLaunchExtras( long rowid, boolean invited )
     {
         Bundle bundle = new Bundle();
         bundle.putLong( INTENT_KEY_ROWID, rowid );
@@ -949,54 +910,57 @@ public class GameUtils {
             // have the lock and we'll never get it.  Better to drop
             // the message than fire the hung-lock assert.  Messages
             // belong in local pre-delivery storage anyway.
-            GameLock lock = new GameLock( rowid, true ).lock( 150 );
-            if ( null != lock ) {
-                CurGameInfo gi = new CurGameInfo( context );
-                FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-                GamePtr gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
-                if ( null != gamePtr ) {
-                    XwJNI.comms_resendAll( gamePtr, false, false );
+            try ( GameLock lock = GameLock.getFor( rowid ).lock( 150 ) ) {
+                if ( null != lock ) {
+                    CurGameInfo gi = new CurGameInfo( context );
+                    FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
+                    GamePtr gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+                    if ( null != gamePtr ) {
+                        XwJNI.comms_resendAll( gamePtr, false, false );
 
-                    Assert.assertNotNull( ret );
-                    draw = XwJNI.game_receiveMessage( gamePtr, msg, ret );
-                    XwJNI.comms_ackAny( gamePtr );
+                        Assert.assertNotNull( ret );
+                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret );
+                        XwJNI.comms_ackAny( gamePtr );
 
-                    // update gi to reflect changes due to messages
-                    XwJNI.game_getGi( gamePtr, gi );
+                        // update gi to reflect changes due to messages
+                        XwJNI.game_getGi( gamePtr, gi );
 
-                    if ( draw && XWPrefs.getThumbEnabled( context ) ) {
-                        Bitmap bitmap = takeSnapshot( context, gamePtr, gi );
-                        DBUtils.saveThumbnail( context, lock, bitmap );
-                    }
+                        if ( draw && XWPrefs.getThumbEnabled( context ) ) {
+                            Bitmap bitmap = takeSnapshot( context, gamePtr, gi );
+                            DBUtils.saveThumbnail( context, lock, bitmap );
+                        }
 
-                    if ( null != bmr ) {
-                        if ( null != feedImpl.m_chat ) {
-                            bmr.m_chat = feedImpl.m_chat;
-                            bmr.m_chatFrom = feedImpl.m_chatFrom;
-                            bmr.m_chatTs = feedImpl.m_ts;
-                        } else {
-                            LastMoveInfo lmi = new LastMoveInfo();
-                            XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
-                            bmr.m_lmi = lmi;
+                        if ( null != bmr ) {
+                            if ( null != feedImpl.m_chat ) {
+                                bmr.m_chat = feedImpl.m_chat;
+                                bmr.m_chatFrom = feedImpl.m_chatFrom;
+                                bmr.m_chatTs = feedImpl.m_ts;
+                            } else {
+                                LastMoveInfo lmi = new LastMoveInfo();
+                                XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
+                                bmr.m_lmi = lmi;
+                            }
+                        }
+
+                        saveGame( context, gamePtr, gi, lock, false );
+                        GameSummary summary = summarizeAndRelease( context, lock,
+                                                                   gamePtr, gi );
+                        if ( null != isLocalOut ) {
+                            isLocalOut[0] = 0 <= summary.turn
+                                && gi.players[summary.turn].isLocal;
+                        }
+
+                        int flags = setFromFeedImpl( feedImpl );
+                        if ( GameSummary.MSG_FLAGS_NONE != flags ) {
+                            draw = true;
+                            int curFlags = DBUtils.getMsgFlags( context, rowid );
+                            DBUtils.setMsgFlags( rowid, flags | curFlags );
                         }
                     }
-
-                    saveGame( context, gamePtr, gi, lock, false );
-                    GameSummary summary = summarizeAndRelease( context, lock,
-                                                               gamePtr, gi );
-                    if ( null != isLocalOut ) {
-                        isLocalOut[0] = 0 <= summary.turn
-                            && gi.players[summary.turn].isLocal;
-                    }
-
-                    int flags = setFromFeedImpl( feedImpl );
-                    if ( GameSummary.MSG_FLAGS_NONE != flags ) {
-                        draw = true;
-                        int curFlags = DBUtils.getMsgFlags( context, rowid );
-                        DBUtils.setMsgFlags( rowid, flags | curFlags );
-                    }
                 }
-                lock.unlock();
+            } catch ( GameLock.GameLockedException gle ) {
+                DbgUtils.toastNoLock( TAG, context, "feedMessage(): dropping message "
+                                      + " for %d", rowid );
             }
         }
         return draw;
@@ -1008,35 +972,37 @@ public class GameUtils {
     public static boolean replaceDicts( Context context, long rowid,
                                         String oldDict, String newDict )
     {
-        GameLock lock = new GameLock( rowid, true ).lock(300);
-        boolean success = null != lock;
-        if ( success ) {
-            byte[] stream = savedGame( context, lock );
-            CurGameInfo gi = new CurGameInfo( context );
-            XwJNI.gi_from_stream( gi, stream );
+        boolean success;
+        try ( GameLock lock = GameLock.getFor( rowid ).lock(300) ) {
+            success = null != lock;
+            if ( success ) {
+                byte[] stream = savedGame( context, lock );
+                CurGameInfo gi = new CurGameInfo( context );
+                XwJNI.gi_from_stream( gi, stream );
 
-            // first time required so dictNames() will work
-            gi.replaceDicts( context, newDict );
+                // first time required so dictNames() will work
+                gi.replaceDicts( context, newDict );
 
-            String[] dictNames = gi.dictNames();
-            DictUtils.DictPairs pairs = DictUtils.openDicts( context,
-                                                             dictNames );
+                String[] dictNames = gi.dictNames();
+                DictUtils.DictPairs pairs = DictUtils.openDicts( context,
+                                                                 dictNames );
 
-            GamePtr gamePtr =
-                XwJNI.initFromStream( rowid, stream, gi, dictNames,
-                                      pairs.m_bytes, pairs.m_paths,
-                                      gi.langName( context ), null,
-                                      null, CommonPrefs.get( context ), null );
-            // second time required as game_makeFromStream can overwrite
-            gi.replaceDicts( context, newDict );
+                GamePtr gamePtr =
+                    XwJNI.initFromStream( rowid, stream, gi, dictNames,
+                                          pairs.m_bytes, pairs.m_paths,
+                                          gi.langName( context ), null,
+                                          null, CommonPrefs.get( context ), null );
+                // second time required as game_makeFromStream can overwrite
+                gi.replaceDicts( context, newDict );
 
-            saveGame( context, gamePtr, gi, lock, false );
+                saveGame( context, gamePtr, gi, lock, false );
 
-            summarizeAndRelease( context, lock, gamePtr, gi );
+                summarizeAndRelease( context, lock, gamePtr, gi );
 
-            lock.unlock();
-        } else {
-            Log.w( TAG, "replaceDicts: unable to open rowid %d", rowid );
+            } else {
+                DbgUtils.toastNoLock( TAG, context, "replaceDicts(): rowid %d",
+                                      rowid );
+            }
         }
         return success;
     } // replaceDicts
@@ -1292,32 +1258,32 @@ public class GameUtils {
                     }
                 }
 
-                GameLock lock = new GameLock( rowid, false );
-                if ( lock.tryLock() ) {
-                    CurGameInfo gi = new CurGameInfo( m_context );
-                    MultiMsgSink sink = new MultiMsgSink( m_context, rowid );
-                    GamePtr gamePtr = loadMakeGame( m_context, gi, sink, lock );
-                    if ( null != gamePtr ) {
-                        int nSent = XwJNI.comms_resendAll( gamePtr, true,
-                                                           m_filter, false );
-                        gamePtr.release();
-                        Log.d( TAG, "Resender.doInBackground(): sent %d "
-                               + "messages for rowid %d", nSent, rowid );
-                        nSentTotal += sink.numSent();
+                try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+                    if ( null != lock ) {
+                        CurGameInfo gi = new CurGameInfo( m_context );
+                        MultiMsgSink sink = new MultiMsgSink( m_context, rowid );
+                        GamePtr gamePtr = loadMakeGame( m_context, gi, sink, lock );
+                        if ( null != gamePtr ) {
+                            int nSent = XwJNI.comms_resendAll( gamePtr, true,
+                                                               m_filter, false );
+                            gamePtr.release();
+                            Log.d( TAG, "Resender.doInBackground(): sent %d "
+                                   + "messages for rowid %d", nSent, rowid );
+                            nSentTotal += sink.numSent();
+                        } else {
+                            Log.d( TAG, "Resender.doInBackground(): loadMakeGame()"
+                                   + " failed for rowid %d", rowid );
+                        }
                     } else {
-                        Log.d( TAG, "Resender.doInBackground(): loadMakeGame()"
-                               + " failed for rowid %d", rowid );
-                    }
-                    lock.unlock();
-                } else {
-                    JNIThread jniThread = JNIThread.getRetained( rowid, false );
-                    if ( null != jniThread ) {
-                        jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false,
-                                          false, false );
-                        jniThread.release();
-                    } else {
-                        Log.w( TAG, "Resender.doInBackground: unable to unlock %d",
-                               rowid );
+                        JNIThread jniThread = JNIThread.getRetained( m_context, rowid );
+                        if ( null != jniThread ) {
+                            jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false,
+                                              false, false );
+                            jniThread.release();
+                        } else {
+                            Log.w( TAG, "Resender.doInBackground: unable to unlock %d",
+                                   rowid );
+                        }
                     }
                 }
             }

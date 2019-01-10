@@ -120,7 +120,7 @@ static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
 
 static XP_Bool board_setXOffset( BoardCtxt* board, XP_U16 offset );
 static XP_Bool preflight( BoardCtxt* board, XP_Bool reveal );
-
+static XP_U16 MIN_TRADE_TILES( const BoardCtxt* board );
 
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
@@ -830,7 +830,7 @@ XP_Bool
 board_canTrade( BoardCtxt* board )
 {
     XP_Bool result = preflight( board, XP_FALSE )
-        && MIN_TRADE_TILES <= server_countTilesInPool( board->server );
+        && MIN_TRADE_TILES(board) <= server_countTilesInPool( board->server );
     return result;
 }
 
@@ -1062,11 +1062,17 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
     } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board ) ) {
         if ( pti->tradeInProgress ) {
             TileBit traySelBits = pti->traySelBits;
+            int count = 0;
+            for ( TileBit tmp = traySelBits; tmp != 0; tmp &= tmp - 1 ) {
+                ++count;
+            }
             result = XP_TRUE; /* there's at least the window to clean up
                                  after */
 
             if ( NO_TILES == traySelBits ) {
                 util_userError( board->util, ERR_NO_EMPTY_TRADE );
+            } else if ( count > server_countTilesInPool(board->server) ) {
+                util_userError( board->util, ERR_TOO_MANY_TRADE );
             } else {
                 TrayTileSet selTiles;
                 getSelTiles( board, traySelBits, &selTiles );
@@ -1189,7 +1195,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
         /* Just in case somebody started a trade when it wasn't his turn and
            there were plenty of tiles but now there aren't. */
         if ( newInfo->tradeInProgress && 
-             server_countTilesInPool(board->server) < MIN_TRADE_TILES ) {
+             server_countTilesInPool(board->server) < MIN_TRADE_TILES(board) ) {
             newInfo->tradeInProgress = XP_FALSE;
             newInfo->traySelBits = 0x00; /* clear any selected */
         }
@@ -2070,6 +2076,15 @@ preflight( BoardCtxt* board, XP_Bool reveal )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
 
+static XP_U16
+MIN_TRADE_TILES( const BoardCtxt* board )
+{
+    const DictionaryCtxt* dict = model_getDictionary( board->model );
+    XP_LangCode langCode = dict_getLangCode( dict );
+    /* 6 is Spanish, but I swear that's not defined anywhere! */
+    return 6 == langCode ? 1 : MAX_TRAY_TILES;
+}
+
 /* Refuse with error message if any tiles are currently on board in this turn.
  * Then call the engine, and display the first move.  Return true if there's
  * any redrawing to be done.
@@ -2524,7 +2539,8 @@ board_beginTrade( BoardCtxt* board )
 
     result = preflight( board, XP_TRUE );
     if ( result ) {
-        if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
+        XP_S16 tilesLeft = server_countTilesInPool(board->server);
+        if ( tilesLeft < MIN_TRADE_TILES( board ) ) {
             util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
             model_resetCurrentTurn( board->model, board->selPlayer );
@@ -2551,6 +2567,7 @@ board_endTrade( BoardCtxt* board )
         invalSelTradeWindow( board );
         pti->tradeInProgress = XP_FALSE;
         pti->traySelBits = NO_TILES;
+        board_invalTrayTiles( board, ALLTILES );
     }
     return result;
 }

@@ -27,10 +27,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import java.util.Iterator;
-import java.util.Map;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class WiDirInviteDelegate extends InviteDelegate
     implements WiDirService.DevSetListener {
@@ -76,11 +77,17 @@ public class WiDirInviteDelegate extends InviteDelegate
         WiDirService.unregisterDevSetListener( this );
     }
 
+    protected void onBarButtonClicked( int id )
+    {
+        // not implemented yet as there's no bar button
+        Assert.assertFalse( BuildConfig.DEBUG );
+    }
+
     @Override
     protected void onChildAdded( View child, InviterItem data )
     {
         TwoStringPair pair = (TwoStringPair)data;
-        ((TwoStrsItem)child).setStrings( pair.str2, pair.str1 );
+        ((TwoStrsItem)child).setStrings( pair.str2, pair.getDev() );
     }
 
     @Override
@@ -88,7 +95,7 @@ public class WiDirInviteDelegate extends InviteDelegate
     {
         for ( int ii = 0; ii < selected.length; ++ii ) {
             TwoStringPair pair = (TwoStringPair)selected[ii];
-            devs[ii] = pair.str1;
+            devs[ii] = pair.getDev();
         }
     }
 
@@ -107,13 +114,13 @@ public class WiDirInviteDelegate extends InviteDelegate
     private void rebuildList()
     {
         int count = m_macsToName.size();
-        TwoStringPair[] pairs = new TwoStringPair[count];
+        List<TwoStringPair> pairs = new ArrayList<>();
         // String[] names = new String[count];
         // String[] addrs = new String[count];
         Iterator<String> iter = m_macsToName.keySet().iterator();
         for ( int ii = 0; ii < count; ++ii ) {
             String mac = iter.next();
-            pairs[ii] = new TwoStringPair(mac, m_macsToName.get(mac) );
+            pairs.add( new TwoStringPair(mac, m_macsToName.get(mac) ) );
             // addrs[ii] = mac;
             // names[ii] = m_macsToName.get(mac);
         }

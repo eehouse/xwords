@@ -23,8 +23,7 @@ package org.eehouse.android.xw4.jni;
 import android.content.Context;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
-
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BTService;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.Log;

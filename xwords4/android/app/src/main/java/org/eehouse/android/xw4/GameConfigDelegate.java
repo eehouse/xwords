@@ -45,7 +45,6 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -484,7 +483,7 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     protected void onResume()
     {
-        m_jniThread = JNIThread.getRetained( m_rowid );
+        m_jniThread = JNIThread.getRetained( m_activity, m_rowid );
         super.onResume();
         loadGame();
     }
@@ -537,11 +536,14 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
 
-            GameLock gameLock;
-            XwJNI.GamePtr gamePtr;
+            GameLock gameLock = null;
+            XwJNI.GamePtr gamePtr = null;
             if ( null == m_jniThread ) {
-                gameLock = new GameLock( m_rowid, false ).lock();
-                gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
+                gameLock = GameLock.getFor( m_rowid ).tryLockRO();
+                if ( null != gameLock ) {
+                    gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig,
+                                                      gameLock );
+                }
             } else {
                 gameLock = m_jniThread.getLock();
                 gamePtr = m_jniThread.getGamePtr();
@@ -1232,7 +1234,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( !isFinishing() ) {
             GameLock gameLock = m_jniThread == null
-                ? new GameLock( m_rowid, true ).lock()
+                ? GameLock.getFor( m_rowid ).tryLock()
                 : m_jniThread.getLock();
             GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
                                     gameLock, forceNew );

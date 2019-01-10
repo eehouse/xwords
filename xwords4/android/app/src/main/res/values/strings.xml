@@ -148,6 +148,9 @@
     <!-- Title of dialog for renaming game (triggered by selecting
          list_item_rename) -->
 
+    <!-- long-tap game list menuitem for showing info about game's connectivity -->
+    <string name="list_item_netstats">Connections…</string>
+
     <!-- If you try to copy a networked game you get this error
     message. -->
     <string name="no_copy_network">Games that have already connected
@@ -1319,6 +1322,14 @@
     <string name="str_too_few_tiles_left_to_trade">Too few tiles left
          to exchange.</string>
 
+         <!-- In Spanish you can trade with fewer than 7 tiles in the
+              pool, so you can wind up selecting more than are
+              available. You get this error message in that case. -->
+    <plurals name="too_many_trade_fmt">
+      <item quantity="one">Too many tiles selected. Please select only one.</item>
+      <item quantity="other">Too many tiles selected. Please select no more than %1$d.</item>
+    </plurals>
+
     <!-- Displayed if you try to use the undo menuitem or button and
          there are no tiles on the board (no move has yet been made.)
          [If I'm being clever and disabling those features in this
@@ -1813,15 +1824,18 @@
 
     <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
 
-      <!-- In the Bluetooth invite device dialog -->
-    <string name="bt_pick_addall_button">Add all Paired</string>
-      <!--  -->
-    <string name="bt_pick_clear_button">Remove checked</string>
-    <!--  -->
+    <!-- In invitation dialogs, button to remove checked items -->
+    <string name="bt_pick_clear_button">Remove</string>
+
+    <!-- In the Bluetooth invite device dialog, to launch Andorid BT
+         settings pair new device -->
     <string name="bt_pair_settings">Pair More</string>
+    <!-- In the Bluetooth invite device dialog, kick off a new scan of
+         nearby devices -->
+    <string name="button_scan">Rescan</string>
 
       <!--  -->
-    <string name="invite_progress_title">Connecting...</string>
+    <string name="invite_progress_title">Connecting…</string>
     <string name="invite_progress_fmt">Sending invitation to CrossWords on %1$s</string>
       <!--  -->
     <string name="summary_wait_host">Waiting for connection[s]</string>
@@ -1837,7 +1851,6 @@
     <string name="new_bt_body_fmt">A player on the device %1$s wants to start a game</string>
     <string name="new_relay_body">Tap to open the new game</string>
 
-
       <!--  -->
     <string name="bt_bad_proto_fmt">The version of CrossWords on
     \"%1$s\" is incompatible with this one for play using
@@ -1850,13 +1863,20 @@
     continue.</string>
 
     <!--  -->
-    <plurals name="invite_bt_desc_fmt">
-      <item quantity="one">Please check the device
-      you want to include in this game.\n\nUse the \"%2$s\"
-      button if you don\'t see the device you expect.</item>
-      <item quantity="other">Please check up to %1$d device[s]
-      you want to include in this game.\n\nUse the \"%2$s\"
-      button if you don\'t see a device you expect.</item>
+    <plurals name="invite_bt_desc_fmt_2">
+      <item quantity="one">Please check the device you want to include
+      in this game.</item>
+      <item quantity="other">Please check up to %1$d device[s] you
+      want to include in this game.</item>
+    </plurals>
+
+    <!-- Appended to above -->
+    <string name="invite_bt_desc_postscript">\n\n(The list is of devices you\'ve
+    paired and on which CrossWords has been detected.)</string>
+
+    <plurals name="bt_scan_progress_fmt">
+      <item quantity="one">Scanning for CrossWords</item>
+      <item quantity="other">Scanning for CrossWords on %1$d paired devices.</item>
     </plurals>
     <!--  -->
     <string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry
@@ -2025,6 +2045,10 @@
 
     <string name="title_enable_p2p">Enable WiFi Direct</string>
     <string name="summary_enable_p2p">Experimental, uses lots of battery</string>
+
+    <string name="bkng_notify_text">Accepting Bluetooth messages…</string>
+    <string name="bkng_stop_text">Stop</string>
+    <string name="bkng_settings_text">Settings</string>
 
     <!--  -->
     <string name="confirm_sms_title">Confirm your SMS plan</string>
@@ -2393,6 +2417,9 @@
 	within Bluetooth range and that CrossWords is installed on
 	it.</string>
 
+    <!-- How long ago did we last see a BT device via scan -->
+    <string name="bt_scan_age_fmt">Last scan response: %1$s</string>
+
 	<!-- label within default wordlists in app preferences -->
 	<string name="default_language">Default language</string>
 
@@ -2447,7 +2474,7 @@
     <string name="waiting_invite_title">Waiting for response</string>
     <string name="waiting_rematch_title">Rematch in progress</string>
     <!-- Button for alert with title above -->
-    <string name="button_wait">Wait</string>
+    <string name="button_close">Close</string>
     <string name="button_reinvite">Re-invite</string>
 
     <string name="invite_stays">(This dialog will stay up until all
@@ -2641,6 +2668,12 @@
   player name \"%1$s\". Would you like to personalize with your own
   name before you create this game?</string>
 
+  <string name="btservice_expl">This notification is present whenever
+  CrossWords is running in the background to accept Bluetooth
+  messages. It usually runs for about 15 minutes after CrossWords
+  starts or a Bluetooth message is received.
+  </string>
+
   <string name="no_invites">This game has sent no invitations</string>
 
   <string name="disable_dualpane">Disable side-by-side</string>
@@ -2715,4 +2748,14 @@
   <string name="perms_rationale_title">Android Permissions</string>
   <string name="toast_no_permission">Permission not granted</string>
 
+  <!-- Explanation in settings for always-on BT notification -->
+  <string name="foreground_channel_expl">Accepting Bluetooth in background</string>
+  <!-- Explanation in settings for traditional move-arrived notification -->
+  <string name="gameevent_channel_expl">In-game events</string>
+
+  <string name="not_again_emptybtscan">If a scan doesn\'t find the device you expect:\n
+  • First, just try again\n
+  • Make sure Bluetooth is on on the other device\n
+  • Launch CrossWords on the other device\n
+  </string>
 </resources>

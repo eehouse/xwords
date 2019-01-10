@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.v4.app.DialogFragment;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;

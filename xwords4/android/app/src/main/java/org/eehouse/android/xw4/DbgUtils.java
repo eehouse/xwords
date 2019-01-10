@@ -25,7 +25,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.text.format.Time;
 
@@ -34,7 +33,6 @@ import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -101,9 +99,24 @@ public class DbgUtils {
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
+    public static void toastNoLock( String tag, Context context, String format,
+                                    Object... args )
+    {
+        format = "Unable to lock game; " + format;
+        if ( BuildConfig.DEBUG ) {
+            showf( context, format, args );
+        }
+        Log.w( tag, format, args );
+    }
+
     public static void assertOnUIThread()
     {
-        Assert.assertTrue( Looper.getMainLooper().equals(Looper.myLooper()) );
+        assertOnUIThread( true );
+    }
+
+    public static void assertOnUIThread( boolean isOnThread )
+    {
+        Assert.assertTrue( isOnThread == Utils.isOnUIThread() );
     }
 
     public static void printStack( String tag, StackTraceElement[] trace )
@@ -121,6 +134,12 @@ public class DbgUtils {
         if ( s_doLog ) {
             printStack( tag, Thread.currentThread().getStackTrace() );
         }
+    }
+
+    public static void printStack( String tag, Exception ex )
+    {
+        String stackTrace = android.util.Log.getStackTraceString(ex);
+        Log.d( tag, stackTrace );
     }
 
     static String extrasToString( Intent intent )

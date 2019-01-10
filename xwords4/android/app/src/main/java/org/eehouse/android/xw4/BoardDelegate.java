@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -188,16 +187,14 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case GAME_OVER:
-        case DLG_CONNSTAT: {
+        case GAME_OVER: {
             GameSummary summary = (GameSummary)params[0];
             int title = (Integer)params[1];
             String msg = (String)params[2];
             ab.setTitle( title )
                 .setMessage( msg )
                 .setPositiveButton( android.R.string.ok, null );
-            if ( DlgID.GAME_OVER == dlgID
-                        && rematchSupported( m_activity, true, summary ) ) {
+            if ( rematchSupported( m_activity, true, summary ) ) {
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg,
                                              int whichButton ) {
@@ -216,25 +213,6 @@ public class BoardDelegate extends DelegateBase
                         };
                     ab.setNeutralButton( R.string.button_archive, lstnr );
                 }
-
-            } else if ( DlgID.DLG_CONNSTAT == dlgID
-                        && BuildConfig.DEBUG && null != m_connTypes
-                        && (m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
-                            || m_connTypes.contains( CommsConnType.COMMS_CONN_P2P )) ) {
-
-                lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dlg,
-                                             int whichButton ) {
-                            NetStateCache.reset( m_activity );
-                            if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                                RelayService.reset( m_activity );
-                            }
-                            if ( m_connTypes.contains( CommsConnType.COMMS_CONN_P2P ) ) {
-                                WiDirService.reset( m_activity );
-                            }
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_reconnect, lstnr );
             }
             dialog = ab.create();
         }
@@ -536,7 +514,7 @@ public class BoardDelegate extends DelegateBase
                             finish();
                         }
                     };
-                alert.setNoDismissListenerNeg( ab, R.string.button_wait, lstnr );
+                alert.setNoDismissListenerNeg( ab, R.string.button_close, lstnr );
             }
 
             dialog = ab.create();
@@ -588,17 +566,21 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
-        m_jniThreadRef = JNIThread.getRetained( m_rowid, true );
+        // getRetained() can in threory fail to get the lock and so will
+        // return null. Let m_jniThreadRef stay null in that case; doResume()
+        // will finish() in that case.
+        m_jniThreadRef = JNIThread.getRetained( m_activity, m_rowid, true );
+        if ( null != m_jniThreadRef ) {
+            // see http://stackoverflow.com/questions/680180/where-to-stop- \
+            // destroy-threads-in-android-service-class
+            m_jniThreadRef.setDaemonOnce( true );
+            m_jniThreadRef.startOnce();
 
-        // see http://stackoverflow.com/questions/680180/where-to-stop- \
-        // destroy-threads-in-android-service-class
-        m_jniThreadRef.setDaemonOnce( true ); // firing
-        m_jniThreadRef.startOnce();
+            NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
 
-        NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
-
-        setBackgroundColor();
-        setKeepScreenOn();
+            setBackgroundColor();
+            setKeepScreenOn();
+        }
     } // init
 
     @Override
@@ -628,7 +610,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void onStop()
     {
-        if ( isFinishing() ) {
+        if ( isFinishing() && null != m_jniThreadRef ) {
             m_jniThreadRef.release();
             m_jniThreadRef = null;
         }
@@ -1217,7 +1199,9 @@ public class BoardDelegate extends DelegateBase
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS:
-                Perms23.tryGetPerms( this, Perm.SEND_SMS, R.string.sms_invite_rationale,
+                Perms23.tryGetPerms( this, new Perm[] { Perm.SEND_SMS,
+                                                        Perm.RECEIVE_SMS },
+                                     R.string.sms_invite_rationale,
                                      Action.INVITE_SMS, m_mySIS.nMissing, info );
                 break;
             case RELAY:
@@ -1468,6 +1452,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // ConnStatusHandler.ConnStatusCBacks
     //////////////////////////////////////////////////
+    @Override
     public void invalidateParent()
     {
         runOnUiThread(new Runnable() {
@@ -1478,22 +1463,13 @@ public class BoardDelegate extends DelegateBase
             });
     }
 
+    @Override
     public void onStatusClicked()
     {
-        final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
-        post( new Runnable() {
-                @Override
-                public void run() {
-                    if ( null == msg ) {
-                        askNoAddrsDelete();
-                    } else {
-                        showDialogFragment( DlgID.DLG_CONNSTAT, null,
-                                            R.string.info_title, msg );
-                    }
-                }
-            } );
+        onStatusClicked( m_jniGamePtr );
     }
 
+    @Override
     public Handler getHandler()
     {
         return m_handler;
@@ -1504,15 +1480,6 @@ public class BoardDelegate extends DelegateBase
         GameUtils.deleteGame( m_activity, m_gameLock, false );
         waitCloseGame( false );
         finish();
-    }
-
-    private void askNoAddrsDelete()
-    {
-        makeConfirmThenBuilder( R.string.connstat_net_noaddr,
-                                Action.DELETE_AND_EXIT )
-            .setPosButton( R.string.list_item_delete )
-            .setNegButton( R.string.button_close_game )
-            .show();
     }
 
     private void askDropRelay()
@@ -1853,46 +1820,52 @@ public class BoardDelegate extends DelegateBase
         {
             int resid = 0;
             boolean asToast = false;
+            String msg = null;
             switch( code ) {
-            case UtilCtxt.ERR_TILES_NOT_IN_LINE:
+            case ERR_TILES_NOT_IN_LINE:
                 resid = R.string.str_tiles_not_in_line;
                 break;
-            case UtilCtxt.ERR_NO_EMPTIES_IN_TURN:
+            case ERR_NO_EMPTIES_IN_TURN:
                 resid = R.string.str_no_empties_in_turn;
                 break;
-            case UtilCtxt.ERR_TWO_TILES_FIRST_MOVE:
+            case ERR_TWO_TILES_FIRST_MOVE:
                 resid = R.string.str_two_tiles_first_move;
                 break;
-            case UtilCtxt.ERR_TILES_MUST_CONTACT:
+            case ERR_TILES_MUST_CONTACT:
                 resid = R.string.str_tiles_must_contact;
                 break;
-            case UtilCtxt.ERR_NOT_YOUR_TURN:
+            case ERR_NOT_YOUR_TURN:
                 resid = R.string.str_not_your_turn;
                 break;
-            case UtilCtxt.ERR_NO_PEEK_ROBOT_TILES:
+            case ERR_NO_PEEK_ROBOT_TILES:
                 resid = R.string.str_no_peek_robot_tiles;
                 break;
-            case UtilCtxt.ERR_NO_EMPTY_TRADE:
+            case ERR_NO_EMPTY_TRADE:
                 // This should not be possible as the button's
                 // disabled when no tiles selected.
                 Assert.fail();
                 break;
-            case UtilCtxt.ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
+            case ERR_TOO_MANY_TRADE:
+                int nLeft = XwJNI.server_countTilesInPool( m_jniGamePtr );
+                msg = getQuantityString( R.plurals.too_many_trade_fmt,
+                                         nLeft, nLeft );
+                break;
+            case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
                 resid = R.string.str_too_few_tiles_left_to_trade;
                 break;
-            case UtilCtxt.ERR_CANT_UNDO_TILEASSIGN:
+            case ERR_CANT_UNDO_TILEASSIGN:
                 resid = R.string.str_cant_undo_tileassign;
                 break;
-            case UtilCtxt.ERR_CANT_HINT_WHILE_DISABLED:
+            case ERR_CANT_HINT_WHILE_DISABLED:
                 resid = R.string.str_cant_hint_while_disabled;
                 break;
-            case UtilCtxt.ERR_NO_PEEK_REMOTE_TILES:
+            case ERR_NO_PEEK_REMOTE_TILES:
                 resid = R.string.str_no_peek_remote_tiles;
                 break;
-            case UtilCtxt.ERR_REG_UNEXPECTED_USER:
+            case ERR_REG_UNEXPECTED_USER:
                 resid = R.string.str_reg_unexpected_user;
                 break;
-            case UtilCtxt.ERR_SERVER_DICT_WINS:
+            case ERR_SERVER_DICT_WINS:
                 resid = R.string.str_server_dict_wins;
                 break;
             case ERR_REG_SERVER_SANS_REMOTE:
@@ -1904,17 +1877,21 @@ public class BoardDelegate extends DelegateBase
                 break;
             }
 
-            if ( resid != 0 ) {
+            if ( null == msg && resid != 0 ) {
+                msg = getString( resid );
+            }
+
+            if ( null != msg ) {
                 if ( asToast ) {
-                    final int residf = resid;
+                    final String msgf = msg;
                     runOnUiThread( new Runnable() {
                             @Override
                             public void run() {
-                                showToast( residf );
+                                showToast( msgf );
                             }
                         } );
                 } else {
-                    nonBlockingDialog( DlgID.DLG_OKONLY, getString( resid ) );
+                    nonBlockingDialog( DlgID.DLG_OKONLY, msg );
                 }
             }
         } // userError
@@ -2066,9 +2043,9 @@ public class BoardDelegate extends DelegateBase
 
     private void doResume( boolean isStart )
     {
-        boolean success = true;
+        boolean success = null != m_jniThreadRef;
         boolean firstStart = null == m_handler;
-        if ( firstStart ) {
+        if ( success && firstStart ) {
             m_handler = new Handler();
 
             success = m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
@@ -2631,9 +2608,7 @@ public class BoardDelegate extends DelegateBase
 
     private boolean inArchiveGroup()
     {
-        String archiveName = LocUtils
-            .getString( m_activity, R.string.group_name_archive );
-        long archiveGroup = DBUtils.getGroup( m_activity, archiveName );
+        long archiveGroup = DBUtils.getArchiveGroup( m_activity );
         long curGroup = DBUtils.getGroupForGame( m_activity, m_rowid );
         return curGroup == archiveGroup;
     }
@@ -2770,18 +2745,21 @@ public class BoardDelegate extends DelegateBase
         GamePtr gamePtr = null;
         GameSummary summary = null;
         CurGameInfo gi = null;
-        JNIThread thread = JNIThread.getRetained( rowID );
+        JNIThread thread = JNIThread.getRetained( activity, rowID );
         if ( null != thread ) {
             gamePtr = thread.getGamePtr().retain();
             summary = thread.getSummary();
             gi = thread.getGI();
         } else {
-            GameLock lock = new GameLock( rowID, false );
-            if ( lock.tryLock() ) {
-                summary = DBUtils.getSummary( activity, lock );
-                gi = new CurGameInfo( activity );
-                gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
-                lock.unlock();
+            try ( GameLock lock = GameLock.getFor( rowID ).tryLockRO() ) {
+                if ( null != lock ) {
+                    summary = DBUtils.getSummary( activity, lock );
+                    gi = new CurGameInfo( activity );
+                    gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+                } else {
+                    DbgUtils.toastNoLock( TAG, activity,
+                                          "setupRematchFor(%d)", rowID );
+                }
             }
         }
 

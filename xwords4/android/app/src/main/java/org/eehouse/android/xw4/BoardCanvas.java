@@ -31,7 +31,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.BoardDims;
 import org.eehouse.android.xw4.jni.CommonPrefs;

@@ -92,8 +92,8 @@
   <string name="key_udp_interval">key_udp_interval</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
-  <!-- <string name="key_notagain_sms_ready">key_notagain_sms_ready</string> -->
   <string name="key_notagain_newselect">key_notagain_newselect</string>
+  <string name="key_notagain_emptybtscan">key_notagain_emptybtscan</string>
   <string name="key_notagain_backclears">key_notagain_backclears</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
   <string name="key_notagain_relay">key_notagain_relay</string>
@@ -136,7 +136,6 @@
   <string name="key_invite_multi">key_invite_multi</string>
   <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
   <string name="key_notagain_dfltname">key_notagain_dfltname</string>
-
   <string name="key_na_comms_bt">key_na_comms_bt</string>
   <string name="key_na_comms_p2p">key_na_comms_p2p</string>
   <string name="key_na_comms_sms">key_na_comms_sms</string>

@@ -33,7 +33,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.JNIThread;

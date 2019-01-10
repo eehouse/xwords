@@ -28,8 +28,7 @@ import java.util.Arrays;
 
 import org.json.JSONObject;
 
-import junit.framework.Assert;
-
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.Log;

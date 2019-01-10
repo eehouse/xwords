@@ -24,8 +24,7 @@ import android.graphics.Rect;
 
 import java.util.Arrays;
 
-import junit.framework.Assert;
-
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Utils;
@@ -58,6 +57,8 @@ public class XwJNI {
                    this, m_rowid, m_refCount );
             return this;
         }
+
+        public long getRowid() { return m_rowid; }
 
         // Force (via an assert in finalize() below) that this is called. It's
         // better if jni stuff isn't being done on the finalizer thread
@@ -365,6 +366,7 @@ public class XwJNI {
     public static native void server_handleUndo( GamePtr gamePtr );
     public static native boolean server_do( GamePtr gamePtr );
     public static native void server_tilesPicked( GamePtr gamePtr, int player, int[] tiles );
+    public static native int server_countTilesInPool( GamePtr gamePtr );
 
     public static native String server_formatDictCounts( GamePtr gamePtr, int nCols );
     public static native boolean server_getGameIsOver( GamePtr gamePtr );

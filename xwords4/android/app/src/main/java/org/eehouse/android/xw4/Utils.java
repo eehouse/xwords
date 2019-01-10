@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
@@ -38,6 +39,8 @@ import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Looper;
 import android.provider.ContactsContract.PhoneLookup;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
@@ -71,7 +74,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -254,7 +256,9 @@ public class Utils {
             defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        Notification notification = new NotificationCompat.Builder( context )
+        String channelID = Channels.getChannelID( context, Channels.ID.GAME_EVENT );
+        Notification notification =
+            new NotificationCompat.Builder( context, channelID )
             .setContentIntent( pi )
             .setSmallIcon( R.drawable.notify )
             //.setTicker(body)
@@ -526,6 +530,11 @@ public class Utils {
         return result;
     }
 
+    public static boolean isOnUIThread()
+    {
+        return Looper.getMainLooper().equals(Looper.myLooper());
+    }
+
     public static String base64Encode( byte[] in )
     {
         return Base64.encodeToString( in, Base64.NO_WRAP );
@@ -568,7 +577,7 @@ public class Utils {
 
     public static void testSerialization( Serializable obj )
     {
-        if ( BuildConfig.DEBUG ) {
+        if ( false && BuildConfig.DEBUG ) {
             String as64 = serializableToString64( obj );
             Object other = string64ToSerializable( as64 );
             Assert.assertTrue( other.equals( obj ) );
@@ -610,5 +619,4 @@ public class Utils {
             }
         }
     }
-
 }

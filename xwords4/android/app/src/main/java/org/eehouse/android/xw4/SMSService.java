@@ -34,7 +34,6 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
@@ -87,6 +86,7 @@ public class SMSService extends XWService {
     private BroadcastReceiver m_sentReceiver;
     private BroadcastReceiver m_receiveReceiver;
     private OnSharedPreferenceChangeListener m_prefsListener;
+    private SMSServiceHelper mHelper;
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
@@ -175,28 +175,28 @@ public class SMSService extends XWService {
     public static void stopService( Context context )
     {
         Intent intent = getIntentTo( context, SMSAction.STOP_SELF );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     // NBS case
     public static void handleFrom( Context context, byte[] buffer,
                                    String phone )
     {
-        Intent intent = getIntentTo( context, SMSAction.HANDLEDATA );
-        intent.putExtra( BUFFER, buffer );
-        intent.putExtra( PHONE, phone );
-        context.startService( intent );
+        Intent intent = getIntentTo( context, SMSAction.HANDLEDATA )
+            .putExtra( BUFFER, buffer )
+            .putExtra( PHONE, phone );
+        startService( context, intent );
     }
 
     public static void inviteRemote( Context context, String phone,
                                      NetLaunchInfo nli )
     {
-        Intent intent = getIntentTo( context, SMSAction.INVITE );
-        intent.putExtra( PHONE, phone );
         Log.w( TAG, "inviteRemote(%s, '%s')", phone, nli );
         byte[] data = nli.asByteArray();
-        intent.putExtra( GAMEDATA_BA, data );
-        context.startService( intent );
+        Intent intent = getIntentTo( context, SMSAction.INVITE )
+            .putExtra( PHONE, phone )
+            .putExtra( GAMEDATA_BA, data );
+        startService( context, intent );
     }
 
     public static int sendPacket( Context context, String phone,
@@ -204,11 +204,11 @@ public class SMSService extends XWService {
     {
         int nSent = -1;
         if ( XWPrefs.getSMSEnabled( context ) ) {
-            Intent intent = getIntentTo( context, SMSAction.SEND );
-            intent.putExtra( PHONE, phone );
-            intent.putExtra( MultiService.GAMEID, gameID );
-            intent.putExtra( BINBUFFER, binmsg );
-            context.startService( intent );
+            Intent intent = getIntentTo( context, SMSAction.SEND )
+                .putExtra( PHONE, phone )
+                .putExtra( MultiService.GAMEID, gameID )
+                .putExtra( BINBUFFER, binmsg );
+            startService( context, intent );
             nSent = binmsg.length;
         } else {
             Log.i( TAG, "sendPacket: dropping because SMS disabled" );
@@ -218,17 +218,17 @@ public class SMSService extends XWService {
 
     public static void gameDied( Context context, int gameID, String phone )
     {
-        Intent intent = getIntentTo( context, SMSAction.REMOVE );
-        intent.putExtra( PHONE, phone );
-        intent.putExtra( MultiService.GAMEID, gameID );
-        context.startService( intent );
+        Intent intent = getIntentTo( context, SMSAction.REMOVE )
+            .putExtra( PHONE, phone )
+            .putExtra( MultiService.GAMEID, gameID );
+        startService( context, intent );
     }
 
     public static void onGameDictDownload( Context context, Intent intentOld )
     {
         Intent intent = getIntentTo( context, SMSAction.ADDED_MISSING );
         intent.fillIn( intentOld, 0 );
-        context.startService( intent );
+        startService( context, intent );
     }
 
     public static String fromPublicFmt( String msg )
@@ -256,10 +256,16 @@ public class SMSService extends XWService {
         return result;
     }
 
+    private static void startService( Context context, Intent intent )
+    {
+        Log.d( TAG, "startService(%s)", intent );
+        context.startService( intent );
+    }
+
     private static Intent getIntentTo( Context context, SMSAction cmd )
     {
-        Intent intent = new Intent( context, SMSService.class );
-        intent.putExtra( CMD_STR, cmd.ordinal() );
+        Intent intent = new Intent( context, SMSService.class )
+            .putExtra( CMD_STR, cmd.ordinal() );
         return intent;
     }
 
@@ -273,14 +279,9 @@ public class SMSService extends XWService {
     }
 
     @Override
-    protected MultiMsgSink getSink( long rowid )
-    {
-        return new SMSMsgSink( this );
-    }
-
-    @Override
     public void onCreate()
     {
+        mHelper = new SMSServiceHelper( this );
         if ( Utils.deviceSupportsSMS( this ) ) {
             registerReceivers();
         } else {
@@ -312,6 +313,7 @@ public class SMSService extends XWService {
     @Override
     public int onStartCommand( Intent intent, int flags, int startId )
     {
+        // Log.d( TAG, "onStartCommand(%s)", intent );
         int result = Service.START_NOT_STICKY;
         if ( null != intent ) {
             int ordinal = intent.getIntExtra( CMD_STR, -1 );
@@ -463,10 +465,10 @@ public class SMSService extends XWService {
             }
             break;
         case DEATH:
-            postEvent( MultiEvent.MESSAGE_NOGAME, msg.gameID );
+            mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, msg.gameID );
             break;
         case ACK_INVITE:
-            postEvent( MultiEvent.NEWGAME_SUCCESS, msg.gameID );
+            mHelper.postEvent( MultiEvent.NEWGAME_SUCCESS, msg.gameID );
             break;
         default:
             Log.w( TAG, "unexpected cmd %s", msg.cmd );
@@ -483,26 +485,17 @@ public class SMSService extends XWService {
             for ( SMSProtoMsg msg : msgs ) {
                 receive( msg, senderPhone );
             }
-            postEvent( MultiEvent.SMS_RECEIVE_OK );
+            mHelper.postEvent( MultiEvent.SMS_RECEIVE_OK );
         } else {
             Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
                    senderPhone );
         }
     }
 
-    @Override
-    protected void postNotification( String phone, int gameID, long rowid )
-    {
-        String owner = Utils.phoneToContact( this, phone, true );
-        String body = LocUtils.getString( this, R.string.new_name_body_fmt,
-                                          owner );
-        GameUtils.postInvitedNotification( this, gameID, body, rowid );
-    }
-
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
         if ( nli != null ) {
-            handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
+            mHelper.handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
             ackInvite( phone, nli.gameID() );
         }
     }
@@ -548,7 +541,7 @@ public class SMSService extends XWService {
                 } catch ( NullPointerException npe ) {
                     Assert.fail();      // shouldn't be trying to do this!!!
                 } catch ( java.lang.SecurityException se ) {
-                    postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
+                    mHelper.postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
                 } catch ( Exception ee ) {
                     Log.ex( TAG, ee );
                 }
@@ -569,11 +562,12 @@ public class SMSService extends XWService {
 
     private boolean feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
     {
-        ReceiveResult rslt = receiveMessage( this, gameID, null, msg, addr );
-        if ( ReceiveResult.GAME_GONE == rslt ) {
+        XWServiceHelper.ReceiveResult rslt = mHelper
+            .receiveMessage( this, gameID, null, msg, addr );
+        if ( XWServiceHelper.ReceiveResult.GAME_GONE == rslt ) {
             sendDiedPacket( addr.sms_phone, gameID );
         }
-        return rslt == ReceiveResult.OK;
+        return rslt == XWServiceHelper.ReceiveResult.OK;
     }
 
     private void registerReceivers()
@@ -584,15 +578,15 @@ public class SMSService extends XWService {
                 {
                     switch ( getResultCode() ) {
                     case Activity.RESULT_OK:
-                        postEvent( MultiEvent.SMS_SEND_OK );
+                        mHelper.postEvent( MultiEvent.SMS_SEND_OK );
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        postEvent( MultiEvent.SMS_SEND_FAILED_NORADIO );
+                        mHelper.postEvent( MultiEvent.SMS_SEND_FAILED_NORADIO );
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
                     default:
                         Log.w( TAG, "FAILURE!!!" );
-                        postEvent( MultiEvent.SMS_SEND_FAILED );
+                        mHelper.postEvent( MultiEvent.SMS_SEND_FAILED );
                         break;
                     }
                 }
@@ -647,6 +641,30 @@ public class SMSService extends XWService {
         public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
         {
             return sendPacket( addr.sms_phone, gameID, buf );
+        }
+    }
+
+    private class SMSServiceHelper extends XWServiceHelper {
+        private Service mService;
+
+        SMSServiceHelper( Service service ) {
+            super( service );
+            mService = service;
+        }
+
+        @Override
+        protected MultiMsgSink getSink( long rowid )
+        {
+            return new SMSMsgSink( SMSService.this );
+        }
+
+        @Override
+        protected void postNotification( String phone, int gameID, long rowid )
+        {
+            String owner = Utils.phoneToContact( mService, phone, true );
+            String body = LocUtils.getString( mService, R.string.new_name_body_fmt,
+                                              owner );
+            GameUtils.postInvitedNotification( mService, gameID, body, rowid );
         }
     }
 }

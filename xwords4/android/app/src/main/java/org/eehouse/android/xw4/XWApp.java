@@ -21,6 +21,11 @@
 package org.eehouse.android.xw4;
 
 import android.app.Application;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.OnLifecycleEvent;
+import android.arch.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
@@ -30,9 +35,10 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.UUID;
 
-import junit.framework.Assert;
 
-public class XWApp extends Application {
+import static android.arch.lifecycle.Lifecycle.Event.ON_ANY;
+
+public class XWApp extends Application implements LifecycleObserver {
     private static final String TAG = XWApp.class.getSimpleName();
 
     public static final boolean BTSUPPORTED = true;
@@ -44,8 +50,6 @@ public class XWApp extends Application {
     public static final boolean LOCUTILS_ENABLED = false;
     public static final boolean CONTEXT_MENUS_ENABLED = true;
     public static final boolean OFFER_DUALPANE = false;
-    // BT class "COMPUTERS" includes tablets like the Nexus 9
-    public static final boolean BT_SCAN_COMPUTERS = true;
 
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
@@ -64,6 +68,8 @@ public class XWApp extends Application {
         s_context = this;
         Assert.assertTrue( s_context == s_context.getApplicationContext() );
         super.onCreate();
+
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
         // This one line should always get logged even if logging is
         // off -- because logging is on by default until logEnable is
@@ -85,10 +91,23 @@ public class XWApp extends Application {
         }
         UpdateCheckReceiver.restartTimer( this );
 
-        BTService.startService( this );
         RelayService.startService( this );
         GCMIntentService.init( this );
         WiDirWrapper.init( this );
+    }
+
+    @OnLifecycleEvent(ON_ANY)
+    public void onAny( LifecycleOwner source,  Lifecycle.Event event )
+    {
+        Log.d( TAG, "onAny(%s)", event );
+        switch( event ) {
+        case ON_RESUME:
+            BTService.onAppToForeground( this );
+            break;
+        case ON_STOP:
+            BTService.onAppToBackground( this );
+            break;
+        }
     }
 
     // This is called on emulator only, but good for ensuring no memory leaks

@@ -29,7 +29,6 @@ import com.google.android.gcm.GCMRegistrar;
 
 import org.json.JSONArray;
 
-import junit.framework.Assert;
 
 public class GCMIntentService extends GCMBaseIntentService {
     private static final String TAG = GCMIntentService.class.getSimpleName();

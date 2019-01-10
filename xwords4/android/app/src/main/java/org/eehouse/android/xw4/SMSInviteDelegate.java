@@ -36,7 +36,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -299,7 +298,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                 }
             });
 
-        updateListAdapter( m_phoneRecs.toArray( new PhoneRec[m_phoneRecs.size()] ) );
+        updateListAdapter( m_phoneRecs );
         tryEnable();
     }
 

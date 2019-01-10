@@ -33,7 +33,6 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
@@ -367,22 +366,27 @@ public class DBUtils {
     public static void addRematchInfo( Context context, long rowid, String btAddr,
                                        String phone, String relayID, String p2pAddr )
     {
-        GameLock lock = new GameLock( rowid, true ).lock();
-        GameSummary summary = getSummary( context, lock );
-        if ( null != btAddr ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+        try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
+            Assert.assertNotNull( lock );
+            if ( null != lock ) {
+                GameSummary summary = getSummary( context, lock );
+                if ( null != btAddr ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+                }
+                if ( null != phone ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
+                }
+                if ( null != relayID ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+                }
+                if ( null != p2pAddr ) {
+                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr );
+                }
+                saveSummary( context, lock, summary );
+            } else {
+                Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
+            }
         }
-        if ( null != phone ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
-        }
-        if ( null != relayID ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
-        }
-        if ( null != p2pAddr ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr );
-        }
-        saveSummary( context, lock, summary );
-        lock.unlock();
     }
 
     public static int countGamesUsingLang( Context context, int lang )
@@ -1053,7 +1057,8 @@ public class DBUtils {
 
             setCached( rowid, null ); // force reread
 
-            lock = new GameLock( rowid, true ).lock();
+            lock = GameLock.getFor( rowid ).tryLock();
+            Assert.assertNotNull( lock );
             notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
 
@@ -1114,14 +1119,14 @@ public class DBUtils {
 
     public static void deleteGame( Context context, long rowid )
     {
-        GameLock lock = new GameLock( rowid, true ).lock( 300 );
-        if ( null != lock ) {
-            deleteGame( context, lock );
-            lock.unlock();
-        } else {
-            Log.e( TAG, "deleteGame: unable to lock rowid %d", rowid );
-            if ( BuildConfig.DEBUG ) {
-                Assert.fail();
+        try ( GameLock lock = GameLock.getFor( rowid ).lock( 300 ) ) {
+            if ( null != lock ) {
+                deleteGame( context, lock );
+            } else {
+                Log.e( TAG, "deleteGame: unable to lock rowid %d", rowid );
+                if ( BuildConfig.DEBUG ) {
+                    Assert.fail();
+                }
             }
         }
     }
@@ -1786,6 +1791,14 @@ public class DBUtils {
         invalGroupsCache();
     }
 
+    public static long getArchiveGroup( Context context )
+    {
+        String archiveName = LocUtils
+            .getString( context, R.string.group_name_archive );
+        long archiveGroup = getGroup( context, archiveName );
+        return archiveGroup;
+    }
+
     // Change group id of a game
     public static void moveGame( Context context, long rowid, long groupID )
     {
@@ -2395,7 +2408,7 @@ public class DBUtils {
 
     public static void setIntFor( Context context, String key, int value )
     {
-        // Log.df( "DBUtils.setIntFor(key=%s, val=%d)", key, value );
+        // Log.d( TAG, "DBUtils.setIntFor(key=%s, val=%d)", key, value );
         String asStr = String.format( "%d", value );
         setStringFor( context, key, asStr );
     }
@@ -2406,7 +2419,7 @@ public class DBUtils {
         if ( null != asStr ) {
             dflt = Integer.parseInt( asStr );
         }
-        // Log.df( "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
+        // Log.d( TAG, "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
         return dflt;
     }
 

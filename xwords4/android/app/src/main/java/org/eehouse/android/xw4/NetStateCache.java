@@ -29,7 +29,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
@@ -54,17 +53,21 @@ public class NetStateCache {
 
     public static void register( Context context, StateChangedIf proc )
     {
-        initIfNot( context );
-        synchronized( s_ifs ) {
-            s_ifs.add( proc );
+        if ( Utils.isOnUIThread() ) {
+            initIfNot( context );
+            synchronized( s_ifs ) {
+                s_ifs.add( proc );
+            }
         }
     }
 
     public static void unregister( Context context, StateChangedIf proc )
     {
-        initIfNot( context );
-        synchronized( s_ifs ) {
-            s_ifs.remove( proc );
+        if ( Utils.isOnUIThread() ) {
+            initIfNot( context );
+            synchronized( s_ifs ) {
+                s_ifs.remove( proc );
+            }
         }
     }
 
@@ -178,8 +181,6 @@ public class NetStateCache {
 
         public PvtBroadcastReceiver()
         {
-            DbgUtils.assertOnUIThread();
-            mHandler = new Handler();
             mLastStateSent = s_netAvail;
         }
 
@@ -187,6 +188,11 @@ public class NetStateCache {
         public void onReceive( Context context, Intent intent )
         {
             DbgUtils.assertOnUIThread();
+
+            if ( null == mHandler ) {
+                DbgUtils.assertOnUIThread();
+                mHandler = new Handler();
+            }
 
             if ( intent.getAction().
                  equals( ConnectivityManager.CONNECTIVITY_ACTION)) {

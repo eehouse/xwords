@@ -29,6 +29,9 @@ import android.content.Intent;
 public class BTReceiver extends BroadcastReceiver {
     private static final String TAG = BTReceiver.class.getSimpleName();
 
+    // This string is also used in AndroidManifest (as a string literal)
+    static final String ACTION_STOP_BT = "org.eehouse.android.ACTION_STOP_BT";
+
     @Override
     public void onReceive( Context context, Intent intent )
     {
@@ -37,9 +40,14 @@ public class BTReceiver extends BroadcastReceiver {
             Log.d( TAG, "BTReceiver.onReceive(action=%s, intent=%s)",
                    action, intent.toString() );
 
-            if ( action.equals( BluetoothDevice.ACTION_ACL_CONNECTED ) ) {
-                BTService.startService( context );
-            } else if ( action.equals( BluetoothAdapter.ACTION_STATE_CHANGED ) ) {
+            switch (action ) {
+            case ACTION_STOP_BT:
+                BTService.stopBackground( context );
+                break;
+            case BluetoothDevice.ACTION_ACL_CONNECTED:
+                BTService.onACLConnected( context );
+                break;
+            case BluetoothAdapter.ACTION_STATE_CHANGED:
                 int newState =
                     intent.getIntExtra( BluetoothAdapter.EXTRA_STATE, -1 );
                 switch ( newState ) {

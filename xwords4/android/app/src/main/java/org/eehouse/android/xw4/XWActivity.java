@@ -40,7 +40,6 @@ import android.widget.ListView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-import junit.framework.Assert;
 
 public class XWActivity extends FragmentActivity
     implements Delegator, DlgDelegate.DlgClickNotify {

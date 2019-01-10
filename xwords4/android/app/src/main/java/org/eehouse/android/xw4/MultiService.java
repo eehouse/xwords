@@ -26,7 +26,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -88,7 +87,6 @@ public class MultiService {
                              SMS_SEND_FAILED_NOPERMISSION,
 
                              BT_GAME_CREATED,
-                             BT_ERR_COUNT,
 
                              RELAY_ALERT,
     };

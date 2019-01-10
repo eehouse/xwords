@@ -45,7 +45,6 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
@@ -1062,23 +1061,6 @@ public class DictsDelegate extends ListDelegateBase
             items[nextI++] = m_locNames[loc.ordinal()];
         }
         return items;
-    }
-
-    // private static Intent mkDownloadIntent( Context context, String dict_url )
-    // {
-        // Uri uri = Uri.parse( dict_url );
-        // Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-        // intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        // return intent;
-    // }
-
-    private static Intent mkDownloadIntent( Context context,
-                                            int lang, String dict )
-    {
-        Assert.fail();
-        return null;
-        // String dict_url = Utils.makeDictUri( context, lang, dict );
-        // return mkDownloadIntent( context, dict_url );
     }
 
     public static void downloadForResult( Delegator delegator, RequestCode requestCode,

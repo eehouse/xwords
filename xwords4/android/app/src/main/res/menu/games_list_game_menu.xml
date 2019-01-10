@@ -25,6 +25,9 @@
     <item android:id="@+id/games_game_copy"
           android:title="@string/list_item_copy"
           />
+    <item android:id="@+id/games_game_netstats"
+          android:title="@string/list_item_netstats"
+          />
     <item android:id="@+id/games_game_select"
           android:title="@string/list_item_select"
           />

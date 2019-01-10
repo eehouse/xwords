@@ -247,9 +247,6 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
             case INVITE:
                 (*storage->procs->inviteReceived)( storage->procClosure,
                                                    (NetLaunchInfo*)msg->data, addr );
-                                                   /* gameName,  */
-                                                   /* gameID, dictLang, dictName, nPlayers, */
-                                                   /* nMissing, forceChannel, addr ); */
                 break;
             default:
                 XP_ASSERT(0);   /* implement me!! */

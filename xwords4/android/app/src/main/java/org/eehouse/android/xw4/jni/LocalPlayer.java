@@ -25,8 +25,7 @@ import android.text.TextUtils;
 
 import java.io.Serializable;
 
-import junit.framework.Assert;
-
+import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;

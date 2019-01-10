@@ -652,11 +652,44 @@ gtkSocketAdded( void* closure, int newSock, GIOFunc proc )
 } /* gtk_socket_changed */
 
 
+/* Stuff common to receiving invitations */
+static void
+gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
+                const CommsAddrRec* returnAddr )
+{
+    LaunchParams* params = apg->params;
+    CurGameInfo gi = {0};
+    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+
+    gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH );
+    gi.gameID = invite->gameID;
+    gi.dictLang = invite->lang;
+    gi.forceChannel = invite->forceChannel;
+    gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
+    replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict );
+
+    GtkGameGlobals* globals = malloc( sizeof(*globals) );
+    params->needsNewGame = XP_FALSE;
+    initGlobals( globals, params, &gi );
+
+    if ( !!returnAddr ) {
+        globals->cGlobals.addr = *returnAddr;
+    } else {
+        nli_makeAddrRec( invite, &globals->cGlobals.addr );
+    }
+
+    GtkWidget* gameWindow = globals->window;
+    globals->cGlobals.selRow = -1;
+    recordOpened( apg, globals );
+    gtk_widget_show( gameWindow );
+
+    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+}
+
 static void
 relayInviteReceived( void* closure, NetLaunchInfo* invite )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    LaunchParams* params = apg->params;
 
     XP_U32 gameID = invite->gameID;
     sqlite3_int64 rowids[1];
@@ -666,28 +699,7 @@ relayInviteReceived( void* closure, NetLaunchInfo* invite )
     if ( 0 < nRowIDs ) {
         gtktell( apg->window, "Duplicate invite rejected" );
     } else {
-        CurGameInfo gi = {0};
-        gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
-
-        gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH );
-        gi.gameID = gameID;
-        gi.dictLang = invite->lang;
-        gi.forceChannel = invite->forceChannel;
-        replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict );
-
-        GtkGameGlobals* globals = malloc( sizeof(*globals) );
-        params->needsNewGame = XP_FALSE;
-        initGlobals( globals, params, &gi );
-
-        nli_makeAddrRec( invite, &globals->cGlobals.addr );
-        // globals->cGlobals.addr = *returnAddr;
-
-        GtkWidget* gameWindow = globals->window;
-        globals->cGlobals.selRow = -1;
-        recordOpened( apg, globals );
-        gtk_widget_show( gameWindow );
-
-        gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+        gameFromInvite( apg, invite, NULL );
     }
 }
 
@@ -746,41 +758,16 @@ gtkNoticeRcvd( void* closure )
 }
 
 static void
-/* smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName),  */
-/*                    XP_U32 gameID, XP_U16 dictLang, const XP_UCHAR* dictName, */
-/*                    XP_U16 nPlayers, XP_U16 nHere, XP_U16 forceChannel, */
-/*                    const CommsAddrRec* returnAddr ) */
 smsInviteReceived( void* closure, const NetLaunchInfo* nli,
                    const CommsAddrRec* returnAddr )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    LaunchParams* params = apg->params;
     XP_LOGF( "%s(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, "
              "nHere=%d, forceChannel=%d)", __func__, nli->gameName,
              nli->gameID, nli->dict, nli->nPlayersT,
              nli->nPlayersH, nli->forceChannel );
 
-    CurGameInfo gi = {0};
-    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
-
-    gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH );
-    gi.gameID = nli->gameID;
-    gi.dictLang = nli->lang;
-    gi.forceChannel = nli->forceChannel;
-    gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
-    replaceStringIfDifferent( params->mpool, &gi.dictName, nli->dict );
-
-    GtkGameGlobals* globals = malloc( sizeof(*globals) );
-    params->needsNewGame = XP_FALSE;
-    initGlobals( globals, params, &gi );
-    globals->cGlobals.addr = *returnAddr;
-
-    GtkWidget* gameWindow = globals->window;
-    globals->cGlobals.selRow = -1;
-    recordOpened( apg, globals );
-    gtk_widget_show( gameWindow );
-
-    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+    gameFromInvite( apg, nli, returnAddr );
 }
 
 static void

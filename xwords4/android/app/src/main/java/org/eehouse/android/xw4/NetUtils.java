@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -276,8 +275,10 @@ public class NetUtils {
                     }
                     result = new String( bas.toByteArray() );
                 } else {
-                    Log.w( TAG, "runConn: responseCode: %d for url: %s",
-                           responseCode, conn.getURL() );
+                    Log.w( TAG, "runConn: responseCode: %d/%s for url: %s",
+                           responseCode, conn.getResponseMessage(),
+                           conn.getURL() );
+                    logErrorStream( conn.getErrorStream() );
                 }
             } catch ( java.net.ProtocolException pe ) {
                 Log.ex( TAG, pe );
@@ -287,6 +288,24 @@ public class NetUtils {
         }
 
         return result;
+    }
+
+    private static void logErrorStream( InputStream is )
+    {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            for ( ; ; ) {
+                int length = is.read( buffer );
+                if ( length == -1 ) {
+                    break;
+                }
+                baos.write( buffer, 0, length );
+            }
+            Log.e( TAG, baos.toString() );
+        } catch (Exception ex) {
+            Log.e( TAG, ex.getMessage() );
+        }
     }
 
     // This handles multiple params but only every gets passed one!

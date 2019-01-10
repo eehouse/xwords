@@ -346,6 +346,10 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "No tiles selected; trade cancelled.";
         break;
 
+    case ERR_TOO_MANY_TRADE:
+        message = "More tiles selected than remain in pool.";
+        break;
+
     case ERR_NO_HINT_FOUND:
         message = "Unable to suggest any moves.";
         break;

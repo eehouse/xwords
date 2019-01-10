@@ -34,7 +34,6 @@ import android.view.View;
 
 import java.io.Serializable;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 
@@ -325,6 +324,11 @@ public class DlgDelegate {
         m_dlgt = dlgt;
         m_clickCallback = callback;
         m_handler = new Handler();
+    }
+
+    void onPausing()
+    {
+        stopProgress();
     }
 
     private void showOKOnlyDialogThen( String msg, Action action,

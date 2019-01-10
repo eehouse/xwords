@@ -5,8 +5,8 @@
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               >
-  <Button android:id="@+id/button_add"
-          android:text="@string/bt_pick_addall_button"
+  <Button android:id="@+id/button_scan"
+          android:text="@string/button_scan"
           style="@style/evenly_spaced_horizontal"
           />
 

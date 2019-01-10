@@ -29,7 +29,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.View;
 
-import junit.framework.Assert;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

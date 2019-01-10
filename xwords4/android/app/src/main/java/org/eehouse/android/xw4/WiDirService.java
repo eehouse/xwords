@@ -69,7 +69,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-import junit.framework.Assert;
 
 public class WiDirService extends XWService {
     private static final String TAG = WiDirService.class.getSimpleName();
@@ -125,6 +124,7 @@ public class WiDirService extends XWService {
     private static Set<String> s_peersSet;
 
     private P2pMsgSink m_sink;
+    private WiDirServiceHelper mHelper;
 
     public interface DevSetListener {
         void setChanged( Map<String, String> macToName );
@@ -134,6 +134,7 @@ public class WiDirService extends XWService {
     public void onCreate()
     {
         m_sink = new P2pMsgSink();
+        mHelper = new WiDirServiceHelper(this);
     }
 
     @Override
@@ -213,6 +214,8 @@ public class WiDirService extends XWService {
         } catch ( NoClassDefFoundError ndf ) { // old os version
             sHavePermission = false;
         } catch ( SecurityException se ) {               // perm not in manifest
+            sHavePermission = false;
+        } catch ( NullPointerException npe ) { // Seeing this on Oreo emulator
             sHavePermission = false;
         }
     }
@@ -750,8 +753,9 @@ public class WiDirService extends XWService {
         CommsAddrRec addr = new CommsAddrRec( CommsConnType.COMMS_CONN_P2P )
             .setP2PParams( macAddress );
 
-        ReceiveResult rslt = receiveMessage( this, gameID, m_sink, data, addr );
-        if ( ReceiveResult.GAME_GONE == rslt ) {
+        XWServiceHelper.ReceiveResult rslt = mHelper
+            .receiveMessage( this, gameID, m_sink, data, addr );
+        if ( XWServiceHelper.ReceiveResult.GAME_GONE == rslt ) {
             sendNoGame( null, macAddress, gameID );
         }
     }
@@ -763,27 +767,15 @@ public class WiDirService extends XWService {
         NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, nliData );
         String returnMac = intent.getStringExtra( KEY_SRC );
 
-        if ( !handleInvitation( nli, returnMac, DictFetchOwner.OWNER_P2P ) ) {
+        if ( !mHelper.handleInvitation( nli, returnMac, DictFetchOwner.OWNER_P2P ) ) {
             Log.d( TAG, "handleInvitation() failed" );
         }
-    }
-
-    @Override
-    void postNotification( String device, int gameID, long rowid )
-    {
-        Log.e( TAG, "postNotification() doing nothing" );
-    }
-
-    @Override
-    MultiMsgSink getSink( long rowid )
-    {
-        return m_sink;
     }
 
     private void handleGameGone( Intent intent )
     {
         int gameID = intent.getIntExtra( KEY_GAMEID, 0 );
-        postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+        mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
     }
 
     private void makeGame( NetLaunchInfo nli, String senderMac )
@@ -793,7 +785,7 @@ public class WiDirService extends XWService {
             CommsAddrRec addr = nli.makeAddrRec( this );
             long rowid = GameUtils.makeNewMultiGame( this, nli,
                                                      m_sink,
-                                                     getUtilCtxt() );
+                                                     mHelper.getUtilCtxt() );
             if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                 if ( null != nli.gameName && 0 < nli.gameName.length() ) {
                     DBUtils.setName( this, rowid, nli.gameName );
@@ -1204,5 +1196,24 @@ public class WiDirService extends XWService {
 
     private class P2pMsgSink extends MultiMsgSink {
         public P2pMsgSink() { super( WiDirService.this ); }
+    }
+
+    private class WiDirServiceHelper extends XWServiceHelper {
+
+        WiDirServiceHelper( Service service ) {
+            super( service );
+        }
+
+        @Override
+        MultiMsgSink getSink( long rowid )
+        {
+            return m_sink;
+        }
+
+        @Override
+        void postNotification( String device, int gameID, long rowid )
+        {
+            Log.e( TAG, "postNotification() doing nothing" );
+        }
     }
 }

@@ -702,10 +702,10 @@ and_dutil_deviceRegistered( XW_DUtilCtxt* duc, DevIDType typ,
                             const XP_UCHAR* idRelay )
 {
     DUTIL_CBK_HEADER( "deviceRegistered",
-                      "(L" PKG_PATH("jni/UtilCtxt$DevIDType") ";Ljava/lang/String;)V" );
+                      "(L" PKG_PATH("jni/DUtilCtxt$DevIDType") ";Ljava/lang/String;)V" );
     jstring jstr = (*env)->NewStringUTF( env, idRelay );
     jobject jtyp = intToJEnum( env, typ, 
-                               PKG_PATH("jni/UtilCtxt$DevIDType") );
+                               PKG_PATH("jni/DUtilCtxt$DevIDType") );
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, jtyp, jstr );
     deleteLocalRefs( env, jstr, jtyp, DELETE_NO_REF );
     DUTIL_CBK_TAIL();

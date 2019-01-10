@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.Environment;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;

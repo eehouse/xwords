@@ -44,7 +44,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
@@ -86,6 +85,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
+    private static final String BACKGROUND_EXTRA = "bkgrnd";
     private static final String GAMEID_EXTRA = "gameid";
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
     private static final String REMATCH_DICT_EXTRA = "rm_dict";
@@ -987,6 +987,16 @@ public class GamesListDelegate extends ListDelegateBase
             } );
 
         updateField();
+
+        // RECEIVE_SMS is required now (Oreo/SDK_26) but wasn't
+        // before. There's logic elsewhere to ask for it AND SEND_SMS, but if
+        // the user's already granted SEND_SMS we can get RECEIVE_SMS just by
+        // asking (OS will grant without user interaction) since they're in
+        // the same group. So just do it now.  This code can be removed
+        // later...
+        if ( Perms23.havePermission( Perm.SEND_SMS ) ) {
+            Perms23.tryGetPerms( this, Perm.RECEIVE_SMS, 0, Action.SKIP_CALLBACK );
+        }
     } // init
 
     @Override
@@ -1221,14 +1231,14 @@ public class GamesListDelegate extends ListDelegateBase
                                final Object ... args )
     {
         switch( event ) {
-        case HOST_PONGED:
-            post( new Runnable() {
-                    public void run() {
-                        DbgUtils.showf( m_activity,
-                                        "Pong from %s", args[0].toString() );
-                    }
-                });
-            break;
+        // case HOST_PONGED:
+        //     post( new Runnable() {
+        //             public void run() {
+        //                 DbgUtils.showf( m_activity,
+        //                                 "Pong from %s", args[0].toString() );
+        //             }
+        //         });
+        //     break;
         case BT_GAME_CREATED:
             post( new Runnable() {
                     public void run() {
@@ -1661,9 +1671,11 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = BoardDelegate.rematchSupported( m_activity, rowID );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
-                enable = item.getSummary().isMultiGame()
+                boolean isMultiGame = item.getSummary().isMultiGame();
+                enable = isMultiGame
                     && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
+                Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
 
                 enable = !m_launchedGames.contains( rowID );
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
@@ -1767,7 +1779,7 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;
     }
 
-    private boolean handleSelGamesItem( int itemID, final long[] selRowIDs )
+    private boolean handleSelGamesItem( int itemID, long[] selRowIDs )
     {
         boolean handled = true;
         boolean dropSels = false;
@@ -1806,8 +1818,9 @@ public class GamesListDelegate extends ListDelegateBase
                 .show();
             break;
         case R.id.games_game_copy:
+            final long selRowID = selRowIDs[0];
             final GameSummary smry = GameUtils.getSummary( m_activity,
-                                                           selRowIDs[0] );
+                                                           selRowID );
             if ( smry.inRelayGame() ) {
                 makeOkOnlyBuilder( R.string.no_copy_network ).show();
             } else {
@@ -1816,14 +1829,14 @@ public class GamesListDelegate extends ListDelegateBase
                         public void run() {
                             Activity self = m_activity;
                             byte[] stream =
-                                GameUtils.savedGame( self, selRowIDs[0] );
+                                GameUtils.savedGame( self, selRowID );
                             long groupID = XWPrefs
                                 .getDefaultNewGameGroup( self );
-                            GameLock lock =
-                                GameUtils.saveNewGame( self, stream, groupID );
-                            DBUtils.saveSummary( self, lock, smry );
-                            m_mySIS.selGames.add( lock.getRowid() );
-                            lock.unlock();
+                            try ( GameLock lock =
+                                  GameUtils.saveNewGame( self, stream, groupID ) ) {
+                                DBUtils.saveSummary( self, lock, smry );
+                                m_mySIS.selGames.add( lock.getRowid() );
+                            }
                             mkListAdapter();
                         }
                     });
@@ -1836,6 +1849,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_game_rename:
             showDialogFragment( DlgID.RENAME_GAME, selRowIDs[0] );
+            break;
+
+        case R.id.games_game_netstats:
+            onStatusClicked( selRowIDs[0] );
             break;
 
             // DEBUG only
@@ -2023,9 +2040,7 @@ public class GamesListDelegate extends ListDelegateBase
         try {
             hasDicts = GameUtils.gameDictsHere( m_activity, rowid, missingNames,
                                                 missingLang );
-        } catch ( GameUtils.NoSuchGameException nsge ) {
-            hasDicts = true;    // irrelevant question
-        } catch ( GameLock.GameLockedException gle ) {
+        } catch ( GameLock.GameLockedException | GameUtils.NoSuchGameException ex ) {
             hasDicts = true;    // irrelevant question
         }
 
@@ -2096,7 +2111,8 @@ public class GamesListDelegate extends ListDelegateBase
             boolean haveDict;
             try {
                 haveDict = GameUtils.gameDictsHere( m_activity, rowid );
-            } catch ( GameLock.GameLockedException gle ) {
+            } catch ( GameLock.GameLockedException
+                      | GameUtils.NoSuchGameException gle ) {
                 haveDict = true;
             }
             if ( haveDict ) {
@@ -2237,7 +2253,12 @@ public class GamesListDelegate extends ListDelegateBase
                 int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
                 String json = extras.getString( REMATCH_PREFS_EXTRA );
 
+                // Don't save rematch in Archive group
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
+                if ( groupID == DBUtils.getArchiveGroup( m_activity ) ) {
+                    groupID = XWPrefs.getDefaultNewGameGroup( m_activity );
+                }
+
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
@@ -2264,6 +2285,14 @@ public class GamesListDelegate extends ListDelegateBase
             if ( nli.isValid() ) {
                 startNewNetGame( nli );
             }
+        }
+    }
+
+    private void tryBackgroundIntent( Intent intent )
+    {
+        if ( intent.getBooleanExtra( BACKGROUND_EXTRA, false ) ) {
+            makeOkOnlyBuilder( R.string.btservice_expl )
+                .show();
         }
     }
 
@@ -2481,6 +2510,7 @@ public class GamesListDelegate extends ListDelegateBase
         startRematch( intent );
         tryAlert( intent );
         tryNFCIntent( intent );
+        tryBackgroundIntent( intent );
     }
 
     private void doOpenGame( Object[] params )
@@ -2662,6 +2692,13 @@ public class GamesListDelegate extends ListDelegateBase
         Intent intent = new Intent( context, MainActivity.class );
         intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
                          | Intent.FLAG_ACTIVITY_SINGLE_TOP );
+        return intent;
+    }
+
+    public static Intent makeBackgroundIntent( Context context )
+    {
+        Intent intent = makeSelfIntent( context );
+        intent.putExtra( BACKGROUND_EXTRA, true );
         return intent;
     }
 

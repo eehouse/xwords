@@ -67,7 +67,10 @@ public interface UtilCtxt {
     void notifyMove( String query );
     void notifyTrade( String[] tiles );
 
-    // These oughtto be an enum but then I'd have to cons one up in C.
+    // These can't be an ENUM! The set is open-ended, with arbitrary values
+    // added to ERR_RELAY_BASE, so no way to create an enum from an int in the
+    // jni world. int has to be passed into userError(). Trust me: I
+    // tried. :-)
     static final int ERR_NONE = 0;
     static final int ERR_TILES_NOT_IN_LINE = 1;
     static final int ERR_NO_EMPTIES_IN_TURN = 2;
@@ -82,11 +85,12 @@ public interface UtilCtxt {
     static final int ERR_REG_SERVER_SANS_REMOTE = 11;
     static final int STR_NEED_BT_HOST_ADDR = 12;
     static final int ERR_NO_EMPTY_TRADE = 13;
-    static final int ERR_CANT_UNDO_TILEASSIGN = 14;
-    static final int ERR_CANT_HINT_WHILE_DISABLED = 15;
-    static final int ERR_NO_HINT_FOUND = 16;
+    static final int ERR_TOO_MANY_TRADE = 14;
+    static final int ERR_CANT_UNDO_TILEASSIGN = 15;
+    static final int ERR_CANT_HINT_WHILE_DISABLED = 16;
+    static final int ERR_NO_HINT_FOUND = 17;
 
-    static final int ERR_RELAY_BASE = 17;
+    static final int ERR_RELAY_BASE = 18;
     void userError( int id );
 
     void informMove( int turn, String expl, String words );

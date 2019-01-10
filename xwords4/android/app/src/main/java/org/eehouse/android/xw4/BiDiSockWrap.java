@@ -27,7 +27,6 @@ import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.json.JSONObject;
 
-import junit.framework.Assert;
 
 public class BiDiSockWrap {
     private static final String TAG = BiDiSockWrap.class.getSimpleName();

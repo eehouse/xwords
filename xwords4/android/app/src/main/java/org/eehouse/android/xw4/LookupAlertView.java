@@ -36,7 +36,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 

@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -30,6 +31,7 @@ import android.support.v4.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,20 +40,20 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-import junit.framework.Assert;
     
 public class Perms23 {
     private static final String TAG = Perms23.class.getSimpleName();
     
     public static enum Perm {
-        READ_PHONE_STATE("android.permission.READ_PHONE_STATE"),
-        STORAGE("android.permission.WRITE_EXTERNAL_STORAGE"),
-        SEND_SMS("android.permission.SEND_SMS"),
-        READ_CONTACTS("android.permission.READ_CONTACTS")
-        ;
+        READ_PHONE_STATE(Manifest.permission.READ_PHONE_STATE),
+        STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        SEND_SMS(Manifest.permission.SEND_SMS),
+        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
+        READ_CONTACTS(Manifest.permission.READ_CONTACTS);
 
         private String m_str;
         private Perm(String str) { m_str = str; }
+
         public String getString() { return m_str; }
         public static Perm getFor( String str ) {
             Perm result = null;
@@ -78,6 +80,12 @@ public class Perms23 {
 
         public Builder(Set<Perm> perms) {
             m_perms.addAll( perms );
+        }
+
+        public Builder( Perm[] perms ) {
+            for ( Perm perm : perms ) {
+                m_perms.add( perm );
+            }
         }
 
         public Builder( Perm perm ) {
@@ -128,7 +136,7 @@ public class Perms23 {
 
             if ( haveAll ) {
                 if ( null != cbck ) {
-                    Map<Perm, Boolean> map = new HashMap<Perm, Boolean>();
+                    Map<Perm, Boolean> map = new HashMap<>();
                     for ( Perm perm : m_perms ) {
                         map.put( perm, true );
                     }
@@ -149,36 +157,37 @@ public class Perms23 {
 
     private static class QueryInfo {
         private Action m_action;
-        private Perm m_perm;
+        private Perm[] m_perms;
         private DelegateBase m_delegate;
         private String m_rationaleMsg;
         private Object[] m_params;
 
         private QueryInfo( DelegateBase delegate, Action action,
-                           Perm perm, String msg, Object[] params ) {
+                           Perm[] perms, String msg, Object[] params ) {
             m_delegate = delegate;
             m_action = action;
-            m_perm = perm;
+            m_perms = perms;
             m_rationaleMsg = msg;
             m_params = params;
         }
 
         private QueryInfo( DelegateBase delegate, Object[] params )
         {
-            this( delegate, (Action)params[0], (Perm)params[1], (String)params[2],
+            this( delegate, (Action)params[0], (Perm[])params[1], (String)params[2],
                   (Object[])params[3] );
         }
 
         private Object[] getParams()
         {
-            return new Object[] { m_action, m_perm, m_rationaleMsg, m_params };
+            return new Object[] { m_action, m_perms, m_rationaleMsg, m_params };
         }
 
         private void doIt( boolean showRationale )
         {
-            Builder builder = new Builder( m_perm );
+            Builder builder = new Builder( m_perms );
             if ( showRationale && null != m_rationaleMsg ) {
                 builder.setOnShowRationale( new OnShowRationale() {
+                        @Override
                         public void onShouldShowRationale( Set<Perm> perms ) {
                             m_delegate.makeConfirmThenBuilder( m_rationaleMsg,
                                                                Action.PERMS_QUERY )
@@ -191,9 +200,21 @@ public class Perms23 {
                     } );
             }
             builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
+                    @Override
                     public void onPermissionResult( Map<Perm, Boolean> perms ) {
                         if ( Action.SKIP_CALLBACK != m_action ) {
-                            if ( perms.get( m_perm ) ) {
+                            Set<Perm> keys = perms.keySet();
+
+                            // We need all the sought perms to have been granted
+                            boolean allGood = keys.size() == m_params.length;
+                            for ( Iterator<Perm> iter = keys.iterator();
+                                  allGood && iter.hasNext(); ) {
+                                if ( !perms.get(iter.next()) ) {
+                                    allGood = false;
+                                }
+                            }
+
+                            if ( allGood ) {
                                 m_delegate.onPosButton( m_action, m_params );
                             } else {
                                 m_delegate.onNegButton( m_action, m_params );
@@ -231,22 +252,36 @@ public class Perms23 {
      * Request permissions, giving rationale once, then call with action and
      * either positive or negative, the former if permission granted.
      */
-    public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
+    public static void tryGetPerms( DelegateBase delegate, Perm[] perms, int rationaleId,
                                     final Action action, Object... params )
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
         Context context = XWApp.getContext();
-        String msg = LocUtils.getString( context, rationaleId );
-        tryGetPerms( delegate, perm, msg, action, params );
+        String msg = rationaleId == 0
+            ? null : LocUtils.getString( context, rationaleId );
+        tryGetPerms( delegate, perms, msg, action, params );
+    }
+
+    public static void tryGetPerms( DelegateBase delegate, Perm[] perms,
+                                    String rationaleMsg, final Action action,
+                                    Object... params )
+    {
+        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
+        new QueryInfo( delegate, action, perms, rationaleMsg, params )
+            .doIt( true );
     }
 
     public static void tryGetPerms( DelegateBase delegate, Perm perm,
                                     String rationaleMsg, final Action action,
                                     Object... params )
     {
-        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
-        new QueryInfo( delegate, action, perm, rationaleMsg, params )
-            .doIt( true );
+        tryGetPerms( delegate, new Perm[]{ perm }, rationaleMsg, action, params );
+    }
+
+    public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
+                                    final Action action, Object... params )
+    {
+        tryGetPerms( delegate, new Perm[]{perm}, rationaleId, action, params );
     }
 
     public static void onGotPermsAction( DelegateBase delegate, boolean positive,
@@ -262,6 +297,7 @@ public class Perms23 {
     {
         // Log.d( TAG, "gotPermissionResult(%s)", perms.toString() );
         Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
+        boolean shouldResend = false;
         for ( int ii = 0; ii < perms.length; ++ii ) {
             Perm perm = Perm.getFor( perms[ii] );
             boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
@@ -270,14 +306,18 @@ public class Perms23 {
             // Hack. If SMS has been granted, resend all moves. This should be
             // replaced with an api allowing listeners to register
             // Perm-by-Perm, but I'm in a hurry.
-            if ( granted && perm == Perm.SEND_SMS ) {
-                GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS,
-                                       true, true );
+            if ( granted && (perm == Perm.SEND_SMS || perm == Perm.RECEIVE_SMS) ) {
+                shouldResend = true;
             }
 
             // Log.d( TAG, "calling %s.onPermissionResult(%s, %b)",
             //                record.cbck.getClass().getSimpleName(), perm.toString(),
             //                granted );
+        }
+
+        if ( shouldResend ) {
+            GameUtils.resendAllIf( context, CommsConnType.COMMS_CONN_SMS,
+                                   true, true );
         }
 
         PermCbck cbck = s_map.remove( code );
@@ -291,15 +331,15 @@ public class Perms23 {
         String permString = perm.getString();
         boolean result = PackageManager.PERMISSION_GRANTED
             == ContextCompat.checkSelfPermission( XWApp.getContext(), permString );
+        // Log.d( TAG, "havePermission(%s) => %b", permString, result );
         return result;
     }
 
-    // This is probably overkill as the OS only allows one permission request
-    // at a time
+    // If two permission requests are made in a row the map may contain more
+    // than one entry.
     private static int s_nextRecord = 0;
     private static int register( PermCbck cbck )
     {
-        Assert.assertTrue( !BuildConfig.DEBUG || 0 == s_map.size() );
         DbgUtils.assertOnUIThread();
         int code = ++s_nextRecord;
         s_map.put( code, cbck );

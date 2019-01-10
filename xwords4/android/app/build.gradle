@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 8
-def VERSION_CODE_BASE = 135
-def VERSION_NAME = '4.4.139'
+def VERSION_CODE_BASE = 136
+def VERSION_NAME = '4.4.140'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
 def BUILD_INFO_NAME = "build-info.txt"
@@ -23,8 +23,8 @@ if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) {
     apply plugin: 'io.fabric'
 }
 repositories {
-    maven { url 'https://maven.fabric.io/public' }
     google()
+    maven { url 'https://maven.fabric.io/public' }
 }
 
 android {
@@ -32,8 +32,8 @@ android {
     // default changes and .travis.yml can be kept in sync
     buildToolsVersion '27.0.3'
     defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 23
+        minSdkVersion 14
+        targetSdkVersion 26
         versionCode VERSION_CODE_BASE
         versionName VERSION_NAME
     }
@@ -63,6 +63,7 @@ android {
     productFlavors {
         all {
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
+            resValue "string", "invite_prefix", "/and/"
         }
 
         xw4 {
@@ -71,7 +72,6 @@ android {
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
-            resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
 
@@ -84,7 +84,6 @@ android {
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
-            resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
 
@@ -96,7 +95,6 @@ android {
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
-            resValue "string", "invite_prefix", "/anddbg/"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
 
@@ -197,11 +195,19 @@ android {
     }
 }
 
+ext {
+    SUPPORT_LIB_VERSION = '27.1.1'
+}
+
 dependencies {
     // Look into replacing this with a fetch too PENDING
     xw4Implementation files('../libs/gcm.jar')
 
-    implementation 'com.android.support:support-v4:23.4.0'
+    implementation "com.android.support:support-v4:$SUPPORT_LIB_VERSION"
+    implementation "com.android.support:support-compat:$SUPPORT_LIB_VERSION"
+
+    implementation "android.arch.lifecycle:extensions:1.1.1"
+    annotationProcessor "android.arch.lifecycle:compiler:1.1.1"
 
     // 2.6.8 is probably as far forward as I can go without upping my
     // min-supported SDK version
@@ -222,7 +228,13 @@ task copyStrings(type: Exec) {
 
 task ndkSetup(type: Exec) {
     workingDir '../'
-    commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
+    // remove ', "--arm-only"' for Genymotion builds
+
+    // I'm putting ARM back for a while. It's too much trouble having
+    // builds, including those built by travis, that don't run on the
+    // emulator. Maybe remove this change before each release?
+    commandLine "./scripts/ndksetup.sh", "--with-clang"
+    // commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
 }
 
 task myPreBuild(dependsOn: ['ndkSetup', 'mkImages', 'copyStrings', 'mkXml']) {
