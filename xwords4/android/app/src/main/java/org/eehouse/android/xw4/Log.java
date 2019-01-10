@@ -24,27 +24,40 @@ import java.util.Formatter;
 
 public class Log {
     private static final String PRE_TAG = BuildConfig.FLAVOR + "-";
+    private static final boolean LOGGING_ENABLED
+        = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
+    private static final boolean ERROR_LOGGING_ENABLED = true;
 
     public static void d( String tag, String fmt, Object... args ) {
-        String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.d( PRE_TAG + tag, str );
+        if ( LOGGING_ENABLED ) {
+            String str = new Formatter().format( fmt, args ).toString();
+            android.util.Log.d( PRE_TAG + tag, str );
+        }
     }
     public static void w( String tag, String fmt, Object... args ) {
-        String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.w( PRE_TAG + tag, str );
+        if ( LOGGING_ENABLED ) {
+            String str = new Formatter().format( fmt, args ).toString();
+            android.util.Log.w( PRE_TAG + tag, str );
+        }
     }
     public static void e( String tag, String fmt, Object... args ) {
-        String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.e( PRE_TAG + tag, str );
+        if ( ERROR_LOGGING_ENABLED ) {
+            String str = new Formatter().format( fmt, args ).toString();
+            android.util.Log.e( PRE_TAG + tag, str );
+        }
     }
     public static void i( String tag, String fmt, Object... args ) {
-        String str = new Formatter().format( fmt, args ).toString();
-        android.util.Log.i( PRE_TAG + tag, str );
+        if ( LOGGING_ENABLED ) {
+            String str = new Formatter().format( fmt, args ).toString();
+            android.util.Log.i( PRE_TAG + tag, str );
+        }
     }
 
     public static void ex( String tag, Exception exception )
     {
-        w( tag, "Exception: %s", exception.toString() );
-        DbgUtils.printStack( tag, exception.getStackTrace() );
+        if ( LOGGING_ENABLED ) {
+            w( tag, "Exception: %s", exception.toString() );
+            DbgUtils.printStack( tag, exception.getStackTrace() );
+        }
     }
 }
