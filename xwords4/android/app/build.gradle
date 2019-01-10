@@ -63,6 +63,7 @@ android {
     productFlavors {
         all {
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
+            resValue "string", "invite_prefix", "/and/"
         }
 
         xw4 {
@@ -71,7 +72,6 @@ android {
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
-            resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
 
@@ -84,7 +84,6 @@ android {
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
-            resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
 
@@ -96,7 +95,6 @@ android {
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
-            resValue "string", "invite_prefix", "/anddbg/"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
 
