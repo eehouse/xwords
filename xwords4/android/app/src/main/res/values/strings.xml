@@ -2669,9 +2669,9 @@
   name before you create this game?</string>
 
   <string name="btservice_expl">This notification is present whenever
-  CrossWords is running in the background to accept Bluetooth messages.
-  Because messages come in clusters, it usually runs for
-  about 15 minutes after the last message is received.
+  CrossWords is running in the background to accept Bluetooth
+  messages. It usually runs for about 15 minutes after CrossWords
+  starts or a Bluetooth message is received.
   </string>
 
   <string name="no_invites">This game has sent no invitations</string>
