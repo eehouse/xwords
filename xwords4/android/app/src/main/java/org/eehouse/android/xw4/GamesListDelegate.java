@@ -1779,7 +1779,7 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;
     }
 
-    private boolean handleSelGamesItem( int itemID, final long[] selRowIDs )
+    private boolean handleSelGamesItem( int itemID, long[] selRowIDs )
     {
         boolean handled = true;
         boolean dropSels = false;
@@ -1818,8 +1818,9 @@ public class GamesListDelegate extends ListDelegateBase
                 .show();
             break;
         case R.id.games_game_copy:
+            final long selRowID = selRowIDs[0];
             final GameSummary smry = GameUtils.getSummary( m_activity,
-                                                           selRowIDs[0] );
+                                                           selRowID );
             if ( smry.inRelayGame() ) {
                 makeOkOnlyBuilder( R.string.no_copy_network ).show();
             } else {
@@ -1828,7 +1829,7 @@ public class GamesListDelegate extends ListDelegateBase
                         public void run() {
                             Activity self = m_activity;
                             byte[] stream =
-                                GameUtils.savedGame( self, selRowIDs[0] );
+                                GameUtils.savedGame( self, selRowID );
                             long groupID = XWPrefs
                                 .getDefaultNewGameGroup( self );
                             try ( GameLock lock =
