@@ -22,13 +22,14 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -49,9 +50,11 @@ public class BTInviteDelegate extends InviteDelegate {
                                              R.id.button_clear,
     };
     private static final boolean ENABLE_FAKER = false;
+    private static final int SCAN_SECONDS = 5;
 
     private Activity m_activity;
-    private ProgressDialog m_progress;
+    private ProgressBar mProgressBar;
+    private Handler m_handler = new Handler();
 
     private static class Persisted implements Serializable {
         List<TwoStringPair> pairs;
@@ -173,7 +176,7 @@ public class BTInviteDelegate extends InviteDelegate {
         case SCAN_DONE:
             post( new Runnable() {
                     public void run() {
-                        m_progress.cancel();
+                        killProgress();
 
                         if ( mPersisted.empty() ) {
                             makeNotAgainBuilder( R.string.not_again_emptybtscan,
@@ -233,9 +236,8 @@ public class BTInviteDelegate extends InviteDelegate {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
             String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
-            m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
-
-            BTService.scan( m_activity, 5000 );
+            startProgress( SCAN_SECONDS );
+            BTService.scan( m_activity, 1000 * SCAN_SECONDS );
         } else {
             makeConfirmThenBuilder( R.string.bt_no_devs,
                                     Action.OPEN_BT_PREFS_ACTION )
@@ -253,6 +255,39 @@ public class BTInviteDelegate extends InviteDelegate {
 
         updateListAdapter( mPersisted.pairs );
         tryEnable();
+    }
+
+    private void startProgress( int nSeconds )
+    {
+        mProgressBar = (ProgressBar)findViewById( R.id.progress );
+        mProgressBar.setProgress( 0 );
+        mProgressBar.setMax( nSeconds );
+        findViewById( R.id.progress_line ).setVisibility( View.VISIBLE );
+        incrementProgressIn( 1 );
+    }
+
+    private void killProgress()
+    {
+        findViewById( R.id.progress_line ).setVisibility( View.GONE );
+        mProgressBar = null;
+    }
+
+    private void incrementProgressIn( int inSeconds )
+    {
+        m_handler.postDelayed( new Runnable() {
+                @Override
+                public void run() {
+                    if ( null != mProgressBar ) {
+                        int curProgress = mProgressBar.getProgress();
+                        if ( curProgress >= mProgressBar.getMax() ) {
+                            killProgress(); // create illusion it's done
+                        } else {
+                            mProgressBar.setProgress( curProgress + 1, true );
+                            incrementProgressIn( 1 );
+                        }
+                    }
+                }
+            }, 1000 * inSeconds );
     }
 
     private void load()

@@ -1403,7 +1403,7 @@ public class BTService extends XWService {
                                       int timeout )
     {
         String name = socket.getRemoteDevice().getName();
-        Log.w( TAG, "connect(%s) starting", name );
+        Log.w( TAG, "connect(%s, timeout=%d) starting", name, timeout );
         // DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
         // Docs say always call cancelDiscovery before trying to connect
         m_adapter.cancelDiscovery();

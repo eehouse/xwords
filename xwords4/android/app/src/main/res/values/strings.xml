@@ -1833,6 +1833,9 @@
     <!-- In the Bluetooth invite device dialog, kick off a new scan of
          nearby devices -->
     <string name="button_scan">Rescan</string>
+    <!-- Text to the left of the bluetooth-scanning progress bar in BT
+         invitation dialog -->
+    <string name="scan_progress_label">Scanning:</string>
 
       <!--  -->
     <string name="invite_progress_title">Connecting…</string>
