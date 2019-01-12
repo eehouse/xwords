@@ -30,6 +30,7 @@ import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -176,7 +177,7 @@ public class BTInviteDelegate extends InviteDelegate {
         case SCAN_DONE:
             post( new Runnable() {
                     public void run() {
-                        killProgress();
+                        hideProgress();
 
                         if ( mPersisted.empty() ) {
                             makeNotAgainBuilder( R.string.not_again_emptybtscan,
@@ -235,8 +236,7 @@ public class BTInviteDelegate extends InviteDelegate {
 
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
-            String msg = getQuantityString( R.plurals.bt_scan_progress_fmt, count, count );
-            startProgress( SCAN_SECONDS );
+            showProgress( count, SCAN_SECONDS );
             BTService.scan( m_activity, 1000 * SCAN_SECONDS );
         } else {
             makeConfirmThenBuilder( R.string.bt_no_devs,
@@ -257,16 +257,21 @@ public class BTInviteDelegate extends InviteDelegate {
         tryEnable();
     }
 
-    private void startProgress( int nSeconds )
+    private void showProgress( int nDevs, int nSeconds )
     {
         mProgressBar = (ProgressBar)findViewById( R.id.progress );
         mProgressBar.setProgress( 0 );
         mProgressBar.setMax( nSeconds );
+
+        String msg = getQuantityString( R.plurals.bt_scan_progress_fmt,
+                                        nDevs, nDevs );
+        ((TextView)findViewById( R.id.progress_msg )).setText( msg );
+
         findViewById( R.id.progress_line ).setVisibility( View.VISIBLE );
         incrementProgressIn( 1 );
     }
 
-    private void killProgress()
+    private void hideProgress()
     {
         findViewById( R.id.progress_line ).setVisibility( View.GONE );
         mProgressBar = null;
@@ -280,7 +285,7 @@ public class BTInviteDelegate extends InviteDelegate {
                     if ( null != mProgressBar ) {
                         int curProgress = mProgressBar.getProgress();
                         if ( curProgress >= mProgressBar.getMax() ) {
-                            killProgress(); // create illusion it's done
+                            hideProgress(); // create illusion it's done
                         } else {
                             mProgressBar.setProgress( curProgress + 1, true );
                             incrementProgressIn( 1 );

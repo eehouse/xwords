@@ -1833,9 +1833,6 @@
     <!-- In the Bluetooth invite device dialog, kick off a new scan of
          nearby devices -->
     <string name="button_scan">Rescan</string>
-    <!-- Text to the left of the bluetooth-scanning progress bar in BT
-         invitation dialog -->
-    <string name="scan_progress_label">Scanning:</string>
 
       <!--  -->
     <string name="invite_progress_title">Connecting…</string>
@@ -1879,7 +1876,7 @@
 
     <plurals name="bt_scan_progress_fmt">
       <item quantity="one">Scanning for CrossWords</item>
-      <item quantity="other">Scanning for CrossWords on %1$d paired devices.</item>
+      <item quantity="other">Scanning for CrossWords on %1$d paired devices</item>
     </plurals>
     <!--  -->
     <string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry
