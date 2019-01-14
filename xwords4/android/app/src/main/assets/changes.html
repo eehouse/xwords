@@ -13,9 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>CrossWords 4.4.140 release</h2>
+  <h2>CrossWords 4.4.141 release</h2>
 
-  <p>This release updates translations for Catalan, French, German and Japanese.</p>
+  <p>This release changes how background networking works to comply
+      with new Google requirements.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -25,8 +26,18 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Include changes made by Weblate volunteers for four
-      languages. (Thanks!)</li>
+      <li>Run BlueTooth visibly (with permanent notification) when in
+          the background for 15 minutes after the last BlueTooth
+          message was received</li>
+      <li>Group notifications into types so users of latest Android
+          versions can disable them separately</li>
+      <li>Improve Invite-via-Bluetooth dialog, esp. show when a remote
+          device was last detected</li>
+      <li>Store new games outside Archive group even if created from
+          inside it</li>
+      <li>For Spanish-games only, allow trades when fewer than 7 tiles remain</li>
+      <li>New translations in Arabic, German, Norwegian, Polish and Portuguese</li>
+      <li>Disable logging for release builds (to improve performance)</li>
   </ul>
 
   <p>(The full changelog
@@ -34,9 +45,11 @@
 
   <h3>Next up</h3>
   <ul>
-      <li>Make changes in how background networking and bluetooth work
-          that Google's mandating for all releases after 1
-          November.</li>
+      <li>Improve communication with the message-passing relay for
+          Google Play store release</li>
+      <li>Investigate removing play-via-SMS feature from Google Play
+          store release (in case Google doesn't approve my request to
+          let it stay.) (F-droid release will retain SMS play.)
   </ul>
 
   <p>Please let me know
