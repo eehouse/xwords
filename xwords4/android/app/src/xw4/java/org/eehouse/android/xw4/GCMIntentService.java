@@ -69,15 +69,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     {
         Log.d( TAG, "onMessage()" );
 
-        if ( null == m_toastGCM ) {
-            m_toastGCM = new Boolean( XWPrefs.getToastGCM( context ) );
-        }
-
         if ( XWPrefs.getIgnoreGCM( context ) ) {
             String logMsg = "received GCM but ignoring it";
             Log.d( TAG, logMsg );
             DbgUtils.showf( context, logMsg );
         } else {
+            boolean toastGCM = XWPrefs.getToastGCM( context );
+
             notifyRelayService( context, true );
 
             String value = intent.getStringExtra( "checkUpdates" );
@@ -88,8 +86,9 @@ public class GCMIntentService extends GCMBaseIntentService {
             value = intent.getStringExtra( "getMoves" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
                 RelayService.timerFired( context );
-                if ( m_toastGCM ) {
-                    DbgUtils.showf( context, "onMessage(): got 'getMoves'" );
+                if ( toastGCM ) {
+                    DbgUtils.showf( context, "%s.onMessage(): got 'getMoves'",
+                                    TAG );
                 }
             }
 
@@ -99,9 +98,9 @@ public class GCMIntentService extends GCMBaseIntentService {
                 try {
                     JSONArray msgs64 = new JSONArray( value );
                     String[] strs64 = new String[msgs64.length()];
-                    if ( m_toastGCM ) {
-                        DbgUtils.showf( context, "onMessage(): got %d msgs",
-                                        strs64.length );
+                    if ( toastGCM ) {
+                        DbgUtils.showf( context, "%s.onMessage(): got %d msgs",
+                                        TAG, strs64.length );
                     }
 
                     for ( int ii = 0; ii < strs64.length; ++ii ) {
