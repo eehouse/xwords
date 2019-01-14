@@ -196,12 +196,13 @@ public class RelayService extends JobIntentService
         enqueueWork( context, intent );
     }
 
-    // Must use the same lobID for all work enqueued for the same class
+    // Must use the same jobID for all work enqueued for the same class
     private final static int sJobID = RelayService.class.hashCode();
 
     private static void enqueueWork( Context context, Intent intent )
     {
-        Log.d( TAG, "calling enqueueWork(cmd=%s)", cmdFrom( intent ) );
+        Log.d( TAG, "calling enqueueWork(id=%d, cmd=%s)", sJobID,
+               cmdFrom( intent ) );
         enqueueWork( context, RelayService.class, sJobID, intent );
     }
 

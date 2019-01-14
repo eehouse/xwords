@@ -159,12 +159,11 @@ public class BTInviteDelegate extends InviteDelegate {
             BTService.openBTSettings( m_activity );
             break;
         case R.id.button_clear:
-            mPersisted.remove( getChecked() );
-            store();
-
-            clearChecked();
-            updateListAdapter( mPersisted.pairs );
-            tryEnable();
+            int count = getChecked().size();
+            String msg = getQuantityString( R.plurals.confirm_clear_bt_fmt,
+                                            count, count )
+                + getString( R.string.confirm_clear_bt_postscript );
+            makeConfirmThenBuilder( msg, Action.CLEAR_ACTION ).show();
             break;
         }
     }
@@ -322,6 +321,14 @@ public class BTInviteDelegate extends InviteDelegate {
         switch( action ) {
         case OPEN_BT_PREFS_ACTION:
             BTService.openBTSettings( m_activity );
+            break;
+        case CLEAR_ACTION:
+            mPersisted.remove( getChecked() );
+            store();
+
+            clearChecked();
+            updateListAdapter( mPersisted.pairs );
+            tryEnable();
             break;
         default:
             handled = super.onPosButton( action, params );
