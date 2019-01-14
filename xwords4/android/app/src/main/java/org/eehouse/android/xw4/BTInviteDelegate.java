@@ -56,6 +56,7 @@ public class BTInviteDelegate extends InviteDelegate {
     private Activity m_activity;
     private ProgressBar mProgressBar;
     private Handler m_handler = new Handler();
+    private int mNDevsThisScan;
 
     private static class Persisted implements Serializable {
         List<TwoStringPair> pairs;
@@ -178,7 +179,7 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void run() {
                         hideProgress();
 
-                        if ( mPersisted.empty() ) {
+                        if ( mPersisted.empty() || 0 == mNDevsThisScan ) {
                             makeNotAgainBuilder( R.string.not_again_emptybtscan,
                                                  R.string.key_notagain_emptybtscan )
                                 .show();
@@ -235,6 +236,7 @@ public class BTInviteDelegate extends InviteDelegate {
 
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
+            mNDevsThisScan = 0;
             showProgress( count, SCAN_SECONDS );
             BTService.scan( m_activity, 1000 * SCAN_SECONDS );
         } else {
@@ -249,6 +251,7 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         DbgUtils.assertOnUIThread();
 
+        ++mNDevsThisScan;
         mPersisted.add( dev.getAddress(), dev.getName() );
         store();
 

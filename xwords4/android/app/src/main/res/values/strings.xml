@@ -2763,8 +2763,9 @@
   <string name="gameevent_channel_expl">In-game events</string>
 
   <string name="not_again_emptybtscan">If a scan doesn\'t find the device you expect:\n
-  • First, just try again\n
-  • Make sure Bluetooth is on on the other device\n
+  • First, just Rescan\n
+  • Make sure Bluetooth is enabled on the other device\n
   • Launch CrossWords on the other device\n
+  • If all else fails, reboot this device\n
   </string>
 </resources>
