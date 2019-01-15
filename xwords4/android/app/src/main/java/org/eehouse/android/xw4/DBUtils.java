@@ -367,7 +367,6 @@ public class DBUtils {
                                        String phone, String relayID, String p2pAddr )
     {
         try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
-            Assert.assertNotNull( lock );
             if ( null != lock ) {
                 GameSummary summary = getSummary( context, lock );
                 if ( null != btAddr ) {
@@ -384,6 +383,7 @@ public class DBUtils {
                 }
                 saveSummary( context, lock, summary );
             } else {
+                Assert.assertFalse( BuildConfig.DEBUG );
                 Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
             }
         }
@@ -1124,9 +1124,7 @@ public class DBUtils {
                 deleteGame( context, lock );
             } else {
                 Log.e( TAG, "deleteGame: unable to lock rowid %d", rowid );
-                if ( BuildConfig.DEBUG ) {
-                    Assert.fail();
-                }
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
     }

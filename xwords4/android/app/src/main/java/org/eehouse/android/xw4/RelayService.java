@@ -982,6 +982,7 @@ public class RelayService extends JobIntentService
 
         void setService( RelayService service )
         {
+            Assert.assertNotNull( service );
             synchronized ( mServiceHolder ) {
                 mServiceHolder[0] = service;
                 // unblock waiters for non-null Service
@@ -1058,11 +1059,9 @@ public class RelayService extends JobIntentService
         private void connectSocket() throws InterruptedException
         {
             if ( null == m_UDPSocket ) {
-                int port;
-                String host;
                 final RelayService service = getService();
-                port = XWPrefs.getDefaultRelayPort( service );
-                host = XWPrefs.getDefaultRelayHost( service );
+                int port = XWPrefs.getDefaultRelayPort( service );
+                String host = XWPrefs.getDefaultRelayHost( service );
 
                 try {
                     m_UDPSocket = new DatagramSocket();

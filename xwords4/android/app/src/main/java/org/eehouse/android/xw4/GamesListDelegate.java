@@ -1231,14 +1231,6 @@ public class GamesListDelegate extends ListDelegateBase
                                final Object ... args )
     {
         switch( event ) {
-        // case HOST_PONGED:
-        //     post( new Runnable() {
-        //             public void run() {
-        //                 DbgUtils.showf( m_activity,
-        //                                 "Pong from %s", args[0].toString() );
-        //             }
-        //         });
-        //     break;
         case BT_GAME_CREATED:
             post( new Runnable() {
                     public void run() {
@@ -2689,30 +2681,29 @@ public class GamesListDelegate extends ListDelegateBase
 
     private static Intent makeSelfIntent( Context context )
     {
-        Intent intent = new Intent( context, MainActivity.class );
-        intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
-                         | Intent.FLAG_ACTIVITY_SINGLE_TOP );
+        Intent intent = new Intent( context, MainActivity.class )
+            .setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
+                       | Intent.FLAG_ACTIVITY_SINGLE_TOP );
         return intent;
     }
 
     public static Intent makeBackgroundIntent( Context context )
     {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( BACKGROUND_EXTRA, true );
-        return intent;
+        return makeSelfIntent( context )
+            .putExtra( BACKGROUND_EXTRA, true );
     }
 
     public static Intent makeRowidIntent( Context context, long rowid )
     {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( ROWID_EXTRA, rowid );
+        Intent intent = makeSelfIntent( context )
+            .putExtra( ROWID_EXTRA, rowid );
         return intent;
     }
 
     public static Intent makeGameIDIntent( Context context, int gameID )
     {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( GAMEID_EXTRA, gameID );
+        Intent intent = makeSelfIntent( context )
+            .putExtra( GAMEID_EXTRA, gameID );
         return intent;
     }
 
@@ -2724,14 +2715,14 @@ public class GamesListDelegate extends ListDelegateBase
                                             String newName )
     {
         Intent intent = null;
-        intent = makeSelfIntent( context );
-        intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
-        intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
         boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
-        intent.putExtra( REMATCH_IS_SOLO, isSolo );
-        intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
-        intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
-        intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
+        intent = makeSelfIntent( context )
+            .putExtra( REMATCH_ROWID_EXTRA, rowid )
+            .putExtra( REMATCH_DICT_EXTRA, gi.dictName )
+            .putExtra( REMATCH_IS_SOLO, isSolo )
+            .putExtra( REMATCH_LANG_EXTRA, gi.dictLang )
+            .putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() )
+            .putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
         if ( null != addrTypes ) {
             intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
@@ -2757,8 +2748,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     public static Intent makeAlertIntent( Context context, String msg )
     {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( ALERT_MSG, msg );
+        Intent intent = makeSelfIntent( context )
+            .putExtra( ALERT_MSG, msg );
         return intent;
     }
 
@@ -2771,8 +2762,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     public static void openGame( Context context, Uri data )
     {
-        Intent intent = makeSelfIntent( context );
-        intent.setData( data );
+        Intent intent = makeSelfIntent( context )
+            .setData( data );
         context.startActivity( intent );
     }
 }

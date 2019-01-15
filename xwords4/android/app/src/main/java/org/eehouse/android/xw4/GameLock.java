@@ -91,7 +91,7 @@ public class GameLock implements AutoCloseable {
     // OR
     // * existing locks are ReadOnly and this request is readOnly
     // OR
-    // * the requesting thread already holds the lock
+    // * the requesting thread already holds the lock (later...)
     private GameLock tryLockImpl( boolean readOnly )
     {
         GameLock result = null;
@@ -168,17 +168,6 @@ public class GameLock implements AutoCloseable {
         Assert.assertNotNull( result );
         return result;
     }
-
-    // @NonNull
-    // public GameLock lockRO() throws InterruptedException
-    // {
-    //     if ( BuildConfig.DEBUG ) {
-    //         DbgUtils.assertOnUIThread( false );
-    //     }
-    //     GameLock result = lockImpl( Long.MAX_VALUE, true );
-    //     Assert.assertNotNull( result );
-    //     return result;
-    // }
 
     // Version that's allowed to return null -- if maxMillis > 0
     public GameLock lock( long maxMillis ) throws GameLockedException

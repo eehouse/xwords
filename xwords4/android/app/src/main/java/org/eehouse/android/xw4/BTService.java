@@ -341,9 +341,8 @@ public class BTService extends XWService {
                                      NetLaunchInfo nli )
     {
         Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
-        String nliData = nli.toString();
         Intent intent = getIntentTo( context, BTAction.INVITE )
-            .putExtra( GAMEDATA_KEY, nliData )
+            .putExtra( GAMEDATA_KEY, nli.toString() )
             .putExtra( ADDR_KEY, btAddr );
         startService( context, intent );
     }
@@ -410,9 +409,7 @@ public class BTService extends XWService {
     private static boolean canRunForegroundService()
     {
         // added in API level 26
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-            // && Prefs.runForegroundServiceEnabled( context, true )
-            ;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     private static Intent getIntentTo( Context context, BTAction cmd )
@@ -458,13 +455,6 @@ public class BTService extends XWService {
         return result;
     }
 
-    @Override
-    public void onDestroy()
-    {
-        Log.d( TAG, "%s.onDestroy()", this );
-        super.onDestroy();
-    }
-
     private int handleCommand( Intent intent )
     {
         int result;
@@ -497,7 +487,7 @@ public class BTService extends XWService {
                 case INVITE:
                     String jsonData = intent.getStringExtra( GAMEDATA_KEY );
                     NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, jsonData );
-                    Log.i( TAG, "handleCommand: nli: %s", nli.toString() );
+                    Log.i( TAG, "handleCommand: nli: %s", nli );
                     String btAddr = intent.getStringExtra( ADDR_KEY );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
                     break;

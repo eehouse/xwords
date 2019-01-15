@@ -101,6 +101,16 @@ public class MultiService {
     public void setListener( MultiEventListener li )
     {
         synchronized( this ) {
+            // If this is happening, the order of resume/pause isn't what we
+            // expect. Might need to keep a set of these instead of a
+            // singleton.
+            if ( BuildConfig.DEBUG ) {
+                if ( m_li == null && li == null ) {
+                    Assert.fail();
+                } else if ( m_li != null && li != null ) {
+                    Assert.fail();
+                }
+            }
             m_li = li;
         }
     }

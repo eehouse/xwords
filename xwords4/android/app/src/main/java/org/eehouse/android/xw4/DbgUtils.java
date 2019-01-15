@@ -30,7 +30,6 @@ import android.text.format.Time;
 
 import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.Iterator;
 import java.util.Set;
 
 
