@@ -120,24 +120,25 @@ public class DevID {
 
     public static String getGCMDevID( Context context )
     {
-        int curVers = Utils.getAppVersion( context );
-        int storedVers = DBUtils.getIntFor( context, GCM_REGVERS_KEY, 0 );
-        // TRANSITIONAL
-        if ( 0 == storedVers ) {
-            storedVers = XWPrefs.getPrefsInt( context,
-                                              R.string.key_gcmvers_regid, 0 );
-            if ( 0 != storedVers ) {
-                DBUtils.setIntFor( context, GCM_REGVERS_KEY, storedVers );
-            }
-        }
+        return "";
+        // int curVers = Utils.getAppVersion( context );
+        // int storedVers = DBUtils.getIntFor( context, GCM_REGVERS_KEY, 0 );
+        // // TRANSITIONAL
+        // if ( 0 == storedVers ) {
+        //     storedVers = XWPrefs.getPrefsInt( context,
+        //                                       R.string.key_gcmvers_regid, 0 );
+        //     if ( 0 != storedVers ) {
+        //         DBUtils.setIntFor( context, GCM_REGVERS_KEY, storedVers );
+        //     }
+        // }
 
-        String result;
-        if ( 0 != storedVers && storedVers < curVers ) {
-            result = "";        // Don't trust what registrar has
-        } else {
-            result = GCMStub.getRegistrationId( context );
-        }
-        return result;
+        // String result;
+        // if ( 0 != storedVers && storedVers < curVers ) {
+        //     result = "";        // Don't trust what registrar has
+        // } else {
+        //     result = GCMStub.getRegistrationId( context );
+        // }
+        // return result;
     }
 
     public static void clearGCMDevID( Context context )

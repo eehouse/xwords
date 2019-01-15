@@ -2,7 +2,6 @@ def INITIAL_CLIENT_VERS = 8
 def VERSION_CODE_BASE = 137
 def VERSION_NAME = '4.4.141'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
-def GCM_SENDER_ID = System.getenv("GCM_SENDER_ID")
 def BUILD_INFO_NAME = "build-info.txt"
 
 boolean forFDroid = hasProperty('forFDroid')
@@ -69,6 +68,7 @@ android {
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
             buildConfigField "boolean", "IS_TAGGED_BUILD", "${CURTAG}" == '' ? "false" : "true"
             resValue "string", "invite_prefix", "/and/"
+            buildConfigField "String", "GCM_SENDER_ID", "\"\""
         }
 
         xw4 {
@@ -79,8 +79,6 @@ android {
             resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
-
-            buildConfigField "String", "GCM_SENDER_ID", "\"$GCM_SENDER_ID\""
         }
 
         xw4fdroid {
@@ -91,8 +89,6 @@ android {
             resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
-
-            buildConfigField "String", "GCM_SENDER_ID", "\"\""
         }
         xw4d {
             dimension "variant"
@@ -102,8 +98,6 @@ android {
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
-
-            buildConfigField "String", "GCM_SENDER_ID", "\"\""
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need
@@ -205,9 +199,6 @@ ext {
 }
 
 dependencies {
-    // Look into replacing this with a fetch too PENDING
-    xw4Implementation files('../libs/gcm.jar')
-
     implementation "com.android.support:support-v4:$SUPPORT_LIB_VERSION"
     implementation "com.android.support:support-compat:$SUPPORT_LIB_VERSION"
 
