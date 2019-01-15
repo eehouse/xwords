@@ -94,12 +94,16 @@ public class XWApp extends Application implements LifecycleObserver {
     }
 
     @OnLifecycleEvent(ON_ANY)
-    public void onAny( LifecycleOwner source,  Lifecycle.Event event )
+    public void onAny( LifecycleOwner source, Lifecycle.Event event )
     {
         Log.d( TAG, "onAny(%s)", event );
         switch( event ) {
         case ON_RESUME:
             BTService.onAppToForeground( this );
+            // Do here what checkForMoves does
+            if ( null != DBUtils.getRelayIDs( this, null ) ) {
+                RelayService.timerFired( this );
+            }
             break;
         case ON_STOP:
             BTService.onAppToBackground( this );
