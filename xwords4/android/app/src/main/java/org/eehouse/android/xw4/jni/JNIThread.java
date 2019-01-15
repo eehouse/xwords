@@ -500,7 +500,7 @@ public class JNIThread extends Thread {
                 XwJNI.comms_resetSame( m_jniGamePtr );
                 // FALLTHRU
             case CMD_START:
-                draw = tryConnectClient( m_jniGamePtr, m_gi );
+                draw = tryConnect( m_jniGamePtr, m_gi );
                 break;
 
             case CMD_SWITCHCLIENT:
@@ -776,8 +776,9 @@ public class JNIThread extends Thread {
         }
     }
 
-    public static boolean tryConnectClient( GamePtr gamePtr, CurGameInfo gi )
+    public static boolean tryConnect( GamePtr gamePtr, CurGameInfo gi )
     {
+        Log.d( TAG, "tryConnect(rowid=%d)", gamePtr.getRowid() );
         XwJNI.comms_start( gamePtr );
         if ( gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
             XwJNI.server_initClientConnection( gamePtr );

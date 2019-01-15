@@ -559,7 +559,7 @@ public class RelayService extends JobIntentService
     private static boolean skipNativeSend()
     {
         boolean skip = sNativeFailScore.get() > UDP_FAIL_LIMIT || sSkipUPDSet;
-        // Log.d( TAG, "skipNativeSend(score=%d)) => %b", m_nativeFailScore, skip );
+        // Log.d( TAG, "skipNativeSend(score=%d)) => %b", sNativeFailScore.get(), skip );
         return skip;
     }
 
@@ -1201,6 +1201,7 @@ public class RelayService extends JobIntentService
             int sentLen = 0;
 
             if ( packets.size() > 0 ) {
+                Log.d( TAG, "sendViaUDP(): sending %d at once", packets.size() );
                 final RelayService service = getService();
                 service.noteSent( packets, true );
                 for ( PacketData packet : packets ) {
@@ -1241,6 +1242,7 @@ public class RelayService extends JobIntentService
                                                 sentLen > 0 );
             }
 
+            Log.d( TAG, "sendViaUDP(): sent %d bytes", sentLen );
             return sentLen;
         }
 

@@ -1066,7 +1066,7 @@ public class GameUtils {
         }
 
         if ( null != sink ) {
-            JNIThread.tryConnectClient( gamePtr, gi );
+            JNIThread.tryConnect( gamePtr, gi );
         }
 
         saveGame( context, gamePtr, gi, lock, false );

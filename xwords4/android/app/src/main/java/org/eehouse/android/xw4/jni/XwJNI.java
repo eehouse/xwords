@@ -38,10 +38,13 @@ public class XwJNI {
         private int m_ptr = 0;
         private int m_refCount = 0;
         private long m_rowid;
+        private String mStack;
 
-        private GamePtr( int ptr, long rowid ) {
+        private GamePtr( int ptr, long rowid )
+        {
             m_ptr = ptr;
             m_rowid = rowid;
+            mStack = android.util.Log.getStackTraceString(new Exception());
         }
 
         public synchronized int ptr()
@@ -81,6 +84,10 @@ public class XwJNI {
         // @Override
         public void finalize() throws java.lang.Throwable
         {
+            if ( 0 != m_ptr ) {
+                Log.e( TAG, "ptr not cleared; creator: %s", mStack );
+            }
+            Assert.assertTrue( 0 == m_refCount );
             Assert.assertTrue( 0 == m_ptr );
             super.finalize();
         }

@@ -108,8 +108,8 @@ public class MultiMsgSink implements TransportProcs {
             Assert.fail();
             break;
         }
-        Log.i( TAG, "transportSend(): sent %d via %s",
-                       nSent, typ.toString() );
+        Log.i( TAG, "transportSend(): sent %d msgs for game %d/%x via %s",
+               nSent, gameID, gameID, typ.toString() );
         if ( 0 < nSent ) {
             Log.d( TAG, "transportSend: adding %s", msgNo );
             m_sentSet.add( msgNo );

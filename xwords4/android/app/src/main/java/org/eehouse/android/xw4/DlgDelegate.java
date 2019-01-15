@@ -421,6 +421,7 @@ public class DlgDelegate {
 
     public void doSyncMenuitem()
     {
+        Log.d( TAG, "doSyncMenuitem()" );
         if ( null == DBUtils.getRelayIDs( m_activity, null ) ) {
             makeOkOnlyBuilder( R.string.no_games_to_refresh ).show();
         } else {
