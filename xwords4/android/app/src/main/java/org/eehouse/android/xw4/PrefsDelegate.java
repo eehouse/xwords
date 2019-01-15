@@ -185,7 +185,7 @@ public class PrefsDelegate extends DelegateBase
         if ( s_keysHash.containsKey( key ) ) {
             switch( s_keysHash.get( key ) ) {
             case R.string.key_logging_on:
-                DbgUtils.logEnable( sp.getBoolean( key, false ) );
+                Log.enable( sp.getBoolean( key, false ) );
                 break;
             case R.string.key_show_sms:
                 SMSService.smsToastEnable( sp.getBoolean( key, false ) );

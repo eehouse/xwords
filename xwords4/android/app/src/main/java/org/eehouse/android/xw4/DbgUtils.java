@@ -39,48 +39,8 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DbgUtils {
     private static final String TAG = DbgUtils.class.getSimpleName();
-    private static boolean s_doLog = BuildConfig.DEBUG;
-
-    private enum LogType { ERROR, WARN, DEBUG, INFO };
 
     private static Time s_time = new Time();
-
-    public static void logEnable( boolean enable )
-    {
-        s_doLog = enable;
-    }
-
-    public static void logEnable( Context context )
-    {
-        boolean on = BuildConfig.DEBUG ||
-            XWPrefs.getPrefsBoolean( context, R.string.key_logging_on, false );
-        logEnable( on );
-    }
-
-    private static void callLog( LogType lt, String tag, String fmt,
-                                 Object... args )
-    {
-        if ( s_doLog ) {
-            String msg = new Formatter().format( fmt, args ).toString();
-            switch( lt ) {
-            case DEBUG:
-                Log.d( tag, msg );
-                break;
-            case WARN:
-                Log.w( tag, msg );
-                break;
-            case INFO:
-                Log.i( tag, msg );
-                break;
-            case ERROR:
-                Log.e( tag, msg );
-                break;
-            default:
-                Assert.fail();
-                break;
-            }
-        }
-    }
 
     public static void showf( String format, Object... args )
     {
@@ -121,7 +81,7 @@ public class DbgUtils {
 
     public static void printStack( String tag, StackTraceElement[] trace )
     {
-        if ( s_doLog && null != trace ) {
+        if ( null != trace ) {
             // 1: skip printStack etc.
             for ( int ii = 1; ii < trace.length; ++ii ) {
                 Log.d( tag, "ste %d: %s", ii, trace[ii].toString() );
@@ -131,9 +91,7 @@ public class DbgUtils {
 
     public static void printStack( String tag )
     {
-        if ( s_doLog ) {
-            printStack( tag, Thread.currentThread().getStackTrace() );
-        }
+        printStack( tag, Thread.currentThread().getStackTrace() );
     }
 
     public static void printStack( String tag, Exception ex )
@@ -156,10 +114,8 @@ public class DbgUtils {
 
     public static void dumpCursor( Cursor cursor )
     {
-        if ( s_doLog ) {
-            String dump = DatabaseUtils.dumpCursorToString( cursor );
-            Log.i( TAG, "cursor: %s", dump );
-        }
+        String dump = DatabaseUtils.dumpCursorToString( cursor );
+        Log.i( TAG, "cursor: %s", dump );
     }
 
     // public static String secondsToDateStr( long seconds )

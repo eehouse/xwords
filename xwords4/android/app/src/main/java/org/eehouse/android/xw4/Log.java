@@ -20,6 +20,8 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Context;
+
 import java.util.Formatter;
 
 public class Log {
@@ -27,27 +29,48 @@ public class Log {
     private static final boolean LOGGING_ENABLED
         = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
     private static final boolean ERROR_LOGGING_ENABLED = true;
+    private static boolean sEnabled = BuildConfig.DEBUG;
 
-    public static void d( String tag, String fmt, Object... args ) {
-        if ( LOGGING_ENABLED ) {
+    public static void enable( boolean newVal )
+    {
+        sEnabled = newVal;
+    }
+
+    public static void enable( Context context )
+    {
+        boolean on = LOGGING_ENABLED ||
+            XWPrefs.getPrefsBoolean( context, R.string.key_logging_on,
+                                     LOGGING_ENABLED );
+        enable( on );
+    }
+
+    public static void d( String tag, String fmt, Object... args )
+    {
+        if ( sEnabled ) {
             String str = new Formatter().format( fmt, args ).toString();
             android.util.Log.d( PRE_TAG + tag, str );
         }
     }
-    public static void w( String tag, String fmt, Object... args ) {
-        if ( LOGGING_ENABLED ) {
+
+    public static void w( String tag, String fmt, Object... args )
+    {
+        if ( sEnabled ) {
             String str = new Formatter().format( fmt, args ).toString();
             android.util.Log.w( PRE_TAG + tag, str );
         }
     }
-    public static void e( String tag, String fmt, Object... args ) {
+
+    public static void e( String tag, String fmt, Object... args )
+    {
         if ( ERROR_LOGGING_ENABLED ) {
             String str = new Formatter().format( fmt, args ).toString();
             android.util.Log.e( PRE_TAG + tag, str );
         }
     }
-    public static void i( String tag, String fmt, Object... args ) {
-        if ( LOGGING_ENABLED ) {
+
+    public static void i( String tag, String fmt, Object... args )
+    {
+        if ( sEnabled ) {
             String str = new Formatter().format( fmt, args ).toString();
             android.util.Log.i( PRE_TAG + tag, str );
         }
@@ -55,7 +78,7 @@ public class Log {
 
     public static void ex( String tag, Exception exception )
     {
-        if ( LOGGING_ENABLED ) {
+        if ( sEnabled ) {
             w( tag, "Exception: %s", exception.toString() );
             DbgUtils.printStack( tag, exception.getStackTrace() );
         }

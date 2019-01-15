@@ -71,11 +71,9 @@ public class XWApp extends Application implements LifecycleObserver {
 
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
-        // This one line should always get logged even if logging is
-        // off -- because logging is on by default until logEnable is
-        // called.
-        Log.i( TAG, "onCreate(); git_rev=%s", getString( R.string.git_rev ) );
-        DbgUtils.logEnable( this );
+        android.util.Log.i( TAG, "onCreate(); git_rev="
+                            + getString( R.string.git_rev ) );
+        Log.enable( this );
 
         OnBootReceiver.startTimers( this );
 
