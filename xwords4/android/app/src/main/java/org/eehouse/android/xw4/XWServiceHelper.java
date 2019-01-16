@@ -39,7 +39,7 @@ import java.util.Map;
 abstract class XWServiceHelper {
     private static final String TAG = XWServiceHelper.class.getSimpleName();  
     private Service mService;
-    private static MultiService s_srcMgr = null;
+    private static MultiService s_srcMgr = new MultiService();
 
     public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
 
@@ -101,19 +101,17 @@ abstract class XWServiceHelper {
 
     public final static void setListener( MultiService.MultiEventListener li )
     {
-        if ( null == s_srcMgr ) {
-            // DbgUtils.logf( "XWService.setListener: registering %s",
-            // li.getClass().getName() );
-            s_srcMgr = new MultiService();
-        }
         s_srcMgr.setListener( li );
+    }
+
+    public final static void clearListener( MultiService.MultiEventListener li )
+    {
+        s_srcMgr.clearListener( li );
     }
 
     protected void postEvent( MultiEvent event, Object ... args )
     {
-        if ( null != s_srcMgr ) {
-            s_srcMgr.postEvent( event, args );
-        } else {
+        if ( 0 == s_srcMgr.postEvent( event, args ) ) {
             Log.d( TAG, "postEvent(): dropping %s event",
                    event.toString() );
         }

@@ -158,7 +158,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void onPause()
     {
         m_isVisible = false;
-        XWServiceHelper.setListener( null );
+        XWServiceHelper.clearListener( this );
         m_dlgDelegate.onPausing();
     }
 

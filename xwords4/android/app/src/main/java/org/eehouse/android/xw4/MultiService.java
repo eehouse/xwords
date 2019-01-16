@@ -26,6 +26,9 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -58,8 +61,8 @@ public class MultiService {
     private static final String ACTION_FETCH_DICT = "_afd";
     private static final String FOR_MISSING_DICT = "_fmd";
 
-    // Shouldn't this be a Set?
-    private MultiEventListener m_li;
+    private Set<MultiEventListener> m_lis = Collections
+        .newSetFromMap(new ConcurrentHashMap<MultiEventListener, Boolean>());
 
     // these do not currently pass between devices so they can change.
     public enum MultiEvent { _INVALID,
@@ -100,28 +103,25 @@ public class MultiService {
 
     public void setListener( MultiEventListener li )
     {
-        synchronized( this ) {
-            // If this is happening, the order of resume/pause isn't what we
-            // expect. Might need to keep a set of these instead of a
-            // singleton.
-            if ( BuildConfig.DEBUG ) {
-                if ( m_li == null && li == null ) {
-                    Assert.fail();
-                } else if ( m_li != null && li != null ) {
-                    Assert.fail();
-                }
-            }
-            m_li = li;
-        }
+        m_lis.add( li );
     }
 
-    public void postEvent( MultiEvent event, Object ... args )
+    public void clearListener( MultiEventListener li )
     {
-        synchronized( this ) {
-            if ( null != m_li ) {
-                m_li.eventOccurred( event, args );
-            }
+        Assert.assertTrue( m_lis.contains( li ) || ! BuildConfig.DEBUG );
+        m_lis.remove( li );
+    }
+
+    public int postEvent( MultiEvent event, Object ... args )
+    {
+        // don't just return size(): concurrency doesn't guarantee isn't
+        // changed
+        int count = 0;
+        for ( MultiEventListener listener : m_lis ) {
+            listener.eventOccurred( event, args );
+            ++count;
         }
+        return count;
     }
 
     public static Intent makeMissingDictIntent( Context context, NetLaunchInfo nli,
