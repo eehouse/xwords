@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -114,13 +115,6 @@ public class GameLock implements AutoCloseable {
                 mReadOnly = readOnly;
                 result = this;
             }
-            if ( DEBUG_LOCKS ) {
-                Log.d( TAG, "%s.tryLockImpl(ro=%b) => %s", this, readOnly, result );
-                if ( null == result ) {
-                    Log.d( TAG, "Unable to lock; cur owner: %s; would-be owner: %s",
-                           mOwners.peek(), new Owner() );
-                }
-            }
         }
         return result;
     }
@@ -129,12 +123,16 @@ public class GameLock implements AutoCloseable {
     // // see if not doing that causes problems.
     public GameLock tryLock()
     {
-        return tryLockImpl( false );
+        GameLock result = tryLockImpl( false );
+        logIfNull( result, "tryLock()" );
+        return result;
     }
 
     public GameLock tryLockRO()
     {
-        return tryLockImpl( true );
+        GameLock result = tryLockImpl( true );
+        logIfNull( result, "tryLockRO()" );
+        return result;
     }
 
     private GameLock lockImpl( long timeoutMS, boolean readOnly ) throws InterruptedException
@@ -182,6 +180,7 @@ public class GameLock implements AutoCloseable {
         if ( DEBUG_LOCKS ) {
             Log.d( TAG, "%s.lock(%d) => %s", this, maxMillis, result );
         }
+        logIfNull( result, "lock(maxMillis=%d)", maxMillis );
         return result;
     }
 
@@ -193,6 +192,8 @@ public class GameLock implements AutoCloseable {
             lock = lockImpl( maxMillis, true );
         } catch ( InterruptedException ex ) {
         }
+
+        logIfNull( lock, "lockRO(maxMillis=%d)", maxMillis );
         return lock;
     }
 
@@ -239,5 +240,15 @@ public class GameLock implements AutoCloseable {
             Log.w( TAG, "%s.canWrite(): => false", this );
         }
         return result;
+    }
+
+    private void logIfNull( GameLock result, String fmt, Object... args )
+    {
+        if ( DEBUG_LOCKS && null == result ) {
+            String func = new Formatter().format( fmt, args ).toString();
+            Log.d( TAG, "%s.%s => null", this, func );
+            Log.d( TAG, "Unable to lock; cur owner: %s; would-be owner: %s",
+                       mOwners.peek(), new Owner() );
+        }
     }
 }
