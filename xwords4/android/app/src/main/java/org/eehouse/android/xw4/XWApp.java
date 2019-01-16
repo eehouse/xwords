@@ -104,6 +104,7 @@ public class XWApp extends Application implements LifecycleObserver {
             if ( null != DBUtils.getRelayIDs( this, null ) ) {
                 RelayService.timerFired( this );
             }
+            GameUtils.resendAllIf( this, null );
             break;
         case ON_STOP:
             BTService.onAppToBackground( this );
