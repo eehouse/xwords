@@ -62,8 +62,8 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
     private LinearLayout m_layout;
     private boolean m_visible;
-    private Map<Buttons, Object> m_onClickListeners;
-    private Map<Buttons, Object> m_onLongClickListeners;
+    private Map<Buttons, Object> m_onClickListeners = new HashMap<>();
+    private Map<Buttons, Object> m_onLongClickListeners = new HashMap<>();
     private Set<Buttons> m_enabled = new HashSet<Buttons>();
 
     public Toolbar( Activity activity, HasDlgDelegate dlgDlgt )
@@ -87,12 +87,9 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
         return (ImageButton)m_activity.findViewById( index.getResId() );
     }
 
-    public void setListener( Buttons index, final int msgID,
-                             final int prefsKey, final Action action )
+    public Toolbar setListener( Buttons index, final int msgID,
+                                final int prefsKey, final Action action )
     {
-        if ( null == m_onClickListeners ) {
-            m_onClickListeners = new HashMap<Buttons, Object>();
-        }
         m_onClickListeners.put( index, new View.OnClickListener() {
                 @Override
                 public void onClick( View view ) {
@@ -102,14 +99,12 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
                         .show();
                 }
             } );
+        return this;
     }
 
-    public void setLongClickListener( Buttons index, final int msgID,
+    public Toolbar setLongClickListener( Buttons index, final int msgID,
                                          final int prefsKey, final Action action )
     {
-        if ( null == m_onLongClickListeners ) {
-            m_onLongClickListeners = new HashMap<Buttons, Object>();
-        }
         m_onLongClickListeners.put( index, new View.OnLongClickListener() {
                 public boolean onLongClick( View view ) {
                     m_dlgDlgt.makeNotAgainBuilder( msgID, prefsKey, action )
@@ -117,9 +112,10 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
                     return true;
                 }
             } );
+        return this;
     }
 
-    public void update( Buttons index, boolean enable )
+    public Toolbar update( Buttons index, boolean enable )
     {
         int id = index.getResId();
         ImageButton button = (ImageButton)m_activity.findViewById( id );
@@ -132,6 +128,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
         } else {
             m_enabled.remove( index );
         }
+        return this;
     }
 
     protected int enabledCount() { return m_enabled.size(); }

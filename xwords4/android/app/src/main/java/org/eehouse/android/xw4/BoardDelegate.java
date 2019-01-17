@@ -2276,39 +2276,41 @@ public class BoardDelegate extends DelegateBase
             m_toolbar.setListener( Buttons.BUTTON_BROWSE_DICT,
                                    R.string.not_again_browseall,
                                    R.string.key_na_browseall,
-                                   Action.BUTTON_BROWSEALL_ACTION );
-            m_toolbar.setLongClickListener( Buttons.BUTTON_BROWSE_DICT,
-                                            R.string.not_again_browse,
-                                            R.string.key_na_browse,
-                                            Action.BUTTON_BROWSE_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_HINT_PREV,
-                                   R.string.not_again_hintprev,
-                                   R.string.key_notagain_hintprev,
-                                   Action.PREV_HINT_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_HINT_NEXT,
-                                   R.string.not_again_hintnext,
-                                   R.string.key_notagain_hintnext,
-                                   Action.NEXT_HINT_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_JUGGLE,
-                                   R.string.not_again_juggle,
-                                   R.string.key_notagain_juggle,
-                                   Action.JUGGLE_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_FLIP,
-                                   R.string.not_again_flip,
-                                   R.string.key_notagain_flip,
-                                   Action.FLIP_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_VALUES,
-                                   R.string.not_again_values,
-                                   R.string.key_na_values,
-                                   Action.VALUES_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_UNDO,
-                                   R.string.not_again_undo,
-                                   R.string.key_notagain_undo,
-                                   Action.UNDO_ACTION );
-            m_toolbar.setListener( Buttons.BUTTON_CHAT,
-                                   R.string.not_again_chat,
-                                   R.string.key_notagain_chat,
-                                   Action.CHAT_ACTION );
+                                   Action.BUTTON_BROWSEALL_ACTION )
+                .setLongClickListener( Buttons.BUTTON_BROWSE_DICT,
+                                       R.string.not_again_browse,
+                                       R.string.key_na_browse,
+                                       Action.BUTTON_BROWSE_ACTION )
+                .setListener( Buttons.BUTTON_HINT_PREV,
+                              R.string.not_again_hintprev,
+                              R.string.key_notagain_hintprev,
+                              Action.PREV_HINT_ACTION )
+                .setListener( Buttons.BUTTON_HINT_NEXT,
+                              R.string.not_again_hintnext,
+                              R.string.key_notagain_hintnext,
+                              Action.NEXT_HINT_ACTION )
+                .setListener( Buttons.BUTTON_JUGGLE,
+                              R.string.not_again_juggle,
+                              R.string.key_notagain_juggle,
+                              Action.JUGGLE_ACTION )
+                .setListener( Buttons.BUTTON_FLIP,
+                              R.string.not_again_flip,
+                              R.string.key_notagain_flip,
+                              Action.FLIP_ACTION )
+                .setListener( Buttons.BUTTON_VALUES,
+                              R.string.not_again_values,
+                              R.string.key_na_values,
+                              Action.VALUES_ACTION )
+                .setListener( Buttons.BUTTON_UNDO,
+                              R.string.not_again_undo,
+                              R.string.key_notagain_undo,
+                              Action.UNDO_ACTION )
+                .setListener( Buttons.BUTTON_CHAT,
+                              R.string.not_again_chat,
+                              R.string.key_notagain_chat,
+                              Action.CHAT_ACTION );
+        } else {
+            Log.e( TAG, "not initing toolbar; still null" );
         }
     } // populateToolbar
 
@@ -2499,15 +2501,15 @@ public class BoardDelegate extends DelegateBase
     private void updateToolbar()
     {
         if ( null != m_toolbar ) {
-            m_toolbar.update( Buttons.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
-            m_toolbar.update( Buttons.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
-            m_toolbar.update( Buttons.BUTTON_JUGGLE, m_gsi.canShuffle );
-            m_toolbar.update( Buttons.BUTTON_UNDO, m_gsi.canRedo );
-            m_toolbar.update( Buttons.BUTTON_HINT_PREV, m_gsi.canHint );
-            m_toolbar.update( Buttons.BUTTON_HINT_NEXT, m_gsi.canHint );
-            m_toolbar.update( Buttons.BUTTON_CHAT, m_gsi.canChat );
-            m_toolbar.update( Buttons.BUTTON_BROWSE_DICT,
-                              null != m_gi.dictName( m_view.getCurPlayer() ) );
+            m_toolbar.update( Buttons.BUTTON_FLIP, m_gsi.visTileCount >= 1 )
+                .update( Buttons.BUTTON_VALUES, m_gsi.visTileCount >= 1 )
+                .update( Buttons.BUTTON_JUGGLE, m_gsi.canShuffle )
+                .update( Buttons.BUTTON_UNDO, m_gsi.canRedo )
+                .update( Buttons.BUTTON_HINT_PREV, m_gsi.canHint )
+                .update( Buttons.BUTTON_HINT_NEXT, m_gsi.canHint )
+                .update( Buttons.BUTTON_CHAT, m_gsi.canChat )
+                .update( Buttons.BUTTON_BROWSE_DICT,
+                         null != m_gi.dictName( m_view.getCurPlayer() ) );
 
             int count = m_toolbar.enabledCount();
             if ( 0 == count ) {
