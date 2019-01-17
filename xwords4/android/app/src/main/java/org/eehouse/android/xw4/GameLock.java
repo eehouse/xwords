@@ -34,15 +34,28 @@ import android.support.annotation.NonNull;
 // Implements read-locks and write-locks per game.  A read lock is
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
-public class GameLock implements AutoCloseable {
+//
+// Let's try representing a lock with something serializable. Let's not have
+// one public object per game, but rather let lots of objects represent the
+// same state. That way a lock can be grabbed by one thread or object (think
+// GamesListDelegate) and held for as long as it takes the game that's opened
+// to be closed. During that time it can be shared among objects
+// (BoardDelegate and JNIThread, etc.) that know how to manage their
+// interactions. (Note that I'm not doing this now -- found a way around it --
+// but that the capability is still worth having, and so the change is going
+// in. Having getFor() be public, and there being GameLock instances out there
+// whose state was "unlocked", was just dumb.)
+//
+// So the class everybody sees (GameLock) is not stored. The rowid it
+// holds is a key to a private Hash of state.
+
+public class GameLock implements AutoCloseable, Serializable {
     private static final String TAG = GameLock.class.getSimpleName();
 
     private static final boolean DEBUG_LOCKS = false;
     // private static final long ASSERT_TIME = 2000;
     private static final long THROW_TIME = 1000;
     private long m_rowid;
-    private Stack<Owner> mOwners = new Stack<>();
-    private boolean mReadOnly;
 
     private static class Owner {
         Thread mThread;
@@ -62,26 +75,195 @@ public class GameLock implements AutoCloseable {
         }
     }
 
-    @Override
-    public String toString()
-    {
-        return String.format("{this: %H; rowid: %d; count: %d; ro: %b}",
-                             this, m_rowid, mOwners.size(), mReadOnly);
+    private static class GameLockState {
+        long mRowid;
+        private Stack<Owner> mOwners = new Stack<>();
+        private boolean mReadOnly;
+
+        GameLockState( long rowid ) { mRowid = rowid; }
+
+        // We grant a lock IFF:
+        // * Count is 0
+        // OR
+        // * existing locks are ReadOnly and this request is readOnly
+        // OR
+        // * the requesting thread already holds the lock (later...)
+        // // This could be written to allow multiple read locks.  Let's
+        // // see if not doing that causes problems.
+
+        private GameLock tryLockImpl( boolean readOnly )
+        {
+            GameLock result = null;
+            synchronized ( mOwners ) {
+                if ( DEBUG_LOCKS ) {
+                    Log.d( TAG, "%s.tryLockImpl(ro=%b)", this, readOnly );
+                }
+                // Thread thisThread = Thread.currentThread();
+                boolean grant = false;
+                if ( mOwners.empty() ) {
+                    grant = true;
+                } else if ( mReadOnly && readOnly ) {
+                    grant = true;
+                    // } else if ( thisThread == mOwnerThread ) {
+                    //     grant = true;
+                }
+
+                if ( grant ) {
+                    mOwners.push( new Owner() );
+                    mReadOnly = readOnly;
+                    result = new GameLock( mRowid );
+                }
+            }
+            return result;
+        }
+
+        private GameLock tryLockRO()
+        {
+            GameLock result = tryLockImpl( true );
+            logIfNull( result, "tryLockRO()" );
+            return result;
+        }
+
+        private GameLock lockImpl( long timeoutMS, boolean readOnly ) throws InterruptedException
+        {
+            long startMS = System.currentTimeMillis();
+            long endMS = startMS + timeoutMS;
+            synchronized ( mOwners ) {
+                while ( null == tryLockImpl( readOnly ) ) {
+                    long now = System.currentTimeMillis();
+                    if ( now >= endMS ) {
+                        throw new GameLockedException();
+                    }
+                    mOwners.wait( endMS - now );
+                }
+            }
+
+            if ( DEBUG_LOCKS ) {
+                long tookMS = System.currentTimeMillis() - startMS;
+                Log.d( TAG, "%s.lockImpl() returning after %d ms", this, tookMS );
+            }
+            return new GameLock(mRowid);
+        }
+
+        // Version that's allowed to return null -- if maxMillis > 0
+        private GameLock lock( long maxMillis ) throws GameLockedException
+        {
+            Assert.assertTrue( maxMillis <= THROW_TIME );
+            GameLock result = null;
+            try {
+                result = lockImpl( maxMillis, false );
+            } catch (InterruptedException ex) {
+                Log.d( TAG, "lock(): got %s", ex.getMessage() );
+            }
+            if ( DEBUG_LOCKS ) {
+                Log.d( TAG, "%s.lock(%d) => %s", this, maxMillis, result );
+            }
+            logIfNull( result, "lock(maxMillis=%d)", maxMillis );
+            return result;
+        }
+
+        private GameLock tryLock()
+        {
+            GameLock result = tryLockImpl( false );
+            logIfNull( result, "tryLock()" );
+            return result;
+        }
+
+        public GameLock lock() throws InterruptedException
+        {
+            if ( BuildConfig.DEBUG ) {
+                DbgUtils.assertOnUIThread( false );
+            }
+            GameLock result = lockImpl( Long.MAX_VALUE, false );
+            Assert.assertNotNull( result );
+            return result;
+        }
+
+        private GameLock lockRO( long maxMillis )
+        {
+            Assert.assertTrue( maxMillis <= THROW_TIME );
+            GameLock lock = null;
+            try {
+                lock = lockImpl( maxMillis, true );
+            } catch ( InterruptedException ex ) {
+            }
+
+            logIfNull( lock, "lockRO(maxMillis=%d)", maxMillis );
+            return lock;
+        }
+
+        private void unlock()
+        {
+            synchronized ( mOwners ) {
+                if ( DEBUG_LOCKS ) {
+                    Log.d( TAG, "%s.unlock()", this );
+                }
+                Thread oldThread = mOwners.pop().mThread;
+
+                // It's ok for different threads to hold the same RO lock
+                if ( !mReadOnly && oldThread != Thread.currentThread() ) {
+                    Log.e( TAG, "unlock(): unequal threads: %s => %s", oldThread,
+                           Thread.currentThread() );
+                    Assert.fail();
+                }
+
+                if ( mOwners.empty() ) {
+                    mOwners.notifyAll();
+                }
+                if ( DEBUG_LOCKS ) {
+                    Log.d( TAG, "%s.unlock() DONE", this );
+                }
+            }
+        }
+
+        private boolean canWrite()
+        {
+            boolean result = !mReadOnly; // && 1 == mLockCount[0];
+            if ( !result ) {
+                Log.w( TAG, "%s.canWrite(): => false", this );
+            }
+            return result;
+        }
+
+        private void setOwner( Owner owner )
+        {
+            synchronized ( mOwners ) {
+                mOwners.pop();
+                mOwners.push( owner );
+            }
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format("{this: %H; rowid: %d; count: %d; ro: %b}",
+                                 this, mRowid, mOwners.size(), mReadOnly);
+        }
+
+        private void logIfNull( GameLock result, String fmt, Object... args )
+        {
+            if ( DEBUG_LOCKS && null == result ) {
+                String func = new Formatter().format( fmt, args ).toString();
+                Log.d( TAG, "%s.%s => null", this, func );
+                Log.d( TAG, "Unable to lock; cur owner: %s; would-be owner: %s",
+                       mOwners.peek(), new Owner() );
+            }
+        }
     }
 
     public static class GameLockedException extends RuntimeException {}
 
-    private static Map<Long, WeakReference<GameLock>> sLockMap = new HashMap<>();
-    public static GameLock getFor( long rowid )
+    private static Map<Long, GameLockState> sLockMap = new HashMap<>();
+    private static GameLockState getFor( long rowid )
     {
-        GameLock result = null;
+        GameLockState result = null;
         synchronized ( sLockMap ) {
             if ( sLockMap.containsKey( rowid ) ) {
-                result = sLockMap.get( rowid ).get();
+                result = sLockMap.get( rowid );
             }
             if ( null == result ) {
-                result = new GameLock( rowid );
-                sLockMap.put( rowid, new WeakReference(result) );
+                result = new GameLockState( rowid );
+                sLockMap.put( rowid, result );
             }
         }
         return result;
@@ -89,138 +271,35 @@ public class GameLock implements AutoCloseable {
 
     private GameLock( long rowid ) { m_rowid = rowid; }
 
-    // We grant a lock IFF:
-    // * Count is 0
-    // OR
-    // * existing locks are ReadOnly and this request is readOnly
-    // OR
-    // * the requesting thread already holds the lock (later...)
-    private GameLock tryLockImpl( boolean readOnly )
+    public static GameLock tryLock( long rowid )
     {
-        GameLock result = null;
-        synchronized ( mOwners ) {
-            if ( DEBUG_LOCKS ) {
-                Log.d( TAG, "%s.tryLockImpl(ro=%b)", this, readOnly );
-            }
-            // Thread thisThread = Thread.currentThread();
-            boolean grant = false;
-            if ( mOwners.empty() ) {
-                grant = true;
-            } else if ( mReadOnly && readOnly ) {
-                grant = true;
-            // } else if ( thisThread == mOwnerThread ) {
-            //     grant = true;
-            }
-
-            if ( grant ) {
-                mOwners.push( new Owner() );
-                mReadOnly = readOnly;
-                result = this;
-            }
-        }
-        return result;
-    }
-    
-    // // This could be written to allow multiple read locks.  Let's
-    // // see if not doing that causes problems.
-    public GameLock tryLock()
-    {
-        GameLock result = tryLockImpl( false );
-        logIfNull( result, "tryLock()" );
-        return result;
+        return getFor( rowid ).tryLock();
     }
 
-    public GameLock tryLockRO()
+    public static GameLock tryLockRO(long rowid)
     {
-        GameLock result = tryLockImpl( true );
-        logIfNull( result, "tryLockRO()" );
-        return result;
-    }
-
-    private GameLock lockImpl( long timeoutMS, boolean readOnly ) throws InterruptedException
-    {
-        long startMS = System.currentTimeMillis();
-        long endMS = startMS + timeoutMS;
-        synchronized ( mOwners ) {
-            while ( null == tryLockImpl( readOnly ) ) {
-                long now = System.currentTimeMillis();
-                if ( now >= endMS ) {
-                    throw new GameLockedException();
-                }
-                mOwners.wait( endMS - now );
-            }
-        }
-
-        if ( DEBUG_LOCKS ) {
-            long tookMS = System.currentTimeMillis() - startMS;
-            Log.d( TAG, "%s.lockImpl() returning after %d ms", this, tookMS );
-        }
-        return this;
+        return getFor( rowid ).tryLockRO();
     }
 
     @NonNull
-    public GameLock lock() throws InterruptedException
+    public static GameLock lock(long rowid) throws InterruptedException
     {
-        if ( BuildConfig.DEBUG ) {
-            DbgUtils.assertOnUIThread( false );
-        }
-        GameLock result = lockImpl( Long.MAX_VALUE, false );
-        Assert.assertNotNull( result );
-        return result;
+        return getFor( rowid ).lock();
     }
 
-    // Version that's allowed to return null -- if maxMillis > 0
-    public GameLock lock( long maxMillis ) throws GameLockedException
+    public static GameLock lock( long rowid, long maxMillis ) throws GameLockedException
     {
-        Assert.assertTrue( maxMillis <= THROW_TIME );
-        GameLock result = null;
-        try {
-            result = lockImpl( maxMillis, false );
-        } catch (InterruptedException ex) {
-            Log.d( TAG, "lock(): got %s", ex.getMessage() );
-        }
-        if ( DEBUG_LOCKS ) {
-            Log.d( TAG, "%s.lock(%d) => %s", this, maxMillis, result );
-        }
-        logIfNull( result, "lock(maxMillis=%d)", maxMillis );
-        return result;
+        return getFor( rowid ).lock( maxMillis );
     }
 
-    public GameLock lockRO( long maxMillis )
+    public static GameLock lockRO( long rowid, long maxMillis )
     {
-        Assert.assertTrue( maxMillis <= THROW_TIME );
-        GameLock lock = null;
-        try {
-            lock = lockImpl( maxMillis, true );
-        } catch ( InterruptedException ex ) {
-        }
-
-        logIfNull( lock, "lockRO(maxMillis=%d)", maxMillis );
-        return lock;
+        return getFor( rowid ).lockRO( maxMillis );
     }
 
     public void unlock()
     {
-        synchronized ( mOwners ) {
-            if ( DEBUG_LOCKS ) {
-                Log.d( TAG, "%s.unlock()", this );
-            }
-            Thread oldThread = mOwners.pop().mThread;
-
-            // It's ok for different threads to hold the same RO lock
-            if ( !mReadOnly && oldThread != Thread.currentThread() ) {
-                Log.e( TAG, "unlock(): unequal threads: %s => %s", oldThread,
-                       Thread.currentThread() );
-                Assert.fail();
-            }
-            
-            if ( mOwners.empty() ) {
-                mOwners.notifyAll();
-            }
-            if ( DEBUG_LOCKS ) {
-                Log.d( TAG, "%s.unlock() DONE", this );
-            }
-        }
+        getFor( m_rowid ).unlock();
     }
 
     @Override
@@ -232,14 +311,6 @@ public class GameLock implements AutoCloseable {
     public long getRowid()
     {
         return m_rowid;
-    }
-
-    private void setOwner( Owner owner )
-    {
-        synchronized ( mOwners ) {
-            mOwners.pop();
-            mOwners.push( owner );
-        }
     }
 
     public interface LockProc {
@@ -268,10 +339,9 @@ public class GameLock implements AutoCloseable {
                         } catch ( Exception ex) {}
                     } else {
                         try {
-                            lock = GameLock
-                                .getFor( rowid )
-                                .lockImpl( maxMillis, false );
-                            lock.setOwner( owner );
+                            GameLockState state = getFor( rowid );
+                            lock = state.lockImpl( maxMillis, false );
+                            state.setOwner( owner );
                         } catch ( GameLockedException | InterruptedException gle ) {}
                     }
 
@@ -289,20 +359,6 @@ public class GameLock implements AutoCloseable {
     // used only for asserts
     public boolean canWrite()
     {
-        boolean result = !mReadOnly; // && 1 == mLockCount[0];
-        if ( !result ) {
-            Log.w( TAG, "%s.canWrite(): => false", this );
-        }
-        return result;
-    }
-
-    private void logIfNull( GameLock result, String fmt, Object... args )
-    {
-        if ( DEBUG_LOCKS && null == result ) {
-            String func = new Formatter().format( fmt, args ).toString();
-            Log.d( TAG, "%s.%s => null", this, func );
-            Log.d( TAG, "Unable to lock; cur owner: %s; would-be owner: %s",
-                       mOwners.peek(), new Owner() );
-        }
+        return getFor( m_rowid ).canWrite();
     }
 }

@@ -663,7 +663,7 @@ public class DelegateBase implements DlgClickNotify,
     public void onStatusClicked( long rowid )
     {
         Log.d( TAG, "onStatusClicked(%d)", rowid );
-        try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+        try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
             if ( null != lock ) {
                 GamePtr gamePtr = GameUtils.loadMakeGame( getActivity(), lock );
                 if ( null != gamePtr ) {

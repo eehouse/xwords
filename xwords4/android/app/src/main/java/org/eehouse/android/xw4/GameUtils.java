@@ -93,7 +93,7 @@ public class GameUtils {
     public static byte[] savedGame( Context context, long rowid )
     {
         byte[] result = null;
-        try (GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+        try (GameLock lock = GameLock.tryLockRO( rowid ) ) {
             if ( null != lock ) {
                 result = savedGame( context, lock );
             }
@@ -147,7 +147,7 @@ public class GameUtils {
         if ( null == lockDest ) {
             long groupID = DBUtils.getGroupForGame( context, lockSrc.getRowid() );
             long rowid = saveNewGame( context, gamePtr, gi, groupID );
-            lockDest = GameLock.getFor( rowid ).tryLock();
+            lockDest = GameLock.tryLock( rowid );
         } else {
             saveGame( context, gamePtr, gi, lockDest, true );
         }
@@ -160,7 +160,7 @@ public class GameUtils {
     public static boolean resetGame( Context context, long rowidIn )
     {
         boolean success = false;
-        try ( GameLock lock = GameLock.getFor( rowidIn ).lock( 500 ) ) {
+        try ( GameLock lock = GameLock.lock( rowidIn, 500 ) ) {
             if ( null != lock ) {
                 tellDied( context, lock, true );
                 resetGame( context, lock, lock, false );
@@ -225,7 +225,7 @@ public class GameUtils {
             lock = thread.getLock();
         } else {
             try {
-                lock = GameLock.getFor( rowid ).lockRO( maxMillis );
+                lock = GameLock.lockRO( rowid, maxMillis );
             } catch ( GameLock.GameLockedException gle ) {
                 Log.ex( TAG, gle );
             }
@@ -256,7 +256,7 @@ public class GameUtils {
         if ( null != thread ) {
             lockSrc = thread.getLock();
         } else {
-            lockSrc = GameLock.getFor( rowidIn ).lockRO( 300 );
+            lockSrc = GameLock.lockRO( rowidIn, 300 );
         }
 
         if ( null != lockSrc ) {
@@ -292,7 +292,7 @@ public class GameUtils {
     {
         boolean success;
         // does this need to be synchronized?
-        try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
+        try ( GameLock lock = GameLock.tryLock( rowid ) ) {
             if ( null != lock ) {
                 deleteGame( context, lock, informNow );
                 success = true;
@@ -397,7 +397,7 @@ public class GameUtils {
     public static Bitmap loadMakeBitmap( Context context, long rowid )
     {
         Bitmap thumb = null;
-        try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+        try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
             if ( null != lock ) {
                 CurGameInfo gi = new CurGameInfo( context );
                 GamePtr gamePtr = loadMakeGame( context, gi, lock );
@@ -649,7 +649,7 @@ public class GameUtils {
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             // Use tryLock in case we're on UI thread. It's guaranteed to
             // succeed because we just created the rowid.
-            try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
+            try ( GameLock lock = GameLock.tryLock( rowid ) ) {
                 Assert.assertNotNull( lock );
                 applyChanges( context, sink, gi, util, addr, null, lock, false );
             }
@@ -910,7 +910,7 @@ public class GameUtils {
             // have the lock and we'll never get it.  Better to drop
             // the message than fire the hung-lock assert.  Messages
             // belong in local pre-delivery storage anyway.
-            try ( GameLock lock = GameLock.getFor( rowid ).lock( 150 ) ) {
+            try ( GameLock lock = GameLock.lock( rowid, 150 ) ) {
                 if ( null != lock ) {
                     CurGameInfo gi = new CurGameInfo( context );
                     FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
@@ -973,7 +973,7 @@ public class GameUtils {
                                         String oldDict, String newDict )
     {
         boolean success;
-        try ( GameLock lock = GameLock.getFor( rowid ).lock(300) ) {
+        try ( GameLock lock = GameLock.lock( rowid, 300 ) ) {
             success = null != lock;
             if ( success ) {
                 byte[] stream = savedGame( context, lock );
@@ -1258,7 +1258,7 @@ public class GameUtils {
                     }
                 }
 
-                try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+                try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
                     if ( null != lock ) {
                         CurGameInfo gi = new CurGameInfo( m_context );
                         MultiMsgSink sink = new MultiMsgSink( m_context, rowid );

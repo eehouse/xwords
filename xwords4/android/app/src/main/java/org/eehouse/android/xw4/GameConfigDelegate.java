@@ -539,7 +539,7 @@ public class GameConfigDelegate extends DelegateBase
             GameLock gameLock = null;
             XwJNI.GamePtr gamePtr = null;
             if ( null == m_jniThread ) {
-                gameLock = GameLock.getFor( m_rowid ).tryLockRO();
+                gameLock = GameLock.tryLockRO( m_rowid );
                 if ( null != gameLock ) {
                     gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig,
                                                       gameLock );
@@ -1234,8 +1234,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         if ( !isFinishing() ) {
             GameLock gameLock = m_jniThread == null
-                ? GameLock.getFor( m_rowid ).tryLock()
-                : m_jniThread.getLock();
+                ? GameLock.tryLock( m_rowid ) : m_jniThread.getLock();
             GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
                                     gameLock, forceNew );
             DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it

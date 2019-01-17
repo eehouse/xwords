@@ -366,7 +366,7 @@ public class DBUtils {
     public static void addRematchInfo( Context context, long rowid, String btAddr,
                                        String phone, String relayID, String p2pAddr )
     {
-        try ( GameLock lock = GameLock.getFor( rowid ).tryLock() ) {
+        try ( GameLock lock = GameLock.tryLock(rowid) ) {
             if ( null != lock ) {
                 GameSummary summary = getSummary( context, lock );
                 if ( null != btAddr ) {
@@ -1057,7 +1057,7 @@ public class DBUtils {
 
             setCached( rowid, null ); // force reread
 
-            lock = GameLock.getFor( rowid ).tryLock();
+            lock = GameLock.tryLock( rowid );
             Assert.assertNotNull( lock );
             notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
@@ -1119,7 +1119,7 @@ public class DBUtils {
 
     public static void deleteGame( Context context, long rowid )
     {
-        try ( GameLock lock = GameLock.getFor( rowid ).lock( 300 ) ) {
+        try ( GameLock lock = GameLock.lock( rowid, 300 ) ) {
             if ( null != lock ) {
                 deleteGame( context, lock );
             } else {

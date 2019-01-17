@@ -2769,7 +2769,7 @@ public class BoardDelegate extends DelegateBase
             summary = thread.getSummary();
             gi = thread.getGI();
         } else {
-            try ( GameLock lock = GameLock.getFor( rowID ).tryLockRO() ) {
+            try ( GameLock lock = GameLock.tryLockRO( rowID ) ) {
                 if ( null != lock ) {
                     summary = DBUtils.getSummary( activity, lock );
                     gi = new CurGameInfo( activity );

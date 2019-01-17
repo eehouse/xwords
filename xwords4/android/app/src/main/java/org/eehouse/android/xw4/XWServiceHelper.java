@@ -134,7 +134,7 @@ abstract class XWServiceHelper {
                 for ( int ii = 0; success && ii < rowids.length; ++ii ) {
                     long rowid = rowids[ii];
                     CurGameInfo gi = null;
-                    try ( GameLock lock = GameLock.getFor( rowid ).tryLockRO() ) {
+                    try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
                         // drop invite if can't open game; likely a dupe!
                         if ( null != lock ) {
                             gi = new CurGameInfo( mService );
