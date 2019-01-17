@@ -2653,7 +2653,8 @@ public class BoardDelegate extends DelegateBase
     // For now, supported if standalone or either BT or SMS used for transport
     private boolean rematchSupported( boolean showMulti )
     {
-        return rematchSupported( showMulti ? m_activity : null,
+        return null != m_summary
+            && rematchSupported( showMulti ? m_activity : null,
                                  m_summary );
     }
 
