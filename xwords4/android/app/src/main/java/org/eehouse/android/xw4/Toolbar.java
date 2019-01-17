@@ -134,11 +134,17 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     protected int enabledCount() { return m_enabled.size(); }
 
     // SizeChangeListener
+    @Override
     public void sizeChanged( int width, int height, boolean isPortrait )
+    {
+        installListeners();
+        doShowHide();
+    }
+
+    public void installListeners()
     {
         tryAddListeners( m_onClickListeners );
         tryAddListeners( m_onLongClickListeners );
-        doShowHide();
     }
 
     private void tryAddListeners( Map<Buttons, Object> map )
@@ -163,7 +169,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
             } else if ( listener instanceof View.OnLongClickListener ) {
                 button.setOnLongClickListener( (View.OnLongClickListener)listener );
             } else {
-                Assert.fail();
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
         return success;

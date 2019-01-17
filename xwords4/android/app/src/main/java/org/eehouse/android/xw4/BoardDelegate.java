@@ -738,6 +738,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != findViewById( R.id.tbar_parent_hor ) ) {
             if ( null == m_toolbar ) {
                 m_toolbar = new Toolbar( m_activity, this );
+                populateToolbar();
             }
         }
     }
@@ -2150,7 +2151,6 @@ public class BoardDelegate extends DelegateBase
             }
 
             initToolbar();
-            populateToolbar();
             adjustTradeVisibility();
 
             int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
@@ -2245,7 +2245,7 @@ public class BoardDelegate extends DelegateBase
                     }
                     // Why this m_relayMissing thing?
                     if ( 0 == nMissing /* || !m_relayMissing*/ ) {
-                        Log.d( TAG, "dismissing invite alert %H", m_inviteAlert );
+                        // Log.d( TAG, "dismissing invite alert %H", m_inviteAlert );
                         dismissInviteAlert();
                     }
                 }
@@ -2285,6 +2285,7 @@ public class BoardDelegate extends DelegateBase
 
     private void populateToolbar()
     {
+        Assert.assertTrue( null != m_toolbar || !BuildConfig.DEBUG );
         if ( null != m_toolbar ) {
             m_toolbar.setListener( Buttons.BUTTON_BROWSE_DICT,
                                    R.string.not_again_browseall,
@@ -2321,7 +2322,8 @@ public class BoardDelegate extends DelegateBase
                 .setListener( Buttons.BUTTON_CHAT,
                               R.string.not_again_chat,
                               R.string.key_notagain_chat,
-                              Action.CHAT_ACTION );
+                              Action.CHAT_ACTION )
+                .installListeners();
         } else {
             Log.e( TAG, "not initing toolbar; still null" );
         }

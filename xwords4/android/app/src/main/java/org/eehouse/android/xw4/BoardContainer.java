@@ -70,7 +70,7 @@ public class BoardContainer extends ViewGroup {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    protected void onMeasure( int widthMeasureSpec, int heightMeasureSpec )
     {
         int width = MeasureSpec.getSize( widthMeasureSpec );
         int height = MeasureSpec.getSize( heightMeasureSpec );
@@ -111,7 +111,7 @@ public class BoardContainer extends ViewGroup {
     // gets it all IFF the trade buttons aren't visible.
     @Override
     protected void onLayout( boolean changed, int left, int top,
-                             int right, int bottom)
+                             int right, int bottom )
     {
         // If this isn't true, need to refigure the rects
         // Assert.assertTrue( 0 == left && 0 == top );
