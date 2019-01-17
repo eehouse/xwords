@@ -26,6 +26,11 @@
 
   <h3>New with this release</h3>
   <ul>
+      <li>Remove "Google Cloud Messaging", which is incompatible with
+          the Android version that is required as of Nov 1 2018. The
+          next release will replace it with something that is
+          compatible, but for now messages from the relay will be
+          delivered a bit more slowly</li>
       <li>Run BlueTooth visibly (with permanent notification) when in
           the background for 15 minutes after the last BlueTooth
           message was received</li>
@@ -45,11 +50,13 @@
 
   <h3>Next up</h3>
   <ul>
+      <li>Remove play-via-SMS feature from Google Play Store release
+          (Google has rejected my request to let it stay.)
+          (Play-via-SMS will remain in
+          the <a href="https://f-droid.org/">F-droid
+          release</a>.)</li>
       <li>Improve communication with the message-passing relay for
           Google Play store release</li>
-      <li>Investigate removing play-via-SMS feature from Google Play
-          store release (in case Google doesn't approve my request to
-          let it stay.) (F-droid release will retain SMS play.)
   </ul>
 
   <p>Please let me know
