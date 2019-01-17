@@ -200,12 +200,17 @@ public class GameLock implements AutoCloseable, Serializable {
                 }
                 Thread oldThread = mOwners.pop().mThread;
 
-                // It's ok for different threads to hold the same RO lock
-                if ( !mReadOnly && oldThread != Thread.currentThread() ) {
-                    Log.e( TAG, "unlock(): unequal threads: %s => %s", oldThread,
-                           Thread.currentThread() );
-                    Assert.fail();
-                }
+                // It's ok for different threads to obtain and unlock the same
+                // lock. E.g. JNIThread is refcounted, with multiple threads
+                // holding the same reference. The last to release() it will
+                // be the one that calls unlock() and may not be the original
+                // caller of lock(). There's probably no point in even
+                // tracking threads, but it's useful for logging conflicts. So
+                // commenting out for now.
+                // if ( !mReadOnly && oldThread != Thread.currentThread() ) {
+                //     Log.e( TAG, "unlock(): unequal threads: %s => %s",
+                //            oldThread, Thread.currentThread() );
+                // }
 
                 if ( mOwners.empty() ) {
                     mOwners.notifyAll();
