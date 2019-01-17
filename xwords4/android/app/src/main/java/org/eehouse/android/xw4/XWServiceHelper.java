@@ -76,7 +76,7 @@ abstract class XWServiceHelper {
     {
         boolean allConsumed = true;
         boolean[] isLocalP = new boolean[1];
-        JNIThread jniThread = JNIThread.getRetained( context, rowid );
+        JNIThread jniThread = JNIThread.getRetained( rowid );
         boolean consumed = false;
         if ( null != jniThread ) {
             consumed = true;
@@ -146,7 +146,7 @@ abstract class XWServiceHelper {
 
                     if ( null == gi ) {
                         // locked. Maybe it's open?
-                        JNIThread thread = JNIThread.getRetained( mService, rowid );
+                        JNIThread thread = JNIThread.getRetained( rowid );
                         if ( null != thread ) {
                             gi = thread.getGI();
                             thread.release( false );

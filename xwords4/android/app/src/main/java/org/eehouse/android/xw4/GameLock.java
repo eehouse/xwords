@@ -20,6 +20,8 @@
 
 package org.eehouse.android.xw4;
 
+import android.os.Handler;
+
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.Formatter;
@@ -230,6 +232,58 @@ public class GameLock implements AutoCloseable {
     public long getRowid()
     {
         return m_rowid;
+    }
+
+    private void setOwner( Owner owner )
+    {
+        synchronized ( mOwners ) {
+            mOwners.pop();
+            mOwners.push( owner );
+        }
+    }
+
+    public interface LockProc {
+        public void gotLock( GameLock lock );
+    }
+
+    // Meant to be called from UI thread, returning immediately, but when it
+    // gets the lock, or time runs out, calls the callback (using the Handler
+    // passed in) with the lock or null.
+    public static void callWithLock( final long rowid,
+                                     final long maxMillis,
+                                     final Handler handler,
+                                     final LockProc proc )
+    {
+        // capture caller thread and stack
+        final Owner owner = new Owner();
+
+        new Thread( new Runnable() {
+                @Override
+                public void run() {
+                    GameLock lock = null;
+                    if ( false && 0 == Utils.nextRandomInt() % 5 ) {
+                        Log.d( TAG, "testing return-null case" );
+                        try {
+                            Thread.sleep( maxMillis );
+                        } catch ( Exception ex) {}
+                    } else {
+                        try {
+                            lock = GameLock
+                                .getFor( rowid )
+                                .lockImpl( maxMillis, false );
+                            lock.setOwner( owner );
+                        } catch ( GameLockedException | InterruptedException gle ) {}
+                    }
+
+                    final GameLock fLock = lock;
+                    handler.post( new Runnable() {
+                            @Override
+                            public void run() {
+                                proc.gotLock( fLock );
+                            }
+                        } );
+                }
+            } ).start();
     }
 
     // used only for asserts

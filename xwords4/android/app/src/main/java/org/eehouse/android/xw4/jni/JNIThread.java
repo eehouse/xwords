@@ -823,27 +823,24 @@ public class JNIThread extends Thread {
         }
     }
 
-    public static JNIThread getRetained( Context context, long rowid )
+    public static JNIThread getRetained( long rowid )
     {
-        return getRetained( context, rowid, false );
+        return getRetained( rowid, null );
     }
 
-    public static JNIThread getRetained( Context context, long rowid, boolean makeNew )
+    public static JNIThread getRetained( GameLock lock )
+    {
+        return getRetained( lock.getRowid(), lock );
+    }
+
+    private static JNIThread getRetained( long rowid, GameLock lock )
     {
         JNIThread result = null;
         synchronized( s_instances ) {
             result = s_instances.get( rowid );
-            if ( null == result && makeNew ) {
-                DbgUtils.assertOnUIThread(); // can't use GameLock.lock()
-                if ( true /*test done*/ || (0 != Utils.nextRandomInt() % 3) ) {
-                    GameLock lock = GameLock.getFor( rowid ).tryLock();
-                    if ( lock != null ) {
-                        result = new JNIThread( lock );
-                        s_instances.put( rowid, result );
-                    } else {
-                        DbgUtils.toastNoLock( TAG, context, "getRetained(%d)", rowid );
-                    }
-                }
+            if ( null == result && null != lock ) {
+                result = new JNIThread( lock );
+                s_instances.put( rowid, result );
             }
             if ( null != result ) {
                 result.retain_sync();

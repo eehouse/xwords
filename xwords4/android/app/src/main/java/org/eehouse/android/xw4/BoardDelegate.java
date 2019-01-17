@@ -566,35 +566,48 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
-        // getRetained() can in threory fail to get the lock and so will
-        // return null. Let m_jniThreadRef stay null in that case; doResume()
-        // will finish() in that case.
-        m_jniThreadRef = JNIThread.getRetained( m_activity, m_rowid, true );
-        if ( null != m_jniThreadRef ) {
-            // see http://stackoverflow.com/questions/680180/where-to-stop- \
-            // destroy-threads-in-android-service-class
-            m_jniThreadRef.setDaemonOnce( true );
-            m_jniThreadRef.startOnce();
+        GameLock.callWithLock( m_rowid, 100L, new Handler(),
+                               new GameLock.LockProc() {
+                @Override
+                public void gotLock( GameLock lock ) {
+                    if ( null == lock ) {
+                        finish();
+                    } else {
+                        m_jniThreadRef = JNIThread.getRetained( lock );
 
-            NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
+                        // see http://stackoverflow.com/questions/680180/where-to-stop- \
+                        // destroy-threads-in-android-service-class
+                        m_jniThreadRef.setDaemonOnce( true );
+                        m_jniThreadRef.startOnce();
 
-            setBackgroundColor();
-            setKeepScreenOn();
-        }
+                        // Don't seem to need to unregister...
+                        NFCUtils.register( m_activity, BoardDelegate.this );
+
+                        setBackgroundColor();
+                        setKeepScreenOn();
+
+                        doResume( true );
+                    }
+                }
+            } );
     } // init
 
     @Override
     protected void onStart()
     {
         super.onStart();
-        doResume( true );
+        if ( null != m_jniThreadRef ) {
+            doResume( true );
+        }
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        doResume( false );
+        if ( null != m_jniThreadRef ) {
+            doResume( false );
+        }
     }
 
     protected void onPause()
@@ -2747,7 +2760,7 @@ public class BoardDelegate extends DelegateBase
         GamePtr gamePtr = null;
         GameSummary summary = null;
         CurGameInfo gi = null;
-        JNIThread thread = JNIThread.getRetained( activity, rowID );
+        JNIThread thread = JNIThread.getRetained( rowID );
         if ( null != thread ) {
             gamePtr = thread.getGamePtr().retain();
             summary = thread.getSummary();

@@ -219,7 +219,7 @@ public class GameUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        JNIThread thread = JNIThread.getRetained( context, rowid );
+        JNIThread thread = JNIThread.getRetained( rowid );
         GameLock lock = null;
         if ( null != thread ) {
             lock = thread.getLock();
@@ -252,7 +252,7 @@ public class GameUtils {
         long rowid = DBUtils.ROWID_NOTFOUND;
         GameLock lockSrc = null;
 
-        JNIThread thread = JNIThread.getRetained( context, rowidIn );
+        JNIThread thread = JNIThread.getRetained( rowidIn );
         if ( null != thread ) {
             lockSrc = thread.getLock();
         } else {
@@ -1275,7 +1275,7 @@ public class GameUtils {
                                    + " failed for rowid %d", rowid );
                         }
                     } else {
-                        JNIThread jniThread = JNIThread.getRetained( m_context, rowid );
+                        JNIThread jniThread = JNIThread.getRetained( rowid );
                         if ( null != jniThread ) {
                             jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false,
                                               false, false );
