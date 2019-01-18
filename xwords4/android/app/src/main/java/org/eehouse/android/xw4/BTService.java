@@ -664,16 +664,14 @@ public class BTService extends XWService {
         void setService( Context context, BTService service )
         {
             synchronized ( mServiceHolder ) {
-                if ( null == mServiceHolder[0] ) {
-                    Log.d( TAG, "setService(): setting. notifying all!!!" );
+                if ( service != mServiceHolder[0] ) {
                     Assert.assertNotNull( context );
                     mContext = context; // Use Service instead of Receiver (possibly)
                     mServiceHolder[0] = service;
                     if ( service != null ) {
+                        Log.d( TAG, "setService(): setting. notifying all!!!" );
                         mServiceHolder.notifyAll();
                     }
-                } else {
-                    Assert.assertTrue( service == mServiceHolder[0] );
                 }
             }
         }
