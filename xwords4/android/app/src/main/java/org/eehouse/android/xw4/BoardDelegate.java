@@ -116,6 +116,8 @@ public class BoardDelegate extends DelegateBase
 
     private volatile JNIThread m_jniThread;
     private JNIThread m_jniThreadRef;
+    private boolean m_resumeSkipped;
+    private boolean m_startSkipped;
     private JNIThread.GameStateInfo m_gsi;
 
     private int m_nGuestDevs = -1;
@@ -586,7 +588,12 @@ public class BoardDelegate extends DelegateBase
                         setBackgroundColor();
                         setKeepScreenOn();
 
-                        doResume( true );
+                        if ( m_startSkipped ) {
+                            doResume( true );
+                        }
+                        if ( m_resumeSkipped ) {
+                            doResume( false );
+                        }
                     }
                 }
             } );
@@ -598,6 +605,8 @@ public class BoardDelegate extends DelegateBase
         super.onStart();
         if ( null != m_jniThreadRef ) {
             doResume( true );
+        } else {
+            m_startSkipped = true;
         }
     }
 
@@ -607,6 +616,8 @@ public class BoardDelegate extends DelegateBase
         super.onResume();
         if ( null != m_jniThreadRef ) {
             doResume( false );
+        } else {
+            m_resumeSkipped = true;
         }
     }
 
