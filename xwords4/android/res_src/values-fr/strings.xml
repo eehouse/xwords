@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
@@ -2101,7 +2101,7 @@ xwords@eehouse.org.</string>
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
     <!--<string name="about_credits">Toolbar icons by Sarah Chu.</string>-->
-    <string name="about_credits">Icônes de la barre d\'outils par Sarah Chu.</string>
+    <string name="about_credits">"Icônes de la barre d\'outils par Sarah Chu. Icônes de la barre de navigation du Noun Project : \"archive\" par Trendy ;  \"rematch\" par Becris ; et \"swap\" par iconomania."</string>
 
     <!-- text of dialog showing the set of changes made since the last
          release -->
@@ -2239,7 +2239,7 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <string name="bt_pick_addall_button">Ajouter tous les périphériques appairés</string>
       <!--  -->
     <!--<string name="bt_pick_clear_button">Remove checked</string>-->
-    <string name="bt_pick_clear_button">Retirer les périphériques cochés</string>
+    <string name="bt_pick_clear_button">Retirer</string>
 
       <!--  -->
     <!--<string name="invite_progress_title">Connecting...</string>-->
@@ -3582,7 +3582,7 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
 \n
 \n(Effacer le groupe Archive ne cause pas de problème car il sera recréé de zéro si nécessaire.)</string>
 
-      <string name="button_archive">Archive‌</string>
+      <string name="button_archive">Archive</string>
     <string name="group_name_archive">Archive</string>
 
     <string name="duplicate_group_name_fmt">Le groupe \"%1$s\" existe déjà.</string>
@@ -3604,5 +3604,24 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
   <string name="enable_smsproto_summary">(Nécessite que l\'adversaire l\'utilise aussi)</string>
 
   <string name="expl_relay_url">URL pour l\'API de relai web</string>
-
-  </resources>
+    <string name="list_item_netstats">Connexions…</string>
+    <plurals name="too_many_trade_fmt">
+    <item quantity="one">Trop de jetons sélectionnés. N\'en sélectionnez qu\'un seul.</item>
+    <item quantity="other">Trop de jetons sélectionnés. N\'en sélectionnez pas plus que %1$d.</item>
+</plurals>
+    <string name="tile_tray_picker">Piocher des nouveaux jetons pour le chevalet</string>
+    <string name="tile_pick_summary_fmt">Pioche courante : %1$s</string>
+    <string name="tilepick_all_fmt">En piocher %1$d pour moi</string>
+    <string name="button_scan">Rescanner</string>
+    <plurals name="confirm_clear_bt_fmt">
+    <item quantity="one">Êtes-vous sûr de vouloir oublier l\'appareil sélectionné \?</item>
+    <item quantity="other">"Êtes-vous sûr de vouloir oublier les  %1d appareils sélectionnés \?"</item>
+</plurals>
+    <string name="confirm_clear_bt_postscript">"
+\n
+\n(Vous ne pouvez rajouter des périphériques que quand ils sont à portée de Bluetooth.)"</string>
+    <string name="bkng_settings_text">Paramètres</string>
+    <string name="force_tablet_default">Utiliser par défaut pour mon appareil</string>
+    <string name="button_close">Fermer</string>
+    <string name="btservice_expl">Cette notification est présente dès que CrossWords tourne en tâche de fond pour recevoir des messages Bluetooth. Elle reste pendant environ 15 minutes après que CrossWords ait démarré ou qu\'un message Bluetooth ait été reçu.</string>
+</resources>
