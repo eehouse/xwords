@@ -28,14 +28,18 @@ done
 [ -z "$APKS" ] && usage "no apks provided"
 
 for APK in $APKS; do
-	if [ ${APK/-unsigned} == $APK ]; then
-		echo "$APK not unsigned; skipping"
-		continue
-	fi
     APK_SIGNED=/tmp/$$_tmp.apk
 	cp $APK $APK_SIGNED
+
     jarsigner -verbose -digestalg SHA1 -keystore ~/.keystore $APK_SIGNED mykey
-	rm -f ${APK/-unsigned/-signed}
-    zipalign -v 4 $APK_SIGNED ${APK/-unsigned/-signed}
+	if [ ${APK/-unsigned} == $APK ]; then
+		OUTNAME=${APK/.apk/.signed.apk}
+	else
+		OUTNAME=${APK/-unsigned/-signed}
+	fi
+	rm -f ${OUTNAME}
+    zipalign -v 4 $APK_SIGNED ${OUTNAME}
+
 	rm -f $APK_SIGNED
+	echo "saved as $OUTNAME"
 done
