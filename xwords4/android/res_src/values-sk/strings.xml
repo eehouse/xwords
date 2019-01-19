@@ -107,9 +107,6 @@
        # Dialog giving copyright and other basic info about # the app
        ########################################################### 
       -->
-  <!-- String giving version info, which is substituted in. -->
-  <string name="about_vers_fmt">XLATE ME: CrossWords for Android, Version %1$s,
-        rev %2$s, built on %3$s.</string>
   <!-- Welcome dialog text -->
   <string name="default_name_message">XLATE ME: Thanks for installing
       CrossWords!\n\nFeel free to enter your name here. It will be used

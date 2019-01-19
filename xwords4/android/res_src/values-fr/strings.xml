@@ -2075,8 +2075,8 @@ modèle.</string>
     <!-- String giving version info, which is substituted in. -->
     <!--<string name="about_vers_fmt">CrossWords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>-->
-    <string name="about_vers_fmt">CrossWords pour Android, version %1$s,
-rév. %2$s, compilé le %3$s.</string>
+    <string name="about_vers_fmt">CrossWords pour Android, %1$s variant, version %2$s,
+rév. %3$s, compilé le %4$s.</string>
     <!-- copyright info -->
     <!--<string name="about_copyright">Copyright (C) 1998-2015 by Eric
         House. This free/open source software is released under the GNU Public

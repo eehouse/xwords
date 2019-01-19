@@ -79,6 +79,7 @@ android {
             resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
+            buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
         }
 
         xw4fdroid {
@@ -89,6 +90,7 @@ android {
             resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
+            buildConfigField "String", "VARIANT_NAME", "\"F-Droid\""
         }
         xw4d {
             dimension "variant"
@@ -98,6 +100,7 @@ android {
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
+            buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need

@@ -1452,8 +1452,8 @@
        ########################################################### 
       -->
   <!-- String giving version info, which is substituted in. -->
-  <string name="about_vers_fmt">CrossWords para Android, Versão %1$s,
-        rev %2$s, built on %3$s.</string>
+  <string name="about_vers_fmt">CrossWords para Android, %1$s Variant, Versão %2$s,
+        rev %3$s, built on %4$s.</string>
   <!-- copyright info -->
   <string name="about_copyright">Copyright (C) 1998-2013 por Eric
         House. Esse software livre/aberto é liberado sob a Licença

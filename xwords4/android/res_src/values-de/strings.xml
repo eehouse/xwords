@@ -1177,7 +1177,7 @@
 
     <string name="not_again_newfrom">Eine neue Partie erzeugen, die bereit zum Spielen ist, mit allen Einstellungen aus dieser Partie. Das heißt, diese Partie als Vorlage verwenden.</string>
 
-    <string name="about_vers_fmt">CrossWords für Android, Version %1$s, Rev. %2$s, Build-Datum %3$s.</string>
+    <string name="about_vers_fmt">CrossWords für Android, %1$s Variant, Version %2$s, Rev. %3$s, Build-Datum %4$s.</string>
     <string name="bt_pick_addall_button">Alle gepaarten hinzufügen</string>
       <string name="bt_pair_settings">Weitere paaren</string>
 
