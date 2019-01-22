@@ -1310,6 +1310,7 @@ public class GamesListDelegate extends ListDelegateBase
             String lang = (String)params[0];
             String name = (String)params[1];
             DownloadFinishedListener lstnr = new DownloadFinishedListener() {
+                    @Override
                     public void downloadFinished( String lang, String name, boolean success )
                     {
                         if ( success ) {
@@ -1703,6 +1704,7 @@ public class GamesListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////////////////////////
+    @Override
     public void downloadFinished( String lang, String name,
                                   final boolean success )
     {

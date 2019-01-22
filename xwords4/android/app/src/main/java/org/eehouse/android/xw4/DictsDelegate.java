@@ -1142,6 +1142,7 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////////////////////////
+    @Override
     public void downloadFinished( String lang, final String name,
                                   final boolean success )
     {
