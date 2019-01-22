@@ -2676,15 +2676,23 @@ public class GamesListDelegate extends ListDelegateBase
     public static void onGameDictDownload( Context context, Intent intent )
     {
         intent.setClass( context, MainActivity.class );
+        addLaunchFlags( intent );
         context.startActivity( intent );
     }
 
     private static Intent makeSelfIntent( Context context )
     {
-        Intent intent = new Intent( context, MainActivity.class )
-            .setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
-                       | Intent.FLAG_ACTIVITY_SINGLE_TOP );
+        Intent intent = new Intent( context, MainActivity.class );
+        addLaunchFlags( intent );
         return intent;
+    }
+
+    private static void addLaunchFlags( Intent intent )
+    {
+        intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
+                          | Intent.FLAG_ACTIVITY_SINGLE_TOP )
+            // FLAG_ACTIVITY_CLEAR_TASK -- don't think so
+            ;
     }
 
     public static Intent makeBackgroundIntent( Context context )
