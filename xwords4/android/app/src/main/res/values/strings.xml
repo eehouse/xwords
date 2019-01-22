@@ -1,7 +1,5 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools"
-           tools:ignore="MissingTranslation"
-           >
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
   <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
          zero-width, so it should do the trick:
@@ -1976,8 +1974,9 @@
       <item quantity="other">Are you sure you want to forget %1$d
       checked devices?</item>
     </plurals>
-    <string name="confirm_clear_bt_postscript">\n\n(You can re-add devices
-    only when they are within BlueTooth range.)</string>
+    <string name="confirm_clear_bt_postscript">"
+\n
+\n(You can only re-add devices that are within Bluetooth range.)"</string>
 
     <!--  -->
     <string name="summary_conn_sms_fmt">Game in play with %1$s</string>

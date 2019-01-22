@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources><string name="button_new_group">Legg til gruppe</string>
 
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
@@ -1298,5 +1298,42 @@
   <string name="phone_lookup_rationale">For omkamp i et spill som bruker SMS trenger CrossWords tilgang til ditt telefonnummer.</string>
 
   <string name="contacts_rationale">CrossWords ønsker tilgang til dine kontakter for å tilknytte navn til telefonnumrene som sender deg invitasjoner via SMS. Du vil fremdeles kunne motta invitasjoner hvis du ikke innvilger denne tilgangen, men kun avsenderens telefonnummer vil bli vist.</string>
-
-  </resources>
+    <string name="list_item_netstats">Tilkoblinger…</string>
+    <plurals name="too_many_trade_fmt">
+    <item quantity="one">For mange fliser valgt. Velg kun ei.</item>
+    <item quantity="other">For mange fliser valgt. Ikke velg mer enn %1$d.</item>
+</plurals>
+    <string name="button_scan">Skann på ny</string>
+    <plurals name="invite_bt_desc_fmt_2">
+    <item quantity="one">Velg enheten du ønsker å inkludere i dette spillet.</item>
+    <item quantity="other">Velg opptil %1$d enhet[er] som du ønsker å inkludere i dette spillet.</item>
+</plurals>
+    <string name="invite_bt_desc_postscript">"
+\n
+\n(Listen over tilknyttede enheter CrossWords har blitt oppdaget på gjennom skanning.)"</string>
+    <plurals name="bt_scan_progress_fmt">
+    <item quantity="one">Skanner etter CrossWords</item>
+    <item quantity="other">Skanner etter CrossWords på %1$d tilknyttede enheter</item>
+</plurals>
+    <plurals name="confirm_clear_bt_fmt">
+    <item quantity="one">Er du sikker på at du ønsker å glemme den valgte enheten\?</item>
+    <item quantity="other">Er du sikker på at du ønsker å glemme %1$d valgte enheter\?</item>
+</plurals>
+    <string name="confirm_clear_bt_postscript">"
+\n
+\n(Du kan kun legge til enheter som er innen Blåtannsrekkevidde på ny.)"</string>
+    <string name="bkng_notify_text">Godtar Blåtannsmeldinger…</string>
+    <string name="bkng_stop_text">Stopp</string>
+    <string name="bkng_settings_text">Innstillinger</string>
+    <string name="bt_scan_age_fmt">Siste skanningsrespons: %1$s</string>
+    <string name="button_close">Lukk</string>
+    <string name="btservice_expl">Denne merknaden er der når CrossWords kjører i bakgrunnen, for å godta Blåtannsmeldinger i bakgrunnen. Den kjører vanligvis i omentrent ett kvarter etter at CrossWords starter, eller en Blåtannsmelding mottas.</string>
+    <string name="foreground_channel_expl">Godtar Blåtann i bakgrunnen</string>
+    <string name="gameevent_channel_expl">Hendelser inne i spillet</string>
+    <string name="not_again_emptybtscan">Hvis en skanning ikke finner enheten du forventer:
+\n • Først, skann på ny
+\n • Forsikre deg om at Blåtann er påskrudd på den andre enheten
+\n • Kjør CrossWords på den andre enheten
+\n • Hvis ingenting annet virker, start denne enheten på ny
+\n</string>
+</resources>
