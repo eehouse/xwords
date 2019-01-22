@@ -64,6 +64,8 @@ public class MainActivity extends XWActivity
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
+        Assert.assertTrue(isTaskRoot() || !BuildConfig.DEBUG);
+
         m_dpEnabled = XWPrefs.getIsTablet( this );
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
