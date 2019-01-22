@@ -201,20 +201,18 @@ public class Perms23 {
             }
             builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
                     @Override
-                    public void onPermissionResult( Map<Perm, Boolean> perms ) {
+                    public void onPermissionResult( Map<Perm, Boolean> permsMap ) {
                         if ( Action.SKIP_CALLBACK != m_action ) {
-                            Set<Perm> keys = perms.keySet();
 
                             // We need all the sought perms to have been granted
-                            boolean allGood = keys.size() == m_params.length;
-                            for ( Iterator<Perm> iter = keys.iterator();
-                                  allGood && iter.hasNext(); ) {
-                                if ( !perms.get(iter.next()) ) {
-                                    allGood = false;
-                                }
+                            boolean allGranted = true;
+                            Iterator<Perm> iter = permsMap.keySet().iterator();
+                            while ( allGranted && iter.hasNext() ) {
+                                Perm perm = iter.next();
+                                allGranted = allGranted && permsMap.get( perm );
                             }
 
-                            if ( allGood ) {
+                            if ( allGranted ) {
                                 m_delegate.onPosButton( m_action, m_params );
                             } else {
                                 m_delegate.onNegButton( m_action, m_params );
