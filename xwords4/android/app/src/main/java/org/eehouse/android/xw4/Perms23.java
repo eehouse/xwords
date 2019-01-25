@@ -47,14 +47,21 @@ public class Perms23 {
     public static enum Perm {
         READ_PHONE_STATE(Manifest.permission.READ_PHONE_STATE),
         STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        SEND_SMS(Manifest.permission.SEND_SMS),
-        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
+        SEND_SMS(Manifest.permission.SEND_SMS, BuildConfig.SMS_BANNED_EXPL),
+        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS, BuildConfig.SMS_BANNED_EXPL),
         READ_CONTACTS(Manifest.permission.READ_CONTACTS);
 
         private String m_str;
-        private Perm(String str) { m_str = str; }
+        private int[] m_expl;
+        private Perm(String str) { this(str, null); }
+        private Perm(String str, int[] bannedExpl) {
+            m_str = str;
+            m_expl = bannedExpl;
+        }
 
         public String getString() { return m_str; }
+        public boolean isBanned() { return m_expl != null; }
+        public int[] getExpl() { Assert.assertTrue(isBanned()); return m_expl; }
         public static Perm getFor( String str ) {
             Perm result = null;
             for ( Perm one : Perm.values() ) {
@@ -184,7 +191,27 @@ public class Perms23 {
 
         private void doIt( boolean showRationale )
         {
-            Builder builder = new Builder( m_perms );
+            Set<Perm> validPerms = new HashSet<>();
+            Set<Perm> bannedPerms = new HashSet<>();
+            for ( Perm perm : m_perms ) {
+                if ( perm.isBanned() ) {
+                    bannedPerms.add( perm );
+                } else {
+                    validPerms.add( perm );
+                }
+            }
+
+            if ( 0 < validPerms.size() ) {
+                doItAsk( validPerms, showRationale );
+            }
+            if ( 0 < bannedPerms.size() ) {
+                doItFail( bannedPerms );
+            }
+        }
+
+        private void doItAsk( Set<Perm> perms, boolean showRationale )
+        {
+            Builder builder = new Builder( perms );
             if ( showRationale && null != m_rationaleMsg ) {
                 builder.setOnShowRationale( new OnShowRationale() {
                         @Override
@@ -218,6 +245,23 @@ public class Perms23 {
                                 m_delegate.onNegButton( m_action, m_params );
                             }
                         }
+                    }
+                } );
+        }
+
+        // Cons up a call with a "no" answer, and post it.
+        private void doItFail( Set<Perm> bannedPerms )
+        {
+            int resID = 0;
+
+            final Perm[] perms = bannedPerms.toArray( new Perm[bannedPerms.size()] );
+            int[] expls = perms[0].getExpl();
+            m_delegate.makeNotAgainBuilder(expls[1], expls[0]).show();
+
+            m_delegate.post( new Runnable() {
+                    @Override
+                    public void run() {
+                        m_delegate.onNegButton( m_action, perms );
                     }
                 } );
         }

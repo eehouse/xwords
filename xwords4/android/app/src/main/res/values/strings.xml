@@ -2767,4 +2767,12 @@
   • Launch CrossWords on the other device\n
   • If all else fails, reboot this device\n
   </string>
+
+  <string name="sms_banned_expl">Play-via-SMS requires Permissions
+  that most Android apps are no longer allowed to request -- as a
+  condition of being listed on the Google Play Store. Thus
+  play-via-SMS no longer works on copies of CrossWords obtained
+  through the Play Store (as this one was.) If you miss this feature,
+  please check http://eehouse.org/sms.html for updates on the
+  situation.</string>
 </resources>

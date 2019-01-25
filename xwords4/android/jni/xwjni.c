@@ -683,7 +683,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 #ifdef XWFEATURE_BLUETOOTH
 # if defined VARIANT_xw4 || defined VARIANT_xw4fdroid
         (*env)->NewStringUTF( env, XW_BT_UUID )
-# elif defined VARIANT_xw4d
+# elif defined VARIANT_xw4d || defined VARIANT_xw4dNoSMS
         (*env)->NewStringUTF( env, XW_BT_UUID_DBG )
 # endif
 #else
