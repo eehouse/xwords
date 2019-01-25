@@ -22,12 +22,12 @@ def CURTAG = "git describe --exact-match".execute().text.trim()
 apply plugin: 'com.android.application'
 
 
-if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) {
-    apply plugin: 'io.fabric'
-}
+if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) { // rm-for-fdroid
+    apply plugin: 'io.fabric'                            // rm-for-fdroid
+}                                                        // rm-for-fdroid
 repositories {
     google()
-    maven { url 'https://maven.fabric.io/public' }
+    maven { url 'https://maven.fabric.io/public' }       // rm-for-fdroid
 }
 
 android {
@@ -210,9 +210,12 @@ dependencies {
 
     // 2.6.8 is probably as far forward as I can go without upping my
     // min-supported SDK version
-    xw4dImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') {
-        transitive = true;
-    }
+    xw4dImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
+        transitive = true;                                                    // rm-for-fdroid
+    }                                                                         // rm-for-fdroid
+
+    implementation 'com.google.firebase:firebase-messaging:17.3.4' // rm-for-fdroid
+    implementation 'com.google.firebase:firebase-core:16.0.6'      // rm-for-fdroid
 }
 
 task mkImages(type: Exec) {
@@ -308,3 +311,5 @@ task makeBuildAssets() {
 gradle.projectsEvaluated {
     build.dependsOn(makeBuildAssets)
 }
+
+apply plugin: 'com.google.gms.google-services'    // rm-for-fdroid

@@ -35,8 +35,8 @@ public class DevID {
     private static final String TAG = DevID.class.getSimpleName();
 
     private static final String DEVID_KEY = "DevID.devid_key";
-    private static final String DEVID_ACK_KEY = "key_relay_regid_ackd";
-    private static final String GCM_REGVERS_KEY = "key_gcmvers_regid";
+    private static final String DEVID_ACK_KEY = "key_relay_regid_ackd2";
+    private static final String FCM_REGVERS_KEY = "key_fcmvers_regid";
 
     private static String s_relayDevID;
     private static int s_asInt;
@@ -111,10 +111,10 @@ public class DevID {
         // DbgUtils.printStack();
     }
 
-    public static void setGCMDevID( Context context, String devID )
+    public static void setFCMDevID( Context context, String devID )
     {
         int curVers = Utils.getAppVersion( context );
-        DBUtils.setIntFor( context, GCM_REGVERS_KEY, curVers );
+        DBUtils.setIntFor( context, FCM_REGVERS_KEY, curVers );
         DBUtils.setBoolFor( context, DEVID_ACK_KEY, false );
     }
 
