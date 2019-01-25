@@ -2,6 +2,7 @@
 
 set -u -e
 
+VARIANT=Xw4
 TAGNAME=""
 FILES=""
 LIST_FILE=''
@@ -10,12 +11,14 @@ XW_RELEASE_SCP_DEST=${XW_RELEASE_SCP_DEST:-""}
 
 usage() {
     echo "Error: $*" >&2
-    echo "usage: $0 [--tag <name>] [--apk-list path/to/out.txt] [<package-unsigned.apk>]" >&2
+    echo "usage: $0 [--tag <name>] [--apk-list path/to/out.txt] \\"
+    echo "    [--variant VARIANT] # default value: $VARIANT \\"
+    echo "    [<package-unsigned.apk>]" >&2
     exit 1
 }
 
 do_build() {
-    (cd $(dirname $0)/../ && ./gradlew clean assembleXw4Rel)
+    (cd $(dirname $0)/../ && ./gradlew clean as${VARIANT}Rel)
 }
 
 while [ "$#" -gt 0 ]; do
@@ -28,6 +31,10 @@ while [ "$#" -gt 0 ]; do
 		--apk-list)
 			LIST_FILE=$2
 			> $LIST_FILE
+			shift
+			;;
+		--variant)
+			VARIANT=$2
 			shift
 			;;
 		--help)
@@ -54,7 +61,7 @@ fi
 
 if [ -z "$FILES" ]; then
     do_build
-	for f in $(dirname $0)/../app/build/outputs/apk/xw4/release/*-unsigned-*.apk; do
+	for f in $(ls $(dirname $0)/../app/build/outputs/apk/*/release/*-release-unsigned-*.apk); do
 		$(dirname $0)/sign-align.sh --apk $f
 	done
 fi
