@@ -60,7 +60,6 @@ public class FBMService extends FirebaseMessagingService {
 
             Map<String, String>	data = message.getData();
             Log.d( TAG, "onMessageReceived(data=%s)", data );
-            boolean toastFCM = XWPrefs.getToastFCM( this );
 
             String value = data.get( "msgs64" );
             if ( null != value ) {
@@ -68,10 +67,6 @@ public class FBMService extends FirebaseMessagingService {
                 try {
                     JSONArray msgs64 = new JSONArray( value );
                     String[] strs64 = new String[msgs64.length()];
-                    if ( toastFCM ) {
-                        DbgUtils.showf( this, "onMessage(): got %d msgs",
-                                        strs64.length );
-                    }
 
                     for ( int ii = 0; ii < strs64.length; ++ii ) {
                         strs64[ii] = msgs64.optString(ii);
@@ -95,9 +90,6 @@ public class FBMService extends FirebaseMessagingService {
             value = data.get( "getMoves" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
                 RelayService.timerFired( this );
-                if ( toastFCM ) {
-                    DbgUtils.showf( this, "onMessage(): got 'getMoves'" );
-                }
             }
 
             value = data.get( "msg" );
@@ -126,7 +118,6 @@ public class FBMService extends FirebaseMessagingService {
             getTokenAsync( context );
         }
 
-        Log.d( TAG, "getFCMDevID() => %s", result );
         return result;
     }
 
