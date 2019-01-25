@@ -28,11 +28,12 @@ import android.os.Handler;
 import android.support.v4.app.JobIntentService;
 import android.text.TextUtils;
 
+import org.eehouse.android.xw4.FBMService;
 import org.eehouse.android.xw4.GameUtils.BackMoveResult;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.DUtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -152,16 +153,16 @@ public class RelayService extends JobIntentService
                               XWPDEV_GOTINVITE, // test without this!!!
     };
 
-    public static void gcmConfirmed( Context context, boolean confirmed )
+    public static void fcmConfirmed( Context context, boolean working )
     {
-        if ( s_gcmWorking != confirmed ) {
-            Log.i( TAG, "gcmConfirmed(): changing s_gcmWorking to %b",
-                   confirmed );
-            s_gcmWorking = confirmed;
+        if ( s_gcmWorking != working ) {
+            Log.i( TAG, "fcmConfirmed(): changing s_gcmWorking to %b",
+                   working );
+            s_gcmWorking = working;
         }
 
         // If we've gotten a GCM id and haven't registered it, do so!
-        if ( confirmed && !s_curType.equals( DevIDType.ID_TYPE_ANDROID_GCM ) ) {
+        if ( working && !s_curType.equals( DevIDType.ID_TYPE_ANDROID_FCM ) ) {
             s_regStartTime = 0;      // so we're sure to register
             devIDChanged();
             timerFired( context );
@@ -732,7 +733,7 @@ public class RelayService extends JobIntentService
         long now = Utils.getCurSeconds();
         long interval = now - s_regStartTime;
         if ( interval < REG_WAIT_INTERVAL ) {
-            Log.i( TAG, "registerWithRelay: skipping because only %d "
+            Log.i( TAG, "registerWithRelay(): skipping because only %d "
                    + "seconds since last start", interval );
         } else {
             String relayID = DevID.getRelayDevID( this );
@@ -920,9 +921,9 @@ public class RelayService extends JobIntentService
         if ( null != devid && 0 < devid.length() ) {
             typ = DevIDType.ID_TYPE_RELAY;
         } else {
-            devid = DevID.getGCMDevID( this );
+            devid = FBMService.getFCMDevID( this );
             if ( null != devid && 0 < devid.length() ) {
-                typ = DevIDType.ID_TYPE_ANDROID_GCM;
+                typ = DevIDType.ID_TYPE_ANDROID_FCM;
             } else {
                 devid = "";
                 typ = DevIDType.ID_TYPE_ANON;
@@ -1624,7 +1625,7 @@ public class RelayService extends JobIntentService
     private boolean shouldMaintainConnection()
     {
         boolean result = relayEnabled( this )
-            && (!s_gcmWorking || XWPrefs.getIgnoreGCM( this ));
+            && (!s_gcmWorking || XWPrefs.getIgnoreFCM( this ));
 
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;

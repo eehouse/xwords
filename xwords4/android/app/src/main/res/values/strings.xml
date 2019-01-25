@@ -2640,11 +2640,11 @@
   devices and I think it\'s rare that people play with more than
   two. Let me know if I\'m wrong and I\'ll up the priority.</string>
 
-  <string name="ignore_gcm_title">Ignore incoming GCM messages</string>
-  <string name="ignore_gcm_summary">Mimic life without a google account</string>
+  <string name="ignore_fcm_title">Ignore incoming FCM messages</string>
+  <string name="ignore_fcm_summary">Mimic life without a google account</string>
 
   <string name="show_sms_title">Show SMS sends, receives</string>
-  <string name="show_gcm_title">Show GCM receives</string>
+  <string name="show_fcm_title">Show FCM receives</string>
 
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
