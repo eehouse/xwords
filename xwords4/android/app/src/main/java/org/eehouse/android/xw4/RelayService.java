@@ -392,6 +392,7 @@ public class RelayService extends JobIntentService
     }
 
     // NetStateCache.StateChangedIf interface
+    @Override
     public void onNetAvail( boolean nowAvailable )
     {
         startService( this ); // bad name: will *stop* threads too
@@ -759,9 +760,9 @@ public class RelayService extends JobIntentService
 
                 out.writeShort( BuildConfig.CLIENT_VERS_RELAY );
                 writeVLIString( out, BuildConfig.GIT_REV );
-                // writeVLIString( out, String.format( "€%s", Build.MODEL) );
                 writeVLIString( out, Build.MODEL );
                 writeVLIString( out, Build.VERSION.RELEASE );
+                writeVLIString( out, BuildConfig.VARIANT_NAME );
 
                 postPacket( bas, XWRelayReg.XWPDEV_REG );
                 s_regStartTime = now;
