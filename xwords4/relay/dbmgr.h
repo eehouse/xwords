@@ -101,13 +101,15 @@ class DBMgr {
     DevIDRelay RegisterDevice( const DevID* host );
     DevIDRelay RegisterDevice( const DevID* host, int clientVersion, 
                                const char* const desc, const char* const model,
-                               const char* const osVers );
+                               const char* const osVers, const char* const variant );
     void ReregisterDevice( DevIDRelay relayID, const DevID* host, 
                            const char* const desc, int clientVersion, 
-                           const char* const model, const char* const osVers );
+                           const char* const model, const char* const osVers,
+                           const char* const variant );
     bool UpdateDevice( DevIDRelay relayID, const char* const desc, 
                        int clientVersion, const char* const model, 
-                       const char* const osVers, bool check );
+                       const char* const osVers, const char* const variant,
+                       bool check );
 
     HostID AddToGame( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const AddrInfo* addr,
@@ -174,7 +176,8 @@ class DBMgr {
     bool UpdateDevice( DevIDRelay relayID );
     void formatUpdate( QueryBuilder& qb, bool append, const char* const desc, 
                        int clientVersion, const char* const model, 
-                       const char* const osVers, DevIDRelay relayID );
+                       const char* const osVers, const char* const variant,
+                       DevIDRelay relayID );
 
 
     PGconn* getThreadConn( void );
