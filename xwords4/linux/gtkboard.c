@@ -1904,7 +1904,8 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
                         XP_U16 newOffset )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    if ( !!globals->adjustment ) {
+    /* adjustment is invalid when gtk's shutting down; ignore */
+    if ( !!globals->adjustment && GTK_IS_ADJUSTMENT(globals->adjustment) ) {
         gint nRows = globals->cGlobals.gi->boardSize;
         gtk_adjustment_set_page_size(globals->adjustment, nRows - maxOffset);
         gtk_adjustment_set_value(globals->adjustment, newOffset);
