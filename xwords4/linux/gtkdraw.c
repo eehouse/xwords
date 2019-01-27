@@ -85,6 +85,8 @@ initCairo( GtkDrawCtx* dctx )
 
     if ( !!dctx->surface ) {
         cairo = cairo_create( dctx->surface );
+        cairo_surface_destroy( dctx->surface );
+        // XP_ASSERT( 0 );
     } else if ( !!dctx->drawing_area ) {
 #ifdef GDK_AVAILABLE_IN_3_22
         GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
@@ -115,12 +117,16 @@ destroyCairo( GtkDrawCtx* dctx )
 {
     /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !!dctx->_cairo );
+    if ( !!dctx->surface ) {
+        XP_LOGF( "%s(): have surface; doing nothing", __func__ );
+    } else {
 #ifdef GDK_AVAILABLE_IN_3_22
-    GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
-    gdk_window_end_draw_frame( window, dctx->dc );
+        GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
+        gdk_window_end_draw_frame( window, dctx->dc );
 #else
-    cairo_destroy( dctx->_cairo );
+        cairo_destroy( dctx->_cairo );
 #endif
+    }
     dctx->_cairo = NULL;
 }
 
@@ -464,6 +470,8 @@ gtk_draw_beginDraw( DrawCtx* p_dctx )
 #ifdef USE_CAIRO
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     return initCairo( dctx );
+#else
+    fix this
 #endif
 }
 
@@ -1509,7 +1517,7 @@ void
 removeSurface( GtkDrawCtx* dctx )
 {
     XP_ASSERT( !!dctx->surface );
-    g_object_unref( dctx->surface );
+    cairo_surface_destroy( dctx->surface );
     dctx->surface = NULL;
 }
 
@@ -1534,6 +1542,8 @@ getImage( GtkDrawCtx* XP_UNUSED_DBG(dctx), XWStreamCtxt* XP_UNUSED_DBG(stream) )
         cairo_surface_write_to_png_stream( dctx->surface,
                                            write_func, stream );
     XP_ASSERT( CAIRO_STATUS_SUCCESS == status );
+#else
+    error Will Robinson
 #endif
 }
 
