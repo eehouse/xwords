@@ -216,20 +216,24 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(list));
     GtkListStore* store = GTK_LIST_STORE( model );
     GtkTreeIter iter;
-    if ( isNew ) {
-        gtk_list_store_append( store, &iter );
-    } else {
-        gboolean valid;
-        for ( valid = gtk_tree_model_get_iter_first( model, &iter );
+    XP_Bool found = XP_FALSE;
+    if ( !isNew ) {
+        for ( gboolean valid = gtk_tree_model_get_iter_first( model, &iter );
               valid;
               valid = gtk_tree_model_iter_next( model, &iter ) ) {
             sqlite3_int64 tmpid;
             gtk_tree_model_get( model, &iter, ROW_ITEM, &tmpid, -1 );
             if ( tmpid == rowid ) {
+                found = XP_TRUE;
                 break;
             }
         }
     }
+
+    if ( !found ) {
+        gtk_list_store_append( store, &iter );
+    }
+
     gchar* localString = 0 <= gib->turn ? gib->turnLocal ? "YES"
         : "NO" : "";
 
