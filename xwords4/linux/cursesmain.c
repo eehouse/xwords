@@ -221,7 +221,7 @@ cursesUserError( CursesAppGlobals* globals, const char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    VDECL( const char*, buttons, 1 ) = {"OK"};
+    const char* buttons[] = {"OK"};
     (void)cursesask( globals, buf, VSIZE(buttons), buttons );
 
     va_end(ap);
@@ -285,7 +285,7 @@ ask_move( gpointer data )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
     CommonGlobals* cGlobals = &globals->cGlobals;
-    VDECL( const char*, answers, 3 ) = {"Ok", "Cancel", NULL};
+    const char* answers[] = {"Ok", "Cancel", NULL};
 
     if (0 == cursesask(globals, cGlobals->question, VSIZE(answers)-1, answers) ) {
         BoardCtxt* board = cGlobals->game.board;
@@ -304,7 +304,7 @@ curses_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
     XP_U16 len = stream_getSize( stream );
-    XP_ASSERT( len <= QUESTION_LEN );
+    XP_ASSERT( len <= VSIZE(cGlobals->question) );
     stream_getBytes( stream, cGlobals->question, len );
     (void)g_idle_add( ask_move, globals );
 } /* curses_util_userQuery */
@@ -315,7 +315,7 @@ ask_trade( gpointer data )
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
     CommonGlobals* cGlobals = &globals->cGlobals;
 
-    VDECL( const char*, buttons, 2 ) = { "Ok", "Cancel" };
+    const char* buttons[] = { "Ok", "Cancel" };
     if (0 == cursesask( globals, cGlobals->question, VSIZE(buttons), buttons ) ) {
         BoardCtxt* board = cGlobals->game.board;
         if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
@@ -353,7 +353,7 @@ cursesShowFinalScores( CursesAppGlobals* globals )
 
     text = strFromStream( stream );
 
-    VDECL( const char*, buttons, 1 ) = { "Ok" };
+    const char* buttons[] = { "Ok" };
     (void)cursesask( globals, text, VSIZE(buttons), buttons );
 
     free( text );
@@ -366,7 +366,7 @@ curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char* question = strFromStream( expl );
-    VDECL( const char*, buttons, 1 ) = { "Ok" };
+    const char* buttons[] = { "Ok" };
     (void)cursesask( globals, question, VSIZE(buttons), buttons );
     free( question );
 }
@@ -1412,7 +1412,7 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 
     text = strFromStream( stream );
 
-    VDECL( const char*, buttons, 1 ) = { "Ok" };
+    const char* buttons[] = { "Ok" };
     (void)cursesask( globals, text, VSIZE(buttons), buttons );
 
     free( text );
@@ -1795,7 +1795,7 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
     } else {
         g_free( globals->lastErr );
         globals->lastErr = g_strdup( msg );
-        VDECL( const char*, buttons, 1 ) = { "Ok" };
+        const char* buttons[] = { "Ok" };
         (void)cursesask( globals, msg, VSIZE(buttons), buttons );
     }
 }
@@ -2015,7 +2015,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 
 #ifdef XWFEATURE_SMS
-        VDECL( gchar, buf, 32 );
+        gchar buf[32];
         const gchar* myPhone = params->connInfo.sms.myPhone;
         if ( !!myPhone ) {
             db_store( params->pDb, KEY_SMSPHONE, myPhone );
@@ -2023,7 +2023,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             params->connInfo.sms.myPhone = myPhone = buf;
         }
         XP_U16 myPort = params->connInfo.sms.port;
-        VDECL( gchar, portbuf, 8 );
+        gchar portbuf[8];
         if ( 0 < myPort ) {
             sprintf( portbuf, "%d", myPort );
             db_store( params->pDb, KEY_SMSPORT, portbuf );

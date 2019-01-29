@@ -745,7 +745,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                  XP_Bool clearBack )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    VDECL( XP_UCHAR, numbuf, 3 );
+    XP_UCHAR numbuf[3];
     XP_Rect insetR = *rect;
     XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0;
     XP_Bool valHidden = (flags & CELL_VALHIDDEN) != 0;
@@ -1113,13 +1113,13 @@ formatScoreText( PangoLayout* layout, XP_UCHAR* buf, XP_U16 bufLen,
     XP_U16 nTilesLeft = dsi->nTilesLeft;
     XP_Bool isTurn = dsi->isTurn;
     XP_S16 maxWidth = bounds->width;
-    VDECL( XP_UCHAR, numBuf, 16 );
+    XP_UCHAR numBuf[16];
     int width, height;
     *nLines = 1;
 
     XP_SNPRINTF( numBuf, VSIZE(numBuf), "%d", score );
     if ( (nTilesLeft < MAX_TRAY_TILES) && (nTilesLeft > 0) ) {
-        VDECL( XP_UCHAR, tmp, 10 );
+        XP_UCHAR tmp[10];
         XP_SNPRINTF( tmp, VSIZE(tmp), ":%d", nTilesLeft );
         (void)XP_STRCAT( numBuf, tmp );
     }
@@ -1134,7 +1134,7 @@ formatScoreText( PangoLayout* layout, XP_UCHAR* buf, XP_U16 bufLen,
     }
 
     /* Reformat name + ':' until it fits */
-    VDECL( XP_UCHAR, name, MAX_SCORE_LEN ) = { 0 };
+    XP_UCHAR name[MAX_SCORE_LEN] = { 0 };
     if ( isTurn && maxWidth > 0 ) {
         XP_U16 len = 1 + XP_STRLEN( dsi->name ); /* +1 for "\0" */
         if ( scoreIsVertical ) {
@@ -1181,7 +1181,7 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
                            XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    VDECL( XP_UCHAR, buf, 36 );
+    XP_UCHAR buf[36];
     PangoLayout* layout;
     int lineHeight = GTK_HOR_SCORE_HEIGHT, nLines;
 
@@ -1191,9 +1191,9 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
     *heightP = nLines * lineHeight;
 
     XP_U16 playerNum = dsi->playerNum;
-    XP_ASSERT( playerNum < MAX_NUM_PLAYERS );
+    XP_ASSERT( playerNum < VSIZE(dctx->scoreCache) );
     XP_SNPRINTF( dctx->scoreCache[playerNum].str,
-                 MAX_SCORE_LEN+1, "%s", buf );
+                 VSIZE(dctx->scoreCache[playerNum].str), "%s", buf );
     dctx->scoreCache[playerNum].fontHt = lineHeight;
 } /* gtk_draw_measureScoreText */
 
@@ -1203,7 +1203,7 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
                              XP_S16 curTurn, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    VDECL( XP_UCHAR, buf, 5 );
+    XP_UCHAR buf[5];
     XP_U16 ht;
     XP_Rect localR;
     GdkRGBA* cursor = ((flags & CELL_ISCURSOR) != 0) 
@@ -1259,7 +1259,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Bool hadCairo = haveCairo( dctx );
     if ( hadCairo || initCairo( dctx ) ) {
-        VDECL( XP_UCHAR, buf, 10 );
+        XP_UCHAR buf[10];
 
         gtkFormatTimerText( buf, VSIZE(buf), secondsLeft );
 
@@ -1406,10 +1406,8 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 
     dctx->vtable = g_malloc( sizeof(*(((GtkDrawCtx*)dctx)->vtable)) );
 
-    void** ptr = (void**)dctx->vtable;
-    void** tableEnd = (void**)&dctx->vtable->tableEnd;
-    while ( ptr < tableEnd ) {
-        *ptr++ = draw_doNothing;
+    for ( int ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
+        ((void**)(dctx->vtable))[ii] = draw_doNothing; /* bad? */
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, gtk );

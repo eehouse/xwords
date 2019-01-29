@@ -323,7 +323,7 @@ and_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
 {
     UTIL_CBK_HEADER("setTimer", "(III)V" );
 
-    XP_ASSERT( why < NUM_TIMERS_PLUS_ONE );
+    XP_ASSERT( why < VSIZE(util->timerStorage) );
     TimerStorage* storage = &util->timerStorage[why];
     storage->proc = proc;
     storage->closure = closure;
@@ -388,7 +388,7 @@ and_dutil_getUserString( XW_DUtilCtxt* duc, XP_U16 stringCode )
     XP_UCHAR* result = "";
     DUTIL_CBK_HEADER("getUserString", "(I)Ljava/lang/String;" );
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
-    XP_ASSERT( index < N_AND_USER_STRINGS );
+    XP_ASSERT( index < VSIZE( dutil->userStrings ) );
 
     XP_ASSERT( 0 == (dutil->userStringsBits & (1 << index)) );
 
@@ -417,7 +417,7 @@ and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 stringCode, XP_U16 qu
     XP_UCHAR* result = "";
     DUTIL_CBK_HEADER("getUserQuantityString", "(II)Ljava/lang/String;" );
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
-    XP_ASSERT( index < N_AND_USER_STRINGS );
+    XP_ASSERT( index < VSIZE( dutil->userStrings ) );
     XP_UCHAR** ptrs;
 
     dutil->userStringsBits |= 1 << index;
@@ -908,7 +908,7 @@ destroyDUtil( XW_DUtilCtxt** dutilp )
         (*env)->DeleteGlobalRef( env, dutil->jdutil );
     }
 
-    for ( int ii = 0; ii < N_AND_USER_STRINGS; ++ii ) {
+    for ( int ii = 0; ii < VSIZE(dutil->userStrings); ++ii ) {
         XP_UCHAR* ptr = dutil->userStrings[ii];
         if ( NULL != ptr ) {
             if ( 0 == (dutil->userStringsBits & (1 << ii)) ) {

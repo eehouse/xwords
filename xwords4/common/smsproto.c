@@ -668,7 +668,7 @@ restorePartials( SMSProto* state )
          && PARTIALS_FORMAT == stream_getU8( stream ) ) {
         int nFromPhones = stream_getU8( stream );
         for ( int ii = 0; ii < nFromPhones; ++ii ) {
-            VDECL( XP_UCHAR, phone, 32 );
+            XP_UCHAR phone[32];
             (void)stringFromStreamHere( stream, phone, VSIZE(phone) );
             int nMsgIDs = stream_getU8( stream );
             XP_LOGF( "%s(): got %d message records for phone %s", __func__,
@@ -861,7 +861,7 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
     SMSProto* state = smsproto_init( mpool, dutil );
 
     const int smallSiz = 20;
-    VDECL(char*, phones, 4) = {"1234", "3456", "5467", "9877"};
+    const char* phones[] = {"1234", "3456", "5467", "9877"};
     const char* buf = "asoidfaisdfoausdf aiousdfoiu asodfu oiuasdofi oiuaosiduf oaisudf oiasd f"
         ";oiaisdjfljiojaklj asdlkjalskdjf laksjd flkjasdlfkj aldsjkf lsakdjf lkjsad flkjsd fl;kj"
         "asdifaoaosidfoiauosidufoaus doifuoaiusdoifu aoisudfoaisd foia sdoifuasodfu aosiud foiuas odfiu asd"
@@ -869,7 +869,7 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
         ;
     const XP_Bool forceOld = XP_TRUE;
 
-    VDECL( SMSMsgArray*, arrs, VSIZE(phones) );
+    SMSMsgArray* arrs[VSIZE(phones)];
     for ( int ii = 0; ii < VSIZE(arrs); ++ii ) {
         arrs[ii] = NULL;
     }

@@ -188,7 +188,6 @@ typedef struct _TimerInfo {
 typedef void (*OnSaveFunc)( void* closure, sqlite3_int64 rowid,
                             XP_Bool firstTime );
 
-#define QUESTION_LEN 256*4
 struct CommonGlobals {
     LaunchParams* params;
     CommonPrefs cp;
@@ -224,7 +223,7 @@ struct CommonGlobals {
 
     /* Saved state from util method to response method */
     XP_U16 selPlayer;
-    char question[QUESTION_LEN];
+    char question[256*4];
     const XP_UCHAR* askPassName;
     XP_U16 nTiles;
     XP_U16 nToPick;

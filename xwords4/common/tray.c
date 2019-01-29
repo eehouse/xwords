@@ -409,7 +409,7 @@ getSelTiles( const BoardCtxt* board, TileBit selBits, TrayTileSet* selTiles )
     for ( index = 0; selBits != 0; selBits >>= 1, ++index ) {
         if ( 0 != (selBits & 0x01) ) {
             Tile tile = model_getPlayerTile( model, turn, index );
-            XP_ASSERT( nTiles < MAX_TRAY_TILES );
+            XP_ASSERT( nTiles < VSIZE(selTiles->tiles) );
             selTiles->tiles[nTiles++] = tile;
         }
     }

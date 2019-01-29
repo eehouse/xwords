@@ -216,7 +216,8 @@ addPhoniesCombo( GtkNewGameState* state, GtkWidget* parent )
                         FALSE, TRUE, 0 );
     GtkWidget* phoniesCombo = gtk_combo_box_text_new();
 
-    VDECL( const char*, ptxts, 3 ) = { "IGNORE", "WARN", "DISALLOW" };
+    const char* ptxts[] = { "IGNORE", "WARN", "DISALLOW" };
+
     for ( int ii = 0; ii < VSIZE(ptxts); ++ii ) {
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(phoniesCombo),
                                         ptxts[ii] );
@@ -239,7 +240,7 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* hbox;
 #ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* roleCombo;
-    VDECL( char*, roles, 3 ) = { "Standalone", "Host", "Guest" };
+    char* roles[] = { "Standalone", "Host", "Guest" };
 #endif
     GtkWidget* nPlayersCombo;
     GtkWidget* boardSizeCombo;
