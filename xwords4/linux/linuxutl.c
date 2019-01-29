@@ -68,7 +68,7 @@ linux_debugf( const char* format, ... )
 void
 linux_backtrace( void )
 {
-    void* buffer[128];
+    VDECL( void*, buffer, 128 );
     int nFound = backtrace( buffer, VSIZE(buffer) );
     XP_ASSERT( nFound < VSIZE(buffer) );
     char** traces = backtrace_symbols( buffer, nFound );
@@ -105,10 +105,13 @@ linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx) )
 #define TL BONUS_TRIPLE_LETTER
 #define TW BONUS_TRIPLE_WORD
 
+#define SC_BOARD_SIZE 36
+#define SEVENTEEN_BOARD_SIZE 45
+
 static XWBonusType*
 bonusesFor( XP_U16 boardSize, XP_U16* len )
 {
-    static XWBonusType scrabbleBoard[] = { 
+    static XWBonusType scrabbleBoard[SC_BOARD_SIZE] = {
         TW,//EM,EM,DL,EM,EM,EM,TW,
         EM,DW,//EM,EM,EM,TL,EM,EM,
 
@@ -122,7 +125,7 @@ bonusesFor( XP_U16 boardSize, XP_U16* len )
         TW,EM,EM,DL,EM,EM,EM,DW,
     }; /* scrabbleBoard */
 
-    static XWBonusType seventeen[] = { 
+    static XWBonusType seventeen[SEVENTEEN_BOARD_SIZE] = {
         TW,//EM,EM,DL,EM,EM,EM,TW,
         EM,DW,//EM,EM,EM,TL,EM,EM,
 
@@ -140,10 +143,10 @@ bonusesFor( XP_U16 boardSize, XP_U16* len )
     XWBonusType* result = NULL;
     if ( boardSize == 15 ) {
         result = scrabbleBoard;
-        *len = VSIZE(scrabbleBoard);
+        *len = SC_BOARD_SIZE;
     } else if ( boardSize == 17 ) {
         result = seventeen;
-        *len = VSIZE(seventeen);
+        *len = SEVENTEEN_BOARD_SIZE;
     }
 
     return result;
@@ -481,7 +484,7 @@ formatConfirmTrade( CommonGlobals* cGlobals, const XP_UCHAR** tiles,
     }
     tileBuf[offset-2] = '\0';
 
-    snprintf( cGlobals->question, VSIZE(cGlobals->question),
+    snprintf( cGlobals->question, QUESTION_LEN,
               "Are you sure you want to trade the selected tiles (%s)?",
               tileBuf );
 }

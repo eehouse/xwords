@@ -268,7 +268,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
     XP_Bool isUTF8 = XP_FALSE;
     XP_Bool hasHeader = XP_FALSE;
     const XP_U8* ptr;
-    char path[256];
+    VDECL( char, path, 256 );
 
     if ( !getDictPath( params, fileName, path, VSIZE(path) ) ) {
         XP_LOGF( "%s: path=%s", __func__, path );

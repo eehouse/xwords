@@ -149,7 +149,7 @@ curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx),
                             XP_U16* width, XP_U16* height )
 {
     char buf[64];
-    char* lines[2] = {0};
+    VDECL( char*, lines, 2 ) = {0};
     formatRemText( nTilesLeft, rect, buf, lines );
     
     *width = 0;
@@ -170,7 +170,7 @@ curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[32];
 
-    char* lines[2] = {0};
+    VDECL( char*,  lines, 2 ) = {0};
     formatRemText( nTilesLeft, rInner, buf, lines );
     int ii;
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
@@ -270,7 +270,7 @@ curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx),
                               XP_U16* width, XP_U16* height )
 {
     XP_UCHAR buf[100];
-    char* lines[3] = {0};
+    VDECL( char*, lines, 3 ) = {0};
     formatScoreText( buf, dsi, rect, lines );
 
     int ii;
@@ -295,7 +295,7 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     curses_draw_clearRect( p_dctx, rOuter );
 
     /* print the name and turn/remoteness indicator */
-    char* lines[3] = {0};
+    VDECL( char*, lines, 3 ) = {0};
     formatScoreText( buf, dsi, rInner, lines );
     int ii;
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {

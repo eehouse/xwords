@@ -57,7 +57,7 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
     short curSelButton = 1;	/* force draw by being different */
     short maxWidth;
     short numCtlButtons;
-    const char* ctlButtons[] = { "Ok", "Cancel" };
+    VDECL( const char*, ctlButtons, 2 ) = { "Ok", "Cancel" };
     XP_Bool dismissed = XP_FALSE;
     FormatInfo fi;
     int len;

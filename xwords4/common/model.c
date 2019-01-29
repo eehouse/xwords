@@ -551,7 +551,7 @@ model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts )
 #ifdef DEBUG
         DictionaryCtxt* gameDict = model_getDictionary( model );
 #endif
-        for ( ii = 0; ii < VSIZE(dicts->dicts); ++ii ) {
+        for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             DictionaryCtxt* oldDict = model->vol.dicts.dicts[ii];
             DictionaryCtxt* newDict = dicts->dicts[ii];
             if ( oldDict != newDict ) {
@@ -573,7 +573,7 @@ model_getDictionary( const ModelCtxt* model )
 {
     XP_U16 ii;
     DictionaryCtxt* result = model->vol.dict;
-    for ( ii = 0; !result && ii < VSIZE(model->vol.dicts.dicts); ++ii ) {
+    for ( ii = 0; !result && ii < MAX_NUM_PLAYERS; ++ii ) {
         result = model->vol.dicts.dicts[ii];
     }
     return result;
@@ -594,7 +594,7 @@ static void
 model_unrefDicts( ModelCtxt* model )
 {
     XP_U16 ii;
-    for ( ii = 0; ii < VSIZE(model->vol.dicts.dicts); ++ii ) {
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         dict_unref( model->vol.dicts.dicts[ii] );
         model->vol.dicts.dicts[ii] = NULL;
     }
@@ -611,7 +611,7 @@ getPendingTileFor( const ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
     const PendingTile* pendings;
     XP_U16 ii;
 
-    XP_ASSERT( turn < VSIZE(model->players) );
+    XP_ASSERT( turn < MAX_NUM_PLAYERS );
 
     player = &model->players[turn];
     pendings = player->pendingTiles;
@@ -2064,7 +2064,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
 {
     if ( entry->moveType != ASSIGN_TYPE ) {
         const XP_UCHAR* format;
-        XP_UCHAR buf[64];
+        VDECL( XP_UCHAR, buf, 64 );
         XP_UCHAR traybuf[MAX_TRAY_TILES+1];
         MovePrintClosure* closure = (MovePrintClosure*)p_closure;
         XWStreamCtxt* stream = closure->stream;
@@ -2293,7 +2293,7 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
     model_destroy( tmpModel );
 
     lmi->score = score;
-    XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
+    XP_SNPRINTF( lmi->word, MAX_COLS+1, "%s", data.word );
 } /* scoreLastMove */
 
 static XP_U16

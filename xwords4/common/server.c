@@ -493,7 +493,7 @@ static void
 cleanupServer( ServerCtxt* server )
 {
     XP_U16 ii;
-    for ( ii = 0; ii < VSIZE(server->players); ++ii ){
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ){
         ServerPlayer* player = &server->players[ii];
         if ( player->engine != NULL ) {
             engine_destroy( player->engine );
@@ -1346,8 +1346,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         XP_U32 gameID;
         PoolContext* pool;
 #ifdef STREAM_VERS_BIGBOARD
-        XP_UCHAR rmtDictName[128];
-        XP_UCHAR rmtDictSum[64];
+        VDECL( XP_UCHAR, rmtDictName,128 );
+        VDECL( XP_UCHAR, rmtDictSum, 64 );
 #endif
 
         /* version; any dependencies here? */
@@ -3172,10 +3172,11 @@ server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn )
         if ( 0 < nOthers ) {
             Tile tile;
             const DictionaryCtxt* dict = model_getDictionary( server->vol.model );
-            XP_U16 counts[dict_numTileFaces( dict )];
+            const size_t numFaces = dict_numTileFaces( dict );
+            XP_U16 counts[numFaces];
             XP_MEMSET( counts, 0, sizeof(counts) );
             model_countAllTrayTiles( server->vol.model, counts, turn );
-            for ( tile = 0; tile < VSIZE(counts); ++tile ) {
+            for ( tile = 0; tile < numFaces; ++tile ) {
                 XP_U16 count = counts[tile];
                 if ( 0 < count ) {
                     result += count * dict_getTileValue( dict, tile );

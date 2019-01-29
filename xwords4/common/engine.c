@@ -75,7 +75,8 @@ typedef struct MoveIterationData {
 
 /* one bit per tile that's possible here *\/ */
 typedef XP_U32 CrossBits;
-typedef struct Crosscheck { CrossBits bits[2]; } Crosscheck;
+#define NUM_CBITS 2
+typedef struct Crosscheck { CrossBits bits[NUM_CBITS]; } Crosscheck;
 
 struct EngineCtxt {
     const ModelCtxt* model;
@@ -277,7 +278,7 @@ print_savedMoves( const EngineCtxt* engine, const char* label )
 {
     int ii;
     int pos = 0;
-    char buf[(NUM_SAVED_ENGINE_MOVES*10) + 3] = {0};
+    VDECL(char, buf, (NUM_SAVED_ENGINE_MOVES*10) + 3) = {0};
     for ( ii = 0; ii < engine->nMovesToSave; ++ii ) {
         if ( 0 < engine->miData.savedMoves[ii].score ) {
             pos += XP_SNPRINTF( &buf[pos], VSIZE(buf)-pos, "[%d]: %d; ", 
@@ -725,8 +726,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
             XP_ASSERT( tile < MAX_UNIQUE_TILES );
             tiles[0] = tile;
             if ( lookup( dict, in_edge, tiles, 0, tilesAfter ) ) {
-                XP_ASSERT( (tile >> 5)
-                           < (VSIZE(check->bits)) );
+                XP_ASSERT( (tile >> 5) < NUM_CBITS );
                 check->bits[tile>>5] |= (1L << (tile & 0x1F));
             }
 

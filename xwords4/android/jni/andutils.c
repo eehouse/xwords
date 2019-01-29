@@ -576,9 +576,9 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
         case COMMS_CONN_RELAY:
             addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
             getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
-                       VSIZE(addr->u.ip_relay.hostName) );
+                       MAX_HOSTNAME_LEN + 1 );
             getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
-                       VSIZE(addr->u.ip_relay.invite) );
+                       MAX_INVITE_LEN + 1 );
             addr->u.ip_relay.seeksPublicRoom =
                 getBool( env, jaddr, "ip_relay_seeksPublicRoom" );
             addr->u.ip_relay.advertiseRoom =
@@ -587,19 +587,19 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
             break;
         case COMMS_CONN_SMS:
             getString( env, jaddr, "sms_phone", addr->u.sms.phone,
-                       VSIZE(addr->u.sms.phone) );
+                       MAX_PHONE_LEN + 1 );
             // XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
             addr->u.sms.port = getInt( env, jaddr, "sms_port" );
             break;
         case COMMS_CONN_BT:
             getString( env, jaddr, "bt_hostName", addr->u.bt.hostName,
-                       VSIZE(addr->u.bt.hostName) );
+                       MAX_HOSTNAME_LEN + 1 );
             getString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars,
-                       VSIZE(addr->u.bt.btAddr.chars) );
+                       MAX_BTADDR_STR_LEN );
             break;
         case COMMS_CONN_P2P:
             getString( env, jaddr, "p2p_addr", addr->u.p2p.mac_addr,
-                       VSIZE(addr->u.p2p.mac_addr) );
+                       MAX_P2P_MAC_LEN + 1 );
             break;
         default:
             XP_ASSERT(0);

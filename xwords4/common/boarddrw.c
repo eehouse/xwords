@@ -395,7 +395,7 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
         /* This 'while' is only here so I can 'break' below */
         while ( board->trayVisState == TRAY_HIDDEN ||
                 !rectContainsRect( &board->trayBounds, &cellRect ) ) {
-            XP_UCHAR ch[4] = {'\0'};
+            VDECL(XP_UCHAR, ch, 4) = {'\0'};
             XP_S16 owner = -1;
             XP_Bool invert = XP_FALSE;
             XP_Bitmaps bitmaps;
@@ -470,7 +470,7 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
                                      tile, value, owner, bonus, hintAtts, 
                                      flags );
 #ifdef LOG_CELL_DRAW
-            XP_UCHAR buf[64];
+            VDECL( XP_UCHAR, buf, 64 );
             XP_LOGF( "%s(col=%d, row=%d, flags=%s)=>%s", __func__, col, row,
                      formatFlags(buf, VSIZE(buf), flags), success?"true":"false" );
 #endif

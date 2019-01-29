@@ -32,6 +32,8 @@
 #define MAX_MOVE_CHECK_MS ((XP_U16)(1000 * 60 * 60 * 24))
 #define RELAY_API_PROTO "http"
 
+#define HOST_LEN 64
+
 typedef struct _RelayConStorage {
     pthread_t mainThread;
     guint moveCheckerID;
@@ -50,7 +52,7 @@ typedef struct _RelayConStorage {
     uint32_t nextID;
     XWPDevProto proto;
     LaunchParams* params;
-    XP_UCHAR host[64];
+    XP_UCHAR host[HOST_LEN];
     int nextTaskID;
 } RelayConStorage;
 
@@ -259,7 +261,7 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
         pthread_mutex_init( &storage->gotDataMutex, NULL );
         g_timeout_add( 50, gotDataTimer, storage );
 
-        XP_ASSERT( XP_STRLEN(host) < VSIZE(storage->host) );
+        XP_ASSERT( XP_STRLEN(host) < HOST_LEN );
         XP_MEMCPY( storage->host, host, XP_STRLEN(host) + 1 );
     } else {
         storage->socket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );

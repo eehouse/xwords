@@ -107,7 +107,7 @@ dmgr_put( DictMgrCtxt* dmgr, const XP_UCHAR* key, DictionaryCtxt* dict )
 
     XP_S16 loc = findFor( dmgr, key );
     if ( NOT_FOUND == loc ) { /* reuse the last one */
-        moveToFront( dmgr, VSIZE(dmgr->pairs) - 1 );
+        moveToFront( dmgr, DMGR_MAX_DICTS - 1 );
         DictPair* pair = dmgr->pairs; /* the head */
         dict_unref( pair->dict );
         pair->dict = dict_ref( dict );
@@ -126,7 +126,7 @@ findFor( DictMgrCtxt* dmgr, const XP_UCHAR* key )
 {
     XP_S16 result = NOT_FOUND;
     XP_U16 ii;
-    for ( ii = 0; ii < VSIZE(dmgr->pairs); ++ii ) {
+    for ( ii = 0; ii < DMGR_MAX_DICTS; ++ii ) {
         DictPair* pair = &dmgr->pairs[ii];
         if ( !!pair->key && 0 == XP_STRCMP( key, pair->key ) ) {
             result = ii;
@@ -151,7 +151,7 @@ static void
 printInOrder( const DictMgrCtxt* dmgr )
 {
     XP_U16 ii;
-    for ( ii = 0; ii < VSIZE(dmgr->pairs); ++ii ) {
+    for ( ii = 0; ii < DMGR_MAX_DICTS; ++ii ) {
         const XP_UCHAR* name = dmgr->pairs[ii].key;
         XP_LOGF( "%s: dict[%d]: %s", __func__, ii, 
                  (NULL == name)? "<empty>" : name );

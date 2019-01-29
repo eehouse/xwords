@@ -232,7 +232,8 @@ static void
 splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr, 
                      int nFaceBytes, int nFaces, XP_Bool isUTF8 )
 {
-    XP_UCHAR facesBuf[nFaces*16]; /* seems a reasonable upper bound... */
+    const size_t facesBufSize = nFaces*16;
+    XP_UCHAR facesBuf[facesBufSize]; /* seems a reasonable upper bound... */
     int indx = 0;
     int offsets[nFaces];
     int nBytes;
@@ -267,7 +268,7 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
         }
 
         deleteLocalRef( env, jstrs );
-        XP_ASSERT( indx < VSIZE(facesBuf) );
+        XP_ASSERT( indx < facesBufSize );
     }
     deleteLocalRef( env, jstrarr );
 
@@ -572,7 +573,7 @@ makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
     jsize len = (*env)->GetArrayLength( env, jdicts );
     XP_ASSERT( len == (*env)->GetArrayLength( env, jnames ) );
 
-    for ( int ii = 0; ii <= VSIZE(dicts->dicts); ++ii ) {
+    for ( int ii = 0; ii <= MAX_NUM_PLAYERS; ++ii ) {
         DictionaryCtxt* dict = NULL;
         if ( ii < len ) {
             jobject jdict = (*env)->GetObjectArrayElement( env, jdicts, ii );
@@ -590,7 +591,7 @@ makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
         if ( 0 == ii ) {
             *dictp = dict;
         } else {
-            XP_ASSERT( ii-1 < VSIZE( dicts->dicts ) );
+            XP_ASSERT( ii-1 < MAX_NUM_PLAYERS );
             dicts->dicts[ii-1] = dict;
         }
     }

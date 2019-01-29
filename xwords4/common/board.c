@@ -2254,7 +2254,7 @@ figureScale( BoardCtxt* board, XP_U16 count, XP_U16 dimension, ScrollData* sd )
 
     sd->lastVisible = count - board->zoomCount + sd->offset - 1;
 
-    if ( figureDims( sd->dims, VSIZE(sd->dims), nVis,
+    if ( figureDims( sd->dims, MAX_COLS, nVis,
                      scale, spares ) ) {
         board_invalAll( board );
     }
@@ -2344,7 +2344,7 @@ figureBoardRect( BoardCtxt* board )
 
         vsd->lastVisible = nVisible + vsd->offset - 1;
 
-        if ( figureDims( vsd->dims, VSIZE(vsd->dims), nVisible, 
+        if ( figureDims( vsd->dims, MAX_COLS, nVisible,
                          vsd->scale, extra ) ) {
             board_invalAll( board );
         }
