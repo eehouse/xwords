@@ -40,10 +40,7 @@
 # endif
 #endif
 
-#define VSIZE(_arr) __name_of ## _arr
-#define VDECL(_type, _arr, _count)              \
-    enum {VSIZE(_arr) = _count};                \
-    _type _arr[VSIZE(_arr)]
+#define VSIZE(arr) (sizeof(arr)/sizeof(arr[0]))
 
 #ifndef MAX_ROWS
 # define MAX_ROWS 16

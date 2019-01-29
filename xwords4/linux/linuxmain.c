@@ -327,7 +327,7 @@ catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
                               cGlobals->params->vtMgr,
                               NULL, CHANNEL_NONE, catOnClose );
     if ( -1 != quitter ) {
-        VDECL( XP_UCHAR, buf, 128 );
+        XP_UCHAR buf[128];
         XP_SNPRINTF( buf, VSIZE(buf), "Player %s resigned\n",
                      cGlobals->gi->players[quitter].name );
         stream_catString( stream, buf );
@@ -818,7 +818,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 static struct option* 
 make_longopts()
 {
-    int count = N_CMDS;
+    int count = VSIZE( CmdInfoRecs );
     struct option* result = calloc( count+1, sizeof(*result) );
     int ii;
     for ( ii = 0; ii < count; ++ii ) {
@@ -841,7 +841,7 @@ usage( char* appName, char* msg )
     fprintf( stderr, "usage: %s \n", appName );
 
     int maxWidth = 0;
-    for ( ii = 0; ii < N_CMDS; ++ii ) {
+    for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
         const CmdInfoRec* rec = &CmdInfoRecs[ii];
         int width = strlen(rec->param) + 1;
         if ( rec->hasArg ) {
@@ -852,7 +852,7 @@ usage( char* appName, char* msg )
         }
     }
 
-    for ( ii = 0; ii < N_CMDS; ++ii ) {
+    for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
         const CmdInfoRec* rec = &CmdInfoRecs[ii];
         char buf[120];
         snprintf( buf, sizeof(buf), "--%s %s", rec->param, 
@@ -1624,7 +1624,7 @@ static void
 testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
                 XP_U16 depth, IndexData* data, XP_U16 min, XP_U16 max )
 {
-    VDECL( XP_UCHAR, buf, 64 );
+    XP_UCHAR buf[64];
     XP_U32 ii, jj;
     DictIter iter;
 
@@ -1678,7 +1678,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
     XP_U32 count = dict_countWords( &iter, &lens );
 
     XP_U32 sum = 0;
-    for ( jj = 0; jj < MAX_COLS_DICT+1; ++jj ) {
+    for ( jj = 0; jj < VSIZE(lens.lens); ++jj ) {
         sum += lens.lens[jj];
         XP_LOGF( "%d words of length %ld", lens.lens[jj], jj );
     }
@@ -1692,7 +1692,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
               gotOne;
               gotOne = dict_getNextWord( &iter ) ) {
             XP_ASSERT( dict_getPosition( &iter ) == jj );
-            VDECL( XP_UCHAR, buf, 64 );
+            XP_UCHAR buf[64];
             dict_wordToString( &iter, buf, VSIZE(buf) );
 # ifdef PRINT_ALL
             fprintf( stderr, "%.6ld: %s\n", jj, buf );
@@ -1708,7 +1708,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
               gotOne;
               ++jj, gotOne = dict_getPrevWord( &iter ) ) {
             XP_ASSERT( dict_getPosition(&iter) == count-jj-1 );
-            VDECL( XP_UCHAR, buf, 64 );
+            XP_UCHAR buf[64];
             dict_wordToString( &iter, buf, VSIZE(buf) );
 # ifdef PRINT_ALL
             fprintf( stderr, "%.6ld: %s\n", jj, buf );
@@ -1750,13 +1750,13 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
                 XP_ASSERT( 0 );
             }
             XP_ASSERT( word.index == indices[ii] );
-            VDECL( XP_UCHAR, buf1, 64 );
+            XP_UCHAR buf1[64];
             dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
-            VDECL( XP_UCHAR, buf2, 64 ) = {0};
+            XP_UCHAR buf2[64] = {0};
             if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
                 dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
             }
-            VDECL( char, prfx, 8 );
+            char prfx[8];
             dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, 
                                 VSIZE(prfx) );
             fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
@@ -1774,8 +1774,8 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
                 gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
                 XP_S16 lenMatched = dict_findStartsWith( &iter, prefix );
                 if ( 0 <= lenMatched ) {
-                    VDECL( XP_UCHAR,  buf, 32 );
-                    VDECL( XP_UCHAR, bufPrev, 32 ) = {0};
+                    XP_UCHAR buf[32];
+                    XP_UCHAR bufPrev[32] = {0};
                     dict_wordToString( &iter, buf, VSIZE(buf) );
 
                     /* This doesn't work with synonyms like "L-L" for "L·L" */
@@ -1832,7 +1832,7 @@ dumpDict( DictionaryCtxt* dict )
     for ( XP_Bool result = dict_firstWord( &iter ); 
           result; 
           result = dict_getNextWord( &iter ) ) {
-        VDECL( XP_UCHAR,  buf, 32 );
+        XP_UCHAR buf[32];
         dict_wordToString( &iter, buf, VSIZE(buf) );
         fprintf( stdout, "%s\n", buf );
     }
@@ -1841,7 +1841,7 @@ dumpDict( DictionaryCtxt* dict )
 static void
 trimDictPath( const char* input, char* buf, int bufsiz, char** path, char** dict )
 {
-    VDECL( char, unlinked, 256 );
+    char unlinked[256];
     XP_ASSERT( strlen(input) < VSIZE(unlinked) );
     ssize_t siz = readlink( input, unlinked, VSIZE(unlinked) );
     if ( 0 <= siz ) {
@@ -1883,7 +1883,7 @@ getDictPath( const LaunchParams *params, const char* name,
     result[0] = '\0';
     for ( iter = params->dictDirs; !!iter; iter = iter->next ) {
         const char* path = iter->data;
-        VDECL( char,  buf, 256 );
+        char buf[256];
         int len = snprintf( buf, VSIZE(buf), "%s/%s.xwd", path, name );
         if ( len < VSIZE(buf) && file_exists( buf ) ) {
             snprintf( result, resultLen, "%s", buf );
@@ -2064,7 +2064,7 @@ main( int argc, char** argv )
     GSList* testPrefixes = NULL;
     char* testMinMax = NULL;
 #endif
-    VDECL( char, dictbuf, 256 );
+    char dictbuf[256];
     char* dict;
     char* path;
 

@@ -329,8 +329,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
     }
 }
 
-#define GI_INTS_SIZE 6
-static const SetInfo gi_ints[GI_INTS_SIZE] = {
+static const SetInfo gi_ints[] = {
     ARR_MEMBER( CurGameInfo, nPlayers )
     ,ARR_MEMBER( CurGameInfo, gameSeconds )
     ,ARR_MEMBER( CurGameInfo, boardSize )
@@ -339,16 +338,14 @@ static const SetInfo gi_ints[GI_INTS_SIZE] = {
     ,ARR_MEMBER( CurGameInfo, forceChannel )
 };
 
-#define GI_BOOLS_SIZE 4
-static const SetInfo gi_bools[GI_BOOLS_SIZE] = {
+static const SetInfo gi_bools[] = {
     ARR_MEMBER( CurGameInfo, hintsNotAllowed )
     ,ARR_MEMBER( CurGameInfo, timerEnabled )
     ,ARR_MEMBER( CurGameInfo, allowPickTiles )
     ,ARR_MEMBER( CurGameInfo, allowHintRect )
 };
 
-#define PL_INTS_SIZE 2
-static const SetInfo pl_ints[PL_INTS_SIZE] = {
+static const SetInfo pl_ints[] = {
     ARR_MEMBER( LocalPlayer, robotIQ )
     ,ARR_MEMBER( LocalPlayer, secondsUsed )
 };
@@ -357,10 +354,10 @@ static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 {
     CurGameInfo* gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*gi) );
-    VDECL( XP_UCHAR, buf, 256 );          /* in case needs whole path */
+    XP_UCHAR buf[256];          /* in case needs whole path */
 
-    getInts( env, (void*)gi, jgi, gi_ints, GI_INTS_SIZE );
-    getBools( env, (void*)gi, jgi, gi_bools, GI_BOOLS_SIZE );
+    getInts( env, (void*)gi, jgi, gi_ints, VSIZE(gi_ints) );
+    getBools( env, (void*)gi, jgi, gi_bools, VSIZE(gi_bools) );
 
     /* Unlike on other platforms, gi is created without a call to
        game_makeNewGame, which sets gameID.  So check here if it's still unset
@@ -393,7 +390,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            getInts( env, (void*)lp, jlp, pl_ints, PL_INTS_SIZE );
+            getInts( env, (void*)lp, jlp, pl_ints, VSIZE(pl_ints) );
 
             lp->isLocal = getBool( env, jlp, "isLocal" );
 
@@ -414,8 +411,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
     return gi;
 } /* makeGI */
 
-#define NLI_INTS_SIZE 7
-static const SetInfo nli_ints[NLI_INTS_SIZE] = {
+static const SetInfo nli_ints[] = {
     ARR_MEMBER( NetLaunchInfo, _conTypes ),
     ARR_MEMBER( NetLaunchInfo, lang ),
     ARR_MEMBER( NetLaunchInfo, forceChannel ),
@@ -425,13 +421,11 @@ static const SetInfo nli_ints[NLI_INTS_SIZE] = {
     ARR_MEMBER( NetLaunchInfo, osVers ),
 };
 
-#define NLI_BOOLS_SIZE 1
-static const SetInfo nli_bools[NLI_BOOLS_SIZE] = {
+static const SetInfo nli_bools[] = {
     ARR_MEMBER( NetLaunchInfo, isGSM )
 };
 
-#define NLI_STRS_SIZE 7
-static const SetInfo nli_strs[NLI_STRS_SIZE] = {
+static const SetInfo nli_strs[] = {
     ARR_MEMBER( NetLaunchInfo, dict ),
     ARR_MEMBER( NetLaunchInfo, gameName ),
     ARR_MEMBER( NetLaunchInfo, room ),
@@ -444,17 +438,17 @@ static const SetInfo nli_strs[NLI_STRS_SIZE] = {
 static void
 loadNLI( JNIEnv* env, NetLaunchInfo* nli, jobject jnli )
 {
-    getInts( env, (void*)nli, jnli, nli_ints, NLI_INTS_SIZE );
-    getBools( env, (void*)nli, jnli, nli_bools, NLI_BOOLS_SIZE );
-    getStrings( env, (void*)nli, jnli, nli_strs, NLI_STRS_SIZE );
+    getInts( env, (void*)nli, jnli, nli_ints, VSIZE(nli_ints) );
+    getBools( env, (void*)nli, jnli, nli_bools, VSIZE(nli_bools) );
+    getStrings( env, (void*)nli, jnli, nli_strs, VSIZE(nli_strs) );
 }
 
 static void
 setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli )
 {
-    setInts( env, jnli, (void*)nli, nli_ints, NLI_INTS_SIZE );
-    setBools( env, jnli, (void*)nli, nli_bools, NLI_BOOLS_SIZE );
-    setStrings( env, jnli, (void*)nli, nli_strs, NLI_STRS_SIZE );
+    setInts( env, jnli, (void*)nli, nli_ints, VSIZE(nli_ints) );
+    setBools( env, jnli, (void*)nli, nli_bools, VSIZE(nli_bools) );
+    setStrings( env, jnli, (void*)nli, nli_strs, VSIZE(nli_strs) );
 }
 
 static void
@@ -462,8 +456,8 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 {
     // set fields
 
-    setInts( env, jgi, (void*)gi, gi_ints, GI_INTS_SIZE );
-    setBools( env, jgi, (void*)gi, gi_bools, GI_BOOLS_SIZE );
+    setInts( env, jgi, (void*)gi, gi_ints, VSIZE(gi_ints) );
+    setBools( env, jgi, (void*)gi, gi_bools, VSIZE(gi_bools) );
 
     setString( env, jgi, "dictName", gi->dictName );
 
@@ -482,7 +476,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            setInts( env, jlp, (void*)lp, pl_ints, PL_INTS_SIZE );
+            setInts( env, jlp, (void*)lp, pl_ints, VSIZE(pl_ints) );
             
             setBool( env, jlp, "isLocal", lp->isLocal );
             setString( env, jlp, "name", lp->name );
@@ -498,8 +492,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 } /* setJGI */
 
 #ifdef COMMON_LAYOUT
-#define BD_INTS_SIZE 16
-static const SetInfo bd_ints[BD_INTS_SIZE] = {
+static const SetInfo bd_ints[] = {
     ARR_MEMBER( BoardDims, left )
     ,ARR_MEMBER( BoardDims, top )
     ,ARR_MEMBER( BoardDims, width )
@@ -521,13 +514,13 @@ static const SetInfo bd_ints[BD_INTS_SIZE] = {
 static void
 dimsJToC( JNIEnv* env, BoardDims* out, jobject jdims )
 {
-    getInts( env, (void*)out, jdims, bd_ints, BD_INTS_SIZE );
+    getInts( env, (void*)out, jdims, bd_ints, VSIZE(bd_ints) );
 }
 
 static void
 dimsCtoJ( JNIEnv* env, jobject jdims, const BoardDims* in )
 {
-    setInts( env, jdims, (void*)in, bd_ints, BD_INTS_SIZE );
+    setInts( env, jdims, (void*)in, bd_ints, VSIZE(bd_ints) );
 }
 #endif
 
@@ -1256,7 +1249,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
     XWJNI_START();
     XP_Bool canInOut[2];
     result = board_zoom( state->game.board, zoomBy, canInOut );
-    VDECL( jboolean,  canZoom, 2 ) = { canInOut[0], canInOut[1] };
+    jboolean canZoom[2] = { canInOut[0], canInOut[1] };
     setBoolArray( env, jCanZoom, VSIZE(canZoom), canZoom );
     XWJNI_END();
     return result;
@@ -1791,7 +1784,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
     XWJNI_START();
     XP_ASSERT( state->game.comms );
     if ( !!state->game.comms ) {
-        VDECL( CommsAddrRec, addrs, MAX_NUM_PLAYERS );
+        CommsAddrRec addrs[MAX_NUM_PLAYERS];
         XP_U16 count = VSIZE(addrs);
         comms_getAddrs( state->game.comms, addrs, &count );
 
@@ -1884,7 +1877,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
             switch( typ ) {
             case COMMS_CONN_RELAY: {
-                VDECL( XP_UCHAR, buf, 128 );
+                XP_UCHAR buf[128];
                 XP_U16 len = VSIZE(buf);
                 if ( comms_getRelayID( comms, buf, &len ) ) {
                     XP_ASSERT( '\0' == buf[len-1] ); /* failed! */
@@ -1897,7 +1890,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             case COMMS_CONN_BT:
             case COMMS_CONN_P2P:
             case COMMS_CONN_SMS: {
-                VDECL( CommsAddrRec, addrs, MAX_NUM_PLAYERS );
+                CommsAddrRec addrs[MAX_NUM_PLAYERS];
                 XP_U16 count = VSIZE(addrs);
                 comms_getAddrs( comms, addrs, &count );
             
@@ -2017,15 +2010,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getGi
     XWJNI_END();
 }
 
-#define GSI_INTS_SIZE 3
-static const SetInfo gsi_ints[GSI_INTS_SIZE] = {
+static const SetInfo gsi_ints[] = {
     ARR_MEMBER( GameStateInfo, visTileCount ),
     ARR_MEMBER( GameStateInfo, nPendingMessages ),
     ARR_MEMBER( GameStateInfo, trayVisState ),
 };
-
-#define GSI_BOOLS_SIZE 10
-static const SetInfo gsi_bools[GSI_BOOLS_SIZE] = {
+static const SetInfo gsi_bools[] = {
     ARR_MEMBER( GameStateInfo,canHint ),
     ARR_MEMBER( GameStateInfo, canUndo ),
     ARR_MEMBER( GameStateInfo, canRedo ),
@@ -2046,8 +2036,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
     GameStateInfo info;
     game_getState( &state->game, &info );
 
-    setInts( env, jgsi, (void*)&info, gsi_ints, GSI_INTS_SIZE );
-    setBools( env, jgsi, (void*)&info, gsi_bools, GSI_BOOLS_SIZE );
+    setInts( env, jgsi, (void*)&info, gsi_ints, VSIZE(gsi_ints) );
+    setBools( env, jgsi, (void*)&info, gsi_bools, VSIZE(gsi_bools) );
 
     XWJNI_END();
 }
@@ -2340,7 +2330,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
         LengthsArray lens;
         if ( 0 < dict_countWords( &iter, &lens ) ) {
             XP_ASSERT( sizeof(jint) == sizeof(lens.lens[0]) );
-            result = makeIntArray( env, MAX_COLS_DICT+1, (jint*)&lens.lens,
+            result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens,
                                    sizeof(lens.lens[0]) );
         }
     }
@@ -2358,7 +2348,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
 
         XP_U16 depth = data->depth;
         for ( int ii = 0; ii < data->idata.count; ++ii ) {
-            VDECL( XP_UCHAR, buf, 16 );
+            XP_UCHAR buf[16];
             (void)dict_tilesToString( data->dict, 
                                       &data->idata.prefixes[depth*ii], 
                                       depth, buf, VSIZE(buf) );
@@ -2394,7 +2384,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
         if ( dict_getNthWord( &data->iter, nn, data->depth, &data->idata ) ) {
-            VDECL( XP_UCHAR, buf, 64 );
+            XP_UCHAR buf[64];
             dict_wordToString( &data->iter, buf, VSIZE(buf) );
             result = (*env)->NewStringUTF( env, buf );
         }

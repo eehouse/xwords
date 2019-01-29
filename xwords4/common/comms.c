@@ -734,8 +734,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     }
 
     if ( STREAM_VERS_DISABLEDS <= version ) {
-        for ( int typ = 0; typ < COMMS_CONN_NTYPES; ++typ ) {
-            for ( int ii = 0; ii < 2; ++ii ) {
+        for ( int typ = 0; typ < VSIZE(comms->disableds); ++typ ) {
+            for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
                 comms->disableds[typ][ii] = 0 != stream_getBits( stream, 1 );
             }
         }
@@ -929,8 +929,8 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
-    for ( int typ = 0; typ < COMMS_CONN_NTYPES; ++typ ) {
-        for ( int ii = 0; ii < 2; ++ii ) {
+    for ( int typ = 0; typ < VSIZE(comms->disableds); ++typ ) {
+        for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
             stream_putBits( stream, 1, comms->disableds[typ][ii] ? 1 : 0 );
         }
     }

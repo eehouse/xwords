@@ -222,7 +222,7 @@ summarize( CommonGlobals* cGlobals )
 
     // gchar* connvia = "local";
     gchar connvia[128] = {0};
-    VDECL( XP_UCHAR, relayID, 32 ) = {0};
+    XP_UCHAR relayID[32] = {0};
 
     if ( !!game->comms ) {
         nMissing = server_getMissingPlayers( game->server );
@@ -341,7 +341,7 @@ getRelayIDsToRowsMap( sqlite3* pDb )
         switch( sqlite3_step( ppStmt ) ) {
         case SQLITE_ROW:        /* have data */
         {
-            VDECL( XP_UCHAR, relayID, 32 );
+            XP_UCHAR relayID[32];
             int len = VSIZE(relayID);
             getColumnText( ppStmt, 0, relayID, &len );
             gpointer key = g_strdup( relayID );

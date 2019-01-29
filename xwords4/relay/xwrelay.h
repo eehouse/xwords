@@ -281,8 +281,6 @@ typedef unsigned short CookieID;
 
 #define COOKIE_ID_NONE 0
 
-#ifndef VSIZE
-# define VSIZE(arr) (sizeof(arr)/sizeof(arr[0]))
-#endif
+#define VSIZE(arr) (sizeof(arr)/sizeof(arr[0]))
 
 #endif

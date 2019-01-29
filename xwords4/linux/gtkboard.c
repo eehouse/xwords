@@ -1113,7 +1113,7 @@ change_dictionary( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommonGlobals* cGlobals = &globals->cGlobals;
     LaunchParams* params = cGlobals->params;
 	GSList* dicts = listDicts( params );
-	VDECL( gchar, buf, 265 );
+	gchar buf[265];
 	gchar* name = gtkaskdict( dicts, buf, VSIZE(buf) );
 	if ( !!name ) {
 		DictionaryCtxt* dict = 
@@ -1662,7 +1662,7 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 #endif
 
     if ( '\0' != addrs->u.sms.phone[0] && 0 < addrs->u.sms.port ) {
-        VDECL( gchar,  gameName, 64 );
+        gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
 
         linux_sms_invite( cGlobals->params, &nli,
@@ -1844,7 +1844,7 @@ ask_password( gpointer data )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
     CommonGlobals* cGlobals = &globals->cGlobals;
-    VDECL( XP_UCHAR,  buf, 32 );
+    XP_UCHAR buf[32];
     XP_U16 len = VSIZE(buf);
     if ( gtkpasswdask( cGlobals->askPassName, buf, &len ) ) {
         BoardCtxt* board = cGlobals->game.board;
@@ -2003,7 +2003,7 @@ gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
 {
     if ( 0 != strcmp( oldName, newName ) ) {
         GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-        VDECL( gchar, buf, 512 );
+        gchar buf[512];
         int offset = snprintf( buf, VSIZE(buf),
                                "dict changing from %s to %s (sum=%s).", 
                                oldName, newName, newSum );
@@ -2298,7 +2298,7 @@ gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg, XP_S16 from,
                    XP_U32 timestamp )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    VDECL( XP_UCHAR,  buf, 1024 );
+    XP_UCHAR buf[1024];
     XP_UCHAR* name = "<unknown>";
     if ( 0 <= from ) {
         name = globals->cGlobals.gi->players[from].name;
@@ -2338,7 +2338,7 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
     LastMoveInfo lmi;
     if ( model_getPlayersLastScore( globals->cGlobals.game.model,
                                     player, &lmi ) ) {
-        VDECL( XP_UCHAR,  buf, 128 );
+        XP_UCHAR buf[128];
         formatLMI( &lmi, buf, VSIZE(buf) );
         (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
     }
@@ -2393,7 +2393,7 @@ gtk_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
     /* XP_Bool freeMe = XP_FALSE; */
 
     XP_U16 len = stream_getSize( stream );
-    XP_ASSERT( len <= QUESTION_LEN );
+    XP_ASSERT( len <= VSIZE(cGlobals->question) );
     stream_getBytes( stream, cGlobals->question, len );
     (void)g_idle_add( ask_move, globals );
 

@@ -454,7 +454,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_U16 maxCountBits, maxValueBits;
     XP_U16 ii, nSpecials;
     XP_UCHAR* localTexts[32];
-    VDECL( XP_U8, utf8, MAX_UNIQUE_TILES );
+    XP_U8 utf8[MAX_UNIQUE_TILES];
 
     XP_ASSERT( !dict->destructor );
     dict->destructor = common_destructor;
