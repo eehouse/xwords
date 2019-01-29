@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.JobIntentService;
 import android.text.TextUtils;
 
@@ -205,6 +206,7 @@ public class RelayService extends JobIntentService
         Log.d( TAG, "calling enqueueWork(id=%d, cmd=%s)", sJobID,
                cmdFrom( intent ) );
         enqueueWork( context, RelayService.class, sJobID, intent );
+        Log.d( TAG, "enqueueWork() returned" );
     }
 
     private static MsgCmds cmdFrom( Intent intent )
@@ -375,11 +377,13 @@ public class RelayService extends JobIntentService
         Log.d( TAG, "%s.onHandleWork(cmd=%s)", this, cmdFrom( intent ) );
         handleCommand( intent );
         resetExitTimer();
+        Log.d( TAG, "%s.onHandleWork(cmd=%s) DONE", this, cmdFrom( intent ) );
     }
 
     @Override
     public void onDestroy()
     {
+        Log.d( TAG, "onDestroy() called" );
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
             RelayReceiver.setTimer( this, interval_millis );
@@ -389,6 +393,36 @@ public class RelayService extends JobIntentService
         }
         super.onDestroy();
         Log.d( TAG, "%s.onDestroy() DONE", this );
+    }
+
+    @Override
+    public boolean onStopCurrentWork() {
+        Log.d( TAG, "onStopCurrentWork() called");
+        boolean result = super.onStopCurrentWork();
+        Log.d( TAG, "onStopCurrentWork() => %b", result);
+        return result;
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Log.d( TAG, "onTaskRemoved() called");
+        super.onTaskRemoved(rootIntent);
+        Log.d( TAG, "onTaskRemoved() => (void)");
+    }
+
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        Log.d( TAG, "onStartCommand(%s) called", intent );
+        int result = super.onStartCommand(intent, flags, startId );
+        Log.d( TAG, "onStartCommand() => %d", result );
+        return result;
+    }
+
+    @Override
+    public void onLowMemory() {
+        Log.d( TAG, "onLowMemory() called" );
+        super.onLowMemory();
+        Log.d( TAG, "onLowMemory() => void" );
     }
 
     // NetStateCache.StateChangedIf interface

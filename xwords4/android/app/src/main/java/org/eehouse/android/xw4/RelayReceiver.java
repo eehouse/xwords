@@ -28,10 +28,12 @@ import android.content.Intent;
 import android.os.SystemClock;
 
 public class RelayReceiver extends BroadcastReceiver {
+    private static final String TAG = RelayReceiver.class.getSimpleName();
 
     @Override
     public void onReceive( Context context, Intent intent )
     {
+        Log.d( TAG, "onReceive(intent=%s)", intent );
         RelayService.timerFired( context );
     }
 
