@@ -76,7 +76,7 @@ conTypeToPageNum( const GtkInviteState* state, CommsConnType conType )
             pageNum = ii;
             break;
         }
-        XP_ASSERT( ii < VSIZE(state->pageData) );
+        XP_ASSERT( ii < COMMS_CONN_NTYPES );
     }
     return pageNum;
 }

@@ -350,7 +350,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
         comms_getAddr( comms, &addr );
         addrToStream( stream, &addr );
 
-        CommsAddrRec addrs[4];
+        VDECL( CommsAddrRec, addrs, 4 );
         XP_U16 nRecs = VSIZE(addrs);
         comms_getAddrs( comms, addrs, &nRecs );
 
@@ -478,7 +478,7 @@ setWindowTitle( GtkAppGlobals* apg )
     GtkWidget* window = apg->window;
     LaunchParams* params = apg->params;
 
-    gchar title[128] = {0};
+    VDECL( gchar, title, 128 ) = {0};
     if ( !!params->dbName ) {
         strcat( title, params->dbName );
     }
@@ -696,7 +696,7 @@ relayInviteReceived( void* closure, NetLaunchInfo* invite )
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
 
     XP_U32 gameID = invite->gameID;
-    sqlite3_int64 rowids[1];
+    VDECL( sqlite3_int64, rowids, 1 );
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( apg->params->pDb, gameID, rowids, &nRowIDs );
     
@@ -782,7 +782,7 @@ smsMsgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params =  apg->params;
 
-    sqlite3_int64 rowids[4];
+    VDECL( sqlite3_int64, rowids, 4 );
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
     XP_LOGF( "%s: found %d rows for gameID %d", __func__, nRowIDs, gameID );
@@ -888,7 +888,7 @@ gtkmain( LaunchParams* params )
         }
 
 #ifdef XWFEATURE_SMS
-        gchar buf[32];
+        VDECL( gchar, buf, 32 );
         const gchar* myPhone = params->connInfo.sms.myPhone;
         if ( !!myPhone ) {
             db_store( params->pDb, KEY_SMSPHONE, myPhone );
@@ -896,7 +896,7 @@ gtkmain( LaunchParams* params )
             params->connInfo.sms.myPhone = myPhone = buf;
         }
         XP_U16 myPort = params->connInfo.sms.port;
-        gchar portbuf[8];
+        VDECL( gchar, portbuf, 8 );
         if ( 0 < myPort ) {
             sprintf( portbuf, "%d", myPort );
             db_store( params->pDb, KEY_SMSPORT, portbuf );

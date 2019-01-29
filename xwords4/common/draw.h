@@ -223,6 +223,8 @@ typedef struct DrawCtxVTable {
                                            const XP_Rect* rect, void** closure );
 #endif
 #ifndef DRAW_LINK_DIRECT
+
+    void* tableEnd;
 } DrawCtxVTable; /*  */
 #endif
 

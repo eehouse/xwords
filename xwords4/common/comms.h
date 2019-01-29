@@ -71,7 +71,8 @@ typedef enum {
 /* on Palm BtLibDeviceAddressType is a 48-bit quantity.  Linux's typeis the
    same size.  Goal is something all platforms support */
 typedef struct XP_BtAddr { XP_U8 bits[6]; } XP_BtAddr;
-typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
+#define MAX_BTADDR_STR_LEN 18
+typedef struct XP_BtAddrStr { XP_UCHAR chars[MAX_BTADDR_STR_LEN]; } XP_BtAddrStr;
 
 #ifdef COMMS_HEARTBEAT
 # define IF_CH(a) a,
