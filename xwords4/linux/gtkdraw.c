@@ -1181,7 +1181,7 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
                            XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    XP_UCHAR buf[36];
+    XP_UCHAR buf[VSIZE(dctx->scoreCache[0].str)];
     PangoLayout* layout;
     int lineHeight = GTK_HOR_SCORE_HEIGHT, nLines;
 
@@ -1404,10 +1404,12 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 {
     GtkDrawCtx* dctx = g_malloc0( sizeof(*dctx) );
 
-    dctx->vtable = g_malloc( sizeof(*(((GtkDrawCtx*)dctx)->vtable)) );
-
-    for ( int ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
-        ((void**)(dctx->vtable))[ii] = draw_doNothing; /* bad? */
+    size_t tableSize = sizeof(*(((GtkDrawCtx*)dctx)->vtable));
+    dctx->vtable = g_malloc( tableSize );
+    void** ptr = (void**)dctx->vtable;
+    void** end = (void**)(((unsigned char*)ptr) + tableSize);
+    while ( ptr < end ) {
+        *ptr++ = draw_doNothing;
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, gtk );
