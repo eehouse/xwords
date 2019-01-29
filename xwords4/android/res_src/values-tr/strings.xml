@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources><string name="button_new_group">"Grup ekle "</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="robot_name_fmt">%1$s (robot)</string>
+    <string name="missing_player">(burada değil henüz...)</string>
+    <string name="summary_relay_conf_fmt">\"%1$s\" odası için yapılandırıldı</string>
+    <string name="summary_relay_wait_fmt">\"%1$s\" odasındaki oyuncuları bekliyor</string>
+</resources>
