@@ -36,7 +36,6 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
@@ -44,6 +43,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.net.ssl.HttpsURLConnection;
 
 import javax.net.SocketFactory;
 
@@ -100,7 +100,7 @@ public class NetUtils {
                     one.put( "seed", m_obits[ii].m_seed );
                     params.put( one );
                 }
-                HttpURLConnection conn = makeHttpRelayConn( m_context, "kill" );
+                HttpsURLConnection conn = makeHttpsRelayConn( m_context, "kill" );
                 String resStr = runConn( conn, params );
                 Log.d( TAG, "runViaWeb(): kill(%s) => %s", params, resStr );
 
@@ -194,27 +194,36 @@ public class NetUtils {
         return host;
     }
 
-    protected static HttpURLConnection makeHttpRelayConn( Context context,
-                                                           String proc )
+    public static String ensureHttps( String url )
+    {
+        String result = url.replaceFirst( "^http:", "https:" );
+        if ( ! url.equals( result ) ) {
+            Log.d( TAG, "ensureHttps(%s) => %s", url, result );
+        }
+        return result;
+    }
+
+    protected static HttpsURLConnection makeHttpsRelayConn( Context context,
+                                                            String proc )
     {
         String url = XWPrefs.getDefaultRelayUrl( context );
-        return makeHttpConn( context, url, proc );
+        return makeHttpsConn( context, url, proc );
     }
 
-    protected static HttpURLConnection makeHttpUpdateConn( Context context,
-                                                           String proc )
+    protected static HttpsURLConnection makeHttpsUpdateConn( Context context,
+                                                             String proc )
     {
         String url = XWPrefs.getDefaultUpdateUrl( context );
-        return makeHttpConn( context, url, proc );
+        return makeHttpsConn( context, url, proc );
     }
 
-    private static HttpURLConnection makeHttpConn( Context context,
-                                                   String path, String proc )
+    private static HttpsURLConnection makeHttpsConn( Context context,
+                                                     String path, String proc )
     {
-        HttpURLConnection result = null;
+        HttpsURLConnection result = null;
         try {
-            String url = String.format( "%s/%s", path, proc );
-            result = (HttpURLConnection)new URL(url).openConnection();
+            String url = String.format( "%s/%s", ensureHttps( path ), proc );
+            result = (HttpsURLConnection)new URL(url).openConnection(); // class cast exception
         } catch ( java.net.MalformedURLException mue ) {
             Assert.assertNull( result );
             Log.ex( TAG, mue );
@@ -225,17 +234,17 @@ public class NetUtils {
         return result;
     }
 
-    protected static String runConn( HttpURLConnection conn, JSONArray param )
+    protected static String runConn( HttpsURLConnection conn, JSONArray param )
     {
         return runConn( conn, param.toString() );
     }
 
-    protected static String runConn( HttpURLConnection conn, JSONObject param )
+    protected static String runConn( HttpsURLConnection conn, JSONObject param )
     {
         return runConn( conn, param.toString() );
     }
 
-    private static String runConn( HttpURLConnection conn, String param )
+    private static String runConn( HttpsURLConnection conn, String param )
     {
         String result = null;
         Map<String, String> params = new HashMap<String, String>();
@@ -260,7 +269,7 @@ public class NetUtils {
                 os.close();
 
                 int responseCode = conn.getResponseCode();
-                if ( HttpURLConnection.HTTP_OK == responseCode ) {
+                if ( HttpsURLConnection.HTTP_OK == responseCode ) {
                     InputStream is = conn.getInputStream();
                     BufferedInputStream bis = new BufferedInputStream( is );
 

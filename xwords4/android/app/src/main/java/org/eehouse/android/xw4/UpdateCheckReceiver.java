@@ -31,12 +31,11 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 
+import java.io.File;
+import javax.net.ssl.HttpsURLConnection;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.io.File;
-import java.net.HttpURLConnection;
 
 public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String TAG = UpdateCheckReceiver.class.getSimpleName();
@@ -259,8 +258,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override
         protected String doInBackground( Void... unused )
         {
-            HttpURLConnection conn
-                = NetUtils.makeHttpUpdateConn( m_context, "getUpdates" );
+            HttpsURLConnection conn
+                = NetUtils.makeHttpsUpdateConn( m_context, "getUpdates" );
             String json = null;
             if ( null != conn ) {
                 json = NetUtils.runConn( conn, m_params );
@@ -307,7 +306,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             }
 
                             Intent intent;
-                            String url = app.getString( k_URL );
+                            String url = NetUtils.ensureHttps( app.getString( k_URL ) );
                             if ( useBrowser ) {
                                 intent = new Intent( Intent.ACTION_VIEW,
                                                      Uri.parse(url) );

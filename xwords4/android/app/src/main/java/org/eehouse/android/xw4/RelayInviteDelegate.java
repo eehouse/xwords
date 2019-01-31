@@ -41,7 +41,6 @@ import android.widget.FrameLayout;
 import android.widget.Spinner;
 
 import java.io.Serializable;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,7 +50,6 @@ import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 

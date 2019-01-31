@@ -51,7 +51,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -63,6 +62,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.net.ssl.HttpsURLConnection;
 
 public class RelayService extends JobIntentService
     implements NetStateCache.StateChangedIf {
@@ -1183,8 +1183,8 @@ public class RelayService extends JobIntentService
                 Log.d( TAG, "sendViaWeb(): sending %d at once", packets.size() );
 
                 final RelayService service = getService();
-                HttpURLConnection conn = NetUtils
-                    .makeHttpRelayConn( service, "post" );
+                HttpsURLConnection conn = NetUtils
+                    .makeHttpsRelayConn( service, "post" );
                 if ( null == conn ) {
                     Log.e( TAG, "sendViaWeb(): null conn for POST" );
                 } else {
