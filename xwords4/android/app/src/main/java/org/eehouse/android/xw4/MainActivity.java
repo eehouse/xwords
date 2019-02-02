@@ -64,7 +64,9 @@ public class MainActivity extends XWActivity
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        Assert.assertTrue(isTaskRoot() || !BuildConfig.DEBUG);
+        if ( BuildConfig.DEBUG && !isTaskRoot() ) {
+            Log.e( TAG, "isTaskRoot() => false!!! What to do?" );
+        }
 
         m_dpEnabled = XWPrefs.getIsTablet( this );
 
