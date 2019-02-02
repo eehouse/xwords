@@ -61,13 +61,13 @@ echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,
 
 # Messages
 echo "Unack'd msgs count:" $(psql -t xwgames -c "select count(*) FROM msgs where stime = 'epoch' AND connname IN (SELECT connname from games $QUERY);")
-echo "SELECT id,connName,hid as h,token,ctime,stime,devid,msg64 "\
+echo "SELECT id,connName,hid as h,token,ctime,stime,devid as dest,msg64 "\
      "FROM msgs WHERE stime = 'epoch' AND connname IN (SELECT connname from games $QUERY) "\
      "ORDER BY ctime DESC, connname LIMIT $LIMIT;" \
     | psql xwgames
 
 # Devices
-LINE="SELECT id, model, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes as dTyps, devids[1] as devid_1 FROM devices "
+LINE="SELECT id, model, variant as var, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes as dTyps, devids[1] as devid_1 FROM devices "
 if [ -n "$FILTER_DEVS" ]; then
      LINE="${LINE} WHERE id IN (select UNNEST(devids) FROM games $QUERY)"
 fi
