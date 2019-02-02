@@ -347,9 +347,10 @@ public class CommsTransport implements TransportProcs,
     }
 
     // TransportProcs interface
-
+    @Override
     public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
 
+    @Override
     public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                               CommsConnType conType, int gameID )
     {
@@ -386,17 +387,20 @@ public class CommsTransport implements TransportProcs,
         return nSent;
     }
 
+    @Override
     public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {
         m_tpHandler.tpmRelayConnd( room, devOrder, allHere, nMissing );
     }
 
+    @Override
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
         m_tpHandler.tpmRelayErrorProc( relayErr );
     }
 
+    @Override
     public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
         Assert.fail();
