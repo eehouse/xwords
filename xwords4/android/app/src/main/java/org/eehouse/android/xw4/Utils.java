@@ -159,13 +159,22 @@ public class Utils {
         showToast( context, text );
     }
 
-    public static void showToast( Context context, String msg )
+    public static void showToast( final Context context,
+                                  final String msg )
     {
         // Make this safe to call from non-looper threads
-        try {
-            Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
-        } catch ( java.lang.RuntimeException re ) {
-            Log.ex( TAG, re );
+        Activity activity = DelegateBase.getHasLooper();
+        if ( null != activity ) {
+            activity.runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
+                        } catch ( java.lang.RuntimeException re ) {
+                            Log.ex( TAG, re );
+                        }
+                    }
+                } );
         }
     }
 

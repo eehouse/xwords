@@ -58,6 +58,10 @@ public class FBMService extends FirebaseMessagingService {
         } else {
             RelayService.fcmConfirmed( this, true );
 
+            if ( BuildConfig.DEBUG ) {
+                Utils.showToast( this, TAG + ".onMessageReceived()" );
+            }
+
             Map<String, String>	data = message.getData();
             Log.d( TAG, "onMessageReceived(data=%s)", data );
 
