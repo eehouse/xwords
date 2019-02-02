@@ -73,6 +73,12 @@ public class RelayService extends JobIntentService
     private static final int INITIAL_BACKOFF = 5;
     private static final int UDP_FAIL_LIMIT = 5;
 
+    // Must use the same jobID for all work enqueued for the same class. I
+    // used to use the class's hashCode(), but that's different each time the
+    // app runs. I think I was getting failures when a new instance launched
+    // and found older jobs in the JobIntentService's work queue.
+    private final static int sJobID = 218719978;
+
     // One day, in seconds.  Probably should be configurable.
     private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
 
@@ -198,13 +204,9 @@ public class RelayService extends JobIntentService
         enqueueWork( context, intent );
     }
 
-    // Must use the same jobID for all work enqueued for the same class
-    private final static int sJobID = RelayService.class.hashCode();
-
     private static void enqueueWork( Context context, Intent intent )
     {
-        Log.d( TAG, "calling enqueueWork(id=%d, cmd=%s)", sJobID,
-               cmdFrom( intent ) );
+        Log.d( TAG, "calling enqueueWork(cmd=%s)", cmdFrom( intent ) );
         enqueueWork( context, RelayService.class, sJobID, intent );
         Log.d( TAG, "enqueueWork() returned" );
     }
