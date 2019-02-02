@@ -166,9 +166,9 @@ def notifyViaFCM( devids, typ, target ):
                     response = urllib2.urlopen( req ).read()
                     asJson = json.loads( response  )
 
-                    if 'success' in asJson and 'failure' in asJson and len(devids) == asJson['success'] \
-                       and 0 == asJson['failure']:
-                        print "OK; no failures"
+                    # not sure what the response format looks like to test for success....
+                    if 'name' in asJson: # and len(asJson['name']) == len(devids):
+                        print "OK; no failures: ", response
                         success = True
                     else:
                         print "Errors: "
