@@ -112,7 +112,7 @@ public class RelayService extends JobIntentService
     private static List<PacketData> s_packetsSentWeb = new ArrayList<>();
     private static final PacketData sEOQPacket = new PacketData();
     private static AtomicInteger s_nextPacketID = new AtomicInteger();
-    private static boolean s_gcmWorking = false;
+    private static long s_lastFCM = 0L;
     private static boolean s_registered = false;
     private static CommsAddrRec s_addr =
         new CommsAddrRec( CommsConnType.COMMS_CONN_RELAY );
@@ -162,11 +162,12 @@ public class RelayService extends JobIntentService
 
     public static void fcmConfirmed( Context context, boolean working )
     {
-        if ( s_gcmWorking != working ) {
-            Log.i( TAG, "fcmConfirmed(): changing s_gcmWorking to %b",
-                   working );
-            s_gcmWorking = working;
+        long newVal = working ? System.currentTimeMillis() : 0L;
+        if ( (s_lastFCM == 0) != working ) {
+            Log.i( TAG, "fcmConfirmed(): changing s_lastFCM to %d",
+                   newVal );
         }
+        s_lastFCM = newVal;
 
         // If we've gotten a GCM id and haven't registered it, do so!
         if ( working && !s_curType.equals( DevIDType.ID_TYPE_ANDROID_FCM ) ) {
@@ -174,6 +175,12 @@ public class RelayService extends JobIntentService
             devIDChanged();
             timerFired( context );
         }
+    }
+
+    public static long getLastFCMMillis()
+    {
+        Log.d( TAG, "getLastFCMMillis() => %d", s_lastFCM );
+        return s_lastFCM;
     }
 
     public static boolean relayEnabled( Context context )
@@ -1655,14 +1662,14 @@ public class RelayService extends JobIntentService
      * Goal: maintain connection by keeping this service alive with
      * its periodic pings to relay.  When it dies or is killed,
      * notice, and use RelayReceiver's timer to get it restarted a bit
-     * later.  But note: s_gcmWorking will not be set when the app is
+     * later.  But note: s_lastFCM will not be set when the app is
      * relaunched.
      */
 
     private boolean shouldMaintainConnection()
     {
         boolean result = relayEnabled( this )
-            && (!s_gcmWorking || XWPrefs.getIgnoreFCM( this ));
+            && (0 == s_lastFCM || XWPrefs.getIgnoreFCM( this ));
 
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;

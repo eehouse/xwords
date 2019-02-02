@@ -30,8 +30,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.format.DateUtils;
-import android.text.format.Time;
-
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -62,7 +60,6 @@ public class ConnStatusHandler {
     private static ConnStatusCBacks s_cbacks;
     private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
     private static boolean[] s_showSuccesses = { false, false };
-    private static Time s_time = new Time();
 
     private static class SuccessRecord implements java.io.Serializable {
         public long lastSuccess;
@@ -81,24 +78,12 @@ public class ConnStatusHandler {
 
         public String newerStr( Context context )
         {
-            String result = null;
-            long time = successNewer? lastSuccess : lastFailure;
-            if ( time > 0 ) {
-                s_time.set( time );
-                result = format( context, s_time );
-            }
-            return result;
+            return format( context, successNewer? lastSuccess : lastFailure );
         }
 
         public String olderStr( Context context )
         {
-            String result = null;
-            long time = successNewer? lastFailure : lastSuccess;
-            if ( time > 0 ) {
-                s_time.set( time );
-                result = format( context, s_time );
-            }
-            return result;
+            return format( context, successNewer? lastFailure : lastSuccess );
         }
 
         public void update( boolean success )
@@ -112,15 +97,18 @@ public class ConnStatusHandler {
             successNewer = success;
         }
 
-        private String format( Context context, Time time )
+        private static String format( Context context, long millis )
         {
-            CharSequence seq =
-                DateUtils.getRelativeDateTimeString( context,
-                                                     time.toMillis(true),
-                                                     DateUtils.SECOND_IN_MILLIS,
-                                                     DateUtils.WEEK_IN_MILLIS,
-                                                     0 );
-            return seq.toString();
+            String result = null;
+            if ( millis > 0 ) {
+                CharSequence seq =
+                    DateUtils.getRelativeDateTimeString( context, millis,
+                                                         DateUtils.SECOND_IN_MILLIS,
+                                                         DateUtils.WEEK_IN_MILLIS,
+                                                         0 );
+                result = seq.toString();
+            }
+            return result;
         }
     }
 
@@ -545,9 +533,12 @@ public class ConnStatusHandler {
         if ( BuildConfig.DEBUG ) {
             switch ( typ ) {
             case COMMS_CONN_RELAY:
-                result = String.format( "DevID: %d; host: %s",
+                String fcmMsg = SuccessRecord
+                    .format( context, RelayService.getLastFCMMillis() );
+                result = String.format( "DevID: %d; host: %s; latest FCM: %s",
                                         DevID.getRelayDevIDInt(context),
-                                        XWPrefs.getDefaultRelayHost(context) );
+                                        XWPrefs.getDefaultRelayHost(context),
+                                        fcmMsg );
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();

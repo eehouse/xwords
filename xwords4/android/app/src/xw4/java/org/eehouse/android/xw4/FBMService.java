@@ -160,9 +160,5 @@ public class FBMService extends FirebaseMessagingService {
 
         DBUtils.setStringFor( context, KEY_FCMID, token );
         DevID.setFCMDevID( context, token );
-
-        if ( !XWPrefs.getIgnoreFCM( context ) ) {
-            RelayService.fcmConfirmed( context, true );
-        }
     }
 }
