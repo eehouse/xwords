@@ -2644,6 +2644,7 @@
   <string name="ignore_fcm_summary">Mimic life without a google account</string>
 
   <string name="show_sms_title">Show SMS sends, receives</string>
+  <string name="show_fcm_title">Show FCM receives</string>
 
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">

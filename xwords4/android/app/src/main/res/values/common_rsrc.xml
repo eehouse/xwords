@@ -127,6 +127,7 @@
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
   <string name="key_enable_smsproto">key_enable_smsproto</string>
   <string name="key_ignore_fcm">key_ignore_fcm</string>
+  <string name="key_show_fcm">key_show_fcm</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_got_langdict">key_got_langdict</string>
