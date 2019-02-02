@@ -398,6 +398,10 @@
                           android:summary="@string/ignore_fcm_summary"
                           android:defaultValue="false"
                           />
+      <CheckBoxPreference android:key="@string/key_show_fcm"
+                          android:title="@string/show_fcm_title"
+                          android:defaultValue="false"
+                          />
       <org.eehouse.android.xw4.XWEditTextPreference 
           android:key="@string/key_relay_host"
           android:title="@string/relay_host"
