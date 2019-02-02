@@ -84,9 +84,10 @@ public class MultiMsgSink implements TransportProcs {
     }
 
     /***** TransportProcs interface *****/
-
+    @Override
     public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
 
+    @Override
     public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                               CommsConnType typ, int gameID )
     {
@@ -118,15 +119,18 @@ public class MultiMsgSink implements TransportProcs {
         return nSent;
     }
 
+    @Override
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
     }
 
+    @Override
     public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {
     }
 
+    @Override
     public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
         // Assert.fail();
