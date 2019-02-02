@@ -141,11 +141,13 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onStart()
     {
-        Class clazz = getClass();
-        if ( s_instances.containsKey( clazz ) ) {
-            Log.d( TAG, "onStart(): replacing curThis" );
+        synchronized (s_instances) {
+            Class clazz = getClass();
+            if ( s_instances.containsKey( clazz ) ) {
+                Log.d( TAG, "onStart(): replacing curThis" );
+            }
+            s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
         }
-        s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
     }
 
     protected void onResume()
@@ -165,7 +167,10 @@ public class DelegateBase implements DlgClickNotify,
     protected DelegateBase curThis()
     {
         DelegateBase result = null;
-        WeakReference<DelegateBase> ref = s_instances.get( getClass() );
+        WeakReference<DelegateBase> ref;
+        synchronized (s_instances) {
+            ref = s_instances.get( getClass() );
+        }
         if ( null != ref ) {
             result = ref.get();
         }
@@ -776,5 +781,21 @@ public class DelegateBase implements DlgClickNotify,
     public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object... params )
     {
         // Assert.fail();
+    }
+
+    public static Activity getHasLooper()
+    {
+        Activity result = null;
+        synchronized (s_instances) {
+            for ( WeakReference<DelegateBase> ref : s_instances.values() ) {
+                DelegateBase base = ref.get();
+                if ( null != base ) {
+                    result = base.getActivity();
+                    break;
+                }
+            }
+        }
+        Log.d( TAG, "getHasLooper() => %s", result );
+        return result;
     }
 }
