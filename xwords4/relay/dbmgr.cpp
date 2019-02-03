@@ -451,14 +451,13 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
 {
     QueryBuilder qb;
     qb.appendQueryf( "UPDATE " DEVICES_TABLE " SET "
-                     "devTypes = array_prepend($$, devTypes), "
-                     "devids = array_prepend($$, devids), " )
-
+                     "devTypes[1] = $$, "
+                     "devids[1] = $$, " )
         .appendParam( host->m_devIDType )
         .appendParam( host->m_devIDString.c_str() );
 
-    formatUpdate( qb, true, desc, clientVersion, model, osVers, variant, relayID,
-                  host->m_devIDString.c_str() );
+    formatUpdate( qb, true, desc, clientVersion, model, osVers, variant,
+                  relayID );
     qb.finish();
     execParams( qb );
 }
@@ -481,7 +480,7 @@ DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc,
         QueryBuilder qb;
         qb.appendQueryf( "UPDATE " DEVICES_TABLE " SET " );
         formatUpdate( qb, false, desc, clientVersion, model, osVers,
-                      variant, relayID, NULL );
+                      variant, relayID );
         qb.finish();
         execParams( qb );
     }
@@ -499,13 +498,9 @@ DBMgr::formatUpdate( QueryBuilder& qb,
                      bool append, const char* const desc, 
                      int clientVersion, const char* const model, 
                      const char* const osVers, const char* const variant,
-                     DevIDRelay relayID, const char* newDevID )
+                     DevIDRelay relayID )
 {
-    if ( append ) {
-        qb.appendQueryf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
-    } else {
-        qb.appendQueryf( "mtimes[1]='now'" );
-    }
+    qb.appendQueryf( "mtimes[1]='now'" );
 
     if ( NULL != desc && '\0' != desc[0] ) {
         qb.appendQueryf( ", clntVers=$$" )
@@ -525,15 +520,8 @@ DBMgr::formatUpdate( QueryBuilder& qb,
         qb.appendQueryf( ", variant=$$" )
             .appendParam( variant );
     }
-
     qb.appendQueryf( " WHERE id = $$" )
         .appendParam( relayID );
-
-    if ( !!newDevID ) {
-        assert( append );
-        qb.appendQueryf( " AND NOT devids[1] = $$" )
-            .appendParam( newDevID );
-    }
 }
 
 HostID
