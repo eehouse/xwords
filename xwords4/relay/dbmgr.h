@@ -177,7 +177,7 @@ class DBMgr {
     void formatUpdate( QueryBuilder& qb, bool append, const char* const desc, 
                        int clientVersion, const char* const model, 
                        const char* const osVers, const char* const variant,
-                       DevIDRelay relayID, const char* newDevID );
+                       DevIDRelay relayID );
 
 
     PGconn* getThreadConn( void );
