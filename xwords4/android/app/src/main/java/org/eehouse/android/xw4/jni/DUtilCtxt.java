@@ -59,7 +59,9 @@ public class DUtilCtxt {
             typ = DevIDType.ID_TYPE_RELAY;
         } else {
             result = FBMService.getFCMDevID( m_context );
-            if ( result.equals("") ) {
+            if ( null == result ) {
+                // do nothing
+            } else if ( result.equals("") ) {
                 result = null;
             } else {
                 typ = DevIDType.ID_TYPE_ANDROID_FCM;
