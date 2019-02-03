@@ -1149,7 +1149,7 @@ public class RelayService extends JobIntentService
                                         gotEOQ = true;
                                         break;
                                     } else if ( skipNativeSend() || outData.getForWeb() ) {
-                                        dataListWeb.add (outData );
+                                        dataListWeb.add( outData );
                                     } else {
                                         dataListUDP.add( outData );
                                     }
@@ -1285,9 +1285,10 @@ public class RelayService extends JobIntentService
                 ConnStatusHandler.updateStatus( service, null,
                                                 CommsConnType.COMMS_CONN_RELAY,
                                                 sentLen > 0 );
+                Log.d( TAG, "sendViaUDP(): sent %d bytes (%d packets)",
+                       sentLen, packets.size() );
             }
 
-            Log.d( TAG, "sendViaUDP(): sent %d bytes", sentLen );
             return sentLen;
         }
 
@@ -1326,7 +1327,8 @@ public class RelayService extends JobIntentService
                            s_packetsSentUDP.size() );
                 }
                 if ( foundNonAck ) {
-                    Log.d( TAG, "runUDPAckTimer(): reposting %d packets", forResend.size() );
+                    Log.d( TAG, "runUDPAckTimer(): reposting %d packets",
+                           forResend.size() );
                     m_queue.addAll( forResend );
                 }
             }
