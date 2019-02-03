@@ -69,8 +69,8 @@ public class FBMService extends FirebaseMessagingService {
                     JSONArray msgs64 = new JSONArray( value );
                     String[] strs64 = new String[msgs64.length()];
                     if ( toastFCM ) {
-                        DbgUtils.showf( this, "%s.onMessageReceived(): got %d msgs",
-                                        TAG, strs64.length );
+                        DbgUtils.showf( this, "%s-%s.onMessageReceived(): got %d msgs",
+                                        BuildConfig.FLAVOR, TAG, strs64.length );
                     }
 
                     for ( int ii = 0; ii < strs64.length; ++ii ) {
