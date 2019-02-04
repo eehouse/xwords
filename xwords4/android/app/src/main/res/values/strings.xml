@@ -1974,9 +1974,8 @@
       <item quantity="other">Are you sure you want to forget %1$d
       checked devices?</item>
     </plurals>
-    <string name="confirm_clear_bt_postscript">"
-\n
-\n(You can only re-add devices that are within Bluetooth range.)"</string>
+    <string name="confirm_clear_bt_postscript">\n\n(You can only
+    re-add devices that are within Bluetooth range.)</string>
 
     <!--  -->
     <string name="summary_conn_sms_fmt">Game in play with %1$s</string>
