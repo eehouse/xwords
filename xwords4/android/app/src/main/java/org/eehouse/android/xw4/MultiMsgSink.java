@@ -135,7 +135,7 @@ public class MultiMsgSink implements TransportProcs {
     {
         // Assert.fail();
         int nSent = RelayService.sendNoConnPacket( m_context, getRowID(),
-                                                   relayID, buf );
+                                                   relayID, buf, msgNo );
         boolean success = buf.length == nSent;
         if ( success ) {
             Log.d( TAG, "relayNoConnProc: adding %s", msgNo );
