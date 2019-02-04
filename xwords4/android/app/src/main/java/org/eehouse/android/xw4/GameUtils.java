@@ -76,8 +76,11 @@ public class GameUtils {
     private static final long RESEND_INTERVAL_SECS = 60 * 5; // 5 minutes
 
     public static class NoSuchGameException extends RuntimeException {
-        public NoSuchGameException() {
-            Log.i( TAG, "NoSuchGameException()");
+        private long m_rowID;
+        public NoSuchGameException( long rowid ) {
+            m_rowID = rowid;
+            Log.i( TAG, "NoSuchGameException(rowid=%d)", rowid);
+            // DbgUtils.printStack( TAG );
         }
     }
 
@@ -100,7 +103,7 @@ public class GameUtils {
         }
 
         if ( null == result ) {
-            throw new NoSuchGameException();
+            throw new NoSuchGameException( rowid );
         }
 
         return result;
