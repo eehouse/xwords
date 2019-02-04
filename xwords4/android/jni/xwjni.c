@@ -350,14 +350,17 @@ static const SetInfo pl_ints[] = {
     ,ARR_MEMBER( LocalPlayer, secondsUsed )
 };
 
+#define AANDS(a)                                \
+    (a), VSIZE(a)
+
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 {
     CurGameInfo* gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*gi) );
     XP_UCHAR buf[256];          /* in case needs whole path */
 
-    getInts( env, (void*)gi, jgi, gi_ints, VSIZE(gi_ints) );
-    getBools( env, (void*)gi, jgi, gi_bools, VSIZE(gi_bools) );
+    getInts( env, (void*)gi, jgi, AANDS(gi_ints) );
+    getBools( env, (void*)gi, jgi, AANDS(gi_bools) );
 
     /* Unlike on other platforms, gi is created without a call to
        game_makeNewGame, which sets gameID.  So check here if it's still unset
@@ -376,7 +379,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
         jenumFieldToInt( env, jgi, "serverRole", 
                          PKG_PATH("jni/CurGameInfo$DeviceRole"));
 
-    getString( env, jgi, "dictName", buf, VSIZE(buf) );
+    getString( env, jgi, "dictName", AANDS(buf) );
     gi->dictName = copyString( mpool, buf );
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
@@ -390,15 +393,15 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            getInts( env, (void*)lp, jlp, pl_ints, VSIZE(pl_ints) );
+            getInts( env, (void*)lp, jlp, AANDS(pl_ints) );
 
             lp->isLocal = getBool( env, jlp, "isLocal" );
 
-            getString( env, jlp, "name", buf, VSIZE(buf) );
+            getString( env, jlp, "name", AANDS(buf) );
             lp->name = copyString( mpool, buf );
-            getString( env, jlp, "password", buf, VSIZE(buf) );
+            getString( env, jlp, "password", AANDS(buf) );
             lp->password = copyString( mpool, buf );
-            getString( env, jlp, "dictName", buf, VSIZE(buf) );
+            getString( env, jlp, "dictName", AANDS(buf) );
             lp->dictName = copyString( mpool, buf );
 
             deleteLocalRef( env, jlp );
@@ -438,17 +441,17 @@ static const SetInfo nli_strs[] = {
 static void
 loadNLI( JNIEnv* env, NetLaunchInfo* nli, jobject jnli )
 {
-    getInts( env, (void*)nli, jnli, nli_ints, VSIZE(nli_ints) );
-    getBools( env, (void*)nli, jnli, nli_bools, VSIZE(nli_bools) );
-    getStrings( env, (void*)nli, jnli, nli_strs, VSIZE(nli_strs) );
+    getInts( env, (void*)nli, jnli, AANDS(nli_ints) );
+    getBools( env, (void*)nli, jnli, AANDS(nli_bools) );
+    getStrings( env, (void*)nli, jnli, AANDS(nli_strs) );
 }
 
 static void
 setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli )
 {
-    setInts( env, jnli, (void*)nli, nli_ints, VSIZE(nli_ints) );
-    setBools( env, jnli, (void*)nli, nli_bools, VSIZE(nli_bools) );
-    setStrings( env, jnli, (void*)nli, nli_strs, VSIZE(nli_strs) );
+    setInts( env, jnli, (void*)nli, AANDS(nli_ints) );
+    setBools( env, jnli, (void*)nli, AANDS(nli_bools) );
+    setStrings( env, jnli, (void*)nli, AANDS(nli_strs) );
 }
 
 static void
@@ -456,8 +459,8 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 {
     // set fields
 
-    setInts( env, jgi, (void*)gi, gi_ints, VSIZE(gi_ints) );
-    setBools( env, jgi, (void*)gi, gi_bools, VSIZE(gi_bools) );
+    setInts( env, jgi, (void*)gi, AANDS(gi_ints) );
+    setBools( env, jgi, (void*)gi, AANDS(gi_bools) );
 
     setString( env, jgi, "dictName", gi->dictName );
 
@@ -476,7 +479,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            setInts( env, jlp, (void*)lp, pl_ints, VSIZE(pl_ints) );
+            setInts( env, jlp, (void*)lp, AANDS(pl_ints) );
             
             setBool( env, jlp, "isLocal", lp->isLocal );
             setString( env, jlp, "name", lp->name );
@@ -514,13 +517,13 @@ static const SetInfo bd_ints[] = {
 static void
 dimsJToC( JNIEnv* env, BoardDims* out, jobject jdims )
 {
-    getInts( env, (void*)out, jdims, bd_ints, VSIZE(bd_ints) );
+    getInts( env, (void*)out, jdims, AANDS(bd_ints) );
 }
 
 static void
 dimsCtoJ( JNIEnv* env, jobject jdims, const BoardDims* in )
 {
-    setInts( env, jdims, (void*)in, bd_ints, VSIZE(bd_ints) );
+    setInts( env, jdims, (void*)in, AANDS(bd_ints) );
 }
 #endif
 
@@ -2036,8 +2039,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
     GameStateInfo info;
     game_getState( &state->game, &info );
 
-    setInts( env, jgsi, (void*)&info, gsi_ints, VSIZE(gsi_ints) );
-    setBools( env, jgsi, (void*)&info, gsi_bools, VSIZE(gsi_bools) );
+    setInts( env, jgsi, (void*)&info, AANDS(gsi_ints) );
+    setBools( env, jgsi, (void*)&info, AANDS(gsi_bools) );
 
     XWJNI_END();
 }
