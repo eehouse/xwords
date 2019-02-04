@@ -795,7 +795,6 @@ public class DelegateBase implements DlgClickNotify,
                 }
             }
         }
-        Log.d( TAG, "getHasLooper() => %s", result );
         return result;
     }
 }
