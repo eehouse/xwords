@@ -68,12 +68,12 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.security.MessageDigest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
 
 import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -159,13 +159,22 @@ public class Utils {
         showToast( context, text );
     }
 
-    public static void showToast( Context context, String msg )
+    public static void showToast( final Context context,
+                                  final String msg )
     {
         // Make this safe to call from non-looper threads
-        try {
-            Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
-        } catch ( java.lang.RuntimeException re ) {
-            Log.ex( TAG, re );
+        Activity activity = DelegateBase.getHasLooper();
+        if ( null != activity ) {
+            activity.runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
+                        } catch ( java.lang.RuntimeException re ) {
+                            Log.ex( TAG, re );
+                        }
+                    }
+                } );
         }
     }
 
@@ -348,6 +357,32 @@ public class Utils {
             str = str.substring( 0, 1 ).toUpperCase() + str.substring( 1 );
         }
         return str;
+    }
+
+    public static String getMD5SumFor( byte[] bytes )
+    {
+        String result = null;
+        if ( bytes != null ) {
+            byte[] digest = null;
+            try {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] buf = new byte[128];
+                int nLeft = bytes.length;
+                int offset = 0;
+                while ( 0 < nLeft ) {
+                    int len = Math.min( buf.length, nLeft );
+                    System.arraycopy( bytes, offset, buf, 0, len );
+                    md.update( buf, 0, len );
+                    nLeft -= len;
+                    offset += len;
+                }
+                digest = md.digest();
+            } catch ( java.security.NoSuchAlgorithmException nsae ) {
+                Log.ex( TAG, nsae );
+            }
+            result = Utils.digestToString( digest );
+        }
+        return result;
     }
 
     public static void setChecked( View parent, int id, boolean value )

@@ -30,7 +30,6 @@ import org.eehouse.android.xw4.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 
 public class JNIUtilsImpl implements JNIUtils {
@@ -62,6 +61,7 @@ public class JNIUtilsImpl implements JNIUtils {
      * <letter>[<delim><letter]*, so for each loop until the delim
      * isn't found.
      */
+    @Override
     public String[][] splitFaces( byte[] chars, boolean isUTF8 )
     {
         ArrayList<String[]> faces = new ArrayList<String[]>();
@@ -130,32 +130,13 @@ public class JNIUtilsImpl implements JNIUtils {
         faces.add( face.toArray( new String[face.size()] ) );
     }
 
+    @Override
     public String getMD5SumFor( byte[] bytes )
     {
-        String result = null;
-        if ( bytes != null ) {
-            byte[] digest = null;
-            try {
-                MessageDigest md = MessageDigest.getInstance("MD5");
-                byte[] buf = new byte[128];
-                int nLeft = bytes.length;
-                int offset = 0;
-                while ( 0 < nLeft ) {
-                    int len = Math.min( buf.length, nLeft );
-                    System.arraycopy( bytes, offset, buf, 0, len );
-                    md.update( buf, 0, len );
-                    nLeft -= len;
-                    offset += len;
-                }
-                digest = md.digest();
-            } catch ( java.security.NoSuchAlgorithmException nsae ) {
-                Log.ex( TAG, nsae );
-            }
-            result = Utils.digestToString( digest );
-        }
-        return result;
+        return Utils.getMD5SumFor( bytes );
     }
 
+    @Override
     public String getMD5SumFor( String dictName, byte[] bytes )
     {
         String result = null;

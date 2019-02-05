@@ -66,14 +66,14 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_nfc_toself, false );
     }
 
-    public static boolean getIgnoreGCM( Context context )
+    public static boolean getIgnoreFCM( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_ignore_gcm, false );
+        return getPrefsBoolean( context, R.string.key_ignore_fcm, false );
     }
 
-    public static boolean getToastGCM( Context context )
+    public static boolean getToastFCM( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_show_gcm, false );
+        return getPrefsBoolean( context, R.string.key_show_fcm, false );
     }
 
     public static boolean getSMSToSelfEnabled( Context context )

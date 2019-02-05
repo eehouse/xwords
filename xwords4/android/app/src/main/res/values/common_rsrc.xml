@@ -37,12 +37,12 @@
   <string name="key_relay_host">key_relay_host</string>
   <string name="key_relay_port">key_relay_port2</string>
   <string name="key_relay_via_http_first">key_relay_via_http_first</string>
-  <string name="key_update_url">key_update_url</string>
-  <string name="key_relay_url">key_relay_url</string>
+  <string name="key_update_url">key_update_url2</string>
+  <string name="key_relay_url">key_relay_url2</string>
   <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
-  <string name="key_dict_host">key_dict_host3</string>
+  <string name="key_dict_host">key_dict_host4</string>
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_show_sms">key_show_sms</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
@@ -126,8 +126,8 @@
   <string name="key_enable_nfc_toself">key_enable_nfc_toself</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
   <string name="key_enable_smsproto">key_enable_smsproto</string>
-  <string name="key_ignore_gcm">key_ignore_gcm</string>
-  <string name="key_show_gcm">key_show_gcm</string>
+  <string name="key_ignore_fcm">key_ignore_fcm</string>
+  <string name="key_show_fcm">key_show_fcm</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_got_langdict">key_got_langdict</string>
@@ -136,6 +136,7 @@
   <string name="key_invite_multi">key_invite_multi</string>
   <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
   <string name="key_notagain_dfltname">key_notagain_dfltname</string>
+  <string name="key_notagain_sms_banned">key_notagain_sms_banned</string>
   <string name="key_na_comms_bt">key_na_comms_bt</string>
   <string name="key_na_comms_p2p">key_na_comms_p2p</string>
   <string name="key_na_comms_sms">key_na_comms_sms</string>
@@ -152,9 +153,9 @@
   <string name="invite_mime">application/x-xwordsinvite</string>
   <!--string name="invite_mime">text/plain</string-->
 
-  <string name="dict_url">http://eehouse.org/and_wordlists</string>
-  <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
-  <string name="default_relay_url">http://eehouse.org/xw4/relay.py</string>
+  <string name="dict_url">https://eehouse.org/and_wordlists</string>
+  <string name="default_update_url">https://eehouse.org/xw4/info.py</string>
+  <string name="default_relay_url">https://eehouse.org/xw4/relay.py</string>
   <!-- <string name="default_relay_url">http://10.0.3.2/xw4/relay.py</string> -->
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->

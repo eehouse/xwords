@@ -85,6 +85,8 @@ initCairo( GtkDrawCtx* dctx )
 
     if ( !!dctx->surface ) {
         cairo = cairo_create( dctx->surface );
+        cairo_surface_destroy( dctx->surface );
+        // XP_ASSERT( 0 );
     } else if ( !!dctx->drawing_area ) {
 #ifdef GDK_AVAILABLE_IN_3_22
         GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
@@ -115,12 +117,16 @@ destroyCairo( GtkDrawCtx* dctx )
 {
     /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !!dctx->_cairo );
+    if ( !!dctx->surface ) {
+        XP_LOGF( "%s(): have surface; doing nothing", __func__ );
+    } else {
 #ifdef GDK_AVAILABLE_IN_3_22
-    GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
-    gdk_window_end_draw_frame( window, dctx->dc );
+        GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
+        gdk_window_end_draw_frame( window, dctx->dc );
 #else
-    cairo_destroy( dctx->_cairo );
+        cairo_destroy( dctx->_cairo );
 #endif
+    }
     dctx->_cairo = NULL;
 }
 
@@ -464,6 +470,8 @@ gtk_draw_beginDraw( DrawCtx* p_dctx )
 #ifdef USE_CAIRO
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     return initCairo( dctx );
+#else
+    fix this
 #endif
 }
 
@@ -1173,7 +1181,7 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
                            XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    XP_UCHAR buf[36];
+    XP_UCHAR buf[VSIZE(dctx->scoreCache[0].str)];
     PangoLayout* layout;
     int lineHeight = GTK_HOR_SCORE_HEIGHT, nLines;
 
@@ -1396,10 +1404,12 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 {
     GtkDrawCtx* dctx = g_malloc0( sizeof(*dctx) );
 
-    dctx->vtable = g_malloc( sizeof(*(((GtkDrawCtx*)dctx)->vtable)) );
-
-    for ( int ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
-        ((void**)(dctx->vtable))[ii] = draw_doNothing; /* bad? */
+    size_t tableSize = sizeof(*(((GtkDrawCtx*)dctx)->vtable));
+    dctx->vtable = g_malloc( tableSize );
+    void** ptr = (void**)dctx->vtable;
+    void** end = (void**)(((unsigned char*)ptr) + tableSize);
+    while ( ptr < end ) {
+        *ptr++ = draw_doNothing;
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, gtk );
@@ -1509,7 +1519,7 @@ void
 removeSurface( GtkDrawCtx* dctx )
 {
     XP_ASSERT( !!dctx->surface );
-    g_object_unref( dctx->surface );
+    cairo_surface_destroy( dctx->surface );
     dctx->surface = NULL;
 }
 
@@ -1534,6 +1544,8 @@ getImage( GtkDrawCtx* XP_UNUSED_DBG(dctx), XWStreamCtxt* XP_UNUSED_DBG(stream) )
         cairo_surface_write_to_png_stream( dctx->surface,
                                            write_func, stream );
     XP_ASSERT( CAIRO_STATUS_SUCCESS == status );
+#else
+    error Will Robinson
 #endif
 }
 

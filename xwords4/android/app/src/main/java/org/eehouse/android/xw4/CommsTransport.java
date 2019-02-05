@@ -347,9 +347,13 @@ public class CommsTransport implements TransportProcs,
     }
 
     // TransportProcs interface
+    private static final boolean TRANSPORT_DOES_NOCONN = true;
+    @Override
+    public int getFlags() {
+        return TRANSPORT_DOES_NOCONN ? COMMS_XPORT_FLAGS_HASNOCONN : COMMS_XPORT_FLAGS_NONE;
+    }
 
-    public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
-
+    @Override
     public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
                               CommsConnType conType, int gameID )
     {
@@ -386,21 +390,29 @@ public class CommsTransport implements TransportProcs,
         return nSent;
     }
 
+    @Override
     public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {
         m_tpHandler.tpmRelayConnd( room, devOrder, allHere, nMissing );
     }
 
+    @Override
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
         m_tpHandler.tpmRelayErrorProc( relayErr );
     }
 
+    @Override
     public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
-        Assert.fail();
-        return false;
+        Assert.assertTrue( TRANSPORT_DOES_NOCONN );
+        int nSent = RelayService.sendNoConnPacket( m_context, m_rowid,
+                                                   relayID, buf, msgNo );
+        boolean success = buf.length == nSent;
+        Log.d( TAG, "relayNoConnProc(msgNo=%s, len=%d) => %b", msgNo,
+               buf.length, success );
+        return success;
     }
 
     private static int sendForAddr( Context context, CommsAddrRec addr,

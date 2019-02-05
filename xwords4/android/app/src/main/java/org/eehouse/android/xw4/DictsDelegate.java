@@ -61,7 +61,6 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,6 +68,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.net.ssl.HttpsURLConnection;
 
 public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
@@ -1225,7 +1225,8 @@ public class DictsDelegate extends ListDelegateBase
             // parse less data
             String name = null;
             String proc = String.format( "listDicts?lc=%s", m_lc );
-            HttpURLConnection conn = NetUtils.makeHttpUpdateConn( m_context, proc );
+            HttpsURLConnection conn = NetUtils.makeHttpsUpdateConn( m_context,
+                                                                    proc );
             if ( null != conn ) {
                 JSONObject theOne = null;
                 String langName = null;
@@ -1310,7 +1311,8 @@ public class DictsDelegate extends ListDelegateBase
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
-            HttpURLConnection conn = NetUtils.makeHttpUpdateConn( m_context, "listDicts" );
+            HttpsURLConnection conn = NetUtils.makeHttpsUpdateConn( m_context,
+                                                                    "listDicts" );
             if ( null != conn ) {
                 String json = NetUtils.runConn( conn, new JSONObject() );
                 if ( !isCancelled() ) {

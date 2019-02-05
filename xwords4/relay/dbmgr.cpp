@@ -276,7 +276,7 @@ DBMgr::FindRelayIDFor( const char* connName, HostID hid,
     if ( found ) {
         devID = (DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
         *devIDP = devID;
-        ReregisterDevice( devID, host, NULL, 0, NULL, NULL );
+        ReregisterDevice( devID, host, NULL, 0, NULL, NULL, NULL );
     }
     PQclear( result );
     if ( !found ) {
@@ -390,7 +390,7 @@ DBMgr::AllDevsAckd( const char* const connName )
 DevIDRelay
 DBMgr::RegisterDevice( const DevID* host, int clientVersion, 
                        const char* const desc, const char* const model,
-                       const char* const osVers )
+                       const char* const osVers, const char* const variant )
 {
     DevIDRelay devID;
     assert( host->m_devIDType != ID_TYPE_NONE );
@@ -418,8 +418,8 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
 
             QueryBuilder qb;
             qb.appendQueryf( "INSERT INTO " DEVICES_TABLE " (id, devTypes[1],"
-                             " devids[1], clntVers, versdesc, model, osvers)"
-                             " VALUES($$, $$, $$, $$, $$, $$, $$)" )
+                             " devids[1], clntVers, versdesc, model, osvers, variant)"
+                             " VALUES($$, $$, $$, $$, $$, $$, $$, $$)" )
 
                 .appendParam( devID )
                 .appendParam( host->m_devIDType )
@@ -428,6 +428,7 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
                 .appendParam( desc )
                 .appendParam( model )
                 .appendParam( osVers )
+                .appendParam( variant )
                 .finish();
 
             success = execParams( qb );
@@ -439,23 +440,24 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
 DevIDRelay 
 DBMgr::RegisterDevice( const DevID* host )
 {
-    return RegisterDevice( host, 0, NULL, NULL, NULL );
+    return RegisterDevice( host, 0, NULL, NULL, NULL, NULL );
 }
 
 void
 DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host, 
                          const char* const desc, int clientVersion, 
-                         const char* const model, const char* const osVers )
+                         const char* const model, const char* const osVers,
+                         const char* const variant )
 {
     QueryBuilder qb;
     qb.appendQueryf( "UPDATE " DEVICES_TABLE " SET "
-                     "devTypes = array_prepend($$, devTypes), "
-                     "devids = array_prepend($$, devids), " )
-
+                     "devTypes[1] = $$, "
+                     "devids[1] = $$, " )
         .appendParam( host->m_devIDType )
         .appendParam( host->m_devIDString.c_str() );
 
-    formatUpdate( qb, true, desc, clientVersion, model, osVers, relayID );
+    formatUpdate( qb, true, desc, clientVersion, model, osVers, variant,
+                  relayID );
     qb.finish();
     execParams( qb );
 }
@@ -464,7 +466,8 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
 bool
 DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc, 
                      int clientVersion, const char* const model,
-                     const char* const osVers, bool check )
+                     const char* const osVers, const char* const variant,
+                     bool check )
 {
     bool exists = !check;
     if ( !exists ) {
@@ -476,7 +479,8 @@ DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc,
     if ( exists ) {
         QueryBuilder qb;
         qb.appendQueryf( "UPDATE " DEVICES_TABLE " SET " );
-        formatUpdate( qb, false, desc, clientVersion, model, osVers, relayID );
+        formatUpdate( qb, false, desc, clientVersion, model, osVers,
+                      variant, relayID );
         qb.finish();
         execParams( qb );
     }
@@ -486,20 +490,17 @@ DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc,
 bool
 DBMgr::UpdateDevice( DevIDRelay relayID )
 {
-    return UpdateDevice( relayID, NULL, 0, NULL, NULL, false );
+    return UpdateDevice( relayID, NULL, 0, NULL, NULL, NULL, false );
 }
 
 void
 DBMgr::formatUpdate( QueryBuilder& qb,
                      bool append, const char* const desc, 
                      int clientVersion, const char* const model, 
-                     const char* const osVers, DevIDRelay relayID )
+                     const char* const osVers, const char* const variant,
+                     DevIDRelay relayID )
 {
-    if ( append ) {
-        qb.appendQueryf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
-    } else {
-        qb.appendQueryf( "mtimes[1]='now'" );
-    }
+    qb.appendQueryf( "mtimes[1]='now'" );
 
     if ( NULL != desc && '\0' != desc[0] ) {
         qb.appendQueryf( ", clntVers=$$" )
@@ -514,6 +515,10 @@ DBMgr::formatUpdate( QueryBuilder& qb,
     if ( NULL != osVers && '\0' != osVers[0] ) {
         qb.appendQueryf( ", osvers=$$" )
             .appendParam( osVers );
+    }
+    if ( NULL != variant && '\0' != variant[0] ) {
+        qb.appendQueryf( ", variant=$$" )
+            .appendParam( variant );
     }
     qb.appendQueryf( " WHERE id = $$" )
         .appendParam( relayID );

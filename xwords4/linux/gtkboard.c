@@ -906,7 +906,9 @@ cleanup( GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
     saveGame( cGlobals );
-    g_source_remove( globals->idleID );
+    if ( 0 < globals->idleID ) {
+        g_source_remove( globals->idleID );
+    }
 
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( cGlobals );
@@ -1904,7 +1906,8 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
                         XP_U16 newOffset )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    if ( !!globals->adjustment ) {
+    /* adjustment is invalid when gtk's shutting down; ignore */
+    if ( !!globals->adjustment && GTK_IS_ADJUSTMENT(globals->adjustment) ) {
         gint nRows = globals->cGlobals.gi->boardSize;
         gtk_adjustment_set_page_size(globals->adjustment, nRows - maxOffset);
         gtk_adjustment_set_value(globals->adjustment, newOffset);
@@ -2198,6 +2201,7 @@ idle_func( gpointer data )
        calls gtk_main, then this idle proc will also apply to that event loop
        and bad things can happen.  So kill the idle proc asap. */
     g_source_remove( globals->idleID );
+    globals->idleID = 0;        /* 0 is illegal event source ID */
 
     ServerCtxt* server = globals->cGlobals.game.server;
     if ( !!server && server_do( server ) ) {

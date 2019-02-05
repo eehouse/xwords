@@ -2181,7 +2181,10 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
 
         augmentChannelAddr( comms, rec, addr, senderID );
 
-        if ( msgID != rec->lastMsgRcd + 1 ) {
+        if ( msgID == rec->lastMsgRcd + 1 ) {
+            XP_LOGF( TAGFMT() "expected %d AND got %d", TAGPRMS,
+                     msgID, msgID );
+        } else if ( msgID != rec->lastMsgRcd + 1 ) {
             XP_LOGF( TAGFMT() "expected %d, got %d", TAGPRMS,
                      rec->lastMsgRcd + 1, msgID );
             rec = NULL;
@@ -3054,7 +3057,6 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         XP_LOGF( "%s: dropping message because %s disabled", __func__,
                  ConnType2Str( COMMS_CONN_RELAY ) );
     } else {
-
         XWStreamCtxt* tmpStream = 
             relay_msg_to_stream( comms, cmd, destID, data, dlen );
 

@@ -22,12 +22,12 @@ def CURTAG = "git describe --exact-match".execute().text.trim()
 apply plugin: 'com.android.application'
 
 
-if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) {
-    apply plugin: 'io.fabric'
-}
+if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) { // rm-for-fdroid
+    apply plugin: 'io.fabric'                            // rm-for-fdroid
+}                                                        // rm-for-fdroid
 repositories {
     google()
-    maven { url 'https://maven.fabric.io/public' }
+    maven { url 'https://maven.fabric.io/public' }       // rm-for-fdroid
 }
 
 android {
@@ -68,7 +68,7 @@ android {
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
             buildConfigField "boolean", "IS_TAGGED_BUILD", "${CURTAG}" == '' ? "false" : "true"
             resValue "string", "invite_prefix", "/and/"
-            buildConfigField "String", "GCM_SENDER_ID", "\"\""
+            buildConfigField "int[]", "SMS_BANNED_EXPL", "null"
         }
 
         xw4 {
@@ -76,10 +76,12 @@ android {
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
-            resValue "string", "nbs_port", "3344"
+            resValue "string", "nbs_port", "0"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
+            buildConfigField "int[]", "SMS_BANNED_EXPL",
+                "{R.string.key_notagain_sms_banned, R.string.sms_banned_expl}"
         }
 
         xw4fdroid {
@@ -101,6 +103,19 @@ android {
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
+        }
+
+        xw4dNoSMS {
+            dimension "variant"
+            applicationId "org.eehouse.android.xw4dbg"
+            manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
+            resValue "string", "app_name", "CrossDbg"
+            resValue "string", "nbs_port", "3345"
+            buildConfigField "boolean", "WIDIR_ENABLED", "true"
+            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
+            buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug sans SMS\""
+            buildConfigField "int[]", "SMS_BANNED_EXPL",
+                "{R.string.key_notagain_sms_banned, R.string.sms_banned_expl}"
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need
@@ -173,6 +188,14 @@ android {
                 jniLibs.srcDir "../libs-xw4dDebug"
             }
         }
+        xw4dNoSMS {
+            release {
+                jniLibs.srcDir "../libs-xw4dNoSMSRelease"
+            }
+            debug {
+                jniLibs.srcDir "../libs-xw4dNoSMSDebug"
+            }
+        }
         xw4fdroid {
             release {
                 jniLibs.srcDir "../libs-xw4fdroidRelease"
@@ -210,9 +233,15 @@ dependencies {
 
     // 2.6.8 is probably as far forward as I can go without upping my
     // min-supported SDK version
-    xw4dImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') {
-        transitive = true;
-    }
+    xw4dImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
+        transitive = true;                                                    // rm-for-fdroid
+    }                                                                         // rm-for-fdroid
+    xw4dNoSMSImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
+        transitive = true;                                                         // rm-for-fdroid
+    }                                                                              // rm-for-fdroid
+
+    implementation 'com.google.firebase:firebase-messaging:17.3.4' // rm-for-fdroid
+    implementation 'com.google.firebase:firebase-core:16.0.6'      // rm-for-fdroid
 }
 
 task mkImages(type: Exec) {
@@ -291,6 +320,15 @@ afterEvaluate {
                 "src/xw4d/res/values/strings.xml"
             }
     preBuild.dependsOn copyStringsTask
+
+    String copyStringsTaskNoSMS = "copyStringsXw4DNoSMS"
+    task "$copyStringsTaskNoSMS"(type: Exec) {
+                workingDir './'
+                environment.put('APPNAME', 'CrossDbg')
+                commandLine 'make', '-f', '../scripts/Variant.mk',
+                    "src/xw4dNoSMS/res/values/strings.xml"
+            }
+    preBuild.dependsOn copyStringsTaskNoSMS
 }
 
 task makeBuildAssets() {
@@ -308,3 +346,5 @@ task makeBuildAssets() {
 gradle.projectsEvaluated {
     build.dependsOn(makeBuildAssets)
 }
+
+apply plugin: 'com.google.gms.google-services'    // rm-for-fdroid

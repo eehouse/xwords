@@ -206,6 +206,7 @@ typedef enum {
     ,ID_TYPE_ANDROID_GCM
     ,ID_TYPE_ANDROID_OTHER
     ,ID_TYPE_ANON               /* please assign me one based on nothing */
+    ,ID_TYPE_ANDROID_FCM
 
     ,ID_TYPE_NTYPES
 } DevIDType;

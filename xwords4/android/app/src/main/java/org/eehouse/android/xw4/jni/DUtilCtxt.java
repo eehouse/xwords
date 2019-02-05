@@ -24,11 +24,12 @@ import android.content.Context;
 import android.telephony.PhoneNumberUtils;
 
 import org.eehouse.android.xw4.Assert;
-import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DevID;
-import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.FBMService;
 import org.eehouse.android.xw4.Log;
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DUtilCtxt {
@@ -40,13 +41,14 @@ public class DUtilCtxt {
         m_context = XWApp.getContext();
     }
 
-    // Possible values for typ[0], these must match enum in xwrelay.sh
+    // Possible values for typ[0], these must match enum in xwrelay.h
     public enum DevIDType { ID_TYPE_NONE
-            , ID_TYPE_RELAY
-            , ID_TYPE_LINUX
-            , ID_TYPE_ANDROID_GCM
-            , ID_TYPE_ANDROID_OTHER
-            , ID_TYPE_ANON
+                            , ID_TYPE_RELAY
+                            , ID_TYPE_LINUX
+                            , ID_TYPE_ANDROID_GCM_UNUSED // 3
+                            , ID_TYPE_ANDROID_OTHER
+                            , ID_TYPE_ANON
+                            , ID_TYPE_ANDROID_FCM // 6
             }
 
     public String getDevID( /*out*/ byte[] typa )
@@ -56,11 +58,13 @@ public class DUtilCtxt {
         if ( null != result ) {
             typ = DevIDType.ID_TYPE_RELAY;
         } else {
-            result = DevID.getGCMDevID( m_context );
-            if ( result.equals("") ) {
+            result = FBMService.getFCMDevID( m_context );
+            if ( null == result ) {
+                // do nothing
+            } else if ( result.equals("") ) {
                 result = null;
             } else {
-                typ = DevIDType.ID_TYPE_ANDROID_GCM;
+                typ = DevIDType.ID_TYPE_ANDROID_FCM;
             }
         }
         typa[0] = (byte)typ.ordinal();

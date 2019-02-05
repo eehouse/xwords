@@ -90,6 +90,7 @@ public class XWApp extends Application implements LifecycleObserver {
         UpdateCheckReceiver.restartTimer( this );
 
         RelayService.startService( this );
+        FBMService.init( this );
         WiDirWrapper.init( this );
     }
 
