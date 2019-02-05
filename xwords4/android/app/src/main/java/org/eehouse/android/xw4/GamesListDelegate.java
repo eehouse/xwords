@@ -1624,6 +1624,7 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;// || super.onOptionsItemSelected( item );
     }
 
+    @Override
     public void onCreateContextMenu( ContextMenu menu, View view,
                                      ContextMenuInfo menuInfo )
     {
@@ -1664,9 +1665,15 @@ public class GamesListDelegate extends ListDelegateBase
                 enable = BoardDelegate.rematchSupported( m_activity, rowID );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
-                boolean isMultiGame = item.getSummary().isMultiGame();
-                enable = isMultiGame
-                    && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
+                // Deal with possibility summary's temporarily null....
+                GameSummary summary = item.getSummary();
+                enable = false;
+                boolean isMultiGame = false;
+                if ( null != summary ) {
+                    isMultiGame = summary.isMultiGame();
+                    enable = isMultiGame
+                        && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
+                }
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
                 Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
 
@@ -1675,7 +1682,7 @@ public class GamesListDelegate extends ListDelegateBase
                 Utils.setItemVisible( menu, R.id.games_game_reset, enable );
             }
         }
-    }
+    } // onCreateContextMenu
 
     public boolean onContextItemSelected( MenuItem item )
     {

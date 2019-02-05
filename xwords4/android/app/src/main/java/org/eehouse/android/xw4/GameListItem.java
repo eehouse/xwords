@@ -91,9 +91,9 @@ public class GameListItem extends LinearLayout
         m_dsdel = new DrawSelDelegate( this );
     }
 
+    // Might return null!!
     public GameSummary getSummary()
     {
-        Assert.assertNotNull( m_summary );
         return m_summary;
     }
 
@@ -111,7 +111,6 @@ public class GameListItem extends LinearLayout
     public void forceReload()
     {
         // DbgUtils.logf( "GameListItem.forceReload: rowid=%d", m_rowid );
-        m_summary = null;
         setLoaded( false );
         // Apparently it's impossible to reliably cancel an existing
         // AsyncTask, so let it complete, but drop the results as soon
