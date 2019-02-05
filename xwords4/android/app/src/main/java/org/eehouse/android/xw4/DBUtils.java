@@ -131,6 +131,7 @@ public class DBUtils {
     public static GameSummary getSummary( Context context,
                                           GameLock lock )
     {
+        long startMS = System.currentTimeMillis();
         initDB( context );
         GameSummary summary = null;
         String[] columns = { ROW_ID,
@@ -154,8 +155,8 @@ public class DBUtils {
                                         selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
                 summary = new GameSummary();
-                summary.nMoves = cursor.getInt(cursor.
-                                               getColumnIndex(DBHelper.NUM_MOVES));
+                summary.nMoves = cursor
+                    .getInt( cursor.getColumnIndex(DBHelper.NUM_MOVES) );
                 summary.nPlayers =
                     cursor.getInt(cursor.
                                   getColumnIndex(DBHelper.NUM_PLAYERS));
@@ -264,6 +265,11 @@ public class DBUtils {
         if ( null == summary && lock.canWrite() ) {
             summary = GameUtils.summarize( context, lock );
         }
+        long endMS = System.currentTimeMillis();
+
+        // Might want to be cacheing this...
+        Log.d( TAG, "getSummary(rowid=%d) => %s (took %dms)",
+               lock.getRowid(), summary, endMS - startMS );
         return summary;
     } // getSummary
 
