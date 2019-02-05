@@ -557,7 +557,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
     gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
-    XP_LOGF( "%s: read serverRole of %d", __func__, gi->serverRole );
+    /* XP_LOGF( "%s: read serverRole of %d", __func__, gi->serverRole ); */
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
     if ( strVersion < STREAM_VERS_ROBOTIQ ) {
         (void)stream_getBits( stream, 2 );
@@ -581,7 +581,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     if ( STREAM_VERS_MULTIADDR <= strVersion ) {
         gi->forceChannel = stream_getBits( stream, 2 );
-        XP_LOGF( "%s: loaded forceChannel: %d", __func__, gi->forceChannel );
+        /* XP_LOGF( "%s: loaded forceChannel: %d", __func__, gi->forceChannel ); */
     }
 
     gi->gameID = strVersion < STREAM_VERS_BLUETOOTH2 ? 
@@ -623,7 +623,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U16 strVersion = stream_getVersion( stream );
-    XP_LOGF( "%s: strVersion = 0x%x", __func__, strVersion );
+    /* XP_LOGF( "%s: strVersion = 0x%x", __func__, strVersion ); */
     XP_ASSERT( STREAM_SAVE_PREVWORDS <= strVersion );
     nColsNBits = STREAM_VERS_BIGBOARD > strVersion ? NUMCOLS_NBITS_4
         : NUMCOLS_NBITS_5;
@@ -636,7 +636,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, NPLAYERS_NBITS, gi->nPlayers );
     stream_putBits( stream, nColsNBits, gi->boardSize );
     stream_putBits( stream, 2, gi->serverRole );
-    XP_LOGF( "%s: wrote serverRole of %d", __func__, gi->serverRole );
+    /* XP_LOGF( "%s: wrote serverRole of %d", __func__, gi->serverRole ); */
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
@@ -644,7 +644,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );
     stream_putBits( stream, 2, gi->forceChannel );
-    XP_LOGF( "%s: wrote forceChannel: %d", __func__, gi->forceChannel );
+    /* XP_LOGF( "%s: wrote forceChannel: %d", __func__, gi->forceChannel ); */
 
     if ( 0 ) {
 #ifdef STREAM_VERS_BIGBOARD

@@ -935,10 +935,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 
     /* pthread_mutex_init( &state->msgMutex, NULL ); */
     
-    XP_LOGF( "%s: initing srand with %d", __func__, seed );
+    /* XP_LOGF( "%s: initing srand with %d", __func__, seed ); */
     srandom( seed );
 
-    LOG_RETURNF( "%p", state );
+    /* LOG_RETURNF( "%p", state ); */
     return (jint) state;
 }
 
@@ -973,7 +973,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, j_cp );
 
-    XP_LOGF( "calling game_makeNewGame" );
     game_makeNewGame( MPPARM(mpool) &state->game, gi, globals->util, dctx, &cp,
                       globals->xportProcs );
 
@@ -1000,7 +999,6 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 ( JNIEnv* env, jclass claz, GamePtrType gamePtr )
 {
     JNIState* state = getState( env, gamePtr, __func__ );
-    LOG_FUNC();
 
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = state->mpool;
