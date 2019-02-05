@@ -83,7 +83,7 @@ public class DevID {
                 s_relayDevID = asStr;
             }
         }
-        Log.d( TAG, "getRelayDevID() => %s", s_relayDevID );
+        // Log.d( TAG, "getRelayDevID() => %s", s_relayDevID );
         return s_relayDevID;
     }
 

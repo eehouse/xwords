@@ -97,7 +97,7 @@ public class NetStateCache {
         }
 
         boolean result = s_netAvail || s_onSDKSim;
-        Log.d( TAG, "netAvail() => %b", result );
+        // Log.d( TAG, "netAvail() => %b", result );
         return result;
     }
 
