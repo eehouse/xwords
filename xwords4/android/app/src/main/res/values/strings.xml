@@ -2767,6 +2767,10 @@
   • If all else fails, reboot this device\n
   </string>
 
+  <!-- Message to be shown each time user of Google Play version (post
+       March 9, 2019) tries to use a feature that requires SMS_SEND or
+       SMS_RECEIVE permission. Message displayed with the "do not show
+       again" checkbox. -->
   <string name="sms_banned_expl">Play-via-SMS requires Permissions
   that most Android apps are no longer allowed to request -- as a
   condition of being listed on the Google Play Store. Thus
