@@ -69,6 +69,7 @@ android {
             buildConfigField "boolean", "IS_TAGGED_BUILD", "${CURTAG}" == '' ? "false" : "true"
             resValue "string", "invite_prefix", "/and/"
             buildConfigField "int[]", "SMS_BANNED_EXPL", "null"
+			buildConfigField "boolean", "UDP_ENABLED", "true"
         }
 
         xw4 {

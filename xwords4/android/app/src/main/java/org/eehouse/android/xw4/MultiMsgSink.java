@@ -58,7 +58,7 @@ public class MultiMsgSink implements TransportProcs {
     // can just insert a message into its queue
     public int sendViaRelay( byte[] buf, int gameID )
     {
-        Assert.assertTrue( XWApp.UDP_ENABLED );
+        Assert.assertTrue( BuildConfig.UDP_ENABLED );
         return RelayService.sendPacket( m_context, getRowID(), buf );
     }
 

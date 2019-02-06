@@ -567,7 +567,7 @@ public class RelayService extends JobIntentService
     private boolean startFetchThreadIfNotUDP()
     {
         // DbgUtils.logf( "startFetchThreadIfNotUDP()" );
-        boolean handled = relayEnabled( this ) && !XWApp.UDP_ENABLED;
+        boolean handled = relayEnabled( this ) && !BuildConfig.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             Assert.assertFalse( BuildConfig.DEBUG ); // NOT using this now!
 
@@ -600,7 +600,7 @@ public class RelayService extends JobIntentService
     private UDPThreads startUDPThreadsOnce()
     {
         UDPThreads threads = null;
-        if ( XWApp.UDP_ENABLED && relayEnabled( this ) ) {
+        if ( BuildConfig.UDP_ENABLED && relayEnabled( this ) ) {
             synchronized ( sUDPThreadsRef ) {
                 threads = sUDPThreadsRef.get();
                 if ( null == threads ) {
@@ -1613,7 +1613,7 @@ public class RelayService extends JobIntentService
         Log.d( TAG, "startThreads()" );
         if ( !relayEnabled( this ) || !NetStateCache.netAvail( this ) ) {
             stopThreads();
-        } else if ( XWApp.UDP_ENABLED ) {
+        } else if ( BuildConfig.UDP_ENABLED ) {
             stopFetchThreadIf();
             startUDPThreadsOnce();
             registerWithRelay( -1 );
