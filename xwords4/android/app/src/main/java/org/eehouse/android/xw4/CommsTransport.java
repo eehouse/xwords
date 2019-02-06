@@ -80,7 +80,7 @@ public class CommsTransport implements TransportProcs,
         @Override
         public void run()
         {
-            if ( !XWApp.UDP_ENABLED ) {
+            if ( !BuildConfig.UDP_ENABLED ) {
                 m_done = false;
                 boolean failed = true;
                 try {
@@ -111,7 +111,7 @@ public class CommsTransport implements TransportProcs,
         private boolean loop()
         {
             boolean failed = false;
-            if ( !XWApp.UDP_ENABLED ) {
+            if ( !BuildConfig.UDP_ENABLED ) {
                 outer_loop:
                 while ( !m_done ) {
                     try {
@@ -237,7 +237,7 @@ public class CommsTransport implements TransportProcs,
 
     private synchronized void putOut( final byte[] buf )
     {
-        if ( !XWApp.UDP_ENABLED ) {
+        if ( !BuildConfig.UDP_ENABLED ) {
             int len = buf.length;
             ByteBuffer netbuf = ByteBuffer.allocate( len + 2 );
             netbuf.putShort( (short)len );
@@ -254,7 +254,7 @@ public class CommsTransport implements TransportProcs,
 
     private synchronized void closeSocket()
     {
-        if ( !XWApp.UDP_ENABLED && null != m_socketChannel ) {
+        if ( !BuildConfig.UDP_ENABLED && null != m_socketChannel ) {
             try {
                 m_socketChannel.close();
             } catch ( Exception e ) {
@@ -294,7 +294,7 @@ public class CommsTransport implements TransportProcs,
 
     private void addIncoming( )
     {
-        if ( !XWApp.UDP_ENABLED ) {
+        if ( !BuildConfig.UDP_ENABLED ) {
             m_bytesIn.flip();
 
             for ( ; ; ) {
@@ -330,7 +330,7 @@ public class CommsTransport implements TransportProcs,
 
     private void waitToStopImpl()
     {
-        if ( !XWApp.UDP_ENABLED ) {
+        if ( !BuildConfig.UDP_ENABLED ) {
             m_done = true;          // this is in a race!
             if ( null != m_selector ) {
                 m_selector.wakeup(); // getting NPE inside here -- see below
@@ -363,13 +363,13 @@ public class CommsTransport implements TransportProcs,
         Assert.assertNotNull( addr );
         Assert.assertTrue( addr.contains( conType ) );
 
-        if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY
+        if ( !BuildConfig.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY
              && null == m_relayAddr ) {
             m_relayAddr = new CommsAddrRec( addr );
             m_useHost = NetUtils.forceHost( m_relayAddr.ip_relay_hostName );
         }
 
-        if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY ) {
+        if ( !BuildConfig.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY ) {
             if ( NetStateCache.netAvail( m_context ) ) {
                 putOut( buf );      // add to queue
                 if ( null == m_thread ) {
@@ -422,7 +422,7 @@ public class CommsTransport implements TransportProcs,
         int nSent = -1;
         switch ( conType ) {
         case COMMS_CONN_RELAY:
-            Assert.assertTrue( XWApp.UDP_ENABLED );
+            Assert.assertTrue( BuildConfig.UDP_ENABLED );
             nSent = RelayService.sendPacket( context, rowID, buf );
             break;
         case COMMS_CONN_SMS:
