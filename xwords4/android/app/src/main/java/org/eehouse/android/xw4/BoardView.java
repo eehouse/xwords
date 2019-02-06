@@ -294,7 +294,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     public void startHandling( Activity parent, JNIThread thread,
                                CommsConnTypeSet connTypes )
     {
-        Log.d( TAG, "startHandling(thread=%H)", thread );
+        Log.d( TAG, "startHandling(thread=%H, parent=%s)", thread, parent );
+        Assert.assertTrue( null != parent || !BuildConfig.DEBUG );
         m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = thread.getGamePtr();
@@ -339,7 +340,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         // Force update now that we have bits to copy. I don't know why (yet),
         // but on older versions of Android we need to run this even if drew
         // is false
-        m_parent.runOnUiThread( m_invalidator );
+        if ( null != m_parent ) {
+            m_parent.runOnUiThread( m_invalidator );
+        }
     }
 
     public void dimsChanged( BoardDims dims )
