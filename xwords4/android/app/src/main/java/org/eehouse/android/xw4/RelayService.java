@@ -439,36 +439,6 @@ public class RelayService extends JobIntentService
         Log.d( TAG, "%s.onDestroy() DONE", this );
     }
 
-    @Override
-    public boolean onStopCurrentWork() {
-        Log.d( TAG, "onStopCurrentWork() called");
-        boolean result = super.onStopCurrentWork();
-        Log.d( TAG, "onStopCurrentWork() => %b", result);
-        return result;
-    }
-
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        Log.d( TAG, "onTaskRemoved() called");
-        super.onTaskRemoved(rootIntent);
-        Log.d( TAG, "onTaskRemoved() => (void)");
-    }
-
-    @Override
-    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        Log.d( TAG, "onStartCommand(%s) called", intent );
-        int result = super.onStartCommand(intent, flags, startId );
-        Log.d( TAG, "onStartCommand() => %d", result );
-        return result;
-    }
-
-    @Override
-    public void onLowMemory() {
-        Log.d( TAG, "onLowMemory() called" );
-        super.onLowMemory();
-        Log.d( TAG, "onLowMemory() => void" );
-    }
-
     // NetStateCache.StateChangedIf interface
     @Override
     public void onNetAvail( boolean nowAvailable )
