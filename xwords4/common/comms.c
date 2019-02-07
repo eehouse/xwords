@@ -676,7 +676,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     } else {
         comms->channelSeed = stream_getU16( stream );
         CNO_FMT( cbuf, comms->channelSeed );
-        XP_LOGF( "%s: loaded seed: %s(%d)", __func__, cbuf, comms->channelSeed );
     }
     if ( STREAM_VERS_COMMSBACKOFF <= version ) {
         comms->resendBackoff = stream_getU16( stream );
@@ -892,7 +891,6 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     stream_putU16( stream, comms->nextChannelNo );
     XP_U16 channelSeed = comms_getChannelSeed( comms ); /* force creation */
     stream_putU16( stream, channelSeed );
-    XP_LOGF( "%s: stored seed: %x(%d)", __func__, channelSeed, channelSeed );
     stream_putU16( stream, comms->resendBackoff );
     stream_putU32( stream, comms->nextResend );
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
