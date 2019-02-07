@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+
 abstract class InviteDelegate extends ListDelegateBase
     implements View.OnClickListener,
                ViewGroup.OnHierarchyChangeListener {
@@ -83,7 +85,8 @@ abstract class InviteDelegate extends ListDelegateBase
 
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
-    protected static final String INTENT_KEY_NMISSING = "NMISSING";
+    public static final String RAR = "RAR";
+    private static final String INTENT_KEY_NMISSING = "NMISSING";
     protected static final String INTENT_KEY_LASTDEV = "LDEV";
 
     protected int m_nMissing;
@@ -96,6 +99,18 @@ abstract class InviteDelegate extends ListDelegateBase
     protected Map<InviterItem, Integer> m_counts;
     protected Set<InviterItem> m_checked;
     private boolean m_setChecked;
+    private boolean m_remotesAreRobots;
+
+    public static Intent makeIntent( Activity activity, Class target,
+                                     int nMissing, SentInvitesInfo info )
+    {
+        Intent intent = new Intent( activity, target )
+            .putExtra( INTENT_KEY_NMISSING, nMissing );
+        if ( null != info ) {
+            intent.putExtra( RAR, info.getRemotesRobots() );
+        }
+        return intent;
+    }
 
     public InviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -104,6 +119,7 @@ abstract class InviteDelegate extends ListDelegateBase
         Intent intent = getIntent();
         m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
         m_lastDev = intent.getStringExtra( INTENT_KEY_LASTDEV );
+        m_remotesAreRobots = intent.getBooleanExtra( RAR, false );
         m_counts = new HashMap<InviterItem, Integer>();
         m_checked = new HashSet<InviterItem>();
     }
@@ -193,6 +209,7 @@ abstract class InviteDelegate extends ListDelegateBase
             Intent intent = new Intent();
             intent.putExtra( DEVS, devs );
             intent.putExtra( COUNTS, counts );
+            intent.putExtra( RAR, m_remotesAreRobots );
             setResult( Activity.RESULT_OK, intent );
             finish();
         }

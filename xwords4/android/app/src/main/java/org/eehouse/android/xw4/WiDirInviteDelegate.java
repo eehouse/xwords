@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+
 public class WiDirInviteDelegate extends InviteDelegate
     implements WiDirService.DevSetListener {
     private static final String SAVE_NAME = "SAVE_NAME";
@@ -40,10 +42,12 @@ public class WiDirInviteDelegate extends InviteDelegate
     private Activity m_activity;
 
     public static void launchForResult( Activity activity, int nMissing,
+                                        SentInvitesInfo info,
                                         RequestCode requestCode )
     {
-        Intent intent = new Intent( activity, WiDirInviteActivity.class );
-        intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+        Intent intent =
+            InviteDelegate.makeIntent( activity, WiDirInviteActivity.class,
+                                       nMissing, info );
         activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 

@@ -44,6 +44,7 @@ public class MultiService {
     public static final String GAMENAME = "GAMENAME";
     public static final String NPLAYERST = "NPLAYERST";
     public static final String NPLAYERSH = "NPLAYERSH";
+    public static final String REMOTES_ROBOTS = "RR";
     public static final String INVITER = "INVITER";
     private static final String OWNER = "OWNER";
     public static final String BT_NAME = "BT_NAME";

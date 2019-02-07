@@ -132,7 +132,9 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                     button.setEnabled( true );
                 }
             };
-        OnClickListener okClicked = new OnClickListener() {
+
+        final OnClickListener okClicked = new OnClickListener() {
+                @Override
                 public void onClick( DialogInterface dlg, int view ) {
                     Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
                     int indx = sel[0];
@@ -151,6 +153,21 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                                    sel[0], selChanged )
             .setPositiveButton( android.R.string.ok, okClicked )
             .setNegativeButton( android.R.string.cancel, null );
+        if ( BuildConfig.DEBUG ) {
+            builder.setNeutralButton( R.string.ok_with_robots,
+                                      new OnClickListener() {
+                                          @Override
+                                          public void onClick( DialogInterface dlg,
+                                                               int view ) {
+
+                                              if ( state.m_params[0] instanceof SentInvitesInfo )  {
+                                                  SentInvitesInfo sii = (SentInvitesInfo)state.m_params[0];
+                                                  sii.setRemotesRobots();
+                                              }
+                                              okClicked.onClick( dlg, view );
+                                          }
+                                      } );
+        }
 
         return builder.create();
     }

@@ -37,7 +37,6 @@ typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
  */
 
 typedef struct _InviteInfo {
-    XP_U8 version;              /* struct version for backward compatibility */
     XP_U16 _conTypes;
 
     XP_UCHAR gameName[MAX_GAME_NAME_LEN];
@@ -46,6 +45,7 @@ typedef struct _InviteInfo {
     XP_U8 forceChannel;
     XP_U8 nPlayersT;
     XP_U8 nPlayersH;
+    XP_Bool remotesAreRobots;
 
     /* Relay */
     XP_UCHAR room[MAX_INVITE_LEN + 1];

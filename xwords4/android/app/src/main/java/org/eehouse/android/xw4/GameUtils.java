@@ -574,7 +574,7 @@ public class GameUtils {
                                  new String[] { nli.dict }, null, nli.nPlayersT,
                                  nli.nPlayersH, nli.forceChannel,
                                  nli.inviteID(), nli.gameID(),
-                                 nli.gameName, false );
+                                 nli.gameName, false, nli.remotesAreRobots );
     }
 
     public static long makeNewMultiGame( Context context, long groupID,
@@ -611,7 +611,7 @@ public class GameUtils {
         return makeNewMultiGame( context, (MultiMsgSink)null, (UtilCtxt)null,
                                  groupID, addr, langArray, dictArray, jsonData,
                                  2, 1, forceChannel, inviteID, 0, gameName,
-                                 true );
+                                 true, false );
     }
 
     private static long makeNewMultiGame( Context context, MultiMsgSink sink,
@@ -622,7 +622,7 @@ public class GameUtils {
                                           int nPlayersT, int nPlayersH,
                                           int forceChannel, String inviteID,
                                           int gameID, String gameName,
-                                          boolean isHost )
+                                          boolean isHost, boolean localsRobots )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
 
@@ -633,7 +633,7 @@ public class GameUtils {
         gi.forceChannel = forceChannel;
         lang[0] = gi.dictLang;
         dict[0] = gi.dictName;
-        gi.setNPlayers( nPlayersT, nPlayersH );
+        gi.setNPlayers( nPlayersT, nPlayersH, localsRobots );
         gi.juggle();
         if ( 0 != gameID ) {
             gi.gameID = gameID;

@@ -107,6 +107,7 @@ public class BoardDelegate extends DelegateBase
     private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
     private int[] m_missingCounts;
+    private boolean m_remotesAreRobots;
     private InviteMeans m_missingMeans = null;
     private boolean m_progressShown = false;
     private boolean m_isFirstLaunch;
@@ -696,6 +697,7 @@ public class BoardDelegate extends DelegateBase
                 // meaning m_gi etc are still null.
                 m_missingDevs = data.getStringArrayExtra( InviteDelegate.DEVS );
                 m_missingCounts = data.getIntArrayExtra( InviteDelegate.COUNTS );
+                m_remotesAreRobots = data.getBooleanExtra( InviteDelegate.RAR, false );
                 m_missingMeans = missingMeans;
             }
         }
@@ -1230,12 +1232,12 @@ public class BoardDelegate extends DelegateBase
                                      Action.INVITE_SMS, m_mySIS.nMissing, info );
                 break;
             case RELAY:
-                RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing,
+                RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
                                                      RequestCode.RELAY_INVITE_RESULT );
                 break;
             case WIFIDIRECT:
                 WiDirInviteDelegate.launchForResult( m_activity,
-                                                     m_mySIS.nMissing,
+                                                     m_mySIS.nMissing, info,
                                                      RequestCode.P2P_INVITE_RESULT );
                 break;
             case EMAIL:
@@ -1254,7 +1256,7 @@ public class BoardDelegate extends DelegateBase
 
                 break;
             default:
-                Assert.fail();
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
     }
@@ -1348,7 +1350,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // TransportProcs.TPMsgHandler interface
     //////////////////////////////////////////////////
-
+    @Override
     public void tpmRelayConnd( final String room, final int devOrder,
                                final boolean allHere, final int nMissing )
     {
@@ -1360,6 +1362,7 @@ public class BoardDelegate extends DelegateBase
             } );
     }
 
+    @Override
     public void tpmRelayErrorProc( TransportProcs.XWRELAY_ERROR relayErr )
     {
         int strID = -1;
@@ -1419,6 +1422,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////
+    @Override
     public void downloadFinished( String lang, final String name,
                                   boolean success )
     {
@@ -1435,6 +1439,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // NFCUtils.NFCActor
     //////////////////////////////////////////////////
+    @Override
     public String makeNFCMessage()
     {
         String data = null;
@@ -2474,7 +2479,9 @@ public class BoardDelegate extends DelegateBase
                 Assert.assertTrue( 0 <= m_nGuestDevs );
                 int forceChannel = ii + m_nGuestDevs + 1;
                 NetLaunchInfo nli = new NetLaunchInfo( m_activity, m_summary, m_gi,
-                                                       nPlayers, forceChannel );
+                                                       nPlayers, forceChannel )
+                    .setRemotesAreRobots( m_remotesAreRobots );
+
                 if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }

@@ -455,7 +455,8 @@ public class CurGameInfo implements Serializable {
         return added;
     }
 
-    public void setNPlayers( int nPlayersTotal, int nPlayersHere )
+    public void setNPlayers( int nPlayersTotal, int nPlayersHere,
+                             boolean localsAreRobots )
     {
         assert( nPlayersTotal < MAX_NUM_PLAYERS );
         assert( nPlayersHere < nPlayersTotal );
@@ -463,8 +464,14 @@ public class CurGameInfo implements Serializable {
         nPlayers = nPlayersTotal;
 
         for ( int ii = 0; ii < nPlayersTotal; ++ii ) {
-            players[ii].isLocal = ii < nPlayersHere;
-            assert( !players[ii].isRobot() );
+            boolean isLocal = ii < nPlayersHere;
+            LocalPlayer player = players[ii];
+            player.isLocal = isLocal;
+            if ( isLocal && localsAreRobots ) {
+                player.setIsRobot( true );
+            } else {
+                assert( !player.isRobot() );
+            }
         }
     }
 

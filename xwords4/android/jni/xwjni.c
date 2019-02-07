@@ -425,7 +425,8 @@ static const SetInfo nli_ints[] = {
 };
 
 static const SetInfo nli_bools[] = {
-    ARR_MEMBER( NetLaunchInfo, isGSM )
+    ARR_MEMBER( NetLaunchInfo, isGSM ),
+    ARR_MEMBER( NetLaunchInfo, remotesAreRobots ),
 };
 
 static const SetInfo nli_strs[] = {

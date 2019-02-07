@@ -51,6 +51,7 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class RelayInviteDelegate extends InviteDelegate {
@@ -64,22 +65,22 @@ public class RelayInviteDelegate extends InviteDelegate {
         R.id.button_edit,
     };
 
-    // private static final int GET_CONTACT = 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<DevIDRec> m_devIDRecs;
-    // private RelayDevsAdapter m_adapter;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
     private String m_devIDStr;
 
     public static void launchForResult( Activity activity, int nMissing,
+                                        SentInvitesInfo info,
                                         RequestCode requestCode )
     {
         if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
-            Intent intent = new Intent( activity, RelayInviteActivity.class );
-            intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+            Intent intent =
+                InviteDelegate.makeIntent( activity, RelayInviteActivity.class,
+                                           nMissing, info );
             activity.startActivityForResult( intent, requestCode.ordinal() );
         }
     }

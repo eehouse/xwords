@@ -114,8 +114,9 @@ public class BTInviteDelegate extends InviteDelegate {
                                         RequestCode requestCode )
     {
         Assert.assertTrue( 0 < nMissing ); // don't call if nMissing == 0
-        Intent intent = new Intent( activity, BTInviteActivity.class );
-        intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+        Intent intent = InviteDelegate
+            .makeIntent( activity, BTInviteActivity.class,
+                         nMissing, info );
         if ( null != info ) {
             String lastDev = info.getLastDev( InviteMeans.BLUETOOTH );
             if ( null != lastDev ) {
