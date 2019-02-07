@@ -495,7 +495,7 @@ public class SMSService extends XWService {
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
         if ( nli != null ) {
-            mHelper.handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
+            mHelper.handleInvitation( this, nli, phone, DictFetchOwner.OWNER_SMS );
             ackInvite( phone, nli.gameID() );
         }
     }

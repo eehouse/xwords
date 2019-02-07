@@ -1373,7 +1373,7 @@ public class BTService extends XWService {
                                 String btAddr )
     {
         BTCmd result;
-        if ( mHelper.handleInvitation( nli, btName,
+        if ( mHelper.handleInvitation( this, nli, btName,
                                        DictFetchOwner.OWNER_BT ) ) {
             result = BTCmd.INVITE_ACCPT;
         } else {
