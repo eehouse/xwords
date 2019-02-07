@@ -117,8 +117,8 @@ abstract class XWServiceHelper {
         }
     }
 
-    protected boolean handleInvitation( NetLaunchInfo nli, String device,
-                                        DictFetchOwner dfo )
+    protected boolean handleInvitation( Context context, NetLaunchInfo nli,
+                                        String device, DictFetchOwner dfo )
     {
         boolean success = nli.isValid() && checkNotInFlight( nli );
         if ( success ) {
@@ -141,6 +141,8 @@ abstract class XWServiceHelper {
                             GamePtr gamePtr = GameUtils
                                 .loadMakeGame( mService, gi, lock );
                             gamePtr.release();
+                        } else {
+                            DbgUtils.toastNoLock( TAG, context, "handleInvitation()" );
                         }
                     }
 

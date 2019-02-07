@@ -303,7 +303,8 @@ public class RelayService extends JobIntentService
     {
         Log.d( TAG, "receiveInvitation: got nli from %d: %s", srcDevID,
                nli.toString() );
-        if ( !mHelper.handleInvitation( nli, null, DictFetchOwner.OWNER_RELAY ) ) {
+        if ( !mHelper.handleInvitation( this, nli, null,
+                                        DictFetchOwner.OWNER_RELAY ) ) {
             Log.d( TAG, "handleInvitation() failed" );
         }
     }
