@@ -221,9 +221,8 @@ public class RelayService extends JobIntentService
 
     private static void enqueueWork( Context context, Intent intent )
     {
-        Log.d( TAG, "calling enqueueWork(cmd=%s)", cmdFrom( intent ) );
         enqueueWork( context, RelayService.class, sJobID, intent );
-        Log.d( TAG, "enqueueWork() returned" );
+        Log.d( TAG, "called enqueueWork(cmd=%s)", cmdFrom( intent ) );
     }
 
     private static MsgCmds cmdFrom( Intent intent )
@@ -561,13 +560,11 @@ public class RelayService extends JobIntentService
             }
         } else {
             Assert.assertTrue( s_UDPSocket.isConnected() );
-            Log.i( TAG, "s_UDPSocket not null" );
         }
     }
 
     private boolean serviceQueue()
     {
-        Log.d( TAG, "serviceQueue()" );
         boolean shouldGoOn = true;
         List<PacketData> dataListUDP = new ArrayList<>();
         List<PacketData> dataListWeb = new ArrayList<>();
@@ -602,7 +599,6 @@ public class RelayService extends JobIntentService
             Log.w( TAG, "write thread killed" );
             shouldGoOn = false;
         }
-        Log.d( TAG, "serviceQueue() => %b", shouldGoOn );
         return shouldGoOn;
     }
 
@@ -1346,7 +1342,6 @@ public class RelayService extends JobIntentService
 
         private void postGotPacket( Context context, DatagramPacket packet )
         {
-            Log.d( TAG, "postGotPacket()" );
             int packetLen = packet.getLength();
             byte[] data = new byte[packetLen];
             System.arraycopy( packet.getData(), 0, data, 0, packetLen );
