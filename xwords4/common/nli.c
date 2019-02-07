@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2019 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -25,6 +25,11 @@
 #include "strutils.h"
 #include "dbgutil.h"
 
+/* Don't check in other than 0 for a few releases!!! */
+#ifndef NLI_VERSION
+# define NLI_VERSION 0
+#endif
+
 void
 nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
           XP_U16 nPlayers, XP_U16 forceChannel )
@@ -41,7 +46,6 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
         types_addType( &nli->_conTypes, COMMS_CONN_RELAY );
         XP_STRCAT( nli->room, addr->u.ip_relay.invite );
     }
-    
 }
 
 static XP_U32 
@@ -71,10 +75,9 @@ nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID )
 void 
 nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 {
-    LOG_FUNC();
-    stream_putU8( stream, nli->version );
+    stream_putU8( stream, NLI_VERSION );
+
     stream_putU16( stream, nli->_conTypes );
-    XP_LOGF( "%s: wrote _conTypes: %x", __func__, nli->_conTypes );
     stream_putU16( stream, nli->lang );
     stringToStream( stream, nli->dict );
     stringToStream( stream, nli->gameName );
@@ -84,65 +87,67 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     stream_putU8( stream, nli->forceChannel );
 
     if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
-        XP_LOGF( "%s: writing relay stuff", __func__ );
         stringToStream( stream, nli->room );
-        XP_LOGF( "%s: writing room: %s", __func__, nli->room );
         stringToStream( stream, nli->inviteID );
         stream_putU32( stream, nli->devID );
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
-        XP_LOGF( "%s: writing bt stuff", __func__ );
         stringToStream( stream, nli->btName );
         stringToStream( stream, nli->btAddress );
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
-        XP_LOGF( "%s: writing sms stuff", __func__ );
         stringToStream( stream, nli->phone );
         stream_putU8( stream, nli->isGSM );
         stream_putU8( stream, nli->osType );
         stream_putU32( stream, nli->osVers );
     }
-    LOG_RETURN_VOID();
+
+    if ( NLI_VERSION > 0 ) {
+        stream_putBits( stream, 1, nli->remotesAreRobots ? 1 : 0 );
+    }
 }
 
 XP_Bool 
 nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_TRUE;
     LOG_FUNC();
     XP_MEMSET( nli, 0, sizeof(*nli) );
-    nli->version = stream_getU8( stream );
-    XP_Bool success = 0 == nli->version;
-    if ( success ) {
-        nli->_conTypes = stream_getU16( stream );
-        XP_LOGF( "%s: read _conTypes: %x", __func__, nli->_conTypes );
-        nli->lang = stream_getU16( stream );
-        stringFromStreamHere( stream, nli->dict, sizeof(nli->dict) );
-        stringFromStreamHere( stream, nli->gameName, sizeof(nli->gameName) );
-        nli->nPlayersT = stream_getU8( stream );
-        nli->nPlayersH = stream_getU8( stream );
-        nli->gameID = stream_getU32( stream );
-        nli->forceChannel = stream_getU8( stream );
+    XP_U16 version = stream_getU8( stream );
+    XP_LOGF( "%s(): read version: %d", __func__, version );
 
-        if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
-            XP_LOGF( "%s: reading relay stuff", __func__ );
-            stringFromStreamHere( stream, nli->room, sizeof(nli->room) );
-            XP_LOGF( "%s: read room: %s", __func__, nli->room );
-            stringFromStreamHere( stream, nli->inviteID, sizeof(nli->inviteID) );
-            nli->devID = stream_getU32( stream );
-        }
-        if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
-            XP_LOGF( "%s: reading bt stuff", __func__ );
-            stringFromStreamHere( stream, nli->btName, sizeof(nli->btName) );
-            stringFromStreamHere( stream, nli->btAddress, sizeof(nli->btAddress) );
-        }
-        if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
-            XP_LOGF( "%s: reading sms stuff", __func__ );
-            stringFromStreamHere( stream, nli->phone, sizeof(nli->phone) );
-            nli->isGSM = stream_getU8( stream );
-            nli->osType= stream_getU8( stream );
-            nli->osVers = stream_getU32( stream );
-        }
+    nli->_conTypes = stream_getU16( stream );
+    nli->lang = stream_getU16( stream );
+    stringFromStreamHere( stream, nli->dict, sizeof(nli->dict) );
+    stringFromStreamHere( stream, nli->gameName, sizeof(nli->gameName) );
+    nli->nPlayersT = stream_getU8( stream );
+    nli->nPlayersH = stream_getU8( stream );
+    nli->gameID = stream_getU32( stream );
+    nli->forceChannel = stream_getU8( stream );
+
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
+        stringFromStreamHere( stream, nli->room, sizeof(nli->room) );
+        stringFromStreamHere( stream, nli->inviteID, sizeof(nli->inviteID) );
+        nli->devID = stream_getU32( stream );
     }
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
+        stringFromStreamHere( stream, nli->btName, sizeof(nli->btName) );
+        stringFromStreamHere( stream, nli->btAddress, sizeof(nli->btAddress) );
+    }
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
+        stringFromStreamHere( stream, nli->phone, sizeof(nli->phone) );
+        nli->isGSM = stream_getU8( stream );
+        nli->osType= stream_getU8( stream );
+        nli->osVers = stream_getU32( stream );
+    }
+
+    if ( version > 0 ) {
+        nli->remotesAreRobots = 0 != stream_getBits( stream, 1 );
+        XP_LOGF( "%s(): remotesAreRobots: %d", __func__, nli->remotesAreRobots );
+    }
+
+    XP_ASSERT( 0 == stream_getSize( stream ) );
+
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }

@@ -1169,6 +1169,9 @@
 	<string name="invite_choice_relay">Internet/Relay</string>
     <string name="invite_choice_p2p">Wifi Direct</string>
 	<string name="invite_choice_title">Inviting players: How?</string>
+
+    <!-- Button, on DEBUG builds only, causes invitee players to be robots -->
+    <string name="ok_with_robots">OK (robots)</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
     <!--    via email?</string> -->
     <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->

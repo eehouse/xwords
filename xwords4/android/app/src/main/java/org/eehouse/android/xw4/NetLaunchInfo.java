@@ -72,6 +72,7 @@ public class NetLaunchInfo implements Serializable {
     protected int forceChannel;
     protected int nPlayersT;
     protected int nPlayersH;
+    protected boolean remotesAreRobots;
     protected String room;      // relay
     protected String btName;
     protected String btAddress;
@@ -109,6 +110,7 @@ public class NetLaunchInfo implements Serializable {
         gameName = bundle.getString( MultiService.GAMENAME );
         nPlayersT = bundle.getInt( MultiService.NPLAYERST );
         nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
+        remotesAreRobots = bundle.getBoolean( MultiService.REMOTES_ROBOTS );
         gameID = bundle.getInt( MultiService.GAMEID );
         btName = bundle.getString( MultiService.BT_NAME );
         btAddress = bundle.getString( MultiService.BT_ADDRESS );
@@ -341,6 +343,7 @@ public class NetLaunchInfo implements Serializable {
         bundle.putString( MultiService.GAMENAME, gameName );
         bundle.putInt( MultiService.NPLAYERST, nPlayersT );
         bundle.putInt( MultiService.NPLAYERSH, nPlayersH );
+        bundle.putBoolean( MultiService.REMOTES_ROBOTS, remotesAreRobots );
         bundle.putInt( MultiService.GAMEID, gameID() );
         bundle.putString( MultiService.BT_NAME, btName );
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
@@ -364,6 +367,7 @@ public class NetLaunchInfo implements Serializable {
                 && forceChannel == other.forceChannel
                 && nPlayersT == other.nPlayersT
                 && nPlayersH == other.nPlayersH
+                && remotesAreRobots == other.remotesAreRobots
                 && TextUtils.equals( room, other.room )
                 && TextUtils.equals( btName, other.btName )
                 && TextUtils.equals( btAddress, other.btAddress )
@@ -393,6 +397,7 @@ public class NetLaunchInfo implements Serializable {
                 .put( MultiService.GAMENAME, gameName )
                 .put( MultiService.NPLAYERST, nPlayersT )
                 .put( MultiService.NPLAYERSH, nPlayersH )
+                .put( MultiService.REMOTES_ROBOTS, remotesAreRobots )
                 .put( MultiService.GAMEID, gameID() )
                 .put( MultiService.FORCECHANNEL, forceChannel );
 
@@ -467,6 +472,7 @@ public class NetLaunchInfo implements Serializable {
         gameName = json.optString( MultiService.GAMENAME );
         nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
         nPlayersH = json.optInt( MultiService.NPLAYERSH, 1 ); // absent ok
+        remotesAreRobots = json.optBoolean( MultiService.REMOTES_ROBOTS, false );
         gameID = json.optInt( MultiService.GAMEID, 0 );
 
         // Try each type
@@ -605,6 +611,13 @@ public class NetLaunchInfo implements Serializable {
     {
         // DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
         return m_valid;
+    }
+
+    public NetLaunchInfo setRemotesAreRobots( boolean val )
+    {
+        Assert.assertTrue( val == false || BuildConfig.DEBUG );
+        remotesAreRobots = val;
+        return this;
     }
 
     @Override

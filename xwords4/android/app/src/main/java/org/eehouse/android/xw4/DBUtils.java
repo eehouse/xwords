@@ -465,6 +465,7 @@ public class DBUtils {
         private ArrayList<String> m_targets;
         private ArrayList<Date> m_timestamps;
         private int m_cachedCount = 0;
+        private boolean m_remotesRobots = false;
 
         @Override
         public boolean equals( Object other )
@@ -590,6 +591,8 @@ public class DBUtils {
             return result;
         }
 
+        void setRemotesRobots() { m_remotesRobots = true; }
+        boolean getRemotesRobots() { return m_remotesRobots; }
     }
 
     public static SentInvitesInfo getInvitesFor( Context context, long rowid )
