@@ -627,7 +627,7 @@ public class BoardDelegate extends DelegateBase
         m_handler = null;
         ConnStatusHandler.setHandler( null );
         waitCloseGame( true );
-        pauseGame();
+        pauseGame();            // sets m_jniThread to null
         super.onPause();
     }
 
@@ -2896,7 +2896,8 @@ public class BoardDelegate extends DelegateBase
     private void handleViaThread( JNICmd cmd, Object... args )
     {
         if ( null == m_jniThread ) {
-            Log.w( TAG, "not calling handle(%s)", cmd.toString() );
+            Log.w( TAG, "m_jniThread null: not calling m_jniThread.handle(%s)",
+                   cmd.toString() );
             DbgUtils.printStack( TAG );
         } else {
             m_jniThread.handle( cmd, args );

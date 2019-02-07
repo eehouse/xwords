@@ -325,7 +325,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     if ( STREAM_SAVE_PREVWORDS < version ) {
         nv->streamVersion = stream_getU8 ( stream );
     }
-    XP_LOGF( "%s: read streamVersion: 0x%x", __func__, nv->streamVersion );
+    /* XP_LOGF( "%s: read streamVersion: 0x%x", __func__, nv->streamVersion ); */
 #endif
 } /* getNV */
 
@@ -356,7 +356,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     }
 #ifdef STREAM_VERS_BIGBOARD
     stream_putU8( stream, nv->streamVersion );
-    XP_LOGF( "%s: wrote streamVersion: 0x%x", __func__, nv->streamVersion );
+    /* XP_LOGF( "%s: wrote streamVersion: 0x%x", __func__, nv->streamVersion ); */
 #endif
 } /* putNV */
 
