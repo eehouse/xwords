@@ -196,6 +196,12 @@ public class BTService extends XWJIService {
         {
             Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( m_btAddr ) );
         }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "{cmd: %s}", m_cmd );
+        }
     }
 
     private BluetoothAdapter m_adapter;
@@ -777,9 +783,11 @@ public class BTService extends XWJIService {
 
     private synchronized void releaseSender( BTService bts )
     {
-        BTSenderThread self = senderFor( bts );
-        self.mFinishing = true;
-        sMap.remove( bts );
+        BTSenderThread thread = sMap.get( bts );
+        if ( null != thread ) {
+            thread.mFinishing = true;
+            sMap.remove( bts );
+        }
     }
 
     private class BTSenderThread extends Thread {
@@ -802,6 +810,7 @@ public class BTService extends XWJIService {
         @Override
         public void run()
         {
+            int nDone = 0;
             String className = getClass().getSimpleName();
             Log.d( TAG, "%s.run() starting", className );
             for ( ; ; ) {
@@ -821,6 +830,7 @@ public class BTService extends XWJIService {
                         break;
                     }
                 } else {
+                    ++nDone;
                     // DbgUtils.logf( "run: got %s from queue", elem.m_cmd.toString() );
 
                     switch( elem.m_cmd ) {
@@ -857,8 +867,8 @@ public class BTService extends XWJIService {
                     }
                 }
             }
-            Log.d( TAG, "%s.run() exiting (owner was %s)", className,
-                   BTService.this );
+            Log.d( TAG, "%s.run() exiting (owner was %s; handled %d packets)",
+                   className, BTService.this, nDone );
         } // run
 
         private void sendPings( MultiEvent event, int timeout )
