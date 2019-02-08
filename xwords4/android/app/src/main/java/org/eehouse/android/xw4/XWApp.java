@@ -99,15 +99,11 @@ public class XWApp extends Application implements LifecycleObserver {
         Log.d( TAG, "onAny(%s)", event );
         switch( event ) {
         case ON_RESUME:
-            BTService.onAppToForeground( this );
             // Do here what checkForMoves does
             if ( null != DBUtils.getRelayIDs( this, null ) ) {
                 RelayService.timerFired( this );
             }
             GameUtils.resendAllIf( this, null );
-            break;
-        case ON_STOP:
-            BTService.onAppToBackground( this );
             break;
         }
     }

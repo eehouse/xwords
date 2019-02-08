@@ -85,7 +85,6 @@ public class GamesListDelegate extends ListDelegateBase
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
-    private static final String BACKGROUND_EXTRA = "bkgrnd";
     private static final String GAMEID_EXTRA = "gameid";
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
     private static final String REMATCH_DICT_EXTRA = "rm_dict";
@@ -2289,14 +2288,6 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void tryBackgroundIntent( Intent intent )
-    {
-        if ( intent.getBooleanExtra( BACKGROUND_EXTRA, false ) ) {
-            makeOkOnlyBuilder( R.string.btservice_expl )
-                .show();
-        }
-    }
-
     private void askDefaultName()
     {
         String name = CommonPrefs.getDefaultPlayerName( m_activity, 0, true );
@@ -2511,7 +2502,6 @@ public class GamesListDelegate extends ListDelegateBase
         startRematch( intent );
         tryAlert( intent );
         tryNFCIntent( intent );
-        tryBackgroundIntent( intent );
     }
 
     private void doOpenGame( Object[] params )
@@ -2702,12 +2692,6 @@ public class GamesListDelegate extends ListDelegateBase
                           | Intent.FLAG_ACTIVITY_SINGLE_TOP )
             // FLAG_ACTIVITY_CLEAR_TASK -- don't think so
             ;
-    }
-
-    public static Intent makeBackgroundIntent( Context context )
-    {
-        return makeSelfIntent( context )
-            .putExtra( BACKGROUND_EXTRA, true );
     }
 
     public static Intent makeRowidIntent( Context context, long rowid )
