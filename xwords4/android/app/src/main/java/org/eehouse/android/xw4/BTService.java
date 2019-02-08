@@ -417,7 +417,6 @@ public class BTService extends XWJIService {
             break;
 
         case START_BACKGROUND:
-            startListener();
             noteLastUsed( this );   // prevent timer from killing immediately
             setTimeoutTimer();
             break;
@@ -540,7 +539,6 @@ public class BTService extends XWJIService {
         static void startYourself()
         {
             Log.d( TAG, "startYourself()" );
-            // DbgUtils.assertOnUIThread();
             synchronized ( s_listener ) {
                 if ( s_listener[0] == null ) {
                     s_listener[0] = new BTListenerThread();
@@ -552,19 +550,14 @@ public class BTService extends XWJIService {
         static void stopYourself( BTListenerThread self )
         {
             Log.d( TAG, "stopYourself()" );
-            BTListenerThread listener;
+            BTListenerThread curListener;
             synchronized ( s_listener ) {
-                listener = s_listener[0];
+                curListener = s_listener[0];
                 s_listener[0] = null;
             }
-            if ( null != listener ) {
-                Assert.assertTrue( self == null || self == listener );
-                listener.stopListening();
-                try {
-                    listener.join( 100 );
-                } catch ( InterruptedException ie ) {
-                    Log.ex( TAG, ie );
-                }
+            if ( null != curListener ) {
+                Assert.assertTrue( self == null || self == curListener );
+                curListener.stopListening();
             }
         }
 
@@ -608,6 +601,7 @@ public class BTService extends XWJIService {
             }
 
             closeServerSocket();
+            stopYourself( this ); // need to clear the ref so can restart
             Log.d( TAG, "BTListenerThread.run() exiting" );
         } // run()
 
@@ -808,7 +802,8 @@ public class BTService extends XWJIService {
         @Override
         public void run()
         {
-            Log.d( TAG, "BTListenerThread.run() starting" );
+            String className = getClass().getSimpleName();
+            Log.d( TAG, "%s.run() starting", className );
             for ( ; ; ) {
                 BTQueueElem elem;
                 // onTheWayOut: mFinishing can change while we're in poll()
@@ -862,7 +857,7 @@ public class BTService extends XWJIService {
                     }
                 }
             }
-            Log.d( TAG, "BTListenerThread.run() exiting (owner was %s)",
+            Log.d( TAG, "%s.run() exiting (owner was %s)", className,
                    BTService.this );
         } // run
 
