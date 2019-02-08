@@ -26,7 +26,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.JobIntentService;
 import android.text.TextUtils;
 
 import org.eehouse.android.xw4.FBMService;
@@ -64,7 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.HttpsURLConnection;
 
-public class RelayService extends JobIntentService
+public class RelayService extends XWJIService
     implements NetStateCache.StateChangedIf {
     private static final String TAG = RelayService.class.getSimpleName();
     private static final int MAX_SEND = 1024;
@@ -82,24 +81,21 @@ public class RelayService extends JobIntentService
     // One day, in seconds.  Probably should be configurable.
     private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
 
-    private static final String CMD_KEY = "CMD";
-    private static final String TIMESTAMP = "TIMESTAMP";
-
-    private static enum MsgCmds { INVALID,
-                                  DO_WORK,
-                                  PROCESS_GAME_MSGS,
-                                  PROCESS_DEV_MSGS,
-                                  UDP_CHANGED,
-                                  SEND,
-                                  SENDNOCONN,
-                                  RECEIVE,
-                                  TIMER_FIRED,
-                                  RESET,
-                                  UPGRADE,
-                                  INVITE,
-                                  GOT_INVITE,
-                                  GOT_PACKET,
-                                  STOP,
+    private static enum MsgCmds implements XWJICmds { INVALID,
+                                                      DO_WORK,
+                                                      PROCESS_GAME_MSGS,
+                                                      PROCESS_DEV_MSGS,
+                                                      UDP_CHANGED,
+                                                      SEND,
+                                                      SENDNOCONN,
+                                                      RECEIVE,
+                                                      TIMER_FIRED,
+                                                      RESET,
+                                                      UPGRADE,
+                                                      INVITE,
+                                                      GOT_INVITE,
+                                                      GOT_PACKET,
+                                                      STOP,
     }
 
     private static final String MSGS_ARR = "MSGS_ARR";
@@ -222,18 +218,7 @@ public class RelayService extends JobIntentService
     private static void enqueueWork( Context context, Intent intent )
     {
         enqueueWork( context, RelayService.class, sJobID, intent );
-        Log.d( TAG, "called enqueueWork(cmd=%s)", cmdFrom( intent ) );
-    }
-
-    private static MsgCmds cmdFrom( Intent intent )
-    {
-        MsgCmds cmd;
-        try {
-            cmd = MsgCmds.values()[intent.getIntExtra( CMD_KEY, -1 )];
-        } catch (Exception ex) { // OOB most likely
-            cmd = null;
-        }
-        return cmd;
+        Log.d( TAG, "called enqueueWork(cmd=%s)", cmdFrom( intent, MsgCmds.values() ) );
     }
 
     private static void stopService( Context context )
@@ -353,10 +338,7 @@ public class RelayService extends JobIntentService
 
     private static Intent getIntentTo( Context context, MsgCmds cmd )
     {
-        Intent intent = new Intent( context, RelayService.class )
-            .putExtra( CMD_KEY, cmd.ordinal() )
-            .putExtra( TIMESTAMP, System.currentTimeMillis() );
-        return intent;
+        return getIntentTo( context, RelayService.class, cmd );
     }
 
     @Override
@@ -391,15 +373,15 @@ public class RelayService extends JobIntentService
     }
 
     @Override
-    public void onHandleWork( Intent intent )
+    void onHandleWorkImpl( Intent intent, XWJICmds jicmd, long timestamp )
     {
         DbgUtils.assertOnUIThread( false );
-        Log.d( TAG, "%s.onHandleWork(cmd=%s)", this, cmdFrom( intent ) );
+        // Log.d( TAG, "%s.onHandleWork(cmd=%s)", this, cmdFrom( intent ) );
 
         try {
             connectSocketOnce();    // must not be on UI thread
 
-            handleCommand( intent );
+            handleCommand( intent, jicmd, timestamp );
 
             boolean goOn = serviceQueue();
             if ( !goOn ) {
@@ -438,6 +420,9 @@ public class RelayService extends JobIntentService
         Log.d( TAG, "%s.onDestroy() DONE", this );
     }
 
+    @Override
+    XWJICmds[] getCmds() { return MsgCmds.values(); }
+    
     // NetStateCache.StateChangedIf interface
     @Override
     public void onNetAvail( boolean nowAvailable )
@@ -445,94 +430,89 @@ public class RelayService extends JobIntentService
         startService( this ); // bad name: will *stop* threads too
     }
 
-    private void handleCommand( Intent intent )
+    private void handleCommand( Intent intent, XWJICmds jicmd, long timestamp )
     {
-        MsgCmds cmd = cmdFrom( intent );
-        if ( null != cmd ) {
-            long timestamp = intent.getLongExtra( TIMESTAMP, 0 );
-            Log.d( TAG, "handleCommand(): cmd=%s (age=%dms)", cmd.toString(),
-                   System.currentTimeMillis() - timestamp );
-            switch( cmd ) {
-            case DO_WORK:       // exists only to launch service
-                break;
-            case PROCESS_GAME_MSGS:
-                String[] relayIDs = new String[1];
-                relayIDs[0] = intent.getStringExtra( RELAY_ID );
-                long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
-                if ( 0 < rowIDs.length ) {
-                    byte[][][] msgs = expandMsgsArray( intent );
-                    process( msgs, rowIDs, relayIDs );
-                }
-                break;
-            case PROCESS_DEV_MSGS:
-                byte[][][] msgss = expandMsgsArray( intent );
-                for ( byte[][] msgs : msgss ) {
-                    for ( byte[] msg : msgs ) {
-                        gotPacket( msg, true, false, timestamp );
-                    }
-                }
-                break;
-            case UDP_CHANGED:
-                startThreads();
-                break;
-            case RESET:
-                stopThreads();
-                startThreads();
-                break;
-            case UPGRADE:
-                UpdateCheckReceiver.checkVersions( this, false );
-                break;
-            case GOT_INVITE:
-                int srcDevID = intent.getIntExtra( INVITE_FROM, 0 );
-                NetLaunchInfo nli
-                    = NetLaunchInfo.makeFrom( this, intent.getStringExtra(NLI_DATA) );
-                receiveInvitation( srcDevID, nli );
-                break;
-            case GOT_PACKET:
-                byte[] msg = intent.getByteArrayExtra( BINBUFFER );
-                gotPacket( msg, false, true );
-                break;
-            case SEND:
-            case RECEIVE:
-            case SENDNOCONN:
-                startUDPReadThreadOnce();
-                long rowid = intent.getLongExtra( ROWID, -1 );
-                msg = intent.getByteArrayExtra( BINBUFFER );
-                if ( MsgCmds.SEND == cmd ) {
-                    sendMessage( rowid, msg, timestamp );
-                } else if ( MsgCmds.SENDNOCONN == cmd ) {
-                    String relayID = intent.getStringExtra( RELAY_ID );
-                    String msgNo = intent.getStringExtra( MSGNUM );
-                    sendNoConnMessage( rowid, relayID, msg, msgNo, timestamp );
-                } else {
-                    mHelper.receiveMessage( this, rowid, null, msg, s_addr );
-                }
-                break;
-            case INVITE:
-                startUDPReadThreadOnce();
-                srcDevID = intent.getIntExtra( DEV_ID_SRC, 0 );
-                int destDevID = intent.getIntExtra( DEV_ID_DEST, 0 );
-                String relayID = intent.getStringExtra( RELAY_ID );
-                String nliData = intent.getStringExtra( NLI_DATA );
-                sendInvitation( srcDevID, destDevID, relayID, nliData, timestamp );
-                break;
-            case TIMER_FIRED:
-                if ( !NetStateCache.netAvail( this ) ) {
-                    Log.w( TAG, "not connecting: no network" );
-                } else if ( startFetchThreadIfNotUDP() ) {
-                    // do nothing
-                } else if ( registerWithRelayIfNot( timestamp ) ) {
-                    requestMessages( timestamp );
-                }
-                RelayReceiver.setTimer( this );
-                break;
-            case STOP:
-                stopThreads();
-                stopSelf();
-                break;
-            default:
-                Assert.assertFalse( BuildConfig.DEBUG );
+        MsgCmds cmd = (MsgCmds)jicmd;
+        switch( cmd ) {
+        case DO_WORK:       // exists only to launch service
+            break;
+        case PROCESS_GAME_MSGS:
+            String[] relayIDs = new String[1];
+            relayIDs[0] = intent.getStringExtra( RELAY_ID );
+            long[] rowIDs = DBUtils.getRowIDsFor( this, relayIDs[0] );
+            if ( 0 < rowIDs.length ) {
+                byte[][][] msgs = expandMsgsArray( intent );
+                process( msgs, rowIDs, relayIDs );
             }
+            break;
+        case PROCESS_DEV_MSGS:
+            byte[][][] msgss = expandMsgsArray( intent );
+            for ( byte[][] msgs : msgss ) {
+                for ( byte[] msg : msgs ) {
+                    gotPacket( msg, true, false, timestamp );
+                }
+            }
+            break;
+        case UDP_CHANGED:
+            startThreads();
+            break;
+        case RESET:
+            stopThreads();
+            startThreads();
+            break;
+        case UPGRADE:
+            UpdateCheckReceiver.checkVersions( this, false );
+            break;
+        case GOT_INVITE:
+            int srcDevID = intent.getIntExtra( INVITE_FROM, 0 );
+            NetLaunchInfo nli
+                = NetLaunchInfo.makeFrom( this, intent.getStringExtra(NLI_DATA) );
+            receiveInvitation( srcDevID, nli );
+            break;
+        case GOT_PACKET:
+            byte[] msg = intent.getByteArrayExtra( BINBUFFER );
+            gotPacket( msg, false, true );
+            break;
+        case SEND:
+        case RECEIVE:
+        case SENDNOCONN:
+            startUDPReadThreadOnce();
+            long rowid = intent.getLongExtra( ROWID, -1 );
+            msg = intent.getByteArrayExtra( BINBUFFER );
+            if ( MsgCmds.SEND == cmd ) {
+                sendMessage( rowid, msg, timestamp );
+            } else if ( MsgCmds.SENDNOCONN == cmd ) {
+                String relayID = intent.getStringExtra( RELAY_ID );
+                String msgNo = intent.getStringExtra( MSGNUM );
+                sendNoConnMessage( rowid, relayID, msg, msgNo, timestamp );
+            } else {
+                mHelper.receiveMessage( this, rowid, null, msg, s_addr );
+            }
+            break;
+        case INVITE:
+            startUDPReadThreadOnce();
+            srcDevID = intent.getIntExtra( DEV_ID_SRC, 0 );
+            int destDevID = intent.getIntExtra( DEV_ID_DEST, 0 );
+            String relayID = intent.getStringExtra( RELAY_ID );
+            String nliData = intent.getStringExtra( NLI_DATA );
+            sendInvitation( srcDevID, destDevID, relayID, nliData, timestamp );
+            break;
+        case TIMER_FIRED:
+            if ( !NetStateCache.netAvail( this ) ) {
+                Log.w( TAG, "not connecting: no network" );
+            } else if ( startFetchThreadIfNotUDP() ) {
+                // do nothing
+            } else if ( registerWithRelayIfNot( timestamp ) ) {
+                requestMessages( timestamp );
+            }
+            RelayReceiver.setTimer( this );
+            break;
+        case STOP:
+            stopThreads();
+            stopSelf();
+            break;
+        default:
+            Assert.assertFalse( BuildConfig.DEBUG );
         }
     }
 

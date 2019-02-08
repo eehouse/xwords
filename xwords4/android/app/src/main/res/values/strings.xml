@@ -2056,10 +2056,6 @@
     <string name="title_enable_p2p">Enable WiFi Direct</string>
     <string name="summary_enable_p2p">Experimental, uses lots of battery</string>
 
-    <string name="bkng_notify_text">Accepting Bluetooth messages…</string>
-    <string name="bkng_stop_text">Stop</string>
-    <string name="bkng_settings_text">Settings</string>
-
     <!--  -->
     <string name="confirm_sms_title">Confirm your SMS plan</string>
     <!--  -->
@@ -2677,12 +2673,6 @@
   <string name="not_again_dfltname_fmt">You are using the default
   player name \"%1$s\". Would you like to personalize with your own
   name before you create this game?</string>
-
-  <string name="btservice_expl">This notification is present whenever
-  CrossWords is running in the background to accept Bluetooth
-  messages. It usually runs for about 15 minutes after CrossWords
-  starts or a Bluetooth message is received.
-  </string>
 
   <string name="no_invites">This game has sent no invitations</string>
 
