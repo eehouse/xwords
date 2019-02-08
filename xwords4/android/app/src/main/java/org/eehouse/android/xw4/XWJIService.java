@@ -57,8 +57,7 @@ abstract class XWJIService extends JobIntentService {
 
     XWJICmds cmdFrom( Intent intent )
     {
-        int ord = intent.getIntExtra( CMD_KEY, -1 );
-        return getCmds()[ord];
+        return cmdFrom( intent, getCmds() );
     }
 
     long getTimestamp( Intent intent )

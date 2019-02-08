@@ -339,10 +339,10 @@ public class BTService extends XWJIService {
         Assert.assertNotNull( targetAddr );
         String btAddr = getSafeAddr( targetAddr );
         if ( null != btAddr && 0 < btAddr.length() ) {
-            Intent intent = getIntentTo( context, BTAction.SEND );
-            intent.putExtra( MSG_KEY, buf );
-            intent.putExtra( ADDR_KEY, btAddr );
-            intent.putExtra( GAMEID_KEY, gameID );
+            Intent intent = getIntentTo( context, BTAction.SEND )
+                .putExtra( MSG_KEY, buf )
+                .putExtra( ADDR_KEY, btAddr )
+                .putExtra( GAMEID_KEY, gameID );
             enqueueWork( context, intent );
             nSent = buf.length;
         }
