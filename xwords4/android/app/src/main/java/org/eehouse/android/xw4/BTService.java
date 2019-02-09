@@ -292,17 +292,15 @@ public class BTService extends XWJIService {
 
     private static void enqueueWork( Context context, Intent intent )
     {
-        enqueueWork( context, BTService.class, sJobID, intent );
-        Log.d( TAG, "called enqueueWork(cmd=%s)",
-               cmdFrom( intent, BTAction.values() ) );
+        if ( BTEnabled() ) {
+            enqueueWork( context, BTService.class, sJobID, intent );
+        }
     }
 
     public static void onACLConnected( Context context )
     {
-        Log.d( TAG, "onACLConnected()" );
         enqueueWork( context,
                      getIntentTo( context, BTAction.ACL_CONN ) );
-
     }
 
     public static void radioChanged( Context context, boolean cameOn )
@@ -417,115 +415,117 @@ public class BTService extends XWJIService {
     @Override
     void onHandleWorkImpl( Intent intent, XWJICmds jicmd, long timestamp )
     {
-        BTAction cmd = (BTAction)jicmd;
-        switch( cmd ) {
-        case ACL_CONN:          // just forces onCreate to run
-            break;
+        if ( BTEnabled() ) {
+            BTAction cmd = (BTAction)jicmd;
+            switch( cmd ) {
+            case ACL_CONN:          // just forces onCreate to run
+                break;
 
-        case START_BACKGROUND:
-            noteLastUsed( this );   // prevent timer from killing immediately
-            setTimeoutTimer();
-            break;
+            case START_BACKGROUND:
+                noteLastUsed( this );   // prevent timer from killing immediately
+                setTimeoutTimer();
+                break;
 
-        case SCAN:
-            int timeout = intent.getIntExtra( SCAN_TIMEOUT_KEY, -1 );
-            add( new BTQueueElem( BTCmd.SCAN, timeout ) );
-            break;
-        case INVITE:
-            String jsonData = intent.getStringExtra( GAMEDATA_KEY );
-            NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, jsonData );
-            Log.i( TAG, "handleCommand: nli: %s", nli );
-            String btAddr = intent.getStringExtra( ADDR_KEY );
-            add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
-            break;
+            case SCAN:
+                int timeout = intent.getIntExtra( SCAN_TIMEOUT_KEY, -1 );
+                add( new BTQueueElem( BTCmd.SCAN, timeout ) );
+                break;
+            case INVITE:
+                String jsonData = intent.getStringExtra( GAMEDATA_KEY );
+                NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, jsonData );
+                Log.i( TAG, "handleCommand: nli: %s", nli );
+                String btAddr = intent.getStringExtra( ADDR_KEY );
+                add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
+                break;
 
-        case PINGHOST:
-            btAddr = intent.getStringExtra( ADDR_KEY );
-            int gameID = intent.getIntExtra( GAMEID_KEY, 0 );
-            add( new BTQueueElem( BTCmd.PING, btAddr, gameID ) );
-            break;
+            case PINGHOST:
+                btAddr = intent.getStringExtra( ADDR_KEY );
+                int gameID = intent.getIntExtra( GAMEID_KEY, 0 );
+                add( new BTQueueElem( BTCmd.PING, btAddr, gameID ) );
+                break;
 
-        case SEND:
-            byte[] buf = intent.getByteArrayExtra( MSG_KEY );
-            btAddr = intent.getStringExtra( ADDR_KEY );
-            gameID = intent.getIntExtra( GAMEID_KEY, -1 );
-            if ( -1 != gameID ) {
-                add( new BTQueueElem( BTCmd.MESG_SEND, buf,
-                                               btAddr, gameID ) );
-            }
-            break;
-        case RADIO:
-            boolean cameOn = intent.getBooleanExtra( RADIO_KEY, false );
-            MultiEvent evt = cameOn? MultiEvent.BT_ENABLED
-                : MultiEvent.BT_DISABLED;
-            mHelper.postEvent( evt );
-            if ( cameOn ) {
-                GameUtils.resendAllIf( this, CommsConnType.COMMS_CONN_BT );
-            } else {
-                ConnStatusHandler.updateStatus( this, null,
-                                                CommsConnType.COMMS_CONN_BT,
-                                                false );
-                stopListener();
-                // stopSender();
-                stopSelf();
-            }
-            break;
-        case REMOVE:
-            gameID = intent.getIntExtra( GAMEID_KEY, -1 );
-            btAddr = intent.getStringExtra( ADDR_KEY );
-            add( new BTQueueElem( BTCmd.MESG_GAMEGONE, btAddr, gameID ) );
-            break;
-
-        case MAKE_OR_NOTIFY:
-            int socketRef = intent.getIntExtra( SOCKET_REF, -1 );
-            BluetoothSocket socket = socketForRef( socketRef  );
-            if ( null == socket ) {
-                Log.e( TAG, "socket didn't survive into onHandleWork()" );
-            } else {
-                nli = (NetLaunchInfo)intent.getSerializableExtra( NLI_KEY );
-                BluetoothDevice host = socket.getRemoteDevice();
-                BTCmd response = makeOrNotify( nli, host.getName(), host.getAddress() );
-
-                writeBack( socket, response );
-
-                closeForRef( socketRef );
-            }
-            break;
-
-        case RECEIVE_MSG:
-            socketRef = intent.getIntExtra( SOCKET_REF, -1 );
-            socket = socketForRef( socketRef  );
-            if ( null != socket ) {
+            case SEND:
+                byte[] buf = intent.getByteArrayExtra( MSG_KEY );
+                btAddr = intent.getStringExtra( ADDR_KEY );
                 gameID = intent.getIntExtra( GAMEID_KEY, -1 );
-                buf = intent.getByteArrayExtra( MSG_KEY );
-                BluetoothDevice host = socket.getRemoteDevice();
-                CommsAddrRec addr = new CommsAddrRec( host.getName(),
-                                                      host.getAddress() );
-                XWServiceHelper.ReceiveResult rslt
-                    = mHelper.receiveMessage( this, gameID,
-                                              m_btMsgSink,
-                                              buf, addr );
-
-                BTCmd response = rslt == XWServiceHelper.ReceiveResult.GAME_GONE ?
-                    BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
-                writeBack( socket, response );
-                closeForRef( socketRef );
-            }
-            break;
-
-        case POST_GAME_GONE:
-            socketRef = intent.getIntExtra( SOCKET_REF, -1 );
-            socket = socketForRef( socketRef  );
-            if ( null != socket ) {
+                if ( -1 != gameID ) {
+                    add( new BTQueueElem( BTCmd.MESG_SEND, buf,
+                                          btAddr, gameID ) );
+                }
+                break;
+            case RADIO:
+                boolean cameOn = intent.getBooleanExtra( RADIO_KEY, false );
+                MultiEvent evt = cameOn? MultiEvent.BT_ENABLED
+                    : MultiEvent.BT_DISABLED;
+                mHelper.postEvent( evt );
+                if ( cameOn ) {
+                    GameUtils.resendAllIf( this, CommsConnType.COMMS_CONN_BT );
+                } else {
+                    ConnStatusHandler.updateStatus( this, null,
+                                                    CommsConnType.COMMS_CONN_BT,
+                                                    false );
+                    stopListener();
+                    // stopSender();
+                    stopSelf();
+                }
+                break;
+            case REMOVE:
                 gameID = intent.getIntExtra( GAMEID_KEY, -1 );
-                mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
-                writeBack( socket, BTCmd.MESG_ACCPT );
-                closeForRef( socketRef );
-            }
-            break;
+                btAddr = intent.getStringExtra( ADDR_KEY );
+                add( new BTQueueElem( BTCmd.MESG_GAMEGONE, btAddr, gameID ) );
+                break;
+
+            case MAKE_OR_NOTIFY:
+                int socketRef = intent.getIntExtra( SOCKET_REF, -1 );
+                BluetoothSocket socket = socketForRef( socketRef  );
+                if ( null == socket ) {
+                    Log.e( TAG, "socket didn't survive into onHandleWork()" );
+                } else {
+                    nli = (NetLaunchInfo)intent.getSerializableExtra( NLI_KEY );
+                    BluetoothDevice host = socket.getRemoteDevice();
+                    BTCmd response = makeOrNotify( nli, host.getName(), host.getAddress() );
+
+                    writeBack( socket, response );
+
+                    closeForRef( socketRef );
+                }
+                break;
+
+            case RECEIVE_MSG:
+                socketRef = intent.getIntExtra( SOCKET_REF, -1 );
+                socket = socketForRef( socketRef  );
+                if ( null != socket ) {
+                    gameID = intent.getIntExtra( GAMEID_KEY, -1 );
+                    buf = intent.getByteArrayExtra( MSG_KEY );
+                    BluetoothDevice host = socket.getRemoteDevice();
+                    CommsAddrRec addr = new CommsAddrRec( host.getName(),
+                                                          host.getAddress() );
+                    XWServiceHelper.ReceiveResult rslt
+                        = mHelper.receiveMessage( this, gameID,
+                                                  m_btMsgSink,
+                                                  buf, addr );
+
+                    BTCmd response = rslt == XWServiceHelper.ReceiveResult.GAME_GONE ?
+                        BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
+                    writeBack( socket, response );
+                    closeForRef( socketRef );
+                }
+                break;
+
+            case POST_GAME_GONE:
+                socketRef = intent.getIntExtra( SOCKET_REF, -1 );
+                socket = socketForRef( socketRef  );
+                if ( null != socket ) {
+                    gameID = intent.getIntExtra( GAMEID_KEY, -1 );
+                    mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                    writeBack( socket, BTCmd.MESG_ACCPT );
+                    closeForRef( socketRef );
+                }
+                break;
                 
-        default:
-            Assert.fail();
+            default:
+                Assert.fail();
+            }
         }
     } // onHandleWorkImpl()
 
