@@ -38,6 +38,8 @@ public class CrashTrack {
             try {
                 Fabric.with( context, new Crashlytics() );
 
+                Crashlytics.setString("git-rev", BuildConfig.GIT_REV );
+
                 // Now crash as a test
                 if ( false ) {
                     new Thread( new Runnable() {
