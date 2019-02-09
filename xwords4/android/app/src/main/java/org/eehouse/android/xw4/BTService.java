@@ -1386,7 +1386,7 @@ public class BTService extends XWJIService {
             Assert.assertTrue( !s_sockets.containsKey(code) || !BuildConfig.DEBUG );
             s_sockets.put( code, socket );
         }
-        Log.d( TAG, "makeRefFor(%s) => %d (size: %d)", socket, code, s_sockets.size() );
+        // Log.d( TAG, "makeRefFor(%s) => %d (size: %d)", socket, code, s_sockets.size() );
         return code;
     }
 
@@ -1413,8 +1413,9 @@ public class BTService extends XWJIService {
                 } catch ( IOException ex ) {
                     Log.ex( TAG, ex );
                 }
+                s_sockets.remove( ref );
             }
         }
-        Log.d( TAG, "closeForRef(%d) (size: %d)", ref, s_sockets.size() );
+        // Log.d( TAG, "closeForRef(%d) (size: %d)", ref, s_sockets.size() );
     }
 }
