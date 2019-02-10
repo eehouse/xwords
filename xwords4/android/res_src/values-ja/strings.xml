@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="button_new_game">ゲームを追加</string>
     <string name="button_new_group">グループを追加</string>
@@ -1330,5 +1330,38 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 
   <string name="show_sms_title">SMS 送信、受信を表示する</string>
   <string name="show_gcm_title">GCM の受信を表示する</string>
-
-  </resources>
+    <string name="list_item_netstats">接続…</string>
+    <plurals name="too_many_trade_fmt">
+    <item quantity="other">選択されたタイルが多すぎます。 %1$d 以下にしてください。</item>
+</plurals>
+    <string name="button_scan">再スキャン</string>
+    <plurals name="invite_bt_desc_fmt_2">
+    <item quantity="other">このゲームに含めたいデバイスを %1$d までにしてください。</item>
+</plurals>
+    <string name="invite_bt_desc_postscript">"
+\n
+\n(クロスワードのスキャンによって検出された、ペアになったデバイスの一覧)"</string>
+    <plurals name="bt_scan_progress_fmt">
+    <item quantity="other">%1$d ペアのデバイスでクロスワードをスキャンしています</item>
+</plurals>
+    <plurals name="confirm_clear_bt_fmt">
+    <item quantity="other">%1$d のチェックされたデバイスを記憶しないでよろしいですか\?</item>
+</plurals>
+    <string name="confirm_clear_bt_postscript">" 
+\n 
+\n(Bluetooth の範囲内にあるデバイスだけ再追加できます)"</string>
+    <string name="bkng_notify_text">Bluetooth メッセージを受け付けています…</string>
+    <string name="bkng_stop_text">停止</string>
+    <string name="bkng_settings_text">設定</string>
+    <string name="bt_scan_age_fmt">最後のスキャンの応答: %1$s</string>
+    <string name="button_close">閉じる</string>
+    <string name="btservice_expl">この通知は、クロスワードがバックグラウンドで実行されている場合に Bluetooth のメッセージを受け付けるために発生します。通常、クロスワードを開始または Bluetooth メッセージを受信した後、約 15 分間実行されます。</string>
+    <string name="foreground_channel_expl">バックグラウンドで Bluetooth を受け付けています</string>
+    <string name="gameevent_channel_expl">ゲーム内イベント</string>
+    <string name="not_again_emptybtscan">スキャンしても期待するデバイスが見つからない場合:
+\n • まず、再スキャンしてみます
+\n • 他のデバイス上で Bluetooth が有効になっていることを確認します
+\n • 他のデバイスでクロスワードを起動してみます
+\n • それでも失敗する場合は、このデバイスを再起動します
+\n</string>
+</resources>
