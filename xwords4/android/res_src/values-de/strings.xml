@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="button_new_game">Spiel hinzufügen</string>
     <string name="button_new_group">Gruppe hinzufügen</string>
@@ -1289,7 +1289,7 @@
   <string name="perms_rationale_title">Android-Berechtigungen</string>
   <string name="toast_no_permission">Berechtigung nicht erteilt</string>
 
-<string name="bt_pick_clear_button">Markierte entfernen</string>
+<string name="bt_pick_clear_button">Entfernen</string>
     <string name="slmenu_clear_sel">Ausgewählte löschen</string>
     <string name="slmenu_select_all">Alle auswählen</string>
     <string name="slmenu_deselect_all">Auswahl aufheben</string>
@@ -1301,4 +1301,44 @@
     <string name="loc_filters_menu">Aktuelles Menü</string>
     <string name="game_summary_field_rowid">rowid</string>
   <string name="game_summary_field_gameid">gameid</string>
-  </resources>
+    <string name="list_item_netstats">Verbindungen …</string>
+    <plurals name="too_many_trade_fmt">
+    <item quantity="one">Zu viele Spielsteine ausgewählt. Bitte nur einen auswählen.</item>
+    <item quantity="other">Zu viele Spielsteine ausgewählt. Bitte maximal %1$d auswählen.</item>
+</plurals>
+    <string name="button_scan">Erneut scannen</string>
+    <plurals name="invite_bt_desc_fmt_2">
+    <item quantity="one">Bitte Gerät auswählen, dass an dieser Partie teilnehmen soll.</item>
+    <item quantity="other">"Bitte bis zu %1$d  Geräte auswählen, die an dieser Partie teilnehmen sollen."</item>
+</plurals>
+    <string name="invite_bt_desc_postscript">"
+\n
+\n(Liste der gepaarten Geräte, auf denen CrossWords beim Scannen gefunden wurde.)"</string>
+    <plurals name="bt_scan_progress_fmt">
+    <item quantity="one">Scanne nach CrossWords</item>
+    <item quantity="other">Scanne nach CrossWords auf %1$d gepaarten Geräten</item>
+</plurals>
+    <plurals name="confirm_clear_bt_fmt">
+    <item quantity="one">Wollen Sie das gewählte Gerät wirklich vergessen\?</item>
+    <item quantity="other">Wollen Sie die %1$d gewählten Geräte wirklich vergessen\?</item>
+</plurals>
+    <string name="confirm_clear_bt_postscript">" 
+\n 
+\n(Sie können nur Geräte erneut hinzufügen, die sich in Bluetooth-Reichweite befinden.)"</string>
+    <string name="bkng_notify_text">Empfange Bluetooth-Nachrichten …</string>
+    <string name="bkng_stop_text">Stopp</string>
+    <string name="bkng_settings_text">Einstellungen</string>
+    <string name="pct_suffix">" ％"</string>
+    <string name="loc_item_copy_bless">Offiziell kopieren</string>
+    <string name="bt_scan_age_fmt">Zuletzt beim Scannen gesehen: %1$s</string>
+    <string name="button_close">Schließen</string>
+    <string name="btservice_expl">Diese Anzeige wird immer dann gezeigt, wenn Crosswords im Hintergrund läuft, um Bluetooth-Nachrichten zu empfangen. Normalerweise läuft es 15 Minuten lang nach dem Start oder nach Empfang der letzten Bluetooth-Nachricht.</string>
+    <string name="foreground_channel_expl">Bluetooth-Nachrichten im Hintergrund empfangen</string>
+    <string name="gameevent_channel_expl">Ereignisse während der Partie</string>
+    <string name="not_again_emptybtscan">Wenn beim Scannen das erwartete Gerät nicht gefunden wird:
+\n • Zuerst: Scannen Sie erneut
+\n • Stellen Sie sicher, dass Bluetooth auf dem anderen Gerät eingeschaltet ist
+\n • Starten Sie CrossWords auf dem anderen Gerät
+\n • Wenn alles nichts hilft, booten Sie dieses Gerät
+\n</string>
+</resources>

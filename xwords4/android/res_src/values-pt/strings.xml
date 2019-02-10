@@ -1279,7 +1279,7 @@
     desistir?</string>
   <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-  <string name="query_title">Uma pergunta...</string>
+  <string name="query_title">Uma pergunta…</string>
   <!--
        ###########################################################
        # :Dialogs:
@@ -1629,7 +1629,7 @@
   <!-- board menu for small devices only -->
   <string name="board_menu_dict">Navegar lista de palavras</string>
   <!--  -->
-  <string name="game_list_tmp">Carregando resumo do jogo...</string>
+  <string name="game_list_tmp">Carregando resumo do jogo…</string>
   <!--  -->
   <string name="connstat_net_fmt">Informações de rede para jogo conectado
     por %1$s:</string>
