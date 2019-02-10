@@ -190,37 +190,6 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
-        case GAME_OVER: {
-            GameSummary summary = (GameSummary)params[0];
-            int title = (Integer)params[1];
-            String msg = (String)params[2];
-            ab.setTitle( title )
-                .setMessage( msg )
-                .setPositiveButton( android.R.string.ok, null );
-            if ( rematchSupported( m_activity, true, summary ) ) {
-                lstnr = new OnClickListener() {
-                        public void onClick( DialogInterface dlg,
-                                             int whichButton ) {
-                            doRematchIf();
-                        }
-                    };
-                ab.setNegativeButton( R.string.button_rematch, lstnr );
-
-                // If we're not already in the "archive" group, offer to move
-                if ( !inArchiveGroup() ) {
-                    lstnr = new OnClickListener() {
-                            public void onClick( DialogInterface dlg,
-                                                 int whichButton ) {
-                                showArchiveNA();
-                            }
-                        };
-                    ab.setNeutralButton( R.string.button_archive, lstnr );
-                }
-            }
-            dialog = ab.create();
-        }
-            break;
-
         case DLG_USEDICT:
         case DLG_GETDICT: {
             int title = (Integer)params[0];
@@ -897,7 +866,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_archive:
-            showArchiveNA();
+            showArchiveNA( false );
             break;
 
         case R.id.board_menu_trade_commit:
@@ -1013,6 +982,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public boolean onPosButton( Action action, final Object[] params )
     {
+        // Log.d( TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         JNICmd cmd = JNICmd.CMD_NONE;
         switch ( action ) {
@@ -1122,7 +1092,24 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case ARCHIVE_ACTION:
-            archiveAndClose();
+            boolean rematchAfter = params.length >= 1 && (Boolean)params[0];
+            long curGroup = DBUtils.getGroupForGame( m_activity, m_rowid );
+            archiveGame( !rematchAfter );
+            if ( rematchAfter ) {
+                doRematchIf( curGroup );      // closes game
+            }
+            break;
+
+        case REMATCH_ACTION:
+            if ( params.length >= 1 && (Boolean)params[0] ) {
+                showArchiveNA( true );
+            } else {
+                doRematchIf();      // closes game
+            }
+            break;
+
+        case ARCHIVE_SEL_ACTION:
+            showArchiveNA( false );
             break;
 
         case ENABLE_SMS_DO:
@@ -2106,7 +2093,7 @@ public class BoardDelegate extends DelegateBase
     private Handler makeJNIHandler()
     {
         Handler handler = new Handler() {
-                public void handleMessage( Message msg ) {
+                public void handleMessage( final Message msg ) {
                     switch( msg.what ) {
                     case JNIThread.DIALOG:
                         showDialogFragment( DlgID.DLG_OKONLY, msg.arg1,
@@ -2135,8 +2122,16 @@ public class BoardDelegate extends DelegateBase
                         break;
                     case JNIThread.GAME_OVER:
                         if ( m_isFirstLaunch ) {
-                            showDialogFragment( DlgID.GAME_OVER, m_summary, msg.arg1,
-                                                (String)msg.obj );
+                            runOnUiThread( new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        show( GameOverAlert
+                                              .newInstance( m_summary,
+                                                            msg.arg1,
+                                                            (String)msg.obj,
+                                                            inArchiveGroup() ) );
+                                    }
+                                } );
                         }
                         break;
                     case JNIThread.MSGS_SENT:
@@ -2648,15 +2643,16 @@ public class BoardDelegate extends DelegateBase
         return curGroup == archiveGroup;
     }
 
-    private void showArchiveNA()
+    private void showArchiveNA( boolean rematchAfter )
     {
         makeNotAgainBuilder( R.string.not_again_archive,
                              R.string.key_na_archive,
                              Action.ARCHIVE_ACTION )
+            .setParams( rematchAfter )
             .show();
     }
 
-    private void archiveAndClose()
+    private void archiveGame( boolean closeAfter )
     {
         String archiveName = LocUtils
             .getString( m_activity, R.string.group_name_archive );
@@ -2666,8 +2662,10 @@ public class BoardDelegate extends DelegateBase
             archiveGroupID = DBUtils.addGroup( m_activity, archiveName );
         }
         DBUtils.moveGame( m_activity, m_rowid, archiveGroupID );
-        waitCloseGame( false );
-        finish();
+        if ( closeAfter ) {
+            waitCloseGame( false );
+            finish();
+        }
     }
 
     // For now, supported if standalone or either BT or SMS used for transport
@@ -2719,12 +2717,19 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematchIf()
     {
-        doRematchIf( m_activity, this, m_rowid, m_summary, m_gi, m_jniGamePtr );
+        doRematchIf( DBUtils.GROUPID_UNSPEC );
+    }
+
+    private void doRematchIf( long groupID )
+    {
+        doRematchIf( m_activity, this, m_rowid, groupID, m_summary,
+                     m_gi, m_jniGamePtr );
     }
 
     private static void doRematchIf( Activity activity, DelegateBase dlgt,
-                                     long rowid, GameSummary summary,
-                                     CurGameInfo gi, GamePtr jniGamePtr )
+                                     long rowid, long groupID,
+                                     GameSummary summary, CurGameInfo gi,
+                                     GamePtr jniGamePtr )
     {
         boolean doIt = true;
         String phone = null;
@@ -2768,8 +2773,8 @@ public class BoardDelegate extends DelegateBase
             CommsConnTypeSet connTypes = summary.conTypes;
             String newName = summary.getRematchName( activity );
             Intent intent = GamesListDelegate
-                .makeRematchIntent( activity, rowid, gi, connTypes, btAddr,
-                                    phone, relayID, p2pMacAddress, newName );
+                .makeRematchIntent( activity, rowid, groupID, gi, connTypes,
+                                    btAddr, phone, relayID, p2pMacAddress, newName );
             if ( null != intent ) {
                 activity.startActivity( intent );
             }
@@ -2800,7 +2805,8 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( null != gamePtr ) {
-            doRematchIf( activity, null, rowID, summary, gi, gamePtr );
+            doRematchIf( activity, null, rowID, DBUtils.GROUPID_UNSPEC,
+                         summary, gi, gamePtr );
             gamePtr.release();
         } else {
             Log.w( TAG, "setupRematchFor(): unable to lock game" );

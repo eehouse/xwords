@@ -30,11 +30,10 @@ import android.text.format.Time;
 
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Set;
 
-
 import org.eehouse.android.xw4.loc.LocUtils;
-
 
 public class DbgUtils {
     private static final String TAG = DbgUtils.class.getSimpleName();
@@ -115,6 +114,17 @@ public class DbgUtils {
     {
         String dump = DatabaseUtils.dumpCursorToString( cursor );
         Log.i( TAG, "cursor: %s", dump );
+    }
+
+    public static String toStr( Object[] params )
+    {
+        List<String> strs = new ArrayList<>();
+        if ( null != params ) {
+            for ( Object obj : params ) {
+                strs.add( obj.toString() );
+            }
+        }
+        return TextUtils.join( ", ", strs );
     }
 
     // public static String secondsToDateStr( long seconds )

@@ -119,7 +119,8 @@ public class GameUtils {
      * basis for a new one.
      */
     public static GameLock resetGame( Context context, GameLock lockSrc,
-                                      GameLock lockDest, boolean juggle )
+                                      GameLock lockDest, long groupID,
+                                      boolean juggle )
     {
         CurGameInfo gi = new CurGameInfo( context );
         CommsAddrRec addr = null;
@@ -148,7 +149,9 @@ public class GameUtils {
         }
 
         if ( null == lockDest ) {
-            long groupID = DBUtils.getGroupForGame( context, lockSrc.getRowid() );
+            if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+                groupID = DBUtils.getGroupForGame( context, lockSrc.getRowid() );
+            }
             long rowid = saveNewGame( context, gamePtr, gi, groupID );
             lockDest = GameLock.tryLock( rowid );
         } else {
@@ -166,7 +169,7 @@ public class GameUtils {
         try ( GameLock lock = GameLock.lock( rowidIn, 500 ) ) {
             if ( null != lock ) {
                 tellDied( context, lock, true );
-                resetGame( context, lock, lock, false );
+                resetGame( context, lock, lock, DBUtils.GROUPID_UNSPEC, false );
 
                 Utils.cancelNotification( context, (int)rowidIn );
                 success = true;
@@ -252,6 +255,11 @@ public class GameUtils {
 
     public static long dupeGame( Context context, long rowidIn )
     {
+        return dupeGame( context, rowidIn, DBUtils.GROUPID_UNSPEC );
+    }
+
+    public static long dupeGame( Context context, long rowidIn, long groupID )
+    {
         long rowid = DBUtils.ROWID_NOTFOUND;
         GameLock lockSrc = null;
 
@@ -264,7 +272,8 @@ public class GameUtils {
 
         if ( null != lockSrc ) {
             boolean juggle = CommonPrefs.getAutoJuggle( context );
-            GameLock lockDest = resetGame( context, lockSrc, null, juggle );
+            GameLock lockDest = resetGame( context, lockSrc, null, groupID,
+                                           juggle );
             rowid = lockDest.getRowid();
             lockDest.unlock();
 
