@@ -87,6 +87,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
+    private static final String REMATCH_GROUPID_EXTRA = "rm_groupid";
     private static final String REMATCH_DICT_EXTRA = "rm_dict";
     private static final String REMATCH_LANG_EXTRA = "rm_lang";
     private static final String REMATCH_PREFS_EXTRA = "rm_prefs";
@@ -2235,12 +2236,22 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( null != gameName && 0 < gameName.length() ) {
             Bundle extras = m_rematchExtras;
-            long srcRowID = extras.getLong( REMATCH_ROWID_EXTRA, DBUtils.ROWID_NOTFOUND );
+            long srcRowID = extras.getLong( REMATCH_ROWID_EXTRA,
+                                            DBUtils.ROWID_NOTFOUND );
+            long groupID = extras.getLong( REMATCH_GROUPID_EXTRA,
+                                           DBUtils.GROUPID_UNSPEC );
+            if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+                groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
+            }
+            // Don't save rematch in Archive group
+            if ( groupID == DBUtils.getArchiveGroup( m_activity ) ) {
+                groupID = XWPrefs.getDefaultNewGameGroup( m_activity );
+            }
             boolean solo = extras.getBoolean( REMATCH_IS_SOLO, true );
 
             long newid;
             if ( solo ) {
-                newid = GameUtils.dupeGame( m_activity, srcRowID );
+                newid = GameUtils.dupeGame( m_activity, srcRowID, groupID );
                 if ( DBUtils.ROWID_NOTFOUND != newid ) {
                     DBUtils.setName( m_activity, newid, gameName );
                 }
@@ -2252,12 +2263,6 @@ public class GamesListDelegate extends ListDelegateBase
                 String dict = extras.getString( REMATCH_DICT_EXTRA );
                 int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
                 String json = extras.getString( REMATCH_PREFS_EXTRA );
-
-                // Don't save rematch in Archive group
-                long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
-                if ( groupID == DBUtils.getArchiveGroup( m_activity ) ) {
-                    groupID = XWPrefs.getDefaultNewGameGroup( m_activity );
-                }
 
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
@@ -2709,7 +2714,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     public static Intent makeRematchIntent( Context context, long rowid,
-                                            CurGameInfo gi,
+                                            long groupID, CurGameInfo gi,
                                             CommsConnTypeSet addrTypes,
                                             String btAddr, String phone,
                                             String relayID, String p2pMacAddress,
@@ -2719,6 +2724,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
         intent = makeSelfIntent( context )
             .putExtra( REMATCH_ROWID_EXTRA, rowid )
+            .putExtra( REMATCH_GROUPID_EXTRA, groupID )
             .putExtra( REMATCH_DICT_EXTRA, gi.dictName )
             .putExtra( REMATCH_IS_SOLO, isSolo )
             .putExtra( REMATCH_LANG_EXTRA, gi.dictLang )
