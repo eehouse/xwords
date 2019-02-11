@@ -2805,7 +2805,7 @@ public class BoardDelegate extends DelegateBase
                     gi = new CurGameInfo( activity );
                     gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
                 } else {
-                    DbgUtils.toastNoLock( TAG, activity,
+                    DbgUtils.toastNoLock( TAG, activity, rowID,
                                           "setupRematchFor(%d)", rowID );
                 }
             }
