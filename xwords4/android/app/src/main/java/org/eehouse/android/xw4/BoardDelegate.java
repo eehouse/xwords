@@ -510,6 +510,7 @@ public class BoardDelegate extends DelegateBase
         m_activity = delegator.getActivity();
     }
 
+    private static int s_noLockCount = 0; // supports a quick debugging hack
     protected void init( Bundle savedInstanceState )
     {
         m_isFirstLaunch = null == savedInstanceState;
@@ -544,7 +545,13 @@ public class BoardDelegate extends DelegateBase
                 public void gotLock( GameLock lock ) {
                     if ( null == lock ) {
                         finish();
+                        if ( BuildConfig.REPORT_LOCKS && ++s_noLockCount == 3 ) {
+                            String msg = "BoardDelegate unable to get lock; holder stack: "
+                                + GameLock.getHolderStack( m_rowid );
+                            CrashTrack.logAndSend( msg );
+                        }
                     } else {
+                        s_noLockCount = 0;
                         m_jniThreadRef = JNIThread.getRetained( lock );
 
                         // see http://stackoverflow.com/questions/680180/where-to-stop- \

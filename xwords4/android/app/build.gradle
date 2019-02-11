@@ -70,6 +70,7 @@ android {
             resValue "string", "invite_prefix", "/and/"
             buildConfigField "int[]", "SMS_BANNED_EXPL", "null"
 			buildConfigField "boolean", "UDP_ENABLED", "true"
+			buildConfigField "boolean", "REPORT_LOCKS", "false"
         }
 
         xw4 {
@@ -104,6 +105,7 @@ android {
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
+			buildConfigField "boolean", "REPORT_LOCKS", "true"
         }
 
         xw4dNoSMS {
