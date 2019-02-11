@@ -10,6 +10,7 @@
   <TextView android:id="@+id/msg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             />
   <!-- spacer -->
   <View android:layout_height="15dp"
