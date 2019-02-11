@@ -60,4 +60,19 @@ public class CrashTrack {
             }
         }
     }
+
+    public static void logAndSend( String msg )
+    {
+        Crashlytics.log( msg );
+        new Thread( new Runnable() {
+                @Override
+                public void run() {
+                    String foo = null;
+                    try {
+                        Thread.sleep( 5000 );
+                        throw new RuntimeException( "crash generator" );
+                    } catch ( InterruptedException ex ) {}
+                }
+            } ).start();
+    }
 }

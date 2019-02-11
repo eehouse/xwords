@@ -64,7 +64,6 @@ public class GameLock implements AutoCloseable, Serializable {
         Owner()
         {
             mThread = Thread.currentThread();
-            // mTrace = mThread.getStackTrace();
             mTrace = android.util.Log.getStackTraceString(new Exception());
         }
 
@@ -359,6 +358,13 @@ public class GameLock implements AutoCloseable, Serializable {
                         } );
                 }
             } ).start();
+    }
+
+    public static String getHolderStack( long rowid )
+    {
+        GameLockState state = getFor( rowid );
+        Owner owner = state.mOwners.peek();
+        return owner.mTrace;
     }
 
     // used only for asserts
