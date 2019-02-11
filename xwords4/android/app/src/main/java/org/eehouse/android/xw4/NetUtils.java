@@ -251,7 +251,7 @@ public class NetUtils {
         params.put( k_PARAMS, param );
         String paramsString = getPostDataString( params );
 
-        if ( null != paramsString ) {
+        if ( null != conn && null != paramsString ) {
             try {
                 conn.setReadTimeout( 15000 );
                 conn.setConnectTimeout( 15000 );
@@ -294,6 +294,9 @@ public class NetUtils {
             } catch( java.io.IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
+        } else {
+            Log.e( TAG, "not running conn %s with params %s", conn,
+                   paramsString );
         }
 
         return result;
