@@ -142,7 +142,8 @@ abstract class XWServiceHelper {
                                 .loadMakeGame( mService, gi, lock );
                             gamePtr.release();
                         } else {
-                            DbgUtils.toastNoLock( TAG, context, "handleInvitation()" );
+                            DbgUtils.toastNoLock( TAG, context, rowid,
+                                                  "handleInvitation()" );
                         }
                     }
 

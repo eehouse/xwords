@@ -174,8 +174,8 @@ public class GameUtils {
                 Utils.cancelNotification( context, (int)rowidIn );
                 success = true;
             } else {
-                DbgUtils.toastNoLock( TAG, context, "resetGame(): rowid %d",
-                                      rowidIn );
+                DbgUtils.toastNoLock( TAG, context, rowidIn,
+                                      "resetGame(): rowid %d", rowidIn );
             }
         }
         return success;
@@ -309,7 +309,8 @@ public class GameUtils {
                 deleteGame( context, lock, informNow );
                 success = true;
             } else {
-                DbgUtils.toastNoLock( TAG, context, "deleteGame(): rowid %d",
+                DbgUtils.toastNoLock( TAG, context, rowid,
+                                      "deleteGame(): rowid %d",
                                       rowid );
                 success = false;
             }
@@ -971,7 +972,8 @@ public class GameUtils {
                     }
                 }
             } catch ( GameLock.GameLockedException gle ) {
-                DbgUtils.toastNoLock( TAG, context, "feedMessage(): dropping message "
+                DbgUtils.toastNoLock( TAG, context, rowid,
+                                      "feedMessage(): dropping message "
                                       + " for %d", rowid );
             }
         }
@@ -1012,7 +1014,8 @@ public class GameUtils {
                 summarizeAndRelease( context, lock, gamePtr, gi );
 
             } else {
-                DbgUtils.toastNoLock( TAG, context, "replaceDicts(): rowid %d",
+                DbgUtils.toastNoLock( TAG, context, rowid,
+                                      "replaceDicts(): rowid %d",
                                       rowid );
             }
         }

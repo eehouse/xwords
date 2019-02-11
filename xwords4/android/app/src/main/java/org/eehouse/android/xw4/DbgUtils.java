@@ -57,14 +57,16 @@ public class DbgUtils {
         showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
-    public static void toastNoLock( String tag, Context context, String format,
-                                    Object... args )
+    public static void toastNoLock( String tag, Context context, long rowid,
+                                    String format, Object... args )
     {
         format = "Unable to lock game; " + format;
         if ( BuildConfig.DEBUG ) {
             showf( context, format, args );
         }
         Log.w( tag, format, args );
+        Log.w( tag, "stack for lock owner for %d", rowid );
+        Log.w( tag, GameLock.getHolderStack( rowid ) );
     }
 
     public static void assertOnUIThread()
