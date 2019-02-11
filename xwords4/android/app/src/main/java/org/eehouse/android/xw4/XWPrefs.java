@@ -126,7 +126,11 @@ public class XWPrefs {
 
     public static String getDefaultRelayUrl( Context context )
     {
-        return getPrefsString( context, R.string.key_relay_url );
+        String result = getPrefsString( context, R.string.key_relay_url );
+        if ( result == null || 0 == result.length() ) {
+            result = context.getString( R.string.default_relay_url );
+        }
+        return result;
     }
 
     public static boolean getSkipToWebAPI( Context context )
