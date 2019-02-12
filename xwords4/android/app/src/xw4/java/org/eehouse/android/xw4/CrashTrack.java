@@ -24,5 +24,5 @@ import android.content.Context;
 
 public class CrashTrack {
     public static void init( Context context ) {} // does nothing here
-    public static void logAndSend( String msg ) {}
+    public static void logAndSend( String tag, String msg ) {}
 }

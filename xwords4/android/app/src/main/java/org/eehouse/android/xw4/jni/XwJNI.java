@@ -467,7 +467,6 @@ public class XwJNI {
             release();
             super.finalize();
         }
-
     }
 
     public static native boolean dict_tilesAreSame( int dict1, int dict2 );

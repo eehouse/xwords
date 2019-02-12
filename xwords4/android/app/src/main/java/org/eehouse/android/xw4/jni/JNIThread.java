@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class JNIThread extends Thread {
+public class JNIThread extends Thread implements AutoCloseable {
     private static final String TAG = JNIThread.class.getSimpleName();
 
     public enum JNICmd { CMD_NONE,
@@ -265,7 +265,16 @@ public class JNIThread extends Thread {
         } catch ( java.lang.InterruptedException ie ) {
             Log.ex( TAG, ie );
         }
-        m_lock.unlock();
+
+        unlockOnce();
+    }
+
+    private synchronized void unlockOnce()
+    {
+        if ( null != m_lock ) {
+            m_lock.unlock();
+            m_lock = null;
+        }
     }
 
     public boolean busy()
@@ -746,8 +755,17 @@ public class JNIThread extends Thread {
             m_jniGamePtr.release();
             m_jniGamePtr = null;
         }
+
+        unlockOnce();
         Log.d( TAG, "run() finished" );
     } // run
+
+    @Override
+    public void finalize() throws java.lang.Throwable
+    {
+        Assert.assertTrue( null == m_lock || !BuildConfig.DEBUG );
+        super.finalize();
+    }
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
     {
@@ -821,6 +839,12 @@ public class JNIThread extends Thread {
         } else if ( save && 0 != m_lastSavedState ) { // has configure() run?
             handle( JNICmd.CMD_SAVE );         // in case releaser has made changes
         }
+    }
+
+    @Override
+    public void close()
+    {
+        release();
     }
 
     public static JNIThread getRetained( long rowid )

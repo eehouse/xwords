@@ -61,9 +61,12 @@ public class CrashTrack {
         }
     }
 
-    public static void logAndSend( String msg )
+    public static void logAndSend( String tag, String msg )
     {
         Crashlytics.log( msg );
+        Log.e( tag, msg );
+
+        // Now crash so Crashlytics will upload the log
         new Thread( new Runnable() {
                 @Override
                 public void run() {

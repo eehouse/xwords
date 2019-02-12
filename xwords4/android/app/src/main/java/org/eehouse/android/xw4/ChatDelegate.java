@@ -59,7 +59,6 @@ public class ChatDelegate extends DelegateBase {
     private EditText m_edit;
     private TableLayout m_layout;
     private ScrollView m_scroll;
-    private JNIThread m_jniThreadRef;
 
     public ChatDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -130,28 +129,20 @@ public class ChatDelegate extends DelegateBase {
     protected void onResume()
     {
         super.onResume();
-        m_jniThreadRef = JNIThread.getRetained( m_rowid );
-        if ( null == m_jniThreadRef ) {
-            Log.w( TAG, "onResume(): m_jniThreadRef null; exiting" );
-            finish();
-        } else {
-            s_visibleThis = this;
-            int[] startAndEnd = new int[2];
-            String curMsg = DBUtils.getCurChat( m_activity, m_rowid,
-                                                m_curPlayer, startAndEnd );
-            if ( null != curMsg && 0 < curMsg.length() ) {
-                m_edit.setText( curMsg );
-                m_edit.setSelection( startAndEnd[0], startAndEnd[1] );
-            }
+
+        s_visibleThis = this;
+        int[] startAndEnd = new int[2];
+        String curMsg = DBUtils.getCurChat( m_activity, m_rowid,
+                                            m_curPlayer, startAndEnd );
+        if ( null != curMsg && 0 < curMsg.length() ) {
+            m_edit.setText( curMsg );
+            m_edit.setSelection( startAndEnd[0], startAndEnd[1] );
         }
     }
 
     @Override
     protected void onPause()
     {
-        if ( null != m_jniThreadRef ) {
-            m_jniThreadRef.release();
-        }
         s_visibleThis = null;
 
         String curText = m_edit.getText().toString();
@@ -205,7 +196,11 @@ public class ChatDelegate extends DelegateBase {
         addRow( text, m_curPlayer, (int)ts );
         m_edit.setText( null );
 
-        m_jniThreadRef.sendChat( text );
+        try ( JNIThread thread = JNIThread.getRetained( m_rowid ) ) {
+            if ( null != thread ) {
+                thread.sendChat( text );
+            }
+        }
     }
 
     @Override

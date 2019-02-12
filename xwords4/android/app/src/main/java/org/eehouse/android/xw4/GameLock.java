@@ -60,18 +60,24 @@ public class GameLock implements AutoCloseable, Serializable {
     private static class Owner {
         Thread mThread;
         String mTrace;
+        long mStamp;
 
         Owner()
         {
             mThread = Thread.currentThread();
             mTrace = android.util.Log.getStackTraceString(new Exception());
+            setStamp();
         }
 
         @Override
         public String toString()
         {
-            return String.format( "Owner: {%s/%s}", mThread, mTrace );
+            long ageMS = System.currentTimeMillis() - mStamp;
+            return String.format( "Owner: {age: %dms; thread: {%s}; stack: {%s}}",
+                                  ageMS, mThread, mTrace );
         }
+
+        void setStamp() { mStamp = System.currentTimeMillis(); }
     }
 
     private static class GameLockState {
@@ -233,6 +239,7 @@ public class GameLock implements AutoCloseable, Serializable {
         {
             synchronized ( mOwners ) {
                 mOwners.pop();
+                owner.setStamp();
                 mOwners.push( owner );
             }
         }
@@ -296,7 +303,7 @@ public class GameLock implements AutoCloseable, Serializable {
         return getFor( rowid ).lock( maxMillis );
     }
 
-    public static GameLock lockRO( long rowid, long maxMillis )
+    public static GameLock lockRO( long rowid, long maxMillis ) throws GameLockedException
     {
         return getFor( rowid ).lockRO( maxMillis );
     }
@@ -317,17 +324,17 @@ public class GameLock implements AutoCloseable, Serializable {
         return m_rowid;
     }
 
-    public interface LockProc {
+    public interface GotLockProc {
         public void gotLock( GameLock lock );
     }
 
     // Meant to be called from UI thread, returning immediately, but when it
     // gets the lock, or time runs out, calls the callback (using the Handler
     // passed in) with the lock or null.
-    public static void callWithLock( final long rowid,
-                                     final long maxMillis,
-                                     final Handler handler,
-                                     final LockProc proc )
+    public static void getLockThen( final long rowid,
+                                    final long maxMillis,
+                                    final Handler handler,
+                                    final GotLockProc proc )
     {
         // capture caller thread and stack
         final Owner owner = new Owner();
@@ -360,11 +367,11 @@ public class GameLock implements AutoCloseable, Serializable {
             } ).start();
     }
 
-    public static String getHolderStack( long rowid )
+    public static String getHolderDump( long rowid )
     {
         GameLockState state = getFor( rowid );
         Owner owner = state.mOwners.peek();
-        return owner.mTrace;
+        return owner.toString();
     }
 
     // used only for asserts
