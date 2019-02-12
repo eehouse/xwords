@@ -2074,7 +2074,7 @@ public class BoardDelegate extends DelegateBase
             success = m_jniThreadRef.configure( m_activity, m_view, m_utils, this,
                                                 makeJNIHandler() );
             if ( success ) {
-                m_jniGamePtr = m_jniThreadRef.getGamePtr();
+                m_jniGamePtr = m_jniThreadRef.getGamePtr(); // .retain()?
                 Assert.assertNotNull( m_jniGamePtr );
             }
         }
@@ -2785,35 +2785,42 @@ public class BoardDelegate extends DelegateBase
 
     public static void setupRematchFor( Activity activity, long rowID )
     {
-        GamePtr gamePtr = null;
         GameSummary summary = null;
         CurGameInfo gi = null;
 
         try ( JNIThread thread = JNIThread.getRetained( rowID ) ) {
             if ( null != thread ) {
-                gamePtr = thread.getGamePtr().retain();
-                summary = thread.getSummary();
-                gi = thread.getGI();
+                try ( GamePtr gamePtr = thread.getGamePtr().retain() ) {
+                    summary = thread.getSummary();
+                    gi = thread.getGI();
+                    setupRematchFor( activity, gamePtr, summary, gi );
+                }
             } else {
                 try ( GameLock lock = GameLock.tryLockRO( rowID ) ) {
                     if ( null != lock ) {
                         summary = DBUtils.getSummary( activity, lock );
                         gi = new CurGameInfo( activity );
-                        gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+                        try ( GamePtr gamePtr = GameUtils
+                              .loadMakeGame( activity, gi, lock ) ) {
+                            setupRematchFor( activity, gamePtr, summary, gi );
+                        }
                     } else {
                         DbgUtils.toastNoLock( TAG, activity, rowID,
                                               "setupRematchFor(%d)", rowID );
                     }
                 }
             }
+        }
+    }
 
-            if ( null != gamePtr ) {
-                doRematchIf( activity, null, rowID, DBUtils.GROUPID_UNSPEC,
-                             summary, gi, gamePtr );
-                gamePtr.release();
-            } else {
-                Log.w( TAG, "setupRematchFor(): unable to lock game" );
-            }
+    private static void setupRematchFor( Activity activity, GamePtr gamePtr,
+                                         GameSummary summary, CurGameInfo gi )
+    {
+        if ( null != gamePtr ) {
+            doRematchIf( activity, null, gamePtr.getRowid(),
+                         DBUtils.GROUPID_UNSPEC, summary, gi, gamePtr );
+        } else {
+            Log.w( TAG, "setupRematchFor(): unable to lock game" );
         }
     }
 

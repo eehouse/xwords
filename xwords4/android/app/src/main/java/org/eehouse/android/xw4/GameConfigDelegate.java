@@ -536,101 +536,107 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
 
-            XwJNI.GamePtr gamePtr = null;
             if ( null != m_jniThread ) {
-                gamePtr = m_jniThread.getGamePtr().retain();
+                try ( XwJNI.GamePtr gamePtr = m_jniThread
+                      .getGamePtr().retain() ) {
+                    loadGame( gamePtr );
+                }
             } else {
                 try ( GameLock lock = GameLock.tryLockRO( m_rowid ) ) {
                     if ( null != lock ) {
-                        gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig,
-                                                          lock );
-                    }
-                }
-            }
-
-            if ( null == gamePtr ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
-            } else {
-                m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
-                    || XwJNI.comms_isConnected( gamePtr );
-
-                if ( m_gameStarted ) {
-                    if ( null == m_gameLockedCheck ) {
-                        m_gameLockedCheck =
-                            (CheckBox)findViewById( R.id.game_locked_check );
-                        m_gameLockedCheck.setVisibility( View.VISIBLE );
-                        m_gameLockedCheck.setOnClickListener( this );
-                    }
-                    handleLockedChange();
-                }
-
-                if ( null == m_gi ) {
-                    m_gi = new CurGameInfo( m_giOrig );
-                }
-
-                m_carOrig = new CommsAddrRec();
-                if ( XwJNI.game_hasComms( gamePtr ) ) {
-                    XwJNI.comms_getAddr( gamePtr, m_carOrig );
-                    m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
-                } else if ( !localOnlyGame() ) {
-                    String relayName = XWPrefs.getDefaultRelayHost( m_activity );
-                    int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
-                    XwJNI.comms_getInitialAddr( m_carOrig, relayName,
-                                                relayPort );
-                }
-
-                // load if the first time through....
-                if ( null == m_conTypes ) {
-                    m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
-                }
-
-                buildDisabledsMap( gamePtr );
-                setDisableds();
-
-                gamePtr.release();
-
-                m_car = new CommsAddrRec( m_carOrig );
-
-                setTitle();
-
-                TextView label = (TextView)findViewById( R.id.lang_separator );
-                label.setText( getString( localOnlyGame() ? R.string.lang_label
-                                          : R.string.langdict_label ) );
-
-                m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
-                if ( localOnlyGame() ) {
-                    m_dictSpinner.setVisibility( View.GONE );
-                    m_dictSpinner = null;
-                }
-
-                setConnLabel();
-                setupRelayStuffIf();
-                loadPlayersList();
-                configLangSpinner();
-
-                m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
-
-                setSmartnessSpinner();
-
-                setChecked( R.id.hints_allowed, !m_gi.hintsNotAllowed );
-                setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
-                setInt( R.id.timer_minutes_edit,
-                        m_gi.gameSeconds/60/m_gi.nPlayers );
-
-                CheckBox check = (CheckBox)findViewById( R.id.use_timer );
-                OnCheckedChangeListener lstnr =
-                    new OnCheckedChangeListener() {
-                        public void onCheckedChanged( CompoundButton buttonView,
-                                                      boolean checked ) {
-                            showTimerSet( checked );
+                        try ( XwJNI.GamePtr gamePtr = GameUtils.
+                              loadMakeGame( m_activity, m_giOrig, lock ) ) {
+                            loadGame( gamePtr );
                         }
-                    };
-                check.setOnCheckedChangeListener( lstnr );
-                setChecked( R.id.use_timer, m_gi.timerEnabled );
-                showTimerSet( m_gi.timerEnabled );
-
-                setBoardsizeSpinner();
+                    }
+                }
             }
+        }
+    }
+
+    // Exists only to be called from inside two try-with-resource blocks above
+    private void loadGame( XwJNI.GamePtr gamePtr )
+    {
+        if ( null == gamePtr ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
+        } else {
+            m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
+                || XwJNI.comms_isConnected( gamePtr );
+
+            if ( m_gameStarted ) {
+                if ( null == m_gameLockedCheck ) {
+                    m_gameLockedCheck =
+                        (CheckBox)findViewById( R.id.game_locked_check );
+                    m_gameLockedCheck.setVisibility( View.VISIBLE );
+                    m_gameLockedCheck.setOnClickListener( this );
+                }
+                handleLockedChange();
+            }
+
+            if ( null == m_gi ) {
+                m_gi = new CurGameInfo( m_giOrig );
+            }
+
+            m_carOrig = new CommsAddrRec();
+            if ( XwJNI.game_hasComms( gamePtr ) ) {
+                XwJNI.comms_getAddr( gamePtr, m_carOrig );
+                m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
+            } else if ( !localOnlyGame() ) {
+                String relayName = XWPrefs.getDefaultRelayHost( m_activity );
+                int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
+                XwJNI.comms_getInitialAddr( m_carOrig, relayName,
+                                            relayPort );
+            }
+
+            // load if the first time through....
+            if ( null == m_conTypes ) {
+                m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
+            }
+
+            buildDisabledsMap( gamePtr );
+            setDisableds();
+
+            m_car = new CommsAddrRec( m_carOrig );
+
+            setTitle();
+
+            TextView label = (TextView)findViewById( R.id.lang_separator );
+            label.setText( getString( localOnlyGame() ? R.string.lang_label
+                                      : R.string.langdict_label ) );
+
+            m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
+            if ( localOnlyGame() ) {
+                m_dictSpinner.setVisibility( View.GONE );
+                m_dictSpinner = null;
+            }
+
+            setConnLabel();
+            setupRelayStuffIf();
+            loadPlayersList();
+            configLangSpinner();
+
+            m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
+
+            setSmartnessSpinner();
+
+            setChecked( R.id.hints_allowed, !m_gi.hintsNotAllowed );
+            setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
+            setInt( R.id.timer_minutes_edit,
+                    m_gi.gameSeconds/60/m_gi.nPlayers );
+
+            CheckBox check = (CheckBox)findViewById( R.id.use_timer );
+            OnCheckedChangeListener lstnr =
+                new OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton buttonView,
+                                                  boolean checked ) {
+                        showTimerSet( checked );
+                    }
+                };
+            check.setOnCheckedChangeListener( lstnr );
+            setChecked( R.id.use_timer, m_gi.timerEnabled );
+            showTimerSet( m_gi.timerEnabled );
+
+            setBoardsizeSpinner();
         }
     } // loadGame
 

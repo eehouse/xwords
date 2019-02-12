@@ -808,8 +808,8 @@ public class JNIThread extends Thread implements AutoCloseable {
     private void retain_sync()
     {
         ++m_refCount;
-        Log.i( TAG, "retain_sync(rowid=%d): m_refCount raised to %d",
-               m_rowid, m_refCount );
+        // Log.i( TAG, "retain_sync(rowid=%d): m_refCount raised to %d",
+        //        m_rowid, m_refCount );
     }
 
     public JNIThread retain()
@@ -831,8 +831,8 @@ public class JNIThread extends Thread implements AutoCloseable {
                 stop = true;
             }
         }
-        Log.i( TAG, "release(rowid=%d): m_refCount dropped to %d",
-               m_rowid, m_refCount );
+        // Log.i( TAG, "release(rowid=%d): m_refCount dropped to %d",
+        //        m_rowid, m_refCount );
 
         if ( stop ) {
             waitToStop( true );
