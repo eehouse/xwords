@@ -26,10 +26,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -49,7 +49,7 @@ public class GameOverAlert extends XWDialogFragment
     private GameSummary mSummary;
     private int mTitleID;
     private String mMsg;
-    private LinearLayout m_view;
+    private ViewGroup m_view;
     private boolean mInArchive;
     private CheckBox mArchiveBox;
     // private boolean mArchiveChecked;
@@ -95,7 +95,7 @@ public class GameOverAlert extends XWDialogFragment
         mInArchive = sis.getBoolean( IN_ARCH );
 
         Activity activity = getActivity();
-        m_view = (LinearLayout)LocUtils.inflate( activity, R.layout.game_over );
+        m_view = (ViewGroup)LocUtils.inflate( activity, R.layout.game_over );
         initView();
 
         AlertDialog.Builder ab = LocUtils.makeAlertBuilder( activity )
