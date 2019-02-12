@@ -103,8 +103,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     private static class MySIS implements Serializable {
         public MySIS(){
-            selGames = new HashSet<Long>();
-            selGroupIDs = new HashSet<Long>();
+            selGames = new HashSet<>();
+            selGroupIDs = new HashSet<>();
         }
         int groupSelItem;
         boolean nextIsSolo;
@@ -781,6 +781,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case CHANGE_GROUP:
+            final long[] games = (long[])params[0];
             dialog = makeAlertBuilder()
                 .setTitle( R.string.change_group )
                 .setSingleChoiceItems( m_adapter.groupNames(),
@@ -800,7 +801,7 @@ public class GamesListDelegate extends ListDelegateBase
                                             long gid = m_adapter
                                                 .getGroupIDFor( m_mySIS
                                                                 .groupSelItem );
-                                            moveSelGamesTo( gid );
+                                            moveSelGamesTo( games, gid );
                                         }
                                     } )
                 .setNeutralButton( R.string.button_newgroup,
@@ -1070,15 +1071,18 @@ public class GamesListDelegate extends ListDelegateBase
         // }
     }
 
-    private void moveSelGamesTo( long gid )
+    private void moveSelGamesTo( long[] games, long gid )
     {
-        for ( long rowid : m_mySIS.selGames ) {
+        boolean destOpen = DBUtils.getGroups( m_activity ).get( gid ).m_expanded;
+        for ( long rowid : games ) {
             DBUtils.moveGame( m_activity, rowid, gid );
+            if ( !destOpen ) {
+                m_mySIS.selGames.remove( rowid );
+            }
         }
 
         // Invalidate if there could have been change
-        if ( ! DBUtils.getGroups( m_activity ).get( gid ).m_expanded ) {
-            m_mySIS.selGames.clear();
+        if ( ! destOpen ) {
             invalidateOptionsMenuIf();
             setTitle();
         }
@@ -1808,7 +1812,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_game_move:
             m_mySIS.groupSelItem = -1;
-            showDialogFragment( DlgID.CHANGE_GROUP );
+            showDialogFragment( DlgID.CHANGE_GROUP, selRowIDs );
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
@@ -2377,7 +2381,9 @@ public class GamesListDelegate extends ListDelegateBase
     {
         if ( m_mySIS.moveAfterNewGroup ) {
             m_mySIS.moveAfterNewGroup = false;
-            showDialogFragment( DlgID.CHANGE_GROUP );
+            Long[] games = m_mySIS.selGames
+                .toArray( new Long[m_mySIS.selGames.size()] );
+            showDialogFragment( DlgID.CHANGE_GROUP, (Object)games );
         }
     }
 
