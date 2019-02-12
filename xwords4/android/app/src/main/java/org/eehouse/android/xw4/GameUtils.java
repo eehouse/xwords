@@ -225,24 +225,16 @@ public class GameUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        JNIThread thread = JNIThread.getRetained( rowid );
-        GameLock lock = null;
-        if ( null != thread ) {
-            lock = thread.getLock();
-        } else {
-            try {
-                lock = GameLock.lockRO( rowid, maxMillis );
-            } catch ( GameLock.GameLockedException gle ) {
-                Log.ex( TAG, gle );
-            }
-        }
-
-        if ( null != lock ) {
-            result = DBUtils.getSummary( context, lock );
-            if ( null == thread ) {
-                lock.unlock();
+        try ( JNIThread thread = JNIThread.getRetained( rowid ) ) {
+            if ( null != thread ) {
+                result = DBUtils.getSummary( context, thread.getLock() );
             } else {
-                thread.release();
+                try ( GameLock lock = GameLock.lockRO( rowid, maxMillis ) ) {
+                    if ( null != lock ) {
+                        result = DBUtils.getSummary( context, lock );
+                    }
+                } catch ( GameLock.GameLockedException gle ) {
+                }
             }
         }
         return result;
@@ -260,35 +252,41 @@ public class GameUtils {
 
     public static long dupeGame( Context context, long rowidIn, long groupID )
     {
-        long rowid = DBUtils.ROWID_NOTFOUND;
-        GameLock lockSrc = null;
+        long result = DBUtils.ROWID_NOTFOUND;
 
-        JNIThread thread = JNIThread.getRetained( rowidIn );
-        if ( null != thread ) {
-            lockSrc = thread.getLock();
-        } else {
-            lockSrc = GameLock.lockRO( rowidIn, 300 );
+        try ( JNIThread thread = JNIThread.getRetained( rowidIn ) ) {
+            if ( null != thread ) {
+                result = dupeGame( context, thread.getLock(), groupID );
+            } else {
+                try ( GameLock lockSrc = GameLock.lockRO( rowidIn, 300 ) ) {
+                    if ( null != lockSrc ) {
+                        result = dupeGame( context, lockSrc, groupID );
+                    }
+                } catch ( GameLock.GameLockedException gle ) {
+                }
+            }
         }
 
-        if ( null != lockSrc ) {
-            boolean juggle = CommonPrefs.getAutoJuggle( context );
-            GameLock lockDest = resetGame( context, lockSrc, null, groupID,
-                                           juggle );
-            rowid = lockDest.getRowid();
-            lockDest.unlock();
-
-            if ( null != thread ) {
-                thread.release();
-            } else {
-                lockSrc.unlock();
-            }
-        } else {
+        if ( DBUtils.ROWID_NOTFOUND == result ) {
             Log.d( TAG, "dupeGame: unable to open rowid %d", rowidIn );
         }
-        return rowid;
+        return result;
     }
 
-    public static void deleteGame( Context context, GameLock lock, boolean informNow )
+    private static long dupeGame( Context context, GameLock lock, long groupID )
+    {
+        long result;
+        boolean juggle = CommonPrefs.getAutoJuggle( context );
+        try ( GameLock lockDest = resetGame( context, lock,
+                                             null, groupID,
+                                             juggle ) ) {
+            result = lockDest.getRowid();
+        }
+        return result;
+    }
+
+    public static void deleteGame( Context context, GameLock lock,
+                                   boolean informNow )
     {
         if ( null != lock ) {
             tellDied( context, lock, informNow );
@@ -1290,14 +1288,14 @@ public class GameUtils {
                                    + " failed for rowid %d", rowid );
                         }
                     } else {
-                        JNIThread jniThread = JNIThread.getRetained( rowid );
-                        if ( null != jniThread ) {
-                            jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false,
-                                              false, false );
-                            jniThread.release();
-                        } else {
-                            Log.w( TAG, "Resender.doInBackground: unable to unlock %d",
-                                   rowid );
+                        try ( JNIThread thread = JNIThread.getRetained( rowid ) ) {
+                            if ( null != thread ) {
+                                thread.handle( JNIThread.JNICmd.CMD_RESEND, false,
+                                               false, false );
+                            } else {
+                                Log.w( TAG, "Resender.doInBackground: unable to unlock %d",
+                                       rowid );
+                            }
                         }
                     }
                 }

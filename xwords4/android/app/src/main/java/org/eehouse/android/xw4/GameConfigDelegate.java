@@ -536,17 +536,16 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
 
-            GameLock gameLock = null;
             XwJNI.GamePtr gamePtr = null;
-            if ( null == m_jniThread ) {
-                gameLock = GameLock.tryLockRO( m_rowid );
-                if ( null != gameLock ) {
-                    gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig,
-                                                      gameLock );
-                }
+            if ( null != m_jniThread ) {
+                gamePtr = m_jniThread.getGamePtr().retain();
             } else {
-                gameLock = m_jniThread.getLock();
-                gamePtr = m_jniThread.getGamePtr();
+                try ( GameLock lock = GameLock.tryLockRO( m_rowid ) ) {
+                    if ( null != lock ) {
+                        gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig,
+                                                          lock );
+                    }
+                }
             }
 
             if ( null == gamePtr ) {
@@ -588,10 +587,7 @@ public class GameConfigDelegate extends DelegateBase
                 buildDisabledsMap( gamePtr );
                 setDisableds();
 
-                if ( null == m_jniThread ) {
-                    gamePtr.release();
-                    gameLock.unlock();
-                }
+                gamePtr.release();
 
                 m_car = new CommsAddrRec( m_carOrig );
 
@@ -1230,17 +1226,32 @@ public class GameConfigDelegate extends DelegateBase
         m_car.conTypes = m_conTypes;
     } // saveChanges
 
+    private void applyChanges( GameLock lock, boolean forceNew )
+    {
+        GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
+                                lock, forceNew );
+        DBUtils.saveThumbnail( m_activity, lock, null ); // clear it
+    }
+
     private void applyChanges( boolean forceNew )
     {
         if ( !isFinishing() ) {
-            GameLock gameLock = m_jniThread == null
-                ? GameLock.tryLock( m_rowid ) : m_jniThread.getLock();
-            GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
-                                    gameLock, forceNew );
-            DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
-            if ( null == m_jniThread ) {
-                gameLock.unlock();
+            if ( null != m_jniThread ) {
+                applyChanges( m_jniThread.getLock(), forceNew );
+            } else {
+                try ( GameLock lock = GameLock.tryLock( m_rowid ) ) {
+                    applyChanges( lock, forceNew );
+                }
             }
+        // }
+            // GameLock gameLock = m_jniThread == null
+            //     ? GameLock.tryLock( m_rowid ) : m_jniThread.getLock();
+            // GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
+            //                         gameLock, forceNew );
+            // DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
+            // if ( null == m_jniThread ) {
+            //     gameLock.unlock();
+            // }
         }
     }
 

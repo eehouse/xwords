@@ -76,21 +76,23 @@ abstract class XWServiceHelper {
     {
         boolean allConsumed = true;
         boolean[] isLocalP = new boolean[1];
-        JNIThread jniThread = JNIThread.getRetained( rowid );
         boolean consumed = false;
-        if ( null != jniThread ) {
-            consumed = true;
-            jniThread.receive( msg, addr ).release();
-        } else {
-            GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
-            if ( null == sink ) {
-                sink = getSink( rowid );
-            }
-            if ( GameUtils.feedMessage( context, rowid, msg, addr,
-                                        sink, bmr, isLocalP ) ) {
+
+        try ( JNIThread jniThread = JNIThread.getRetained( rowid ) ) {
+            if ( null != jniThread ) {
+                jniThread.receive( msg, addr );
                 consumed = true;
-                GameUtils.postMoveNotification( context, rowid, bmr,
-                                                isLocalP[0] );
+            } else {
+                GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
+                if ( null == sink ) {
+                    sink = getSink( rowid );
+                }
+                if ( GameUtils.feedMessage( context, rowid, msg, addr,
+                                            sink, bmr, isLocalP ) ) {
+                    GameUtils.postMoveNotification( context, rowid, bmr,
+                                                    isLocalP[0] );
+                    consumed = true;
+                }
             }
         }
         if ( allConsumed && !consumed ) {
@@ -149,10 +151,10 @@ abstract class XWServiceHelper {
 
                     if ( null == gi ) {
                         // locked. Maybe it's open?
-                        JNIThread thread = JNIThread.getRetained( rowid );
-                        if ( null != thread ) {
-                            gi = thread.getGI();
-                            thread.release( false );
+                        try ( JNIThread thrd = JNIThread.getRetained( rowid ) ) {
+                            if ( null != thrd ) {
+                                gi = thrd.getGI();
+                            }
                         }
                     }
                     success = null != gi && gi.forceChannel != nli.forceChannel;

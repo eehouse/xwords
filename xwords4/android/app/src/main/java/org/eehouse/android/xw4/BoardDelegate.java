@@ -89,7 +89,6 @@ public class BoardDelegate extends DelegateBase
     private Activity m_activity;
     private BoardView m_view;
     private GamePtr m_jniGamePtr;
-    private GameLock m_gameLock;
     private CurGameInfo m_gi;
     private GameSummary m_summary;
     private boolean m_relayMissing;
@@ -539,16 +538,16 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
-        GameLock.callWithLock( m_rowid, 100L, new Handler(),
-                               new GameLock.LockProc() {
+        GameLock.getLockThen( m_rowid, 100L, new Handler(),
+                              new GameLock.GotLockProc() {
                 @Override
                 public void gotLock( GameLock lock ) {
                     if ( null == lock ) {
                         finish();
                         if ( BuildConfig.REPORT_LOCKS && ++s_noLockCount == 3 ) {
                             String msg = "BoardDelegate unable to get lock; holder stack: "
-                                + GameLock.getHolderStack( m_rowid );
-                            CrashTrack.logAndSend( msg );
+                                + GameLock.getHolderDump( m_rowid );
+                            CrashTrack.logAndSend( TAG, msg );
                         }
                     } else {
                         s_noLockCount = 0;
@@ -1501,7 +1500,7 @@ public class BoardDelegate extends DelegateBase
 
     private void deleteAndClose()
     {
-        GameUtils.deleteGame( m_activity, m_gameLock, false );
+        GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false );
         waitCloseGame( false );
         finish();
     }
@@ -2158,7 +2157,6 @@ public class BoardDelegate extends DelegateBase
             m_jniThread = m_jniThreadRef.retain();
             m_gi = m_jniThread.getGI();
             m_summary = m_jniThread.getSummary();
-            m_gameLock = m_jniThread.getLock();
 
             m_view.startHandling( m_activity, m_jniThread, m_connTypes );
 
@@ -2427,8 +2425,6 @@ public class BoardDelegate extends DelegateBase
             m_jniThread = null;
 
             m_view.stopHandling();
-
-            m_gameLock = null;
         }
     }
 
@@ -2440,7 +2436,6 @@ public class BoardDelegate extends DelegateBase
             // m_jniGamePtr = null;
 
             // m_gameLock.unlock(); // likely the problem
-            m_gameLock = null;
         }
     }
 
@@ -2793,34 +2788,32 @@ public class BoardDelegate extends DelegateBase
         GamePtr gamePtr = null;
         GameSummary summary = null;
         CurGameInfo gi = null;
-        JNIThread thread = JNIThread.getRetained( rowID );
-        if ( null != thread ) {
-            gamePtr = thread.getGamePtr().retain();
-            summary = thread.getSummary();
-            gi = thread.getGI();
-        } else {
-            try ( GameLock lock = GameLock.tryLockRO( rowID ) ) {
-                if ( null != lock ) {
-                    summary = DBUtils.getSummary( activity, lock );
-                    gi = new CurGameInfo( activity );
-                    gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
-                } else {
-                    DbgUtils.toastNoLock( TAG, activity, rowID,
-                                          "setupRematchFor(%d)", rowID );
+
+        try ( JNIThread thread = JNIThread.getRetained( rowID ) ) {
+            if ( null != thread ) {
+                gamePtr = thread.getGamePtr().retain();
+                summary = thread.getSummary();
+                gi = thread.getGI();
+            } else {
+                try ( GameLock lock = GameLock.tryLockRO( rowID ) ) {
+                    if ( null != lock ) {
+                        summary = DBUtils.getSummary( activity, lock );
+                        gi = new CurGameInfo( activity );
+                        gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+                    } else {
+                        DbgUtils.toastNoLock( TAG, activity, rowID,
+                                              "setupRematchFor(%d)", rowID );
+                    }
                 }
             }
-        }
 
-        if ( null != gamePtr ) {
-            doRematchIf( activity, null, rowID, DBUtils.GROUPID_UNSPEC,
-                         summary, gi, gamePtr );
-            gamePtr.release();
-        } else {
-            Log.w( TAG, "setupRematchFor(): unable to lock game" );
-        }
-
-        if ( null != thread ) {
-            thread.release();
+            if ( null != gamePtr ) {
+                doRematchIf( activity, null, rowID, DBUtils.GROUPID_UNSPEC,
+                             summary, gi, gamePtr );
+                gamePtr.release();
+            } else {
+                Log.w( TAG, "setupRematchFor(): unable to lock game" );
+            }
         }
     }
 

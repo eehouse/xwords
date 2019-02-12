@@ -66,7 +66,7 @@ public class DbgUtils {
         }
         Log.w( tag, format, args );
         Log.w( tag, "stack for lock owner for %d", rowid );
-        Log.w( tag, GameLock.getHolderStack( rowid ) );
+        Log.w( tag, GameLock.getHolderDump( rowid ) );
     }
 
     public static void assertOnUIThread()
