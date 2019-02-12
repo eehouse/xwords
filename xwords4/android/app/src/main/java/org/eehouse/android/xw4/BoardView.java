@@ -298,7 +298,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         Assert.assertTrue( null != parent || !BuildConfig.DEBUG );
         m_parent = parent;
         m_jniThread = thread;
-        m_jniGamePtr = thread.getGamePtr();
+        m_jniGamePtr = thread.getGamePtr(); // .retain()?
         m_gi = thread.getGI();
         m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
         m_connTypes = connTypes;

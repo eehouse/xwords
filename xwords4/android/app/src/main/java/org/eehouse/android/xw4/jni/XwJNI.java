@@ -34,7 +34,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 public class XwJNI {
     private static final String TAG = XwJNI.class.getSimpleName();
 
-    public static class GamePtr {
+    public static class GamePtr implements AutoCloseable {
         private int m_ptr = 0;
         private int m_refCount = 0;
         private long m_rowid;
@@ -68,8 +68,8 @@ public class XwJNI {
         public synchronized void release()
         {
             --m_refCount;
-            Log.d( TAG, "release(this=%H, rowid=%d): refCount now %d",
-                   this, m_rowid, m_refCount );
+            // Log.d( TAG, "release(this=%H, rowid=%d): refCount now %d",
+            //        this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
                 if ( 0 != m_ptr ) {
                     if ( !haveEnv( getJNI().m_ptr ) ) {
@@ -79,6 +79,12 @@ public class XwJNI {
                     m_ptr = 0;
                 }
             }
+        }
+
+        @Override
+        public void close()
+        {
+            release();
         }
 
         // @Override
