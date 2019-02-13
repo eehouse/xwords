@@ -916,26 +916,21 @@ struct _JNIState {
     }                                                 \
 
 JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
+Java_org_eehouse_android_xw4_jni_XwJNI_initGameJNI
 ( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed )
 {
-    /* Why am I doing this twice? */
-    /* struct timeval tv; */
-    /* gettimeofday( &tv, NULL ); */
-    /* srandom( tv.tv_sec ); */
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = ((JNIGlobalState*)jniGlobalPtr)->mpool;
 #endif
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
     state->globalJNI = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &state->globalJNI->ti, env );
     AndGameGlobals* globals = &state->globals;
     globals->dutil = state->globalJNI->dutil;
     globals->state = (JNIState*)state;
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
-    /* pthread_mutex_init( &state->msgMutex, NULL ); */
-    
     /* XP_LOGF( "%s: initing srand with %d", __func__, seed ); */
     srandom( seed );
 
