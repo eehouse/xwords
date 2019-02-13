@@ -1803,6 +1803,9 @@ public class DBUtils {
         String archiveName = LocUtils
             .getString( context, R.string.group_name_archive );
         long archiveGroup = getGroup( context, archiveName );
+        if ( DBUtils.GROUPID_UNSPEC == archiveGroup ) {
+            archiveGroup = DBUtils.addGroup( context, archiveName );
+        }
         return archiveGroup;
     }
 
