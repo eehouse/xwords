@@ -1241,27 +1241,6 @@ public class GamesListDelegate extends ListDelegateBase
         return selected;
     }
 
-    // BTService.MultiEventListener interface
-    public void eventOccurred( MultiService.MultiEvent event,
-                               final Object ... args )
-    {
-        switch( event ) {
-        case BT_GAME_CREATED:
-            post( new Runnable() {
-                    public void run() {
-                        long rowid = (Long)args[0];
-                        if ( checkWarnNoDict( rowid ) ) {
-                            launchGame( rowid, true );
-                        }
-                    }
-                });
-            break;
-        default:
-            super.eventOccurred( event, args );
-            break;
-        }
-    }
-
     // DlgDelegate.DlgClickNotify interface
     @Override
     public boolean onPosButton( Action action, Object[] params )
