@@ -238,7 +238,7 @@ public class BTInviteDelegate extends InviteDelegate {
         int count = BTService.getPairedCount( m_activity );
         if ( 0 < count ) {
             mNDevsThisScan = 0;
-            showProgress( count, SCAN_SECONDS );
+            showProgress( count, 2 * SCAN_SECONDS );
             BTService.scan( m_activity, 1000 * SCAN_SECONDS );
         } else {
             makeConfirmThenBuilder( R.string.bt_no_devs,
