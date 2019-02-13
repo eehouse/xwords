@@ -113,8 +113,8 @@ public class XWApp extends Application implements LifecycleObserver {
     @Override
     public void onTerminate()
     {
-        Log.i( TAG, "onTerminate() called" );
-        XwJNI.cleanGlobals();
+        Log.d( TAG, "onTerminate() called" );
+        XwJNI.cleanGlobalsEmu();
         super.onTerminate();
     }
 

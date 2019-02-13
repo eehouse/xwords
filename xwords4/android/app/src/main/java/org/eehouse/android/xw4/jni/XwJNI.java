@@ -114,16 +114,21 @@ public class XwJNI {
         m_ptr = initGlobals( new DUtilCtxt(), JNIUtilsImpl.get() );
     }
 
-    public static void cleanGlobals()
+    public static void cleanGlobalsEmu()
+    {
+        cleanGlobals();
+    }
+
+    private static void cleanGlobals()
     {
         synchronized( XwJNI.class ) { // let's be safe here
             XwJNI jni = getJNI();
-            cleanGlobals( jni.m_ptr );
+            cleanGlobals( jni.m_ptr ); // tests for 0
             jni.m_ptr = 0;
         }
     }
 
-    // @Override
+    @Override
     public void finalize() throws java.lang.Throwable
     {
         cleanGlobals( m_ptr );
@@ -178,10 +183,10 @@ public class XwJNI {
     public static native String comms_getUUID();
 
     // Game methods
-    private static GamePtr initJNI( long rowid )
+    private static GamePtr initGameJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
-        int ptr = initJNI( getJNI().m_ptr, seed );
+        int ptr = initGameJNI( getJNI().m_ptr, seed );
         GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }
@@ -194,7 +199,7 @@ public class XwJNI {
                         CommonPrefs cp, TransportProcs procs )
 
     {
-        GamePtr gamePtr = initJNI( rowid );
+        GamePtr gamePtr = initGameJNI( rowid );
         if ( game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
                                   dictPaths, langName, util, draw,
                                   cp, procs ) ) {
@@ -211,7 +216,7 @@ public class XwJNI {
                  String[] dictPaths, String langName, UtilCtxt util,
                  DrawCtx draw, CommonPrefs cp, TransportProcs procs )
     {
-        GamePtr gamePtr = initJNI( 0 );
+        GamePtr gamePtr = initGameJNI( 0 );
         game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths,
                           langName, util, draw, cp, procs );
         return gamePtr.retain();
@@ -513,7 +518,7 @@ public class XwJNI {
     private static native byte[] nli_to_stream( int jniState, NetLaunchInfo nli );
     private static native void nli_from_stream( int jniState, NetLaunchInfo nli,
                                                 byte[] stream );
-    private static native int initJNI( int jniState, int seed );
+    private static native int initGameJNI( int jniState, int seed );
     private static native void envDone( int globals );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
