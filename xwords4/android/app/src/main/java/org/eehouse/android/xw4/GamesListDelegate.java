@@ -1076,16 +1076,26 @@ public class GamesListDelegate extends ListDelegateBase
         boolean destOpen = DBUtils.getGroups( m_activity ).get( gid ).m_expanded;
         for ( long rowid : games ) {
             DBUtils.moveGame( m_activity, rowid, gid );
-            if ( !destOpen ) {
-                m_mySIS.selGames.remove( rowid );
-            }
+            unselIfHidden( rowid, gid );
         }
+    }
 
-        // Invalidate if there could have been change
-        if ( ! destOpen ) {
+    private void unselIfHidden( long rowid, long gid )
+    {
+        boolean groupOpen = DBUtils.getGroups( m_activity )
+            .get( gid ).m_expanded;
+        if ( !groupOpen ) {
+            m_mySIS.selGames.remove( rowid );
+            // Invalidate if there could have been change
             invalidateOptionsMenuIf();
             setTitle();
         }
+    }
+
+    private void unselIfHidden( long rowid )
+    {
+        long gid = DBUtils.getGroupForGame( m_activity, rowid );
+        unselIfHidden( rowid, gid );
     }
 
     public void invalidateOptionsMenuIf()
@@ -1158,6 +1168,7 @@ public class GamesListDelegate extends ListDelegateBase
                         setSelGame( rowid );
                         break;
                     case GAME_MOVED:
+                        unselIfHidden( rowid );
                         mkListAdapter();
                         break;
                     default:

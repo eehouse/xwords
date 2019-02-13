@@ -2656,14 +2656,8 @@ public class BoardDelegate extends DelegateBase
 
     private void archiveGame( boolean closeAfter )
     {
-        String archiveName = LocUtils
-            .getString( m_activity, R.string.group_name_archive );
-        long archiveGroupID = DBUtils.getGroup( m_activity, archiveName );
-
-        if ( DBUtils.GROUPID_UNSPEC == archiveGroupID ) {
-            archiveGroupID = DBUtils.addGroup( m_activity, archiveName );
-        }
-        DBUtils.moveGame( m_activity, m_rowid, archiveGroupID );
+        long gid = DBUtils.getArchiveGroup( m_activity );
+        DBUtils.moveGame( m_activity, m_rowid, gid );
         if ( closeAfter ) {
             waitCloseGame( false );
             finish();
