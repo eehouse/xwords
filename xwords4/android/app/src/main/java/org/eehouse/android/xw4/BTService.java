@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh insXw4Deb"; -*- */
 /*
- * Copyright 2010 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2019 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -36,6 +36,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
@@ -44,18 +45,24 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Notes on running under Oreo
 //
@@ -83,23 +90,25 @@ public class BTService extends XWJIService {
     private final static int sJobID = 218719979;
     // half minute for testing; maybe 15 on ship? Or make it a debug config.
     private static int DEFAULT_KEEPALIVE_SECONDS = 15 * 60;
-    private static int CONNECT_SLEEP_MS = 1000;
+    private static int CONNECT_SLEEP_MS = 2500;
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
     private static final int CONNECT_TIMEOUT_MS = 10000;
 
     private static final int BT_PROTO_ORIG = 0;
-    private static final int BT_PROTO_JSONS = 1; // using jsons instead of lots of fields
+    // private static final int BT_PROTO_JSONS = 1; // using jsons instead of lots of fields
     private static final int BT_PROTO_NLI = 2; // using binary/common form of NLI
-    private static final int BT_PROTO = BT_PROTO_JSONS; // change in a release or two
+    private static final int BT_PROTO_BATCH = 3;
+    private static final int BT_PROTO = BT_PROTO_BATCH;
 
     private enum BTAction implements XWJICmds { _NONE,
                                                 ACL_CONN,
                                                 START_BACKGROUND,
+                                                RESEND,
                                                 SCAN,
-                                                INVITE,
-                                                SEND,
+                                                INVITE, // old
+                                                SEND,   // old
                                                 RADIO,
                                                 REMOVE,
                                                 PINGHOST,
@@ -108,6 +117,7 @@ public class BTService extends XWJIService {
                                                 MAKE_OR_NOTIFY,
                                                 RECEIVE_MSG,
                                                 POST_GAME_GONE,
+                                                POST_PING_REPLY,
     };
 
     private static final String MSG_KEY = "MSG";
@@ -115,6 +125,7 @@ public class BTService extends XWJIService {
     private static final String ADDR_KEY = "ADR";
     private static final String SCAN_TIMEOUT_KEY = "SCAN_TIMEOUT";
     private static final String RADIO_KEY = "RDO";
+    private static final String DEL_KEY = "DEL";
     private static final String SOCKET_REF = "SOCKET";
     private static final String NLI_KEY = "NLI";
 
@@ -135,74 +146,16 @@ public class BTService extends XWJIService {
         SCAN,
         INVITE,
         INVITE_ACCPT,
-        INVITE_DECL,
+        INVITE_DECL,            // unused
         INVITE_DUPID,
         INVITE_FAILED,      // generic error
         MESG_SEND,
         MESG_ACCPT,
-        MESG_DECL,
+        MESG_DECL,              // unused
         MESG_GAMEGONE,
-        REMOVE_FOR,
+        REMOVE_FOR,             // unused
         INVITE_DUP_INVITE,
     };
-
-    private class BTQueueElem {
-        int m_failCount;
-        int m_timeout;
-        // These should perhaps be in some subclasses....
-        BTCmd m_cmd;
-        byte[] m_msg;
-        String m_btAddr;
-        String m_gameName;
-        int m_gameID;
-        int m_lang;
-        String m_dict;
-        int m_nPlayersT;
-        NetLaunchInfo m_nli;
-
-        public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
-        public BTQueueElem( BTCmd cmd, int timeout )
-        {
-            this(cmd);
-            m_timeout = timeout;
-        }
-
-        public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, int gameID ) {
-            this( cmd );
-            Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
-            m_msg = buf; m_btAddr = btAddr;
-            m_gameID = gameID;
-            checkAddr();
-        }
-        public BTQueueElem( BTCmd cmd, String btAddr, int gameID ) {
-            this( cmd );
-            Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
-            m_btAddr = btAddr;
-            m_gameID = gameID;
-            checkAddr();
-        }
-
-        public BTQueueElem( BTCmd cmd, NetLaunchInfo nli, String btAddr ) {
-            this( cmd );
-            m_nli = nli;
-            m_btAddr = btAddr;
-            checkAddr();
-        }
-
-        public int incrFailCount() { return ++m_failCount; }
-        public boolean failCountExceeded() { return m_failCount >= MAX_SEND_FAIL; }
-
-        private void checkAddr()
-        {
-            Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( m_btAddr ) );
-        }
-
-        @Override
-        public String toString()
-        {
-            return String.format( "{cmd: %s}", m_cmd );
-        }
-    }
 
     private BluetoothAdapter m_adapter;
     private BTMsgSink m_btMsgSink;
@@ -294,11 +247,13 @@ public class BTService extends XWJIService {
     {
         if ( BTEnabled() ) {
             enqueueWork( context, BTService.class, sJobID, intent );
+            // Log.d( TAG, "enqueueWork(%s)", cmdFrom( intent, BTAction.values() ) );
         }
     }
 
     public static void onACLConnected( Context context )
     {
+        Log.d( TAG, "onACLConnected()" );
         enqueueWork( context,
                      getIntentTo( context, BTAction.ACL_CONN ) );
     }
@@ -336,7 +291,7 @@ public class BTService extends XWJIService {
         enqueueWork( context, intent );
     }
 
-    public static int enqueueFor( Context context, byte[] buf,
+    public static int sendPacket( Context context, byte[] buf,
                                   CommsAddrRec targetAddr, int gameID )
     {
         int nSent = -1;
@@ -352,8 +307,8 @@ public class BTService extends XWJIService {
         }
 
         if ( -1 == nSent ) {
-            Log.i( TAG, "enqueueFor(): can't send to %s",
-                   targetAddr.bt_hostName );
+            Log.i( TAG, "sendPacket(gameID=%d(0x%x)): can't send to %s",
+                   gameID, gameID, targetAddr.bt_hostName );
         }
         return nSent;
     }
@@ -406,7 +361,6 @@ public class BTService extends XWJIService {
     public void onDestroy()
     {
         super.onDestroy();
-        releaseSender( this );
     }
 
     @Override
@@ -416,9 +370,12 @@ public class BTService extends XWJIService {
     void onHandleWorkImpl( Intent intent, XWJICmds jicmd, long timestamp )
     {
         if ( BTEnabled() ) {
+            BTSenderThread.startYourself( this );
+
             BTAction cmd = (BTAction)jicmd;
             switch( cmd ) {
             case ACL_CONN:          // just forces onCreate to run
+                startListener();
                 break;
 
             case START_BACKGROUND:
@@ -428,20 +385,19 @@ public class BTService extends XWJIService {
 
             case SCAN:
                 int timeout = intent.getIntExtra( SCAN_TIMEOUT_KEY, -1 );
-                add( new BTQueueElem( BTCmd.SCAN, timeout ) );
+                startScanThread( timeout );
                 break;
             case INVITE:
                 String jsonData = intent.getStringExtra( GAMEDATA_KEY );
                 NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, jsonData );
                 Log.i( TAG, "handleCommand: nli: %s", nli );
                 String btAddr = intent.getStringExtra( ADDR_KEY );
-                add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
+                getSenderFor( btAddr ).addInvite( nli );
                 break;
-
             case PINGHOST:
                 btAddr = intent.getStringExtra( ADDR_KEY );
                 int gameID = intent.getIntExtra( GAMEID_KEY, 0 );
-                add( new BTQueueElem( BTCmd.PING, btAddr, gameID ) );
+                getSenderFor( btAddr ).addPing( gameID );
                 break;
 
             case SEND:
@@ -449,8 +405,7 @@ public class BTService extends XWJIService {
                 btAddr = intent.getStringExtra( ADDR_KEY );
                 gameID = intent.getIntExtra( GAMEID_KEY, -1 );
                 if ( -1 != gameID ) {
-                    add( new BTQueueElem( BTCmd.MESG_SEND, buf,
-                                          btAddr, gameID ) );
+                    getSenderFor( btAddr ).addMsg( gameID, buf );
                 }
                 break;
             case RADIO:
@@ -472,7 +427,7 @@ public class BTService extends XWJIService {
             case REMOVE:
                 gameID = intent.getIntExtra( GAMEID_KEY, -1 );
                 btAddr = intent.getStringExtra( ADDR_KEY );
-                add( new BTQueueElem( BTCmd.MESG_GAMEGONE, btAddr, gameID ) );
+                getSenderFor( btAddr ).addDied( gameID );
                 break;
 
             case MAKE_OR_NOTIFY:
@@ -522,16 +477,42 @@ public class BTService extends XWJIService {
                     closeForRef( socketRef );
                 }
                 break;
-                
+
+            case POST_PING_REPLY:
+                socketRef = intent.getIntExtra( SOCKET_REF, -1 );
+                socket = socketForRef( socketRef  );
+                if ( null != socket ) {
+                    try {
+                        boolean deleted = intent.getBooleanExtra( DEL_KEY, false );
+                        DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
+                        os.writeByte( BTCmd.PONG.ordinal() );
+                        os.writeBoolean( deleted );
+                        os.flush();
+                    } catch ( IOException ex ) {
+                        Log.ex( TAG, ex );
+                    }
+                    closeForRef( socketRef );
+                }
+                break;
+
             default:
                 Assert.fail();
             }
         }
     } // onHandleWorkImpl()
 
-    private void add( BTQueueElem elem )
+    private void startScanThread( final int timeout )
     {
-        senderFor( this ).add( elem );
+        new Thread( new Runnable() {
+                @Override
+                public void run() {
+                    Log.d( TAG, "scan thread starting" );
+                    BTSenderThread.startYourself( BTService.this )
+                        .sendPings( MultiEvent.HOST_PONGED, timeout );
+                    mHelper.postEvent( MultiEvent.SCAN_DONE );
+                    Log.d( TAG, "scan thread done" );
+                }
+            } ).start();
     }
 
     private static class BTListenerThread extends Thread {
@@ -581,60 +562,55 @@ public class BTService extends XWJIService {
                 logIOE( ioe );
             }
 
+            int nBadCount = 0;
             while ( null != m_serverSocket && adapter.isEnabled() ) {
+                BluetoothSocket socket = null;
                 try {
                     Log.d( TAG, "%s.run() calling accept()", this );
-                    BluetoothSocket socket = m_serverSocket.accept(); // blocks
-                    Log.d( TAG, "accept() => %s", socket );
+                    socket = m_serverSocket.accept(); // blocks
+                    Assert.assertTrue( socket.isConnected() || !BuildConfig.DEBUG );
                     DataInputStream inStream =
                         new DataInputStream( socket.getInputStream() );
 
                     byte proto = inStream.readByte();
-                    BTCmd cmd = BTCmd.values()[inStream.readByte()];
-                    Log.d( TAG, "BTListenerThread() got %s", cmd );
-                    if ( protoOK( proto, cmd ) ) {
-                        process( socket, proto, inStream, cmd );
+                    if ( proto == BT_PROTO_BATCH ) {
+                        resetSenderFor( socket );         // still looks good here?
+
+                        new PacketParser()
+                            .dispatchAll( inStream, socket, BTListenerThread.this );
+                        // hack: will close if nobody ref'd it inside dispatchAll()
+                        closeForRef( makeRefFor( socket ) );
+                        socket = null;
                     } else {
                         writeBack( socket, BTCmd.BAD_PROTO );
+                        socket.close();
                     }
+                    nBadCount = 0;
                 } catch ( IOException ioe ) {
-                    Log.w( TAG, "trying again..." );
-                    logIOE( ioe);
-                    continue;
+                    ++nBadCount;
+                    Log.w( TAG, "BTListenerThread.run(): trying again (%dth time)", nBadCount );
+                    // logIOE( ioe);
+
                 } catch ( NullPointerException npe ) {
-                    continue;   // m_serverSocket probably null
+                    // continue;   // m_serverSocket probably null
+                } finally {
+                    if ( null != socket ) {
+                        try {
+                            socket.close();
+                        } catch ( Exception ex ) {
+                            Log.ex( TAG, ex );
+                        }
+                    }
                 }
             }
 
             closeServerSocket();
+
             stopYourself( this ); // need to clear the ref so can restart
+            onACLConnected( XWApp.getContext() ); // make sure we'll start again
+
             Log.d( TAG, "BTListenerThread.run() exiting" );
         } // run()
-
-        private void process( BluetoothSocket socket, byte proto,
-                              DataInputStream inStream, BTCmd cmd )
-            throws IOException
-        {
-            switch( cmd ) {
-            case PING:
-                receivePing( socket );
-                break;
-            case INVITE:
-                receiveInvitation( proto, inStream, socket );
-                break;
-            case MESG_SEND:
-                receiveMessage( cmd, inStream, socket );
-                break;
-
-            case MESG_GAMEGONE:
-                receiveMessage( cmd, inStream, socket );
-                break;
-
-            default:
-                Log.e( TAG, "unexpected msg %s", cmd.toString());
-                break;
-            }
-        }
 
         public void stopListening()
         {
@@ -654,44 +630,21 @@ public class BTService extends XWJIService {
             }
         }
 
-        private boolean protoOK( byte proto, BTCmd cmd )
+        void receivePing( int gameID, BluetoothSocket socket )
+            throws IOException
         {
-            boolean ok = proto == BT_PROTO_NLI || proto == BT_PROTO_JSONS;
-            return ok;
-        }
-
-        private void receivePing( BluetoothSocket socket ) throws IOException
-        {
-            DataInputStream inStream = new DataInputStream( socket.getInputStream() );
-            int gameID = inStream.readInt();
             boolean deleted = 0 != gameID && !DBUtils
                 .haveGame( XWApp.getContext(), gameID );
 
-            DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
-            os.writeByte( BTCmd.PONG.ordinal() );
-            os.writeBoolean( deleted );
-            os.flush();
+            enqueueWork( getIntentTo( BTAction.POST_PING_REPLY )
+                         .putExtra( SOCKET_REF, makeRefFor( socket ) )
+                         .putExtra( DEL_KEY, deleted ) );
 
-            socket.close();
-            // service.updateStatusOut( true );
         }
 
-        private void receiveInvitation( byte proto, DataInputStream is,
-                                        BluetoothSocket socket )
+        void receiveInvitation( NetLaunchInfo nli, BluetoothSocket socket )
             throws IOException
         {
-            BTCmd result;
-            NetLaunchInfo nli;
-            if ( BT_PROTO_JSONS == proto ) {
-                String asJson = is.readUTF();
-                nli = NetLaunchInfo.makeFrom( XWApp.getContext(), asJson );
-            } else {
-                short len = is.readShort();
-                byte[] nliData = new byte[len];
-                is.readFully( nliData );
-                nli = XwJNI.nliFromStream( nliData );
-            }
-
             Intent intent = getIntentTo( BTAction.MAKE_OR_NOTIFY )
                 .putExtra( SOCKET_REF, makeRefFor( socket ) )
                 .putExtra( NLI_KEY, nli )
@@ -699,42 +652,20 @@ public class BTService extends XWJIService {
             enqueueWork( intent );
         } // receiveInvitation
 
-        private void receiveMessage( BTCmd cmd, DataInputStream dis,
-                                     BluetoothSocket socket )
+        void receiveMessage( int gameID, byte[] buffer, BluetoothSocket socket )
         {
-            try {
-                BTCmd result = null;
-                int gameID = dis.readInt();
-                switch ( cmd ) {
-                case MESG_SEND:
-                    byte[] buffer = new byte[dis.readShort()];
-                    dis.readFully( buffer );
-
-                    enqueueWork( getIntentTo( BTAction.RECEIVE_MSG )
-                                 .putExtra( SOCKET_REF, makeRefFor( socket ) )
-                                 .putExtra( GAMEID_KEY, gameID )
-                                 .putExtra( MSG_KEY, buffer ) );
-                    socket = null;
-                    break;
-                case MESG_GAMEGONE:
-                    enqueueWork( getIntentTo( BTAction.POST_GAME_GONE )
-                                 .putExtra( SOCKET_REF, makeRefFor( socket ) )
-                                 .putExtra( GAMEID_KEY, gameID ) );
-                    socket = null;
-                    break;
-                default:
-                    result = BTCmd.BAD_PROTO;
-                    break;
-                }
-
-                if ( null != socket ) {
-                    writeBack( socket, result );
-                    socket.close();
-                }
-            } catch ( IOException ioe ) {
-                logIOE( ioe );
-            }
+            enqueueWork( getIntentTo( BTAction.RECEIVE_MSG )
+                         .putExtra( SOCKET_REF, makeRefFor( socket ) )
+                         .putExtra( GAMEID_KEY, gameID )
+                         .putExtra( MSG_KEY, buffer ) );
         } // receiveMessage
+
+        void receiveGameGone( int gameID, BluetoothSocket socket )
+        {
+            enqueueWork( getIntentTo( BTAction.POST_GAME_GONE )
+                         .putExtra( SOCKET_REF, makeRefFor( socket ) )
+                         .putExtra( GAMEID_KEY, gameID ) );
+        }
     } // class BTListenerThread
 
     private static Map<String, String> s_namesToAddrs;
@@ -769,111 +700,101 @@ public class BTService extends XWJIService {
     // forever. Ideally it exists long enough to send the elems posted by one
     // instance then dies.
 
-    private static Map<BTService, BTSenderThread> sMap = new HashMap<>();
-    private synchronized BTSenderThread senderFor( BTService bts )
-    {
-        BTSenderThread result = sMap.get( bts );
-        if ( null == result ) {
-            result = new BTSenderThread();
-            result.start();
-            sMap.put( bts, result );
-        }
-        return result;
-    }
-
-    private synchronized void releaseSender( BTService bts )
-    {
-        BTSenderThread thread = sMap.get( bts );
-        if ( null != thread ) {
-            thread.mFinishing = true;
-            sMap.remove( bts );
-        }
-    }
-
-    private class BTSenderThread extends Thread {
-        private LinkedBlockingQueue<BTQueueElem> m_queue;
-        private HashMap<String,LinkedList<BTQueueElem> > m_resends;
+    private static class BTSenderThread extends Thread {
         private volatile boolean mFinishing = false;
+        private BTService mService;
 
-        private BTSenderThread()
+        private static BTSenderThread[] sSenderHolder = {null};
+        private static BTSenderThread startYourself( BTService bts )
         {
-            m_queue = new LinkedBlockingQueue<BTQueueElem>();
-            m_resends = new HashMap<String,LinkedList<BTQueueElem> >();
+            synchronized ( sSenderHolder ) {
+                BTSenderThread result = sSenderHolder[0];
+                if ( null == result || !result.isAlive() ) {
+                    result = new BTSenderThread( bts );
+                    result.start();
+                    sSenderHolder[0] = result;
+                } else {
+                    result.setService( bts );
+                }
+                return result;
+            }
         }
 
-        public void add( BTQueueElem elem )
-        {
-            Assert.assertFalse( mFinishing );
-            m_queue.add( elem );
+        private BTSenderThread( BTService service ) {
+            setService( service );
         }
+
+        void setService( BTService service ) { mService = service; }
 
         @Override
         public void run()
         {
-            int nDone = 0;
-            String className = getClass().getSimpleName();
+            final String className = getClass().getSimpleName();
+            final AtomicInteger nDone = new AtomicInteger();
             Log.d( TAG, "%s.run() starting", className );
-            for ( ; ; ) {
-                BTQueueElem elem;
-                // onTheWayOut: mFinishing can change while we're in poll()
-                boolean onTheWayOut = mFinishing;
+            while ( !mFinishing ) {
                 try {
-                    elem = m_queue.poll( RESEND_TIMEOUT, TimeUnit.SECONDS );
+                    List<PacketAccumulator> pas = getHasData(); // blocks
+                    Thread[] threads = new Thread[pas.size()];
+                    int ii = 0;
+                    for ( final PacketAccumulator pa : pas ) {
+                        threads[ii] = new Thread( new Runnable() {
+                                @Override
+                                public void run() {
+                                    BluetoothSocket socket = null;
+                                    try {
+                                        boolean success = false;
+                                        socket = mService.m_adapter.getRemoteDevice( pa.getAddr() )
+                                            .createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
+                                        DataOutputStream dos = connect( socket );
+                                        if ( null == dos ) {
+                                            pa.setNoHost();
+                                        } else {
+                                            Log.d( TAG, "%s.run(): connect(%s) => %s", className,
+                                                   pa.getName(), dos );
+                                            nDone.addAndGet( pa.writeAndCheck( socket, dos,
+                                                                               mService.mHelper ) );
+                                            success = true;
+                                        }
+                                    } catch ( IOException ioe ) {
+                                        Log.e( TAG, "%s.run(): ioe: %s", className,
+                                               ioe.getMessage() );
+                                    } finally {
+                                        if ( null != socket ) {
+                                            try { socket.close(); }
+                                            catch (Exception ex) {}
+                                        }
+                                    }
+                                }
+                            } );
+                        threads[ii++].start();
+                    }
+
+                    Log.d( TAG, "%s.run(): waiting on %d threads", className,
+                           threads.length );
+                    for ( Thread thread : threads ) {
+                        try {
+                            thread.join();
+                        } catch ( InterruptedException ex ) {
+                            Assert.assertFalse( BuildConfig.DEBUG );
+                        }
+                    }
+                    Log.d( TAG, "%s.run(): DONE waiting on %d threads", className,
+                           threads.length );
+                // } catch ( IOException ie ) {
+                //     Log.e( TAG, "run(): ioe: %s", ie.getMessage() );
                 } catch ( InterruptedException ie ) {
-                    Log.w( TAG, "interrupted; killing thread" );
+                    Log.w( TAG, "%s.run() interrupted; killing thread", className );
                     break;
                 }
-
-                if ( null == elem ) { // timed out
-                    if ( doAnyResends() && onTheWayOut ) {
-                        // nothing to send AND nothing to resend: outta here!
-                        break;
-                    }
-                } else {
-                    ++nDone;
-                    // DbgUtils.logf( "run: got %s from queue", elem.m_cmd.toString() );
-
-                    switch( elem.m_cmd ) {
-                    case PING:
-                        if ( null == elem.m_btAddr ) {
-                            sendPings( MultiEvent.HOST_PONGED, CONNECT_TIMEOUT_MS );
-                        } else {
-                            sendPing( elem.m_btAddr, elem.m_gameID, CONNECT_TIMEOUT_MS );
-                        }
-                        break;
-                    case SCAN:
-                        sendPings( MultiEvent.HOST_PONGED, elem.m_timeout );
-                        mHelper.postEvent( MultiEvent.SCAN_DONE );
-                        break;
-                    case INVITE:
-                        sendInvite( elem );
-                        break;
-                    case MESG_SEND:
-                        boolean success = doAnyResends( elem.m_btAddr )
-                            && sendElem( elem );
-                        if ( !success ) {
-                            addToResends( elem );
-                        }
-                        updateStatusOut( success );
-                        break;
-
-                    case MESG_GAMEGONE:
-                        sendElem( elem );
-                        break;
-
-                    default:
-                        Assert.fail();
-                        break;
-                    }
-                }
             }
-            Log.d( TAG, "%s.run() exiting (owner was %s; handled %d packets)",
-                   className, BTService.this, nDone );
-        } // run
-
+            Log.d( TAG, "%s.run() exiting after sending %d packets (owner was %s)", className,
+                   nDone.get(), mService );
+        }
+        
         private void sendPings( MultiEvent event, int timeout )
         {
-            Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
+            Set<BluetoothDevice> pairedDevs = mService.m_adapter.getBondedDevices();
             Map<BluetoothDevice, PingThread> threads = new HashMap<>();
             for ( BluetoothDevice dev : pairedDevs ) {
                 // Skip things that can't host an Android app
@@ -883,8 +804,8 @@ public class BTService extends XWJIService {
                     threads.put( dev, thread );
                     thread.start();
                 } else {
-                    Log.d( TAG, "skipping %s; not an android device!",
-                           dev.getName() );
+                    Log.d( TAG, "skipping %s (clazz=%d); not an android device!",
+                           dev.getName(), clazz );
                 }
             }
 
@@ -913,7 +834,7 @@ public class BTService extends XWJIService {
             public void run() {
                 mGotResponse = sendPing( mDev, 0, mTimeout );
                 if ( mGotResponse && null != mEvent) {
-                    mHelper.postEvent( mEvent, mDev );
+                    mService.mHelper.postEvent( mEvent, mDev );
                 }
             }
 
@@ -922,6 +843,7 @@ public class BTService extends XWJIService {
 
         private boolean sendPing( BluetoothDevice dev, int gameID, int timeout )
         {
+            Log.d( TAG, "sendPing(dev=%s)", dev );
             boolean gotReply = false;
             boolean sendWorking = false;
             boolean receiveWorking = false;
@@ -929,23 +851,14 @@ public class BTService extends XWJIService {
                 BluetoothSocket socket =
                     dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                 if ( null != socket ) {
-                    DataOutputStream os = connect( socket, BTCmd.PING, timeout );
+                    DataOutputStream os = connect( socket, timeout );
                     if ( null != os ) {
-                        os.writeInt( gameID );
-                        os.flush();
-                        try ( KillerIn killer = new KillerIn( socket, 5 ) ) {
-                            DataInputStream is =
-                                new DataInputStream( socket.getInputStream() );
-                            BTCmd reply = BTCmd.values()[is.readByte()];
-                            if ( BTCmd.BAD_PROTO == reply ) {
-                                sendBadProto( socket );
-                            } else {
-                                gotReply = BTCmd.PONG == reply;
-                                if ( gotReply && is.readBoolean() ) {
-                                    mHelper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
-                                }
-                            }
-                        }
+                        // quick hack to use new formatting code here too
+                        PacketAccumulator pa = new PacketAccumulator(socket.getRemoteDevice().getAddress());
+                        pa.addPing( gameID );
+                        int nSent = pa.writeAndCheck( socket, os, mService.mHelper );
+                        gotReply = nSent == 1;
+                        Assert.assertTrue( nSent == 1 );
                         receiveWorking = true;
                         sendWorking = true;
                     }
@@ -955,265 +868,63 @@ public class BTService extends XWJIService {
                 Log.e( TAG, "sendPing() failure; %s", ioe.getMessage() );
                 DbgUtils.printStack( TAG, ioe );
             }
-            updateStatusOut( sendWorking );
-            updateStatusIn( receiveWorking );
-            Log.d( TAG, "sendPing(%s) => %b", dev.getName(), gotReply );
+            mService.updateStatusOut( sendWorking );
+            mService.updateStatusIn( receiveWorking );
+            // Log.d( TAG, "sendPing(%s) => %b", dev.getName(), gotReply );
             return gotReply;
         } // sendPing
 
         private boolean sendPing( String btAddr, int gameID, int timeout )
         {
             boolean success = false;
-            BluetoothDevice dev = m_adapter.getRemoteDevice( btAddr );
+            BluetoothDevice dev = mService.m_adapter.getRemoteDevice( btAddr );
             success = sendPing( dev, gameID, timeout );
             return success;
         }
 
-        private void sendInvite( BTQueueElem elem )
+        private DataOutputStream connect( BluetoothSocket socket )
         {
-            try {
-                BluetoothDevice dev =
-                    m_adapter.getRemoteDevice( elem.m_btAddr );
-                BluetoothSocket socket =
-                    dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
-                if ( null != socket ) {
-                    BTCmd reply = null;
-                    DataOutputStream outStream = connect( socket, BTCmd.INVITE );
-                    if ( null != outStream ) {
-                        if ( BT_PROTO == BT_PROTO_JSONS ) {
-                            outStream.writeUTF( elem.m_nli.toString() );
-                        } else {
-                            byte[] nliData = XwJNI.nliToStream( elem.m_nli );
-                            outStream.writeShort( nliData.length );
-                            outStream.write( nliData, 0, nliData.length );
-                        }
-                        Log.i( TAG, "sending invite" );
-                        outStream.flush();
-
-                        DataInputStream inStream =
-                            new DataInputStream( socket.getInputStream() );
-                        reply = BTCmd.values()[inStream.readByte()];
-                        Log.i( TAG, "got invite reply: %s", reply );
-                    }
-
-                    if ( null == reply ) {
-                        mHelper.postEvent( MultiEvent.APP_NOT_FOUND_BT,
-                                           dev.getName() );
-                    } else {
-                        switch ( reply ) {
-                        case BAD_PROTO:
-                            sendBadProto( socket );
-                            break;
-                        case INVITE_ACCPT:
-                            mHelper.postEvent( MultiEvent.NEWGAME_SUCCESS,
-                                               elem.m_gameID );
-                            break;
-                        case INVITE_DUPID:
-                            mHelper.postEvent( MultiEvent.NEWGAME_DUP_REJECTED,
-                                               dev.getName() );
-                            break;
-                        default:
-                            mHelper.postEvent( MultiEvent.NEWGAME_FAILURE,
-                                               elem.m_gameID );
-                            break;
-                        }
-                    }
-
-                    socket.close();
-                }
-            } catch ( IOException ioe ) {
-                logIOE( ioe );
-            }
-        } // sendInvite
-
-        private boolean sendElem( BTQueueElem elem )
-        {
-            boolean success = false;
-            // synchronized( m_deadGames ) {
-            //     success = m_deadGames.contains( elem.m_gameID );
-            // }
-            MultiEvent evt;
-            if ( success ) {
-                evt = MultiEvent.MESSAGE_DROPPED;
-                Log.w( TAG, "sendElem: dropping message %s because game %X dead",
-                       elem.m_cmd, elem.m_gameID );
-            } else {
-                evt = MultiEvent.MESSAGE_REFUSED;
-            }
-            if ( !success ) {
-                try {
-                    BluetoothDevice dev =
-                        m_adapter.getRemoteDevice( elem.m_btAddr );
-                    BluetoothSocket socket = dev.
-                        createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
-                    if ( null != socket ) {
-                        DataOutputStream outStream =
-                            connect( socket, elem.m_cmd );
-                        if ( null != outStream ) {
-                            outStream.writeInt( elem.m_gameID );
-
-                            switch ( elem.m_cmd ) {
-                            case MESG_SEND:
-                                short len = (short)elem.m_msg.length;
-                                outStream.writeShort( len );
-                                outStream.write( elem.m_msg, 0, elem.m_msg.length );
-                                break;
-                            case MESG_GAMEGONE:
-                                // gameID's all we need
-                                break;
-                            default:
-                                Assert.fail();
-                            }
-
-                            outStream.flush();
-
-                            BTCmd reply;
-                            try ( KillerIn killer = new KillerIn( socket, 10 ) ) {
-                                DataInputStream inStream =
-                                    new DataInputStream( socket.getInputStream() );
-                                reply = BTCmd.values()[inStream.readByte()];
-                            }
-                            success = true;
-
-                            switch ( reply ) {
-                            case BAD_PROTO:
-                                sendBadProto( socket );
-                                evt = null;
-                                break;
-                            case MESG_ACCPT:
-                                evt = MultiEvent.MESSAGE_ACCEPTED;
-                                break;
-                            case MESG_GAMEGONE:
-                                evt = MultiEvent.MESSAGE_NOGAME;
-                                break;
-                            }
-                        }
-                        socket.close();
-                    }
-                } catch ( IOException ioe ) {
-                    success = false;
-                    logIOE( ioe );
-                }
-            }
-
-            if ( null != evt ) {
-                String btName = nameForAddr( m_adapter, elem.m_btAddr );
-                mHelper.postEvent( evt, elem.m_gameID, 0, btName );
-                if ( ! success ) {
-                    int failCount = elem.incrFailCount();
-                    mHelper.postEvent( MultiEvent.MESSAGE_RESEND, btName,
-                                                RESEND_TIMEOUT, failCount );
-                }
-            }
-            return success;
-        } // sendElem
-
-        private boolean doAnyResends( LinkedList<BTQueueElem> resends )
-        {
-            int count = 0;
-            boolean success = null == resends || 0 < resends.size();
-            if ( !success ) {
-                count = resends.size();
-                success = true;
-                ListIterator<BTQueueElem> iter = resends.listIterator();
-                while ( iter.hasNext() && success ) {
-                    BTQueueElem elem = iter.next();
-                    success = sendElem( elem );
-                    if ( success ) {
-                        iter.remove();
-                    } else if ( elem.failCountExceeded() ) {
-                        String btName = nameForAddr( m_adapter, elem.m_btAddr );
-                        mHelper.postEvent( MultiEvent.MESSAGE_FAILOUT, btName );
-                        iter.remove();
-                    }
-                }
-
-            }
-            if ( 0 < count ) {
-                Log.d( TAG, "doAnyResends(size=%d) => %b", count, success );
-            }
-            return success;
+            return connect( socket, 20000 );
         }
 
-        private boolean doAnyResends( String btAddr )
-        {
-            return doAnyResends( m_resends.get( btAddr ) );
-        }
-
-        private boolean doAnyResends()
-        {
-            boolean success = true;
-            Iterator<LinkedList<BTQueueElem>> iter =
-                m_resends.values().iterator();
-            while ( iter.hasNext() ) {
-                LinkedList<BTQueueElem> list = iter.next();
-                success = doAnyResends( list ) && success;
-            }
-            return success;
-        }
-
-        private void addToResends( BTQueueElem elem )
-        {
-            String addr = elem.m_btAddr;
-            LinkedList<BTQueueElem> resends = m_resends.get( addr );
-            if ( null == resends ) {
-                resends = new LinkedList<BTQueueElem>();
-                m_resends.put( addr, resends );
-            }
-            resends.add( elem );
-        }
-
-        private boolean haveResends()
-        {
-            boolean found = false;
-            Iterator<LinkedList<BTQueueElem>> iter =
-                m_resends.values().iterator();
-            while ( !found && iter.hasNext() ) {
-                LinkedList<BTQueueElem> list = iter.next();
-                found = 0 < list.size();
-            }
-            return found;
-        }
-
-        private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )
-        {
-            return connect( socket, cmd, 20000 );
-        }
-
-        private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd,
-                                          int timeout )
+        private DataOutputStream connect( BluetoothSocket socket, int timeout )
         {
             String name = socket.getRemoteDevice().getName();
             String addr = socket.getRemoteDevice().getAddress();
             Log.w( TAG, "connect(%s/%s, timeout=%d) starting", name, addr, timeout );
             // DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
             // Docs say always call cancelDiscovery before trying to connect
-            m_adapter.cancelDiscovery();
+            mService.m_adapter.cancelDiscovery();
 
             DataOutputStream dos = null;
 
             // Retry for some time. Some devices take a long time to generate and
             // broadcast ACL conn ACTION
+            int nTries = 0;
             for ( long end = timeout + System.currentTimeMillis(); ; ) {
                 try {
-                    Log.d( TAG, "trying connect(%s/%s) ", name, addr );
+                    Log.d( TAG, "trying connect(%s/%s) (check accept() logs)", name, addr );
+                    ++nTries;
                     socket.connect();
-                    Log.i( TAG, "connect(%s/%s) succeeded", name, addr );
+                    Log.i( TAG, "connect(%s/%s) succeeded after %d tries",
+                           name, addr, nTries );
                     dos = new DataOutputStream( socket.getOutputStream() );
                     dos.writeByte( BT_PROTO );
-                    dos.writeByte( cmd.ordinal() );
                     break;          // success!!!
                 } catch (IOException ioe) {
-                    if ( CONNECT_SLEEP_MS + System.currentTimeMillis() > end ) {
+                    Log.d( TAG, "connect(): %s", ioe.getMessage() );
+                    long msLeft = end - System.currentTimeMillis();
+                    if ( msLeft <= 0 ) {
                         break;
                     }
                     try {
-                        Thread.sleep( CONNECT_SLEEP_MS );
+                        Thread.sleep( Math.min( CONNECT_SLEEP_MS, msLeft ) );
                     } catch ( InterruptedException ex ) {
                         break;
                     }
                 }
             }
+            Log.w( TAG, "connect(%s/%s) => %s", name, addr, dos );
             return dos;
         }
     } // class BTSenderThread
@@ -1287,8 +998,13 @@ public class BTService extends XWJIService {
 
     private void sendBadProto( BluetoothSocket socket )
     {
-        mHelper.postEvent( MultiEvent.BAD_PROTO_BT,
-                           socket.getRemoteDevice().getName() );
+        sendBadProto( mHelper, socket );
+    }
+
+    private static void sendBadProto( BTServiceHelper helper, BluetoothSocket socket )
+    {
+        helper.postEvent( MultiEvent.BAD_PROTO_BT,
+                          socket.getRemoteDevice().getName() );
     }
 
     private void updateStatusOut( boolean success )
@@ -1303,34 +1019,6 @@ public class BTService extends XWJIService {
             .updateStatusIn( this, null, CommsConnType.COMMS_CONN_BT, success );
     }
 
-    private class KillerIn implements AutoCloseable {
-        private final Thread mThread;
-        KillerIn( final BluetoothSocket socket, final int seconds )
-        {
-            mThread = new Thread( new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep( 1000 * seconds );
-                    } catch ( InterruptedException ie ) {
-                        // Log.d( TAG, "KillerIn: killed by owner" );
-                    }
-                    try {
-                        socket.close();
-                    } catch( IOException ioe ) {
-                        Log.ex( TAG, ioe );
-                    }
-                }
-                });
-            mThread.start();
-        }
-
-        @Override
-        public void close()
-        {
-            mThread.interrupt();
-        }
-    }
-
     private class BTMsgSink extends MultiMsgSink {
 
         public BTMsgSink() { super( BTService.this ); }
@@ -1341,8 +1029,8 @@ public class BTService extends XWJIService {
             int nSent = -1;
             String btAddr = getSafeAddr( addr );
             if ( null != btAddr && 0 < btAddr.length() ) {
-                add( new BTQueueElem( BTCmd.MESG_SEND, buf, btAddr,
-                                      gameID ) );
+                getSenderFor( btAddr ).addMsg( gameID, buf );
+                BTSenderThread.startYourself( BTService.this );
                 nSent = buf.length;
             } else {
                 Log.i( TAG, "sendViaBluetooth(): no addr for dev %s",
@@ -1378,15 +1066,491 @@ public class BTService extends XWJIService {
         }
     }
 
-    private static Map<Integer, BluetoothSocket> s_sockets = new HashMap<>();
+    private static class PacketAccumulator {
+        private String mAddr;
+        private String mName;
+        private List<BTCmd> mCmds;
+        private List<Integer> mGameIDs;
+        private OutputPair mOP;
+        private long mStamp;
+        private long mLastFailTime;
+        private int mFailCount;
+
+        // private int mPacketCount;
+
+        PacketAccumulator( String addr ) {
+            mAddr = addr;
+            mName = getName( addr );
+            clearAll();
+            // Log.d( TAG, "PacketAccumulator.__init() => %s", this );
+        }
+
+        String getAddr() { return mAddr; }
+        String getName() { return mName; }
+
+        long getNextReadyMS()
+        {
+            long waitFromNow;
+            // Log.d( TAG, "getNextReadyMS() IN" );
+            synchronized ( this ) {
+                if ( 0 == mCmds.size() ) { // nothing to send
+                    waitFromNow = Long.MAX_VALUE;
+                } else if ( 0 == mFailCount ) {
+                    waitFromNow = 0;
+                } else {
+                    // If we're failing, use a backoff.
+                    long wait = 10 * 1000 * 2 * (1 + mFailCount);
+                    waitFromNow = wait - (System.currentTimeMillis() - mLastFailTime);
+                }
+
+                Log.d( TAG, "%s.getNextReadyMS() => %dms", this, waitFromNow );
+            }
+            return waitFromNow;
+        }
+
+         void setNoHost()
+        {
+            // Log.d( TAG, "setNoHost() IN" );
+            synchronized ( this ) {
+                mLastFailTime = System.currentTimeMillis();
+                ++mFailCount;
+            }
+            // Log.d( TAG, "setNoHost() OUT" );
+        }
+
+        @Override
+        public synchronized String toString()
+        {
+            long age = System.currentTimeMillis() - mStamp;
+            return String.format("{name: %s, addr: %s, age: %dms, failCount: %d, len: %d, cmds: %s}",
+                                 mName, mAddr, age, mFailCount, mOP.length(),
+                                 TextUtils.join(",", mCmds) );
+        }
+
+        int writeAndCheck( BluetoothSocket socket, DataOutputStream dos,
+                           BTServiceHelper helper )
+            throws IOException
+        {
+            Log.d( TAG, "%s.writeAndCheck() IN", this );
+
+            List<BTCmd> localCmds = null;
+            List<Integer> localGameIDs = null;
+
+            synchronized ( this ) {
+                byte[] data = mOP.bos.toByteArray();
+                if ( 0 < data.length ) {
+                    try {
+                        // Format is <proto><len-of-rest><msgCount><msgsData> To
+                        // insert the count at the beginning we have to create a
+                        // whole new byte array since there's no random access.
+
+                        OutputPair tmpOP = new OutputPair();
+                        tmpOP.dos.writeByte( mCmds.size() ); // count of messages
+                        Log.d( TAG, "writeAndCheck(): wrote msg count: %d", mCmds.size() );
+                        tmpOP.dos.write( data, 0, data.length );
+                        data = tmpOP.bos.toByteArray(); // replace data
+
+                        // now write to the socket
+                        Assert.assertNotNull( dos );
+                        // dos.writeByte( BT_PROTO );
+                        dos.writeShort( data.length );
+                        dos.write( data, 0, data.length );
+                        dos.flush();
+                        Log.d( TAG, "writeAndCheck(): wrote %d-byte payload with sum %s",
+                               data.length, Utils.getMD5SumFor( data ) );
+
+                        // If we get this far, we're going to assume the send has
+                        // succeeded. Now we need to get out of the synchronized
+                        // block because handling all the reads on the socket can
+                        // take a long time and will block lots of stuff
+
+                        localCmds = mCmds;
+                        localGameIDs = mGameIDs;
+
+                        // Now read responses
+                        // int nCmds = mCmds.size();
+                        // On remote, socket is being passed through
+                        // onHandleWork. Could take a f*ck of a long time. Maybe we
+                        // don't want this any more?
+                        // try ( KillerIn killer = new KillerIn( socket, 5 * nCmds ) ) {
+                        // DataInputStream inStream =
+                        //     new DataInputStream( socket.getInputStream() );
+                    } catch ( IOException ioe ) {
+                        Log.e( TAG, "writeAndCheck(): ioe: %s", ioe.getMessage() );
+                    }
+                }
+            }
+
+            Log.d( TAG, "writeAndCheck(): reading replies" );
+            int nDone = 0;
+            if ( null != localCmds ) {
+                try {
+                    DataInputStream inStream =
+                        new DataInputStream( socket.getInputStream() );
+                    for ( int ii = 0; ii < localCmds.size(); ++ii ) {
+                        BTCmd cmd = localCmds.get(ii);
+                        int gameID = localGameIDs.get(ii);
+                        BTCmd reply = BTCmd.values()[inStream.readByte()];
+                        Log.d( TAG, "writeAndCheck() %s: got response %s to cmd[%d] %s",
+                               this, reply, ii, cmd );
+
+                        handleReply( helper, socket, inStream, cmd, gameID, reply );
+                        nDone = localCmds.size();
+                    }
+                    if ( nDone > 0 ) {
+                        clearAll();
+                    }
+                } catch ( IOException ioe ) {
+                    Log.d( TAG, "failed reading replies: %s", ioe.getMessage() );
+                }
+            }
+            Log.d( TAG, "writeAndCheck() => %d", nDone );
+            return nDone;
+        }
+
+        private void handleReply( BTServiceHelper helper, BluetoothSocket socket,
+                                  DataInputStream inStream, BTCmd cmd, int gameID,
+                                  BTCmd reply ) throws IOException
+        {
+            MultiEvent evt = null;
+            if ( reply == BTCmd.BAD_PROTO ) {
+                sendBadProto( helper, socket );
+            } else {
+                switch ( cmd ) {
+                case MESG_SEND:
+                case MESG_GAMEGONE:
+                    switch ( reply ) {
+                    case MESG_ACCPT:
+                        evt = MultiEvent.MESSAGE_ACCEPTED;
+                        break;
+                    case MESG_GAMEGONE:
+                        evt = MultiEvent.MESSAGE_NOGAME;
+                        break;
+                    }
+                    break;
+                    
+                case INVITE:
+                    switch ( reply ) {
+                    case INVITE_ACCPT:
+                        helper.postEvent( MultiEvent.NEWGAME_SUCCESS, gameID );
+                        break;
+                    case INVITE_DUPID:
+                        helper.postEvent( MultiEvent.NEWGAME_DUP_REJECTED, mName );
+                        break;
+                    default:
+                        helper.postEvent( MultiEvent.NEWGAME_FAILURE, gameID );
+                        break;
+                    }
+                    break;
+                case PING:
+                    if ( BTCmd.PONG == reply && inStream.readBoolean() ) {
+                        helper.postEvent( MultiEvent.MESSAGE_NOGAME, gameID );
+                    }
+                    break;
+                    
+                default:
+                    Log.e( TAG, "handleReply(cmd=%s) case not handled", cmd );
+                    Assert.assertFalse( BuildConfig.DEBUG ); // fired
+                }
+
+                if ( null != evt ) {
+                    helper.postEvent( evt, gameID, 0, mName );
+                    // if ( ! success ) {
+                    //     int failCount = elem.incrFailCount();
+                    //     mHelper.postEvent( MultiEvent.MESSAGE_RESEND, btName,
+                    //                        RESEND_TIMEOUT, failCount );
+                    // }
+                }
+            }
+        }
+
+        private void clearAll() {
+            Log.d( TAG, "PacketAccumulator.clearAll(): wiping %d messages",
+                   mCmds == null ? 0 : mCmds.size() );
+            mOP = new OutputPair();
+            mCmds = new ArrayList<>();
+            mGameIDs = new ArrayList<>();
+            mFailCount = 0;
+            mStamp = 0;
+        }
+
+        void addPing( int gameID )
+        {
+            try {
+                OutputPair op = new OutputPair();
+                op.dos.writeInt( gameID );
+                append( BTCmd.PING, gameID, op );
+            } catch ( IOException ioe ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
+        }
+
+        void addInvite( NetLaunchInfo nli )
+        {
+            try {
+                OutputPair op = new OutputPair();
+                byte[] nliData = XwJNI.nliToStream( nli );
+                op.dos.writeShort( nliData.length );
+                op.dos.write( nliData, 0, nliData.length );
+                append( BTCmd.INVITE, op );
+            } catch ( IOException ioe ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
+        }
+
+        void addMsg( int gameID, byte[] buf )
+        {
+            try {
+                OutputPair op = new OutputPair();
+                op.dos.writeInt( gameID );
+                op.dos.writeShort( buf.length );
+                op.dos.write( buf, 0, buf.length );
+                append( BTCmd.MESG_SEND, gameID, op );
+            } catch ( IOException ioe ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
+        }
+        
+        void addDied( int gameID )
+        {
+            try {
+                OutputPair op = new OutputPair();
+                op.dos.writeInt( gameID );
+                append( BTCmd.MESG_GAMEGONE, gameID, op );
+            } catch ( IOException ioe ) {
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
+        }
+
+        private void append( BTCmd cmd, OutputPair op ) throws IOException
+        {
+            // Log.d( TAG, "append() IN" );
+            synchronized ( this ) {
+                append( cmd, 0, op );
+            }
+            // Log.d( TAG, "append() OUT" );
+        }
+        
+        private void append( BTCmd cmd, int gameID, OutputPair op ) throws IOException
+        {
+            // Log.d( TAG, "append() IN" );
+            synchronized ( this ) {
+                if ( 0 == mCmds.size() ) {
+                    mStamp = System.currentTimeMillis();
+                }
+                mCmds.add( cmd );
+                mGameIDs.add( gameID );
+                mOP.dos.writeByte( cmd.ordinal() );
+                byte[] data = op.bos.toByteArray();
+                mOP.dos.writeShort( data.length );
+                mOP.dos.write( data, 0, data.length );
+
+                mFailCount = 0;     // for now, we restart timer on new data
+                tellSomebody();
+
+            }
+            // Log.d( TAG, "append(%s): now %s", cmd, this );
+        }
+
+        void resetBackoff()
+        {
+            // Log.d( TAG, "resetBackoff() IN" );
+            synchronized ( this ) {
+                mFailCount = 0;
+            }
+            // Log.d( TAG, "resetBackoff() OUT" );
+        }
+
+        private static class OutputPair {
+            ByteArrayOutputStream bos;
+            DataOutputStream dos;
+            OutputPair() {
+                bos = new ByteArrayOutputStream();
+                dos = new DataOutputStream( bos );
+            }
+
+            int length() { return bos.toByteArray().length; }
+        }
+                             
+        private void tellSomebody()
+        {
+            // Log.d( TAG, "tellSomebody() IN" );
+            synchronized ( sBlocker ) {
+                sBlocker.notifyAll();
+            }
+            // Log.d( TAG, "tellSomebody() OUT" );
+        }
+
+        private String getName( String addr )
+        {
+            Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( addr ) );
+            String result = "<unknown>";
+            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            if ( null != adapter ) {
+                Set<BluetoothDevice> devs = adapter.getBondedDevices();
+                Iterator<BluetoothDevice> iter = devs.iterator();
+                while ( iter.hasNext() ) {
+                    BluetoothDevice dev = iter.next();
+                    String devAddr = dev.getAddress();
+                    Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( devAddr ) );
+                    if ( devAddr.equals( addr ) ) {
+                        result = dev.getName();
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+    }
+
+    private static class PacketParser {
+        void dispatchAll( DataInputStream inStream, BluetoothSocket socket,
+                          BTListenerThread processor )
+        {
+            try {
+                short isLen = inStream.readShort();
+                byte[] data = new byte[isLen];
+                inStream.readFully( data );
+
+                ByteArrayInputStream bis = new ByteArrayInputStream( data );
+                DataInputStream dis = new DataInputStream( bis );
+                int nMessages = dis.readByte();
+
+                Log.d( TAG, "dispatchAll(): read %d-byte payload with sum %s containing %d messages",
+                       data.length, Utils.getMD5SumFor( data ), nMessages );
+
+                for ( int ii = 0; ii < nMessages; ++ii ) {
+                    BTCmd cmd = BTCmd.values()[dis.readByte()];
+                    final short oneLen = dis.readShort(); // used only to skip
+                    int availableBefore = dis.available();
+                    switch ( cmd ) {
+                    case PING:
+                        int gameID = dis.readInt();
+                        processor.receivePing( gameID, socket );
+                        break;
+                    case INVITE:
+                        data = new byte[dis.readShort()];
+                        dis.readFully( data );
+                        NetLaunchInfo nli = XwJNI.nliFromStream( data );
+                        processor.receiveInvitation( nli, socket );
+                        break;
+                    case MESG_SEND:
+                        gameID = dis.readInt();
+                        data = new byte[dis.readShort()];
+                        dis.readFully( data );
+                        processor.receiveMessage( gameID, data, socket );
+                        break;
+                    case MESG_GAMEGONE:
+                        gameID = dis.readInt();
+                        processor.receiveGameGone( gameID, socket );
+                        break;
+                    default:
+                        Log.e( TAG, "unexpected command %s; skipping %d bytes", cmd, oneLen );
+                        if ( oneLen <= dis.available() ) {
+                            dis.readFully( new byte[oneLen] );
+                            Assert.assertFalse( BuildConfig.DEBUG );
+                        }
+                        break;
+                    }
+
+                    // sanity-check based on packet length
+                    int availableAfter = dis.available();
+                    Assert.assertTrue( oneLen == availableBefore - availableAfter
+                                       || !BuildConfig.DEBUG );
+                }
+            } catch ( IOException ioe ) {
+                Log.e( TAG, "dispatchAll() got ioe: %s", ioe );
+                Log.ex( TAG, ioe );
+                // Assert.assertFalse( BuildConfig.DEBUG ); // fired
+            } catch ( Exception ex ) {
+                Log.e( TAG, "dispatchAll() got ex: %s", ex );
+                Log.ex( TAG, ex );
+                Assert.assertFalse( BuildConfig.DEBUG );
+            }
+            Log.d( TAG, "dispatchAll() done" );
+        }
+    }
+
+    // Blocks until can return an Accumulator with data
+    private static Object sBlocker = new Object();
+    private static List<PacketAccumulator> getHasData() throws InterruptedException
+    {
+        // Log.d( TAG, "getHasData() IN" );
+        List<PacketAccumulator> result = new ArrayList<>();
+        while ( 0 == result.size() ) {
+            long newMin = 5 * 60 * 1000;
+            synchronized ( sSenders ) {
+                for ( String addr : sSenders.keySet() ) {
+                    PacketAccumulator pa = sSenders.get( addr );
+                    long nextReady = pa.getNextReadyMS();
+                    if ( nextReady <= 0 ) {
+                        result.add( pa );
+                    } else {
+                        newMin = Math.min( newMin, nextReady );
+                    }
+                }
+            }
+
+            if ( result.size() == 0 ) {
+                synchronized ( sBlocker ) {
+                    long whileDebugging = Math.min( newMin, 10 * 1000 );
+                    Log.d( TAG, "getHasData(): waiting %dms (should be %dms)",
+                           whileDebugging, newMin );
+                    sBlocker.wait( 1 + whileDebugging ); // 0 might mean forever
+                    Log.d( TAG, "getHasData(): DONE waiting" );
+                }
+            }
+        }
+        Log.d( TAG, "getHasData() => %s", result );
+        return result;
+    }
+
+    private static Map<String, PacketAccumulator> sSenders = new HashMap<>();
+    private static PacketAccumulator getSenderFor( String addr )
+    {
+        return getSenderFor( addr, true );
+    }
+
+    private static PacketAccumulator getSenderFor( String addr, boolean create )
+    {
+        synchronized ( sSenders ) {
+            if ( create && !sSenders.containsKey( addr ) ) {
+                sSenders.put( addr, new PacketAccumulator( addr ) );
+            }
+            return sSenders.get( addr );
+        }
+    }
+
+    private static void resetSenderFor( BluetoothSocket socket )
+    {
+        // Log.d( TAG, "resetSenderFor(%s)", socket );
+        String addr = socket.getRemoteDevice().getAddress();
+        PacketAccumulator pa = getSenderFor( addr, false );
+        if ( null != pa ) {
+            pa.resetBackoff();
+        } else {
+            Log.d( TAG, "resetSenderFor(): not creating for addr %s", addr );
+        }
+        // Log.d( TAG, "resetSenderFor(): reset backoff for %s", pa );
+    }
+
+    private static class KeptSocket {
+        BluetoothSocket mSocket;
+        int mCount = 0;
+        KeptSocket(BluetoothSocket socket) { mSocket = socket; }
+    }
+    private static Map<Integer, KeptSocket> s_sockets = new HashMap<>();
     private static int makeRefFor( BluetoothSocket socket )
     {
         int code = socket.hashCode();
         synchronized ( s_sockets ) {
-            Assert.assertTrue( !s_sockets.containsKey(code) || !BuildConfig.DEBUG );
-            s_sockets.put( code, socket );
+            if ( !s_sockets.containsKey( code ) ) {
+                s_sockets.put( code, new KeptSocket(socket) );
+            }
+            ++s_sockets.get( code ).mCount;
+            // Log.d( TAG, "makeRefFor(%s) => %d (map size: %d, ref count: %d)", socket,
+            //        code, s_sockets.size(), s_sockets.get( code ).mCount );
         }
-        // Log.d( TAG, "makeRefFor(%s) => %d (size: %d)", socket, code, s_sockets.size() );
         return code;
     }
 
@@ -1395,7 +1559,7 @@ public class BTService extends XWJIService {
         BluetoothSocket result = null;
         synchronized ( s_sockets ) {
             if ( s_sockets.containsKey( ref ) ) {
-                result = s_sockets.get( ref );
+                result = s_sockets.get( ref ).mSocket;
                 Assert.assertTrue( null != result || !BuildConfig.DEBUG );
             }
         }
@@ -1407,15 +1571,21 @@ public class BTService extends XWJIService {
     {
         synchronized ( s_sockets ) {
             BluetoothSocket socket = socketForRef( ref );
-            if ( null != socket ) {
-                try {
-                    socket.close();
-                } catch ( IOException ex ) {
-                    Log.ex( TAG, ex );
+            KeptSocket ks = s_sockets.get( ref );
+            Assert.assertNotNull( ks );
+            if ( null != ks ) {
+                --ks.mCount;
+                // Log.d( TAG, "closeForRef(%d): refCount now %d", ref, ks.mCount );
+                if ( 0 == ks.mCount ) {
+                    try {
+                        ks.mSocket.close();
+                    } catch ( IOException ex ) {
+                        Log.ex( TAG, ex );
+                    }
+                    s_sockets.remove( ref );
                 }
-                s_sockets.remove( ref );
             }
         }
-        // Log.d( TAG, "closeForRef(%d) (size: %d)", ref, s_sockets.size() );
+        // Log.d( TAG, "closeForRef(%d) (map size: %d)", ref, s_sockets.size() );
     }
 }

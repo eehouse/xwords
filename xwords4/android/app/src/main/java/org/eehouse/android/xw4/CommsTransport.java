@@ -430,7 +430,7 @@ public class CommsTransport implements TransportProcs,
                                            gameID, buf );
             break;
         case COMMS_CONN_BT:
-            nSent = BTService.enqueueFor( context, buf, addr, gameID );
+            nSent = BTService.sendPacket( context, buf, addr, gameID );
             break;
         case COMMS_CONN_P2P:
             nSent = WiDirService

@@ -609,7 +609,9 @@ public class NetLaunchInfo implements Serializable {
 
     public boolean isValid()
     {
-        // DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
+        calcValid();            // this isn't always called. Likely should
+                                // remove it as it's a stupid optimization
+        // Log.d( TAG, "NetLaunchInfo(%s).isValid() => %b", this, m_valid );
         return m_valid;
     }
 
