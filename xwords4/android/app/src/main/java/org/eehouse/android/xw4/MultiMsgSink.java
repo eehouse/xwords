@@ -64,7 +64,7 @@ public class MultiMsgSink implements TransportProcs {
 
     public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
     {
-        return BTService.enqueueFor( m_context, buf, addr, gameID );
+        return BTService.sendPacket( m_context, buf, addr, gameID );
     }
 
     public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
