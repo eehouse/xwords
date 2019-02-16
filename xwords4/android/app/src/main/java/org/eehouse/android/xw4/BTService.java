@@ -736,22 +736,22 @@ public class BTService extends XWJIService {
                 try {
                     List<PacketAccumulator> pas = getHasData(); // blocks
                     Thread[] threads = new Thread[pas.size()];
-                    int ii = 0;
-                    for ( final PacketAccumulator pa : pas ) {
+                    for ( int ii = 0; ii < threads.length; ++ii ) {
+                        final PacketAccumulator pa = pas.get( ii );
                         threads[ii] = new Thread( new Runnable() {
                                 @Override
                                 public void run() {
+                                    boolean success = false;
                                     BluetoothSocket socket = null;
                                     try {
-                                        boolean success = false;
                                         socket = mService.m_adapter.getRemoteDevice( pa.getAddr() )
                                             .createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                                         DataOutputStream dos = connect( socket );
                                         if ( null == dos ) {
                                             pa.setNoHost();
                                         } else {
-                                            Log.d( TAG, "%s.run(): connect(%s) => %s", className,
-                                                   pa.getName(), dos );
+                                            Log.d( TAG, "%s.thread.run(): connect(%s) => %s",
+                                                   className, pa.getName(), dos );
                                             nDone.addAndGet( pa.writeAndCheck( socket, dos,
                                                                                mService.mHelper ) );
                                             success = true;
@@ -765,9 +765,12 @@ public class BTService extends XWJIService {
                                             catch (Exception ex) {}
                                         }
                                     }
+                                    if ( !success ) {
+                                        pa.setNoHost();
+                                    }
                                 }
                             } );
-                        threads[ii++].start();
+                        threads[ii].start();
                     }
 
                     Log.d( TAG, "%s.run(): waiting on %d threads", className,
@@ -1005,6 +1008,7 @@ public class BTService extends XWJIService {
     {
         helper.postEvent( MultiEvent.BAD_PROTO_BT,
                           socket.getRemoteDevice().getName() );
+        DbgUtils.printStack( TAG );
     }
 
     private void updateStatusOut( boolean success )
