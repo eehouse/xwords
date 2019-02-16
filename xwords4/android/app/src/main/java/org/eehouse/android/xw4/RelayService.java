@@ -536,10 +536,12 @@ public class RelayService extends XWJIService
                 Assert.fail();
             } catch( java.net.UnknownHostException uhe ) {
                 Log.ex( TAG, uhe );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Log.e( TAG, "connectSocketOnce(): %s", uhe.getMessage() );
+                // Assert.assertFalse( BuildConfig.DEBUG );
             }
         } else {
-            Assert.assertTrue( s_UDPSocket.isConnected() );
+            Log.e( TAG, "connectSocketOnce(): udp socket not connected" );
+            // Assert.assertTrue( s_UDPSocket.isConnected() );
         }
     }
 
