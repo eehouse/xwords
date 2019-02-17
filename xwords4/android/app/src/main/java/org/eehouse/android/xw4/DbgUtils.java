@@ -31,7 +31,6 @@ import android.text.format.Time;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
-import java.util.Set;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -168,4 +167,102 @@ public class DbgUtils {
     //     return dump.toString();
     // }
 
+    private static List<DeadlockWatch> sLockHolders = new ArrayList<>();
+
+    public static class DeadlockWatch extends Thread implements AutoCloseable {
+        private static final long DEFAULT_SLEEP_MS = 10 * 1000;
+        final private Object mOwner;
+        private long mStartStamp;
+        // private long mGotItTime = 0;
+        private boolean mCloseFired = false;
+        private String mStartStack;
+
+        // There's a race between this constructor and the synchronized()
+        // block that follows its try-with-resources.  Oh well.
+        DeadlockWatch( Object syncObj )
+        {
+            mOwner = BuildConfig.DEBUG ? syncObj : null;
+            if ( BuildConfig.DEBUG ) {
+                mStartStack = android.util.Log.getStackTraceString(new Exception());
+                // Log.d( TAG, "__init(owner=%d): %s", mOwner.hashCode(), mStartStack );
+                mStartStamp = System.currentTimeMillis();
+                synchronized ( sLockHolders ) {
+                    sLockHolders.add( this );
+                    // Log.d( TAG, "added for owner %d", mOwner.hashCode() );
+                }
+                start();
+            }
+        }
+
+        // public void gotIt( Object obj )
+        // {
+        //     if ( BuildConfig.DEBUG ) {
+        //         Assert.assertTrue( obj == mOwner );
+        //         mGotItTime = System.currentTimeMillis();
+        //         // Log.d( TAG, "%s got lock after %dms", obj, mGotItTime - mStartStamp );
+        //     }
+        // }
+
+        @Override
+        public void close()
+        {
+            if ( BuildConfig.DEBUG ) {
+                mCloseFired = true;
+                // Assert.assertTrue( 0 < mGotItTime ); // did you forget to call gotIt? :-)
+            }
+        }
+
+        @Override
+        public void run()
+        {
+            if ( BuildConfig.DEBUG ) {
+                long sleepMS = DEFAULT_SLEEP_MS;
+                try {
+                    Thread.sleep( sleepMS );
+
+                    if ( !mCloseFired ) {
+                        DeadlockWatch likelyCulprit = null;
+                        synchronized ( sLockHolders ) {
+                            for ( DeadlockWatch sc : sLockHolders ) {
+                                if ( sc.mOwner == mOwner && sc != this ) {
+                                    likelyCulprit = sc;
+                                    break;
+                                }
+                            }
+                        }
+
+                        String msg = new StringBuilder()
+                            .append("timer fired!!!!")
+                            .append( "lock sought by: " )
+                            .append( mStartStack )
+                            .append( "lock likely held by: " )
+                            .append( likelyCulprit.mStartStack )
+                            .toString();
+                        CrashTrack.logAndSend( TAG, msg );
+                    }
+
+                    removeSelf();
+                } catch ( InterruptedException ie ) {
+                }
+            }
+        }
+
+        private void removeSelf()
+        {
+            if ( BuildConfig.DEBUG ) {
+                synchronized ( sLockHolders ) {
+                    int start = sLockHolders.size();
+                    // Log.d( TAG, "removing for owner %d", mOwner.hashCode() );
+                    sLockHolders.remove( this );
+                    Assert.assertTrue( start - 1 == sLockHolders.size() );
+                }
+            }
+        }
+
+        @Override
+        public String toString()
+        {
+            return super.toString() + "; startStack: " + mStartStack;
+        }
+    }
 }
