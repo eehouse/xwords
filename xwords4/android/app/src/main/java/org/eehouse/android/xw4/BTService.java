@@ -248,6 +248,8 @@ public class BTService extends XWJIService {
         if ( BTEnabled() ) {
             enqueueWork( context, BTService.class, sJobID, intent );
             // Log.d( TAG, "enqueueWork(%s)", cmdFrom( intent, BTAction.values() ) );
+        } else {
+            Log.d( TAG, "enqueueWork(): BT disabled so doing nothing" );
         }
     }
 
@@ -498,6 +500,8 @@ public class BTService extends XWJIService {
             default:
                 Assert.fail();
             }
+        } else {
+            Log.d( TAG, "onHandleWorkImpl(): BT disabled so doing nothing" );
         }
     } // onHandleWorkImpl()
 
@@ -525,7 +529,6 @@ public class BTService extends XWJIService {
 
         static void startYourself()
         {
-            Log.d( TAG, "startYourself()" );
             synchronized ( s_listener ) {
                 if ( s_listener[0] == null ) {
                     s_listener[0] = new BTListenerThread();
@@ -732,7 +735,7 @@ public class BTService extends XWJIService {
             final String className = getClass().getSimpleName();
             final AtomicInteger nDone = new AtomicInteger();
             Log.d( TAG, "%s.run() starting", className );
-            while ( !mFinishing ) {
+            while ( !mFinishing && BTEnabled() ) {
                 try {
                     List<PacketAccumulator> pas = getHasData(); // blocks
                     Thread[] threads = new Thread[pas.size()];
@@ -1096,18 +1099,20 @@ public class BTService extends XWJIService {
         {
             long waitFromNow;
             // Log.d( TAG, "getNextReadyMS() IN" );
-            synchronized ( this ) {
-                if ( 0 == mCmds.size() ) { // nothing to send
-                    waitFromNow = Long.MAX_VALUE;
-                } else if ( 0 == mFailCount ) {
-                    waitFromNow = 0;
-                } else {
-                    // If we're failing, use a backoff.
-                    long wait = 10 * 1000 * 2 * (1 + mFailCount);
-                    waitFromNow = wait - (System.currentTimeMillis() - mLastFailTime);
-                }
+            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+                synchronized ( this ) {
+                    if ( 0 == mCmds.size() ) { // nothing to send
+                        waitFromNow = Long.MAX_VALUE;
+                    } else if ( 0 == mFailCount ) {
+                        waitFromNow = 0;
+                    } else {
+                        // If we're failing, use a backoff.
+                        long wait = 10 * 1000 * 2 * (1 + mFailCount);
+                        waitFromNow = wait - (System.currentTimeMillis() - mLastFailTime);
+                    }
 
-                Log.d( TAG, "%s.getNextReadyMS() => %dms", this, waitFromNow );
+                    Log.d( TAG, "%s.getNextReadyMS() => %dms", this, waitFromNow );
+                }
             }
             return waitFromNow;
         }
@@ -1115,9 +1120,11 @@ public class BTService extends XWJIService {
          void setNoHost()
         {
             // Log.d( TAG, "setNoHost() IN" );
-            synchronized ( this ) {
-                mLastFailTime = System.currentTimeMillis();
-                ++mFailCount;
+            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+                synchronized ( this ) {
+                    mLastFailTime = System.currentTimeMillis();
+                    ++mFailCount;
+                }
             }
             // Log.d( TAG, "setNoHost() OUT" );
         }
@@ -1140,47 +1147,49 @@ public class BTService extends XWJIService {
             List<BTCmd> localCmds = null;
             List<Integer> localGameIDs = null;
 
-            synchronized ( this ) {
-                byte[] data = mOP.bos.toByteArray();
-                if ( 0 < data.length ) {
-                    try {
-                        // Format is <proto><len-of-rest><msgCount><msgsData> To
-                        // insert the count at the beginning we have to create a
-                        // whole new byte array since there's no random access.
+            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+                synchronized ( this ) {
+                    byte[] data = mOP.bos.toByteArray();
+                    if ( 0 < data.length ) {
+                        try {
+                            // Format is <proto><len-of-rest><msgCount><msgsData> To
+                            // insert the count at the beginning we have to create a
+                            // whole new byte array since there's no random access.
 
-                        OutputPair tmpOP = new OutputPair();
-                        tmpOP.dos.writeByte( mCmds.size() ); // count of messages
-                        Log.d( TAG, "writeAndCheck(): wrote msg count: %d", mCmds.size() );
-                        tmpOP.dos.write( data, 0, data.length );
-                        data = tmpOP.bos.toByteArray(); // replace data
+                            OutputPair tmpOP = new OutputPair();
+                            tmpOP.dos.writeByte( mCmds.size() ); // count of messages
+                            Log.d( TAG, "writeAndCheck(): wrote msg count: %d", mCmds.size() );
+                            tmpOP.dos.write( data, 0, data.length );
+                            data = tmpOP.bos.toByteArray(); // replace data
 
-                        // now write to the socket
-                        Assert.assertNotNull( dos );
-                        // dos.writeByte( BT_PROTO );
-                        dos.writeShort( data.length );
-                        dos.write( data, 0, data.length );
-                        dos.flush();
-                        Log.d( TAG, "writeAndCheck(): wrote %d-byte payload with sum %s",
-                               data.length, Utils.getMD5SumFor( data ) );
+                            // now write to the socket
+                            Assert.assertNotNull( dos );
+                            // dos.writeByte( BT_PROTO );
+                            dos.writeShort( data.length );
+                            dos.write( data, 0, data.length );
+                            dos.flush();
+                            Log.d( TAG, "writeAndCheck(): wrote %d-byte payload with sum %s",
+                                   data.length, Utils.getMD5SumFor( data ) );
 
-                        // If we get this far, we're going to assume the send has
-                        // succeeded. Now we need to get out of the synchronized
-                        // block because handling all the reads on the socket can
-                        // take a long time and will block lots of stuff
+                            // If we get this far, we're going to assume the send has
+                            // succeeded. Now we need to get out of the synchronized
+                            // block because handling all the reads on the socket can
+                            // take a long time and will block lots of stuff
 
-                        localCmds = mCmds;
-                        localGameIDs = mGameIDs;
+                            localCmds = mCmds;
+                            localGameIDs = mGameIDs;
 
-                        // Now read responses
-                        // int nCmds = mCmds.size();
-                        // On remote, socket is being passed through
-                        // onHandleWork. Could take a f*ck of a long time. Maybe we
-                        // don't want this any more?
-                        // try ( KillerIn killer = new KillerIn( socket, 5 * nCmds ) ) {
-                        // DataInputStream inStream =
-                        //     new DataInputStream( socket.getInputStream() );
-                    } catch ( IOException ioe ) {
-                        Log.e( TAG, "writeAndCheck(): ioe: %s", ioe.getMessage() );
+                            // Now read responses
+                            // int nCmds = mCmds.size();
+                            // On remote, socket is being passed through
+                            // onHandleWork. Could take a f*ck of a long time. Maybe we
+                            // don't want this any more?
+                            // try ( KillerIn killer = new KillerIn( socket, 5 * nCmds ) ) {
+                            // DataInputStream inStream =
+                            //     new DataInputStream( socket.getInputStream() );
+                        } catch ( IOException ioe ) {
+                            Log.e( TAG, "writeAndCheck(): ioe: %s", ioe.getMessage() );
+                        }
                     }
                 }
             }
@@ -1328,30 +1337,28 @@ public class BTService extends XWJIService {
 
         private void append( BTCmd cmd, OutputPair op ) throws IOException
         {
-            // Log.d( TAG, "append() IN" );
-            synchronized ( this ) {
-                append( cmd, 0, op );
-            }
-            // Log.d( TAG, "append() OUT" );
+            append( cmd, 0, op );
         }
         
         private void append( BTCmd cmd, int gameID, OutputPair op ) throws IOException
         {
             // Log.d( TAG, "append() IN" );
-            synchronized ( this ) {
-                if ( 0 == mCmds.size() ) {
-                    mStamp = System.currentTimeMillis();
+            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+                synchronized ( this ) {
+                    if ( 0 == mCmds.size() ) {
+                        mStamp = System.currentTimeMillis();
+                    }
+                    mCmds.add( cmd );
+                    mGameIDs.add( gameID );
+                    mOP.dos.writeByte( cmd.ordinal() );
+                    byte[] data = op.bos.toByteArray();
+                    mOP.dos.writeShort( data.length );
+                    mOP.dos.write( data, 0, data.length );
+
+                    mFailCount = 0;     // for now, we restart timer on new data
+                    tellSomebody();
+
                 }
-                mCmds.add( cmd );
-                mGameIDs.add( gameID );
-                mOP.dos.writeByte( cmd.ordinal() );
-                byte[] data = op.bos.toByteArray();
-                mOP.dos.writeShort( data.length );
-                mOP.dos.write( data, 0, data.length );
-
-                mFailCount = 0;     // for now, we restart timer on new data
-                tellSomebody();
-
             }
             // Log.d( TAG, "append(%s): now %s", cmd, this );
         }
@@ -1359,8 +1366,10 @@ public class BTService extends XWJIService {
         void resetBackoff()
         {
             // Log.d( TAG, "resetBackoff() IN" );
-            synchronized ( this ) {
-                mFailCount = 0;
+            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+                synchronized ( this ) {
+                    mFailCount = 0;
+                }
             }
             // Log.d( TAG, "resetBackoff() OUT" );
         }
@@ -1379,8 +1388,10 @@ public class BTService extends XWJIService {
         private void tellSomebody()
         {
             // Log.d( TAG, "tellSomebody() IN" );
-            synchronized ( sBlocker ) {
-                sBlocker.notifyAll();
+            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( sBlocker ) ) {
+                synchronized ( sBlocker ) {
+                    sBlocker.notifyAll();
+                }
             }
             // Log.d( TAG, "tellSomebody() OUT" );
         }
@@ -1483,14 +1494,16 @@ public class BTService extends XWJIService {
         List<PacketAccumulator> result = new ArrayList<>();
         while ( 0 == result.size() ) {
             long newMin = 5 * 60 * 1000;
-            synchronized ( sSenders ) {
-                for ( String addr : sSenders.keySet() ) {
-                    PacketAccumulator pa = sSenders.get( addr );
-                    long nextReady = pa.getNextReadyMS();
-                    if ( nextReady <= 0 ) {
-                        result.add( pa );
-                    } else {
-                        newMin = Math.min( newMin, nextReady );
+            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( sSenders ) ) {
+                synchronized ( sSenders ) {
+                    for ( String addr : sSenders.keySet() ) {
+                        PacketAccumulator pa = sSenders.get( addr );
+                        long nextReady = pa.getNextReadyMS();
+                        if ( nextReady <= 0 ) {
+                            result.add( pa );
+                        } else {
+                            newMin = Math.min( newMin, nextReady );
+                        }
                     }
                 }
             }
