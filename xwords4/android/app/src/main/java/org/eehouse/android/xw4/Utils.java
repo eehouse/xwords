@@ -570,6 +570,39 @@ public class Utils {
         return Looper.getMainLooper().equals(Looper.myLooper());
     }
 
+    private static final String KEY_LAUNCHED_SINCE_INSTALL
+        = TAG + "_LAUNCHED_SINCE_INSTALL";
+    public static void setLaunchedSinceInstall( Context context, boolean val )
+    {
+        DBUtils.setBoolFor( context, KEY_LAUNCHED_SINCE_INSTALL, val );
+    }
+
+    private static boolean getLaunchedSinceInstall( Context context )
+    {
+        boolean result = DBUtils
+            .getBoolFor( context, KEY_LAUNCHED_SINCE_INSTALL, false );
+        return result;
+    }
+
+    private static final int LAUNCH_SINCE_INSTALL_MSG_ID
+        = R.string.bt_need_launch_body; // whatever
+    public static void showLaunchSinceInstall( Context context )
+    {
+        if ( ! getLaunchedSinceInstall( context ) ) {
+            Intent intent = GamesListDelegate
+                .makeGameIDIntent( context, 0 );
+            postNotification( context, intent,
+                              R.string.bt_need_launch_title,
+                              R.string.bt_need_launch_body,
+                              LAUNCH_SINCE_INSTALL_MSG_ID );
+        }
+    }
+
+    public static void cancelLaunchSinceInstall( Context context )
+    {
+        cancelNotification( context, LAUNCH_SINCE_INSTALL_MSG_ID );
+    }
+
     public static String base64Encode( byte[] in )
     {
         return Base64.encodeToString( in, Base64.NO_WRAP );
