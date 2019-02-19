@@ -695,9 +695,11 @@ public class DelegateBase implements DlgClickNotify,
     public void eventOccurred( MultiEvent event, final Object ... args )
     {
         int fmtId = 0;
+        int notAgainKey = 0;
         switch( event ) {
         case BAD_PROTO_BT:
             fmtId = R.string.bt_bad_proto_fmt;
+            notAgainKey = R.string.key_na_bt_badproto;
             break;
         case BAD_PROTO_SMS:
             fmtId = R.string.sms_bad_proto_fmt;
@@ -715,9 +717,16 @@ public class DelegateBase implements DlgClickNotify,
 
         if ( 0 != fmtId ) {
             final String msg = getString( fmtId, (String)args[0] );
+            final int key = notAgainKey;
             runOnUiThread( new Runnable() {
                     public void run() {
-                        makeOkOnlyBuilder( msg ).show();
+                        DlgDelegate.DlgDelegateBuilder builder;
+                        if ( 0 == key ) {
+                            builder = makeOkOnlyBuilder( msg );
+                        } else {
+                            builder = makeNotAgainBuilder( msg, key );
+                        }
+                        builder.show();
                     }
                 });
         }
