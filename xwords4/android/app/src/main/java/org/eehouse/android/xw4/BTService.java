@@ -681,7 +681,6 @@ public class BTService extends XWJIService {
             enqueueWork( getIntentTo( BTAction.POST_PING_REPLY )
                          .putExtra( SOCKET_REF, makeRefFor( socket ) )
                          .putExtra( DEL_KEY, deleted ) );
-
         }
 
         void receiveInvitation( NetLaunchInfo nli, BluetoothSocket socket )
