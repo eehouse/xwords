@@ -2760,6 +2760,11 @@
   • If all else fails, reboot this device\n
   </string>
 
+  <string name="bt_need_launch_title">Tap to launch CrossWords</string>
+  <string name="bt_need_launch_body">After each upgrade the app needs
+  to be launched once before it can do things like receive Bluetooth
+  messages in the background.</string>
+
   <!-- Message to be shown each time user of Google Play version (post
        March 9, 2019) tries to use a feature that requires SMS_SEND or
        SMS_RECEIVE permission. Message displayed with the "do not show

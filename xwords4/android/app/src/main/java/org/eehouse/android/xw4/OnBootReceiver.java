@@ -34,12 +34,11 @@ public class OnBootReceiver extends BroadcastReceiver {
             String action = intent.getAction();
             Log.d( TAG, "got %s", action );
             switch( action ) {
-            case Intent.ACTION_BOOT_COMPLETED:
             case Intent.ACTION_MY_PACKAGE_REPLACED:
+                Utils.setLaunchedSinceInstall( context, false );
+                // FALLTHRU
+            case Intent.ACTION_BOOT_COMPLETED:
                 startTimers( context );
-                // Let's not put up the foreground service notification on
-                // boot. Too likely to annoy.
-                // BTService.onAppToBackground( context );
                 break;
             }
         }

@@ -95,6 +95,7 @@ public class BTService extends XWJIService {
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
     private static final int CONNECT_TIMEOUT_MS = 10000;
+    private static final int MAX_PACKET_LEN = 4 * 1024;
 
     private static final int BT_PROTO_ORIG = 0;
     // private static final int BT_PROTO_JSONS = 1; // using jsons instead of lots of fields
@@ -159,7 +160,6 @@ public class BTService extends XWJIService {
 
     private BluetoothAdapter m_adapter;
     private BTMsgSink m_btMsgSink;
-    private Notification m_notification; // make once use many
     private Handler mHandler;
     private BTServiceHelper mHelper;
 
@@ -246,10 +246,53 @@ public class BTService extends XWJIService {
     private static void enqueueWork( Context context, Intent intent )
     {
         if ( BTEnabled() ) {
+            setCheckTimerOnce( context );
             enqueueWork( context, BTService.class, sJobID, intent );
             // Log.d( TAG, "enqueueWork(%s)", cmdFrom( intent, BTAction.values() ) );
         } else {
             Log.d( TAG, "enqueueWork(): BT disabled so doing nothing" );
+        }
+    }
+
+    // It appears that the OS won't launch my service (calling onCreate() and
+    // onHandleWork()) after an install, including via adb, until the app's
+    // been launched manually. So we'll check for that case and post a
+    // notification if it appears to be a problem.
+    private static Thread[] sLaunchChecker = {null};
+
+    private static void clearCheckTimer()
+    {
+        synchronized ( sLaunchChecker ) {
+            if ( null != sLaunchChecker[0] ) {
+                sLaunchChecker[0].interrupt();
+            }
+        }
+    }
+
+    private static void setCheckTimerOnce( final Context context )
+    {
+        synchronized ( sLaunchChecker ) {
+            if ( null == sLaunchChecker[0] ) {
+                sLaunchChecker[0] = new Thread( new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                synchronized ( sLaunchChecker ) {
+                                    sLaunchChecker.notify();
+                                }
+                                Thread.sleep( 10 * 1000 );
+
+                                Utils.showLaunchSinceInstall( context );
+                            } catch ( InterruptedException ie ) {
+                            }
+                        }
+                    } );
+
+                sLaunchChecker[0].start();
+                // Don't return until the thread's interruptable
+                try { sLaunchChecker.wait(); }
+                catch ( InterruptedException ex ) {}
+            }
         }
     }
 
@@ -341,6 +384,8 @@ public class BTService extends XWJIService {
         Log.d( TAG, "%s.onCreate()", this );
         super.onCreate();
 
+        clearCheckTimer();
+
         mHelper = new BTServiceHelper( this );
 
         m_btMsgSink = new BTMsgSink();
@@ -390,10 +435,10 @@ public class BTService extends XWJIService {
                 startScanThread( timeout );
                 break;
             case INVITE:
+                String btAddr = intent.getStringExtra( ADDR_KEY );
                 String jsonData = intent.getStringExtra( GAMEDATA_KEY );
                 NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, jsonData );
-                Log.i( TAG, "handleCommand: nli: %s", nli );
-                String btAddr = intent.getStringExtra( ADDR_KEY );
+                // Log.i( TAG, "onHandleWorkImpl(): nli: %s", nli );
                 getSenderFor( btAddr ).addInvite( nli );
                 break;
             case PINGHOST:
@@ -918,7 +963,7 @@ public class BTService extends XWJIService {
                     dos.writeByte( BT_PROTO );
                     break;          // success!!!
                 } catch (IOException ioe) {
-                    Log.d( TAG, "connect(): %s", ioe.getMessage() );
+                    // Log.d( TAG, "connect(): %s", ioe.getMessage() );
                     long msLeft = end - System.currentTimeMillis();
                     if ( msLeft <= 0 ) {
                         break;
@@ -1107,26 +1152,23 @@ public class BTService extends XWJIService {
                         waitFromNow = 0;
                     } else {
                         // If we're failing, use a backoff.
-                        long wait = 10 * 1000 * 2 * (1 + mFailCount);
+                        long wait = 1000 * (long)Math.pow( mFailCount, 2 );
                         waitFromNow = wait - (System.currentTimeMillis() - mLastFailTime);
                     }
-
-                    Log.d( TAG, "%s.getNextReadyMS() => %dms", this, waitFromNow );
                 }
             }
+            Log.d( TAG, "%s.getNextReadyMS() => %dms", this, waitFromNow );
             return waitFromNow;
         }
 
-         void setNoHost()
+        void setNoHost()
         {
-            // Log.d( TAG, "setNoHost() IN" );
             try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     mLastFailTime = System.currentTimeMillis();
                     ++mFailCount;
                 }
             }
-            // Log.d( TAG, "setNoHost() OUT" );
         }
 
         @Override
@@ -1340,27 +1382,32 @@ public class BTService extends XWJIService {
             append( cmd, 0, op );
         }
         
-        private void append( BTCmd cmd, int gameID, OutputPair op ) throws IOException
+        private boolean append( BTCmd cmd, int gameID, OutputPair op ) throws IOException
         {
+            boolean haveSpace;
             // Log.d( TAG, "append() IN" );
             try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
                 synchronized ( this ) {
-                    if ( 0 == mCmds.size() ) {
-                        mStamp = System.currentTimeMillis();
+                    haveSpace = mOP.length() + op.length() + 3 < MAX_PACKET_LEN;
+                    if ( haveSpace ) {
+                        if ( 0 == mCmds.size() ) {
+                            mStamp = System.currentTimeMillis();
+                        }
+
+                        mCmds.add( cmd );
+                        mGameIDs.add( gameID );
+                        mOP.dos.writeByte( cmd.ordinal() );
+                        byte[] data = op.bos.toByteArray();
+                        mOP.dos.writeShort( data.length );
+                        mOP.dos.write( data, 0, data.length );
+
+                        mFailCount = 0;     // for now, we restart timer on new data
+                        tellSomebody();
                     }
-                    mCmds.add( cmd );
-                    mGameIDs.add( gameID );
-                    mOP.dos.writeByte( cmd.ordinal() );
-                    byte[] data = op.bos.toByteArray();
-                    mOP.dos.writeShort( data.length );
-                    mOP.dos.write( data, 0, data.length );
-
-                    mFailCount = 0;     // for now, we restart timer on new data
-                    tellSomebody();
-
                 }
             }
             // Log.d( TAG, "append(%s): now %s", cmd, this );
+            return haveSpace;
         }
 
         void resetBackoff()
@@ -1424,54 +1471,59 @@ public class BTService extends XWJIService {
         {
             try {
                 short isLen = inStream.readShort();
-                byte[] data = new byte[isLen];
-                inStream.readFully( data );
+                if ( isLen >= MAX_PACKET_LEN ) {
+                    Log.e( TAG, "packet too big; dropping!!!" );
+                    Assert.assertFalse( BuildConfig.DEBUG );
+                } else {
+                    byte[] data = new byte[isLen];
+                    inStream.readFully( data );
 
-                ByteArrayInputStream bis = new ByteArrayInputStream( data );
-                DataInputStream dis = new DataInputStream( bis );
-                int nMessages = dis.readByte();
+                    ByteArrayInputStream bis = new ByteArrayInputStream( data );
+                    DataInputStream dis = new DataInputStream( bis );
+                    int nMessages = dis.readByte();
 
-                Log.d( TAG, "dispatchAll(): read %d-byte payload with sum %s containing %d messages",
-                       data.length, Utils.getMD5SumFor( data ), nMessages );
+                    Log.d( TAG, "dispatchAll(): read %d-byte payload with sum %s containing %d messages",
+                           data.length, Utils.getMD5SumFor( data ), nMessages );
 
-                for ( int ii = 0; ii < nMessages; ++ii ) {
-                    BTCmd cmd = BTCmd.values()[dis.readByte()];
-                    final short oneLen = dis.readShort(); // used only to skip
-                    int availableBefore = dis.available();
-                    switch ( cmd ) {
-                    case PING:
-                        int gameID = dis.readInt();
-                        processor.receivePing( gameID, socket );
-                        break;
-                    case INVITE:
-                        data = new byte[dis.readShort()];
-                        dis.readFully( data );
-                        NetLaunchInfo nli = XwJNI.nliFromStream( data );
-                        processor.receiveInvitation( nli, socket );
-                        break;
-                    case MESG_SEND:
-                        gameID = dis.readInt();
-                        data = new byte[dis.readShort()];
-                        dis.readFully( data );
-                        processor.receiveMessage( gameID, data, socket );
-                        break;
-                    case MESG_GAMEGONE:
-                        gameID = dis.readInt();
-                        processor.receiveGameGone( gameID, socket );
-                        break;
-                    default:
-                        Log.e( TAG, "unexpected command %s; skipping %d bytes", cmd, oneLen );
-                        if ( oneLen <= dis.available() ) {
-                            dis.readFully( new byte[oneLen] );
-                            Assert.assertFalse( BuildConfig.DEBUG );
+                    for ( int ii = 0; ii < nMessages; ++ii ) {
+                        BTCmd cmd = BTCmd.values()[dis.readByte()];
+                        final short oneLen = dis.readShort(); // used only to skip
+                        int availableBefore = dis.available();
+                        switch ( cmd ) {
+                        case PING:
+                            int gameID = dis.readInt();
+                            processor.receivePing( gameID, socket );
+                            break;
+                        case INVITE:
+                            data = new byte[dis.readShort()];
+                            dis.readFully( data );
+                            NetLaunchInfo nli = XwJNI.nliFromStream( data );
+                            processor.receiveInvitation( nli, socket );
+                            break;
+                        case MESG_SEND:
+                            gameID = dis.readInt();
+                            data = new byte[dis.readShort()];
+                            dis.readFully( data );
+                            processor.receiveMessage( gameID, data, socket );
+                            break;
+                        case MESG_GAMEGONE:
+                            gameID = dis.readInt();
+                            processor.receiveGameGone( gameID, socket );
+                            break;
+                        default:
+                            Log.e( TAG, "unexpected command %s; skipping %d bytes", cmd, oneLen );
+                            if ( oneLen <= dis.available() ) {
+                                dis.readFully( new byte[oneLen] );
+                                Assert.assertFalse( BuildConfig.DEBUG );
+                            }
+                            break;
                         }
-                        break;
-                    }
 
-                    // sanity-check based on packet length
-                    int availableAfter = dis.available();
-                    Assert.assertTrue( oneLen == availableBefore - availableAfter
-                                       || !BuildConfig.DEBUG );
+                        // sanity-check based on packet length
+                        int availableAfter = dis.available();
+                        Assert.assertTrue( oneLen == availableBefore - availableAfter
+                                           || !BuildConfig.DEBUG );
+                    }
                 }
             } catch ( IOException ioe ) {
                 Log.e( TAG, "dispatchAll() got ioe: %s", ioe );
@@ -1484,7 +1536,7 @@ public class BTService extends XWJIService {
             }
             Log.d( TAG, "dispatchAll() done" );
         }
-    }
+    } // class PacketParser
 
     // Blocks until can return an Accumulator with data
     private static Object sBlocker = new Object();
@@ -1493,7 +1545,7 @@ public class BTService extends XWJIService {
         // Log.d( TAG, "getHasData() IN" );
         List<PacketAccumulator> result = new ArrayList<>();
         while ( 0 == result.size() ) {
-            long newMin = 5 * 60 * 1000;
+            long newMin = 60 * 60 * 1000; // longest wait: 1 hour
             try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( sSenders ) ) {
                 synchronized ( sSenders ) {
                     for ( String addr : sSenders.keySet() ) {
@@ -1508,17 +1560,15 @@ public class BTService extends XWJIService {
                 }
             }
 
-            if ( result.size() == 0 ) {
+            if ( 0 == result.size() ) {
                 synchronized ( sBlocker ) {
-                    long whileDebugging = Math.min( newMin, 10 * 1000 );
-                    Log.d( TAG, "getHasData(): waiting %dms (should be %dms)",
-                           whileDebugging, newMin );
-                    sBlocker.wait( 1 + whileDebugging ); // 0 might mean forever
+                    Log.d( TAG, "getHasData(): waiting %dms", newMin );
+                    sBlocker.wait( 1 + newMin ); // 0 might mean forever
                     Log.d( TAG, "getHasData(): DONE waiting" );
                 }
             }
         }
-        Log.d( TAG, "getHasData() => %s", result );
+        // Log.d( TAG, "getHasData() => %s", result );
         return result;
     }
 
