@@ -152,7 +152,7 @@ public class XWPrefs {
 
     public static String getDefaultDictURL( Context context )
     {
-        return getPrefsString( context, R.string.key_dict_host );
+        return getPrefsString( context, R.string.key_dict_host4 );
     }
 
     public static boolean getSquareTiles( Context context )
