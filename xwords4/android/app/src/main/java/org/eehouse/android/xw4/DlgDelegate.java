@@ -455,7 +455,10 @@ public class DlgDelegate {
 
     public void setProgressMsg( int id )
     {
-        m_progress.setMessage( getString( id ) );
+        ProgressDialog progress = m_progress;
+        if ( null != progress ) {
+            progress.setMessage( getString( id ) );
+        }
     }
 
     public void stopProgress()
