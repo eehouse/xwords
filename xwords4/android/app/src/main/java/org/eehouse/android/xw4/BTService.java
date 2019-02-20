@@ -626,6 +626,7 @@ public class BTService extends XWJIService {
                         // hack: will close if nobody ref'd it inside dispatchAll()
                         closeForRef( makeRefFor( socket ) );
                         socket = null;
+                        updateStatusIn( true );
                     } else {
                         writeBack( socket, BTCmd.BAD_PROTO );
                         socket.close();
@@ -793,6 +794,7 @@ public class BTService extends XWJIService {
                                         DataOutputStream dos = connect( socket );
                                         if ( null == dos ) {
                                             pa.setNoHost();
+                                            updateStatusOut( false );
                                         } else {
                                             Log.d( TAG, "%s.thread.run(): connect(%s) => %s",
                                                    className, pa.getName(), dos );
@@ -915,8 +917,8 @@ public class BTService extends XWJIService {
                 Log.e( TAG, "sendPing() failure; %s", ioe.getMessage() );
                 DbgUtils.printStack( TAG, ioe );
             }
-            mService.updateStatusOut( sendWorking );
-            mService.updateStatusIn( receiveWorking );
+            updateStatusOut( sendWorking );
+            updateStatusIn( receiveWorking );
             // Log.d( TAG, "sendPing(%s) => %b", dev.getName(), gotReply );
             return gotReply;
         } // sendPing
@@ -1055,16 +1057,18 @@ public class BTService extends XWJIService {
         DbgUtils.printStack( TAG );
     }
 
-    private void updateStatusOut( boolean success )
+    private static void updateStatusOut( boolean success )
     {
+        Context context = XWApp.getContext();
         ConnStatusHandler
-            .updateStatusOut( this, null, CommsConnType.COMMS_CONN_BT, success );
+            .updateStatusOut( context, null, CommsConnType.COMMS_CONN_BT, success );
     }
 
-    private void updateStatusIn( boolean success )
+    private static void updateStatusIn( boolean success )
     {
+        Context context = XWApp.getContext();
         ConnStatusHandler
-            .updateStatusIn( this, null, CommsConnType.COMMS_CONN_BT, success );
+            .updateStatusIn( context, null, CommsConnType.COMMS_CONN_BT, success );
     }
 
     private class BTMsgSink extends MultiMsgSink {
@@ -1288,6 +1292,9 @@ public class BTService extends XWJIService {
             }
             unappend( nDone );
             Log.d( TAG, "writeAndCheck() => %d", nDone );
+            if ( nDone > 0 ) {
+                updateStatusOut( true );
+            }
             return nDone;
         }
 
