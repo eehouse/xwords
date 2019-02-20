@@ -34,10 +34,11 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 
+import org.eehouse.android.xw4.DbgUtils.DeadlockWatch;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -1229,7 +1230,7 @@ public class BTService extends XWJIService {
         {
             long waitFromNow;
             // Log.d( TAG, "getNextReadyMS() IN" );
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     if ( 0 == mElems.size() ) { // nothing to send
                         waitFromNow = Long.MAX_VALUE;
@@ -1248,7 +1249,7 @@ public class BTService extends XWJIService {
 
         void setNoHost()
         {
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     mLastFailTime = System.currentTimeMillis();
                     ++mFailCount;
@@ -1280,7 +1281,7 @@ public class BTService extends XWJIService {
             Assert.assertNotNull( dos );
 
             List<MsgElem> localElems = new ArrayList<>();
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     if ( 0 < mLength ) {
                         try {
@@ -1476,7 +1477,7 @@ public class BTService extends XWJIService {
                                 OutputPair op ) throws IOException
         {
             boolean haveSpace;
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     MsgElem newElem = new MsgElem( cmd, gameID, msgID, op );
                     haveSpace = mLength + newElem.size() < MAX_PACKET_LEN;
@@ -1509,7 +1510,7 @@ public class BTService extends XWJIService {
         private void unappend( int nToRemove )
         {
             Assert.assertTrue( nToRemove <= mElems.size() );
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     for ( int ii = 0; ii < nToRemove; ++ii ) {
                         MsgElem elem = mElems.remove(0);
@@ -1526,7 +1527,7 @@ public class BTService extends XWJIService {
         void resetBackoff()
         {
             // Log.d( TAG, "resetBackoff() IN" );
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     mFailCount = 0;
                 }
@@ -1548,7 +1549,7 @@ public class BTService extends XWJIService {
         private void tellSomebody()
         {
             // Log.d( TAG, "tellSomebody() IN" );
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( sBlocker ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( sBlocker ) ) {
                 synchronized ( sBlocker ) {
                     sBlocker.notifyAll();
                 }
@@ -1681,7 +1682,7 @@ public class BTService extends XWJIService {
         List<PacketAccumulator> result = new ArrayList<>();
         while ( 0 == result.size() ) {
             long newMin = 60 * 60 * 1000; // longest wait: 1 hour
-            try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( sSenders ) ) {
+            try ( DeadlockWatch dw = new DeadlockWatch( sSenders ) ) {
                 synchronized ( sSenders ) {
                     for ( String addr : sSenders.keySet() ) {
                         PacketAccumulator pa = sSenders.get( addr );
@@ -1715,12 +1716,16 @@ public class BTService extends XWJIService {
 
     private static PacketAccumulator getSenderFor( String addr, boolean create )
     {
-        synchronized ( sSenders ) {
-            if ( create && !sSenders.containsKey( addr ) ) {
-                sSenders.put( addr, new PacketAccumulator( addr ) );
+        PacketAccumulator result;
+        try ( DeadlockWatch dw = new DeadlockWatch( sSenders ) ) {
+            synchronized ( sSenders ) {
+                if ( create && !sSenders.containsKey( addr ) ) {
+                    sSenders.put( addr, new PacketAccumulator( addr ) );
+                }
+                result = sSenders.get( addr );
             }
-            return sSenders.get( addr );
         }
+        return result;
     }
 
     private static void resetSenderFor( BluetoothSocket socket )
