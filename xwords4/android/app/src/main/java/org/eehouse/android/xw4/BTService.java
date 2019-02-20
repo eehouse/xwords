@@ -1161,6 +1161,7 @@ public class BTService extends XWJIService {
             int mGameID;
             long mStamp;
             byte[] mData;
+            int mLocalID;
 
             MsgElem( BTCmd cmd, int gameID, String msgID, OutputPair op )
             {
@@ -1184,6 +1185,8 @@ public class BTService extends XWJIService {
                            ioe.getMessage() );
                 }
             }
+
+            void setLocalID( int id ) { mLocalID = id; }
 
             boolean isSameAs( MsgElem other )
             {
@@ -1214,6 +1217,7 @@ public class BTService extends XWJIService {
         private long mLastFailTime;
         private int mFailCount;
         private int mLength;
+        private int mCounter;
 
         PacketAccumulator( String addr ) {
             mAddr = addr;
@@ -1260,17 +1264,28 @@ public class BTService extends XWJIService {
         @Override
         public synchronized String toString()
         {
-            long age = 0;
+            StringBuilder sb = new StringBuilder("{")
+                .append("name: ").append( mName )
+                .append( ", addr: ").append( mAddr )
+                .append( ", failCount: " ).append( mFailCount )
+                .append( ", len: " ).append( mLength )
+                ;
+
             if ( 0 < mElems.size() ) {
-                age = System.currentTimeMillis() - mElems.get(0).mStamp;
+                long age = System.currentTimeMillis() - mElems.get(0).mStamp;
+                int lowID = mElems.get(0).mLocalID;
+                int highID = mElems.get(mElems.size() - 1).mLocalID;
+                List<BTCmd> cmds = new ArrayList<>();
+                for ( MsgElem elem : mElems ) {
+                    cmds.add( elem.mCmd );
+                }
+                sb.append( ", age: " ).append( age )
+                    .append( ", ids: ").append(lowID).append('-').append(highID)
+                    .append( ", cmds: " ).append( TextUtils.join(",", cmds) )
+                    ;
             }
-            List<BTCmd> cmds = new ArrayList<>();
-            for ( MsgElem elem : mElems ) {
-                cmds.add( elem.mCmd );
-            }
-            return String.format("{name: %s, addr: %s, age: %dms, failCount: %d, len: %d, cmds: %s}",
-                                 mName, mAddr, age, mFailCount, mLength,
-                                 TextUtils.join(",", cmds) );
+
+            return sb.append('}').toString();
         }
 
         int writeAndCheck( BluetoothSocket socket, DataOutputStream dos,
@@ -1494,6 +1509,7 @@ public class BTService extends XWJIService {
                         if ( dupFound ) {
                             Log.d( TAG, "append(): dropping dupe: %s", newElem );
                         } else {
+                            newElem.setLocalID( mCounter++ );
                             mElems.add( newElem );
                             mLength += newElem.size();
                         }
