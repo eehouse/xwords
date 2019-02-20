@@ -62,9 +62,10 @@ public class MultiMsgSink implements TransportProcs {
         return RelayService.sendPacket( m_context, getRowID(), buf );
     }
 
-    public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
+    public int sendViaBluetooth( byte[] buf, String msgID, int gameID,
+                                 CommsAddrRec addr )
     {
-        return BTService.sendPacket( m_context, buf, addr, gameID );
+        return BTService.sendPacket( m_context, buf, msgID, addr, gameID );
     }
 
     public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
@@ -88,7 +89,7 @@ public class MultiMsgSink implements TransportProcs {
     public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
 
     @Override
-    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
+    public int transportSend( byte[] buf, String msgID, CommsAddrRec addr,
                               CommsConnType typ, int gameID )
     {
         int nSent = -1;
@@ -97,7 +98,7 @@ public class MultiMsgSink implements TransportProcs {
             nSent = sendViaRelay( buf, gameID );
             break;
         case COMMS_CONN_BT:
-            nSent = sendViaBluetooth( buf, gameID, addr );
+            nSent = sendViaBluetooth( buf, msgID, gameID, addr );
             break;
         case COMMS_CONN_SMS:
             nSent = sendViaSMS( buf, gameID, addr );
@@ -112,8 +113,8 @@ public class MultiMsgSink implements TransportProcs {
         Log.i( TAG, "transportSend(): sent %d msgs for game %d/%x via %s",
                nSent, gameID, gameID, typ.toString() );
         if ( 0 < nSent ) {
-            Log.d( TAG, "transportSend: adding %s", msgNo );
-            m_sentSet.add( msgNo );
+            Log.d( TAG, "transportSend: adding %s", msgID );
+            m_sentSet.add( msgID );
         }
 
         return nSent;

@@ -354,7 +354,7 @@ public class CommsTransport implements TransportProcs,
     }
 
     @Override
-    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr,
+    public int transportSend( byte[] buf, String msgID, CommsAddrRec addr,
                               CommsConnType conType, int gameID )
     {
         Log.d( TAG, "transportSend(len=%d, typ=%s)", buf.length,
@@ -380,7 +380,7 @@ public class CommsTransport implements TransportProcs,
             }
         } else {
             nSent = sendForAddr( m_context, addr, conType, m_rowid,
-                                 gameID, buf );
+                                 gameID, buf, msgID );
         }
 
         // Keep this while debugging why the resend_all that gets
@@ -404,20 +404,20 @@ public class CommsTransport implements TransportProcs,
     }
 
     @Override
-    public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
+    public boolean relayNoConnProc( byte[] buf, String msgID, String relayID )
     {
         Assert.assertTrue( TRANSPORT_DOES_NOCONN );
         int nSent = RelayService.sendNoConnPacket( m_context, m_rowid,
-                                                   relayID, buf, msgNo );
+                                                   relayID, buf, msgID );
         boolean success = buf.length == nSent;
-        Log.d( TAG, "relayNoConnProc(msgNo=%s, len=%d) => %b", msgNo,
+        Log.d( TAG, "relayNoConnProc(msgID=%s, len=%d) => %b", msgID,
                buf.length, success );
         return success;
     }
 
     private static int sendForAddr( Context context, CommsAddrRec addr,
                                     CommsConnType conType, long rowID,
-                                    int gameID, byte[] buf )
+                                    int gameID, byte[] buf, String msgID )
     {
         int nSent = -1;
         switch ( conType ) {
@@ -430,7 +430,7 @@ public class CommsTransport implements TransportProcs,
                                            gameID, buf );
             break;
         case COMMS_CONN_BT:
-            nSent = BTService.sendPacket( context, buf, addr, gameID );
+            nSent = BTService.sendPacket( context, buf, msgID, addr, gameID );
             break;
         case COMMS_CONN_P2P:
             nSent = WiDirService
