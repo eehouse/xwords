@@ -1219,8 +1219,7 @@ public class BTService extends XWJIService {
             Log.d( TAG, "%s.writeAndCheck() IN", this );
             Assert.assertNotNull( dos );
 
-            List<MsgElem> localElems = null;
-
+            List<MsgElem> localElems = new ArrayList<>();
             try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
                 synchronized ( this ) {
                     if ( 0 < mLength ) {
@@ -1236,8 +1235,10 @@ public class BTService extends XWJIService {
                             }
 
                             for ( int ii = 0; ii < msgCount; ++ii ) {
-                                byte[] elemData = mElems.get(ii).mData;
+                                MsgElem elem = mElems.get(ii);
+                                byte[] elemData = elem.mData;
                                 tmpOP.dos.write( elemData, 0, elemData.length );
+                                localElems.add( elem );
                             }
                             byte[] data = tmpOP.bos.toByteArray();
 
@@ -1252,17 +1253,12 @@ public class BTService extends XWJIService {
                                    + " %d-byte payload with sum %s (for %s)",
                                    msgCount, data.length, Utils.getMD5SumFor( data ),
                                    this );
-
-                            if ( IS_BATCH_PROTO() ) {
-                                localElems = mElems;
-                            } else {
-                                localElems = mElems.subList(0, 1);
-                            }
                         } catch ( IOException ioe ) {
                             Log.e( TAG, "writeAndCheck(): ioe: %s", ioe.getMessage() );
+                            localElems = null;
                         }
                     }
-                }
+                } // synchronized
             }
 
             int nDone = 0;
@@ -1438,6 +1434,8 @@ public class BTService extends XWJIService {
                     }
                     Log.d( TAG, "unappend(): after removing %d, have %d left for size %d",
                            nToRemove, mElems.size(), mLength );
+
+                    resetBackoff(); // we were successful sending, so should retry immediately
                 }
             }
         }
