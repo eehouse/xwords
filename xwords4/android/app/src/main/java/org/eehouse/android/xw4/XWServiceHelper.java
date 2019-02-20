@@ -179,7 +179,6 @@ abstract class XWServiceHelper {
                         .makeMissingDictIntent( mService, nli, dfo );
                     MultiService.postMissingDictNotification( mService, intent,
                                                               nli.gameID() );
-                    success = false;
                 }
             }
         }
