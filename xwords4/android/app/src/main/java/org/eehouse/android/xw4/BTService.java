@@ -1075,6 +1075,35 @@ public class BTService extends XWJIService {
             .updateStatusIn( context, null, CommsConnType.COMMS_CONN_BT, success );
     }
 
+    private static class KillerIn extends Thread implements AutoCloseable {
+        private int mSeconds;
+        private java.io.Closeable mSocket;
+
+        KillerIn( final java.io.Closeable socket, final int seconds )
+        {
+            mSeconds = seconds;
+            mSocket = socket;
+            start();
+        }
+
+        @Override
+        public void run()
+        {
+            try {
+                Thread.sleep( 1000 * mSeconds );
+                Log.d( TAG, "KillerIn(): time's up; closing socket" );
+                mSocket.close();
+            } catch ( InterruptedException ie ) {
+                // Log.d( TAG, "KillerIn: killed by owner" );
+            } catch( IOException ioe ) {
+                Log.ex( TAG, ioe );
+            }
+        }
+
+        @Override
+        public void close() { interrupt(); }
+    }
+
     private class BTMsgSink extends MultiMsgSink {
 
         public BTMsgSink() { super( BTService.this ); }
@@ -1295,7 +1324,7 @@ public class BTService extends XWJIService {
             int nDone = 0;
             if ( null != localElems ) {
                 Log.d( TAG, "writeAndCheck(): reading %d replies", localElems.size() );
-                try {
+                try ( KillerIn ki = new KillerIn( socket, 30 ) ) {
                     DataInputStream inStream =
                         new DataInputStream( socket.getInputStream() );
                     for ( int ii = 0; ii < localElems.size(); ++ii ) {
@@ -1314,7 +1343,7 @@ public class BTService extends XWJIService {
                         ++nDone;
                     }
                 } catch ( IOException ioe ) {
-                    Log.d( TAG, "failed reading replies: %s", ioe.getMessage() );
+                    Log.d( TAG, "failed reading replies for %s: %s", this, ioe.getMessage() );
                 }
             }
             unappend( nDone );
