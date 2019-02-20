@@ -48,6 +48,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -119,6 +120,7 @@ public class BTService extends XWJIService {
     };
 
     private static final String MSG_KEY = "MSG";
+    private static final String MSGID_KEY = "MSGID";
     private static final String GAMENAME_KEY = "NAM";
     private static final String ADDR_KEY = "ADR";
     private static final String SCAN_TIMEOUT_KEY = "SCAN_TIMEOUT";
@@ -333,7 +335,7 @@ public class BTService extends XWJIService {
         enqueueWork( context, intent );
     }
 
-    public static int sendPacket( Context context, byte[] buf,
+    public static int sendPacket( Context context, byte[] buf, String msgID,
                                   CommsAddrRec targetAddr, int gameID )
     {
         int nSent = -1;
@@ -342,6 +344,7 @@ public class BTService extends XWJIService {
         if ( null != btAddr && 0 < btAddr.length() ) {
             Intent intent = getIntentTo( context, BTAction.SEND )
                 .putExtra( MSG_KEY, buf )
+                .putExtra( MSGID_KEY, msgID )
                 .putExtra( ADDR_KEY, btAddr )
                 .putExtra( GAMEID_KEY, gameID );
             enqueueWork( context, intent );
@@ -447,9 +450,10 @@ public class BTService extends XWJIService {
             case SEND:
                 byte[] buf = intent.getByteArrayExtra( MSG_KEY );
                 btAddr = intent.getStringExtra( ADDR_KEY );
+                String msgID = intent.getStringExtra( MSGID_KEY );
                 gameID = intent.getIntExtra( GAMEID_KEY, -1 );
                 if ( -1 != gameID ) {
-                    getSenderFor( btAddr ).addMsg( gameID, buf );
+                    getSenderFor( btAddr ).addMsg( gameID, buf, msgID );
                 }
                 break;
             case RADIO:
@@ -1076,12 +1080,13 @@ public class BTService extends XWJIService {
         public BTMsgSink() { super( BTService.this ); }
 
         @Override
-        public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
+        public int sendViaBluetooth( byte[] buf, String msgID, int gameID,
+                                     CommsAddrRec addr )
         {
             int nSent = -1;
             String btAddr = getSafeAddr( addr );
             if ( null != btAddr && 0 < btAddr.length() ) {
-                getSenderFor( btAddr ).addMsg( gameID, buf );
+                getSenderFor( btAddr ).addMsg( gameID, buf, msgID );
                 BTSenderThread.startYourself( BTService.this );
                 nSent = buf.length;
             } else {
@@ -1122,13 +1127,15 @@ public class BTService extends XWJIService {
 
         private static class MsgElem {
             BTCmd mCmd;
+            String mMsgID;
             int mGameID;
             long mStamp;
             byte[] mData;
 
-            MsgElem( BTCmd cmd, int gameID, OutputPair op )
+            MsgElem( BTCmd cmd, int gameID, String msgID, OutputPair op )
             {
                 mCmd = cmd;
+                mMsgID = msgID;
                 mGameID = gameID;
                 mStamp = System.currentTimeMillis();
 
@@ -1148,7 +1155,27 @@ public class BTService extends XWJIService {
                 }
             }
 
+            boolean isSameAs( MsgElem other )
+            {
+                boolean result = mCmd == other.mCmd
+                    && mGameID == other.mGameID
+                    && Arrays.equals( mData, other.mData );
+                if ( result ) {
+                    if ( null != mMsgID && !mMsgID.equals( other.mMsgID ) ) {
+                        Log.e( TAG, "hmmm: identical but msgIDs differ: new %s vs old %s",
+                               mMsgID, other.mMsgID );
+                        Assert.assertFalse( BuildConfig.DEBUG );
+                    }
+                }
+                return result;
+            }
+
             int size() { return mData.length; }
+            @Override
+            public String toString()
+            {
+                return String.format("{cmd: %s, msgID: %s}", mCmd, mMsgID );
+            }
         }
 
         private String mAddr;
@@ -1382,14 +1409,14 @@ public class BTService extends XWJIService {
             }
         }
 
-        void addMsg( int gameID, byte[] buf )
+        void addMsg( int gameID, byte[] buf, String msgID )
         {
             try {
                 OutputPair op = new OutputPair();
                 op.dos.writeInt( gameID );
                 op.dos.writeShort( buf.length );
                 op.dos.write( buf, 0, buf.length );
-                append( BTCmd.MESG_SEND, gameID, op );
+                append( BTCmd.MESG_SEND, gameID, msgID, op );
             } catch ( IOException ioe ) {
                 Assert.assertFalse( BuildConfig.DEBUG );
             }
@@ -1408,20 +1435,40 @@ public class BTService extends XWJIService {
 
         private void append( BTCmd cmd, OutputPair op ) throws IOException
         {
-            append( cmd, 0, op );
+            append( cmd, 0, null, op );
+        }
+
+        private void append( BTCmd cmd, int gameID, OutputPair op ) throws IOException
+        {
+            append( cmd, gameID, null, op );
         }
         
-        private boolean append( BTCmd cmd, int gameID, OutputPair op ) throws IOException
+        private boolean append( BTCmd cmd, int gameID, String msgID,
+                                OutputPair op ) throws IOException
         {
             boolean haveSpace;
             try ( DbgUtils.DeadlockWatch dw = new DbgUtils.DeadlockWatch( this ) ) {
                 synchronized ( this ) {
-                    MsgElem newElem = new MsgElem( cmd, gameID, op );
+                    MsgElem newElem = new MsgElem( cmd, gameID, msgID, op );
                     haveSpace = mLength + newElem.size() < MAX_PACKET_LEN;
                     if ( haveSpace ) {
-                        mElems.add( newElem );
-                        mLength += newElem.size();
-                        mFailCount = 0;     // for now, we restart timer on new data
+                        // Let's check for duplicates....
+                        boolean dupFound = false;
+                        for ( MsgElem elem : mElems ) {
+                            if ( elem.isSameAs( newElem ) ) {
+                                dupFound = true;
+                                break;
+                            }
+                        }
+
+                        if ( dupFound ) {
+                            Log.d( TAG, "append(): dropping dupe: %s", newElem );
+                        } else {
+                            mElems.add( newElem );
+                            mLength += newElem.size();
+                        }
+                        // for now, we restart timer on new data, even if a dupe
+                        mFailCount = 0;
                         tellSomebody();
                     }
                 }
