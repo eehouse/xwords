@@ -1011,7 +1011,7 @@ public class BTService extends XWJIService {
             // appropriate based on backoff logic, and be awakened when
             // something new comes in or there's reason to hope a send try
             // will succeed.
-            while ( ! mShouldExit ) {
+            while ( BTEnabled() && ! mShouldExit ) {
                 synchronized ( this ) {
                     if ( mExitWhenEmpty && 0 == mElems.size() ) {
                         break;
