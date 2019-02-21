@@ -16,7 +16,8 @@
   <h2>CrossWords 4.4.141 release</h2>
 
   <p>This release changes how background networking works to comply
-      with new Google requirements.</p>
+      with new Google requirements. I highly recommend you upgrade,
+      and ask that you report any problems to me quickly.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,23 +27,24 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Remove "Google Cloud Messaging", which is incompatible with
-          the Android version that is required as of Nov 1 2018. The
-          next release will replace it with something that is
-          compatible, but for now messages from the relay will be
-          delivered a bit more slowly</li>
-      <li>Run BlueTooth visibly (with permanent notification) when in
-          the background for 15 minutes after the last BlueTooth
-          message was received</li>
-      <li>Group notifications into types so users of latest Android
-          versions can disable them separately</li>
+      <li>Lots of internal changes to background networking (for games
+          using the relay and Bluetooth) to comply with recent
+          requirements from Google. (I hope you won't notice :-) </li>
       <li>Improve Invite-via-Bluetooth dialog, esp. show when a remote
-          device was last detected</li>
+          device was last detected via scan</li>
       <li>Store new games outside Archive group even if created from
           inside it</li>
-      <li>For Spanish-games only, allow trades when fewer than 7 tiles remain</li>
-      <li>New translations in Arabic, German, Norwegian, Polish and Portuguese</li>
+      <li>Replace "Google Cloud Messaging" with the newer Firebase
+          workalike. (You should not notice, at least in the Google
+          Play Store version.)</li>
+      <li>For Spanish games only, allow trades when fewer than 7 tiles
+          remain</li>
+      <li>New translations in Arabic, German, Japanese, Norwegian,
+          Polish and Portuguese</li>
+      <li>Use https instead of http for web communication
+          (e.g. wordlist downloads)</li>
       <li>Disable logging for release builds (to improve performance)</li>
+      <li>Fix some infrequent crashes</li>
   </ul>
 
   <p>(The full changelog
