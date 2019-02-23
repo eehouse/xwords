@@ -202,13 +202,16 @@ linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 {
     XP_U16 len = 0;
     linux_dutil_loadPtr( duc, key, NULL, &len );
-    XP_U8 buf[len];
-    linux_dutil_loadPtr( duc, key, buf, &len );
+    if ( 0 < len ) {
+        XP_U8 buf[len];
+        linux_dutil_loadPtr( duc, key, buf, &len );
+        XP_ASSERT( buf[len-1] == '\0' );
 
-    gsize out_len;
-    guchar* txt = g_base64_decode( (const gchar*)buf, &out_len );
-    stream_putBytes( stream, txt, out_len );
-    g_free( txt );
+        gsize out_len;
+        guchar* txt = g_base64_decode( (const gchar*)buf, &out_len ); /* BAD */
+        stream_putBytes( stream, txt, out_len );
+        g_free( txt );
+    }
 
     XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(stream) );
 }
