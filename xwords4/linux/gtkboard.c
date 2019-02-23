@@ -761,7 +761,6 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     short bdHeight = alloc.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
         - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
 
-#ifdef COMMON_LAYOUT
     XP_ASSERT( !cGlobals->params->verticalScore ); /* not supported */
 
     BoardDims dims;
@@ -769,80 +768,6 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                         GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
                         110, 150, 200, bdWidth-25, 16, 16, XP_FALSE, &dims );
     board_applyLayout( board, &dims );
-
-#else
-    short timerLeft, timerTop;
-    gint hscale, vscale;
-    gint trayTop;
-    gint boardTop = 0;
-    XP_U16 netStatWidth = 0;
-    gint nCols;
-    gint nRows;
-
-    nCols = cGlobals->gi->boardSize;
-    nRows = nCols;
-    if ( cGlobals->params->verticalScore ) {
-        bdWidth -= GTK_VERT_SCORE_WIDTH;
-    }
-
-    hscale = bdWidth / nCols;
-    if ( 0 != cGlobals->params->nHidden ) {
-        vscale = hscale;
-    } else {
-        vscale = (bdHeight / (nCols + GTK_TRAY_HT_ROWS)); /* makd tray height
-                                                             3x cell height */
-    }
-
-    if ( !cGlobals->params->verticalScore ) {
-        boardTop += GTK_HOR_SCORE_HEIGHT;
-    }
-
-    trayTop = boardTop + (vscale * nRows);
-    /* move tray up if part of board's meant to be hidden */
-    trayTop -= vscale * cGlobals->params->nHidden;
-    board_setPos( board, GTK_BOARD_LEFT, boardTop,
-                  hscale * nCols, vscale * nRows, hscale * 4, XP_FALSE );
-    /* board_setScale( board, hscale, vscale ); */
-
-    if ( !!cGlobals->game.comms ) {
-        netStatWidth = GTK_NETSTAT_WIDTH;
-    }
-
-    timerTop = GTK_TIMER_TOP;
-    if ( cGlobals->params->verticalScore ) {
-        timerLeft = GTK_BOARD_LEFT + (hscale*nCols) + 1;
-        board_setScoreboardLoc( board, 
-                                timerLeft,
-                                GTK_VERT_SCORE_TOP,
-                                GTK_VERT_SCORE_WIDTH, 
-                                vscale*nCols,
-                                XP_FALSE );
-
-    } else {
-        timerLeft = GTK_BOARD_LEFT + (hscale*nCols)
-            - GTK_TIMER_WIDTH - netStatWidth;
-        board_setScoreboardLoc( board, 
-                                GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP,
-                                timerLeft-GTK_BOARD_LEFT,
-                                GTK_HOR_SCORE_HEIGHT, 
-                                XP_TRUE );
-
-    }
-
-    /* Still pending: do this for the vertical score case */
-    if ( cGlobals->game.comms ) {
-        globals->netStatLeft = timerLeft + GTK_TIMER_WIDTH;
-        globals->netStatTop = 0;
-    }
-
-    board_setTimerLoc( board, timerLeft, timerTop,
-                       GTK_TIMER_WIDTH, GTK_HOR_SCORE_HEIGHT );
-
-    board_setTrayLoc( board, GTK_TRAY_LEFT, trayTop, 
-                      hscale * nCols, vscale * GTK_TRAY_HT_ROWS + 10, 
-                      GTK_DIVIDER_WIDTH );
-
-#endif
 
     setCtrlsForTray( globals );
     board_invalAll( board );
@@ -2778,9 +2703,16 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
    test app....*/
 
 static gboolean
-on_draw_event( GtkWidget *widget, cairo_t* cr, gpointer user_data )
+on_draw_event( GtkWidget* widget, cairo_t* cr, gpointer user_data )
 {
     // XP_LOGF( "%s(widget=%p)", __func__, widget );
+
+    GdkRectangle rect;
+    if ( gdk_cairo_get_clip_rectangle( cr, &rect) ) {
+        XP_LOGF( "%s(): clip: x:%d,y:%d,w:%d,h:%d", __func__,
+                 rect.x, rect.y, rect.width, rect.height );
+    }
+
     GtkGameGlobals* globals = (GtkGameGlobals*)user_data;
     board_invalAll( globals->cGlobals.game.board );
     board_draw( globals->cGlobals.game.board );
@@ -2801,6 +2733,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     GtkWidget* menubar;
     GtkWidget* vbox;
     GtkWidget* hbox;
+    gulong id;
 
     initGlobalsNoDraw( globals, params, gi );
     if ( !!gi ) {
@@ -2819,11 +2752,13 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
 
-    g_signal_connect( window, "destroy", G_CALLBACK(destroy_board_window),
-                      globals );
+    id = g_signal_connect( window, "destroy", G_CALLBACK(destroy_board_window),
+                           globals );
+    XP_ASSERT( id > 0 );
     XP_ASSERT( !!globals );
-    g_signal_connect( window, "show", G_CALLBACK( on_board_window_shown ),
-                      globals );
+    id = g_signal_connect( window, "show", G_CALLBACK( on_board_window_shown ),
+                           globals );
+    XP_ASSERT( id > 0 );
 
     menubar = makeMenus( globals );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
@@ -2837,7 +2772,10 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     gtk_box_pack_start( GTK_BOX(vbox), makeButtons( globals ), FALSE, TRUE, 0);
 
     drawing_area = gtk_drawing_area_new();
-    g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(on_draw_event), globals);
+    gtk_widget_add_events( drawing_area, GDK_ALL_EVENTS_MASK );
+    id = g_signal_connect(G_OBJECT(drawing_area), "draw",
+                          G_CALLBACK(on_draw_event), globals);
+    XP_ASSERT( id > 0 );
 
     globals->drawing_area = drawing_area;
     gtk_widget_show( drawing_area );
@@ -2864,8 +2802,9 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
         gtk_adjustment_new( 0, 0, nRows, 1, 2, 
                             nRows - params->nHidden );
     vscrollbar = gtk_scrollbar_new( GTK_ORIENTATION_VERTICAL, globals->adjustment );
-    g_signal_connect( globals->adjustment, "value_changed",
-                      G_CALLBACK(scroll_value_changed), globals );
+    id = g_signal_connect( globals->adjustment, "value_changed",
+                           G_CALLBACK(scroll_value_changed), globals );
+    XP_ASSERT( id > 0 );
     gtk_widget_show( vscrollbar );
     gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, FALSE, FALSE, 0 );
 
@@ -2876,14 +2815,18 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox/* drawing_area */, TRUE, TRUE, 0);
 
-    g_signal_connect( drawing_area,"configure_event",
-                      G_CALLBACK(configure_event), globals );
-    g_signal_connect( drawing_area, "button_press_event",
-                      G_CALLBACK(button_press_event), globals );
-    g_signal_connect( drawing_area, "motion_notify_event",
-                      G_CALLBACK(motion_notify_event), globals );
-    g_signal_connect( drawing_area, "button_release_event",
-                      G_CALLBACK(button_release_event), globals );
+    id = g_signal_connect( drawing_area, "configure-event",
+                           G_CALLBACK(configure_event), globals );
+    XP_ASSERT( id > 0 );
+    id = g_signal_connect( drawing_area, "button_press_event",
+                           G_CALLBACK(button_press_event), globals );
+    XP_ASSERT( id > 0 );
+    id = g_signal_connect( drawing_area, "motion_notify_event",
+                           G_CALLBACK(motion_notify_event), globals );
+    XP_ASSERT( id > 0 );
+    id = g_signal_connect( drawing_area, "button_release_event",
+                           G_CALLBACK(button_release_event), globals );
+    XP_ASSERT( id > 0 );
 
     setOneSecondTimer( cGlobals );
 

@@ -83,7 +83,8 @@ initCairo( GtkDrawCtx* dctx )
     XP_ASSERT( !dctx->_cairo );
     cairo_t* cairo = NULL;
 
-    if ( !!dctx->surface ) {
+    if ( !!dctx->surface ) {  /* the thumbnail case */
+        XP_LOGF( "%s(): have surface; doing nothing", __func__ );
         cairo = cairo_create( dctx->surface );
         cairo_surface_destroy( dctx->surface );
         // XP_ASSERT( 0 );
@@ -117,7 +118,7 @@ destroyCairo( GtkDrawCtx* dctx )
 {
     /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !!dctx->_cairo );
-    if ( !!dctx->surface ) {
+    if ( !!dctx->surface ) {    /* the thumbnail case */
         XP_LOGF( "%s(): have surface; doing nothing", __func__ );
     } else {
 #ifdef GDK_AVAILABLE_IN_3_22
