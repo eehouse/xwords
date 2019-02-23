@@ -34,9 +34,8 @@
 
 /* To match the SMSService format */
 # define SMS_PROTO_VERSION_JAVA 1
-
-# define SMS_PROTO_VERSION 1
 # define SMS_PROTO_VERSION_COMBO 2
+# define SMS_PROTO_VERSION SMS_PROTO_VERSION_JAVA
 
 # define PARTIALS_FORMAT 0
 
@@ -302,7 +301,7 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
     XP_U8 proto;
     if ( stream_gotU8( stream, &proto ) ) {
         switch ( proto ) {
-        case SMS_PROTO_VERSION: {
+        case SMS_PROTO_VERSION_JAVA: {
             XP_U8 msgID, indx, count;
             if ( stream_gotU8( stream, &msgID )
                  && stream_gotU8( stream, &indx )
