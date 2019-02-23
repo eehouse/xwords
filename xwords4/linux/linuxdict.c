@@ -536,54 +536,54 @@ linux_dict_getShortName( const DictionaryCtxt* dict )
  * This guy reads in from a prc file, and probably hasn't worked in a year.
  */
 #define RECS_BEFORE_DAWG 3	/* a hack */
-static XP_Bool
-initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
-{
-    short i;
-    unsigned short* dataP;
-    unsigned nRecs;
-    prc_record_t* prect;
+/* static XP_Bool */
+/* initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName ) */
+/* { */
+/*     short i; */
+/*     unsigned short* dataP; */
+/*     unsigned nRecs; */
+/*     prc_record_t* prect; */
 
-    prc_t* pt = prcopen( fileName, PRC_OPEN_READ );
-    dctx->pt = pt;		/* remember so we can close it later */
+/*     prc_t* pt = prcopen( fileName, PRC_OPEN_READ ); */
+/*     dctx->pt = pt;		/\* remember so we can close it later *\/ */
 
-    nRecs = prcgetnrecords( pt );
+/*     nRecs = prcgetnrecords( pt ); */
 
-    /* record 0 holds a struct whose 5th byte is the record num of the first
-       dawg record. 1 and 2 hold tile data.  Let's assume 3 is the first dawg
-       record for now. */
+/*     /\* record 0 holds a struct whose 5th byte is the record num of the first */
+/*        dawg record. 1 and 2 hold tile data.  Let's assume 3 is the first dawg */
+/*        record for now. *\/ */
 
-    prect = prcgetrecord( pt, 1 );
-    dctx->super.numFaces = prect->datalen; /* one char per byte */
-    dctx->super.faces = malloc( prect->datalen );
-    memcpy( dctx->super.faces, prect->data, prect->datalen );
+/*     prect = prcgetrecord( pt, 1 ); */
+/*     dctx->super.numFaces = prect->datalen; /\* one char per byte *\/ */
+/*     dctx->super.faces = malloc( prect->datalen ); */
+/*     memcpy( dctx->super.faces, prect->data, prect->datalen ); */
     
-    dctx->super.counts = malloc( dctx->super.numFaces );
-    dctx->super.values = malloc( dctx->super.numFaces );
+/*     dctx->super.counts = malloc( dctx->super.numFaces ); */
+/*     dctx->super.values = malloc( dctx->super.numFaces ); */
 
-    prect = prcgetrecord( pt, 2 );
-    dataP = (unsigned short*)prect->data + 1;	/* skip the xloc header */
+/*     prect = prcgetrecord( pt, 2 ); */
+/*     dataP = (unsigned short*)prect->data + 1;	/\* skip the xloc header *\/ */
 
-    for ( ii = 0; ii < dctx->super.numFaces; ++ii ) {
-        unsigned short byt = *dataP++;
-        dctx->super.values[ii] = byt >> 8;
-        dctx->super.counts[ii] = byt & 0xFF;
-        if ( dctx->super.values[ii] == 0 ) {
-            dctx->super.counts[ii] = 4; /* 4 blanks :-) */
-        }
-    }
+/*     for ( ii = 0; ii < dctx->super.numFaces; ++ii ) { */
+/*         unsigned short byt = *dataP++; */
+/*         dctx->super.values[ii] = byt >> 8; */
+/*         dctx->super.counts[ii] = byt & 0xFF; */
+/*         if ( dctx->super.values[ii] == 0 ) { */
+/*             dctx->super.counts[ii] = 4; /\* 4 blanks :-) *\/ */
+/*         } */
+/*     } */
 
-    dctx->numStarts = nRecs - RECS_BEFORE_DAWG;
-    dctx->starts = XP_MALLOC( dctx->numStarts * sizeof(*dctx->starts) );
+/*     dctx->numStarts = nRecs - RECS_BEFORE_DAWG; */
+/*     dctx->starts = XP_MALLOC( dctx->numStarts * sizeof(*dctx->starts) ); */
 
-    for ( i = 0/* , offset = 0 */; i < dctx->numStarts; ++i ) {
-        prect = prcgetrecord( pt, i + RECS_BEFORE_DAWG );
-        dctx->starts[i].numNodes = prect->datalen / 3;
-        dctx->starts[i].array = (array_edge*)prect->data;
+/*     for ( i = 0/\* , offset = 0 *\/; i < dctx->numStarts; ++i ) { */
+/*         prect = prcgetrecord( pt, i + RECS_BEFORE_DAWG ); */
+/*         dctx->starts[i].numNodes = prect->datalen / 3; */
+/*         dctx->starts[i].array = (array_edge*)prect->data; */
 
-        XP_ASSERT( (prect->datalen % 3) == 0 );
-    }
-} /* initFromDictFile */
+/*         XP_ASSERT( (prect->datalen % 3) == 0 ); */
+/*     } */
+/* } /\* initFromDictFile *\/ */
 
 void
 linux_dictionary_destroy( DictionaryCtxt* dict )
