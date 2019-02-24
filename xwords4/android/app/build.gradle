@@ -78,7 +78,7 @@ android {
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
             resValue "string", "app_name", "CrossWords"
-            resValue "string", "nbs_port", "0"
+            resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
@@ -105,7 +105,7 @@ android {
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
-			buildConfigField "boolean", "REPORT_LOCKS", "true"
+            buildConfigField "boolean", "REPORT_LOCKS", "true"
         }
 
         xw4dNoSMS {
