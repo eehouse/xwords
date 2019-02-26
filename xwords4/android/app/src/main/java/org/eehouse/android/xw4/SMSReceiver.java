@@ -26,15 +26,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class SMSReceiver extends BroadcastReceiver {
     private static final String TAG = SMSReceiver.class.getSimpleName();
+    private static final Pattern sPortPat = Pattern.compile("^sms://localhost:(\\d+)$");
 
     @Override
     public void onReceive( Context context, Intent intent )
     {
         String action = intent.getAction();
         // Log.d( TAG, "onReceive(): action=%s", action );
-        if ( action.equals("android.intent.action.DATA_SMS_RECEIVED") ) {
+        if ( action.equals("android.intent.action.DATA_SMS_RECEIVED")
+             && checkPort( context, intent ) ) {
             Bundle bundle = intent.getExtras();
             if ( null != bundle ) {
                 Object[] pdus = (Object[])bundle.get( "pdus" );
@@ -54,5 +59,30 @@ public class SMSReceiver extends BroadcastReceiver {
                 }
             }
         }
+    }
+
+    private boolean checkPort( Context context, Intent intent )
+    {
+        boolean portsMatch = true;
+        Matcher matcher = sPortPat.matcher( intent.getDataString() );
+        if ( matcher.find() ) {
+            short port = Short.valueOf( matcher.group(1) );
+            short myPort = getConfiguredPort( context );
+            portsMatch = port == myPort;
+            if ( !portsMatch ) {
+                Log.i( TAG, "checkPort(): received msg on %d but expect %d",
+                       port, myPort );
+            }
+        }
+        return portsMatch;
+    }
+
+    private static Short sPort;
+    private short getConfiguredPort( Context context )
+    {
+        if ( sPort == null ) {
+            sPort = Short.valueOf( context.getString( R.string.nbs_port ) );
+        }
+        return sPort;
     }
 }
