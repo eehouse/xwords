@@ -39,16 +39,16 @@ public class XWPrefs {
     // No reason to put this in xml if they're private to this file!
     private static final String key_checked_upgrades = "key_checked_upgrades";
 
-    public static boolean getSMSEnabled( Context context )
+    public static boolean getNBSEnabled( Context context )
     {
         boolean haveNative = Perms23.haveNativePerms();
-        return haveNative || getPrefsBoolean( context, R.string.key_enable_sms, false );
+        return haveNative || getPrefsBoolean( context, R.string.key_enable_nbs, false );
     }
 
-    public static void setSMSEnabled( Context context, boolean enabled )
+    public static void setNBSEnabled( Context context, boolean enabled )
     {
         Assert.assertTrue( !Perms23.haveNativePerms() || !BuildConfig.DEBUG );
-        setPrefsBoolean( context, R.string.key_enable_sms, enabled );
+        setPrefsBoolean( context, R.string.key_enable_nbs, enabled );
     }
 
     public static boolean getDebugEnabled( Context context )

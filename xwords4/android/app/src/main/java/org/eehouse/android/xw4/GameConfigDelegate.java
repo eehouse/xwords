@@ -284,7 +284,7 @@ public class GameConfigDelegate extends DelegateBase
                                      switch( typ ) {
                                      case COMMS_CONN_SMS:
                                          makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                                                 Action.ENABLE_SMS_ASK )
+                                                                 Action.ENABLE_NBS_ASK )
                                              .setPosButton( R.string.button_enable_sms )
                                              .setNegButton( R.string.button_later )
                                              .show();

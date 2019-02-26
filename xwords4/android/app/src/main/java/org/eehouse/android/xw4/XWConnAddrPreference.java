@@ -64,7 +64,7 @@ public class XWConnAddrPreference extends DialogPreference {
                                   case COMMS_CONN_SMS:
                                       activity
                                           .makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                                                   Action.ENABLE_SMS_ASK )
+                                                                   Action.ENABLE_NBS_ASK )
                                           .setPosButton( R.string.button_enable_sms )
                                           .setNegButton( R.string.button_later )
                                           .show();

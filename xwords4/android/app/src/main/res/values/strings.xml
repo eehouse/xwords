@@ -575,8 +575,10 @@
     this alert will not be dismissed until everybody has been invited
     and all invitations have been accepted.)</string>
 
-    <string name="invit_expl_sms_fmt">Invite sent via SMS to phone
+    <string name="invit_expl_sms_fmt">Invite sent via Data SMS to phone
     number %1$s on %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Invite sent via SMS messaging
+    to phone number %1$s on %2$s</string>
     <string name="invit_expl_bt_fmt">Invite sent via Bluetooth to
     paired device \"%1$s\" on %2$s</string>
     <string name="invit_expl_relay_fmt">Invite forwarded by the relay
@@ -1162,7 +1164,8 @@
     <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
-	<string name="invite_choice_sms">SMS (texting)</string>
+	<string name="invite_choice_user_sms">SMS (texting)</string>
+    <string name="invite_choice_data_sms">Data SMS</string>
 	<string name="invite_choice_email">Email</string>
 	<string name="invite_choice_bt">Bluetooth</string>
 	<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
@@ -1203,6 +1206,10 @@
     \u003Cbr \\\u003E
     \u003Cbr \\\u003E
     (full link: %1$s )
+    </string>
+
+    <string name="invite_sms_fmt">Tap the link to accept my
+    invitation and join a CrossWords game: %1$s
     </string>
 
     <!-- When I've created the invitation, in text or html, I ask
@@ -2046,8 +2053,6 @@
     <string name="connstat_noreceipt">No messages have been received.</string>
     <!--  -->
     <string name="connstat_relay">Internet/relay</string>
-    <!--  -->
-    <string name="connstat_sms">SMS/texting</string>
     <!--  -->
     <string name="enable_sms">Allow games via SMS</string>
     <!--  -->

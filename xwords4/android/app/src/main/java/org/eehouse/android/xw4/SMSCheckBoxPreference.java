@@ -39,7 +39,7 @@ public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
-        if ( !Utils.deviceSupportsSMS( getContext() ) ) {
+        if ( !Utils.deviceSupportsNBS( getContext() ) ) {
             setEnabled( false );
         }
     }
@@ -47,7 +47,7 @@ public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
     @Override
     protected void checkIfConfirmed() {
         PrefsActivity activity = (PrefsActivity)getContext();
-        activity.showSMSEnableDialog( Action.ENABLE_SMS_DO );
+        activity.showSMSEnableDialog( Action.ENABLE_NBS_DO );
     }
 
     protected static void setChecked()

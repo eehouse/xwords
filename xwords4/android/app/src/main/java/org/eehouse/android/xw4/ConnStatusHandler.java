@@ -495,7 +495,7 @@ public class ConnStatusHandler {
         boolean result = true;
         switch( connType ) {
         case COMMS_CONN_SMS:
-            result = XWPrefs.getSMSEnabled( context )
+            result = XWPrefs.getNBSEnabled( context )
                 && !getAirplaneModeOn( context );
             break;
         case COMMS_CONN_BT:

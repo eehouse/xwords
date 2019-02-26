@@ -740,11 +740,11 @@ public class DelegateBase implements DlgClickNotify,
         boolean handled = true;
         Log.d( TAG, "%s.onPosButton(%s)", getClass().getSimpleName(), action );
         switch( action ) {
-        case ENABLE_SMS_ASK:
-            showSMSEnableDialog( Action.ENABLE_SMS_DO );
+        case ENABLE_NBS_ASK:
+            showSMSEnableDialog( Action.ENABLE_NBS_DO );
             break;
-        case ENABLE_SMS_DO:
-            XWPrefs.setSMSEnabled( m_activity, true );
+        case ENABLE_NBS_DO:
+            XWPrefs.setNBSEnabled( m_activity, true );
             break;
         case ENABLE_BT_DO:
             BTService.enable();

@@ -114,7 +114,7 @@ public class ConnViaViewLayout extends LinearLayout {
         Context context = getContext();
         switch( typ ) {
         case COMMS_CONN_SMS:
-            enabled = XWPrefs.getSMSEnabled( context );
+            enabled = XWPrefs.getNBSEnabled( context );
             break;
         case COMMS_CONN_BT:
             enabled = BTService.BTEnabled();

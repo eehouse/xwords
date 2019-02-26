@@ -203,7 +203,7 @@ public class SMSService extends XWService {
                                   int gameID, byte[] binmsg )
     {
         int nSent = -1;
-        if ( XWPrefs.getSMSEnabled( context ) ) {
+        if ( XWPrefs.getNBSEnabled( context ) ) {
             Intent intent = getIntentTo( context, SMSAction.SEND )
                 .putExtra( PHONE, phone )
                 .putExtra( MultiService.GAMEID, gameID )
@@ -282,7 +282,7 @@ public class SMSService extends XWService {
     public void onCreate()
     {
         mHelper = new SMSServiceHelper( this );
-        if ( Utils.deviceSupportsSMS( this ) ) {
+        if ( Utils.deviceSupportsNBS( this ) ) {
             registerReceivers();
         } else {
             stopSelf();
@@ -369,7 +369,7 @@ public class SMSService extends XWService {
         }
 
         if ( Service.START_NOT_STICKY == result
-             || !XWPrefs.getSMSEnabled( this ) ) {
+             || !XWPrefs.getNBSEnabled( this ) ) {
             stopSelf( startId );
         }
 
@@ -509,7 +509,7 @@ public class SMSService extends XWService {
     private boolean sendBuffers( byte[][] fragments, String phone )
     {
         boolean success = false;
-        if ( XWPrefs.getSMSEnabled( this ) ) {
+        if ( XWPrefs.getNBSEnabled( this ) ) {
 
             // Try send-to-self
             if ( XWPrefs.getSMSToSelfEnabled( this ) ) {
