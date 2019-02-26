@@ -117,6 +117,8 @@ public class MultiMsgSink implements TransportProcs {
             m_sentSet.add( msgID );
         }
 
+        Log.d( TAG, "transportSend(len=%d, typ=%s) => %d", buf.length,
+               typ, nSent );
         return nSent;
     }
 

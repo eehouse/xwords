@@ -379,14 +379,15 @@ public class CommsTransport implements TransportProcs,
                 nSent = buf.length;
             }
         } else {
-            nSent = sendForAddr( m_context, addr, conType, m_rowid,
-                                 gameID, buf, msgID );
+            nSent = sendForAddr( m_context, addr, conType, m_rowid, gameID,
+                                 buf, msgID );
         }
 
         // Keep this while debugging why the resend_all that gets
         // fired on reconnect doesn't unstall a game but a manual
         // resend does.
-        Log.d( TAG, "transportSend(%d)=>%d", buf.length, nSent );
+        Log.d( TAG, "transportSend(len=%d, typ=%s) => %d", buf.length,
+               conType, nSent );
         return nSent;
     }
 
@@ -440,6 +441,8 @@ public class CommsTransport implements TransportProcs,
             Assert.fail();
             break;
         }
+        Log.d( TAG, "sendForAddr(typ=%s, len=%d) => %d", conType,
+               buf.length, nSent );
         return nSent;
     }
 
