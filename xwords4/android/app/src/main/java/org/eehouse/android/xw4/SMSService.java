@@ -213,6 +213,7 @@ public class SMSService extends XWService {
         } else {
             Log.i( TAG, "sendPacket: dropping because SMS disabled" );
         }
+        Log.d( TAG, "sendPacket(len=%d) => %d", binmsg.length, nSent );
         return nSent;
     }
 
