@@ -60,7 +60,7 @@ public class CommsAddrRec {
             case COMMS_CONN_BT:
                 id = R.string.invite_choice_bt; break;
             case COMMS_CONN_SMS:
-                id = R.string.connstat_sms; break;
+                id = R.string.invite_choice_data_sms; break;
             case COMMS_CONN_P2P:
                 id = R.string.invite_choice_p2p; break;
             }

@@ -45,7 +45,6 @@ public class XWApp extends Application implements LifecycleObserver {
     public static final boolean ATTACH_SUPPORTED = false;
     public static final boolean LOG_LIFECYLE = false;
     public static final boolean DEBUG_EXP_TIMERS = false;
-    public static final boolean SMS_INVITE_ENABLED = true;
     public static final boolean LOCUTILS_ENABLED = false;
     public static final boolean CONTEXT_MENUS_ENABLED = true;
     public static final boolean OFFER_DUALPANE = false;

@@ -78,7 +78,7 @@ public class DlgDelegate {
         NFC_TO_SELF,
         DROP_RELAY_ACTION,
         DROP_SMS_ACTION,
-        INVITE_SMS,
+        INVITE_SMS_DATA,
         BLANK_PICKED,
         TRAY_PICKED,
         INVITE_INFO,
@@ -115,9 +115,9 @@ public class DlgDelegate {
         // DwnldDelegate && GamesListDelegate
         STORAGE_CONFIRMED,
 
-        // clasify me
-        ENABLE_SMS_ASK,
-        ENABLE_SMS_DO,
+        // classify me
+        ENABLE_NBS_ASK,
+        ENABLE_NBS_DO,
         ENABLE_BT_DO,
         ENABLE_RELAY_DO,
         ENABLE_RELAY_DO_OR,
@@ -296,7 +296,9 @@ public class DlgDelegate {
         // These are stored in the INVITES table. Don't change order
         // gratuitously
         public static enum InviteMeans {
-            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
+            SMS_DATA, // classic NBS-based data sms
+            EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
+            SMS_USER, // just launch the SMS app, as with email
         };
         boolean onPosButton( Action action, Object... params );
         boolean onNegButton( Action action, Object... params );
@@ -401,7 +403,7 @@ public class DlgDelegate {
     public void showInviteChoicesThen( final Action action,
                                        SentInvitesInfo info )
     {
-        if ( (XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS( m_activity ))
+        if ( (Utils.deviceSupportsNBS( m_activity ))
              || XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0]
              || WiDirWrapper.enabled()

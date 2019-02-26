@@ -71,7 +71,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             .makeIntent( activity, SMSInviteActivity.class,
                          nMissing, info );
         if ( null != info ) {
-            String lastDev = info.getLastDev( InviteMeans.SMS );
+            String lastDev = info.getLastDev( InviteMeans.SMS_DATA );
             intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
         }
         activity.startActivityForResult( intent, requestCode.ordinal() );

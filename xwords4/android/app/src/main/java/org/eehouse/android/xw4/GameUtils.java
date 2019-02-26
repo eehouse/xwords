@@ -695,15 +695,8 @@ public class GameUtils {
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
     {
-        // DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
-        Uri gameUri = nli.makeLaunchUri( activity );
-        // DbgUtils.logf( "launchEmailInviteActivity: uri=%s", gameUri );
-
-        String msgString = null == gameUri ? null : gameUri.toString();
-        if ( null != msgString ) {
-            int choiceID;
-            String message = LocUtils.getString( activity, R.string.invite_htm_fmt, msgString );
-
+        String message = makeInviteMessage( activity, nli, R.string.invite_htm_fmt );
+        if ( null != message ) {
             Intent intent = new Intent();
             intent.setAction( Intent.ACTION_SEND );
             String subject =
@@ -734,6 +727,36 @@ public class GameUtils {
                                     choiceType );
             activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
         }
+    }
+
+    public static void launchSMSInviteActivity( Activity activity, String phone,
+                                                NetLaunchInfo nli )
+    {
+        String message = makeInviteMessage( activity, nli,
+                                            R.string.invite_sms_fmt );
+        if ( null != message ) {
+            Intent intent = new Intent( Intent.ACTION_VIEW )
+                .setData( Uri.parse("sms:" + phone) )
+                .putExtra( "sms_body", message )
+                ;
+            if ( intent.resolveActivity(activity.getPackageManager()) != null) {
+                activity.startActivity( intent );
+            } else {
+                DbgUtils.showf( "Unable to launch SMS app" );
+            }
+        }
+    }
+
+    private static String makeInviteMessage( Activity activity, NetLaunchInfo nli,
+                                             int fmtID )
+    {
+        String result = null;
+        Uri gameUri = nli.makeLaunchUri( activity );
+        String msgString = null == gameUri ? null : gameUri.toString();
+        if ( null != msgString ) {
+            result = LocUtils.getString( activity, fmtID, msgString );
+        }
+        return result;
     }
 
     public static String[] dictNames( Context context, GameLock lock )

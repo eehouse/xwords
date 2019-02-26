@@ -300,7 +300,7 @@
                     android:key="@string/key_network_behavior"
                     >
     <org.eehouse.android.xw4.SMSCheckBoxPreference 
-        android:key="@string/key_enable_sms"
+        android:key="@string/key_enable_nbs"
         android:title="@string/enable_sms"
         android:summary="@string/enable_sms_summary"
         android:defaultValue="false"

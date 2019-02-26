@@ -656,8 +656,11 @@ public class BoardDelegate extends DelegateBase
             case BT_INVITE_RESULT:
                 missingMeans = InviteMeans.BLUETOOTH;
                 break;
-            case SMS_INVITE_RESULT:
-                missingMeans = InviteMeans.SMS;
+            case SMS_DATA_INVITE_RESULT:
+                missingMeans = InviteMeans.SMS_DATA;
+                break;
+            case SMS_USER_INVITE_RESULT:
+                missingMeans = InviteMeans.SMS_USER;
                 break;
             case RELAY_INVITE_RESULT:
                 missingMeans = InviteMeans.RELAY;
@@ -1062,11 +1065,10 @@ public class BoardDelegate extends DelegateBase
         case DROP_SMS_ACTION:   // do nothing; work done in onNegButton case
             break;
 
-        case INVITE_SMS:
+        case INVITE_SMS_DATA:
             int nMissing = (Integer)params[0];
             SentInvitesInfo info = (SentInvitesInfo)params[1];
-            SMSInviteDelegate.launchForResult( m_activity, nMissing, info,
-                                               RequestCode.SMS_INVITE_RESULT );
+            launchPhoneNumberInvite( nMissing, info, RequestCode.SMS_DATA_INVITE_RESULT );
             break;
 
         case ASKED_PHONE_STATE:
@@ -1118,11 +1120,11 @@ public class BoardDelegate extends DelegateBase
             showArchiveNA( false );
             break;
 
-        case ENABLE_SMS_DO:
+        case ENABLE_NBS_DO:
             post( new Runnable() {
                     @Override
                     public void run() {
-                        retrySMSInvites( params );
+                        retryNBSInvites( params );
                     }
                 } );
             // FALLTHRU: so super gets called, before
@@ -1218,11 +1220,15 @@ public class BoardDelegate extends DelegateBase
                 BTInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
-            case SMS:
+            case SMS_DATA:
                 Perms23.tryGetPerms( this, new Perm[] { Perm.SEND_SMS,
                                                         Perm.RECEIVE_SMS },
                                      R.string.sms_invite_rationale,
-                                     Action.INVITE_SMS, m_mySIS.nMissing, info );
+                                     Action.INVITE_SMS_DATA, m_mySIS.nMissing, info );
+                break;
+            case SMS_USER:      // like an email invite, but we want the phone #
+                launchPhoneNumberInvite( m_mySIS.nMissing, info,
+                                         RequestCode.SMS_USER_INVITE_RESULT );
                 break;
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
@@ -1496,6 +1502,12 @@ public class BoardDelegate extends DelegateBase
     public Handler getHandler()
     {
         return m_handler;
+    }
+
+    private void launchPhoneNumberInvite( int nMissing, SentInvitesInfo info,
+                                          RequestCode code )
+    {
+        SMSInviteDelegate.launchForResult( m_activity, nMissing, info, code );
     }
 
     private void deleteAndClose()
@@ -2442,9 +2454,9 @@ public class BoardDelegate extends DelegateBase
     private void warnIfNoTransport()
     {
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-            if ( !XWPrefs.getSMSEnabled( m_activity ) ) {
+            if ( !XWPrefs.getNBSEnabled( m_activity ) ) {
                 makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                        Action.ENABLE_SMS_ASK )
+                                        Action.ENABLE_NBS_ASK )
                     .setPosButton( R.string.button_enable_sms )
                     .setNegButton( R.string.button_later )
                     .show();
@@ -2499,8 +2511,11 @@ public class BoardDelegate extends DelegateBase
                     }
                     BTService.inviteRemote( m_activity, dev, nli );
                     break;
-                case SMS:
-                    sendSMSInviteIf( dev, nli, true );
+                case SMS_USER:
+                    GameUtils.launchSMSInviteActivity( m_activity, dev, nli );
+                    break;
+                case SMS_DATA:
+                    sendNBSInviteIf( dev, nli, true );
                     dev = null; // don't record send a second time
                     break;
                 case RELAY:
@@ -2838,7 +2853,7 @@ public class BoardDelegate extends DelegateBase
             String value;
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
             if ( null != value ) {
-                sendSMSInviteIf( value, nli, true );
+                sendNBSInviteIf( value, nli, true );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
             if ( null != value ) {
@@ -2861,15 +2876,15 @@ public class BoardDelegate extends DelegateBase
         return force;
     }
 
-    private void sendSMSInviteIf( String phone, NetLaunchInfo nli,
+    private void sendNBSInviteIf( String phone, NetLaunchInfo nli,
                                   boolean askOk )
     {
-        if ( XWPrefs.getSMSEnabled( m_activity ) ) {
+        if ( XWPrefs.getNBSEnabled( m_activity ) ) {
             SMSService.inviteRemote( m_activity, phone, nli );
-            recordInviteSent( InviteMeans.SMS, phone );
+            recordInviteSent( InviteMeans.SMS_DATA, phone );
         } else if ( askOk ) {
             makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                    Action.ENABLE_SMS_ASK )
+                                    Action.ENABLE_NBS_ASK )
                 .setPosButton( R.string.button_enable_sms )
                 .setNegButton( R.string.button_later )
                 .setParams( nli, phone )
@@ -2877,15 +2892,15 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void retrySMSInvites( Object[] params )
+    private void retryNBSInvites( Object[] params )
     {
         if ( null != params && 2 == params.length
              && params[0] instanceof NetLaunchInfo
              && params[1] instanceof String ) {
-            sendSMSInviteIf( (String)params[1], (NetLaunchInfo)params[0],
+            sendNBSInviteIf( (String)params[1], (NetLaunchInfo)params[0],
                              false );
         } else {
-            Log.w( TAG, "retrySMSInvites: tests failed" );
+            Log.w( TAG, "retryNBSInvites: tests failed" );
         }
     }
 

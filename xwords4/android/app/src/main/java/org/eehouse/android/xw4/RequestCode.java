@@ -26,7 +26,8 @@ public enum RequestCode {
 
     // BoardDelegate
     BT_INVITE_RESULT,
-    SMS_INVITE_RESULT,
+    SMS_USER_INVITE_RESULT,
+    SMS_DATA_INVITE_RESULT,
     RELAY_INVITE_RESULT,
     P2P_INVITE_RESULT,
 

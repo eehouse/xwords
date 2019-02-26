@@ -30,7 +30,7 @@ import android.support.v4.app.DialogFragment;
 import android.widget.Button;
 
 import java.util.ArrayList;
-
+import java.util.List;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
@@ -67,31 +67,25 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             lastMeans = ((SentInvitesInfo)state.m_params[0]).getLastMeans();
         }
 
-        if ( XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS(context) ) {
-            items.add( getString( R.string.invite_choice_sms ) );
-            means.add( InviteMeans.SMS );
-        }
-        items.add( getString( R.string.invite_choice_email ) );
-        means.add( InviteMeans.EMAIL );
+        add( items, means, R.string.invite_choice_user_sms, InviteMeans.SMS_USER );
+        add( items, means, R.string.invite_choice_email, InviteMeans.EMAIL );
+
         if ( BTService.BTAvailable() ) {
-            items.add( getString( R.string.invite_choice_bt ) );
-            means.add( InviteMeans.BLUETOOTH );
+            add( items, means, R.string.invite_choice_bt, InviteMeans.BLUETOOTH );
+        }
+        if ( Utils.deviceSupportsNBS(context) ) {
+            add( items, means, R.string.invite_choice_data_sms, InviteMeans.SMS_DATA );
         }
         if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
-            items.add( getString( R.string.invite_choice_relay ) );
-            means.add( InviteMeans.RELAY );
+            add( items, means, R.string.invite_choice_relay, InviteMeans.RELAY );
         }
         if ( WiDirWrapper.enabled() ) {
-            items.add( getString( R.string.invite_choice_p2p ) );
-            means.add( InviteMeans.WIFIDIRECT );
+            add( items, means, R.string.invite_choice_p2p, InviteMeans.WIFIDIRECT );
         }
-        if ( XWPrefs.getNFCToSelfEnabled( context )
-             || NFCUtils.nfcAvail( context )[0] ) {
-            items.add( getString( R.string.invite_choice_nfc ) );
-            means.add( InviteMeans.NFC );
+        if ( XWPrefs.getNFCToSelfEnabled( context ) || NFCUtils.nfcAvail( context )[0] ) {
+            add( items, means, R.string.invite_choice_nfc, InviteMeans.NFC );
         }
-        items.add( getString( R.string.slmenu_copy_sel ) );
-        means.add( InviteMeans.CLIPBOARD );
+        add( items, means, R.string.slmenu_copy_sel, InviteMeans.CLIPBOARD );
 
         final int[] sel = { -1 };
         if ( null != lastMeans ) {
@@ -104,10 +98,10 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         }
 
         OnClickListener selChanged = new OnClickListener() {
-                public void onClick( DialogInterface dlg, int view ) {
+                public void onClick( DialogInterface dlg, int pos ) {
                     XWActivity activity = (XWActivity)getActivity();
-                    sel[0] = view;
-                    switch ( means.get(view) ) {
+                    sel[0] = pos;
+                    switch ( means.get(pos) ) {
                     case CLIPBOARD:
                         String msg =
                             getString( R.string.not_again_clip_expl_fmt,
@@ -116,11 +110,11 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                             .makeNotAgainBuilder(msg, R.string.key_na_clip_expl)
                             .show();
                         break;
-                    case SMS:
-                        if ( ! XWPrefs.getSMSEnabled( context ) ) {
+                    case SMS_DATA:
+                        if ( ! XWPrefs.getNBSEnabled( context ) ) {
                             activity
                                 .makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                                         Action.ENABLE_SMS_ASK )
+                                                         Action.ENABLE_NBS_ASK )
                                 .setPosButton( R.string.button_enable_sms )
                                 .setNegButton( R.string.button_later )
                                 .show();
@@ -135,7 +129,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
 
         final OnClickListener okClicked = new OnClickListener() {
                 @Override
-                public void onClick( DialogInterface dlg, int view ) {
+                public void onClick( DialogInterface dlg, int pos ) {
                     Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
                     int indx = sel[0];
                     if ( 0 <= indx ) {
@@ -154,21 +148,27 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             .setPositiveButton( android.R.string.ok, okClicked )
             .setNegativeButton( android.R.string.cancel, null );
         if ( BuildConfig.DEBUG ) {
-            builder.setNeutralButton( R.string.ok_with_robots,
-                                      new OnClickListener() {
-                                          @Override
-                                          public void onClick( DialogInterface dlg,
-                                                               int view ) {
-
-                                              if ( state.m_params[0] instanceof SentInvitesInfo )  {
-                                                  SentInvitesInfo sii = (SentInvitesInfo)state.m_params[0];
-                                                  sii.setRemotesRobots();
-                                              }
-                                              okClicked.onClick( dlg, view );
-                                          }
-                                      } );
+            OnClickListener ocl = new OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dlg, int pos ) {
+                        if ( state.m_params[0] instanceof SentInvitesInfo ) {
+                            SentInvitesInfo sii = (SentInvitesInfo)
+                                state.m_params[0];
+                            sii.setRemotesRobots();
+                        }
+                        okClicked.onClick( dlg, pos );
+                    }
+                };
+            builder.setNeutralButton( R.string.ok_with_robots, ocl );
         }
 
         return builder.create();
+    }
+
+    private void add( List<String> items, List<InviteMeans> means,
+                      int resID, InviteMeans oneMeans )
+    {
+        items.add( getString( resID ) );
+        means.add( oneMeans );
     }
 }

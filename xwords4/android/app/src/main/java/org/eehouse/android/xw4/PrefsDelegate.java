@@ -52,7 +52,7 @@ public class PrefsDelegate extends DelegateBase
     private static int[] s_keys = {
         R.string.key_logging_on,
         R.string.key_show_sms,
-        R.string.key_enable_sms,
+        R.string.key_enable_nbs,
         R.string.key_download_path,
         R.string.key_thumbsize,
         R.string.key_xlations_locale,
@@ -190,7 +190,7 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_show_sms:
                 SMSService.smsToastEnable( sp.getBoolean( key, false ) );
                 break;
-            case R.string.key_enable_sms:
+            case R.string.key_enable_nbs:
                 if ( ! sp.getBoolean( key, true ) ) {
                     SMSService.stopService( m_activity );
                 }
@@ -247,8 +247,8 @@ public class PrefsDelegate extends DelegateBase
     {
         boolean handled = true;
         switch ( action ) {
-        case ENABLE_SMS_DO:
-            XWPrefs.setSMSEnabled( m_activity, true );
+        case ENABLE_NBS_DO:
+            XWPrefs.setNBSEnabled( m_activity, true );
             SMSCheckBoxPreference.setChecked();
             break;
         case DISABLE_RELAY_DO:
@@ -372,7 +372,7 @@ public class PrefsDelegate extends DelegateBase
     private void hideStuff()
     {
         if ( !Utils.isGSMPhone( m_activity ) || Perms23.haveNativePerms() ) {
-            hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
+            hideOne( R.string.key_enable_nbs, R.string.key_network_behavior );
         }
 
         if ( ABUtils.haveActionBar() ) {

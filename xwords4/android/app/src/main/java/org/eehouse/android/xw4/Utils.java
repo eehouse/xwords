@@ -138,7 +138,7 @@ public class Utils {
     // temporary workaround for KitKat having broken use of non-data messages,
     // we only support SMS on kitkat if data messages have been turned on (and
     // that's not allowed except on GSM phones.)
-    public static boolean deviceSupportsSMS( Context context )
+    public static boolean deviceSupportsNBS( Context context )
     {
         boolean result = false;
         if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
@@ -149,7 +149,7 @@ public class Utils {
                 result = TelephonyManager.PHONE_TYPE_GSM == type;
             }
         }
-        Log.d( TAG, "deviceSupportsSMS() => %b", result );
+        Log.d( TAG, "deviceSupportsNBS() => %b", result );
         return result;
     }
 
