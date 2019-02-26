@@ -57,21 +57,25 @@ public class SMSInviteDelegate extends InviteDelegate {
         R.id.manual_add_button,
         R.id.button_clear,
     };
+    private static final String INTENT_KEY_MEANS = "means";
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
+    private InviteMeans mMeans;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
+                                        InviteMeans means,
                                         RequestCode requestCode )
     {
 
         Intent intent = InviteDelegate
             .makeIntent( activity, SMSInviteActivity.class,
-                         nMissing, info );
+                         nMissing, info )
+            .putExtra( INTENT_KEY_MEANS, means.ordinal() );
         if ( null != info ) {
-            String lastDev = info.getLastDev( InviteMeans.SMS_DATA );
+            String lastDev = info.getLastDev( means );
             intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
         }
         activity.startActivityForResult( intent, requestCode.ordinal() );
@@ -86,6 +90,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     @Override
     protected void init( Bundle savedInstanceState )
     {
+        mMeans = InviteMeans.values()[getIntent().getIntExtra(INTENT_KEY_MEANS, -1)];
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
@@ -96,6 +101,24 @@ public class SMSInviteDelegate extends InviteDelegate {
         rebuildList( true );
 
         askContactsPermission();
+    }
+
+    @Override
+    int getExtra()
+    {
+        int result = 0;
+        switch( mMeans ) {
+        case SMS_DATA:
+            result = R.string.invite_nbs_desc;
+            break;
+        case SMS_USER:
+            result = R.string.invite_sms_desc;
+            break;
+        default:
+            Assert.assertFalse( BuildConfig.DEBUG );
+            break;
+        }
+        return result;
     }
 
     @Override

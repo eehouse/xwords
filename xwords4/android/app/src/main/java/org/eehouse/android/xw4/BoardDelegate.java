@@ -1068,7 +1068,8 @@ public class BoardDelegate extends DelegateBase
         case INVITE_SMS_DATA:
             int nMissing = (Integer)params[0];
             SentInvitesInfo info = (SentInvitesInfo)params[1];
-            launchPhoneNumberInvite( nMissing, info, RequestCode.SMS_DATA_INVITE_RESULT );
+            launchPhoneNumberInvite( nMissing, info, InviteMeans.SMS_DATA,
+                                     RequestCode.SMS_DATA_INVITE_RESULT );
             break;
 
         case ASKED_PHONE_STATE:
@@ -1227,7 +1228,7 @@ public class BoardDelegate extends DelegateBase
                                      Action.INVITE_SMS_DATA, m_mySIS.nMissing, info );
                 break;
             case SMS_USER:      // like an email invite, but we want the phone #
-                launchPhoneNumberInvite( m_mySIS.nMissing, info,
+                launchPhoneNumberInvite( m_mySIS.nMissing, info, means,
                                          RequestCode.SMS_USER_INVITE_RESULT );
                 break;
             case RELAY:
@@ -1505,9 +1506,10 @@ public class BoardDelegate extends DelegateBase
     }
 
     private void launchPhoneNumberInvite( int nMissing, SentInvitesInfo info,
-                                          RequestCode code )
+                                          InviteMeans means, RequestCode code )
     {
-        SMSInviteDelegate.launchForResult( m_activity, nMissing, info, code );
+        SMSInviteDelegate.launchForResult( m_activity, nMissing, info,
+                                           means, code );
     }
 
     private void deleteAndClose()
