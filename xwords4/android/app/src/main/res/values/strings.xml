@@ -1921,6 +1921,20 @@
       <item quantity="other">Please check the %1$d phone numbers you
       want to invite to your new game, then tap \"%2$s\".</item>
     </plurals>
+
+    <!-- Appears near top of invitation phone number picker when it's
+         the user-visible SMS case -->
+    <string name="invite_sms_desc">Your SMS messaging app will then be
+    launched with a message for you to send to the phone number
+    you\'ve selected.</string>
+
+    <!-- Appears near top of invitation phone number picker when it's
+         the user-invisible Data SMS case -->
+    <string name="invite_nbs_desc">A data message will then be
+    delivered to the device with that phone number. If CrossWords is
+    installed there and has the necessary permissions it will receive
+    the invitation and play can begin.</string>
+
     <!--  -->
     <plurals name="invite_relay_desc_fmt">
       <item quantity="one">Please check the device you want to invite

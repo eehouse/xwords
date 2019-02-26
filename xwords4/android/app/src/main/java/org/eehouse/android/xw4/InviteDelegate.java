@@ -132,6 +132,13 @@ abstract class InviteDelegate extends ListDelegateBase
         TextView descView = (TextView)findViewById( R.id.invite_desc );
         descView.setText( descTxt );
 
+        int extraID = getExtra();
+        if ( 0 != extraID ) {
+            TextView extraView = (TextView)findViewById( R.id.invite_extra );
+            extraView.setText( getString( extraID ) );
+            extraView.setVisibility( View.VISIBLE );
+        }
+
         m_lv = (ListView)findViewById( android.R.id.list );
         m_ev = (TextView)findViewById( android.R.id.empty );
         if ( null != m_lv && null != m_ev && 0 != emptyMsgId ) {
@@ -145,6 +152,9 @@ abstract class InviteDelegate extends ListDelegateBase
 
     // Children implement ...
     abstract void onChildAdded( View child, InviterItem item );
+
+    // Implement this if you want to insert descriptive text
+    int getExtra() { return 0; }
 
     // Subclasses are meant to call this
     protected void addButtonBar( int buttonBarId, int[] buttonBarItemIds )
