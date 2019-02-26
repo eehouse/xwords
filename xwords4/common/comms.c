@@ -1493,8 +1493,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
                  elem->sendCount );
     }
     CNO_FMT( cbuf1, elem->channelNo );
-    XP_LOGF( "%s(%s; msgID=" XP_LD ")=>%d", __func__, 
-             cbuf1, elem->msgID, result );
+    XP_LOGF( "%s(%s; msgID=" XP_LD ", len=%d)=>%d", __func__,
+             cbuf1, elem->msgID, elem->len, result );
+    XP_ASSERT( result < 0 || elem->len == result );
     return result;
 } /* sendMsg */
 
