@@ -260,7 +260,11 @@ public class SMSService extends XWService {
     private static void startService( Context context, Intent intent )
     {
         Log.d( TAG, "startService(%s)", intent );
-        context.startService( intent );
+        try {
+            context.startService( intent );
+        } catch ( java.lang.IllegalStateException ise ) {
+            Log.e( TAG, "startService(): %s", ise.getMessage() );
+        }
     }
 
     private static Intent getIntentTo( Context context, SMSAction cmd )

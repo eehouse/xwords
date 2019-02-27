@@ -1867,7 +1867,7 @@
 
     <string name="sms_bad_proto_fmt">The version of CrossWords on the
     phone with number \"%1$s\" is incompatible with this one for play
-    using SMS. One of you may need to upgrade before you can
+    using Data SMS. One of you may need to upgrade before you can
     continue.</string>
 
     <!--  -->
@@ -2068,7 +2068,7 @@
     <!--  -->
     <string name="connstat_relay">Internet/relay</string>
     <!--  -->
-    <string name="enable_sms">Allow games via SMS</string>
+    <string name="enable_sms">Allow games via Data SMS</string>
     <!--  -->
     <string name="enable_sms_summary">Only if you have unlimited texting!</string>
 
@@ -2080,12 +2080,12 @@
     <!--  -->
     <string name="confirm_sms_expl">Warning: This feature is meant for
     phones with unlimited texting plans. Once you enable it dozens of
-    SMS (text) messages will be sent (invisibly) for each game
+    Data SMS messages will be sent (invisibly) for each game
     played. If you don\'t have an unlimited plan your carrier may
-    charge you for each and every message!\n\nShould play via SMS be
-    enabled?</string>
+    charge you for each and every message!\n\nShould play via Data SMS
+    be enabled?</string>
     <!--  -->
-    <string name="confirm_sms_prompt">Enable play via SMS?</string>
+    <string name="confirm_sms_prompt">Enable play via Data SMS?</string>
     <!--  -->
     <string name="confirm_sms_leave">No: leave disabled</string>
     <!--  -->
@@ -2094,9 +2094,9 @@
     <string name="confirm_sms_willpay">Yes: I\'ll pay all carrier charges</string>
 
     <!--  -->
-    <string name="warn_sms_disabled">Play via SMS is currently
-    disabled. No moves will be sent via SMS.\n\nYou can enable play
-    via SMS now, or later.
+    <string name="warn_sms_disabled">Play via Data SMS is currently
+    disabled. No moves will be sent via Data SMS.\n\nYou can enable
+    play via Data SMS now, or later.
     </string>
 
     <string name="warn_bt_disabled">Bluetooth is currently off on this
@@ -2121,7 +2121,7 @@
       <item quantity="other">\n\n(You have %1$d games using it.)</item>
     </plurals>
 
-    <string name="button_enable_sms">Enable SMS</string>
+    <string name="button_enable_sms">Enable Data SMS</string>
     <string name="button_enable_bt">Enable Bluetooth</string>
     <string name="button_enable_relay">Enable Relay play</string>
     <string name="button_disable_relay">Disable Relay play</string>
@@ -2626,7 +2626,7 @@
   <string name="confirm_drop_relay_bt">Bluetooth only works for nearby
   devices.</string>
   <string name="confirm_drop_relay_sms">Not all carriers support play
-  via SMS.</string>
+  via Data SMS.</string>
 
   <string name="button_enable">Enable</string>
 
@@ -2636,12 +2636,13 @@
   connection, but might have problems on restricted WiFi
   networks.</string>
 
-  <string name="not_again_comms_sms">Play via SMS uses the same
-  technology as \"texting\". Though the messages are invisible to you,
-  your carrier considers them texts, so you want to avoid this feature
-  unless you have an unlimited texting plan (or budget.) Note that
-  Android only supports this feature on devices on a GSM carrier,
-  i.e. every carrier in the world except Verizon and Sprint.</string>
+  <string name="not_again_comms_sms">Play via Data SMS uses the
+  technology on which as \"texting\" is built. Though the messages are
+  invisible to you, your carrier bills them as texts, so you want to
+  avoid this feature unless you have an unlimited texting plan (or
+  budget.) Note that Android only supports this feature on devices on
+  a GSM carrier, i.e. every carrier in the world except Verizon and
+  Sprint.</string>
 
   <string name="not_again_comms_bt">Use Bluetooth to play against a
   nearby device that\'s \"paired\" with yours.</string>
@@ -2699,18 +2700,18 @@
   <string name="after_restart">This change will take effect after you
   restart CrossWords.</string>
 
-  <string name="missing_perms">This game is configured to
-  communicate via SMS but CrossWords does not have permission to do
-  so. You can still open the game, but it may not be able to send or
-  receive moves.\n\nYou can re-open it to be asked for permission
-  again. Or you can remove the SMS communication setting.</string>
+  <string name="missing_perms">This game is configured to communicate
+  via Data SMS but CrossWords does not have permission to do so. You
+  can still open the game, but it may not be able to send or receive
+  moves.\n\nYou can re-open it to be asked for permission again. Or
+  you can remove the Data SMS communication setting.</string>
 
   <string name="download_rationale">CrossWords needs access to
   temporary storage to keep what you\'re about to download.
   </string>
 
   <string name="sms_invite_rationale">
-    CrossWords needs permission to send an invitation via SMS.
+    CrossWords needs permission to send an invitation via Data SMS.
   </string>
 
   <string name="dicts_storage_rationale">
@@ -2732,23 +2733,24 @@
   </string>
 
   <string name="phone_lookup_rationale">
-    To rematch a game that uses SMS CrossWords needs permission to
+    To rematch a game that uses Data SMS CrossWords needs permission to
     access your phone number.
   </string>
 
   <!-- Case where SMS is the only way the game can communicate -->
-  <string name="phone_lookup_rationale_drop">Rematching this SMS-only
-  game is not possible without this permission.</string>
+  <string name="phone_lookup_rationale_drop">Rematching this
+  Data-SMS-only game is not possible without this permission.</string>
   <!-- Case where SMS is NOT the only way the game can communicate -->
   <string name="phone_lookup_rationale_others">Without this permission
-  rematching will continue but will create a game that cannot not play
-  via SMS.</string>
+  rematching will continue but will create a game that cannot play via
+  Data SMS.</string>
 
   <string name="contacts_rationale">
     CrossWords wants access to your contacts in order to put a name to
-    phone numbers that send you invitations via SMS. You\'ll still be
-    able to receive invitations if you don\'t grant this permission,
-    but only the phone number of the sender will be displayed.
+    phone numbers that send you invitations via Data SMS. You\'ll
+    still be able to receive invitations if you don\'t grant this
+    permission, but only the phone number of the sender will be
+    displayed.
   </string>
 
   <string name="move_dict_rationale">Storing a wordlist in the
@@ -2788,10 +2790,10 @@
        March 9, 2019) tries to use a feature that requires SMS_SEND or
        SMS_RECEIVE permission. Message displayed with the "do not show
        again" checkbox. -->
-  <string name="sms_banned_expl">Play-via-SMS requires Permissions
-  that most Android apps are no longer allowed to request -- as a
-  condition of being listed on the Google Play Store. Thus
-  play-via-SMS does not work on copies of CrossWords obtained through
-  the Play Store. If you miss this feature, please check
+  <string name="sms_banned_expl">Play-via-Data-SMS requires
+  Permissions that most Android apps are no longer allowed to request
+  -- as a condition of being listed on the Google Play Store. Thus
+  play-via-Data-SMS does not work on copies of CrossWords obtained
+  through the Play Store. If you miss this feature, please check
   https://eehouse.org/sms.html for updates on the situation.</string>
 </resources>
