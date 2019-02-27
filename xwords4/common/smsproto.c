@@ -77,9 +77,38 @@ struct SMSProto {
 
     int nFromPhones;
     FromPhoneRec* fromPhoneRecs;
-
+#ifdef DEBUG
+    pthread_t starter;
+    int nestCount;
+#endif
     MPSLOT;
 };
+
+#ifdef DEBUG
+# define CHECK_START( state ) {                                 \
+    SMSProto* _state = state;                                   \
+    pthread_t _self = pthread_self();                           \
+    if ( _state->nestCount == 0 ) {                             \
+        XP_ASSERT( _state->starter == 0 );                      \
+        _state->starter = _self;                                \
+    } else {                                                    \
+        XP_ASSERT( _state->starter == _self );                  \
+    }                                                           \
+    ++_state->nestCount;                                        \
+    XP_LOGF( "%s(): check: %d", __func__, _state->nestCount );  \
+
+# define CHECK_END()                                         \
+    if ( --_state->nestCount == 0 ) {                           \
+        _state->starter = 0;                                    \
+    }                                                           \
+    XP_LOGF( "%s(): check: %d", __func__, _state->nestCount );  \
+    }                                                           \
+
+
+#else
+# define CHECK_START(s)
+# define CHECK_END()
+#endif
 
 #define KEY_PARTIALS PERSIST_KEY("partials")
 #define KEY_NEXTID PERSIST_KEY("nextID")
@@ -105,18 +134,12 @@ static void freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex,
 static void freeForPhone( SMSProto* state, const XP_UCHAR* phone );
 static void freeMsg( SMSProto* state, MsgRec** msg );
 static void freeRec( SMSProto* state, ToPhoneRec* rec );
-#ifdef DEBUG
-static void checkThread( SMSProto* state );
-#else
-# define checkThread(p)
-#endif
 
 SMSProto*
 smsproto_init( MPFORMAL XW_DUtilCtxt* dutil )
 {
     SMSProto* state = (SMSProto*)XP_CALLOC( mpool, sizeof(*state) );
     state->dutil = dutil;
-    // checkThread( state ); <-- Android's calling this on background thread now
     MPASSIGN( state->mpool, mpool );
 
     XP_U16 siz = sizeof(state->nNextID);
@@ -132,7 +155,6 @@ void
 smsproto_free( SMSProto* state )
 {
     if ( NULL != state ) {
-        // checkThread( state ); <-- risky (see above)
         XP_ASSERT( state->creator == 0 || state->creator == pthread_self() );
 
         for ( XP_U16 ii = 0; ii < state->nToPhones; ++ii ) {
@@ -213,6 +235,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
 {
     XP_USE( toPort );
     SMSMsgArray* result = NULL;
+    CHECK_START( state );
 
 #ifdef DEBUG
     XP_UCHAR* checksum = dutil_md5sum( state->dutil, buf, buflen );
@@ -221,7 +244,6 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
     XP_FREEP( state->mpool, &checksum );
 #endif
 
-    checkThread( state );
     ToPhoneRec* rec = getForPhone( state, toPhone, cmd != NONE );
 
     /* First, add the new message (if present) to the array */
@@ -252,6 +274,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
 
     XP_LOGF( "%s() => %p (len=%d, *waitSecs=%d)", __func__, result,
              !!result ? result->nMsgs : 0, *waitSecsP );
+    CHECK_END();
     return result;
 }
 
@@ -292,12 +315,12 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
                       XP_U16 wantPort, const XP_U8* data, XP_U16 len )
 {
     XP_LOGF( "%s(): len=%d, fromPhone=%s", __func__, len, fromPhone );
-    checkThread( state );
+    SMSMsgArray* result = NULL;
+    CHECK_START( state );
 
     XWStreamCtxt* stream = mkStream( state );
     stream_putBytes( stream, data, len );
 
-    SMSMsgArray* result = NULL;
     XP_U8 proto;
     if ( stream_gotU8( stream, &proto ) ) {
         switch ( proto ) {
@@ -361,13 +384,14 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
     stream_destroy( stream );
 
     XP_LOGF( "%s() => %p (len=%d)", __func__, result, (!!result) ? result->nMsgs : 0 );
+    CHECK_END();
     return result;
 }
 
 void
 smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
 {
-    checkThread( state );
+    CHECK_START( state );
 
     for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
         XP_U8** ptr = arr->format == FORMAT_LOC
@@ -389,6 +413,7 @@ smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
     }
     XP_FREEP( state->mpool, ptr );
     XP_FREEP( state->mpool, &arr );
+    CHECK_END();
 }
 
 static void
@@ -620,7 +645,7 @@ freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex, int msgIDIndex
 static void
 savePartials( SMSProto* state )
 {
-    checkThread( state );
+    CHECK_START( state );
 
     XWStreamCtxt* stream = mkStream( state );
     stream_putU8( stream, PARTIALS_FORMAT );
@@ -655,6 +680,7 @@ savePartials( SMSProto* state )
     stream_destroy( stream );
 
     LOG_RETURN_VOID();
+    CHECK_END();
 } /* savePartials */
 
 static void
@@ -840,19 +866,6 @@ mkStream( SMSProto* state )
 }
 
 #ifdef DEBUG
-static void
-checkThread( SMSProto* state )
-{
-    pthread_t curThread = pthread_self();
-    if ( 0 == state->creator ) {
-        state->creator = curThread;
-    } else {
-        /* If this is firing will need to use a mutex to make SMSProto access
-           thread-safe */
-        XP_ASSERT( state->creator == curThread );
-    }
-}
-
 void
 smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
 {
