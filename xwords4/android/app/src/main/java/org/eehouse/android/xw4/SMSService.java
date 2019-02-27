@@ -55,22 +55,24 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class SMSService extends XWService {
+public class SMSService extends XWJIService {
     private static final String TAG = SMSService.class.getSimpleName();
+
+    private final static int sJobID = 218719980;
 
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
 
     private static final int SMS_PROTO_VERSION_WITHPORT = 1;
     private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_WITHPORT;
-    private enum SMSAction { _NONE,
-                             INVITE,
-                             SEND,
-                             REMOVE,
-                             ADDED_MISSING,
-                             STOP_SELF,
-                             HANDLEDATA,
-                             RESEND,
+    private enum SMSAction implements XWJICmds { _NONE,
+                                                 INVITE,
+                                                 SEND,
+                                                 REMOVE,
+                                                 ADDED_MISSING,
+                                                 STOP_SELF,
+                                                 HANDLEDATA,
+                                                 RESEND,
     };
 
     private static final String CMD_STR = "CMD";
@@ -176,7 +178,7 @@ public class SMSService extends XWService {
     public static void stopService( Context context )
     {
         Intent intent = getIntentTo( context, SMSAction.STOP_SELF );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     // NBS case
@@ -186,7 +188,7 @@ public class SMSService extends XWService {
         Intent intent = getIntentTo( context, SMSAction.HANDLEDATA )
             .putExtra( BUFFER, buffer )
             .putExtra( PHONE, phone );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static void inviteRemote( Context context, String phone,
@@ -197,7 +199,7 @@ public class SMSService extends XWService {
         Intent intent = getIntentTo( context, SMSAction.INVITE )
             .putExtra( PHONE, phone )
             .putExtra( GAMEDATA_BA, data );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static int sendPacket( Context context, String phone,
@@ -209,7 +211,7 @@ public class SMSService extends XWService {
                 .putExtra( PHONE, phone )
                 .putExtra( MultiService.GAMEID, gameID )
                 .putExtra( BINBUFFER, binmsg );
-            startService( context, intent );
+            enqueueWork( context, intent );
             nSent = binmsg.length;
         } else {
             Log.i( TAG, "sendPacket: dropping because SMS disabled" );
@@ -223,14 +225,14 @@ public class SMSService extends XWService {
         Intent intent = getIntentTo( context, SMSAction.REMOVE )
             .putExtra( PHONE, phone )
             .putExtra( MultiService.GAMEID, gameID );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static void onGameDictDownload( Context context, Intent intentOld )
     {
         Intent intent = getIntentTo( context, SMSAction.ADDED_MISSING );
         intent.fillIn( intentOld, 0 );
-        startService( context, intent );
+        enqueueWork( context, intent );
     }
 
     public static String fromPublicFmt( String msg )
@@ -258,21 +260,15 @@ public class SMSService extends XWService {
         return result;
     }
 
-    private static void startService( Context context, Intent intent )
+    private static void enqueueWork( Context context, Intent intent )
     {
-        Log.d( TAG, "startService(%s)", intent );
-        try {
-            context.startService( intent );
-        } catch ( java.lang.IllegalStateException ise ) {
-            Log.e( TAG, "startService(): %s", ise.getMessage() );
-        }
+        enqueueWork( context, SMSService.class, sJobID, intent );
+        Log.d( TAG, "called enqueueWork(%s)", intent );
     }
 
     private static Intent getIntentTo( Context context, SMSAction cmd )
     {
-        Intent intent = new Intent( context, SMSService.class )
-            .putExtra( CMD_STR, cmd.ordinal() );
-        return intent;
+        return getIntentTo( context, SMSService.class, cmd );
     }
 
     private static boolean showToasts( Context context )
@@ -287,11 +283,63 @@ public class SMSService extends XWService {
     @Override
     public void onCreate()
     {
+        super.onCreate();
+
         mHelper = new SMSServiceHelper( this );
         if ( Utils.deviceSupportsNBS( this ) ) {
             registerReceivers();
-        } else {
+        }
+    }
+
+    @Override
+    XWJICmds[] getCmds() { return SMSAction.values(); }
+
+    @Override
+    void onHandleWorkImpl( Intent intent, XWJICmds jicmd, long timestamp )
+    {
+        Log.d( TAG, "onHandleWorkImpl()" );
+        SMSAction cmd = (SMSAction)jicmd;
+        switch( cmd ) {
+        case STOP_SELF:
             stopSelf();
+            break;
+        case HANDLEDATA:
+            ++m_nReceived;
+            ConnStatusHandler.
+                updateStatusIn( this, null,
+                                CommsConnType.COMMS_CONN_SMS, true );
+            if ( showToasts( this ) && (0 == (m_nReceived % 5)) ) {
+                DbgUtils.showf( this, "Got msg %d", m_nReceived );
+            }
+            String phone = intent.getStringExtra( PHONE );
+            byte[] buffer = intent.getByteArrayExtra( BUFFER );
+            receiveBuffer( buffer, phone );
+            break;
+        case INVITE:
+            phone = intent.getStringExtra( PHONE );
+            buffer = intent.getByteArrayExtra( GAMEDATA_BA );
+            inviteRemote( phone, buffer );
+            break;
+        case ADDED_MISSING:
+            NetLaunchInfo nli
+                = MultiService.getMissingDictData( this, intent );
+            phone = intent.getStringExtra( PHONE );
+            makeForInvite( phone, nli );
+            break;
+        case SEND:
+            phone = intent.getStringExtra( PHONE );
+            byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
+            int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+            sendPacket( phone, gameID, bytes );
+            break;
+        case REMOVE:
+            gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+            phone = intent.getStringExtra( PHONE );
+            sendDiedPacket( phone, gameID );
+            break;
+        case RESEND:
+            phone = intent.getStringExtra( PHONE );
+            resendFor( phone );
         }
     }
 
@@ -315,72 +363,6 @@ public class SMSService extends XWService {
 
         super.onDestroy();
     }
-
-    @Override
-    public int onStartCommand( Intent intent, int flags, int startId )
-    {
-        // Log.d( TAG, "onStartCommand(%s)", intent );
-        int result = Service.START_NOT_STICKY;
-        if ( null != intent ) {
-            int ordinal = intent.getIntExtra( CMD_STR, -1 );
-            if ( -1 == ordinal ) {
-                // ???
-            } else {
-                SMSAction cmd = SMSAction.values()[ordinal];
-                switch( cmd ) {
-                case STOP_SELF:
-                    stopSelf();
-                    break;
-                case HANDLEDATA:
-                    ++m_nReceived;
-                    ConnStatusHandler.
-                        updateStatusIn( this, null,
-                                        CommsConnType.COMMS_CONN_SMS, true );
-                    if ( showToasts( this ) && (0 == (m_nReceived % 5)) ) {
-                        DbgUtils.showf( this, "Got msg %d", m_nReceived );
-                    }
-                    String phone = intent.getStringExtra( PHONE );
-                    byte[] buffer = intent.getByteArrayExtra( BUFFER );
-                    receiveBuffer( buffer, phone );
-                    break;
-                case INVITE:
-                    phone = intent.getStringExtra( PHONE );
-                    buffer = intent.getByteArrayExtra( GAMEDATA_BA );
-                    inviteRemote( phone, buffer );
-                    break;
-                case ADDED_MISSING:
-                    NetLaunchInfo nli
-                        = MultiService.getMissingDictData( this, intent );
-                    phone = intent.getStringExtra( PHONE );
-                    makeForInvite( phone, nli );
-                    break;
-                case SEND:
-                    phone = intent.getStringExtra( PHONE );
-                    byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
-                    int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                    sendPacket( phone, gameID, bytes );
-                    break;
-                case REMOVE:
-                    gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                    phone = intent.getStringExtra( PHONE );
-                    sendDiedPacket( phone, gameID );
-                    break;
-                case RESEND:
-                    phone = intent.getStringExtra( PHONE );
-                    resendFor( phone );
-                }
-            }
-
-            result = Service.START_STICKY;
-        }
-
-        if ( Service.START_NOT_STICKY == result
-             || !XWPrefs.getNBSEnabled( this ) ) {
-            stopSelf( startId );
-        }
-
-        return result;
-    } // onStartCommand
 
     private void inviteRemote( String phone, byte[] asBytes )
     {
@@ -440,7 +422,7 @@ public class SMSService extends XWService {
     private void postResend( final String phone, final int waitSecs )
     {
         Log.d( TAG, "postResend" );
-        new Thread(new Runnable() {
+        new Thread( new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -450,7 +432,7 @@ public class SMSService extends XWService {
                         Intent intent = getIntentTo( SMSService.this,
                                                      SMSAction.RESEND );
                         intent.putExtra( PHONE, phone );
-                        startService( intent );
+                        enqueueWork( SMSService.this, intent );
                     } catch ( InterruptedException ie ) {
                         Log.e( TAG, ie.getMessage() );
                     }
