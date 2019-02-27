@@ -31,6 +31,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
+import org.eehouse.android.nbsplib.NBSProxy;
+
 import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.UUID;

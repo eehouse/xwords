@@ -245,6 +245,8 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-messaging:17.3.4' // rm-for-fdroid
     implementation 'com.google.firebase:firebase-core:16.0.6'      // rm-for-fdroid
+
+    implementation 'com.github.eehouse:nbsproxy:v0.0.2'
 }
 
 task mkImages(type: Exec) {
