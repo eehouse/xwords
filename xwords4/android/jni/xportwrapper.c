@@ -90,6 +90,12 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const XP_UCHAR* msgNo,
                                         jbytes, jMsgNo, jaddr, jConType, gameID );
         deleteLocalRefs( env, jaddr, jbytes, jMsgNo, jConType, DELETE_NO_REF );
     }
+
+    if ( result < len ) {
+        XP_LOGF( "%s(): changing result %d to -1", __func__, result );
+        result = -1;            /* signal failure. Not sure where 0's coming from */
+    }
+
     LOG_RETURNF( "%d", result );
     return result;
 }
