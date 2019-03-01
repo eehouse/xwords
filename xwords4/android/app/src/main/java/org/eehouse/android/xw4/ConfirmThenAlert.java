@@ -19,11 +19,13 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConfirmThenAlert extends DlgDelegateAlert {
@@ -49,11 +51,17 @@ public class ConfirmThenAlert extends DlgDelegateAlert {
         naView.setShowNACheckbox( null != state.m_onNAChecked );
         OnClickListener lstnr = mkCallbackClickListener( naView );
 
-        return LocUtils.makeAlertBuilder( context )
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
             .setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )
             .setView( naView )
             .setPositiveButton( state.m_posButton, lstnr )
-            .setNegativeButton( state.m_negButton, lstnr )
-            .create();
+            .setNegativeButton( state.m_negButton, lstnr );
+
+        if ( null != state.m_pair ) {
+            ActionPair pair = state.m_pair;
+            builder.setNeutralButton( pair.buttonStr,
+                                      mkCallbackClickListener( pair, naView ) );
+        }
+        return builder.create();
     }
 }
