@@ -218,7 +218,7 @@ public class RelayService extends XWJIService
     private static void enqueueWork( Context context, Intent intent )
     {
         enqueueWork( context, RelayService.class, sJobID, intent );
-        Log.d( TAG, "called enqueueWork(cmd=%s)", cmdFrom( intent, MsgCmds.values() ) );
+        // Log.d( TAG, "called enqueueWork(cmd=%s)", cmdFrom( intent, MsgCmds.values() ) );
     }
 
     private static void stopService( Context context )
@@ -394,13 +394,13 @@ public class RelayService extends XWJIService
         }
 
         resetExitTimer();
-        Log.d( TAG, "%s.onHandleWork(cmd=%s) DONE", this, cmdFrom( intent ) );
+        // Log.d( TAG, "%s.onHandleWork(cmd=%s) DONE", this, cmdFrom( intent ) );
     }
 
     @Override
     public void onDestroy()
     {
-        Log.d( TAG, "onDestroy() called" );
+        // Log.d( TAG, "onDestroy() called" );
 
         if ( null != mReadThread ) {
             mReadThread.unsetService();
@@ -412,12 +412,12 @@ public class RelayService extends XWJIService
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
             RelayReceiver.setTimer( this, interval_millis );
-            Log.d( TAG, "onDestroy(): rescheduling in %d ms",
-                   interval_millis );
+            // Log.d( TAG, "onDestroy(): rescheduling in %d ms",
+            //        interval_millis );
         }
 
         super.onDestroy();
-        Log.d( TAG, "%s.onDestroy() DONE", this );
+        // Log.d( TAG, "%s.onDestroy() DONE", this );
     }
 
     @Override
@@ -832,7 +832,7 @@ public class RelayService extends XWJIService
     
     private void noteSent( PacketData packet, boolean fromUDP )
     {
-        Log.d( TAG, "noteSent(packet=%s, fromUDP=%b)", packet, fromUDP );
+        // Log.d( TAG, "noteSent(packet=%s, fromUDP=%b)", packet, fromUDP );
         if ( fromUDP ) {
             packet.setSentMS();
         }
@@ -1676,7 +1676,7 @@ public class RelayService extends XWJIService
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;
         }
-        Log.d( TAG, "shouldMaintainConnection=>%b", result );
+        // Log.d( TAG, "shouldMaintainConnection=>%b", result );
         return result;
     }
 
