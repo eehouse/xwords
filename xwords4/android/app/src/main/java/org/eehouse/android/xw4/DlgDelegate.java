@@ -164,12 +164,16 @@ public class DlgDelegate {
         protected Action m_action;
         protected Object[] m_params;
         protected int m_titleId = 0;
+        protected ActionPair m_actionPair;
 
         public DlgDelegateBuilder( String msg, Action action )
         { m_msgString = msg; m_action = action; }
 
         public DlgDelegateBuilder( int msgId, Action action )
         { this( getString(msgId), action );}
+
+        public DlgDelegateBuilder setAction( Action action )
+        { m_action = action; return this; }
 
         public DlgDelegateBuilder setNAKey( int keyId )
         {  m_nakey = keyId; return this; }
@@ -186,6 +190,12 @@ public class DlgDelegate {
         public DlgDelegateBuilder setParams( Object... params )
         { m_params = params; return this; }
 
+        public DlgDelegateBuilder setTitle( int titleId )
+        { m_titleId = titleId; return this; }
+
+        public DlgDelegateBuilder setActionPair( ActionPair pr )
+        { m_actionPair = pr; return this; }
+
         abstract void show();
     }
 
@@ -193,14 +203,11 @@ public class DlgDelegate {
 
         public OkOnlyBuilder(String msg) { super( msg, Action.SKIP_CALLBACK ); }
         public OkOnlyBuilder(int msgId) { super( msgId, Action.SKIP_CALLBACK ); }
-        public OkOnlyBuilder setAction( Action action )
-        { m_action = action; return this; }
-        public OkOnlyBuilder setTitle( int titleId )
-        { m_titleId = titleId; return this; }
 
         @Override
         public void show()
         {
+            Assert.assertTrue( null == m_actionPair || !BuildConfig.DEBUG );
             showOKOnlyDialogThen( m_msgString, m_action, m_params, m_titleId );
         }
     }
@@ -209,20 +216,17 @@ public class DlgDelegate {
         public ConfirmThenBuilder(String msg, Action action) {super(msg, action);}
         public ConfirmThenBuilder(int msgId, Action action) {super(msgId, action);}
 
-        public ConfirmThenBuilder setTitle( int titleId )
-        { m_titleId = titleId; return this; }
-
         @Override
         public void show()
         {
             showConfirmThen( m_nakey, m_onNA, m_msgString, m_posButton,
-                             m_negButton, m_action, m_titleId, m_params );
+                             m_negButton, m_action, m_titleId, m_actionPair,
+                             m_params );
         }
     }
 
     public class NotAgainBuilder extends DlgDelegateBuilder {
         private int m_prefsKey;
-        private ActionPair m_actionPair;
 
         public NotAgainBuilder(String msg, int key, Action action)
         { super(msg, action); m_prefsKey = key; }
@@ -235,9 +239,6 @@ public class DlgDelegate {
 
         public NotAgainBuilder( int msgId, int key )
         { super( msgId, Action.SKIP_CALLBACK ); m_prefsKey = key; }
-
-        public NotAgainBuilder setActionPair( ActionPair pr )
-        { m_actionPair = pr; return this; }
 
         @Override
         public void show()
@@ -385,7 +386,7 @@ public class DlgDelegate {
 
     private void showConfirmThen( int nakey, Action onNA, String msg,
                                   int posButton, int negButton, Action action,
-                                  int titleId, Object[] params )
+                                  int titleId, ActionPair more, Object[] params )
     {
         if ( 0 == nakey ||
              ! XWPrefs.getPrefsBoolean( m_activity, nakey, false ) ) {
@@ -395,6 +396,7 @@ public class DlgDelegate {
                 .setNegButton( negButton )
                 .setAction( action )
                 .setTitle( titleId )
+                .setActionPair( more )
                 .setParams( params );
             m_dlgt.show( state );
         }
