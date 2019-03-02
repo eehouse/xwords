@@ -848,7 +848,6 @@
 WiFi ダイレクト経由で接続可能なデバイスはありません。</string>
     <string name="not_again_comms_p2p">WiFi ダイレクトを使用して、クロスワードがインストールされた
 近くの WiFi ダイレクト対応デバイスに対してプレイします。</string>
-
   <string name="missing_sms_perms">このゲームは SMS 経由で通信するように構成されていますが、
 
 クロスワードにそれを行うアクセス許可がありません。
@@ -920,35 +919,32 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="group_name_archive">アーカイブ</string>
     <string name="duplicate_group_name_fmt">グループ \"%1$s\" は既に存在します。</string>
     <string name="gamel_menu_writegit">Git の情報をクリップボードにコピー</string>
-  <string name="relay_via_http_first">Web API から使用する</string>
-  <string name="relay_via_http_first_summary">(カスタムプロトコルからのフォールバックとして)</string>
-  <string name="enable_smsproto_title">新しい/実験的な SMS コードを使用する</string>
-  <string name="enable_smsproto_summary">(相手も使用する必要があります)</string>
-
-  <string name="expl_relay_url">Web API をリレーする URL</string>
-
-  <string name="ignore_gcm_title">受信した GCM メッセージを無視する</string>
-  <string name="ignore_gcm_summary">Google カウントを使用しないで同様のことを行います</string>
-
-  <string name="show_sms_title">SMS 送信、受信を表示する</string>
-  <string name="show_gcm_title">GCM の受信を表示する</string>
+    <string name="relay_via_http_first">Web API から使用する</string>
+    <string name="relay_via_http_first_summary">(カスタムプロトコルからのフォールバックとして)</string>
+    <string name="enable_smsproto_title">新しい/実験的な SMS コードを使用する</string>
+    <string name="enable_smsproto_summary">(相手も使用する必要があります)</string>
+    <string name="expl_relay_url">Web API をリレーする URL</string>
+    <string name="ignore_gcm_title">受信した GCM メッセージを無視する</string>
+    <string name="ignore_gcm_summary">Google カウントを使用しないで同様のことを行います</string>
+    <string name="show_sms_title">SMS 送信、受信を表示する</string>
+    <string name="show_gcm_title">GCM の受信を表示する</string>
     <string name="list_item_netstats">接続…</string>
     <plurals name="too_many_trade_fmt">
-      <item quantity="other">選択されたタイルが多すぎます。 %1$d 以下にしてください。</item>
+        <item quantity="other">選択されたタイルが多すぎます。 %1$d 以下にしてください。</item>
     </plurals>
     <string name="button_scan">再スキャン</string>
     <plurals name="invite_bt_desc_fmt_2">
-      <item quantity="other">このゲームに含めたいデバイスを %1$d までにしてください。</item>
+        <item quantity="other">このゲームに含めたいデバイスを %1$d までにしてください。</item>
     </plurals>
     <string name="invite_bt_desc_postscript">"
 \n
 \n(クロスワードのスキャンによって検出された、ペアになったデバイスの一覧)"</string>
     <plurals name="bt_scan_progress_fmt">
-    <item quantity="other">%1$d ペアのデバイスでクロスワードをスキャンしています</item>
-</plurals>
+        <item quantity="other">%1$d ペアのデバイスでクロスワードをスキャンしています</item>
+    </plurals>
     <plurals name="confirm_clear_bt_fmt">
-    <item quantity="other">%1$d のチェックされたデバイスを記憶しないでよろしいですか\?</item>
-</plurals>
+        <item quantity="other">%1$d のチェックされたデバイスを記憶しないでよろしいですか\?</item>
+    </plurals>
     <string name="confirm_clear_bt_postscript">" 
 \n 
 \n(Bluetooth の範囲内にあるデバイスだけ再追加できます)"</string>
