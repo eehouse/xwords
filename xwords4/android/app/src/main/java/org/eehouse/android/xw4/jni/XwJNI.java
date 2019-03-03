@@ -239,16 +239,16 @@ public class XwJNI {
                                                  TransportProcs procs );
 
     private static native boolean game_makeFromStream( GamePtr gamePtr,
-                                                      byte[] stream,
-                                                      CurGameInfo gi,
-                                                      String[] dictNames,
-                                                      byte[][] dictBytes,
-                                                      String[] dictPaths,
-                                                      String langName,
-                                                      UtilCtxt util,
-                                                      DrawCtx draw,
-                                                      CommonPrefs cp,
-                                                      TransportProcs procs );
+                                                       byte[] stream,
+                                                       CurGameInfo gi,
+                                                       String[] dictNames,
+                                                       byte[][] dictBytes,
+                                                       String[] dictPaths,
+                                                       String langName,
+                                                       UtilCtxt util,
+                                                       DrawCtx draw,
+                                                       CommonPrefs cp,
+                                                       TransportProcs procs );
 
     public static native boolean game_receiveMessage( GamePtr gamePtr,
                                                       byte[] stream,

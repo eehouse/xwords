@@ -344,7 +344,7 @@ public class RelayService extends XWJIService
     @Override
     public void onCreate()
     {
-        Log.d( TAG, "%s.onCreate()", this );
+        // Log.d( TAG, "%s.onCreate()", this );
         super.onCreate();
 
         mHelper = new RelayServiceHelper( this );
@@ -539,7 +539,7 @@ public class RelayService extends XWJIService
                 Log.e( TAG, "connectSocketOnce(): %s", uhe.getMessage() );
                 // Assert.assertFalse( BuildConfig.DEBUG );
             }
-        } else {
+        } else if( ! s_UDPSocket.isConnected() ) {
             Log.e( TAG, "connectSocketOnce(): udp socket not connected" );
             // Assert.assertTrue( s_UDPSocket.isConnected() );
         }
