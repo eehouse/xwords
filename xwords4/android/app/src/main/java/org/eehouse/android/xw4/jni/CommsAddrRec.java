@@ -25,6 +25,7 @@ import android.text.TextUtils;
 
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BTService;
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
@@ -36,8 +37,10 @@ import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 public class CommsAddrRec {
     private static final String TAG = CommsAddrRec.class.getSimpleName();
@@ -63,6 +66,8 @@ public class CommsAddrRec {
                 id = R.string.invite_choice_data_sms; break;
             case COMMS_CONN_P2P:
                 id = R.string.invite_choice_p2p; break;
+            default:
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
 
             return ( 0 == id ) ? toString() : LocUtils.getString( context, id );
@@ -113,18 +118,27 @@ public class CommsAddrRec {
             return result;
         }
 
-        public static CommsConnTypeSet getSupported( Context context )
+        /**
+         * Return supported types in display order, i.e. with the easiest to
+         * use or most broadly useful first. DATA_SMS comes last because it
+         * depends on permissions that are banned on PlayStore variants of the
+         * game.
+         *
+         * @return ordered list of types supported by this device as
+         * configured.
+         */
+        public static List<CommsConnType> getSupported( Context context )
         {
-            CommsConnTypeSet supported = new CommsConnTypeSet();
+            List<CommsConnType> supported = new ArrayList<>();
             supported.add( CommsConnType.COMMS_CONN_RELAY );
             if ( BTService.BTAvailable() ) {
                 supported.add( CommsConnType.COMMS_CONN_BT );
             }
-            if ( Utils.isGSMPhone( context ) ) {
-                supported.add( CommsConnType.COMMS_CONN_SMS );
-            }
             if ( WiDirWrapper.enabled() ) {
                 supported.add( CommsConnType.COMMS_CONN_P2P );
+            }
+            if ( Utils.isGSMPhone( context ) ) {
+                supported.add( CommsConnType.COMMS_CONN_SMS );
             }
             return supported;
         }
@@ -134,7 +148,7 @@ public class CommsAddrRec {
         {
             // Remove anything no longer supported. This probably only
             // happens when key_force_radio is being messed with
-            CommsConnTypeSet supported = getSupported( context );
+            List<CommsConnType> supported = getSupported( context );
             for ( CommsConnType typ : set.getTypes() ) {
                 if ( ! supported.contains( typ ) ) {
                     set.remove( typ );

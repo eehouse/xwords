@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -186,8 +187,8 @@ public class NetLaunchInfo implements Serializable {
                         m_addrs = new CommsConnTypeSet();
                     }
 
-                    CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
-                    for ( CommsConnType typ : supported.getTypes() ) {
+                    List<CommsConnType> supported = CommsConnTypeSet.getSupported( context );
+                    for ( CommsConnType typ : supported ) {
                         if ( hasAddrs && !m_addrs.contains( typ ) ) {
                             continue;
                         }
@@ -458,7 +459,7 @@ public class NetLaunchInfo implements Serializable {
 
     private void init( Context context, String data ) throws JSONException
     {
-        CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
+        List<CommsConnType> supported = CommsConnTypeSet.getSupported( context );
         JSONObject json = new JSONObject( data );
 
         int flags = json.optInt(ADDRS_KEY, -1);
@@ -476,7 +477,7 @@ public class NetLaunchInfo implements Serializable {
         gameID = json.optInt( MultiService.GAMEID, 0 );
 
         // Try each type
-        for ( CommsConnType typ : supported.getTypes() ) {
+        for ( CommsConnType typ : supported ) {
             if ( hasAddrs && !m_addrs.contains( typ ) ) {
                 continue;
             }
@@ -665,7 +666,7 @@ public class NetLaunchInfo implements Serializable {
             && 0 != gameID();
     }
 
-    private void removeUnsupported( CommsConnTypeSet supported )
+    private void removeUnsupported( List<CommsConnType> supported )
     {
         for ( Iterator<CommsConnType> iter = m_addrs.iterator();
               iter.hasNext(); ) {
