@@ -28,8 +28,8 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
+import java.util.List;
 import java.util.Map;
-
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -81,9 +81,9 @@ public class ConnViaViewLayout extends LinearLayout {
         list.removeAllViews();  // in case being reused
 
         Context context = getContext();
-        CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
+        List<CommsConnType> supported = CommsConnTypeSet.getSupported( context );
 
-        for ( CommsConnType typ : supported.getTypes() ) {
+        for ( CommsConnType typ : supported ) {
             CheckBox box = new CheckBox( context );
             box.setText( typ.longName( context ) );
             box.setChecked( m_curSet.contains( typ ) );
