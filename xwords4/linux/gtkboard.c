@@ -2892,6 +2892,8 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
                                  XP_FALSE );
             }
 #endif
+        } else {
+            game_dispose( &cGlobals->game );
         }
     }
     stream_destroy( stream );
