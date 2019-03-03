@@ -216,6 +216,7 @@ public class JNIThread extends Thread implements AutoCloseable {
             // Assert.assertNull( m_jniGamePtr ); // fired!!
             if ( null != m_jniGamePtr ) {
                 Log.d( TAG, "configure(): m_jniGamePtr not null; that ok?" );
+                m_jniGamePtr.release();
             }
 
             synchronized ( this ) {

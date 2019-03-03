@@ -25,6 +25,7 @@ import android.graphics.Rect;
 import java.util.Arrays;
 
 import org.eehouse.android.xw4.Assert;
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Utils;
@@ -78,6 +79,8 @@ public class XwJNI {
                     game_dispose( this ); // will crash if haveEnv fails
                     m_ptr = 0;
                 }
+            } else {
+                Assert.assertTrue( m_refCount > 0 || !BuildConfig.DEBUG );
             }
         }
 
@@ -90,11 +93,10 @@ public class XwJNI {
         // @Override
         public void finalize() throws java.lang.Throwable
         {
-            if ( 0 != m_ptr ) {
-                Log.e( TAG, "ptr not cleared; creator: %s", mStack );
+            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptr) ) {
+                Log.e( TAG, "finalize(): called prematurely: refCount: %d"
+                       + "; ptr: %d; creator: %s", m_refCount, m_ptr, mStack );
             }
-            Assert.assertTrue( 0 == m_refCount );
-            Assert.assertTrue( 0 == m_ptr );
             super.finalize();
         }
     }
@@ -199,12 +201,11 @@ public class XwJNI {
                         CommonPrefs cp, TransportProcs procs )
 
     {
-        GamePtr gamePtr = initGameJNI( rowid );
-        if ( game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
-                                  dictPaths, langName, util, draw,
-                                  cp, procs ) ) {
-            gamePtr.retain();
-        } else {
+        GamePtr gamePtr = initGameJNI( rowid ).retain();
+        if ( ! game_makeFromStream( gamePtr, stream, gi, dictNames, dictBytes,
+                                    dictPaths, langName, util, draw,
+                                    cp, procs ) ) {
+            gamePtr.release();
             gamePtr = null;
         }
 

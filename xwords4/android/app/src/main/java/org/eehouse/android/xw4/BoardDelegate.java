@@ -124,7 +124,7 @@ public class BoardDelegate extends DelegateBase
     private boolean m_haveInvited = false;
     private boolean m_showedReInvite;
     private boolean m_overNotShown;
-    private boolean m_dropOnDismiss;
+    private boolean m_dropRelayOnDismiss;
     private DBAlert m_inviteAlert;
     private boolean m_haveStartedShowing;
 
@@ -1146,7 +1146,7 @@ public class BoardDelegate extends DelegateBase
         boolean handled = true;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
-            m_dropOnDismiss = true;
+            m_dropRelayOnDismiss = true;
             break;
         case DROP_SMS_ACTION:
             dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
@@ -1169,7 +1169,7 @@ public class BoardDelegate extends DelegateBase
         boolean handled = true;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
-            if ( m_dropOnDismiss ) {
+            if ( m_dropRelayOnDismiss ) {
                 postDelayed( new Runnable() {
                         @Override
                         public void run() {
@@ -2466,7 +2466,7 @@ public class BoardDelegate extends DelegateBase
         }
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             if ( !RelayService.relayEnabled( m_activity ) ) {
-                m_dropOnDismiss = false;
+                m_dropRelayOnDismiss = false;
                 String msg = getString( R.string.warn_relay_disabled )
                     + "\n\n" + getString( R.string.warn_relay_remove );
                 makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO_OR )

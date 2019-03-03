@@ -46,9 +46,15 @@
 #include "jniutlswrapper.h"
 #include "paths.h"
 
+#define LOG_MAPPING
+// #define LOG_MAPPING_ALL
+
 typedef struct _EnvThreadEntry {
     JNIEnv* env;
     pthread_t owner;
+#ifdef LOG_MAPPING
+    const char* ownerFunc;
+#endif
 } EnvThreadEntry;
 
 struct _EnvThreadInfo {
@@ -89,8 +95,6 @@ releaseMPool( JNIGlobalState* globalState )
 # define releaseMPool(s)
 #endif
 
-#define LOG_MAPPING
-// #define LOG_MAPPING_ALL
 
 #define GAMEPTR_IS_OBJECT
 #ifdef GAMEPTR_IS_OBJECT
@@ -119,8 +123,10 @@ countUsed(const EnvThreadInfo* ti)
 # endif
 #endif
 
+#define MAP_THREAD( ti, env ) map_thread_prv( (ti), (env), __func__ )
+
 static void
-map_thread( EnvThreadInfo* ti, JNIEnv* env )
+map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
 {
     pthread_t self = pthread_self();
 
@@ -170,6 +176,7 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
         firstEmpty->owner = self;
         firstEmpty->env = env;
 #ifdef LOG_MAPPING
+        firstEmpty->ownerFunc = caller;
         XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__,
                  firstEmpty - ti->entries, env, (int)self );
         XP_LOGF( "%s: num entries USED now %d", __func__, countUsed(ti) );
@@ -177,19 +184,19 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
     }
 
     pthread_mutex_unlock( &ti->mtxThreads );
-} /* map_thread */
+} /* map_thread_prv */
 
 static void
 map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
 {
     pthread_mutex_init( &ti->mtxThreads, NULL );
     MPASSIGN( ti->mpool, mpool );
-    map_thread( ti, env );
+    MAP_THREAD( ti, env );
 }
 
-#define MAP_REMOVE( ti, env ) map_remove((ti), (env), __func__)
+#define MAP_REMOVE( ti, env ) map_remove_prv((ti), (env), __func__)
 static void
-map_remove( EnvThreadInfo* ti, JNIEnv* env, const char* func )
+map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
 {
     XP_Bool found = false;
 
@@ -197,12 +204,13 @@ map_remove( EnvThreadInfo* ti, JNIEnv* env, const char* func )
     for ( int ii = 0; !found && ii < ti->nEntries; ++ii ) {
         found = env == ti->entries[ii].env;
         if ( found ) {
-            XP_ASSERT( pthread_self() == ti->entries[ii].owner );
 #ifdef LOG_MAPPING
-            XP_LOGF( "%s: UNMAPPED env %p to thread %x (from %s)", __func__,
+            XP_LOGF( "%s: UNMAPPED env %p to thread %x (from %s; mapped by %s)", __func__,
                      ti->entries[ii].env,
-                     (int)ti->entries[ii].owner, func );
+                     (int)ti->entries[ii].owner, func,
+                     ti->entries[ii].ownerFunc );
 #endif   
+            XP_ASSERT( pthread_self() == ti->entries[ii].owner );
             ti->entries[ii].env = NULL;
             ti->entries[ii].owner = 0;
 #ifdef LOG_MAPPING
@@ -724,7 +732,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 {
     jboolean result = false;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &globalState->ti, env );
+    MAP_THREAD( &globalState->ti, env );
 
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = getMPool( globalState );
@@ -828,7 +836,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
 {
     jobjectArray result = NULL;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &globalState->ti, env );
+    MAP_THREAD( &globalState->ti, env );
 
     SMS_CMD cmd = jEnumToInt( env, jCmd );
     jbyte* data = NULL;
@@ -867,7 +875,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
 
     if ( !!jData ) {
         JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
-        map_thread( &globalState->ti, env );
+        MAP_THREAD( &globalState->ti, env );
 
         int len = (*env)->GetArrayLength( env, jData );
         jbyte* data = (*env)->GetByteArrayElements( env, jData, NULL );
@@ -906,7 +914,7 @@ struct _JNIState {
     MPSLOT;                                                 \
     MPASSIGN( mpool, state->mpool);                         \
     XP_ASSERT( !!state->globalJNI );                        \
-    map_thread( &state->globalJNI->ti, env );               \
+    MAP_THREAD( &state->globalJNI->ti, env );               \
 
 #define XWJNI_START_GLOBALS()                           \
     XWJNI_START()                                       \
@@ -924,7 +932,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGameJNI
 #endif
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
     state->globalJNI = (JNIGlobalState*)jniGlobalPtr;
-    map_thread( &state->globalJNI->ti, env );
+    MAP_THREAD( &state->globalJNI->ti, env );
     AndGameGlobals* globals = &state->globals;
     globals->dutil = state->globalJNI->dutil;
     globals->state = (JNIState*)state;
@@ -1052,16 +1060,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     dict_unref( dict );         /* game owns it now */
     dict_unref_all( &dicts );
 
+    /* If game_makeFromStream() fails, the platform-side caller still needs to
+       call game_dispose. That requirement's better than having cleanup code
+       in two places. */
     if ( result ) {
         XP_ASSERT( 0 != globals->gi->gameID );
         if ( !!jgi ) {
             setJGI( env, jgi, globals->gi );
         }
-    } else {
-        destroyDraw( &globals->dctx );
-        destroyXportProcs( &globals->xportProcs );
-        destroyUtil( &globals->util );
-        destroyGI( MPPARM(mpool) &globals->gi );
     }
 
     XWJNI_END();
