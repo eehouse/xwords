@@ -514,7 +514,7 @@ public class Utils {
         if ( null == s_appVersion ) {
             try {
                 int version = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0)
+                    .getPackageInfo(BuildConfig.APPLICATION_ID, 0)
                     .versionCode;
                 s_appVersion = new Integer( version );
             } catch ( Exception e ) {
@@ -558,7 +558,7 @@ public class Utils {
     public static boolean isGooglePlayApp( Context context )
     {
         PackageManager pm = context.getPackageManager();
-        String packageName = context.getPackageName();
+        String packageName = BuildConfig.APPLICATION_ID;
         String installer = pm.getInstallerPackageName( packageName );
         boolean result = "com.google.android.feedback".equals( installer )
             || "com.android.vending".equals( installer );

@@ -621,7 +621,7 @@ public class DictUtils {
             File storage = Environment.getExternalStorageDirectory();
             if ( null != storage ) {
                 String packdir = String.format( "Android/data/%s/files/",
-                                                context.getPackageName() );
+                                                BuildConfig.APPLICATION_ID );
                 result = new File( storage.getPath(), packdir );
                 if ( !result.exists() ) {
                     result.mkdirs();

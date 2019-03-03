@@ -113,7 +113,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     {
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
-        String packageName = context.getPackageName();
+        String packageName = BuildConfig.APPLICATION_ID;
         int versionCode;
         try {
             versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
