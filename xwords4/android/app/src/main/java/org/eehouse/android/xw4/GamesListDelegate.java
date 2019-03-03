@@ -1580,7 +1580,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_rateme:
             String str = String.format( "market://details?id=%s",
-                                        m_activity.getPackageName() );
+                                        BuildConfig.APPLICATION_ID );
             try {
                 startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( str ) ) );
             } catch ( android.content.ActivityNotFoundException anf ) {
