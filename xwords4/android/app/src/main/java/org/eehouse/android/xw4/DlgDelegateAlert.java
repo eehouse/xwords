@@ -120,6 +120,11 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
         };
     }
 
+    protected OnClickListener mkCallbackClickListener( ActionPair pair )
+    {
+        return mkCallbackClickListener( pair, null );
+    }
+
     protected OnClickListener mkCallbackClickListener( final NotAgainView naView )
     {
         OnClickListener cbkOnClickLstnr;

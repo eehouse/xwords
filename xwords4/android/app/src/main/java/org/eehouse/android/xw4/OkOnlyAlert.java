@@ -52,11 +52,18 @@ public class OkOnlyAlert extends DlgDelegateAlert {
 
         final DlgState state = getState( sis );
 
-        Dialog dialog = LocUtils.makeAlertBuilder( getActivity() )
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( getActivity() )
             .setTitle( state.m_titleId == 0 ? R.string.info_title : state.m_titleId )
             .setMessage( state.m_msg )
             .setPositiveButton( android.R.string.ok, null )
-            .create();
+            ;
+
+        ActionPair pair = state.m_pair;
+        if ( null != pair ) {
+            builder.setNeutralButton( pair.buttonStr, mkCallbackClickListener( pair ) );
+        }
+
+        Dialog dialog = builder.create();
         // dialog = setCallbackDismissListener( dialog, state, dlgID );
         return dialog;
     }

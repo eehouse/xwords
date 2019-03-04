@@ -207,8 +207,8 @@ public class DlgDelegate {
         @Override
         public void show()
         {
-            Assert.assertTrue( null == m_actionPair || !BuildConfig.DEBUG );
-            showOKOnlyDialogThen( m_msgString, m_action, m_params, m_titleId );
+            showOKOnlyDialogThen( m_msgString, m_action, m_actionPair,
+                                  m_params, m_titleId );
         }
     }
 
@@ -337,12 +337,14 @@ public class DlgDelegate {
     }
 
     private void showOKOnlyDialogThen( String msg, Action action,
-                                       Object[] params, int titleId )
+                                       ActionPair more, Object[] params,
+                                       int titleId )
     {
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY )
             .setMsg( msg )
             .setParams( params )
             .setTitle( titleId )
+            .setActionPair( more )
             .setAction(action);
         m_dlgt.show( state );
     }
