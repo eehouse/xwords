@@ -202,20 +202,17 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
 
     pthread_mutex_lock( &ti->mtxThreads );
     for ( int ii = 0; !found && ii < ti->nEntries; ++ii ) {
-        found = env == ti->entries[ii].env;
+        EnvThreadEntry* entry = &ti->entries[ii];
+        found = env == entry->env;
         if ( found ) {
 #ifdef LOG_MAPPING
             XP_LOGF( "%s: UNMAPPED env %p to thread %x (from %s; mapped by %s)", __func__,
-                     ti->entries[ii].env,
-                     (int)ti->entries[ii].owner, func,
-                     ti->entries[ii].ownerFunc );
-#endif   
-            XP_ASSERT( pthread_self() == ti->entries[ii].owner );
-            ti->entries[ii].env = NULL;
-            ti->entries[ii].owner = 0;
-#ifdef LOG_MAPPING
+                     entry->env, (int)entry->owner, func, entry->ownerFunc );
             XP_LOGF( "%s: %d entries left", __func__, countUsed( ti ) );
+            entry->ownerFunc = NULL;
 #endif
+            entry->env = NULL;
+            entry->owner = 0;
         }
     }
     pthread_mutex_unlock( &ti->mtxThreads );
