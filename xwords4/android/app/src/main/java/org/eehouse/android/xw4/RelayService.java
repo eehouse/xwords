@@ -553,7 +553,7 @@ public class RelayService extends XWJIService
         PacketData outData;
         try {
             long ts = s_packetsSentUDP.size() > 0 ? 10 : 1000;
-            Log.d( TAG, "blocking %dms on poll()", ts );
+            // Log.d( TAG, "blocking %dms on poll()", ts );
             for ( outData = s_queue.poll( ts, TimeUnit.MILLISECONDS );
                   null != outData;
                   outData = s_queue.poll() ) {         // doesn't block
@@ -868,7 +868,7 @@ public class RelayService extends XWJIService
                 if ( !skipAck ) {
                     sendAckIf( header );
                 }
-                Log.d( TAG, "%s.gotPacket(): cmd=%s", this, header.m_cmd.toString() );
+                // Log.d( TAG, "%s.gotPacket(): cmd=%s", this, header.m_cmd.toString() );
                 switch ( header.m_cmd ) {
                 case XWPDEV_UNAVAIL:
                     int unavail = dis.readInt();
