@@ -52,6 +52,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     // constants that are also used in info.py
     private static final String k_NAME = "name";
     private static final String k_AVERS = "avers";
+    private static final String k_VARIANT = "variant";
     private static final String k_GVERS = "gvers";
     private static final String k_GHASH = "ghash";
     private static final String k_INSTALLER = "installer";
@@ -66,6 +67,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_DEBUG = "dbg";
     private static final String k_XLATEINFO = "xlatinfo";
     private static final String k_STRINGSHASH = "strings";
+    private static final String k_UPGRADE_TITLE = "title";
+    private static final String k_UPGRADE_BODY = "body";
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -99,16 +102,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 interval_millis, pi );
     }
 
-    // Is app upgradeable OR have we installed any dicts?
-    public static boolean haveToCheck( Context context )
-    {
-        boolean result = !Utils.isGooglePlayApp( context );
-        if ( !result ) { // give another chance
-            result = null != getDownloadedDicts( context );
-        }
-        return result;
-    }
-
     public static void checkVersions( Context context, boolean fromUI )
     {
         JSONObject params = new JSONObject();
@@ -123,17 +116,22 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         // App update
-        if ( BuildConfig.FOR_FDROID || Utils.isGooglePlayApp( context ) ) {
-            // Do nothing; can't or mustn't upgrade app
+        if ( BuildConfig.FOR_FDROID ) {
+            // Do nothing; can't upgrade app
         } else {
             String installer = pm.getInstallerPackageName( packageName );
+            if ( null == installer ) {
+                installer = "none";
+            }
 
             try {
                 JSONObject appParams = new JSONObject();
 
+                appParams.put( k_VARIANT, BuildConfig.VARIANT_NAME );
                 appParams.put( k_AVERS, versionCode );
+                // Look at whether server needs these duplicates. PENDING....
                 appParams.put( k_GVERS, BuildConfig.GIT_REV );
-                appParams.put( k_GHASH, context.getString( R.string.git_rev ) );
+                appParams.put( k_GHASH, BuildConfig.GIT_REV );
                 appParams.put( k_INSTALLER, installer );
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
@@ -315,12 +313,17 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                     .makeAppDownloadIntent( m_context, url );
                             }
 
-                            String title =
-                                LocUtils.getString( m_context, R.string.new_app_avail_fmt,
-                                                    label );
-                            String body =
-                                LocUtils.getString( m_context,
-                                                    R.string.new_app_avail );
+                            // title and/or body might be in the reply
+                            String title = app.optString( k_UPGRADE_TITLE, null );
+                            if ( null == title ) {
+                                title = LocUtils
+                                    .getString( m_context, R.string.new_app_avail_fmt, label );
+                            }
+                            String body = app.optString( k_UPGRADE_BODY, null );
+                            if ( null == body ) {
+                                body = LocUtils
+                                    .getString( m_context, R.string.new_app_avail );
+                            }
                             Utils.postNotification( m_context, intent, title,
                                                     body, url.hashCode() );
                             gotOne = true;

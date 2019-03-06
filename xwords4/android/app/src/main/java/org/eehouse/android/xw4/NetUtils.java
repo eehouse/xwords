@@ -21,8 +21,9 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.TextUtils;
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -201,6 +202,18 @@ public class NetUtils {
             Log.d( TAG, "ensureHttps(%s) => %s", url, result );
         }
         return result;
+    }
+
+    public static void launchWebBrowserWith( Context context, int uriResID )
+    {
+        String uri = context.getString( uriResID );
+        launchWebBrowserWith( context, uri );
+    }
+
+    public static void launchWebBrowserWith( Context context, String uri )
+    {
+        Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse(uri) );
+        context.startActivity( intent );
     }
 
     protected static HttpsURLConnection makeHttpsRelayConn( Context context,

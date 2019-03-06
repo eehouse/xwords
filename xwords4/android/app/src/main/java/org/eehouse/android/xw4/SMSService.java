@@ -376,8 +376,9 @@ public class SMSService extends XWJIService {
 
     private void sendDiedPacket( String phone, int gameID )
     {
-        if ( !s_sentDied.contains(gameID) ) {
+        if ( !s_sentDied.contains( gameID ) ) {
             resendFor( phone, SMS_CMD.DEATH, gameID, null );
+            s_sentDied.add( gameID );
         }
     }
 
@@ -515,19 +516,25 @@ public class SMSService extends XWJIService {
                 short nbsPort = getNBSPort();
                 try {
                     SmsManager mgr = SmsManager.getDefault();
-                    PendingIntent sent = makeStatusIntent( MSG_SENT );
-                    PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
+                    boolean useProxy = Perms23.Perm.SEND_SMS.isBanned()
+                        && NBSProxy.isInstalled( this );
+                    PendingIntent sent = useProxy ? null : makeStatusIntent( MSG_SENT );
+                    PendingIntent delivery = useProxy ? null : makeStatusIntent( MSG_DELIVERED );
                     for ( byte[] fragment : fragments ) {
-                        mgr.sendDataMessage( phone, null, nbsPort, fragment, sent,
-                                             delivery );
-                        Log.i( TAG, "sendBuffers(): sent %d byte fragment to %s",
-                               fragment.length, phone );
+                        if ( useProxy ) {
+                            NBSProxy.send( this, phone, nbsPort, fragment );
+                        } else {
+                            mgr.sendDataMessage( phone, null, nbsPort, fragment,
+                                                 sent, delivery );
+                        }
+                        // Log.i( TAG, "sendBuffers(): sent %d byte fragment to %s",
+                        //        fragment.length, phone );
                     }
                     success = true;
                 } catch ( IllegalArgumentException iae ) {
                     Log.w( TAG, "sendBuffers(%s): %s", phone, iae.toString() );
                 } catch ( NullPointerException npe ) {
-                    Assert.fail();      // shouldn't be trying to do this!!!
+                    Assert.assertFalse( BuildConfig.DEBUG ); // shouldn't be trying to do this!!!
                 } catch ( java.lang.SecurityException se ) {
                     mHelper.postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
                 } catch ( Exception ee ) {

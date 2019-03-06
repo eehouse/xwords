@@ -23,6 +23,7 @@ except ImportError:
 VERBOSE = False
 k_NAME = 'name'
 k_AVERS = 'avers'
+k_VARIANT = 'variant'
 k_GVERS = 'gvers'
 k_INSTALLER = 'installer'
 k_DEVOK = 'devOK'
@@ -35,6 +36,9 @@ k_LOCALE = 'locale'
 k_XLATPROTO = 'proto'
 k_XLATEVERS = 'xlatevers'
 k_STRINGSHASH = 'strings'
+k_UPGRADE_TITLE = 'title'
+k_UPGRADE_BODY = 'body'
+
 
 k_DICT_HEADER_MASK = 0x08
 

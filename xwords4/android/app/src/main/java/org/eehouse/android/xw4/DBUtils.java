@@ -433,7 +433,8 @@ public class DBUtils {
         return result;
     }
 
-    public static int countOpenGamesUsingRelay( Context context )
+    private static int countOpenGamesUsing( Context context,
+                                            CommsConnType connTyp )
     {
         int result = 0;
         String[] columns = { DBHelper.CONTYPE };
@@ -446,16 +447,28 @@ public class DBUtils {
             int indx = cursor.getColumnIndex( DBHelper.CONTYPE );
             while ( cursor.moveToNext() ) {
                 CommsConnTypeSet typs = new CommsConnTypeSet( cursor.getInt(indx) );
-                if ( typs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                if ( typs.contains( connTyp ) ) {
                     ++result;
                 }
             }
 
-
             cursor.close();
         }
 
-        // Log.d( TAG, "countOpenGamesUsingRelay() => %d", result );
+        // Log.d( TAG, "countOpenGamesUsing(%s) => %d", connTyp, result );
+        return result;
+    }
+
+    public static int countOpenGamesUsingRelay( Context context )
+    {
+        int result = countOpenGamesUsing( context, CommsConnType.COMMS_CONN_RELAY );
+        return result;
+    }
+
+    public static int countOpenGamesUsingNBS( Context context )
+    {
+        int result = countOpenGamesUsing( context, CommsConnType.COMMS_CONN_SMS );
+        // Log.d( TAG, "countOpenGamesUsingNBS() => %d", result );
         return result;
     }
 

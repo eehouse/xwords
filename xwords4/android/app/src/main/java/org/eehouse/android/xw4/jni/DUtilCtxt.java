@@ -216,10 +216,8 @@ public class DUtilCtxt {
 
     public void store( String key, byte[] data )
     {
-        Log.d( TAG, "store(key=%s)", key );
-
-        if ( null == data ) {
-        } else {
+        // Log.d( TAG, "store(key=%s)", key );
+        if ( null != data ) {
             DBUtils.setBytesFor( m_context, key, data );
         }
     }

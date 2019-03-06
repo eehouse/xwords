@@ -1279,7 +1279,7 @@
 
   <string name="not_again_dfltname_fmt">Du bruker forvalgt spillernavn \"%1$s\". Ønsker du å personalisere med ditt eget navn før du oppretter dette spillet?</string>
 
-  <string name="missing_perms">Dette spillet er satt opp for kommunikasjon via SMS, men CrossWords mangler tilgangen. Du kan åpne spillet, men det kan hende du ikke vil kunne sende eller motta trekk.
+  <string name="missing_sms_perms">Dette spillet er satt opp for kommunikasjon via SMS, men CrossWords mangler tilgangen. Du kan åpne spillet, men det kan hende du ikke vil kunne sende eller motta trekk.
 \n
 \nDu kan gjenåpne det for å bli spurt om tilgang igjen. Eller du kan fjerne SMS-kommunikasjonsinnstillingen.</string>
 

@@ -125,7 +125,7 @@ public class Utils {
     public static boolean isGSMPhone( Context context )
     {
         boolean result = false;
-        if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
+        if ( Perms23.havePermissions( context, Perm.READ_PHONE_STATE ) ) {
             SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
             result = null != info && info.isPhone && info.isGSM;
         }
@@ -141,7 +141,7 @@ public class Utils {
     public static boolean deviceSupportsNBS( Context context )
     {
         boolean result = false;
-        if ( Perms23.havePermission( Perm.READ_PHONE_STATE ) ) {
+        if ( Perms23.havePermissions( context, Perm.READ_PHONE_STATE ) ) {
             TelephonyManager tm = (TelephonyManager)
                 context.getSystemService( Context.TELEPHONY_SERVICE );
             if ( null != tm ) {
@@ -314,7 +314,7 @@ public class Utils {
         synchronized ( s_phonesHash ) {
             if ( s_phonesHash.containsKey( phone ) ) {
                 name = s_phonesHash.get( phone );
-            } else if ( Perms23.havePermission( Perm.READ_CONTACTS ) ) {
+            } else if ( Perms23.havePermissions( context, Perm.READ_CONTACTS ) ) {
                 try {
                     ContentResolver contentResolver = context
                         .getContentResolver();

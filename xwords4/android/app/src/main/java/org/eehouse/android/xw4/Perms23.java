@@ -35,6 +35,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eehouse.android.nbsplib.NBSProxy;
+
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -47,21 +49,20 @@ public class Perms23 {
     public static enum Perm {
         READ_PHONE_STATE(Manifest.permission.READ_PHONE_STATE),
         STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        SEND_SMS(Manifest.permission.SEND_SMS, BuildConfig.SMS_BANNED_EXPL),
-        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS, BuildConfig.SMS_BANNED_EXPL),
+        SEND_SMS(Manifest.permission.SEND_SMS, BuildConfig.SMS_BANNED),
+        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS, BuildConfig.SMS_BANNED),
         READ_CONTACTS(Manifest.permission.READ_CONTACTS);
 
         private String m_str;
-        private int[] m_expl;
-        private Perm(String str) { this(str, null); }
-        private Perm(String str, int[] bannedExpl) {
+        private boolean m_banned;
+        private Perm(String str) { this(str, false); }
+        private Perm(String str, boolean banned) {
             m_str = str;
-            m_expl = bannedExpl;
+            m_banned = banned;
         }
 
         public String getString() { return m_str; }
-        public boolean isBanned() { return m_expl != null; }
-        public int[] getExpl() { Assert.assertTrue(isBanned()); return m_expl; }
+        public boolean isBanned() { return m_banned; }
         public static Perm getFor( String str ) {
             Perm result = null;
             for ( Perm one : Perm.values() ) {
@@ -75,7 +76,7 @@ public class Perms23 {
     }
 
     public interface PermCbck {
-        void onPermissionResult( Map<Perm, Boolean> perms );
+        void onPermissionResult( boolean allGood, Map<Perm, Boolean> perms );
     }
     public interface OnShowRationale {
         void onShouldShowRationale( Set<Perm> perms );
@@ -89,19 +90,10 @@ public class Perms23 {
             m_perms.addAll( perms );
         }
 
-        public Builder( Perm[] perms ) {
+        public Builder( Perm... perms ) {
             for ( Perm perm : perms ) {
                 m_perms.add( perm );
             }
-        }
-
-        public Builder( Perm perm ) {
-            m_perms.add( perm );
-        }
-
-        public Builder add( Perm perm ) {
-            m_perms.add( perm );
-            return this;
         }
 
         public Builder setOnShowRationale( OnShowRationale onShow )
@@ -115,6 +107,11 @@ public class Perms23 {
             asyncQuery( activity, null );
         }
 
+        // We have set of permissions. For any of them that needs asking (not
+        // granted AND not banned) start an ask.
+        //
+        // PENDING: I suspect this'll crash if I ask for a banned and
+        // non-banned at the same time (and don't have either)
         public void asyncQuery( Activity activity, PermCbck cbck )
         {
             Log.d( TAG, "asyncQuery(%s)", m_perms.toString() );
@@ -125,10 +122,13 @@ public class Perms23 {
             ArrayList<String> askStrings = new ArrayList<String>();
             for ( Perm perm : m_perms ) {
                 String permStr = perm.getString();
-                boolean haveIt = PackageManager.PERMISSION_GRANTED
+                boolean haveIt = perm.isBanned() || PackageManager.PERMISSION_GRANTED
                     == ContextCompat.checkSelfPermission( activity, permStr );
 
                 if ( !haveIt ) {
+                    // do not pass banned perms to the OS! They're not in
+                    // AndroidManifest.xml so may crash on some devices
+                    Assert.assertFalse( perm.isBanned() );
                     askStrings.add( permStr );
 
                     if ( null != m_onShow && ActivityCompat
@@ -144,10 +144,13 @@ public class Perms23 {
             if ( haveAll ) {
                 if ( null != cbck ) {
                     Map<Perm, Boolean> map = new HashMap<>();
+                    boolean allGood = true;
                     for ( Perm perm : m_perms ) {
-                        map.put( perm, true );
+                        boolean banned = perm.isBanned();
+                        map.put( perm, !banned );
+                        allGood = allGood & !banned;
                     }
-                    cbck.onPermissionResult( map );
+                    cbck.onPermissionResult( allGood, map );
                 }
             } else if ( 0 < needShow.size() && null != m_onShow ) {
                 // Log.d( TAG, "calling onShouldShowRationale()" );
@@ -228,18 +231,10 @@ public class Perms23 {
             }
             builder.asyncQuery( m_delegate.getActivity(), new PermCbck() {
                     @Override
-                    public void onPermissionResult( Map<Perm, Boolean> permsMap ) {
+                    public void onPermissionResult( boolean allGood,
+                                                    Map<Perm, Boolean> permsMap ) {
                         if ( Action.SKIP_CALLBACK != m_action ) {
-
-                            // We need all the sought perms to have been granted
-                            boolean allGranted = true;
-                            Iterator<Perm> iter = permsMap.keySet().iterator();
-                            while ( allGranted && iter.hasNext() ) {
-                                Perm perm = iter.next();
-                                allGranted = allGranted && permsMap.get( perm );
-                            }
-
-                            if ( allGranted ) {
+                            if ( allGood ) {
                                 m_delegate.onPosButton( m_action, m_params );
                             } else {
                                 m_delegate.onNegButton( m_action, m_params );
@@ -252,16 +247,11 @@ public class Perms23 {
         // Cons up a call with a "no" answer, and post it.
         private void doItFail( Set<Perm> bannedPerms )
         {
-            int resID = 0;
-
-            final Perm[] perms = bannedPerms.toArray( new Perm[bannedPerms.size()] );
-            int[] expls = perms[0].getExpl();
-            m_delegate.makeNotAgainBuilder(expls[1], expls[0]).show();
-
             m_delegate.post( new Runnable() {
                     @Override
                     public void run() {
-                        m_delegate.onNegButton( m_action, perms );
+                        Log.d( TAG, "doItFail(); passing perms to onNegButton(%s)", m_action );
+                        m_delegate.onNegButton( m_action, m_params );
                     }
                 } );
         }
@@ -338,11 +328,14 @@ public class Perms23 {
                                             String[] perms, int[] granteds )
     {
         // Log.d( TAG, "gotPermissionResult(%s)", perms.toString() );
-        Map<Perm, Boolean> result = new HashMap<Perm, Boolean>();
+        Map<Perm, Boolean> result = new HashMap<>();
         boolean shouldResend = false;
+        boolean allGood = true;
         for ( int ii = 0; ii < perms.length; ++ii ) {
             Perm perm = Perm.getFor( perms[ii] );
+            Assert.assertTrue( !perm.isBanned() || ! BuildConfig.DEBUG );
             boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
+            allGood = allGood && granted;
             result.put( perm, granted );
 
             // Hack. If SMS has been granted, resend all moves. This should be
@@ -364,16 +357,58 @@ public class Perms23 {
 
         PermCbck cbck = s_map.remove( code );
         if ( null != cbck ) {
-            cbck.onPermissionResult( result );
+            cbck.onPermissionResult( allGood, result );
         }
     }
 
-    public static boolean havePermission( Perm perm )
+    public static boolean havePermissions( Context context, Perm... perms )
     {
-        String permString = perm.getString();
-        boolean result = PackageManager.PERMISSION_GRANTED
-            == ContextCompat.checkSelfPermission( XWApp.getContext(), permString );
-        // Log.d( TAG, "havePermission(%s) => %b", permString, result );
+        boolean result = true;
+        for ( int ii = 0; result && ii < perms.length; ++ii ) {
+            Perm perm = perms[ii];
+            boolean thisResult;
+            if ( perm.isBanned() ) {
+                thisResult = bannedWithWorkaround( context, perm );
+            } else {
+                thisResult = PackageManager.PERMISSION_GRANTED
+                    == ContextCompat.checkSelfPermission( XWApp.getContext(),
+                                                          perm.getString() );
+            }
+            result = result && thisResult;
+        }
+        return result;
+    }
+
+    static boolean anyBanned( Perms23.Perm... perms )
+    {
+        boolean anyBanned = false;
+        for ( int ii = 0; !anyBanned && ii < perms.length; ++ii ) {
+            anyBanned = perms[ii].isBanned();
+        }
+        return anyBanned;
+    }
+
+    static boolean bannedWithWorkaround( Context context, Perms23.Perm... perms )
+    {
+        boolean allBanned = true;
+        boolean workaroundKnown = true;
+        for ( Perms23.Perm perm : perms ) {
+            allBanned = allBanned && perm.isBanned();
+
+            switch ( perm ) {
+            case SEND_SMS:
+            case RECEIVE_SMS:
+                workaroundKnown = workaroundKnown && NBSProxy.isInstalled( context );
+                break;
+            default:
+                Log.e( TAG, "bannedWithWorkaround(): unexpected perm %s", perm );
+                Assert.assertFalse( BuildConfig.DEBUG );
+                break;
+            }
+        }
+
+        boolean result = allBanned && workaroundKnown;
+        Log.d( TAG, "bannedWithWorkaround() => %b", result );
         return result;
     }
 

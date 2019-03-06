@@ -44,7 +44,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
@@ -944,6 +943,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void init( Bundle savedInstanceState )
     {
+        boolean isFirstLaunch = null == savedInstanceState;
         m_origTitle = getTitle();
 
         m_handler = new Handler();
@@ -995,8 +995,12 @@ public class GamesListDelegate extends ListDelegateBase
         // asking (OS will grant without user interaction) since they're in
         // the same group. So just do it now.  This code can be removed
         // later...
-        if ( Perms23.havePermission( Perm.SEND_SMS ) ) {
-            Perms23.tryGetPerms( this, Perm.RECEIVE_SMS, 0, Action.SKIP_CALLBACK );
+        if ( !Perm.RECEIVE_SMS.isBanned() ) {
+            if ( Perms23.havePermissions( m_activity, Perm.SEND_SMS ) ) {
+                Perms23.tryGetPerms( this, Perm.RECEIVE_SMS, 0, Action.SKIP_CALLBACK );
+            }
+        } else if ( isFirstLaunch ) {
+            warnSMSBannedIf();
         }
     } // init
 
@@ -1057,6 +1061,23 @@ public class GamesListDelegate extends ListDelegateBase
             m_mySIS = (MySIS)bundle.getSerializable( SAVE_MYSIS );
         } else {
             m_mySIS = new MySIS();
+        }
+    }
+
+    private void warnSMSBannedIf()
+    {
+        if ( !Perms23.havePermissions( m_activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
+             && Perm.SEND_SMS.isBanned() ) {
+            int smsGameCount = DBUtils.countOpenGamesUsingNBS( m_activity );
+            if ( 0 < smsGameCount ) {
+                String msg = LocUtils.getString( m_activity,
+                                                 R.string.not_again_nbsGamesOnUpgrade,
+                                                 smsGameCount );
+                makeNotAgainBuilder( msg, R.string.key_notagain_nbsGamesOnUpgrade )
+                    .setActionPair( new ActionPair( Action.PERMS_BANNED_INFO,
+                                                    R.string.button_more_info ) )
+                    .show();
+            }
         }
     }
 
@@ -1448,8 +1469,7 @@ public class GamesListDelegate extends ListDelegateBase
             showItemsIf( ONEGAME_ITEMS, menu, 1 == nGamesSelected );
             showItemsIf( ONEGROUP_ITEMS, menu, 1 == nGroupsSelected );
 
-            boolean enable = showDbg && nothingSelected
-                && UpdateCheckReceiver.haveToCheck( m_activity );
+            boolean enable = showDbg && nothingSelected;
             Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );
 
             int selGroupPos = -1;

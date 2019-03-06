@@ -2700,11 +2700,22 @@
   <string name="after_restart">This change will take effect after you
   restart CrossWords.</string>
 
-  <string name="missing_perms">This game is configured to communicate
+  <string name="missing_sms_perms">This game is configured to communicate
   via Data SMS but CrossWords does not have permission to do so. You
   can still open the game, but it may not be able to send or receive
   moves.\n\nYou can re-open it to be asked for permission again. Or
   you can remove the Data SMS communication setting.</string>
+
+  <string name="not_again_nbsGamesOnUpgrade">The Google Play Store
+  version of CrossWords is no longer allowed to support the
+  Play-by-Data-SMS feature.
+  \n\n
+  You have %1$d open games that use this feature. They will not be
+  able to send or receive moves via Data SMS as long as you are using
+  the Google Play version of CrossWords, or until I can figure out a
+  workaround that meets Store policies.
+  \n\n
+  You can read more using the button below.</string>
 
   <string name="download_rationale">CrossWords needs access to
   temporary storage to keep what you\'re about to download.

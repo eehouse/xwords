@@ -124,11 +124,12 @@ public class DlgDelegate {
         DISABLE_RELAY_DO,
         ASKED_PHONE_STATE,
         PERMS_QUERY,
+        PERMS_BANNED_INFO,
 
         // Sent when not-again checkbox checked
         SET_NA_DEFAULTNAME,
         SET_GOT_LANGDICT,
-    }
+    } // Action enum
 
     public static class ActionPair implements Serializable {
         public ActionPair( Action act, int str ) {

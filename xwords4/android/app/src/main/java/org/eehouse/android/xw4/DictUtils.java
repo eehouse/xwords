@@ -181,7 +181,8 @@ public class DictUtils {
         // Note: if STORAGE permission is changed the set being returned here
         // will change. Might want to check for that and invalidate this list
         // if it's changed.
-        boolean haveStorage = Perms23.havePermission( Perms23.Perm.STORAGE );
+        boolean haveStorage = Perms23.havePermissions( context,
+                                                       Perms23.Perm.STORAGE );
         boolean permsChanged = null == s_hadStorage
             || haveStorage != s_hadStorage;
 

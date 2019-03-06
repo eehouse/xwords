@@ -46,9 +46,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map;
 import java.util.Set;
-
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -147,6 +145,16 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+
+    // Quick hack to manage a series of alerts meant to be presented
+    // one-at-a-time in order. Each tests whether it's its turn, and if so
+    // checks its conditions for being shown (e.g. NO_MEANS for no way to
+    // communicate). If the conditions aren't met (no need to show alert), it
+    // just sets the StartAlertOrder ivar to the next value and
+    // exits. Otherwise it needs to ensure that however the alert it's posting
+    // exits that ivar is incremented as well.
+    private static enum StartAlertOrder { NBS_PERMS, NO_MEANS, INVITE, DONE, };
+
     private static class MySIS implements Serializable {
         MySIS() { nMissing = -1; }
         String toastStr;
@@ -155,8 +163,21 @@ public class BoardDelegate extends DelegateBase
         int nMissing;
         int nAlerts;
         boolean inTrade;
+        StartAlertOrder mAlertOrder = StartAlertOrder.values()[0];
     }
     private MySIS m_mySIS;
+
+    private boolean alertOrderAt( StartAlertOrder ord )
+    {
+        return m_mySIS.mAlertOrder == ord;
+    }
+
+    private void alertOrderIncrIfAt( StartAlertOrder ord )
+    {
+        if ( alertOrderAt( ord ) ) {
+            m_mySIS.mAlertOrder = ord.values()[ord.ordinal() + 1];
+        }
+    }
 
     @Override
     protected Dialog makeDialog( DBAlert alert, Object[] params )
@@ -694,6 +715,7 @@ public class BoardDelegate extends DelegateBase
                 setBackgroundColor();
                 setKeepScreenOn();
             } else {
+                warnIfNoTransport();
                 showInviteAlertIf();
             }
         }
@@ -1063,6 +1085,7 @@ public class BoardDelegate extends DelegateBase
             deleteAndClose();
             break;
         case DROP_SMS_ACTION:   // do nothing; work done in onNegButton case
+            alertOrderIncrIfAt( StartAlertOrder.NBS_PERMS );
             break;
 
         case INVITE_SMS_DATA:
@@ -1157,6 +1180,20 @@ public class BoardDelegate extends DelegateBase
         case ASKED_PHONE_STATE:
             showInviteChoicesThen( params );
             break;
+        case INVITE_SMS_DATA:
+            Perms23.Perm[] perms = (Perms23.Perm[])params[2];
+            if ( Perms23.bannedWithWorkaround( m_activity, perms ) ) {
+                int nMissing = (Integer)params[0];
+                SentInvitesInfo info = (SentInvitesInfo)params[1];
+                launchPhoneNumberInvite( nMissing, info, InviteMeans.SMS_DATA,
+                                         RequestCode.SMS_DATA_INVITE_RESULT );
+            } else if ( Perms23.anyBanned( perms ) ) {
+                makeOkOnlyBuilder( R.string.sms_banned_ok_only )
+                    .setActionPair(new ActionPair( Action.PERMS_BANNED_INFO,
+                                                   R.string.button_more_info ) )
+                    .show();
+            }
+            break;
         default:
             handled = super.onNegButton( action, params );
         }
@@ -1222,10 +1259,10 @@ public class BoardDelegate extends DelegateBase
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS_DATA:
-                Perms23.tryGetPerms( this, new Perm[] { Perm.SEND_SMS,
-                                                        Perm.RECEIVE_SMS },
-                                     R.string.sms_invite_rationale,
-                                     Action.INVITE_SMS_DATA, m_mySIS.nMissing, info );
+                Perm[] perms = { Perm.SEND_SMS, Perm.RECEIVE_SMS };
+                Perms23.tryGetPerms( this, perms, R.string.sms_invite_rationale,
+                                     Action.INVITE_SMS_DATA, m_mySIS.nMissing,
+                                     info, perms );
                 break;
             case SMS_USER:      // like an email invite, but we want the phone #
                 launchPhoneNumberInvite( m_mySIS.nMissing, info, means,
@@ -2211,7 +2248,7 @@ public class BoardDelegate extends DelegateBase
 
             Utils.cancelNotification( m_activity, (int)m_rowid );
 
-            askPermissions();
+            askNBSPermissions();
 
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 warnIfNoTransport();
@@ -2221,23 +2258,51 @@ public class BoardDelegate extends DelegateBase
         }
     } // resumeGame
 
-    private void askPermissions()
+    private void askNBSPermissions()
     {
-        if ( m_summary.conTypes.contains( CommsConnType.COMMS_CONN_SMS )
-             && null == m_permCbck ) { // already asked?
-            m_permCbck = new Perms23.PermCbck() {
-                    @Override
-                    public void onPermissionResult( Map<Perm, Boolean> perms ) {
-                        if ( ! perms.get(Perm.SEND_SMS) ) {
-                            makeConfirmThenBuilder( R.string.missing_perms,
-                                                    Action.DROP_SMS_ACTION )
-                                .setNegButton(R.string.remove_sms)
-                                .show();
+        final StartAlertOrder thisOrder = StartAlertOrder.NBS_PERMS;
+        if ( alertOrderAt( thisOrder ) // already asked?
+             && m_summary.conTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+            Perm[] nbsPerms = { Perm.SEND_SMS, Perm.RECEIVE_SMS };
+            if ( Perms23.havePermissions( m_activity, nbsPerms ) ) {
+                // We have them or a workaround; cool! proceed
+                alertOrderIncrIfAt( thisOrder );
+            } else {
+                // Make sure these can be treated the same!!!
+                Assert.assertTrue( nbsPerms.length == 2 &&
+                                   nbsPerms[0].isBanned() == nbsPerms[1].isBanned() );
+
+                m_permCbck = new Perms23.PermCbck() {
+                        @Override
+                        public void onPermissionResult( boolean allGood,
+                                                        Map<Perm, Boolean> perms )
+                        {
+                            if ( allGood ) {
+                                // Yay! nothing to do
+                                alertOrderIncrIfAt( thisOrder );
+                            } else {
+                                Log.d( TAG, "askNBSPermissions(): posting alert" );
+                                boolean banned = Perm.SEND_SMS.isBanned();
+                                int explID = banned
+                                    ? R.string.banned_nbs_perms : R.string.missing_sms_perms;
+                                DlgDelegate.ConfirmThenBuilder builder =
+                                    makeConfirmThenBuilder( explID, Action.DROP_SMS_ACTION );
+                                if ( banned ) {
+                                    ActionPair pr = new ActionPair( Action.PERMS_BANNED_INFO,
+                                                                    R.string.button_more_info );
+                                    builder.setActionPair( pr );
+                                }
+                                builder.setNegButton( R.string.remove_sms )
+                                    .show();
+                                Log.d( TAG, "askNBSPermissions(): DONE posting alert" );
+                            }
                         }
-                    }
-                };
-            new Perms23.Builder(Perm.SEND_SMS)
-                .asyncQuery( m_activity, m_permCbck );
+                    };
+                new Perms23.Builder( nbsPerms )
+                    .asyncQuery( m_activity, m_permCbck );
+            }
+        } else {
+            alertOrderIncrIfAt( thisOrder );
         }
     }
 
@@ -2385,17 +2450,21 @@ public class BoardDelegate extends DelegateBase
     private void showInviteAlertIf()
     {
         DbgUtils.assertOnUIThread();
-        if ( ! m_haveStartedShowing && null == m_inviteAlert
-             && m_mySIS.nMissing > 0 && !isFinishing() ) {
-            InviteAlertState ias = new InviteAlertState();
-            ias.summary = m_summary;
-            ias.gi = m_gi;
-            ias.relayMissing = m_relayMissing;
-            ias.connTypes = m_connTypes;
-            ias.rowid = m_rowid;
-            ias.nMissing = m_mySIS.nMissing;
-            showDialogFragment( DlgID.DLG_INVITE, ias );
-            m_haveStartedShowing = true;
+        if ( alertOrderAt( StartAlertOrder.INVITE ) ) {
+            if ( ! m_haveStartedShowing && null == m_inviteAlert
+                 && m_mySIS.nMissing > 0 && !isFinishing() ) {
+                InviteAlertState ias = new InviteAlertState();
+                ias.summary = m_summary;
+                ias.gi = m_gi;
+                ias.relayMissing = m_relayMissing;
+                ias.connTypes = m_connTypes;
+                ias.rowid = m_rowid;
+                ias.nMissing = m_mySIS.nMissing;
+                showDialogFragment( DlgID.DLG_INVITE, ias );
+                m_haveStartedShowing = true;
+            } else {
+                alertOrderIncrIfAt( StartAlertOrder.INVITE );
+            }
         }
     }
 
@@ -2455,24 +2524,32 @@ public class BoardDelegate extends DelegateBase
 
     private void warnIfNoTransport()
     {
-        if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-            if ( !XWPrefs.getNBSEnabled( m_activity ) ) {
-                makeConfirmThenBuilder( R.string.warn_sms_disabled,
-                                        Action.ENABLE_NBS_ASK )
-                    .setPosButton( R.string.button_enable_sms )
-                    .setNegButton( R.string.button_later )
-                    .show();
+        if ( alertOrderAt( StartAlertOrder.NO_MEANS ) ) {
+            if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                if ( !XWPrefs.getNBSEnabled( m_activity ) ) {
+                    makeConfirmThenBuilder( R.string.warn_sms_disabled,
+                                            Action.ENABLE_NBS_ASK )
+                        .setPosButton( R.string.button_enable_sms )
+                        .setNegButton( R.string.button_later )
+                        .show();
+                }
             }
-        }
-        if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-            if ( !RelayService.relayEnabled( m_activity ) ) {
-                m_dropRelayOnDismiss = false;
-                String msg = getString( R.string.warn_relay_disabled )
-                    + "\n\n" + getString( R.string.warn_relay_remove );
-                makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO_OR )
-                    .setPosButton( R.string.button_enable_relay )
-                    .setNegButton( R.string.newgame_drop_relay )
-                    .show();
+            if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                if ( !RelayService.relayEnabled( m_activity ) ) {
+                    m_dropRelayOnDismiss = false;
+                    String msg = getString( R.string.warn_relay_disabled )
+                        + "\n\n" + getString( R.string.warn_relay_remove );
+                    makeConfirmThenBuilder( msg, Action.ENABLE_RELAY_DO_OR )
+                        .setPosButton( R.string.button_enable_relay )
+                        .setNegButton( R.string.newgame_drop_relay )
+                        .show();
+                }
+            }
+
+            if ( m_connTypes.isEmpty() ) {
+                askNoAddrsDelete();
+            } else {
+                alertOrderIncrIfAt( StartAlertOrder.NO_MEANS );
             }
         }
     }
