@@ -2804,10 +2804,10 @@
   <string name="button_more_info">Read more</string>
 
   <string name="banned_nbs_perms">This game is configured to
-  communicate via Data SMS, but as of March 9, 2019, apps from the
-  Google Play Store are no longer allowed to do so (with rare
-  exceptions). You can still open the game, but it may not be able to
-  send or receive moves.\n\nYou can remove the Data SMS communication
-  setting, or use the \"Read more\" button to check my progress
-  developing an alternative.</string>
+  communicate via Data SMS, but apps from the Google Play Store are no
+  longer allowed to do so (with rare exceptions). You can still open
+  the game, but it may not be able to send or receive moves.\n\nYou
+  can remove the Data SMS communication setting, or use the \"Read
+  more\" button to check my progress developing an
+  alternative.</string>
 </resources>
