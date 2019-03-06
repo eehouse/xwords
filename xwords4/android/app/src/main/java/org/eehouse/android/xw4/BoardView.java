@@ -230,7 +230,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             // nothing to do either
             Log.d( TAG, "layoutBoardOnce(): no m_jniThread" );
         } else if ( null == m_dims ) {
-            Log.d( TAG, "layoutBoardOnce(): null m_dims" );
+            // Log.d( TAG, "layoutBoardOnce(): null m_dims" );
             // m_canvas = null;
             // need to synchronize??
             Paint paint = new Paint();
@@ -347,7 +347,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     public void dimsChanged( BoardDims dims )
     {
-        Log.d( TAG, "dimsChanged(%s)", dims.toString() );
         m_dims = dims;
         m_parent.runOnUiThread( new Runnable() {
                 public void run()
