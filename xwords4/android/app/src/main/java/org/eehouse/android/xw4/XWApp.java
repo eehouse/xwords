@@ -40,7 +40,8 @@ import java.util.UUID;
 
 import static android.arch.lifecycle.Lifecycle.Event.ON_ANY;
 
-public class XWApp extends Application implements LifecycleObserver {
+public class XWApp extends Application
+    implements LifecycleObserver, NBSProxy.Callbacks {
     private static final String TAG = XWApp.class.getSimpleName();
 
     public static final boolean BTSUPPORTED = true;
@@ -62,6 +63,8 @@ public class XWApp extends Application implements LifecycleObserver {
     private static Boolean s_onEmulator = null;
     private static Context s_context = null;
 
+    private short mPort;
+
     @Override
     public void onCreate()
     {
@@ -72,7 +75,7 @@ public class XWApp extends Application implements LifecycleObserver {
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
         android.util.Log.i( TAG, "onCreate(); git_rev="
-                            + getString( R.string.git_rev ) );
+                            + BuildConfig.GIT_REV );
         Log.enable( this );
 
         OnBootReceiver.startTimers( this );
@@ -92,6 +95,11 @@ public class XWApp extends Application implements LifecycleObserver {
         RelayService.startService( this );
         FBMService.init( this );
         WiDirWrapper.init( this );
+
+        mPort = Short.valueOf( getString( R.string.nbs_port ) );
+        if ( NBSProxy.isInstalled( this ) ) {
+            NBSProxy.register( mPort, BuildConfig.APPLICATION_ID, this );
+        }
     }
 
     @OnLifecycleEvent(ON_ANY)
@@ -117,6 +125,24 @@ public class XWApp extends Application implements LifecycleObserver {
         Log.d( TAG, "onTerminate() called" );
         XwJNI.cleanGlobalsEmu();
         super.onTerminate();
+    }
+
+    // NBSProxy.Callbacks
+    @Override
+    public void onDataReceived( short port, String fromPhone, byte[] data )
+    {
+        Assert.assertTrue( port == mPort || !BuildConfig.DEBUG );
+        SMSService.handleFrom( this, data, fromPhone );
+    }
+
+    // NBSProxy.Callbacks
+    @Override
+    public void onRegResponse( boolean appReached )
+    {
+        if ( !appReached ) {
+            String channelID = Channels.getChannelID( this, Channels.ID.FOREGROUND );
+            NBSProxy.postLaunchNotification( this, channelID, R.drawable.notify );
+        }
     }
 
     public static UUID getAppUUID()

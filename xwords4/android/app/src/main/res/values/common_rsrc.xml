@@ -136,7 +136,7 @@
   <string name="key_invite_multi">key_invite_multi</string>
   <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
   <string name="key_notagain_dfltname">key_notagain_dfltname</string>
-  <string name="key_notagain_sms_banned">key_notagain_sms_banned</string>
+  <string name="key_notagain_nbsGamesOnUpgrade">key_notagain_nbsGamesOnUpgrade</string>
   <string name="key_na_comms_bt">key_na_comms_bt</string>
   <string name="key_na_comms_p2p">key_na_comms_p2p</string>
   <string name="key_na_comms_sms">key_na_comms_sms</string>
@@ -155,6 +155,7 @@
   <!--string name="invite_mime">text/plain</string-->
 
   <string name="dict_url">https://eehouse.org/and_wordlists</string>
+  <string name="nbs_ban_url">https://eehouse.org/sms.html</string>
   <string name="default_update_url">https://eehouse.org/xw4/info.py</string>
   <string name="default_relay_url">https://eehouse.org/xw4/relay.py</string>
   <!-- <string name="default_relay_url">http://10.0.3.2/xw4/relay.py</string> -->

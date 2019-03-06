@@ -755,6 +755,9 @@ public class DelegateBase implements DlgClickNotify,
         case PERMS_QUERY:
             Perms23.onGotPermsAction( this, true, params );
             break;
+        case PERMS_BANNED_INFO:
+            NetUtils.launchWebBrowserWith( m_activity, R.string.nbs_ban_url );
+            break;
         default:
             Log.d( TAG, "unhandled action %s", action.toString() );
             // Assert.assertTrue( !BuildConfig.DEBUG );

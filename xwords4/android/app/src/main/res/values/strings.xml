@@ -2700,11 +2700,22 @@
   <string name="after_restart">This change will take effect after you
   restart CrossWords.</string>
 
-  <string name="missing_perms">This game is configured to communicate
+  <string name="missing_sms_perms">This game is configured to communicate
   via Data SMS but CrossWords does not have permission to do so. You
   can still open the game, but it may not be able to send or receive
   moves.\n\nYou can re-open it to be asked for permission again. Or
   you can remove the Data SMS communication setting.</string>
+
+  <string name="not_again_nbsGamesOnUpgrade">The Google Play Store
+  version of CrossWords is no longer allowed to support the
+  Play-by-Data-SMS feature.
+  \n\n
+  You have %1$d open games that use this feature. They will not be
+  able to send or receive moves via Data SMS as long as you are using
+  the Google Play version of CrossWords, or until I can figure out a
+  workaround that meets Store policies.
+  \n\n
+  You can read more using the button below.</string>
 
   <string name="download_rationale">CrossWords needs access to
   temporary storage to keep what you\'re about to download.
@@ -2786,14 +2797,17 @@
   to be launched once before it can do things like receive Bluetooth
   messages in the background.</string>
 
-  <!-- Message to be shown each time user of Google Play version (post
-       March 9, 2019) tries to use a feature that requires SMS_SEND or
-       SMS_RECEIVE permission. Message displayed with the "do not show
-       again" checkbox. -->
-  <string name="sms_banned_expl">Play-via-Data-SMS requires
-  Permissions that most Android apps are no longer allowed to request
-  -- as a condition of being listed on the Google Play Store. Thus
-  play-via-Data-SMS does not work on copies of CrossWords obtained
-  through the Play Store. If you miss this feature, please check
-  https://eehouse.org/sms.html for updates on the situation.</string>
+  <string name="sms_banned_ok_only">The Google Play Store version of
+  CrossWords no longer supports inviting or playing by Data
+  SMS.</string>
+
+  <string name="button_more_info">Read more</string>
+
+  <string name="banned_nbs_perms">This game is configured to
+  communicate via Data SMS, but as of March 9, 2019, apps from the
+  Google Play Store are no longer allowed to do so (with rare
+  exceptions). You can still open the game, but it may not be able to
+  send or receive moves.\n\nYou can remove the Data SMS communication
+  setting, or use the \"Read more\" button to check my progress
+  developing an alternative.</string>
 </resources>

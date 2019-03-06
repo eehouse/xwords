@@ -557,8 +557,8 @@ public class RelayService extends XWJIService
             for ( outData = s_queue.poll( ts, TimeUnit.MILLISECONDS );
                   null != outData;
                   outData = s_queue.poll() ) {         // doesn't block
-                Log.d( TAG, "removed packet from queue (%d left): %s",
-                       s_queue.size(), outData );
+                // Log.d( TAG, "removed packet from queue (%d left): %s",
+                //        s_queue.size(), outData );
                 if ( outData == sEOQPacket ) {
                     shouldGoOn = false;
                     break;
@@ -691,7 +691,7 @@ public class RelayService extends XWJIService
         int sentLen = 0;
 
         if ( packets.size() > 0 ) {
-            Log.d( TAG, "sendViaUDP(): sending %d at once", packets.size() );
+            // Log.d( TAG, "sendViaUDP(): sending %d at once", packets.size() );
             final RelayService service = this;
             service.noteSent( packets, true );
             for ( PacketData packet : packets ) {
@@ -1155,9 +1155,9 @@ public class RelayService extends XWJIService
         byte proto = dis.readByte();
         if ( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() == proto ) {
             int packetID = vli2un( dis );
-            if ( 0 != packetID ) {
-                Log.d( TAG, "readHeader(): got packetID %d", packetID );
-            }
+            // if ( 0 != packetID ) {
+            //     Log.d( TAG, "readHeader(): got packetID %d", packetID );
+            // }
             byte ordinal = dis.readByte();
             XWRelayReg cmd = XWRelayReg.values()[ordinal];
             result = new PacketHeader( cmd, packetID );

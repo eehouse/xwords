@@ -1128,7 +1128,7 @@
   <string name="disable_dualpane">Tablet-Layout deaktivieren</string>
   <string name="after_restart">Diese Änderung wird aktiv, wenn Sie CrossWords neu starten.</string>
 
-  <string name="missing_perms">Diese Partie ist konfiguriert über SMS zu kommunizieren, aber CrossWords hat keine Berechtigung dazu. Sie können die Partie immer noch öffnen, aber möglicherweise keine Züge senden oder empfangen.
+  <string name="missing_sms_perms">Diese Partie ist konfiguriert über SMS zu kommunizieren, aber CrossWords hat keine Berechtigung dazu. Sie können die Partie immer noch öffnen, aber möglicherweise keine Züge senden oder empfangen.
 \n
 \nSie können sie neu öffnen, um wieder nach der Berechtigung gefragt zu werden. Oder Sie können die SMS-Verbindung aus den Einstellungen entfernen.</string>
 

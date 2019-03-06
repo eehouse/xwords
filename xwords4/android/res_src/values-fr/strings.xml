@@ -3533,7 +3533,7 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
 
     <string name="not_again_comms_p2p">Utiliser le WiFi Direct pour jouer contre un appareil faisant du WiFi Direct, sur lequel CrossWords est installé.</string>
 
-  <string name="missing_perms">Cette partie est configurée pour communiquer par SMS mais Crosswords n\'a pas la permission de le faire. Vous pouvez toujours ouvrir cette partie, mais elle pourrait ne pas être en capacité d\'envoyer ou recevoir des coups.
+  <string name="missing_sms_perms">Cette partie est configurée pour communiquer par SMS mais Crosswords n\'a pas la permission de le faire. Vous pouvez toujours ouvrir cette partie, mais elle pourrait ne pas être en capacité d\'envoyer ou recevoir des coups.
 
 Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouvez retirer le réglage de communication par SMS.</string>
 
