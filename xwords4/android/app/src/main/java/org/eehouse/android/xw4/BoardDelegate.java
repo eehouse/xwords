@@ -1015,7 +1015,7 @@ public class BoardDelegate extends DelegateBase
     {
         // Log.d( TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
-        JNICmd cmd = JNICmd.CMD_NONE;
+        JNICmd cmd = null;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
             RelayService.setEnabled( m_activity, true );
@@ -1156,7 +1156,7 @@ public class BoardDelegate extends DelegateBase
             handled = super.onPosButton( action, params );
         }
 
-        if ( JNICmd.CMD_NONE != cmd ) {
+        if ( null != cmd ) {
             handleViaThread( cmd );
         }
 
@@ -2281,7 +2281,6 @@ public class BoardDelegate extends DelegateBase
                                 // Yay! nothing to do
                                 alertOrderIncrIfAt( thisOrder );
                             } else {
-                                Log.d( TAG, "askNBSPermissions(): posting alert" );
                                 boolean banned = Perm.SEND_SMS.isBanned();
                                 int explID = banned
                                     ? R.string.banned_nbs_perms : R.string.missing_sms_perms;
@@ -2294,7 +2293,6 @@ public class BoardDelegate extends DelegateBase
                                 }
                                 builder.setNegButton( R.string.remove_sms )
                                     .show();
-                                Log.d( TAG, "askNBSPermissions(): DONE posting alert" );
                             }
                         }
                     };
