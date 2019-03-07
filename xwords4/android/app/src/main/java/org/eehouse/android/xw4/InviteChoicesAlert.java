@@ -67,8 +67,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
             lastMeans = ((SentInvitesInfo)state.m_params[0]).getLastMeans();
         }
 
-        add( items, means, R.string.invite_choice_user_sms, InviteMeans.SMS_USER );
         add( items, means, R.string.invite_choice_email, InviteMeans.EMAIL );
+        add( items, means, R.string.invite_choice_user_sms, InviteMeans.SMS_USER );
 
         if ( BTService.BTAvailable() ) {
             add( items, means, R.string.invite_choice_bt, InviteMeans.BLUETOOTH );
@@ -102,6 +102,12 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                     XWActivity activity = (XWActivity)getActivity();
                     sel[0] = pos;
                     switch ( means.get(pos) ) {
+                    case SMS_USER:
+                        activity
+                            .makeNotAgainBuilder( R.string.sms_invite_flakey,
+                                                  R.string.key_na_sms_invite_flakey )
+                            .show();
+                        break;
                     case CLIPBOARD:
                         String msg =
                             getString( R.string.not_again_clip_expl_fmt,

@@ -210,6 +210,11 @@ public class XWActivity extends FragmentActivity
         return m_dlgt.makeNotAgainBuilder( msg, keyId );
     }
 
+    public DlgDelegate.NotAgainBuilder makeNotAgainBuilder( int msgID, int keyId )
+    {
+        return m_dlgt.makeNotAgainBuilder( msgID, keyId );
+    }
+
     public DlgDelegate.ConfirmThenBuilder makeConfirmThenBuilder( int msgID,
                                                                   Action action )
     {

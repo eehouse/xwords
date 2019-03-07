@@ -579,6 +579,16 @@
     number %1$s on %2$s</string>
     <string name="invit_expl_usrsms_fmt">Invite sent via SMS messaging
     to phone number %1$s on %2$s</string>
+
+    <!-- shown when user chooses to invite via the default SMS app -->
+    <string name="sms_invite_flakey">This new option launches your
+    default SMS app with an invitation ready to send -- when it
+    works. Each SMS app is different, and some won\'t
+    cooperate.</string>
+
+    <!-- Toast when invite-by-visible-sms fails -->
+    <string name="sms_invite_fail">Unable to launch SMS app</string>
+
     <string name="invit_expl_bt_fmt">Invite sent via Bluetooth to
     paired device \"%1$s\" on %2$s</string>
     <string name="invit_expl_relay_fmt">Invite forwarded by the relay
