@@ -83,6 +83,7 @@ android {
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
+            buildConfigField "int", "VARIANT_CODE", "1"
             buildConfigField "boolean", "SMS_BANNED", "true"
         }
 
@@ -95,6 +96,7 @@ android {
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"F-Droid\""
+            buildConfigField "int", "VARIANT_CODE", "2"
             buildConfigField "boolean", "SMS_BANNED", "false"
         }
         xw4d {
@@ -106,6 +108,7 @@ android {
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
+            buildConfigField "int", "VARIANT_CODE", "3"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
             buildConfigField "boolean", "SMS_BANNED", "false"
         }
@@ -119,6 +122,7 @@ android {
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug sans SMS\""
+            buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "SMS_BANNED", "true"
         }
 

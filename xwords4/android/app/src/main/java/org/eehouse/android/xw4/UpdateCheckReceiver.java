@@ -127,7 +127,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try {
                 JSONObject appParams = new JSONObject();
 
-                appParams.put( k_VARIANT, BuildConfig.VARIANT_NAME );
+                appParams.put( k_VARIANT, BuildConfig.VARIANT_CODE );
                 appParams.put( k_AVERS, versionCode );
                 // Look at whether server needs these duplicates. PENDING....
                 appParams.put( k_GVERS, BuildConfig.GIT_REV );
