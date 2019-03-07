@@ -31,6 +31,8 @@ import android.widget.LinearLayout;
 import java.util.List;
 import java.util.Map;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -146,8 +148,15 @@ public class ConnViaViewLayout extends LinearLayout {
                 keyID = R.string.key_na_comms_relay;
                 break;
             case COMMS_CONN_SMS:
-                msgID = R.string.not_again_comms_sms;
-                keyID = R.string.key_na_comms_sms;
+                if ( Perms23.havePermissions( getContext(),
+                                              Perms23.Perm.SEND_SMS,
+                                              Perms23.Perm.RECEIVE_SMS )
+                     || !Perms23.Perm.SEND_SMS.isBanned() ) {
+                    msgID = R.string.not_again_comms_sms;
+                    keyID = R.string.key_na_comms_sms;
+                } else {
+                    msgID = R.string.sms_banned_ok_only;
+                }
                 break;
             case COMMS_CONN_BT:
                 msgID = R.string.not_again_comms_bt;
@@ -161,8 +170,14 @@ public class ConnViaViewLayout extends LinearLayout {
                 Assert.fail();
                 break;
             }
-            m_dlgDlgt.makeNotAgainBuilder( msgID, keyID )
-                .show();
+
+            DlgDelegate.DlgDelegateBuilder builder = 0 != keyID
+                ? m_dlgDlgt.makeNotAgainBuilder( msgID, keyID )
+                : m_dlgDlgt.makeOkOnlyBuilder( msgID )
+                .setActionPair( new ActionPair( Action.PERMS_BANNED_INFO,
+                                                R.string.button_more_info ) )
+                ;
+            builder.show();
         }
     }
 }
