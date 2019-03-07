@@ -60,7 +60,6 @@ public class SMSInviteDelegate extends InviteDelegate {
     private static final String INTENT_KEY_MEANS = "means";
 
     private ArrayList<PhoneRec> m_phoneRecs;
-    private boolean m_immobileConfirmed;
     private Activity m_activity;
     private InviteMeans mMeans;
 
@@ -179,11 +178,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                             String name
                                 = ((EditText)getNumView.findViewById(R.id.name_field))
                                 .getText().toString();
-                            makeConfirmThenBuilder( R.string.warn_unlimited,
-                                                    Action.POST_WARNING_ACTION )
-                                .setPosButton( R.string.button_yes )
-                                .setParams( number, name )
-                                .show();
+                            postSMSCostWarning( number, name );
                         }
                     }
                 };
@@ -230,7 +225,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             clearSelectedImpl();
             break;
         case USE_IMMOBILE_ACTION:
-            m_immobileConfirmed = true;
+            postSMSCostWarning( (String)params[0], (String)params[1] );
             break;
         case POST_WARNING_ACTION:
             PhoneRec rec = new PhoneRec( (String)params[1],
@@ -242,33 +237,6 @@ public class SMSInviteDelegate extends InviteDelegate {
             break;
         default:
             handled = super.onPosButton( action, params );
-        }
-        return handled;
-    }
-
-    @Override
-    public boolean onNegButton( Action action, final Object[] params )
-    {
-        boolean handled = true;
-        switch ( action ) {
-        case USE_IMMOBILE_ACTION:
-            if ( m_immobileConfirmed ) {
-                // Putting up a new alert from inside another's handler
-                // confuses things. So post instead.
-                post( new Runnable() {
-                        @Override
-                        public void run() {
-                            makeConfirmThenBuilder( R.string.warn_unlimited,
-                                                    Action.POST_WARNING_ACTION )
-                                .setPosButton( R.string.button_yes )
-                                .setParams( params )
-                                .show();
-                        }
-                    } );
-            }
-            break;
-        default:
-            handled = super.onNegButton( action, params );
         }
         return handled;
     }
@@ -298,22 +266,33 @@ public class SMSInviteDelegate extends InviteDelegate {
                 int type = cursor.getInt( cursor.
                                           getColumnIndex( Phone.TYPE ) );
 
-                DlgDelegate.ConfirmThenBuilder builder;
                 if ( Phone.TYPE_MOBILE == type ) {
-                    builder = makeConfirmThenBuilder( R.string.warn_unlimited,
-                                                      Action.POST_WARNING_ACTION );
+                    postSMSCostWarning( number, name );
                 } else {
-                    m_immobileConfirmed = false;
-                    String msg = getString( R.string.warn_nomobile_fmt,
-                                            number, name );
-                    builder = makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION );
+                    postConfirmMobile( number, name );
                 }
-                builder.setPosButton( R.string.button_yes )
-                    .setParams( number, name )
-                    .show();
             }
         }
     } // addPhoneNumbers
+
+    private void postSMSCostWarning( String number, String name )
+    {
+        makeConfirmThenBuilder( R.string.warn_unlimited,
+                                Action.POST_WARNING_ACTION )
+            .setPosButton( R.string.button_yes )
+            .setParams( number, name )
+            .show();
+    }
+
+    private void postConfirmMobile( String number, String name )
+    {
+        String msg = getString( R.string.warn_nomobile_fmt,
+                                number, name );
+        makeConfirmThenBuilder( msg, Action.USE_IMMOBILE_ACTION )
+            .setPosButton( R.string.button_yes )
+            .setParams( number, name )
+            .show();
+    }
 
     private void rebuildList( boolean checkIfAll )
     {
