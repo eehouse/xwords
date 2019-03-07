@@ -32,13 +32,14 @@ import android.widget.Button;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
-import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
+import org.eehouse.android.xw4.Perms23.Perm;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 
 public class InviteChoicesAlert extends DlgDelegateAlert {
 
@@ -117,7 +118,14 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                             .show();
                         break;
                     case SMS_DATA:
-                        if ( ! XWPrefs.getNBSEnabled( context ) ) {
+                        if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
+                             && Perm.SEND_SMS.isBanned() ) {
+                            activity
+                                .makeOkOnlyBuilder( R.string.sms_banned_ok_only )
+                                .setActionPair(new ActionPair( Action.PERMS_BANNED_INFO,
+                                                               R.string.button_more_info ) )
+                                .show();
+                        } else if ( ! XWPrefs.getNBSEnabled( context ) ) {
                             activity
                                 .makeConfirmThenBuilder( R.string.warn_sms_disabled,
                                                          Action.ENABLE_NBS_ASK )
@@ -127,6 +135,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                         }
                         break;
                     }
+
                     Button button = ((AlertDialog)dlg)
                         .getButton( AlertDialog.BUTTON_POSITIVE );
                     button.setEnabled( true );

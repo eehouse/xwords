@@ -221,6 +221,11 @@ public class XWActivity extends FragmentActivity
         return m_dlgt.makeConfirmThenBuilder( msgID, action );
     }
 
+    public DlgDelegate.OkOnlyBuilder makeOkOnlyBuilder( int msgID )
+    {
+        return m_dlgt.makeOkOnlyBuilder( msgID );
+    }
+
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////
