@@ -25,12 +25,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
-
 
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -674,8 +674,8 @@ public class GameUtils {
         Uri gameUri = nli.makeLaunchUri( context );
         String asStr = gameUri.toString();
 
-        int sdk = android.os.Build.VERSION.SDK_INT;
-        if ( sdk < android.os.Build.VERSION_CODES.HONEYCOMB ) {
+        int sdk = Build.VERSION.SDK_INT;
+        if ( sdk < Build.VERSION_CODES.HONEYCOMB ) {
             android.text.ClipboardManager clipboard =
                 (android.text.ClipboardManager)
                 context.getSystemService(Context.CLIPBOARD_SERVICE);
