@@ -28,6 +28,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.provider.Telephony;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
@@ -729,20 +731,56 @@ public class GameUtils {
         }
     }
 
+    // There seems to be no standard on how to launch an SMS app to send a
+    // message. So let's gather here the stuff that works, and try in order
+    // until something succeeds.
     public static void launchSMSInviteActivity( Activity activity, String phone,
                                                 NetLaunchInfo nli )
     {
         String message = makeInviteMessage( activity, nli,
                                             R.string.invite_sms_fmt );
         if ( null != message ) {
-            Intent intent = new Intent( Intent.ACTION_VIEW )
-                .setData( Uri.parse("sms:" + phone) )
-                .putExtra( "sms_body", message )
-                ;
-            if ( intent.resolveActivity(activity.getPackageManager()) != null) {
-                activity.startActivity( intent );
-            } else {
-                DbgUtils.showf( "Unable to launch SMS app" );
+            boolean succeeded = false;
+            outer:
+            for ( int ii = 0; !succeeded; ++ii ) {
+                Intent intent;
+                switch ( ii ) {
+                case 0:
+                    String defaultSmsPkg = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                        ? Telephony.Sms.getDefaultSmsPackage(activity)
+                        : Settings.Secure.getString(activity.getContentResolver(),
+                                                    "sms_default_application");
+                    intent = new Intent( Intent.ACTION_SEND )
+                        .setPackage( defaultSmsPkg )
+                        .setType( "text/plain" )
+                        .putExtra( Intent.EXTRA_TEXT, message )
+                        .setData( Uri.parse("sms:" + phone) )
+                        .putExtra( "sms_body", message )
+                        .putExtra( "address", phone)
+                        .setData(Uri.parse("smsto:" + phone))
+                        ;
+                    break;
+                case 1:
+                    intent = new Intent( Intent.ACTION_VIEW )
+                        .setData( Uri.parse("sms:" + phone) )
+                        .putExtra( "sms_body", message )
+                        ;
+                    break;
+                default:
+                    break outer;
+                }
+                try {
+                    if ( intent.resolveActivity(activity.getPackageManager()) != null) {
+                        activity.startActivity( intent );
+                        succeeded = true;
+                    }
+                } catch ( Exception ex ) {
+                    Log.e( TAG, "launchSMSInviteActivity(): ex: %s", ex );
+                }
+            }
+
+            if ( !succeeded ) {
+                DbgUtils.showf( activity, R.string.sms_invite_fail );
             }
         }
     }
