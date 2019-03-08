@@ -1,21 +1,19 @@
 <html>
-  <body style="max-width: 500px; width:100%; margin: 0px auto;"
-	>
+  <body>
     <h2>CrossWords and Play-via-Data-SMS</h2>
     <p>Play-via-Data-SMS is one of my favorite features of
       CrossWords. It's super-reliable, and works between GSM phones
       round-the-world without requiring any kind of server. Most apps
       have servers in order to harvest saleable infomation about you
-      or to show ads, but CrossWords doesn't care about that and so
-      has always supported this feature.</p>
+      or to show ads, but CrossWords is ad-free (and not-for-profit)
+      and so has always supported this feature.</p>
 
-    <p>Unfortunately, Google's decided there are security problems
-      with SMS (or at least that's their claimed motivation) and is
-      prohibiting most apps from continuing to send or receive SMS
-      (including Data SMS) if they want to be listed on the Play
-      Store. And so I've removed the feature from the CrossWords
-      "variant" that's available there. The feature remains, however,
-      in other variants, including those at:
+    <p>Unfortunately, Google's decided there may be security problems
+      with SMS and is prohibiting most apps from continuing to send or
+      receive SMS (including Data SMS) if they want to be listed on
+      the Play Store. And so I've removed the feature from the
+      CrossWords "variant" that's available there. The feature
+      remains, however, in other variants, including those at:
 
         <ul>
             <li><a href="https://github.com/eehouse/xwords/releases/">Github
@@ -32,13 +30,14 @@
         variant, however, you'll have to uninstall your current
         variant first, losing your games and settings.)</p>
 
-    <p>I've also starting working on a data-SMS-forwarding app called
-        NBSProxy. With NBSProxy installed, CrossWords can communicate
-        using Data SMS without the SMS permissions (since NBSProxy has
-        them, and is the one using Android's Data SMS functionality.)
-        Google says that apps whose core functionality requires SMS
-        permissions will be allowed on the Play Store, so NBSProxy
-        should be available there soon. In the meantime, you
+    <p>I've also written a data-SMS-forwarding app called
+        NBSProxy. With NBSProxy installed, CrossWords will be able to
+        communicate using Data SMS without the SMS permissions (since
+        NBSProxy has them, and is the one using Android's Data SMS
+        functionality.)  Google says that apps whose core
+        functionality requires SMS permissions will be allowed on the
+        Play Store, so NBSProxy should be available there soon. In the
+        meantime, you
         can <a href="https://github.com/eehouse/nbsproxy/releases">get
         it from GitHub</a>.
     </p>
