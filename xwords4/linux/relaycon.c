@@ -32,6 +32,8 @@
 #define MAX_MOVE_CHECK_MS ((XP_U16)(1000 * 60 * 60 * 24))
 #define RELAY_API_PROTO "http"
 
+#define CLIENT_VARIANT_CODE 1000
+
 typedef struct _RelayConStorage {
     pthread_t mainThread;
     guint moveCheckerID;
@@ -305,7 +307,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, SVN_REV );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux box" );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux version" );
-    indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux variant" );
+    indx += writeShort( &tmpbuf[indx], sizeof(tmpbuf) - indx, CLIENT_VARIANT_CODE );
 
     sendIt( storage, tmpbuf, indx, 0.5 );
 }

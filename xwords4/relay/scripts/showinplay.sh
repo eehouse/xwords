@@ -67,7 +67,7 @@ echo "SELECT id,connName,hid as h,token,ctime,stime,devid as dest,msg64 "\
     | psql xwgames
 
 # Devices
-LINE="SELECT id, model, variant as var, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes as dTyps, devids[1] as devid_1 FROM devices "
+LINE="SELECT id, model, variantCode as var, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes as dTyps, devids[1] as devid_1 FROM devices "
 if [ -n "$FILTER_DEVS" ]; then
      LINE="${LINE} WHERE id IN (select UNNEST(devids) FROM games $QUERY)"
 fi
