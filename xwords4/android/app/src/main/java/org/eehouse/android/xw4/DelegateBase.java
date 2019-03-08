@@ -473,7 +473,13 @@ public class DelegateBase implements DlgClickNotify,
         runOnUiThread( new Runnable() {
                 @Override
                 public void run() {
-                    show( DBAlert.newInstance( dlgID, params ) );
+                    if ( isFinishing() ) {
+                        Log.e( TAG, "not posting dlgID %s b/c %s finishing",
+                               dlgID, this );
+                        DbgUtils.printStack( TAG );
+                    } else {
+                        show( DBAlert.newInstance( dlgID, params ) );
+                    }
                 }
             } );
     }
