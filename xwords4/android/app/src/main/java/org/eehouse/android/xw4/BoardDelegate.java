@@ -2302,7 +2302,9 @@ public class BoardDelegate extends DelegateBase
                                 if ( banned ) {
                                     ActionPair pr = new ActionPair( Action.PERMS_BANNED_INFO,
                                                                     R.string.button_more_info );
-                                    builder.setActionPair( pr );
+                                    builder.setActionPair( pr )
+                                        .setNAKey( R.string.key_na_sms_banned )
+                                        ;
                                 }
                                 builder.setNegButton( R.string.remove_sms )
                                     .show();

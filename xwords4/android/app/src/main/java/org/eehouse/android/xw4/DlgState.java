@@ -43,7 +43,7 @@ public class DlgState implements Parcelable {
     public int m_negButton;
     public Action m_action = null;
     public ActionPair m_pair = null;
-    public int m_prefsKey;
+    public int m_prefsNAKey;
     // These can't be serialized!!!!
     public Object[] m_params;
     public Action m_onNAChecked;
@@ -57,7 +57,7 @@ public class DlgState implements Parcelable {
     public DlgState setMsg( String msg )
     { m_msg = msg; return this; }
     public DlgState setPrefsKey( int key )
-    { m_prefsKey = key; return this; }
+    { m_prefsNAKey = key; return this; }
     public DlgState setAction( Action action )
     { m_action = action; return this; }
     public DlgState setParams( Object... params )
@@ -100,7 +100,7 @@ public class DlgState implements Parcelable {
             return String.format("[id: %s; msg: %s; key: %s; action: %s; pair %s; "
                                  + "na: %s; pos: %d; neg: %d; title: %d; "
                                  + "params: %s]",
-                                 m_id, m_msg, m_prefsKey, m_action, m_pair, m_onNAChecked,
+                                 m_id, m_msg, m_prefsNAKey, m_action, m_pair, m_onNAChecked,
                                  m_posButton, m_negButton, m_titleId, params );
         } else {
             return super.toString();
@@ -123,7 +123,7 @@ public class DlgState implements Parcelable {
                     && m_negButton == other.m_negButton
                     && m_action == other.m_action
                     && ((null == m_pair) ? (null == other.m_pair) : m_pair.equals(other.m_pair))
-                    && m_prefsKey == other.m_prefsKey
+                    && m_prefsNAKey == other.m_prefsNAKey
                     && Arrays.deepEquals( m_params, other.m_params )
                     && m_onNAChecked == other.m_onNAChecked
                     && m_titleId == other.m_titleId;
@@ -158,7 +158,7 @@ public class DlgState implements Parcelable {
         out.writeInt( m_posButton );
         out.writeInt( m_negButton );
         out.writeInt( null == m_action ? -1 : m_action.ordinal() );
-        out.writeInt( m_prefsKey );
+        out.writeInt( m_prefsNAKey );
         out.writeInt( null == m_onNAChecked  ? -1 : m_onNAChecked.ordinal() );
         out.writeInt( m_titleId );
         out.writeString( m_msg );
