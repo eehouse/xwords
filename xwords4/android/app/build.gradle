@@ -72,6 +72,7 @@ android {
             resValue "string", "invite_prefix", "/and/"
             buildConfigField "boolean", "UDP_ENABLED", "true"
             buildConfigField "boolean", "REPORT_LOCKS", "false"
+            buildConfigField "boolean", "LOG_LIFECYLE", "false"
         }
 
         xw4 {
