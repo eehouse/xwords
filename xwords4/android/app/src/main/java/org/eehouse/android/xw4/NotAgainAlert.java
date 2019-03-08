@@ -46,18 +46,11 @@ public class NotAgainAlert extends DlgDelegateAlert {
     public NotAgainAlert() {}
 
     @Override
-    public Dialog onCreateDialog( Bundle sis )
+    public void populateBuilder( Context context, DlgState state,
+                                 AlertDialog.Builder builder,
+                                 NotAgainView naView )
     {
-        Context context = getActivity();
-        DlgState state = getState( sis );
-
-        NotAgainView naView = (NotAgainView)
-            LocUtils.inflate( context, R.layout.not_again_view );
-        naView.setMessage( state.m_msg );
-
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
-            .setTitle( R.string.newbie_title )
-            .setView( naView )
+        builder.setTitle( R.string.newbie_title )
             .setPositiveButton( android.R.string.ok,
                                 mkCallbackClickListener( naView ) );
 
@@ -66,7 +59,5 @@ public class NotAgainAlert extends DlgDelegateAlert {
             builder.setNegativeButton( pair.buttonStr,
                                        mkCallbackClickListener( pair, naView ) );
         }
-
-        return builder.create();
     }
 }

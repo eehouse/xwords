@@ -365,7 +365,8 @@ public class DlgDelegate {
                                       final Action action, ActionPair more,
                                       final Object[] params )
     {
-        if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
+        if ( 0 != prefsKey
+             && XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
             // If it's set, do the action without bothering with the
             // dialog
             if ( Action.SKIP_CALLBACK != action ) {
@@ -393,7 +394,8 @@ public class DlgDelegate {
     {
         if ( 0 == nakey ||
              ! XWPrefs.getPrefsBoolean( m_activity, nakey, false ) ) {
-            DlgState state = new DlgState( DlgID.CONFIRM_THEN ).setOnNA(onNA)
+            DlgState state = new DlgState( DlgID.CONFIRM_THEN )
+                .setOnNA(onNA)
                 .setMsg( msg )
                 .setPosButton( posButton )
                 .setNegButton( negButton )

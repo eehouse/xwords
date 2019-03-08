@@ -53,12 +53,10 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
     public InviteChoicesAlert() {}
 
     @Override
-    public Dialog onCreateDialog( Bundle sis )
+    public void populateBuilder( final Context context, final DlgState state,
+                                 AlertDialog.Builder builder,
+                                 NotAgainView naView )
     {
-        final Context context = getActivity();
-
-        final DlgState state = getState( sis );
-
         final ArrayList<InviteMeans> means =
             new ArrayList<InviteMeans>();
         ArrayList<String> items = new ArrayList<String>();
@@ -156,8 +154,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                 }
             };
 
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
-            .setTitle( R.string.invite_choice_title )
+        builder.setTitle( R.string.invite_choice_title )
             .setSingleChoiceItems( items.toArray( new String[items.size()] ),
                                    sel[0], selChanged )
             .setPositiveButton( android.R.string.ok, okClicked )
@@ -176,8 +173,6 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                 };
             builder.setNeutralButton( R.string.ok_with_robots, ocl );
         }
-
-        return builder.create();
     }
 
     private void add( List<String> items, List<InviteMeans> means,
