@@ -741,15 +741,17 @@ public class GameUtils {
                                             R.string.invite_sms_fmt );
         if ( null != message ) {
             boolean succeeded = false;
+            String defaultSmsPkg = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                ? Telephony.Sms.getDefaultSmsPackage(activity)
+                : Settings.Secure.getString(activity.getContentResolver(),
+                                            "sms_default_application");
+            Log.d( TAG, "launchSMSInviteActivity(): default app: %s", defaultSmsPkg );
+
             outer:
             for ( int ii = 0; !succeeded; ++ii ) {
                 Intent intent;
                 switch ( ii ) {
-                case 0:
-                    String defaultSmsPkg = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
-                        ? Telephony.Sms.getDefaultSmsPackage(activity)
-                        : Settings.Secure.getString(activity.getContentResolver(),
-                                                    "sms_default_application");
+                case 0:         // test case: QKSMS
                     intent = new Intent( Intent.ACTION_SEND )
                         .setPackage( defaultSmsPkg )
                         .setType( "text/plain" )
@@ -760,7 +762,14 @@ public class GameUtils {
                         .setData(Uri.parse("smsto:" + phone))
                         ;
                     break;
-                case 1:
+                case 1:         // test case: Signal
+                    intent = new Intent( Intent.ACTION_SENDTO,
+                                         Uri.parse("smsto:" + phone) )
+                        .putExtra("sms_body", message)
+                        .setPackage( defaultSmsPkg )
+                        ;
+                    break;
+                case 2:
                     intent = new Intent( Intent.ACTION_VIEW )
                         .setData( Uri.parse("sms:" + phone) )
                         .putExtra( "sms_body", message )
@@ -1350,8 +1359,8 @@ public class GameUtils {
                             if ( null != gamePtr ) {
                                 int nSent = XwJNI.comms_resendAll( gamePtr, true,
                                                                    m_filter, false );
-                                Log.d( TAG, "Resender.doInBackground(): sent %d "
-                                       + "messages for rowid %d", nSent, rowid );
+                                // Log.d( TAG, "Resender.doInBackground(): sent %d "
+                                //        + "messages for rowid %d", nSent, rowid );
                                 nSentTotal += sink.numSent();
                             } else {
                                 Log.d( TAG, "Resender.doInBackground(): loadMakeGame()"
