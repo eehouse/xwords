@@ -158,7 +158,7 @@ public class DlgDelegate {
 
     public abstract class DlgDelegateBuilder {
         protected String m_msgString;
-        protected int m_nakey;
+        protected int m_prefsNAKey;
         protected Action m_onNA;
         protected int m_posButton = android.R.string.ok;
         protected int m_negButton = android.R.string.cancel;
@@ -177,7 +177,7 @@ public class DlgDelegate {
         { m_action = action; return this; }
 
         public DlgDelegateBuilder setNAKey( int keyId )
-        {  m_nakey = keyId; return this; }
+        {  m_prefsNAKey = keyId; return this; }
 
         public DlgDelegateBuilder setOnNA( Action onNA )
         { m_onNA = onNA; return this; }
@@ -220,31 +220,29 @@ public class DlgDelegate {
         @Override
         public void show()
         {
-            showConfirmThen( m_nakey, m_onNA, m_msgString, m_posButton,
+            showConfirmThen( m_prefsNAKey, m_onNA, m_msgString, m_posButton,
                              m_negButton, m_action, m_titleId, m_actionPair,
                              m_params );
         }
     }
 
     public class NotAgainBuilder extends DlgDelegateBuilder {
-        private int m_prefsKey;
-
         public NotAgainBuilder(String msg, int key, Action action)
-        { super(msg, action); m_prefsKey = key; }
+        { super(msg, action); setNAKey( key ); }
 
         public NotAgainBuilder(int msgId, int key, Action action)
-        { super(msgId, action); m_prefsKey = key; }
+        { super(msgId, action); m_prefsNAKey = key; }
 
         public NotAgainBuilder( String msg, int key )
-        { super( msg, Action.SKIP_CALLBACK ); m_prefsKey = key; }
+        { super( msg, Action.SKIP_CALLBACK ); m_prefsNAKey = key; }
 
         public NotAgainBuilder( int msgId, int key )
-        { super( msgId, Action.SKIP_CALLBACK ); m_prefsKey = key; }
+        { super( msgId, Action.SKIP_CALLBACK ); m_prefsNAKey = key; }
 
         @Override
         public void show()
         {
-            showNotAgainDlgThen( m_msgString, m_prefsKey,
+            showNotAgainDlgThen( m_msgString, m_prefsNAKey,
                                  m_action, m_actionPair,
                                  m_params );
         }
@@ -395,14 +393,16 @@ public class DlgDelegate {
         if ( 0 == nakey ||
              ! XWPrefs.getPrefsBoolean( m_activity, nakey, false ) ) {
             DlgState state = new DlgState( DlgID.CONFIRM_THEN )
-                .setOnNA(onNA)
+                .setOnNA( onNA )
                 .setMsg( msg )
                 .setPosButton( posButton )
                 .setNegButton( negButton )
                 .setAction( action )
                 .setTitle( titleId )
                 .setActionPair( more )
-                .setParams( params );
+                .setParams( params )
+                .setPrefsKey( nakey )
+                ;
             m_dlgt.show( state );
         }
     }

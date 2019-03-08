@@ -44,8 +44,6 @@ public class ConfirmThenAlert extends DlgDelegateAlert {
                                  AlertDialog.Builder builder,
                                  NotAgainView naView )
     {
-        naView.setMessage( state.m_msg );
-        naView.setShowNACheckbox( null != state.m_onNAChecked );
         OnClickListener lstnr = mkCallbackClickListener( naView );
 
         builder.setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )

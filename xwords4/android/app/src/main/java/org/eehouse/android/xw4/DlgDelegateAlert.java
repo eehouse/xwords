@@ -78,7 +78,7 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
         NotAgainView naView =
             ((NotAgainView)LocUtils.inflate( context, R.layout.not_again_view ))
             .setMessage( state.m_msg )
-            .setShowNACheckbox( 0 != state.m_prefsKey );
+            .setShowNACheckbox( 0 != state.m_prefsNAKey );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
             .setView( naView )
@@ -123,8 +123,8 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
     protected void checkNotAgainCheck( DlgState state, NotAgainView naView )
     {
         if ( null != naView && naView.getChecked() ) {
-            if ( 0 != state.m_prefsKey ) {
-                XWPrefs.setPrefsBoolean( getActivity(), m_state.m_prefsKey,
+            if ( 0 != state.m_prefsNAKey ) {
+                XWPrefs.setPrefsBoolean( getActivity(), m_state.m_prefsNAKey,
                                          true );
             } else if ( null != state.m_onNAChecked ) {
                 DlgClickNotify notify = (DlgClickNotify)getActivity();
