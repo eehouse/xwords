@@ -1599,7 +1599,7 @@ static void
 registerDevice( const string& relayIDStr, const DevID* devID, 
                 const AddrInfo* addr, int clientVers, const string& devDesc, 
                 const string& model, const string& osVers,
-                const string& variant )
+                unsigned short variantCode )
 {
     DevIDRelay relayID = DBMgr::DEVID_NONE;
     DBMgr* dbMgr = DBMgr::Get();
@@ -1611,16 +1611,16 @@ registerDevice( const string& relayIDStr, const DevID* devID,
 
     if ( DBMgr::DEVID_NONE == relayID ) { // new device
         relayID = dbMgr->RegisterDevice( devID, clientVers, devDesc.c_str(), 
-                                         model.c_str(), osVers.c_str(), variant.c_str() );
+                                         model.c_str(), osVers.c_str(), variantCode );
     } else if ( ID_TYPE_RELAY < devID->m_devIDType ) { // re-registering
         dbMgr->ReregisterDevice( relayID, devID, devDesc.c_str(), clientVers, 
-                                 model.c_str(), osVers.c_str(), variant.c_str() );
+                                 model.c_str(), osVers.c_str(), variantCode );
         checkMsgs = true;
     } else {
         // No new information; just update the time
         checkMsgs = dbMgr->UpdateDevice( relayID, devDesc.c_str(), clientVers, 
-                                         model.c_str(), osVers.c_str(), variant.c_str(),
-                                         true );
+                                         model.c_str(), osVers.c_str(),
+                                         variantCode, true );
         if ( !checkMsgs ) {
             uint8_t buf[32];
             int indx = addRegID( &buf[0], relayID );
@@ -1772,13 +1772,16 @@ handle_udp_packet( PacketThreadClosure* ptc )
                         if ( 3 >= clientVers ) {
                             checkAllAscii( model, "bad model" );
                         }
-                        string variant;
-                        if ( getVLIString( &ptr, end, variant ) ) {
-                            logf( XW_LOGINFO, "%s(): got variant %s", __func__, variant.c_str() );
+
+                        unsigned short variantCode = 0;
+                        if ( getNetShort( &ptr, end, &variantCode ) ) {
+                            logf( XW_LOGINFO, "%s(): got variantCode %d", __func__,
+                                  variantCode );
                         }
 
                         registerDevice( relayID, &devID, ptc->addr(),
-                                        clientVers, devDesc, model, osVers, variant );
+                                        clientVers, devDesc, model, osVers,
+                                        variantCode );
                     }
                 }
             }
