@@ -1031,7 +1031,7 @@ public class RelayService extends XWJIService
                 writeVLIString( out, BuildConfig.GIT_REV );
                 writeVLIString( out, Build.MODEL );
                 writeVLIString( out, Build.VERSION.RELEASE );
-                writeShort( out, BuildConfig.VARIANT_CODE );
+                out.writeShort( BuildConfig.VARIANT_CODE );
 
                 postPacket( bas, XWRelayReg.XWPDEV_REG, timestamp );
                 s_regStartTime = now;
