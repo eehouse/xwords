@@ -643,9 +643,9 @@
          relay.  Once this happens there is no way to continue the
          game so you might as well delete it (unless you're saving it
          for its history etc.) -->
-    <string name="msg_dev_deleted">This game has been deleted on
-      another device. You will not be able to play any
-      further.</string>
+    <string name="msg_dev_deleted_fmt">The game named \"%1$s\" has been
+    deleted on another device. You will not be able to play any
+    further.</string>
 
     <!-- Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is

@@ -185,7 +185,7 @@ public class BoardDelegate extends DelegateBase
         final DlgID dlgID = alert.getDlgID();
         Log.d( TAG, "makeDialog(%s)", dlgID.toString() );
         OnClickListener lstnr;
-        AlertDialog.Builder ab = makeAlertBuilder();
+        AlertDialog.Builder ab = makeAlertBuilder(); // used everywhere...
 
         Dialog dialog;
         switch ( dlgID ) {
@@ -236,13 +236,15 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case DLG_DELETED: {
+            final int gameID = (Integer)params[0];
+            String gameName = GameUtils.getName( m_activity, m_rowid );
             ab = ab.setTitle( R.string.query_title )
-                .setMessage( R.string.msg_dev_deleted )
+                .setMessage( getString( R.string.msg_dev_deleted_fmt, gameName ) )
                 .setPositiveButton( android.R.string.ok, null );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg,
                                          int whichButton ) {
-                        deleteAndClose();
+                        deleteAndClose( gameID );
                     }
                 };
             ab.setNegativeButton( R.string.button_delete, lstnr );
@@ -1082,7 +1084,7 @@ public class BoardDelegate extends DelegateBase
             dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
             break;
         case DELETE_AND_EXIT:
-            deleteAndClose();
+            deleteAndClose( m_gi.gameID );
             break;
         case DROP_SMS_ACTION:   // do nothing; work done in onNegButton case
             alertOrderIncrIfAt( StartAlertOrder.NBS_PERMS );
@@ -1328,12 +1330,12 @@ public class BoardDelegate extends DelegateBase
             doStopProgress = true;
             break;
         case MESSAGE_NOGAME:
-            int gameID = (Integer)args[0];
-            if ( gameID == m_gi.gameID ) {
+            final int gameID = (Integer)args[0];
+            if ( gameID == m_gi.gameID && !isFinishing() ) {
                 post( new Runnable() {
                         @Override
                         public void run() {
-                            showDialogFragment( DlgID.DLG_DELETED );
+                            showDialogFragment( DlgID.DLG_DELETED, gameID );
                         }
                     } );
             }
@@ -1405,6 +1407,7 @@ public class BoardDelegate extends DelegateBase
         int strID = -1;
         DlgID dlgID = DlgID.NONE;
         boolean doToast = false;
+        Object[] params = null;
 
         switch ( relayErr ) {
         case TOO_MANY:
@@ -1427,7 +1430,7 @@ public class BoardDelegate extends DelegateBase
 
         case DEADGAME:
         case DELETED:
-            strID = R.string.msg_dev_deleted;
+            params = new Object[] { m_gi.gameID };
             dlgID = DlgID.DLG_DELETED;
             break;
 
@@ -1444,13 +1447,14 @@ public class BoardDelegate extends DelegateBase
         if ( doToast ) {
             showToast( strID );
         } else if ( dlgID != DlgID.NONE ) {
-            final int strIDf = strID;
             final DlgID dlgIDf = dlgID;
+            final Object[] paramsF = null == params
+                ? new Object[] {R.string.relay_alert, getString( strID )}
+                : params;
             post( new Runnable() {
                     @Override
                     public void run() {
-                        showDialogFragment( dlgIDf, R.string.relay_alert,
-                                            getString( strIDf ) );
+                        showDialogFragment( dlgIDf, paramsF );
                     }
                 });
         }
@@ -1549,11 +1553,15 @@ public class BoardDelegate extends DelegateBase
                                            means, code );
     }
 
-    private void deleteAndClose()
+    private void deleteAndClose( int gameID )
     {
-        GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false );
-        waitCloseGame( false );
-        finish();
+        if ( gameID == m_gi.gameID ) {
+            GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false );
+            waitCloseGame( false );
+            finish();
+        } else {
+            Log.e( TAG, "deleteAndClose() called with wrong gameID %d", gameID );
+        }
     }
 
     private void askDropRelay()
