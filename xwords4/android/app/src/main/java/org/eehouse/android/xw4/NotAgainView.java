@@ -28,14 +28,16 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class NotAgainView extends ScrollView {
+    private static final String TAG = NotAgainView.class.getSimpleName();
 
     public NotAgainView( Context cx, AttributeSet as ) {
         super( cx, as );
     }
 
-    public void setMessage( String msg )
+    public NotAgainView setMessage( String msg )
     {
         ((TextView)findViewById( R.id.msg )).setText( msg );
+        return this;
     }
 
     public boolean getChecked()
@@ -44,9 +46,10 @@ public class NotAgainView extends ScrollView {
         return cbx.isChecked();
     }
 
-    public void setShowNACheckbox( boolean show )
+    public NotAgainView setShowNACheckbox( boolean show )
     {
         findViewById( R.id.not_again_check )
             .setVisibility( show ? View.VISIBLE : View.GONE );
+        return this;
     }
 }

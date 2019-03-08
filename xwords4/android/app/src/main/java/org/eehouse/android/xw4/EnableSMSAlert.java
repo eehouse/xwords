@@ -46,11 +46,10 @@ public class EnableSMSAlert extends DlgDelegateAlert {
     public EnableSMSAlert() {}
 
     @Override
-    public Dialog onCreateDialog( Bundle sis )
+    public void populateBuilder( Context context, final DlgState state,
+                                 AlertDialog.Builder builder,
+                                 NotAgainView naView )
     {
-        Context context = getActivity();
-        final DlgState state = getState( sis );
-
         View layout = LocUtils.inflate( context, R.layout.confirm_sms );
         mSpinner = (Spinner)layout.findViewById( R.id.confirm_sms_reasons );
 
@@ -74,16 +73,20 @@ public class EnableSMSAlert extends DlgDelegateAlert {
                 }
             };
 
-        AlertDialog dialog = LocUtils.makeAlertBuilder( context )
-            .setTitle( R.string.confirm_sms_title )
+        builder.setTitle( R.string.confirm_sms_title )
             .setView( layout )
             .setPositiveButton( R.string.button_enable, lstnr )
             .setNegativeButton( android.R.string.cancel, null )
-            .create();
+            ;
+    }
 
+    @Override
+    Dialog create( AlertDialog.Builder builder )
+    {
+        Dialog dialog = super.create( builder );
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
                 @Override
-                public void onShow(DialogInterface dialog) {
+                public void onShow( DialogInterface dialog ) {
                     checkEnableButton( (Dialog)dialog );
                 }
             });

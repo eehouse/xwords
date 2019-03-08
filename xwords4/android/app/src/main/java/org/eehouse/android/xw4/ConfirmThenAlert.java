@@ -40,20 +40,15 @@ public class ConfirmThenAlert extends DlgDelegateAlert {
     public ConfirmThenAlert() {}
 
     @Override
-    public Dialog onCreateDialog( Bundle sis )
+    public void populateBuilder( Context context, DlgState state,
+                                 AlertDialog.Builder builder,
+                                 NotAgainView naView )
     {
-        final Context context = getActivity();
-        final DlgState state = getState( sis );
-        
-        NotAgainView naView = (NotAgainView)
-            LocUtils.inflate( context, R.layout.not_again_view );
         naView.setMessage( state.m_msg );
         naView.setShowNACheckbox( null != state.m_onNAChecked );
         OnClickListener lstnr = mkCallbackClickListener( naView );
 
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
-            .setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )
-            .setView( naView )
+        builder.setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )
             .setPositiveButton( state.m_posButton, lstnr )
             .setNegativeButton( state.m_negButton, lstnr );
 
@@ -62,6 +57,5 @@ public class ConfirmThenAlert extends DlgDelegateAlert {
             builder.setNeutralButton( pair.buttonStr,
                                       mkCallbackClickListener( pair, naView ) );
         }
-        return builder.create();
     }
 }

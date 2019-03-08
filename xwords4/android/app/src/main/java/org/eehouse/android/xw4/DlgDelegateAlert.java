@@ -63,6 +63,32 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
         setArguments( state.toBundle() );
     }
 
+    abstract void populateBuilder( Context context, DlgState state,
+                                   AlertDialog.Builder builder,
+                                   NotAgainView naView );
+
+    Dialog create( AlertDialog.Builder builder ) { return builder.create(); }
+
+    @Override
+    public final Dialog onCreateDialog( Bundle sis )
+    {
+        Context context = getActivity();
+        DlgState state = getState( sis );
+
+        NotAgainView naView =
+            ((NotAgainView)LocUtils.inflate( context, R.layout.not_again_view ))
+            .setMessage( state.m_msg )
+            .setShowNACheckbox( 0 != state.m_prefsKey );
+
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( context )
+            .setView( naView )
+            ;
+
+        populateBuilder( context, state, builder, naView );
+
+        return create( builder );
+    }
+
     @Override
     public void onSaveInstanceState( Bundle bundle )
     {
