@@ -16,8 +16,7 @@
   <h2>CrossWords 4.4.141 release</h2>
 
   <p>This release changes how background networking works to comply
-      with new Google requirements. I highly recommend you upgrade,
-      and ask that you report any problems to me quickly.</p>
+      with new Google requirements.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -28,10 +27,12 @@
   <h3>New with this release</h3>
   <ul>
       <li>Lots of internal changes to background networking (for games
-          using the relay and Bluetooth) to comply with recent
-          requirements from Google. (I hope you won't notice :-) </li>
+          using the relay, Bluetooth or Data SMS) to comply with
+          recent requirements from Google. (I hope you won't notice
+          :-) </li>
       <li>Improve Invite-via-Bluetooth dialog, esp. show when a remote
           device was last detected via scan</li>
+      <li>Disable Play-by-Data-SMS feature (Google Play version only)</li>
       <li>Store new games outside Archive group even if created from
           inside it</li>
       <li>Replace "Google Cloud Messaging" with the newer Firebase
@@ -52,11 +53,8 @@
 
   <h3>Next up</h3>
   <ul>
-      <li>Remove play-via-SMS feature from Google Play Store release
-          (Google has rejected my request to let it stay.)
-          (Play-via-SMS will remain in
-          the <a href="https://f-droid.org/">F-droid
-          release</a>.)</li>
+      <li>Improve play-by-data-sms workaround
+      using <a href="https://github.com/eehouse/nbsproxy">NBSProxy</a></li>
   </ul>
 
   <p>Please let me know
