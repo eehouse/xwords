@@ -246,6 +246,7 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         m_dfts = new ArrayList<DownloadFilesTask>();

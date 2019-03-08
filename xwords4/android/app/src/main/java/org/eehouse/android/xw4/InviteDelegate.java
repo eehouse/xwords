@@ -124,6 +124,12 @@ abstract class InviteDelegate extends ListDelegateBase
         m_checked = new HashSet<InviterItem>();
     }
 
+    @Override
+    protected void init( Bundle sis )
+    {
+        super.init( sis );
+    }
+
     protected void init( String descTxt, int emptyMsgId )
     {
         m_inviteButton = (Button)findViewById( R.id.button_invite );

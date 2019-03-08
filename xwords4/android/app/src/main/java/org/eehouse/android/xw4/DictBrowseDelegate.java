@@ -158,6 +158,7 @@ public class DictBrowseDelegate extends DelegateBase
         m_activity = delegator.getActivity();
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         Bundle args = getArguments();

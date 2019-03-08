@@ -448,6 +448,7 @@ public class GameConfigDelegate extends DelegateBase
         lp.isLocal = !Utils.getChecked( dialog, R.id.remote_check );
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         getBundledData( savedInstanceState );
