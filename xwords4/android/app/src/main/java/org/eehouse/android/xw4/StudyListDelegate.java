@@ -74,6 +74,7 @@ public class StudyListDelegate extends ListDelegateBase
         m_activity = delegator.getActivity();
     }
 
+    @Override
     protected void init( Bundle sis )
     {
         m_list = (ListView)findViewById( android.R.id.list );

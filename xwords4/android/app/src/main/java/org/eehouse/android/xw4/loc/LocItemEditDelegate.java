@@ -60,6 +60,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         m_activity = delegator.getActivity();
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         String key = getIntent().getStringExtra( KEY );

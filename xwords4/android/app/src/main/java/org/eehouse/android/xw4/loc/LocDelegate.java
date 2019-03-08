@@ -94,6 +94,7 @@ public class LocDelegate extends ListDelegateBase
         setListAdapter( m_adapter );
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         m_searchButton = (ImageButton)findViewById( R.id.loc_search_button );

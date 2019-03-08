@@ -533,6 +533,7 @@ public class BoardDelegate extends DelegateBase
     }
 
     private static int s_noLockCount = 0; // supports a quick debugging hack
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         m_isFirstLaunch = null == savedInstanceState;

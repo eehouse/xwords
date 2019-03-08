@@ -135,6 +135,7 @@ public class PrefsDelegate extends DelegateBase
         return dialog;
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         if ( null == s_keysHash ) {

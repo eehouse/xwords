@@ -91,6 +91,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         m_activity = delegator.getActivity();
     }
 
+    @Override
     protected void init( Bundle savedInstanceState )
     {
         if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
