@@ -49,7 +49,7 @@ public class XWActivity extends FragmentActivity
 
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onCreate(this=%H,sis=%s)", getClass().getSimpleName(),
                    this, savedInstanceState );
         }
@@ -69,7 +69,7 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onSaveInstanceState( Bundle outState )
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onSaveInstanceState(this=%H)",
                    getClass().getSimpleName(), this );
         }
@@ -80,7 +80,7 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onPause()
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onPause(this=%H)", getClass().getSimpleName(),
                    this );
         }
@@ -92,7 +92,7 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onResume()
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onResume(this=%H)", getClass().getSimpleName(),
                    this );
         }
@@ -104,7 +104,7 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onPostResume()
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onPostResume(this=%H)",
                    getClass().getSimpleName(), this );
         }
@@ -114,7 +114,7 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onStart()
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onStart(this=%H)", getClass().getSimpleName(), this );
         }
         super.onStart();
@@ -124,7 +124,7 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onStop()
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onStop(this=%H)", getClass().getSimpleName(), this );
         }
         m_dlgt.onStop();
@@ -134,7 +134,7 @@ public class XWActivity extends FragmentActivity
     @Override
     protected void onDestroy()
     {
-        if ( XWApp.LOG_LIFECYLE ) {
+        if ( BuildConfig.LOG_LIFECYLE ) {
             Log.i( TAG, "%s.onDestroy(this=%H)", getClass().getSimpleName(), this );
         }
         m_dlgt.onDestroy();
