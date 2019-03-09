@@ -2230,6 +2230,7 @@
          just ended. -->
     <string name="button_rematch">Rematch</string>
     <string name="button_archive">Archive\u200C</string>
+    <string name="checkbox_archive">Move to Archive</string>
     <string name="group_name_archive">Archive</string>
 
     <string name="duplicate_group_name_fmt">The group \"%1$s\" already exists.</string>
