@@ -754,7 +754,7 @@ android_debugf( const char* format, ... )
     }
     
     (void)__android_log_write( ANDROID_LOG_DEBUG, 
-# if defined VARIANT_xw4 || defined VARIANT_xw4fdroid
+# if defined VARIANT_xw4 || defined VARIANT_xw4fdroid || defined VARIANT_xw4SMS
                                "xw4"
 # elif defined VARIANT_xw4d || defined VARIANT_xw4dNoSMS
                                "x4bg"
