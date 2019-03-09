@@ -24,7 +24,7 @@
     <CheckBox android:id="@+id/archive_check"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:text="@string/button_archive"
+              android:text="@string/checkbox_archive"
               />
   </LinearLayout>
 </ScrollView>
