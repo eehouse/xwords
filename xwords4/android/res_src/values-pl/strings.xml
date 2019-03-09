@@ -1,17 +1,17 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="button_new_group">Dodaj grupę</string>
-
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="button_new_group">Dodaj grupę</string>
     <string name="missing_player">(jeszcze nie tutaj...)</string>
-
     <string name="summary_relay_gameover_fmt">Koniec gry w pokoju \"%1$s\"</string>
-
     <string name="summary_invites_out">Zaproszeni Gracze</string>
     <string name="gameOver">Koniec gry</string>
     <string name="button_delete">Usuń</string>
     <string name="menu_prefs">Ustawienia aplikacji…</string>
-
     <string name="summary_invites_out_fmt">Gracze zaproszeni do pokoju \"%1$s\"</string>
-
     <string name="board_menu_file_about">O CrossWords…</string>
-
-    </resources>
+    <string name="summary_relay_wait_fmt">Czekam na graczy w pokoju \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Gra w gry w pokoju \"%1$s\"</string>
+    <string name="gamel_menu_dicts">Listy słów…</string>
+    <string name="gamel_menu_checkmoves">Sprawdź ruchy</string>
+    <string name="list_item_config">Ustawienia gry…</string>
+</resources>
