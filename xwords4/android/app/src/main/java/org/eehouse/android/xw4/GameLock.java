@@ -28,6 +28,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.support.annotation.NonNull;
 
@@ -58,6 +59,7 @@ public class GameLock implements AutoCloseable, Serializable {
     // private static final long ASSERT_TIME = 2000;
     private static final long THROW_TIME = 1000;
     private long m_rowid;
+    private AtomicInteger m_lockCount = new AtomicInteger(1);
 
     private static class Owner {
         Thread mThread;
@@ -314,15 +316,26 @@ public class GameLock implements AutoCloseable, Serializable {
         return getFor( rowid ).lockRO( maxMillis );
     }
 
-    public void unlock()
+    public void release()
     {
-        getFor( m_rowid ).unlock();
+        int count = m_lockCount.decrementAndGet();
+        Log.d( TAG, "%s.release(): count NOW %d", this, count );
+        if ( count == 0 ) {
+            getFor( m_rowid ).unlock();
+        }
+    }
+
+    public GameLock retain()
+    {
+        int count = m_lockCount.incrementAndGet();
+        Log.d( TAG, "%s.retain(): count NOW %d", this, count );
+        return this;
     }
 
     @Override
     public void close()
     {
-        unlock();
+        release();
     }
     
     public long getRowid()

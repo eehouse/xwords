@@ -595,6 +595,7 @@ public class BoardDelegate extends DelegateBase
                     } else {
                         s_noLockCount = 0;
                         m_jniThreadRef = JNIThread.getRetained( lock );
+                        lock.release();
 
                         // see http://stackoverflow.com/questions/680180/where-to-stop- \
                         // destroy-threads-in-android-service-class
