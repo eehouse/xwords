@@ -869,7 +869,7 @@
     <string name="pref_player4_name">Fourth player</string>
 
     <!-- Label for the first "human player" name preference -->
-    <string name="pref_human_name">Human player</string>
+    <string name="pref_human_name">Human player (your name)</string>
 
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
     <string name="prefs_dicts">Wordlists</string>
