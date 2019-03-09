@@ -52,7 +52,9 @@ import android.support.annotation.NonNull;
 public class GameLock implements AutoCloseable, Serializable {
     private static final String TAG = GameLock.class.getSimpleName();
 
+    private static final boolean GET_OWNER_STACK = BuildConfig.DEBUG;
     private static final boolean DEBUG_LOCKS = false;
+
     // private static final long ASSERT_TIME = 2000;
     private static final long THROW_TIME = 1000;
     private long m_rowid;
@@ -65,7 +67,11 @@ public class GameLock implements AutoCloseable, Serializable {
         Owner()
         {
             mThread = Thread.currentThread();
-            mTrace = android.util.Log.getStackTraceString(new Exception());
+            if ( GET_OWNER_STACK ) {
+                mTrace = android.util.Log.getStackTraceString(new Exception());
+            } else {
+                mTrace = "<untracked>";
+            }
             setStamp();
         }
 
