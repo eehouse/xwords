@@ -1451,89 +1451,95 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onPrepareOptionsMenu( Menu menu )
     {
-        int nGamesSelected = m_mySIS.selGames.size();
-        int nGroupsSelected = m_mySIS.selGroupIDs.size();
-        int groupCount = m_adapter.getGroupCount();
-        m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
+        m_menuPrepared = null != m_mySIS;
         if ( m_menuPrepared ) {
-            boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
+            int nGamesSelected = m_mySIS.selGames.size(); // NPE
+            int nGroupsSelected = m_mySIS.selGroupIDs.size();
+            int groupCount = m_adapter.getGroupCount();
+            m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
 
-            final boolean showDbg = BuildConfig.DEBUG
-                || XWPrefs.getDebugEnabled( m_activity );
-            showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
-            Utils.setItemVisible( menu, R.id.games_menu_loaddb,
-                                  showDbg && nothingSelected &&
-                                  DBUtils.gameDBExists( m_activity ) );
+            if ( m_menuPrepared ) {
+                boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
 
-            showItemsIf( NOSEL_ITEMS, menu, nothingSelected );
-            showItemsIf( ONEGAME_ITEMS, menu, 1 == nGamesSelected );
-            showItemsIf( ONEGROUP_ITEMS, menu, 1 == nGroupsSelected );
+                final boolean showDbg = BuildConfig.DEBUG
+                    || XWPrefs.getDebugEnabled( m_activity );
+                showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
+                Utils.setItemVisible( menu, R.id.games_menu_loaddb,
+                                      showDbg && nothingSelected &&
+                                      DBUtils.gameDBExists( m_activity ) );
 
-            boolean enable = showDbg && nothingSelected;
-            Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );
+                showItemsIf( NOSEL_ITEMS, menu, nothingSelected );
+                showItemsIf( ONEGAME_ITEMS, menu, 1 == nGamesSelected );
+                showItemsIf( ONEGROUP_ITEMS, menu, 1 == nGroupsSelected );
 
-            int selGroupPos = -1;
-            if ( 1 == nGroupsSelected ) {
-                long id = m_mySIS.selGroupIDs.iterator().next();
-                selGroupPos = m_adapter.getGroupPosition( id );
+                boolean enable = showDbg && nothingSelected;
+                Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );
+
+                int selGroupPos = -1;
+                if ( 1 == nGroupsSelected ) {
+                    long id = m_mySIS.selGroupIDs.iterator().next();
+                    selGroupPos = m_adapter.getGroupPosition( id );
+                }
+
+                // You can't delete the default group, nor make it the default.
+                // But we enable delete so a warning message later can explain.
+                Utils.setItemVisible( menu, R.id.games_group_delete,
+                                      1 <= nGroupsSelected );
+                enable = (1 == nGroupsSelected) && ! m_mySIS.selGroupIDs
+                    .contains( XWPrefs.getDefaultNewGameGroup( m_activity ) );
+                Utils.setItemVisible( menu, R.id.games_group_default, enable );
+
+                // Rematch supported if there's one game selected
+                enable = 1 == nGamesSelected;
+                if ( enable ) {
+                    enable = BoardDelegate.rematchSupported( m_activity,
+                                                             getSelRowIDs()[0] );
+                }
+                Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
+
+                // Move up/down enabled for groups if not the top-most or bottommost
+                // selected
+                enable = 1 == nGroupsSelected;
+                Utils.setItemVisible( menu, R.id.games_group_moveup,
+                                      enable && 0 < selGroupPos );
+                Utils.setItemVisible( menu, R.id.games_group_movedown, enable
+                                      && (selGroupPos + 1) < groupCount );
+
+                // New game available when nothing selected or one group
+                Utils.setItemVisible( menu, R.id.games_menu_newgame_solo,
+                                      nothingSelected || 1 == nGroupsSelected );
+                Utils.setItemVisible( menu, R.id.games_menu_newgame_net,
+                                      nothingSelected || 1 == nGroupsSelected );
+
+                // Multiples can be deleted, but disable if any selected game is
+                // currently open
+                enable = 0 < nGamesSelected;
+                for ( long row : m_mySIS.selGames ) {
+                    enable = enable && !m_launchedGames.contains( row );
+                }
+                Utils.setItemVisible( menu, R.id.games_game_delete, enable );
+                Utils.setItemVisible( menu, R.id.games_game_reset, enable );
+
+                // multiple games can be regrouped/reset.
+                Utils.setItemVisible( menu, R.id.games_game_move,
+                                      0 < nGamesSelected );
+
+                // Hide rate-me if not a google play app
+                enable = nothingSelected && Utils.isGooglePlayApp( m_activity );
+                Utils.setItemVisible( menu, R.id.games_menu_rateme, enable );
+
+                enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
+                Utils.setItemVisible( menu, R.id.games_menu_study, enable );
+
+                enable = nothingSelected &&
+                    0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
+                Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
+
+                Assert.assertTrue( m_menuPrepared );
             }
+        }
 
-            // You can't delete the default group, nor make it the default.
-            // But we enable delete so a warning message later can explain.
-            Utils.setItemVisible( menu, R.id.games_group_delete,
-                                  1 <= nGroupsSelected );
-            enable = (1 == nGroupsSelected) && ! m_mySIS.selGroupIDs
-                .contains( XWPrefs.getDefaultNewGameGroup( m_activity ) );
-            Utils.setItemVisible( menu, R.id.games_group_default, enable );
-
-            // Rematch supported if there's one game selected
-            enable = 1 == nGamesSelected;
-            if ( enable ) {
-                enable = BoardDelegate.rematchSupported( m_activity,
-                                                         getSelRowIDs()[0] );
-            }
-            Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
-
-            // Move up/down enabled for groups if not the top-most or bottommost
-            // selected
-            enable = 1 == nGroupsSelected;
-            Utils.setItemVisible( menu, R.id.games_group_moveup,
-                                  enable && 0 < selGroupPos );
-            Utils.setItemVisible( menu, R.id.games_group_movedown, enable
-                                  && (selGroupPos + 1) < groupCount );
-
-            // New game available when nothing selected or one group
-            Utils.setItemVisible( menu, R.id.games_menu_newgame_solo,
-                                  nothingSelected || 1 == nGroupsSelected );
-            Utils.setItemVisible( menu, R.id.games_menu_newgame_net,
-                                  nothingSelected || 1 == nGroupsSelected );
-
-            // Multiples can be deleted, but disable if any selected game is
-            // currently open
-            enable = 0 < nGamesSelected;
-            for ( long row : m_mySIS.selGames ) {
-                enable = enable && !m_launchedGames.contains( row );
-            }
-            Utils.setItemVisible( menu, R.id.games_game_delete, enable );
-            Utils.setItemVisible( menu, R.id.games_game_reset, enable );
-
-            // multiple games can be regrouped/reset.
-            Utils.setItemVisible( menu, R.id.games_game_move,
-                                  0 < nGamesSelected );
-
-            // Hide rate-me if not a google play app
-            enable = nothingSelected && Utils.isGooglePlayApp( m_activity );
-            Utils.setItemVisible( menu, R.id.games_menu_rateme, enable );
-
-            enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
-            Utils.setItemVisible( menu, R.id.games_menu_study, enable );
-
-            enable = nothingSelected &&
-                0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
-            Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
-
-            Assert.assertTrue( m_menuPrepared );
-        } else {
+        if ( !m_menuPrepared ) {
             Log.d( TAG, "onPrepareOptionsMenu: incomplete so bailing" );
         }
         return m_menuPrepared;
