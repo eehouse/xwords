@@ -114,7 +114,7 @@ public class Perms23 {
         // non-banned at the same time (and don't have either)
         public void asyncQuery( Activity activity, PermCbck cbck )
         {
-            Log.d( TAG, "asyncQuery(%s)", m_perms.toString() );
+            Log.d( TAG, "asyncQuery(%s)", m_perms );
             boolean haveAll = true;
             boolean shouldShow = false;
             Set<Perm> needShow = new HashSet<Perm>();
@@ -150,7 +150,7 @@ public class Perms23 {
                         map.put( perm, !banned );
                         allGood = allGood & !banned;
                     }
-                    cbck.onPermissionResult( allGood, map );
+                    callOPR( cbck, allGood, map );
                 }
             } else if ( 0 < needShow.size() && null != m_onShow ) {
                 // Log.d( TAG, "calling onShouldShowRationale()" );
@@ -357,7 +357,7 @@ public class Perms23 {
 
         PermCbck cbck = s_map.remove( code );
         if ( null != cbck ) {
-            cbck.onPermissionResult( allGood, result );
+            callOPR( cbck, allGood, result );
         }
     }
 
@@ -422,4 +422,12 @@ public class Perms23 {
         s_map.put( code, cbck );
         return code;
     }
+
+    private static void callOPR( PermCbck cbck, boolean allGood,
+                                 Map<Perm, Boolean> map )
+    {
+        Log.d( TAG, "callOPR(): passing %s to %s", map, cbck );
+        cbck.onPermissionResult( allGood, map );
+    }
+
 }
