@@ -629,6 +629,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
             }
             stream_putBits( stream, NAME_LEN_NBITS, len );
             stream_putBytes( stream, name, len );
+            XP_LOGF( "%s(): wrote local name %s", __func__, name );
         }
 #ifdef STREAM_VERS_BIGBOARD
         stream_putU8( stream, CUR_STREAM_VERS );
@@ -1246,7 +1247,6 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_S8 deviceIndex = -1;
     XP_PlayerAddr channelNo;
-    XP_UCHAR* name;
     XP_U16 nameLen;
     LocalPlayer* lp;
     ServerPlayer* player = (ServerPlayer*)NULL;
@@ -1262,12 +1262,12 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
         /* get data from stream */
         lp->robotIQ = 1 == stream_getBits( stream, 1 )? 1 : 0;
         nameLen = stream_getBits( stream, NAME_LEN_NBITS );
-        name = (XP_UCHAR*)XP_MALLOC( server->mpool, nameLen + 1 );
+        XP_UCHAR name[nameLen + 1];
         stream_getBytes( stream, name, nameLen );
         name[nameLen] = '\0';
+        XP_LOGF( "%s(): read remote name: %s", __func__, name );
 
         replaceStringIfDifferent( server->mpool, &lp->name, name );
-        XP_FREE( server->mpool, name );
 
         channelNo = stream_getAddress( stream );
         deviceIndex = getIndexForDevice( server, channelNo );
