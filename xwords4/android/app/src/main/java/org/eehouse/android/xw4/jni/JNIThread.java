@@ -866,6 +866,14 @@ public class JNIThread extends Thread implements AutoCloseable {
             if ( null == result && null != lock ) {
                 result = new JNIThread( lock );
                 s_instances.put( rowid, result );
+            } else if ( null != lock ) {
+                // unlock if we're not using it. This is a hack needed because
+                // we don't have retain/release semantics. The caller is done
+                // with the lock and expects us to keep it. If we don't need
+                // it we need to unlock it. Fix is for JNIThread.__init() to
+                // be able to retain() it and caller to release() it after we
+                // return.
+                lock.unlock();
             }
             if ( null != result ) {
                 result.retain_sync();
