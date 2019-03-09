@@ -169,13 +169,32 @@ public class BoardDelegate extends DelegateBase
 
     private boolean alertOrderAt( StartAlertOrder ord )
     {
-        return m_mySIS.mAlertOrder == ord;
+        boolean result = m_mySIS.mAlertOrder == ord;
+        Log.d( TAG, "alertOrderAt(%s) => %b", ord, result );
+        return result;
     }
 
     private void alertOrderIncrIfAt( StartAlertOrder ord )
     {
+        Log.d( TAG, "alertOrderIncrIfAt(%s)", ord );
         if ( alertOrderAt( ord ) ) {
             m_mySIS.mAlertOrder = ord.values()[ord.ordinal() + 1];
+            doNext();
+        }
+    }
+
+    private void doNext()
+    {
+        switch ( m_mySIS.mAlertOrder ) {
+        case NBS_PERMS:
+            askNBSPermissions();
+            break;
+        case NO_MEANS:
+            warnIfNoTransport();
+            break;
+        case INVITE:
+            showInviteAlertIf();
+            break;
         }
     }
 
@@ -1016,7 +1035,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public boolean onPosButton( Action action, final Object[] params )
     {
-        // Log.d( TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr( params ) );
+        Log.d( TAG, "onPosButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         JNICmd cmd = null;
         switch ( action ) {
@@ -1169,6 +1188,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public boolean onNegButton( Action action, Object[] params )
     {
+        Log.d( TAG, "onNegButton(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
@@ -1206,6 +1226,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     public boolean onDismissed( Action action, Object[] params )
     {
+        Log.d( TAG, "onDismissed(%s, %s)", action, DbgUtils.toStr( params ) );
         boolean handled = true;
         switch ( action ) {
         case ENABLE_RELAY_DO_OR:
@@ -1230,6 +1251,10 @@ public class BoardDelegate extends DelegateBase
             // to do for now is to close. User will have to begin the process
             // of committing turn again on re-launching the game.
             finish();
+            break;
+
+        case DROP_SMS_ACTION:
+            alertOrderIncrIfAt( StartAlertOrder.NBS_PERMS );
             break;
 
         default:
