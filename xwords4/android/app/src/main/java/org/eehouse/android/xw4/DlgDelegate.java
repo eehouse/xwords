@@ -387,8 +387,9 @@ public class DlgDelegate {
     }
 
     private void showConfirmThen( int nakey, Action onNA, String msg,
-                                  int posButton, int negButton, Action action,
-                                  int titleId, ActionPair more, Object[] params )
+                                  int posButton, int negButton,
+                                  final Action action, int titleId,
+                                  ActionPair more, final Object[] params )
     {
         if ( 0 == nakey ||
              ! XWPrefs.getPrefsBoolean( m_activity, nakey, false ) ) {
@@ -404,6 +405,13 @@ public class DlgDelegate {
                 .setPrefsKey( nakey )
                 ;
             m_dlgt.show( state );
+        } else if ( Action.SKIP_CALLBACK != action ) {
+            post( new Runnable() {
+                    public void run() {
+                        XWActivity xwact = (XWActivity)m_activity;
+                        xwact.onDismissed( action, params );
+                    }
+                });
         }
     }
 
