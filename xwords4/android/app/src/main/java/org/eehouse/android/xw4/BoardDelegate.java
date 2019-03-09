@@ -2537,7 +2537,7 @@ public class BoardDelegate extends DelegateBase
 
     private void warnIfNoTransport()
     {
-        if ( alertOrderAt( StartAlertOrder.NO_MEANS ) ) {
+        if ( null != m_connTypes && alertOrderAt( StartAlertOrder.NO_MEANS ) ) {
             if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
                 if ( !XWPrefs.getNBSEnabled( m_activity ) ) {
                     makeConfirmThenBuilder( R.string.warn_sms_disabled,
