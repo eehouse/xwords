@@ -581,7 +581,7 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
-        GameLock.getLockThen( m_rowid, 100L, new Handler(),
+        GameLock.getLockThen( m_rowid, 100L, new Handler(), // this doesn't unlock
                               new GameLock.GotLockProc() {
                 @Override
                 public void gotLock( GameLock lock ) {
