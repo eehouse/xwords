@@ -691,7 +691,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
     jstring jstr = 
 #ifdef XWFEATURE_BLUETOOTH
         (*env)->NewStringUTF( env,
-# if defined VARIANT_xw4 || defined VARIANT_xw4fdroid || defined VARIANT_xw4SMS
+# if defined VARIANT_xw4NoSMS || defined VARIANT_xw4fdroid || defined VARIANT_xw4SMS
         XW_BT_UUID
 # elif defined VARIANT_xw4d || defined VARIANT_xw4dNoSMS
         XW_BT_UUID_DBG
