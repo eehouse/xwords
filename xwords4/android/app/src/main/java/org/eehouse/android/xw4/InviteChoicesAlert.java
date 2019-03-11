@@ -117,7 +117,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                         break;
                     case SMS_DATA:
                         if ( !Perms23.havePermissions( activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
-                             && Perm.SEND_SMS.isBanned() ) {
+                             && Perm.SEND_SMS.isBanned(activity) ) {
                             activity
                                 .makeOkOnlyBuilder( R.string.sms_banned_ok_only )
                                 .setActionPair(new ActionPair( Action.PERMS_BANNED_INFO,

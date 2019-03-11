@@ -995,7 +995,7 @@ public class GamesListDelegate extends ListDelegateBase
         // asking (OS will grant without user interaction) since they're in
         // the same group. So just do it now.  This code can be removed
         // later...
-        if ( !Perm.RECEIVE_SMS.isBanned() ) {
+        if ( !Perm.RECEIVE_SMS.isBanned(m_activity) ) {
             if ( Perms23.havePermissions( m_activity, Perm.SEND_SMS ) ) {
                 Perms23.tryGetPerms( this, Perm.RECEIVE_SMS, 0, Action.SKIP_CALLBACK );
             }
@@ -1067,7 +1067,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void warnSMSBannedIf()
     {
         if ( !Perms23.havePermissions( m_activity, Perm.SEND_SMS, Perm.RECEIVE_SMS )
-             && Perm.SEND_SMS.isBanned() ) {
+             && Perm.SEND_SMS.isBanned(m_activity) ) {
             int smsGameCount = DBUtils.countOpenGamesUsingNBS( m_activity );
             if ( 0 < smsGameCount ) {
                 String msg = LocUtils.getString( m_activity,
