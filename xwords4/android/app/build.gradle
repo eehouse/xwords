@@ -122,7 +122,7 @@ android {
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
-            buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug sans SMS\""
+            buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug NoSMS\""
             buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "SMS_BANNED", "true"
         }
