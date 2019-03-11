@@ -516,7 +516,7 @@ public class SMSService extends XWJIService {
                 short nbsPort = getNBSPort();
                 try {
                     SmsManager mgr = SmsManager.getDefault();
-                    boolean useProxy = Perms23.Perm.SEND_SMS.isBanned()
+                    boolean useProxy = Perms23.Perm.SEND_SMS.isBanned( this )
                         && NBSProxy.isInstalled( this );
                     PendingIntent sent = useProxy ? null : makeStatusIntent( MSG_SENT );
                     PendingIntent delivery = useProxy ? null : makeStatusIntent( MSG_DELIVERED );

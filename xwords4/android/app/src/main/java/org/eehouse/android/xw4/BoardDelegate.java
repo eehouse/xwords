@@ -1211,7 +1211,7 @@ public class BoardDelegate extends DelegateBase
                 SentInvitesInfo info = (SentInvitesInfo)params[1];
                 launchPhoneNumberInvite( nMissing, info, InviteMeans.SMS_DATA,
                                          RequestCode.SMS_DATA_INVITE_RESULT );
-            } else if ( Perms23.anyBanned( perms ) ) {
+            } else if ( Perms23.anyBanned( m_activity, perms ) ) {
                 makeOkOnlyBuilder( R.string.sms_banned_ok_only )
                     .setActionPair(new ActionPair( Action.PERMS_BANNED_INFO,
                                                    R.string.button_more_info ) )
@@ -2309,7 +2309,8 @@ public class BoardDelegate extends DelegateBase
             } else {
                 // Make sure these can be treated the same!!!
                 Assert.assertTrue( nbsPerms.length == 2 &&
-                                   nbsPerms[0].isBanned() == nbsPerms[1].isBanned() );
+                                   nbsPerms[0].isBanned(m_activity)
+                                   == nbsPerms[1].isBanned(m_activity) );
 
                 m_permCbck = new Perms23.PermCbck() {
                         @Override
@@ -2320,7 +2321,7 @@ public class BoardDelegate extends DelegateBase
                                 // Yay! nothing to do
                                 alertOrderIncrIfAt( thisOrder );
                             } else {
-                                boolean banned = Perm.SEND_SMS.isBanned();
+                                boolean banned = Perm.SEND_SMS.isBanned(m_activity);
                                 int explID = banned
                                     ? R.string.banned_nbs_perms : R.string.missing_sms_perms;
                                 DlgDelegate.ConfirmThenBuilder builder =

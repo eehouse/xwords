@@ -23,7 +23,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,13 +59,21 @@ public class Perms23 {
         private String m_str;
         private boolean m_banned;
         private Perm(String str) { this(str, false); }
-        private Perm(String str, boolean banned) {
+        private Perm( String str, boolean banned ) {
             m_str = str;
             m_banned = banned;
         }
 
         public String getString() { return m_str; }
-        public boolean isBanned() { return m_banned; }
+        public boolean isBanned( Context context )
+        {
+            // PENDING...  Once this has been here for a week or so, remove
+            // SMS_BANNED. That way absence of the permission from a variant's
+            // manifest is the only way being banned is expressed. It sucks
+            // keeping two things in sync.
+            Assert.assertFalse( m_banned == permInManifest( context, this ) );
+            return m_banned;
+        }
         public static Perm getFor( String str ) {
             Perm result = null;
             for ( Perm one : Perm.values() ) {
@@ -75,6 +86,35 @@ public class Perms23 {
         }
     }
 
+    private static Map<Perm, Boolean> sManifestMap = new HashMap<>();
+    private static boolean permInManifest( Context context, Perm perm )
+    {
+        boolean result = false;
+        if ( sManifestMap.containsKey( perm ) ) {
+            result = sManifestMap.get( perm );
+        } else {
+            PackageManager pm = context.getPackageManager();
+            try {
+                String[] pis = pm
+                    .getPackageInfo( BuildConfig.APPLICATION_ID,
+                                     PackageManager.GET_PERMISSIONS )
+                    .requestedPermissions;
+                if ( pis == null ) {
+                    Assert.assertFalse( BuildConfig.DEBUG );
+                } else {
+                    String manifestName = perm.getString();
+                    for ( int ii = 0; !result && ii < pis.length; ++ii ) {
+                        result = pis[ii].equals( manifestName );
+                    }
+                }
+            } catch( PackageManager.NameNotFoundException nnfe ) {
+                Log.e(TAG, "permInManifest() nnfe: %s", nnfe.getMessage());
+            }
+            sManifestMap.put( perm, result );
+        }
+        return result;
+    }
+
     public interface PermCbck {
         void onPermissionResult( boolean allGood, Map<Perm, Boolean> perms );
     }
@@ -83,7 +123,7 @@ public class Perms23 {
     }
 
     public static class Builder {
-        private Set<Perm> m_perms = new HashSet<Perm>();
+        private Set<Perm> m_perms = new HashSet<>();
         private OnShowRationale m_onShow;
 
         public Builder(Set<Perm> perms) {
@@ -117,18 +157,18 @@ public class Perms23 {
             Log.d( TAG, "asyncQuery(%s)", m_perms );
             boolean haveAll = true;
             boolean shouldShow = false;
-            Set<Perm> needShow = new HashSet<Perm>();
+            Set<Perm> needShow = new HashSet<>();
 
-            ArrayList<String> askStrings = new ArrayList<String>();
+            List<String> askStrings = new ArrayList<>();
             for ( Perm perm : m_perms ) {
                 String permStr = perm.getString();
-                boolean haveIt = perm.isBanned() || PackageManager.PERMISSION_GRANTED
+                boolean haveIt = perm.isBanned(activity) || PackageManager.PERMISSION_GRANTED
                     == ContextCompat.checkSelfPermission( activity, permStr );
 
                 if ( !haveIt ) {
                     // do not pass banned perms to the OS! They're not in
                     // AndroidManifest.xml so may crash on some devices
-                    Assert.assertFalse( perm.isBanned() );
+                    Assert.assertFalse( perm.isBanned(activity) );
                     askStrings.add( permStr );
 
                     if ( null != m_onShow && ActivityCompat
@@ -146,7 +186,7 @@ public class Perms23 {
                     Map<Perm, Boolean> map = new HashMap<>();
                     boolean allGood = true;
                     for ( Perm perm : m_perms ) {
-                        boolean banned = perm.isBanned();
+                        boolean banned = perm.isBanned(activity);
                         map.put( perm, !banned );
                         allGood = allGood & !banned;
                     }
@@ -197,7 +237,7 @@ public class Perms23 {
             Set<Perm> validPerms = new HashSet<>();
             Set<Perm> bannedPerms = new HashSet<>();
             for ( Perm perm : m_perms ) {
-                if ( perm.isBanned() ) {
+                if ( perm.isBanned(m_delegate.getActivity()) ) {
                     bannedPerms.add( perm );
                 } else {
                     validPerms.add( perm );
@@ -323,7 +363,7 @@ public class Perms23 {
         info.handleButton( positive );
     }
 
-    private static Map<Integer, PermCbck> s_map = new HashMap<Integer, PermCbck>();
+    private static Map<Integer, PermCbck> s_map = new HashMap<>();
     public static void gotPermissionResult( Context context, int code,
                                             String[] perms, int[] granteds )
     {
@@ -333,7 +373,7 @@ public class Perms23 {
         boolean allGood = true;
         for ( int ii = 0; ii < perms.length; ++ii ) {
             Perm perm = Perm.getFor( perms[ii] );
-            Assert.assertTrue( !perm.isBanned() || ! BuildConfig.DEBUG );
+            Assert.assertTrue( !perm.isBanned(context) || ! BuildConfig.DEBUG );
             boolean granted = PackageManager.PERMISSION_GRANTED == granteds[ii];
             allGood = allGood && granted;
             result.put( perm, granted );
@@ -367,7 +407,7 @@ public class Perms23 {
         for ( int ii = 0; result && ii < perms.length; ++ii ) {
             Perm perm = perms[ii];
             boolean thisResult;
-            if ( perm.isBanned() ) {
+            if ( perm.isBanned(context) ) {
                 thisResult = bannedWithWorkaround( context, perm );
             } else {
                 thisResult = PackageManager.PERMISSION_GRANTED
@@ -379,11 +419,11 @@ public class Perms23 {
         return result;
     }
 
-    static boolean anyBanned( Perms23.Perm... perms )
+    static boolean anyBanned( Context context, Perms23.Perm... perms )
     {
         boolean anyBanned = false;
         for ( int ii = 0; !anyBanned && ii < perms.length; ++ii ) {
-            anyBanned = perms[ii].isBanned();
+            anyBanned = perms[ii].isBanned( context );
         }
         return anyBanned;
     }
@@ -393,7 +433,7 @@ public class Perms23 {
         boolean allBanned = true;
         boolean workaroundKnown = true;
         for ( Perms23.Perm perm : perms ) {
-            allBanned = allBanned && perm.isBanned();
+            allBanned = allBanned && perm.isBanned(context);
 
             switch ( perm ) {
             case SEND_SMS:

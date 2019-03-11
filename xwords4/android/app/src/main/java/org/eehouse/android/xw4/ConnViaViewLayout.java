@@ -151,7 +151,7 @@ public class ConnViaViewLayout extends LinearLayout {
                 if ( Perms23.havePermissions( getContext(),
                                               Perms23.Perm.SEND_SMS,
                                               Perms23.Perm.RECEIVE_SMS )
-                     || !Perms23.Perm.SEND_SMS.isBanned() ) {
+                     || !Perms23.Perm.SEND_SMS.isBanned(getContext()) ) {
                     msgID = R.string.not_again_comms_sms;
                     keyID = R.string.key_na_comms_sms;
                 } else {
