@@ -99,8 +99,8 @@ void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
 void gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGi );
 XP_U16 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly );
 
-XP_Bool player_hasPasswd( LocalPlayer* player );
-XP_Bool player_passwordMatches( LocalPlayer* player, const XP_UCHAR* pwd );
+XP_Bool player_hasPasswd( const LocalPlayer* player );
+XP_Bool player_passwordMatches( const LocalPlayer* player, const XP_UCHAR* pwd );
 XP_U16 player_timePenalty( CurGameInfo* gi, XP_U16 playerNum );
 
 #ifdef CPLUS
