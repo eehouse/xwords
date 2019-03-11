@@ -99,4 +99,16 @@ public class LocalPlayer implements Serializable {
         Assert.assertTrue( iq > 0 );
         robotIQ = iq;
     }
+
+    @Override
+    public String toString()
+    {
+        String result;
+        if ( BuildConfig.DEBUG ) {
+            result = String.format( "{name: %s, isLocal: %b}", name, isLocal );
+        } else {
+            result = super.toString();
+        }
+        return result;
+    }
 }

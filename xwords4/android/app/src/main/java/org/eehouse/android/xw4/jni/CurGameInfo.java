@@ -155,6 +155,26 @@ public class CurGameInfo implements Serializable {
         Utils.testSerialization( this );
     }
 
+    @Override
+    public String toString()
+    {
+        String result = null;
+        if ( BuildConfig.DEBUG ) {
+            StringBuilder sb = new StringBuilder(TAG)
+                .append( ": {nPlayers: ").append( nPlayers )
+                .append(", players: [");
+            for ( int ii = 0; ii < nPlayers; ++ii ) {
+                sb.append( players[ii] )
+                    .append( ", " );
+            }
+            sb.append( "], gameID: ").append( gameID );
+            result = sb.toString();
+        } else {
+            result = super.toString();
+        }
+        return result;
+    }
+
     public String getJSONData()
     {
         String jsonData = null;
