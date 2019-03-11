@@ -683,7 +683,7 @@ gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict )
 #endif
 
 XP_Bool
-player_hasPasswd( LocalPlayer* player )
+player_hasPasswd( const LocalPlayer* player )
 {
     XP_UCHAR* password = player->password;
     /*     XP_ASSERT( player->isLocal ); */
@@ -691,7 +691,7 @@ player_hasPasswd( LocalPlayer* player )
 } /* player_hasPasswd */
 
 XP_Bool
-player_passwordMatches( LocalPlayer* player, const XP_UCHAR* buf )
+player_passwordMatches( const LocalPlayer* player, const XP_UCHAR* buf )
 {
     XP_ASSERT( player->isLocal );
 
