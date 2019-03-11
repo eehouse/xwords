@@ -9,7 +9,7 @@ usage() {
 	exit 1
 }
 
-VARIANTS="xw4 xw4d xw4dNoSMS"
+VARIANTS="xw4NoSMS xw4d xw4dNoSMS"
 WD=$(cd $(dirname $0)/../ && pwd)
 
 while [ $# -gt 0 ]; do
