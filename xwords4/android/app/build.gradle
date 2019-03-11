@@ -75,7 +75,7 @@ android {
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
         }
 
-        xw4 {
+        xw4NoSMS {
             dimension "variant"
             applicationId "org.eehouse.android.xw4"
             manifestPlaceholders = [ APP_ID: applicationId ]
@@ -194,12 +194,12 @@ android {
         // directories here. AS doesn't respect what's set here: it'll
         // compile, but post-install app launch and source-level
         // debugging don't work.
-        xw4 {
+        xw4NoSMS {
             release {
-                jniLibs.srcDir "../libs-xw4Release"
+                jniLibs.srcDir "../libs-xw4NoSMSRelease"
             }
             debug {
-                jniLibs.srcDir "../libs-xw4Debug"
+                jniLibs.srcDir "../libs-xw4NoSMSDebug"
             }
         }
         xw4d {
