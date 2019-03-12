@@ -97,7 +97,7 @@ public class XWApp extends Application
         WiDirWrapper.init( this );
 
         mPort = Short.valueOf( getString( R.string.nbs_port ) );
-        NBSProxy.register( mPort, BuildConfig.APPLICATION_ID, this );
+        NBSProxy.register( this, mPort, BuildConfig.APPLICATION_ID, this );
     }
 
     @OnLifecycleEvent(ON_ANY)
