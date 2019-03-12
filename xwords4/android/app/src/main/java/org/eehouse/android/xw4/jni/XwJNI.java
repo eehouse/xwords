@@ -163,6 +163,7 @@ public class XwJNI {
     public static void gi_from_stream( CurGameInfo gi, byte[] stream )
     {
         gi_from_stream( getJNI().m_ptr, gi, stream );
+        Log.d( TAG, "gi_from_stream() read: %s", gi );
     }
 
     public static byte[] nliToStream( NetLaunchInfo nli )
@@ -207,6 +208,8 @@ public class XwJNI {
                                     cp, procs ) ) {
             gamePtr.release();
             gamePtr = null;
+        } else {
+            Log.d( TAG, "initFromStream() read: %s", gi );
         }
 
         return gamePtr;
