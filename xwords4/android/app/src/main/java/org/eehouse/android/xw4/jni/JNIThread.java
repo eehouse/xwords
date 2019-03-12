@@ -388,6 +388,7 @@ public class JNIThread extends Thread implements AutoCloseable {
         if ( null != m_newDict ) {
             m_gi.dictName = m_newDict;
         }
+        Log.d( TAG, "save_jni(); m_gi: %s", m_gi );
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
         int newHash = Arrays.hashCode( state );
         boolean hashesEqual = m_lastSavedState == newHash;

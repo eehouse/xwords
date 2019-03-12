@@ -167,7 +167,10 @@ public class CurGameInfo implements Serializable {
                 sb.append( players[ii] )
                     .append( ", " );
             }
-            sb.append( "], gameID: ").append( gameID );
+            sb.append( "], gameID: ").append( gameID )
+                .append( ", hashCode: ").append( hashCode() )
+                .append('}');
+
             result = sb.toString();
         } else {
             result = super.toString();

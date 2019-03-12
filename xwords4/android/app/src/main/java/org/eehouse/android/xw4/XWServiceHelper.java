@@ -123,6 +123,7 @@ abstract class XWServiceHelper {
                                         String device, DictFetchOwner dfo )
     {
         boolean success = nli.isValid() && checkNotInFlight( nli );
+        CurGameInfo gi = null;
         if ( success ) {
             long[] rowids = DBUtils.getRowIDsFor( mService, nli.gameID() );
             if ( 0 == rowids.length ) {
@@ -135,7 +136,6 @@ abstract class XWServiceHelper {
                 // for duplicates! forceChannel's hard to dig up, but works
                 for ( int ii = 0; success && ii < rowids.length; ++ii ) {
                     long rowid = rowids[ii];
-                    CurGameInfo gi = null;
                     try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
                         // drop invite if can't open game; likely a dupe!
                         if ( null != lock ) {
@@ -182,7 +182,7 @@ abstract class XWServiceHelper {
                 }
             }
         }
-        Log.d( TAG, "handleInvitation() => %b", success );
+        Log.d( TAG, "handleInvitation() => %b (gi: %s)", success, gi );
         return success;
     }
 
