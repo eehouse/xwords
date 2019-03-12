@@ -33,6 +33,7 @@ import android.preference.PreferenceManager;
 
 import org.eehouse.android.nbsplib.NBSProxy;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 import java.util.UUID;
@@ -96,9 +97,7 @@ public class XWApp extends Application
         WiDirWrapper.init( this );
 
         mPort = Short.valueOf( getString( R.string.nbs_port ) );
-        if ( NBSProxy.isInstalled( this ) ) {
-            NBSProxy.register( mPort, BuildConfig.APPLICATION_ID, this );
-        }
+        NBSProxy.register( mPort, BuildConfig.APPLICATION_ID, this );
     }
 
     @OnLifecycleEvent(ON_ANY)
@@ -127,6 +126,20 @@ public class XWApp extends Application
     }
 
     // NBSProxy.Callbacks
+
+    @Override
+    public void onProxyAppLaunched()
+    {
+        Log.d( TAG, "onProxyAppLaunched()" );
+    }
+
+    @Override
+    public void onPermissionsGranted()
+    {
+        Log.d( TAG, "onPermissionsGranted()" );
+        GameUtils.resendAllIf( this, CommsConnType.COMMS_CONN_SMS );
+    }
+
     @Override
     public void onDataReceived( short port, String fromPhone, byte[] data )
     {
