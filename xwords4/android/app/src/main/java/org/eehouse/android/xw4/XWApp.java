@@ -126,7 +126,6 @@ public class XWApp extends Application
     }
 
     // NBSProxy.Callbacks
-
     @Override
     public void onProxyAppLaunched()
     {
@@ -147,11 +146,10 @@ public class XWApp extends Application
         SMSService.handleFrom( this, data, fromPhone );
     }
 
-    // NBSProxy.Callbacks
     @Override
-    public void onRegResponse( boolean appReached )
+    public void onRegResponse( boolean appReached, boolean needsInitialLaunch )
     {
-        if ( !appReached ) {
+        if ( needsInitialLaunch ) {
             String channelID = Channels.getChannelID( this, Channels.ID.FOREGROUND );
             NBSProxy.postLaunchNotification( this, channelID, R.drawable.notify );
         }
