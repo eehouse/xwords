@@ -6,7 +6,7 @@ FILTER_DEVS="1"
 ROOMS=""
 CONNNAMES=''
 
-LIMIT=10000
+LIMIT=''
 
 usage() {
     echo "usage: $0 [--limit <n>] \\"
@@ -54,23 +54,28 @@ echo ";   relay pid[s]: $(pidof xwrelay)"
 echo -n "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
 echo "; Relay sockets: $(for PID in $(pidof xwrelay); do ls /proc/$PID/fd; done | sort -un | tr '\n' ' ')"
 
+ORDER="ORDER BY NOT dead, ctime DESC"
+if [ -n "$LIMIT" ]; then
+	LIMIT="LIMIT $LIMIT"
+fi
+
 # Games
 echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as npd,nsents as snts, seeds,devids,tokens,ack, mtimes "\
-     "FROM games $QUERY ORDER BY NOT dead, ctime DESC LIMIT $LIMIT;" \
+     "FROM games $QUERY $ORDER $LIMIT;" \
     | psql xwgames
 
 # Messages
-echo "Unack'd msgs count:" $(psql -t xwgames -c "select count(*) FROM msgs where stime = 'epoch' AND connname IN (SELECT connname from games $QUERY);")
+echo "Unack'd msgs count:" $(psql -t xwgames -c "select count(*) FROM msgs where stime = 'epoch' AND connname IN (SELECT connname from games $QUERY $ORDER);")
 echo "SELECT id,connName,hid as h,token,ctime,stime,devid as dest,msg64 "\
-     "FROM msgs WHERE stime = 'epoch' AND connname IN (SELECT connname from games $QUERY) "\
-     "ORDER BY ctime DESC, connname LIMIT $LIMIT;" \
+     "FROM msgs WHERE stime = 'epoch' AND connname IN (SELECT connname from games $QUERY $ORDER $LIMIT) "\
+     "ORDER BY ctime DESC, connname;" \
     | psql xwgames
 
 # Devices
 LINE="SELECT id, model, variantCode as var, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes as dTyps, devids[1] as devid_1 FROM devices "
 if [ -n "$FILTER_DEVS" ]; then
-     LINE="${LINE} WHERE id IN (select UNNEST(devids) FROM games $QUERY)"
+     LINE="${LINE} WHERE id IN (select UNNEST(devids) FROM (select devids from games $QUERY $ORDER $LIMIT) as devids)"
 fi
-LINE="$LINE ORDER BY mtimes[1] DESC LIMIT $LIMIT;"
+LINE="$LINE ORDER BY mtimes[1] DESC;"
 echo "$LINE" | psql xwgames
 
