@@ -1359,10 +1359,6 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
             logf( XW_LOGVERBOSE0, "%s(): wrote %d bytes to socket %d", __func__,
                   nWritten, sock );
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
-            // This is wrong: should be removed when ACK returns and not
-            // before. But for some reason if I make that change apps wind up
-            // stalling.
-            dbmgr->RemoveStoredMessages( msgIDs );
         } else {
             assert(0);
         }
