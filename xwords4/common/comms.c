@@ -1039,10 +1039,10 @@ comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
 }
 
 static void
-formatMsgNo( const MsgQueueElem* elem, XP_UCHAR* buf, XP_U16 len )
+formatMsgNo( const CommsCtxt* comms, const MsgQueueElem* elem,
+             XP_UCHAR* buf, XP_U16 len )
 {
-    XP_SNPRINTF( buf, len, "%d:%d", elem->channelNo & CHANNEL_MASK, 
-                 elem->msgID );
+    XP_SNPRINTF( buf, len, "%d:%d", comms->rr.myHostID, elem->msgID );
 }
 
 /* Get *my* "relayID", a combo of connname and host id */
@@ -1432,7 +1432,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
                     nSent = elem->len;
                 } else if ( comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
                     XP_UCHAR msgNo[16];
-                    formatMsgNo( elem, msgNo, sizeof(msgNo) );
+                    formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                     if ( send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
                                          elem->msg, elem->len, msgNo ) ){
                         nSent = elem->len;
@@ -1471,7 +1471,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
                 XP_U32 gameid = gameID( comms );
                 logAddr( comms, &addr, __func__ );
                 XP_UCHAR msgNo[16];
-                formatMsgNo( elem, msgNo, sizeof(msgNo) );
+                formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                 nSent = (*comms->procs.send)( elem->msg, elem->len, msgNo, &addr,
                                               typ, gameid, comms->procs.closure );
                 break;
@@ -3103,7 +3103,7 @@ sendNoConn( CommsCtxt* comms, const MsgQueueElem* elem, XWHostID destID )
             XP_U16 len = stream_getSize( stream );
             if ( 0 < len ) {
                 XP_UCHAR msgNo[16];
-                formatMsgNo( elem, msgNo, sizeof(msgNo) );
+                formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                 success = (*comms->procs.sendNoConn)( stream_getPtr( stream ), 
                                                       len, msgNo, relayID,
                                                       comms->procs.closure );
