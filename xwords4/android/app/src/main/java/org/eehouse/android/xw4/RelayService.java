@@ -1085,7 +1085,8 @@ public class RelayService extends XWJIService
                                     byte[] msg, String msgNo, // not used yet
                                     long timestamp )
     {
-        Log.d( TAG, "sendNoConnMessage(msgNo=%s, len=%d)", msgNo, msg.length );
+        Log.d( TAG, "sendNoConnMessage(rowid=%d, msgNo=%s, len=%d)", rowid,
+               msgNo, msg.length );
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             DataOutputStream out = new DataOutputStream( bas );
