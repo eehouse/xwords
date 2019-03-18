@@ -73,17 +73,24 @@ typedef struct _JNIGlobalState {
     XW_DUtilCtxt* dutil;
     JNIUtilCtxt* jniutil;
     XP_Bool mpoolInUse;
+    const char* mpoolUser;
     MPSLOT
 } JNIGlobalState;
 
 #ifdef MEM_DEBUG
 static MemPoolCtx*
-getMPool( JNIGlobalState* globalState )
+getMPoolImpl( JNIGlobalState* globalState, const char* user )
 {
-    XP_ASSERT( !globalState->mpoolInUse );
+    if ( globalState->mpoolInUse ) {
+        XP_LOGF( "%s(): mpoolInUse ALREADY SET!!!! (by %s)",
+                 __func__, globalState->mpoolUser );
+    }
     globalState->mpoolInUse = XP_TRUE;
+    globalState->mpoolUser = user;
     return globalState->mpool;
 }
+
+#define GETMPOOL(gs) getMPoolImpl( (gs), __func__ )
 
 static void
 releaseMPool( JNIGlobalState* globalState )
@@ -320,7 +327,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
     if ( 0 != jniGlobalPtr ) {
         JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-        MemPoolCtx* mpool = getMPool( globalState );
+        MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
         XP_ASSERT( ENVFORME(&globalState->ti) == env );
         smsproto_free( globalState->smsProto );
@@ -583,7 +590,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
     jbyteArray result;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( globalState );
+    MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
@@ -604,7 +611,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 {
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( globalState );
+    MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env,
                                               globalState->vtMgr, jstream );
@@ -631,7 +638,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
     LOG_FUNC();
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( globalState );
+    MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
 
     jbyteArray result;
@@ -656,7 +663,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
     LOG_FUNC();
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( globalState );
+    MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env,
                                               globalState->vtMgr, jstream );
@@ -734,7 +741,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
     MAP_THREAD( &globalState->ti, env );
 
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = getMPool( globalState );
+    MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
 
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globalState->dictMgr,
