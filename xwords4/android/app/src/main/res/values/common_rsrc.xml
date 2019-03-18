@@ -56,6 +56,7 @@
   <string name="key_robot_name">key_robot_name</string>
   <string name="key_default_robodict">key_default_robodict</string>
   <string name="key_default_phonies">key_default_phonies2</string>
+  <string name="key_relay_poll">key_relay_poll</string>
   <string name="key_default_timerenabled">key_default_timerenabled</string>
   <string name="key_connect_frequency">key_connect_frequency</string>
   <string name="key_notify_sound">key_notify_sound</string>
@@ -127,7 +128,6 @@
   <string name="key_enable_nfc_toself">key_enable_nfc_toself</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
   <string name="key_enable_smsproto">key_enable_smsproto</string>
-  <string name="key_ignore_fcm">key_ignore_fcm</string>
   <string name="key_show_fcm">key_show_fcm</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
@@ -322,6 +322,12 @@
     <item>@string/radio_name_tablet</item>
     <item>@string/radio_name_gsm</item>
     <item>@string/radio_name_cdma</item>
+  </string-array>
+
+  <string-array name="relay_poll_names">
+    <item>@string/relay_poll_name_no_fcm</item>
+    <item>@string/relay_poll_name_no_polling</item>
+    <item>@string/relay_poll_name_both</item>
   </string-array>
 
   <string-array name="force_tablet_names">

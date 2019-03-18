@@ -35,12 +35,14 @@ public class XWListPreference extends ListPreference {
         m_context = context;
     }
 
+    @Override
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
         setSummary( getPersistedString( "" ) );
     }
 
+    @Override
     protected boolean persistString( String value )
     {
         setSummary( value );

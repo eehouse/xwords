@@ -775,7 +775,8 @@ public class DBUtils {
     {
         HashMap<Long, CommsConnTypeSet> result = new HashMap<Long,CommsConnTypeSet>();
         String[] columns = { ROW_ID, DBHelper.CONTYPE };
-        String selection = String.format( "%s > 0", DBHelper.NPACKETSPENDING );
+        String selection = String.format( "%s > 0 AND %s != %d", DBHelper.NPACKETSPENDING,
+                                          DBHelper.GROUPID, getArchiveGroup( context ) );
         initDB( context );
         synchronized( s_dbHelper ) {
             Cursor cursor = s_db.query( DBHelper.TABLE_NAME_SUM, columns,

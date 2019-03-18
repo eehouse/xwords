@@ -68,7 +68,26 @@ public class XWPrefs {
 
     public static boolean getIgnoreFCM( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_ignore_fcm, false );
+        String curValue =
+            XWPrefs.getPrefsString( context, R.string.key_relay_poll );
+        String noFCMString = context.getString(R.string.relay_poll_name_no_fcm);
+        boolean result = noFCMString.equals( curValue );
+        // Log.d( TAG, "getIgnoreFCM() => %b (%s vs %s)", result,
+        //        curValue, noFCMString );
+        return result;
+    }
+
+    // Not used yet
+    public static boolean getFCMOnly( Context context )
+    {
+        String curValue =
+            XWPrefs.getPrefsString( context, R.string.key_relay_poll );
+        String FCMOnlyString = context
+            .getString( R.string.relay_poll_name_no_polling );
+        boolean result = FCMOnlyString.equals( curValue );
+        Log.d( TAG, "getFCMOnly() => %b (%s vs %s)", result,
+               curValue, FCMOnlyString );
+        return result;
     }
 
     public static boolean getToastFCM( Context context )

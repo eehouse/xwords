@@ -1371,9 +1371,10 @@ public class GameUtils {
                             if ( null != gamePtr ) {
                                 int nSent = XwJNI.comms_resendAll( gamePtr, true,
                                                                    m_filter, false );
-                                // Log.d( TAG, "Resender.doInBackground(): sent %d "
-                                //        + "messages for rowid %d", nSent, rowid );
                                 nSentTotal += sink.numSent();
+                                // Log.d( TAG, "Resender.doInBackground(): sent %d "
+                                //        + "messages for rowid %d (total now %d)",
+                                //        nSent, rowid, nSentTotal );
                             } else {
                                 Log.d( TAG, "Resender.doInBackground(): loadMakeGame()"
                                        + " failed for rowid %d", rowid );
