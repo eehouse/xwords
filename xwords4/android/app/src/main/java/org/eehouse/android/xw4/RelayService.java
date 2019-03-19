@@ -77,6 +77,9 @@ public class RelayService extends XWJIService
     // app runs. I think I was getting failures when a new instance launched
     // and found older jobs in the JobIntentService's work queue.
     private final static int sJobID = 218719978;
+    static {
+        XWJIService.register( RelayService.class, sJobID );
+    }
 
     // One day, in seconds.  Probably should be configurable.
     private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
@@ -217,7 +220,7 @@ public class RelayService extends XWJIService
 
     private static void enqueueWork( Context context, Intent intent )
     {
-        enqueueWork( context, RelayService.class, sJobID, intent );
+        enqueueWork( context, RelayService.class, intent );
         // Log.d( TAG, "called enqueueWork(cmd=%s)", cmdFrom( intent, MsgCmds.values() ) );
     }
 

@@ -59,6 +59,9 @@ public class SMSService extends XWJIService {
     private static final String TAG = SMSService.class.getSimpleName();
 
     private final static int sJobID = 218719980;
+    static {
+        XWJIService.register( SMSService.class, sJobID );
+    }
 
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
@@ -262,7 +265,7 @@ public class SMSService extends XWJIService {
 
     private static void enqueueWork( Context context, Intent intent )
     {
-        enqueueWork( context, SMSService.class, sJobID, intent );
+        enqueueWork( context, SMSService.class, intent );
         Log.d( TAG, "called enqueueWork(%s)", intent );
     }
 
