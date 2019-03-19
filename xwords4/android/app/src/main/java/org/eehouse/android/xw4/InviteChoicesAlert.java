@@ -120,8 +120,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
                              && Perm.SEND_SMS.isBanned(activity) ) {
                             activity
                                 .makeOkOnlyBuilder( R.string.sms_banned_ok_only )
-                                .setActionPair(new ActionPair( Action.PERMS_BANNED_INFO,
-                                                               R.string.button_more_info ) )
+                                .setActionPair( Action.PERMS_BANNED_INFO,
+                                                R.string.button_more_info )
                                 .show();
                         } else if ( ! XWPrefs.getNBSEnabled( context ) ) {
                             activity

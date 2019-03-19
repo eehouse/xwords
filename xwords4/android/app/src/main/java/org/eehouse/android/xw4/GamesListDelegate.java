@@ -1074,8 +1074,8 @@ public class GamesListDelegate extends ListDelegateBase
                                                  R.string.not_again_nbsGamesOnUpgrade,
                                                  smsGameCount );
                 makeNotAgainBuilder( msg, R.string.key_notagain_nbsGamesOnUpgrade )
-                    .setActionPair( new ActionPair( Action.PERMS_BANNED_INFO,
-                                                    R.string.button_more_info ) )
+                    .setActionPair( Action.PERMS_BANNED_INFO,
+                                    R.string.button_more_info )
                     .show();
             }
         }
@@ -1997,12 +1997,11 @@ public class GamesListDelegate extends ListDelegateBase
         if ( skipOffer ) {
             handleNewGame( solo );
         } else {
-            ActionPair pair = new ActionPair( Action.SET_HIDE_NEWGAME_BUTTONS,
-                                              R.string.set_pref );
             makeNotAgainBuilder( R.string.not_again_hidenewgamebuttons,
                                  R.string.key_notagain_hidenewgamebuttons,
                                  Action.NEW_GAME_PRESSED )
-                .setActionPair( pair )
+                .setActionPair( Action.SET_HIDE_NEWGAME_BUTTONS,
+                                R.string.set_pref )
                 .show();
         }
     }
