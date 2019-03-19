@@ -125,6 +125,7 @@ android {
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug NoSMS\""
             buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "SMS_BANNED", "true"
+            buildConfigField "boolean", "REPORT_LOCKS", "true"
         }
 
         xw4SMS {
