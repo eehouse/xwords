@@ -30,10 +30,12 @@ import android.app.NotificationManager;
 public class Channels {
 
     enum ID {
-        FOREGROUND(R.string.foreground_channel_expl,
-                   NotificationManager.IMPORTANCE_LOW),
+        NBSPROXY(R.string.nbsproxy_channel_expl,
+                 NotificationManager.IMPORTANCE_LOW),
         GAME_EVENT(R.string.gameevent_channel_expl,
-                   NotificationManager.IMPORTANCE_LOW);
+                   NotificationManager.IMPORTANCE_LOW),
+        SERVICE_STALL(R.string.servicestall_channel_expl,
+                      NotificationManager.IMPORTANCE_LOW);
 
         private int mExpl;
         private int mImportance;

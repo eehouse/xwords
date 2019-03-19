@@ -99,6 +99,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_P2PADDR_EXTRA = "rm_p2pma";
 
     private static final String ALERT_MSG = "alert_msg";
+    private static final String WITH_EMAIL = "with_email";
 
     private static class MySIS implements Serializable {
         public MySIS(){
@@ -1352,6 +1353,10 @@ public class GamesListDelegate extends ListDelegateBase
             askDefaultName();
             break;
 
+        case SEND_EMAIL:
+            Utils.emailAuthor( m_activity );
+            break;
+
         case ASKED_PHONE_STATE:
             rematchWithNameAndPerm( true, params );
             break;
@@ -2297,7 +2302,13 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String msg = intent.getStringExtra( ALERT_MSG );
         if ( null != msg ) {
-            makeOkOnlyBuilder( msg ).show();
+            DlgDelegate.DlgDelegateBuilder builder =
+                makeOkOnlyBuilder( msg );
+            if ( intent.getBooleanExtra( WITH_EMAIL, false ) ) {
+                builder.setActionPair( Action.SEND_EMAIL,
+                                        R.string.board_menu_file_email );
+            }
+            builder.show();
         }
     }
 
@@ -2779,6 +2790,13 @@ public class GamesListDelegate extends ListDelegateBase
         Intent intent = makeSelfIntent( context )
             .putExtra( ALERT_MSG, msg );
         return intent;
+    }
+
+    public static Intent makeAlertWithEmailIntent( Context context, String msg )
+    {
+        return makeAlertIntent( context, msg )
+            .putExtra( WITH_EMAIL, true )
+            ;
     }
 
     public static void sendNFCToSelf( Context context, String data )

@@ -21,14 +21,23 @@
 package org.eehouse.android.xw4;
 
 
-import android.support.v4.app.JobIntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.JobIntentService;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 abstract class XWJIService extends JobIntentService {
+    private static final String TAG = XWJIService.class.getSimpleName();
+    private static final boolean LOG_COUNTS = false;
+
     static final String CMD_KEY = "CMD";
     private static final String TIMESTAMP = "TIMESTAMP";
 
@@ -47,6 +56,8 @@ abstract class XWJIService extends JobIntentService {
     @Override
     public final void onHandleWork( Intent intent )
     {
+        forget( getClass(), intent );
+
         long timestamp = getTimestamp(intent);
         XWJICmds cmd = cmdFrom( intent );
         Log.d( getClass().getSimpleName(),
@@ -59,7 +70,9 @@ abstract class XWJIService extends JobIntentService {
 
     protected static void enqueueWork( Context context, Class clazz, Intent intent )
     {
+        remember( clazz, intent );
         enqueueWork( context, clazz, sJobIDs.get(clazz), intent );
+        checkForStall( context );
     }
 
     static XWJICmds cmdFrom( Intent intent, XWJICmds[] values )
@@ -85,5 +98,130 @@ abstract class XWJIService extends JobIntentService {
             .putExtra( CMD_KEY, cmd.ordinal() )
             .putExtra( TIMESTAMP, System.currentTimeMillis() );
         return intent;
+    }
+
+    private static Map<String, List<Intent>> sPendingIntents = new HashMap<>();
+
+    private static void remember( Class clazz, Intent intent )
+    {
+        String name = clazz.getSimpleName();
+        synchronized ( sPendingIntents ) {
+            if ( !sPendingIntents.containsKey( name )) {
+                sPendingIntents.put( name, new ArrayList<Intent>() );
+            }
+            sPendingIntents.get(name).add( intent );
+            if ( LOG_COUNTS ) {
+                Log.d( TAG, "remember(): now have %d intents for class %s",
+                       sPendingIntents.get(name).size(), name );
+            }
+        }
+    }
+
+    private static final long AGE_THRESHOLD_MS = 1000 * 60; // one minute to start
+    private static void checkForStall( Context context )
+    {
+        long now = System.currentTimeMillis();
+        long maxAge = 0;
+        synchronized ( sPendingIntents ) {
+            for ( String simpleName : sPendingIntents.keySet() ) {
+                List<Intent> intents = sPendingIntents.get( simpleName );
+                if ( 1 <= intents.size() ) {
+                    Intent intent = intents.get(0);
+                    long timestamp = intent.getLongExtra( TIMESTAMP, -1 );
+                    long age = now - timestamp;
+                    if ( age > maxAge ) {
+                        maxAge = age;
+                    }
+                }
+            }
+        }
+
+        if ( maxAge > AGE_THRESHOLD_MS ) {
+            Utils.showStallNotification( context, maxAge );
+        }
+    }
+
+    private static void forget( Class clazz, Intent intent )
+    {
+        String name = clazz.getSimpleName();
+        synchronized ( sPendingIntents ) {
+            String found = null;
+            if ( sPendingIntents.containsKey( name ) ) {
+                List<Intent> intents = sPendingIntents.get( name );
+                for (Iterator<Intent> iter = intents.iterator();
+                     iter.hasNext(); ) {
+                    Intent candidate = iter.next();
+                    if ( areSame( candidate, intent ) ) {
+                        found = name;
+                        iter.remove();
+                        break;
+                    } else {
+                        Log.d( TAG, "skipping intent: %s",
+                               DbgUtils.extrasToString( candidate ) );
+                    }
+                }
+
+                if ( found != null ) {
+                    if ( LOG_COUNTS ) {
+                        Log.d( TAG, "forget(): now have %d intents for class %s",
+                               sPendingIntents.get(found).size(), found );
+                    }
+                } else {
+                    Log.e( TAG, "intent %s not found", intent );
+                }
+            }
+        }
+    }
+
+    private static boolean areSame( Intent intent1, Intent intent2 )
+    {
+        boolean equal = intent1.filterEquals( intent2 );
+        if ( equal ) {
+            Bundle bundle1 = intent1.getExtras();
+            equal = null != bundle1;
+            if ( equal ) {
+                Bundle bundle2 = intent2.getExtras();
+                equal = null != bundle2 && bundle1.size() == bundle2.size();
+                if ( equal ) {
+                    for ( final String key : bundle1.keySet()) {
+                        if ( ! bundle2.containsKey( key ) ) {
+                            equal = false;
+                            break;
+                        }
+
+                        Object obj1 = bundle1.get( key );
+                        Object obj2 = bundle2.get( key );
+                        if ( obj1.getClass() != obj2.getClass() ) {
+                            equal = false;
+                            break;
+                        }
+
+                        if ( obj1 instanceof byte[] ) {
+                            equal = Arrays.equals( (byte[])obj1, (byte[])obj2 );
+                        } else if ( obj1 instanceof String[] ) {
+                            equal = Arrays.equals( (String[])obj1, (String[])obj2 );
+                        } else {
+                            if ( BuildConfig.DEBUG ) {
+                                if ( obj1 instanceof Long
+                                     || obj1 instanceof String
+                                     || obj1 instanceof Boolean
+                                     || obj1 instanceof Integer ) {
+                                    // expected class; log nothing
+                                } else {
+                                    Log.d( TAG, "areSame: using default for class %s",
+                                           obj1.getClass().getSimpleName() );
+                                }
+                            }
+                            equal = obj1.equals( obj2 );
+                        }
+                        if ( ! equal ) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return equal;
     }
 }

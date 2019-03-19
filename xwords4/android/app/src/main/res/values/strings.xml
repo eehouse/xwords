@@ -2792,9 +2792,11 @@
   <string name="toast_no_permission">Permission not granted</string>
 
   <!-- Explanation in settings for always-on BT notification -->
-  <string name="foreground_channel_expl">Accepting Bluetooth in background</string>
+  <string name="nbsproxy_channel_expl">Alerts about NBSProxy</string>
   <!-- Explanation in settings for traditional move-arrived notification -->
   <string name="gameevent_channel_expl">In-game events</string>
+  <!-- Notification that the OS isn't scheduling background services -->
+  <string name="servicestall_channel_expl">Stalled messaging alerts</string>
 
   <string name="not_again_emptybtscan">If a scan doesn\'t find the device you expect:\n
   • First, just Rescan\n
@@ -2803,10 +2805,24 @@
   • If all else fails, reboot this device\n
   </string>
 
-  <string name="bt_need_launch_title">Tap to launch CrossWords</string>
-  <string name="bt_need_launch_body">After each upgrade the app needs
-  to be launched once before it can do things like receive Bluetooth
-  messages in the background.</string>
+  <string name="notify_stall_title">Message sending is stalled</string>
+
+  <string name="notify_stall_body_fmt">Though it normally takes less
+  than a second, Android has been unable to process CrossWords\'
+  outbound messages for more than %1$d seconds. This might be because
+  your device is especially busy, or because CrossWords hasn\'t run in
+  the foreground for a while.
+
+  \n\n
+
+  If the problem persists (i.e. you see this frequently), please
+  consider emailing me with information about your device so I can try
+  to reproduce and fix it.
+
+  \n\n
+
+  You will see this message at most once every %2$d minutes.
+  </string>
 
   <string name="sms_banned_ok_only">The Google Play Store version of
   CrossWords no longer supports inviting or playing by Data

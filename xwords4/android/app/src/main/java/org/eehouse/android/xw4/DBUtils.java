@@ -2449,6 +2449,23 @@ public class DBUtils {
         return dflt;
     }
 
+    public static void setLongFor( Context context, String key, long value )
+    {
+        // Log.d( TAG, "DBUtils.setIntFor(key=%s, val=%d)", key, value );
+        String asStr = String.format( "%d", value );
+        setStringFor( context, key, asStr );
+    }
+
+    public static long getLongFor( Context context, String key, long dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Long.parseLong( asStr );
+        }
+        // Log.d( TAG, "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
+        return dflt;
+    }
+
     public static void setBoolFor( Context context, String key, boolean value )
     {
         // Log.df( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
