@@ -68,9 +68,6 @@ public class MainActivity extends XWActivity
             Log.e( TAG, "isTaskRoot() => false!!! What to do?" );
         }
 
-        Utils.setLaunchedSinceInstall( this, true );
-        Utils.cancelLaunchSinceInstall( this );
-
         m_dpEnabled = XWPrefs.getIsTablet( this );
 
         m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )

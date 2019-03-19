@@ -56,6 +56,7 @@ public class DlgDelegate {
         SET_HIDE_NEWGAME_BUTTONS,
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,
+        SEND_EMAIL,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

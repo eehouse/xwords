@@ -35,8 +35,6 @@ public class OnBootReceiver extends BroadcastReceiver {
             Log.d( TAG, "got %s", action );
             switch( action ) {
             case Intent.ACTION_MY_PACKAGE_REPLACED:
-                Utils.setLaunchedSinceInstall( context, false );
-                // FALLTHRU
             case Intent.ACTION_BOOT_COMPLETED:
                 startTimers( context );
                 break;

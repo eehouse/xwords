@@ -247,6 +247,14 @@ public class Utils {
                                          String title, String body,
                                          int id )
     {
+        String channelID = Channels.getChannelID( context, Channels.ID.GAME_EVENT );
+        postNotification( context, intent, title, body, id, channelID );
+    }
+
+    private static void postNotification( Context context, Intent intent,
+                                          String title, String body,
+                                          int id, String channelID )
+    {
         /* nextRandomInt: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
            one way to avoid getting the same PendingIntent for similar
@@ -265,7 +273,6 @@ public class Utils {
             defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        String channelID = Channels.getChannelID( context, Channels.ID.GAME_EVENT );
         Notification notification =
             new NotificationCompat.Builder( context, channelID )
             .setContentIntent( pi )
@@ -281,6 +288,31 @@ public class Utils {
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
         nm.notify( id, notification );
+    }
+
+    private static final String KEY_LAST_STALL_NOT = TAG + ".last_stall_note";
+    private static final long MIN_STALL_NOT_INTERVAL_MS = 1000 * 60 * 30;
+    public static void showStallNotification( Context context, long ageMS )
+    {
+        long now = System.currentTimeMillis();
+        long lastStallNotify = DBUtils.getLongFor( context, KEY_LAST_STALL_NOT, 0 );
+        if ( now - lastStallNotify > MIN_STALL_NOT_INTERVAL_MS ) {
+            String title = LocUtils.getString( context, R.string.notify_stall_title );
+            String body = LocUtils.getString( context, R.string.notify_stall_body_fmt,
+                                              (ageMS + 500) / 1000,
+                                              MIN_STALL_NOT_INTERVAL_MS / (1000 * 60));
+            String channelID = Channels.getChannelID( context,
+                                                      Channels.ID.SERVICE_STALL );
+
+            Intent intent = GamesListDelegate
+                .makeAlertWithEmailIntent( context, body );
+            postNotification( context, intent, title, body,
+                              R.string.notify_stall_title, channelID );
+            DBUtils.setLongFor( context, KEY_LAST_STALL_NOT, now );
+        } else {
+        //     Log.d( TAG, "showStallNotification(): not posting for another %d ms",
+        //            MIN_STALL_NOT_INTERVAL_MS - (now - lastStallNotify) );
+        }
     }
 
     public static void cancelNotification( Context context, int id )
@@ -568,39 +600,6 @@ public class Utils {
     public static boolean isOnUIThread()
     {
         return Looper.getMainLooper().equals(Looper.myLooper());
-    }
-
-    private static final String KEY_LAUNCHED_SINCE_INSTALL
-        = TAG + "_LAUNCHED_SINCE_INSTALL";
-    public static void setLaunchedSinceInstall( Context context, boolean val )
-    {
-        DBUtils.setBoolFor( context, KEY_LAUNCHED_SINCE_INSTALL, val );
-    }
-
-    private static boolean getLaunchedSinceInstall( Context context )
-    {
-        boolean result = DBUtils
-            .getBoolFor( context, KEY_LAUNCHED_SINCE_INSTALL, false );
-        return result;
-    }
-
-    private static final int LAUNCH_SINCE_INSTALL_MSG_ID
-        = R.string.bt_need_launch_body; // whatever
-    public static void showLaunchSinceInstall( Context context )
-    {
-        if ( ! getLaunchedSinceInstall( context ) ) {
-            Intent intent = GamesListDelegate
-                .makeGameIDIntent( context, 0 );
-            postNotification( context, intent,
-                              R.string.bt_need_launch_title,
-                              R.string.bt_need_launch_body,
-                              LAUNCH_SINCE_INSTALL_MSG_ID );
-        }
-    }
-
-    public static void cancelLaunchSinceInstall( Context context )
-    {
-        cancelNotification( context, LAUNCH_SINCE_INSTALL_MSG_ID );
     }
 
     public static String base64Encode( byte[] in )

@@ -150,7 +150,7 @@ public class XWApp extends Application
     public void onRegResponse( boolean appReached, boolean needsInitialLaunch )
     {
         if ( needsInitialLaunch ) {
-            String channelID = Channels.getChannelID( this, Channels.ID.FOREGROUND );
+            String channelID = Channels.getChannelID( this, Channels.ID.NBSPROXY );
             NBSProxy.postLaunchNotification( this, channelID, R.drawable.notify );
         }
     }
