@@ -197,6 +197,9 @@ public class DlgDelegate {
         public DlgDelegateBuilder setActionPair( ActionPair pr )
         { m_actionPair = pr; return this; }
 
+        public DlgDelegateBuilder setActionPair( Action actn, int id )
+        { return setActionPair( new ActionPair( actn, id ) ); }
+
         abstract void show();
     }
 

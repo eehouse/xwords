@@ -1213,8 +1213,8 @@ public class BoardDelegate extends DelegateBase
                                          RequestCode.SMS_DATA_INVITE_RESULT );
             } else if ( Perms23.anyBanned( m_activity, perms ) ) {
                 makeOkOnlyBuilder( R.string.sms_banned_ok_only )
-                    .setActionPair(new ActionPair( Action.PERMS_BANNED_INFO,
-                                                   R.string.button_more_info ) )
+                    .setActionPair(Action.PERMS_BANNED_INFO,
+                                   R.string.button_more_info )
                     .show();
             }
             break;
@@ -2327,9 +2327,8 @@ public class BoardDelegate extends DelegateBase
                                 DlgDelegate.ConfirmThenBuilder builder =
                                     makeConfirmThenBuilder( explID, Action.DROP_SMS_ACTION );
                                 if ( banned ) {
-                                    ActionPair pr = new ActionPair( Action.PERMS_BANNED_INFO,
-                                                                    R.string.button_more_info );
-                                    builder.setActionPair( pr )
+                                    builder.setActionPair( Action.PERMS_BANNED_INFO,
+                                                           R.string.button_more_info )
                                         .setNAKey( R.string.key_na_sms_banned )
                                         ;
                                 }
