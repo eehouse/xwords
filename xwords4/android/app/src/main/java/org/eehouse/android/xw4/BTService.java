@@ -85,7 +85,12 @@ public class BTService extends XWJIService {
     private static final String TAG = BTService.class.getSimpleName();
     private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
     private static final String KEY_KEEPALIVE_UNTIL_SECS = "keep_secs";
+
     private final static int sJobID = 218719979;
+    static {
+        XWJIService.register( BTService.class, sJobID );
+    }
+
     // half minute for testing; maybe 15 on ship? Or make it a debug config.
     private static int DEFAULT_KEEPALIVE_SECONDS = 15 * 60;
     private static int CONNECT_SLEEP_MS = 2500;
@@ -246,53 +251,10 @@ public class BTService extends XWJIService {
     private static void enqueueWork( Context context, Intent intent )
     {
         if ( BTEnabled() ) {
-            setCheckTimerOnce( context );
-            enqueueWork( context, BTService.class, sJobID, intent );
+            enqueueWork( context, BTService.class, intent );
             // Log.d( TAG, "enqueueWork(%s)", cmdFrom( intent, BTAction.values() ) );
         } else {
             Log.d( TAG, "enqueueWork(): BT disabled so doing nothing" );
-        }
-    }
-
-    // It appears that the OS won't launch my service (calling onCreate() and
-    // onHandleWork()) after an install, including via adb, until the app's
-    // been launched manually. So we'll check for that case and post a
-    // notification if it appears to be a problem.
-    private static Thread[] sLaunchChecker = {null};
-
-    private static void clearCheckTimer()
-    {
-        synchronized ( sLaunchChecker ) {
-            if ( null != sLaunchChecker[0] ) {
-                sLaunchChecker[0].interrupt();
-            }
-        }
-    }
-
-    private static void setCheckTimerOnce( final Context context )
-    {
-        synchronized ( sLaunchChecker ) {
-            if ( null == sLaunchChecker[0] ) {
-                sLaunchChecker[0] = new Thread( new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                synchronized ( sLaunchChecker ) {
-                                    sLaunchChecker.notify();
-                                }
-                                Thread.sleep( 10 * 1000 );
-
-                                Utils.showLaunchSinceInstall( context );
-                            } catch ( InterruptedException ie ) {
-                            }
-                        }
-                    } );
-
-                sLaunchChecker[0].start();
-                // Don't return until the thread's interruptable
-                try { sLaunchChecker.wait(); }
-                catch ( InterruptedException ex ) {}
-            }
         }
     }
 
@@ -384,8 +346,6 @@ public class BTService extends XWJIService {
     {
         Log.d( TAG, "%s.onCreate()", this );
         super.onCreate();
-
-        clearCheckTimer();
 
         mHelper = new BTServiceHelper( this );
 

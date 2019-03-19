@@ -25,6 +25,9 @@ import android.support.v4.app.JobIntentService;
 import android.content.Context;
 import android.content.Intent;
 
+import java.util.HashMap;
+import java.util.Map;
+
 abstract class XWJIService extends JobIntentService {
     static final String CMD_KEY = "CMD";
     private static final String TIMESTAMP = "TIMESTAMP";
@@ -35,6 +38,11 @@ abstract class XWJIService extends JobIntentService {
 
     abstract void onHandleWorkImpl( Intent intent, XWJICmds cmd, long timestamp );
     abstract XWJICmds[] getCmds();
+
+    private static Map<Class, Integer> sJobIDs = new HashMap<>();
+    static void register( Class clazz, int jobID ) {
+        sJobIDs.put( clazz, jobID );
+    }
     
     @Override
     public final void onHandleWork( Intent intent )
@@ -47,6 +55,11 @@ abstract class XWJIService extends JobIntentService {
                Thread.activeCount() );
 
         onHandleWorkImpl( intent, cmd, timestamp );
+    }
+
+    protected static void enqueueWork( Context context, Class clazz, Intent intent )
+    {
+        enqueueWork( context, clazz, sJobIDs.get(clazz), intent );
     }
 
     static XWJICmds cmdFrom( Intent intent, XWJICmds[] values )
