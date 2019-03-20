@@ -44,7 +44,6 @@ public class LocalPlayer implements Serializable {
         isLocal = true;
         robotIQ = 0;            // human
         name = CommonPrefs.getDefaultPlayerName( context, num, true );
-        Log.d( TAG, "__init(%d) => %s", num, name );
         password = "";
 
         // Utils.testSerialization( this );
