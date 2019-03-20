@@ -72,6 +72,9 @@ public class XWApp extends Application
         Assert.assertTrue( s_context == s_context.getApplicationContext() );
         super.onCreate();
 
+        // Remove me soon!!!
+        Assert.assertTrue( BuildConfig.DEBUG == getResources().getBoolean(R.bool.DEBUG) );
+
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
         android.util.Log.i( TAG, "onCreate(); git_rev="

@@ -180,9 +180,11 @@ android {
             minifyEnabled false // PENDING
             // proguard crashes when I do this (the optimize part)
             // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue "bool", "DEBUG", "false"
         }
         debug {
             debuggable true
+            resValue "bool", "DEBUG", "true"
             minifyEnabled true // for testing
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // This doesn't work on marshmallow: duplicate permission error
