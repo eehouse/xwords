@@ -304,15 +304,19 @@ and_util_engineProgressCallback( XW_UtilCtxt* uc )
 bool
 utilTimerFired( XW_UtilCtxt* uc, XWTimerReason why, int handle )
 {
-    bool handled;
+    bool handled = false;
     AndUtil* util = (AndUtil*)uc;
     TimerStorage* timerStorage = &util->timerStorage[why];
     if ( handle == (int)timerStorage ) {
-        handled = (*timerStorage->proc)( timerStorage->closure, why );
+        XWTimerProc proc = timerStorage->proc;
+        if ( !!proc ) {
+            handled = (*proc)( timerStorage->closure, why );
+        } else {
+            XP_LOGF( "%s(why=%d): ERROR: no proc set", __func__, why );
+        }
     } else {
         XP_LOGF( "%s: mismatch: handle=%d; timerStorage=%d", __func__,
                  handle, (int)timerStorage );
-        handled = false;
     }
     return handled;
 }
