@@ -36,7 +36,8 @@ import java.util.Map;
 
 abstract class XWJIService extends JobIntentService {
     private static final String TAG = XWJIService.class.getSimpleName();
-    private static final boolean LOG_COUNTS = false;
+    private static final boolean LOG_INTENT_COUNTS = false;
+    private static final boolean LOG_PACKETS = false;
 
     static final String CMD_KEY = "CMD";
     private static final String TIMESTAMP = "TIMESTAMP";
@@ -60,10 +61,12 @@ abstract class XWJIService extends JobIntentService {
 
         long timestamp = getTimestamp(intent);
         XWJICmds cmd = cmdFrom( intent );
-        Log.d( getClass().getSimpleName(),
-               "onHandleWork(): cmd=%s; age=%dms; threadCount: %d)",
-               cmd, System.currentTimeMillis() - timestamp,
-               Thread.activeCount() );
+        if ( LOG_PACKETS ) {
+            Log.d( getClass().getSimpleName(),
+                   "onHandleWork(): cmd=%s; age=%dms; threadCount: %d)",
+                   cmd, System.currentTimeMillis() - timestamp,
+                   Thread.activeCount() );
+        }
 
         onHandleWorkImpl( intent, cmd, timestamp );
     }
@@ -110,7 +113,7 @@ abstract class XWJIService extends JobIntentService {
                 sPendingIntents.put( name, new ArrayList<Intent>() );
             }
             sPendingIntents.get(name).add( intent );
-            if ( LOG_COUNTS ) {
+            if ( LOG_INTENT_COUNTS ) {
                 Log.d( TAG, "remember(): now have %d intents for class %s",
                        sPendingIntents.get(name).size(), name );
             }
@@ -162,7 +165,7 @@ abstract class XWJIService extends JobIntentService {
                 }
 
                 if ( found != null ) {
-                    if ( LOG_COUNTS ) {
+                    if ( LOG_INTENT_COUNTS ) {
                         Log.d( TAG, "forget(): now have %d intents for class %s",
                                sPendingIntents.get(found).size(), found );
                     }

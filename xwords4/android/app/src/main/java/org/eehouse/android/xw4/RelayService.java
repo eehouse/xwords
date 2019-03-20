@@ -46,12 +46,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -534,7 +536,7 @@ public class RelayService extends XWJIService
                 s_UDPSocket.connect( addr, port ); // remember this address
                 Log.d( TAG, "connectSocket(%s:%d): s_UDPSocket now %H",
                        host, port, s_UDPSocket );
-            } catch( java.net.SocketException se ) {
+            } catch( SocketException se ) {
                 Log.ex( TAG, se );
                 Assert.fail();
             } catch( java.net.UnknownHostException uhe ) {
@@ -951,7 +953,7 @@ public class RelayService extends XWJIService
                     break;
                 }
             }
-        } catch ( java.io.IOException ioe ) {
+        } catch ( IOException ioe ) {
             Log.ex( TAG, ioe );
         }
 
@@ -1038,7 +1040,7 @@ public class RelayService extends XWJIService
 
                 postPacket( bas, XWRelayReg.XWPDEV_REG, timestamp );
                 s_regStartTime = now;
-            } catch ( java.io.IOException ioe ) {
+            } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
         }
@@ -1065,7 +1067,7 @@ public class RelayService extends XWJIService
             } else {
                 Log.d(TAG, "requestMessages(): devid is null" );
             }
-        } catch ( java.io.IOException ioe ) {
+        } catch ( IOException ioe ) {
             Log.ex( TAG, ioe );
         }
     }
@@ -1079,7 +1081,7 @@ public class RelayService extends XWJIService
             out.writeInt( (int)rowid );
             out.write( msg, 0, msg.length );
             postPacket( bas, XWRelayReg.XWPDEV_MSG, timestamp );
-        } catch ( java.io.IOException ioe ) {
+        } catch ( IOException ioe ) {
             Log.ex( TAG, ioe );
         }
     }
@@ -1099,7 +1101,7 @@ public class RelayService extends XWJIService
             out.write( '\n' );
             out.write( msg, 0, msg.length );
             postPacket( bas, XWRelayReg.XWPDEV_MSGNOCONN, timestamp );
-        } catch ( java.io.IOException ioe ) {
+        } catch ( IOException ioe ) {
             Log.ex( TAG, ioe );
         }
     }
@@ -1133,7 +1135,7 @@ public class RelayService extends XWJIService
             out.writeShort( nliData.length );
             out.write( nliData, 0, nliData.length );
             postPacket( bas, XWRelayReg.XWPDEV_INVITE, timestamp );
-        } catch ( java.io.IOException ioe ) {
+        } catch ( IOException ioe ) {
             Log.ex( TAG, ioe );
         }
     }
@@ -1146,14 +1148,14 @@ public class RelayService extends XWJIService
                 DataOutputStream out = new DataOutputStream( bas );
                 un2vli( header.m_packetID, out );
                 postPacket( bas, XWRelayReg.XWPDEV_ACK, -1 );
-            } catch ( java.io.IOException ioe ) {
+            } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
         }
     }
 
     private PacketHeader readHeader( DataInputStream dis )
-        throws java.io.IOException
+        throws IOException
     {
         PacketHeader result = null;
         byte proto = dis.readByte();
@@ -1171,8 +1173,7 @@ public class RelayService extends XWJIService
         return result;
     }
 
-    private String getVLIString( DataInputStream dis )
-        throws java.io.IOException
+    private String getVLIString( DataInputStream dis ) throws IOException
     {
         byte[] tmp = new byte[vli2un( dis )];
         dis.readFully( tmp );
@@ -1185,8 +1186,8 @@ public class RelayService extends XWJIService
     {
         PacketData packet = new PacketData( bas, cmd, timestamp );
         s_queue.add( packet );
-        Log.d( TAG, "postPacket(%s); (now %d in queue)", packet,
-               s_queue.size() );
+        // Log.d( TAG, "postPacket(%s); (now %d in queue)", packet,
+        //        s_queue.size() );
     }
 
     private String getDevID( DevIDType[] typp )
@@ -1311,8 +1312,9 @@ public class RelayService extends XWJIService
                         // service.resetExitTimer();
                         // service.gotPacket( packet );
                     } catch ( java.io.InterruptedIOException iioe ) {
+                        // poll timing out, typically
                         // Log.d( TAG, "iioe from receive(): %s", iioe.getMessage() );
-                    } catch( java.io.IOException ioe ) {
+                    } catch( IOException ioe ) {
                         Log.d( TAG, "ioe from receive(): %s/%s", ioe.getMessage() );
                         Assert.assertFalse( BuildConfig.DEBUG );
                         break;
@@ -1411,7 +1413,7 @@ public class RelayService extends XWJIService
                     outStream.flush();
                     socket.close();
                 }
-            } catch ( java.io.IOException ioe ) {
+            } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
         } // run
@@ -1562,7 +1564,7 @@ public class RelayService extends XWJIService
     }
 
     private static void un2vli( int nn, OutputStream os )
-        throws java.io.IOException
+        throws IOException
     {
         int indx = 0;
         boolean done = false;
@@ -1577,7 +1579,7 @@ public class RelayService extends XWJIService
         } while ( !done );
     }
 
-    private static int vli2un( InputStream is ) throws java.io.IOException
+    private static int vli2un( InputStream is ) throws IOException
     {
         int result = 0;
         byte[] buf = new byte[1];
@@ -1602,7 +1604,7 @@ public class RelayService extends XWJIService
     }
 
     private static void writeVLIString( DataOutputStream os, String str )
-        throws java.io.IOException
+        throws IOException
     {
         if ( null == str ) {
             str = "";
@@ -1804,7 +1806,7 @@ public class RelayService extends XWJIService
                 un2vli( m_packetID, out );
                 out.writeByte( m_cmd.ordinal() );
                 m_header = bas.toByteArray();
-            } catch ( java.io.IOException ioe ) {
+            } catch ( IOException ioe ) {
                 Log.ex( TAG, ioe );
             }
         }
