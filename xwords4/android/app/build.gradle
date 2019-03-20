@@ -369,7 +369,17 @@ afterEvaluate {
 task makeBuildAssets() {
     def assetsDir = android.sourceSets.main.assets.srcDirs.toArray()[0]
     String path = new File(assetsDir, BUILD_INFO_NAME).getAbsolutePath()
-    String out = "git: ${GITREV}\n"
+    String out = "git_describe: ${GITREV}\n"
+
+    String HEAD = "git rev-parse HEAD".execute().text.trim()
+    out += "HEAD: ${HEAD}\n"
+
+    String date = "date".execute().text.trim()
+    out += "date: ${date}\n"
+
+    // I want the variant, but that's harder. Here's a quick hack from SO.
+    String target = gradle.startParameter.taskNames[-1]
+    out += "target: ${target}\n"
 
     String diff = "git diff".execute().text.trim()
     if (diff) {
