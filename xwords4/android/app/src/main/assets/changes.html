@@ -15,8 +15,8 @@
 <body>
   <h2>CrossWords 4.4.143 release</h2>
 
-  <p>This is a fdroid-only release fixing a problem that made the
-      previous release, whose changelist is below, unbuildable for fdroid</p>
+  <p>This release fixes a relay communication problem for all versions
+  and a build problem for the F-Droid version</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,26 +26,11 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Lots of internal changes to background networking (for games
-          using the relay, Bluetooth or Data SMS) to comply with
-          recent requirements from Google. (I hope you won't notice
-          :-) </li>
-      <li>Improve Invite-via-Bluetooth dialog, esp. show when a remote
-          device was last detected via scan</li>
-      <li>Disable Play-by-Data-SMS feature (Google Play version only)</li>
-      <li>Store new games outside Archive group even if created from
-          inside it</li>
-      <li>Replace "Google Cloud Messaging" with the newer Firebase
-          workalike. (You should not notice, at least in the Google
-          Play Store version.)</li>
-      <li>For Spanish games only, allow trades when fewer than 7 tiles
-          remain</li>
-      <li>New translations in Arabic, German, Japanese, Norwegian,
-          Polish and Portuguese</li>
-      <li>Use https instead of http for web communication
-          (e.g. wordlist downloads)</li>
-      <li>Disable logging for release builds (to improve performance)</li>
-      <li>Fix some infrequent crashes</li>
+      <li>Stop replacing your name with "Player 2"</li>
+      <li>Fix long-standing bug in Relay networking</li>
+      <li>Fix F-Droid build </li>
+      <li>Improve interaction with NBSProxy (impacts those using
+          play-by-Data-SMS)</li>
   </ul>
 
   <p>(The full changelog
@@ -54,7 +39,8 @@
   <h3>Next up</h3>
   <ul>
       <li>Improve play-by-data-sms workaround
-      using <a href="https://github.com/eehouse/nbsproxy">NBSProxy</a></li>
+          using <a href="https://github.com/eehouse/nbsproxy">NBSProxy</a></li>
+      <li>More networking improvements</li>
   </ul>
 
   <p>Please let me know

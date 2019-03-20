@@ -319,7 +319,6 @@ public class GameLock implements AutoCloseable, Serializable {
     public void release()
     {
         int count = m_lockCount.decrementAndGet();
-        Log.d( TAG, "%s.release(): count NOW %d", this, count );
         if ( count == 0 ) {
             getFor( m_rowid ).unlock();
         }
@@ -328,7 +327,6 @@ public class GameLock implements AutoCloseable, Serializable {
     public GameLock retain()
     {
         int count = m_lockCount.incrementAndGet();
-        Log.d( TAG, "%s.retain(): count NOW %d", this, count );
         return this;
     }
 

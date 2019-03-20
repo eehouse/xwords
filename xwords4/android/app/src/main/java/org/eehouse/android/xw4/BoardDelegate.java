@@ -1358,7 +1358,7 @@ public class BoardDelegate extends DelegateBase
             break;
         case MESSAGE_NOGAME:
             final int gameID = (Integer)args[0];
-            if ( null != m_gi && gameID == m_gi.gameID && !isFinishing() ) { // NPE
+            if ( null != m_gi && gameID == m_gi.gameID && !isFinishing() ) {
                 post( new Runnable() {
                         @Override
                         public void run() {

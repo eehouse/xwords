@@ -201,7 +201,6 @@ public class GameUtils {
     private static GameSummary summarize( Context context, GameLock lock,
                                           GamePtr gamePtr, CurGameInfo gi )
     {
-        Log.d( TAG, "summarize(gi=%s)", gi );
         GameSummary summary = new GameSummary( gi );
         XwJNI.game_summarize( gamePtr, summary );
 
@@ -523,7 +522,6 @@ public class GameUtils {
                                  CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
     {
-        Log.d( TAG, "saveGame() gi: %s", gi );
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
         return saveGame( context, stream, lock, setCreate );
     }
@@ -531,7 +529,6 @@ public class GameUtils {
     public static long saveNewGame( Context context, GamePtr gamePtr,
                                     CurGameInfo gi, long groupID )
     {
-        Log.d( TAG, "saveNewGame() gi: %s", gi );
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
         long rowid;
         try ( GameLock lock = DBUtils.saveNewGame( context, stream, groupID, null ) ) {
@@ -1047,7 +1044,6 @@ public class GameUtils {
                             DBUtils.setMsgFlags( rowid, flags | curFlags );
                         }
                     }
-                    Log.d( TAG, "feedMessage(): gi: %s)", gi );
                 }
             } catch ( GameLock.GameLockedException gle ) {
                 DbgUtils.toastNoLock( TAG, context, rowid,
