@@ -521,33 +521,40 @@ public class RelayService extends XWJIService
         }
     }
 
-    private synchronized void connectSocketOnce() throws InterruptedException
+    private DatagramSocket connectSocketOnce() throws InterruptedException
     {
-        if ( null == s_UDPSocket ) {
-            final RelayService service = this;
-            int port = XWPrefs.getDefaultRelayPort( service );
-            String host = XWPrefs.getDefaultRelayHost( service );
-
-            try {
-                s_UDPSocket = new DatagramSocket();
-                s_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
-
-                InetAddress addr = InetAddress.getByName( host );
-                s_UDPSocket.connect( addr, port ); // remember this address
-                Log.d( TAG, "connectSocket(%s:%d): s_UDPSocket now %H",
-                       host, port, s_UDPSocket );
-            } catch( SocketException se ) {
-                Log.ex( TAG, se );
-                Assert.fail();
-            } catch( java.net.UnknownHostException uhe ) {
-                Log.ex( TAG, uhe );
-                Log.e( TAG, "connectSocketOnce(): %s", uhe.getMessage() );
-                // Assert.assertFalse( BuildConfig.DEBUG );
+        DatagramSocket result = null;
+        synchronized ( RelayService.class ) {
+            if ( null != s_UDPSocket && ! s_UDPSocket.isConnected() ) {
+                closeUDPSocket( s_UDPSocket );
             }
-        } else if( ! s_UDPSocket.isConnected() ) {
-            Log.e( TAG, "connectSocketOnce(): udp socket not connected" );
-            // Assert.assertTrue( s_UDPSocket.isConnected() );
+
+            if ( null == s_UDPSocket ) {
+                final RelayService service = this;
+                int port = XWPrefs.getDefaultRelayPort( service );
+                String host = XWPrefs.getDefaultRelayHost( service );
+
+                try {
+                    DatagramSocket udpSocket = new DatagramSocket();
+                    udpSocket.setSoTimeout(30 * 1000); // timeout so we can log
+
+                    InetAddress addr = InetAddress.getByName( host );
+                    udpSocket.connect( addr, port ); // remember this address
+                    Log.d( TAG, "connectSocket(%s:%d): udpSocket now %H",
+                           host, port, udpSocket );
+                    s_UDPSocket = udpSocket;
+                } catch( SocketException se ) {
+                    Log.ex( TAG, se );
+                    Assert.fail();
+                } catch( java.net.UnknownHostException uhe ) {
+                    Log.ex( TAG, uhe );
+                    Log.e( TAG, "connectSocketOnce(): %s", uhe.getMessage() );
+                    // Assert.assertFalse( BuildConfig.DEBUG );
+                }
+            }
+            result = s_UDPSocket;
         }
+        return result;
     }
 
     private boolean serviceQueue()
@@ -695,40 +702,40 @@ public class RelayService extends XWJIService
     {
         int sentLen = 0;
 
-        if ( packets.size() > 0 ) {
+        DatagramSocket udpSocket = s_UDPSocket;
+        if ( null != udpSocket && packets.size() > 0 ) {
             // Log.d( TAG, "sendViaUDP(): sending %d at once", packets.size() );
             final RelayService service = this;
             service.noteSent( packets, true );
             for ( PacketData packet : packets ) {
-                boolean getOut = true;
+                boolean breakNow = true;
                 byte[] data = packet.assemble();
                 try {
                     DatagramPacket udpPacket = new DatagramPacket( data, data.length );
-                    s_UDPSocket.send( udpPacket );
+                    udpSocket.send( udpPacket );
 
                     sentLen += udpPacket.getLength();
+                    // Why's this commented out?
                     // packet.setSentMS( nowMS );
-                    getOut = false;
-                } catch ( java.net.SocketException se ) {
-                    Log.ex( TAG, se );
+                    breakNow = false;
+                } catch ( IOException ex ) {
+                    Log.e( TAG, "fail sending to %s", udpSocket );
+                    Log.ex( TAG, ex );
                     Log.i( TAG, "Restarting threads to force new socket" );
                     ConnStatusHandler.updateStatusOut( service, null,
                                                        CommsConnType.COMMS_CONN_RELAY,
                                                        true );
+                    closeUDPSocket( udpSocket );
 
                     service.m_handler.post( new Runnable() {
                             public void run() {
                                 service.stopUDPReadThread();
                             }
                         } );
-                    break;
-                } catch ( java.io.IOException ioe ) {
-                    Log.e( TAG, "sendViaUDP(): failure \"%s\" sending on %s",
-                           s_UDPSocket, ioe.getMessage() );
                 } catch ( NullPointerException npe ) {
                     Log.w( TAG, "network problem; dropping packet" );
                 }
-                if ( getOut ) {
+                if ( breakNow ) {
                     break;
                 }
             }
@@ -736,8 +743,8 @@ public class RelayService extends XWJIService
             ConnStatusHandler.updateStatus( service, null,
                                             CommsConnType.COMMS_CONN_RELAY,
                                             sentLen > 0 );
-            Log.d( TAG, "sendViaUDP(): sent %d bytes (%d packets)",
-                   sentLen, packets.size() );
+            Log.d( TAG, "%s.sendViaUDP(): sent %d bytes (%d packets)",
+                   this, sentLen, packets.size() );
         }
 
         return sentLen;
@@ -1253,6 +1260,8 @@ public class RelayService extends XWJIService
     private static class UDPReadThread extends Thread {
         private RelayService[] mServiceHolder = {null};
 
+        UDPReadThread() { super("UDPReadThread"); }
+
         void setService( RelayService service )
         {
             Assert.assertNotNull( service );
@@ -1294,19 +1303,24 @@ public class RelayService extends XWJIService
 
         @Override
         public void run() {
+            Log.i( TAG, "%s.run() starting", this );
             Context context = XWApp.getContext();
             try {
-                if ( null == s_UDPSocket ) {
-                    getService().connectSocketOnce(); // block until this is done
+                DatagramSocket udpSocket = s_UDPSocket;
+                if ( null == udpSocket ) {
+                    udpSocket = getService().connectSocketOnce(); // block until this is done
                 }
 
-                Log.i( TAG, "%s.run() starting", this );
                 byte[] buf = new byte[1024];
+                DatagramPacket packet =
+                    new DatagramPacket( buf, buf.length );
                 for ( ; ; ) {
-                    DatagramPacket packet =
-                        new DatagramPacket( buf, buf.length );
+                    if ( interrupted() ) {
+                        Log.d( TAG, "%s.run() interrupted; outta here", this );
+                        break;
+                    }
                     try {
-                        s_UDPSocket.receive( packet );
+                        udpSocket.receive( packet );
                         postGotPacket( context, packet );
                         // final RelayService service = getService();
                         // service.resetExitTimer();
@@ -1315,8 +1329,8 @@ public class RelayService extends XWJIService
                         // poll timing out, typically
                         // Log.d( TAG, "iioe from receive(): %s", iioe.getMessage() );
                     } catch( IOException ioe ) {
-                        Log.d( TAG, "ioe from receive(): %s/%s", ioe.getMessage() );
-                        Assert.assertFalse( BuildConfig.DEBUG );
+                        Log.d( TAG, "ioe from receive(): %s", ioe.getMessage() );
+                        closeUDPSocket( udpSocket );
                         break;
                     }
                 }
@@ -1337,6 +1351,16 @@ public class RelayService extends XWJIService
             Intent intent = getIntentTo( context, MsgCmds.GOT_PACKET )
                 .putExtra( BINBUFFER, data );
             enqueueWork( context, intent );
+        }
+    }
+
+    private static void closeUDPSocket( DatagramSocket udpSocket )
+    {
+        synchronized ( RelayService.class ) {
+            if ( udpSocket == s_UDPSocket ) {
+                s_UDPSocket.close();
+                s_UDPSocket = null;
+            }
         }
     }
 
