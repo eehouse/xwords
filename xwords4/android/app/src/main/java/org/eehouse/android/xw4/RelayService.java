@@ -618,7 +618,12 @@ public class RelayService extends XWJIService
                       iter.hasNext(); ) {
                     PacketData packet = iter.next();
                     long sentMS = packet.getSentMS();
-                    Assert.assertTrue( prevSentMS <= sentMS );
+                    if ( prevSentMS > sentMS ) {
+                        Log.e( TAG, "error: prevSentMS: %d > sentMS: %d", prevSentMS, sentMS );
+                        Assert.assertFalse( BuildConfig.DEBUG );
+                        continue;
+                    }
+
                     prevSentMS = sentMS;
                     if ( sentMS > minSentMS ) {
                         break;
@@ -715,8 +720,7 @@ public class RelayService extends XWJIService
                     udpSocket.send( udpPacket );
 
                     sentLen += udpPacket.getLength();
-                    // Why's this commented out?
-                    // packet.setSentMS( nowMS );
+                    packet.setSentMS(); // this was commented out. Why?
                     breakNow = false;
                 } catch ( IOException ex ) {
                     Log.e( TAG, "fail sending to %s", udpSocket );
