@@ -291,16 +291,16 @@ public class Utils {
     }
 
     private static final String KEY_LAST_STALL_NOT = TAG + ".last_stall_note";
-    private static final long MIN_STALL_NOT_INTERVAL_MS = 1000 * 60 * 30;
+    private static final long MIN_STALL_NOTE_INTERVAL_MS = 1000 * 60 * 30;
     public static void showStallNotification( Context context, long ageMS )
     {
         long now = System.currentTimeMillis();
         long lastStallNotify = DBUtils.getLongFor( context, KEY_LAST_STALL_NOT, 0 );
-        if ( now - lastStallNotify > MIN_STALL_NOT_INTERVAL_MS ) {
+        if ( now - lastStallNotify > MIN_STALL_NOTE_INTERVAL_MS ) {
             String title = LocUtils.getString( context, R.string.notify_stall_title );
             String body = LocUtils.getString( context, R.string.notify_stall_body_fmt,
                                               (ageMS + 500) / 1000,
-                                              MIN_STALL_NOT_INTERVAL_MS / (1000 * 60));
+                                              MIN_STALL_NOTE_INTERVAL_MS / (1000 * 60));
             String channelID = Channels.getChannelID( context,
                                                       Channels.ID.SERVICE_STALL );
 
@@ -309,9 +309,6 @@ public class Utils {
             postNotification( context, intent, title, body,
                               R.string.notify_stall_title, channelID );
             DBUtils.setLongFor( context, KEY_LAST_STALL_NOT, now );
-        } else {
-        //     Log.d( TAG, "showStallNotification(): not posting for another %d ms",
-        //            MIN_STALL_NOT_INTERVAL_MS - (now - lastStallNotify) );
         }
     }
 

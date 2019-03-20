@@ -57,7 +57,7 @@ abstract class XWJIService extends JobIntentService {
     @Override
     public final void onHandleWork( Intent intent )
     {
-        forget( getClass(), intent );
+        forget( this, getClass(), intent );
 
         long timestamp = getTimestamp(intent);
         XWJICmds cmd = cmdFrom( intent );
@@ -73,7 +73,7 @@ abstract class XWJIService extends JobIntentService {
 
     protected static void enqueueWork( Context context, Class clazz, Intent intent )
     {
-        remember( clazz, intent );
+        remember( context, clazz, intent );
         enqueueWork( context, clazz, sJobIDs.get(clazz), intent );
         checkForStall( context );
     }
@@ -105,17 +105,19 @@ abstract class XWJIService extends JobIntentService {
 
     private static Map<String, List<Intent>> sPendingIntents = new HashMap<>();
 
-    private static void remember( Class clazz, Intent intent )
+    private static void remember( Context context, Class clazz, Intent intent )
     {
-        String name = clazz.getSimpleName();
-        synchronized ( sPendingIntents ) {
-            if ( !sPendingIntents.containsKey( name )) {
-                sPendingIntents.put( name, new ArrayList<Intent>() );
-            }
-            sPendingIntents.get(name).add( intent );
-            if ( LOG_INTENT_COUNTS ) {
-                Log.d( TAG, "remember(): now have %d intents for class %s",
-                       sPendingIntents.get(name).size(), name );
+        if ( stallCheckEnabled( context ) ) {
+            String name = clazz.getSimpleName();
+            synchronized ( sPendingIntents ) {
+                if ( !sPendingIntents.containsKey( name )) {
+                    sPendingIntents.put( name, new ArrayList<Intent>() );
+                }
+                sPendingIntents.get(name).add( intent );
+                if ( LOG_INTENT_COUNTS ) {
+                    Log.d( TAG, "remember(): now have %d intents for class %s",
+                           sPendingIntents.get(name).size(), name );
+                }
             }
         }
     }
@@ -123,57 +125,65 @@ abstract class XWJIService extends JobIntentService {
     private static final long AGE_THRESHOLD_MS = 1000 * 60; // one minute to start
     private static void checkForStall( Context context )
     {
-        long now = System.currentTimeMillis();
-        long maxAge = 0;
-        synchronized ( sPendingIntents ) {
-            for ( String simpleName : sPendingIntents.keySet() ) {
-                List<Intent> intents = sPendingIntents.get( simpleName );
-                if ( 1 <= intents.size() ) {
-                    Intent intent = intents.get(0);
-                    long timestamp = intent.getLongExtra( TIMESTAMP, -1 );
-                    long age = now - timestamp;
-                    if ( age > maxAge ) {
-                        maxAge = age;
+        if ( stallCheckEnabled( context ) ) {
+            long now = System.currentTimeMillis();
+            long maxAge = 0;
+            synchronized ( sPendingIntents ) {
+                for ( String simpleName : sPendingIntents.keySet() ) {
+                    List<Intent> intents = sPendingIntents.get( simpleName );
+                    if ( 1 <= intents.size() ) {
+                        Intent intent = intents.get(0);
+                        long timestamp = intent.getLongExtra( TIMESTAMP, -1 );
+                        long age = now - timestamp;
+                        if ( age > maxAge ) {
+                            maxAge = age;
+                        }
                     }
                 }
             }
-        }
 
-        if ( maxAge > AGE_THRESHOLD_MS ) {
-            Utils.showStallNotification( context, maxAge );
+            if ( maxAge > AGE_THRESHOLD_MS ) {
+                Utils.showStallNotification( context, maxAge );
+            }
         }
     }
 
-    private static void forget( Class clazz, Intent intent )
+    private static void forget( Context context, Class clazz, Intent intent )
     {
-        String name = clazz.getSimpleName();
-        synchronized ( sPendingIntents ) {
-            String found = null;
-            if ( sPendingIntents.containsKey( name ) ) {
-                List<Intent> intents = sPendingIntents.get( name );
-                for (Iterator<Intent> iter = intents.iterator();
-                     iter.hasNext(); ) {
-                    Intent candidate = iter.next();
-                    if ( areSame( candidate, intent ) ) {
-                        found = name;
-                        iter.remove();
-                        break;
-                    } else {
-                        Log.d( TAG, "skipping intent: %s",
-                               DbgUtils.extrasToString( candidate ) );
+        if ( stallCheckEnabled( context ) ) {
+            String name = clazz.getSimpleName();
+            synchronized ( sPendingIntents ) {
+                String found = null;
+                if ( sPendingIntents.containsKey( name ) ) {
+                    List<Intent> intents = sPendingIntents.get( name );
+                    for (Iterator<Intent> iter = intents.iterator();
+                         iter.hasNext(); ) {
+                        Intent candidate = iter.next();
+                        if ( areSame( candidate, intent ) ) {
+                            found = name;
+                            iter.remove();
+                            break;
+                        } else {
+                            Log.d( TAG, "skipping intent: %s",
+                                   DbgUtils.extrasToString( candidate ) );
+                        }
                     }
-                }
 
-                if ( found != null ) {
-                    if ( LOG_INTENT_COUNTS ) {
-                        Log.d( TAG, "forget(): now have %d intents for class %s",
-                               sPendingIntents.get(found).size(), found );
+                    if ( found != null ) {
+                        if ( LOG_INTENT_COUNTS ) {
+                            Log.d( TAG, "forget(): now have %d intents for class %s",
+                                   sPendingIntents.get(found).size(), found );
+                        }
                     }
-                } else {
-                    Log.e( TAG, "intent %s not found", intent );
                 }
             }
         }
+    }
+
+    private static boolean stallCheckEnabled( Context context )
+    {
+        return XWPrefs.getPrefsBoolean( context, R.string.key_enable_stallnotify,
+                                        BuildConfig.DEBUG );
     }
 
     private static boolean areSame( Intent intent1, Intent intent2 )
