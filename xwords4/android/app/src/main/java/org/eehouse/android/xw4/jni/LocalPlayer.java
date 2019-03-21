@@ -22,15 +22,16 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.text.TextUtils;
-
 import java.io.Serializable;
 
 import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
+import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 
 public class LocalPlayer implements Serializable {
+    private static final String TAG = LocalPlayer.class.getSimpleName();
     public String name;
     public String password;
     public String dictName;
@@ -42,8 +43,8 @@ public class LocalPlayer implements Serializable {
     {
         isLocal = true;
         robotIQ = 0;            // human
-        String fmt = context.getString( R.string.player_fmt);
-        name = String.format( fmt, num + 1 );
+        name = CommonPrefs.getDefaultPlayerName( context, num, true );
+        Log.d( TAG, "__init(%d) => %s", num, name );
         password = "";
 
         // Utils.testSerialization( this );
