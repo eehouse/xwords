@@ -893,9 +893,11 @@ public class BTService extends XWJIService {
                     && Arrays.equals( mData, other.mData );
                 if ( result ) {
                     if ( null != mMsgID && !mMsgID.equals( other.mMsgID ) ) {
-                        Log.e( TAG, "hmmm: identical but msgIDs differ: new %s vs old %s",
+                        Log.d( TAG, "hmmm: identical but msgIDs differ: new %s vs old %s",
                                mMsgID, other.mMsgID );
-                        Assert.assertFalse( BuildConfig.DEBUG );
+                        // new 0:0 vs old 2:0 is ok!! since 0: is replaced by
+                        // 2 or more when device becomes a client
+                        // Assert.assertFalse( BuildConfig.DEBUG ); // fired!!!
                     }
                 }
                 return result;
