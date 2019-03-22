@@ -2,7 +2,7 @@
 
 set -u -e
 
-VARIANT=Xw4
+VARIANT=Xw4NoSMS
 TAGNAME=""
 FILES=""
 LIST_FILE=''
