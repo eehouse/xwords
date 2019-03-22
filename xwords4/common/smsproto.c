@@ -25,19 +25,18 @@
 #include "comtypes.h"
 #include "strutils.h"
 
-# define MAX_WAIT 3
+#define MAX_WAIT 3
 // # define MAX_MSG_LEN 50         /* for testing */
-# define MAX_LEN_BINARY 115
+#define MAX_LEN_BINARY 115
 /* PENDING: Might want to make SEND_NOW_SIZE smaller; might as well send now
    if even the smallest new message is likely to put us over. */
-# define SEND_NOW_SIZE MAX_LEN_BINARY
+#define SEND_NOW_SIZE MAX_LEN_BINARY
 
 /* To match the SMSService format */
-# define SMS_PROTO_VERSION_JAVA 1
-# define SMS_PROTO_VERSION_COMBO 2
-# define SMS_PROTO_VERSION SMS_PROTO_VERSION_JAVA
+#define SMS_PROTO_VERSION_JAVA 1
+#define SMS_PROTO_VERSION_COMBO 2
 
-# define PARTIALS_FORMAT 0
+#define PARTIALS_FORMAT 0
 
 typedef struct _MsgRec {
     XP_U32 createSeconds;
@@ -831,7 +830,7 @@ toNetMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld )
                 SMSMsgNet newMsg = { .len = useLen + 4,
                                      .data = XP_MALLOC( state->mpool, useLen + 4 )
                 };
-                newMsg.data[0] = SMS_PROTO_VERSION;
+                newMsg.data[0] = SMS_PROTO_VERSION_JAVA;
                 newMsg.data[1] = msgID;
                 newMsg.data[2] = indx;
                 newMsg.data[3] = count;
