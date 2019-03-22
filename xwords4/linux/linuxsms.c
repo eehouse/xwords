@@ -374,7 +374,7 @@ check_for_files( gpointer data )
 static gint
 check_for_files_once( gpointer data )
 {
-    LOG_FUNC();
+    // LOG_FUNC();
     LaunchParams* params = (LaunchParams*)data;
     LinSMSData* storage = getStorage( params );
 
@@ -385,7 +385,7 @@ check_for_files_once( gpointer data )
         struct timespec oldestModTime;
 
         GDir* dir = g_dir_open( storage->myQueue, 0, NULL );
-        XP_LOGF( "%s: opening queue %s", __func__, storage->myQueue );
+        // XP_LOGF( "%s: opening queue %s", __func__, storage->myQueue );
         for ( ; ; ) {
             const gchar* name = g_dir_read_name( dir );
             if ( NULL == name ) {
@@ -431,7 +431,7 @@ check_for_files_once( gpointer data )
             nRead = decodeAndDelete( storage, oldestFile, buf,
                                      sizeof(buf), &fromAddr );
         } else {
-            XP_LOGF( "%s: no file found", __func__ );
+            // XP_LOGF( "%s: no file found", __func__ );
         }
 
         unlock_queue( storage );
