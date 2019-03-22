@@ -52,17 +52,12 @@ public class Perms23 {
     public static enum Perm {
         READ_PHONE_STATE(Manifest.permission.READ_PHONE_STATE),
         STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        SEND_SMS(Manifest.permission.SEND_SMS, BuildConfig.SMS_BANNED),
-        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS, BuildConfig.SMS_BANNED),
+        SEND_SMS(Manifest.permission.SEND_SMS),
+        RECEIVE_SMS(Manifest.permission.RECEIVE_SMS),
         READ_CONTACTS(Manifest.permission.READ_CONTACTS);
 
         private String m_str;
-        private boolean m_banned;
-        private Perm(String str) { this(str, false); }
-        private Perm( String str, boolean banned ) {
-            m_str = str;
-            m_banned = banned;
-        }
+        private Perm(String str) { m_str = str; }
 
         public String getString() { return m_str; }
         public boolean isBanned( Context context )
@@ -71,8 +66,8 @@ public class Perms23 {
             // SMS_BANNED. That way absence of the permission from a variant's
             // manifest is the only way being banned is expressed. It sucks
             // keeping two things in sync.
-            Assert.assertFalse( m_banned == permInManifest( context, this ) );
-            return m_banned;
+            // Assert.assertFalse( m_banned == permInManifest( context, this ) );
+            return !permInManifest( context, this );
         }
         public static Perm getFor( String str ) {
             Perm result = null;
