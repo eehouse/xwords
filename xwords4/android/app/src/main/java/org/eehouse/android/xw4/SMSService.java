@@ -397,6 +397,8 @@ public class SMSService extends XWJIService {
             sendBuffers( msgs, toPhone );
         }
         if ( waitSecs > 0 ) {
+            // PENDING
+            Log.d( TAG, "calling postResend(), but might want to avoid enqueueWork!" );
             postResend( toPhone, waitSecs );
         }
     }
