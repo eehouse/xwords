@@ -31,6 +31,6 @@ done
 cd $(dirname $0)/..
 pwd
 
-./gradlew $CLEAN asXw4Rel
+./gradlew $CLEAN asXw4NoSMSRel
 ./scripts/sign-align.sh --apk $(find app/build -name '*xw4-release-unsigned-*.apk')
 adb install -r $(find app/build -name '*xw4-release-signed-*.apk')
