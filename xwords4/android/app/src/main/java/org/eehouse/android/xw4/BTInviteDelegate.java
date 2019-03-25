@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,6 +53,8 @@ public class BTInviteDelegate extends InviteDelegate {
     };
     private static final boolean ENABLE_FAKER = false;
     private static final int SCAN_SECONDS = 5;
+
+    private static Persisted sPersisted;
 
     private Activity m_activity;
     private ProgressBar mProgressBar;
@@ -107,7 +110,6 @@ public class BTInviteDelegate extends InviteDelegate {
                 });
         }
     }
-    private Persisted mPersisted;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
@@ -142,11 +144,11 @@ public class BTInviteDelegate extends InviteDelegate {
 
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
 
-        load();
-        if ( mPersisted.empty() ) {
+        load( m_activity );
+        if ( sPersisted.empty() ) {
             scan();
         } else {
-            updateListAdapter( mPersisted.pairs );
+            updateListAdapter( sPersisted.pairs );
         }
     }
 
@@ -180,7 +182,7 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void run() {
                         hideProgress();
 
-                        if ( mPersisted.empty() || 0 == mNDevsThisScan ) {
+                        if ( sPersisted.empty() || 0 == mNDevsThisScan ) {
                             makeNotAgainBuilder( R.string.not_again_emptybtscan,
                                                  R.string.key_notagain_emptybtscan )
                                 .show();
@@ -207,9 +209,9 @@ public class BTInviteDelegate extends InviteDelegate {
         String devName = ((TwoStringPair)data).str2;
 
         String msg = null;
-        if ( mPersisted.stamps.containsKey( devName ) ) {
+        if ( sPersisted.stamps.containsKey( devName ) ) {
             CharSequence elapsed = DateUtils
-                .getRelativeTimeSpanString( mPersisted.stamps.get( devName ),
+                .getRelativeTimeSpanString( sPersisted.stamps.get( devName ),
                                             System.currentTimeMillis(),
                                             DateUtils.SECOND_IN_MILLIS );
             msg = getString( R.string.bt_scan_age_fmt, elapsed );
@@ -232,7 +234,7 @@ public class BTInviteDelegate extends InviteDelegate {
     private void scan()
     {
         if ( ENABLE_FAKER && Utils.nextRandomInt() % 5 == 0 ) {
-            mPersisted.add( "00:00:00:00:00:00", "Do Not Invite Me" );
+            sPersisted.add( "00:00:00:00:00:00", "Do Not Invite Me" );
         }
 
         int count = BTService.getPairedCount( m_activity );
@@ -253,10 +255,10 @@ public class BTInviteDelegate extends InviteDelegate {
         DbgUtils.assertOnUIThread();
 
         ++mNDevsThisScan;
-        mPersisted.add( dev.getAddress(), dev.getName() );
-        store();
+        sPersisted.add( dev.getAddress(), dev.getName() );
+        store( m_activity );
 
-        updateListAdapter( mPersisted.pairs );
+        updateListAdapter( sPersisted.pairs );
         tryEnable();
     }
 
@@ -298,23 +300,25 @@ public class BTInviteDelegate extends InviteDelegate {
             }, 1000 * inSeconds );
     }
 
-    private void load()
+    private synchronized static void load( Context context )
     {
-        try {
-            String str64 = DBUtils.getStringFor( m_activity, KEY_PERSIST, null );
-            mPersisted = (Persisted)Utils.string64ToSerializable( str64 );
-        } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
+        if ( null == sPersisted ) {
+            try {
+                String str64 = DBUtils.getStringFor( context, KEY_PERSIST, null );
+                sPersisted = (Persisted)Utils.string64ToSerializable( str64 );
+            } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
 
-        if ( null == mPersisted ) {
-            mPersisted = new Persisted();
+            if ( null == sPersisted ) {
+                sPersisted = new Persisted();
+            }
         }
     }
 
-    private void store()
+    private synchronized static void store( Context context )
     {
-        String str64 = mPersisted == null
-            ? "" : Utils.serializableToString64( mPersisted );
-        DBUtils.setStringFor( m_activity, KEY_PERSIST, str64 );
+        String str64 = sPersisted == null
+            ? "" : Utils.serializableToString64( sPersisted );
+        DBUtils.setStringFor( context, KEY_PERSIST, str64 );
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -327,16 +331,23 @@ public class BTInviteDelegate extends InviteDelegate {
             BTService.openBTSettings( m_activity );
             break;
         case CLEAR_ACTION:
-            mPersisted.remove( getChecked() );
-            store();
+            sPersisted.remove( getChecked() );
+            store( m_activity );
 
             clearChecked();
-            updateListAdapter( mPersisted.pairs );
+            updateListAdapter( sPersisted.pairs );
             tryEnable();
             break;
         default:
             handled = super.onPosButton( action, params );
         }
         return handled;
+    }
+
+    public static void onHeardFromDev( Context context, BluetoothDevice dev )
+    {
+        load( context );
+        sPersisted.add( dev.getAddress(), dev.getName() );
+        store( context );
     }
 }
