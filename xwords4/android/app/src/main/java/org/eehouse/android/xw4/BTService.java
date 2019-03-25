@@ -576,6 +576,8 @@ public class BTService extends XWJIService {
                     byte proto = inStream.readByte();
                     if ( proto == BT_PROTO_BATCH || proto == BT_PROTO_JSONS ) {
                         resetSenderFor( socket );         // still looks good here?
+                        BTInviteDelegate.onHeardFromDev( XWApp.getContext(),
+                                                         socket.getRemoteDevice() );
 
                         new PacketParser( proto )
                             .dispatchAll( inStream, socket, BTListenerThread.this );
