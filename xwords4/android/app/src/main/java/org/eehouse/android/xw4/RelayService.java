@@ -298,7 +298,7 @@ public class RelayService extends XWJIService
     {
         Log.d( TAG, "receiveInvitation: got nli from %d: %s", srcDevID,
                nli.toString() );
-        if ( !mHelper.handleInvitation( this, nli, null,
+        if ( !mHelper.handleInvitation( nli, null,
                                         DictFetchOwner.OWNER_RELAY ) ) {
             Log.d( TAG, "handleInvitation() failed" );
         }
@@ -491,7 +491,7 @@ public class RelayService extends XWJIService
                 String msgNo = intent.getStringExtra( MSGNUM );
                 sendNoConnMessage( rowid, relayID, msg, msgNo, timestamp );
             } else {
-                mHelper.receiveMessage( this, rowid, null, msg, s_addr );
+                mHelper.receiveMessage( rowid, null, msg, s_addr );
             }
             break;
         case INVITE:
@@ -1253,7 +1253,7 @@ public class RelayService extends XWJIService
                     long rowid = rowIDs[ii];
                     sink.setRowID( rowid );
                     for ( byte[] msg : forOne ) {
-                        mHelper.receiveMessage( this, rowid, sink, msg, s_addr );
+                        mHelper.receiveMessage( rowid, sink, msg, s_addr );
                     }
                 }
             }

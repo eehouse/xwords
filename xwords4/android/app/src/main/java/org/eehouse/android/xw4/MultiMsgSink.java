@@ -70,7 +70,7 @@ public class MultiMsgSink implements TransportProcs {
 
     public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
     {
-        return SMSService.sendPacket( m_context, addr.sms_phone, gameID, buf );
+        return NBSProto.sendPacket( m_context, addr.sms_phone, gameID, buf );
     }
 
     public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )

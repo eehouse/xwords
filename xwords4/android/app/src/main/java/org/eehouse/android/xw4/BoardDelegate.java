@@ -2998,7 +2998,7 @@ public class BoardDelegate extends DelegateBase
                                   boolean askOk )
     {
         if ( XWPrefs.getNBSEnabled( m_activity ) ) {
-            SMSService.inviteRemote( m_activity, phone, nli );
+            NBSProto.inviteRemote( m_activity, phone, nli );
             recordInviteSent( InviteMeans.SMS_DATA, phone );
         } else if ( askOk ) {
             makeConfirmThenBuilder( R.string.warn_sms_disabled,

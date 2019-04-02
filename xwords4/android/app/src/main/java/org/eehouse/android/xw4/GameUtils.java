@@ -1272,7 +1272,7 @@ public class GameUtils {
                                 BTService.gameDied( context, addr.bt_btAddr, gameID );
                                 break;
                             case COMMS_CONN_SMS:
-                                SMSService.gameDied( context, gameID, addr.sms_phone );
+                                NBSProto.gameDied( context, gameID, addr.sms_phone );
                                 break;
                             case COMMS_CONN_P2P:
                                 WiDirService.gameDied( addr.p2p_addr, gameID );

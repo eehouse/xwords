@@ -51,7 +51,8 @@ public class SMSReceiver extends BroadcastReceiver {
                         try {
                             String phone = sms.getOriginatingAddress();
                             byte[] body = sms.getUserData();
-                            SMSService.handleFrom( context, body, phone );
+                            NBSProto.handleFrom( context, body, phone,
+                                                 getConfiguredPort( context ) );
                         } catch ( NullPointerException npe ) {
                             Log.ex( TAG, npe );
                         }

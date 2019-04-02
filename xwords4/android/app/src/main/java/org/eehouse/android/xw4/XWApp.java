@@ -143,7 +143,7 @@ public class XWApp extends Application
     public void onDataReceived( short port, String fromPhone, byte[] data )
     {
         Assert.assertTrue( port == mPort || !BuildConfig.DEBUG );
-        SMSService.handleFrom( this, data, fromPhone );
+        NBSProto.handleFrom( this, data, fromPhone, port );
     }
 
     @Override

@@ -782,7 +782,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void showConnAfterCheck()
     {
-        if ( null == SMSService.getPhoneInfo( m_activity ) ) {
+        if ( null == NBSProto.getPhoneInfo( m_activity ) ) {
             Perms23.tryGetPerms( this, Perms23.Perm.READ_PHONE_STATE,
                                  R.string.phone_state_rationale,
                                  Action.ASKED_PHONE_STATE );

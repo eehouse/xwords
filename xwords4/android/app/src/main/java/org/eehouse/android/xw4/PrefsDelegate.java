@@ -189,11 +189,11 @@ public class PrefsDelegate extends DelegateBase
                 Log.enable( sp.getBoolean( key, false ) );
                 break;
             case R.string.key_show_sms:
-                SMSService.smsToastEnable( sp.getBoolean( key, false ) );
+                NBSProto.smsToastEnable( sp.getBoolean( key, false ) );
                 break;
             case R.string.key_enable_nbs:
                 if ( ! sp.getBoolean( key, true ) ) {
-                    SMSService.stopService( m_activity );
+                    NBSProto.stopService( m_activity );
                 }
                 break;
             case R.string.key_download_path:
@@ -224,7 +224,7 @@ public class PrefsDelegate extends DelegateBase
                 forceDictsMatch( sp.getString( key, null ) );
                 break;
             case R.string.key_force_radio:
-                SMSService.resetPhoneInfo();
+                NBSProto.resetPhoneInfo();
                 break;
             case R.string.key_disable_nag:
             case R.string.key_disable_nag_solo:
