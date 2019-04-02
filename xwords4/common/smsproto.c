@@ -69,6 +69,7 @@ typedef struct _FromPhoneRec {
 struct SMSProto {
     XW_DUtilCtxt* dutil;
     pthread_t creator;
+    pthread_mutex_t mutex;
     XP_U16 nNextID;
     int lastStoredSize;
     XP_U16 nToPhones;
@@ -82,32 +83,6 @@ struct SMSProto {
 #endif
     MPSLOT;
 };
-
-#ifdef DEBUG
-# define CHECK_START( state ) {                                 \
-    SMSProto* _state = state;                                   \
-    pthread_t _self = pthread_self();                           \
-    if ( _state->nestCount == 0 ) {                             \
-        XP_ASSERT( _state->starter == 0 );                      \
-        _state->starter = _self;                                \
-    } else {                                                    \
-        XP_ASSERT( _state->starter == _self );                  \
-    }                                                           \
-    ++_state->nestCount;                                        \
-    XP_LOGF( "%s(): check: %d", __func__, _state->nestCount );  \
-
-# define CHECK_END()                                         \
-    if ( --_state->nestCount == 0 ) {                           \
-        _state->starter = 0;                                    \
-    }                                                           \
-    XP_LOGF( "%s(): check: %d", __func__, _state->nestCount );  \
-    }                                                           \
-
-
-#else
-# define CHECK_START(s)
-# define CHECK_END()
-#endif
 
 #define KEY_PARTIALS PERSIST_KEY("partials")
 #define KEY_NEXTID PERSIST_KEY("nextID")
@@ -138,6 +113,7 @@ SMSProto*
 smsproto_init( MPFORMAL XW_DUtilCtxt* dutil )
 {
     SMSProto* state = (SMSProto*)XP_CALLOC( mpool, sizeof(*state) );
+    pthread_mutex_init( &state->mutex, NULL );
     state->dutil = dutil;
     MPASSIGN( state->mpool, mpool );
 
@@ -171,6 +147,8 @@ smsproto_free( SMSProto* state )
             }
         }
         XP_ASSERT( !state->fromPhoneRecs ); /* above nulls this once empty */
+
+        pthread_mutex_destroy( &state->mutex );
 
         XP_FREEP( state->mpool, &state );
     }
@@ -234,7 +212,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
 {
     XP_USE( toPort );
     SMSMsgArray* result = NULL;
-    CHECK_START( state );
+    pthread_mutex_lock( &state->mutex );
 
 #ifdef DEBUG
     XP_UCHAR* checksum = dutil_md5sum( state->dutil, buf, buflen );
@@ -273,7 +251,8 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
 
     XP_LOGF( "%s() => %p (len=%d, *waitSecs=%d)", __func__, result,
              !!result ? result->nMsgs : 0, *waitSecsP );
-    CHECK_END();
+
+    pthread_mutex_unlock( &state->mutex );
     return result;
 }
 
@@ -315,7 +294,7 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
 {
     XP_LOGF( "%s(): len=%d, fromPhone=%s", __func__, len, fromPhone );
     SMSMsgArray* result = NULL;
-    CHECK_START( state );
+    pthread_mutex_lock( &state->mutex );
 
     XWStreamCtxt* stream = mkStream( state );
     stream_putBytes( stream, data, len );
@@ -383,14 +362,15 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
     stream_destroy( stream );
 
     XP_LOGF( "%s() => %p (len=%d)", __func__, result, (!!result) ? result->nMsgs : 0 );
-    CHECK_END();
+
+    pthread_mutex_unlock( &state->mutex );
     return result;
 }
 
 void
 smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
 {
-    CHECK_START( state );
+    pthread_mutex_lock( &state->mutex );
 
     for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
         XP_U8** ptr = arr->format == FORMAT_LOC
@@ -412,7 +392,7 @@ smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
     }
     XP_FREEP( state->mpool, ptr );
     XP_FREEP( state->mpool, &arr );
-    CHECK_END();
+    pthread_mutex_unlock( &state->mutex );
 }
 
 static void
@@ -644,8 +624,6 @@ freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex, int msgIDIndex
 static void
 savePartials( SMSProto* state )
 {
-    CHECK_START( state );
-
     XWStreamCtxt* stream = mkStream( state );
     stream_putU8( stream, PARTIALS_FORMAT );
 
@@ -679,7 +657,6 @@ savePartials( SMSProto* state )
     stream_destroy( stream );
 
     LOG_RETURN_VOID();
-    CHECK_END();
 } /* savePartials */
 
 static void
