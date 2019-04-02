@@ -126,7 +126,7 @@ public class Utils {
     {
         boolean result = false;
         if ( Perms23.havePermissions( context, Perm.READ_PHONE_STATE ) ) {
-            NBSProto.SMSPhoneInfo info = NBSProto.getPhoneInfo( context );
+            SMSPhoneInfo info = SMSPhoneInfo.get( context );
             result = null != info && info.isPhone && info.isGSM;
         }
         Log.d( TAG, "isGSMPhone() => %b", result );

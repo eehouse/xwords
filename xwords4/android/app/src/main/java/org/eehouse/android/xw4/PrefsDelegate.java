@@ -224,7 +224,7 @@ public class PrefsDelegate extends DelegateBase
                 forceDictsMatch( sp.getString( key, null ) );
                 break;
             case R.string.key_force_radio:
-                NBSProto.resetPhoneInfo();
+                SMSPhoneInfo.reset();
                 break;
             case R.string.key_disable_nag:
             case R.string.key_disable_nag_solo:
