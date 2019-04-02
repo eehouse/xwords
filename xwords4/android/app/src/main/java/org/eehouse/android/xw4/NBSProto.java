@@ -167,67 +167,36 @@ public class NBSProto {
         s_phoneInfo = null;
     }
 
-
-    private static class SendThread extends Thread {
+    static abstract class NBSProtoThread extends Thread {
         private String mPhone;
         private short mPort;
-        private LinkedBlockingQueue<SendElem> mQueue = new LinkedBlockingQueue<>();
+        private LinkedBlockingQueue<QueueElem> mQueue = new LinkedBlockingQueue<>();
 
-        SendThread( String phone ) {
+        NBSProtoThread( String name, String phone, short port )
+        {
+            super( name );
             mPhone = phone;
-            mPort = getNBSPort();
+            mPort = port;
         }
 
         String getPhone() { return mPhone; }
+        short getPort() { return mPort; }
 
-        void addPacket( Context context, int gameID, byte[] binmsg )
-        {
-            mQueue.add( new SendElem( context, SMS_CMD.DATA, gameID, binmsg ) );
-        }
+        abstract void removeSelf();
+        abstract void process( QueueElem elem, boolean exiting );
 
-        void addInvite( Context context, NetLaunchInfo nli )
-        {
-            mQueue.add( new SendElem( context, SMS_CMD.INVITE, nli ) );
-        }
-
-        void addDeathNotice( Context context, int gameID )
-        {
-            mQueue.add( new SendElem( context, SMS_CMD.DEATH, gameID, null ) );
-        }
-
-        void addAck( Context context, int gameID )
-        {
-            mQueue.add( new SendElem( context, SMS_CMD.ACK_INVITE, gameID, null ) );
-        }
+        void add( QueueElem elem ) { mQueue.add( elem ); }
 
         @Override
         public void run() {
             Log.d( TAG, "%s.run() starting for %s", this, mPhone );
-            int[] waitSecs = { 5 };
 
             while ( !isInterrupted() ) {
-                SendElem elem;
-
                 try {
-                    elem = mQueue.poll( waitSecs[0], TimeUnit.SECONDS );
-
-                    byte[][] msgs;
-                    if ( null == elem ) { // timed out?
-                        // removeSelf( this );
-                        msgs = XwJNI.smsproto_prepOutbound( SMS_CMD.NONE, 0, null, mPhone,
-                                                            mPort, true, waitSecs );
-                    } else {
-                        boolean newSMSEnabled = XWPrefs.getSMSProtoEnabled( elem.context );
-                        boolean forceNow = !newSMSEnabled; // || cmd == SMS_CMD.INVITE;
-                        msgs = XwJNI.smsproto_prepOutbound( elem.cmd, elem.gameID, elem.data, mPhone,
-                                                            mPort, forceNow, waitSecs );
-                    }
-
-                    if ( null != msgs ) {
-                        sendBuffers( msgs, mPhone, mPort );
-                    }
-                    if ( waitSecs[0] <= 0 ) {
-                        waitSecs[0] = 5;
+                    QueueElem elem = mQueue.poll( 5, TimeUnit.MINUTES );
+                    process( elem, false );
+                    if ( null == elem ) {
+                        break;
                     }
                 } catch ( InterruptedException iex ) {
                     Log.d( TAG, "poll() threw: %s", iex.getMessage() );
@@ -235,19 +204,104 @@ public class NBSProto {
                 }
             }
 
-            // To be safe, call again
-            removeSelf( this );
+            removeSelf();
+
+            // Now just empty out the queue, in case anything was added
+            // late. Note that if we're abandoning a half-assembled
+            // multi-message buffer that data's lost until a higher level
+            // resends. So don't let that happen.
+            for ( ; ; ) {
+                QueueElem elem = mQueue.poll();
+                process( elem, true );
+                if ( null == elem ) {
+                    break;
+                }
+            }
 
             // Better not be leaving anything behind!
             Assert.assertTrue( 0 == mQueue.size() || !BuildConfig.DEBUG );
             Log.d( TAG, "%s.run() DONE", this );
         }
 
-        private void sendBuffers( byte[][] fragments, String phone, short nbsPort )
+        private SMSServiceHelper mHelper = null;
+        protected SMSServiceHelper getHelper( Context context )
+        {
+            if ( null == mHelper ) {
+                mHelper = new SMSServiceHelper( context );
+            }
+            return mHelper;
+        }
+
+        static class QueueElem {
+            Context context;
+            QueueElem( Context context ) { this.context = context; }
+        }
+    }
+
+    private static class SendThread extends NBSProtoThread {
+        private int[] mWaitSecs = { 0 };
+        private boolean mForceNow;
+
+        SendThread( String phone ) {
+            super( "SendThread", phone, getNBSPort() );
+
+            boolean newSMSEnabled = XWPrefs.getSMSProtoEnabled( XWApp.getContext() );
+            mForceNow = !newSMSEnabled;
+        }
+
+        void addPacket( Context context, int gameID, byte[] binmsg )
+        {
+            add( new SendElem( context, SMS_CMD.DATA, gameID, binmsg ) );
+        }
+
+        void addInvite( Context context, NetLaunchInfo nli )
+        {
+            add( new SendElem( context, SMS_CMD.INVITE, nli ) );
+        }
+
+        void addDeathNotice( Context context, int gameID )
+        {
+            add( new SendElem( context, SMS_CMD.DEATH, gameID, null ) );
+        }
+
+        void addAck( Context context, int gameID )
+        {
+            add( new SendElem( context, SMS_CMD.ACK_INVITE, gameID, null ) );
+        }
+
+        @Override
+        protected void removeSelf() { NBSProto.removeSelf( this ); }
+
+        @Override
+        protected void process( QueueElem qelm, boolean exiting )
+        {
+            SendElem elem = (SendElem)qelm;
+            byte[][] msgs;
+            boolean forceNow = mForceNow || exiting;
+            if ( null != elem ) {
+                msgs = XwJNI.smsproto_prepOutbound( elem.cmd, elem.gameID, elem.data,
+                                                    getPhone(), getPort(), forceNow, mWaitSecs );
+            } else { // timed out
+                msgs = XwJNI.smsproto_prepOutbound( SMS_CMD.NONE, 0, null, getPhone(),
+                                                    getPort(), forceNow, mWaitSecs );
+            }
+
+            if ( null != msgs ) {
+                sendBuffers( msgs );
+            }
+            // if ( mWaitSecs[0] <= 0 ) {
+            //     mWaitSecs[0] = 5;
+            // }
+        }
+
+        private void sendBuffers( byte[][] fragments )
         {
             Context context = XWApp.getContext();
             boolean success = false;
             if ( XWPrefs.getNBSEnabled( context ) ) {
+
+                String phone = getPhone();
+                short port = getPort();
 
                 // Try send-to-self
                 if ( XWPrefs.getSMSToSelfEnabled( context ) ) {
@@ -255,7 +309,7 @@ public class NBSProto {
                     if ( null != myPhone
                          && PhoneNumberUtils.compare( phone, myPhone ) ) {
                         for ( byte[] fragment : fragments ) {
-                            handleFrom( context, fragment, phone, nbsPort );
+                            handleFrom( context, fragment, phone, port );
                         }
                         success = true;
                     }
@@ -272,9 +326,9 @@ public class NBSProto {
                             : makeStatusIntent( context, MSG_DELIVERED );
                         for ( byte[] fragment : fragments ) {
                             if ( useProxy ) {
-                                NBSProxy.send( context, phone, nbsPort, fragment );
+                                NBSProxy.send( context, phone, port, fragment );
                             } else {
-                                mgr.sendDataMessage( phone, null, nbsPort, fragment,
+                                mgr.sendDataMessage( phone, null, port, fragment,
                                                      sent, delivery );
                             }
                         }
@@ -284,8 +338,7 @@ public class NBSProto {
                     } catch ( NullPointerException npe ) {
                         Assert.assertFalse( BuildConfig.DEBUG ); // shouldn't be trying to do this!!!
                     } catch ( java.lang.SecurityException se ) {
-                        // getHelper(context).postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
-                        Assert.assertFalse( BuildConfig.DEBUG );
+                        getHelper(context).postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
                     } catch ( Exception ee ) {
                         Log.ex( TAG, ee );
                     }
@@ -309,13 +362,12 @@ public class NBSProto {
             return PendingIntent.getBroadcast( context, 0, intent, 0 );
         }
 
-        private static class SendElem {
-            Context context;
+        private static class SendElem extends QueueElem {
             SMS_CMD cmd;
             int gameID;
             byte[] data;
             SendElem( Context context, SMS_CMD cmd, int gameID, byte[] data ) {
-                this.context = context;
+                super( context );
                 this.cmd = cmd;
                 this.gameID = gameID;
                 this.data = data;
@@ -352,54 +404,39 @@ public class NBSProto {
         }
     }
 
-    private static class ReceiveThread extends Thread {
-        private String mPhone;
+    private static class ReceiveThread extends NBSProtoThread {
         private short mPort;
 
-        private LinkedBlockingQueue<ReceiveElem> mQueue = new LinkedBlockingQueue<>();
-
         ReceiveThread( String fromPhone, short port ) {
-            mPhone = fromPhone;
-            mPort = port;
+            super( "ReceiveThread", fromPhone, port );
         }
-
-        short getPort() { return mPort; }
 
         void addPacket( Context context, byte[] data )
         {
-            mQueue.add( new ReceiveElem( context, data ) );
+            add( new ReceiveElem( context, data ) );
         }
-        
-        @Override
-        public void run() {
-            Log.d( TAG, "%s.run() starting", this );
-            while ( ! isInterrupted() ) {
-                ReceiveElem elem;
-                try {
-                    elem = mQueue.poll( 10, TimeUnit.SECONDS );
 
-                    if ( null != elem ) {
-                        SMSProtoMsg[] msgs = XwJNI.smsproto_prepInbound( elem.data, mPhone, mPort );
-                        if ( null != msgs ) {
-                            Log.d( TAG, "got %d msgs combined!", msgs.length );
-                            for ( int ii = 0; ii < msgs.length; ++ii ) {
-                                Log.d( TAG, "%d: type: %s; len: %d", ii, msgs[ii].cmd, msgs[ii].data.length );
-                            }
-                            for ( SMSProtoMsg msg : msgs ) {
-                                receive( elem.context, msg );
-                            }
-                            getHelper(elem.context).postEvent( MultiEvent.SMS_RECEIVE_OK );
-                        } else {
-                            Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
-                                   mPhone );
-                        }
-                    }
-                } catch (InterruptedException iex) {
-                    Log.d( TAG, "%s.poll() threw: %s", this, iex.getMessage() );
-                    break;
+        @Override
+        protected void removeSelf() { NBSProto.removeSelf( this ); }
+
+        @Override
+        protected void process( QueueElem qelem, boolean exiting )
+        {
+            ReceiveElem elem = (ReceiveElem)qelem;
+            SMSProtoMsg[] msgs = XwJNI.smsproto_prepInbound( elem.data, getPhone(), getPort() );
+            if ( null != msgs ) {
+                Log.d( TAG, "got %d msgs combined!", msgs.length );
+                for ( int ii = 0; ii < msgs.length; ++ii ) {
+                    Log.d( TAG, "%d: type: %s; len: %d", ii, msgs[ii].cmd, msgs[ii].data.length );
                 }
+                for ( SMSProtoMsg msg : msgs ) {
+                    receive( elem.context, msg );
+                }
+                getHelper(elem.context).postEvent( MultiEvent.SMS_RECEIVE_OK );
+            } else {
+                Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
+                       getPhone() );
             }
-            Log.d( TAG, "%s.run() DONE", this );
         }
 
         private void receive( Context context, SMSProtoMsg msg )
@@ -410,7 +447,7 @@ public class NBSProto {
                 makeForInvite( context, NetLaunchInfo.makeFrom( context, msg.data ) );
                 break;
             case DATA:
-                if ( feedMessage( context, msg.gameID, msg.data, new CommsAddrRec( mPhone ) ) ) {
+                if ( feedMessage( context, msg.gameID, msg.data, new CommsAddrRec( getPhone() ) ) ) {
                     SMSResendReceiver.resetTimer( context );
                 }
                 break;
@@ -450,26 +487,17 @@ public class NBSProto {
         private void makeForInvite( Context context, NetLaunchInfo nli )
         {
             if ( nli != null ) {
-                getHelper(context).handleInvitation( nli, mPhone, DictFetchOwner.OWNER_SMS );
-                getCurSender( mPhone ).addAck( context, nli.gameID() );
+                String phone = getPhone();
+                getHelper(context).handleInvitation( nli, phone, DictFetchOwner.OWNER_SMS );
+                getCurSender( phone ).addAck( context, nli.gameID() );
             }
         }
 
-        private SMSServiceHelper mHelper = null;
-        private SMSServiceHelper getHelper( Context context )
-        {
-            if ( null == mHelper ) {
-                mHelper = new SMSServiceHelper( context );
-            }
-            return mHelper;
-        }
-
-        private static class ReceiveElem {
-            Context context;
+        private static class ReceiveElem extends QueueElem {
             byte[] data;
             ReceiveElem( Context context, byte[] data )
             {
-                this.context = context;
+                super( context );
                 this.data = data;
             }
         }
@@ -490,6 +518,16 @@ public class NBSProto {
             }
         }
         return result;
+    }
+
+    private static void removeSelf( ReceiveThread self )
+    {
+        synchronized ( sReceiversMap ) {
+            String phone = self.getPhone();
+            if ( sReceiversMap.get(phone) == self ) {
+                sReceiversMap.remove( phone );
+            }
+        }
     }
 
     private static class SMSMsgSink extends MultiMsgSink {
