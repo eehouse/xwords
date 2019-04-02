@@ -29,7 +29,7 @@ import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.NBSProto;
+import org.eehouse.android.xw4.SMSPhoneInfo;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.WiDirService;
 import org.eehouse.android.xw4.WiDirWrapper;
@@ -373,7 +373,7 @@ public class CommsAddrRec {
             }
             break;
         case COMMS_CONN_SMS:
-            NBSProto.SMSPhoneInfo pi = NBSProto.getPhoneInfo( context );
+            SMSPhoneInfo pi = SMSPhoneInfo.get( context );
             // Do we have phone permission? If not, shouldn't be set at all!
             if ( null != pi ) {
                 sms_phone = pi.number;

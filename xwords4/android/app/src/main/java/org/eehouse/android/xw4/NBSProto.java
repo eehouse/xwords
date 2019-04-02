@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
-import android.telephony.TelephonyManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,81 +89,6 @@ public class NBSProto {
     public static void smsToastEnable( boolean newVal )
     {
         s_showToasts = newVal;
-    }
-
-    public static class SMSPhoneInfo {
-        public SMSPhoneInfo( boolean isAPhone, String num, boolean gsm ) {
-            isPhone = isAPhone;
-            number = num;
-            isGSM = gsm;
-        }
-        public boolean isPhone;
-        public String number;
-        public boolean isGSM;
-    }
-
-    private static SMSPhoneInfo s_phoneInfo;
-    public static SMSPhoneInfo getPhoneInfo( Context context )
-    {
-        if ( null == s_phoneInfo ) {
-            try {
-                String number = null;
-                boolean isGSM = false;
-                boolean isPhone = false;
-                TelephonyManager mgr = (TelephonyManager)
-                    context.getSystemService(Context.TELEPHONY_SERVICE);
-                if ( null != mgr ) {
-                    number = mgr.getLine1Number(); // needs permission
-                    int type = mgr.getPhoneType();
-                    isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
-                    isPhone = true;
-                }
-
-                String radio =
-                    XWPrefs.getPrefsString( context, R.string.key_force_radio );
-                int[] ids = { R.string.radio_name_real,
-                              R.string.radio_name_tablet,
-                              R.string.radio_name_gsm,
-                              R.string.radio_name_cdma,
-                };
-
-                // default so don't crash before set
-                int id = R.string.radio_name_real;
-                for ( int ii = 0; ii < ids.length; ++ii ) {
-                    if ( radio.equals(context.getString(ids[ii])) ) {
-                        id = ids[ii];
-                        break;
-                    }
-                }
-
-                switch( id ) {
-                case R.string.radio_name_real:
-                    break;          // go with above
-                case R.string.radio_name_tablet:
-                    number = null;
-                    isPhone = false;
-                    break;
-                case R.string.radio_name_gsm:
-                case R.string.radio_name_cdma:
-                    isGSM = id == R.string.radio_name_gsm;
-                    if ( null == number ) {
-                        number = "000-000-0000";
-                    }
-                    isPhone = true;
-                    break;
-                }
-
-                s_phoneInfo = new SMSPhoneInfo( isPhone, number, isGSM );
-            } catch ( SecurityException se ) {
-                Log.e( TAG, "got SecurityException" );
-            }
-        }
-        return s_phoneInfo;
-    }
-
-    public static void resetPhoneInfo()
-    {
-        s_phoneInfo = null;
     }
 
     static abstract class NBSProtoThread extends Thread {
@@ -305,7 +229,7 @@ public class NBSProto {
 
                 // Try send-to-self
                 if ( XWPrefs.getSMSToSelfEnabled( context ) ) {
-                    String myPhone = getPhoneInfo( context ).number;
+                    String myPhone = SMSPhoneInfo.get( context ).number;
                     if ( null != myPhone
                          && PhoneNumberUtils.compare( phone, myPhone ) ) {
                         for ( byte[] fragment : fragments ) {

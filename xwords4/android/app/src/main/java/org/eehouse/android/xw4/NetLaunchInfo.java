@@ -591,7 +591,7 @@ public class NetLaunchInfo implements Serializable {
 
     public void addSMSInfo( Context context )
     {
-        NBSProto.SMSPhoneInfo pi = NBSProto.getPhoneInfo( context );
+        SMSPhoneInfo pi = SMSPhoneInfo.get( context );
         if ( null != pi ) {
             phone = pi.number;
             isGSM = pi.isGSM;
