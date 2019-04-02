@@ -193,7 +193,7 @@ public class PrefsDelegate extends DelegateBase
                 break;
             case R.string.key_enable_nbs:
                 if ( ! sp.getBoolean( key, true ) ) {
-                    NBSProto.stopService( m_activity );
+                    NBSProto.stopThreads();
                 }
                 break;
             case R.string.key_download_path:
