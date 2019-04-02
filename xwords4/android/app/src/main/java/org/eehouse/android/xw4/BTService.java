@@ -457,9 +457,7 @@ public class BTService extends XWJIService {
                     CommsAddrRec addr = new CommsAddrRec( host.getName(),
                                                           host.getAddress() );
                     XWServiceHelper.ReceiveResult rslt
-                        = mHelper.receiveMessage( this, gameID,
-                                                  m_btMsgSink,
-                                                  buf, addr );
+                        = mHelper.receiveMessage( gameID, m_btMsgSink, buf, addr );
 
                     BTCmd response = rslt == XWServiceHelper.ReceiveResult.GAME_GONE ?
                         BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
@@ -748,8 +746,7 @@ public class BTService extends XWJIService {
                                 String btAddr )
     {
         BTCmd result;
-        if ( mHelper.handleInvitation( this, nli, btName,
-                                       DictFetchOwner.OWNER_BT ) ) {
+        if ( mHelper.handleInvitation( nli, btName, DictFetchOwner.OWNER_BT ) ) {
             result = BTCmd.INVITE_ACCPT;
         } else {
             result = BTCmd.INVITE_DUP_INVITE; // dupe of rematch

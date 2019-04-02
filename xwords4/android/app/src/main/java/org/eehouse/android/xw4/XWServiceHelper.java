@@ -38,31 +38,31 @@ import java.util.Map;
 
 abstract class XWServiceHelper {
     private static final String TAG = XWServiceHelper.class.getSimpleName();  
-    private Service mService;
+    private Context mContext;
     private static MultiService s_srcMgr = new MultiService();
 
     public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
 
-    XWServiceHelper( Service service )
+    XWServiceHelper( Context context )
     {
-        mService = service;
+        mContext = context;
     }
 
     abstract MultiMsgSink getSink( long rowid );
     abstract void postNotification( String device, int gameID, long rowid );
 
-    protected ReceiveResult receiveMessage( Context context, int gameID,
+    protected ReceiveResult receiveMessage( int gameID,
                                             MultiMsgSink sink, byte[] msg,
                                             CommsAddrRec addr )
     {
         ReceiveResult result;
-        long[] rowids = DBUtils.getRowIDsFor( context, gameID );
+        long[] rowids = DBUtils.getRowIDsFor( mContext, gameID );
         if ( null == rowids || 0 == rowids.length ) {
             result = ReceiveResult.GAME_GONE;
         } else {
             result = ReceiveResult.UNCONSUMED;
             for ( long rowid : rowids ) {
-                if ( receiveMessage( context, rowid, sink, msg, addr ) ) {
+                if ( receiveMessage( rowid, sink, msg, addr ) ) {
                     result = ReceiveResult.OK;
                 }
             }
@@ -70,9 +70,8 @@ abstract class XWServiceHelper {
         return result;
     }
 
-    protected boolean receiveMessage( Context context, long rowid,
-                                      MultiMsgSink sink, byte[] msg,
-                                      CommsAddrRec addr )
+    protected boolean receiveMessage( long rowid, MultiMsgSink sink,
+                                      byte[] msg, CommsAddrRec addr )
     {
         boolean allConsumed = true;
         boolean[] isLocalP = new boolean[1];
@@ -87,9 +86,9 @@ abstract class XWServiceHelper {
                 if ( null == sink ) {
                     sink = getSink( rowid );
                 }
-                if ( GameUtils.feedMessage( context, rowid, msg, addr,
+                if ( GameUtils.feedMessage( mContext, rowid, msg, addr,
                                             sink, bmr, isLocalP ) ) {
-                    GameUtils.postMoveNotification( context, rowid, bmr,
+                    GameUtils.postMoveNotification( mContext, rowid, bmr,
                                                     isLocalP[0] );
                     consumed = true;
                 }
@@ -119,17 +118,17 @@ abstract class XWServiceHelper {
         }
     }
 
-    protected boolean handleInvitation( Context context, NetLaunchInfo nli,
+    protected boolean handleInvitation( NetLaunchInfo nli,
                                         String device, DictFetchOwner dfo )
     {
         boolean success = nli.isValid() && checkNotInFlight( nli );
         CurGameInfo gi = null;
         if ( success ) {
-            long[] rowids = DBUtils.getRowIDsFor( mService, nli.gameID() );
+            long[] rowids = DBUtils.getRowIDsFor( mContext, nli.gameID() );
             if ( 0 == rowids.length ) {
                 // cool: we're good
             } else if ( rowids.length < nli.nPlayersT ) {
-                success = XWPrefs.getSecondInviteAllowed( mService );
+                success = XWPrefs.getSecondInviteAllowed( mContext );
 
                 // Allowing a second game allows the common testing action of
                 // sending invitation to myself. But we still need to check
@@ -139,12 +138,12 @@ abstract class XWServiceHelper {
                     try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
                         // drop invite if can't open game; likely a dupe!
                         if ( null != lock ) {
-                            gi = new CurGameInfo( mService );
+                            gi = new CurGameInfo( mContext );
                             GamePtr gamePtr = GameUtils
-                                .loadMakeGame( mService, gi, lock );
+                                .loadMakeGame( mContext, gi, lock );
                             gamePtr.release();
                         } else {
-                            DbgUtils.toastNoLock( TAG, context, rowid,
+                            DbgUtils.toastNoLock( TAG, mContext, rowid,
                                                   "handleInvitation()" );
                         }
                     }
@@ -164,20 +163,20 @@ abstract class XWServiceHelper {
             }
 
             if ( success ) {
-                if ( DictLangCache.haveDict( mService, nli.lang, nli.dict ) ) {
-                    long rowid = GameUtils.makeNewMultiGame( mService, nli,
+                if ( DictLangCache.haveDict( mContext, nli.lang, nli.dict ) ) {
+                    long rowid = GameUtils.makeNewMultiGame( mContext, nli,
                                                              getSink( 0 ),
                                                              getUtilCtxt() );
 
                     if ( null != nli.gameName && 0 < nli.gameName.length() ) {
-                        DBUtils.setName( mService, rowid, nli.gameName );
+                        DBUtils.setName( mContext, rowid, nli.gameName );
                     }
 
                     postNotification( device, nli.gameID(), rowid );
                 } else {
                     Intent intent = MultiService
-                        .makeMissingDictIntent( mService, nli, dfo );
-                    MultiService.postMissingDictNotification( mService, intent,
+                        .makeMissingDictIntent( mContext, nli, dfo );
+                    MultiService.postMissingDictNotification( mContext, intent,
                                                               nli.gameID() );
                 }
             }
@@ -190,7 +189,7 @@ abstract class XWServiceHelper {
     protected UtilCtxt getUtilCtxt()
     {
         if ( null == m_utilCtxt ) {
-            m_utilCtxt = new UtilCtxtImpl( mService );
+            m_utilCtxt = new UtilCtxtImpl( mContext );
         }
         return m_utilCtxt;
     }

@@ -2230,7 +2230,7 @@ public class GamesListDelegate extends ListDelegateBase
             int bits = extras.getInt( REMATCH_ADDRS_EXTRA, -1 );
             final CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
             boolean hasSMS = addrs.contains( CommsConnType.COMMS_CONN_SMS );
-            if ( !hasSMS || null != SMSService.getPhoneInfo( m_activity ) ) {
+            if ( !hasSMS || null != NBSProto.getPhoneInfo( m_activity ) ) {
                 rematchWithNameAndPerm( gameName, addrs );
             } else {
                 int id = (1 == addrs.size())

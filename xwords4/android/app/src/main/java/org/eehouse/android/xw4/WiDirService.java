@@ -754,7 +754,7 @@ public class WiDirService extends XWService {
             .setP2PParams( macAddress );
 
         XWServiceHelper.ReceiveResult rslt = mHelper
-            .receiveMessage( this, gameID, m_sink, data, addr );
+            .receiveMessage( gameID, m_sink, data, addr );
         if ( XWServiceHelper.ReceiveResult.GAME_GONE == rslt ) {
             sendNoGame( null, macAddress, gameID );
         }
@@ -767,7 +767,7 @@ public class WiDirService extends XWService {
         NetLaunchInfo nli = NetLaunchInfo.makeFrom( this, nliData );
         String returnMac = intent.getStringExtra( KEY_SRC );
 
-        if ( !mHelper.handleInvitation( this, nli, returnMac, DictFetchOwner.OWNER_P2P ) ) {
+        if ( !mHelper.handleInvitation( nli, returnMac, DictFetchOwner.OWNER_P2P ) ) {
             Log.d( TAG, "handleInvitation() failed" );
         }
     }

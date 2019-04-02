@@ -427,8 +427,8 @@ public class CommsTransport implements TransportProcs,
             nSent = RelayService.sendPacket( context, rowID, buf );
             break;
         case COMMS_CONN_SMS:
-            nSent = SMSService.sendPacket( context, addr.sms_phone,
-                                           gameID, buf );
+            nSent = NBSProto.sendPacket( context, addr.sms_phone,
+                                         gameID, buf );
             break;
         case COMMS_CONN_BT:
             nSent = BTService.sendPacket( context, buf, msgID, addr, gameID );

@@ -209,7 +209,7 @@ public class MultiService {
                     DictFetchOwner owner = DictFetchOwner.values()[ordinal];
                     switch ( owner ) {
                     case OWNER_SMS:
-                        SMSService.onGameDictDownload( context, intent );
+                        NBSProto.onGameDictDownload( context, intent );
                         break;
                     case OWNER_RELAY:
                     case OWNER_BT:
