@@ -66,12 +66,6 @@ public class NBSProto {
         }
     }
 
-    public static void onGameDictDownload( Context context, Intent oldIntent )
-    {
-        NetLaunchInfo nli = MultiService.getMissingDictData( context, oldIntent );
-        getCurThread( nli.phone ).addInviteFrom( context, nli );
-    }
-
     public static void inviteRemote( Context context, String phone,
                                      NetLaunchInfo nli )
     {
@@ -88,6 +82,12 @@ public class NBSProto {
     public static void gameDied( Context context, int gameID, String phone )
     {
         getCurThread( phone ).addGameDied( context, gameID );
+    }
+
+    public static void onGameDictDownload( Context context, Intent oldIntent )
+    {
+        NetLaunchInfo nli = MultiService.getMissingDictData( context, oldIntent );
+        getCurThread( nli.phone ).addInviteFrom( context, nli );
     }
 
     public static void stopThreads()
@@ -112,12 +112,11 @@ public class NBSProto {
             super( "NBSProtoThread" );
             mPhone = phone;
             mPort = port;
-            boolean newSMSEnabled = XWPrefs.getSMSProtoEnabled( XWApp.getContext() );
-            mForceNow = !newSMSEnabled;
+            mForceNow = !XWPrefs.getSMSProtoEnabled( XWApp.getContext() );
         }
 
-        String getPhone() { return mPhone; }
-        short getPort() { return mPort; }
+        private String getPhone() { return mPhone; }
+        private short getPort() { return mPort; }
 
         void addPacketFrom( Context context, byte[] data )
         {
@@ -149,11 +148,6 @@ public class NBSProto {
             add( new SendElem( context, SMS_CMD.ACK_INVITE, gameID, null ) );
         }
 
-        void removeSelf()
-        {
-            NBSProto.removeSelf( this );
-        }
-
         @Override
         public void run() {
             Log.d( TAG, "%s.run() starting for %s", this, mPhone );
@@ -166,8 +160,7 @@ public class NBSProto {
                     // there's something in the queue.
                     long waitSecs = mWaitSecs[0] <= 0 ? 10 * 60 : mWaitSecs[0];
                     QueueElem elem = mQueue.poll( waitSecs, TimeUnit.SECONDS );
-                    boolean handled = process( elem, false );
-                    if ( /*null == elem && */!handled ) {
+                    if ( !process( elem, false ) ) {
                         break;
                     }
                 } catch ( InterruptedException iex ) {
@@ -176,7 +169,7 @@ public class NBSProto {
                 }
             }
 
-            removeSelf();       // should stop additions to the queue
+            removeSelf( this );       // should stop additions to the queue
 
             // Now just empty out the queue, in case anything was added
             // late. Note that if we're abandoning a half-assembled
@@ -213,7 +206,7 @@ public class NBSProto {
                     for ( SMSProtoMsg msg : msgs ) {
                         receive( elem.context, msg );
                     }
-                    getHelper(elem.context).postEvent( MultiEvent.SMS_RECEIVE_OK );
+                    getHelper().postEvent( MultiEvent.SMS_RECEIVE_OK );
                 } else {
                     Log.d( TAG, "receiveBuffer(): bogus or incomplete message from %s",
                            getPhone() );
@@ -227,15 +220,11 @@ public class NBSProto {
 
         private boolean processSend( SendElem elem, boolean exiting )
         {
-            byte[][] msgs;
             boolean forceNow = mForceNow || exiting;
-            if ( null != elem ) {
-                msgs = XwJNI.smsproto_prepOutbound( elem.cmd, elem.gameID, elem.data,
-                                                    mPhone, mPort, forceNow, mWaitSecs );
-            } else { // timed out
-                msgs = XwJNI.smsproto_prepOutbound( SMS_CMD.NONE, 0, null, mPhone,
-                                                    mPort, forceNow, mWaitSecs );
-            }
+            byte[][] msgs = null != elem
+                ? XwJNI.smsproto_prepOutbound( elem.cmd, elem.gameID, elem.data,
+                                               mPhone, mPort, forceNow, mWaitSecs )
+                : XwJNI.smsproto_prepOutbound( mPhone, mPort, forceNow, mWaitSecs );
 
             if ( null != msgs ) {
                 sendBuffers( msgs );
@@ -256,10 +245,10 @@ public class NBSProto {
         }
 
         private SMSServiceHelper mHelper = null;
-        protected SMSServiceHelper getHelper( Context context )
+        protected SMSServiceHelper getHelper()
         {
             if ( null == mHelper ) {
-                mHelper = new SMSServiceHelper( context );
+                mHelper = new SMSServiceHelper( XWApp.getContext() );
             }
             return mHelper;
         }
@@ -277,10 +266,10 @@ public class NBSProto {
                 }
                 break;
             case DEATH:
-                getHelper(context).postEvent( MultiEvent.MESSAGE_NOGAME, msg.gameID );
+                getHelper().postEvent( MultiEvent.MESSAGE_NOGAME, msg.gameID );
                 break;
             case ACK_INVITE:
-                getHelper(context).postEvent( MultiEvent.NEWGAME_SUCCESS, msg.gameID );
+                getHelper().postEvent( MultiEvent.NEWGAME_SUCCESS, msg.gameID );
                 break;
             default:
                 Log.w( TAG, "unexpected cmd %s", msg.cmd );
@@ -292,7 +281,7 @@ public class NBSProto {
         private boolean feedMessage( Context context, int gameID, byte[] msg,
                                      CommsAddrRec addr )
         {
-            XWServiceHelper.ReceiveResult rslt = getHelper(context)
+            XWServiceHelper.ReceiveResult rslt = getHelper()
                 .receiveMessage( gameID, null, msg, addr );
             if ( XWServiceHelper.ReceiveResult.GAME_GONE == rslt ) {
                 sendDiedPacket( context, addr.sms_phone, gameID );
@@ -304,7 +293,6 @@ public class NBSProto {
         {
             if ( !s_sentDied.contains( gameID ) ) {
                 getCurThread( phone ).addGameDied( context, gameID );
-                // resendFor( phone, SMS_CMD.DEATH, gameID, null );
                 s_sentDied.add( gameID );
             }
         }
@@ -312,10 +300,11 @@ public class NBSProto {
         private void makeForInvite( Context context, NetLaunchInfo nli )
         {
             if ( nli != null ) {
-                getHelper(context).handleInvitation( nli, mPhone, DictFetchOwner.OWNER_SMS );
+                getHelper().handleInvitation( nli, mPhone, DictFetchOwner.OWNER_SMS );
                 getCurThread(mPhone).addAck( context, nli.gameID() );
             }
         }
+
         private void sendBuffers( byte[][] fragments )
         {
             Context context = XWApp.getContext();
@@ -353,8 +342,6 @@ public class NBSProto {
                                 mgr.sendDataMessage( phone, null, port, fragment,
                                                      sent, delivery );
                             }
-                            Log.d( TAG, "sendBuffers(): sent fragment of len %d",
-                                   fragment.length );
                         }
                         success = true;
                     } catch ( IllegalArgumentException iae ) {
@@ -362,7 +349,7 @@ public class NBSProto {
                     } catch ( NullPointerException npe ) {
                         Assert.assertFalse( BuildConfig.DEBUG ); // shouldn't be trying to do this!!!
                     } catch ( java.lang.SecurityException se ) {
-                        getHelper(context).postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
+                        getHelper().postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
                     } catch ( Exception ee ) {
                         Log.ex( TAG, ee );
                     }
@@ -415,6 +402,7 @@ public class NBSProto {
         }
 
         private static class ReceiveElem extends QueueElem {
+            // One of these two will be set
             byte[] data;
             NetLaunchInfo nli;
             ReceiveElem( Context context, byte[] data )
@@ -468,9 +456,9 @@ public class NBSProto {
         }
     }
 
-    private static class SMSMsgSink extends MultiMsgSink {
+    private static class NBSMsgSink extends MultiMsgSink {
         private Context mContext;
-        public SMSMsgSink( Context context ) {
+        public NBSMsgSink( Context context ) {
             super( context );
             mContext = context;
         }
@@ -493,7 +481,7 @@ public class NBSProto {
         @Override
         protected MultiMsgSink getSink( long rowid )
         {
-            return new SMSMsgSink( mContext );
+            return new NBSMsgSink( mContext );
         }
 
         @Override
