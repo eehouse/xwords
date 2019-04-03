@@ -438,6 +438,12 @@ public class XwJNI {
         return smsproto_prepOutbound( getJNI().m_ptr, cmd, gameID, buf, phone,
                                       port, forceNow, waitSecs );
     }
+
+    public static byte[][]
+        smsproto_prepOutbound( String phone, int port, boolean forceNow, int[] waitSecs )
+    {
+        return smsproto_prepOutbound( SMS_CMD.NONE, 0, null, phone, port, forceNow, waitSecs );
+    }
     
     public static SMSProtoMsg[] smsproto_prepInbound( byte[] data,
                                                       String fromPhone, int wantPort )
