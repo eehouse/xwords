@@ -47,8 +47,7 @@ public class EnableSMSAlert extends DlgDelegateAlert {
 
     @Override
     public void populateBuilder( Context context, final DlgState state,
-                                 AlertDialog.Builder builder,
-                                 NotAgainView naView )
+                                 AlertDialog.Builder builder )
     {
         View layout = LocUtils.inflate( context, R.layout.confirm_sms );
         mSpinner = (Spinner)layout.findViewById( R.id.confirm_sms_reasons );

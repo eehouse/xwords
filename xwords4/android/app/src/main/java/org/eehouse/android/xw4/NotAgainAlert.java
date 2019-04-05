@@ -47,9 +47,9 @@ public class NotAgainAlert extends DlgDelegateAlert {
 
     @Override
     public void populateBuilder( Context context, DlgState state,
-                                 AlertDialog.Builder builder,
-                                 NotAgainView naView )
+                                 AlertDialog.Builder builder )
     {
+        NotAgainView naView = addNAView( state, builder );
         builder.setTitle( R.string.newbie_title )
             .setPositiveButton( android.R.string.ok,
                                 mkCallbackClickListener( naView ) );

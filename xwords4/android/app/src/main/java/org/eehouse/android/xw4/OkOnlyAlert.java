@@ -47,8 +47,7 @@ public class OkOnlyAlert extends DlgDelegateAlert {
 
     @Override
     public void populateBuilder( Context context, DlgState state,
-                                 AlertDialog.Builder builder,
-                                 NotAgainView naView )
+                                 AlertDialog.Builder builder )
     {
         builder.setTitle( state.m_titleId == 0 ? R.string.info_title : state.m_titleId )
             .setPositiveButton( android.R.string.ok, null )

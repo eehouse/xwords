@@ -41,9 +41,9 @@ public class ConfirmThenAlert extends DlgDelegateAlert {
 
     @Override
     public void populateBuilder( Context context, DlgState state,
-                                 AlertDialog.Builder builder,
-                                 NotAgainView naView )
+                                 AlertDialog.Builder builder )
     {
+        NotAgainView naView = addNAView( state, builder );
         OnClickListener lstnr = mkCallbackClickListener( naView );
 
         builder.setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )

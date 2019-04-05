@@ -35,7 +35,6 @@ import java.util.List;
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
-import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
 import org.eehouse.android.xw4.Perms23.Perm;
@@ -54,8 +53,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
 
     @Override
     public void populateBuilder( final Context context, final DlgState state,
-                                 AlertDialog.Builder builder,
-                                 NotAgainView naView )
+                                 AlertDialog.Builder builder )
     {
         final ArrayList<InviteMeans> means =
             new ArrayList<InviteMeans>();
