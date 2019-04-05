@@ -53,7 +53,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
-    private BoardDelegate m_boardDlgt;
     private int m_defaultFontHt;
     private int m_mediumFontHt;
     private Runnable m_invalidator;
@@ -284,11 +283,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         // Log.d( TAG, "layoutBoardOnce()=>%b", layoutDone );
         return layoutDone;
     } // layoutBoardOnce
-
-    protected void setBoardDelegate( BoardDelegate dlgt )
-    {
-        m_boardDlgt = dlgt;
-    }
 
     // BoardHandler interface implementation
     public void startHandling( Activity parent, JNIThread thread,
