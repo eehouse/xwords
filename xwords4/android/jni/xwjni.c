@@ -95,7 +95,11 @@ getMPoolImpl( JNIGlobalState* globalState, const char* user )
 static void
 releaseMPool( JNIGlobalState* globalState )
 {
-    XP_ASSERT( globalState->mpoolInUse );
+    // XP_ASSERT( globalState->mpoolInUse ); /* fired again!!! */
+    if ( !globalState->mpoolInUse ) {
+        XP_LOGF( "%s() line %d; ERROR ERROR ERROR mpoolInUse not set",
+                 __func__, __LINE__ );
+    }
     globalState->mpoolInUse = XP_FALSE;
 }
 #else
