@@ -148,7 +148,7 @@ public class BTInviteDelegate extends InviteDelegate {
         if ( sPersisted.empty() ) {
             scan();
         } else {
-            updateListAdapter( sPersisted.pairs );
+            updateList( sPersisted.pairs );
         }
     }
 
@@ -258,7 +258,7 @@ public class BTInviteDelegate extends InviteDelegate {
         sPersisted.add( dev.getAddress(), dev.getName() );
         store( m_activity );
 
-        updateListAdapter( sPersisted.pairs );
+        updateList( sPersisted.pairs );
         tryEnable();
     }
 
@@ -335,7 +335,7 @@ public class BTInviteDelegate extends InviteDelegate {
             store( m_activity );
 
             clearChecked();
-            updateListAdapter( sPersisted.pairs );
+            updateList( sPersisted.pairs );
             tryEnable();
             break;
         default:

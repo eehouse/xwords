@@ -129,6 +129,6 @@ public class WiDirInviteDelegate extends InviteDelegate
             // names[ii] = m_macsToName.get(mac);
         }
 
-        updateListAdapter( pairs );
+        updateList( pairs );
     }
 }

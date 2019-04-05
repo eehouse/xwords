@@ -31,6 +31,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
 import android.widget.FrameLayout;
 import android.widget.ListView;
@@ -49,7 +50,7 @@ import java.util.Set;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 
-abstract class InviteDelegate extends ListDelegateBase
+abstract class InviteDelegate extends DelegateBase
     implements View.OnClickListener,
                ViewGroup.OnHierarchyChangeListener {
     private static final String TAG = InviteDelegate.class.getSimpleName();
@@ -93,9 +94,8 @@ abstract class InviteDelegate extends ListDelegateBase
     protected String m_lastDev;
     protected Button m_inviteButton;
     private Activity m_activity;
-    private ListView m_lv;
+    private LinearLayout m_lv;
     private TextView m_ev;
-    private InviteItemsAdapter m_adapter;
     protected Map<InviterItem, Integer> m_counts;
     protected Set<InviterItem> m_checked;
     private boolean m_setChecked;
@@ -145,8 +145,8 @@ abstract class InviteDelegate extends ListDelegateBase
             extraView.setVisibility( View.VISIBLE );
         }
 
-        m_lv = (ListView)findViewById( android.R.id.list );
-        m_ev = (TextView)findViewById( android.R.id.empty );
+        m_lv = (LinearLayout)findViewById( R.id.invitees );
+        m_ev = (TextView)findViewById( R.id.empty );
         if ( null != m_lv && null != m_ev && 0 != emptyMsgId ) {
             m_ev.setText( getString( emptyMsgId ) );
             m_lv.setOnHierarchyChangeListener( this );
@@ -183,17 +183,19 @@ abstract class InviteDelegate extends ListDelegateBase
         tryEnable();
     }
 
-    protected void updateListAdapter( List<? extends InviterItem> items )
+    protected void updateList( List<? extends InviterItem> items )
     {
-        updateListAdapter( R.layout.two_strs_item, items );
+        updateList( R.layout.two_strs_item, items );
     }
 
-    protected void updateListAdapter( int itemId,
-                                      List<? extends InviterItem> items )
+    protected void updateList( int itemId, List<? extends InviterItem> items )
     {
         updateChecked( items );
-        m_adapter = new InviteItemsAdapter( itemId, items );
-        setListAdapter( m_adapter );
+
+        m_lv.removeAllViews();
+        for ( InviterItem item : items ) {
+            m_lv.addView( makeViewFor( itemId, item ) );
+        }
     }
 
     protected void listSelected( InviterItem[] selected, String[] devs )
@@ -244,10 +246,13 @@ abstract class InviteDelegate extends ListDelegateBase
     ////////////////////////////////////////
     // ViewGroup.OnHierarchyChangeListener
     ////////////////////////////////////////
+    @Override
     public void onChildViewAdded( View parent, View child )
     {
         showEmptyIfEmpty();
     }
+
+    @Override
     public void onChildViewRemoved( View parent, View child )
     {
         showEmptyIfEmpty();
@@ -255,8 +260,8 @@ abstract class InviteDelegate extends ListDelegateBase
 
     private void showEmptyIfEmpty()
     {
-        m_ev.setVisibility( 0 == m_lv.getChildCount()
-                            ? View.VISIBLE : View.GONE );
+        int count = m_lv.getChildCount();
+        m_ev.setVisibility( 0 == count ? View.VISIBLE : View.GONE );
     }
 
     protected void tryEnable()
@@ -297,105 +302,69 @@ abstract class InviteDelegate extends ListDelegateBase
         }
     }
 
-    private InviteItemsAdapter getAdapter()
+    private View makeViewFor( int itemID, final InviterItem item )
     {
-        return m_adapter;
-    }
+        final LinearLayout layout = (LinearLayout)
+            inflate( R.layout.inviter_item_frame );
+        CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
 
-    private class InviteItemsAdapter extends XWListAdapter {
-        private InviterItem[] m_items;
-        private int m_itemId;
+        // Give subclass a chance to install and populate its view
+        FrameLayout frame = (FrameLayout)layout.findViewById( R.id.frame );
+        View child = inflate( itemID );
+        frame.addView( child );
+        onChildAdded( child, item );
 
-        public InviteItemsAdapter( int itemID, List<? extends InviterItem> items )
-        {
-            super( null == items? 0 : items.size() );
-            m_itemId = itemID;
-            if ( null != items ) {
-                m_items = items.toArray( new InviterItem[items.size()] );
+        m_counts.put( item, 1 );
+        if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
+            Spinner spinner = (Spinner)
+                layout.findViewById(R.id.nperdev_spinner);
+            ArrayAdapter<String> adapter =
+                new ArrayAdapter<String>( m_activity, android.R.layout
+                                          .simple_spinner_item );
+            for ( int ii = 1; ii <= m_nMissing; ++ii ) {
+                String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
+                adapter.add( str );
             }
-            // m_items = new LinearLayout[getCount()];
-        }
-
-        public InviterItem[] getItems() { return m_items; }
-
-        // public String[] getAddrs() { return m_devAddrs; }
-
-        @Override
-        public Object getItem( int position ) { return m_items[position]; }
-
-        @Override
-        public View getView( final int position, View convertView,
-                             ViewGroup parent )
-        {
-            final InviterItem item = m_items[position];
-            final LinearLayout layout = (LinearLayout)
-                inflate( R.layout.inviter_item_frame );
-            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-
-            // Give subclass a chance to install and populate its view
-            FrameLayout frame = (FrameLayout)layout.findViewById( R.id.frame );
-            View child = inflate( m_itemId );
-            frame.addView( child );
-            onChildAdded( child, m_items[position] );
-
-            m_counts.put( item, 1 );
-            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
-                Spinner spinner = (Spinner)
-                    layout.findViewById(R.id.nperdev_spinner);
-                ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>( m_activity, android.R.layout
-                                              .simple_spinner_item );
-                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
-                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
-                    adapter.add( str );
-                }
-                spinner.setAdapter( adapter );
-                spinner.setVisibility( View.VISIBLE );
-                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
-                        public void onItemSelected( AdapterView<?> parent,
-                                                    View view, int pos,
-                                                    long id )
-                        {
-                            m_counts.put( item, 1 + pos );
-                            tryEnable();
-                        }
-
-                        public void onNothingSelected( AdapterView<?> parent ) {}
-                    } );
-            }
-
-            CompoundButton.OnCheckedChangeListener listener =
-                new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton buttonView,
-                                                  boolean isChecked ) {
-                        if ( !isChecked ) {
-                            m_setChecked = false;
-                        }
-                        if ( isChecked ) {
-                            m_checked.add( item );
-                        } else {
-                            m_checked.remove( item );
-                        //     // User's now making changes; don't check new views
-                        //     m_setChecked = false;
-                        }
-                        onItemChecked( item, isChecked );
-
+            spinner.setAdapter( adapter );
+            spinner.setVisibility( View.VISIBLE );
+            spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
+                    public void onItemSelected( AdapterView<?> parent,
+                                                View view, int pos,
+                                                long id )
+                    {
+                        m_counts.put( item, 1 + pos );
                         tryEnable();
                     }
-                };
-            box.setOnCheckedChangeListener( listener );
 
-            if ( m_setChecked || m_checked.contains( item ) ) {
-                box.setChecked( true );
-            } else if ( null != m_lastDev && m_lastDev.equals(item.getDev()) ) {
-                m_lastDev = null;
-                box.setChecked( true );
-            }
-            return layout;
+                    public void onNothingSelected( AdapterView<?> parent ) {}
+                } );
         }
 
-        public String getAddr( CheckBox box ) { return (String)box.getTag(); }
-        public String getName( CheckBox box ) { return box.getText().toString(); }
-    }
+        box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged( CompoundButton buttonView,
+                                              boolean isChecked ) {
+                    if ( !isChecked ) {
+                        m_setChecked = false;
+                    }
+                    if ( isChecked ) {
+                        m_checked.add( item );
+                    } else {
+                        m_checked.remove( item );
+                    }
+                    onItemChecked( item, isChecked );
 
+                    tryEnable();
+                }
+            } );
+
+        if ( m_setChecked || m_checked.contains( item ) ) {
+            box.setChecked( true );
+        } else if ( null != m_lastDev && m_lastDev.equals(item.getDev()) ) {
+            m_lastDev = null;
+            box.setChecked( true );
+        }
+
+        return layout;
+    }
 }
