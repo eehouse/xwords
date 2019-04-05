@@ -1315,35 +1315,38 @@ timerFiredForPen( BoardCtxt* board )
 #ifdef XWFEATURE_RAISETILE
                 draw = dragDropSetAdd( board );
 #endif
-            } else {
-                XP_Bool listWords = XP_FALSE;
-#ifdef XWFEATURE_BOARDWORDS
-                XP_U16 modelCol, modelRow;
-                flipIf( board, col, row, &modelCol, &modelRow );
-                listWords = model_getTile( board->model, modelCol, modelRow, 
-                                           XP_TRUE, board->selPlayer, NULL, 
-                                           NULL, NULL, NULL );
-                if ( listWords ) {
-                    XWStreamCtxt* stream = 
-                        mem_stream_make_raw( MPPARM(board->mpool)
-                                             dutil_getVTManager(board->dutil) );
-                    model_listWordsThrough( board->model, modelCol, modelRow, 
-                                            stream );
-                    util_cellSquareHeld( board->util, stream );
-                    stream_destroy( stream );
-                }
+            }
+
+            /* We calculate words even for a pending tile set, meaning
+               dragDrop might be happening too. */
+            XP_Bool listWords = XP_FALSE;
+#ifdef XWFEATURE_BOARDWORDS     /* here it is */
+            XP_U16 modelCol, modelRow;
+            flipIf( board, col, row, &modelCol, &modelRow );
+            listWords = model_getTile( board->model, modelCol, modelRow,
+                                       XP_TRUE, board->selPlayer, NULL,
+                                       NULL, NULL, NULL );
+            if ( listWords ) {
+                XP_LOGF( "%s(): listWords came back true", __func__ );
+                XWStreamCtxt* stream =
+                    mem_stream_make_raw( MPPARM(board->mpool)
+                                         dutil_getVTManager(board->dutil) );
+                model_listWordsThrough( board->model, modelCol, modelRow,
+                                        board->selPlayer, stream );
+                util_cellSquareHeld( board->util, stream );
+                stream_destroy( stream );
+            }
 #endif
-                if ( !listWords ) {
-                    XWBonusType bonus;
-                    bonus = model_getSquareBonus( board->model, col, row );
-                    if ( bonus != BONUS_NONE ) {
+            if ( !listWords ) {
+                XWBonusType bonus;
+                bonus = model_getSquareBonus( board->model, col, row );
+                if ( bonus != BONUS_NONE ) {
 #ifdef XWFEATURE_MINIWIN
-                        text = draw_getMiniWText( board->draw, 
-                                                  (XWMiniTextType)bonus );
+                    text = draw_getMiniWText( board->draw,
+                                              (XWMiniTextType)bonus );
 #else
-                        util_bonusSquareHeld( board->util, bonus );
+                    util_bonusSquareHeld( board->util, bonus );
 #endif
-                    }
                 }
             }
             board->penTimerFired = XP_TRUE;

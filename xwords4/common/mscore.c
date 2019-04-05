@@ -277,15 +277,15 @@ tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal )
 } /* tilesInLine */
 
 void
-normalizeMoves( ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
+normalizeMoves( const ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
                 MoveInfo* moveInfo )
 {
     XP_S16 lowCol, ii, jj, thisCol; /* unsigned is a problem on palm */
-    PlayerCtxt* player = &model->players[turn];
+    const PlayerCtxt* player = &model->players[turn];
     XP_U16 nTiles = player->nPending;
     XP_S16 lastTaken;
     short lowIndex = 0;
-    PendingTile* pt;
+    const PendingTile* pt;
 
     moveInfo->isHorizontal = isHorizontal;
     moveInfo->nTiles = (XP_U8)nTiles;
