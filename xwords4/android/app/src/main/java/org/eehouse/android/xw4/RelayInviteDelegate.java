@@ -463,7 +463,7 @@ public class RelayInviteDelegate extends InviteDelegate {
             });
 
         addSelf();
-        updateListAdapter( m_devIDRecs );
+        updateList( m_devIDRecs );
         tryEnable();
     }
 

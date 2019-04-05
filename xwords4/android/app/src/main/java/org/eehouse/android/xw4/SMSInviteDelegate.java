@@ -302,7 +302,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                 }
             });
 
-        updateListAdapter( m_phoneRecs );
+        updateList( m_phoneRecs );
         tryEnable();
     }
 

@@ -28,6 +28,7 @@ import android.widget.ListAdapter;
  */
 public abstract class XWListAdapter extends BaseAdapter
     implements ListAdapter {
+    private static final String TAG = XWListAdapter.class.getSimpleName();
     private int m_count;
 
     public XWListAdapter() {
