@@ -2850,4 +2850,10 @@
   <string name="relay_poll_name_no_polling">FCM only: no polling</string>
   <string name="relay_poll_name_both">Default: mix polling and FCM</string>
 
+  <string name="not_again_longtap_lookup">You can look up words BEFORE
+  they\'re committed as moves -- by long-tapping, same as committed
+  words.\n\nUse this feature to check the validity of words you\'re
+  thinking of playing, or to look up an unfamiliar word provided as a
+  hint.</string>
+
 </resources>

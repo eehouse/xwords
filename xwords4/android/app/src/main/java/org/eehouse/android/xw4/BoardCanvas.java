@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -31,6 +31,8 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eehouse.android.xw4.jni.BoardDims;
 import org.eehouse.android.xw4.jni.CommonPrefs;
@@ -88,6 +90,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     protected String[] m_dictChars;
     private boolean m_hasSmallScreen;
     private int m_backgroundUsed = 0x00000000;
+    private int mPendingCount;
 
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
@@ -382,6 +385,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     bonusStr = m_bonusSummaries[bonus];
                 }
             } else if ( pending ) {
+                ++mPendingCount;
                 if ( darkOnLight() ) {
                     foreColor = WHITE;
                     backColor = BLACK;
@@ -425,7 +429,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return canDraw;
     } // drawCell
 
-    private boolean m_arrowHintShown = false;
     public void drawBoardArrow( Rect rect, int bonus, boolean vert,
                                 int hintAtts, int flags )
     {
@@ -452,19 +455,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         arrow.setBounds( rect );
         arrow.draw( BoardCanvas.this );
 
-        if ( !m_arrowHintShown ) {
-            m_arrowHintShown = true;
-            // Handler handler = getHandler();
-            // if ( null != handler ) {
-            //     handler.post( new Runnable() {
-            //             public void run() {
-            //                 m_parent.
-            //                     showNotAgainDlgThen( R.string.not_again_arrow,
-            //                                          R.string.
-            //                                          key_notagain_arrow );
-            //             } } );
-            // }
-        }
+        postNAHint( R.string.not_again_arrow, R.string.key_notagain_arrow );
     }
 
     public boolean trayBegin( Rect rect, int owner, int score )
@@ -543,6 +534,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             int xx = rect.left + rect.width() - 1;
             drawLine( xx, rect.top, xx, rect.top + rect.height(),
                       m_strokePaint );
+
+            if ( mPendingCount > 0 ) {
+                mPendingCount = 0;
+                postNAHint( R.string.not_again_longtap_lookup,
+                            R.string.key_na_longtap_lookup );
+            }
         }
     }
 
@@ -886,4 +883,23 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return m_tileStrokePaint;
     }
 
+    private static Set<Integer> sShown = new HashSet<>();
+    private void postNAHint( final int msgID, final int keyID )
+    {
+        if ( !sShown.contains( keyID ) ) {
+            sShown.add( keyID );
+
+            if ( m_activity instanceof XWActivity ) {
+                final XWActivity activity = (XWActivity)m_activity;
+
+                activity.runOnUiThread( new Runnable() {
+                        @Override
+                        public void run() {
+                            activity.makeNotAgainBuilder( msgID, keyID )
+                                .show();
+                        }
+                    } );
+            }
+        }
+    }
 }
