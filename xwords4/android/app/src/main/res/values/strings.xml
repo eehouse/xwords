@@ -1974,6 +1974,8 @@
     \"Import contact\" button to add people you want to invite, the +
     button to enter numbers directly.</string>
 
+    <string name="empty_bt_inviter">No paired devices detected yet.</string>
+
     <!-- Shows in WiFiDirect Invite dialog when no known peers -->
     <string name="empty_p2p_inviter">There are currently no devices
     reachable via WiFiDirect that have CrossWords installed.</string>

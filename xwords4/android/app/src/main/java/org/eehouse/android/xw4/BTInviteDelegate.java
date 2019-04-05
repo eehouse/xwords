@@ -140,7 +140,7 @@ public class BTInviteDelegate extends InviteDelegate {
         String msg = getQuantityString( R.plurals.invite_bt_desc_fmt_2, m_nMissing,
                                         m_nMissing )
             + getString( R.string.invite_bt_desc_postscript );
-        super.init( msg, 0 );
+        super.init( msg, R.string.empty_bt_inviter );
 
         addButtonBar( R.layout.bt_buttons, BUTTONIDS );
 
