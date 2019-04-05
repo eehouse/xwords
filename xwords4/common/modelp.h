@@ -90,7 +90,7 @@ struct ModelCtxt {
 
 void invalidateScore( ModelCtxt* model, XP_S16 player );
 XP_Bool tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal );
-void normalizeMoves( ModelCtxt* model, XP_S16 turn, 
+void normalizeMoves( const ModelCtxt* model, XP_S16 turn,
                      XP_Bool isHorizontal, MoveInfo* moveInfo );
 void adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn );
 #ifdef CPLUS

@@ -282,7 +282,7 @@ XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
                                    LastMoveInfo* info );
 #ifdef XWFEATURE_BOARDWORDS
 void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
-                             XWStreamCtxt* stream );
+                             XP_S16 turn, XWStreamCtxt* stream );
 #endif
 
 /* Have there been too many passes (so game should end)? */

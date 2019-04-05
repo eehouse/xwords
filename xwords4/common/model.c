@@ -1708,13 +1708,13 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
     PlayerCtxt* player = &model->players[turn];
 
     if ( useStack ) {
-        MoveInfo moveInfo = {0};
         XP_Bool isHorizontal;
 #ifdef DEBUG
         XP_Bool inLine = 
 #endif
             tilesInLine( model, turn, &isHorizontal );
         XP_ASSERT( inLine );
+        MoveInfo moveInfo = {0};
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
     
         stack_addMove( model->vol.stack, turn, &moveInfo, newTiles );
@@ -2396,10 +2396,19 @@ listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
  * How?   Undo backwards until we find the move that placed that tile.*/
 void
 model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row, 
-                        XWStreamCtxt* stream )
+                        XP_S16 turn, XWStreamCtxt* stream )
 {
     ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
     copyStack( model, tmpModel->vol.stack, model->vol.stack );
+
+    XP_Bool isHorizontal;
+    if ( tilesInLine( model, turn, &isHorizontal ) ) {
+        MoveInfo moveInfo = {0};
+        normalizeMoves( model, turn, isHorizontal, &moveInfo );
+        model_makeTurnFromMoveInfo( tmpModel, turn, &moveInfo );
+        TrayTileSet newTiles = {0};
+        commitTurn( tmpModel, turn, &newTiles, NULL, NULL, XP_TRUE );
+    }
 
     XP_ASSERT( !!stream );
     StackCtxt* stack = tmpModel->vol.stack;
