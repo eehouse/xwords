@@ -562,7 +562,6 @@ public class BoardDelegate extends DelegateBase
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );
-        m_view.setBoardDelegate( this );
         if ( ! ABUtils.haveActionBar() ) {
             m_tradeButtons = findViewById( R.id.exchange_buttons );
             if ( null != m_tradeButtons ) {
