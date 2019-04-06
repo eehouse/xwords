@@ -120,8 +120,8 @@ abstract class InviteDelegate extends DelegateBase
         m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
         m_lastDev = intent.getStringExtra( INTENT_KEY_LASTDEV );
         m_remotesAreRobots = intent.getBooleanExtra( RAR, false );
-        m_counts = new HashMap<InviterItem, Integer>();
-        m_checked = new HashSet<InviterItem>();
+        m_counts = new HashMap<>();
+        m_checked = new HashSet<>();
     }
 
     @Override
@@ -277,7 +277,7 @@ abstract class InviteDelegate extends DelegateBase
     // Figure which previously-checked items belong in the new set.
     private void updateChecked( List<? extends InviterItem> newItems )
     {
-        Set<InviterItem> old = new HashSet<InviterItem>();
+        Set<InviterItem> old = new HashSet<>();
         old.addAll( m_checked );
         m_checked.clear();
 
@@ -319,7 +319,7 @@ abstract class InviteDelegate extends DelegateBase
             Spinner spinner = (Spinner)
                 layout.findViewById(R.id.nperdev_spinner);
             ArrayAdapter<String> adapter =
-                new ArrayAdapter<String>( m_activity, android.R.layout
+                new ArrayAdapter<>( m_activity, android.R.layout
                                           .simple_spinner_item );
             for ( int ii = 1; ii <= m_nMissing; ++ii ) {
                 String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
