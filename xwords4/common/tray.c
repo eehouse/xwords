@@ -226,10 +226,10 @@ drawTray( BoardCtxt* board )
                                                      &bitmaps, &value );
                             if ( isADrag ) {
                                 if ( ddAddedIndx == ii ) {
-                                    flags |= CELL_HIGHLIGHT;
+                                    flags |= CELL_PENDING;
                                 }
                             } else if ( (traySelBits & (1<<ii)) != 0 ) {
-                                flags |= CELL_HIGHLIGHT;
+                                flags |= CELL_PENDING;
                             }
                             if ( isBlank ) {
                                 flags |= CELL_ISBLANK;
@@ -256,7 +256,7 @@ drawTray( BoardCtxt* board )
                     figureDividerRect( board, &divider );
                     if ( pti->dividerSelected 
                          || dragDropIsDividerDrag(board) ) {
-                        flags |= CELL_HIGHLIGHT;
+                        flags |= CELL_PENDING;
                     }
                     draw_drawTrayDivider( board->draw, &divider, flags );
                     board->dividerInvalid = XP_FALSE;

@@ -34,7 +34,7 @@ typedef XP_Bool (*LastScoreCallback)( void* closure, XP_S16 player,
 typedef enum {
     CELL_NONE = 0x00
     , CELL_ISBLANK = 0x01
-    , CELL_HIGHLIGHT = 0x02
+    , CELL_RECENT = 0x02
     , CELL_ISSTAR = 0x04
     , CELL_ISCURSOR = 0x08
     , CELL_ISEMPTY = 0x10       /* of a tray tile slot */
@@ -43,7 +43,8 @@ typedef enum {
     , CELL_DRAGCUR = 0x80       /* where drag is now */
     , CELL_CROSSVERT = 0x100    /* vertical component of crosshair */
     , CELL_CROSSHOR = 0x200     /* horizontal component of crosshair */
-    , CELL_ALL = 0x3FF
+    , CELL_PENDING = 0x400
+    , CELL_ALL = 0x7FF
 } CellFlags;
 
 typedef struct DrawScoreInfo {

@@ -23,9 +23,10 @@ package org.eehouse.android.xw4.jni;
 import android.graphics.Rect;
 
 public interface DrawCtx {
+    // These must be kept in sync with the enum CellFlags in draw.h
     static final int CELL_NONE = 0x00;
     static final int CELL_ISBLANK = 0x01;
-    static final int CELL_HIGHLIGHT = 0x02;
+    static final int CELL_RECENT = 0x02;
     static final int CELL_ISSTAR = 0x04;
     static final int CELL_ISCURSOR = 0x08;
     static final int CELL_ISEMPTY = 0x10;       /* of a tray tile slot */
@@ -34,7 +35,8 @@ public interface DrawCtx {
     static final int CELL_DRAGCUR = 0x80;       /* where drag is now */
     static final int CELL_CROSSVERT = 0x100;
     static final int CELL_CROSSHOR = 0x200;
-    static final int CELL_ALL = 0x3FF;
+    static final int CELL_PENDING = 0x400;
+    static final int CELL_ALL = 0x7FF;
 
     /* BoardObjectType */
     static final int OBJ_NONE = 0;

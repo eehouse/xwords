@@ -397,7 +397,6 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
                 !rectContainsRect( &board->trayBounds, &cellRect ) ) {
             XP_UCHAR ch[4] = {'\0'};
             XP_S16 owner = -1;
-            XP_Bool invert = XP_FALSE;
             XP_Bitmaps bitmaps;
             XP_Bitmaps* bptr = NULL;
             const XP_UCHAR* textP = NULL;
@@ -432,8 +431,6 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
                                                         modelRow );
                 }
 
-                invert = showPending? pending : recent;
-
                 if ( board->showCellValues ) {
                     XP_SNPRINTF( ch, VSIZE(ch), "%d", value );
                     textP = ch;
@@ -451,8 +448,10 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
             if ( (col==board->star_row) && (row==board->star_row) ) {
                 flags |= CELL_ISSTAR;
             }
-            if ( invert ) {
-                flags |= CELL_HIGHLIGHT;
+            if ( recent && !showPending ) {
+                flags |= CELL_RECENT;
+            } else if ( pending ) {
+                flags |= CELL_PENDING;
             }
             if ( isBlank ) {
                 flags |= CELL_ISBLANK;
@@ -656,7 +655,8 @@ static XP_UCHAR* formatFlags( XP_UCHAR* buf, XP_U16 len, CellFlags flags )
         if ( 0 != (flag & flags) ) {
             switch (flag) {
             case CELL_ISBLANK: str = "BLNK"; break;
-            case CELL_HIGHLIGHT: str = "HLIT"; break;
+            case CELL_PENDING: str = "PEND"; break;
+            case CELL_RECENT: str = "RCNT"; break;
             case CELL_ISEMPTY: str = "MPTY"; break;
             case CELL_ISCURSOR: str = "CURS"; break;
             case CELL_VALHIDDEN: str = "HIDN"; break;

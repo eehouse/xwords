@@ -614,7 +614,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
     XP_Rect rectInset = *rect;
     GtkGameGlobals* globals = dctx->globals;
     XP_Bool showGrid = globals->gridOn;
-    XP_Bool highlight = (flags & CELL_HIGHLIGHT) != 0;
+    XP_Bool recent = (flags & CELL_RECENT) != 0;
+    XP_Bool pending = (flags & CELL_PENDING) != 0;
     GdkRGBA* cursor = 
         ((flags & CELL_ISCURSOR) != 0) ? &dctx->cursor : NULL;
 
@@ -671,7 +672,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
         GdkRGBA* foreground;
         if ( cursor ) {
             gtkSetForeground( dctx, cursor );
-        } else if ( !highlight ) {
+        } else if ( !recent && !pending ) {
             gtkSetForeground( dctx, &dctx->tileBack );
         }
         draw_rectangle( dctx, TRUE, rectInset.left, rectInset.top,
@@ -682,7 +683,13 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
             isBlank = XP_FALSE;
         }
 
-        foreground = highlight? &dctx->white : &dctx->playerColors[owner];
+        if ( pending ) {
+            foreground = &dctx->white;
+        } else if ( recent ) {
+            foreground = &dctx->grey;
+        } else {
+            foreground = &dctx->playerColors[owner];
+        }
         draw_string_at( dctx, NULL, letter, dctx->cellHeight, &rectInset, 
                         XP_GTK_JUST_CENTER, foreground, cursor );
 
@@ -797,7 +804,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                         insetR.left, insetR.top, insetR.width,
                         insetR.height );
 
-        if ( (flags & CELL_HIGHLIGHT) != 0 ) {
+        if ( (flags & (CELL_PENDING|CELL_RECENT)) != 0 ) {
             gtkInsetRect( &insetR, 1 );
             draw_rectangle( dctx, FALSE, insetR.left, insetR.top,
                             insetR.width, insetR.height);
@@ -821,7 +828,7 @@ gtk_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect,
 {
     gtk_draw_trayBegin( p_dctx, rect, owner, 0, DFS_NONE );
     return gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, 
-                            flags | CELL_HIGHLIGHT, XP_FALSE );
+                            flags | (CELL_PENDING|CELL_RECENT), XP_FALSE );
 }
 #endif
 
@@ -852,7 +859,7 @@ gtk_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect r = *rect;
-    XP_Bool selected = 0 != (flags & CELL_HIGHLIGHT);
+    XP_Bool selected = 0 != (flags & (CELL_RECENT|CELL_PENDING));
     XP_Bool isCursor = 0 != (flags & CELL_ISCURSOR);
 
     gtkEraseRect( dctx, &r );

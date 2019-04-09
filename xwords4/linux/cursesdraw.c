@@ -352,7 +352,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
                       HintAtts XP_UNUSED(hintAtts), CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    XP_Bool highlight = (flags & (CELL_HIGHLIGHT|CELL_ISCURSOR)) != 0;
+    XP_Bool highlight = (flags & (CELL_PENDING|CELL_RECENT|CELL_ISCURSOR)) != 0;
     XP_UCHAR loc[rect->width+1];
     if ( !!letter ) {
         XP_MEMCPY( loc, letter, 1 + strlen(letter) );
@@ -438,7 +438,7 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     char* nump = NULL;
     XP_UCHAR* letterp = NULL;
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    XP_Bool highlight = (flags&(CELL_HIGHLIGHT|CELL_ISCURSOR)) != 0;
+    XP_Bool highlight = (flags&(CELL_RECENT|CELL_PENDING|CELL_ISCURSOR)) != 0;
 
     if ( highlight ) {
         wstandout( dctx->boardWin );
@@ -462,7 +462,7 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     }
     curses_stringInTile( dctx, rect, letterp, nump );
 
-    if ( (flags&CELL_HIGHLIGHT) != 0 ) {
+    if ( (flags & (CELL_RECENT|CELL_PENDING)) != 0 ) {
         mvwaddnstr( dctx->boardWin, rect->top+rect->height-1, 
                     rect->left, "*-*", 3 );
     }
