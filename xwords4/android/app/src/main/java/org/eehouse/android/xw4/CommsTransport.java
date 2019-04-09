@@ -424,7 +424,7 @@ public class CommsTransport implements TransportProcs,
         switch ( conType ) {
         case COMMS_CONN_RELAY:
             Assert.assertTrue( BuildConfig.UDP_ENABLED );
-            nSent = RelayService.sendPacket( context, rowID, buf );
+            nSent = RelayService.sendPacket( context, rowID, buf, msgID );
             break;
         case COMMS_CONN_SMS:
             nSent = NBSProto.sendPacket( context, addr.sms_phone,

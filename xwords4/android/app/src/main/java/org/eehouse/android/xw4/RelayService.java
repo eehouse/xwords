@@ -257,9 +257,10 @@ public class RelayService extends XWJIService
         enqueueWork( context, intent );
     }
 
-    public static int sendPacket( Context context, long rowid, byte[] msg )
+    public static int sendPacket( Context context, long rowid, byte[] msg,
+                                  String msgID )
     {
-        Log.d( TAG, "sendPacket(len=%d)", msg.length );
+        Log.d( TAG, "sendPacket(len=%d, msgID=%s)", msg.length, msgID );
         int result = -1;
         if ( NetStateCache.netAvail( context ) ) {
             Intent intent = getIntentTo( context, MsgCmds.SEND )
@@ -1313,12 +1314,12 @@ public class RelayService extends XWJIService
                 DatagramSocket udpSocket = s_UDPSocket;
                 if ( null == udpSocket ) {
                     udpSocket = getService().connectSocketOnce(); // block until this is done
+                    Assert.assertTrue( null != udpSocket || !BuildConfig.DEBUG );
                 }
 
                 byte[] buf = new byte[1024];
-                DatagramPacket packet =
-                    new DatagramPacket( buf, buf.length );
-                for ( ; ; ) {
+                DatagramPacket packet = new DatagramPacket( buf, buf.length );
+                while ( null != udpSocket ) {
                     if ( interrupted() ) {
                         Log.d( TAG, "%s.run() interrupted; outta here", this );
                         break;
@@ -1472,10 +1473,10 @@ public class RelayService extends XWJIService
         }
 
         @Override
-        public int sendViaRelay( byte[] buf, int gameID )
+        public int sendViaRelay( byte[] buf, String msgID, int gameID )
         {
             Assert.assertTrue( -1 != getRowID() );
-            sendPacket( RelayService.this, getRowID(), buf );
+            sendPacket( RelayService.this, getRowID(), buf, msgID );
             return buf.length;
         }
 
