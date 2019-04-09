@@ -89,11 +89,13 @@ public class SMSInviteDelegate extends InviteDelegate {
     @Override
     protected void init( Bundle savedInstanceState )
     {
+        super.init( savedInstanceState );
+
         mMeans = InviteMeans.values()[getIntent().getIntExtra(INTENT_KEY_MEANS, -1)];
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
-        super.init( msg, R.string.empty_sms_inviter );
+        init( msg, R.string.empty_sms_inviter );
         addButtonBar( R.layout.sms_buttons, BUTTONIDS );
 
         getSavedState();
@@ -338,10 +340,10 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     private void clearSelectedImpl()
     {
-        Set<InviterItem> checked = getChecked();
+        Set<String> checked = getChecked();
         Iterator<PhoneRec> iter = m_phoneRecs.iterator();
         for ( ; iter.hasNext(); ) {
-            if ( checked.contains( iter.next() ) ) {
+            if ( checked.contains( iter.next().getDev() ) ) {
                 iter.remove();
             }
         }

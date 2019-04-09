@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -87,12 +88,19 @@ public class BTInviteDelegate extends InviteDelegate {
             sort();
         }
 
-        void remove(final Set<? extends InviterItem> checked)
+        void remove( final Set<String> checked )
         {
-            for ( InviterItem item : checked ) {
-                TwoStringPair pair = (TwoStringPair)item;
-                stamps.remove( pair.str2 );
-                pairs.remove( pair );
+            for ( String dev : checked ) {
+                stamps.remove( dev );
+
+                for ( Iterator<TwoStringPair> iter = pairs.iterator();
+                      iter.hasNext(); ) {
+                    TwoStringPair pair = iter.next();
+                    if ( pair.str2.equals( dev ) ) {
+                        iter.remove();
+                        break;
+                    }
+                }
             }
         }
 
@@ -137,6 +145,8 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void init( Bundle savedInstanceState )
     {
+        super.init( savedInstanceState );
+
         String msg = getQuantityString( R.plurals.invite_bt_desc_fmt_2, m_nMissing,
                                         m_nMissing )
             + getString( R.string.invite_bt_desc_postscript );

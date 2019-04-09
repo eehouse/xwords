@@ -60,6 +60,8 @@ public class WiDirInviteDelegate extends InviteDelegate
     @Override
     protected void init( Bundle savedInstanceState )
     {
+        super.init( savedInstanceState );
+
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_p2p_desc_fmt, m_nMissing,
                                  m_nMissing, msg );
@@ -92,15 +94,6 @@ public class WiDirInviteDelegate extends InviteDelegate
     {
         TwoStringPair pair = (TwoStringPair)data;
         ((TwoStrsItem)child).setStrings( pair.str2, pair.getDev() );
-    }
-
-    @Override
-    protected void listSelected( InviterItem[] selected, String[] devs )
-    {
-        for ( int ii = 0; ii < selected.length; ++ii ) {
-            TwoStringPair pair = (TwoStringPair)selected[ii];
-            devs[ii] = pair.getDev();
-        }
     }
 
     // DevSetListener interface
