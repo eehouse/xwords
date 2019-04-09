@@ -68,9 +68,9 @@ public class MultiMsgSink implements TransportProcs {
         return BTService.sendPacket( m_context, buf, msgID, addr, gameID );
     }
 
-    public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
+    public int sendViaSMS( byte[] buf, String msgID, int gameID, CommsAddrRec addr )
     {
-        return NBSProto.sendPacket( m_context, addr.sms_phone, gameID, buf );
+        return NBSProto.sendPacket( m_context, addr.sms_phone, gameID, buf, msgID );
     }
 
     public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
@@ -101,7 +101,7 @@ public class MultiMsgSink implements TransportProcs {
             nSent = sendViaBluetooth( buf, msgID, gameID, addr );
             break;
         case COMMS_CONN_SMS:
-            nSent = sendViaSMS( buf, gameID, addr );
+            nSent = sendViaSMS( buf, msgID, gameID, addr );
             break;
         case COMMS_CONN_P2P:
             nSent = sendViaP2P( buf, gameID, addr );

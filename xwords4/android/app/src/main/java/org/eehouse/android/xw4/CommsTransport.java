@@ -428,7 +428,7 @@ public class CommsTransport implements TransportProcs,
             break;
         case COMMS_CONN_SMS:
             nSent = NBSProto.sendPacket( context, addr.sms_phone,
-                                         gameID, buf );
+                                         gameID, buf, msgID );
             break;
         case COMMS_CONN_BT:
             nSent = BTService.sendPacket( context, buf, msgID, addr, gameID );
