@@ -95,6 +95,8 @@ public class RelayInviteDelegate extends InviteDelegate {
     protected void init( Bundle savedInstanceState )
     {
         if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+            super.init( savedInstanceState );
+
             String msg = getString( R.string.button_invite );
             msg = getQuantityString( R.plurals.invite_relay_desc_fmt, m_nMissing,
                                      m_nMissing, msg );
@@ -470,11 +472,12 @@ public class RelayInviteDelegate extends InviteDelegate {
     private void getSavedState()
     {
         String dataString = DBUtils.getStringFor( m_activity, RECS_KEY, null );
-        if ( null == dataString ) {
+        if ( null != dataString ) {
+            m_devIDRecs = (ArrayList<DevIDRec>)Utils.string64ToSerializable( dataString );
+        }
+
+        if ( null == m_devIDRecs ) {
             m_devIDRecs = new ArrayList<DevIDRec>();
-        } else {
-            m_devIDRecs = (ArrayList<DevIDRec>)Utils
-                .string64ToSerializable( dataString );
         }
     }
 
@@ -500,23 +503,14 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     private void clearSelectedImpl()
     {
-        Set<InviterItem> checked = getChecked();
-        Iterator<DevIDRec> iter = m_devIDRecs.iterator();
-        for ( ; iter.hasNext(); ) {
-            if ( checked.contains( iter.next() ) ) {
+        Set<String> checked = getChecked();
+        for ( Iterator<DevIDRec> iter = m_devIDRecs.iterator(); iter.hasNext(); ) {
+            if ( checked.contains( iter.next().getDev() ) ) {
                 iter.remove();
             }
         }
         clearChecked();
         saveAndRebuild();
-
-        // int count = m_adapter.getCount();
-        // for ( int ii = count - 1; ii >= 0; --ii ) {
-        //     if ( m_devIDRecs.get( ii ).m_isChecked ) {
-        //         m_devIDRecs.remove( ii );
-        //     }
-        // }
-        // saveAndRebuild();
     }
 
     private static class DevIDRec implements InviterItem, Serializable {

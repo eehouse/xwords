@@ -89,6 +89,7 @@ abstract class InviteDelegate extends DelegateBase
     public static final String RAR = "RAR";
     private static final String INTENT_KEY_NMISSING = "NMISSING";
     protected static final String INTENT_KEY_LASTDEV = "LDEV";
+    private static final String KEY_CHECKED = "CHECKED";
 
     protected int m_nMissing;
     protected String m_lastDev;
@@ -97,7 +98,7 @@ abstract class InviteDelegate extends DelegateBase
     private LinearLayout m_lv;
     private TextView m_ev;
     protected Map<InviterItem, Integer> m_counts;
-    protected Set<InviterItem> m_checked;
+    private HashSet<String> m_checked;
     private boolean m_setChecked;
     private boolean m_remotesAreRobots;
 
@@ -127,7 +128,27 @@ abstract class InviteDelegate extends DelegateBase
     @Override
     protected void init( Bundle sis )
     {
-        super.init( sis );
+        // DO NOT CALL super!!!
+        getBundledData( sis );
+    }
+
+    @Override
+    protected void onSaveInstanceState( Bundle outState )
+    {
+        addBundledData( outState );
+        super.onSaveInstanceState( outState );
+    }
+
+    private void getBundledData( Bundle bundle )
+    {
+        if ( null != bundle ) {
+            m_checked = (HashSet<String>)bundle.getSerializable( KEY_CHECKED );
+        }
+    }
+
+    private void addBundledData( Bundle bundle )
+    {
+        bundle.putSerializable( KEY_CHECKED, m_checked );
     }
 
     protected void init( String descTxt, int emptyMsgId )
@@ -198,13 +219,6 @@ abstract class InviteDelegate extends DelegateBase
         }
     }
 
-    protected void listSelected( InviterItem[] selected, String[] devs )
-    {
-        for ( int ii = 0; ii < selected.length; ++ii ) {
-            devs[ii] = selected[ii].getDev();
-        }
-    }
-
     abstract void onBarButtonClicked( int id );
 
     ////////////////////////////////////////
@@ -214,10 +228,12 @@ abstract class InviteDelegate extends DelegateBase
     {
         if ( m_inviteButton == view ) {
             int len = m_checked.size();
-            String[] devs = new String[len];
 
             InviterItem[] items = getSelItems();
-            listSelected( items, devs );
+            String[] devs = new String[items.length];
+            for ( int ii = 0; ii < items.length; ++ii ) {
+                devs[ii] = items[ii].getDev();
+            }
 
             int[] counts = new int[len];
             for ( int ii = 0; ii < len; ++ii ) {
@@ -235,10 +251,15 @@ abstract class InviteDelegate extends DelegateBase
 
     private InviterItem[] getSelItems()
     {
-        int ii = 0;
         InviterItem[] result = new InviterItem[m_checked.size()];
-        for ( InviterItem checked : m_checked ) {
-            result[ii++] = checked;
+        int next = 0;
+        for ( int ii = 0; ii < m_lv.getChildCount(); ++ii ) {
+            InviterItemFrame child = (InviterItemFrame)m_lv.getChildAt( ii );
+            InviterItem item = child.getItem();
+            if ( m_checked.contains( item.getDev() ) ) {
+                result[next++] = item;
+                Assert.assertTrue( child.isChecked() || !BuildConfig.DEBUG );
+            }
         }
         return result;
     }
@@ -270,22 +291,25 @@ abstract class InviteDelegate extends DelegateBase
         m_inviteButton.setEnabled( count > 0 && count <= m_nMissing );
     }
 
-    final Set<InviterItem> getChecked() { return m_checked; }
+    final Set<String> getChecked() { return m_checked; }
 
-    protected void clearChecked() { m_checked.clear(); }
+    protected void clearChecked()
+    {
+        m_checked.clear();
+    }
 
     // Figure which previously-checked items belong in the new set.
     private void updateChecked( List<? extends InviterItem> newItems )
     {
-        Set<InviterItem> old = new HashSet<>();
+        Set<String> old = new HashSet<>();
         old.addAll( m_checked );
         m_checked.clear();
 
-        for ( Iterator<InviterItem> iter = old.iterator(); iter.hasNext(); ) {
-            InviterItem oldItem = iter.next();
+        for ( Iterator<String> iter = old.iterator(); iter.hasNext(); ) {
+            String oldDev = iter.next();
             for ( InviterItem item : newItems ) {
-                if ( item.equals( oldItem ) ) {
-                    m_checked.add( item );
+                if ( item.getDev().equals( oldDev ) ) {
+                    m_checked.add( oldDev );
                     break;
                 }
             }
@@ -295,23 +319,23 @@ abstract class InviteDelegate extends DelegateBase
     // callbacks made by InviteItemsAdapter
     protected void onItemChecked( InviterItem item, boolean checked )
     {
+        String dev = item.getDev();
         if ( checked ) {
-            m_checked.add( item );
+            m_checked.add( dev );
         } else {
-            m_checked.remove( item );
+            m_checked.remove( dev );
         }
     }
 
     private View makeViewFor( int itemID, final InviterItem item )
     {
-        final LinearLayout layout = (LinearLayout)
+        final InviterItemFrame layout = (InviterItemFrame)
             inflate( R.layout.inviter_item_frame );
-        CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+        layout.setItem( item );
 
         // Give subclass a chance to install and populate its view
-        FrameLayout frame = (FrameLayout)layout.findViewById( R.id.frame );
         View child = inflate( itemID );
-        frame.addView( child );
+        ((FrameLayout)layout.findViewById( R.id.frame )).addView( child );
         onChildAdded( child, item );
 
         m_counts.put( item, 1 );
@@ -340,30 +364,28 @@ abstract class InviteDelegate extends DelegateBase
                 } );
         }
 
-        box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+        layout.setOnCheckedChangeListener( new OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged( CompoundButton buttonView,
                                               boolean isChecked ) {
                     if ( !isChecked ) {
                         m_setChecked = false;
                     }
-                    if ( isChecked ) {
-                        m_checked.add( item );
-                    } else {
-                        m_checked.remove( item );
-                    }
-                    onItemChecked( item, isChecked );
 
+                    onItemChecked( item, isChecked );
                     tryEnable();
                 }
             } );
 
-        if ( m_setChecked || m_checked.contains( item ) ) {
-            box.setChecked( true );
-        } else if ( null != m_lastDev && m_lastDev.equals(item.getDev()) ) {
+        String dev = item.getDev();
+        boolean setIt = false;
+        if ( m_setChecked || m_checked.contains( dev ) ) {
+            setIt = true;
+        } else if ( null != m_lastDev && m_lastDev.equals( dev ) ) {
             m_lastDev = null;
-            box.setChecked( true );
+            setIt = true;
         }
+        layout.setChecked( setIt );
 
         return layout;
     }
