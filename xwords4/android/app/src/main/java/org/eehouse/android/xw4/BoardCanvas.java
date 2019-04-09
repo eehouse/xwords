@@ -363,7 +363,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         if ( canDraw ) {
             int backColor;
             boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
-            boolean pending = 0 != (flags & CELL_HIGHLIGHT);
+            boolean pending = 0 != (flags & CELL_PENDING);
+            boolean recent = 0 != (flags & CELL_RECENT);
             String bonusStr = null;
 
             if ( m_inTrade ) {
@@ -384,8 +385,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     backColor = m_bonusColors[bonus];
                     bonusStr = m_bonusSummaries[bonus];
                 }
-            } else if ( pending ) {
-                ++mPendingCount;
+            } else if ( pending || recent ) {
+                if ( pending ) {
+                    ++mPendingCount;
+                }
                 if ( darkOnLight() ) {
                     foreColor = WHITE;
                     backColor = BLACK;
@@ -484,7 +487,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     public void drawTrayDivider( Rect rect, int flags )
     {
         boolean isCursor = 0 != (flags & CELL_ISCURSOR);
-        boolean selected = 0 != (flags & CELL_HIGHLIGHT);
+        boolean selected = 0 != (flags & (CELL_PENDING|CELL_RECENT));
 
         int index = isCursor? CommonPrefs.COLOR_FOCUS : CommonPrefs.COLOR_BACKGRND;
         fillRectOther( rect, index );
@@ -602,7 +605,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
                     Paint paint = getTileStrokePaint( rect );
                     drawRect( rect, paint ); // frame
-                    if ( 0 != (flags & CELL_HIGHLIGHT) ) {
+                    if ( 0 != (flags & (CELL_PENDING|CELL_RECENT)) ) {
                         int width = (int)paint.getStrokeWidth();
                         rect.inset( width, width );
                         drawRect( rect, paint ); // frame
