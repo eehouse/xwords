@@ -14,4 +14,11 @@
     <string name="gamel_menu_dicts">Listy słów…</string>
     <string name="gamel_menu_checkmoves">Sprawdź ruchy</string>
     <string name="list_item_config">Ustawienia gry…</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="summary_relay_conf_fmt">Skonfigurowane dla pokoju \"%1$s\"</string>
+    <string name="msgs_progress">Sprawdzanie przekaźnika dla ruchów itp.…</string>
+    <string name="no_games_to_refresh">Nie znaleziono gier, które łączą się za pośrednictwem przekaźnika.</string>
+    <string name="list_item_rename">Zmień nazwę…</string>
+    <string name="list_item_move">Przenieś do grupy…</string>
+    <string name="list_item_delete">Usuń grę</string>
 </resources>
