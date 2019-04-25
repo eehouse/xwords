@@ -261,11 +261,17 @@ public class GameLock implements AutoCloseable, Serializable {
 
         private void logIfNull( GameLock result, String fmt, Object... args )
         {
-            if ( DEBUG_LOCKS && null == result ) {
+            if ( BuildConfig.DEBUG && null == result ) {
                 String func = new Formatter().format( fmt, args ).toString();
                 Log.d( TAG, "%s.%s => null", this, func );
+                Owner curOwner = mOwners.peek();
                 Log.d( TAG, "Unable to lock; cur owner: %s; would-be owner: %s",
-                       mOwners.peek(), new Owner() );
+                       curOwner, new Owner() );
+
+                long heldMS = System.currentTimeMillis() - curOwner.mStamp;
+                if ( heldMS > (60 * 1000) ) { // 1 minute's a long time
+                    DbgUtils.showf( "GameLock: logged owner held for %d seconds!", heldMS / 1000 );
+                }
             }
         }
     }
