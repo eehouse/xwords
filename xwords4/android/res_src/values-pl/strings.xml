@@ -49,4 +49,5 @@
     <string name="nethints_allowed">Zezwalaj na wskazówki (sieciowe)</string>
     <string name="use_timer">Włącz licznik czasu gry</string>
     <string name="robot_spinner_prompt">Jak inteligentny powinien być robot\?</string>
+    <string name="no_moves_made">(Brak ruchów)</string>
 </resources>
