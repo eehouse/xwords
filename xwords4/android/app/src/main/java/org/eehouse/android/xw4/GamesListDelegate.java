@@ -1014,6 +1014,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void handleNewIntent( Intent intent )
     {
+        Log.d( TAG, "handleNewIntent(extras={%s})", DbgUtils.extrasToString( intent ) );
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
@@ -2130,35 +2131,44 @@ public class GamesListDelegate extends ListDelegateBase
         return launched;
     }
 
-    private void startFirstHasDict( long rowid )
+    private boolean startFirstHasDict( final long rowid )
     {
-        if ( -1 != rowid && DBUtils.haveGame( m_activity, rowid ) ) {
-            boolean haveDict;
-            try {
-                haveDict = GameUtils.gameDictsHere( m_activity, rowid );
-            } catch ( GameLock.GameLockedException
-                      | GameUtils.NoSuchGameException gle ) {
-                haveDict = true;
-            }
-            if ( haveDict ) {
-                launchGame( rowid );
-            }
+        boolean handled = -1 != rowid && DBUtils.haveGame( m_activity, rowid );
+        if ( handled ) {
+            GameLock.getLockThen( rowid, 100L, m_handler,
+                                  new GameLock.GotLockProc() {
+                                      @Override
+                                      public void gotLock( GameLock lock ) {
+                                          if ( lock != null ) {
+                                              boolean haveDict = GameUtils
+                                                  .gameDictsHere( m_activity, lock );
+                                              lock.release();
+                                              if ( haveDict ) {
+                                                  launchGame( rowid );
+                                              }
+                                          }
+                                      }
+                                  } );
         }
+        return handled;
     }
 
-    private void startFirstHasDict( Intent intent )
+    private boolean startFirstHasDict( Intent intent )
     {
+        boolean result = false;
         if ( null != intent ) {
             String[] relayIDs = intent.getStringArrayExtra( RELAYIDS_EXTRA );
             if ( !startFirstHasDict( relayIDs ) ) {
                 long rowid = intent.getLongExtra( ROWID_EXTRA, -1 );
-                startFirstHasDict( rowid );
+                result = startFirstHasDict( rowid );
             }
         }
+        return result;
     }
 
-    private void startNewNetGame( NetLaunchInfo nli )
+    private boolean startNewNetGame( NetLaunchInfo nli )
     {
+        boolean handled = false;
         Assert.assertTrue( nli.isValid() );
 
         Date create = null;
@@ -2167,6 +2177,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( null == create ) {
             if ( checkWarnNoDict( nli ) ) {
                 makeNewNetGame( nli );
+                handled = true;
             }
         } else if ( XWPrefs.getSecondInviteAllowed( m_activity ) ) {
             String msg = getString( R.string.dup_game_query_fmt,
@@ -2175,13 +2186,17 @@ public class GamesListDelegate extends ListDelegateBase
             makeConfirmThenBuilder( msg, Action.NEW_NET_GAME )
                 .setParams( nli )
                 .show();
+            handled = true;
         } else {
             makeOkOnlyBuilder( R.string.dropped_dupe ).show();
+            handled = true;
         }
+        return handled;
     } // startNewNetGame
 
-    private void startNewNetGame( Intent intent )
+    private boolean startNewNetGame( Intent intent )
     {
+        boolean handled = false;
         NetLaunchInfo nli = null;
         if ( MultiService.isMissingDictIntent( intent ) ) {
             nli = MultiService.getMissingDictData( m_activity, intent );
@@ -2192,34 +2207,43 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
         if ( null != nli && nli.isValid() ) {
-            startNewNetGame( nli );
+            handled = startNewNetGame( nli );
         }
+        return handled;
     } // startNewNetGame
 
-    private void startHasGameID( int gameID )
+    private boolean startHasGameID( int gameID )
     {
+        boolean handled = false;
         long[] rowids = DBUtils.getRowIDsFor( m_activity, gameID );
         if ( null != rowids && 0 < rowids.length ) {
             launchGame( rowids[0] );
+            handled = true;
         }
+        return handled;
     }
 
-    private void startHasGameID( Intent intent )
+    private boolean startHasGameID( Intent intent )
     {
+        boolean handled = false;
         int gameID = intent.getIntExtra( GAMEID_EXTRA, 0 );
         if ( 0 != gameID ) {
-            startHasGameID( gameID );
+            handled = startHasGameID( gameID );
         }
+        return handled;
     }
 
     // Create a new game that's a copy, sending invitations via the means it
     // used to connect.
-    private void startRematch( Intent intent )
+    private boolean startRematch( Intent intent )
     {
+        boolean handled = false;
         if ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) {
             m_rematchExtras = intent.getExtras();
             showDialogFragment( DlgID.GAMES_LIST_NAME_REMATCH );
+            handled = true;
         }
+        return handled;
     }
 
     private void startRematchWithName( final String gameName,
@@ -2298,8 +2322,9 @@ public class GamesListDelegate extends ListDelegateBase
         m_rematchExtras = null;
     }
 
-    private void tryAlert( Intent intent )
+    private boolean tryAlert( Intent intent )
     {
+        boolean handled = false;
         String msg = intent.getStringExtra( ALERT_MSG );
         if ( null != msg ) {
             DlgDelegate.DlgDelegateBuilder builder =
@@ -2309,18 +2334,23 @@ public class GamesListDelegate extends ListDelegateBase
                                         R.string.board_menu_file_email );
             }
             builder.show();
+            handled = true;
         }
+        return handled;
     }
 
-    private void tryNFCIntent( Intent intent )
+    private boolean tryNFCIntent( Intent intent )
     {
+        boolean result = false;
         String data = NFCUtils.getFromIntent( intent );
         if ( null != data ) {
             NetLaunchInfo nli = NetLaunchInfo.makeFrom( m_activity, data );
             if ( nli.isValid() ) {
                 startNewNetGame( nli );
+                result = true;
             }
         }
+        return result;
     }
 
     private void askDefaultName()
@@ -2533,12 +2563,14 @@ public class GamesListDelegate extends ListDelegateBase
     private void tryStartsFromIntent( Intent intent )
     {
         Log.d( TAG, "tryStartsFromIntent(extras={%s})", DbgUtils.extrasToString( intent ) );
-        startFirstHasDict( intent );
-        startNewNetGame( intent );
-        startHasGameID( intent );
-        startRematch( intent );
-        tryAlert( intent );
-        tryNFCIntent( intent );
+        boolean handled = startFirstHasDict( intent )
+            || startNewNetGame( intent )
+            || startHasGameID( intent )
+            || startRematch( intent )
+            || tryAlert( intent )
+            || tryNFCIntent( intent )
+            ;
+        Log.d( TAG, "tryStartsFromIntent() => handled: %b", handled );
     }
 
     private void doOpenGame( Object[] params )
