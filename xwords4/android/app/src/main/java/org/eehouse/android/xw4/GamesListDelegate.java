@@ -2139,6 +2139,7 @@ public class GamesListDelegate extends ListDelegateBase
                                   new GameLock.GotLockProc() {
                                       @Override
                                       public void gotLock( GameLock lock ) {
+                                          Log.d( TAG, "startFirstHasDict.gotLock(%s)", lock );
                                           if ( lock != null ) {
                                               boolean haveDict = GameUtils
                                                   .gameDictsHere( m_activity, lock );
@@ -2150,6 +2151,7 @@ public class GamesListDelegate extends ListDelegateBase
                                       }
                                   } );
         }
+        Log.d( TAG, "startFirstHasDict(rowid=%d) => %b", rowid, handled );
         return handled;
     }
 
