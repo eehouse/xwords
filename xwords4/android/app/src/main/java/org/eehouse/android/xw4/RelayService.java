@@ -360,6 +360,7 @@ public class RelayService extends XWJIService
 
         m_handler = new Handler();
         m_onInactivity = new Runnable() {
+                @Override
                 public void run() {
                     // Log.d( TAG, "m_onInactivity fired" );
                     if ( !shouldMaintainConnection() ) {
@@ -733,6 +734,7 @@ public class RelayService extends XWJIService
                     closeUDPSocket( udpSocket );
 
                     service.m_handler.post( new Runnable() {
+                            @Override
                             public void run() {
                                 service.stopUDPReadThread();
                             }
@@ -811,19 +813,22 @@ public class RelayService extends XWJIService
             synchronized ( sUDPReadThreadRef ) {
                 thread = sUDPReadThreadRef.get();
                 if ( null == thread ) {
-                    thread = new UDPReadThread();
+                    thread = new UDPReadThread( this );
                     sUDPReadThreadRef.set( thread );
                     thread.start();
+                } else if ( null != s_UDPSocket ) {
+                    thread.setService( this );
                 } else {
-                    Assert.assertTrue( null != s_UDPSocket || !BuildConfig.DEBUG );
+                    Log.e( TAG, "startUDPReadThreadOnce(): s_UDPSocket NULL" );
+                    stopUDPReadThread();
+                    thread = null;
                 }
-                thread.setService( this );
             }
         } else {
-            Log.i( TAG, "startUDPThreadsOnce(): UDP disabled" );
+            Log.i( TAG, "startUDPReadThreadOnce(): UDP disabled" );
         }
         return thread;
-    } // startUDPThreadsOnce
+    } // startUDPReadThreadOnce
 
     private void stopUDPReadThread()
     {
@@ -1265,7 +1270,10 @@ public class RelayService extends XWJIService
     private static class UDPReadThread extends Thread {
         private RelayService[] mServiceHolder = {null};
 
-        UDPReadThread() { super("UDPReadThread"); }
+        UDPReadThread( RelayService service ) {
+            super( "UDPReadThread" );
+            setService( service );
+        }
 
         void setService( RelayService service )
         {
