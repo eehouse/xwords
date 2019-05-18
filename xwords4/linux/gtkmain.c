@@ -520,6 +520,17 @@ handle_movescheck( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 }
 
 static void
+handle_relayid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    LaunchParams* params = apg->params;
+    XP_U32 relayID = linux_getDevIDRelay( params );
+    gchar str[32];
+    snprintf( &str[0], VSIZE(str), "%d", relayID );
+    GtkClipboard *clipboard = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
+    gtk_clipboard_set_text( clipboard, str, strlen(str) );
+}
+
+static void
 makeGamesWindow( GtkAppGlobals* apg )
 {
     GtkWidget* window;
@@ -550,6 +561,8 @@ makeGamesWindow( GtkAppGlobals* apg )
         (void)createAddItem( netMenu, "Check for moves",
                              (GCallback)handle_movescheck, apg );
     }
+    (void)createAddItem( netMenu, "copy relayid",
+                         (GCallback)handle_relayid_to_clip, apg );
     gtk_widget_show( menubar );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
 
