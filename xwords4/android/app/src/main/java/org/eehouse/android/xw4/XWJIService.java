@@ -204,7 +204,14 @@ abstract class XWJIService extends JobIntentService {
 
                         Object obj1 = bundle1.get( key );
                         Object obj2 = bundle2.get( key );
-                        if ( obj1.getClass() != obj2.getClass() ) {
+                        if ( obj1 == obj2 ) { // catches case where both null
+                            continue;
+                        } else if ( obj1 == null || obj2 == null ) {
+                            equal = false;
+                            break;
+                        }
+
+                        if ( obj1.getClass() != obj2.getClass() ) { // NPE
                             equal = false;
                             break;
                         }
