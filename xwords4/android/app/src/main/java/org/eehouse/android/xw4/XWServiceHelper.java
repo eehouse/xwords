@@ -130,6 +130,10 @@ abstract class XWServiceHelper {
             } else if ( rowids.length < nli.nPlayersT ) {
                 success = XWPrefs.getSecondInviteAllowed( mContext );
 
+                if ( BuildConfig.DEBUG && !success ) {
+                    DbgUtils.showf( mContext, "Dropping duplicate invite" );
+                }
+
                 // Allowing a second game allows the common testing action of
                 // sending invitation to myself. But we still need to check
                 // for duplicates! forceChannel's hard to dig up, but works
