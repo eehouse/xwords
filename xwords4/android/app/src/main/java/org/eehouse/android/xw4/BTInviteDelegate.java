@@ -314,8 +314,7 @@ public class BTInviteDelegate extends InviteDelegate {
     {
         if ( null == sPersisted ) {
             try {
-                String str64 = DBUtils.getStringFor( context, KEY_PERSIST, null );
-                sPersisted = (Persisted)Utils.string64ToSerializable( str64 );
+                sPersisted = (Persisted)DBUtils.getSerializableFor( context, KEY_PERSIST );
             } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
 
             if ( null == sPersisted ) {
@@ -326,9 +325,7 @@ public class BTInviteDelegate extends InviteDelegate {
 
     private synchronized static void store( Context context )
     {
-        String str64 = sPersisted == null
-            ? "" : Utils.serializableToString64( sPersisted );
-        DBUtils.setStringFor( context, KEY_PERSIST, str64 );
+        DBUtils.setSerializableFor( context, KEY_PERSIST, sPersisted );
     }
 
     // DlgDelegate.DlgClickNotify interface

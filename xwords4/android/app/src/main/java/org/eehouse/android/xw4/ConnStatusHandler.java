@@ -43,6 +43,7 @@ import java.util.Map;
 
 public class ConnStatusHandler {
     private static final String TAG = ConnStatusHandler.class.getSimpleName();
+    private static final String RECS_KEY = TAG + "/recs";
 
     public interface ConnStatusCBacks {
         public void invalidateParent();
@@ -355,14 +356,10 @@ public class ConnStatusHandler {
     {
         synchronized( ConnStatusHandler.class ) {
             if ( s_records == null ) {
-                String as64 = XWPrefs.getPrefsString( context,
-                                                      R.string.key_connstat_data );
-                if ( null != as64 && 0 < as64.length() ) {
-                    s_records = (HashMap<CommsConnType,SuccessRecord[]>)Utils.
-                        string64ToSerializable(as64);
-                }
+                s_records = (HashMap<CommsConnType, SuccessRecord[]>)
+                    DBUtils.getSerializableFor( context, RECS_KEY );
                 if ( null == s_records ) {
-                    s_records = new HashMap<CommsConnType,SuccessRecord[]>();
+                    s_records = new HashMap<>();
                 }
             }
         }
@@ -472,9 +469,7 @@ public class ConnStatusHandler {
     private static void doSave( Context context )
     {
         synchronized( ConnStatusHandler.class ) {
-            String as64 = Utils.serializableToString64( getRecords( context ) );
-            XWPrefs.setPrefsString( context, R.string.key_connstat_data,
-                                    as64 );
+            DBUtils.setSerializableFor( context, RECS_KEY, getRecords( context ) );
             s_needsSave = false;
         }
     }

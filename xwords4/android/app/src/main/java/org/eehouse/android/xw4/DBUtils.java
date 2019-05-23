@@ -2517,6 +2517,23 @@ public class DBUtils {
         return bytes;
     }
 
+    public static Serializable getSerializableFor( Context context, String key )
+    {
+        Serializable value = null;
+        String str64 = getStringFor( context, key, "" );
+        if ( str64 != null ) {
+            value = (Serializable)Utils.string64ToSerializable( str64 );
+        }
+        return value;
+    }
+
+    public static void setSerializableFor( Context context, String key,
+                                           Serializable value )
+    {
+        String str64 = null == value ? "" : Utils.serializableToString64( value );
+        setStringFor( context, key, str64 );
+    }
+
     public static void appendLog( String tag, String msg )
     {
         appendLog( XWApp.getContext(), msg );

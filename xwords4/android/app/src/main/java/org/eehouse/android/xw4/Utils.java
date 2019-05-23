@@ -618,7 +618,7 @@ public class Utils {
                 new ObjectInputStream( new ByteArrayInputStream(bytes) );
             result = ois.readObject();
         } catch ( Exception ex ) {
-            Log.d( TAG, ex.getMessage() );
+            Log.d( TAG, "%s", ex.getMessage() );
         }
         return result;
     }
