@@ -471,20 +471,15 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     private void getSavedState()
     {
-        String dataString = DBUtils.getStringFor( m_activity, RECS_KEY, null );
-        if ( null != dataString ) {
-            m_devIDRecs = (ArrayList<DevIDRec>)Utils.string64ToSerializable( dataString );
-        }
-
+        m_devIDRecs = (ArrayList<DevIDRec>)DBUtils.getSerializableFor( m_activity, RECS_KEY );
         if ( null == m_devIDRecs ) {
-            m_devIDRecs = new ArrayList<DevIDRec>();
+            m_devIDRecs = new ArrayList<>();
         }
     }
 
     private void saveAndRebuild()
     {
-        String as64 = Utils.serializableToString64( m_devIDRecs );
-        DBUtils.setStringFor( m_activity, RECS_KEY, as64 );
+        DBUtils.setSerializableFor( m_activity, RECS_KEY, m_devIDRecs );
         rebuildList( false );
     }
 
