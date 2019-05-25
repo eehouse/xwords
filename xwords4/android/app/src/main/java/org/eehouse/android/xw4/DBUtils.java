@@ -1460,9 +1460,15 @@ public class DBUtils {
             m_lastMoveTime = 0;
             m_count = count;
         }
+
+        @Override
+        public String toString()
+        {
+            return String.format( "GameGroupInfo: {name: %s}", m_name );
+        }
     }
 
-    private static HashMap<Long,GameGroupInfo> s_groupsCache = null;
+    private static Map<Long,GameGroupInfo> s_groupsCache = null;
 
     private static void invalGroupsCache()
     {
@@ -1513,11 +1519,10 @@ public class DBUtils {
     }
 
     // Map of groups rowid (= summaries.groupid) to group info record
-    protected static HashMap<Long,GameGroupInfo> getGroups( Context context )
+    protected static Map<Long,GameGroupInfo> getGroups( Context context )
     {
         if ( null == s_groupsCache ) {
-            HashMap<Long,GameGroupInfo> result =
-                new HashMap<Long,GameGroupInfo>();
+            Map<Long,GameGroupInfo> result = new HashMap<>();
 
             // Select all groups.  For each group get the number of games in
             // that group.  There should be a way to do that with one query
@@ -1556,26 +1561,9 @@ public class DBUtils {
             }
             s_groupsCache = result;
         }
+        Log.d( TAG, "getGroups() => %s", s_groupsCache );
         return s_groupsCache;
     } // getGroups
-
-    // public static void unhideTo( Context context, long groupID )
-    // {
-    //     Assert.assertTrue( GROUPID_UNSPEC != groupID );
-    //     initDB( context );
-    //     synchronized( s_dbHelper ) {
-    //         SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-    //         ContentValues values = new ContentValues();
-    //         values.put( DBHelper.GROUPID, groupID );
-    //         String selection = String.format( "%s = %d", DBHelper.GROUPID,
-    //                                           GROUPID_UNSPEC );
-    //         long result = db.update( DBHelper.TABLE_NAME_SUM,
-    //                                  values, selection, null );
-    //         db.close();
-
-    //         notifyListeners( ROWID_NOTFOUND, true );
-    //     }
-    // }
 
     private static void readTurnInfo( SQLiteDatabase db, long groupID,
                                       GameGroupInfo ggi )
@@ -1725,7 +1713,7 @@ public class DBUtils {
     public static long getAnyGroup( Context context )
     {
         long result = GROUPID_UNSPEC;
-        HashMap<Long,GameGroupInfo> groups = getGroups( context );
+        Map<Long,GameGroupInfo> groups = getGroups( context );
         Iterator<Long> iter = groups.keySet().iterator();
         if ( iter.hasNext() ) {
             result = iter.next();
@@ -1754,6 +1742,7 @@ public class DBUtils {
             }
             cursor.close();
         }
+        Log.d( TAG, "getGroup(%s) => %d", name, result );
         return result;
     }
 
@@ -1761,8 +1750,7 @@ public class DBUtils {
     {
         long rowid = GROUPID_UNSPEC;
         if ( null != name && 0 < name.length() ) {
-            HashMap<Long,GameGroupInfo> gameInfo = getGroups( context );
-            if ( null == gameInfo.get( name ) ) {
+            if ( null == getGroups( context ).get( name ) ) {
                 ContentValues values = new ContentValues();
                 values.put( DBHelper.GROUPNAME, name );
                 values.put( DBHelper.EXPANDED, 1 );
