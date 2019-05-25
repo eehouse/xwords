@@ -43,6 +43,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.text.TextUtils;
 
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
@@ -137,7 +138,7 @@ public class GamesListDelegate extends ListDelegateBase
         GameListAdapter()
         {
             super( new Class[] { GroupRec.class, GameRec.class } );
-            m_groupPositions = checkPositions();
+            m_groupPositions = checkGroupPositions();
         }
 
         protected Object[] makeListData()
@@ -310,7 +311,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( null == m_groupPositions ||
                  m_groupPositions.length != keys.size() ) {
 
-                HashSet<Long> unused = new HashSet<Long>( keys );
+                HashSet<Long> unused = new HashSet<>( keys );
                 long[] newArray = new long[unused.size()];
 
                 // First copy the existing values, in order
@@ -342,6 +343,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         void moveGroup( long groupID, boolean moveUp )
         {
+            Log.d( TAG, "moveGroup(up=%b)", moveUp );
             int src = getGroupPosition( groupID );
             int dest = src + (moveUp ? -1 : 1);
 
@@ -538,14 +540,14 @@ public class GamesListDelegate extends ListDelegateBase
             return result;
         }
 
-        private long[] checkPositions()
+        private long[] checkGroupPositions()
         {
             long[] result = XWPrefs.getGroupPositions( m_activity );
 
             if ( null != result ) {
-                final Map<Long,GameGroupInfo> gameInfo =
+                final Map<Long,GameGroupInfo> groups =
                     DBUtils.getGroups( m_activity );
-                Set<Long> posns = gameInfo.keySet();
+                Set<Long> posns = groups.keySet();
                 if ( result.length != posns.size() ) {
                     result = null;
                 } else {
@@ -556,6 +558,14 @@ public class GamesListDelegate extends ListDelegateBase
                         }
                     }
                 }
+            }
+
+            if ( BuildConfig.DEBUG && null != result ) {
+                List<Long> list = new ArrayList<>();
+                for ( long ll : result ) {
+                    list.add( ll );
+                }
+                Log.d( TAG, "checkGroupPositions() => %s", TextUtils.join(",", list ));
             }
             return result;
         }
