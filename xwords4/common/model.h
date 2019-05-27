@@ -129,7 +129,7 @@ void model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict );
 DictionaryCtxt* model_getDictionary( const ModelCtxt* model );
 
 void model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts );
-DictionaryCtxt* model_getPlayerDict( const ModelCtxt* model, XP_U16 playerNum );
+DictionaryCtxt* model_getPlayerDict( const ModelCtxt* model, XP_S16 playerNum );
 
 XP_Bool model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
                        XP_Bool getPending, XP_S16 turn,

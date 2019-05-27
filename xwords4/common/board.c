@@ -2180,7 +2180,7 @@ board_requestHint( BoardCtxt* board,
 # endif
 #endif
             searchComplete = 
-                engine_findMove( engine, model, selPlayer,
+                engine_findMove( engine, model, selPlayer, XP_FALSE,
                                  tiles, nTiles, usePrev,
 #ifdef XWFEATURE_BONUSALL
                                  allTilesBonus, 

@@ -81,7 +81,7 @@ struct EngineCtxt {
     const ModelCtxt* model;
     const DictionaryCtxt* dict;
     XW_UtilCtxt* util;
-    XP_U16 turn;
+    XP_S16 turn;
 
     Engine_rack rack;
     Tile blankTile;
@@ -96,6 +96,7 @@ struct EngineCtxt {
     XP_U16 star_row;
     XP_Bool returnNOW;
     XP_Bool isRobot;
+    XP_Bool includePending;
     MoveIterationData miData;
 
     XP_S16 blankValues[MAX_TRAY_TILES];
@@ -374,9 +375,9 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
  * filled in in *newMove.
  */
 XP_Bool
-engine_findMove( EngineCtxt* engine, const ModelCtxt* model, 
-                 XP_U16 turn, const Tile* tiles,
-                 const XP_U16 nTiles, XP_Bool usePrev,
+engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
+                 XP_S16 turn, XP_Bool includePending,
+                 const Tile* tiles, const XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                  XP_U16 allTilesBonus,
 #endif
@@ -427,6 +428,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
     engine->model = model;
     engine->dict = model_getPlayerDict( model, turn );
     engine->turn = turn;
+    engine->includePending = includePending;
     engine->usePrev = usePrev;
     engine->blankTile = dict_getBlankTile( engine->dict );
     engine->returnNOW = XP_FALSE;
@@ -763,9 +765,8 @@ localGetBoardTile( EngineCtxt* engine, XP_U16 col, XP_U16 row,
         row = tmp;
     }
 
-    if ( model_getTile( engine->model, col, row, XP_FALSE,
-                        0, /* don't get pending, so turn doesn't matter */
-                        &result, &isBlank, NULL, NULL ) ) {
+    if ( model_getTile( engine->model, col, row, engine->includePending,
+                        engine->turn, &result, &isBlank, NULL, NULL ) ) {
         if ( isBlank && substBlank ) {
             result = engine->blankTile;
         }
