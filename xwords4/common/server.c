@@ -882,7 +882,7 @@ makeRobotMove( ServerCtxt* server )
 #endif
         XP_ASSERT( !!server_getEngineFor( server, turn ) );
         searchComplete = engine_findMove( server_getEngineFor( server, turn ),
-                                          model, turn, tileSet->tiles, 
+                                          model, turn, XP_FALSE, tileSet->tiles,
                                           tileSet->nTiles, XP_FALSE,
 #ifdef XWFEATURE_BONUSALL
                                           allTilesBonus, 

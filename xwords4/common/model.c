@@ -580,9 +580,12 @@ model_getDictionary( const ModelCtxt* model )
 } /* model_getDictionary */
 
 DictionaryCtxt*
-model_getPlayerDict( const ModelCtxt* model, XP_U16 playerNum )
+model_getPlayerDict( const ModelCtxt* model, XP_S16 playerNum )
 {
-    DictionaryCtxt* dict = model->vol.dicts.dicts[playerNum];
+    DictionaryCtxt* dict = NULL;
+    if ( 0 <= playerNum && playerNum < VSIZE(model->vol.dicts.dicts) ) {
+        dict = model->vol.dicts.dicts[playerNum];
+    }
     if ( NULL == dict ) {
         dict = model->vol.dict;
     }
