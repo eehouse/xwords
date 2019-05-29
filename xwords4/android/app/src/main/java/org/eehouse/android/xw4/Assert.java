@@ -40,6 +40,14 @@ public class Assert {
         }
     }
 
+    // NR: non-release
+    public static void assertTrueNR( boolean val )
+    {
+        if ( BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD ) {
+            assertTrue( val );
+        }
+    }
+
     public static void assertNotNull( Object val )
     {
         assertTrue( val != null );
