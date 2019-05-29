@@ -65,6 +65,10 @@ public class NBSProto {
         if ( (0 == (++s_nReceived % TOAST_FREQ)) && showToasts( context ) ) {
             DbgUtils.showf( context, "Got msg %d", s_nReceived );
         }
+
+        ConnStatusHandler.updateStatusIn( context, null,
+                                          CommsConnType.COMMS_CONN_SMS,
+                                          true );
     }
 
     public static void inviteRemote( Context context, String phone,
