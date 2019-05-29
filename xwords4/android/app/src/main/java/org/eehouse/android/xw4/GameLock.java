@@ -23,12 +23,10 @@ package org.eehouse.android.xw4;
 import android.os.Handler;
 
 import java.io.Serializable;
-import java.lang.ref.WeakReference;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import android.support.annotation.NonNull;
 
@@ -59,7 +57,7 @@ public class GameLock implements AutoCloseable, Serializable {
     // private static final long ASSERT_TIME = 2000;
     private static final long THROW_TIME = 1000;
     private long m_rowid;
-    private AtomicInteger m_lockCount = new AtomicInteger(1);
+    private int[] m_lockCount = {1};
 
     private static class Owner {
         Thread mThread;
@@ -324,16 +322,21 @@ public class GameLock implements AutoCloseable, Serializable {
 
     public void release()
     {
-        int count = m_lockCount.decrementAndGet();
-        if ( count == 0 ) {
-            getFor( m_rowid ).unlock();
+        synchronized ( m_lockCount ) {
+            int count = --m_lockCount[0];
+            if ( count == 0 ) {
+                getFor( m_rowid ).unlock();
+            }
         }
     }
 
     public GameLock retain()
     {
-        int count = m_lockCount.incrementAndGet();
-        return this;
+        synchronized ( m_lockCount ) {
+            int count = m_lockCount[0]++;
+            Assert.assertTrueNR( count > 0 );
+            return this;
+        }
     }
 
     @Override
