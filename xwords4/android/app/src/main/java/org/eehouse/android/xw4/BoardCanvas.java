@@ -546,9 +546,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public void dictChanged( final int newPtr )
+    @Override
+    public void dictChanged( final long newPtr )
     {
-        int curPtr = m_dict.getDictPtr();
+        long curPtr = m_dict.getDictPtr();
         if ( curPtr != newPtr ) {
             if ( 0 == newPtr ) {
                 m_fontDims = null;

@@ -36,19 +36,19 @@ public class XwJNI {
     private static final String TAG = XwJNI.class.getSimpleName();
 
     public static class GamePtr implements AutoCloseable {
-        private int m_ptr = 0;
+        private long m_ptr = 0;
         private int m_refCount = 0;
         private long m_rowid;
         private String mStack;
 
-        private GamePtr( int ptr, long rowid )
+        private GamePtr( long ptr, long rowid )
         {
             m_ptr = ptr;
             m_rowid = rowid;
             mStack = android.util.Log.getStackTraceString(new Exception());
         }
 
-        public synchronized int ptr()
+        public synchronized long ptr()
         {
             Assert.assertTrue( 0 != m_ptr );
             return m_ptr;
@@ -110,7 +110,7 @@ public class XwJNI {
         return s_JNI;
     }
 
-    private int m_ptr;
+    private long m_ptr;
     private XwJNI()
     {
         m_ptr = initGlobals( new DUtilCtxt(), JNIUtilsImpl.get() );
@@ -188,7 +188,7 @@ public class XwJNI {
     private static GamePtr initGameJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
-        int ptr = initGameJNI( getJNI().m_ptr, seed );
+        long ptr = initGameJNI( getJNI().m_ptr, seed );
         GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }
@@ -453,14 +453,14 @@ public class XwJNI {
 
     // Dicts
     public static class DictWrapper {
-        private int m_dictPtr;
+        private long m_dictPtr;
 
         public DictWrapper()
         {
-            m_dictPtr = 0;
+            m_dictPtr = 0L;
         }
 
-        public DictWrapper( int dictPtr )
+        public DictWrapper( long dictPtr )
         {
             m_dictPtr = dictPtr;
             dict_ref( dictPtr );
@@ -474,7 +474,7 @@ public class XwJNI {
             }
         }
 
-        public int getDictPtr()
+        public long getDictPtr()
         {
             return m_dictPtr;
         }
@@ -487,64 +487,64 @@ public class XwJNI {
         }
     }
 
-    public static native boolean dict_tilesAreSame( int dict1, int dict2 );
-    public static native String[] dict_getChars( int dict );
+    public static native boolean dict_tilesAreSame( long dict1, long dict2 );
+    public static native String[] dict_getChars( long dict );
     public static boolean dict_getInfo( byte[] dict, String name, String path,
                                         boolean check, DictInfo info )
     {
         return dict_getInfo( getJNI().m_ptr, dict, name, path, check, info );
     }
 
-    public static native int dict_getTileValue( int dictPtr, int tile );
+    public static native int dict_getTileValue( long dictPtr, int tile );
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static int dict_iter_init( byte[] dict, String name,
-                                      String path )
+    public static long dict_iter_init( byte[] dict, String name,
+                                       String path )
     {
         return dict_iter_init( getJNI().m_ptr, dict, name, path );
     }
-    public static native void dict_iter_setMinMax( int closure,
+    public static native void dict_iter_setMinMax( long closure,
                                                    int min, int max );
-    public static native void dict_iter_destroy( int closure );
-    public static native int dict_iter_wordCount( int closure );
-    public static native int[] dict_iter_getCounts( int closure );
-    public static native String dict_iter_nthWord( int closure, int nn );
-    public static native String[] dict_iter_getPrefixes( int closure );
-    public static native int[] dict_iter_getIndices( int closure );
-    public static native int dict_iter_getStartsWith( int closure,
+    public static native void dict_iter_destroy( long closure );
+    public static native int dict_iter_wordCount( long closure );
+    public static native int[] dict_iter_getCounts( long closure );
+    public static native String dict_iter_nthWord( long closure, int nn );
+    public static native String[] dict_iter_getPrefixes( long closure );
+    public static native int[] dict_iter_getIndices( long closure );
+    public static native int dict_iter_getStartsWith( long closure,
                                                       String prefix );
-    public static native String dict_iter_getDesc( int closure );
+    public static native String dict_iter_getDesc( long closure );
 
     // Private methods -- called only here
-    private static native int initGlobals(DUtilCtxt dutil, JNIUtils jniu);
-    private static native void cleanGlobals( int jniState );
-    private static native byte[] gi_to_stream( int jniState, CurGameInfo gi );
-    private static native void gi_from_stream( int jniState, CurGameInfo gi,
+    private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );
+    private static native void cleanGlobals( long jniState );
+    private static native byte[] gi_to_stream( long jniState, CurGameInfo gi );
+    private static native void gi_from_stream( long jniState, CurGameInfo gi,
                                                byte[] stream );
-    private static native byte[] nli_to_stream( int jniState, NetLaunchInfo nli );
-    private static native void nli_from_stream( int jniState, NetLaunchInfo nli,
+    private static native byte[] nli_to_stream( long jniState, NetLaunchInfo nli );
+    private static native void nli_from_stream( long jniState, NetLaunchInfo nli,
                                                 byte[] stream );
-    private static native int initGameJNI( int jniState, int seed );
-    private static native void envDone( int globals );
-    private static native void dict_ref( int dictPtr );
-    private static native void dict_unref( int dictPtr );
-    private static native boolean dict_getInfo( int jniState, byte[] dict,
+    private static native long initGameJNI( long jniState, int seed );
+    private static native void envDone( long globals );
+    private static native void dict_ref( long dictPtr );
+    private static native void dict_unref( long dictPtr );
+    private static native boolean dict_getInfo( long jniState, byte[] dict,
                                                 String name, String path,
                                                 boolean check,
                                                 DictInfo info );
-    private static native int dict_iter_init( int jniState, byte[] dict,
-                                              String name, String path );
+    private static native long dict_iter_init( long jniState, byte[] dict,
+                                               String name, String path );
 
     private static native byte[][]
-        smsproto_prepOutbound( int jniState, SMS_CMD cmd, int gameID, byte[] buf,
+        smsproto_prepOutbound( long jniState, SMS_CMD cmd, int gameID, byte[] buf,
                                String phone, int port, boolean forceNow,
                                /*out*/int[] waitSecs );
 
-    private static native SMSProtoMsg[] smsproto_prepInbound( int jniState,
+    private static native SMSProtoMsg[] smsproto_prepInbound( long jniState,
                                                               byte[] data,
                                                               String fromPhone,
                                                               int wantPort);
 
-    private static native boolean haveEnv( int jniState );
+    private static native boolean haveEnv( long jniState );
 }

@@ -567,7 +567,7 @@ and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum,
         if ( code != draw->curLang ) {
             draw->curLang = code;
 
-            DRAW_CBK_HEADER( "dictChanged", "(I)V" );
+            DRAW_CBK_HEADER( "dictChanged", "(J)V" );
 
             /* /\* create a DictWrapper object -- if the API changes to require it *\/ */
             /* jclass rclass = (*env)->FindClass( env, PKG_PATH("jni/XwJNI$DictWrapper") ); */
@@ -576,7 +576,7 @@ and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum,
             /* jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", sig ); */
             /* jobject jdict = (*env)->NewObject( env, rclass, initId, (int)dict ); */
 
-            (*env)->CallVoidMethod( env, draw->jdraw, mid, (jint)dict );
+            (*env)->CallVoidMethod( env, draw->jdraw, mid, (jlong)dict );
         }
     }
 }
@@ -653,7 +653,7 @@ makeDraw( MPFORMAL EnvThreadInfo* ti, jobject jdraw )
     draw->ti = ti;
     MPASSIGN( draw->mpool, mpool );
 
-    for ( int ii = 0; ii < sizeof(*draw->vtable)/4; ++ii ) {
+    for ( int ii = 0; ii < sizeof(*draw->vtable)/sizeof(void*); ++ii ) {
         ((void**)(draw->vtable))[ii] = draw_doNothing;
     }
 

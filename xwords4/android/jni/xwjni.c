@@ -111,7 +111,7 @@ releaseMPool( JNIGlobalState* globalState )
 #ifdef GAMEPTR_IS_OBJECT
 typedef jobject GamePtrType;
 #else
-typedef int GamePtrType;
+typedef long GamePtrType;
 #endif
 
 #ifdef LOG_MAPPING
@@ -188,7 +188,7 @@ map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
         firstEmpty->env = env;
 #ifdef LOG_MAPPING
         firstEmpty->ownerFunc = caller;
-        XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__,
+        XP_LOGF( "%s: entry %zu: mapped env %p to thread %x", __func__,
                  firstEmpty - ti->entries, env, (int)self );
         XP_LOGF( "%s: num entries USED now %d", __func__, countUsed(ti) );
 #endif
@@ -294,20 +294,21 @@ getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
     }
 #endif
     XP_ASSERT( NULL != gamePtr ); /* fired */
-    jmethodID mid = getMethodID( env, gamePtr, "ptr", "()I" );
+    jmethodID mid = getMethodID( env, gamePtr, "ptr", "()J" );
     XP_ASSERT( !!mid );
-    return (JNIState*)(*env)->CallIntMethod( env, gamePtr, mid );
+    return (JNIState*)(*env)->CallLongMethod( env, gamePtr, mid );
 }
 #else
 # define getState( env, gamePtr, func ) ((JNIState*)(gamePtr))
 #endif
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
 ( JNIEnv* env, jclass C, jobject jdutil, jobject jniu )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make( NULL );
+    XP_LOGF( "%s(): ptr size: %zu", __func__, sizeof(mpool) );
 #endif
     JNIGlobalState* globalState = (JNIGlobalState*)XP_CALLOC( mpool,
                                                               sizeof(*globalState) );
@@ -320,12 +321,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
     globalState->smsProto = smsproto_init( MPPARM( mpool ) globalState->dutil );
     MPASSIGN( globalState->mpool, mpool );
     // LOG_RETURNF( "%p", globalState );
-    return (jint)globalState;
+    return (jlong)globalState;
 }
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
-( JNIEnv* env, jclass C, jint jniGlobalPtr )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
     // LOG_FUNC();
     if ( 0 != jniGlobalPtr ) {
@@ -589,7 +590,7 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
  ****************************************************/
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jgi )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jgi )
 {
     jbyteArray result;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
@@ -611,7 +612,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jgi, jbyteArray jstream )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jgi, jbyteArray jstream )
 {
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
@@ -637,7 +638,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject njli )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject njli )
 {
     LOG_FUNC();
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
@@ -662,7 +663,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jnli, jbyteArray jstream )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli, jbyteArray jstream )
 {
     LOG_FUNC();
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
@@ -717,7 +718,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1ref
-( JNIEnv* env, jclass C, jint dictPtr )
+( JNIEnv* env, jclass C, jlong dictPtr )
 {
     if ( 0 != dictPtr ) {
         DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
@@ -727,7 +728,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1ref
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1unref
-( JNIEnv* env, jclass C, jint dictPtr )
+( JNIEnv* env, jclass C, jlong dictPtr )
 {
     if ( 0 != dictPtr ) {
         DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
@@ -737,7 +738,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1unref
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jDictBytes, 
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jDictBytes,
   jstring jname, jstring jpath, jboolean check, jobject jinfo )
 {
     jboolean result = false;
@@ -770,7 +771,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 /* Dictionary methods: don't use gamePtr */
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesAreSame
-( JNIEnv* env, jclass C, jint dictPtr1, jint dictPtr2 )
+( JNIEnv* env, jclass C, jlong dictPtr1, jlong dictPtr2 )
 {
     jboolean result;
     const DictionaryCtxt* dict1 = (DictionaryCtxt*)dictPtr1;
@@ -783,7 +784,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesAreSame
 
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getChars
-( JNIEnv* env, jclass C, jint dictPtr )
+( JNIEnv* env, jclass C, jlong dictPtr )
 {
     jobject result = NULL;
     result = and_dictionary_getChars( env, (DictionaryCtxt*)dictPtr );
@@ -792,7 +793,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getChars
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTileValue
-( JNIEnv* env, jclass C, jint dictPtr, jint tile )
+( JNIEnv* env, jclass C, jlong dictPtr, jint tile )
 {
     return dict_getTileValue( (DictionaryCtxt*)dictPtr, tile );
 }
@@ -840,7 +841,7 @@ msgArrayToJMsgArray( JNIEnv* env, const SMSMsgArray* arr )
 
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jobject jCmd, jint jGameID,
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jCmd, jint jGameID,
   jbyteArray jData, jstring jToPhone, jint jPort, jboolean jForce,
   jintArray jWaitSecsArr )
 {
@@ -878,7 +879,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepOutbound
 
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_smsproto_1prepInbound
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jData,
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jData,
   jstring jFromPhone, jint jWantPort )
 {
     jobjectArray result = NULL;
@@ -933,9 +934,9 @@ struct _JNIState {
 #define XWJNI_END()                                   \
     }                                                 \
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initGameJNI
-( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint seed )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = ((JNIGlobalState*)jniGlobalPtr)->mpool;
@@ -953,12 +954,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGameJNI
     srandom( seed );
 
     /* LOG_RETURNF( "%p", state ); */
-    return (jint) state;
+    return (jlong) state;
 }
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_envDone
-( JNIEnv* env, jclass C, int jniGlobalPtr )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
     JNIGlobalState* globalJNI = (JNIGlobalState*)jniGlobalPtr;
     MAP_REMOVE( &globalJNI->ti, env );
@@ -2211,7 +2212,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrDisabled
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_haveEnv
-( JNIEnv* env, jclass C, jint jniGlobalPtr )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
     jboolean result = NULL != prvEnvForMe(&globalState->ti);
@@ -2263,12 +2264,12 @@ typedef struct _DictIterData {
 static void makeIndex( DictIterData* data );
 static void freeIndices( DictIterData* data );
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
-( JNIEnv* env, jclass C, jint jniGlobalPtr, jbyteArray jDictBytes, jstring jname, 
-  jstring jpath )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jDictBytes,
+  jstring jname, jstring jpath )
 {
-    jint closure = 0;
+    jlong closure = 0;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 
     DictionaryCtxt* dict = makeDict( MPPARM(globalState->mpool) env,
@@ -2284,14 +2285,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 #ifdef MEM_DEBUG
         data->mpool = globalState->mpool;
 #endif
-        closure = (int)data;
+        closure = (jlong)data;
     }
     return closure;
 }
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1setMinMax
-( JNIEnv* env, jclass C, jint closure, jint min, jint max )
+( JNIEnv* env, jclass C, jlong closure, jint min, jint max )
 {
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
@@ -2303,7 +2304,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1setMinMax
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
-( JNIEnv* env, jclass C, jint closure )
+( JNIEnv* env, jclass C, jlong closure )
 {
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
@@ -2320,7 +2321,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
-(JNIEnv* env, jclass C, jint closure )
+(JNIEnv* env, jclass C, jlong closure )
 {
     jint result = 0;
     DictIterData* data = (DictIterData*)closure;
@@ -2332,7 +2333,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
 
 JNIEXPORT jintArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
-(JNIEnv* env, jclass C, jint closure )
+(JNIEnv* env, jclass C, jlong closure )
 {
     jintArray result = NULL;
     DictIterData* data = (DictIterData*)closure;
@@ -2352,7 +2353,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
 
 JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
-( JNIEnv* env, jclass C, jint closure )
+( JNIEnv* env, jclass C, jlong closure )
 {
     jobjectArray result = NULL;
     DictIterData* data = (DictIterData*)closure;
@@ -2375,7 +2376,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
 
 JNIEXPORT jintArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
-( JNIEnv* env, jclass C , jint closure )
+( JNIEnv* env, jclass C, jlong closure )
 {
     jintArray jindices = NULL;
     DictIterData* data = (DictIterData*)closure;
@@ -2391,7 +2392,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
 
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
-( JNIEnv* env, jclass C, jint closure, jint nn)
+( JNIEnv* env, jclass C, jlong closure, jint nn)
 {
     jstring result = NULL;
     DictIterData* data = (DictIterData*)closure;
@@ -2407,7 +2408,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
-( JNIEnv* env, jclass C, jint closure, jstring jprefix )
+( JNIEnv* env, jclass C, jlong closure, jstring jprefix )
 {
     jint result = -1;
     DictIterData* data = (DictIterData*)closure;
@@ -2423,7 +2424,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
 
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getDesc
-( JNIEnv* env, jclass C, jint closure )
+( JNIEnv* env, jclass C, jlong closure )
 {
     jstring result = NULL;
     DictIterData* data = (DictIterData*)closure;

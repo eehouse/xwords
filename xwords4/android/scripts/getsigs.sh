@@ -3,7 +3,7 @@
 set -e -u
 
 NODE=xw4
-VARIANT=xw4
+VARIANT=xw4NoSMS
 CLASSPATH=${CLASSPATH:-""}
 
 usage() {

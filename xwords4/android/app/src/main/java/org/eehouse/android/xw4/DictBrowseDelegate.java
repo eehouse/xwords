@@ -54,7 +54,7 @@ public class DictBrowseDelegate extends DelegateBase
     private static final int MIN_LEN = 2;
 
     private Activity m_activity;
-    private int m_dictClosure = 0;
+    private long m_dictClosure = 0L;
     private int m_lang;
     private String m_name;
     private DictUtils.DictLoc m_loc;
