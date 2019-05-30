@@ -54,7 +54,7 @@ public class ThumbCanvas extends BoardCanvas {
     // calling us.  So don't switch threads for the dict_getChars()
     // call
     @Override
-    public void dictChanged( int dictPtr )
+    public void dictChanged( long dictPtr )
     {
         if ( 0 != dictPtr ) {
             m_fontDims = null;

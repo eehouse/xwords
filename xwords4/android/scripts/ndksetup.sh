@@ -42,7 +42,7 @@ if [ -n "$XWORDS_DEBUG_ARMONLY" ]; then
 elif [ -n "$XWORDS_DEBUG_X86ONLY" ]; then
     echo "APP_ABI := x86" >> $TMP_MK
 else
-    echo "APP_ABI := armeabi x86" >> $TMP_MK
+    echo "APP_ABI := armeabi arm64-v8a x86" >> $TMP_MK
 fi
 # echo "APP_OPTIM := debug" >> $TMP_MK
 
