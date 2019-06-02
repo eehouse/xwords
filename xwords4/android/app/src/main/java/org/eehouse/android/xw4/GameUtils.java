@@ -98,13 +98,19 @@ public class GameUtils {
     public static byte[] savedGame( Context context, long rowid )
     {
         byte[] result = null;
-        try (GameLock lock = GameLock.tryLockRO( rowid ) ) {
+        try ( GameLock lock = GameLock.tryLockRO( rowid ) ) {
             if ( null != lock ) {
                 result = savedGame( context, lock );
             }
         }
 
         if ( null == result ) {
+            String msg = "savedGame(): unable to get lock; holder dump: "
+                + GameLock.getHolderDump( rowid );
+            Log.d( TAG, msg );
+            if ( BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD ) {
+                Utils.emailAuthor( context, msg );
+            }
             throw new NoSuchGameException( rowid );
         }
 

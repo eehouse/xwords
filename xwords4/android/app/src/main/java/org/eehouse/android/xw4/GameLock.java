@@ -51,7 +51,8 @@ import android.support.annotation.NonNull;
 public class GameLock implements AutoCloseable, Serializable {
     private static final String TAG = GameLock.class.getSimpleName();
 
-    private static final boolean GET_OWNER_STACK = BuildConfig.DEBUG;
+    private static final boolean GET_OWNER_STACK =
+        BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
     private static final boolean DEBUG_LOCKS = false;
 
     // private static final long ASSERT_TIME = 2000;

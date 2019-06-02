@@ -186,6 +186,11 @@ public class Utils {
 
     public static void emailAuthor( Context context )
     {
+        emailAuthor( context, null );
+    }
+
+    public static void emailAuthor( Context context, String msg )
+    {
         Intent intent = new Intent( Intent.ACTION_SEND );
         intent.setType( "message/rfc822" ); // force email
         intent.putExtra( Intent.EXTRA_SUBJECT,
@@ -196,6 +201,9 @@ public class Utils {
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
                                           BuildConfig.GIT_REV );
+        if ( null != msg ) {
+            body += "\n\n" + msg;
+        }
         intent.putExtra( Intent.EXTRA_TEXT, body );
         String chooserMsg = LocUtils.getString( context,
                                                 R.string.email_author_chooser );
