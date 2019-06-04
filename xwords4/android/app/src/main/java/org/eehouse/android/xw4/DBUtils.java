@@ -1521,8 +1521,9 @@ public class DBUtils {
     // Map of groups rowid (= summaries.groupid) to group info record
     protected static Map<Long,GameGroupInfo> getGroups( Context context )
     {
-        if ( null == s_groupsCache ) {
-            Map<Long,GameGroupInfo> result = new HashMap<>();
+        Map<Long,GameGroupInfo> result = s_groupsCache;
+        if ( null == result ) {
+            result = new HashMap<>();
 
             // Select all groups.  For each group get the number of games in
             // that group.  There should be a way to do that with one query
@@ -1561,8 +1562,8 @@ public class DBUtils {
             }
             s_groupsCache = result;
         }
-        Log.d( TAG, "getGroups() => %s", s_groupsCache );
-        return s_groupsCache;
+        Log.d( TAG, "getGroups() => %s", result );
+        return result;
     } // getGroups
 
     private static void readTurnInfo( SQLiteDatabase db, long groupID,
