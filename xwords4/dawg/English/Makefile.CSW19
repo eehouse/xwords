@@ -19,11 +19,11 @@
 XWLANG=CSW19
 LANGCODE=en_US
 TARGET_TYPE=WINCE
-DICTNOTE = "Adds 617 new words for CSW19 and removes 7. Lengths 2-8 only as I can't find a list of the rest."
+DICTNOTE = "Submitted by a user. Claims equivalence with Collins Scrabble Words 2019"
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/English/CSW19.dict
+SOURCEDICT ?= $(XWDICTPATH)/English/csw19_no_def.txt
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	cat $< | tr -d '\r' | awk '{print $$1}' | tr [a-z] [A-Z] | \
