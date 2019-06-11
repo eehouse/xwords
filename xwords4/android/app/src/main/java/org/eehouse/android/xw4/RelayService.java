@@ -80,7 +80,8 @@ public class RelayService extends XWJIService
     // and found older jobs in the JobIntentService's work queue.
     private final static int sJobID = 218719978;
     static {
-        XWJIService.register( RelayService.class, sJobID );
+        XWJIService.register( RelayService.class, sJobID,
+                              CommsConnType.COMMS_CONN_RELAY );
     }
 
     // One day, in seconds.  Probably should be configurable.
