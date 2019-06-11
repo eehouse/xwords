@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,6 +32,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 abstract class XWJIService extends JobIntentService {
     private static final String TAG = XWJIService.class.getSimpleName();
@@ -50,22 +51,25 @@ abstract class XWJIService extends JobIntentService {
     abstract XWJICmds[] getCmds();
 
     private static Map<Class, Integer> sJobIDs = new HashMap<>();
-    static void register( Class clazz, int jobID ) {
+    private static Map<Class, CommsConnType> sTypes = new HashMap<>();
+    static void register( Class clazz, int jobID, CommsConnType typ )
+    {
         sJobIDs.put( clazz, jobID );
+        sTypes.put( clazz, typ );
     }
     
     @Override
     public final void onHandleWork( Intent intent )
     {
-        forget( this, getClass(), intent );
-
         long timestamp = getTimestamp(intent);
+        long ageMS = System.currentTimeMillis() - timestamp;
+        forget( this, getClass(), intent, ageMS );
+
         XWJICmds cmd = cmdFrom( intent );
         if ( LOG_PACKETS ) {
             Log.d( getClass().getSimpleName(),
                    "onHandleWork(): cmd=%s; age=%dms; threadCount: %d)",
-                   cmd, System.currentTimeMillis() - timestamp,
-                   Thread.activeCount() );
+                   cmd, ageMS, Thread.activeCount() );
         }
 
         onHandleWorkImpl( intent, cmd, timestamp );
@@ -75,7 +79,7 @@ abstract class XWJIService extends JobIntentService {
     {
         remember( context, clazz, intent );
         enqueueWork( context, clazz, sJobIDs.get(clazz), intent );
-        checkForStall( context );
+        checkForStall( context, clazz );
     }
 
     static XWJICmds cmdFrom( Intent intent, XWJICmds[] values )
@@ -123,7 +127,7 @@ abstract class XWJIService extends JobIntentService {
     }
 
     private static final long AGE_THRESHOLD_MS = 1000 * 60; // one minute to start
-    private static void checkForStall( Context context )
+    private static void checkForStall( Context context, Class clazz )
     {
         if ( stallCheckEnabled( context ) ) {
             long now = System.currentTimeMillis();
@@ -143,12 +147,15 @@ abstract class XWJIService extends JobIntentService {
             }
 
             if ( maxAge > AGE_THRESHOLD_MS ) {
+                // ConnStatusHandler.noteStall( sTypes.get( clazz ), maxAge );
                 Utils.showStallNotification( context, maxAge );
             }
         }
     }
 
-    private static void forget( Context context, Class clazz, Intent intent )
+    // Called when an intent is successfully delivered
+    private static void forget( Context context, Class clazz,
+                                Intent intent, long ageMS )
     {
         if ( stallCheckEnabled( context ) ) {
             String name = clazz.getSimpleName();
@@ -177,6 +184,9 @@ abstract class XWJIService extends JobIntentService {
                     }
                 }
             }
+
+            ConnStatusHandler.noteIntentHandled( context, sTypes.get( clazz ), ageMS );
+            Utils.clearStallNotification( context, ageMS );
         }
     }
 

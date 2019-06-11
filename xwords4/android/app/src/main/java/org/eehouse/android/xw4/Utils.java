@@ -320,6 +320,14 @@ public class Utils {
         }
     }
 
+    // If the OS starts delivering Intents before the user notices the
+    // notification, remove it. PENDING: should I replace it with something
+    // that tells how long the stall was?
+    public static void clearStallNotification( Context context, long age )
+    {
+        cancelNotification( context, R.string.notify_stall_title );
+    }
+
     public static void cancelNotification( Context context, int id )
     {
         NotificationManager nm = (NotificationManager)

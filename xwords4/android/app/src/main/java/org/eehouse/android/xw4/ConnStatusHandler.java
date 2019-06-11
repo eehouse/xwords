@@ -37,13 +37,16 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class ConnStatusHandler {
     private static final String TAG = ConnStatusHandler.class.getSimpleName();
     private static final String RECS_KEY = TAG + "/recs";
+    private static final String STALL_STATS_KEY = TAG + "/stall_stats";
 
     public interface ConnStatusCBacks {
         public void invalidateParent();
@@ -214,11 +217,107 @@ public class ConnStatusHandler {
                     } else {
                         sb.append( LocUtils.getString( context, R.string.connstat_noreceipt) );
                     }
+
+                    if ( BuildConfig.DEBUG ) {
+                        String stallStats = stallStatsFor( context, typ );
+                        if ( null != stallStats ) {
+                            sb.append( stallStats );
+                        }
+                    }
                 }
             }
             msg = sb.toString();
         }
         return msg;
+    }
+
+    private static class StallStats implements java.io.Serializable {
+        private static final int MAX_STALL_DATA_LEN = 100;
+        long[] mData = new long[MAX_STALL_DATA_LEN];
+        long[] mStamps = new long[MAX_STALL_DATA_LEN];
+        int mUsed = 0;          // <= MAX_STALL_DATA_LEN
+
+        private static HashMap<CommsConnType, StallStats> sStallStatsMap;
+
+        static StallStats get( Context context, CommsConnType typ )
+        {
+            if ( null == sStallStatsMap ) {
+                sStallStatsMap = (HashMap<CommsConnType, StallStats>)DBUtils
+                    .getSerializableFor( context, STALL_STATS_KEY );
+                if ( null == sStallStatsMap ) {
+                    sStallStatsMap = new HashMap<>();
+                }
+            }
+
+            StallStats result = sStallStatsMap.get( typ );
+            if ( result == null ) {
+                result = new StallStats();
+                sStallStatsMap.put( typ, result );
+            }
+            return result;
+        }
+
+        private static void save( Context context )
+        {
+            DBUtils.setSerializableFor( context, STALL_STATS_KEY, sStallStatsMap );
+        }
+
+        synchronized void append( Context context, long ageMS )
+        {
+            if ( MAX_STALL_DATA_LEN == mUsed ) {
+                --mUsed;
+                System.arraycopy( mData, 1, mData, 0, mUsed );
+                System.arraycopy( mStamps, 1, mStamps, 0, mUsed );
+            }
+            mData[mUsed] = ageMS;
+            mStamps[mUsed] = System.currentTimeMillis();
+            ++mUsed;
+
+            save( context );
+        }
+
+        synchronized String toString( Context context )
+        {
+            StringBuffer sb = new StringBuffer()
+                .append("\n\nService delay stats:\n");
+            if ( mUsed > 0 ) {
+                long dataSum10 = 0;
+                long dataSum100 = 0;
+                final int last10Indx = Math.max( 0, mUsed - 10 );
+                for ( int ii = 0; ii < mUsed; ++ii ) {
+                    long datum = mData[ii];
+                    dataSum100 += datum;
+                    if ( ii >= last10Indx ) {
+                        dataSum10 += datum;
+                    }
+                }
+
+                long firstStamp100 = mStamps[0];
+                long firstStamp10 = mStamps[last10Indx];
+
+                int num = Math.min(10, mUsed);
+                append( context, sb, num, dataSum10 / num, firstStamp10 );
+                append( context, sb, mUsed, dataSum100 / mUsed, firstStamp100 );
+            }
+            return sb.toString();
+        }
+
+        private void append( Context context, StringBuffer sb, int len, long avg, long stamp )
+        {
+            sb.append( String.format( "For last %d: %dms avg. (oldest: %s)\n", len, avg,
+                                      DateUtils.getRelativeDateTimeString( context, stamp,
+                                                                           DateUtils.SECOND_IN_MILLIS,
+                                                                           DateUtils.HOUR_IN_MILLIS,
+                                                                           0 ) ) );
+        }
+    }
+
+    private static String stallStatsFor( Context context, CommsConnType typ )
+    {
+        // long[] nums = StallStats.get( context, typ ).averages();
+        // return "Average for last 10 Intents (spanning %s): %dms";;
+        StallStats stats = StallStats.get( context, typ );
+        return stats == null ? null : stats.toString( context );
     }
 
     private static void invalidateParent()
@@ -284,6 +383,20 @@ public class ConnStatusHandler {
     public static void showSuccessOut()
     {
         showSuccessOut( s_cbacks );
+    }
+
+    // public static void noteStall( CommsConnType connType, long ageMS )
+    // {
+    //     Log.d( TAG, "noteStall(%s, age=%s)", connType, age / 1000 );
+
+    //     StallStats
+    // }
+
+    public static void noteIntentHandled( Context context, CommsConnType connType,
+                                          long ageMS )
+    {
+        // Log.d( TAG, "noteIntentHandled(%s, ageMS=%d)", connType, ageMS );
+        StallStats.get( context, connType ).append( context, ageMS );
     }
 
     public static void draw( Context context, Canvas canvas, Resources res,

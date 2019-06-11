@@ -88,7 +88,8 @@ public class BTService extends XWJIService {
 
     private final static int sJobID = 218719979;
     static {
-        XWJIService.register( BTService.class, sJobID );
+        XWJIService.register( BTService.class, sJobID,
+                              CommsConnType.COMMS_CONN_BT );
     }
 
     // half minute for testing; maybe 15 on ship? Or make it a debug config.
