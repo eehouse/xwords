@@ -97,6 +97,7 @@ android {
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"F-Droid\""
             buildConfigField "int", "VARIANT_CODE", "2"
+            buildConfigField "boolean", "FOR_FDROID", "true"
         }
         xw4d {
             dimension "variant"
