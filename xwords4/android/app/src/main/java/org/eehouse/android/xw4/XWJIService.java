@@ -221,7 +221,7 @@ abstract class XWJIService extends JobIntentService {
                             break;
                         }
 
-                        if ( obj1.getClass() != obj2.getClass() ) { // NPE
+                        if ( obj1.getClass() != obj2.getClass() ) {
                             equal = false;
                             break;
                         }
