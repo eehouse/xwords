@@ -239,7 +239,7 @@ public class ConnStatusHandler {
 
         private static HashMap<CommsConnType, StallStats> sStallStatsMap;
 
-        static StallStats get( Context context, CommsConnType typ )
+        static StallStats get( Context context, CommsConnType typ, boolean makeNew )
         {
             if ( null == sStallStatsMap ) {
                 sStallStatsMap = (HashMap<CommsConnType, StallStats>)DBUtils
@@ -250,7 +250,7 @@ public class ConnStatusHandler {
             }
 
             StallStats result = sStallStatsMap.get( typ );
-            if ( result == null ) {
+            if ( result == null && makeNew ) {
                 result = new StallStats();
                 sStallStatsMap.put( typ, result );
             }
@@ -316,7 +316,7 @@ public class ConnStatusHandler {
     {
         // long[] nums = StallStats.get( context, typ ).averages();
         // return "Average for last 10 Intents (spanning %s): %dms";;
-        StallStats stats = StallStats.get( context, typ );
+        StallStats stats = StallStats.get( context, typ, false );
         return stats == null ? null : stats.toString( context );
     }
 
@@ -396,7 +396,7 @@ public class ConnStatusHandler {
                                           long ageMS )
     {
         // Log.d( TAG, "noteIntentHandled(%s, ageMS=%d)", connType, ageMS );
-        StallStats.get( context, connType ).append( context, ageMS );
+        StallStats.get( context, connType, true ).append( context, ageMS );
     }
 
     public static void draw( Context context, Canvas canvas, Resources res,
