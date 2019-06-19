@@ -250,8 +250,8 @@
     <string name="button_default_robot">Robot</string>
     <string name="button_default_both">Oba</string>
     <string name="players_label_host_fmt">Gracze (%1$d lokalny, %2$d wyłączone urządzenie)</string>
-    <string name="public_names_progress_fmt">Pobieranie publicznych pokoi dla gier %1$d -player w %2$s.</string>
-    <string name="no_name_found_fmt">Nie znaleziono pomieszczeń ogólnodostępnych dla %1$d-player w %2$s. Spróbuj odświeżyć lub utworzyć własne.</string>
+    <string name="public_names_progress_fmt">Pobieranie publicznych pokoi dla gier %1$d -graczy w grach %2$s.</string>
+    <string name="no_name_found_fmt">Nie znaleziono ogólnodostępnych pokoi dla %1$d-player w %2$s. Spróbuj odświeżyć lub utworzyć własne.</string>
     <string name="robot_smarter">Inteligentniejszy robot</string>
     <string name="robot_smartest">Najmądrzejszy robot</string>
     <string name="phonies_spinner_prompt">Jak obsługiwać \"phonies\" (słowa nie znajdujące się na liście słów)</string>
@@ -338,8 +338,8 @@
 \n</string>
     <plurals name="strd_remains_header_fmt">
         <item quantity="one">%1$d kafelki pozostawione w puli.</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
+        <item quantity="few"/>
+        <item quantity="many"/>
     </plurals>
     <string name="confirm_undo_last">Czy na pewno chcesz cofnąć ostatnią kolej\? (Nie ma opcji ponów.)</string>
     <string name="title_prefs">Ustawienia Krzyżówki</string>
@@ -710,8 +710,8 @@
     <string name="lmi_pass_fmt">%1$s minęło (0 punktów)</string>
     <plurals name="lmi_move_fmt">
         <item quantity="one">%1$s zagrał %2$s za %3$d punktów</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
+        <item quantity="few"/>
+        <item quantity="many"/>
     </plurals>
     <string name="lmi_phony_fmt">%1$s stracił swoją kolej</string>
     <string name="lmi_tiles_fmt">Kafelki przypisane do %1$s</string>
@@ -893,4 +893,9 @@
 \n• Uruchom CrossWords na innym urządzeniu
 \n• Jeśli wszystko inne zawiedzie, uruchom ponownie urządzenie
 \n</string>
+    <plurals name="group_name_fmt">
+        <item quantity="one">%1$s (%2$d gra)</item>
+        <item quantity="few">%1$s (%2$d gier)</item>
+        <item quantity="many">%1$s (%2$d gry)</item>
+    </plurals>
 </resources>
