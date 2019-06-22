@@ -22,11 +22,12 @@ package org.eehouse.android.xw4;
 
 import android.os.Handler;
 
-import java.io.Serializable;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Stack;
+import java.util.Set;
 
 import android.support.annotation.NonNull;
 
@@ -48,7 +49,7 @@ import android.support.annotation.NonNull;
 // So the class everybody sees (GameLock) is not stored. The rowid it
 // holds is a key to a private Hash of state.
 
-public class GameLock implements AutoCloseable, Serializable {
+public class GameLock implements AutoCloseable {
     private static final String TAG = GameLock.class.getSimpleName();
 
     private static final boolean GET_OWNER_STACK =
@@ -57,8 +58,9 @@ public class GameLock implements AutoCloseable, Serializable {
 
     // private static final long ASSERT_TIME = 2000;
     private static final long THROW_TIME = 1000;
-    private long m_rowid;
-    private int[] m_lockCount = {1};
+    final private long m_rowid;
+    private Owner m_owner;
+    final private GameLockState m_state;
 
     private static class Owner {
         Thread mThread;
@@ -80,8 +82,8 @@ public class GameLock implements AutoCloseable, Serializable {
         public String toString()
         {
             long ageMS = System.currentTimeMillis() - mStamp;
-            return String.format( "Owner: {age: %dms; thread: {%s}; stack: {%s}}",
-                                  ageMS, mThread, mTrace );
+            return String.format( "Owner: {age: %dms (since %d); thread: {%s}; stack: {%s}}",
+                                  ageMS, mStamp, mThread, mTrace );
         }
 
         void setStamp() { mStamp = System.currentTimeMillis(); }
@@ -89,10 +91,34 @@ public class GameLock implements AutoCloseable, Serializable {
 
     private static class GameLockState {
         long mRowid;
-        private Stack<Owner> mOwners = new Stack<>();
+        private Set<Owner> mOwners = new HashSet<>();
         private boolean mReadOnly;
 
         GameLockState( long rowid ) { mRowid = rowid; }
+
+        private void add( Owner owner )
+        {
+            synchronized( mOwners ) {
+                Assert.assertFalse( mOwners.contains( owner ) );
+                mOwners.add( owner );
+            }
+        }
+
+        private void remove( Owner owner )
+        {
+            synchronized ( mOwners ) {
+                Assert.assertTrue( mOwners.contains( owner ) );
+                mOwners.remove( owner );
+
+                if ( DEBUG_LOCKS ) {
+                    Log.d( TAG, "remove(): %d owners left", mOwners.size() );
+                }
+
+                if ( 0 == mOwners.size() ) {
+                    mOwners.notifyAll();
+                }
+            }
+        }
 
         // We grant a lock IFF:
         // * Count is 0
@@ -112,7 +138,7 @@ public class GameLock implements AutoCloseable, Serializable {
                 }
                 // Thread thisThread = Thread.currentThread();
                 boolean grant = false;
-                if ( mOwners.empty() ) {
+                if ( 0 == mOwners.size() ) {
                     grant = true;
                 } else if ( mReadOnly && readOnly ) {
                     grant = true;
@@ -121,9 +147,8 @@ public class GameLock implements AutoCloseable, Serializable {
                 }
 
                 if ( grant ) {
-                    mOwners.push( new Owner() );
                     mReadOnly = readOnly;
-                    result = new GameLock( mRowid );
+                    result = new GameLock( this, mRowid );
                 }
             }
             return result;
@@ -138,10 +163,15 @@ public class GameLock implements AutoCloseable, Serializable {
 
         private GameLock lockImpl( long timeoutMS, boolean readOnly ) throws InterruptedException
         {
+            GameLock result = null;
             long startMS = System.currentTimeMillis();
             long endMS = startMS + timeoutMS;
             synchronized ( mOwners ) {
-                while ( null == tryLockImpl( readOnly ) ) {
+                for ( ; ; ) {
+                    result = tryLockImpl( readOnly );
+                    if ( null != result ) {
+                        break;
+                    }
                     long now = System.currentTimeMillis();
                     if ( now >= endMS ) {
                         throw new GameLockedException();
@@ -154,7 +184,7 @@ public class GameLock implements AutoCloseable, Serializable {
                 long tookMS = System.currentTimeMillis() - startMS;
                 Log.d( TAG, "%s.lockImpl() returning after %d ms", this, tookMS );
             }
-            return new GameLock(mRowid);
+            return result;
         }
 
         // Version that's allowed to return null -- if maxMillis > 0
@@ -204,32 +234,14 @@ public class GameLock implements AutoCloseable, Serializable {
             return lock;
         }
 
-        private void unlock()
+        private void unlock( Owner owner )
         {
-            synchronized ( mOwners ) {
-                if ( DEBUG_LOCKS ) {
-                    Log.d( TAG, "%s.unlock()", this );
-                }
-                Thread oldThread = mOwners.pop().mThread;
-
-                // It's ok for different threads to obtain and unlock the same
-                // lock. E.g. JNIThread is refcounted, with multiple threads
-                // holding the same reference. The last to release() it will
-                // be the one that calls unlock() and may not be the original
-                // caller of lock(). There's probably no point in even
-                // tracking threads, but it's useful for logging conflicts. So
-                // commenting out for now.
-                // if ( !mReadOnly && oldThread != Thread.currentThread() ) {
-                //     Log.e( TAG, "unlock(): unequal threads: %s => %s",
-                //            oldThread, Thread.currentThread() );
-                // }
-
-                if ( mOwners.empty() ) {
-                    mOwners.notifyAll();
-                }
-                if ( DEBUG_LOCKS ) {
-                    Log.d( TAG, "%s.unlock() DONE", this );
-                }
+            if ( DEBUG_LOCKS ) {
+                Log.d( TAG, "%s.unlock()", this );
+            }
+            remove( owner );
+            if ( DEBUG_LOCKS ) {
+                Log.d( TAG, "%s.unlock() DONE", this );
             }
         }
 
@@ -240,15 +252,6 @@ public class GameLock implements AutoCloseable, Serializable {
                 Log.w( TAG, "%s.canWrite(): => false", this );
             }
             return result;
-        }
-
-        private void setOwner( Owner owner )
-        {
-            synchronized ( mOwners ) {
-                mOwners.pop();
-                owner.setStamp();
-                mOwners.push( owner );
-            }
         }
 
         @Override
@@ -263,11 +266,21 @@ public class GameLock implements AutoCloseable, Serializable {
             if ( BuildConfig.DEBUG && null == result ) {
                 String func = new Formatter().format( fmt, args ).toString();
                 Log.d( TAG, "%s.%s => null", this, func );
-                Owner curOwner = mOwners.peek();
-                Log.d( TAG, "Unable to lock; cur owner: %s; would-be owner: %s",
-                       curOwner, new Owner() );
 
-                long heldMS = System.currentTimeMillis() - curOwner.mStamp;
+                final long now = System.currentTimeMillis();
+                long minStamp = now;
+                for ( Iterator<Owner> iter = mOwners.iterator(); iter.hasNext(); ) {
+                    Owner owner = iter.next();
+                    long stamp = owner.mStamp;
+                    if ( stamp < minStamp ) {
+                        minStamp = stamp;
+                    }
+                }
+
+                Log.d( TAG, "Unable to lock; would-be owner: %s; %s",
+                       new Owner(), getHolderDump(mRowid) );
+
+                long heldMS = now - minStamp;
                 if ( heldMS > (60 * 1000) ) { // 1 minute's a long time
                     DbgUtils.showf( "GameLock: logged owner held for %d seconds!", heldMS / 1000 );
                 }
@@ -293,7 +306,27 @@ public class GameLock implements AutoCloseable, Serializable {
         return result;
     }
 
-    private GameLock( long rowid ) { m_rowid = rowid; }
+    private GameLock( GameLockState state, Owner owner, long rowid )
+    {
+        m_state = state;
+        m_owner = owner;
+        m_rowid = rowid;
+
+        m_state.add( owner );
+    }
+
+    private GameLock( GameLockState state, long rowid )
+    {
+        this( state, new Owner(), rowid );
+    }
+
+    private void setOwner( Owner owner )
+    {
+        m_state.add( owner );   // first so doesn't drop to 0
+        m_state.remove( m_owner );
+        m_owner = owner;
+        owner.setStamp();
+    }
 
     public static GameLock tryLock( long rowid )
     {
@@ -323,21 +356,12 @@ public class GameLock implements AutoCloseable, Serializable {
 
     public void release()
     {
-        synchronized ( m_lockCount ) {
-            int count = --m_lockCount[0];
-            if ( count == 0 ) {
-                getFor( m_rowid ).unlock();
-            }
-        }
+        m_state.unlock( m_owner );
     }
 
     public GameLock retain()
     {
-        synchronized ( m_lockCount ) {
-            int count = m_lockCount[0]++;
-            Assert.assertTrueNR( count > 0 );
-            return this;
-        }
+        return new GameLock( m_state, m_rowid );
     }
 
     @Override
@@ -377,9 +401,9 @@ public class GameLock implements AutoCloseable, Serializable {
                         } catch ( Exception ex) {}
                     } else {
                         try {
-                            GameLockState state = getFor( rowid );
-                            lock = state.lockImpl( maxMillis, false );
-                            state.setOwner( owner );
+                            lock = getFor( rowid ).lockImpl( maxMillis, false );
+                            owner.setStamp();
+                            lock.setOwner( owner );
                         } catch ( GameLockedException | InterruptedException gle ) {}
                     }
 
@@ -396,14 +420,21 @@ public class GameLock implements AutoCloseable, Serializable {
 
     public static String getHolderDump( long rowid )
     {
+        String result;
         GameLockState state = getFor( rowid );
-        Owner owner = state.mOwners.peek();
-        return owner.toString();
+        synchronized ( state.mOwners ) {
+            result = String.format( "Showing %d owners: ", state.mOwners.size() );
+            for ( Iterator<Owner> iter = state.mOwners.iterator(); iter.hasNext(); ) {
+                Owner owner = iter.next();
+                result += owner.toString();
+            }
+        }
+        return result;
     }
 
     // used only for asserts
     public boolean canWrite()
     {
-        return getFor( m_rowid ).canWrite();
+        return m_state.canWrite();
     }
 }
