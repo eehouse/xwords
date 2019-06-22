@@ -251,7 +251,7 @@
     <string name="button_default_both">Oba</string>
     <string name="players_label_host_fmt">Gracze (%1$d lokalny, %2$d wyłączone urządzenie)</string>
     <string name="public_names_progress_fmt">Pobieranie publicznych pokoi dla gier %1$d -graczy w grach %2$s.</string>
-    <string name="no_name_found_fmt">Nie znaleziono ogólnodostępnych pokoi dla %1$d-player w %2$s. Spróbuj odświeżyć lub utworzyć własne.</string>
+    <string name="no_name_found_fmt">Nie znaleziono pokoi publicznych dla gier %1$d-player w %2$s. Spróbuj odświeżyć lub stworzyć własne.</string>
     <string name="robot_smarter">Inteligentniejszy robot</string>
     <string name="robot_smartest">Najmądrzejszy robot</string>
     <string name="phonies_spinner_prompt">Jak obsługiwać \"phonies\" (słowa nie znajdujące się na liście słów)</string>
@@ -345,7 +345,7 @@
     <string name="title_prefs">Ustawienia Krzyżówki</string>
     <string name="confirm_revert_all">Czy na pewno chcesz przywrócić wszystkie ustawienia do ich oryginalnych wartości\?</string>
     <string name="prefs_defaults">Nowe domyślne ustawienia gry</string>
-    <string name="prefs_names">Nazwy zawodników</string>
+    <string name="prefs_names">Nazwy graczy</string>
     <string name="prefs_names_summary">Domyślna nazwa zawodnika</string>
     <string name="pref_player1_name">Pierwszy gracz</string>
     <string name="pref_player2_name">Drugi gracz</string>
@@ -368,7 +368,7 @@
     <string name="key_bonushint">Punkt bonusowy</string>
     <string name="explain_robot_summary">Wyświetl podsumowanie wyników po każdym robocie lub zdalnym zakręcie</string>
     <string name="skip_confirm_turn">Pomiń potwierdzanie swojej kolejki</string>
-    <string name="skip_confirm_turn_summary">NIE wyświetlaj podsumowania wyniku po każdej ludzkiej kolejce</string>
+    <string name="skip_confirm_turn_summary">NIE wyświetlaj podsumowania wyniku po każdej kolejce człowieka</string>
     <string name="title_sort_tiles">Sortuj nowe kafelki</string>
     <string name="summary_sort_tiles">Sortuj stojaki za każdym razem, gdy dodawane są nowe kafelki.</string>
     <string name="peek_other_summary">Stuknięcie w nazwę tablicy wyników pokaże kafelek gracza</string>
@@ -897,5 +897,10 @@
         <item quantity="one">%1$s (%2$d gra)</item>
         <item quantity="few">%1$s (%2$d gier)</item>
         <item quantity="many">%1$s (%2$d gry)</item>
+    </plurals>
+    <plurals name="confirm_clear_sms_fmt">
+        <item quantity="one">Czy na pewno chcesz usunąć zaznaczony numer telefonu\?</item>
+        <item quantity="few">Czy na pewno chcesz usunąć %1$d zaznaczone numery telefonów\?</item>
+        <item quantity="many">Czy na pewno chcesz usunąć %1$d zaznaczony numer telefonu\?</item>
     </plurals>
 </resources>
