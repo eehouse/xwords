@@ -247,11 +247,11 @@ public class GameSummary implements Serializable {
                                                                     rowid );
                 if ( si.getMinPlayerCount() >= missing ) {
                     result = ( null != roomName )
-                        ? LocUtils.getString( context, R.string
-                                              .summary_invites_out_fmt,
+                        ? LocUtils.getString( context,
+                                              R.string.summary_invites_out_fmt,
                                               roomName )
-                        : LocUtils.getString( context, R.string
-                                              .summary_invites_out );
+                        : LocUtils.getString( context,
+                                              R.string.summary_invites_out );
                 }
             }
 

@@ -2314,7 +2314,6 @@
   <string name="post_dualpane_title">RESTART CROSSWORDS</string>
   <string name="post_dualpane_on_body">START CROSSWORDS WITH SIDE-BY-SIDE ENABLED!</string>
   <string name="post_dualpane_off_body">START CROSSWORDS WITH SIDE-BY-SIDE DISABLED</string>
-  <string name="disable_dualpane">DISABLE SIDE-BY-SIDE</string>
   <string name="dualpane_restart">EXITING APP…</string>
   <string name="after_restart">THIS CHANGE WILL NOT TAKE EFFECT UNTIL
   YOU RESTART CROSSWORDS.</string>

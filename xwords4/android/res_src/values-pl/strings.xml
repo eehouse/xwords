@@ -835,7 +835,6 @@
     <string name="list_item_select">Wybierz</string>
     <string name="list_item_deselect">Odznacz</string>
     <string name="no_invites">Ta gra nie wysłała żadnych zaproszeń</string>
-    <string name="disable_dualpane">Wyłącz side-by-side (obok siebie)</string>
     <string name="after_restart">Ta zmiana zostanie zastosowana po ponownym uruchomieniu CrossWords.</string>
     <string name="missing_perms">Ta gra jest skonfigurowana do komunikowania się za pomocą wiadomości SMS, ale CrossWords nie ma na to pozwolenia. Nadal możesz otworzyć grę, ale może nie być w stanie wysyłać ani odbierać ruchów.
 \n

@@ -2671,9 +2671,6 @@
   devices and I think it\'s rare that people play with more than
   two. Let me know if I\'m wrong and I\'ll up the priority.</string>
 
-  <string name="ignore_fcm_title">Ignore incoming FCM messages</string>
-  <string name="ignore_fcm_summary">Mimic life without a google account</string>
-
   <string name="show_sms_title">Show SMS sends, receives</string>
   <string name="show_fcm_title">Show FCM receives</string>
 
@@ -2710,7 +2707,6 @@
 
   <string name="no_invites">This game has sent no invitations</string>
 
-  <string name="disable_dualpane">Disable side-by-side</string>
   <string name="after_restart">This change will take effect after you
   restart CrossWords.</string>
 

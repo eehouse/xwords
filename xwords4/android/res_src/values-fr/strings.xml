@@ -3510,7 +3510,6 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
   <string name="post_dualpane_on_body">Lancer CrossWords avec la vue côte à côte activée !</string>
   <string name="post_dualpane_off_body">Lancer CrossWords avec la vue côte à côte désactivée</string>
 
-  <string name="disable_dualpane">Désactiver la vue côte à côte</string>
   <string name="db_enabled_toast">Mode vue côte à côte ACTIVÉ</string>
 <string name="dualpane_exit_now">CrossWords va maintenant se fermer pour que les changements s\'appliquent. Vous pouvez utiliser la notification qu\'il affiche pour le redémarrer.</string>
 
