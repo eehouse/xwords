@@ -343,7 +343,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         void moveGroup( long groupID, boolean moveUp )
         {
-            Log.d( TAG, "moveGroup(up=%b)", moveUp );
             int src = getGroupPosition( groupID );
             int dest = src + (moveUp ? -1 : 1);
 
