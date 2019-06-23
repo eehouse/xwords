@@ -1,2 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="button_new_group">Додати групу</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="robot_name_fmt">%1$s (робот)</string>
+    <string name="missing_player">(ще не тут…)</string>
+</resources>
