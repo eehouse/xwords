@@ -38,7 +38,7 @@ def load_strings(lang=''):
     wd = os.path.dirname(sys.argv[0])
     values = 'values'
     if not '' == lang: values += '-' + lang
-    path = wd + '/../XWords4/res/' + values + '/strings.xml'
+    path = wd + '/../app/src/main/res/' + values + '/strings.xml'
     file = open( path, 'r')
     for match in pat.finditer( file.read() ):
         index = len(nodes)
