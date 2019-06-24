@@ -45,6 +45,7 @@ struct NewGameCtx {
     XP_U16 nPlayersShown;       /* real nPlayers lives in gi */
     XP_U16 nPlayersTotal;       /* used only until changedNPlayers set */
     XP_U16 nLocalPlayers;       /* not changed except in newg_load */
+    XP_U16 timerSeconds;
     DeviceRole role;
     XP_Bool isNewGame;
     XP_Bool changedNPlayers;
@@ -149,6 +150,10 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame?
                             TRI_ENAB_ENABLED : TRI_ENAB_DISABLED );
 
+    ngc->timerSeconds = gi->gameSeconds;
+    value.ng_u16 = ngc->timerSeconds;
+    (*ngc->setAttrProc)( closure, NG_ATTR_TIMER, value );
+
     setRoleStrings( ngc );
     considerEnable( ngc );   
 
@@ -225,6 +230,8 @@ newg_store( NewGameCtx* ngc, CurGameInfo* gi,
         gi->serverRole = ngc->role;
         makeLocal = ngc->role != SERVER_ISSERVER;
 #endif
+        gi->gameSeconds = ngc->timerSeconds;
+        gi->timerEnabled = gi->gameSeconds > 0;
 
         for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
             storePlayer( ngc, player, &gi->players[player] );
@@ -250,17 +257,23 @@ void
 newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
 {
     XP_Bool changed = XP_FALSE;
-    if ( attr == NG_ATTR_NPLAYERS ) {
+    switch ( attr ) {
+    case NG_ATTR_NPLAYERS:
         if ( ngc->nPlayersShown != value.ng_u16 ) {
             ngc->nPlayersShown = value.ng_u16;
             ngc->changedNPlayers = XP_TRUE;
             changed = XP_TRUE;
         }
+        break;
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( NG_ATTR_ROLE == attr ) { 
+    case NG_ATTR_ROLE:
         changed = changeRole( ngc, value.ng_role );
+        break;
 #endif
-    } else {
+    case NG_ATTR_TIMER:
+        ngc->timerSeconds = value.ng_u16;
+        break;
+    default:
         XP_ASSERT( 0 );
     }
 

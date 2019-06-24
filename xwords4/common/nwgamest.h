@@ -59,6 +59,7 @@ typedef enum {
     NG_ATTR_NPLAYERS
     ,NG_ATTR_NPLAYHEADER
     ,NG_ATTR_CANJUGGLE
+    ,NG_ATTR_TIMER
 } NewGameAttr;
 
 typedef union NGValue {

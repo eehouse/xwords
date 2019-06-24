@@ -61,6 +61,7 @@ typedef struct GtkNewGameState {
     GtkWidget* nPlayersCombo;
     GtkWidget* nPlayersLabel;
     GtkWidget* juggleButton;
+    GtkWidget* timerField;
 } GtkNewGameState;
 
 static void
@@ -230,6 +231,30 @@ addPhoniesCombo( GtkNewGameState* state, GtkWidget* parent )
     gtk_widget_show( hbox );
 
     gtk_box_pack_start( GTK_BOX(parent), hbox, FALSE, TRUE, 0 );
+}
+
+static void
+on_timer_changed( GtkEditable *editable, gpointer data )
+{
+    GtkNewGameState* state = (GtkNewGameState*)data;
+    XP_ASSERT( GTK_ENTRY(state->timerField) == GTK_ENTRY(editable) );
+    gchar* text = gtk_editable_get_chars( editable, 0, -1 );
+    NGValue value = { .ng_u16 = atoi(text) };
+    newg_attrChanged( state->newGameCtxt, NG_ATTR_TIMER, value );
+}
+
+static void
+addTimerWidget( GtkNewGameState* state, GtkWidget* parent )
+{
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+    gtk_box_pack_start( GTK_BOX(parent), hbox, FALSE, TRUE, 0 );
+    GtkWidget* label = gtk_label_new( "Timer seconds (per move in duplicate case):" );
+    gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
+    state->timerField = gtk_entry_new();
+    g_signal_connect( state->timerField, "changed",
+                      (GCallback)on_timer_changed, state );
+    gtk_entry_set_input_purpose( GTK_ENTRY(state->timerField), GTK_INPUT_PURPOSE_NUMBER );
+    gtk_box_pack_start( GTK_BOX(hbox), state->timerField, FALSE, TRUE, 0 );
 }
 
 static GtkWidget*
@@ -411,6 +436,8 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_widget_show( hbox );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
+    addTimerWidget( state, vbox );
+
     /* buttons at the bottom */
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), 
@@ -571,19 +598,34 @@ static void
 gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
-    if ( attr == NG_ATTR_NPLAYERS ) {
+    switch( attr ) {
+    case NG_ATTR_NPLAYERS: {
         XP_U16 ii = value.ng_u16;
         XP_LOGF( "%s: setting menu %d", __func__, ii-1 );
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), ii-1 );
+    }
+        break;
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( attr == NG_ATTR_ROLE ) {
+    case NG_ATTR_ROLE:
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->roleCombo), 
                                   value.ng_role );
-    } else if ( attr == NG_ATTR_REMHEADER ) {
+        break;
+    case NG_ATTR_REMHEADER:
         /* ignored on GTK: no headers at all */
+        break;
 #endif
-    } else if ( attr == NG_ATTR_NPLAYHEADER ) {
+    case NG_ATTR_NPLAYHEADER:
         gtk_label_set_text( GTK_LABEL(state->nPlayersLabel), value.ng_cp );
+        break;
+    case NG_ATTR_TIMER: {
+        gchar buf[32];
+        snprintf( buf, VSIZE(buf), "%d", value.ng_u16 );
+        gtk_label_set_text( GTK_LABEL(state->timerField), buf );
+    }
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
     }
 }
 
