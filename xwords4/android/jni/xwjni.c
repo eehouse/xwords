@@ -243,10 +243,9 @@ prvEnvForMe( EnvThreadInfo* ti )
     JNIEnv* result = NULL;
     pthread_t self = pthread_self();
     pthread_mutex_lock( &ti->mtxThreads );
-    for ( int ii = 0; ii < ti->nEntries; ++ii ) {
+    for ( int ii = 0; !result && ii < ti->nEntries; ++ii ) {
         if ( self == ti->entries[ii].owner ) {
             result = ti->entries[ii].env;
-            break;
         }
     }
     pthread_mutex_unlock( &ti->mtxThreads );
@@ -2250,6 +2249,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
 
 typedef struct _DictIterData {
     JNIEnv* env;
+    JNIGlobalState* globalState;
     JNIUtilCtxt* jniutil;
     VTableMgr* vtMgr;
     DictionaryCtxt* dict;
@@ -2271,6 +2271,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 {
     jlong closure = 0;
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
+    MAP_THREAD( &globalState->ti, env );
 
     DictionaryCtxt* dict = makeDict( MPPARM(globalState->mpool) env,
                                      globalState->dictMgr, globalState->jniutil,
@@ -2278,6 +2279,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
     if ( !!dict ) {
         DictIterData* data = XP_CALLOC( globalState->mpool, sizeof(*data) );
         data->env = env;
+        data->globalState = globalState;
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globalState->mpool) );
         data->jniutil = globalState->jniutil;
         data->dict = dict;
@@ -2314,6 +2316,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 
         dict_unref( data->dict );
         freeIndices( data );
+
+        MAP_REMOVE( &data->globalState->ti, env );
+
         vtmgr_destroy( MPPARM(mpool) data->vtMgr );
         XP_FREE( mpool, data );
     }
