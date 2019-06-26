@@ -233,16 +233,21 @@ public class RelayService extends XWJIService
         enqueueWork( context, intent );
     }
 
-    public static void inviteRemote( Context context, int destDevID,
-                                     String relayID, NetLaunchInfo nli )
+    public static void inviteRemote( Context context, XwJNI.GamePtr gamePtr,
+                                     int destDevID, String relayID, NetLaunchInfo nli )
     {
-        int myDevID = DevID.getRelayDevIDInt( context );
-        if ( 0 != myDevID ) {
-            enqueueWork( context, getIntentTo( context, MsgCmds.INVITE )
-                                  .putExtra( DEV_ID_SRC, myDevID )
-                                  .putExtra( DEV_ID_DEST, destDevID )
-                                  .putExtra( RELAY_ID, relayID )
-                                  .putExtra( NLI_DATA, nli.toString() ) );
+        if ( XwJNI.comms_getAddrDisabled( gamePtr, CommsConnType.COMMS_CONN_RELAY,
+                                          true ) ) {
+            Log.d( TAG, "inviteRemote() dropping because relay sends disabled" );
+        } else {
+            int myDevID = DevID.getRelayDevIDInt( context );
+            if ( 0 != myDevID ) {
+                enqueueWork( context, getIntentTo( context, MsgCmds.INVITE )
+                             .putExtra( DEV_ID_SRC, myDevID )
+                             .putExtra( DEV_ID_DEST, destDevID )
+                             .putExtra( RELAY_ID, relayID )
+                             .putExtra( NLI_DATA, nli.toString() ) );
+            }
         }
     }
 

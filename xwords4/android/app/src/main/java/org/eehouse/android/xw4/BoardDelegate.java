@@ -2638,7 +2638,7 @@ public class BoardDelegate extends DelegateBase
                 case RELAY:
                     try {
                         int destDevID = Integer.parseInt( dev ); // failing
-                        RelayService.inviteRemote( m_activity, destDevID,
+                        RelayService.inviteRemote( m_activity, m_jniGamePtr, destDevID,
                                                    null, nli );
                     } catch (NumberFormatException nfi) {
                         Log.ex( TAG, nfi );
@@ -2979,7 +2979,7 @@ public class BoardDelegate extends DelegateBase
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
             if ( null != value ) {
-                RelayService.inviteRemote( m_activity, 0, value, nli );
+                RelayService.inviteRemote( m_activity, m_jniGamePtr, 0, value, nli );
                 recordInviteSent( InviteMeans.RELAY, value );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_P2P );
