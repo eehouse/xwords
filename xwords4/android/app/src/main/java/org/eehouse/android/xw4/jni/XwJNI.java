@@ -36,22 +36,22 @@ public class XwJNI {
     private static final String TAG = XwJNI.class.getSimpleName();
 
     public static class GamePtr implements AutoCloseable {
-        private long m_ptr = 0;
+        private long m_ptrGame = 0;
         private int m_refCount = 0;
         private long m_rowid;
         private String mStack;
 
         private GamePtr( long ptr, long rowid )
         {
-            m_ptr = ptr;
+            m_ptrGame = ptr;
             m_rowid = rowid;
             mStack = android.util.Log.getStackTraceString(new Exception());
         }
 
         public synchronized long ptr()
         {
-            Assert.assertTrue( 0 != m_ptr );
-            return m_ptr;
+            Assert.assertTrue( 0 != m_ptrGame );
+            return m_ptrGame;
         }
 
         public synchronized GamePtr retain()
@@ -69,15 +69,15 @@ public class XwJNI {
         public synchronized void release()
         {
             --m_refCount;
-            // Log.d( TAG, "release(this=%H, rowid=%d): refCount now %d",
-            //        this, m_rowid, m_refCount );
+            // Log.d( TAG, "%s.release(this=%H, rowid=%d): refCount now %d",
+            //        getClass().getName(), this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
-                if ( 0 != m_ptr ) {
-                    if ( !haveEnv( getJNI().m_ptr ) ) {
+                if ( 0 != m_ptrGame ) {
+                    if ( !haveEnv( getJNI().m_ptrGlobals ) ) {
                         Assert.fail();
                     }
                     game_dispose( this ); // will crash if haveEnv fails
-                    m_ptr = 0;
+                    m_ptrGame = 0;
                 }
             } else {
                 Assert.assertTrue( m_refCount > 0 || !BuildConfig.DEBUG );
@@ -93,16 +93,16 @@ public class XwJNI {
         // @Override
         public void finalize() throws java.lang.Throwable
         {
-            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptr) ) {
+            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptrGame) ) {
                 Log.e( TAG, "finalize(): called prematurely: refCount: %d"
-                       + "; ptr: %d; creator: %s", m_refCount, m_ptr, mStack );
+                       + "; ptr: %d; creator: %s", m_refCount, m_ptrGame, mStack );
             }
             super.finalize();
         }
     }
 
     private static XwJNI s_JNI = null;
-    private static XwJNI getJNI()
+    private static synchronized XwJNI getJNI()
     {
         if ( null == s_JNI ) {
             s_JNI = new XwJNI();
@@ -110,10 +110,10 @@ public class XwJNI {
         return s_JNI;
     }
 
-    private long m_ptr;
+    private long m_ptrGlobals;
     private XwJNI()
     {
-        m_ptr = initGlobals( new DUtilCtxt(), JNIUtilsImpl.get() );
+        m_ptrGlobals = initGlobals( new DUtilCtxt(), JNIUtilsImpl.get() );
     }
 
     public static void cleanGlobalsEmu()
@@ -125,15 +125,15 @@ public class XwJNI {
     {
         synchronized( XwJNI.class ) { // let's be safe here
             XwJNI jni = getJNI();
-            cleanGlobals( jni.m_ptr ); // tests for 0
-            jni.m_ptr = 0;
+            cleanGlobals( jni.m_ptrGlobals ); // tests for 0
+            jni.m_ptrGlobals = 0;
         }
     }
 
     @Override
     public void finalize() throws java.lang.Throwable
     {
-        cleanGlobals( m_ptr );
+        cleanGlobals( m_ptrGlobals );
         super.finalize();
     }
 
@@ -157,24 +157,24 @@ public class XwJNI {
 
     public static byte[] gi_to_stream( CurGameInfo gi )
     {
-        return gi_to_stream( getJNI().m_ptr, gi );
+        return gi_to_stream( getJNI().m_ptrGlobals, gi );
     }
 
     public static void gi_from_stream( CurGameInfo gi, byte[] stream )
     {
-        gi_from_stream( getJNI().m_ptr, gi, stream );
+        gi_from_stream( getJNI().m_ptrGlobals, gi, stream ); // called here
     }
 
     public static byte[] nliToStream( NetLaunchInfo nli )
     {
         nli.freezeAddrs();
-        return nli_to_stream( getJNI().m_ptr, nli );
+        return nli_to_stream( getJNI().m_ptrGlobals, nli );
     }
 
     public static NetLaunchInfo nliFromStream( byte[] stream )
     {
         NetLaunchInfo nli = new NetLaunchInfo();
-        nli_from_stream( getJNI().m_ptr, nli, stream );
+        nli_from_stream( getJNI().m_ptrGlobals, nli, stream );
         nli.unfreezeAddrs();
         return nli;
     }
@@ -188,7 +188,7 @@ public class XwJNI {
     private static GamePtr initGameJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
-        long ptr = initGameJNI( getJNI().m_ptr, seed );
+        long ptr = initGameJNI( getJNI().m_ptrGlobals, seed );
         GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }
@@ -226,7 +226,7 @@ public class XwJNI {
     // hack to allow cleanup of env owned by thread that doesn't open game
     public static void threadDone()
     {
-        envDone( getJNI().m_ptr );
+        envDone( getJNI().m_ptrGlobals );
     }
 
     private static native void game_makeNewGame( GamePtr gamePtr,
@@ -435,8 +435,8 @@ public class XwJNI {
         smsproto_prepOutbound( SMS_CMD cmd, int gameID, byte[] buf, String phone,
                                int port, boolean forceNow, /*out*/ int[] waitSecs )
     {
-        return smsproto_prepOutbound( getJNI().m_ptr, cmd, gameID, buf, phone,
-                                      port, forceNow, waitSecs );
+        return smsproto_prepOutbound( getJNI().m_ptrGlobals, cmd, gameID, buf,
+                                      phone, port, forceNow, waitSecs );
     }
 
     public static byte[][]
@@ -448,7 +448,7 @@ public class XwJNI {
     public static SMSProtoMsg[] smsproto_prepInbound( byte[] data,
                                                       String fromPhone, int wantPort )
     {
-        return smsproto_prepInbound( getJNI().m_ptr, data, fromPhone, wantPort );
+        return smsproto_prepInbound( getJNI().m_ptrGlobals, data, fromPhone, wantPort );
     }
 
     // Dicts
@@ -492,7 +492,7 @@ public class XwJNI {
     public static boolean dict_getInfo( byte[] dict, String name, String path,
                                         boolean check, DictInfo info )
     {
-        return dict_getInfo( getJNI().m_ptr, dict, name, path, check, info );
+        return dict_getInfo( getJNI().m_ptrGlobals, dict, name, path, check, info );
     }
 
     public static native int dict_getTileValue( long dictPtr, int tile );
@@ -502,7 +502,7 @@ public class XwJNI {
     public static long dict_iter_init( byte[] dict, String name,
                                        String path )
     {
-        return dict_iter_init( getJNI().m_ptr, dict, name, path );
+        return dict_iter_init( getJNI().m_ptrGlobals, dict, name, path );
     }
     public static native void dict_iter_setMinMax( long closure,
                                                    int min, int max );
