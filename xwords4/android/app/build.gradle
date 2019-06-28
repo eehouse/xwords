@@ -67,6 +67,7 @@ android {
     flavorDimensions "variant"//, "abi"
     productFlavors {
         all {
+            buildConfigField "String", "DB_NAME", "\"xwdb\"";
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
             buildConfigField "boolean", "IS_TAGGED_BUILD", "${CURTAG}" == '' ? "false" : "true"
             resValue "string", "invite_prefix", "/and/"
@@ -102,6 +103,7 @@ android {
         }
         xw4d {
             dimension "variant"
+            buildConfigField "String", "DB_NAME", "\"xwddb\"";
             applicationId "org.eehouse.android.xw4dbg"
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
@@ -116,6 +118,7 @@ android {
 
         xw4dNoSMS {
             dimension "variant"
+            buildConfigField "String", "DB_NAME", "\"xwddb\"";
             applicationId "org.eehouse.android.xw4dbg"
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"

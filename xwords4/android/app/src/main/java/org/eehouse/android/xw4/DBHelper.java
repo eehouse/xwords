@@ -46,7 +46,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_INVITES = "invites";
     public static final String TABLE_NAME_CHAT = "chat";
     public static final String TABLE_NAME_LOGS = "logs";
-    private static final String DB_NAME = "xwdb";
+    private static final String DB_NAME = BuildConfig.DB_NAME;
     private static final int DB_VERSION = 29;
 
     public static final String GAME_NAME = "GAME_NAME";
@@ -233,7 +233,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public DBHelper( Context context )
     {
-        super( context, DB_NAME, null, DB_VERSION );
+        super( context, getDBName(), null, DB_VERSION );
         m_context = context;
     }
 
@@ -263,7 +263,7 @@ public class DBHelper extends SQLiteOpenHelper {
     @SuppressWarnings("fallthrough")
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
     {
-        Log.i( TAG, "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
+        Log.i( TAG, "onUpgrade(%s): old: %d; new: %d", db, oldVersion, newVersion );
 
         boolean madeSumTable = false;
         boolean madeChatTable = false;
