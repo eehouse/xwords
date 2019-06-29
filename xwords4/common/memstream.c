@@ -113,7 +113,7 @@ mem_stream_make_sized( MPFORMAL VTableMgr* vtmgr, XP_U16 startSize,
 }
 
 static void
-mem_stream_getBytes( XWStreamCtxt* p_sctx, void* where, XP_U16 count )
+mem_stream_getBytes( DBG_PROC_FORMAL XWStreamCtxt* p_sctx, void* where, XP_U16 count )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     
@@ -121,8 +121,20 @@ mem_stream_getBytes( XWStreamCtxt* p_sctx, void* where, XP_U16 count )
         stream->nReadBits = 0;
     }
 
+#ifdef MEM_DEBUG
+    if( stream->curReadPos + count > stream->nBytesAllocated ) {
+        XP_LOGF( "%s(): caller: %s()", __func__, DBG_PROC_VAL_NOCOMMA );
+        XP_ASSERT(0);
+    }
+    if ( stream->curReadPos + count > stream->nBytesWritten ) {
+        XP_LOGF( "%s(): caller: %s()", __func__, DBG_PROC_VAL_NOCOMMA );
+        XP_ASSERT(0);
+    }
+#else
     XP_ASSERT( stream->curReadPos + count <= stream->nBytesAllocated );
     XP_ASSERT( stream->curReadPos + count <= stream->nBytesWritten );
+#endif
+
 
     XP_MEMCPY( where, stream->buf + stream->curReadPos, count );
     stream->curReadPos += count;
@@ -130,27 +142,27 @@ mem_stream_getBytes( XWStreamCtxt* p_sctx, void* where, XP_U16 count )
 } /* mem_stream_getBytes */
 
 static XP_U8 
-mem_stream_getU8( XWStreamCtxt* p_sctx )
+mem_stream_getU8( DBG_PROC_FORMAL XWStreamCtxt* p_sctx )
 {
     XP_U8 result;
-    mem_stream_getBytes( p_sctx, &result, sizeof(result) );
+    mem_stream_getBytes( DBG_PROC_VAL p_sctx, &result, sizeof(result) );
     return result;
 } /* mem_stream_getU8 */
 
 static XP_U16
-mem_stream_getU16( XWStreamCtxt* p_sctx )
+mem_stream_getU16( DBG_PROC_FORMAL XWStreamCtxt* p_sctx )
 {
     XP_U16 result;
-    mem_stream_getBytes( p_sctx, &result, sizeof(result) );
+    mem_stream_getBytes( DBG_PROC_VAL p_sctx, &result, sizeof(result) );
 
     return XP_NTOHS(result);
 } /* mem_stream_getU16 */
 
 static XP_U32
-mem_stream_getU32( XWStreamCtxt* p_sctx )
+mem_stream_getU32( DBG_PROC_FORMAL XWStreamCtxt* p_sctx )
 {
     XP_U32 result;
-    mem_stream_getBytes( p_sctx, &result, sizeof(result) );
+    mem_stream_getBytes( DBG_PROC_VAL p_sctx, &result, sizeof(result) );
     return XP_NTOHL( result );
 } /* mem_stream_getU32 */
 
