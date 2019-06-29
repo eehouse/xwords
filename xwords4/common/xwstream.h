@@ -49,7 +49,8 @@ typedef XP_U8 PosWhich;
 #else
 # define DBG_PROC
 # define DBG_PROC_FORMAL
-foo
+# define DBG_PROC_VAL_NOCOMMA
+# define DBG_PROC_VAL
 #endif
 
 
