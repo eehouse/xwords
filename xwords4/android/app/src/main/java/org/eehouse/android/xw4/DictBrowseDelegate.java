@@ -90,14 +90,6 @@ public class DictBrowseDelegate extends DelegateBase
             setTitle( getString( format, m_name, m_nWords,
                                  m_browseState.m_minShown,
                                  m_browseState.m_maxShown ));
-
-            String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
-            if ( null != desc ) {
-                TextView view = (TextView)findViewById( R.id.desc );
-                Assert.assertNotNull( view );
-                view.setVisibility( View.VISIBLE );
-                view.setText( desc );
-            }
         }
 
         public Object getItem( int position )
@@ -177,6 +169,15 @@ public class DictBrowseDelegate extends DelegateBase
             m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0],
                                                   name, pairs.m_paths[0] );
 
+            String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
+            Log.d( TAG, "got desc: %s", desc );
+            if ( null != desc ) {
+                TextView view = (TextView)findViewById( R.id.desc );
+                Assert.assertNotNull( view );
+                view.setVisibility( View.VISIBLE );
+                view.setText( desc );
+            }
+
             m_browseState = DBUtils.dictsGetOffset( m_activity, name, m_loc );
             boolean newState = null == m_browseState;
             if ( newState ) {
@@ -220,7 +221,8 @@ public class DictBrowseDelegate extends DelegateBase
 
     protected void onPause()
     {
-        if ( null != m_browseState ) { // already saved?
+        if ( null != m_browseState // already saved?
+             && null != m_list ) { // there are words? (don't NPE on empty dict)
             m_browseState.m_pos = m_list.getFirstVisiblePosition();
             View view = m_list.getChildAt( 0 );
             m_browseState.m_top = (view == null) ? 0 : view.getTop();
@@ -274,6 +276,7 @@ public class DictBrowseDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
+    @Override
     public void onItemSelected( AdapterView<?> parent, View view,
                                 int position, long id )
     {
@@ -296,6 +299,7 @@ public class DictBrowseDelegate extends DelegateBase
         }
     }
 
+    @Override
     public void onNothingSelected( AdapterView<?> parent )
     {
     }
