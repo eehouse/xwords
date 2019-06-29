@@ -20,6 +20,8 @@ XWLANG = Greek
 LANGCODE = el_GK
 ENC = UTF-8
 
+DICTNOTE = "Tiles for Greek (no words, so robot and hint won't work)"
+
 # DICT2DAWGARGS = -lang $(LANGCODE)
 # DICT2DAWGARGS = -debug
 
