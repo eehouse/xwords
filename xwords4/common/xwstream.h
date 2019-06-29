@@ -40,14 +40,27 @@ typedef XP_U8 PosWhich;
 # define DBG_LINE_FILE_PARM
 #endif
 
+
+#ifdef MEM_DEBUG
+# define DBG_PROC __func__,
+# define DBG_PROC_FORMAL const char* proc,
+# define DBG_PROC_VAL_NOCOMMA proc
+# define DBG_PROC_VAL DBG_PROC_VAL_NOCOMMA,
+#else
+# define DBG_PROC
+# define DBG_PROC_FORMAL
+foo
+#endif
+
+
 typedef struct StreamCtxVTable {
     void (*m_stream_destroy)( XWStreamCtxt* dctx );
 
-    XP_U8 (*m_stream_getU8)( XWStreamCtxt* dctx );
-    void (*m_stream_getBytes)( XWStreamCtxt* dctx, void* where, 
+    XP_U8 (*m_stream_getU8)( DBG_PROC_FORMAL XWStreamCtxt* dctx );
+    void (*m_stream_getBytes)( DBG_PROC_FORMAL XWStreamCtxt* dctx, void* where,
                                XP_U16 count );
-    XP_U16 (*m_stream_getU16)( XWStreamCtxt* dctx );
-    XP_U32 (*m_stream_getU32)( XWStreamCtxt* dctx );
+    XP_U16 (*m_stream_getU16)( DBG_PROC_FORMAL XWStreamCtxt* dctx );
+    XP_U32 (*m_stream_getU32)( DBG_PROC_FORMAL XWStreamCtxt* dctx );
     XP_U32 (*m_stream_getBits)( XWStreamCtxt* dctx, XP_U16 nBits );
 #if defined DEBUG
     void (*m_stream_copyBits)( const XWStreamCtxt* dctx, XWStreamPos endPos,
@@ -102,16 +115,16 @@ struct XWStreamCtxt {
          (sc)->vtable->m_stream_destroy(sc)
 
 #define stream_getU8(sc) \
-         (sc)->vtable->m_stream_getU8(sc)
+         (sc)->vtable->m_stream_getU8(DBG_PROC (sc))
 
 #define stream_getBytes(sc, wh, c ) \
-         (sc)->vtable->m_stream_getBytes((sc), (wh), (c))
+         (sc)->vtable->m_stream_getBytes(DBG_PROC (sc), (wh), (c))
 
 #define stream_getU16(sc) \
-         (sc)->vtable->m_stream_getU16(sc)
+         (sc)->vtable->m_stream_getU16(DBG_PROC sc)
 
 #define stream_getU32(sc) \
-         (sc)->vtable->m_stream_getU32(sc)
+         (sc)->vtable->m_stream_getU32(DBG_PROC sc)
 
 #define stream_getBits(sc, n) \
          (sc)->vtable->m_stream_getBits((sc), (n))
