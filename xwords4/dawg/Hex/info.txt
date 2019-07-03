@@ -51,11 +51,11 @@ XLOC_HEADER:0xFF00
 
 <BEGIN_TILES>
 4			0		{"_"}
-9			1		'Ä'
-2			3		'B'
-2			3		'C'
-4			2		'D'
-12			1		'Ë'
-2			4		'F'
+9			1		'Ä|ä'
+2			3		'B|b'
+2			3		'C|c'
+4			2		'D|d'
+12			1		'Ë|ë'
+2			4		'F|f'
 <END_TILES>
 # should ignore all after the <END_TILES> above
