@@ -78,33 +78,33 @@ XLOC_HEADER:0x8600
 
 <BEGIN_TILES>
 2			0	{"_"}
-12			1	'A'
-2			3	'B'
-4			3	'C'
-1			5	{"CH",true,true}
-5			2	'D'
-12			1	'E'
-1			4	'F'
-2			2	'G'
-2			4	'H'
-6			1	'I'
-1			8	'J'
-4			1	'L'
-1			8	{"LL", true, true}
-2			3	'M'
-5			1	'N'
-1			8	'Ñ'
-9			1	'O'
-2			3	'P'
-1			5	'Q'
-5			1	'R'
-1			8	{"RR",true,true}
-6			1	'S'
-4			1	'T'
-5			1	'U'
-1			4	'V'
-1			8	'X'
-1			4	'Y'
-1			10	'Z'
+12			1	'A|a'
+2			3	'B|b'
+4			3	'C|c'
+1			5	{"CH|ch|Ch|cH",true,true}
+5			2	'D|d'
+12			1	'E|e'
+1			4	'F|f'
+2			2	'G|g'
+2			4	'H|h'
+6			1	'I|i'
+1			8	'J|j'
+4			1	'L|l'
+1			8	{"LL|ll|Ll|lL", true, true}
+2			3	'M|m'
+5			1	'N|n'
+1			8	'Ñ|ñ'
+9			1	'O|o'
+2			3	'P|p'
+1			5	'Q|q'
+5			1	'R|r'
+1			8	{"RR|rr|Rr|rR",true,true}
+6			1	'S|s'
+4			1	'T|t'
+5			1	'U|u'
+1			4	'V|v'
+1			8	'X|x'
+1			4	'Y|y'
+1			10	'Z|z'
 <END_TILES>
 # should ignore all after the <END> above
