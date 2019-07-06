@@ -187,17 +187,17 @@ def notifyViaFCM( devids, typ, target ):
     return success
 
 def shouldSend(val):
-    return g_sendAll or val == 1
-    # pow = 1
-    # while pow < val:
-    #     pow *= 3
-    # return pow == val
+    pow = 1
+    while pow < val: pow *= 2
+    result = pow == val
+    # print "shouldSend(", val, ") =>", result
+    return result
 
 # given a list of msgid, devid lists, figure out which messages should
 # be sent/resent now and mark them as sent.  Backoff is based on
 # msgids: if the only messages a device has pending have been seen
 # before, backoff applies.
-def targetsAfterBackoff( msgs ):
+def targetsAfterBackoff( msgs, ignoreBackoff ):
     global g_sent
     targets = {}
     for row in msgs:
@@ -206,8 +206,10 @@ def targetsAfterBackoff( msgs ):
         if not msgid in g_sent:
             g_sent[msgid] = 0
         g_sent[msgid] += 1
-        if shouldSend( g_sent[msgid] ):
-            targets[devid] = row
+        if ignoreBackoff or shouldSend( g_sent[msgid] ):
+            if not devid in targets: targets[devid] = []
+            targets[devid].append(row)
+    print "targetsAfterBackoff() using:", g_sent
     return targets
 
 # devids is an array of (msgid, devid) tuples
@@ -272,8 +274,8 @@ def main():
         # print "got msgs:", len(devids)
         if 0 < len(devids):
             devids = addClntVers( g_con, devids )
-            targets = targetsAfterBackoff( devids )
-            # print "got targets:", len(targets)
+            targets = targetsAfterBackoff( devids, False )
+            print 'got', len(targets), 'targets'
             if 0 < len(targets):
                 if 0 < emptyCount: print ""
                 emptyCount = 0
@@ -281,12 +283,12 @@ def main():
                 if g_debug: print "devices needing notification:", targets, '=>',
                 toDelete = []
                 for devid in targets.keys():
-                    target = targets[devid]
-                    if notifyViaFCM( asGCMIds(g_con, [devid], typ), typ, target ) \
-                            and 3 <= target['clntVers'] \
-                            and target['msg64']:
-                        toDelete.append( str(target['id']) )
-                        nSent += 1
+                    for targetRow in targets[devid]:
+                        if notifyViaFCM( asGCMIds(g_con, [devid], typ), typ, targetRow ) \
+                           and 3 <= targetRow['clntVers'] \
+                           and targetRow['msg64']:
+                            toDelete.append( str(targetRow['id']) )
+                            nSent += 1
                 pruneSent( devids )
                 deleteMsgs( g_con, toDelete )
             elif g_debug: print "no targets after backoff"
