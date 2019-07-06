@@ -433,16 +433,16 @@ public class XwJNI {
 
     public static byte[][]
         smsproto_prepOutbound( SMS_CMD cmd, int gameID, byte[] buf, String phone,
-                               int port, boolean forceNow, /*out*/ int[] waitSecs )
+                               int port, /*out*/ int[] waitSecs )
     {
         return smsproto_prepOutbound( getJNI().m_ptrGlobals, cmd, gameID, buf,
-                                      phone, port, forceNow, waitSecs );
+                                      phone, port, waitSecs );
     }
 
     public static byte[][]
-        smsproto_prepOutbound( String phone, int port, boolean forceNow, int[] waitSecs )
+        smsproto_prepOutbound( String phone, int port, int[] waitSecs )
     {
-        return smsproto_prepOutbound( SMS_CMD.NONE, 0, null, phone, port, forceNow, waitSecs );
+        return smsproto_prepOutbound( SMS_CMD.NONE, 0, null, phone, port, waitSecs );
     }
     
     public static SMSProtoMsg[] smsproto_prepInbound( byte[] data,
@@ -538,8 +538,7 @@ public class XwJNI {
 
     private static native byte[][]
         smsproto_prepOutbound( long jniState, SMS_CMD cmd, int gameID, byte[] buf,
-                               String phone, int port, boolean forceNow,
-                               /*out*/int[] waitSecs );
+                               String phone, int port, /*out*/int[] waitSecs );
 
     private static native SMSProtoMsg[] smsproto_prepInbound( long jniState,
                                                               byte[] data,
