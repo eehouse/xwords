@@ -149,14 +149,12 @@ public class NBSProto {
     private static LinkedBlockingQueue<QueueElem> sQueue = new LinkedBlockingQueue<>();
 
     static class NBSProtoThread extends Thread {
-        private boolean mForceNow;
         private int[] mWaitSecs = { 0 };
         private Set<String> mCachedDests = new HashSet<>();
 
         NBSProtoThread()
         {
             super( "NBSProtoThread" );
-            mForceNow = !XWPrefs.getSMSProtoEnabled( XWApp.getContext() );
         }
 
         @Override
@@ -213,7 +211,6 @@ public class NBSProto {
         // already waiting for possible combination with other messages.
         private boolean processRetry()
         {
-            Assert.assertTrue( !mForceNow || !BuildConfig.DEBUG );
             boolean handled = false;
 
             for ( Iterator<String> iter = mCachedDests.iterator();
@@ -221,8 +218,7 @@ public class NBSProto {
                 String[] portAndPhone = iter.next().split( "\0", 2 );
                 short port = Short.valueOf(portAndPhone[0]);
                 byte[][] msgs = XwJNI
-                    .smsproto_prepOutbound( portAndPhone[1], port,
-                                            mForceNow, mWaitSecs );
+                    .smsproto_prepOutbound( portAndPhone[1], port, mWaitSecs );
                 if ( null != msgs ) {
                     sendBuffers( msgs, portAndPhone[1], port );
                     handled = true;
@@ -238,10 +234,9 @@ public class NBSProto {
 
         private boolean processSend( SendElem elem )
         {
-            boolean forceNow = mForceNow;
             byte[][] msgs = XwJNI
                 .smsproto_prepOutbound( elem.cmd, elem.gameID, elem.data,
-                                        elem.phone, elem.port, forceNow, mWaitSecs );
+                                        elem.phone, elem.port, mWaitSecs );
             if ( null != msgs ) {
                 sendBuffers( msgs, elem.phone, elem.port );
             }

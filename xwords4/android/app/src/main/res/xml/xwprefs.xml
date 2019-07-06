@@ -446,11 +446,6 @@
     <PreferenceScreen android:title="@string/pref_group_sms_title"
                       android:summary="@string/pref_group_sms_summary"
                       >
-      <CheckBoxPreference android:key="@string/key_enable_smsproto"
-                          android:title="@string/enable_smsproto_title"
-                          android:summary="@string/enable_smsproto_summary"
-                          android:defaultValue="false"
-                          />
       <CheckBoxPreference android:key="@string/key_enable_sms_toself"
                           android:title="@string/enable_sms_toself_title"
                           android:summary="@string/enable_sms_toself_summary"
