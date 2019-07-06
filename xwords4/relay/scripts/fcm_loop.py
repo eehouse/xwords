@@ -267,10 +267,13 @@ def main():
 
     while g_con:
         if g_debug: print
+        nSent = 0
         devids = getPendingMsgs( g_con, typ )
+        # print "got msgs:", len(devids)
         if 0 < len(devids):
             devids = addClntVers( g_con, devids )
             targets = targetsAfterBackoff( devids )
+            # print "got targets:", len(targets)
             if 0 < len(targets):
                 if 0 < emptyCount: print ""
                 emptyCount = 0
@@ -283,10 +286,12 @@ def main():
                             and 3 <= target['clntVers'] \
                             and target['msg64']:
                         toDelete.append( str(target['id']) )
+                        nSent += 1
                 pruneSent( devids )
                 deleteMsgs( g_con, toDelete )
             elif g_debug: print "no targets after backoff"
-        else:
+
+        if nSent == 0:
             emptyCount += 1
             if (0 == (emptyCount%5)) and not g_debug:
                 sys.stdout.write('.')
