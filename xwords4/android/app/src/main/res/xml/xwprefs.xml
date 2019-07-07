@@ -398,6 +398,7 @@
 
     <PreferenceScreen android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
+                      android:key="@string/pref_group_relay_title"
                       >
       <org.eehouse.android.xw4.XWListPreference
           android:key="@string/key_relay_poll"

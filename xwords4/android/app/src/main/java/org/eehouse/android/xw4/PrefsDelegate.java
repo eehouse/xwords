@@ -383,6 +383,10 @@ public class PrefsDelegate extends DelegateBase
         if ( ! BuildConfig.WIDIR_ENABLED ) {
             hideOne( R.string.key_enable_p2p, R.string.key_network_behavior );
         }
+
+        if ( null == FBMService.getFCMDevID( m_activity ) ) {
+            hideOne( R.string.key_show_fcm, R.string.pref_group_relay_title );
+        }
     }
 
     public static void launch( Context context )
