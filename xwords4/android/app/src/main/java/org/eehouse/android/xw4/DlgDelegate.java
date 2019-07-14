@@ -422,24 +422,10 @@ public class DlgDelegate {
     public void showInviteChoicesThen( final Action action,
                                        SentInvitesInfo info )
     {
-        if ( (Utils.deviceSupportsNBS( m_activity ))
-             || XWPrefs.getNFCToSelfEnabled( m_activity )
-             || NFCUtils.nfcAvail( m_activity )[0]
-             || WiDirWrapper.enabled()
-             || BTService.BTAvailable() ) {
-            DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
-                .setAction( action )
-                .setParams( info );
-            m_dlgt.show( state );
-        } else {
-            post( new Runnable() {
-                    public void run() {
-                        DlgClickNotify.InviteMeans means
-                            = DlgClickNotify.InviteMeans.EMAIL;
-                        m_clickCallback.inviteChoiceMade( action, means );
-                    }
-                });
-        }
+        DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN )
+            .setAction( action )
+            .setParams( info );
+        m_dlgt.show( state );
     }
 
     public void doSyncMenuitem()
