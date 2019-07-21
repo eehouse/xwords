@@ -44,12 +44,6 @@ public class GameNamer extends LinearLayout {
         view.setText( label );
     }
 
-    public void setKeyListener( KeyListener lstnr )
-    {
-        EditText view = (EditText)findViewById( R.id.name_edit );
-        view.setKeyListener( lstnr );
-    }
-
     public void setLabel( int id )
     {
         setLabel( LocUtils.getString( getContext(), id ) );
@@ -57,14 +51,17 @@ public class GameNamer extends LinearLayout {
 
     public void setName( String text )
     {
-        EditText view = (EditText)findViewById( R.id.name_edit );
-        view.setText( text );
+        getEdit().setText( text );
     }
 
     public String getName()
     {
-        EditText view = (EditText)findViewById( R.id.name_edit );
-        return view.getText().toString();
+        return getEdit().getText().toString();
     }
 
+    private EditWClear getEdit()
+    {
+        EditWClear view = (EditWClear)findViewById( R.id.name_edit );
+        return view;
+    }
 }

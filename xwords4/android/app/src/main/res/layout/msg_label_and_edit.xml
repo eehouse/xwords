@@ -14,16 +14,18 @@
               android:text="@string/game_name_label"
               />
 
-    <EditText android:id="@+id/edit"
-              android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:scrollHorizontally="true"
-              android:maxLines="1"
-              android:inputType="textCapWords"
-              android:maxLength="32"
-              android:textAppearance="?android:attr/textAppearanceMedium" 
-              android:selectAllOnFocus="true"
-              />
+    <org.eehouse.android.xw4.EditWClear
+        android:id="@+id/edit"
+        style="@style/edit_w_clear"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:scrollHorizontally="true"
+        android:maxLines="1"
+        android:inputType="textCapWords"
+        android:maxLength="32"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:selectAllOnFocus="true"
+        />
 
     <TextView android:id="@+id/msg"
               android:layout_height="wrap_content"

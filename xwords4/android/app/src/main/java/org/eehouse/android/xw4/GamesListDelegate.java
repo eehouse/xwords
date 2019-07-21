@@ -862,9 +862,10 @@ public class GamesListDelegate extends ListDelegateBase
 
         case GAMES_LIST_NEWGAME: {
             boolean solo = (Boolean)params[0];
-            LinearLayout view = (LinearLayout)
+            final LinearLayout view = (LinearLayout)
                 LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
-            final EditText edit = (EditText)view.findViewById( R.id.edit );
+            final EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
+            edit.setText( GameUtils.makeDefaultName( m_activity ) );
 
             boolean canDoDefaults = solo ||
                 0 < XWPrefs.getAddrTypes( m_activity ).size();
@@ -878,8 +879,6 @@ public class GamesListDelegate extends ListDelegateBase
             }
             TextView tmpEdit = (TextView)view.findViewById( R.id.msg );
             tmpEdit.setText( msg );
-            tmpEdit = (TextView)view.findViewById( R.id.edit );
-            tmpEdit.setText( GameUtils.makeDefaultName( m_activity ) );
 
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
@@ -907,11 +906,11 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case GAMES_LIST_NAME_REMATCH: {
-            LinearLayout view = (LinearLayout)
+            final LinearLayout view = (LinearLayout)
                 LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
             int iconResID = R.drawable.sologame__gen;
             if ( null != m_rematchExtras ) {
-                EditText edit = (EditText)view.findViewById( R.id.edit );
+                EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
                 edit.setText( m_rematchExtras.getString( REMATCH_NEWNAME_EXTRA ));
                 boolean solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
                 if ( !solo ) {
@@ -925,8 +924,9 @@ public class GamesListDelegate extends ListDelegateBase
                 .setTitle( R.string.button_rematch )
                 .setIcon( iconResID )
                 .setPositiveButton( android.R.string.ok, new OnClickListener() {
+                        @Override
                         public void onClick( DialogInterface dlg, int item ) {
-                            EditText edit = (EditText)((Dialog)dlg)
+                            EditWClear edit = (EditWClear)((Dialog)dlg)
                                 .findViewById( R.id.edit );
                             String gameName = edit.getText().toString();
                             startRematchWithName( gameName, true );

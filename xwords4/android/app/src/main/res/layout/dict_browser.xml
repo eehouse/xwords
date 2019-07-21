@@ -23,15 +23,18 @@
                 android:layout_weight="0"
                 android:layout_below="@id/desc"
                 >
-    <EditText android:id="@+id/word_edit" 
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:maxLines="1"
-              android:inputType="text"
-              android:layout_weight="1"
-              android:hint="@string/word_search_hint"
-              android:capitalize="characters"
-              />
+
+    <org.eehouse.android.xw4.EditWClear
+        android:id="@+id/word_edit"
+        style="@style/edit_w_clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:inputType="text"
+        android:layout_weight="1"
+        android:hint="@string/word_search_hint"
+        android:capitalize="characters"
+        />
 
     <Button android:id="@+id/search_button"
             android:layout_width="wrap_content" 

@@ -334,13 +334,13 @@ public class DictBrowseDelegate extends DelegateBase
 
     private String getFindText()
     {
-        EditText edit = (EditText)findViewById( R.id.word_edit );
+        EditWClear edit = (EditWClear)findViewById( R.id.word_edit );
         return edit.getText().toString();
     }
 
     private void setFindText( String text )
     {
-        EditText edit = (EditText)findViewById( R.id.word_edit );
+        EditWClear edit = (EditWClear)findViewById( R.id.word_edit );
         edit.setText( text );
     }
 
