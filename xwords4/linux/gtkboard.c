@@ -2707,11 +2707,11 @@ on_draw_event( GtkWidget* widget, cairo_t* cr, gpointer user_data )
 {
     // XP_LOGF( "%s(widget=%p)", __func__, widget );
 
-    GdkRectangle rect;
-    if ( gdk_cairo_get_clip_rectangle( cr, &rect) ) {
-        XP_LOGF( "%s(): clip: x:%d,y:%d,w:%d,h:%d", __func__,
-                 rect.x, rect.y, rect.width, rect.height );
-    }
+    /* GdkRectangle rect; */
+    /* if ( gdk_cairo_get_clip_rectangle( cr, &rect) ) { */
+        /* XP_LOGF( "%s(): clip: x:%d,y:%d,w:%d,h:%d", __func__, */
+        /*          rect.x, rect.y, rect.width, rect.height ); */
+    /* } */
 
     GtkGameGlobals* globals = (GtkGameGlobals*)user_data;
     board_invalAll( globals->cGlobals.game.board );
