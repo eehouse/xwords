@@ -71,7 +71,7 @@
     <string name="msg_relay_all_here_fmt">Wszyscy gracze są w pokoju \"%1$s\".</string>
     <string name="relay_alert">Problem z połączeniem</string>
     <string name="msg_no_room">Żaden host nie zarejestrował pokoju o tej nazwie.</string>
-    <string name="button_revert_all">Przywróć wszystkie</string>
+    <string name="button_revert_all">Przywróć wszystko</string>
     <string name="confirm_revert_colors">Czy na pewno chcesz przywrócić wszystkie ustawienia kolorów do ich oryginalnych wartości\?</string>
     <string name="button_revert_colors">Przywróć kolory</string>
     <string name="prefs_defaults_summary">Domyślne ustawienia dla nowych gier</string>
@@ -84,7 +84,7 @@
     <string name="prefs_appearance_summary">Ustawienia kontrolujące wygląd</string>
     <string name="game_summary_field_empty">&lt;Nic&gt;</string>
     <string name="game_summary_field_language">Język gry</string>
-    <string name="game_summary_field_opponents">Nazwa przeciwnika [s]</string>
+    <string name="game_summary_field_opponents">Nazwy przeciwników</string>
     <string name="game_summary_field_state">Stan gry</string>
     <string name="hide_title">Ukryj pasek tytułowy</string>
     <string name="hide_title_summary">Ukrycie nazwy gry pozwala na nieco większą planszę</string>
@@ -92,7 +92,7 @@
     <string name="hide_newgames_summary">Ukrywanie nowych przycisków gry na głównym ekranie powoduje wyświetlenie większej liczby gier</string>
     <string name="show_arrow">Pokaż strzałkę planszy</string>
     <string name="keep_screenon">Włącz ekran</string>
-    <string name="keep_screenon_summary">Zachowaj ekran na 10 minut</string>
+    <string name="keep_screenon_summary">Trzymaj ekran włączony przez 10 minut</string>
     <string name="prefs_colors">Indywidualne kolory</string>
     <string name="prefs_colors_summary">Edytuj kolory używane na planszy</string>
     <string name="bonus_l2x">Podwójna litera</string>
@@ -107,8 +107,8 @@
     <string name="explain_robot">Wyjaśnij inne ruchy</string>
     <string name="hide_crosshairs">Wyłącz krzyżyk</string>
     <string name="hide_crosshairs_summary">Nie pokazuj, która komórka planszy jest dotknięta</string>
-    <string name="network_behavior">Ustawienia gry w sieci</string>
-    <string name="network_behavior_summary">Ustawienia dla gry sieciowej</string>
+    <string name="network_behavior">Ustawienia gry sieciowej</string>
+    <string name="network_behavior_summary">Ustawienia mające zastosowanie do gier sieciowych</string>
     <string name="relay_behavior_summary">Ustawienia, które mają zastosowanie do gier online</string>
     <string name="connect_five_mins">Co 5 minut</string>
     <string name="connect_fifteen_mins">Co 15 minut</string>
@@ -147,7 +147,7 @@
     <string name="button_discard">Odrzucić</string>
     <string name="button_retry">Ponów próbę</string>
     <string name="history_title">Historia gry</string>
-    <string name="newbie_title">Oto wskazówka</string>
+    <string name="newbie_title">Wskazówka</string>
     <string name="button_notagain">Nie pokazuj ponownie</string>
     <string name="default_name_title">Domyślna nazwa gracza</string>
     <string name="default_name_message">Wpisz tutaj swoje imię. Będzie ono używane podczas tworzenia nowych gier. (Możesz zmienić go później w sekcji „Nowa gra domyślna” w Ustawieniach.)</string>
@@ -187,7 +187,7 @@
     <string name="lang_name_arabic">Arabski</string>
     <string name="lang_name_spanish">Hiszpański</string>
     <string name="lang_name_swedish">Szwedzki</string>
-    <string name="lang_name_polish">Szwedzki</string>
+    <string name="lang_name_polish">Polski</string>
     <string name="lang_name_danish">Duński</string>
     <string name="lang_name_italian">Włoski</string>
     <string name="lang_name_dutch">Holenderski</string>
@@ -254,10 +254,10 @@
     <string name="no_name_found_fmt">Nie znaleziono pokoi publicznych dla gier %1$d-player w %2$s. Spróbuj odświeżyć lub stworzyć własne.</string>
     <string name="robot_smarter">Inteligentniejszy robot</string>
     <string name="robot_smartest">Najmądrzejszy robot</string>
-    <string name="phonies_spinner_prompt">Jak obsługiwać \"phonies\" (słowa nie znajdujące się na liście słów)</string>
-    <string name="phonies_ignore">Ignorowanie fonii</string>
-    <string name="phonies_warn">Ostrzegaj, jeśli fałszywe alarmy</string>
-    <string name="phonies_disallow">Nie Zezwalaj na fonie</string>
+    <string name="phonies_spinner_prompt">Jak traktować „niepoprawne słowa” (słowa, których nie ma na liście słów)</string>
+    <string name="phonies_ignore">Ignoruj niepoprawne słowa</string>
+    <string name="phonies_warn">Ostrzegaj przed niepoprawnymi słowami</string>
+    <string name="phonies_disallow">Nie zezwalaj na niepoprawne słowa</string>
     <string name="guest_name">(Wyłączone urządzenie zawodnika)</string>
     <string name="confirm_save">Ta gra jest w toku. Jeśli zapiszesz zmiany, to należy ją ponownie uruchomić. Chcesz zapisać te zmiany\?</string>
     <string name="force_title">Wyłączone urządzenie zawodnika[ów]</string>
@@ -342,7 +342,7 @@
         <item quantity="many"/>
     </plurals>
     <string name="confirm_undo_last">Czy na pewno chcesz cofnąć ostatnią kolej\? (Nie ma opcji ponów.)</string>
-    <string name="title_prefs">Ustawienia Krzyżówki</string>
+    <string name="title_prefs">Ustawienia CrossWords</string>
     <string name="confirm_revert_all">Czy na pewno chcesz przywrócić wszystkie ustawienia do ich oryginalnych wartości\?</string>
     <string name="prefs_defaults">Nowe domyślne ustawienia gry</string>
     <string name="prefs_names">Nazwy graczy</string>
@@ -351,22 +351,22 @@
     <string name="pref_player2_name">Drugi gracz</string>
     <string name="pref_player3_name">Trzeci gracz</string>
     <string name="pref_player4_name">Czwarty gracz</string>
-    <string name="pref_human_name">Ludzki gracz</string>
+    <string name="pref_human_name">Gracz ludzki</string>
     <string name="prefs_dicts">Listy słów</string>
     <string name="default_dict">Lista słów dla ludzi</string>
     <string name="default_robodict">Lista słów dla robotów</string>
     <string name="init_autojuggle">Wymieszaj graczy</string>
-    <string name="default_phonies">Obsługa fonii</string>
-    <string name="phonies_found_title">Znaleziono fonie</string>
+    <string name="default_phonies">Zarządzaj niepoprawnymi słowami</string>
+    <string name="phonies_found_title">Znaleziono niepoprawne słowa</string>
     <string name="initial_player_minutes">Minut na każdego gracza</string>
     <string name="summary_field">Dołącz do listy gier</string>
-    <string name="show_arrow_summary">Dotknięte kafelki stojaków lądują na tej strzałce, gdy są widoczne</string>
+    <string name="show_arrow_summary">Dotknięte kafelki gry są umieszczane na tej strzałce, gdy są widoczne</string>
     <string name="bonus_l3x">Potrójna litera</string>
     <string name="bonus_w2x">Podwójne słowo</string>
     <string name="bonus_w3x">Potrójne słowo</string>
     <string name="clr_crosshairs">Kolor krzyżyków</string>
     <string name="key_bonushint">Punkt bonusowy</string>
-    <string name="explain_robot_summary">Wyświetl podsumowanie wyników po każdym robocie lub zdalnym zakręcie</string>
+    <string name="explain_robot_summary">Wyświetl podsumowanie wyników po zakończeniu każdego robota lub zdalnego gracza</string>
     <string name="skip_confirm_turn">Pomiń potwierdzanie swojej kolejki</string>
     <string name="skip_confirm_turn_summary">NIE wyświetlaj podsumowania wyniku po każdej kolejce człowieka</string>
     <string name="title_sort_tiles">Sortuj nowe kafelki</string>
@@ -412,7 +412,7 @@
     <string name="notify_title_fmt">Poruszaj się w grze %1$s</string>
     <string name="notify_chat_title_fmt">Wiadomość czatu w grze %1$s</string>
     <string name="dup_game_query_fmt">"Masz już tę grę, która wydaje się być utworzona (na  %1$s) z tego samego zaproszenia. Czy na pewno chcesz utworzyć nową\?"</string>
-    <string name="info_title">DLA TWOJEJ INFORMACJI.…</string>
+    <string name="info_title">INFORMUJĘ, ŻE.…</string>
     <string name="title_blank_picker">Wybierz kafelek dla pustego</string>
     <string name="tile_tray_picker">Wybierz nowe kafelki do zasobnika</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
@@ -478,7 +478,7 @@
     <string name="alert_empty_dict_fmt">Lista słów %1$s zawiera tylko informacje o kafelkach. Nie ma słów do przeglądania.</string>
     <string name="prompt_min_len">Słowa nie krótsze niż</string>
     <string name="prompt_max_len">Słowa nie dłuższe niż</string>
-    <string name="board_menu_file_email">Autor wiadomości e-mail</string>
+    <string name="board_menu_file_email">E-mail do autora</string>
     <string name="email_author_subject">Komentarz o CrossWords</string>
     <string name="email_author_chooser">Wyślij komentarz przez</string>
     <string name="email_body_rev_fmt">(Jeśli dotyczy, proszę podać wersję: \"%1$s\"; oraz markę/model telefonu lub tabletu.)</string>
@@ -560,7 +560,7 @@
     <string name="warn_relay_havegames">Czy na pewno chcesz wyłączyć grę za pomocą przekaźnika\?</string>
     <string name="button_enable_sms">Włącz SMS</string>
     <string name="button_enable_bt">Włącz Bluetooth</string>
-    <string name="button_enable_relay">Włącz odtwarzanie przekaźnika</string>
+    <string name="button_enable_relay">Aktywuj grę przez przekaźnik</string>
     <string name="button_disable_relay">Wyłącz odtwarzanie przekaźnika</string>
     <string name="button_later">Później</string>
     <string name="gamel_menu_checkupdates">Sprawdź dostępność aktualizacji</string>
@@ -580,7 +580,7 @@
     <string name="missing_dict_title">Oczekujące zaproszenie do gry</string>
     <string name="missing_dict_detail">Stuknij, aby pobrać brakującą listę słów</string>
     <string name="invite_dict_missing_title">Brak listy słów</string>
-    <string name="invite_dict_missing_body_fmt">%1$s zaprasza Cię do gry w CrossWords używając listy s łów %2$s (do gry w %3$s), ale nie jest ona zainstalowana. Chcesz pobrać listę słów czy odrzucić zaproszenie\?</string>
+    <string name="invite_dict_missing_body_fmt">%1$s zaprasza Cię do gry w CrossWords używając listy słów %2$s (do gry w %3$s), ale nie jest ona zainstalowana. Chcesz pobrać listę słów czy odrzucić zaproszenie\?</string>
     <string name="invite_dict_missing_body_noname_fmt">Zostałeś zaproszony do gry CrossWords przy użyciu listy słów %2$s (do gry w %3$s), ale nie jest ona zainstalowana. Czy chcesz pobrać listę słów\?</string>
     <string name="button_decline">Odmów</string>
     <string name="download_done">Pobieranie zakończone</string>
@@ -624,13 +624,13 @@
     <plurals name="confirm_studylist_clear_fmt">
         <item quantity="one">Czy na pewno chcesz usunąć zaznaczone słowo\?
 \n
-\n(Tej akcji nie można cofnąć).</item>
-        <item quantity="few">Czy na pewno chcesz usunąć zaznaczone słowa\?
+\n(Tej akcji nie można cofnąć.)</item>
+        <item quantity="few">Czy na pewno chcesz usunąć %1$d zaznaczonych słów\?
 \n
-\n(Tej akcji nie można cofnąć).</item>
-        <item quantity="many">Czy na pewno chcesz usunąć zaznaczone słowo\?
+\n(Tej akcji nie można cofnąć.)</item>
+        <item quantity="many">Czy na pewno chcesz usunąć %1$d zaznaczone słowa\?
 \n
-\n(Tej akcji nie można cofnąć).</item>
+\n(Tej akcji nie można cofnąć.)</item>
     </plurals>
     <plurals name="paste_done_fmt">
         <item quantity="one">Skopiowano jedno słowo</item>
@@ -638,8 +638,8 @@
         <item quantity="many">Skopiowano jedno słowo</item>
     </plurals>
     <string name="study_langpick">Twoje słowa na:</string>
-    <string name="study_no_lang_fmt">Nie zapisano jeszcze żadnych słów w StudyList dla %1$s.</string>
-    <string name="study_no_lists">Nie zapisałeś jeszcze żadnych słów na listę dyskusyjną.</string>
+    <string name="study_no_lang_fmt">Nie zapisano jeszcze żadnych słów na liście do nauki dla %1$s.</string>
+    <string name="study_no_lists">Nie zapisałeś jeszcze żadnych słów na listę do nauki.</string>
     <string name="not_again_studycopy">Wybrane słowa zostaną skopiowane do schowka systemowego. Następnie można je wkleić do dowolnej aplikacji obsługującej wklejanie tekstu, np. aplikacji pocztowej.</string>
     <string name="lookup_title">Wyszukiwanie słów</string>
     <string name="slmenu_select_all">Wybierz wszystkie</string>
@@ -655,9 +655,9 @@
     <string name="loc_item_check">Sprawdzić</string>
     <string name="loc_item_copy_bless">Kopia oficjalna</string>
     <string name="loc_fmts_mismatch">Nieprawidłowe tłumaczenie: przetłumaczony łańcuch musi mieć ten sam format (np. %1$s) co oryginał.</string>
-    <string name="not_again_fmt_expl">Ten łańcuch ma specjalne formaty (np. %1$s). Upewnij się, że Twoje tłumaczenie jest takie samo jak oryginał.
+    <string name="not_again_fmt_expl">Ten łańcuch ma specjalne znaki formatu (np. %1$s). Upewnij się, że Twoje tłumaczenie jest takie samo jak oryginał.
 \n
-\n(Nie będziesz w stanie go zapisać, chyba że tak się stanie.)</string>
+\n(Nie będziesz w stanie go zapisać bez niego.)</string>
     <string name="remote_digesting">Przetwarzanie informacji z listy słów…</string>
     <string name="remote_no_net">Nie można pobrać informacji z listy słów z serwera.</string>
     <string name="delete_dicts">Usuń listę słów[s]</string>
@@ -668,7 +668,7 @@
 \nRozmiar pliku do pobrania: %2$dK
 \nUwaga: %3$s</string>
     <string name="note_none">(Brak)</string>
-    <string name="dict_on_server">Dotknij, aby uzyskać szczegółowe informacje</string>
+    <string name="dict_on_server">Dotknij, aby poznać szczegóły</string>
     <plurals name="lang_name_fmt">
         <item quantity="one">%1$s (%2$d lista słów)</item>
         <item quantity="few">%1$s (%2$d listy słów)</item>
@@ -676,14 +676,14 @@
     </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d słów)</string>
     <string name="lang_unknown">Nieznane</string>
-    <string name="not_again_dicts">Ten ekran pozwala zainstalować nowe listy słów i wyświetlić te, które już masz. 
+    <string name="not_again_dicts">Ten ekran pozwala zainstalować nowe listy słów i wyświetlić już zainstalowane. 
 \n 
-\nJakie słowniki zainstalowałeś: 
-\n• W jakich językach możesz grać 
+\nTwoje zainstalowane listy słów są zdefiniowane przez: 
+\n• Języki, w których możesz grać 
 \n• Jak inteligentny jest robot 
-\n• Jakie słowa są legalne. 
+\n• Które słowa są legalne. 
 \n 
-\nZaznacz pole „Pokaż do pobrania” u góry, aby zobaczyć, co jest dostępne.</string>
+\nZaznacz u góry pole „Pokaż do pobrania”, aby zobaczyć, jakie listy słów są dostępne.</string>
     <string name="force_tablet_title">Użyć układu tabletu (obok siebie)\?</string>
     <string name="force_tablet_default">Użyj domyślnego dla mojego urządzenia</string>
     <string name="force_tablet_tablet">Wymuś układ tabletu</string>
@@ -715,16 +715,16 @@
     </plurals>
     <string name="lmi_phony_fmt">%1$s stracił swoją kolej</string>
     <string name="lmi_tiles_fmt">Kafelki przypisane do %1$s</string>
-    <string name="bt_no_devs">Obecnie nie masz sparowanych urządzeń Bluetooth (lub Bluetooth jest wyłączony). Czy chcesz otworzyć panel ustawień systemu Android, aby dodać jeden lub więcej\? 
+    <string name="bt_no_devs">Obecnie nie masz sparowanych urządzeń Bluetooth (lub Bluetooth jest wyłączony). Czy chcesz otworzyć panel ustawień systemu Android, aby dodać jedno lub więcej urządzeń\? 
 \n 
 \n(Może być także konieczne otwarcie go na urządzeniu, które chcesz sparować.)</string>
     <string name="app_not_found_fmt">Nie można połączyć się przez Bluetooth do CrossWords w urządzeniu %1$s. Sprawdź, czy urządzenie znajduje się w zasięgu Bluetooth i czy zainstalowano w nim CrossWords.</string>
     <string name="default_language">Język domyślny</string>
     <string name="title_addrs_pref">Komunikuj się przez</string>
     <string name="rematch_name_fmt">%1$s</string>
-    <string name="new_game_message">Czy chcesz utworzyć tę grę przy użyciu ustawień domyślnych\? 
+    <string name="new_game_message">Chcesz utworzyć grę przy użyciu ustawień domyślnych\? 
 \n 
-\nCzy chcesz go najpierw skonfigurować\?</string>
+\nCzy chcesz ją najpierw skonfigurować\?</string>
     <string name="new_game_message_nodflt">Ta gra musi zostać skonfigurowana, zanim będzie można ją otworzyć.</string>
     <string name="new_game_message_net">(Będziesz miał okazję zaprosić innych graczy, gdy będzie otwarta.)</string>
     <string name="use_defaults">Użyj ustawień domyślnych</string>
@@ -749,7 +749,7 @@
     <string name="button_reinvite">Ponowne zaproszenie</string>
     <string name="invite_stays">(To okno dialogowe pozostanie aktywne, dopóki nie połączą się wszyscy zdalni gracze. Możesz zamknąć grę, jeśli spodziewasz się, że potrwa to trochę czasu. Zdalni gracze nadal będą mogli się połączyć, będziesz powiadamiany, kiedy to zrobią.)</string>
     <string name="nfc_just_tap">Aby zaprosić przez NFC, wystarczy dotknąć tyłu tego urządzenia, które chcesz zaprosić - za każdym razem, gdy gra jest otwarta.</string>
-    <string name="config_no_connvia">Ta gra nie może się połączyć i nie można jej zapisać. Czy chcesz odrzucić zmiany lub edytować, aby umożliwić im połączenie\?</string>
+    <string name="config_no_connvia">Ta gra nie może się połączyć i nie można jej zapisać. Chcesz odrzucić zmiany, czy je edytować, aby umożliwić połączenie\?</string>
     <string name="button_edit">Edycja</string>
     <string name="button_discard_changes">Odrzucać zmiany</string>
     <string name="rematch_sent_toast">Wysłano zaproszenie do rewanżu</string>
@@ -758,7 +758,7 @@
     <string name="disable_nag_title">Wyłącz przypomnienie o grach sieciowych</string>
     <string name="disable_nag_summary">Nie powiadamiaj mnie bez względu na to, jak długo była moja kolej</string>
     <string name="disable_nag_solo_title">Wyłącz przypomnienie o grze solo</string>
-    <string name="confirm_get_locdict_fmt">Twoje urządzenie jest skonfigurowane na %1$s. Czy chcesz pobrać listę słów, aby móc grać w CrossWords w %1$s\?</string>
+    <string name="confirm_get_locdict_fmt">Twoje urządzenie jest skonfigurowane na język %1$s. Chcesz pobrać listę słów, aby móc grać w CrossWords w %1$s\?</string>
     <string name="advanced">Dla debugowania</string>
     <string name="advanced_summary">Nigdy nie powinieneś ich potrzebować...</string>
     <string name="relay_host">Host przekazywania</string>
@@ -797,7 +797,7 @@
     <string name="pref_group_sms_summary">Preferencje związane z grą za pośrednictwem sms</string>
     <string name="pref_group_relay_title">Wyślij przez przekaźnik</string>
     <string name="pref_group_relay_summary">Preferencje związane grą przez Internet/przekaźnik</string>
-    <string name="pref_group_l10n_title">Lokalizacja Wyślij</string>
+    <string name="pref_group_l10n_title">Lokalizacja rzeczy</string>
     <string name="pref_group_l10n_summary">Preferencje związane z lokalizacją w aplikacji</string>
     <string name="pref_item_update_summary">Uzyskaj pośrednie kompilacje</string>
     <string name="checking_title">Sprawdzanie</string>
@@ -828,7 +828,7 @@
     <string name="not_again_clip_expl_fmt">Opcja \"%1$s\" kopiuje adres URL zaproszenia do Schowka. Wklej go do wybranej aplikacji i wyślij do znajomego.</string>
     <string name="confirm_clear_chat">Czy na pewno chcesz usunąć całą historię czatu dla tej gry\?
 \n
-\n(Ta akcja nie może zostać cofnięta.)</string>
+\n(Tej akcji nie można cofnąć.)</string>
     <string name="rel_invite_title">Tytuł zaproszenia do przekazywania</string>
     <string name="fetching_from_relay">Pobieranie gier z przekaźnika</string>
     <string name="processing_games">Przetwarzanie gier</string>
@@ -902,4 +902,14 @@
         <item quantity="few">Czy na pewno chcesz usunąć %1$d zaznaczone numery telefonów\?</item>
         <item quantity="many">Czy na pewno chcesz usunąć %1$d zaznaczony numer telefonu\?</item>
     </plurals>
+    <string name="vs_join">" przeciwko. "</string>
+    <string name="peek_other">Pokaż kafelek poza kolejnością</string>
+    <string name="pick_faceup">Wybierz odkryte płytki</string>
+    <string name="menu_juggle">Mieszaj kafelki</string>
+    <string name="pct_suffix">" %."</string>
+    <string name="add_to_study_fmt">Dodaj %1$ do listy badawczej</string>
+    <string name="title_studyon">Włączyć listy badań</string>
+    <string name="gamel_menu_study">Lista do nauki…</string>
+    <string name="add_done_fmt">%1$s dodane do %2$s listy do nauki</string>
+    <string name="studylist_title_fmt">Lista do nauki dla %1$s</string>
 </resources>

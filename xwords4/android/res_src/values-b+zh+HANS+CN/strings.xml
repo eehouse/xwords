@@ -1,4 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="str_game_name_fmt">%1$s（%2$s）</string>
+    <string name="robot_name_fmt">%1$s（机器人）</string>
+    <string name="list_item_config">游戏设置……</string>
+    <string name="download_more">下载更……</string>
+    <string name="button_default_robot">机器人</string>
+    <string name="button_default_both">都</string>
+    <string name="lang_label">游戏语言</string>
+    <string name="play">玩游戏</string>
+    <string name="password_label">密码</string>
+    <string name="board_submenu_game">游戏-&gt;</string>
+    <string name="title_prefs">CrossWords设置</string>
+    <string name="game_summary_field_language">游戏语言</string>
+    <string name="red">红色</string>
+    <string name="green">绿色</string>
+    <string name="blue">蓝色</string>
+    <string name="invite_choice_bt">蓝牙</string>
+    <string name="chat_local_id">"我： "</string>
+    <string name="downloading_dict_fmt">正在下载%1$s……</string>
+    <string name="button_download">下载</string>
+    <string name="notify_chat_body_fmt">%1$s：%2$s</string>
+    <string name="button_save">保存</string>
+    <string name="tile_button_txt_fmt">%1$s（%2$d）</string>
+    <string name="chat_sender_fmt">%1$s：</string>
+    <string name="bkng_settings_text">设置</string>
+    <string name="str_placer_fmt" formatted="false">【#%d】%s：%d</string>
+    <string name="group_cur_games">我的游戏</string>
+    <string name="group_new_games">新游戏</string>
+    <plurals name="group_name_fmt">
+        <item quantity="one">%1$s（%2$d游戏）</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="loc_menu_xlate">翻译</string>
+    <string name="loc_lang_local">%1$s（你的）</string>
+    <string name="loc_filters_all">都</string>
+    <string name="lang_name_english">英语</string>
+    <string name="lang_name_french">法语</string>
+    <string name="lang_name_german">德语</string>
+    <string name="lang_name_spanish">西班牙语</string>
+    <string name="lang_name_italian">意大利语</string>
+    <string name="progress_title">正在下载</string>
+    <plurals name="nag_minutes_fmt">
+        <item quantity="one">%1$d分钟</item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="nag_hours_fmt">
+        <item quantity="one">%1$d小时</item>
+        <item quantity="other"></item>
+    </plurals>
+    <string name="rematch_name_fmt">%1$s</string>
+    <string name="name_dict_fmt">%1$s／%2$s</string>
 </resources>
