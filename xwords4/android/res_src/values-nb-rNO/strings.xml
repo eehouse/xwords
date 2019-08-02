@@ -125,7 +125,7 @@
     <string name="pref_player2_name">Andre spiller</string>
     <string name="pref_player3_name">Tredje spiller</string>
     <string name="pref_player4_name">Fjerde spiller</string>
-    <string name="pref_human_name">Menneskelig spiller</string>
+    <string name="pref_human_name">Menneskelig spiller (ditt navn)</string>
     <string name="prefs_dicts">Ordlister</string>
     <string name="prefs_dicts_summary">Forvalgte ordlister</string>
     <string name="default_dict">Ordlister for mennesker</string>
@@ -965,4 +965,10 @@
     <string name="sms_invite_fail">Kunne ikke starte SMS-program</string>
     <string name="checkbox_archive">Flytt til arkiv</string>
     <string name="button_more_info">Les mer</string>
+    <string name="invit_expl_usrsms_fmt">Invitasjon sendt via SMS-melding til telefonnummer %1$s på %2$s</string>
+    <string name="msg_dev_deleted_fmt">Spillet ved navn \"%1$s\" har blitt slettet på en annen enhet. Du vil ikke kunne spille videre.</string>
+    <string name="invite_choice_data_sms">Data-SMS</string>
+    <string name="empty_bt_inviter">Ingen parrede enheter oppdaget enda.</string>
+    <string name="sms_banned_ok_only">Google Play-versjonen av CrossWords støtter ikke lenger invitasjon eller spill via data-SMS.</string>
+    <string name="relay_poll_title">Hvordan skal det sjekkes for nye trekk\?</string>
 </resources>
