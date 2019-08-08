@@ -1,41 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><string name="button_new_group">Legg til gruppe</string>
-
+<resources>
+    <string name="button_new_group">Legg til gruppe</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
-
     <string name="robot_name_fmt">%1$s (maskin)</string>
-
     <string name="missing_player">(ikke her enda…)</string>
-
     <string name="summary_relay_conf_fmt">Satt opp for rom \"%1$s\"</string>
     <string name="summary_relay_wait_fmt">Venter for spiller i rom \"%1$s\"</string>
     <string name="summary_relay_conn_fmt">Spill underveis i rom \"%1$s\"</string>
     <string name="summary_relay_gameover_fmt">Spill over i rom \"%1$s\"</string>
-
     <string name="summary_invites_out">Spillere invitert</string>
     <string name="summary_invites_out_fmt">Spillere invitert til rom \"%1$s\"</string>
-
     <string name="gameOver">Spill over</string>
     <plurals name="moves_fmt">
-	<item quantity="one">%1$d trekk gjort</item>
-	<item quantity="other">%1$d trekk gjort</item>
-</plurals>
-
+        <item quantity="one">%1$d trekk gjort</item>
+        <item quantity="other">%1$d trekk gjort</item>
+    </plurals>
     <string name="button_delete">Slett</string>
     <string name="button_reset">Tilbakestill</string>
-
     <string name="gamel_menu_dicts">Ordlister…</string>
-
     <string name="menu_prefs">Programinnstillinger</string>
-
     <string name="gamel_menu_checkmoves">Sjekk trekk</string>
-
     <string name="board_menu_file_about">Om</string>
-
     <string name="list_item_config">Spillinnstillinger…</string>
     <string name="list_item_rename">Gi nytt navn…</string>
     <string name="list_item_move">Flytt til gruppe…</string>
-
     <string name="list_item_delete">Slett spill</string>
     <string name="list_item_reset">Tilbakestill</string>
     <string name="list_item_new_from">Nytt fra</string>
@@ -43,226 +31,140 @@
     <string name="game_rename_title">Gi nytt navn</string>
     <string name="rename_label">Endre navnet på dette spillet til:</string>
     <string name="rename_label_caveat">Endre navnet på dette spillet (kun på denne enheten) til:</string>
-
-    <string name="title_dicts_list">CrossWords-ordlister</string>   
+    <string name="title_dicts_list">CrossWords-ordlister</string>
     <string name="download_more">Last ned flere…</string>
-
     <string name="loc_builtin">Innebygd</string>
-
     <string name="loc_downloads">Nedlastinger</string>
-
     <string name="dicts_item_move">Endre nedlastingsplassering</string>
-
     <string name="dicts_item_select">Gjør til forvalg</string>
-
     <plurals name="confirm_delete_dict_fmt">
-	  <item quantity="one">Er du sikker på at du vil slette ordlisten %1$s?</item>
-	  <item quantity="other">Er du sikker på at du vil slette ordlistene %1$s?</item>
+        <item quantity="one">Er du sikker på at du vil slette ordlisten %1$s?</item>
+        <item quantity="other">Er du sikker på at du vil slette ordlistene %1$s?</item>
     </plurals>
-
     <string name="confirm_deleteonly_dicts_fmt">Sletting av %1$s vil bety at du står uten noen %2$s-ordlister. Ett eller flere spill vil ikke kunne åpnes (til du laster ned en erstatningsliste).</string>
-
     <string name="button_default_human">Menneske</string>
     <string name="button_default_robot">Maskin</string>
     <string name="button_default_both">Begge</string>
-
     <string name="move_dict_fmt">Plassering for ordlisten %1$s</string>
-
     <string name="loc_internal">Intern</string>
     <string name="loc_external">Ekstern</string>
-
-    <string name="title_game_config_fmt">Innstillinger for %1$s</string>  
-
-    <string name="title_gamenet_config_fmt">%1$s-innstillinger (nettverksbasert)</string>  
-
+    <string name="title_game_config_fmt">Innstillinger for %1$s</string>
+    <string name="title_gamenet_config_fmt">%1$s-innstillinger (nettverksbasert)</string>
     <string name="title_langs_list">Språk (basert på installerte ordlister)</string>
-
     <string name="game_locked">Lås innstillinger</string>
-
     <string name="players_label_standalone">Spillere (trykk for å redigere)</string>
-
     <string name="button_add_player">Legg til spiller</string>
-
     <string name="button_juggle_players">Veksle spillere</string>
-
     <string name="lang_label">Spillspråk</string>
     <string name="langdict_label">Spillspråk/ordliste</string>
-
     <string name="connect_label_fmt">Tilkobling (via %1$s)</string>
-
     <string name="join_room">Ta del i offentlig rom</string>
-
     <string name="new_room_hint">Romnavn</string>
-
     <string name="room_public">Gjør nytt navn offentlig</string>
-
     <string name="room_public_prompt">Sett offentlig rom</string>
-
     <string name="public_names_progress_fmt">Henter offentlige rom for %1$d-spillerrom i %2$s.</string>
-
     <string name="no_name_found_fmt">Ingen offentlige rom funnet for %1$d-spillerrom i %2$s. Prøv å gjenoppfriske eller å opprette ditt eget.</string>
-
     <string name="settings_label">Andre innstillinger</string>
-
     <string name="hints_allowed">Tillat hint</string>
-
     <string name="nethints_allowed">Tillat hint (nettverksbasert)</string>
-
     <string name="use_timer">Skru på spillklokke</string>
-
     <string name="minutes_label">Minutter per spiller</string>
-
     <string name="robot_spinner_prompt">Hvor smart skal maskinen være?</string>
-
     <string name="robot_smart">Smart maskin</string>
     <string name="robot_smarter">Smartere maskin</string>
     <string name="robot_smartest">Smartest maskin</string>
-
     <string name="confirm_save_title">Bekreft lagring</string>
-
     <string name="play">Ta del i spill</string>
-
     <string name="player_label">Navn:</string>
-
     <string name="dict_lang_label_fmt">Ordliste (i %1$s)</string>
-
     <string name="dicts_list_prompt_fmt">Installerte ordlister (i %1$s)</string>
-
     <string name="robot_label">Maskinspiller</string>
-
     <string name="password_label">Passord</string>
-
-
     <string name="button_trade_commit">Bekreft bytte</string>
     <string name="button_trade_cancel">Avbryt bytte</string>
-
     <string name="entering_trade">Trykk på flisene for å velge…</string>
-
-
     <string name="no_moves_made">(Ingen trekk enda)</string>
-
     <string name="invit_expl_bt_fmt">Invitasjon sendt via Blåtann til tilknyttet enhet \"%1$s\" på %2$s</string>
     <string name="invit_expl_notarget_fmt">Invitasjon sendt via %1$s på %2$s. Ukjent mottaker.</string>
-
     <string name="relay_alert">Tilkoblingsproblem</string>
-
     <string name="msg_no_room">Ingen vert har registrert et rom ved det navnet.</string>
-
     <string name="board_menu_game_history">Spillhistorikk…</string>
-
     <string name="board_menu_game_resign">Kapituler</string>
-
     <string name="board_menu_game_resend">Send trekk på nytt</string>
-
     <string name="str_robot_moved_fmt">"Maskinen %1$s gjorde dette trekket: "</string>
     <string name="player_edit_title">Rediger spiller</string>
-
     <string name="badwords_accept">" Ønsker du fremdeles å godta dette trekket?"</string>
     <string name="badwords_title">Illegale ord</string>
-
     <string name="board_menu_done">Tur over</string>
-
     <string name="board_menu_trade">Bytt</string>
-
     <string name="board_menu_undo_last">Angre siste</string>
-
     <string name="board_submenu_game">Spill →</string>
-
     <string name="board_menu_game_left">Fliser som gjenstår…</string>
-
     <plurals name="strd_robot_traded_fmt">
-	<item quantity="one">utvekslet ei flis.</item>
-	<item quantity="other">utvekslet %1$d flis.</item>
-</plurals>
+        <item quantity="one">utvekslet ei flis.</item>
+        <item quantity="other">utvekslet %1$d flis.</item>
+    </plurals>
     <string name="strs_new_tiles_fmt">Nye fliser: %1$s</string>
     <string name="strss_traded_for_fmt">Utvekslet %1$s for %2$s.</string>
     <string name="vs_join">" mot "</string>
-
     <string name="str_bonus_all">Bonus for bruk av alle flis: 50
 \n</string>
     <string name="strd_turn_score_fmt">Poengsum for tur: %1$d
 \n</string>
-
     <plurals name="strd_remains_header_fmt">
-	<item quantity="one">%1$d flis igjen å trekke fra.</item>
-	<item quantity="other"/>
-</plurals>
+        <item quantity="one">%1$d flis igjen å trekke fra.</item>
+        <item quantity="other"/>
+    </plurals>
     <string name="button_revert_colors">Gjenopprett farger</string>
     <string name="confirm_revert_all">Er du sikker på at du ønsker å tilbakestille alle innstillingene til forvalg?</string>
-
     <string name="prefs_defaults">Nye spillforvalg</string>
     <string name="prefs_defaults_summary">Forvalgte innstillinger for nye spill</string>
-
     <string name="prefs_names">Spillernavn</string>
-
     <string name="prefs_names_summary">Forvalgte spillernavn</string>
-
     <string name="pref_player1_name">Første spiller</string>
     <string name="pref_player2_name">Andre spiller</string>
     <string name="pref_player3_name">Tredje spiller</string>
     <string name="pref_player4_name">Fjerde spiller</string>
-
-    <string name="pref_human_name">Menneskelig spiller</string>
-
+    <string name="pref_human_name">Menneskelig spiller (ditt navn)</string>
     <string name="prefs_dicts">Ordlister</string>
     <string name="prefs_dicts_summary">Forvalgte ordlister</string>
-
     <string name="default_dict">Ordlister for mennesker</string>
     <string name="default_robodict">Ordlister for roboter</string>
-
     <string name="hints_allowed_sum">Skru på hint-funksjonen</string>
-
     <string name="nethints_allowed_sum">Skru på hint for to-enhets -spill</string>
-
     <string name="init_autojuggle">Sjongler spillere</string>
     <string name="init_autojuggle_sum">Tilfeldig, for nye spill</string>
-
     <string name="board_size">Brettstørrelse</string>
-
     <string name="prefs_appearance">Utseende</string>
     <string name="prefs_appearance_summary">Innstillinger for utseende</string>
-
     <string name="summary_field">Inkluder i spilliste</string>
-
     <string name="game_summary_field_empty">&lt;Ingenting&gt;</string>
     <string name="game_summary_field_language">Spillspråk</string>
     <string name="game_summary_field_opponents">Motstander[e]</string>
     <string name="game_summary_field_state">Spilltilstand</string>
-
     <string name="hide_title">Skjul tittellinje</string>
     <string name="hide_title_summary">Å skjule spillnavn levner litt mer plass til utvidelse av brettet</string>
-
     <string name="hide_newgames_title">Skjul knapp for nytt spill</string>
     <string name="hide_newgames_summary">Å skjule knappen for nytt spill på hovedskjermen gjør spillet mer synlig</string>
-
     <string name="show_arrow">Vis brettpil</string>
     <string name="keep_screenon">Behold skjerm påslått</string>
     <string name="keep_screenon_summary">Behold brettskjermen påslått i 10 minutter</string>
-
     <string name="prefs_colors">Individuelle farger</string>
     <string name="prefs_colors_summary">Rediger fargene brukt på brettet</string>
-
     <string name="bonus_l2x">Dobbeltbokstav</string>
     <string name="bonus_l3x">Trippelbokstav</string>
     <string name="bonus_w2x">Dobbelord</string>
     <string name="bonus_w3x">Trippelord</string>
-
     <string name="tile_back">Flisbakgrunn</string>
-
     <string name="empty">Tom celle/bakgrunn</string>
-
     <string name="background">Brettbakgrunn</string>
-
     <string name="red">Rød</string>
     <string name="green">Grønn</string>
     <string name="blue">Blå</string>
-    
-
     <string name="prefs_behavior">Oppførsel</string>
     <string name="explain_robot">Forklar andre trekk</string>
     <string name="title_sort_tiles">Sorter nye flis</string>
     <string name="peek_other_summary">Å trykke noens navn på resultattavla viser vedkommendes flis</string>
-    
     <string name="network_behavior">Innstillinger for nettverksspill</string>
     <string name="network_behavior_summary">Innstillinger som har innvirkning på nettverksspill</string>
     <string name="connect_never">Aldri sjekk</string>
@@ -272,128 +174,85 @@
     <string name="connect_one_hour">Hver time</string>
     <string name="connect_six_hours">Hver sjette time</string>
     <string name="connect_daily">Én gang om dagen</string>
-
     <string name="notify_sound">Spill lyd</string>
-
     <string name="notify_vibrate">Vibrer</string>
-
     <string name="notify_other_summary">Når motstanderens trekk mottas</string>
-
     <string name="newgame_invite">Inviter nå</string>
     <string name="newgame_invite_more">Mer info</string>
     <string name="invite_choice_sms">SMS (tekstmelding)</string>
-	<string name="invite_choice_email">E-post</string>
-	<string name="invite_choice_bt">Blåtann</string>
-	<string name="invite_choice_title">Invitasjon av spillere: Hvordan?</string>
+    <string name="invite_choice_email">E-post</string>
+    <string name="invite_choice_bt">Blåtann</string>
+    <string name="invite_choice_title">Invitasjon av spillere: Hvordan?</string>
     <string name="chat_local_id">"Meg: "</string>
     <string name="chat_other_id">"Ikke meg: "</string>
     <string name="chat_send">Send</string>
     <string name="chat_hint">Skriv her…</string>
-
     <string name="chat_menu_clear">Tøm historikk</string>
-
-
     <string name="no_empty_rooms">Dette spillet kan ikke koble til uten et romnavn.</string>
-
-
-
     <string name="str_tiles_not_in_line">Alle spilte flis må være i en linje.</string>
-
     <string name="str_too_few_tiles_left_to_trade">For få flis igjen å bytte.</string>
-
     <string name="downloading_dict_fmt">Laster ned %1$s…</string>
-
     <string name="no_dict_title">Ordliste ikke funnet</string>
-
     <string name="button_close_game">Lukk spill</string>
-
     <string name="no_dict_fmt">Spillet \"%1$s\" krever en %2$s-ordliste. Last ned én før du åpner det.</string>
-
     <string name="button_download">Last ned</string>
-
     <string name="button_substdict">Erstatt</string>
-
     <string name="msg_ask_password_fmt">Passord for \"%1$s\":</string>
-
     <string name="game_fmt">Spill %1$d</string>
-
     <string name="player_fmt">Spiller %1$d</string>
-
     <string name="notify_chat_title_fmt">Sludremelding i spillet %1$s</string>
     <string name="notify_chat_body_fmt">%1$s: %2$s</string>
-    <string name="button_yes">Ja</string>  
-    <string name="button_no">Nei</string>  
-
+    <string name="button_yes">Ja</string>
+    <string name="button_no">Nei</string>
     <string name="button_save">Lagre</string>
     <string name="button_discard">Forkast</string>
-
-    <string name="button_retry">Prøv igjen</string>  
-
+    <string name="button_retry">Prøv igjen</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Nåværende valg: %1$s</string>
-
     <string name="tiles_left_title">Gjenstående flis</string>
-
     <string name="history_title">Spillhistorikk</string>
-
     <string name="query_title">Et spørsmål…</string>
-
     <string name="newbie_title">Her er et tips</string>
-
     <string name="button_notagain">Ikke vis igjen</string>
-
     <string name="not_again_undo">Denne knappen angrer eller gjentar nåværende trekk.</string>
     <string name="default_name_title">Forvalgt spillernavn</string>
     <string name="default_name_message">Skriv inn navnet ditt her. Det vil bli brukt til opprettelse av nye spill. (Du kan endre det senere i \"Nytt spillforvalg\"-delen i innstillingene.)</string>
-
     <string name="changes_title">Nylige endringer</string>
     <string name="changes_button">Nylige endringer</string>
-
     <string name="button_lookup_fmt">Slå opp %1$s</string>
     <string name="button_done">Ferdig</string>
-      <string name="button_done_fmt">Ferdig med %1$s</string>
-
-      <string name="pick_url_title_fmt">Slå opp %1$s i</string>
-
-      <string name="board_menu_pass">Hopp over</string>
-
-      <string name="not_again_lookup">Denne knappen lar deg slå opp ord som akkurat ble spilt på nett.</string>
-
-      <string name="button_move">Flytt</string>
+    <string name="button_done_fmt">Ferdig med %1$s</string>
+    <string name="pick_url_title_fmt">Slå opp %1$s i</string>
+    <string name="board_menu_pass">Hopp over</string>
+    <string name="not_again_lookup">Denne knappen lar deg slå opp ord som akkurat ble spilt på nett.</string>
+    <string name="button_move">Flytt</string>
     <string name="button_newgroup">Ny gruppe</string>
-
-      <string name="button_search">Finn</string>
-      <string name="word_search_hint">Første bokstaver</string>
-      <string name="tilepick_all_fmt">Plukk %1$d for meg</string>
-      <string name="disableds_title">Avskrudde adressetyper</string>
-
-      <string name="dict_browse_title_fmt">%1$s (%2$d ord ved bruk av %3$d-%4$d flis)</string>
-      <string name="dict_browse_title1_fmt">%1$s (%2$d ord ved bruk av %3$d flis</string>
-      <string name="dict_browse_nowords_fmt">Ingen ord i %1$s starter med %2$s.</string>
-      <string name="not_again_browse">Denne knappen åpner ordlisteutforskeren i gjeldende spillers ordliste.</string>
-      <string name="not_again_browseall">Denne knappen åpner ordlisteutforskeren i ordlisten du ønsker.</string>
-      <string name="alert_empty_dict_fmt">Ordlisten %1$s inneholder kun flisinformasjon. Det er ingen ord å utforske.</string>
-
-      <string name="min_len">Min. lengde</string>
-      <string name="max_len">Maks. lengde</string>
-      <string name="prompt_min_len">Ord som ikke er kortere enn</string>
-      <string name="prompt_max_len">Ord som ikke er lengre enn</string>
-
-      <string name="email_author_chooser">Send kommentar via</string>
-
-      <string name="summary_wait_guest">Ikke tilkoblet</string>
-      <string name="summary_gameover">Spill over</string>
-      <string name="summary_conn">Spill underveis</string>
-      <string name="invite_notice_title">Nytt spill via invitasjon</string>
-      <string name="new_bt_body_fmt">En spiller på enheten %1$s ønsker å starte et spill</string>
+    <string name="button_search">Finn</string>
+    <string name="word_search_hint">Første bokstaver</string>
+    <string name="tilepick_all_fmt">Plukk %1$d for meg</string>
+    <string name="disableds_title">Avskrudde adressetyper</string>
+    <string name="dict_browse_title_fmt">%1$s (%2$d ord ved bruk av %3$d-%4$d flis)</string>
+    <string name="dict_browse_title1_fmt">%1$s (%2$d ord ved bruk av %3$d flis</string>
+    <string name="dict_browse_nowords_fmt">Ingen ord i %1$s starter med %2$s.</string>
+    <string name="not_again_browse">Denne knappen åpner ordlisteutforskeren i gjeldende spillers ordliste.</string>
+    <string name="not_again_browseall">Denne knappen åpner ordlisteutforskeren i ordlisten du ønsker.</string>
+    <string name="alert_empty_dict_fmt">Ordlisten %1$s inneholder kun flisinformasjon. Det er ingen ord å utforske.</string>
+    <string name="min_len">Min. lengde</string>
+    <string name="max_len">Maks. lengde</string>
+    <string name="prompt_min_len">Ord som ikke er kortere enn</string>
+    <string name="prompt_max_len">Ord som ikke er lengre enn</string>
+    <string name="email_author_chooser">Send kommentar via</string>
+    <string name="summary_wait_guest">Ikke tilkoblet</string>
+    <string name="summary_gameover">Spill over</string>
+    <string name="summary_conn">Spill underveis</string>
+    <string name="invite_notice_title">Nytt spill via invitasjon</string>
+    <string name="new_bt_body_fmt">En spiller på enheten %1$s ønsker å starte et spill</string>
     <string name="new_relay_body">Trykk for å åpne et nytt spill</string>
-
-
-      <string name="bt_resend_fmt">"Blåtannsforsendelse til %1$s mislyktes; prøv %3$d  i %2$d sekunder."</string>
+    <string name="bt_resend_fmt">"Blåtannsforsendelse til %1$s mislyktes; prøv %3$d  i %2$d sekunder."</string>
     <string name="bt_fail_fmt">Blåtannsforsendelser til %1$s har mislyktes for mange ganger. Åpne spillet igjen og prøv på nytt.</string>
-        <string name="bt_invite_title">Blåtannsinvitasjon</string>
+    <string name="bt_invite_title">Blåtannsinvitasjon</string>
     <string name="sms_invite_title">SMS-invitasjon</string>
-	<string name="game_name_label">Nytt spillnavn:</string>
+    <string name="game_name_label">Nytt spillnavn:</string>
     <string name="new_name_body_fmt">%1$s har invitert deg til å spille</string>
     <string name="button_sms_add">Importer kontakt</string>
     <string name="button_relay_add">Skann spill</string>
@@ -401,32 +260,24 @@
     <string name="get_sms_name">Kontaktnavn (valgfritt):</string>
     <string name="get_relay_name">Enhetsnavn (valgfritt):</string>
     <string name="get_relay_number">Skriv inn enhets-ID:</string>
-
     <string name="summary_conn_sms_fmt">Spill underveis med %1$s</string>
     <string name="menu_hint_prev">Forrige hint</string>
-
     <string name="menu_hint_next">Neste hint</string>
-
     <string name="board_menu_undo_current">Angre/gjenta</string>
-
     <string name="menu_chat">Sludring</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="menu_toggle_values">Veksle verdier</string>
-
     <string name="board_menu_dict">Utforsk ordliste</string>
-
     <string name="connstat_lastsend_fmt">Siste forsendelse var %1$s (%2$s)</string>
     <string name="connstat_lastreceipt_fmt">Siste kvittering var %1$s</string>
     <string name="connstat_noreceipt">Ingen meldinger mottatt.</string>
     <string name="connstat_sms">SMS/tekstmelding</string>
     <string name="enable_sms">Tillat spill via SMS</string>
     <string name="enable_sms_summary">Kun hvis du har ubegrensede tekstmeldinger!</string>
-
     <string name="confirm_sms_title">Bekreft din SMS-plan</string>
     <string name="button_enable_sms">Skru på SMS</string>
     <string name="button_enable_bt">Skru på Blåtann</string>
     <string name="button_later">Senere</string>
-
     <string name="gamel_menu_checkupdates">Se etter oppdateringer</string>
     <string name="checkupdates_none_found">Alt er oppdatert.</string>
     <string name="new_dict_avail">Ny ordliste tilgjengelig</string>
@@ -436,85 +287,63 @@
     <string name="inform_dict_diffdict_fmt">Du bruker ordlista %1$s, men spillverten bruker %2$s. Ønsker du å bruke %3$s også?</string>
     <string name="inform_dict_download">" (Du må i tilfelle late den ned først.)"</string>
     <string name="missing_dict_title">Spillinvitasjon venter</string>
-	<string name="missing_dict_detail">Trykk for å laste ned manglende ordliste</string>
+    <string name="missing_dict_detail">Trykk for å laste ned manglende ordliste</string>
     <string name="invite_dict_missing_title">Manglende ordliste</string>
     <string name="button_decline">Avslå</string>
-
     <string name="download_done">Nedlasting fullført</string>
     <string name="download_failed">Nedlasting mislyktes</string>
-
-    <string name="default_loc">Lagre ordlister internt</string> 
-
+    <string name="default_loc">Lagre ordlister internt</string>
     <string name="download_path_title">Nedlastingsmappe</string>
-
     <string name="newgroup_label">Navnet på din nye gruppe:</string>
-
     <string name="list_group_delete">Slett gruppe</string>
     <string name="list_group_rename">Gi nytt navn</string>
     <string name="list_group_default">Putt nye spill her</string>
     <string name="list_group_moveup">Flytt oppover</string>
     <string name="list_group_movedown">Flytt nedover</string>
-
     <string name="group_cur_games">Mine spill</string>
     <string name="group_new_games">Nye spill</string>
-
     <string name="rename_group_label">Endre navnet på denne gruppen til:</string>
     <string name="game_name_group_title">Navngi gruppe</string>
-
     <string name="cannot_delete_default_group_fmt">Gruppen for nye spill, %1$s, kan ikke slettes.</string>
-
     <plurals name="group_name_fmt">
-	<item quantity="one">%1$s (%2$d spill)</item>
-	<item quantity="other">%1$s (%2$d spill)</item>
-</plurals>
-
+        <item quantity="one">%1$s (%2$d spill)</item>
+        <item quantity="other">%1$s (%2$d spill)</item>
+    </plurals>
     <string name="button_reconnect">Koble til igjen</string>
-
     <string name="change_group">Flytt valgte spill til:</string>
-
     <string name="sel_games_fmt">Spill: %1$d</string>
     <string name="sel_groups_fmt">Grupper: %1$d</string>
     <string name="summary_thumbsize">Miniatyrbildestørrelse</string>
     <string name="thumb_off">Avskrudd</string>
-
     <string name="cur_menu_marker_fmt">%1$s (i bruk)</string>
     <string name="add_to_study_fmt">Legg til %1$s i studieliste</string>
     <string name="title_studyon">Skru på studielister</string>
     <string name="summary_studyon">Tilby å legge til og vise lister over ord å huske</string>
     <string name="gamel_menu_study">Studieliste…</string>
-
     <string name="slmenu_copy_sel">Kopier til utklippstavle</string>
     <string name="slmenu_clear_sel">Slett valgte</string>
     <string name="add_done_fmt">%1$s lagt til i %2$s studieliste</string>
     <string name="studylist_title_fmt">Studieliste for %1$s</string>
-
     <string name="study_langpick">Dine ord for:</string>
-
     <string name="lookup_title">Ordoppslag</string>
-
     <string name="slmenu_select_all">Velg alle</string>
     <string name="slmenu_deselect_all">Fravelt alle</string>
     <string name="sel_items_fmt">Valgt: %1$d</string>
-
     <string name="loc_menu_xlate">Oversett</string>
     <string name="loc_lang_blessed">%1$s (offisiell)</string>
     <string name="loc_lang_local">%1$s (din)</string>
-
     <plurals name="new_xlations_fmt">
-	<item quantity="one">Installerte én ny oversettelse</item>
-	<item quantity="other">Installerte %1$d nye oversettelser</item>
-</plurals>
-
+        <item quantity="one">Installerte én ny oversettelse</item>
+        <item quantity="other">Installerte %1$d nye oversettelser</item>
+    </plurals>
     <string name="xlations_enabled_title">Skru på lokal oversetting</string>
     <string name="xlations_enabled_summary">Legg til valget i hver skjermmeny</string>
-
     <string name="loc_filters_prompt">Filtrer etter:</string>
     <string name="loc_search_prompt">Søk etter:</string>
     <string name="loc_filters_all">Alle</string>
     <string name="loc_filters_screen">Siste skjerm</string>
     <string name="loc_filters_menu">Seneste meny</string>
     <string name="loc_filters_modified">Endret av meg</string>
-    
     <string name="lang_name_english">Engelsk</string>
     <string name="lang_name_french">Fransk</string>
     <string name="lang_name_german">Tysk</string>
@@ -532,202 +361,154 @@
     <string name="lang_name_czech">Tsjekkisk</string>
     <string name="lang_name_greek">Gresk</string>
     <string name="lang_name_slovak">Slovakisk</string>
-
     <string name="loc_item_clear">Tøm</string>
     <string name="loc_item_check">Sjekk</string>
     <string name="remote_digesting">Behandler ordlisteinformasjon…</string>
     <string name="delete_dicts">Slett ordliste[r]</string>
-
     <string name="show_remote">Vis nedlastbare</string>
     <string name="progress_title">Laster ned</string>
-
     <string name="dict_on_server">Trykk for detaljer</string>
     <plurals name="lang_name_fmt">
-	<item quantity="one">%1$s (%2$d ordliste)</item>
-	<item quantity="other">%1$s (%2$d ordlister)</item>
-</plurals>
-
+        <item quantity="one">%1$s (%2$d ordliste)</item>
+        <item quantity="other">%1$s (%2$d ordlister)</item>
+    </plurals>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d ord)</string>
-
     <string name="lang_unknown">Ukjent</string>
-
     <string name="force_tablet_title">Bruk brett- (side-ved-side) -oppsett?</string>
     <string name="force_tablet_default">Bruk forvalg for min enhet</string>
     <plurals name="nag_hours_fmt">
-	<item quantity="one">%1$d time</item>
-	<item quantity="other">%1$d timer</item>
-</plurals>
+        <item quantity="one">%1$d time</item>
+        <item quantity="other">%1$d timer</item>
+    </plurals>
     <plurals name="nag_days_fmt">
-	<item quantity="one">%1$d dag</item>
-	<item quantity="other">%1$d dager</item>
-</plurals>
+        <item quantity="one">%1$d dag</item>
+        <item quantity="other">%1$d dager</item>
+    </plurals>
     <string name="nag_body_fmt">%1$s flyttet for mer enn %2$s siden.</string>
     <string name="nag_warn_last_fmt">Siste advarsel: %1$s</string>
     <string name="prev_player">Din motstander</string>
-
     <plurals name="lmi_move_fmt">
-	<item quantity="one">%1$s spilte %2$s for %3$d poeng</item>
-	<item quantity="other"/>
-</plurals>
+        <item quantity="one">%1$s spilte %2$s for %3$d poeng</item>
+        <item quantity="other"/>
+    </plurals>
     <string name="lmi_phony_fmt">%1$s mistet en tur</string>
     <string name="default_language">Forvalgt språk</string>
-
-	<string name="title_addrs_pref">Kommuniser via</string>
-
+    <string name="title_addrs_pref">Kommuniser via</string>
     <string name="new_game">Ny én-enhets -spill</string>
     <string name="new_game_networked">Nytt nettverksbasert spill</string>
     <string name="rematch_name_fmt">%1$s</string>
-
     <string name="new_game_message_nodflt">Dette spillet må settes opp før det kan åpnes.</string>
-
     <string name="use_defaults">Bruk forvalg</string>
-
     <plurals name="nplayers_fmt">
-	<item quantity="one">Én spiller</item>
-	<item quantity="other">%1$d spillere</item>
-</plurals>
+        <item quantity="one">Én spiller</item>
+        <item quantity="other">%1$d spillere</item>
+    </plurals>
     <string name="network_advanced_title">Avansert</string>
     <string name="network_advanced_summary">For erfarne spillere</string>
     <string name="invite_multi_title">Inviter flere</string>
     <string name="enable_pubroom_title">Skru på offentlige rom</string>
     <string name="enable_pubroom_summary">Rom andre kan se og ta del i</string>
-
-
     <string name="set_pref">Skjul knapper</string>
-
     <string name="waiting_title">Venter på spillere</string>
     <string name="waiting_invite_title">Venter på svar</string>
     <string name="waiting_rematch_title">Omkamp underveis</string>
     <string name="button_wait">Vent</string>
     <string name="button_edit">Rediger</string>
     <string name="button_discard_changes">Forkast endringer</string>
-
     <string name="disable_nags_title">Turpåminnelser</string>
     <string name="advanced">For feilretting</string>
-  <string name="advanced_summary">Du skal ikke trenge disse…</string>
-  <string name="logging_on">Skru på loggføring</string>
-  <string name="debug_features">Skru på feilrettingsfunksjoner</string>
-  <string name="board_menu_game_netstats">Nettverksstatistikk</string>
-  <string name="board_menu_game_showInvites">Vis invitasjoner</string>
-  <string name="name_dict_fmt">%1$s/%2$s</string>
-  <string name="gamel_menu_storedb">Skriv spill til SD-kort</string>
-  <string name="gamel_menu_loaddb">Last spill fra SD-kort</string>
-  <string name="enable_dupes_summary">Godta invitasjoner mer enn én gang</string>
-  <string name="enable_sms_toself_title">Kortslutt SMS til deg selv</string>
-  <string name="force_radio_title">Lat som du har radio</string>
-  <string name="radio_name_real">Ikke lat som</string>
-  <string name="radio_name_gsm">GSM</string>
-  <string name="radio_name_cdma">CDMA</string>
-
-  <string name="pref_group_sms_title">SMS-ting</string>
-  <string name="pref_group_l10n_title">Lokaliserings-ting</string>
-  <string name="checking_title">Sjekker</string>
-  <string name="checking_for_fmt">Ser etter ordlister i %1$s…</string>
-  <string name="button_enable">Skru på</string>
-
-  <string name="str_no_hint_found">Finner ingen trekk</string>
-
-  <plurals name="resent_msgs_fmt">
-	<item quantity="one">Ett trekk sendt</item>
-	<item quantity="other">%1$s trekk sendt</item>
-</plurals>
-
-  <string name="clip_label">Invitasjonsnettadresse</string>
-  <string name="list_item_select">Velg</string>
-  <string name="list_item_deselect">Fravelg</string>
-
-  <string name="remove_sms">Fjern SMS</string>
-  <string name="button_ask_again">Spør igjen</string>
-  <string name="sms_send_failed">SMS-forsendelse mislyktes</string>
-  <string name="perms_rationale_title">Android-tilganger</string>
-  <string name="toast_no_permission">Tilgang ikke gitt</string>
-
-<plurals name="confirm_seldeletes_fmt">
-	<item quantity="one">Er du sikker på at du ønsker å slette valgt spill? Denne handlingen kan ikke angres.</item>
-	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte spill? Denne handlingen kan ikke angres.</item>
-</plurals>
-
+    <string name="advanced_summary">Du skal ikke trenge disse…</string>
+    <string name="logging_on">Skru på loggføring</string>
+    <string name="debug_features">Skru på feilrettingsfunksjoner</string>
+    <string name="board_menu_game_netstats">Nettverksstatistikk</string>
+    <string name="board_menu_game_showInvites">Vis invitasjoner</string>
+    <string name="name_dict_fmt">%1$s/%2$s</string>
+    <string name="gamel_menu_storedb">Skriv spill til SD-kort</string>
+    <string name="gamel_menu_loaddb">Last spill fra SD-kort</string>
+    <string name="enable_dupes_summary">Godta invitasjoner mer enn én gang</string>
+    <string name="enable_sms_toself_title">Kortslutt SMS til deg selv</string>
+    <string name="force_radio_title">Lat som du har radio</string>
+    <string name="radio_name_real">Ikke lat som</string>
+    <string name="radio_name_gsm">GSM</string>
+    <string name="radio_name_cdma">CDMA</string>
+    <string name="pref_group_sms_title">SMS-ting</string>
+    <string name="pref_group_l10n_title">Lokaliserings-ting</string>
+    <string name="checking_title">Sjekker</string>
+    <string name="checking_for_fmt">Ser etter ordlister i %1$s…</string>
+    <string name="button_enable">Skru på</string>
+    <string name="str_no_hint_found">Finner ingen trekk</string>
+    <plurals name="resent_msgs_fmt">
+        <item quantity="one">Ett trekk sendt</item>
+        <item quantity="other">%1$s trekk sendt</item>
+    </plurals>
+    <string name="clip_label">Invitasjonsnettadresse</string>
+    <string name="list_item_select">Velg</string>
+    <string name="list_item_deselect">Fravelg</string>
+    <string name="remove_sms">Fjern SMS</string>
+    <string name="button_ask_again">Spør igjen</string>
+    <string name="sms_send_failed">SMS-forsendelse mislyktes</string>
+    <string name="perms_rationale_title">Android-tilganger</string>
+    <string name="toast_no_permission">Tilgang ikke gitt</string>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="one">Er du sikker på at du ønsker å slette valgt spill? Denne handlingen kan ikke angres.</item>
+        <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte spill? Denne handlingen kan ikke angres.</item>
+    </plurals>
     <plurals name="confirm_reset_fmt">
-	<item quantity="one">Er du sikker på at du ønsker å slette valgt spill? Denne handlingen kan ikke angres.
+        <item quantity="one">Er du sikker på at du ønsker å slette valgt spill? Denne handlingen kan ikke angres.
 \n
 \n(Tilbakestilling sletter alle trekk og all tilknyttet informasjon.)</item>
-	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte spill? Denne handlingen kan ikke angres.
+        <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte spill? Denne handlingen kan ikke angres.
 \n
 \n(Tilbakestilling sletter alle trekk og all tilknyttet informasjon.)</item>
-</plurals>
-
+    </plurals>
     <string name="players_label_host_fmt">Spillere (%1$d lokale, %2$d eksterne)</string>
-
     <string name="phonies_spinner_prompt">Hvordan \"ønskeord\" skal behandles (altså dem som ikke finnes i ordlisten)</string>
-
     <string name="phonies_ignore">Ingorer ønskeord</string>
     <string name="phonies_warn">Advar hvis ønskeord</string>
     <string name="phonies_disallow">Ikke tillat ønskeord</string>
-
     <string name="str_reg_server_sans_remote">Minst én spiller må merkes \"ekstern\" for å starte spill som vert.</string>
-
     <string name="guest_name">(Ekstern)</string>
-
     <string name="confirm_save">Dette spillet pågår. Hvis du lagrer disse endringene må det startes på ny. Ønsker du å lagre disse endringene?</string>
     <string name="force_title">Ekstern[e]</string>
     <string name="force_expl">I et spill med flere enheter må det være minst én lokal spiller, og én fra en annen enhet. Sjekk eksterne spillere.</string>
-    
     <string name="forced_consistent">Endret førstespiller.</string>
-
     <string name="remote_label">Ekstern spiller</string>
-
     <string name="bonus_l2x_summary">2B</string>
     <string name="bonus_w2x_summary">2V</string>
     <string name="bonus_l3x_summary">3B</string>
     <string name="bonus_w3x_summary">3O</string>
-
     <plurals name="invite_msg_fmt">
-	<item quantity="one">Dette spiller venter på én ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
-	<item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
-</plurals>
+        <item quantity="one">Dette spiller venter på én ekstern spiller. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
+        <item quantity="other">Dette spiller venter på %1$d eksterne spillere. Ønsker du å invitere noen til spill, sett at du ikke har gjort det allerede?</item>
+    </plurals>
     <plurals name="invite_sent_fmt">
-	<item quantity="one">Du har allerede invitert en ekstern spiller til dette spillet. Vi venter på at vedkommende skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
-	<item quantity="other">Du har allerede sendt %1$d unike invitasjoner til dette spillet. Vi venter på %2$d av de inviterte skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
-</plurals>
+        <item quantity="one">Du har allerede invitert en ekstern spiller til dette spillet. Vi venter på at vedkommende skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
+        <item quantity="other">Du har allerede sendt %1$d unike invitasjoner til dette spillet. Vi venter på %2$d av de inviterte skal svare. Bruk gjeninvitasjonsknappen hvis du tror invitasjonen ikke ble sendt.</item>
+    </plurals>
     <string name="invited_msg">Dette spillet ble opprettet fra en invitasjon du mottok. Det vil begynne så snart det kan koble til senderen og en annen invitert har ankommet.</string>
-
     <string name="msgs_progress">Sjekker relé for trekk osv…</string>
-
     <string name="no_games_to_refresh">"Fant ingen spill som kobler til gjennom relé-et. "</string>
-
     <string name="no_copy_network">Spill som allerede har koblet til gjennom relé-et kan ikke kopieres. Bruk \"Ny fra\" for kopi klar til spilling med de samme innstillingene.</string>
-      <string name="set_default_message_fmt">For hvilke spillere skal ordlisten %1$s være forvalg for nye spill? (Språket %2$s vil være forvalg for begge.)</string>
-
+    <string name="set_default_message_fmt">For hvilke spillere skal ordlisten %1$s være forvalg for nye spill? (Språket %2$s vil være forvalg for begge.)</string>
     <string name="invite_if_nfc">Eller bare trykk for å invitere -- hvis den andre enheten også har Android-stråling og er i nærheten.</string>
-
     <string name="invite_multiple">" (Du forventer flere spillere annensteds fra. Du trenger ikke å invitere dem alle samtidig, men dette varselet vil ikke forsvinne med mindre alle har blitt invitert, og alle invitasjonene har blitt godkjent.)"</string>
-
     <string name="invit_expl_sms_fmt">Invitasjon sendt via SMS til telefonnummer %1$s på %2$s</string>
     <string name="invit_expl_relay_fmt">Invitasjon videresendt av relé-et til en annen enhet på %1$s</string>
     <string name="pts">p.</string>
-
     <plurals name="msg_relay_waiting_fmt">
-	<item quantity="one">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på én spiller.</item>
-	<item quantity="other">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på %3$d spillere.</item>
-</plurals>
-
+        <item quantity="one">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på én spiller.</item>
+        <item quantity="other">Enheten %1$d koblet til relé i rommet \"%2$s\". Venter på %3$d spillere.</item>
+    </plurals>
     <string name="msg_relay_all_here_fmt">Alle spillere er her i rommet \"%1$s\".</string>
-
     <string name="msg_too_many">Du kommer med flere spillere enn verten forventer.</string>
     <string name="msg_dup_room">En annen vert har allerede registrert et rom som bruker det navnet. Gi ditt et nytt navn og prøv igjen senere.</string>
     <string name="msg_lost_other">Relé-et har mistet kontakten med en annen enhet i dette spillet.</string>
-
     <string name="msg_dev_deleted">Dette spillet har blitt slettet på en annen enhet. Du vil ikke kunne spille videre.</string>
-
     <string name="ids_badwords_fmt">Ord[ene] %1$s ble ikke funnet i ordlisten %2$s.</string>
-
     <string name="badwords_lost">Tur tapt.</string>
-
     <string name="board_menu_tray_hide">Skjul stativ</string>
     <string name="board_menu_tray_show">Vis stativ</string>
-
     <string name="board_menu_game_counts">Opptellinger og verdier…</string>
-
     <string name="board_menu_game_final">Sluttpoengsummer</string>
     <string name="strs_values_header_fmt">%1$s opptellinger/verdier:
 \n</string>
@@ -750,118 +531,81 @@
 \n</string>
     <string name="str_nonlocal_name_fmt">%1$s (annensteds fra)</string>
     <plurals name="strd_remains_expl_fmt">
-	<item quantity="one">Én flis igjen i bunken og skjulte stativ:
+        <item quantity="one">Én flis igjen i bunken og skjulte stativ:
 \n</item>
-	<item quantity="other">%1$d flis igjen i bunken og skjulte stativ:
+        <item quantity="other">%1$d flis igjen i bunken og skjulte stativ:
 \n</item>
-</plurals>
-
+    </plurals>
     <string name="confirm_undo_last">Er du siker på at du ønsker å angre sist innsendte tur? (Det finnes inget gjentagelsesvalg.)</string>
-
     <string name="title_prefs">CrossWords-innstillinger</string>
-
     <string name="button_revert_all">Gjenopprett alle</string>
     <string name="confirm_revert_colors">Er du sikker på at du ønsker å gjenopprette alle fargeinnstillingene til deres opprinnelige verdier?</string>
     <string name="default_phonies">Ta hånd om falsknere</string>
-
     <string name="phonies_found_title">Fant falsknere</string>
-
     <string name="initial_player_minutes">Spillminutt per spiller</string>
-
     <string name="show_arrow_summary">Trykkede stativflis lander på denne pilen når den er synlig</string>
-
     <string name="clr_crosshairs">Retikkelfarge</string>
-
     <string name="prefs_behavior_summary">Instillinger for programoppførsel</string>
-
     <string name="explain_robot_summary">Viser poengsumssammendrag etter hver robot- eller -tur annensteds fra</string>
-
     <string name="skip_confirm_turn">Hopp over bekreftelsestur</string>
     <string name="skip_confirm_turn_summary">IKKE vis poengsum etter hver mennesketur</string>
-
     <string name="summary_sort_tiles">Sorter stativ når nye flis legges til</string>
-
     <string name="peek_other">Vis flis ute av tur</string>
     <string name="hide_crosshairs">Skru av retikler</string>
     <string name="hide_crosshairs_summary">Ikke vis hvilken bordcelle som berøres</string>
-
     <string name="relay_behavior">Innstillinger for gjentakelsesavspilling</string>
     <string name="relay_behavior_summary">Innstillinger som har med internettilknyttede spill å gjøre</string>
     <string name="disable_relay">Skru av spill via relé-et</string>
     <string name="disable_relay_summary">Skru av all internettkommunikasjon</string>
-
     <string name="connect_frequency">Sjekkfrekvens for trekk utført i bakgrunnen</string>
     <string name="newgame_configure_first">Sett opp først</string>
-
     <string name="newgame_drop_relay">Dropp relé</string>
-
     <string name="invite_choice_nfc">NFC (\"Android-stråling\")</string>
-	<string name="invite_choice_relay">Internett/relé</string>
+    <string name="invite_choice_relay">Internett/relé</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
-	<string name="invite_subject_fmt">La oss spille CrossWords (Rom %1$s)</string>
-
+    <string name="invite_subject_fmt">La oss spille CrossWords (Rom %1$s)</string>
     <string name="invite_chooser_fmt">Send invitasjon via %1$s</string>
     <string name="invite_chooser_email">e-post</string>
-
     <plurals name="query_trade_fmt">
-	<item quantity="one">Er du sikker på at du ønsker å bytte valgt fil (%2$s)?</item>
-	<item quantity="other">Er du sikker på at du ønsker å bytte valgt filer (%2$s)?</item>
-</plurals>
-
+        <item quantity="one">Er du sikker på at du ønsker å bytte valgt fil (%2$s)?</item>
+        <item quantity="other">Er du sikker på at du ønsker å bytte valgt filer (%2$s)?</item>
+    </plurals>
     <string name="chat_title_fmt">Sludring for %1$s</string>
     <string name="str_no_empties_in_turn">Tomme felter kan ikke dele spilte flis.</string>
-
     <string name="str_two_tiles_first_move">Må spille to eller flere flis i første trekk.</string>
-
     <string name="str_tiles_must_contact">Nye brikker må kontakte andre som allerede er der (eller midtfeltet i første trekk)</string>
-
     <string name="str_not_your_turn">Du kan ikke gjøre dette; det er ikke din tur!</string>
-
     <string name="str_no_peek_robot_tiles">Ingen kikking på robotens trekk!</string>
-
     <string name="str_no_peek_remote_tiles">Ingen kikking på flisene til spillere annensteds fra!</string>
-
     <string name="str_cant_undo_tileassign">Tildelingen kan ikke angres.</string>
-
     <string name="finalscores_title">Sluttpoengsummer</string>
-
     <string name="ids_endnow">Er du sikker på at du ønsker å gi deg?</string>
-
     <string name="about_vers_fmt">CrossWords for Android, %1$s variant, versjon %2$s, rev %3$s, bygd den %4$s.</string>
     <string name="about_copyright">Kopirett © 1998-2018 Eric House. Denne frie programvaren er lisensiert med GNU Public-lisens.</string>
-
     <string name="about_web">For manual eller kildekode, se: http://xwords.sf.net/android.php For å innrapportere feil, foreslå funksjoner, tilby hjelp, osv., send e-post til: xwords@eehouse.org</string>
-
     <string name="xlator">[tom]</string>
-
     <string name="about_credits">Verktøyslinjeinkoner av Sarah Chu. Navigeringsfeltsikoner fra Noun-prosjektet: \"arkiver\" av Trendy; \"omkamp\" av Becris; og \"bytte\" av iconmania.</string>
-
     <string name="button_lookup">Slå opp ord</string>
     <string name="button_lookup_study">Slå opp/studer ord</string>
-      <string name="button_lookup_study_fmt">Slå opp/studer %1$s</string>
-      <string name="title_lookup">Trykk for å slå opp</string>
+    <string name="button_lookup_study_fmt">Slå opp/studer %1$s</string>
+    <string name="title_lookup">Trykk for å slå opp</string>
     <string name="title_lookup_study">Trykk for å slå opp eller studere</string>
-      <string name="board_menu_file_email">E-postforfatter</string>
-      <string name="email_author_subject">Kommentar om CrossWords</string>
-      <string name="email_body_rev_fmt">(Hvis relevant, inkluder versjonen: \"%1$s\", og fabrikatet/modellen av din telefon eller nettbrett.)</string>
-
+    <string name="board_menu_file_email">E-postforfatter</string>
+    <string name="email_author_subject">Kommentar om CrossWords</string>
+    <string name="email_body_rev_fmt">(Hvis relevant, inkluder versjonen: \"%1$s\", og fabrikatet/modellen av din telefon eller nettbrett.)</string>
     <string name="bt_pick_clear_button">Fjern valgte</string>
     <string name="invite_progress_title">Kobler til…</string>
     <string name="invite_progress_fmt">Sender invitasjon til CrossWords på %1$s</string>
-      <string name="summary_wait_host">Venter på tilkobling[er]</string>
-      <string name="p2p_invite_title">Wi-Fi Direct-invitasjon</string>
-
+    <string name="summary_wait_host">Venter på tilkobling[er]</string>
+    <string name="p2p_invite_title">Wi-Fi Direct-invitasjon</string>
     <string name="get_sms_title">Manuell oppføring</string>
     <plurals name="confirm_clear_sms_fmt">
-	<item quantity="one">Er du sikker på at du ønsker å slette valgt telefonnummer?</item>
-	<item quantity="other">Er du sikker på at du ønsker å slette de %1$d valgte telefonnummerne?</item>
-</plurals>
+        <item quantity="one">Er du sikker på at du ønsker å slette valgt telefonnummer?</item>
+        <item quantity="other">Er du sikker på at du ønsker å slette de %1$d valgte telefonnummerne?</item>
+    </plurals>
     <string name="menu_juggle">Sjongler stativ</string>
-
     <string name="game_list_tmp">Bygger spillsammendrag…</string>
-
     <string name="summary_busy">Sammendrag utilgjengelig</string>
-
     <string name="connstat_net_fmt">Nettverksstatus for spill tilkoblet via %1$s:</string>
     <string name="invites_net_fmt">Invitasjoner sendt for spill tilkoblet via %1$s:</string>
     <string name="connstat_succ">vellykket</string>
@@ -870,278 +614,201 @@
     <string name="connstat_relay">Internett/relé</string>
     <string name="title_enable_p2p">Skru på Wi-Fi Direct</string>
     <string name="summary_enable_p2p">Eksperimentelt, bruker mye batteri</string>
-
     <string name="confirm_sms_prompt">Skru på spill via SMS?</string>
     <string name="confirm_sms_leave">Nei: La forbli avskrudd</string>
     <string name="confirm_sms_unlimited">Ja: Jeg har ubegrenset SMS</string>
     <string name="confirm_sms_willpay">Ja: Jeg betaler alle nettkostnader</string>
-
     <string name="warn_sms_disabled">Spill via SMS er foreløpig avslått. Ingen trekk vil bli sendt via SMS.
 \n
 \nDu kan skru på spill via SMS nå, eller senere.</string>
-
     <string name="button_enable_relay">Skru på relé-spill</string>
     <string name="button_disable_relay">Skru av relé-spill</string>
     <string name="str_winner_fmt" formatted="false">[Seierherre] %s: %d</string>
     <string name="str_resigned_fmt" formatted="false">[Resignert] %d: %d</string>
     <string name="inform_dict_title">Samsvarte ikke med ordliste</string>
     <string name="reload_new_dict_fmt">Gjeninnlaster spill med %1$s</string>
-
-	<string name="default_loc_summary">(Ikke i eksternt-/SD-kort -minne)</string>
-
+    <string name="default_loc_summary">(Ikke i eksternt-/SD-kort -minne)</string>
     <string name="button_rematch">Omkamp</string>
     <string name="button_archive">Akriver</string>
     <string name="group_name_archive">Arkiv</string>
-
     <string name="duplicate_group_name_fmt">Gruppen \"%1$s\" finnes allerede.</string>
-
     <string name="relay_alert_title">Melding fra relé-et</string>
-
     <string name="board_menu_invite">Invitasjon</string>
-
     <string name="button_go_settings">Oppstartsinnstillinger</string>
-
     <string name="menu_rateme">Vurder CrossWords</string>
     <string name="no_market">Fant ikke Google Play</string>
-
     <plurals name="paste_done_fmt">
-	<item quantity="one">Ett ord kopiert</item>
-	<item quantity="other">%1$d ord kopiert</item>
-</plurals>
+        <item quantity="one">Ett ord kopiert</item>
+        <item quantity="other">%1$d ord kopiert</item>
+    </plurals>
     <string name="remote_empty">Henter ordlisteinfo fra tjener…</string>
     <string name="remote_no_net">Klarte ikke å hente ordlisteinfo fra tjener.</string>
-
     <string name="dict_info_fmt">Antall ord: %1$d
 \nNedlastingsstørrelse: %2$dK
 \nMerk: %3$s</string>
     <string name="note_none">(Ingen)</string>
     <string name="nag_title">Påminnelse: Det er din tur</string>
     <plurals name="nag_minutes_fmt">
-	<item quantity="one">%1$d minutt</item>
-	<item quantity="other">%1$d minutter</item>
-</plurals>
+        <item quantity="one">%1$d minutt</item>
+        <item quantity="other">%1$d minutter</item>
+    </plurals>
     <string name="lmi_pass_fmt">%1$s passert (0 poeng)</string>
     <plurals name="lmi_trade_fmt">
-	<item quantity="one">%1$s byttet ei flis</item>
-	<item quantity="other">%1$s byttet %2$d flis</item>
-</plurals>
+        <item quantity="one">%1$s byttet ei flis</item>
+        <item quantity="other">%1$s byttet %2$d flis</item>
+    </plurals>
     <string name="lmi_tiles_fmt">Flis tildelt %1$s</string>
-
-	<string name="new_game_message">Ønsker du å opprette dette spillet med forvalgte innstillinger?
+    <string name="new_game_message">Ønsker du å opprette dette spillet med forvalgte innstillinger?
 \n
 \nEller ønsker du å sette det opp først?</string>
     <string name="new_game_message_net">(Du vil kunne invitere andre spillere når det er åpent.)</string>
-
     <string name="nplayers_prompt">Nummeret på denne enheten</string>
     <string name="err_dup_invite_fmt">Duplikatinvitasjon avslått: Enheten \"%1$s\" har allerede godtatt en invitasjon til dette spillet.</string>
-
     <string name="invite_multi_summary">Inviter mer enn én spiller per enhet annensteds fra</string>
     <string name="button_reinvite">Inviter igjen</string>
-
     <string name="rematch_sent_toast">Omkampsinvitasjoner sendt</string>
     <string name="relay_host">Relé-vert</string>
-  <string name="relay_via_http_first">Bruk vev-API-er først</string>
-  <string name="dict_host">Ordlistenedlastingsnettadresse</string>
-  <string name="logging_on_summary">(kun utgivelsesbygg)</string>
-  <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
-  <string name="netstats_title">Spillnettverksstatistikk</string>
-
-  <string name="git_rev_title">Kildekodeversjons-ID</string>
-  <string name="devid_title">Enhets-ID (på relé)</string>
-  <string name="relay_port">Relé-spillport</string>
-  <string name="proxy_port">Relé-enhetsport</string>
-  <string name="gamel_menu_writegit">Kopier Git-info til utklippstavle</string>
-  <string name="enable_dupes_title">Godta duplikatinvitasjoner</string>
-  <string name="xlations_locale">Juks til lokale for oversettelse</string>
-  <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
-  <string name="enable_nfc_toself_title">Skru på NFC til egen enhet</string>
-  <string name="enable_nfc_toself_summary">Juks til invitasjon for å hjelpe i feilrettingsøyemed</string>
-
-  <string name="enable_smsproto_title">Bruk ny/eksperimentell SMS-kode</string>
-  <string name="enable_smsproto_summary">(Krever at motparten bruker det også)</string>
-
-  <string name="nfc_to_self">Send via NFC til egen ehet?</string>
-
-  <string name="game_summary_field_rowid">rad-ID</string>
-  <string name="game_summary_field_gameid">spill-ID</string>
-  <string name="game_summary_field_npackets">Antall ventende pakker</string>
-  <string name="expl_relay_url">Nettadresse for relé-vev-API</string>
-
-  <string name="got_langdict_title">Hent forvalgt ordliste for språk</string>
-  <string name="got_langdict_summary">Ikke prøv igjen</string>
-
-  <string name="pref_group_relay_title">Relé-greier</string>
-  <string name="db_store_done">SD-kort-skriving ferdig.</string>
-
-  <string name="seeking_relay">Kobler til relé…</string>
-
-  <string name="confirm_drop_relay_bt">Blåtann fungerer kun for enheter i nærheten.</string>
-  <string name="confirm_drop_relay_sms">Ikke alle tilbydere støtter spill via SMS.</string>
-
-  <string name="ignore_gcm_title">Se bort fra innkommende GCM-meldinger</string>
-  <string name="show_gcm_title">Vis GCM-mottak</string>
-
-  <string name="invite_copied">Invitasjon klar til innliming</string>
-  <string name="rel_invite_title">Reléinvitasjonstittel</string>
-  <string name="fetching_from_relay">Henter spill fra relé-et</string>
-  <string name="processing_games">Behandler spill</string>
-
-  <string name="no_invites">Dette spillet har ikke sendt noen invitasjoner</string>
-
-  <string name="after_restart">Dette vil tre i effekt etter at du har startet CrossWords på ny.</string>
-
-  <string name="button_skip">Hopp over</string>
-
-  <string name="key_bonushint">Bonushint i felt</string>
-
+    <string name="relay_via_http_first">Bruk vev-API-er først</string>
+    <string name="dict_host">Ordlistenedlastingsnettadresse</string>
+    <string name="logging_on_summary">(kun utgivelsesbygg)</string>
+    <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
+    <string name="netstats_title">Spillnettverksstatistikk</string>
+    <string name="git_rev_title">Kildekodeversjons-ID</string>
+    <string name="devid_title">Enhets-ID (på relé)</string>
+    <string name="relay_port">Relé-spillport</string>
+    <string name="proxy_port">Relé-enhetsport</string>
+    <string name="gamel_menu_writegit">Kopier Git-info til utklippstavle</string>
+    <string name="enable_dupes_title">Godta duplikatinvitasjoner</string>
+    <string name="xlations_locale">Juks til lokale for oversettelse</string>
+    <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
+    <string name="enable_nfc_toself_title">Skru på NFC til egen enhet</string>
+    <string name="enable_nfc_toself_summary">Juks til invitasjon for å hjelpe i feilrettingsøyemed</string>
+    <string name="enable_smsproto_title">Bruk ny/eksperimentell SMS-kode</string>
+    <string name="enable_smsproto_summary">(Krever at motparten bruker det også)</string>
+    <string name="nfc_to_self">Send via NFC til egen ehet?</string>
+    <string name="game_summary_field_rowid">rad-ID</string>
+    <string name="game_summary_field_gameid">spill-ID</string>
+    <string name="game_summary_field_npackets">Antall ventende pakker</string>
+    <string name="expl_relay_url">Nettadresse for relé-vev-API</string>
+    <string name="got_langdict_title">Hent forvalgt ordliste for språk</string>
+    <string name="got_langdict_summary">Ikke prøv igjen</string>
+    <string name="pref_group_relay_title">Relé-greier</string>
+    <string name="db_store_done">SD-kort-skriving ferdig.</string>
+    <string name="seeking_relay">Kobler til relé…</string>
+    <string name="confirm_drop_relay_bt">Blåtann fungerer kun for enheter i nærheten.</string>
+    <string name="confirm_drop_relay_sms">Ikke alle tilbydere støtter spill via SMS.</string>
+    <string name="ignore_gcm_title">Se bort fra innkommende GCM-meldinger</string>
+    <string name="show_gcm_title">Vis GCM-mottak</string>
+    <string name="invite_copied">Invitasjon klar til innliming</string>
+    <string name="rel_invite_title">Reléinvitasjonstittel</string>
+    <string name="fetching_from_relay">Henter spill fra relé-et</string>
+    <string name="processing_games">Behandler spill</string>
+    <string name="no_invites">Dette spillet har ikke sendt noen invitasjoner</string>
+    <string name="after_restart">Dette vil tre i effekt etter at du har startet CrossWords på ny.</string>
+    <string name="button_skip">Hopp over</string>
+    <string name="key_bonushint">Bonushint i felt</string>
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Trykk her&lt;/a&gt; (eller trykk på hele lenken nedenfor, hvis du allerede har CrossWords installert, åpne vedlegget) for å godta min invitasjon og ta del i dette spillet. &lt;br \\&gt; &lt;br \\&gt; (Hele lenken: %1$s )</string>
-
     <string name="str_cant_hint_while_disabled">Hintfunksjonen er skrudd av for dette spillet. Skru den på for et nytt spill fra innstillingene.</string>
-
     <string name="str_reg_unexpected_user">Avslo forsøk på å registrere uventet bruker.</string>
-
     <string name="str_server_dict_wins">Konflikt mellom vert- og gjeste-ordlister; verten\'s liste foretrekkes.</string>
-
-
     <string name="no_dict_subst_fmt">Kunne ikke åpne spillet \"%1$s\" fordi ordlisten %2$s ikke ble funnet. (Den kan ha blitt slettet, eller lagret på et eksternt minnekort som ikke lenger er tilgjengelig.)
 \n
 \nDu kan laste ned en erstatning eller bruk en annen %3$s-ordliste.</string>
-
     <string name="subst_dict_title">Erstatningsordliste (antall ord)</string>
-
     <string name="notify_title_fmt">Trekk i spillet %1$s</string>
     <string name="notify_title_turn_fmt">Din tur i spillet %1$s</string>
     <string name="dup_game_query_fmt">Du har allerede et spill som ser ut til å ha blitt opprettet (den %1$s) fra samme invitasjon. Er du sikker på at du vil opprette en ny?</string>
-
     <string name="info_title">Til din opplysning…</string>
-
     <string name="tile_tray_picker">Velg nye flis for stativet</string>
-
     <string name="counts_values_title">Flisopptellinger og -verdier</string>
-
     <string name="not_again_sync">Denne handlingen sjekker relé-et for ventende trekk/meldinger for alle nettverksspill, og flagger dem med ventende trekk. Når du åpner et flagget spill vil det koble til og synkronisere. (I en senere utgave vil disse trekkene bli lastet ned i bakgrunnen.)</string>
-
     <string name="not_again_trading">Du har gått inn i flisutvekslingsmodus.
 \n
 \nTrykk på flis for å legge til/fjerne dem fra settet for å bli byttet bort.
 \n
 \n</string>
-
-      <string name="not_again_trading_buttons">Bruk knappene til å utføre din tur, eller avslutt utvekslingsmodus.</string>
-      <string name="not_again_trading_menu">Bruk menyen eller handlingsfeltet for å utføre din tur, eller avslutt avslutningsmodus.</string>
-
+    <string name="not_again_trading_buttons">Bruk knappene til å utføre din tur, eller avslutt utvekslingsmodus.</string>
+    <string name="not_again_trading_menu">Bruk menyen eller handlingsfeltet for å utføre din tur, eller avslutt avslutningsmodus.</string>
     <string name="not_again_hintprev">Denne knappen viser alle mulige trekk i stigende rekkefølge (ved bruk av flis til høyre for stativdeleren.)</string>
     <string name="not_again_hintnext">Denne knappen viser alle mulige trekk i synkende rekkefølge (ved bruk av flis til høyre for stativdeleren.)</string>
     <string name="not_again_juggle">Denne knappen stokker om flis tilfeldig på stativet.</string>
     <string name="not_again_flip">Denne knappen dreier brettet om en diagonal akse.</string>
     <string name="not_again_conndall">Du har koblet til og tatt del i et spill på relé-et; rommet er nå fullt. Eneten som opprettet rommet vil nå tildele deg dine første flis, og spillet kan begynne.</string>
-
     <string name="bt_pick_addall_button">Legg til alle parrede</string>
-      <string name="bt_pair_settings">Parr flere</string>
-
-      <string name="bt_bad_proto_fmt">Versjonen av CrossWords på \"%1$s\" er ukompatibel med den for spill ved bruk av Blåtann. Én av dere må oppgradere før du kan fortsette.</string>
-
+    <string name="bt_pair_settings">Parr flere</string>
+    <string name="bt_bad_proto_fmt">Versjonen av CrossWords på \"%1$s\" er ukompatibel med den for spill ved bruk av Blåtann. Én av dere må oppgradere før du kan fortsette.</string>
     <string name="sms_bad_proto_fmt">Versjonen av CrossWords på telefonen med nummer \"%1$s\" er ikke kompatibel med den for spill ved bruk av SMS. Én av dere må oppgradere før du kan fortsette.</string>
-
     <plurals name="invite_bt_desc_fmt">
-	<item quantity="one">Velg enheten du ønsker å inkludere i dette spillet.
+        <item quantity="one">Velg enheten du ønsker å inkludere i dette spillet.
 \n
 \nBruk \"%2$s\"-knappen hvis du ikke ser en enheten du forventer.</item>
-	<item quantity="other">Velg opptil %1$d enhet[er] du ønsker å inkludere i dette spillet.
+        <item quantity="other">Velg opptil %1$d enhet[er] du ønsker å inkludere i dette spillet.
 \n
 \nBruk \"%2$s\"-knappen hvis du ikke ser en enhet du forventer.</item>
-</plurals>
+    </plurals>
     <string name="button_invite">Invitasjon sjekket</string>
-
     <string name="relay_invite_title">Relé-invitasjon</string>
     <plurals name="invite_sms_desc_fmt">
-	<item quantity="one">Velg telefonnummeret du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
-	<item quantity="other">Velg de %1$d telefonnummerne du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
-</plurals>
+        <item quantity="one">Velg telefonnummeret du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
+        <item quantity="other">Velg de %1$d telefonnummerne du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
+    </plurals>
     <plurals name="invite_relay_desc_fmt">
-	<item quantity="one">Velg enheten du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
-	<item quantity="other">Velg de %1$d enhetene du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
-</plurals>
+        <item quantity="one">Velg enheten du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
+        <item quantity="other">Velg de %1$d enhetene du ønsker å invitere til ditt nye spill, trykk så \"%2$s\".</item>
+    </plurals>
     <string name="warn_nomobile_fmt">Nummeret %1$s for %2$s er ikke et \"mobil\"-nummer. Importer uansett?</string>
     <string name="empty_sms_inviter">Denne telefonlisten er tom. Bruk \"Importer kontakt\"-knappen for å legge til folk du ønsker å invitere, bruk +knappen for å skrive inn nummer direkte.</string>
-
     <string name="empty_p2p_inviter">Det er foreløpig ingen enheter som kan nås via Wi-Fi Direct som har CrossWords installert.</string>
-
     <string name="remote_undone">Enhet annensteds hen opphevet en tur.</string>
-
     <string name="connstat_lastother_unsucc_fmt">(Siste sending var %1$s)</string>
     <string name="warn_relay_later">Du kan skru på relé-spill nå, eller senere.</string>
     <string name="warn_relay_remove">Du kan skru på relé-spill nå, eller senere, eller fjerne det fra dette spillet.</string>
-
     <string name="warn_relay_havegames">Er du sikker på at du ønsker å skru av spill på relé-et</string>
-
     <string name="str_placer_fmt" formatted="false">[Nr.%d] %s: %d</string>
-
     <string name="inform_dict_diffversion_fmt">Du og verten for dette spillet bruker forskjellige versjoner av ordlisten %1$s.</string>
     <string name="square_tiles_summary">Selv om de kan være høyere</string>
-
     <string name="enable_nfc">NFC er skrudd av på denne enheten. Du kan bruke systeminnstillingene for å skru det på.</string>
-
     <string name="study_no_lang_fmt">Du har ikke lagret noen ord i studielisten for %1$s enda.</string>
     <string name="study_no_lists">Du har ikke lagret noen ord i noen studieliste enda.</string>
-
     <string name="loc_item_copy_eng">Kopier engelsk</string>
     <string name="loc_item_copy_bless">Kopier offisiell</string>
-
     <string name="force_tablet_tablet">Tving nettbrettvisning</string>
     <string name="force_tablet_phone">Tving telefonvisning</string>
-
     <string name="connection_via_label">Endre kommunikasjon via</string>
-
     <string name="disable_nag_title">Skru av nettverksspillpåminnelser</string>
     <string name="relay_via_http_first_summary">(istedenfor tilbakefall for egendefinert protokoll)</string>
-  <string name="show_sms_title">Vis SMS-forsendelser, -mottak</string>
-  <string name="phone_lookup_rationale_drop">Omkamp etter dette spillet kun på SMS er ikke mulig uten denne tilgangen.</string>
-  <string name="phone_lookup_rationale_others">Uten tilgangen vil omkampen fortsette, men i et spill som ikke kan utspilles via SMS.</string>
-
-  <string name="move_dict_rationale">Lagring av ordliste i nedlastingsområdet krever tilgang.</string>
-
-  <string name="title_blank_picker">Velg flis for blank</string>
+    <string name="show_sms_title">Vis SMS-forsendelser, -mottak</string>
+    <string name="phone_lookup_rationale_drop">Omkamp etter dette spillet kun på SMS er ikke mulig uten denne tilgangen.</string>
+    <string name="phone_lookup_rationale_others">Uten tilgangen vil omkampen fortsette, men i et spill som ikke kan utspilles via SMS.</string>
+    <string name="move_dict_rationale">Lagring av ordliste i nedlastingsområdet krever tilgang.</string>
+    <string name="title_blank_picker">Velg flis for blank</string>
     <string name="not_again_chat">Denne knappen åpner skjermen for meldingsforsendelse mellom enheter i dette spillet. Meldinger vil bli behold til du sletter spillet som inneholder dem.</string>
     <string name="not_again_values">Denne knappen endrer hvorvidt brettet viser bokstaver på plasserte flis, eller deres poengverdier. Bruk det for å minne deg på hva en flis er verdt.</string>
     <string name="not_again_done">Å trykke på \"p.\"-telleverket som vises på høyresiden av stativet er den enkleste måten å sende inn et trekk.</string>
-
     <string name="not_again_unlock">Dette spillet er underveis. Noen innstillinger, f.eks. antall spillere, kan ikke endres uten å starte det på ny. Når du forlater denne siden vil du få muligheten til å forkaste endringer for å unngå omstart.</string>
-
     <string name="not_again_conndfirst">Du har koblet til og startet et spill i et nytt rom. Når de gjenstående enhetene har tatt del i rommet ditt og CrossWords har tildelt dem flis, kan spillet begynne.</string>
-
     <string name="not_again_conndmid">Du har koblet til og tatt del i et spill på relé-et. Du vil få en merknad når gjenstående enhet[er] har tatt del i ditt rom og spillet kan begynne.</string>
-
     <string name="not_again_arrow">Flytting av flis til brettet:
 \nDu kan dra flis mellom stativet og brettet, eller du kan trykke på en tom rute for å plassere bordpilen. Stativflis du trykker på vil erstatte pilen (noe som flytter den en rute i den retningen den peker). Trykk på pilen én gang for å endre dens retning; én gang til for å skjule den. En avkryssningsboks i utseendedelen av innstillingene skjuler den permanent.</string>
-
     <string name="not_again_turnchanged">Spilleren hvis tur det er vises i storskala på poengtavlen.
 \n
 \nHolde en finger på et navn i poengtavlen for å hente detaljene om spillerens nyligste trekk.</string>
-
     <string name="not_again_newfrom">Opprett ny klart-til-spill runde med alle innstillingene fra denne. Altå behandle dette spillet som en mal.</string>
-
     <string name="not_again_archive">Arkiver bruker en spesiell gruppe kalt \"Arkiv\" for å lagre fullførte spill du ønsker å beholde. Og, siden sletting av et helt arkiv er enkelt, er akrivering også en flott måte å merke spill for sletting - hvis det er det du foretrekker å gjøre.
 \n
 \n(Sletting av arkivgruppen er trygt fordi den vil bli gjenopprettet igjen når det trengs.)</string>
-
-      <string name="pick_faceup">Plukk flis med bokstavene avdekt</string>
-
+    <string name="pick_faceup">Plukk flis med bokstavene avdekt</string>
     <plurals name="invite_p2p_desc_fmt">
-	<item quantity="one">Velg navnet på Wi-Fi Direct-enheten du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
-	<item quantity="other">Velg navnet på Wi-Fi Direct-enhetene du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
-</plurals>
-
+        <item quantity="one">Velg navnet på Wi-Fi Direct-enheten du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
+        <item quantity="other">Velg navnet på Wi-Fi Direct-enhetene du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
+    </plurals>
     <string name="invite_p2p_desc_extra">Kun spillere som er tilgjengelig vises. Hvis en enhet i nærheten ikke vises, forsikre deg om at Wi-Fi er slått på, og at CrossWords er installert, og at spill via Wi-Fi Direct er påslått.</string>
-
     <string name="empty_relay_inviter">Listen over enheter er tom. Bruk \"Skann spill\"-knappen for å skanne dine gamle spill for motstandere. Bruk \"+\"knappen for å skrive inn enhets-ID-er direkte.</string>
     <plurals name="confirm_clear_relay_fmt">
-	<item quantity="one">Er du sikker på at du ønsker å slette valgt relé-ID-opptak?</item>
-	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte relé-ID-opptak?</item>
-</plurals>
-
+        <item quantity="one">Er du sikker på at du ønsker å slette valgt relé-ID-opptak?</item>
+        <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte relé-ID-opptak?</item>
+    </plurals>
     <string name="warn_unlimited">Er du sikker på at dette nummeret er på en konto med ubegrenset SMS? Trykk \"Avbryt\" hvis du ikke er sikker.</string>
-
     <string name="menu_flip">Flipp brettet</string>
     <string name="connstat_net_noaddr">Dette nettverksspillet mangler en måte å koble til på, og kan derfor ikke spilles.
 \n
@@ -1152,60 +819,50 @@
     <string name="warn_bt_disabled">Blåtann er skrudd av på denne enheten. Ingen trekk vil bli sendt via Blåtann.
 \n
 \nDu kan skru på Blåtann nå, eller senere.</string>
-
     <string name="warn_relay_disabled">Relé-spill er avskrudd på denne enheten. Ingen trekk vil bli sendt eller mottatt via relé-et.</string>
-
     <plurals name="warn_relay_games_fmt">
-	<item quantity="one">"
+        <item quantity="one">"
 \n
 \n(Du har ett spill som benytter det.)"</item>
-	<item quantity="other">"
+        <item quantity="other">"
 \n
 \n(Du har %1$d spill som benytter det.)"</item>
-</plurals>
-
+    </plurals>
     <string name="invite_dict_missing_body_fmt">%1$s har inviter deg til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten, eller avslå invitasjonen?</string>
     <string name="invite_dict_missing_body_noname_fmt">Du har blitt invitert til å spille CrossWords ved bruk av ordlisten %2$s (for spill i %3$s), men den er ikke installert. Ønsker du å laste ned ordlisten?</string>
     <plurals name="groups_confirm_del_fmt">
-	<item quantity="one">Er du sikker på at du ønsker å slette valgt gruppe?</item>
-	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgt[e] gruppe[r]?</item>
-</plurals>
+        <item quantity="one">Er du sikker på at du ønsker å slette valgt gruppe?</item>
+        <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgt[e] gruppe[r]?</item>
+    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
-	<item quantity="one">"
+        <item quantity="one">"
 \n
 \n(Ett spill vil også bli slettet.)"</item>
-	<item quantity="other">"
+        <item quantity="other">"
 \n
 \n(%1$d spill vil også bli slettet.)"</item>
-</plurals>
-
+    </plurals>
     <string name="square_tiles">Kvadratiske stativflis</string>
     <string name="not_again_newselect">Å trykke på et spill vil åpne det.
 \n
 \nDu kan trykke på ikonene til venstre istedenfor, for å velge eller fravelge spill, for så å utføre handlinger på valgte spill, f.eks. for å slette dem, ved bruk av menyen eller \"handlingsfeltet\".</string>
-
     <string name="not_again_backclears">Tilbake-knappen tømmer et utvalg istedenfor å avslutte. Trykk igjen for å avslutte programmet.</string>
-
     <string name="dropped_dupe">Invitasjon mottatt, men ignorert: Den har allerede blitt brukt for å opprette et spill.</string>
     <string name="pct_suffix">" p."</string>
-
     <plurals name="confirm_studylist_clear_fmt">
-	<item quantity="one">Er du sikker på at du ønsker å slette valgt ord?
+        <item quantity="one">Er du sikker på at du ønsker å slette valgt ord?
 \n
 \n(Denne handlingen kan ikke angres.)</item>
-	<item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte ord?
+        <item quantity="other">Er du sikker på at du ønsker å slette %1$d valgte ord?
 \n
 \n(Denne handlingen kan ikke angres.)</item>
-</plurals>
+    </plurals>
     <string name="not_again_studycopy">De valgte ordene vil kopieres inn i systemutklippstavlen. Du kan lime dem inn i ethvert program som støtter innliming av tekst, f.eks. et e-postprogram.</string>
-
     <string name="loc_fmts_mismatch">Ulovlig oversettelse: En oversatt streng må ha samme formatspesifikatorer (f.eks. %1$s) som original.</string>
     <string name="not_again_fmt_expl">Denne strenger har spesielle formatspesifikatorer (f.eks. %1$s). Forsikre deg om at oversettelsen har de somme som originalen.
 \n
 \n(Du vil ikke kunne lagre den med mindre det er tilfelle.)</string>
-
     <string name="update_dicts_fmt">Oppdateringer er tilgjengelig for én eller flere installerte ordlister. Ønsker du å laste ned ny[e] versjon[er] av %1$s nå?</string>
-
     <string name="not_again_dicts">Denne skjermen lar deg installere nye ordlister og vise dem du allerede har.
 \n
 \nHvilke ordlister du har installert bestemmer:
@@ -1214,110 +871,80 @@
 \n• Hvilke ord som er lovlige.
 \n
 \nSjekk \"Vis nedlastbare\"-boksen på toppen for å se hva som er tilgjengelig.</string>
-
     <string name="bt_no_devs">Du har ikke noen parrede Blåtannsenheter (eller så er blåtann slått av). Ønsker du å åpne innstillingene i Android for å gjøre det?
 \n
 \n(Det kan hende du trenger å åpne det på enheten du ønsker å tilknytte.)</string>
-	<string name="app_not_found_fmt">Kunne ikke koble til via Blåtann til CrossWords på enheten %1$s. Sjekk om enheten er i Blåtannsrekkeveidde, og at CrossWords er installert på den.</string>
-
-	<string name="not_again_hidenewgamebuttons">De to knappene på bunnen av denne skjermen og de to første elementene i dens handlingsfelt (eller meny), gjør samme ting. Hvis du ønsker det kan du skjule knappene for å gjøre flere spill synlige.
+    <string name="app_not_found_fmt">Kunne ikke koble til via Blåtann til CrossWords på enheten %1$s. Sjekk om enheten er i Blåtannsrekkeveidde, og at CrossWords er installert på den.</string>
+    <string name="not_again_hidenewgamebuttons">De to knappene på bunnen av denne skjermen og de to første elementene i dens handlingsfelt (eller meny), gjør samme ting. Hvis du ønsker det kan du skjule knappene for å gjøre flere spill synlige.
 \n
 \n(Hvis du senere ønsker å vise knappene igjen, gå til utseendedelen av programinnstillingene.)</string>
-
     <string name="invite_stays">(Dette dialogvinduet vil forbli oppe til alle spillere annensteds fra har koblet til. Du kan lukke spillet hvis du forventer at dette tar sin tid. Spillere annensteds fra vil fremdeles kunne koble til, og du vil få beskjed om når så har skjedd.)</string>
-
     <string name="nfc_just_tap">For å invitere via NFC, trykk baksiden av denne enheten opp mot den du ønsker å invitere, når spillet er åpent.</string>
-
     <string name="warn_no_comms">Nettverksspill må ha minst én måte å kommunisere på. Hvis du ikke har noen forvalgt tilkoblingsvalg, vil hvert nye nettverksspill måtte settes opp manuelt.</string>
-
     <string name="config_no_connvia">Dette spillet har ingen måte å koble til på, og kan ikke lagres. Ønsker du å forkaste dine endringer, eller redigere det for å gi det en måte å koble til på?</string>
     <string name="rematch_msg">Dette spillet er vertskap for en omkamp, og har sendt en invitasjon. Du vil se denne meldingen til det har blitt godtatt.</string>
-
     <string name="disable_nag_summary">Ikke send meg en merknad, uansett hvor lenge det har vært min tur</string>
     <string name="disable_nag_solo_title">Skru av enspillersmerknader</string>
-
-  <string name="confirm_get_locdict_fmt">Din enhet er satt opp for %1$s. Ønsker du å laste ned en ordliste slik at du kan spille CrossWords i %1$s?</string>
-
-  <string name="enable_sms_toself_summary">Hopp over radio når telefonnumrene er de samme</string>
-
-  <string name="radio_name_tablet">Nettbrett/ingen radio</string>
-  <string name="expl_update_url">Nettadresse for oppgraderingssjekk</string>
-  <string name="pref_group_sms_summary">Innstillinger i tilknytning til spill-via-SMS</string>
-  <string name="pref_group_relay_summary">Innstillinger i tilknytning til spill via Internett/relé</string>
-  <string name="pref_group_l10n_summary">Innstillinger i tilknytning til lokalisering inne i programmet</string>
-  <string name="pref_item_update_title">Oppdater mellom utgivelser</string>
-  <string name="pref_item_update_summary">Hent mellombygg</string>
-
-  <string name="no_relay_conn">Dette spillet er satt opp til å bruke relé-et (Internett) for kommunikasjon, men har ikke kunnet koble til.
+    <string name="confirm_get_locdict_fmt">Din enhet er satt opp for %1$s. Ønsker du å laste ned en ordliste slik at du kan spille CrossWords i %1$s?</string>
+    <string name="enable_sms_toself_summary">Hopp over radio når telefonnumrene er de samme</string>
+    <string name="radio_name_tablet">Nettbrett/ingen radio</string>
+    <string name="expl_update_url">Nettadresse for oppgraderingssjekk</string>
+    <string name="pref_group_sms_summary">Innstillinger i tilknytning til spill-via-SMS</string>
+    <string name="pref_group_relay_summary">Innstillinger i tilknytning til spill via Internett/relé</string>
+    <string name="pref_group_l10n_summary">Innstillinger i tilknytning til lokalisering inne i programmet</string>
+    <string name="pref_item_update_title">Oppdater mellom utgivelser</string>
+    <string name="pref_item_update_summary">Hent mellombygg</string>
+    <string name="no_relay_conn">Dette spillet er satt opp til å bruke relé-et (Internett) for kommunikasjon, men har ikke kunnet koble til.
 \n
 \nPrøv å åpne spillet igjen etter at disse vilkårene har endret seg.</string>
-
-  <string name="drop_relay_warning_fmt">(Dette spillet kan også koble til via %1$s, slik at du kan sette opp spillet uten en relétilkobling.)</string>
-
-  <string name="confirm_drop_relay">Er du sikker på at du vil utelate dette spillets mulighet til å kommunisere via relé-et?</string>
-
-  <string name="wifi_warning">" For eksempel, kan det hende du vil være på et forskjellig Wi-Fi-nettverk."</string>
-
-  <string name="not_again_comms_relay">\"Relé-et\" er en tjener på Internett som sender meldinger mellom enheter som kjører CrossWords. Det fungerer når du har en fungerende internettilknytning, men kan være problematisk på begrensede Wi-Fi-nettverk.</string>
-
-  <string name="not_again_comms_sms">Spill via SMS bruker samme teknologi som \"teksting\". Selv om meldingene er usynlig for deg, vil din tilbyder anse dem som SMS, så du bør unngå denne funksjonen med mindre du har ubegrenset SMS (eller budsjettet). Merk at Android kun støtter denne funksjonen på enheter på en GSM-tilbyder.</string>
-
-  <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
-
-  <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>
-
-  <string name="not_again_rematch_two_only">Omkamp er begrenset til to-personersspill nå, fordi det er vanskeligere med flere enheter, og fordi spill med mer en to spillere er sjeldent. La det komme til kjenne hvis dette er en feilaktig begrensning.</string>
-
-  <string name="ignore_gcm_summary">Imiter livet uten en Google-konto</string>
-
-  <string name="not_again_clip_expl_fmt">Valget \"%1$s\" kopierer en invitasjonsnettadresse til utklippstavlen. Lim det inn i ønsket program og send det til din venn.</string>
-
-  <string name="confirm_clear_chat">Er du sikker på at du ønsker å slette all sludrehistorikk for dette spillet?
+    <string name="drop_relay_warning_fmt">(Dette spillet kan også koble til via %1$s, slik at du kan sette opp spillet uten en relétilkobling.)</string>
+    <string name="confirm_drop_relay">Er du sikker på at du vil utelate dette spillets mulighet til å kommunisere via relé-et?</string>
+    <string name="wifi_warning">" For eksempel, kan det hende du vil være på et forskjellig Wi-Fi-nettverk."</string>
+    <string name="not_again_comms_relay">\"Relé-et\" er en tjener på Internett som sender meldinger mellom enheter som kjører CrossWords. Det fungerer når du har en fungerende internettilknytning, men kan være problematisk på begrensede Wi-Fi-nettverk.</string>
+    <string name="not_again_comms_sms">Spill via SMS bruker samme teknologi som \"teksting\". Selv om meldingene er usynlig for deg, vil din tilbyder anse dem som SMS, så du bør unngå denne funksjonen med mindre du har ubegrenset SMS (eller budsjettet). Merk at Android kun støtter denne funksjonen på enheter på en GSM-tilbyder.</string>
+    <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
+    <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>
+    <string name="not_again_rematch_two_only">Omkamp er begrenset til to-personersspill nå, fordi det er vanskeligere med flere enheter, og fordi spill med mer en to spillere er sjeldent. La det komme til kjenne hvis dette er en feilaktig begrensning.</string>
+    <string name="ignore_gcm_summary">Imiter livet uten en Google-konto</string>
+    <string name="not_again_clip_expl_fmt">Valget \"%1$s\" kopierer en invitasjonsnettadresse til utklippstavlen. Lim det inn i ønsket program og send det til din venn.</string>
+    <string name="confirm_clear_chat">Er du sikker på at du ønsker å slette all sludrehistorikk for dette spillet?
 \n
 \n(Denne handlingen kan ikke endres.)</string>
-
-  <string name="not_again_dfltname_fmt">Du bruker forvalgt spillernavn \"%1$s\". Ønsker du å personalisere med ditt eget navn før du oppretter dette spillet?</string>
-
-  <string name="missing_sms_perms">Dette spillet er satt opp for kommunikasjon via SMS, men CrossWords mangler tilgangen. Du kan åpne spillet, men det kan hende du ikke vil kunne sende eller motta trekk.
+    <string name="not_again_dfltname_fmt">Du bruker forvalgt spillernavn \"%1$s\". Ønsker du å personalisere med ditt eget navn før du oppretter dette spillet?</string>
+    <string name="missing_sms_perms">Dette spillet er satt opp for kommunikasjon via SMS, men CrossWords mangler tilgangen. Du kan åpne spillet, men det kan hende du ikke vil kunne sende eller motta trekk.
 \n
 \nDu kan gjenåpne det for å bli spurt om tilgang igjen. Eller du kan fjerne SMS-kommunikasjonsinnstillingen.</string>
-
-  <string name="download_rationale">CrossWords trenger tilgang til midlertidig lagring for å beholde det du er i ferd med å laste ned.</string>
-
-  <string name="sms_invite_rationale">CrossWords trenger tilgang for å sende invitasjon via SMS.</string>
-
-  <string name="dicts_storage_rationale">CrossWords kan lagre og lese ordlister i din enhets nedlastingsområde, men det trenger tilgang til dem der.
+    <string name="download_rationale">CrossWords trenger tilgang til midlertidig lagring for å beholde det du er i ferd med å laste ned.</string>
+    <string name="sms_invite_rationale">CrossWords trenger tilgang for å sende invitasjon via SMS.</string>
+    <string name="dicts_storage_rationale">CrossWords kan lagre og lese ordlister i din enhets nedlastingsområde, men det trenger tilgang til dem der.
 \n
 \nDu kan trygt nekte denne tilgangen hvis du aldri laster ned ordlister, bortsett fra inne i CrossWords, og ikke har lagret noen der tidligere.</string>
-
-  <string name="phone_state_rationale">Noen telefoner kan utveksle SMS- \"data\"-meldinger. CrossWords ønsker å tilby deg dette valget, men trenger å spørre din enhet om seg selv først (for å lære hvorvidt det er en telefon, og om så er tilfelle, hva som skal skrives).
+    <string name="phone_state_rationale">Noen telefoner kan utveksle SMS- \"data\"-meldinger. CrossWords ønsker å tilby deg dette valget, men trenger å spørre din enhet om seg selv først (for å lære hvorvidt det er en telefon, og om så er tilfelle, hva som skal skrives).
 \n
 \nHvis din enhet ikke kan sende data-SMS (f.eks. fordi det ikke er en telefon), eller du aldri ønsker å spille via SMS (f.eks. fordi du betaler for hver melding), er det trygt å nekte denne tilgangen permanent.</string>
-
-  <string name="phone_lookup_rationale">For omkamp i et spill som bruker SMS trenger CrossWords tilgang til ditt telefonnummer.</string>
-
-  <string name="contacts_rationale">CrossWords ønsker tilgang til dine kontakter for å tilknytte navn til telefonnumrene som sender deg invitasjoner via SMS. Du vil fremdeles kunne motta invitasjoner hvis du ikke innvilger denne tilgangen, men kun avsenderens telefonnummer vil bli vist.</string>
+    <string name="phone_lookup_rationale">For omkamp i et spill som bruker SMS trenger CrossWords tilgang til ditt telefonnummer.</string>
+    <string name="contacts_rationale">CrossWords ønsker tilgang til dine kontakter for å tilknytte navn til telefonnumrene som sender deg invitasjoner via SMS. Du vil fremdeles kunne motta invitasjoner hvis du ikke innvilger denne tilgangen, men kun avsenderens telefonnummer vil bli vist.</string>
     <string name="list_item_netstats">Tilkoblinger…</string>
     <plurals name="too_many_trade_fmt">
-    <item quantity="one">For mange fliser valgt. Velg kun ei.</item>
-    <item quantity="other">For mange fliser valgt. Ikke velg mer enn %1$d.</item>
-</plurals>
+        <item quantity="one">For mange fliser valgt. Velg kun ei.</item>
+        <item quantity="other">For mange fliser valgt. Ikke velg mer enn %1$d.</item>
+    </plurals>
     <string name="button_scan">Skann på ny</string>
     <plurals name="invite_bt_desc_fmt_2">
-    <item quantity="one">Velg enheten du ønsker å inkludere i dette spillet.</item>
-    <item quantity="other">Velg opptil %1$d enhet[er] som du ønsker å inkludere i dette spillet.</item>
-</plurals>
+        <item quantity="one">Velg enheten du ønsker å inkludere i dette spillet.</item>
+        <item quantity="other">Velg opptil %1$d enhet[er] som du ønsker å inkludere i dette spillet.</item>
+    </plurals>
     <string name="invite_bt_desc_postscript">"
 \n
 \n(Listen over tilknyttede enheter CrossWords har blitt oppdaget på gjennom skanning.)"</string>
     <plurals name="bt_scan_progress_fmt">
-    <item quantity="one">Skanner etter CrossWords</item>
-    <item quantity="other">Skanner etter CrossWords på %1$d tilknyttede enheter</item>
-</plurals>
+        <item quantity="one">Skanner etter CrossWords</item>
+        <item quantity="other">Skanner etter CrossWords på %1$d tilknyttede enheter</item>
+    </plurals>
     <plurals name="confirm_clear_bt_fmt">
-    <item quantity="one">Er du sikker på at du ønsker å glemme den valgte enheten\?</item>
-    <item quantity="other">Er du sikker på at du ønsker å glemme %1$d valgte enheter\?</item>
-</plurals>
+        <item quantity="one">Er du sikker på at du ønsker å glemme den valgte enheten\?</item>
+        <item quantity="other">Er du sikker på at du ønsker å glemme %1$d valgte enheter\?</item>
+    </plurals>
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Du kan kun legge til enheter som er innen Blåtannsrekkevidde på ny.)"</string>
@@ -1335,4 +962,13 @@
 \n • Kjør CrossWords på den andre enheten
 \n • Hvis ingenting annet virker, start denne enheten på ny
 \n</string>
+    <string name="sms_invite_fail">Kunne ikke starte SMS-program</string>
+    <string name="checkbox_archive">Flytt til arkiv</string>
+    <string name="button_more_info">Les mer</string>
+    <string name="invit_expl_usrsms_fmt">Invitasjon sendt via SMS-melding til telefonnummer %1$s på %2$s</string>
+    <string name="msg_dev_deleted_fmt">Spillet ved navn \"%1$s\" har blitt slettet på en annen enhet. Du vil ikke kunne spille videre.</string>
+    <string name="invite_choice_data_sms">Data-SMS</string>
+    <string name="empty_bt_inviter">Ingen parrede enheter oppdaget enda.</string>
+    <string name="sms_banned_ok_only">Google Play-versjonen av CrossWords støtter ikke lenger invitasjon eller spill via data-SMS.</string>
+    <string name="relay_poll_title">Hvordan skal det sjekkes for nye trekk\?</string>
 </resources>
