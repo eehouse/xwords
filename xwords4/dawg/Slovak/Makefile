@@ -18,6 +18,7 @@
 XWLANG = Slovak
 LANGCODE = sk_SK
 ENC = UTF-8
+DICTNOTE = "from http://scrabble.hrejsi.cz/pravidla/blex.htm"
 
 TARGET_TYPE ?= WINCE
 
