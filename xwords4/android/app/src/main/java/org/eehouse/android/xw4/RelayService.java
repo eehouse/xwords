@@ -1327,8 +1327,8 @@ public class RelayService extends XWJIService
             try {
                 DatagramSocket udpSocket = s_UDPSocket;
                 if ( null == udpSocket ) {
+                    // will be null if e.g. device or emulator doesn't have network
                     udpSocket = getService().connectSocketOnce(); // block until this is done
-                    Assert.assertTrue( null != udpSocket || !BuildConfig.DEBUG );
                 }
 
                 byte[] buf = new byte[1024];
