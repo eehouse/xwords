@@ -18,16 +18,17 @@
 XWLANG = Slovak
 LANGCODE = sk_SK
 ENC = UTF-8
-DICTNOTE = "from http://scrabble.hrejsi.cz/pravidla/blex.htm"
+DICTNOTE = "compiled by a user from Slovak Scrabble Association dictionaries (Slovenský Spolok Scrabble) at www.hramescrabble.sk"
 
 TARGET_TYPE ?= WINCE
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Slovak/slovnik_scrabble.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/Slovak/Scrabble_SK.dict
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | tr -d '\r' | \
+	cat $< | tr -d '\r' | \
+		tr [aáäbcčdďeéfghiíjklĺľmnňoôóprŕsštťuúvxyýzž] [AÁÄBCČDĎEÉFGHIÍJKLĹĽMNŇOÔÓPRŔSŠTŤUÚVXYÝZŽ] | \
 		sed 's,.,\U\0,g' | \
 		grep '^[AÁÄBCČDĎEÉFGHIÍJKLĹĽMNŇOÔÓPRŔSŠTŤUÚVXYÝZŽ]*$$' | \
 		gzip -c > $@

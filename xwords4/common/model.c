@@ -1362,7 +1362,7 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
 /* setup async query for blank value, but while at it return a reasonable
    default.  */
 Tile
-model_askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row)
+model_askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row )
 {
     XP_U16 nUsed = MAX_UNIQUE_TILES;
     const XP_UCHAR* tfaces[MAX_UNIQUE_TILES];
@@ -1390,7 +1390,8 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
             tile = blankFace;
         } else {
             XP_ASSERT( turn >= 0 );
-            tile = TILE_BLANK_BIT | model_askBlankTile( model, (XP_U16)turn, col, row );
+            tile = TILE_BLANK_BIT
+                | model_askBlankTile( model, (XP_U16)turn, col, row );
         }
         tile |= TILE_BLANK_BIT;
     }
