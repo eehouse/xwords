@@ -75,7 +75,6 @@ gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
         gtk_widget_set_sensitive( button, !counts || counts[ii] > 0 );
 
         if ( ii+1 == nTiles || (ii % BUTTONS_PER_ROW == 0) ) {
-            gtk_widget_show( hbox );
             gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
         }
     }
@@ -87,19 +86,14 @@ gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
     g_signal_connect( button, "clicked", 
                       G_CALLBACK(abort_button_event), NULL );
     gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-    gtk_widget_show( button );
 
     button = gtk_button_new_with_label( "Back up" );
     g_signal_connect( button, "clicked", 
                       G_CALLBACK(set_bool_and_quit), &backedUp );
     gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-    gtk_widget_show( button );
 
-    gtk_widget_show( hbox );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 #endif
-
-    gtk_widget_show( vbox );
 
     /* Create the widgets */
     dialog = gtk_dialog_new();
@@ -135,7 +129,7 @@ gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
     gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
     gtk_widget_show_all( dialog );
 
-    gtk_main();
+    gtk_dialog_run( GTK_DIALOG( dialog ) );
 
     gtk_widget_destroy( dialog );
 
