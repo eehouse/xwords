@@ -1033,21 +1033,13 @@
     <!-- <string name="button_nfc">NFC</string> -->
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-    <string name="invite_subject_fmt">Let\'s play CrossWords (Room %1$s)</string>
+    <string name="invite_subject_fmt">Let\'s play CrossWords (room %1$s)</string>
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
-    <string name="invite_htm_fmt">\u003Ca href=\"%1$s\"\u003ETap
-    here\u003C/a\u003E (or tap the full link below, or, if you already
-    have CrossWords installed, open the attachment) to accept my
-    invitation and join this game.
-
-    \u003Cbr \\\u003E
-    \u003Cbr \\\u003E
-    (full link: %1$s )
-    </string>
+    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Tap here&lt;/a&gt; (or the full link below to join this game. If you already have CrossWords you can open the attachment to do so). &lt;br \\&gt; &lt;br \\&gt; (Full link: %1$s )</string>
     <string name="invite_sms_fmt">Tap the link to accept my
     invitation and join a CrossWords game: %1$s
     </string>
@@ -2405,13 +2397,9 @@
   </string>
     <string name="sms_banned_ok_only">The Google Play version of CrossWords no longer supports invitations or play via data SMS.</string>
     <string name="button_more_info">Read more</string>
-    <string name="banned_nbs_perms">This game is configured to
-  communicate via Data SMS, but apps from the Google Play Store are no
-  longer allowed to do so (with rare exceptions). You can still open
-  the game, but it may not be able to send or receive moves.\n\nYou
-  can remove the Data SMS communication setting, or use the \"Read
-  more\" button to check my progress developing an
-  alternative.</string>
+    <string name="banned_nbs_perms">This game is set up to communicate via data SMS, but apps from the Google Play Store are no longer allowed to do so (with rare exceptions). You can still open the game, but it may not be able to send or receive moves.
+\n
+\nYou can remove the data SMS communication setting, or use the \"Read more\" button to check progress on the development of an alternative.</string>
     <string name="relay_poll_title">Check for moves how?</string>
     <string name="relay_poll_name_no_fcm">Poll only: no FCM messages</string>
     <string name="relay_poll_name_no_polling">FCM only: no polling</string>
