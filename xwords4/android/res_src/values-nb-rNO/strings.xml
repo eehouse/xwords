@@ -2,7 +2,7 @@
 <resources>
     <string name="button_new_group">Legg til gruppe</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
-    <string name="robot_name_fmt">%1$s (maskin)</string>
+    <string name="robot_name_fmt">%1$s (maskinspiller)</string>
     <string name="missing_player">(ikke her enda…)</string>
     <string name="summary_relay_conf_fmt">Satt opp for rom \"%1$s\"</string>
     <string name="summary_relay_wait_fmt">Venter for spiller i rom \"%1$s\"</string>
@@ -43,7 +43,7 @@
     </plurals>
     <string name="confirm_deleteonly_dicts_fmt">Sletting av %1$s vil bety at du står uten noen %2$s-ordlister. Ett eller flere spill vil ikke kunne åpnes (til du laster ned en erstatningsliste).</string>
     <string name="button_default_human">Menneske</string>
-    <string name="button_default_robot">Maskin</string>
+    <string name="button_default_robot">Maskinspiller</string>
     <string name="button_default_both">Begge</string>
     <string name="move_dict_fmt">Plassering for ordlisten %1$s</string>
     <string name="loc_internal">Intern</string>
@@ -69,10 +69,10 @@
     <string name="nethints_allowed">Tillat hint (nettverksbasert)</string>
     <string name="use_timer">Skru på spillklokke</string>
     <string name="minutes_label">Minutter per spiller</string>
-    <string name="robot_spinner_prompt">Hvor smart skal maskinen være?</string>
-    <string name="robot_smart">Smart maskin</string>
-    <string name="robot_smarter">Smartere maskin</string>
-    <string name="robot_smartest">Smartest maskin</string>
+    <string name="robot_spinner_prompt">Hvor smart skal maskinspilleren være\?</string>
+    <string name="robot_smart">Smart maskinspiller</string>
+    <string name="robot_smarter">Smartere maskinspiller</string>
+    <string name="robot_smartest">Smarteste maskinspiller</string>
     <string name="confirm_save_title">Bekreft lagring</string>
     <string name="play">Ta del i spill</string>
     <string name="player_label">Navn:</string>
@@ -91,7 +91,7 @@
     <string name="board_menu_game_history">Spillhistorikk…</string>
     <string name="board_menu_game_resign">Kapituler</string>
     <string name="board_menu_game_resend">Send trekk på nytt</string>
-    <string name="str_robot_moved_fmt">"Maskinen %1$s gjorde dette trekket: "</string>
+    <string name="str_robot_moved_fmt">"Maskinspilleren %1$s gjorde dette trekket: "</string>
     <string name="player_edit_title">Rediger spiller</string>
     <string name="badwords_accept">" Ønsker du fremdeles å godta dette trekket?"</string>
     <string name="badwords_title">Illegale ord</string>
@@ -129,7 +129,7 @@
     <string name="prefs_dicts">Ordlister</string>
     <string name="prefs_dicts_summary">Forvalgte ordlister</string>
     <string name="default_dict">Ordlister for mennesker</string>
-    <string name="default_robodict">Ordlister for roboter</string>
+    <string name="default_robodict">Ordlister for maskinspillere</string>
     <string name="hints_allowed_sum">Skru på hint-funksjonen</string>
     <string name="nethints_allowed_sum">Skru på hint for to-enhets -spill</string>
     <string name="init_autojuggle">Sjongler spillere</string>
@@ -546,7 +546,7 @@
     <string name="show_arrow_summary">Trykkede stativflis lander på denne pilen når den er synlig</string>
     <string name="clr_crosshairs">Retikkelfarge</string>
     <string name="prefs_behavior_summary">Instillinger for programoppførsel</string>
-    <string name="explain_robot_summary">Viser poengsumssammendrag etter hver robot- eller -tur annensteds fra</string>
+    <string name="explain_robot_summary">Viser poengsumssammendrag etter hver maskinspiller- eller -tur annensteds fra</string>
     <string name="skip_confirm_turn">Hopp over bekreftelsestur</string>
     <string name="skip_confirm_turn_summary">IKKE vis poengsum etter hver mennesketur</string>
     <string name="summary_sort_tiles">Sorter stativ når nye flis legges til</string>
@@ -563,7 +563,7 @@
     <string name="invite_choice_nfc">NFC (\"Android-stråling\")</string>
     <string name="invite_choice_relay">Internett/relé</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
-    <string name="invite_subject_fmt">La oss spille CrossWords (Rom %1$s)</string>
+    <string name="invite_subject_fmt">La oss spille CrossWords (rom %1$s)</string>
     <string name="invite_chooser_fmt">Send invitasjon via %1$s</string>
     <string name="invite_chooser_email">e-post</string>
     <plurals name="query_trade_fmt">
@@ -575,7 +575,7 @@
     <string name="str_two_tiles_first_move">Må spille to eller flere flis i første trekk.</string>
     <string name="str_tiles_must_contact">Nye brikker må kontakte andre som allerede er der (eller midtfeltet i første trekk)</string>
     <string name="str_not_your_turn">Du kan ikke gjøre dette; det er ikke din tur!</string>
-    <string name="str_no_peek_robot_tiles">Ingen kikking på robotens trekk!</string>
+    <string name="str_no_peek_robot_tiles">Ingen kikking på maskinspillerens trekk!</string>
     <string name="str_no_peek_remote_tiles">Ingen kikking på flisene til spillere annensteds fra!</string>
     <string name="str_cant_undo_tileassign">Tildelingen kan ikke angres.</string>
     <string name="finalscores_title">Sluttpoengsummer</string>
@@ -863,13 +863,13 @@
 \n
 \n(Du vil ikke kunne lagre den med mindre det er tilfelle.)</string>
     <string name="update_dicts_fmt">Oppdateringer er tilgjengelig for én eller flere installerte ordlister. Ønsker du å laste ned ny[e] versjon[er] av %1$s nå?</string>
-    <string name="not_again_dicts">Denne skjermen lar deg installere nye ordlister og vise dem du allerede har.
-\n
-\nHvilke ordlister du har installert bestemmer:
-\n• Hvilke språk du kan spille med.
-\n• Hvor smart robotspilleren er.
-\n• Hvilke ord som er lovlige.
-\n
+    <string name="not_again_dicts">Denne skjermen lar deg installere nye ordlister og vise dem du allerede har. 
+\n 
+\nHvilke ordlister du har installert bestemmer: 
+\n• Hvilke språk du kan spille med. 
+\n• Hvor smart maskinspilleren er. 
+\n• Hvilke ord som er lovlige. 
+\n 
 \nSjekk \"Vis nedlastbare\"-boksen på toppen for å se hva som er tilgjengelig.</string>
     <string name="bt_no_devs">Du har ikke noen parrede Blåtannsenheter (eller så er blåtann slått av). Ønsker du å åpne innstillingene i Android for å gjøre det?
 \n
@@ -971,4 +971,15 @@
     <string name="empty_bt_inviter">Ingen parrede enheter oppdaget enda.</string>
     <string name="sms_banned_ok_only">Google Play-versjonen av CrossWords støtter ikke lenger invitasjon eller spill via data-SMS.</string>
     <string name="relay_poll_title">Hvordan skal det sjekkes for nye trekk\?</string>
+    <string name="sms_invite_flakey">Dette nye valget starter ditt forvalgte SMS-program med invitasjon klar til forsendelse -- når det virker. Hvert SMS-program er forskjellig, og noen samarbeider ikke.</string>
+    <string name="invite_choice_user_sms">SMS (tekstmelding)</string>
+    <string name="ok_with_robots">OK (maskinspiller)</string>
+    <string name="invite_sms_fmt">Trykk på lenken for å godta min invitasjon og ta del i et CrossWords-spill: %1$s</string>
+    <string name="invite_sms_desc">Ditt SMS-meldingsforsendelsesprogram vil startes med en melding du kan sende til telefonnummeret du har valgt.</string>
+    <string name="invite_nbs_desc">En datamelding vil så leveres til enheten med det telefonnummeret. Hvis CrossWords er installert der og har nødvendige tilganger vil det motta invitasjonen og spillet kan begynne.</string>
+    <string name="show_fcm_title">Vis FCM-mottak</string>
+    <string name="nbsproxy_channel_expl">Varsler om NBSProxy</string>
+    <string name="not_again_longtap_lookup">Du kan slå opp ord FØR de innsendes som trekk -- ved langtrykk, samme som innsendelse.
+\n
+\nDu kan bruke denne funksjonen for å sjekke gyldigheten av ord du tenker å bruke, eller å slå opp et ord du ikker er sikker på.</string>
 </resources>
