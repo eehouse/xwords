@@ -285,7 +285,7 @@ task copyStrings(type: Exec) {
     commandLine './scripts/copy-strings.py'
 }
 
-task ndkSetup(type: Exec) {
+task ndkSetupDebug(type: Exec) {
     workingDir '../'
     // remove ', "--arm-only"' for Genymotion builds
 
@@ -296,7 +296,12 @@ task ndkSetup(type: Exec) {
     // commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
 }
 
-task myPreBuild(dependsOn: ['ndkSetup', 'mkImages', 'copyStrings', 'mkXml']) {
+task ndkSetupRelease(type: Exec) {
+    workingDir '../'
+    commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
+}
+
+task myPreBuild(dependsOn: ['mkImages', 'copyStrings', 'mkXml']) {
 }
 preBuild.dependsOn myPreBuild
 
@@ -312,10 +317,13 @@ afterEvaluate {
     android.applicationVariants.all { variant ->
         // print "variant: " + variant.name + "\n"
         String BUILD = variant.getBuildType().getName()
-        // print "type: " + BUILD + "\n"
+        // println "type: " + BUILD
         String FLAVOR = variant.getFlavorName()
         // print "flavor: " + variant.getFlavorName() + "\n"
         // print "variant: " + variant + "\n"
+
+        String ndkSetup = "ndkSetup" + BUILD.capitalize()
+        // println "ndkSetup: " + ndkSetup
 
         String variantCaps = variant.name.capitalize()
         String nameLC = variant.getBuildType().getName().toLowerCase()
@@ -330,6 +338,7 @@ afterEvaluate {
             }
 
         String compileTask = "compile${variantCaps}Ndk"
+        tasks.getByName(ndkBuildTask).dependsOn ndkSetup
         tasks.getByName(compileTask).dependsOn ndkBuildTask
 
         // For clean task
