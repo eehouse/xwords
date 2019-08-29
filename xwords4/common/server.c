@@ -3030,6 +3030,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 
     XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
     stream_close( incoming );
+    XP_ASSERT( !!accepted );
     return accepted;
 } /* server_receiveMessage */
 #endif
