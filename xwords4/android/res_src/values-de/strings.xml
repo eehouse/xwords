@@ -281,7 +281,7 @@
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC („Android-Beaming“)</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
-    <string name="invite_subject_fmt">Lassen Sie uns CrossWords spielen (Raum %1$s)</string>
+    <string name="invite_subject_fmt">Lass\' uns CrossWords spielen (Raum %1$s)</string>
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Hier antippen&lt;/a&gt; (oder den vollständigen Link unten antippen, oder, wenn Sie CrossWords bereits installiert haben, den Anhang öffnen), um meine Einladung anzunehmen und an diesem Spiel teilzunehmen. &lt;br \\&gt; &lt;br \\&gt; (Vollständiger Link: %1$s )</string>
     <string name="invite_chooser_fmt">Einladung senden über %1$s</string>
     <string name="invite_chooser_email">Email</string>
