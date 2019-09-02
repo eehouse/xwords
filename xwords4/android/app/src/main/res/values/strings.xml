@@ -1089,7 +1089,7 @@
          message-composition field to be sent. -->
     <string name="chat_send">Send</string>
     <!-- "Hint" in empty chat text field -->
-    <string name="chat_hint">Type here...</string>
+    <string name="chat_hint">Type here…</string>
     <!--
        ############################################################
        # :Menus:
@@ -2181,7 +2181,7 @@
     <!-- Debugging stuff. Localize if you think your langauge users will
        care. -->
     <string name="advanced">For debugging</string>
-    <string name="advanced_summary">You should never need these...</string>
+    <string name="advanced_summary">You should never need these…</string>
     <string name="relay_host">Relay host</string>
     <string name="relay_via_http_first">Use Web APIs first</string>
     <string name="relay_via_http_first_summary">(instead of as fallback for custom protocol)</string>
@@ -2205,7 +2205,7 @@
     <string name="enable_dupes_title">Accept duplicate invites</string>
     <string name="xlations_locale">Fake locale for translation</string>
     <string name="enable_dupes_summary">Accept invitations more than once</string>
-    <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
+    <string name="nag_intervals">Reminder intervals (minutes1,minutes2,…)</string>
     <string name="enable_nfc_toself_title">Enable NFC to self</string>
     <string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>
     <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
