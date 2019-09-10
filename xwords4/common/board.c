@@ -585,6 +585,17 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     if ( ldims.boardWidth > bWidth ) {
         ldims.boardWidth = bWidth;
     }
+
+    if ( 0 == nToScroll &&
+         bHeight > (ldims.scoreHt + ldims.boardHt + ldims.trayHt) ) {
+        XP_U16 oldTop = ldims.trayTop;
+        ldims.trayTop = ldims.scoreHt + (ldims.boardHt * colPctMax) / 100;
+        if ( ldims.trayTop + ldims.trayHt > bHeight ) {
+            ldims.trayTop = bHeight - ldims.trayHt;
+        }
+        XP_ASSERT( oldTop <= ldims.trayTop );
+        ldims.height += ldims.trayTop - oldTop;
+    }
 #else
     XP_USE(colPctMax);
 #endif
