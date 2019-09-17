@@ -2356,7 +2356,7 @@ public class GamesListDelegate extends ListDelegateBase
         String data = NFCUtils.getFromIntent( intent );
         if ( null != data ) {
             NetLaunchInfo nli = NetLaunchInfo.makeFrom( m_activity, data );
-            if ( nli.isValid() ) {
+            if ( null != nli && nli.isValid() ) {
                 startNewNetGame( nli );
                 result = true;
             }
