@@ -847,7 +847,7 @@
 WiFi ダイレクト経由で接続可能なデバイスはありません。</string>
     <string name="not_again_comms_p2p">WiFi ダイレクトを使用して、クロスワードがインストールされた
 近くの WiFi ダイレクト対応デバイスに対してプレイします。</string>
-  <string name="missing_sms_perms">このゲームは SMS 経由で通信するように構成されていますが、
+    <string name="missing_sms_perms">このゲームは SMS 経由で通信するように構成されていますが、
 クロスワードにそれを行うアクセス許可がありません。
 まだ、ゲームを開くことができますが、移動を送信または受信できない場合があります。
 
@@ -960,4 +960,14 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 \n • 他のデバイスでクロスワードを起動してみます
 \n • それでも失敗する場合は、このデバイスを再起動します
 \n</string>
+    <string name="invit_expl_usrsms_fmt">%2$s の %1$s に SMS で招待を送信しました</string>
+    <string name="sms_invite_flakey">この新しいオプションを使用すると、デフォルトのSMSアプリが起動し、招待状が送信可能になります（機能する場合）。各SMSアプリは異なり、一部は連携しません。</string>
+    <string name="sms_invite_fail">SMS アプリを起動できません</string>
+    <string name="msg_dev_deleted_fmt">\"%1$s\" という名前のゲームが別のデバイスで削除されました。これ以上プレイすることはできません。</string>
+    <string name="invite_choice_user_sms">SMS (テキストメッセージ)</string>
+    <string name="invite_choice_data_sms">データ SMS</string>
+    <string name="ok_with_robots">OK (ロボット)</string>
+    <string name="invite_sms_fmt">リンクをタップすると招待を受け入れて、クロスワードゲームに参加します: %1$s</string>
+    <string name="invite_sms_desc">SMS メッセージングアプリが起動され、選択した電話番号に送信するメッセージが表示されます。</string>
+    <string name="invite_nbs_desc">その後、データメッセージがその電話番号のデバイスに配信されます。クロスワードがインストールされていて、必要なアクセス許可がある場合は、招待状を受け取ってプレイを開始できます。</string>
 </resources>
