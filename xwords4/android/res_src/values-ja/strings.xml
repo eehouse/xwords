@@ -273,7 +273,7 @@
     <string name="invite_choice_nfc">NFC (\"Android ビーム\")</string>
     <string name="invite_choice_title">プレイヤーの招待: 方法は?</string>
     <string name="invite_subject_fmt">クロスワードで遊びましょう (ルーム %1$s)</string>
-    <string name="invite_htm_fmt">"&lt;a href=\"%1$s\"&gt;ここをタップ&lt;/a&gt; (または下の完全なリンク。既にクロスワードをインストールしている場合は、添付を開いてください) して、招待を受け入れて、このゲームに参加してください。 &lt;br \\&gt; &lt;br \\&gt; (完全なリンク: %1$s ) "</string>
+    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;ここをタップ&lt;/a&gt; (または下の完全なリンク。既にクロスワードをインストールしている場合は、添付を開くこともできます) して、このゲームに参加してください。 &lt;br \\&gt; &lt;br \\&gt; (完全なリンク: %1$s )</string>
     <string name="invite_txt_fmt">クロスワードで遊びましょう! このゲームに参加してください: %1$s。</string>
     <string name="invite_chooser_fmt">%1$s で招待状を送信</string>
     <string name="invite_chooser_email">メール</string>
@@ -447,7 +447,7 @@
     <string name="connect_label_sms">接続 (SMS/テキスト経由)</string>
     <string name="phone_label">接続数:</string>
     <string name="summary_conn_sms_fmt">%1$s とゲームのプレイ中</string>
-    <string name="warn_unlimited">この番号が無制限でテキスト メッセージできるアカウントであることを確認していますか? そうでない場合は、キャンセルをクリックしてください。</string>
+    <string name="warn_unlimited">この番号が無制限でテキスト メッセージできるアカウントであることを確認していますか\? そうでない場合は、\"キャンセル\" をタップしてください。</string>
     <string name="remote_undone">リモートのデバイスが手を元に戻しました。</string>
     <string name="menu_hint_prev">前のヒント</string>
     <string name="menu_hint_next">次のヒント</string>
@@ -459,7 +459,9 @@
     <string name="menu_toggle_values">値の切り替え</string>
     <string name="board_menu_dict">単語リストを参照</string>
     <string name="game_list_tmp">ゲームの概要を構築しています…</string>
-    <string name="connstat_net_noaddr">このネットワーク ゲームは接続して、プレイすることはできません。\n\n(おそらく、お使いのデバイスがサポートする接続方法を指定していない招待状から作成されたようです)</string>
+    <string name="connstat_net_noaddr">このネットワークゲームは接続する方法がなく、プレイできません。
+\n
+\n(お使いデバイスがサポートしていない接続方法が指定された招待状から作成したか、最新の接続方法を削除した可能性があります。)</string>
     <string name="connstat_net_fmt">%1$s 経由で接続されたゲームのネットワーク状況:</string>
     <string name="connstat_succ">成功</string>
     <string name="connstat_unsucc">不成功</string>
@@ -470,23 +472,31 @@
     <string name="connstat_noreceipt">メッセージは受信していません。</string>
     <string name="connstat_relay">インターネット/リレー</string>
     <string name="connstat_sms">SMS/テキストメッセージ</string>
-    <string name="enable_sms">SMS 経由のゲームを許可</string>
+    <string name="enable_sms">データ SMS 経由のゲームを許可</string>
     <string name="enable_sms_summary">無制限にテキスト メッセージができる場合のみ!</string>
     <string name="confirm_sms_title">SMS の料金プランを確認</string>
-    <string name="confirm_sms_expl">警告: この機能は、携帯電話が無制限にテキスト メッセージをできる料金プラン用のものです。これを有効にした場合、多数の SMS (テキスト) メッセージがプレイされる各ゲームに (見えないうちに) 送信されます。無制限の料金プランではない場合、通信会社が各メッセージに課金します!\n\nSMS 経由でのプレイを有効にしてもよろしいですか?</string>
-    <string name="confirm_sms_prompt">SMS 経由でのプレイを有効にしますか?</string>
+    <string name="confirm_sms_expl">"警告: この機能は、携帯電話が無制限にテキスト メッセージをできる料金プラン用のものです。これを有効にした場合、多数のデータ SMS  メッセージがプレイされる各ゲームに (見えないうちに) 送信されます。無制限の料金プランではない場合、通信会社が各メッセージに課金します!
+\n
+\nデータ SMS 経由でのプレイを有効にしてもよろしいですか\?"</string>
+    <string name="confirm_sms_prompt">データ SMS 経由でのプレイを有効にしますか\?</string>
     <string name="confirm_sms_leave">いいえ: 無効のままにします</string>
     <string name="confirm_sms_unlimited">はい: 私は無制限にテキスト メッセージ送信できます</string>
     <string name="confirm_sms_willpay">はい: 私は、すべての通信料を払います</string>
-    <string name="warn_sms_disabled">"SMS 経由でのプレイは現在無効です。SMS 経由で移動は送信されません。\n\n今すぐ、または後で SMS 経由でのプレイを有効にできます。 "</string>
-    <string name="warn_bt_disabled">"このデバイスで Bluetooth はオフになっています。Bluetooth 経由で移動は送信されません。\n\n今すぐ、または後で、Bluetooth を有効にできます。 "</string>
+    <string name="warn_sms_disabled">データ SMS 経由でのプレイは現在無効です。データ SMS 経由で移動は送信されません。
+\n
+\n今すぐ、または後でデータ SMS 経由でのプレイを有効にできます。</string>
+    <string name="warn_bt_disabled">このデバイスで Bluetooth はオフになっています。Bluetooth 経由で移動は送信されません。
+\n
+\n今すぐ、または後で、Bluetooth を有効にできます。</string>
     <string name="enable_nfc">このデバイスで NFC がオフになっています。Android の設定アプリを使用するとオンにできます。</string>
     <string name="sms_ready_text">受信側のデバイスを今すぐタップしてください</string>
-    <string name="bt_no_devs">現在、対の Bluetooth デバイスはありません。Android の設定パネルを開いて、1 つまたは複数を追加しますか?\n\n(対にするデバイスでもそれを開く必要があります)</string>
+    <string name="bt_no_devs">現在、対の Bluetooth デバイスはありません。Android の設定パネルを開いて、1 つまたは複数を追加しますか\?
+\n
+\n(ペアにするデバイスでもそれを開く必要があります)</string>
     <string name="app_not_found_fmt">デバイス %1$s のクロスワードに Bluetooth で接続できません。デバイスが Bluetooth の範囲内にあること、クロスワードがインストールされていることを確認してください。</string>
     <string name="new_game">1 デバイスの新しいゲーム</string>
     <string name="nplayers_prompt">このデバイスの番号</string>
-    <string name="button_enable_sms">SMS を有効にする</string>
+    <string name="button_enable_sms">データ SMS を有効にする</string>
     <string name="button_enable_bt">Bluetooth を有効にする</string>
     <string name="button_later">後で</string>
     <string name="gamel_menu_checkupdates">更新の確認</string>
@@ -505,7 +515,7 @@
     <string name="missing_dict_title">ゲームの招待を保留中</string>
     <string name="missing_dict_detail">タップすると見つからない単語リストをダウンロード</string>
     <string name="invite_dict_missing_title">単語リストが見つかりません</string>
-    <string name="invite_dict_missing_body_fmt">%1$s が、単語リスト %2$s (%3$s でプレイ) を使用するクロスワードのプレイに招待しましたが、インストールされていません。単語リストをダウンロードしますか、または招待を拒否しますか?</string>
+    <string name="invite_dict_missing_body_fmt">%1$s さんが、単語リスト %2$s (%3$s でプレイ) を使用するクロスワードのプレイに招待しましたが、インストールされていません。単語リストをダウンロードしますか、または招待を拒否しますか\?</string>
     <string name="invite_dict_missing_body_noname_fmt">単語リスト %2$s (%3$s でプレイ) を使用するクロスワードのプレイに招待されていますが、インストールされていません。単語リストをダウンロードしますか?</string>
     <string name="button_decline">拒否</string>
     <string name="download_done">ダウンロードが完了しました</string>
@@ -515,17 +525,19 @@
     <string name="download_path_title">ダウンロード ディレクトリ</string>
     <string name="newgroup_label">新しいグループの名前をつけてください:</string>
     <string name="list_group_delete">グループを削除</string>
-    <string name="list_group_rename">名前の変更</string>
+    <string name="list_group_rename">グループの名前を変更</string>
     <string name="list_group_default">ここに新しいゲームを置く</string>
     <string name="list_group_moveup">上に移動</string>
     <string name="list_group_movedown">下に移動</string>
     <string name="group_cur_games">マイ ゲーム</string>
     <string name="group_new_games">新しいゲーム</string>
     <plurals name="groups_confirm_del_fmt">
-        <item quantity="other">選択したグループを削除してもよろしいですか?</item>
+        <item quantity="other">%1$d の選択したグループを削除してもよろしいですか\?</item>
     </plurals>
     <plurals name="groups_confirm_del_games_fmt">
-        <item quantity="other">\n\n(%1$d つのゲームも削除されます)</item>
+        <item quantity="other">"
+\n
+\n(%1$d のゲームも削除されます)"</item>
     </plurals>
     <string name="rename_group_label">このグループの名前を次のように変更します:</string>
     <string name="game_name_group_title">グループに名前をつける</string>
@@ -555,12 +567,14 @@
     <string name="no_market">Google Play アプリが見つかりません</string>
     <string name="add_to_study_fmt">学習リストに %1$s を追加</string>
     <string name="title_studyon">学習リストを有効にする</string>
-    <string name="summary_studyon">覚えておく単語のリストに追加して表示します</string>
+    <string name="summary_studyon">覚えておく単語のリストに追加を提案して表示します</string>
     <string name="gamel_menu_study">学習リスト…</string>
     <string name="slmenu_copy_sel">クリップボードにコピー</string>
     <string name="slmenu_clear_sel">選択した項目を削除</string>
     <plurals name="confirm_studylist_clear_fmt">
-        <item quantity="other">選択した単語を削除してもよろしいですか?\n\n(この操作は元に戻すことができません。)</item>
+        <item quantity="other">%1$d の選択した単語を削除してもよろしいですか\?
+\n
+\n(この操作は元に戻すことができません。)</item>
     </plurals>
     <plurals name="paste_done_fmt">
         <item quantity="one">単語を 1 つコピーしました</item>
@@ -613,7 +627,9 @@
     <string name="loc_item_copy_eng">英語をコピー</string>
     <string name="loc_item_copy_bless">公式をコピー</string>
     <string name="loc_fmts_mismatch">正しくない翻訳: 翻訳された文字列は、元と同じ書式指定子 (例 %1$s) を持つ必要があります。</string>
-    <string name="not_again_fmt_expl">この文字列は特別な書式指定子 (例 %1$s) があります。あなたの翻訳に、元と同じものがあることを確認してください。\n\n(それがない限り保存できません)</string>
+    <string name="not_again_fmt_expl">この文字列は特別な書式指定子 (例 %1$s) があります。あなたの翻訳に、元と同じものがあることを確認してください。
+\n
+\n(そうしない限り保存できません)</string>
     <string name="remote_empty">サーバーから単語リストの情報を取得しています…</string>
     <string name="remote_digesting">単語リストの情報を処理しています…</string>
     <string name="remote_no_net">サーバーから単語リストの情報を取得できません。</string>
@@ -631,7 +647,7 @@
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d 語)</string>
     <string name="lang_unknown">不明</string>
     <string name="not_again_dicts">この画面では、新しい単語リストをインストールしたり、既に持っているものを表示できます。\n\nインストールされている単語リストで決まること:\n • プレイできる言語\n • ロボット プレイヤーの賢さ\n • どの単語が正当か。\n\n上部にある \"ダウンロード可能を表示\" ボックスをチェックして、利用可能なものを参照してください。</string>
-    <string name="force_tablet_title">強制的にタブレット レイアウト</string>
+    <string name="force_tablet_title">タブレット (サイドバイサイド) レイアウトを使用する</string>
     <string name="force_tablet_summary">画面が小さすぎる場合でも</string>
     <string name="nag_title">リマインダー: あなたの番です</string>
     <plurals name="nag_minutes_fmt">
@@ -660,7 +676,7 @@
     <string name="title_addrs_pref">通信経路</string>
     <string name="new_game_networked">新しいネットワーク ゲーム</string>
     <string name="new_game_message">デフォルトの設定を使用して、このゲームを作成しますか?\n\nそれとも、最初に設定しますか?</string>
-    <string name="new_game_message_nodflt">このゲームは開く前に設定する必要があります。</string>
+    <string name="new_game_message_nodflt">このゲームを開く前に設定する必要があります。</string>
     <string name="new_game_message_net">(開くときに他のプレイヤーを招待するチャンスがあります)</string>
     <string name="use_defaults">デフォルトを使用する</string>
     <plurals name="nplayers_fmt">
@@ -674,9 +690,11 @@
     <string name="enable_pubroom_summary">他の人が見ること、参加することができるルーム</string>
     <string name="connection_via_label">通信経路を変更</string>
     <string name="set_pref">ボタンを非表示</string>
-    <string name="not_again_hidenewgamebuttons">"この 2 つのボタンは、このウィンドウのアクションバー (またはメニュー) の最初の 2 つのアイテムと同じことを行います。ゲームの表示を増やすためにボタンを非表示にすることができます。\n\n(後で再度表示する場合は、アプリ設定の外観セクションに移動してください) "</string>
+    <string name="not_again_hidenewgamebuttons">この画面の下部にある 2 つのボタンと、アクション バー (またはメニュー) の最初の 2 つの項目は同じことを行います。あなたが好きなら、より多くのゲームを表示するためにボタンを非表示にすることができます。
+\n
+\n(後でボタンを再表示する場合は、アプリの設定セクションに移動してください)。</string>
     <string name="waiting_title">プレイヤーを待っています</string>
-    <string name="invite_stays">(このダイアログはすべてリモート プレイヤーが接続するまで表示されます。しばらく時間がかかることが予想される場合は、ゲームを閉じることができます。それでも彼らは接続することができ、接続すると通知されます。)</string>
+    <string name="invite_stays">(このダイアログボックスは、すべてのリモートプレイヤーが接続するまで表示します。しばらく時間がかかると予想される場合は、ゲームを閉じることができます。リモートプレイヤーは引き続き接続することができ、接続されると通知を受け取ります。)</string>
     <string name="nfc_just_tap">NFC 経由で招待するには、招待したい人に対してこのデバイスの背面をタッチしてください —随時ゲームが開かれます。</string>
     <string name="warn_no_comms">すべてのネットワーク ゲームは、少なくとも 1 つ通信方法が必要です。デフォルトの接続オプションがない場合は、新しいネットワーク ゲームはすべて手動で設定する必要があります。</string>
     <string name="config_no_connvia">このゲームは接続する方法がないため、保存できません。変更を破棄、または接続する方法を編集して入力しますか?</string>
@@ -738,18 +756,18 @@
     <string name="db_store_done">SD カードの書き込みが完了しました。</string>
     <string name="seeking_relay">リレーに接続しています…</string>
     <string name="no_relay_conn">このゲームは通信用にリレー (インターネット) を使用するように設定されていますが、接続することができませんでした。\n\n条件が変更された後で、もう一度ゲームを開いてみてください。</string>
-    <string name="drop_relay_warning_fmt">"(このゲームは %1$s 経由でも接続できるので、リレー接続せずにゲームをプレイすることができます。) "</string>
+    <string name="drop_relay_warning_fmt">(このゲームは %1$s 経由でも接続できるので、リレー接続せずにゲームをプレイすることができます。)</string>
     <string name="confirm_drop_relay">このゲームから、リレーを経由して通信する設定を削除してもよろしいですか?</string>
     <string name="wifi_warning">" たとえば、異なる WiFi ネットワーク上にいる必要があります。"</string>
-    <string name="confirm_drop_relay_bt">Bluetooth は、近くのデバイスでのみ動作します。</string>
-    <string name="confirm_drop_relay_sms">SMS 経由のプレイは、すべてのキャリアがサポートするわけではありません。</string>
+    <string name="confirm_drop_relay_bt">Bluetooth は、近くのデバイスとだけ動作します。</string>
+    <string name="confirm_drop_relay_sms">データ SMS 経由のプレイは、すべてのキャリアがサポートするわけではありません。</string>
     <string name="button_enable">有効</string>
     <string name="not_again_comms_relay">\"リレー\" は、クロスワードを実行しているデバイス間でメッセージを渡すインターネット上のサーバーです。いつでも完全に機能するインターネット接続がある場合に動作しますが、制限された WiFi ネットワークで問題がある可能性があります。</string>
-    <string name="not_again_comms_sms">SMS 経由でのプレイは、\"テキスト メッセージ\" と同じ技術を使用します。あなたがメッセージを見ることができなくても、お使いの通信会社はそれをテキストだとみなします。無制限のテキスト メッセージの料金プラン (または予算) の場合を除き、この機能を避けた方がよいかもしれません。Android は GSM 通信会社、つまりベリゾンとスプリントを除く世界のすべての通信会社、のデバイスのみこの機能をサポートしていることに注意してください。</string>
-    <string name="not_again_comms_bt">Bluetooth を使用して、あなたと \"対\" の近くのデバイスと対戦します。</string>
+    <string name="not_again_comms_sms">データ SMS 経由のプレイは、\"テキスト メッセージ\" が構築されている技術を使用しています。メッセージは表示されませんが、通信事業者はテキストとして請求するので、無制限のテキストメッセージの料金プラン (または予算) の場合を除き、この機能は使用しないようにしてください。Android は GSM キャリアのデバイス、すなわちベライゾンとスプリントを除く世界中のすべてのキャリアでこの機能をサポートしています。</string>
+    <string name="not_again_comms_bt">Bluetooth を使用して、あなたと \"ペア\" の近くのデバイスと対戦します。</string>
     <string name="str_no_hint_found">移動は見つかりません</string>
     <plurals name="resent_msgs_fmt">
-        <item quantity="other">移動を 1 つ送信しました</item>
+        <item quantity="other">%1$s の移動を再送しました</item>
     </plurals>
     <string name="confirm_clear_chat">このゲームのチャット履歴をすべて削除してもよろしいですか?\n\n(この操作を元に戻すことはできません。)</string>
     <string name="invite_copied">招待状を貼り付ける準備ができました</string>
@@ -775,7 +793,7 @@
     <string name="disable_nags_title">リマインダーの切り替え</string>
     <string name="disable_nag_solo_title">一人ゲーム リマインダーを無効にする</string>
     <string name="devid_title">デバイス ID (リレー上の)</string>
-    <string name="not_again_rematch_two_only">デバイスが増えると難しく、三人以上で遊ぶことはまれだと考えているので、今のところ、再戦は二人ゲームに限定しています。私が間違っているようであれば、優先順位を上げますのでお知らせください。</string>
+    <string name="not_again_rematch_two_only">再戦は2人のゲームに限られていますが、少なくとも今のところは、より多くのデバイスでは難しく、2人以上でプレイすることはまれだと思います。私が間違っているようであれば、優先順位を上げますのでお知らせください。</string>
     <string name="enable_relay_toself_title">自分へのリレーの招待を有効にする</string>
     <string name="enable_relay_toself_summary">(テストとデバッグの支援用)</string>
     <string name="rel_invite_title">招待タイトルのリレー</string>
@@ -786,7 +804,7 @@
     <string name="not_again_dfltname_fmt">デフォルト プレイヤー名 \"%1$s\" を使用しています。ゲームを作成する前に、独自の名前でパーソナル化しますか?</string>
     <string name="summary_invites_out">プレイヤーを招待しました</string>
     <plurals name="invite_sent_fmt">
-        <item quantity="other">すでにこのゲームにリモート プレイヤーを招待しています。私たちは彼/彼女が対応するのを待っています。招待状が送られていないと思う場合は、再招待ボタンを使用してください。</item>
+        <item quantity="other">すでにこのゲームに %1$d の招待状を送信しています。%2$d 人が応答するのを待っています。招待状が送られていないと思う場合は、再招待ボタンを使用してください。</item>
     </plurals>
     <string name="invited_msg">このゲームは、あなたが受け取った招待状から作成されました。送信者に接続して、他の参加者が到着すると、すぐにプレイが開始されます。</string>
     <string name="invit_expl_sms_fmt">データ SMS 経由で %2$s の電話番号 %1$s に招待を送信しました</string>
@@ -795,7 +813,7 @@
     <string name="invit_expl_notarget_fmt">%2$s で %1$s 経由で招待を送信しました。不明な受信者。</string>
     <string name="newgame_invite_more">情報をもっと見る</string>
     <string name="notify_title_turn_fmt">ゲーム %1$s で自分の順番</string>
-    <string name="invites_net_fmt">%1$s を介して接続されているゲームに招待状を送信しました:</string>
+    <string name="invites_net_fmt">%1$s を経由して接続されているゲームに招待状を送信しました:</string>
     <string name="waiting_invite_title">応答を待っています</string>
     <string name="waiting_rematch_title">進行中の再戦</string>
     <string name="button_reinvite">再招待</string>
@@ -811,7 +829,7 @@
     <string name="relay_behavior_summary">インターネット接続したゲームに適用される設定</string>
     <string name="disable_relay">リレーを経由したプレイを無効にする</string>
     <string name="disable_relay_summary">すべてのインターネット通信を無効にします</string>
-    <string name="warn_relay_disabled">"このデバイスでリレー プレイは現在無効です。移動はリレーを介して送信も受信されません。 "</string>
+    <string name="warn_relay_disabled">このデバイスでリレー プレイは現在無効です。移動はリレーを介して送信も受信されません。</string>
     <string name="warn_relay_later">今すぐ、または後でリレー プレイを有効にすることができます。</string>
     <string name="warn_relay_remove">今すぐ、リレー プレイを有効にしたり、このゲームから削除できます。</string>
     <string name="warn_relay_havegames">リレーを使用したプレイを無効にしてもよろしいですか?</string>
@@ -857,34 +875,18 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 
 もう一度開き直して、もう一度アクセス許可を問い合わせることができます。
 または、SMS の通信設定を削除することもできます。</string>
-    <string name="download_rationale">"クロスワードは、ダウンロードを保存するために、
-一時ストレージへのアクセスが必要です。
- "</string>
-    <string name="sms_invite_rationale">"
- クロスワードは、SMS 経由で招待状を送信するためのアクセス許可が必要です。
- "</string>
-    <string name="dicts_storage_rationale">"
- クロスワードは、デバイスのダウンロード エリアに単語リストを保存したり読むことができますが、そこにアクセスするためのアクセス許可が必要です。
-
-クロスワードの中以外から単語リストをダウンロードしない場合や、以前に何も保存していない場合に、このアクセス許可を安全に拒否することができます。
- "</string>
-    <string name="phone_state_rationale">"
- 一部の携帯電話は、「データ」の SMS メッセージを交換できます。
-クロスワードはこのオプションを提供したいと思いますが、お使いのデバイス自体に確認する必要があります (携帯電話の種類を知るため)。 
-
-お使いのデバイスが、データ SMS を送信できない (例えば携帯電話ではないため) または SMS 経由でプレイしたくない (例えばメッセージに料金が必要なため) 場合、恒久的に拒否しても安全です。
- "</string>
-    <string name="phone_lookup_rationale">"
- SMS を使用して再戦するには、クロスワードはお使いの電話番号のアクセス許可が必要です。
- "</string>
-    <string name="phone_lookup_rationale_drop">このアクセス許可がないと、
-この SMS 専用ゲームの再戦はできません。</string>
-    <string name="phone_lookup_rationale_others">このアクセス許可がないと、
-再戦は続行されますが、SMS 経由でプレイできないゲームを作成します。</string>
-    <string name="contacts_rationale">"
- クロスワードは、SMS 経由で招待を送信する電話番号に名前を付けるため、連絡先にアクセスをします。
-このアクセス許可を付与しない場合でも、招待状を受け取ることができますが、送信者の電話番号のみが表示されます。
- "</string>
+    <string name="download_rationale">クロスワードは、ダウンロードを保存するために、 一時ストレージへのアクセスが必要です。</string>
+    <string name="sms_invite_rationale">クロスワードは、データ SMS 経由で招待状を送信するためのアクセス許可が必要です。</string>
+    <string name="dicts_storage_rationale">クロスワードは、デバイスのダウンロード エリアに単語リストを保存したり読むことができますが、そこにアクセスするためのアクセス許可が必要です。
+\n
+\nクロスワードの中以外から単語リストをダウンロードしない場合や、以前に何も保存していない場合は、このアクセス許可を安全に拒否することができます。</string>
+    <string name="phone_state_rationale">一部の携帯電話は、\"データ\" の SMS メッセージを交換できます。 クロスワードはこのオプションを提供したいと思いますが、お使いのデバイス自体に確認する必要があります (携帯電話の種類を知るため)。 
+\n
+\nお使いのデバイスが、データ SMS を送信できない (例えば携帯電話ではないため) または SMS 経由でプレイしたくない (例えばメッセージに料金が必要なため) 場合、恒久的に拒否しても安全です。</string>
+    <string name="phone_lookup_rationale">データ SMS を使用して再戦するには、クロスワードはお使いの電話番号のアクセス許可が必要です。</string>
+    <string name="phone_lookup_rationale_drop">このアクセス許可がないと、 このデータ SMS 専用ゲームの再戦はできません。</string>
+    <string name="phone_lookup_rationale_others">このアクセス許可がないと、 再戦は続行されますが、データ SMS 経由でプレイできないゲームを作成します。</string>
+    <string name="contacts_rationale">クロスワードは、データ SMS 経由で招待状を送信する電話番号に名前を付けるため、連絡先にアクセスをします。 このアクセス許可を付与しない場合でも、招待状を受け取ることができますが、送信者の電話番号のみが表示されます。</string>
     <string name="move_dict_rationale">ダウンロード エリアに単語リストを保存するには、
 アクセス許可が必要です。</string>
     <string name="remove_sms">SMS を削除</string>
@@ -953,7 +955,7 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="bkng_notify_text">Bluetooth メッセージを受け付けています…</string>
     <string name="bkng_stop_text">停止</string>
     <string name="bkng_settings_text">設定</string>
-    <string name="bt_scan_age_fmt">最後のスキャンの応答: %1$s</string>
+    <string name="bt_scan_age_fmt">最後の受信: %1$s</string>
     <string name="button_close">閉じる</string>
     <string name="btservice_expl">この通知は、クロスワードがバックグラウンドで実行されている場合に Bluetooth のメッセージを受け付けるために発生します。通常、クロスワードを開始または Bluetooth メッセージを受信した後、約 15 分間実行されます。</string>
     <string name="foreground_channel_expl">バックグラウンドで Bluetooth を受け付けています</string>
