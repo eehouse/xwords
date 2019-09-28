@@ -875,8 +875,8 @@
     <string name="invite_bt_desc_postscript">"
 \n
 \n(Lista to sparowane urządzenia, na których CrossWords został wykryty za pomocą skanu.)"</string>
-    <string name="confirm_clear_bt_postscript">" 
-\n 
+    <string name="confirm_clear_bt_postscript">"
+\n
 \n(Ponownie można dodać tylko te urządzenia, które są w zasięgu Bluetooth.)"</string>
     <string name="bkng_notify_text">Odbiór wiadomości przez Bluetooth…</string>
     <string name="bkng_stop_text">Zatrzymaj</string>
