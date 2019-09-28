@@ -962,8 +962,8 @@ aparells seleccionats?</string>
         <item quantity="one">Segur que voleu oblidar l\'aparell seleccionat\?</item>
         <item quantity="other">Segur que voleu oblidar els %1$d aparells seleccionats\?</item>
     </plurals>
-    <string name="confirm_clear_bt_postscript">" 
-\n 
+    <string name="confirm_clear_bt_postscript">"
+\n
 \n(Només podeu tornar a afegir els aparells que són accessibles via Bluetooth.)"</string>
     <string name="bkng_notify_text">S\'estan acceptant missatges Bluetooth…</string>
     <string name="bkng_stop_text">Atura\'t</string>
