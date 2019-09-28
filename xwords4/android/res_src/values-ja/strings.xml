@@ -949,8 +949,8 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <plurals name="confirm_clear_bt_fmt">
         <item quantity="other">%1$d のチェックされたデバイスを記憶しないでよろしいですか\?</item>
     </plurals>
-    <string name="confirm_clear_bt_postscript">" 
-\n 
+    <string name="confirm_clear_bt_postscript">"
+\n
 \n(Bluetooth の範囲内にあるデバイスだけ再追加できます)"</string>
     <string name="bkng_notify_text">Bluetooth メッセージを受け付けています…</string>
     <string name="bkng_stop_text">停止</string>
