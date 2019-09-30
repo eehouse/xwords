@@ -295,7 +295,7 @@ que connecti via el repetidor.</string>
     <string name="button_revert_colors">Restaura els colors</string>
     <string name="prefs_names">Noms dels jugadors</string>
     <string name="prefs_names_summary">Noms predeterminats dels jugadors</string>
-    <string name="pref_human_name">Jugador humà</string>
+    <string name="pref_human_name">Jugador humà (el vostre nom)</string>
     <string name="tell_unused">Encara no s\'ha usat…</string>
     <string name="prefs_dicts">Diccionaris</string>
     <string name="prefs_dicts_summary">Diccionaris predeterminats</string>
@@ -829,8 +829,7 @@ aquesta partida. N\'estem esperant resposta.
 de %2$d destinataris. Useu el botó de tornar a
  convidar si penseu que les invitacions no ha arribat.</item>
     </plurals>
-    <string name="invit_expl_sms_fmt">S\'ha enviat la invitació via SMS
-al telèfon %1$s a %2$s</string>
+    <string name="invit_expl_sms_fmt">S\'ha enviat la invitació via SMS de dades al telèfon %1$s a %2$s</string>
     <string name="disable_relay">"Desactiva el joc via repetidor "</string>
     <string name="disable_relay_summary">Inhabilita la comunicació per Internet</string>
     <string name="newgame_invite_more">Més informació</string>
@@ -970,4 +969,7 @@ aparells seleccionats?</string>
     <string name="bkng_settings_text">Configuració</string>
     <string name="button_close">Tanca</string>
     <string name="gameevent_channel_expl">Esdeveniments durant la partida</string>
+    <string name="invit_expl_usrsms_fmt">S\'ha enviat la invitació via SMS al telèfon %1$s a %2$s</string>
+    <string name="invite_choice_user_sms">SMS (missatges de text)</string>
+    <string name="ok_with_robots">D\'acord (robots)</string>
 </resources>
