@@ -161,7 +161,7 @@
     <string name="gameOver">Final de partida</string>
     <!-- <string name="moves_fmt">%1$d torns jugats</string> -->
     <!-- about dialog stuff -->
-    <string name="about_copyright">Copyright (C) 1998-2018 d\'Eric House. Aquest programari es troba sota la Llicència Pública General GNU.</string>
+    <string name="about_copyright">Copyright (C) 1998-2019 d\'Eric House. Aquest programari es troba sota la Llicència Pública General GNU.</string>
     <string name="about_web">Per a l\'ajuda o el codi font visiteu:
     http://xwords.sf.net.  Per informar d\'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
@@ -461,14 +461,14 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="connstat_noreceipt">No s\'ha rebut cap missatge.</string>
     <string name="connstat_relay">Internet/repetidor</string>
     <string name="connstat_sms">SMS/missatges</string>
-    <string name="enable_sms">Permet partides via SMS</string>
+    <string name="enable_sms">Permet partides via SMS de dades</string>
     <string name="enable_sms_summary">Només si teniu missatges SMS il·limitats!</string>
     <string name="confirm_sms_title">Confirmeu el vostre pla de SMS</string>
-    <string name="confirm_sms_prompt">Voleu activar les partides via SMS?</string>
+    <string name="confirm_sms_prompt">Voleu activar les partides via SMS de dades\?</string>
     <string name="confirm_sms_leave">No, deixa-ho desactivat</string>
     <string name="confirm_sms_unlimited">Sí, tinc missatges SMS il·limitats</string>
     <string name="confirm_sms_willpay">Sí, pagaré el cost de l\'operadora</string>
-    <string name="button_enable_sms">Activa els SMS</string>
+    <string name="button_enable_sms">Activa els SMS de dades</string>
     <string name="button_enable_bt">Activa el Bluetooth</string>
     <string name="button_later">Més tard</string>
     <string name="gamel_menu_checkupdates">Comprova si hi ha actualitzacions</string>
@@ -705,7 +705,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="remote_no_net">No s\'ha pogut obtenir la informació del diccionari del servidor.</string>
     <string name="not_again_turnchanged">E jugador amb el torn apareix apareix amb el marcador més gros.\n\nAguanteu el dit en un nom del marcador per a obtenir detalls sobre la jugada més recent del jugador.</string>
     <string name="not_again_newfrom">Crea una partida llesta per a jugar usant la configuració d\'aquesta. Això és, usa aquesta partida com a plantilla.</string>
-    <string name="sms_bad_proto_fmt">La versió del CrossWords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS. Heu d\'actualitzar abans de continuar.</string>
+    <string name="sms_bad_proto_fmt">La versió del CrossWords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS de dades. Heu d\'actualitzar abans de continuar.</string>
     <plurals name="invite_bt_desc_fmt">
         <item quantity="one">Seleccioneu l\'aparell que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
         <item quantity="other">Seleccioneu fins a %1$d aparells que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
@@ -732,7 +732,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="got_langdict_title">Obté el diccionari predeterminat per a la llengua</string>
     <string name="wifi_warning">" Per exemple, potser necessitareu estar en una xarxa WiFi diferent."</string>
     <string name="confirm_drop_relay_bt">Bluetooth només per a aparells propers.</string>
-    <string name="confirm_drop_relay_sms">No totes les operadores permeten jugar via SMS.</string>
+    <string name="confirm_drop_relay_sms">No totes les operadores permeten jugar via SMS de dades.</string>
     <string name="not_again_comms_relay">El «repetidor» és un servidor d\'Internet que passa els missatges entre els aparells que executen el CrossWords. Això funciona bé si teniu una connexió a Internet plenament funcional, però podeu tenir problemes en xarxes WiFi restringides.</string>
     <string name="not_again_comms_sms">Jugar via SMS usa la mateixa tecnologia que els missatges SMS. Els missatges seran invisibles, l\'operadora els considera missatges de text, per tant potser preferiu inhabilitar aquesta característica llevat que tingueu missatges SMS il·limitats (o un bon pressupost). Noteu que l\'Android només permet aquesta característica en els dispositius amb operadora GSM, això és qualsevol operadora mundial, excepte Verizon i Sprint.</string>
     <string name="not_again_comms_bt">Useu Bluetooth per a jugar contra un aparell proper que estigui aparellat amb el vostre.</string>
@@ -753,9 +753,9 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="connstat_lastother_succ_fmt">(últim error fou %1$s)</string>
     <string name="connstat_lastother_unsucc_fmt">(últim enviament correcte fou %1$s)</string>
     <string name="connstat_lastreceipt_fmt">Última recepció fou %1$s</string>
-    <string name="warn_sms_disabled">El joc via SMS està inhabilitat. No s\'enviaran jugades via SMS.
-\n
-\nPodeu habilitar el joc via SMS ara, o més tard.</string>
+    <string name="warn_sms_disabled">El joc via SMS de dades està inhabilitat. No s\'enviaran jugades via SMS de dades. 
+\n 
+\nPodeu habilitar el joc via SMS de dades ara, o més tard.</string>
     <string name="warn_bt_disabled">El Bluetooth està actualment inhabilitat en aquesta aparell. No s\'enviaran jugades via Bluetooth.
 \n
 \nPodeu habilitar el Bluetooth ara, o més tard.</string>
@@ -786,7 +786,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="bt_no_devs">Actualment no teniu cap aparell aparellat via Bluetooth. Voleu obrir la configuració de l\'Android per a afegir-ne algun?\n\n(Potser també heu d\'obrir-lo a l\'aparell amb què vulgueu aparellar.)</string>
     <string name="hide_crosshairs">Inhabilita la creu</string>
     <string name="newgame_drop_relay">Treu el repetidor</string>
-    <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Toca aquí&lt;/a&gt; (o toca l\'enllaç següent, o, si ja teniu el CrossWords instal·lat, obriu l\'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br \&gt; &lt;br \&gt; (enllaç: %1$s ) </string>
+    <string name="invite_htm_fmt">"&lt;a href=%1$s&gt;Taca aquí&lt;/a&gt; (o toca l\'enllaç següent, o, si ja tens el CrossWords instal·lat, obre l\'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br  &lt;br  (enllaç: %1$s )"</string>
     <string name="no_dict_subst_fmt">No es pot obrir la partida «%1$s» perquè el diccionari %2$s no s\'ha trobat. (potser s\'ha suprimit o està emmagatzemat en una memòria externa que no es troba disponible.)\n\nPodeu baixar un substitut o substituir-lo amb un altre diccionari %3$s.</string>
     <string name="bt_pick_addall_button">Afegeix tots els aparellats</string>
     <string name="button_invite">Convida els marcats</string>
@@ -799,7 +799,9 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="pref_group_sms_summary">Configuració relacionada amb el joc via SMS</string>
     <string name="pref_group_relay_summary">Configuracó relacionada amb el joc via internet/repetidor</string>
     <string name="db_store_done">S\'ha completat l\'escriptura a la targeta SD.</string>
-    <string name="confirm_sms_expl">Atenció: aquesta funcionalitat és per a telèfons amb plans de missatges SMS il·limitats. Si l\'habiliteu, per cada partida jugada, s\'enviaran dotzenes de missatges de text SMS de forma invisible. Si no teniu un pla il·limitat, la vostra operadora us pot cobrar cadascun dels missatges!\n\nVoleu habilitar el joc via SMS?</string>
+    <string name="confirm_sms_expl">Atenció: aquesta funcionalitat és per a telèfons amb plans de missatges SMS il·limitats. Si l\'habiliteu, per cada partida jugada, s\'enviaran dotzenes de missatges de SMS de dades de forma invisible. Si no teniu un pla il·limitat, la vostra operadora us pot cobrar cadascun dels missatges!
+\n
+\nVoleu habilitar el joc via SMS de dades\?</string>
     <string name="app_not_found_fmt">No es pot connectar al CrossWords en l\'aparell %1$s. Comproveu que l\'aparell és proper i que té el CrossWords instal·lat.</string>
     <string name="enable_pubroom_summary">Els altres de la sala poden mirar i unir-s\'hi</string>
     <string name="invite_stays">(Aquest diàleg es mostrarà fins que tots els jugadors remots hagin connectat. Podeu tancar la partida si penseu que pot trigar una mica. Podran connectar-hi igualment.)</string>
@@ -972,4 +974,10 @@ aparells seleccionats?</string>
     <string name="invit_expl_usrsms_fmt">S\'ha enviat la invitació via SMS al telèfon %1$s a %2$s</string>
     <string name="invite_choice_user_sms">SMS (missatges de text)</string>
     <string name="ok_with_robots">D\'acord (robots)</string>
+    <string name="sms_invite_flakey">Aquesta opció nova executa l\'aplicació de missatgeria SMS amb una invitació llesta per a enviar, si funciona. Cada aplicació de missatgeria SMS és diferent i algunes no cooperen.</string>
+    <string name="sms_invite_fail">No és pot iniciar l\'aplicació de missatgeria SMS</string>
+    <string name="msg_dev_deleted_fmt">La partida amb nom «%1%s» s\'ha suprimit en un altre aparell. No hi podreu jugar mai més.</string>
+    <string name="invite_choice_data_sms">SMS de dades</string>
+    <string name="empty_bt_inviter">Encara no s\'ha detectat cap aparell aparellat.</string>
+    <string name="checkbox_archive">Mou a l\'arxiu</string>
 </resources>
