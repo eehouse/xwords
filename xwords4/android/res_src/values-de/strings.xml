@@ -282,7 +282,7 @@
     <string name="invite_choice_nfc">NFC („Android-Beaming“)</string>
     <string name="invite_choice_p2p">Wi-Fi Direct</string>
     <string name="invite_subject_fmt">Lass\' uns CrossWords spielen (Raum %1$s)</string>
-    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Hier antippen&lt;/a&gt; (oder den vollständigen Link unten antippen, oder, wenn Sie CrossWords bereits installiert haben, den Anhang öffnen), um meine Einladung anzunehmen und an diesem Spiel teilzunehmen. &lt;br \\&gt; &lt;br \\&gt; (Vollständiger Link: %1$s )</string>
+    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Hier tippen&lt;/a&gt; (oder den vollständigen Link unten, um an diesem Spiel teilzunehmen. Wenn Sie bereits CrossWords installiert haben, können Sie den Anhang öffnen,). &lt;br \\&gt; &lt;br \\&gt; (Vollständiger Link: %1$s)</string>
     <string name="invite_chooser_fmt">Einladung senden über %1$s</string>
     <string name="invite_chooser_email">Email</string>
     <plurals name="query_trade_fmt">
@@ -995,9 +995,9 @@
 \nDiese Meldung wird höchstens einmal alle %2$d Minuten angezeigt.</string>
     <string name="sms_banned_ok_only">Die Google Play-Version von CrossWords unterstützt keine Einladungen mehr oder das Spielen per Daten-SMS.</string>
     <string name="button_more_info">Mehr erfahren</string>
-    <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS konfiguriert, aber Apps aus dem Google Play Store dürfen dies nicht mehr anbieten (mit wenigen Ausnahmen). Sie können das Spiel immer noch öffnen, aber es ist möglicherweise nicht möglich, Züge zu senden oder zu empfangen.
+    <string name="banned_nbs_perms">Dieses Spiel ist für die Kommunikation per Daten-SMS eingerichtet, aber Apps aus dem Google Play Store dürfen dies (bis auf wenige Ausnahmen) nicht mehr tun. Sie können das Spiel immer noch öffnen, aber es ist mehr möglicherweise, Züge zu senden oder zu empfangen.
 \n
-\nSie können die Einstellung für die Daten-SMS-Kommunikation entfernen oder über die Schaltfläche „Mehr erfahren” meinen Fortschritt bei der Entwicklung einer Alternative überprüfen.</string>
+\nSie können die Einstellung für die Daten-SMS-Kommunikation entfernen oder über die Schaltfläche \"Mehr erfahren\" den Fortschritt bei der Entwicklung einer Alternative überprüfen.</string>
     <string name="relay_poll_title">Wie wird nach Zügen gesucht\?</string>
     <string name="relay_poll_name_no_fcm">Nur Umfrage: keine FCM-Nachrichten</string>
     <string name="relay_poll_name_no_polling">Nur FCM: keine Umfragen</string>
