@@ -30,6 +30,7 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.nfc.NfcManager;
+import android.os.Build;
 import android.os.Parcelable;
 
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -47,7 +48,8 @@ public class NFCUtils {
     private static boolean[] s_nfcAvail;
     private static SafeNFC s_safeNFC;
     static {
-        s_inSDK = 14 <= Integer.valueOf( android.os.Build.VERSION.SDK );
+        s_inSDK = 14 <= Build.VERSION.SDK_INT
+            && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P;
         if ( s_inSDK ) {
             s_safeNFC = new SafeNFCImpl();
         }
