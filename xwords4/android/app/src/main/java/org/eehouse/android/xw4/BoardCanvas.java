@@ -30,7 +30,9 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -574,6 +576,34 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
+    private static Method sSaveMethod;
+    private void saveImpl( Rect rect )
+    {
+        if ( Build.VERSION.SDK_INT >= 21 ) {
+            saveLayer( new RectF(rect), null );
+        } else {
+            if ( null == sSaveMethod ) {
+                try {
+                    Class<?> cls = Class.forName("android.graphics.Canvas");
+                    sSaveMethod = cls.getDeclaredMethod( "save", new Class[] {int.class} );
+                } catch ( NoSuchMethodException | ClassNotFoundException ex ) {
+                    Log.e( TAG, "%s", ex );
+                    Assert.fail();
+                }
+            }
+
+            final int CLIP_SAVE_FLAG = 0x02;
+            try {
+                sSaveMethod.invoke( this, CLIP_SAVE_FLAG );
+                Log.d( TAG, "saveImpl() worked" );
+            } catch ( java.lang.reflect.InvocationTargetException
+                      | IllegalAccessException ex ) {
+                Log.e( TAG, "%s", ex );
+                Assert.fail();
+            }
+        }
+    }
+
     private boolean drawTileImpl( Rect rect, String text, int val,
                                   int flags, boolean clearBack )
     {
@@ -583,7 +613,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
             boolean isCursor = (flags & CELL_ISCURSOR) != 0;
 
-            save( Canvas.CLIP_SAVE_FLAG );
+            saveImpl( rect );
             rect.top += 1;
             clipRect( rect );
 

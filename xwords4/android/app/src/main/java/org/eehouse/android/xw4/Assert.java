@@ -36,7 +36,7 @@ public class Assert {
         if (! val) {
             Log.e( TAG, "firing assert!" );
             DbgUtils.printStack( TAG );
-            junit.framework.Assert.fail();
+            assert false;
         }
     }
 
