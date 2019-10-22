@@ -20,9 +20,9 @@ LANGCODE=ca_ES
 TARGET_TYPE ?= WINCE
 ENC = UTF-8
 
-DICTNOTE = "Built from DISC 2.5.12.\nSee http://diccionari.totescrable.cat for more information."
+DICTNOTE = "Built from DISC 2.7.15.\nSee http://diccionari.totescrable.cat for more information."
 # not used yet
-DICTREV = bbbd5723281191ad197cc7e986074cc65ba892fe
+DICTREV = 8dea44bb695f8e18dd64a24d96281e1dd2bb56ba
 
 ifeq ($(TARGET_TYPE),PALM)
 PBITMS = ./bmps/palm
