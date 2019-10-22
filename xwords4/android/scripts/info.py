@@ -72,7 +72,7 @@ k_suffix = '.xwd'
 k_filebase = "/var/www/html/"
 k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
-k_urlbase = "http://eehouse.org"
+k_urlbase = "https://eehouse.org"
 
 s_shelf = None
 
