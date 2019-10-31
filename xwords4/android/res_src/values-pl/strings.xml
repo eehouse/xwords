@@ -383,7 +383,7 @@
     <string name="invite_choice_nfc">NFC (Android beaming)</string>
     <string name="invite_choice_relay">Internet/Przekaźnik</string>
     <string name="invite_choice_p2p">Tryb Wi-Fi Direct</string>
-    <string name="invite_subject_fmt">Zagrajmy w CrossWords (Pokój %1$s)</string>
+    <string name="invite_subject_fmt">Zagrajmy w CrossWords (pokój %1$s)</string>
     <string name="invite_htm_fmt">"&lt;a href=\"%1$s\"&gt; Stuknij tutaj&lt;/a&gt; (lub dotknij pełnego linku poniżej lub, jeśli masz już zainstalowany CrossWords, otwórz załącznik), aby zaakceptować moje zaproszenie i dołączyć do tej gry. &lt;br \\&gt; &lt;br \\&gt;  (pełny link: %1$s )"</string>
     <plurals name="query_trade_fmt">
         <item quantity="one">Czy na pewno chcesz wymienić wybrany kafelek (%2$s)\?</item>
@@ -962,7 +962,7 @@
 \n
 \n(%1$d gier zostanie również usuniętych.)"</item>
     </plurals>
-    <string name="invit_expl_usrsms_fmt">Zaproszenie wysłane za pomocą wiadomości SMS na numer telefonu %1$s na %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Zaproszenie wysłane przez SMS do %1$s na %2$s</string>
     <string name="sms_invite_flakey">Ta opcja uruchamia domyślną aplikację SMS z zaproszeniem gotowym do wysłania -- gdy działa. Każda aplikacja SMS jest inna, a niektóre nie współpracują.</string>
     <string name="sms_invite_fail">Nie można uruchomić aplikacji SMS</string>
     <string name="msg_dev_deleted_fmt">Gra o nazwie \"%1$s\" została usunięta na innym urządzeniu. Nie będziesz mógł grać dalej.</string>
