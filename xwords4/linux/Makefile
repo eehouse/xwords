@@ -144,6 +144,8 @@ DEFINES += -DCURSES_CELL_WIDTH=$(CURSES_CELL_WIDTH)
 endif
 DEFINES += $(UNICODE)
 
+DEFINES += -DLOG_COMMS_MSGNOS
+
 # Networking-related features.  Only set these if STANDALONE is not set
 ifeq ($(STANDALONE),)
 

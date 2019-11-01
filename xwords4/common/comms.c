@@ -699,6 +699,9 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgSaved = rec->lastMsgRcd = stream_getU16( stream );
+#ifdef LOG_COMMS_MSGNOS
+        XP_LOGF( "%s(): read lastMsgRcd of %d for addr %d", __func__, rec->lastMsgRcd, ii );
+#endif
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
             rec->lastMsgAckd = stream_getU16( stream );
         }
@@ -904,6 +907,9 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     nAddrRecs = countAddrRecs(comms);
     stream_putU8( stream, (XP_U8)nAddrRecs );
 
+#ifdef LOG_COMMS_MSGNOS
+    int ii = 0;
+#endif
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
 
         CommsAddrRec* addr = &rec->addr;
@@ -912,6 +918,9 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
         stream_putU16( stream, (XP_U16)rec->nextMsgID );
         stream_putU16( stream, (XP_U16)rec->lastMsgRcd );
+#ifdef LOG_COMMS_MSGNOS
+        XP_LOGF( "%s(): wrote lastMsgRcd of %d for addr %d", __func__, rec->lastMsgRcd, ii++ );
+#endif
         stream_putU16( stream, (XP_U16)rec->lastMsgAckd );
         stream_putU16( stream, rec->channelNo );
         if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
@@ -2283,7 +2292,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     msgID = stream_getU32( stream );
                     lastMsgRcd = stream_getU32( stream );
                     CNO_FMT( cbuf, channelNo );
-                    XP_LOGF( TAGFMT() "rcd on %s: msgID=%d,lastMsgRcd=%d ", 
+                    XP_LOGF( TAGFMT() "rcd on %s: msgID=%d, lastMsgRcd=%d ",
                              TAGPRMS, cbuf, msgID, lastMsgRcd );
                     payloadSize = stream_getSize( stream ); /* anything left? */
                 } else {
