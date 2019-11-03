@@ -2194,14 +2194,13 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
         if ( !success ) {
             success = model_popToHash( server->vol.model, hashReceived, server->pool );
         }
-#ifdef DEBUG_HASHING
-        if ( success ) {
-            XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
-        } else {
+        if ( !success ) {
             XP_LOGF( "%s: hash mismatch: %X not found",__func__, hashReceived );
-        }
-        // XP_ASSERT( success );   /* I need to understand when this can fail */
+#ifdef DEBUG_HASHING
+        } else {
+            XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
 #endif
+        }
     }
 #endif
     if ( success ) {
