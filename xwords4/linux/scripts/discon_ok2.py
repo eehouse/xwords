@@ -163,19 +163,19 @@ class Device():
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     
-    def __init__(self, args, game, indx, app, params, room, peers, db, log, nInGame):
+    def __init__(self, args, game, indx, params, room, peers, db, log, nInGame):
         self.game = game
         self.indx = indx
         self.args = args
         self.pid = 0
         self.gameOver = False
-        self.app = app
         self.params = params
         self.room = room
         self.db = db
         self.logPath = log
         self.nInGame = nInGame
         # runtime stuff; init now
+        self.app = args.APP_OLD
         self.proc = None
         self.peers = peers
         self.devID = ''
@@ -187,9 +187,17 @@ class Device():
         self.relaySeed = 0
         self.locked = False
 
+        self.setApp(args.START_PCT)
+
         with open(self.logPath, "w") as log:
             log.write('New cmdline: ' + self.app + ' ' + (' '.join([str(p) for p in self.params])))
             log.write(os.linesep)
+
+    def setApp(self, pct):
+        if self.app == self.args.APP_OLD and not self.app == self.args.APP_NEW:
+            if pct >= random.randint(0, 99):
+                print('launch(): upgrading from ', self.app, ' to ', self.args.APP_NEW)
+                self.app = self.args.APP_NEW
 
     def logReaderMain(self):
         assert self and self.proc
@@ -232,6 +240,10 @@ class Device():
             args += ['valgrind']
             # args += ['--leak-check=full']
             # args += ['--track-origins=yes']
+
+        # Upgrade if appropriate
+        self.setApp(self.args.UPGRADE_PCT)
+
         args += [self.app] + [str(p) for p in self.params]
         if self.devID: args.extend( ' '.split(self.devID))
         self.launchCount += 1
@@ -430,7 +442,7 @@ def build_cmds(args):
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device(args, GAME, COUNTER, args.APP_NEW, PARAMS, ROOM, peers, DB, LOG, len(LOCALS))
+            dev = Device(args, GAME, COUNTER, PARAMS, ROOM, peers, DB, LOG, len(LOCALS))
             peers.add(dev)
             dev.update_ldevid()
             devs.append(dev)
@@ -611,6 +623,13 @@ def mkParser():
 
     parser.add_argument('--app-new', dest = 'APP_NEW', default = './obj_linux_memdbg/xwords',
                         help = 'the app we\'ll use')
+    parser.add_argument('--app-old', dest = 'APP_OLD', default = './obj_linux_memdbg/xwords',
+                        help = 'the app we\'ll upgrade from')
+    parser.add_argument('--start-pct', dest = 'START_PCT', default = 50, type = int,
+                        help = 'odds of starting with the new app, 0 <= n < 100')
+    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 5, type = int,
+                        help = 'odds of upgrading at any launch, 0 <= n < 100')
+
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
     parser.add_argument('--num-rooms', dest = 'NROOMS', type = int, default = 0,
                         help = 'number of roooms (default to --num-games)')
