@@ -63,6 +63,7 @@ openGamesDB( const char* dbName )
         ",ntotal INT(2)"
         ",nmissing INT(2)"
         ",lastMoveTime INT"
+        ",dupTimerExpires INT"
         ")";
     result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
 
