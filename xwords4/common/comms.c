@@ -2320,7 +2320,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     CNO_FMT( cbuf, channelNo );
                     XP_LOGF( TAGFMT() "got %s; msgID=%d; len=%d", TAGPRMS, cbuf, 
                              msgID, payloadSize );
-                    rec->lastMsgRcd = msgID;
+                    state->msgID = msgID;
+                    state->channelNo = channelNo;
                     comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
                     stream_setAddress( stream, channelNo );
                     messageValid = payloadSize > 0;
@@ -2345,8 +2346,23 @@ comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
     XP_ASSERT( comms == state->comms );
     XP_ASSERT( comms->processingMsg );
 
-    if ( rejected && !!state->rec ) {
-        removeAddrRec( comms, state->rec );
+    if ( rejected ) {
+        if ( !!state->rec ) {
+            removeAddrRec( comms, state->rec );
+        }
+#ifdef LOG_COMMS_MSGNOS
+        XP_LOGF( "%s(): msg rejected; NOT upping lastMsgRcd to %d", __func__,
+                 state->msgID );
+#endif
+    } else {
+        AddressRecord* rec = getRecordFor( comms, NULL, state->channelNo, XP_TRUE );
+        XP_ASSERT( !!rec );
+        if ( !!rec && rec->lastMsgRcd < state->msgID ) {
+#ifdef LOG_COMMS_MSGNOS
+            XP_LOGF( "%s(): upping lastMsgRcd from %d to %d", __func__, rec->lastMsgRcd, state->msgID );
+#endif
+            rec->lastMsgRcd = state->msgID;
+        }
     }
 
 #ifdef DEBUG

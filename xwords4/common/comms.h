@@ -245,6 +245,8 @@ void comms_ackAny( CommsCtxt* comms );
 
 typedef struct _CommsMsgState {
     struct AddressRecord* rec;
+    XP_U32 msgID;
+    XP_PlayerAddr channelNo;
 #ifdef DEBUG
     const CommsCtxt* comms;
 #endif
