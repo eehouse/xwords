@@ -318,7 +318,7 @@ class Device():
                 if b'--ldevid' in line:
                     hasLDevID = True
                     break
-            print('found --ldevid:', hasLDevID);
+            # print('found --ldevid:', hasLDevID);
             Device.sHasLDevIDMap[self.app] = hasLDevID
 
         if Device.sHasLDevIDMap[self.app]:
