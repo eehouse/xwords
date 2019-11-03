@@ -465,6 +465,7 @@ smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 void
 log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
 {
+    XP_LOGF( "%s(len=%d[0x%x])", __func__, len, len );
     const char* hex = "0123456789ABCDEF";
     XP_U16 ii, jj;
     XP_U16 offset = 0;
@@ -502,7 +503,7 @@ log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
         if ( (NULL == tag) || (XP_STRLEN(tag) + sizeof(vals) >= sizeof(buf)) ) {
             tag = "<tag>";
         }
-        XP_SNPRINTF( buf, sizeof(buf), "%s[%.3d]: %s %s", tag, oldOffset, 
+        XP_SNPRINTF( buf, sizeof(buf), "%s[%.3d]: %-24s %s", tag, oldOffset,
                      vals, chars );
         XP_LOGF( "%s", buf );
     }
