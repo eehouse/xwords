@@ -465,7 +465,6 @@ smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 void
 log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
 {
-    XP_LOGF( "%s(len=%d[0x%x])", __func__, len, len );
     const char* hex = "0123456789ABCDEF";
     XP_U16 ii, jj;
     XP_U16 offset = 0;

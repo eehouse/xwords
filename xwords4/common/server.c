@@ -1595,33 +1595,37 @@ bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
 } /* bwiFromStream */
 
 #ifdef DEBUG
-#define caseStr(var, s) case s: var = #s; break;
-static void
-printCode(char* intro, XW_Proto code)
+#define caseStr(s) case s: str = #s; break;
+static const char*
+codeToStr( XW_Proto code )
 {
-    char* str = (char*)NULL;
+    const char* str = (char*)NULL;
 
-    switch( code ) {
-        caseStr( str, XWPROTO_ERROR );
-        caseStr( str, XWPROTO_CHAT );
-        caseStr( str, XWPROTO_DEVICE_REGISTRATION );
-        caseStr( str, XWPROTO_CLIENT_SETUP );
-        caseStr( str, XWPROTO_MOVEMADE_INFO_CLIENT );
-        caseStr( str, XWPROTO_MOVEMADE_INFO_SERVER );
-        caseStr( str, XWPROTO_UNDO_INFO_CLIENT );
-        caseStr( str, XWPROTO_UNDO_INFO_SERVER );
-        caseStr( str, XWPROTO_BADWORD_INFO );
-        caseStr( str, XWPROTO_MOVE_CONFIRM );
-        caseStr( str, XWPROTO_CLIENT_REQ_END_GAME );
-        caseStr( str, XWPROTO_END_GAME );
-        caseStr( str, XWPROTO_NEW_PROTO );
+    switch ( code ) {
+        caseStr( XWPROTO_ERROR );
+        caseStr( XWPROTO_CHAT );
+        caseStr( XWPROTO_DEVICE_REGISTRATION );
+        caseStr( XWPROTO_CLIENT_SETUP );
+        caseStr( XWPROTO_MOVEMADE_INFO_CLIENT );
+        caseStr( XWPROTO_MOVEMADE_INFO_SERVER );
+        caseStr( XWPROTO_UNDO_INFO_CLIENT );
+        caseStr( XWPROTO_UNDO_INFO_SERVER );
+        caseStr( XWPROTO_BADWORD_INFO );
+        caseStr( XWPROTO_MOVE_CONFIRM );
+        caseStr( XWPROTO_CLIENT_REQ_END_GAME );
+        caseStr( XWPROTO_END_GAME );
+        caseStr( XWPROTO_NEW_PROTO );
     }
+    return str;
+} /* codeToStr */
 
-    XP_STATUSF( "\t%s for %s", intro, str );
-} /* printCode */
+
+#define PRINTCODE( intro, code ) \
+    XP_STATUSF( "\t%s(): %s for %s", __func__, intro, codeToStr(code) )
+
 #undef caseStr
 #else
-#define printCode(intro, code)
+#define PRINTCODE(intro, code)
 #endif
 
 static XWStreamCtxt*
@@ -1630,7 +1634,7 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
     XWStreamCtxt* stream;
     XP_PlayerAddr channelNo = server->nv.addresses[devIndex].channelNo;
 
-    printCode("making", code);
+    PRINTCODE("making", code);
 
     stream = util_makeStreamFromAddr( server->vol.util, channelNo );
     stream_open( stream );
@@ -2924,9 +2928,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 {
     XP_Bool accepted = XP_FALSE;
     XP_Bool isServer = amServer( server );
-    XW_Proto code = readProto( server, incoming );
-
-    printCode( "Receiving", code );
+    const XW_Proto code = readProto( server, incoming );
 
     if ( code == XWPROTO_DEVICE_REGISTRATION ) {
         accepted = isServer;
@@ -2958,6 +2960,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         }
         util_showChat( server->vol.util, msg, from, timestamp );
         XP_FREE( server->mpool, msg );
+        accepted = XP_TRUE;
 #endif
     } else if ( readStreamHeader( server, incoming ) ) {
         XP_S8 quitter;
@@ -3029,7 +3032,11 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 
     XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
     stream_close( incoming );
-    XP_ASSERT( !!accepted );
+    if ( !accepted ) {
+        XP_LOGF( "%s(): failure processing code %s", __func__, codeToStr(code) );
+        // XP_ASSERT( 0 );
+    }
+    XP_LOGF( "%s(%s) => %d", __func__, codeToStr(code), accepted );
     return accepted;
 } /* server_receiveMessage */
 #endif
