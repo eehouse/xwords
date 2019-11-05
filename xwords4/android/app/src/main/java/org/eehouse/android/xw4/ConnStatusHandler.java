@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,7 +19,6 @@
  */
 
 package org.eehouse.android.xw4;
-
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -156,7 +155,7 @@ public class ConnStatusHandler {
         return s_downOnMe && s_rect.contains( xx, yy );
     }
 
-    public static String getStatusText( Context context,
+    public static String getStatusText( Context context, XwJNI.GamePtr gamePtr,
                                         CommsConnTypeSet connTypes,
                                         CommsAddrRec addr )
     {
@@ -172,7 +171,7 @@ public class ConnStatusHandler {
                                                connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
                     sb.append( String.format( "\n\n*** %s ", typ.longName( context ) ) );
-                    String did = addDebugInfo( context, addr, typ );
+                    String did = addDebugInfo( context, gamePtr, addr, typ );
                     if ( null != did ) {
                         sb.append( did ).append( " " );
                     }
@@ -634,8 +633,8 @@ public class ConnStatusHandler {
         return result;
     }
 
-    private static String addDebugInfo( Context context, CommsAddrRec addr,
-                                        CommsConnType typ )
+    private static String addDebugInfo( Context context, XwJNI.GamePtr gamePtr,
+                                        CommsAddrRec addr, CommsConnType typ )
     {
         String result = null;
         if ( BuildConfig.DEBUG ) {
@@ -646,7 +645,10 @@ public class ConnStatusHandler {
                 result = String.format( "DevID: %d; host: %s; latest FCM: %s",
                                         DevID.getRelayDevIDInt(context),
                                         XWPrefs.getDefaultRelayHost(context),
-                                        fcmMsg );
+                                        fcmMsg )
+                    + "\n"
+                    + XwJNI.comms_getStats( gamePtr );
+
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();

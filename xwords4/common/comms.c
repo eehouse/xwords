@@ -2601,7 +2601,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last message received: %d\n", 
+                     (XP_UCHAR*)"Last msg received: %d\n", 
                      rec->lastMsgRcd );
         stream_catString( stream, buf );
     }

@@ -655,7 +655,7 @@ public class DelegateBase implements DlgClickNotify,
         final GameSummary summary = GameUtils.getSummary( context, gamePtr.getRowid(), 1 );
         if ( null != summary ) {
             final String msg = ConnStatusHandler
-                .getStatusText( context, summary.conTypes, addr );
+                .getStatusText( context, gamePtr, summary.conTypes, addr );
 
             post( new Runnable() {
                     @Override
