@@ -32,7 +32,7 @@ LANGINFO: UTF-8 and produces dictionaries that should work on
 LANGINFO: Unicode-aware versions of Crosswords. </p>
 
 # High bit means "official".  Next 7 bits are an enum where
-# Slovak==0x31.  Low byte is padding.
+# Slovak==0x13.  Low byte is padding.
 XLOC_HEADER:0x9300
 
 #COUNT     VAL     FACE
