@@ -994,4 +994,12 @@
     <string name="title_enable_stallnotify">Vis merknad for stagnert nettverk</string>
     <string name="summary_enable_stallnotify">Merknad når Android er treg med å behandle utgående invitasjoner og trekk</string>
     <string name="notify_stall_title">Meldingsforsendelse har stagnert</string>
+    <string name="notify_stall_body_fmt">Kunne ikke sende utgående meldinger i løpet av %1$d sekunder.
+\n
+\nHvis dette skjer igjen, send en e-post til utvikleren inneholdende logger og info om din enhet.
+\n
+\nDenne meldingen vil vises toppen én gang hvert %2$d minutt.</string>
+    <string name="relay_poll_name_no_fcm">Kun prøv: Ingen FCM-meldinger</string>
+    <string name="relay_poll_name_no_polling">Kun FCM: Ingen prøving</string>
+    <string name="relay_poll_name_both">Forvalg: Miks prøving og FCM</string>
 </resources>
