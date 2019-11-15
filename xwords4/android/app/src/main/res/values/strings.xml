@@ -2379,22 +2379,11 @@
     <string name="summary_enable_stallnotify">Notify when Android\'s
   slow to process outgoing invitations and moves</string>
     <string name="notify_stall_title">Message sending is stalled</string>
-    <string name="notify_stall_body_fmt">Though it normally takes less
-  than a second, Android has been unable to process CrossWords\'
-  outbound messages for more than %1$d seconds. This might be because
-  your device is especially busy, or because CrossWords hasn\'t run in
-  the foreground for a while.
-
-  \n\n
-
-  If the problem persists (i.e. you see this frequently), please
-  consider emailing me with information about your device so I can try
-  to reproduce and fix it.
-
-  \n\n
-
-  You will see this message at most once every %2$d minutes.
-  </string>
+    <string name="notify_stall_body_fmt">Could not send outbound messages for %1$d seconds.
+\n
+\nIf it happens again, e-mail the developer logs and info about your device.
+\n
+\nThis message will be seen at most once every %2$d minutes.</string>
     <string name="sms_banned_ok_only">The Google Play version of CrossWords no longer supports invitations or play via data SMS.</string>
     <string name="button_more_info">Read more</string>
     <string name="banned_nbs_perms">This game is set up to communicate via data SMS, but apps from the Google Play Store are no longer allowed to do so (with rare exceptions). You can still open the game, but it may not be able to send or receive moves.
