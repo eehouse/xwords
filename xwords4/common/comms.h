@@ -237,6 +237,9 @@ void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
 
 XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, CommsConnType filter, XP_Bool force );
+
+typedef void (*PendingMsgProc)( void* closure, XP_U8* msg, XP_U16 len, MsgID msgID );
+void comms_getPending( CommsCtxt* comms, PendingMsgProc proc, void* closure );
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 
 #ifdef XWFEATURE_COMMSACK
