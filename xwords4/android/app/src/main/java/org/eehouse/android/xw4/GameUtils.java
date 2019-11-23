@@ -626,6 +626,14 @@ public class GameUtils {
         if ( null == addrSet ) {
             addrSet = XWPrefs.getAddrTypes( context );
         }
+
+        // Silently add this to any networked game if our device supports
+        // it. comms is unhappy if we later pass in a message using an address
+        // type the game doesn't have in its set.
+        if ( NFCUtils.nfcAvail( context )[0] ) {
+            addrSet.add( CommsConnType.COMMS_CONN_NFC );
+        }
+
         CommsAddrRec addr = new CommsAddrRec( addrSet );
         addr.populate( context );
         int forceChannel = 0;

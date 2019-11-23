@@ -429,6 +429,15 @@ makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
     return jarray;
 }
 
+jobjectArray
+makeByteArrayArray( JNIEnv *env, int siz )
+{
+    jclass clas = (*env)->FindClass( env, "[B" );
+    jobjectArray result = (*env)->NewObjectArray( env, siz, clas, NULL );
+    deleteLocalRef( env, clas );
+    return result;
+}
+
 jstring
 streamToJString( JNIEnv *env, XWStreamCtxt* stream )
 {
@@ -509,6 +518,8 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
             break;
         case COMMS_CONN_P2P:
             setString( env, jaddr, "p2p_addr", addr->u.p2p.mac_addr );
+            break;
+        case COMMS_CONN_NFC:
             break;
         default:
             XP_ASSERT(0);
@@ -600,6 +611,8 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
         case COMMS_CONN_P2P:
             getString( env, jaddr, "p2p_addr", addr->u.p2p.mac_addr,
                        VSIZE(addr->u.p2p.mac_addr) );
+            break;
+        case COMMS_CONN_NFC:
             break;
         default:
             XP_ASSERT(0);

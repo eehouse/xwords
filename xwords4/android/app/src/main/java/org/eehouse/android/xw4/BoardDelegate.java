@@ -1513,11 +1513,17 @@ public class BoardDelegate extends DelegateBase
     @Override
     public String makeNFCMessage()
     {
+        Log.d( TAG, "makeNFCMessage(): m_mySIS.nMissing: %d", m_mySIS.nMissing );
         String data = null;
-        if ( 0 < m_mySIS.nMissing ) {  // Isn't there a better test??
+        if ( 0 < m_mySIS.nMissing // Isn't there a better test??
+             && DeviceRole.SERVER_ISSERVER == m_gi.serverRole ) {
+            Log.d( TAG, "makeNFCMessage(): invite case" );
             NetLaunchInfo nli = new NetLaunchInfo( m_gi );
             Assert.assertTrue( 0 <= m_nGuestDevs );
             nli.forceChannel = 1 + m_nGuestDevs;
+
+            Assert.assertTrue( m_connTypes.contains( CommsConnType.COMMS_CONN_NFC ) );
+
             for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
                   iter.hasNext(); ) {
                 CommsConnType typ = iter.next();
@@ -1537,16 +1543,27 @@ public class BoardDelegate extends DelegateBase
                 case COMMS_CONN_P2P:
                     nli.addP2PInfo( m_activity );
                     break;
+                case COMMS_CONN_NFC:
+                    nli.addNFCInfo();
+                    break;
                 default:
                     Log.w( TAG, "Not doing NFC join for conn type %s",
                            typ.toString() );
                 }
             }
             data = nli.makeLaunchJSON();
+            if ( null != data ) {
+                recordInviteSent( InviteMeans.NFC, null );
+            }
+        } else if ( BuildConfig.MOVE_VIA_NFC ) {
+            Log.d( TAG, "makeNFCMessage(): move case" );
+            byte[][] msgs = XwJNI.comms_getPending( m_jniGamePtr );
+            data = NFCUtils.makeMsgsJSON( m_gi.gameID, msgs );
+        } else {
+            Log.d( TAG, "makeNFCMessage(): other (bad!!) case" );
+            Assert.assertFalse( BuildConfig.DEBUG );
         }
-        if ( null != data ) {
-            recordInviteSent( InviteMeans.NFC, null );
-        }
+        Log.d( TAG, "makeNFCMessage() => %s", data );
         return data;
     }
 

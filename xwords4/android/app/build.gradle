@@ -73,6 +73,7 @@ android {
             buildConfigField "boolean", "UDP_ENABLED", "true"
             buildConfigField "boolean", "REPORT_LOCKS", "false"
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
+            buildConfigField "boolean", "MOVE_VIA_NFC", "false"
         }
 
         xw4NoSMS {
@@ -110,6 +111,7 @@ android {
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
             buildConfigField "int", "VARIANT_CODE", "3"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
+            buildConfigField "boolean", "MOVE_VIA_NFC", "true"
         }
 
         xw4dNoSMS {
@@ -123,6 +125,7 @@ android {
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug NoSMS\""
             buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
+            buildConfigField "boolean", "MOVE_VIA_NFC", "true"
         }
 
         xw4SMS {

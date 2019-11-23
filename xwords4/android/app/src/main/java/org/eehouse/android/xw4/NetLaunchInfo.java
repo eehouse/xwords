@@ -608,6 +608,11 @@ public class NetLaunchInfo implements Serializable {
         m_addrs.add( CommsConnType.COMMS_CONN_P2P );
     }
 
+    public void addNFCInfo()
+    {
+        m_addrs.add( CommsConnType.COMMS_CONN_NFC );
+    }
+
     public boolean isValid()
     {
         calcValid();            // this isn't always called. Likely should

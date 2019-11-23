@@ -2342,7 +2342,7 @@ public class GamesListDelegate extends ListDelegateBase
                 makeOkOnlyBuilder( msg );
             if ( intent.getBooleanExtra( WITH_EMAIL, false ) ) {
                 builder.setActionPair( Action.SEND_EMAIL,
-                                        R.string.board_menu_file_email );
+                                       R.string.board_menu_file_email );
             }
             builder.show();
             handled = true;
@@ -2359,6 +2359,8 @@ public class GamesListDelegate extends ListDelegateBase
             if ( null != nli && nli.isValid() ) {
                 startNewNetGame( nli );
                 result = true;
+            } else {
+                NFCUtils.receiveMsgs( m_activity, data );
             }
         }
         return result;

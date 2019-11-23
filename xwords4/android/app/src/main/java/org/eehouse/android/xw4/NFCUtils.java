@@ -33,12 +33,21 @@ import android.nfc.NfcManager;
 import android.os.Build;
 import android.os.Parcelable;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONException;
+
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class NFCUtils {
+    private static final String TAG = NFCUtils.class.getSimpleName();
 
     private static final String NFC_TO_SELF_ACTION = "org.eehouse.nfc_to_self";
     private static final String NFC_TO_SELF_DATA = "nfc_data";
+
+    private static final String MSGS = "MSGS";
+    private static final String GAMEID = "GAMEID";
 
     public interface NFCActor {
         String makeNFCMessage();
@@ -171,6 +180,106 @@ public class NFCUtils {
         NfcManager manager =
             (NfcManager)context.getSystemService( Context.NFC_SERVICE );
         return manager.getDefaultAdapter();
+    }
+
+    static String makeMsgsJSON( int gameID, byte[][] msgs )
+    {
+        String result = null;
+
+        JSONArray arr = new JSONArray();
+        for ( byte[] msg : msgs ) {
+            arr.put( Utils.base64Encode( msg ) );
+        }
+
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put( MSGS, arr );
+            obj.put( GAMEID, gameID );
+
+            result = obj.toString();
+        } catch ( JSONException ex ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
+        }
+        return result;
+    }
+
+    static boolean receiveMsgs( Context context, String data )
+    {
+        Log.d( TAG, "receiveMsgs()" );
+        int gameID[] = {0};
+        byte[][] msgs = msgsFrom( data, gameID );
+        boolean success = null != msgs && 0 < msgs.length;
+        if ( success ) {
+            NFCServiceHelper helper = new NFCServiceHelper( context );
+            long[] rowids = DBUtils.getRowIDsFor( context, gameID[0] );
+            for ( long rowid : rowids ) {
+                NFCMsgSink sink = new NFCMsgSink( context, rowid );
+                for ( byte[] msg : msgs ) {
+                    helper.receiveMessage( rowid, sink, msg );
+                }
+            }
+        }
+        return success;
+    }
+
+    private static class NFCServiceHelper extends XWServiceHelper {
+        private CommsAddrRec mAddr
+            = new CommsAddrRec( CommsAddrRec.CommsConnType.COMMS_CONN_NFC );
+
+        NFCServiceHelper( Context context )
+        {
+            super( context );
+        }
+
+        @Override
+        protected MultiMsgSink getSink( long rowid )
+        {
+            Context context = getContext();
+            return new NFCMsgSink( context, rowid );
+        }
+
+        @Override
+        void postNotification( String device, int gameID, long rowid )
+        {
+            Context context = getContext();
+            String body = LocUtils.getString( context, R.string.new_relay_body );
+            GameUtils.postInvitedNotification( context, gameID, body, rowid );
+        }
+
+        private void receiveMessage( long rowid, NFCMsgSink sink, byte[] msg )
+        {
+            Log.d( TAG, "receiveMessage()" );
+            receiveMessage( rowid, sink, msg, mAddr );
+        }
+    }
+
+    private static class NFCMsgSink extends MultiMsgSink {
+        NFCMsgSink( Context context, long rowid )
+        {
+            super( context, rowid );
+        }
+    }
+
+    private static byte[][] msgsFrom( String json, /*out*/ int[] gameID )
+    {
+        byte[][] result = null;
+        try {
+            JSONObject obj = new JSONObject( json );
+            gameID[0] = obj.getInt( GAMEID );
+            JSONArray arr = obj.getJSONArray( MSGS );
+            if ( null != arr ) {
+                result = new byte[arr.length()][];
+                for ( int ii = 0; ii < arr.length(); ++ii ) {
+                    String str = arr.getString( ii );
+                    result[ii] = Utils.base64Decode( str );
+                }
+            }
+        } catch ( JSONException ex ) {
+            Assert.assertFalse( BuildConfig.DEBUG );
+            result = null;
+        }
+        Log.d( TAG, "msgsFrom() => %s", (Object)result );
+        return result;
     }
 
 }

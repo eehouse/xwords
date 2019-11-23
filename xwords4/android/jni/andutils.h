@@ -73,6 +73,7 @@ void getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool d
 void setIntInArray( JNIEnv* env, jintArray arr, int index, int val );
 
 jbyteArray makeByteArray( JNIEnv* env, int size, const jbyte* vals );
+jobjectArray makeByteArrayArray( JNIEnv *env, int siz );
 
 jbooleanArray makeBooleanArray( JNIEnv* env, int size, const jboolean* vals );
 void setBoolArray( JNIEnv* env, jbooleanArray jarr, int count, 

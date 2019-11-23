@@ -614,6 +614,8 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         stringFromStreamHere( stream, addrP->u.p2p.mac_addr,
                               sizeof(addrP->u.p2p.mac_addr) );
         break;
+    case COMMS_CONN_NFC:
+        break;
     default:
         /* shut up, compiler */
         break;
@@ -855,6 +857,8 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
         break;
     case COMMS_CONN_P2P:
         stringToStream( stream, addrP->u.p2p.mac_addr );
+        break;
+    case COMMS_CONN_NFC:
         break;
     default:
         XP_ASSERT(0);
@@ -1964,6 +1968,8 @@ preProcess( CommsCtxt* comms, const CommsAddrRec* useAddr,
 #endif
     case COMMS_CONN_P2P:
         break;    /* nothing to grab?? */
+    case COMMS_CONN_NFC:
+        break;    /* nothing to grab?? */
     default:
         XP_ASSERT(0);
         break;
@@ -2255,15 +2261,15 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 #endif
 
     XP_Bool messageValid = XP_FALSE;
-    XP_LOGF( TAGFMT(retAddr.typ=%s), TAGPRMS, 
-             ConnType2Str(addr_getType( retAddr ) ) );
-    if ( comms_getAddrDisabled( comms, addr_getType(retAddr), XP_FALSE ) ) {
+    CommsConnType addrType = addr_getType( retAddr );
+    XP_LOGF( TAGFMT(retAddr.typ=%s), TAGPRMS, ConnType2Str(addrType ) );
+    if ( comms_getAddrDisabled( comms, addrType, XP_FALSE ) ) {
         XP_LOGF( "%s: dropping message because %s disabled", __func__,
-                 ConnType2Str( addr_getType( retAddr ) ) );
+                 ConnType2Str( addrType ) );
     } else if (0 == (comms->addr._conTypes & retAddr->_conTypes)) {
         /* we don't expect messages with that address type; drop it */
         XP_LOGF( "%s: not expecting %s messages", __func__, 
-                 ConnType2Str( addr_getType( retAddr ) ) );
+                 ConnType2Str( addrType ) );
     } else {
         XWHostID senderID = 0;      /* unset; default for non-relay cases */
         XP_Bool usingRelay = XP_FALSE;
@@ -2601,6 +2607,7 @@ ConnType2Str( CommsConnType typ )
         CASESTR( COMMS_CONN_SMS );
         CASESTR( COMMS_CONN_P2P );
         CASESTR( COMMS_CONN_NTYPES );
+        CASESTR( COMMS_CONN_NFC );
     default:
         XP_ASSERT(0);
     }
@@ -2750,6 +2757,8 @@ logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
                 stream_catString( stream, "mac addr: " );
                 stream_catString( stream, addr->u.p2p.mac_addr );
                 break;
+            case COMMS_CONN_NFC:
+                break;
             default:
                 XP_ASSERT(0);
             }
@@ -2830,6 +2839,8 @@ augmentChannelAddr( CommsCtxt* XP_UNUSED_DBG(comms), AddressRecord * const rec,
                 siz = sizeof(rec->addr.u.bt);
                 break;
 #endif
+            case COMMS_CONN_NFC:
+                break;
             default:
                 XP_ASSERT(0);
                 break;

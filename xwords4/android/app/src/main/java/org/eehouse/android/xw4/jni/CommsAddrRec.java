@@ -28,6 +28,7 @@ import org.eehouse.android.xw4.BTService;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.Log;
+import org.eehouse.android.xw4.NFCUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.SMSPhoneInfo;
 import org.eehouse.android.xw4.Utils;
@@ -52,7 +53,20 @@ public class CommsAddrRec {
         COMMS_CONN_RELAY,
         COMMS_CONN_BT,
         COMMS_CONN_SMS,
-        COMMS_CONN_P2P;
+        COMMS_CONN_P2P,
+        COMMS_CONN_NFC(false);
+
+        private boolean mIsSelectable = true;
+
+        private CommsConnType(boolean isSelectable) {
+            mIsSelectable = isSelectable;
+        }
+
+        private CommsConnType() {
+            this(true);
+        }
+
+        public boolean isSelectable() { return mIsSelectable; }
 
         public String longName( Context context )
         {
@@ -139,6 +153,9 @@ public class CommsAddrRec {
             }
             if ( Utils.isGSMPhone( context ) ) {
                 supported.add( CommsConnType.COMMS_CONN_SMS );
+            }
+            if ( NFCUtils.nfcAvail( context )[0] ) {
+                supported.add( CommsConnType.COMMS_CONN_NFC );
             }
             return supported;
         }

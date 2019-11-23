@@ -86,6 +86,9 @@ public class ConnViaViewLayout extends LinearLayout {
         List<CommsConnType> supported = CommsConnTypeSet.getSupported( context );
 
         for ( CommsConnType typ : supported ) {
+            if ( !typ.isSelectable() ) {
+                continue;
+            }
             CheckBox box = new CheckBox( context );
             box.setText( typ.longName( context ) );
             box.setChecked( m_curSet.contains( typ ) );

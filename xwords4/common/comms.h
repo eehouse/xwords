@@ -42,6 +42,7 @@ typedef enum {
     ,COMMS_CONN_BT
     ,COMMS_CONN_SMS
     ,COMMS_CONN_P2P             /* a.k.a. Wifi direct */
+    ,COMMS_CONN_NFC
 
     ,COMMS_CONN_NTYPES
 } CommsConnType;
