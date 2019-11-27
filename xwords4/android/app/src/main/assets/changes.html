@@ -13,10 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>CrossWords 4.4.149 release</h2>
+  <h2>CrossWords 4.4.150 release</h2>
 
-  <p>This release adds some translations, fixes minor bugs, and adds
-      minor improvements. And congratulates Nantina and Michalis.</p>
+  <p>This release removes Invite-via-NFC on Android 10 (since it
+      doesn't work there) and fixes a few other annoyances.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,12 +26,10 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Add 'X' to right of some fields that clears contents</li>
-      <li>Turn on SMS-Data changes now that everybody should have
-          upgraded (does not apply to Google Play builds)</li>
-      <li>Fix crash browsing empty wordlists (e.g. Greek)</li>
-      <li>Add translations for Catalan, Chinese, Japanese, Norwegian,
-          Polish and Portuguese (from Weblate)</p>
+      <li>Don't offer NFC on Android 10, where it's broken</li>
+      <li>Improve board layout on taller, narrower screens</li>
+      <li>Fix occasional stall sending chat messages</li>
+      <li>Fix another (very rare!) type of stall</li>
   </ul>
 
   <p>(The full changelog
@@ -39,6 +37,7 @@
 
   <h3>Next up</h3>
   <ul>
+      <li>Look for a workaround to allow NFC on Android 10</li>
       <li>Support duplicate-style play (popular in France)</li>
       <li>Improve play-by-data-sms workaround
           using <a href="https://github.com/eehouse/nbsproxy">NBSProxy</a></li>
