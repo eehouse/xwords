@@ -2258,10 +2258,10 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     state->comms = comms;
     XP_ASSERT( !comms->processingMsg );
     comms->processingMsg = XP_TRUE;
+    CommsConnType addrType = addr_getType( retAddr );
 #endif
 
     XP_Bool messageValid = XP_FALSE;
-    CommsConnType addrType = addr_getType( retAddr );
     XP_LOGF( TAGFMT(retAddr.typ=%s), TAGPRMS, ConnType2Str(addrType ) );
     if ( comms_getAddrDisabled( comms, addrType, XP_FALSE ) ) {
         XP_LOGF( "%s: dropping message because %s disabled", __func__,
