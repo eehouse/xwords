@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, psycopg2, json, urllib, urllib2
+import argparse, json, psycopg2, sys, urllib, urllib2
 from oauth2client.service_account import ServiceAccountCredentials
 
 # I'm not checking my key in...
@@ -53,19 +53,16 @@ def sendMsg( devid, msg ):
                 break
 
 def main():
-    to = None
-    msg = sys.argv[1]
-    if msg == '--to':
-        to = sys.argv[2]
-        msg = sys.argv[3]
-    elif 2 < len(sys.argv):
-        usage()
-    if not to in mykey2.devids.keys():
-        print 'Unknown --to param;', to, 'not in', ','.join(mykey2.devids.keys())
-        usage()
-    if not to: usage()
-    devid = mykey2.devids[to]
-    print 'sending: "%s" to' % msg, to
+    parser = argparse.ArgumentParser()
+    parser.add_argument("msg")
+    parser.add_argument('--dest-devid', dest = 'DEVID', type = str, required = True,
+                        help = 'fcm devid of target device')
+
+    args = parser.parse_args()
+    devid = args.DEVID
+    msg = args.msg
+
+    print 'sending: "%s" to' % msg, devid
     sendMsg( devid, msg )
 
 ##############################################################################
