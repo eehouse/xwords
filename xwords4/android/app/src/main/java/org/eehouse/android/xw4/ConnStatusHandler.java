@@ -170,6 +170,10 @@ public class ConnStatusHandler {
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
+                    if ( ! typ.isSelectable() ) {
+                        continue;
+                    }
+
                     sb.append( String.format( "\n\n*** %s ", typ.longName( context ) ) );
                     String did = addDebugInfo( context, gamePtr, addr, typ );
                     if ( null != did ) {
