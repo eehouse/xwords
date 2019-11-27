@@ -1769,8 +1769,10 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                      __func__ );
         }
 
-        XP_LOGF( "%s: set hostID: %x (was %x)", __func__, srcID, 
-                 comms->rr.myHostID );
+        if ( srcID != comms->rr.myHostID ) {
+            XP_LOGF( "%s: set hostID: %x (was %x)", __func__, srcID,
+                     comms->rr.myHostID );
+        }
         comms->rr.myHostID = srcID;
 
 #ifdef DEBUG

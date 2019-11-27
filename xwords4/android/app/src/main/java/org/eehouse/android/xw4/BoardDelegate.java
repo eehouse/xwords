@@ -2373,10 +2373,11 @@ public class BoardDelegate extends DelegateBase
             case COMMS_CONN_RELAY:
             case COMMS_CONN_SMS:
             case COMMS_CONN_P2P:
+            case COMMS_CONN_NFC:
                 break;
             default:
                 Log.w( TAG, "tickle: unexpected type %s", typ.toString() );
-                Assert.fail();
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
 
