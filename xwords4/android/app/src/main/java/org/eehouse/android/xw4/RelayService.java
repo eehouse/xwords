@@ -172,6 +172,7 @@ public class RelayService extends XWJIService
 
     public static void fcmConfirmed( Context context, boolean working )
     {
+        Log.d( TAG, "fcmConfirmed(working=%b)", working );
         long newVal = working ? System.currentTimeMillis() : 0L;
         if ( (s_lastFCM == 0) != working ) {
             Log.i( TAG, "fcmConfirmed(): changing s_lastFCM to %d",
@@ -296,7 +297,7 @@ public class RelayService extends XWJIService
         return result;
     }
 
-    public static void devIDChanged()
+    private static void devIDChanged()
     {
         s_registered = false;
     }
@@ -1052,8 +1053,8 @@ public class RelayService extends XWJIService
                     writeVLIString( out, devid );
                 }
 
-                Log.d( TAG, "registering devID \"%s\" (type=%s)", devid,
-                       typ.toString() );
+                Log.d( TAG, "registerWithRelay(): registering devID \"%s\" (type=%s)",
+                       devid, typ.toString() );
 
                 out.writeShort( BuildConfig.CLIENT_VERS_RELAY );
                 writeVLIString( out, BuildConfig.GIT_REV );

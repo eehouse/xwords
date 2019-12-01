@@ -410,7 +410,7 @@
 
       <CheckBoxPreference android:key="@string/key_show_fcm"
                           android:title="@string/show_fcm_title"
-                          android:defaultValue="false"
+                          android:defaultValue="@bool/DEBUG"
                           />
       <org.eehouse.android.xw4.XWEditTextPreference 
           android:key="@string/key_relay_host"

@@ -92,7 +92,7 @@ public class XWPrefs {
 
     public static boolean getToastFCM( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_show_fcm, false );
+        return getPrefsBoolean( context, R.string.key_show_fcm, BuildConfig.DEBUG );
     }
 
     public static boolean getSMSToSelfEnabled( Context context )
