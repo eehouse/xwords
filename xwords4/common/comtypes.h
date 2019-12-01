@@ -310,6 +310,8 @@ typedef struct _PlayerDicts {
 #define LOG_RETURNF(fmt, ...)  XP_LOGF( "%s => " fmt, __func__, __VA_ARGS__ )
 #define LOG_RETURN_VOID() LOG_RETURNF("%s","void")
 #define XP_LOGLOC() XP_LOGF( "%s(), line %d", __func__, __LINE__ )
+#define LOG_POS(strm) XP_LOGF( "%s(); line %d; read_pos: %X", __func__, __LINE__, \
+                               stream_getPos((strm), POS_READ) )
 
 #ifndef XP_USE
 # define XP_USE(v) v=v

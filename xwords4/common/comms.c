@@ -737,10 +737,15 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         prevsQueueNext = &msg->next;
     }
 
+    /* FIX_NEXT_VERSION_CHANGE: Fix this next time CUR_STREAM_VERS is
+       changed!! Don't write the 0th enum's case as it means NOTHING, and only
+       write those for which the address type is set. I think. */
     if ( STREAM_VERS_DISABLEDS <= version ) {
-        for ( int typ = 0; typ < VSIZE(comms->disableds); ++typ ) {
-            for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
-                comms->disableds[typ][ii] = 0 != stream_getBits( stream, 1 );
+        for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
+            if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->addr, typ ) ) {
+                for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
+                    comms->disableds[typ][ii] = 0 != stream_getBits( stream, 1 );
+                }
             }
         }
     }
@@ -940,9 +945,12 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
         stream_putBytes( stream, msg->msg, msg->len );
     }
 
-    for ( int typ = 0; typ < VSIZE(comms->disableds); ++typ ) {
-        for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
-            stream_putBits( stream, 1, comms->disableds[typ][ii] ? 1 : 0 );
+    /* FIX_NEXT_VERSION_CHANGE: Fix this next time CUR_STREAM_VERS is changed!! */
+    for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
+        if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->addr, typ ) ) {
+            for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
+                stream_putBits( stream, 1, comms->disableds[typ][ii] ? 1 : 0 );
+            }
         }
     }
 
@@ -2893,6 +2901,7 @@ XP_Bool
 types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state )
 {
     CommsConnType typ = *state;
+    XP_ASSERT( (conTypes & 0xFF) == conTypes );
     XP_ASSERT( typ < COMMS_CONN_NTYPES );
     while ( ++typ < COMMS_CONN_NTYPES ) {
         *state = typ;
