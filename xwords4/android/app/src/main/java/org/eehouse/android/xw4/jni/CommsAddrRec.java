@@ -197,10 +197,13 @@ public class CommsAddrRec {
             if ( 0 == types.length ) {
                 result = LocUtils.getString( context, R.string.note_none );
             } else {
-                String[] strs = new String[types.length];
-                for ( int ii = 0; ii < types.length; ++ii ) {
-                    CommsConnType typ = types[ii];
-                    strs[ii] = longVersion? typ.longName( context ) : typ.shortName();
+                List<String> strs = new ArrayList<String>();
+                for ( CommsConnType typ : types ) {
+                    if ( typ.isSelectable() ) {
+                        String str = longVersion?
+                            typ.longName( context ) : typ.shortName();
+                        strs.add( str );
+                    }
                 }
                 String sep = longVersion ? " + " : ",";
                 result = TextUtils.join( sep, strs );
