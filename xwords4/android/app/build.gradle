@@ -75,6 +75,7 @@ android {
             buildConfigField "boolean", "REPORT_LOCKS", "false"
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
             buildConfigField "boolean", "MOVE_VIA_NFC", "false"
+            buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
         }
 
         xw4NoSMS {
