@@ -41,6 +41,8 @@ public interface TransportProcs {
 
     void relayConnd( String room, int devOrder, boolean allHere, int nMissing );
 
+    void countChanged( int newCount );
+
     public static enum XWRELAY_ERROR { NONE
             ,OLDFLAGS
             ,BADPROTO
@@ -66,5 +68,6 @@ public interface TransportProcs {
         public void tpmRelayConnd( String room, int devOrder, boolean allHere,
                                    int nMissing );
         public void tpmRelayErrorProc( XWRELAY_ERROR relayErr );
+        public void tpmCountChanged( int newCount );
     }
 }

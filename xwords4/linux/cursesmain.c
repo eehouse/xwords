@@ -1872,6 +1872,12 @@ smsMsgReceivedCurses( void* closure, const CommsAddrRec* from,
     /* } */
 }
 
+static void
+curses_countChanged( void* XP_UNUSED(closure), XP_U16 newCount )
+{
+    XP_LOGF( "%s(newCount=%d)", __func__, newCount );
+}
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
@@ -1965,6 +1971,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #ifdef RELAY_VIA_HTTP
         .requestJoin = relay_requestJoin_curses,
 #endif
+        .countChanged = curses_countChanged,
 
 # ifdef COMMS_XPORT_FLAGSPROC
         .getFlags = curses_getFlags,

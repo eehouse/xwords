@@ -1490,6 +1490,13 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    @Override
+    public void tpmCountChanged( int newCount )
+    {
+        Log.d( TAG, "tpmCountChanged(%d)", newCount );
+        ConnStatusHandler.updateMoveCount( m_activity, newCount );
+    }
+
     //////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////

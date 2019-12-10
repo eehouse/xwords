@@ -146,6 +146,19 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len, const XP_UCHAR* msgNo,
 }
 
 static void
+and_xport_countChanged( void* closure, XP_U16 count )
+{
+    XP_LOGF( "%s(count=%d)", __func__, count );
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    if ( NULL != aprocs && NULL != aprocs->jxport ) {
+        JNIEnv* env = ENVFORME( aprocs->ti );
+        const char* sig = "(I)V";
+        jmethodID mid = getMethodID( env, aprocs->jxport, "countChanged", sig );
+        (*env)->CallVoidMethod( env, aprocs->jxport, mid, count );
+    }
+}
+
+static void
 and_xport_relayError( void* closure, XWREASON relayErr )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
@@ -185,6 +198,7 @@ makeXportProcs( MPFORMAL EnvThreadInfo* ti, jobject jxport )
     aprocs->tp.rconnd = and_xport_relayConnd;
     aprocs->tp.rerror = and_xport_relayError;
     aprocs->tp.sendNoConn = and_xport_sendNoConn;
+    aprocs->tp.countChanged = and_xport_countChanged;
     aprocs->tp.closure = aprocs;
 
     return (TransportProcs*)aprocs;

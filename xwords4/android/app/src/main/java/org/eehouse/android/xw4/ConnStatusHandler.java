@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -61,8 +62,14 @@ public class ConnStatusHandler {
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
     private static ConnStatusCBacks s_cbacks;
-    private static Paint s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
+    private static Paint s_fillPaint;
+    static {
+        s_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
+        s_fillPaint.setTextAlign( Paint.Align.CENTER );
+    }
+
     private static boolean[] s_showSuccesses = { false, false };
+    private static int s_moveCount = 0;
 
     private static class SuccessRecord implements java.io.Serializable {
         public long lastSuccess;
@@ -122,6 +129,7 @@ public class ConnStatusHandler {
     public static void setRect( int left, int top, int right, int bottom )
     {
         s_rect = new Rect( left, top, right, bottom );
+        s_fillPaint.setTextSize( s_rect.height()/2 );
     }
 
     public static void clearRect()
@@ -330,6 +338,14 @@ public class ConnStatusHandler {
         }
     }
 
+    public static void updateMoveCount( Context context, int newCount )
+    {
+        if ( BuildConfig.DEBUG ) {
+            s_moveCount = newCount;
+            invalidateParent();
+        }
+    }
+
     public static void updateStatus( Context context, ConnStatusCBacks cbacks,
                                      CommsConnType connType, boolean success )
     {
@@ -436,6 +452,14 @@ public class ConnStatusHandler {
                                    || 1 >= Math.abs(scratchR.width()
                                                     - scratchR.height()) );
                 drawIn( canvas, res, R.drawable.multigame__gen, scratchR );
+
+                if ( BuildConfig.DEBUG && 0 < s_moveCount ) {
+                    String str = String.format( "%d", s_moveCount );
+                    s_fillPaint.setColor( Color.BLACK );
+                    canvas.drawText( str, s_rect.left + (s_rect.width() / 2),
+                                     s_rect.top + (s_rect.height()*2/3),
+                                     s_fillPaint );
+                }
             }
         }
     }
@@ -621,6 +645,9 @@ public class ConnStatusHandler {
             break;
         case COMMS_CONN_P2P:
             result = WiDirService.connecting();
+            break;
+        case COMMS_CONN_NFC:
+            result = NFCUtils.nfcAvail( context )[1];
             break;
         default:
             Log.w( TAG, "connTypeEnabled: %s not handled", connType.toString() );

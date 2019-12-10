@@ -56,24 +56,24 @@ public class MultiMsgSink implements TransportProcs {
 
     // These will be overridden by e.g. BTService which for sendViaBluetooth()
     // can just insert a message into its queue
-    public int sendViaRelay( byte[] buf, String msgID, int gameID )
+    int sendViaRelay( byte[] buf, String msgID, int gameID )
     {
         Assert.assertTrue( BuildConfig.UDP_ENABLED );
         return RelayService.sendPacket( m_context, getRowID(), buf, msgID );
     }
 
-    public int sendViaBluetooth( byte[] buf, String msgID, int gameID,
+    int sendViaBluetooth( byte[] buf, String msgID, int gameID,
                                  CommsAddrRec addr )
     {
         return BTService.sendPacket( m_context, buf, msgID, addr, gameID );
     }
 
-    public int sendViaSMS( byte[] buf, String msgID, int gameID, CommsAddrRec addr )
+    int sendViaSMS( byte[] buf, String msgID, int gameID, CommsAddrRec addr )
     {
         return NBSProto.sendPacket( m_context, addr.sms_phone, gameID, buf, msgID );
     }
 
-    public int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
+    int sendViaP2P( byte[] buf, int gameID, CommsAddrRec addr )
     {
         return WiDirService
             .sendPacket( m_context, addr.p2p_addr, gameID, buf );
@@ -106,6 +106,9 @@ public class MultiMsgSink implements TransportProcs {
         case COMMS_CONN_P2P:
             nSent = sendViaP2P( buf, gameID, addr );
             break;
+        case COMMS_CONN_NFC:
+            Log.d( TAG, "transportSend(): got for NFC" );
+            break;
         default:
             Assert.fail();
             break;
@@ -131,6 +134,12 @@ public class MultiMsgSink implements TransportProcs {
     public void relayConnd( String room, int devOrder, boolean allHere,
                             int nMissing )
     {
+    }
+
+    @Override
+    public void countChanged( int newCount )
+    {
+        Log.d( TAG, "countChanged(new=%d); dropping", newCount );
     }
 
     @Override

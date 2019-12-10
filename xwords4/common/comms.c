@@ -203,6 +203,7 @@ static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
 
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms, XP_Bool breakExisting );
+static void notifyQueueChanged( const CommsCtxt* comms );
 #if 0 < COMMS_VERSION
 static XP_U16 makeFlags( const CommsCtxt* comms );
 #endif
@@ -750,6 +751,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         }
     }
 
+    notifyQueueChanged( comms );
+
     return comms;
 } /* comms_makeFromStream */
 
@@ -1244,6 +1247,13 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
     return result;
 } /* comms_send */
 
+static void
+notifyQueueChanged( const CommsCtxt* comms )
+{
+    XP_U16 count = comms->queueLen;
+    (*comms->procs.countChanged)( comms->procs.closure, count );
+}
+
 /* Add new message to the end of the list.  The list needs to be kept in order
  * by ascending msgIDs within each channel since if there's a resend that's
  * the order in which they need to be sent.
@@ -1272,6 +1282,7 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newElem )
 
     if ( newElem == asAdded ) {
         ++comms->queueLen;
+        notifyQueueChanged( comms );
     }
     XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
     return asAdded;
@@ -1388,6 +1399,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
                 elem = asAdded; /* for non-assert case */
             }
         }
+        notifyQueueChanged( comms );
     }
 
     XP_LOGF( "%s: queueLen now %d", __func__, comms->queueLen );

@@ -403,6 +403,8 @@ public class CommsAddrRec {
         case COMMS_CONN_P2P:
             p2p_addr = WiDirService.getMyMacAddress( context );
             break;
+        case COMMS_CONN_NFC:
+            break;
         default:
             Assert.fail();
         }
