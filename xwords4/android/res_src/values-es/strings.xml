@@ -1,2 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="button_new_group">Añadir grupo</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+    <string name="robot_name_fmt">%1$s (robot)</string>
+    <string name="missing_player">(estableciendo conexión…)</string>
+    <string name="summary_relay_conf_fmt">Configurando para entrar en la sala \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">Esperando jugadores en la sala \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Partida en curso en la sala \"%1$s\"</string>
+    <string name="summary_relay_gameover_fmt">Partida finalizada en la sala \"%1$s\"</string>
+    <string name="summary_invites_out">Jugadores invitados</string>
+    <string name="summary_invites_out_fmt">Jugadores invitados en la sala \"%1$s\"</string>
+    <string name="gameOver">Fin de la partida</string>
+    <plurals name="moves_fmt">
+        <item quantity="one">%1$d movimiento realizado</item>
+        <item quantity="other">%1$d movimientos realizados</item>
+    </plurals>
+    <string name="button_delete">Eliminar</string>
+    <string name="button_reset">Reiniciar</string>
+    <string name="gamel_menu_dicts">Listas de palabras…</string>
+    <string name="menu_prefs">Ajustes de la aplicación…</string>
+    <string name="gamel_menu_checkmoves">Comprobar si hay jugadas</string>
+    <string name="msgs_progress">Comprobando en el repetidor si hay movimientos, etc…</string>
+    <string name="no_games_to_refresh">No se han encontrado partidas conectadas a través del repetidor.</string>
+    <string name="board_menu_file_about">Acerca de CrossWords…</string>
+    <string name="list_item_config">Ajustes del juego…</string>
+    <string name="list_item_rename">Cambiar nombre…</string>
+    <string name="list_item_move">Mover al grupo…</string>
+    <string name="list_item_delete">Borrar partida</string>
+    <string name="list_item_reset">Reiniciar</string>
+    <string name="list_item_new_from">Crear nuevo desde</string>
+    <string name="list_item_copy">Copiar</string>
+    <string name="game_rename_title">Cambiar nombre de la partida</string>
+    <string name="rename_label">Cambiar nombre de la partida a:</string>
+    <string name="rename_label_caveat">Cambiar el nombre de esta partida (solo en este dispositivo) por:</string>
+    <plurals name="confirm_seldeletes_fmt">
+        <item quantity="one">¿Estás seguro de que quieres eliminar esta partida\? No podrás deshacer esta acción.</item>
+        <item quantity="other">¿Estás seguro de que quieres eliminar %1$d las siguientes partidas\? No podrás deshacer esta acción.</item>
+    </plurals>
+    <plurals name="confirm_reset_fmt">
+        <item quantity="one">¿Seguro que quieres reiniciar esta partida\?
+\n
+\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión).</item>
+        <item quantity="other">¿Seguro que quieres reiniciar las %1$d siguientes partidas\?
+\n
+\n(La opción de reiniciar borrará todos los movimientos y cualquier información de conexión).</item>
+    </plurals>
+    <string name="title_dicts_list">Listas de palabras de CrossWords</string>
+    <string name="download_more">Descargar más…</string>
+</resources>
