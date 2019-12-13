@@ -147,6 +147,8 @@ typedef void (*RelayRequestJoinProc)( void* closure, const XP_UCHAR* devID,
 # endif
 #endif
 
+typedef void (*MsgCountChange)( void* closure, XP_U16 msgCount );
+
 typedef enum {
     COMMS_XPORT_FLAGS_NONE = 0
     ,COMMS_XPORT_FLAGS_HASNOCONN = 1
@@ -174,6 +176,7 @@ typedef struct _TransportProcs {
 # ifdef RELAY_VIA_HTTP
     RelayRequestJoinProc requestJoin;
 # endif
+    MsgCountChange countChanged;
 #endif
     void* closure;
 } TransportProcs;

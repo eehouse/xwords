@@ -40,7 +40,6 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -155,7 +154,7 @@ public class NetLaunchInfo implements Serializable {
             String nliData = dis.readUTF();
             nli = NetLaunchInfo.makeFrom( context, nliData );
         } catch ( java.io.IOException ex ) {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Log.d( TAG, "not an nli" );
         }
         return nli;
     }
@@ -293,6 +292,8 @@ public class NetLaunchInfo implements Serializable {
                 break;
             case COMMS_CONN_P2P:
                 addP2PInfo( context );
+                break;
+            case COMMS_CONN_NFC:
                 break;
             default:
                 Assert.fail();
@@ -448,6 +449,8 @@ public class NetLaunchInfo implements Serializable {
             case COMMS_CONN_P2P:
                 result.setP2PParams( p2pMacAddress );
                 break;
+            case COMMS_CONN_NFC:
+                break;
             default:
                 Assert.fail();
                 break;
@@ -502,6 +505,9 @@ public class NetLaunchInfo implements Serializable {
             case COMMS_CONN_P2P:
                 p2pMacAddress = json.optString( P2P_MAC_KEY );
                 doAdd = !hasAddrs && null != p2pMacAddress;
+                break;
+            case COMMS_CONN_NFC:
+                doAdd = NFCUtils.nfcAvail( context )[0];
                 break;
             default:
                 doAdd = false;

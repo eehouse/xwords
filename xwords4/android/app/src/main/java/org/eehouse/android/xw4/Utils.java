@@ -270,7 +270,7 @@ public class Utils {
            though the docs say that param's ignored.
         */
         PendingIntent pi = null == intent ? null
-            : PendingIntent.getActivity( context, Utils.nextRandomInt(), intent,
+            : PendingIntent.getActivity( context, nextRandomInt(), intent,
                                          PendingIntent.FLAG_ONE_SHOT );
 
         int defaults = Notification.FLAG_AUTO_CANCEL;

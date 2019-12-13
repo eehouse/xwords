@@ -485,6 +485,15 @@ gtk_getFlags( void* closure )
 #endif
 
 static void
+countChanged_gtk( void* closure, XP_U16 newCount )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+    gchar buf[128];
+    snprintf( buf, VSIZE(buf), "pending count: %d", newCount );
+    gtk_label_set_text( GTK_LABEL(globals->countLabel), buf );
+}
+
+static void
 setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals ) 
 {
     procs->closure = globals;
@@ -503,6 +512,7 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
 # ifdef RELAY_VIA_HTTP
     procs->requestJoin = relay_requestJoin_gtk;
 # endif
+    procs->countChanged = countChanged_gtk;
 #endif
 }
 
@@ -2814,6 +2824,10 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     gtk_widget_show( hbox );
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox/* drawing_area */, TRUE, TRUE, 0);
+
+    GtkWidget* label = globals->countLabel = gtk_label_new( "" );
+    gtk_box_pack_start( GTK_BOX(vbox), label, TRUE, TRUE, 0);
+    gtk_widget_show( label );
 
     id = g_signal_connect( drawing_area, "configure-event",
                            G_CALLBACK(configure_event), globals );

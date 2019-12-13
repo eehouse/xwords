@@ -677,21 +677,27 @@ public class BTService extends XWJIService {
         if ( BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
             String btName = addr.bt_hostName;
             if ( null == s_namesToAddrs ) {
-                s_namesToAddrs = new HashMap<String, String>();
+                s_namesToAddrs = new HashMap<>();
             }
-            if ( ! s_namesToAddrs.containsKey( btName ) ) {
+
+            if ( s_namesToAddrs.containsKey( btName ) ) {
+                btAddr = s_namesToAddrs.get( btName );
+            } else {
+                btAddr = null;
+            }
+            if ( null == btAddr ) {
                 BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
                 if ( null != adapter ) {
-                    Set<BluetoothDevice> devs = adapter.getBondedDevices();
-                    Iterator<BluetoothDevice> iter = devs.iterator();
-                    while ( iter.hasNext() ) {
-                        BluetoothDevice dev = iter.next();
-                        s_namesToAddrs.put( dev.getName(), dev.getAddress() );
+                    for ( BluetoothDevice dev : adapter.getBondedDevices() ) {
+                        Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
+                        if ( btName.equals( dev.getName() ) ) {
+                            btAddr = dev.getAddress();
+                            s_namesToAddrs.put( btName, btAddr );
+                            break;
+                        }
                     }
                 }
             }
-
-            btAddr = s_namesToAddrs.get( btName );
         }
         return btAddr;
     }

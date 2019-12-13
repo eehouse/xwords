@@ -67,7 +67,7 @@ android {
     flavorDimensions "variant"//, "abi"
     productFlavors {
         all {
-            buildConfigField "String", "DB_NAME", "\"xwdb\"";
+            buildConfigField "String", "DB_NAME", "\"xwdb\""
             buildConfigField "String", "BUILD_INFO_NAME", "\"${BUILD_INFO_NAME}\""
             buildConfigField "boolean", "IS_TAGGED_BUILD", "${CURTAG}" == '' ? "false" : "true"
             resValue "string", "invite_prefix", "/and/"
@@ -75,6 +75,7 @@ android {
             buildConfigField "boolean", "REPORT_LOCKS", "false"
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
             buildConfigField "boolean", "MOVE_VIA_NFC", "false"
+            buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
         }
 
         xw4NoSMS {
@@ -256,7 +257,7 @@ android {
 }
 
 ext {
-    SUPPORT_LIB_VERSION = '27.1.1'
+    SUPPORT_LIB_VERSION = '28.0.0'
 }
 
 dependencies {
@@ -269,10 +270,10 @@ dependencies {
     // 2.6.8 is probably as far forward as I can go without upping my
     // min-supported SDK version
     xw4dImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
-        transitive = true;                                                    // rm-for-fdroid
+        transitive = true                                                     // rm-for-fdroid
     }                                                                         // rm-for-fdroid
     xw4dNoSMSImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
-        transitive = true;                                                         // rm-for-fdroid
+        transitive = true                                                          // rm-for-fdroid
     }                                                                              // rm-for-fdroid
 
     implementation 'com.google.firebase:firebase-messaging:17.3.4' // rm-for-fdroid
@@ -319,7 +320,7 @@ task mkXml(type: Exec) {
 }
 
 afterEvaluate {
-    ArrayList<String> cleanCmdLst = new ArrayList<>(["rm", "-rf"]);
+    ArrayList<String> cleanCmdLst = new ArrayList<>(["rm", "-rf"])
     android.applicationVariants.all { variant ->
         // print "variant: " + variant.name + "\n"
         String BUILD = variant.getBuildType().getName()

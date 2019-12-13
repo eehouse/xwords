@@ -416,9 +416,15 @@ public class CommsTransport implements TransportProcs,
         return success;
     }
 
-    private static int sendForAddr( Context context, CommsAddrRec addr,
-                                    CommsConnType conType, long rowID,
-                                    int gameID, byte[] buf, String msgID )
+    @Override
+    public void countChanged( int newCount )
+    {
+        m_tpHandler.tpmCountChanged( newCount );
+    }
+
+    private int sendForAddr( Context context, CommsAddrRec addr,
+                             CommsConnType conType, long rowID,
+                             int gameID, byte[] buf, String msgID )
     {
         int nSent = -1;
         switch ( conType ) {
@@ -436,6 +442,8 @@ public class CommsTransport implements TransportProcs,
         case COMMS_CONN_P2P:
             nSent = WiDirService
                 .sendPacket( context, addr.p2p_addr, gameID, buf );
+            break;
+        case COMMS_CONN_NFC:
             break;
         default:
             Assert.fail();

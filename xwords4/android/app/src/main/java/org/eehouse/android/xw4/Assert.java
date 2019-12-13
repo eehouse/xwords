@@ -37,6 +37,7 @@ public class Assert {
             Log.e( TAG, "firing assert!" );
             DbgUtils.printStack( TAG );
             assert false;
+            throw new RuntimeException();
         }
     }
 

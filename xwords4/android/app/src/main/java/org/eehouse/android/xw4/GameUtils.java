@@ -730,7 +730,7 @@ public class GameUtils {
             intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
             File attach = null;
-            File tmpdir = XWApp.ATTACH_SUPPORTED ?
+            File tmpdir = BuildConfig.ATTACH_SUPPORTED ?
                 DictUtils.getDownloadDir( activity ) : null;
             if ( null != tmpdir ) { // no attachment
                 attach = makeJsonFor( tmpdir, nli );
@@ -1321,7 +1321,7 @@ public class GameUtils {
     private static File makeJsonFor( File dir, NetLaunchInfo nli )
     {
         File result = null;
-        if ( XWApp.ATTACH_SUPPORTED ) {
+        if ( BuildConfig.ATTACH_SUPPORTED ) {
             byte[] data = nli.makeLaunchJSON().getBytes();
 
             File file = new File( dir, String.format("invite_%d", nli.gameID() ));
