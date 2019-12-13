@@ -237,6 +237,10 @@ public class ConnStatusHandler {
                     }
                 }
             }
+
+            if ( BuildConfig.DEBUG ) {
+                sb.append("\n").append( XwJNI.comms_getStats( gamePtr ) );
+            }
             msg = sb.toString();
         }
         return msg;
@@ -676,10 +680,7 @@ public class ConnStatusHandler {
                 result = String.format( "DevID: %d; host: %s; latest FCM: %s",
                                         DevID.getRelayDevIDInt(context),
                                         XWPrefs.getDefaultRelayHost(context),
-                                        fcmMsg )
-                    + "\n"
-                    + XwJNI.comms_getStats( gamePtr );
-
+                                        fcmMsg );
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();
