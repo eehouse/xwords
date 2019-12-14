@@ -339,7 +339,8 @@ game_saveSucceeded( const XWGame* game, XP_U16 saveToken )
 }
 
 XP_Bool
-game_receiveMessage( XWGame* game, XWStreamCtxt* stream, CommsAddrRec* retAddr )
+game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
+                     const CommsAddrRec* retAddr )
 {
     ServerCtxt* server = game->server;
     CommsMsgState commsState;
