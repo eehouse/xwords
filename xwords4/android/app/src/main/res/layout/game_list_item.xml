@@ -38,6 +38,11 @@
                         android:paddingLeft="8dip"
                         android:paddingRight="8dip"
                         >
+            <!-- Shown only when BuildConfig.DEBUG == true -->
+            <TextView android:id="@+id/n_pending"
+	                  android:layout_width="wrap_content"
+	                  android:layout_height="wrap_content"
+                      />
             <ImageView android:id="@+id/game_type_marker"
 	                   android:layout_width="fill_parent"
 	                   android:layout_height="fill_parent"

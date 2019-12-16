@@ -33,7 +33,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -335,6 +334,13 @@ public class GameListItem extends LinearLayout
             }
             findViewById( R.id.has_chat_marker )
                 .setVisibility( hasChat ? View.VISIBLE : View.GONE );
+
+            if ( BuildConfig.DEBUG ) {
+                TextView tv = (TextView)findViewById( R.id.n_pending );
+                int nPending = summary.nPacketsPending;
+                String str = nPending == 0 ? "" : String.format( "%d", nPending );
+                tv.setText( str );
+            }
 
             String roleSummary = summary.summarizeRole( m_context, m_rowid );
             m_role.setVisibility( null == roleSummary ? View.GONE : View.VISIBLE );
