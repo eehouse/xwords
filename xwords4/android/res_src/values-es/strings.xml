@@ -105,4 +105,29 @@
     <string name="player_edit_title">Editar jugador</string>
     <string name="remote_label">Jugador externo</string>
     <string name="player_label">Nombre:</string>
+    <string name="dict_lang_label_fmt">Lista de palabras (en %1$s)</string>
+    <string name="dicts_list_prompt_fmt">Listas de palabras instaladas (en %1$s)</string>
+    <string name="robot_label">Jugador robot</string>
+    <string name="password_label">Contraseña</string>
+    <string name="button_trade_commit">Validar intercambio</string>
+    <string name="button_trade_cancel">Cancelar intercambio</string>
+    <string name="entering_trade">Pulsa en las fichas para seleccionarlas…</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_w2x_summary">2P</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w3x_summary">3P</string>
+    <string name="no_moves_made">(Todavía no hay movimientos)</string>
+    <plurals name="invite_msg_fmt">
+        <item quantity="one">"La partida está esperando un jugador remoto.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
+        <item quantity="other">"La partida está esperando %1$d jugadores remotos.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
+    </plurals>
+    <plurals name="invite_sent_fmt">
+        <item quantity="one">Ya has invitado a un jugador remoto a esta partida. Estamos esperando su respuesta. Por favor, pulsa el botón \"invitar de nuevo\" si crees que la invitación no se ha enviado.</item>
+        <item quantity="other">Ya has enviado %1$d invitaciones para esta partida. Estamos esperando sus respuestas. Por favor, pulsa el botón \"invitar de nuevo\" si crees que las invitaciones no se han enviado.</item>
+    </plurals>
+    <string name="invited_msg">Esta partida ha sido creada a partir de una invitación que has recibido. La partida comenzará tan pronto como se pueda conectar con el remitente y cualquier otro invitado.</string>
+    <string name="invite_if_nfc">O simplemente pulsa para invitar -- si el otro dispositivo tiene también Android Beaming y está cerca.</string>
+    <string name="invite_multiple">" (Estás esperando a varios jugadores remotos. No tienes que invitarlos a todos a la vez, pero esta alerta no será descartada hasta que todos hayan sido invitados y las invitaciones aceptadas.)"</string>
+    <string name="invit_expl_sms_fmt">Invitación enviada por SMS al número de teléfono %1$s a %2$s</string>
+    <string name="invit_expl_usrsms_fmt">Invitación enviada por SMS a %1$s en %2$s</string>
 </resources>
