@@ -58,6 +58,7 @@ typedef struct CurGameInfo {
     XP_Bool timerEnabled;
     XP_Bool allowPickTiles;
     XP_Bool allowHintRect;
+    XP_Bool inDuplicateMode;
     XWPhoniesChoice phoniesAction;
     XP_Bool confirmBTConnect;   /* only used for BT */
 } CurGameInfo;

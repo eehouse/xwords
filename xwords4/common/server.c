@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2019 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -84,6 +84,7 @@ typedef struct ServerVolatiles {
 
 typedef struct ServerNonvolatiles {
     XP_U32 lastMoveTime;    /* seconds of last turn change */
+    XP_S32 dupTimerExpires;
     XP_U8 nDevices;
     XW_State gameState;
     XW_State stateAfterShow;
@@ -103,6 +104,9 @@ typedef struct ServerNonvolatiles {
     RemoteAddress addresses[MAX_NUM_PLAYERS];
     XWStreamCtxt* prevMoveStream;     /* save it to print later */
     XWStreamCtxt* prevWordsStream;
+    XP_Bool dupTurnsMade[MAX_NUM_PLAYERS];
+    XP_Bool dupTurnsForced[MAX_NUM_PLAYERS];
+    XP_Bool dupTurnsSent;       /* used on client only */
 } ServerNonvolatiles;
 
 struct ServerCtxt {
@@ -290,6 +294,9 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     if ( STREAM_VERS_DICTNAME <= version ) {
         nv->lastMoveTime = stream_getU32( stream );
     }
+    if ( STREAM_VERS_DUPLICATE <= version ) {
+        nv->dupTimerExpires = stream_getU32( stream );
+    }
 
     if ( version < STREAM_VERS_SERVER_SAVES_TOSHOW ) {
         /* no longer used */
@@ -327,6 +334,15 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     }
     /* XP_LOGF( "%s: read streamVersion: 0x%x", __func__, nv->streamVersion ); */
 #endif
+
+    if ( version >= STREAM_VERS_DUPLICATE ) {
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            nv->dupTurnsMade[ii] = stream_getBits( stream, 1 );
+            XP_LOGF( "%s(): dupTurnsMade[%d]: %d", __func__, ii, nv->dupTurnsMade[ii] );
+            nv->dupTurnsForced[ii] = stream_getBits( stream, 1 );
+        }
+        nv->dupTurnsSent = stream_getBits( stream, 1 );
+    }
 } /* getNV */
 
 static void
@@ -335,6 +351,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     XP_U16 ii;
 
     stream_putU32( stream, nv->lastMoveTime );
+    stream_putU32( stream, nv->dupTimerExpires );
 
     /* number of players is upper limit on device count */
     stream_putBits( stream, NDEVICES_NBITS, nv->nDevices-1 );
@@ -358,6 +375,12 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     stream_putU8( stream, nv->streamVersion );
     /* XP_LOGF( "%s: wrote streamVersion: 0x%x", __func__, nv->streamVersion ); */
 #endif
+
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        stream_putBits( stream, 1, nv->dupTurnsMade[ii] );
+        stream_putBits( stream, 1, nv->dupTurnsForced[ii] );
+    }
+    stream_putBits( stream, 1, nv->dupTurnsSent );
 } /* putNV */
 
 static XWStreamCtxt*
