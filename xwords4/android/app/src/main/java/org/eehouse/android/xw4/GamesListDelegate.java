@@ -109,7 +109,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
         int groupSelItem;
         boolean nextIsSolo;
-        boolean moveAfterNewGroup;
+        long[] moveAfterNewGroup;
         Set<Long> selGames;
         Set<Long> selGroupIDs;
     }
@@ -818,7 +818,7 @@ public class GamesListDelegate extends ListDelegateBase
                                        @Override
                                        public void onClick( DialogInterface dlg,
                                                             int item ) {
-                                           m_mySIS.moveAfterNewGroup = true;
+                                           m_mySIS.moveAfterNewGroup = games;
                                            showDialogFragment( DlgID.NEW_GROUP );
                                        }
                                    } )
@@ -1596,7 +1596,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_newgroup:
-            m_mySIS.moveAfterNewGroup = false;
+            m_mySIS.moveAfterNewGroup = null;
             showDialogFragment( DlgID.NEW_GROUP );
             break;
 
@@ -2448,11 +2448,10 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void showNewGroupIf()
     {
-        if ( m_mySIS.moveAfterNewGroup ) {
-            m_mySIS.moveAfterNewGroup = false;
-            Long[] games = m_mySIS.selGames
-                .toArray( new Long[m_mySIS.selGames.size()] );
-            showDialogFragment( DlgID.CHANGE_GROUP, (Object)games );
+        long[] games = m_mySIS.moveAfterNewGroup;
+        if ( null != games ) {
+            m_mySIS.moveAfterNewGroup = null;
+            showDialogFragment( DlgID.CHANGE_GROUP, games );
         }
     }
 
