@@ -1246,19 +1246,12 @@ public class GameConfigDelegate extends DelegateBase
             if ( null != m_jniThread ) {
                 applyChanges( m_jniThread.getLock(), forceNew );
             } else {
-                try ( GameLock lock = GameLock.tryLock( m_rowid ) ) {
+                try ( GameLock lock = GameLock.lock( m_rowid, 100L ) ) {
                     applyChanges( lock, forceNew );
+                } catch ( GameLock.GameLockedException gle ) {
+                    Log.e( TAG, "applyChanges(): failed to get lock" );
                 }
             }
-        // }
-            // GameLock gameLock = m_jniThread == null
-            //     ? GameLock.tryLock( m_rowid ) : m_jniThread.getLock();
-            // GameUtils.applyChanges( m_activity, m_gi, m_car, m_disabMap,
-            //                         gameLock, forceNew );
-            // DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
-            // if ( null == m_jniThread ) {
-            //     gameLock.unlock();
-            // }
         }
     }
 
