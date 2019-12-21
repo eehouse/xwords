@@ -1039,7 +1039,7 @@
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
-    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Tap here&lt;/a&gt; (or the full link below to join this game. If you already have CrossWords you can open the attachment to do so). &lt;br \\&gt; &lt;br \\&gt; (Full link: %1$s )</string>
+    <string name="invite_htm_fmt">Tap the full link below to join this game. &lt;br \\&gt; &lt;br \\&gt; (Full link: %1$s )</string>
     <string name="invite_sms_fmt">Tap the link to accept my
     invitation and join a CrossWords game: %1$s
     </string>
