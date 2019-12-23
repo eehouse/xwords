@@ -249,7 +249,7 @@ public class GameListItem extends LinearLayout
             case R.string.game_summary_field_empty:
                 break;
             case R.string.game_summary_field_gameid:
-                value = String.format( "%X", m_summary.gameID );
+                value = String.format( "%d", m_summary.gameID );
                 break;
             case R.string.game_summary_field_rowid:
                 value = String.format( "%d", m_rowid );

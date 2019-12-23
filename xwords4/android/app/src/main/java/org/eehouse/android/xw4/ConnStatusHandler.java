@@ -178,10 +178,6 @@ public class ConnStatusHandler {
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
-                    if ( ! typ.isSelectable() ) {
-                        continue;
-                    }
-
                     sb.append( String.format( "\n\n*** %s ", typ.longName( context ) ) );
                     String did = addDebugInfo( context, gamePtr, addr, typ );
                     if ( null != did ) {
@@ -363,10 +359,21 @@ public class ConnStatusHandler {
         updateStatusImpl( context, cbacks, connType, success, true );
     }
 
+    public static void updateStatusIn( Context context, CommsConnType connType,
+                                       boolean success )
+    {
+        updateStatusImpl( context, null, connType, success, true );
+    }
+
     public static void updateStatusOut( Context context, ConnStatusCBacks cbacks,
                                         CommsConnType connType, boolean success )
     {
         updateStatusImpl( context, cbacks, connType, success, false );
+    }
+
+    public static void updateStatusOut( Context context, CommsConnType connType, boolean success )
+    {
+        updateStatusImpl( context, null, connType, success, false );
     }
 
     private static void updateStatusImpl( Context context, ConnStatusCBacks cbacks,

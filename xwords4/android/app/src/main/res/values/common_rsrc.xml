@@ -152,7 +152,6 @@
   <!-- other -->
   <string name="default_host">eehouse.org</string>
   <!-- <string name="default_host">10.0.3.2</string> -->
-  <string name="xwords_nfc_mime">application/org.eehouse.android.xw4</string>
   <string name="invite_host">eehouse.org</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
   <!--string name="invite_mime">text/plain</string-->

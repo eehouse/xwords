@@ -2397,5 +2397,7 @@
   they\'re committed as moves -- by long-tapping, same as committed
   words.\n\nUse this feature to check the validity of words you\'re
   thinking of playing, or to look up an unfamiliar word provided as a
-  hint.</string>
+    hint.</string>
+
+    <string name="servicedesc">For transmitting CrossWords moves</string>
 </resources>

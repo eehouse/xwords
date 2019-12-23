@@ -4,6 +4,10 @@ def VERSION_NAME = '4.4.150'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def BUILD_INFO_NAME = "build-info.txt"
 
+// AID must start with F (first 4 bits) and be at from 5 to 16 bytes long
+def NFC_AID_XW4 = "FC8FF510B360"
+def NFC_AID_XW4d = "FDDA0A3EB5E5"
+
 boolean forFDroid = hasProperty('forFDroid')
 
 // Get the git revision we're using. Since fdroid modifies files as
@@ -35,6 +39,7 @@ android {
     // default changes and .travis.yml can be kept in sync
     buildToolsVersion '27.0.3'
     defaultConfig {
+        // HostApduService requires 19. But is it a problem?
         minSdkVersion 14
         targetSdkVersion 28     // must match ../build.gradle
         versionCode VERSION_CODE_BASE
@@ -88,6 +93,8 @@ android {
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
             buildConfigField "int", "VARIANT_CODE", "1"
+            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
+            resValue "string", "nfc_aid", "$NFC_AID_XW4"
         }
 
         xw4fdroid {
@@ -101,10 +108,12 @@ android {
             buildConfigField "String", "VARIANT_NAME", "\"F-Droid\""
             buildConfigField "int", "VARIANT_CODE", "2"
             buildConfigField "boolean", "FOR_FDROID", "true"
+            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
+            resValue "string", "nfc_aid", "$NFC_AID_XW4"
         }
         xw4d {
             dimension "variant"
-            buildConfigField "String", "DB_NAME", "\"xwddb\"";
+            buildConfigField "String", "DB_NAME", "\"xwddb\""
             applicationId "org.eehouse.android.xw4dbg"
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
@@ -115,11 +124,13 @@ android {
             buildConfigField "int", "VARIANT_CODE", "3"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
             buildConfigField "boolean", "MOVE_VIA_NFC", "true"
+            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
+            resValue "string", "nfc_aid", "$NFC_AID_XW4d"
         }
 
         xw4dNoSMS {
             dimension "variant"
-            buildConfigField "String", "DB_NAME", "\"xwddb\"";
+            buildConfigField "String", "DB_NAME", "\"xwddb\""
             applicationId "org.eehouse.android.xw4dbg"
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
             resValue "string", "app_name", "CrossDbg"
@@ -130,6 +141,8 @@ android {
             buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
             buildConfigField "boolean", "MOVE_VIA_NFC", "true"
+            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
+            resValue "string", "nfc_aid", "$NFC_AID_XW4d"
         }
 
         xw4SMS {
@@ -142,6 +155,8 @@ android {
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"FOSS\""
             buildConfigField "int", "VARIANT_CODE", "5"
+            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
+            resValue "string", "nfc_aid", "$NFC_AID_XW4"
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need
@@ -390,8 +405,8 @@ task makeBuildAssets() {
     out += "date: ${date}\n"
 
     // I want the variant, but that's harder. Here's a quick hack from SO.
-    String target = gradle.startParameter.taskNames[-1]
-    out += "target: ${target}\n"
+    // String target = gradle.startParameter.taskNames[0]
+    // out += "target: ${target}\n"
 
     String diff = "git diff".execute().text.trim()
     if (diff) {

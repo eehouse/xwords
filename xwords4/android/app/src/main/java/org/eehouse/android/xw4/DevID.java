@@ -37,6 +37,7 @@ public class DevID {
     private static final String DEVID_KEY = "DevID.devid_key";
     private static final String DEVID_ACK_KEY = "key_relay_regid_ackd2";
     private static final String FCM_REGVERS_KEY = "key_fcmvers_regid";
+    private static final String NFC_DEVID_KEY = "key_nfc_devid";
 
     private static String s_relayDevID;
     private static int s_asInt;
@@ -144,5 +145,23 @@ public class DevID {
     public static void clearGCMDevID( Context context )
     {
         DBUtils.setBoolFor( context, DEVID_ACK_KEY, false );
+    }
+
+    // Just a random number I hang onto as long as possible
+    private static int[] sNFCDevID = {0};
+    public static int getNFCDevID( Context context )
+    {
+        synchronized ( sNFCDevID ) {
+            if ( 0 == sNFCDevID[0] ) {
+                int devid = DBUtils.getIntFor( context, NFC_DEVID_KEY, 0 );
+                if ( 0 == devid ) {
+                    devid = Utils.nextRandomInt();
+                    DBUtils.setIntFor( context, NFC_DEVID_KEY, devid );
+                }
+                sNFCDevID[0] = devid;
+            }
+            Log.d( TAG, "getNFCDevID() => %d", sNFCDevID[0] );
+            return sNFCDevID[0];
+        }
     }
 }

@@ -79,6 +79,12 @@ public class MultiMsgSink implements TransportProcs {
             .sendPacket( m_context, addr.p2p_addr, gameID, buf );
     }
 
+    int sendViaNFC( byte[] buf, int gameID )
+    {
+        Log.d( TAG, "sendViaNFC(gameID=%d, len=%d)", gameID, buf.length );
+        return NFCUtils.addMsgFor( buf, gameID );
+    }
+
     public int numSent()
     {
         return m_sentSet.size();
@@ -108,12 +114,13 @@ public class MultiMsgSink implements TransportProcs {
             break;
         case COMMS_CONN_NFC:
             Log.d( TAG, "transportSend(): got for NFC" );
+            nSent = sendViaNFC( buf, gameID );
             break;
         default:
             Assert.fail();
             break;
         }
-        Log.i( TAG, "transportSend(): sent %d msgs for game %d/%x via %s",
+        Log.i( TAG, "transportSend(): sent %d bytes for game %d/%x via %s",
                nSent, gameID, gameID, typ.toString() );
         if ( 0 < nSent ) {
             Log.d( TAG, "transportSend: adding %s", msgID );

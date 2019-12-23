@@ -2647,26 +2647,27 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
                  (XP_UCHAR*)"msg queue len: %d\n", comms->queueLen );
     stream_catString( stream, buf );
 
+    XP_U16 indx = 0;
     for ( elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
-                     " - channelNo=%.4X; msgID=" XP_LD "; len=%d\n", 
-                     elem->channelNo, elem->msgID, elem->len );
+                     "%d: - channelNo=%.4X; msgID=" XP_LD "; len=%d\n",
+                     indx++, elem->channelNo, elem->msgID, elem->len );
         stream_catString( stream, buf );
     }
 
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
-        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"  Stats for channel: %.4X\n", 
+        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
+                     (XP_UCHAR*)"Stats for channel %.4X\n",
                      rec->channelNo );
         stream_catString( stream, buf );
 
-        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last msg sent: " XP_LD "\n", 
+        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
+                     (XP_UCHAR*)"  Last msg sent: " XP_LD "; ",
                      rec->nextMsgID );
         stream_catString( stream, buf );
 
-        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last msg received: %d\n", 
+        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
+                     (XP_UCHAR*)"last msg received: %d\n",
                      rec->lastMsgRcd );
         stream_catString( stream, buf );
     }

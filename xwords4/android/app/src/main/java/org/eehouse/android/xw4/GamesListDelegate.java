@@ -64,6 +64,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2353,14 +2354,14 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean tryNFCIntent( Intent intent )
     {
         boolean result = false;
-        String data = NFCUtils.getFromIntent( intent );
+        byte[] data = NFCUtils.getFromIntent( intent );
         if ( null != data ) {
             NetLaunchInfo nli = NetLaunchInfo.makeFrom( m_activity, data );
             if ( null != nli && nli.isValid() ) {
                 startNewNetGame( nli );
                 result = true;
             } else {
-                NFCUtils.receiveMsgs( m_activity, data );
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
         return result;
@@ -2843,10 +2844,12 @@ public class GamesListDelegate extends ListDelegateBase
             ;
     }
 
-    public static void sendNFCToSelf( Context context, String data )
+    public static void postNFCInvite( Context context, byte[] data )
     {
-        Intent intent = makeSelfIntent( context );
-        NFCUtils.populateIntent( intent, data );
+        Intent intent = makeSelfIntent( context )
+            .addFlags( Intent.FLAG_ACTIVITY_NEW_TASK )
+            ;
+        NFCUtils.populateIntent( context, intent, data );
         context.startActivity( intent );
     }
 

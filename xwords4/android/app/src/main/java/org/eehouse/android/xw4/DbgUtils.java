@@ -158,14 +158,18 @@ public class DbgUtils {
     //     return TextUtils.join( ", ", asStrs );
     // }
 
-    // public static String hexDump( byte[] bytes )
-    // {
-    //     StringBuilder dump = new StringBuilder();
-    //     for ( byte byt : bytes ) {
-    //         dump.append( String.format( "%02x ", byt ) );
-    //     }
-    //     return dump.toString();
-    // }
+    public static String hexDump( byte[] bytes )
+    {
+        String result = "<null>";
+        if ( null != bytes ) {
+            StringBuilder dump = new StringBuilder();
+            for ( byte byt : bytes ) {
+                dump.append( String.format( "%02x ", byt ) );
+            }
+            result = dump.toString();
+        }
+        return result;
+    }
 
     private static List<DeadlockWatch> sLockHolders = new ArrayList<>();
 

@@ -615,6 +615,40 @@ public class Utils {
         return Looper.getMainLooper().equals(Looper.myLooper());
     }
 
+    // But see hexArray above
+    private static final String HEX_CHARS = "0123456789ABCDEF";
+    private static char[] HEX_CHARS_ARRAY = HEX_CHARS.toCharArray();
+
+    public static String ba2HexStr( byte[] input )
+    {
+        StringBuffer sb = new StringBuffer();
+
+        for ( byte byt : input ) {
+            sb.append(HEX_CHARS_ARRAY[(byt >> 4) & 0x0F]);
+            sb.append(HEX_CHARS_ARRAY[byt & 0x0F]);
+        }
+
+        String result = sb.toString();
+        return result;
+    }
+
+    public static byte[] hexStr2ba( String data )
+    {
+        data = data.toUpperCase();
+        Assert.assertTrue( 0 == data.length() % 2 );
+        byte[] result = new byte[data.length() / 2];
+
+        for (int ii = 0; ii < data.length(); ii += 2 ) {
+            int one = HEX_CHARS.indexOf(data.charAt(ii));
+            Assert.assertTrue( one >= 0 );
+            int two = HEX_CHARS.indexOf(data.charAt(ii + 1));
+            Assert.assertTrue( two >= 0 );
+            result[ii/2] = (byte)((one << 4) | two);
+        }
+
+        return result;
+    }
+
     public static String base64Encode( byte[] in )
     {
         return Base64.encodeToString( in, Base64.NO_WRAP );

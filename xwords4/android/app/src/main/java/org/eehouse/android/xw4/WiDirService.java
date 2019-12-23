@@ -172,15 +172,15 @@ public class WiDirService extends XWService {
     private static void updateStatusOut( boolean success )
     {
         ConnStatusHandler
-            .updateStatusOut( XWApp.getContext(), null,
+            .updateStatusOut( XWApp.getContext(),
                               CommsConnType.COMMS_CONN_P2P, success );
     }
 
     private static void updateStatusIn( boolean success )
     {
         ConnStatusHandler
-            .updateStatusIn( XWApp.getContext(), null,
-                             CommsConnType.COMMS_CONN_P2P, success );
+            .updateStatusIn( XWApp.getContext(), CommsConnType.COMMS_CONN_P2P,
+                             success );
     }
 
     public static void init( Context context )

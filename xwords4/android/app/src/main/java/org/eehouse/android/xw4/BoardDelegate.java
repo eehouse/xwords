@@ -72,12 +72,13 @@ import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.TilePickAlert.TilePickState;
+import org.eehouse.android.xw4.NFCCardService.Wrapper;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DwnldDelegate.DownloadFinishedListener,
                ConnStatusHandler.ConnStatusCBacks,
-               NFCUtils.NFCActor {
+               Wrapper.Procs {
     private static final String TAG = BoardDelegate.class.getSimpleName();
 
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
@@ -126,6 +127,8 @@ public class BoardDelegate extends DelegateBase
     private DBAlert m_inviteAlert;
     private boolean m_haveStartedShowing;
 
+    private Wrapper mNFCWrapper;
+
     public class TimerRunnable implements Runnable {
         private int m_why;
         private int m_when;
@@ -170,7 +173,7 @@ public class BoardDelegate extends DelegateBase
     private boolean alertOrderAt( StartAlertOrder ord )
     {
         boolean result = m_mySIS.mAlertOrder == ord;
-        Log.d( TAG, "alertOrderAt(%s) => %b", ord, result );
+        // Log.d( TAG, "alertOrderAt(%s) => %b", ord, result );
         return result;
     }
 
@@ -558,6 +561,9 @@ public class BoardDelegate extends DelegateBase
         m_isFirstLaunch = null == savedInstanceState;
         getBundledData( savedInstanceState );
 
+        int devID = DevID.getNFCDevID( m_activity );
+        mNFCWrapper = Wrapper.init( m_activity, this, devID );
+
         m_utils = new BoardUtilCtxt();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
@@ -601,9 +607,6 @@ public class BoardDelegate extends DelegateBase
                         m_jniThreadRef.setDaemonOnce( true );
                         m_jniThreadRef.startOnce();
 
-                        // Don't seem to need to unregister...
-                        NFCUtils.register( m_activity, BoardDelegate.this );
-
                         setBackgroundColor();
                         setKeepScreenOn();
 
@@ -633,6 +636,7 @@ public class BoardDelegate extends DelegateBase
     protected void onResume()
     {
         super.onResume();
+        Wrapper.setResumed( mNFCWrapper, true );
         if ( null != m_jniThreadRef ) {
             doResume( false );
         } else {
@@ -642,6 +646,7 @@ public class BoardDelegate extends DelegateBase
 
     protected void onPause()
     {
+        Wrapper.setResumed( mNFCWrapper, false );
         closeIfFinishing( false );
         m_handler = null;
         ConnStatusHandler.setHandler( null );
@@ -1098,7 +1103,8 @@ public class BoardDelegate extends DelegateBase
             launchLookup( m_mySIS.words, m_gi.dictLang );
             break;
         case NFC_TO_SELF:
-            GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
+            Assert.assertFalse( BuildConfig.DEBUG );
+            // GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
             break;
         case DROP_RELAY_ACTION:
             dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
@@ -1515,21 +1521,48 @@ public class BoardDelegate extends DelegateBase
     }
 
     //////////////////////////////////////////////////
-    // NFCUtils.NFCActor
+    // ConnStatusHandler.ConnStatusCBacks
     //////////////////////////////////////////////////
     @Override
-    public String makeNFCMessage()
+    public void invalidateParent()
     {
-        Log.d( TAG, "makeNFCMessage(): m_mySIS.nMissing: %d", m_mySIS.nMissing );
-        String data = null;
+        runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    m_view.invalidate();
+                }
+            });
+    }
+
+    @Override
+    public void onStatusClicked()
+    {
+        onStatusClicked( m_jniGamePtr );
+    }
+
+    @Override
+    public Handler getHandler()
+    {
+        return m_handler;
+    }
+
+    ////////////////////////////////////////////////////////////
+    // NFCCardService.Wrapper.Procs
+    ////////////////////////////////////////////////////////////
+    @Override
+    public void onReadingChange( boolean nowReading )
+    {
+        // Do we need this?
+    }
+
+    private byte[] getInvite()
+    {
+        byte[] result = null;
         if ( 0 < m_mySIS.nMissing // Isn't there a better test??
              && DeviceRole.SERVER_ISSERVER == m_gi.serverRole ) {
-            Log.d( TAG, "makeNFCMessage(): invite case" );
             NetLaunchInfo nli = new NetLaunchInfo( m_gi );
             Assert.assertTrue( 0 <= m_nGuestDevs );
             nli.forceChannel = 1 + m_nGuestDevs;
-
-            Assert.assertTrue( m_connTypes.contains( CommsConnType.COMMS_CONN_NFC ) );
 
             for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
                   iter.hasNext(); ) {
@@ -1558,46 +1591,9 @@ public class BoardDelegate extends DelegateBase
                            typ.toString() );
                 }
             }
-            data = nli.makeLaunchJSON();
-            if ( null != data ) {
-                recordInviteSent( InviteMeans.NFC, null );
-            }
-        } else if ( BuildConfig.MOVE_VIA_NFC ) {
-            Log.d( TAG, "makeNFCMessage(): move case" );
-            byte[][] msgs = XwJNI.comms_getPending( m_jniGamePtr );
-            data = NFCUtils.makeMsgsJSON( m_gi.gameID, msgs );
-        } else {
-            Log.d( TAG, "makeNFCMessage(): other (bad!!) case" );
-            Assert.assertFalse( BuildConfig.DEBUG );
+            result = nli.asByteArray();
         }
-        Log.d( TAG, "makeNFCMessage() => %s", data );
-        return data;
-    }
-
-    //////////////////////////////////////////////////
-    // ConnStatusHandler.ConnStatusCBacks
-    //////////////////////////////////////////////////
-    @Override
-    public void invalidateParent()
-    {
-        runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    m_view.invalidate();
-                }
-            });
-    }
-
-    @Override
-    public void onStatusClicked()
-    {
-        onStatusClicked( m_jniGamePtr );
-    }
-
-    @Override
-    public Handler getHandler()
-    {
-        return m_handler;
+        return result;
     }
 
     private void launchPhoneNumberInvite( int nMissing, SentInvitesInfo info,
@@ -2269,7 +2265,14 @@ public class BoardDelegate extends DelegateBase
         if ( null == m_jniThread ) {
             m_jniThread = m_jniThreadRef.retain();
             m_gi = m_jniThread.getGI();
+
             m_summary = m_jniThread.getSummary();
+
+            Wrapper.setGameID( mNFCWrapper, m_gi.gameID );
+            byte[] invite = getInvite();
+            if ( null != invite ) {
+                NFCUtils.addInvitationFor( invite, m_gi.gameID );
+            }
 
             m_view.startHandling( m_activity, m_jniThread, m_connTypes );
 
