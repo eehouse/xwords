@@ -390,12 +390,6 @@
                         android:defaultValue="false"
                         />
 
-    <CheckBoxPreference android:key="@string/key_enable_nfc_toself"
-                        android:title="@string/enable_nfc_toself_title"
-                        android:summary="@string/enable_nfc_toself_summary"
-                        android:defaultValue="false"
-                        />
-
     <PreferenceScreen android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
                       android:key="@string/pref_group_relay_title"

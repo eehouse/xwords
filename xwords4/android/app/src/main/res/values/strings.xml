@@ -2198,8 +2198,6 @@
     <string name="xlations_locale">Fake locale for translation</string>
     <string name="enable_dupes_summary">Accept invitations more than once</string>
     <string name="nag_intervals">Reminder intervals (minutes1,minutes2,…)</string>
-    <string name="enable_nfc_toself_title">Enable NFC to self</string>
-    <string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>
     <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
     <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
     <string name="force_radio_title">Pretend to have radio</string>

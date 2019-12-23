@@ -722,8 +722,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="netstats_title">Estadístiques de la partida en xarxa</string>
     <string name="git_rev_title">ID de la versió de codi font</string>
     <string name="proxy_port">Port de l\'aparell repetidor</string>
-    <string name="enable_nfc_toself_title">Habilita NFC a un mateix</string>
-    <string name="enable_nfc_toself_summary">Simula la invitació per a ajudar a la depuració</string>
     <string name="enable_sms_toself_title">SMS curtcircuit a un mateix</string>
     <string name="force_radio_title">Simula tenir ràdio</string>
     <string name="radio_name_real">No ho simulis</string>

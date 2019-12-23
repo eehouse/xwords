@@ -61,11 +61,6 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_dup_invite, false );
     }
 
-    public static boolean getNFCToSelfEnabled( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_enable_nfc_toself, false );
-    }
-
     public static boolean getIgnoreFCM( Context context )
     {
         String curValue =

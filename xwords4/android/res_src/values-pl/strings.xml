@@ -784,8 +784,6 @@
     <string name="xlations_locale">Fałszywy język do tłumaczenia</string>
     <string name="enable_dupes_summary">Akceptuj zaproszenia więcej niż raz</string>
     <string name="nag_intervals">Przypomnienie w odstępach (1 minuty, 2 minut,...)</string>
-    <string name="enable_nfc_toself_title">Włącz NFC dla siebie (samoczynnie\?)</string>
-    <string name="enable_nfc_toself_summary">Fałszywe zaproszenie do pomocy w debugowaniu</string>
     <string name="enable_sms_toself_title">Akceptuj SMS do siebie</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>

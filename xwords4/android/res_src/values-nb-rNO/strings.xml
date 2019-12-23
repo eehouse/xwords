@@ -681,8 +681,6 @@
     <string name="enable_dupes_title">Godta duplikatinvitasjoner</string>
     <string name="xlations_locale">Juks til lokale for oversettelse</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
-    <string name="enable_nfc_toself_title">Skru på NFC til egen enhet</string>
-    <string name="enable_nfc_toself_summary">Juks til invitasjon for å hjelpe i feilrettingsøyemed</string>
     <string name="enable_smsproto_title">Bruk ny/eksperimentell SMS-kode</string>
     <string name="enable_smsproto_summary">(Krever at motparten bruker det også)</string>
     <string name="nfc_to_self">Send via NFC til egen ehet?</string>

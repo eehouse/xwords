@@ -740,7 +740,6 @@
     <string name="gamel_menu_writegit">Git-Informationen in die Zwischenablage kopieren</string>
     <string name="enable_dupes_summary">Einladungen mehrfach annehmen</string>
     <string name="nag_intervals">Erinnerungsintervall (Minuten1, Minuten2, …)</string>
-    <string name="enable_nfc_toself_summary">Pseudo-Einladung zur Fehlersuche</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
     <string name="got_langdict_title">Standard-Wortliste für Sprache holen</string>
@@ -881,7 +880,6 @@
     <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
     <string name="enable_dupes_title">Doppelte Einladungen annehmen</string>
     <string name="xlations_locale">Pseudo-Locale zum Übersetzen</string>
-    <string name="enable_nfc_toself_title">NFC-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_summary">Mobilfunk weglassen bei gleichen Nummern</string>
     <string name="force_radio_title">Mobilfunk vortäuschen</string>

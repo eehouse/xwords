@@ -2925,13 +2925,6 @@ les release builds)</string>
     <!--<string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>-->
     <string name="nag_intervals">Intervalles des rappels (minutes1,minutes2,…)</string>
     <!--XLATE-ME-->
-    <!--<string name="enable_nfc_toself_title">Enable NFC to self</string>-->
-    <string name="enable_nfc_toself_title">Activer la NFC à soi-même</string>
-    <!--XLATE-ME-->
-    <!--<string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>-->
-    <string name="enable_nfc_toself_summary">Fausse invitation pour aider le
-débuggage</string>
-    <!--XLATE-ME-->
     <!--<string name="enable_sms_toself_title">Short-circuit SMS to self</string>-->
     <string name="enable_sms_toself_title">Court-circuiter les SMS vers soi-même</string>
     <!--XLATE-ME-->
