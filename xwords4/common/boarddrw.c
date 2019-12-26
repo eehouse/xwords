@@ -373,7 +373,7 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
     XP_Bool success = XP_TRUE;
     XP_Rect cellRect = {0};
     Tile tile;
-    XP_Bool isBlank, isEmpty, recent, pending = XP_FALSE;
+    XP_Bool isBlank, isEmpty, recent = XP_FALSE, pending = XP_FALSE;
     XWBonusType bonus;
     ModelCtxt* model = board->model;
     DictionaryCtxt* dict = model_getDictionary( model );
