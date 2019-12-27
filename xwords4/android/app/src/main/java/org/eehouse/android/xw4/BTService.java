@@ -689,7 +689,7 @@ public class BTService extends XWJIService {
                 BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
                 if ( null != adapter ) {
                     for ( BluetoothDevice dev : adapter.getBondedDevices() ) {
-                        Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
+                        // Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
                         if ( btName.equals( dev.getName() ) ) {
                             btAddr = dev.getAddress();
                             s_namesToAddrs.put( btName, btAddr );

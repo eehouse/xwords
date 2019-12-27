@@ -89,7 +89,7 @@ public class NFCUtils {
             result = intent.getByteArrayExtra( NFC_TO_SELF_DATA );
         }
 
-        Log.d( TAG, "getFromIntent() => %s", result );
+        // Log.d( TAG, "getFromIntent() => %s", result );
         return result;
     }
 

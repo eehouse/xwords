@@ -1,10 +1,10 @@
 def INITIAL_CLIENT_VERS = 9
-def VERSION_CODE_BASE = 146
-def VERSION_NAME = '4.4.150'
+def VERSION_CODE_BASE = 147
+def VERSION_NAME = '4.4.151'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def BUILD_INFO_NAME = "build-info.txt"
 
-// AID must start with F (first 4 bits) and be at from 5 to 16 bytes long
+// AID must start with F (first 4 bits) and be from 5 to 16 bytes long
 def NFC_AID_XW4 = "FC8FF510B360"
 def NFC_AID_XW4d = "FDDA0A3EB5E5"
 

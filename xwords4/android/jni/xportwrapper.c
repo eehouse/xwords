@@ -148,7 +148,6 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len, const XP_UCHAR* msgNo,
 static void
 and_xport_countChanged( void* closure, XP_U16 count )
 {
-    XP_LOGF( "%s(count=%d)", __func__, count );
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs && NULL != aprocs->jxport ) {
         JNIEnv* env = ENVFORME( aprocs->ti );

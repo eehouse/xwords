@@ -2385,14 +2385,12 @@ coordToCell( const BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP,
     const XP_U16 maxCols = model_numCols( board->model );
     XP_S16 gotCol = -1;
     XP_S16 gotRow = -1;
-    const ScrollData* hsd = &board->sd[SCROLL_H];
-    const ScrollData* vsd = &board->sd[SCROLL_V];
 
     xx -= board->boardBounds.left;
     yy -= board->boardBounds.top;
 
     if ( xx >= 0 && yy >= 0 ) {
-
+        const ScrollData* hsd = &board->sd[SCROLL_H];
         for ( XP_U16 col = hsd->offset; col < maxCols; ++col ) {
             xx -= hsd->dims[col];
             if ( xx <= 0 ) {
@@ -2401,6 +2399,7 @@ coordToCell( const BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP,
             }
         }
 
+        const ScrollData* vsd = &board->sd[SCROLL_V];
         for ( XP_U16 row = vsd->offset; row < maxCols; ++row ) {
             yy -= vsd->dims[row];
             if ( yy <= 0 ) {

@@ -64,7 +64,6 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;

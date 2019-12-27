@@ -241,11 +241,9 @@ public class NFCCardService extends HostApduService {
         if ( null != apdu ) {
             if ( HEX_STR.CMD_MSG_PART.matchesFrom( apdu ) ) {
                 resStr = HEX_STR.STATUS_SUCCESS;
-                int[] msgID = {0};
-                byte[] all = reassemble( this, apdu, msgID, HEX_STR.CMD_MSG_PART );
+                byte[] all = reassemble( this, apdu, HEX_STR.CMD_MSG_PART );
                 if ( null != all ) {
                     addToMsgThread( this, all );
-                    setLatestAck( msgID[0] );
                 }
             } else {
                 Log.d( TAG, "processCommandApdu(): aid case?" );
@@ -379,20 +377,19 @@ public class NFCCardService extends HostApduService {
     private static byte[][] sParts = null;
     private static int sMsgID = 0;
     private synchronized static byte[] reassemble( Context context, byte[] part,
-                                                   int[] msgIDOut, HEX_STR cmd )
+                                                   HEX_STR cmd )
     {
-        return reassemble( context, part, msgIDOut, cmd.length() );
+        return reassemble( context, part, cmd.length() );
     }
 
     private synchronized static byte[] reassemble( Context context, byte[] part,
-                                                   int[] msgIDOut, int offset )
+                                                   int offset )
     {
         part = Arrays.copyOfRange( part, offset, part.length );
-        return reassemble( context, part, msgIDOut );
+        return reassemble( context, part );
     }
 
-    private synchronized static byte[] reassemble( Context context,
-                                                   byte[] part, int[] msgIDOut )
+    private synchronized static byte[] reassemble( Context context, byte[] part )
     {
         byte[] result = null;
         try {
@@ -438,10 +435,10 @@ public class NFCCardService extends HostApduService {
                     sParts = null;
 
                     result = baos.toByteArray();
-                    msgIDOut[0] = sMsgID;
+                    setLatestAck( sMsgID );
                     if ( 0 != sMsgID ) {
                         Log.d( TAG, "reassemble(): done reassembling msgID=%d: %s",
-                               msgIDOut[0], DbgUtils.hexDump(result) );
+                               sMsgID, DbgUtils.hexDump(result) );
                     }
                 }
             }
@@ -495,7 +492,8 @@ public class NFCCardService extends HostApduService {
                     int latestAck = getLatestAck();
                     baos.write( numTo( latestAck ) );
                 }
-                Assert.assertTrue( HEADER_SIZE >= baos.toByteArray().length );
+                Assert.assertTrue( HEADER_SIZE >= baos.toByteArray().length
+                                   || !BuildConfig.DEBUG );
 
                 int thisLen = Math.min( maxLen - HEADER_SIZE, length - offset );
                 if ( 0 < thisLen ) {
@@ -533,8 +531,9 @@ public class NFCCardService extends HostApduService {
         public static Wrapper init( Activity activity, Procs procs, int devID )
         {
             Wrapper instance = null;
-            if ( null != NfcAdapter.getDefaultAdapter( activity ) ) {
-                instance = new Wrapper( activity, procs, devID );
+            NfcAdapter adapter = NfcAdapter.getDefaultAdapter( activity );
+            if ( null != adapter ) {
+                instance = new Wrapper( activity, adapter, procs, devID );
             }
             Log.d( TAG, "Wrapper.init(devID=%d) => %s", devID, instance );
             return instance;
@@ -554,12 +553,13 @@ public class NFCCardService extends HostApduService {
             }
         }
 
-        private Wrapper( Activity activity, Procs procs, int devID )
+        private Wrapper( Activity activity, NfcAdapter adapter, Procs procs,
+                         int devID )
         {
             mActivity = activity;
+            mAdapter = adapter;
             mProcs = procs;
             mMyDevID = devID;
-            mAdapter = NfcAdapter.getDefaultAdapter( activity );
         }
 
         private void setResumed( boolean resumed )
@@ -681,16 +681,18 @@ public class NFCCardService extends HostApduService {
             if ( statusOK ) {
                 int offset = HEX_STR.STATUS_SUCCESS.length();
                 if ( HEX_STR.CMD_MSG_PART.matchesFrom( response, offset ) ) {
-                    int[] msgID = {0};
-                    byte[] all = reassemble( mActivity, response, msgID,
+                    byte[] all = reassemble( mActivity, response,
                                              offset + HEX_STR.CMD_MSG_PART.length() );
+                    Log.d( TAG, "receiveAny(%s) => %b", DbgUtils.hexDump( response ), statusOK );
                     if ( null != all ) {
                         addToMsgThread( mActivity, all );
-                        setLatestAck( msgID[0] );
+
                     }
                 }
             }
-            Log.d( TAG, "receiveAny(%s) => %b", DbgUtils.hexDump( response ), statusOK );
+            if ( !statusOK ) {
+                Log.d( TAG, "receiveAny(%s) => %b", DbgUtils.hexDump( response ), statusOK );
+            }
             return statusOK;
         }
 
@@ -729,16 +731,6 @@ public class NFCCardService extends HostApduService {
                     } catch ( InterruptedException ie ) {
                         Log.d( TAG, "run interrupted" );
                     }
-                    // toggle();
-                    // try {
-                    //     // How long to sleep.
-                    //     int intervalMS = mMinMS + (Math.abs(mRandom.nextInt())
-                    //                                % (mMaxMS - mMinMS));
-                    //     // Log.d( TAG, "sleeping for %d ms", intervalMS );
-                    //     Thread.sleep( intervalMS );
-                    // } catch ( InterruptedException ie ) {
-                    //     Log.d( TAG, "run interrupted" );
-                    // }
                 }
 
                 // Kill read mode on the way out

@@ -1102,10 +1102,6 @@ public class BoardDelegate extends DelegateBase
         case LOOKUP_ACTION:
             launchLookup( m_mySIS.words, m_gi.dictLang );
             break;
-        case NFC_TO_SELF:
-            Assert.assertFalse( BuildConfig.DEBUG );
-            // GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
-            break;
         case DROP_RELAY_ACTION:
             dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
             break;

@@ -81,7 +81,6 @@ public class MultiMsgSink implements TransportProcs {
 
     int sendViaNFC( byte[] buf, int gameID )
     {
-        Log.d( TAG, "sendViaNFC(gameID=%d, len=%d)", gameID, buf.length );
         return NFCUtils.addMsgFor( buf, gameID );
     }
 
@@ -113,7 +112,6 @@ public class MultiMsgSink implements TransportProcs {
             nSent = sendViaP2P( buf, gameID, addr );
             break;
         case COMMS_CONN_NFC:
-            Log.d( TAG, "transportSend(): got for NFC" );
             nSent = sendViaNFC( buf, gameID );
             break;
         default:
