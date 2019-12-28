@@ -154,7 +154,7 @@ public class DevID {
         synchronized ( sNFCDevID ) {
             if ( 0 == sNFCDevID[0] ) {
                 int devid = DBUtils.getIntFor( context, NFC_DEVID_KEY, 0 );
-                if ( 0 == devid ) {
+                while ( 0 == devid ) {
                     devid = Utils.nextRandomInt();
                     DBUtils.setIntFor( context, NFC_DEVID_KEY, devid );
                 }
