@@ -72,7 +72,7 @@ import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.TilePickAlert.TilePickState;
-import org.eehouse.android.xw4.NFCCardService.Wrapper;
+import org.eehouse.android.xw4.NFCUtils.Wrapper;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
