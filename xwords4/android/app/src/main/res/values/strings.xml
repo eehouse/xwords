@@ -2197,6 +2197,8 @@
     <string name="enable_dupes_title">Accept duplicate invites</string>
     <string name="xlations_locale">Fake locale for translation</string>
     <string name="enable_dupes_summary">Accept invitations more than once</string>
+    <string name="enable_pending_count_title">Show Pending messages</string>
+    <string name="enable_pending_count_summary">Show number not yet acknowledged</string>
     <string name="nag_intervals">Reminder intervals (minutes1,minutes2,…)</string>
     <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
     <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>

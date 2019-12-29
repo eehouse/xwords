@@ -390,6 +390,12 @@
                         android:defaultValue="false"
                         />
 
+    <CheckBoxPreference android:key="@string/key_enable_pending_count"
+                        android:title="@string/enable_pending_count_title"
+                        android:summary="@string/enable_pending_count_summary"
+                        android:defaultValue="@bool/DEBUG"
+                        />
+
     <PreferenceScreen android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
                       android:key="@string/pref_group_relay_title"

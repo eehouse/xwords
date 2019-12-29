@@ -335,7 +335,7 @@ public class GameListItem extends LinearLayout
             findViewById( R.id.has_chat_marker )
                 .setVisibility( hasChat ? View.VISIBLE : View.GONE );
 
-            if ( BuildConfig.DEBUG ) {
+            if ( XWPrefs.moveCountEnabled( m_context ) ) {
                 TextView tv = (TextView)findViewById( R.id.n_pending );
                 int nPending = summary.nPacketsPending;
                 String str = nPending == 0 ? "" : String.format( "%d", nPending );

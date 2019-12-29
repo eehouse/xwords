@@ -61,6 +61,12 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_dup_invite, false );
     }
 
+    public static boolean moveCountEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_pending_count,
+                                BuildConfig.DEBUG );
+    }
+
     public static boolean getIgnoreFCM( Context context )
     {
         String curValue =

@@ -464,7 +464,7 @@ public class ConnStatusHandler {
                                                     - scratchR.height()) );
                 drawIn( canvas, res, R.drawable.multigame__gen, scratchR );
 
-                if ( BuildConfig.DEBUG && 0 < s_moveCount ) {
+                if ( 0 < s_moveCount && XWPrefs.moveCountEnabled( context ) ) {
                     String str = String.format( "%d", s_moveCount );
                     s_fillPaint.setColor( Color.BLACK );
                     canvas.drawText( str, s_rect.left + (s_rect.width() / 2),
