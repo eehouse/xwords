@@ -30,6 +30,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.format.DateUtils;
+import android.graphics.PorterDuff.Mode;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -47,6 +48,7 @@ public class ConnStatusHandler {
     private static final String TAG = ConnStatusHandler.class.getSimpleName();
     private static final String RECS_KEY = TAG + "/recs";
     private static final String STALL_STATS_KEY = TAG + "/stall_stats";
+    private static final int ORANGE = 0XFFFFA500;
 
     public interface ConnStatusCBacks {
         public void invalidateParent();
@@ -487,16 +489,10 @@ public class ConnStatusHandler {
     private static void drawArrow( Canvas canvas, Resources res, Rect rect,
                                    boolean isIn )
     {
-        int arrowID;
         boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
-        if ( isIn ) {
-            arrowID = showSuccesses ?
-                R.drawable.in_arrow_active : R.drawable.in_arrow;
-        } else {
-            arrowID = showSuccesses ?
-                R.drawable.out_arrow_active : R.drawable.out_arrow;
-        }
-        drawIn( canvas, res, arrowID, rect );
+        int color = showSuccesses ? ORANGE : Color.WHITE;
+        int arrowID = isIn ? R.drawable.in_arrow__gen : R.drawable.out_arrow__gen;
+        drawIn( canvas, res, arrowID, rect, color );
     }
 
     // This gets rid of lint warning, but I don't like it as it
@@ -577,8 +573,18 @@ public class ConnStatusHandler {
 
     private static void drawIn( Canvas canvas, Resources res, int id, Rect rect )
     {
+        drawIn( canvas, res, id, rect, Color.WHITE );
+    }
+
+    private static void drawIn( Canvas canvas, Resources res, int id, Rect rect, int color )
+    {
         Drawable icon = res.getDrawable( id );
-        Assert.assertTrue( icon.getBounds().width() == icon.getBounds().height() );
+        if ( Color.WHITE != color ) {
+            icon = icon.mutate();
+            icon.setColorFilter( color, Mode.MULTIPLY );
+        }
+        Assert.assertTrue( icon.getBounds().width() == icon.getBounds().height()
+                           || !BuildConfig.DEBUG );
         icon.setBounds( rect );
         icon.draw( canvas );
     }
