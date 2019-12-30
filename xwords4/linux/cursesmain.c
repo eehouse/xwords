@@ -410,7 +410,7 @@ curses_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
 {
     XP_USE(uc);
     XP_USE(phoniesAction);
-    XP_LOGF( "%s: %s => %s (cksum: %s)", __func__, oldName, newName, newSum );
+    XP_LOGF( "INCEST IS BAD %s: %s => %s (cksum: %s)", __func__, oldName, newName, newSum );
 }
 
 static void
