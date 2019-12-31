@@ -735,9 +735,9 @@ public class RelayService extends XWJIService
                     Log.e( TAG, "fail sending to %s", udpSocket );
                     Log.ex( TAG, ex );
                     Log.i( TAG, "Restarting threads to force new socket" );
-                    ConnStatusHandler.updateStatusOut( service, null,
-                                                       CommsConnType.COMMS_CONN_RELAY,
-                                                       true );
+                    ConnStatusHandler
+                        .updateStatusOut( service, CommsConnType.COMMS_CONN_RELAY,
+                                          true );
                     closeUDPSocket( udpSocket );
 
                     service.m_handler.post( new Runnable() {

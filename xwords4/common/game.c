@@ -339,7 +339,8 @@ game_saveSucceeded( const XWGame* game, XP_U16 saveToken )
 }
 
 XP_Bool
-game_receiveMessage( XWGame* game, XWStreamCtxt* stream, CommsAddrRec* retAddr )
+game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
+                     const CommsAddrRec* retAddr )
 {
     ServerCtxt* server = game->server;
     CommsMsgState commsState;
@@ -486,7 +487,9 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->phoniesAction = srcGI->phoniesAction;
     destGI->allowPickTiles = srcGI->allowPickTiles;
     destGI->forceChannel = srcGI->forceChannel;
-    XP_LOGF( "%s: copied forceChannel: %d", __func__, destGI->forceChannel );
+    destGI->inDuplicateMode = srcGI->inDuplicateMode;
+    XP_LOGF( "%s: copied forceChannel: %d; inDuplicateMode: %d", __func__,
+             destGI->forceChannel, destGI->inDuplicateMode );
 
     for ( srcPl = srcGI->players, destPl = destGI->players, ii = 0; 
           ii < nPlayers; ++srcPl, ++destPl, ++ii ) {
@@ -565,6 +568,9 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->phoniesAction = (XWPhoniesChoice)stream_getBits( stream, 2 );
     gi->timerEnabled = stream_getBits( stream, 1 );
 
+    gi->inDuplicateMode = strVersion >= STREAM_VERS_DUPLICATE
+        ? stream_getBits( stream, 1 )
+        : XP_FALSE;
     if ( strVersion >= STREAM_VERS_41B4 ) {
         gi->allowPickTiles = stream_getBits( stream, 1 );
         gi->allowHintRect = stream_getBits( stream, 1 );
@@ -640,6 +646,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
+    stream_putBits( stream, 1, gi->inDuplicateMode );
     stream_putBits( stream, 1, gi->allowPickTiles );
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );

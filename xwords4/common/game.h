@@ -84,7 +84,7 @@ void game_saveToStream( const XWGame* game, const CurGameInfo* gi,
 void game_saveSucceeded( const XWGame* game, XP_U16 saveToken );
 
 XP_Bool game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
-                             CommsAddrRec* retAddr );
+                             const CommsAddrRec* retAddr );
 
 void game_dispose( XWGame* game );
 

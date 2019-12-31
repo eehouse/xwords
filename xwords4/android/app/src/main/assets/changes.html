@@ -13,11 +13,9 @@
 	</style>
   </head>
 <body>
-  <h2>CrossWords 4.4.150 release</h2>
+  <h2>CrossWords 4.4.152 release</h2>
 
-  <p>This release speeds move delivery for newly-installed games and
-      hides invite-via-NFC on Android 10 (since it doesn't work
-      there).</p>
+  <p>This release fixes a nasty crash in some non-English versions.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -25,13 +23,17 @@
 	CrossWords.</p>
   </div>
 
-  <h3>New with this release</h3>
+  <h3>New with this (and previous) release</h3>
   <ul>
-      <li>Improve message delivery for new installs</li>
-      <li>Don't offer NFC on Android 10, where it's broken</li>
-      <li>Improve board layout on taller, narrower screens</li>
-      <li>Fix occasional stall sending chat messages</li>
-      <li>Fix another (very rare!) type of stall</li>
+      <li>Fix crash with some localized versions (Weblate problem...)</li>
+      <li>Tweak network traffic arrows on game board</li>
+      <li>Fix crash dragging tiles</li>
+      <li>Fix invite-via-NFC for Android 10 (and improve for earlier
+          Android versions)</li>
+      <li>Add ability to send moves via NFC</li>
+      <li>More translations (via Weblate) in Catalan, French, German,
+          Japanese, Norwegian, Polish, and Spanish</li>
+      <li>Fix a couple of other crashes reported via Google (thanks!)</li>
   </ul>
 
   <p>(The full changelog
@@ -39,7 +41,7 @@
 
   <h3>Next up</h3>
   <ul>
-      <li>Look for a workaround to allow NFC on Android 10</li>
+      <li>Improve move-via-NFC</li>
       <li>Support duplicate-style play (popular in France)</li>
       <li>Improve play-by-data-sms workaround
           using <a href="https://github.com/eehouse/nbsproxy">NBSProxy</a></li>

@@ -109,7 +109,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
         int groupSelItem;
         boolean nextIsSolo;
-        boolean moveAfterNewGroup;
+        long[] moveAfterNewGroup;
         Set<Long> selGames;
         Set<Long> selGroupIDs;
     }
@@ -818,7 +818,7 @@ public class GamesListDelegate extends ListDelegateBase
                                        @Override
                                        public void onClick( DialogInterface dlg,
                                                             int item ) {
-                                           m_mySIS.moveAfterNewGroup = true;
+                                           m_mySIS.moveAfterNewGroup = games;
                                            showDialogFragment( DlgID.NEW_GROUP );
                                        }
                                    } )
@@ -1596,7 +1596,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_newgroup:
-            m_mySIS.moveAfterNewGroup = false;
+            m_mySIS.moveAfterNewGroup = null;
             showDialogFragment( DlgID.NEW_GROUP );
             break;
 
@@ -2353,14 +2353,14 @@ public class GamesListDelegate extends ListDelegateBase
     private boolean tryNFCIntent( Intent intent )
     {
         boolean result = false;
-        String data = NFCUtils.getFromIntent( intent );
+        byte[] data = NFCUtils.getFromIntent( intent );
         if ( null != data ) {
             NetLaunchInfo nli = NetLaunchInfo.makeFrom( m_activity, data );
             if ( null != nli && nli.isValid() ) {
                 startNewNetGame( nli );
                 result = true;
             } else {
-                NFCUtils.receiveMsgs( m_activity, data );
+                Assert.assertFalse( BuildConfig.DEBUG );
             }
         }
         return result;
@@ -2448,11 +2448,10 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void showNewGroupIf()
     {
-        if ( m_mySIS.moveAfterNewGroup ) {
-            m_mySIS.moveAfterNewGroup = false;
-            Long[] games = m_mySIS.selGames
-                .toArray( new Long[m_mySIS.selGames.size()] );
-            showDialogFragment( DlgID.CHANGE_GROUP, (Object)games );
+        long[] games = m_mySIS.moveAfterNewGroup;
+        if ( null != games ) {
+            m_mySIS.moveAfterNewGroup = null;
+            showDialogFragment( DlgID.CHANGE_GROUP, games );
         }
     }
 
@@ -2844,10 +2843,12 @@ public class GamesListDelegate extends ListDelegateBase
             ;
     }
 
-    public static void sendNFCToSelf( Context context, String data )
+    public static void postNFCInvite( Context context, byte[] data )
     {
-        Intent intent = makeSelfIntent( context );
-        NFCUtils.populateIntent( intent, data );
+        Intent intent = makeSelfIntent( context )
+            .addFlags( Intent.FLAG_ACTIVITY_NEW_TASK )
+            ;
+        NFCUtils.populateIntent( context, intent, data );
         context.startActivity( intent );
     }
 

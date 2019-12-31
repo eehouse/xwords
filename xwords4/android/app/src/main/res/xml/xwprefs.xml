@@ -390,10 +390,10 @@
                         android:defaultValue="false"
                         />
 
-    <CheckBoxPreference android:key="@string/key_enable_nfc_toself"
-                        android:title="@string/enable_nfc_toself_title"
-                        android:summary="@string/enable_nfc_toself_summary"
-                        android:defaultValue="false"
+    <CheckBoxPreference android:key="@string/key_enable_pending_count"
+                        android:title="@string/enable_pending_count_title"
+                        android:summary="@string/enable_pending_count_summary"
+                        android:defaultValue="@bool/DEBUG"
                         />
 
     <PreferenceScreen android:title="@string/pref_group_relay_title"

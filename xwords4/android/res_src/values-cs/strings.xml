@@ -84,7 +84,6 @@
     <string name="password_label">Heslo</string>
     <string name="player_edit_title">Hráč</string>
     <string name="players_label_standalone">Hráči</string>
-    <string name="players_label_host_fmt">Hráči -- lokální a očekávaní</string>
     <string name="button_add_player">Přidat hráče</string>
     <string name="button_juggle_players">Přehodit hráče</string>
     <string name="dicts_item_select">Nastavit jako výchozí</string>
@@ -131,7 +130,6 @@
     <string name="msg_no_room">Žádný server si nezaregistroval místnost s tímto jménem.</string>
     <string name="msg_dup_room">Jiný server si již zaregistroval místnost s tímto jménem. Přejmenujte ji nebo to zkuste později.</string>
     <string name="msg_lost_other">Relay ztratil kontakt s nějakým zařízením ve hře.</string>
-    <string name="ids_badwords_fmt">Slovo[a] %1$s nebylo nalezeno ve slovníku.</string>
     <string name="badwords_accept">  Chcete přesto přijmout tento tah?</string>
     <string name="badwords_lost">  Tah ztracen.</string>
     <string name="badwords_title">Neplatné slovo[a]</string>

@@ -30,6 +30,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.format.DateUtils;
+import android.graphics.PorterDuff.Mode;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -47,6 +48,7 @@ public class ConnStatusHandler {
     private static final String TAG = ConnStatusHandler.class.getSimpleName();
     private static final String RECS_KEY = TAG + "/recs";
     private static final String STALL_STATS_KEY = TAG + "/stall_stats";
+    private static final int ORANGE = 0XFFFFA500;
 
     public interface ConnStatusCBacks {
         public void invalidateParent();
@@ -178,10 +180,6 @@ public class ConnStatusHandler {
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
-                    if ( ! typ.isSelectable() ) {
-                        continue;
-                    }
-
                     sb.append( String.format( "\n\n*** %s ", typ.longName( context ) ) );
                     String did = addDebugInfo( context, gamePtr, addr, typ );
                     if ( null != did ) {
@@ -363,10 +361,21 @@ public class ConnStatusHandler {
         updateStatusImpl( context, cbacks, connType, success, true );
     }
 
+    public static void updateStatusIn( Context context, CommsConnType connType,
+                                       boolean success )
+    {
+        updateStatusImpl( context, null, connType, success, true );
+    }
+
     public static void updateStatusOut( Context context, ConnStatusCBacks cbacks,
                                         CommsConnType connType, boolean success )
     {
         updateStatusImpl( context, cbacks, connType, success, false );
+    }
+
+    public static void updateStatusOut( Context context, CommsConnType connType, boolean success )
+    {
+        updateStatusImpl( context, null, connType, success, false );
     }
 
     private static void updateStatusImpl( Context context, ConnStatusCBacks cbacks,
@@ -457,7 +466,7 @@ public class ConnStatusHandler {
                                                     - scratchR.height()) );
                 drawIn( canvas, res, R.drawable.multigame__gen, scratchR );
 
-                if ( BuildConfig.DEBUG && 0 < s_moveCount ) {
+                if ( 0 < s_moveCount && XWPrefs.moveCountEnabled( context ) ) {
                     String str = String.format( "%d", s_moveCount );
                     s_fillPaint.setColor( Color.BLACK );
                     canvas.drawText( str, s_rect.left + (s_rect.width() / 2),
@@ -480,16 +489,10 @@ public class ConnStatusHandler {
     private static void drawArrow( Canvas canvas, Resources res, Rect rect,
                                    boolean isIn )
     {
-        int arrowID;
         boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
-        if ( isIn ) {
-            arrowID = showSuccesses ?
-                R.drawable.in_arrow_active : R.drawable.in_arrow;
-        } else {
-            arrowID = showSuccesses ?
-                R.drawable.out_arrow_active : R.drawable.out_arrow;
-        }
-        drawIn( canvas, res, arrowID, rect );
+        int color = showSuccesses ? ORANGE : Color.WHITE;
+        int arrowID = isIn ? R.drawable.in_arrow__gen : R.drawable.out_arrow__gen;
+        drawIn( canvas, res, arrowID, rect, color );
     }
 
     // This gets rid of lint warning, but I don't like it as it
@@ -570,8 +573,18 @@ public class ConnStatusHandler {
 
     private static void drawIn( Canvas canvas, Resources res, int id, Rect rect )
     {
+        drawIn( canvas, res, id, rect, Color.WHITE );
+    }
+
+    private static void drawIn( Canvas canvas, Resources res, int id, Rect rect, int color )
+    {
         Drawable icon = res.getDrawable( id );
-        Assert.assertTrue( icon.getBounds().width() == icon.getBounds().height() );
+        if ( Color.WHITE != color ) {
+            icon = icon.mutate();
+            icon.setColorFilter( color, Mode.MULTIPLY );
+        }
+        Assert.assertTrue( icon.getBounds().width() == icon.getBounds().height()
+                           || !BuildConfig.DEBUG );
         icon.setBounds( rect );
         icon.draw( canvas );
     }

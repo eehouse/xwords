@@ -59,7 +59,7 @@
          how far along they are.  I may list "tiles left" someday
          instead... -->
   <plurals name="moves_fmt">
-    <item quantity="one">%1$d MOVE PLAYED</item>
+    <item quantity="one">1 MOVE PLAYED</item>
     <item quantity="other">%1$d MOVES PLAYED</item>
   </plurals>
   <!-- When you select the gamel_menu_delete_all menuitem or
@@ -2204,8 +2204,6 @@
   <string name="xlations_locale">FAKE LOCALE FOR TRANSLATION</string>
   <string name="enable_dupes_summary">ACCEPT INVITATIONS MORE THAN ONCE</string>
   <string name="nag_intervals">REMINDER INTERVALS (MINUTES1,MINUTES2,...)</string>
-  <string name="enable_nfc_toself_title">ENABLE NFC TO SELF</string>
-  <string name="enable_nfc_toself_summary">FAKE INVITATION TO AID DEBUGGING</string>
   <string name="enable_sms_toself_title">SHORT-CIRCUIT SMS TO SELF</string>
   <string name="enable_sms_toself_summary">SKIP RADIO WHEN PHONE NUMBERS SAME</string>
   <string name="force_radio_title">PRETEND TO HAVE RADIO</string>

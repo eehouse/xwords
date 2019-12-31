@@ -294,6 +294,7 @@ public class NetLaunchInfo implements Serializable {
                 addP2PInfo( context );
                 break;
             case COMMS_CONN_NFC:
+                addNFCInfo();
                 break;
             default:
                 Assert.fail();

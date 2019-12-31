@@ -79,7 +79,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         if ( WiDirWrapper.enabled() ) {
             add( items, means, R.string.invite_choice_p2p, InviteMeans.WIFIDIRECT );
         }
-        if ( XWPrefs.getNFCToSelfEnabled( context ) || NFCUtils.nfcAvail( context )[0] ) {
+        if ( NFCUtils.nfcAvail( context )[0] ) {
             add( items, means, R.string.invite_choice_nfc, InviteMeans.NFC );
         }
         add( items, means, R.string.slmenu_copy_sel, InviteMeans.CLIPBOARD );

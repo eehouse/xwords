@@ -76,7 +76,6 @@ public class DlgDelegate {
         VALUES_ACTION,
         SMS_CONFIG_ACTION,
         BUTTON_BROWSEALL_ACTION,
-        NFC_TO_SELF,
         DROP_RELAY_ACTION,
         DROP_SMS_ACTION,
         INVITE_SMS_DATA,

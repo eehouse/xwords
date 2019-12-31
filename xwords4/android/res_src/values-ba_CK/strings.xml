@@ -59,7 +59,7 @@
          how far along they are.  I may list "tiles left" someday
          instead... -->
   <plurals name="moves_fmt">
-    <item quantity="one">%1$d evom deyalp</item>
+    <item quantity="one">1 evom deyalp</item>
     <item quantity="other">%1$d sevom deyalp</item>
   </plurals>
   <!-- When you select the gamel_menu_delete_all menuitem or
@@ -2204,8 +2204,6 @@
   <string name="xlations_locale">Ekaf elacol rof noitalsnart</string>
   <string name="enable_dupes_summary">Tpecca snoitativni erom naht ecno</string>
   <string name="nag_intervals">Rednimer slavretni ,2setunim,1setunim(...)</string>
-  <string name="enable_nfc_toself_title">Elbane CFN ot fles</string>
-  <string name="enable_nfc_toself_summary">Ekaf noitativni ot dia gniggubed</string>
   <string name="enable_sms_toself_title">Tiucric-trohs SMS ot fles</string>
   <string name="enable_sms_toself_summary">Piks oidar nehw enohp srebmun emas</string>
   <string name="force_radio_title">Dneterp ot evah oidar</string>

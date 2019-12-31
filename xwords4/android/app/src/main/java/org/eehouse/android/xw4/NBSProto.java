@@ -66,8 +66,7 @@ public class NBSProto {
             DbgUtils.showf( context, "Got msg %d", s_nReceived );
         }
 
-        ConnStatusHandler.updateStatusIn( context, null,
-                                          CommsConnType.COMMS_CONN_SMS,
+        ConnStatusHandler.updateStatusIn( context, CommsConnType.COMMS_CONN_SMS,
                                           true );
     }
 
@@ -380,8 +379,7 @@ public class NBSProto {
                 DbgUtils.showf( context, "Sent msg %d", s_nSent );
             }
 
-            ConnStatusHandler.updateStatusOut( context, null,
-                                               CommsConnType.COMMS_CONN_SMS,
+            ConnStatusHandler.updateStatusOut( context, CommsConnType.COMMS_CONN_SMS,
                                                success );
         }
 

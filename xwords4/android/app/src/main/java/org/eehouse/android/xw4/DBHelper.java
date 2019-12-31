@@ -35,17 +35,26 @@ import java.util.Arrays;
 public class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getSimpleName();
 
-    public static final String TABLE_NAME_SUM = "summaries";
-    public static final String TABLE_NAME_OBITS = "obits";
-    public static final String TABLE_NAME_DICTBROWSE = "dictbrowse";
-    public static final String TABLE_NAME_DICTINFO = "dictinfo";
-    public static final String TABLE_NAME_GROUPS = "groups";
-    public static final String TABLE_NAME_STUDYLIST = "study";
-    public static final String TABLE_NAME_LOC = "loc";
-    public static final String TABLE_NAME_PAIRS = "pairs";
-    public static final String TABLE_NAME_INVITES = "invites";
-    public static final String TABLE_NAME_CHAT = "chat";
-    public static final String TABLE_NAME_LOGS = "logs";
+    public enum TABLE_NAMES {
+        SUM( "summaries", 0 ),
+        OBITS( "obits", 5 ),
+        DICTBROWSE( "dictbrowse", 12 ),
+        DICTINFO( "dictinfo", 12 ),
+        GROUPS( "groups", 14 ),
+        STUDYLIST( "study", 18 ),
+        LOC( "loc", 20 ),
+        PAIRS( "pairs", 21 ),
+        INVITES( "invites", 24 ),
+        CHAT( "chat", 25 ),
+        LOGS( "logs", 26 );
+
+        private String mName;
+        private int mAddedVersion;
+        private TABLE_NAMES(String name, int start) { mName = name; mAddedVersion = start; }
+        @Override
+        public String toString() { return mName; }
+        private int addedVersion() { return mAddedVersion; }
+    }
     private static final String DB_NAME = BuildConfig.DB_NAME;
     private static final int DB_VERSION = 29;
 
@@ -245,11 +254,11 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
-        createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
-        createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
-        createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
-        forceRowidHigh( db, TABLE_NAME_SUM );
+        createTable( db, TABLE_NAMES.SUM, s_summaryColsAndTypes );
+        createTable( db, TABLE_NAMES.OBITS, s_obitsColsAndTypes );
+        createTable( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes );
+        createTable( db, TABLE_NAMES.DICTBROWSE, s_dictBrowseColsAndTypes );
+        forceRowidHigh( db, TABLE_NAMES.SUM );
         createGroupsTable( db, false );
         createStudyTable( db );
         createLocTable( db );
@@ -269,7 +278,7 @@ public class DBHelper extends SQLiteOpenHelper {
         boolean madeChatTable = false;
         switch( oldVersion ) {
         case 5:
-            createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
+            createTable( db, TABLE_NAMES.OBITS, s_obitsColsAndTypes );
         case 6:
             addSumColumn( db, TURN );
             addSumColumn( db, GIFLAGS );
@@ -285,8 +294,8 @@ public class DBHelper extends SQLiteOpenHelper {
         case 11:
             addSumColumn( db, REMOTEDEVS );
         case 12:
-            createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
-            createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
+            createTable( db, TABLE_NAMES.DICTINFO, s_dictInfoColsAndTypes );
+            createTable( db, TABLE_NAMES.DICTBROWSE, s_dictBrowseColsAndTypes );
         case 13:
             addSumColumn( db, LASTMOVE );
         case 14:
@@ -296,8 +305,8 @@ public class DBHelper extends SQLiteOpenHelper {
             moveToCurGames( db );
         case 16:
             addSumColumn( db, VISID );
-            setColumnsEqual( db, TABLE_NAME_SUM, VISID, "rowid" );
-            makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
+            setColumnsEqual( db, TABLE_NAMES.SUM, VISID, "rowid" );
+            makeAutoincrement( db, TABLE_NAMES.SUM, s_summaryColsAndTypes );
             madeSumTable = true;
         case 17:
             if ( !madeSumTable ) {
@@ -336,25 +345,14 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         case 28:
             if ( !madeChatTable ) {
-                addColumn( db, TABLE_NAME_CHAT, s_chatsSchema, CHATTIME );
+                addColumn( db, TABLE_NAMES.CHAT, s_chatsSchema, CHATTIME );
             }
 
             break;
         default:
-            db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
-
-            TableAndVersion[] tav = new TableAndVersion[] {
-                new TableAndVersion( TABLE_NAME_OBITS, 5 ),
-                new TableAndVersion( TABLE_NAME_DICTINFO, 12 ),
-                new TableAndVersion( TABLE_NAME_DICTBROWSE, 12 ),
-                new TableAndVersion( TABLE_NAME_GROUPS, 14 ),
-                new TableAndVersion( TABLE_NAME_STUDYLIST, 18 ),
-                new TableAndVersion( TABLE_NAME_LOC, 20 ),
-                new TableAndVersion( TABLE_NAME_PAIRS, 21 ),
-            };
-            for ( TableAndVersion entry : tav ) {
-                if ( oldVersion >= 1 + entry.addedVersion ) {
-                    db.execSQL( "DROP TABLE " + entry.name + ";" );
+            for ( TABLE_NAMES table : TABLE_NAMES.values() ) {
+                if ( oldVersion >= 1 + table.addedVersion() ) {
+                    db.execSQL( "DROP TABLE " + table + ";" );
                 }
             }
             onCreate( db );
@@ -363,10 +361,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private void addSumColumn( SQLiteDatabase db, String colName )
     {
-        addColumn( db, TABLE_NAME_SUM, s_summaryColsAndTypes, colName );
+        addColumn( db, TABLE_NAMES.SUM, s_summaryColsAndTypes, colName );
     }
 
-    private void addColumn( SQLiteDatabase db, String tableName,
+    private void addColumn( SQLiteDatabase db, TABLE_NAMES tableName,
                             String[][] colsAndTypes, String colName )
     {
         String colType = null;
@@ -382,7 +380,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( cmd );
     }
 
-    private void createTable( SQLiteDatabase db, String name, String[][] data )
+    private void createTable( SQLiteDatabase db, TABLE_NAMES name, String[][] data )
     {
         StringBuilder query =
             new StringBuilder( String.format("CREATE TABLE %s (", name ) );
@@ -404,7 +402,7 @@ public class DBHelper extends SQLiteOpenHelper {
             isUpgrade = 0 < countGames( db );
         }
 
-        createTable( db, TABLE_NAME_GROUPS, s_groupsSchema );
+        createTable( db, TABLE_NAMES.GROUPS, s_groupsSchema );
 
         // Create an empty group name
         ContentValues values = new ContentValues();
@@ -412,50 +410,50 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put( GROUPNAME, LocUtils.getString( m_context, false,
                                                        R.string.group_cur_games) );
             values.put( EXPANDED, 1 );
-            long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+            long curGroup = insert( db, TABLE_NAMES.GROUPS, values );
 
             // place all existing games in the initial unnamed group
             values = new ContentValues();
             values.put( GROUPID, curGroup );
-            db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
+            db.update( DBHelper.TABLE_NAMES.SUM.toString(), values, null, null );
         }
 
         values = new ContentValues();
         values.put( GROUPNAME, LocUtils.getString( m_context, false,
                                                    R.string.group_new_games) );
         values.put( EXPANDED, 1 );
-        long newGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+        long newGroup = insert( db, TABLE_NAMES.GROUPS, values );
         XWPrefs.setDefaultNewGameGroup( m_context, newGroup );
     }
 
     private void createStudyTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAME_STUDYLIST, s_studySchema );
+        createTable( db, TABLE_NAMES.STUDYLIST, s_studySchema );
     }
 
     private void createLocTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAME_LOC, s_locSchema );
+        createTable( db, TABLE_NAMES.LOC, s_locSchema );
     }
 
     private void createPairsTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAME_PAIRS, s_pairsSchema );
+        createTable( db, TABLE_NAMES.PAIRS, s_pairsSchema );
     }
 
     private void createInvitesTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAME_INVITES, s_invitesSchema );
+        createTable( db, TABLE_NAMES.INVITES, s_invitesSchema );
     }
 
     private void createChatsTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAME_CHAT, s_chatsSchema );
+        createTable( db, TABLE_NAMES.CHAT, s_chatsSchema );
     }
 
     private void createLogsTable( SQLiteDatabase db )
     {
-        createTable( db, TABLE_NAME_LOGS, s_logsSchema );
+        createTable( db, TABLE_NAMES.LOGS, s_logsSchema );
     }
 
     // Move all existing games to the row previously named "cur games'
@@ -465,19 +463,18 @@ public class DBHelper extends SQLiteOpenHelper {
                                           R.string.group_cur_games );
         String[] columns = { "rowid" };
         String selection = String.format( "%s = '%s'", GROUPNAME, name );
-        Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns,
-                                  selection, null, null, null, null );
+        Cursor cursor = query( db, TABLE_NAMES.GROUPS, columns, selection );
         if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
             long rowid = cursor.getLong( cursor.getColumnIndex("rowid") );
 
             ContentValues values = new ContentValues();
             values.put( GROUPID, rowid );
-            db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
+            update( db, TABLE_NAMES.SUM, values, null );
         }
         cursor.close();
     }
 
-    private void makeAutoincrement( SQLiteDatabase db, String name,
+    private void makeAutoincrement( SQLiteDatabase db, TABLE_NAMES name,
                                     String[][] data )
     {
         db.beginTransaction();
@@ -524,7 +521,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    private void setColumnsEqual( SQLiteDatabase db, String table,
+    private void setColumnsEqual( SQLiteDatabase db, TABLE_NAMES table,
                                   String dest, String src )
     {
         String query = String.format( "UPDATE %s set %s = %s", table,
@@ -532,7 +529,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( query );
     }
 
-    private void forceRowidHigh( SQLiteDatabase db, String name )
+    private void forceRowidHigh( SQLiteDatabase db, TABLE_NAMES name )
     {
         long now = Utils.getCurSeconds();
         // knock 20 years off; whose clock can be that far back?
@@ -546,7 +543,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private int countGames( SQLiteDatabase db )
     {
-        final String query = "SELECT COUNT(*) FROM " + TABLE_NAME_SUM;
+        final String query = "SELECT COUNT(*) FROM " + TABLE_NAMES.SUM;
 
         Cursor cursor = db.rawQuery( query, null );
         cursor.moveToFirst();
@@ -555,7 +552,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    private static String[] getColumns( SQLiteDatabase db, String name )
+    private static String[] getColumns( SQLiteDatabase db, TABLE_NAMES name )
     {
         String query = String.format( "SELECT * FROM %s LIMIT 1", name );
         Cursor cursor = db.rawQuery( query, null );
@@ -564,12 +561,27 @@ public class DBHelper extends SQLiteOpenHelper {
         return colNames;
     }
 
-    private class TableAndVersion {
-        public String name;
-        public int addedVersion;
-        public TableAndVersion( String nn, int vers ) {
-            name = nn; addedVersion = vers;
-        }
+    static Cursor query( SQLiteDatabase db, TABLE_NAMES table, String[] columns,
+                         String selection, String orderBy )
+    {
+        return db.query( table.toString(), columns, selection,
+                         null, null, null, orderBy );
     }
 
+    static Cursor query( SQLiteDatabase db, TABLE_NAMES table, String[] columns,
+                         String selection )
+    {
+        return query( db, table, columns, selection, null );
+    }
+
+    public static int update( SQLiteDatabase db, TABLE_NAMES table, ContentValues values,
+                              String selection )
+    {
+        return db.update( table.toString(), values, selection, null );
+    }
+
+    static long insert( SQLiteDatabase db, TABLE_NAMES table, ContentValues values )
+    {
+        return db.insert( table.toString(), null, values );
+    }
 }

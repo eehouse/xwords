@@ -689,7 +689,7 @@ public class BTService extends XWJIService {
                 BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
                 if ( null != adapter ) {
                     for ( BluetoothDevice dev : adapter.getBondedDevices() ) {
-                        Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
+                        // Log.d( TAG, "%s => %s", dev.getName(), dev.getAddress() );
                         if ( btName.equals( dev.getName() ) ) {
                             btAddr = dev.getAddress();
                             s_namesToAddrs.put( btName, btAddr );
@@ -771,14 +771,14 @@ public class BTService extends XWJIService {
     {
         Context context = XWApp.getContext();
         ConnStatusHandler
-            .updateStatusOut( context, null, CommsConnType.COMMS_CONN_BT, success );
+            .updateStatusOut( context, CommsConnType.COMMS_CONN_BT, success );
     }
 
     private static void updateStatusIn( boolean success )
     {
         Context context = XWApp.getContext();
         ConnStatusHandler
-            .updateStatusIn( context, null, CommsConnType.COMMS_CONN_BT, success );
+            .updateStatusIn( context, CommsConnType.COMMS_CONN_BT, success );
     }
 
     private static class KillerIn extends Thread implements AutoCloseable {

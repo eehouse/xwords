@@ -12,7 +12,7 @@
     <string name="summary_invites_out">Eingeladene Spieler</string>
     <string name="gameOver">Partie beendet</string>
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d Zug gespielt</item>
+        <item quantity="one">1 Zug gespielt</item>
         <item quantity="other">%1$d Züge gespielt</item>
     </plurals>
     <string name="button_delete">Löschen</string>
@@ -102,7 +102,7 @@
     <string name="players_label_standalone">Spieler (zum Bearbeiten antippen)</string>
     <string name="players_label_host_fmt">Spieler (%1$d lokal, %2$d extern)</string>
     <string name="join_room">Öffentlichen Raum betreten</string>
-    <string name="public_names_progress_fmt">Öffentliche Räume für %1$ d-Spieler-Partien in %2$ s werden geholt.</string>
+    <string name="public_names_progress_fmt">Öffentliche Räume für %1$d-Spieler-Partien in %2$s werden geholt.</string>
     <string name="no_name_found_fmt">Keine öffentlichen Räume für %1$d-Spieler-Partien in %2$s gefunden. Versuchen Sie zu aktualisieren oder erzeugen Sie Ihre eigenen.</string>
     <string name="use_timer">Spieluhr aktivieren</string>
     <string name="phonies_spinner_prompt">Wie „falsche Wörter\" behandelt werden (Wörter, die nicht in der Wortliste sind)</string>
@@ -128,7 +128,7 @@
     <string name="entering_trade">Spielsteine durch Antippen auswählen …</string>
     <string name="no_moves_made">(Noch keine Züge)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Diese Partie wartet auf %1$d externen Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
+        <item quantity="one">Diese Partie wartet auf 1 externen Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
         <item quantity="other">Diese Partie wartet auf %1$d externe Spieler. Wollen Sie noch jemanden einladen – falls Sie das nicht bereits haben?</item>
     </plurals>
     <plurals name="invite_sent_fmt">
@@ -330,7 +330,7 @@
     <string name="button_save">Speichern</string>
     <string name="button_discard">Verwerfen</string>
     <string name="button_retry">Erneut versuchen</string>
-    <string name="dup_game_query_fmt">Sie haben bereits eine Partie, die anscheinend von der selben Einladung erzeugt wurde (auf 1$s). Sind Sie sicher, dass Sie eine weitere erzeugen wollen?</string>
+    <string name="dup_game_query_fmt">Sie haben bereits eine Partie, die anscheinend von der selben Einladung erzeugt wurde (auf %1$s). Sind Sie sicher, dass Sie eine weitere erzeugen wollen?</string>
     <string name="info_title">Zur Information …</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Aktuelle Auswahl: %1$s</string>
@@ -506,11 +506,11 @@
     <string name="gamel_menu_checkupdates">Auf Aktualisierungen prüfen</string>
     <string name="checkupdates_none_found">Alles ist auf dem neuesten Stand.</string>
     <string name="new_dict_avail">Neue Wortliste verfügbar</string>
-    <string name="new_dict_avail_fmt">Tippen Sie, um %1$ s zu aktualisieren</string>
-    <string name="new_app_avail_fmt">Neue Version von %1$ s</string>
+    <string name="new_dict_avail_fmt">Tippen Sie, um %1$s zu aktualisieren</string>
+    <string name="new_app_avail_fmt">Neue Version von %1$s</string>
     <string name="new_app_avail">Zum Herunterladen und Installieren antippen</string>
-    <string name="str_winner_fmt" formatted="false">[Gewinner] %s: %d</string>
-    <string name="str_resigned_fmt" formatted="false">[Aufgegeben] %s: %d</string>
+    <string name="str_winner_fmt" formatted="false">[Gewinner] %1$s: %2$d</string>
+    <string name="str_resigned_fmt" formatted="false">[Aufgegeben] %1$s: %2$d</string>
     <string name="inform_dict_diffversion_fmt">Sie und der Server dieser Partie benutzen verschiedene Versionen der Wortliste %1$s.</string>
     <string name="inform_dict_title">Wortlisten stimmen nicht überein</string>
     <string name="inform_dict_diffdict_fmt">Sie benutzen die Wortliste %1$s, aber der Server der Partie benutzt %2$s. Wollen Sie auch %3$s benutzen?</string>
@@ -630,7 +630,7 @@
     <string name="loc_item_check">Überprüfen</string>
     <string name="loc_item_copy_eng">Englisch kopieren</string>
     <string name="loc_fmts_mismatch">Ungültige Übersetzung: Eine übersetzte Zeichenfolge muss die gleichen Formatierungszeichen enthalten (z. B. %1$s) wie das Original.</string>
-    <string name="not_again_fmt_expl">Diese Zeichenfolge enthält spezielle Formatierungszeichen (z. B. 1$s). Vergewissern Sie sich, das Ihre Übersetzung die gleichen wie das Original enthält.
+    <string name="not_again_fmt_expl">Diese Zeichenfolge enthält spezielle Formatierungszeichen (z. B. %1$s). Vergewissern Sie sich, das Ihre Übersetzung die gleichen wie das Original enthält.
 \n
 \n(Sie können erst speichern, wenn das der Fall ist.)</string>
     <string name="remote_empty">Wortliste wird vom Server geladen …</string>
@@ -675,7 +675,7 @@
     <string name="prev_player">Ihr Gegner</string>
     <string name="lmi_pass_fmt">%1$s hat gepasst (0 Punkte)</string>
     <plurals name="lmi_move_fmt">
-        <item quantity="one">%1$s hat %2$s gespielt im Wert von %3$d Punkten</item>
+        <item quantity="one">%1$s hat %2$s gespielt im Wert von 1 Punkten</item>
         <item quantity="other"/>
     </plurals>
     <plurals name="lmi_trade_fmt">
@@ -740,13 +740,12 @@
     <string name="gamel_menu_writegit">Git-Informationen in die Zwischenablage kopieren</string>
     <string name="enable_dupes_summary">Einladungen mehrfach annehmen</string>
     <string name="nag_intervals">Erinnerungsintervall (Minuten1, Minuten2, …)</string>
-    <string name="enable_nfc_toself_summary">Pseudo-Einladung zur Fehlersuche</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
     <string name="got_langdict_title">Standard-Wortliste für Sprache holen</string>
     <string name="got_langdict_summary">Kein zweites Mal versuchen</string>
     <string name="pref_item_update_title">Zwischen den einzelnen Versionen aktualisieren</string>
-    <string name="checking_for_fmt">Wortlisten werden in %1$ s gesucht …</string>
+    <string name="checking_for_fmt">Wortlisten werden in %1$s gesucht …</string>
     <string name="db_store_done">Schreiben auf SD-Karte abgeschlossen.</string>
     <string name="seeking_relay">Verbinde mit Zwischenstation …</string>
     <string name="no_relay_conn">Diese Partie ist für eine Verbindung über die Zwischenstation (Internet) konfiguriert, konnte aber keine Verbindung aufbauen.
@@ -804,7 +803,7 @@
         <item quantity="other"/>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">Noch %1$d Spielstein in den nicht gezeigten Ablagen: 
+        <item quantity="one">Noch 1 Spielstein in den nicht gezeigten Ablagen:
 \n</item>
         <item quantity="other">"Noch %1$d Spielsteine im Säckchen und den nicht gezeigten Ablagen: "</item>
     </plurals>
@@ -848,7 +847,7 @@
 \n
 \n(Wird von %1$d Partien benutzt.)"</item>
     </plurals>
-    <string name="str_placer_fmt" formatted="false">[Nr. %d] %s: %d</string>
+    <string name="str_placer_fmt" formatted="false">[Nr. %1$d] %2$s: %3$d</string>
     <string name="inform_dict_download">" (Sie müssen es zuerst herunterladen.)"</string>
     <string name="list_group_default">Neue Partien hier einstellen</string>
     <string name="list_group_moveup">Nach oben verschieben</string>
@@ -881,7 +880,6 @@
     <string name="gamel_menu_storedb">Partien auf SD-Kartie speichern</string>
     <string name="enable_dupes_title">Doppelte Einladungen annehmen</string>
     <string name="xlations_locale">Pseudo-Locale zum Übersetzen</string>
-    <string name="enable_nfc_toself_title">NFC-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_title">SMS-Selbstverbindung aktivieren</string>
     <string name="enable_sms_toself_summary">Mobilfunk weglassen bei gleichen Nummern</string>
     <string name="force_radio_title">Mobilfunk vortäuschen</string>

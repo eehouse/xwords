@@ -80,6 +80,8 @@ public class CommsAddrRec {
                 id = R.string.invite_choice_data_sms; break;
             case COMMS_CONN_P2P:
                 id = R.string.invite_choice_p2p; break;
+            case COMMS_CONN_NFC:
+                id = R.string.invite_choice_nfc; break;
             default:
                 Assert.assertFalse( BuildConfig.DEBUG );
             }

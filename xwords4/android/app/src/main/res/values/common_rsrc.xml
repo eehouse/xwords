@@ -126,7 +126,7 @@
   <string name="key_na_dicts">key_na_dicts</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
-  <string name="key_enable_nfc_toself">key_enable_nfc_toself</string>
+  <string name="key_enable_pending_count">key_enable_pending_count</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
   <string name="key_show_fcm">key_show_fcm2</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
@@ -152,7 +152,6 @@
   <!-- other -->
   <string name="default_host">eehouse.org</string>
   <!-- <string name="default_host">10.0.3.2</string> -->
-  <string name="xwords_nfc_mime">application/org.eehouse.android.xw4</string>
   <string name="invite_host">eehouse.org</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
   <!--string name="invite_mime">text/plain</string-->

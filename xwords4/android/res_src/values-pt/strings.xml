@@ -1744,17 +1744,17 @@
     <string name="show_wordlist_browser">Listas de palavras</string>
     <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste dispositivo) para:</string>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Você tem certeza que deseja excluir o %1$d jogo selecionado? Esta ação não poderá ser desfeita.</item>
+        <item quantity="one">Você tem certeza que deseja excluir o 1 jogo selecionado? Esta ação não poderá ser desfeita.</item>
         <item quantity="other">Você tem certeza que deseja excluir os %1$d jogos selecionados? Esta ação não poderá ser desfeita.</item>
     </plurals>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">Você tem certeza de que deseja redefinir o %1$d jogo selecionado?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+        <item quantity="one">Você tem certeza de que deseja redefinir o 1 jogo selecionado?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
         <item quantity="other">Você tem certeza de que deseja redefinir os %1$d jogos selecionados?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
     </plurals>
     <string name="summary_invites_out">Jogadores convidados</string>
     <string name="summary_invites_out_fmt">Jogadores convidados para a sala \"%1$s\"</string>
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d movimento jogado</item>
+        <item quantity="one">1 movimento jogado</item>
         <item quantity="other">%1$d movimenotos jogados</item>
     </plurals>
     <plurals name="confirm_delete_dict_fmt">
@@ -1765,7 +1765,7 @@
     <string name="set_default_message_fmt">Para quais jogadores deve a list de palavras %1$s ser o predefinição para os jogos novos\? (O idioma de %2$s será a predefinição para ambos.)</string>
     <string name="connect_label_fmt">Conexão (através de %1$s)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Este jogo está aguardando %1$d jogador remoto. Gostaria de convidar alguém para se juntar -- supondo que você ainda não o fez\?</item>
+        <item quantity="one">Este jogo está aguardando 1 jogador remoto. Gostaria de convidar alguém para se juntar -- supondo que você ainda não o fez\?</item>
         <item quantity="other">Este jogo está aguardando %1$d jogadores remotos. Gostaria de convidar alguém para se juntar -- supondo que você ainda não o fez\?</item>
     </plurals>
     <string name="list_item_netstats">Conexões…</string>

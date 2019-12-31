@@ -89,7 +89,9 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
         stringToStream( stream, nli->room );
         stringToStream( stream, nli->inviteID );
-        stream_putU32( stream, nli->devID );
+        if ( 0 == NLI_VERSION ) {
+            stream_putU32( stream, nli->devID );
+        }
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
         stringToStream( stream, nli->btName );
@@ -128,7 +130,9 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
     if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
         stringFromStreamHere( stream, nli->room, sizeof(nli->room) );
         stringFromStreamHere( stream, nli->inviteID, sizeof(nli->inviteID) );
-        nli->devID = stream_getU32( stream );
+        if ( version == 0 ) {
+            nli->devID = stream_getU32( stream );
+        }
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
         stringFromStreamHere( stream, nli->btName, sizeof(nli->btName) );

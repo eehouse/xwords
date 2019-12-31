@@ -181,7 +181,7 @@ public class CommsTransport implements TransportProcs,
                                     addIncoming();
                                 }
                                 ConnStatusHandler.
-                                    updateStatusIn( m_context, null,
+                                    updateStatusIn( m_context,
                                                     CommsConnType.COMMS_CONN_RELAY,
                                                     0 <= nRead );
                             }
@@ -190,7 +190,7 @@ public class CommsTransport implements TransportProcs,
                                 if ( null != m_bytesOut ) {
                                     int nWritten = channel.write( m_bytesOut );
                                     ConnStatusHandler.
-                                        updateStatusOut( m_context, null,
+                                        updateStatusOut( m_context,
                                                          CommsConnType.COMMS_CONN_RELAY,
                                                          0 < nWritten );
                                 }
@@ -444,6 +444,7 @@ public class CommsTransport implements TransportProcs,
                 .sendPacket( context, addr.p2p_addr, gameID, buf );
             break;
         case COMMS_CONN_NFC:
+            nSent = NFCUtils.addMsgFor( buf, gameID );
             break;
         default:
             Assert.fail();

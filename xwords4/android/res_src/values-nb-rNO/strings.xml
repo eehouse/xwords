@@ -12,7 +12,7 @@
     <string name="summary_invites_out_fmt">Spillere invitert til rom \"%1$s\"</string>
     <string name="gameOver">Spill over</string>
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d trekk gjort</item>
+        <item quantity="one">1 trekk gjort</item>
         <item quantity="other">%1$d trekk gjort</item>
     </plurals>
     <string name="button_delete">Slett</string>
@@ -388,7 +388,7 @@
     <string name="nag_warn_last_fmt">Siste advarsel: %1$s</string>
     <string name="prev_player">Din motstander</string>
     <plurals name="lmi_move_fmt">
-        <item quantity="one">%1$s spilte %2$s for %3$d poeng</item>
+        <item quantity="one">%1$s spilte %2$s for 1 poeng</item>
         <item quantity="other"/>
     </plurals>
     <string name="lmi_phony_fmt">%1$s mistet en tur</string>
@@ -566,10 +566,6 @@
     <string name="invite_subject_fmt">La oss spille CrossWords (rom %1$s)</string>
     <string name="invite_chooser_fmt">Send invitasjon via %1$s</string>
     <string name="invite_chooser_email">e-post</string>
-    <plurals name="query_trade_fmt">
-        <item quantity="one">Er du sikker på at du ønsker å bytte valgt fil (%2$s)?</item>
-        <item quantity="other">Er du sikker på at du ønsker å bytte valgt filer (%2$s)?</item>
-    </plurals>
     <string name="chat_title_fmt">Sludring for %1$s</string>
     <string name="str_no_empties_in_turn">Tomme felter kan ikke dele spilte flis.</string>
     <string name="str_two_tiles_first_move">Må spille to eller flere flis i første trekk.</string>
@@ -623,8 +619,8 @@
 \nDu kan skru på spill via SMS nå, eller senere.</string>
     <string name="button_enable_relay">Skru på relé-spill</string>
     <string name="button_disable_relay">Skru av relé-spill</string>
-    <string name="str_winner_fmt" formatted="false">[Seierherre] %s: %d</string>
-    <string name="str_resigned_fmt" formatted="false">[Resignert] %d: %d</string>
+    <string name="str_winner_fmt" formatted="false">[Seierherre] %1$s: %2$d</string>
+    <string name="str_resigned_fmt" formatted="false">[Resignert] %1$s: %2$d</string>
     <string name="inform_dict_title">Samsvarte ikke med ordliste</string>
     <string name="reload_new_dict_fmt">Gjeninnlaster spill med %1$s</string>
     <string name="default_loc_summary">(Ikke i eksternt-/SD-kort -minne)</string>
@@ -681,8 +677,6 @@
     <string name="enable_dupes_title">Godta duplikatinvitasjoner</string>
     <string name="xlations_locale">Juks til lokale for oversettelse</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
-    <string name="enable_nfc_toself_title">Skru på NFC til egen enhet</string>
-    <string name="enable_nfc_toself_summary">Juks til invitasjon for å hjelpe i feilrettingsøyemed</string>
     <string name="enable_smsproto_title">Bruk ny/eksperimentell SMS-kode</string>
     <string name="enable_smsproto_summary">(Krever at motparten bruker det også)</string>
     <string name="nfc_to_self">Send via NFC til egen ehet?</string>
@@ -764,7 +758,7 @@
     <string name="warn_relay_later">Du kan skru på relé-spill nå, eller senere.</string>
     <string name="warn_relay_remove">Du kan skru på relé-spill nå, eller senere, eller fjerne det fra dette spillet.</string>
     <string name="warn_relay_havegames">Er du sikker på at du ønsker å skru av spill på relé-et</string>
-    <string name="str_placer_fmt" formatted="false">[Nr.%d] %s: %d</string>
+    <string name="str_placer_fmt" formatted="false">[Nr.%1$d] %2$s: %3$d</string>
     <string name="inform_dict_diffversion_fmt">Du og verten for dette spillet bruker forskjellige versjoner av ordlisten %1$s.</string>
     <string name="square_tiles_summary">Selv om de kan være høyere</string>
     <string name="enable_nfc">NFC er skrudd av på denne enheten. Du kan bruke systeminnstillingene for å skru det på.</string>
@@ -798,10 +792,6 @@
 \n
 \n(Sletting av arkivgruppen er trygt fordi den vil bli gjenopprettet igjen når det trengs.)</string>
     <string name="pick_faceup">Plukk flis med bokstavene avdekt</string>
-    <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">Velg navnet på Wi-Fi Direct-enheten du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
-        <item quantity="other">Velg navnet på Wi-Fi Direct-enhetene du ønsker å invitere til spillet ditt, trykk så \"%2$s\".</item>
-    </plurals>
     <string name="invite_p2p_desc_extra">Kun spillere som er tilgjengelig vises. Hvis en enhet i nærheten ikke vises, forsikre deg om at Wi-Fi er slått på, og at CrossWords er installert, og at spill via Wi-Fi Direct er påslått.</string>
     <string name="empty_relay_inviter">Listen over enheter er tom. Bruk \"Skann spill\"-knappen for å skanne dine gamle spill for motstandere. Bruk \"+\"knappen for å skrive inn enhets-ID-er direkte.</string>
     <plurals name="confirm_clear_relay_fmt">
