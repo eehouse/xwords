@@ -186,7 +186,7 @@
     <string name="summary_relay_conn_fmt">Partida en joc a la sala «%1$s»</string>
     <string name="summary_relay_gameover_fmt">Partida finalitzada en la sala «%1$s»</string>
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d jugada feta</item>
+        <item quantity="one">1 jugada feta</item>
         <item quantity="other">%1$d jugades fetes</item>
     </plurals>
     <string name="button_delete">Suprimeix</string>
@@ -265,7 +265,7 @@ que connecti via el repetidor.</string>
     <string name="entering_trade">Toqueu les fitxes per a seleccionar-les…</string>
     <string name="no_moves_made">(Encara no s\'ha fet cap jugada)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Aquesta partida està esperant a %1$d jugador remot. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
+        <item quantity="one">Aquesta partida està esperant a 1 jugador remot. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
         <item quantity="other">Aquesta partida està esperant a %1$d jugadors remots. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
     </plurals>
     <string name="invite_if_nfc">O simplement toqueu per a convidar, si l\'altre aparell també té Android Beaming i és a prop.</string>
@@ -285,7 +285,7 @@ que connecti via el repetidor.</string>
         <item quantity="other">Queden %1$d fitxes al sac.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">Hi ha %1$d fitxa romanent als faristols ocults:
+        <item quantity="one">Hi ha 1 fitxa romanent als faristols ocults:
 \n</item>
         <item quantity="other">Hi ha %1$d fitxes romanents als faristols ocults:
 \n</item>
@@ -477,9 +477,9 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="new_dict_avail_fmt">Toqueu per a actualitzar %1$s</string>
     <string name="new_app_avail_fmt">Versió nova de %1$s</string>
     <string name="new_app_avail">Toqueu per a baixar i instal·lar</string>
-    <string name="str_winner_fmt" formatted="false">[Victòria] %s: %d</string>
-    <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
-    <string name="str_resigned_fmt" formatted="false">[Abandonament] %s: %d</string>
+    <string name="str_winner_fmt" formatted="false">[Victòria] %1$s: %2$d</string>
+    <string name="str_placer_fmt" formatted="false">[#%1$d] %2$s: %3$d</string>
+    <string name="str_resigned_fmt" formatted="false">[Abandonament] %1$s: %2$d</string>
     <string name="inform_dict_title">Els diccionaris no coincideixen</string>
     <string name="inform_dict_download">" (primer l\'heu de baixar.)"</string>
     <string name="inform_dict_diffdict_fmt">Esteu usant el diccionari %1$s però l\'amfitrió de la partida usa %2$s. Voleu usar %3$s també?</string>
@@ -824,7 +824,7 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
 aquesta partida. N\'estem esperant resposta.
 Useu el botó de tornar a convidar si penseu que
  la invitació no ha arribat.</item>
-        <item quantity="other">Ja heu enviat $1$d invitacions a
+        <item quantity="other">Ja heu enviat %1$d invitacions a
 aquesta partida. N\'estem esperant resposta.
 de %2$d destinataris. Useu el botó de tornar a
  convidar si penseu que les invitacions no ha arribat.</item>
@@ -836,7 +836,7 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="invite_choice_relay">Internet/repetidor</string>
     <string name="invite_choice_p2p">Directe per Wifi</string>
     <string name="chat_hint">Escriviu aquí...</string>
-    <string name="notify_title_turn_fmt">Teniu el torn en la partida $1$s</string>
+    <string name="notify_title_turn_fmt">Teniu el torn en la partida %1$s</string>
     <string name="invite_notice_title">Partida nova via invitació</string>
     <string name="new_relay_body">Toqueu per a obrir una partida nova</string>
     <string name="relay_invite_title">Invitació via repetidor</string>
@@ -852,7 +852,7 @@ aparells seleccionats?</string>
 (Ho esteu fent servir en una partida.)</item>
         <item quantity="other">
 
-(Ho esteu fent servir en $1$d partides.)</item>
+(Ho esteu fent servir en %1$d partides.)</item>
     </plurals>
     <string name="rematch_name_fmt">%1$s</string>
     <string name="button_reinvite">Torna a convidar</string>
@@ -904,7 +904,7 @@ aparells seleccionats?</string>
     <string name="bt_pair_settings">Aparella\'n més</string>
     <plurals name="invite_relay_desc_fmt">
         <item quantity="one">Comproveu l\'aparell que voleu convidar a la partida nova, després toqueu «%2$s».</item>
-        <item quantity="other">Comproveu els $1$d aparells que voleu convidar a la partida nova, després toqueu «%2$s».</item>
+        <item quantity="other">Comproveu els %1$d aparells que voleu convidar a la partida nova, després toqueu «%2$s».</item>
     </plurals>
     <string name="invite_p2p_desc_extra">Només es mostren els aparells que són disponibles actualment. Si un aparell proper no es mostra, assegureu-vos que la WiFi és habilitada, que té el CrossWords instal·lat i que el joc via «WiFi Direct» és habilitat.</string>
     <string name="empty_p2p_inviter">Ara mateix no hi ha cap aparell accessible via WiFiDirect que tingui el CrossWords instal·lat.</string>
@@ -913,13 +913,9 @@ aparells seleccionats?</string>
         <item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
         <item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
     </plurals>
-    <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">Seleccioneu el nom de l\'aparell WiFiDirect que voleu convidar a la partida nova, després toqueu «%2$s».</item>
-        <item quantity="other">Seleccioneu els noms dels aparells WiFiDirect que voleu convidar a la partida nova, després toqueu «%2$s».</item>
-    </plurals>
     <plurals name="confirm_clear_relay_fmt">
         <item quantity="one">Esteu segur de voler suprimir el registre RelayID seleccionat?</item>
-        <item quantity="other">Esteu segur de voler suprimir els registres RelayID seleccionats?</item>
+        <item quantity="other">Esteu segur de voler suprimir els %1$d registres RelayID seleccionats?</item>
     </plurals>
     <string name="invites_net_fmt">S\'han enviat les invitacions per a la partida connectada via %1$s:</string>
     <string name="warn_relay_disabled">El joc via repetidor es troba inhabilitat en aquest aparell. No s\'enviarà ni rebrà cap moviment via el repetidor.</string>
@@ -937,7 +933,7 @@ aparells seleccionats?</string>
     <string name="rel_invite_title">Títol de la invitació per repetidor</string>
     <string name="fetching_from_relay">Recupera les partides del repetidor</string>
     <string name="rematch_sent_toast">S\'han enviat les invitacions per a tornar a jugar</string>
-    <string name="not_again_dfltname_fmt">Esteu fent servir el nom de jugador predeterminat «%1%s». Voleu personalitzar-lo amb el vostre nom abans de crear aquesta partida\?</string>
+    <string name="not_again_dfltname_fmt">Esteu fent servir el nom de jugador predeterminat «%1$s». Voleu personalitzar-lo amb el vostre nom abans de crear aquesta partida\?</string>
     <string name="sms_invite_rationale">CrossWords necessita permís per a enviar una invitació via SMS.</string>
     <string name="button_ask_again">Torna-ho a demanar</string>
     <string name="sms_send_failed">No s\'ha pogut enviar l\'SMS</string>
@@ -974,7 +970,7 @@ aparells seleccionats?</string>
     <string name="ok_with_robots">D\'acord (robots)</string>
     <string name="sms_invite_flakey">Aquesta opció nova executa l\'aplicació de missatgeria SMS amb una invitació llesta per a enviar, si funciona. Cada aplicació de missatgeria SMS és diferent i algunes no cooperen.</string>
     <string name="sms_invite_fail">No és pot iniciar l\'aplicació de missatgeria SMS</string>
-    <string name="msg_dev_deleted_fmt">La partida amb nom «%1%s» s\'ha suprimit en un altre aparell. No hi podreu jugar mai més.</string>
+    <string name="msg_dev_deleted_fmt">La partida amb nom «%1$s» s\'ha suprimit en un altre aparell. No hi podreu jugar mai més.</string>
     <string name="invite_choice_data_sms">SMS de dades</string>
     <string name="empty_bt_inviter">Encara no s\'ha detectat cap aparell aparellat.</string>
     <string name="checkbox_archive">Mou a l\'arxiu</string>

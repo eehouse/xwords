@@ -331,7 +331,7 @@
     <string name="history_title">ゲームの履歴</string>
     <string name="finalscores_title">最終スコア</string>
     <string name="ids_endnow">辞めてもよろしいですか?</string>
-    <string name="str_resigned_fmt" formatted="false">[辞めました] %s: %d</string>
+    <string name="str_resigned_fmt" formatted="false">[辞めました] %1$s: %2$d</string>
     <string name="query_title">質問…</string>
     <string name="newbie_title">ヒントがあります</string>
     <string name="button_notagain">今後表示しない</string>
@@ -505,8 +505,8 @@
     <string name="new_dict_avail_fmt">タップすると %1$s を更新</string>
     <string name="new_app_avail_fmt">新しいバージョンの %1$s</string>
     <string name="new_app_avail">タップすると、ダウンロードとインストール</string>
-    <string name="str_winner_fmt" formatted="false">[勝ち] %s: %d</string>
-    <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
+    <string name="str_winner_fmt" formatted="false">[勝ち] %1$s: %2$d</string>
+    <string name="str_placer_fmt" formatted="false">[#%1$d] %2$s: %3$d</string>
     <string name="inform_dict_diffversion_fmt">あなたとこのゲームのホストは、異なるバージョンの単語リスト %1$s を使用しています。</string>
     <string name="inform_dict_title">単語リストの不一致</string>
     <string name="inform_dict_diffdict_fmt">あなたは単語リスト %1$s を使用していますが、ゲームのホストは %2$s を使用しています。%3$s も使用しますか?</string>
@@ -853,12 +853,6 @@
     <string name="invite_choice_p2p">Wifi ダイレクト</string>
     <string name="bt_pair_settings">ペアの詳細</string>
     <string name="p2p_invite_title">WiFi ダイレクトへの招待</string>
-    <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">新しいゲームに招待する WiFi
-ダイレクトデバイスの名前を選択し、
-\"%2$s\" をタップしてください。</item>
-        <item quantity="other"/>
-    </plurals>
     <string name="invite_p2p_desc_extra">現在利用可能なデバイスだけが表示されます。
 近くのデバイス表示されていない場合、WiFi がオンになっていること、
 クロスワードがインストールされていること、WiFi ダイレクトのプレイが

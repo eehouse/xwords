@@ -12,7 +12,7 @@
     <string name="summary_invites_out_fmt">Jugadores invitados en la sala \"%1$s\"</string>
     <string name="gameOver">Fin de la partida</string>
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d movimiento realizado</item>
+        <item quantity="one">1 movimiento realizado</item>
         <item quantity="other">%1$d movimientos realizados</item>
     </plurals>
     <string name="button_delete">Borrar</string>
@@ -120,10 +120,6 @@
     <plurals name="invite_msg_fmt">
         <item quantity="one">"La partida está esperando un jugador remoto.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
         <item quantity="other">"La partida está esperando %1$d jugadores remotos.  Si aún no lo has hecho, ¿te gustaría invitar a alguien a unirse\?"</item>
-    </plurals>
-    <plurals name="invite_sent_fmt">
-        <item quantity="one">Ya has invitado a un jugador remoto a esta partida. Estamos esperando su respuesta. Por favor, pulsa el botón \"invitar de nuevo\" si crees que la invitación no se ha enviado.</item>
-        <item quantity="other">Ya has enviado %1$d invitaciones para esta partida. Estamos esperando sus respuestas. Por favor, pulsa el botón \"invitar de nuevo\" si crees que las invitaciones no se han enviado.</item>
     </plurals>
     <string name="invited_msg">Esta partida ha sido creada a partir de una invitación que has recibido. La partida comenzará tan pronto como se pueda conectar con el remitente y cualquier otro invitado.</string>
     <string name="invite_if_nfc">O simplemente pulsa para invitar -- si el otro dispositivo tiene también Android Beaming y está cerca.</string>

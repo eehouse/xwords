@@ -217,7 +217,7 @@
     <string name="not_again_dfltname_fmt">Używasz domyślnej nazwy gracza \"%1$s\". Czy chciałbyś spersonalizować swoje imię przed utworzeniem tej gry\?</string>
     <string name="robot_name_fmt">%1$s (robot)</string>
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d ruch zagrany</item>
+        <item quantity="one">1 ruch zagrany</item>
         <item quantity="few">%1$d ruchy zagrane</item>
         <item quantity="many">%1$d ruchów zagranych</item>
     </plurals>
@@ -323,7 +323,7 @@
 \n</string>
     <string name="strs_move_across_fmt">przenieś (od %1$s w poprzek)
 \n</string>
-    <string name="strs_move_down_fmt">przenieś (z %1$ w dół)
+    <string name="strs_move_down_fmt">przenieś (z %1$s w dół)
 \n</string>
     <string name="strs_tray_at_start_fmt">Półka na początku: %1$s
 \n</string>
@@ -569,9 +569,8 @@
     <string name="new_dict_avail_fmt">Stuknij, aby zaktualizować %1$s</string>
     <string name="new_app_avail_fmt">Nowa wersja %1$s</string>
     <string name="new_app_avail">Stuknij, aby pobrać i zainstalować</string>
-    <string name="str_winner_fmt" formatted="false">[Zwycięzca] %1$s</string>
-    <string name="str_resigned_fmt" formatted="false">[Zrezygnował] %s: %d</string>
-    <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
+    <string name="str_resigned_fmt" formatted="false">[Zrezygnował] %1$s: %2$d</string>
+    <string name="str_placer_fmt" formatted="false">[#%1$d] %2$s: %3$d</string>
     <string name="inform_dict_diffversion_fmt">Ty i gospodarz tej gry używacie różnych wersji listy słów %1$s.</string>
     <string name="inform_dict_title">Niedopasowanie listy słów</string>
     <string name="inform_dict_diffdict_fmt">Używasz listy słów %1$s, ale gospodarz gry używa %2$s. Czy chciałbyś również użyć %3$s\?</string>
@@ -709,7 +708,7 @@
     <string name="prev_player">Twój przeciwnik</string>
     <string name="lmi_pass_fmt">%1$s minęło (0 punktów)</string>
     <plurals name="lmi_move_fmt">
-        <item quantity="one">%1$s zagrał %2$s za %3$d punktów</item>
+        <item quantity="one">%1$s zagrał %2$s za 1 punktów</item>
         <item quantity="few"/>
         <item quantity="many"/>
     </plurals>
@@ -905,7 +904,7 @@
     <string name="pick_faceup">Wybierz odkryte kafelki</string>
     <string name="menu_juggle">Wymieszaj kafelki</string>
     <string name="pct_suffix">" %."</string>
-    <string name="add_to_study_fmt">Dodaj %1$ do listy nauki</string>
+    <string name="add_to_study_fmt">Dodaj %1$s do listy nauki</string>
     <string name="title_studyon">Włącz listę nauki</string>
     <string name="gamel_menu_study">Lista do nauczenia…</string>
     <string name="add_done_fmt">%1$s dodane do %2$s listy do nauki</string>

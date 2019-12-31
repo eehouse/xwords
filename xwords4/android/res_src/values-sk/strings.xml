@@ -950,7 +950,6 @@
   <string name="msg_dev_deleted">XLATE ME: This game has been deleted on
       another device. You will not be able to play any
       further.</string>
-  <string name="ids_badwords_fmt">Slovo[á] %1$s nebolo nájdené v slovníku.</string>
   <string name="badwords_accept">  Chcete napriek tomu potvrdiť tento ťah?</string>
   <string name="badwords_lost">  Ťah stratený.</string>
   <string name="badwords_title">Neplatné slovo[á]</string>

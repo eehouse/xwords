@@ -58,7 +58,7 @@
          how far along they are.  I may list "tiles left" someday
          instead... -->
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d move played</item>
+        <item quantity="one">One move played</item>
         <item quantity="other">%1$d moves played</item>
     </plurals>
     <!-- When you select the gamel_menu_delete_all menuitem or
@@ -457,7 +457,7 @@
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
     <plurals name="invite_msg_fmt">
-        <item quantity="one">This game is waiting for %1$d remote
+        <item quantity="one">This game is waiting for one remote
       player. Would you like to invite someone to join -- assuming you
       haven\'t already?</item>
         <item quantity="other">This game is waiting for %1$d remote
@@ -677,6 +677,7 @@
     <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
     <plurals name="strd_remains_header_fmt">
+        <item quantity="one">One tile left in pool.</item>
         <item quantity="other">%1$d tiles left in pool.</item>
     </plurals>
     <!-- Intro to the paragraph listing all of the tiles remaining -->
@@ -1845,9 +1846,9 @@
     <!--  -->
     <string name="new_app_avail">Tap to download and install</string>
     <!-- Used in formatting final scores display -->
-    <string name="str_winner_fmt" formatted="false">[Winner] %s: %d</string>
-    <string name="str_resigned_fmt" formatted="false">[Resigned] %s: %d</string>
-    <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
+    <string name="str_winner_fmt" formatted="false">[Winner] %1$s: %2$d</string>
+    <string name="str_resigned_fmt" formatted="false">[Resigned] %1$s: %2$d</string>
+    <string name="str_placer_fmt" formatted="false">[#%1$d] %2$s: %3$d</string>
     <!--  -->
     <string name="inform_dict_diffversion_fmt">You and the host of this
     game are using different versions of the wordlist %1$s.</string>
@@ -2078,6 +2079,7 @@
     <!-- formatting for last move summary in notifications -->
     <string name="lmi_pass_fmt">%1$s passed (0 points)</string>
     <plurals name="lmi_move_fmt">
+        <item quantity="one">%1$s played %2$s for one point</item>
         <item quantity="other">%1$s played %2$s for %3$d points</item>
     </plurals>
     <plurals name="lmi_trade_fmt">

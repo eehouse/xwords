@@ -58,7 +58,7 @@
          how far along they are.  I may list "tiles left" someday
          instead... -->
     <plurals name="moves_fmt">
-        <item quantity="one">%1$d coup joué</item>
+        <item quantity="one">1 coup joué</item>
         <item quantity="other">%1$d coups joués</item>
     </plurals>
     <!-- When you select the gamel_menu_delete_all menuitem or
@@ -763,7 +763,7 @@ restants]</string>
     <!--<string name="strd_remains_header_fmt">%1$d tiles left in pool.</string>-->
     <!--<string name="strd_remains_header_fmt">%1$d jetons restants dans le sac.</string>-->
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">%1$d jeton restant dans le sac.</item>
+        <item quantity="one">1 jeton restant dans le sac.</item>
         <item quantity="other">%1$d jetons restants dans le sac.</item>
     </plurals>
     <!-- Intro to the paragraph lisiting all of the tiles remaining -->
@@ -774,7 +774,7 @@ tous les chevalets :\n</string>-->
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">Un jeton restant dans les chevalets cachés :
 \n</item>
-        <item quantity="other">%d jetons restants dans le sac et les chevalets cachés :
+        <item quantity="other">%1$d jetons restants dans le sac et les chevalets cachés :
 \n</item>
     </plurals>
     <!-- text of dialog shown when the menu item board_menu_undo_last
@@ -2252,11 +2252,11 @@ réseau.)</string>-->
     <string name="new_app_avail">Toucher pour télécharger et installer</string>
     <!-- Used in formatting final scores display -->
     <!--<string name="str_winner_fmt" formatted="false">[Winner] %s: %d</string>-->
-    <string name="str_winner_fmt" formatted="false">[Vainqueur] %s : %d</string>
+    <string name="str_winner_fmt" formatted="false">[Vainqueur] %1$s : %2$d</string>
     <!--<string name="str_resigned_fmt" formatted="false">[Resigned] %s: %d</string>-->
-    <string name="str_resigned_fmt" formatted="false">[Abandon] %s : %d</string>
+    <string name="str_resigned_fmt" formatted="false">[Abandon] %1$s : %2$d</string>
     <!--<string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>-->
-    <string name="str_placer_fmt" formatted="false">[%de] %s : %d</string>
+    <string name="str_placer_fmt" formatted="false">[%1$de] %2$s : %3$d</string>
     <!--  -->
     <!--<string name="inform_dict_diffversion_fmt">You and the host of this
     game are using different versions of the wordlist %1$s.</string>-->
@@ -2653,7 +2653,7 @@ pour voir ce qui est disponible.</string>
     <!--<string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>-->
     <!--<string name="lmi_move_fmt">%1$s a joué %2$s pour %3$d points</string>-->
     <plurals name="lmi_move_fmt">
-        <item quantity="one">%1$s a joué %2$s pour %3$d point</item>
+        <item quantity="one">%1$s a joué %2$s pour un point</item>
         <item quantity="other">%1$s a joué %2$s pour %3$d points</item>
     </plurals>
     <!--<string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>-->
@@ -2763,7 +2763,7 @@ d\'autres joueurs quand elle sera ouverte.)</string>
     <!--<string name="nplayers_fmt">%1$d player[s]</string>-->
     <!--<string name="nplayers_fmt">%1$d joueur[s]</string>-->
     <plurals name="nplayers_fmt">
-        <item quantity="one">%1$d joueur</item>
+        <item quantity="one">1 joueur</item>
         <item quantity="other">%1$d joueurs</item>
     </plurals>
     <!--XLATE-ME-->
@@ -3138,10 +3138,6 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
     <string name="invite_choice_p2p">Wifi Direct</string>
     <string name="bt_pair_settings">En appairer d\'autres</string>
     <string name="p2p_invite_title">Invitation par WiFi direct</string>
-    <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">Sélectionnez le nom de l\'appareil WiFi Direct que vous souhaitez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
-        <item quantity="other">Sélectionnez les noms des appareils WiFi Direct que vous souhaitez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
-    </plurals>
     <string name="invite_p2p_desc_extra">Seuls les appareils actuellement disponibles sont affichés. Si un appareil à proximité ne s\'affiche pas, assurez-vous que le WiFi est allumé, que CrossWords est installé, et que le WiFi Direct est activé.</string>
     <string name="empty_p2p_inviter">Il n\'y a actuellement pas d\'appareils accessibles par WiFi Direct qui ont CrossWords installé.</string>
     <string name="not_again_comms_p2p">Utiliser le WiFi Direct pour jouer contre un appareil faisant du WiFi Direct, sur lequel CrossWords est installé.</string>
@@ -3205,7 +3201,7 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
     <string name="button_scan">Rescanner</string>
     <plurals name="confirm_clear_bt_fmt">
         <item quantity="one">Êtes-vous sûr de vouloir oublier l\'appareil sélectionné \?</item>
-        <item quantity="other">"Êtes-vous sûr de vouloir oublier les  %1d appareils sélectionnés \?"</item>
+        <item quantity="other">"Êtes-vous sûr de vouloir oublier les %1$d appareils sélectionnés \?"</item>
     </plurals>
     <string name="confirm_clear_bt_postscript">"
 \n
