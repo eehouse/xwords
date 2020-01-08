@@ -313,7 +313,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
 }
 
 void
-relaycon_invite( LaunchParams* params, XP_U32 destDevID, 
+relaycon_invite( LaunchParams* params, XP_U32 destRelayDevID,
                  const XP_UCHAR* relayID, NetLaunchInfo* invit )
 {
     XP_U8 tmpbuf[256];
@@ -326,13 +326,13 @@ relaycon_invite( LaunchParams* params, XP_U32 destDevID,
 
     /* write relayID <connname>/<hid>, or if we have an actual devID write a
        null byte plus it. */
-    if ( 0 == destDevID ) {
+    if ( 0 == destRelayDevID ) {
         XP_ASSERT( '\0' != relayID[0] );
         indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, 
                             (XP_U8*)relayID, 1 + XP_STRLEN( relayID ) );
     } else {
         tmpbuf[indx++] = '\0';  /* null byte: zero-len str */
-        indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, destDevID );
+        indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, destRelayDevID );
     }
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)

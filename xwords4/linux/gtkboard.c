@@ -85,7 +85,7 @@ static void handle_invite_button( GtkWidget* widget, GtkGameGlobals* globals );
 static void gtkShowFinalScores( const GtkGameGlobals* globals, 
                                 XP_Bool ignoreTimeout );
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
-                          XP_U32 devID, const XP_UCHAR* relayID, 
+                          XP_U32 relayDevID, const XP_UCHAR* relayID,
                           const CommsAddrRec* addrs );
 
 
@@ -1556,18 +1556,19 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;
-    XP_U32 devID;
-    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers, &devID );
+    XP_U32 relayDevID = 0;
+    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers,
+                                      &relayDevID );
     XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
 
     if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, devID, NULL, &inviteAddr );
+        send_invites( cGlobals, nPlayers, relayDevID, NULL, &inviteAddr );
     }
 } /* handle_invite_button */
 
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
-              XP_U32 devID, const XP_UCHAR* relayID, 
+              XP_U32 relayDevID, const XP_UCHAR* relayID,
               const CommsAddrRec* addrs )
 {
     CommsAddrRec addr = {0};
@@ -1579,10 +1580,12 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 
     NetLaunchInfo nli = {0};
     nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
-    XP_UCHAR buf[32];
-    snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
-    nli_setInviteID( &nli, buf );
-    nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
+    if ( 0 != relayDevID || !!relayID ) {
+        XP_UCHAR buf[32];
+        snprintf( buf, sizeof(buf), "%X", makeRandomInt() );
+        nli_setInviteID( &nli, buf );
+    }
+    // nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
 #ifdef DEBUG
     {
@@ -1603,9 +1606,9 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         linux_sms_invite( cGlobals->params, &nli,
                           addrs->u.sms.phone, addrs->u.sms.port );
     }
-    if ( 0 != devID || !!relayID ) {
-        XP_ASSERT( 0 != devID || (!!relayID && !!relayID[0]) );
-        relaycon_invite( cGlobals->params, devID, relayID, &nli );
+    if ( 0 != relayDevID || !!relayID ) {
+        XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
+        relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
     }
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */
