@@ -70,7 +70,7 @@
     <string name="title_langs_list">Idiomas (basado en las listas de palabras instaladas)</string>
     <string name="game_locked">Ajustes de bloqueo</string>
     <string name="players_label_standalone">Jugadores (pulsa para editar)</string>
-    <string name="players_label_host_fmt">Jugadores (%1$d conectados, %2$d no conectados)</string>
+    <string name="players_label_host_fmt">Jugadores (%1$d locales, %2$d remotos)</string>
     <string name="button_add_player">Añadir jugador</string>
     <string name="button_juggle_players">Barajar jugadores</string>
     <string name="lang_label">Idioma de la partida</string>
@@ -81,7 +81,7 @@
     <string name="room_public">Convertir en sala pública</string>
     <string name="room_public_prompt">Seleccionar sala pública</string>
     <string name="public_names_progress_fmt">Buscando salas públicas para %1$d-jugadores en %2$s.</string>
-    <string name="no_name_found_fmt">No se han encontrados salas públicas para %1$d-jugadores en %2$s. Inténtalo de nuevo o crea una propia .</string>
+    <string name="no_name_found_fmt">No se han encontrado salas públicas para %1$d-jugadores en %2$s. Inténtalo de nuevo o crea una propia .</string>
     <string name="settings_label">Otros ajustes</string>
     <string name="hints_allowed">Mostrar pistas</string>
     <string name="nethints_allowed">Mostrar pistas (en red)</string>
@@ -95,7 +95,7 @@
     <string name="phonies_ignore">Ignorar las palabras falsas</string>
     <string name="phonies_warn">Advertir si hay palabras falsas</string>
     <string name="phonies_disallow">Rechazar palabras falsas</string>
-    <string name="str_reg_server_sans_remote">Al menos un jugador debe marcarse como \"Remoto\" en una partida iniciada como Host.</string>
+    <string name="str_reg_server_sans_remote">Al menos un jugador debe marcarse como \"Remoto\" en una partida iniciada como Anfitrión.</string>
     <string name="guest_name">(Jugador externo)</string>
     <string name="confirm_save">Esta partida está en curso. Si guardas estos cambios se reiniciará. ¿Quieres guardar los cambios\?</string>
     <string name="confirm_save_title">Confirmar cambios</string>
@@ -103,7 +103,7 @@
     <string name="force_title">Jugador[es] externo[s]</string>
     <string name="force_expl">En una partida multidispositivo debe haber al menos un jugador de este dispositivo y otro que no lo sea. Por favor, busca jugadores externos.</string>
     <string name="player_edit_title">Editar jugador</string>
-    <string name="remote_label">Jugador externo</string>
+    <string name="remote_label">Jugador remoto</string>
     <string name="player_label">Nombre:</string>
     <string name="dict_lang_label_fmt">Lista de palabras (en %1$s)</string>
     <string name="dicts_list_prompt_fmt">Listas de palabras instaladas (en %1$s)</string>
@@ -140,4 +140,111 @@
         <item quantity="one">Dispositivo %1$d conectado al repetidor en la sala \"%2$s\". Esperando a un jugador.</item>
         <item quantity="other">Dispositivo %1$d conectado al repetidor en la sala \"%2$s\". Esperando a %3$d jugadores.</item>
     </plurals>
+    <string name="forced_consistent">Primer jugador modificado.</string>
+    <string name="msg_relay_all_here_fmt">Todos los jugadores en la sala \"%1$s\".</string>
+    <string name="relay_alert">Problema de conexión</string>
+    <string name="msg_too_many">Estás proporcionando más jugadores de los que el anfitrión espera.</string>
+    <string name="msg_no_room">Ningún anfitrión ha registrado una sala con ese nombre.</string>
+    <string name="msg_dup_room">Ya hay otro anfitrión que ha registrado una sala con ese nombre. Prueba con otro o inténtalo más tarde.</string>
+    <string name="msg_lost_other">El repetidor ha perdido la señal con el otro dispositivo en esta partida.</string>
+    <string name="msg_dev_deleted_fmt">La partida \"%1$s\" ha sido eliminada en otro dispositivo y ya no podrás jugar más.</string>
+    <string name="ids_badwords_fmt">Palabra[s] %1$s no encontrada[s] en la lista de palabras %2$s.</string>
+    <string name="badwords_accept">" ¿Todavía quieres aceptar esta jugada\?"</string>
+    <string name="badwords_lost">Turno perdido.</string>
+    <string name="badwords_title">Palabra[s] no válida[s]</string>
+    <string name="board_menu_done">Turno jugado</string>
+    <string name="board_menu_trade">Intercambio</string>
+    <string name="board_menu_tray_hide">Ocultar atril</string>
+    <string name="board_menu_tray_show">Mostrar atril</string>
+    <string name="board_menu_undo_last">Deshacer último movimiento</string>
+    <string name="board_submenu_game">Partida -&gt;</string>
+    <string name="board_menu_game_counts">Cantidad y valores…</string>
+    <string name="board_menu_game_left">Fichas restantes…</string>
+    <string name="board_menu_game_history">Historial de la partida…</string>
+    <string name="board_menu_game_final">Resultados finales</string>
+    <string name="board_menu_game_resign">Abandonar</string>
+    <string name="board_menu_game_resend">Volver a enviar movimientos</string>
+    <string name="str_robot_moved_fmt">"El robot %1$s ha realizado un movimiento: "</string>
+    <plurals name="strd_robot_traded_fmt">
+        <item quantity="one">ficha intercambiada.</item>
+        <item quantity="other">%1$d fichas intercambiadas.</item>
+    </plurals>
+    <string name="strs_values_header_fmt">%1$s counts/values:
+\n</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %1$d [todas las fichas restantes]</string>
+    <string name="strd_unused_tiles_sub_fmt">- %1$d [fichas no utilizadas]</string>
+    <string name="strs_new_tiles_fmt">Fichas nuevas: %1$s</string>
+    <string name="strd_cumulative_score_fmt">Puntuación acumulada: %1$d
+\n</string>
+    <string name="str_remote_moved_fmt">"Jugador remoto %1$s ha realizado un movimiento: "</string>
+    <string name="strd_time_penalty_sub_fmt">- %1$d [tiempo]</string>
+    <string name="str_pass">Pasar turno
+\n</string>
+    <string name="strs_move_across_fmt">movimiento (de %1$s en horizontal)
+\n</string>
+    <string name="strs_move_down_fmt">movimiento (de %1$s en vertical)
+\n</string>
+    <string name="strs_tray_at_start_fmt">Atril al inicio: %1$s
+\n</string>
+    <string name="strss_traded_for_fmt">Intercambiado %1$s por %2$s.</string>
+    <string name="str_phony_rejected">Palabra no permitida utilizada; ¡turno perdido!</string>
+    <string name="str_commit_confirm">¿Quieres realizar esta jugada\?
+\n</string>
+    <string name="str_nonlocal_name_fmt">%1$s (remoto)</string>
+    <string name="vs_join">" vs. "</string>
+    <string name="str_bonus_all">Bonus por utilizar todas las fichas: 50
+\n</string>
+    <string name="strd_turn_score_fmt">Puntuación en el turno: %1$d
+\n</string>
+    <plurals name="strd_remains_header_fmt">
+        <item quantity="one">%1$d fichas restantes en la bolsa.</item>
+        <item quantity="other"></item>
+    </plurals>
+    <plurals name="strd_remains_expl_fmt">
+        <item quantity="one">Una ficha restante en la bandeja oculta:
+\n</item>
+        <item quantity="other">%1$d fichas restantes en la bolsa y las bandejas ocultas:
+\n</item>
+    </plurals>
+    <string name="confirm_undo_last">¿Seguro que quieres deshacer la última jugada realizada\? (No podrás deshacer esta opción)</string>
+    <string name="title_prefs">Ajustes de CrossWords</string>
+    <string name="button_revert_all">Restaurar todo</string>
+    <string name="confirm_revert_colors">¿Seguro que quieres restaurar todos los parámetros de color a sus valores predeterminados\?</string>
+    <string name="button_revert_colors">Restablecer colores</string>
+    <string name="confirm_revert_all">¿Estás seguro de que quieres restablecer todos los parámetros a sus valores predeterminados\?</string>
+    <string name="prefs_defaults">Nuevas partidas</string>
+    <string name="prefs_defaults_summary">Valores predeterminados para nuevas partidas</string>
+    <string name="prefs_names">Nombre de los jugadores</string>
+    <string name="prefs_names_summary">Nombre de los jugadores por defecto</string>
+    <string name="pref_player1_name">Jugador 1</string>
+    <string name="pref_player2_name">Jugador 2</string>
+    <string name="pref_player3_name">Jugador 3</string>
+    <string name="pref_player4_name">Jugador 4</string>
+    <string name="pref_human_name">Jugador (tu nombre)</string>
+    <string name="prefs_dicts">Listas de palabras</string>
+    <string name="prefs_dicts_summary">Listas de palabras predefinidas</string>
+    <string name="default_dict">Listas de palabras para jugadores</string>
+    <string name="default_robodict">Listas de palabras para robots</string>
+    <string name="hints_allowed_sum">Activar pistas</string>
+    <string name="nethints_allowed_sum">Activar pistas para partidas con dos dispositivos</string>
+    <string name="init_autojuggle">Barajar jugadores</string>
+    <string name="init_autojuggle_sum">Modo aleatorio, para nuevas partidas</string>
+    <string name="default_phonies">Gestionar las palabras falsas</string>
+    <string name="phonies_found_title">Palabras falsas encontradas</string>
+    <string name="initial_player_minutes">Minutos por jugador</string>
+    <string name="board_size">Tamaño del tablero</string>
+    <string name="prefs_appearance">Apariencia</string>
+    <string name="prefs_appearance_summary">Ajustes de apariencia</string>
+    <string name="summary_field">Incluir en la lista de partidas</string>
+    <string name="game_summary_field_empty">&lt;Vacío&gt;</string>
+    <string name="game_summary_field_language">Idioma de la partida</string>
+    <string name="game_summary_field_opponents">Oponente[s]</string>
+    <string name="game_summary_field_state">Estado del juego</string>
+    <string name="hide_title">Ocultar barra de título</string>
+    <string name="hide_title_summary">Ocultar el nombre del juego permite que el tablero sea un poco más grande</string>
+    <string name="hide_newgames_title">Ocultar botones de nueva partida</string>
+    <string name="hide_newgames_summary">Ocultar los botones de nueva partida permite que la pantalla sea más visible</string>
+    <string name="show_arrow">Mostrar flecha del tablero</string>
+    <string name="show_arrow_summary">Las fichas del atril se colocarán sobre la flecha cuando sea visible</string>
+    <string name="keep_screenon">Mantener pantalla encendida</string>
 </resources>
