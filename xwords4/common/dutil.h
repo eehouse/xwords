@@ -60,8 +60,8 @@ typedef struct _DUtilVtable {
 
 struct XW_DUtilCtxt {
     DUtilVtable vtable;
-
     void* closure;
+    void* devCtxt;              /* owned by device.c */
     VTableMgr* vtMgr;
     MPSLOT
 };

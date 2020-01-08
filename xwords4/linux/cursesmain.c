@@ -65,6 +65,7 @@
 #include "gamesdb.h"
 #include "relaycon.h"
 #include "smsproto.h"
+#include "device.h"
 
 #ifdef CURSES_SMALL_SCREEN
 # define MENU_WINDOW_HEIGHT 1
@@ -2239,8 +2240,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     endwin();
 
+    device_store( params->dutil );
+
     if ( !!params->dbName ) {
         closeGamesDB( params->pDb );
+        params->pDb = NULL;
     }
     relaycon_cleanup( params );
 

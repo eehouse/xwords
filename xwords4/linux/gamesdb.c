@@ -533,8 +533,9 @@ db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
     XP_ASSERT( !!pDb );
     FetchResult result = NOT_THERE;
     char query[256];
-    snprintf( query, sizeof(query),
-              "SELECT value from pairs where key = '%s'", key );
+    int len = snprintf( query, sizeof(query),
+                        "SELECT value from pairs where key = '%s'", key );
+    XP_ASSERT( len < sizeof(query) );
     sqlite3_stmt *ppStmt;
     int sqlResult = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
     XP_Bool found = SQLITE_OK == sqlResult;

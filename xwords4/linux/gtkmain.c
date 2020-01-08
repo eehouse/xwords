@@ -31,6 +31,7 @@
 #include "relaycon.h"
 #include "linuxsms.h"
 #include "gtkask.h"
+#include "device.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
@@ -941,8 +942,9 @@ gtkmain( LaunchParams* params )
     }
 
     gtk_main();
-
+    device_store( params->dutil );
     closeGamesDB( params->pDb );
+    params->pDb = NULL;
     relaycon_cleanup( params );
 #ifdef XWFEATURE_SMS
     linux_sms_cleanup( params );

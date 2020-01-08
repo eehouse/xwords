@@ -205,12 +205,8 @@ linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
     if ( 0 < len ) {
         XP_U8 buf[len];
         linux_dutil_loadPtr( duc, key, buf, &len );
-        XP_ASSERT( buf[len-1] == '\0' );
 
-        gsize out_len;
-        guchar* txt = g_base64_decode( (const gchar*)buf, &out_len ); /* BAD */
-        stream_putBytes( stream, txt, out_len );
-        g_free( txt );
+        stream_putBytes( stream, buf, len );
     }
 
     XP_LOGF( "%s(key=%s) => len: %d", __func__, key, stream_getSize(stream) );
@@ -218,7 +214,7 @@ linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 
 static void
 linux_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
-                      const void* data, XP_U16 len )
+                      const void* data, const XP_U16 len )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
@@ -238,18 +234,23 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
     gint buflen = 0;
     FetchResult res = db_fetch( pDb, key, NULL, &buflen );
     if ( res == BUFFER_TOO_SMALL ) { /* expected: I passed 0 */
-        void* tmp = XP_MALLOC( duc->mpool, buflen );
-        res = db_fetch( pDb, key, tmp, &buflen );
-        XP_ASSERT( res == SUCCESS );
+        if ( 0 == *lenp ) {
+            *lenp = buflen;
+        } else {
+            gchar* tmp = XP_MALLOC( duc->mpool, buflen );
+            res = db_fetch( pDb, key, tmp, &buflen );
+            XP_ASSERT( res == SUCCESS );
+            XP_ASSERT( tmp[buflen-1] == '\0' );
 
-        gsize out_len;
-        guchar* txt = g_base64_decode( (const gchar*)tmp, &out_len );
-        if ( out_len <= *lenp ) {
-            XP_MEMCPY( data, txt, out_len );
-            *lenp = out_len;
+            gsize out_len;
+            guchar* txt = g_base64_decode( (const gchar*)tmp, &out_len );
+            if ( out_len <= *lenp ) {
+                XP_MEMCPY( data, txt, out_len );
+                *lenp = out_len;
+            }
+            XP_FREEP( duc->mpool, &tmp );
+            g_free( txt );
         }
-        XP_FREEP( duc->mpool, &tmp );
-        g_free( txt );
     } else {
         *lenp = 0;              /* doesn't exist */
     }
