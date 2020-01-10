@@ -203,23 +203,26 @@ public class Perms23 {
     private static class QueryInfo {
         private Action m_action;
         private Perm[] m_perms;
+        private int mNAKey;
         private DelegateBase m_delegate;
         private String m_rationaleMsg;
         private Object[] m_params;
 
         private QueryInfo( DelegateBase delegate, Action action,
-                           Perm[] perms, String msg, Object[] params ) {
+                           Perm[] perms, String msg, int naKey,
+                           Object[] params ) {
             m_delegate = delegate;
             m_action = action;
             m_perms = perms;
             m_rationaleMsg = msg;
+            mNAKey = naKey;
             m_params = params;
         }
 
         private QueryInfo( DelegateBase delegate, Object[] params )
         {
             this( delegate, (Action)params[0], (Perm[])params[1], (String)params[2],
-                  (Object[])params[3] );
+                  0, (Object[])params[3] );
         }
 
         private Object[] getParams()
@@ -260,6 +263,7 @@ public class Perms23 {
                                 .setPosButton( R.string.button_ask_again )
                                 .setNegButton( R.string.button_skip )
                                 .setParams( QueryInfo.this.getParams() )
+                                .setNAKey( mNAKey )
                                 .show();
                         }
                     } );
@@ -319,36 +323,51 @@ public class Perms23 {
      * Request permissions, giving rationale once, then call with action and
      * either positive or negative, the former if permission granted.
      */
+    private static void tryGetPermsImpl( DelegateBase delegate, Perm[] perms,
+                                         String rationaleMsg, int naKey,
+                                         final Action action, Object... params )
+    {
+        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
+        new QueryInfo( delegate, action, perms, rationaleMsg, naKey, params )
+            .doIt( true );
+    }
+
     public static void tryGetPerms( DelegateBase delegate, Perm[] perms, int rationaleId,
                                     final Action action, Object... params )
     {
         // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
-        Context context = XWApp.getContext();
-        String msg = rationaleId == 0
-            ? null : LocUtils.getString( context, rationaleId );
-        tryGetPerms( delegate, perms, msg, action, params );
+        String msg = LocUtils.getStringOrNull( rationaleId );
+        tryGetPermsImpl( delegate, perms, msg, 0, action, params );
     }
 
     public static void tryGetPerms( DelegateBase delegate, Perm[] perms,
                                     String rationaleMsg, final Action action,
                                     Object... params )
     {
-        // Log.d( TAG, "tryGetPerms(%s)", perm.toString() );
-        new QueryInfo( delegate, action, perms, rationaleMsg, params )
-            .doIt( true );
+        tryGetPermsImpl( delegate, perms, rationaleMsg, 0, action, params );
     }
 
     public static void tryGetPerms( DelegateBase delegate, Perm perm,
                                     String rationaleMsg, final Action action,
                                     Object... params )
     {
-        tryGetPerms( delegate, new Perm[]{ perm }, rationaleMsg, action, params );
+        tryGetPermsImpl( delegate, new Perm[]{ perm }, rationaleMsg, 0,
+                         action, params );
     }
 
     public static void tryGetPerms( DelegateBase delegate, Perm perm, int rationaleId,
                                     final Action action, Object... params )
     {
         tryGetPerms( delegate, new Perm[]{perm}, rationaleId, action, params );
+    }
+
+    public static void tryGetPermsNA( DelegateBase delegate, Perm perm,
+                                      int rationaleId, int naKey,
+                                      Action action, Object... params )
+    {
+        tryGetPermsImpl( delegate, new Perm[] {perm},
+                         LocUtils.getStringOrNull( rationaleId ), naKey,
+                         action, params );
     }
 
     public static void onGotPermsAction( DelegateBase delegate, boolean positive,

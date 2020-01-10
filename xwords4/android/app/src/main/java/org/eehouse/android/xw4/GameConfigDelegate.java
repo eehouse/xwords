@@ -783,9 +783,10 @@ public class GameConfigDelegate extends DelegateBase
     private void showConnAfterCheck()
     {
         if ( null == SMSPhoneInfo.get( m_activity ) ) {
-            Perms23.tryGetPerms( this, Perms23.Perm.READ_PHONE_STATE,
-                                 R.string.phone_state_rationale,
-                                 Action.ASKED_PHONE_STATE );
+            Perms23.tryGetPermsNA( this, Perms23.Perm.READ_PHONE_STATE,
+                                   R.string.phone_state_rationale,
+                                   R.string.key_na_perms_phonestate,
+                                   Action.ASKED_PHONE_STATE );
         } else {
             showDialogFragment( DlgID.CHANGE_CONN, m_conTypes );
         }
