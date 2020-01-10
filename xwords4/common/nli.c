@@ -42,9 +42,21 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
     nli->nPlayersH = nPlayers;
     nli->forceChannel = forceChannel;
 
-    if ( addr_hasType( addr, COMMS_CONN_RELAY ) ) {
-        types_addType( &nli->_conTypes, COMMS_CONN_RELAY );
-        XP_STRCAT( nli->room, addr->u.ip_relay.invite );
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+        types_addType( &nli->_conTypes, typ );
+        switch ( typ ) {
+        case COMMS_CONN_RELAY:
+            XP_STRCAT( nli->room, addr->u.ip_relay.invite );
+            break;
+        case COMMS_CONN_SMS:
+            XP_STRCAT( nli->phone, addr->u.sms.phone );
+            // nli->port = addr->u.sms.port; <-- I wish
+            break;
+        default:
+            XP_ASSERT(0);
+            break;
+        }
     }
 }
 
@@ -159,9 +171,8 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
 void
 nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
 {
-    XP_U32 state = 0;
     CommsConnType type;
-    while ( types_iter( nli->_conTypes, &type, &state ) ) {
+    for ( XP_U32 state = 0; types_iter( nli->_conTypes, &type, &state ); ) {
         addr_addType( addr, type );
         switch( type ) {
         case COMMS_CONN_RELAY:
@@ -176,6 +187,7 @@ nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
             break;
         case COMMS_CONN_SMS:
             XP_STRCAT( addr->u.sms.phone, nli->phone );
+            addr->u.sms.port = 1; /* BAD, but 0 is worse */
             break;
         default:
             XP_ASSERT(0);
