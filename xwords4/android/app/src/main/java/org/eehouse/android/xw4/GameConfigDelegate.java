@@ -305,7 +305,7 @@ public class GameConfigDelegate extends DelegateBase
                                              .show();
                                          break;
                                      default:
-                                         Assert.fail();
+                                         Assert.failDbg();
                                      }
                                  }
                              }, null, this );
@@ -527,7 +527,7 @@ public class GameConfigDelegate extends DelegateBase
                 setLangSpinnerSelection( langName );
                 break;
             default:
-                Assert.fail();
+                Assert.failDbg();
             }
         }
     }
@@ -559,7 +559,7 @@ public class GameConfigDelegate extends DelegateBase
     private void loadGame( XwJNI.GamePtr gamePtr )
     {
         if ( null == gamePtr ) {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         } else {
             m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
                 || XwJNI.comms_isConnected( gamePtr );
@@ -775,7 +775,7 @@ public class GameConfigDelegate extends DelegateBase
                 break;
             default:
                 Log.w( TAG, "unknown v: " + view.toString() );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
     } // onClick
@@ -1047,7 +1047,7 @@ public class GameConfigDelegate extends DelegateBase
         default:
             Log.w( TAG, "setSmartnessSpinner got %d from getRobotSmartness()",
                    m_gi.getRobotSmartness() );
-            Assert.fail();
+            Assert.failDbg();
         }
         m_smartnessSpinner.setSelection( setting );
     }
@@ -1058,7 +1058,7 @@ public class GameConfigDelegate extends DelegateBase
         case 1: return 13;
         case 2: return 11;
         default:
-            Assert.fail();
+            Assert.failDbg();
         }
         return -1;
     }
@@ -1078,7 +1078,7 @@ public class GameConfigDelegate extends DelegateBase
             selection = 2;
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
             break;
         }
         Assert.assertTrue( size == positionToSize(selection) );
@@ -1185,7 +1185,7 @@ public class GameConfigDelegate extends DelegateBase
         case FORCE_REMOTE:
             return R.layout.force_remote;
         }
-        Assert.fail();
+        Assert.failDbg();
         return 0;
     }
 

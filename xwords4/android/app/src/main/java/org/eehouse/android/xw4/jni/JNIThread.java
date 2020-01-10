@@ -733,7 +733,7 @@ public class JNIThread extends Thread implements AutoCloseable {
                 break;
             default:
                 Log.w( TAG, "dropping cmd: %s", elem.m_cmd.toString() );
-                Assert.fail();
+                Assert.failDbg();
             }
 
             if ( draw ) {

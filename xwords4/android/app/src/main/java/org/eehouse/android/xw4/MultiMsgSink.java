@@ -115,7 +115,7 @@ public class MultiMsgSink implements TransportProcs {
             nSent = sendViaNFC( buf, gameID );
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
             break;
         }
         Log.i( TAG, "transportSend(): sent %d bytes for game %d/%x via %s",

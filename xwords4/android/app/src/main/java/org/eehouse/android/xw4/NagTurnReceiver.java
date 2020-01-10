@@ -154,7 +154,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
                 }
             }
         } else {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
         return result;
     }

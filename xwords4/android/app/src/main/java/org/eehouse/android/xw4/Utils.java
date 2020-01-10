@@ -684,7 +684,7 @@ public class Utils {
             result = base64Encode( bas.toByteArray() );
         } catch ( Exception ex ) {
             Log.ex( TAG, ex );
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
         return result;
     }

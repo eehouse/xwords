@@ -112,7 +112,7 @@ public class NetUtils {
                     }
                 }
             } catch ( JSONException ex ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
     }

@@ -172,7 +172,7 @@ public class BiDiSockWrap {
                         Log.ex( TAG, ioe );
                         closeSocket();
                     } catch ( InterruptedException ie ) {
-                        Assert.fail();
+                        Assert.failDbg();
                     }
                     Log.d( TAG, "write thread exiting" );
                 }

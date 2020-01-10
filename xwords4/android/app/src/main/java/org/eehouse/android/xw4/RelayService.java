@@ -526,7 +526,7 @@ public class RelayService extends XWJIService
             stopSelf();
             break;
         default:
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
     }
 
@@ -554,7 +554,7 @@ public class RelayService extends XWJIService
                     s_UDPSocket = udpSocket;
                 } catch( SocketException se ) {
                     Log.ex( TAG, se );
-                    Assert.fail();
+                    Assert.failDbg();
                 } catch( java.net.UnknownHostException uhe ) {
                     Log.ex( TAG, uhe );
                     Log.e( TAG, "connectSocketOnce(): %s", uhe.getMessage() );
@@ -629,7 +629,7 @@ public class RelayService extends XWJIService
                     long sentMS = packet.getSentMS();
                     if ( prevSentMS > sentMS ) {
                         Log.e( TAG, "error: prevSentMS: %d > sentMS: %d", prevSentMS, sentMS );
-                        Assert.assertFalse( BuildConfig.DEBUG );
+                        Assert.failDbg();
                         continue;
                     }
 
@@ -705,7 +705,7 @@ public class RelayService extends XWJIService
                                                     CommsConnType.COMMS_CONN_RELAY,
                                                     succeeded );
                 } catch ( JSONException ex ) {
-                    Assert.assertFalse( BuildConfig.DEBUG );
+                    Assert.failDbg();
                 }
             }
         }
@@ -785,7 +785,7 @@ public class RelayService extends XWJIService
         // DbgUtils.logf( "startFetchThreadIfNotUDP()" );
         boolean handled = relayEnabled( this ) && !BuildConfig.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
-            Assert.assertFalse( BuildConfig.DEBUG ); // NOT using this now!
+            Assert.failDbg(); // NOT using this now!
 
             m_fetchThread = new Thread( null, new Runnable() {
                     @Override
@@ -804,7 +804,7 @@ public class RelayService extends XWJIService
     {
         while ( null != m_fetchThread ) {
             Log.w( TAG, "2: m_fetchThread NOT NULL; WHAT TO DO???" );
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
             try {
                 Thread.sleep( 20 );
             } catch( java.lang.InterruptedException ie ) {
@@ -1240,7 +1240,7 @@ public class RelayService extends XWJIService
 
     private void fetchAndProcess()
     {
-        Assert.assertFalse( BuildConfig.DEBUG );
+        Assert.failDbg();
         long[][] rowIDss = new long[1][];
         String[] relayIDs = DBUtils.getRelayIDs( this, rowIDss );
         if ( null != relayIDs && 0 < relayIDs.length ) {
@@ -1428,7 +1428,7 @@ public class RelayService extends XWJIService
                         // Need to deal with this case by sending multiple
                         // packets.  It WILL happen.
                         Log.w( TAG, "dropping send for lack of space; FIX ME!!" );
-                        Assert.fail();
+                        Assert.failDbg();
                         break;
                     }
                     // got space; now write it
@@ -1594,7 +1594,7 @@ public class RelayService extends XWJIService
             startUDPReadThreadOnce();
             registerWithRelay( -1 );
         } else {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
             stopUDPReadThread();
             startFetchThreadIfNotUDP();
         }

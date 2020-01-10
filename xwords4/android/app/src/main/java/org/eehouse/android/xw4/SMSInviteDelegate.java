@@ -116,7 +116,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             result = R.string.invite_sms_desc;
             break;
         default:
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
             break;
         }
         return result;

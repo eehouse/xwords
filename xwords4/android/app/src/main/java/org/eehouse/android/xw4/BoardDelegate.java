@@ -1322,7 +1322,7 @@ public class BoardDelegate extends DelegateBase
 
                 break;
             default:
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
     }
@@ -1788,7 +1788,7 @@ public class BoardDelegate extends DelegateBase
                 id = R.string.bonus_w3x;
                 break;
             default:
-                Assert.fail();
+                Assert.failDbg();
             }
 
             if ( 0 != id ) {
@@ -1970,7 +1970,7 @@ public class BoardDelegate extends DelegateBase
             case ERR_NO_EMPTY_TRADE:
                 // This should not be possible as the button's
                 // disabled when no tiles selected.
-                Assert.fail();
+                Assert.failDbg();
                 break;
             case ERR_TOO_MANY_TRADE:
                 int nLeft = XwJNI.server_countTilesInPool( m_jniGamePtr );
@@ -2382,7 +2382,7 @@ public class BoardDelegate extends DelegateBase
                 break;
             default:
                 Log.w( TAG, "tickle: unexpected type %s", typ.toString() );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
 
@@ -2499,7 +2499,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            Assert.fail();
+            Assert.failDbg();
         }
 
         showDialogFragment( dlgID, dlgTitle, txt );

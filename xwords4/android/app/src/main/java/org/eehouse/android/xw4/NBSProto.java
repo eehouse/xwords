@@ -293,7 +293,7 @@ public class NBSProto {
                 break;
             default:
                 Log.w( TAG, "unexpected cmd %s", msg.cmd );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
                 break;
             }
         }
@@ -364,7 +364,7 @@ public class NBSProto {
                     } catch ( IllegalArgumentException iae ) {
                         Log.w( TAG, "sendBuffers(%s): %s", phone, iae.toString() );
                     } catch ( NullPointerException npe ) {
-                        Assert.assertFalse( BuildConfig.DEBUG ); // shouldn't be trying to do this!!!
+                        Assert.failDbg(); // shouldn't be trying to do this!!!
                     } catch ( java.lang.SecurityException se ) {
                         getHelper().postEvent( MultiEvent.SMS_SEND_FAILED_NOPERMISSION );
                     } catch ( Exception ee ) {

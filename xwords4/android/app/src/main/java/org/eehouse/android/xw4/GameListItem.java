@@ -184,7 +184,7 @@ public class GameListItem extends LinearLayout
             }
             break;
         default:
-            Assert.assertFalse(BuildConfig.DEBUG);
+            Assert.failDbg();
             break;
         }
     }

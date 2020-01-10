@@ -49,7 +49,7 @@ public class DBAlert extends XWDialogFragment {
                 if ( null != obj && !(obj instanceof Serializable) ) {
                     Log.d( TAG, "OOPS: %s not Serializable",
                            obj.getClass().getName() );
-                    Assert.assertFalse( BuildConfig.DEBUG );
+                    Assert.failDbg();
                 }
             }
         }

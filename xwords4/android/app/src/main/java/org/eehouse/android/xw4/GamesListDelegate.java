@@ -159,7 +159,7 @@ public class GamesListDelegate extends ListDelegateBase
                     if ( BuildConfig.DEBUG && ggi.m_count != children.size() ) {
                         Log.e( TAG, "m_count: %d != size: %d",
                                ggi.m_count, children.size() );
-                        Assert.fail();
+                        Assert.failDbg();
                     }
                 }
             }
@@ -200,7 +200,7 @@ public class GamesListDelegate extends ListDelegateBase
                 item.setSelected( m_mySIS.selGames.contains( rec.m_rowID ) );
                 result = item;
             } else {
-                Assert.fail();
+                Assert.failDbg();
             }
             return result;
         }
@@ -1204,7 +1204,7 @@ public class GamesListDelegate extends ListDelegateBase
                         mkListAdapter();
                         break;
                     default:
-                        Assert.fail();
+                        Assert.failDbg();
                         break;
                     }
                 }
@@ -1267,7 +1267,7 @@ public class GamesListDelegate extends ListDelegateBase
             long groupID = ((GameListGroup)obj).getGroupID();
             selected = m_mySIS.selGroupIDs.contains( groupID );
         } else {
-            Assert.fail();
+            Assert.failDbg();
             selected = false;
         }
         return selected;
@@ -1685,7 +1685,7 @@ public class GamesListDelegate extends ListDelegateBase
             long groupID = ((GameListGroup)targetView).getGroupID();
             selected = m_mySIS.selGroupIDs.contains( groupID );
         } else {
-            Assert.fail();
+            Assert.failDbg();
         }
 
         if ( 0 != id ) {
@@ -1736,7 +1736,7 @@ public class GamesListDelegate extends ListDelegateBase
                 selIds[0] = ((GameListGroup)targetView).getGroupID();
                 handled = handleSelGroupsItem( itemID, selIds );
             } else {
-                Assert.fail();
+                Assert.failDbg();
             }
         }
 
@@ -2360,7 +2360,7 @@ public class GamesListDelegate extends ListDelegateBase
                 startNewNetGame( nli );
                 result = true;
             } else {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
         return result;
@@ -2592,7 +2592,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         if ( summary.conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
-            Assert.fail();
+            Assert.failDbg();
         } else {
             try {
                 if ( checkWarnNoDict( rowid ) ) {

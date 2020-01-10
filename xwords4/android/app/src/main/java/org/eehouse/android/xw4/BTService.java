@@ -496,7 +496,7 @@ public class BTService extends XWJIService {
                 break;
 
             default:
-                Assert.fail();
+                Assert.failDbg();
             }
         } else {
             Log.d( TAG, "onHandleWorkImpl(): BT disabled so doing nothing" );
@@ -732,7 +732,7 @@ public class BTService extends XWJIService {
                     mHelper.postEvent( event, dev );
                 }
             } catch ( InterruptedException ex ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
     }
@@ -1225,7 +1225,7 @@ public class BTService extends XWJIService {
 
             default:
                 Log.e( TAG, "handleReply(cmd=%s) case not handled", cmd );
-                Assert.assertFalse( BuildConfig.DEBUG ); // fired
+                Assert.failDbg(); // fired
             }
 
             if ( null != evt ) {
@@ -1281,7 +1281,7 @@ public class BTService extends XWJIService {
                 op.dos.writeInt( gameID );
                 append( BTCmd.PING, gameID, op );
             } catch ( IOException ioe ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
             return this;
         }
@@ -1299,7 +1299,7 @@ public class BTService extends XWJIService {
                 }
                 append( BTCmd.INVITE, op );
             } catch ( IOException ioe ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
 
@@ -1312,7 +1312,7 @@ public class BTService extends XWJIService {
                 op.dos.write( buf, 0, buf.length );
                 append( BTCmd.MESG_SEND, gameID, msgID, op );
             } catch ( IOException ioe ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
         
@@ -1323,7 +1323,7 @@ public class BTService extends XWJIService {
                 op.dos.writeInt( gameID );
                 append( BTCmd.MESG_GAMEGONE, gameID, op );
             } catch ( IOException ioe ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
 
@@ -1446,7 +1446,7 @@ public class BTService extends XWJIService {
                     ? (short)inStream.available() : inStream.readShort();
                 if ( isLen >= MAX_PACKET_LEN ) {
                     Log.e( TAG, "packet too big; dropping!!!" );
-                    Assert.assertFalse( BuildConfig.DEBUG );
+                    Assert.failDbg();
                 } else {
                     byte[] data = new byte[isLen];
                     inStream.readFully( data );
@@ -1494,7 +1494,7 @@ public class BTService extends XWJIService {
                                 processor.receiveGameGone( gameID, socket );
                                 break;
                             default:
-                                Assert.assertFalse( BuildConfig.DEBUG );
+                                Assert.failDbg();
                                 break;
                             }
                         } else {
@@ -1502,7 +1502,7 @@ public class BTService extends XWJIService {
                                    + " skipping %d bytes", cmdOrd, oneLen );
                             if ( oneLen <= dis.available() ) {
                                 dis.readFully( new byte[oneLen] );
-                                Assert.assertFalse( BuildConfig.DEBUG );
+                                Assert.failDbg();
                             }
                         }
 
@@ -1520,7 +1520,7 @@ public class BTService extends XWJIService {
             } catch ( Exception ex ) {
                 Log.e( TAG, "dispatchAll() got ex: %s", ex );
                 Log.ex( TAG, ex );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
             Log.d( TAG, "dispatchAll() done" );
         }

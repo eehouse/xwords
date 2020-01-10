@@ -92,7 +92,7 @@ public class XWConnAddrPreference extends DialogPreference {
                                           .show();
                                       break;
                                   default:
-                                      Assert.fail();
+                                      Assert.failDbg();
                                       break;
                                   }
                               }

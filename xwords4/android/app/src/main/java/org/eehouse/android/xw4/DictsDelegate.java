@@ -279,7 +279,7 @@ public class DictsDelegate extends ListDelegateBase
                     item.setComment( m_onServerStr );
 
                 } else {
-                    Assert.fail();
+                    Assert.failDbg();
                 }
 
                 item.setText( name );
@@ -1029,7 +1029,7 @@ public class DictsDelegate extends ListDelegateBase
                 ++results[SEL_REMOTE];
             } else {
                 Log.d( TAG, "obj is a: " + obj );
-                Assert.fail();
+                Assert.failDbg();
             }
         }
         Log.i( TAG, "countSelDicts() => {loc: %d; remote: %d}",

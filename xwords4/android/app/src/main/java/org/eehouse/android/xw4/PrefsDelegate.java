@@ -237,7 +237,7 @@ public class PrefsDelegate extends DelegateBase
                 makeOkOnlyBuilder( R.string.after_restart ).show();
                 break;
             default:
-                Assert.fail();
+                Assert.failDbg();
                 break;
             }
         }
@@ -275,7 +275,7 @@ public class PrefsDelegate extends DelegateBase
             break;
 
         default:
-            Assert.fail();
+            Assert.failDbg();
         }
     }
 

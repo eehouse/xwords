@@ -621,7 +621,7 @@ public class WiDirService extends XWService {
                 break;
 
             default:
-                Assert.fail();
+                Assert.failDbg();
             }
         }
     }
@@ -1163,7 +1163,7 @@ public class WiDirService extends XWService {
                 }
                 getMgr().requestGroupInfo( sChannel, sGroupListener );
             } else {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
 

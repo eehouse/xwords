@@ -95,7 +95,7 @@ public class Perms23 {
                                      PackageManager.GET_PERMISSIONS )
                     .requestedPermissions;
                 if ( pis == null ) {
-                    Assert.assertFalse( BuildConfig.DEBUG );
+                    Assert.failDbg();
                 } else {
                     String manifestName = perm.getString();
                     for ( int ii = 0; !result && ii < pis.length; ++ii ) {
@@ -456,7 +456,7 @@ public class Perms23 {
                 break;
             default:
                 Log.e( TAG, "bannedWithWorkaround(): unexpected perm %s", perm );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
                 break;
             }
         }

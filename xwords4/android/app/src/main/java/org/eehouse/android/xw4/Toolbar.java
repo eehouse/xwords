@@ -169,7 +169,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
             } else if ( listener instanceof View.OnLongClickListener ) {
                 button.setOnLongClickListener( (View.OnLongClickListener)listener );
             } else {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
         return success;

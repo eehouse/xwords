@@ -83,7 +83,7 @@ public class CommsAddrRec {
             case COMMS_CONN_NFC:
                 id = R.string.invite_choice_nfc; break;
             default:
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
 
             return ( 0 == id ) ? toString() : LocUtils.getString( context, id );
@@ -408,7 +408,7 @@ public class CommsAddrRec {
         case COMMS_CONN_NFC:
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
         }
     }
 }

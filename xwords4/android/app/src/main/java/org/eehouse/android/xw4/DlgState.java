@@ -67,7 +67,7 @@ public class DlgState implements Parcelable {
                 if ( null != obj && !(obj instanceof Serializable) ) {
                     Log.d( TAG, "OOPS: %s not Serializable",
                            obj.getClass().getName() );
-                    Assert.assertFalse( BuildConfig.DEBUG );
+                    Assert.failDbg();
                 }
             }
         }
@@ -178,7 +178,7 @@ public class DlgState implements Parcelable {
             Assert.assertFalse(newState == this);
             if ( !this.equals(newState) ) {
                 Log.d( TAG, "restore failed!!: %s => %s", this, newState );
-                Assert.fail();
+                Assert.failDbg();
             }
         }
     }

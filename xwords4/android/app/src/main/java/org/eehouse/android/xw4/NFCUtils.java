@@ -112,7 +112,7 @@ public class NFCUtils {
             intent.setAction( NFC_TO_SELF_ACTION )
                 .putExtra( NFC_TO_SELF_DATA, data );
         } else {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
     }
 
@@ -168,7 +168,7 @@ public class NFCUtils {
                 }
                 result = baos.toByteArray();
             } catch ( IOException ioe ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
         Log.d( TAG, "formatMsgs(gameID=%d) => %s", gameID, DbgUtils.hexDump( result ) );
@@ -429,12 +429,12 @@ public class NFCUtils {
                         break;
                     default:
                         Log.e( TAG, "unexpected reply %d", body[0] );
-                        Assert.assertFalse( BuildConfig.DEBUG );
+                        Assert.failDbg();
                         break;
                     }
                     break;
                 default:
-                    Assert.assertFalse( BuildConfig.DEBUG );
+                    Assert.failDbg();
                     break;
                 }
             }
@@ -492,7 +492,7 @@ public class NFCUtils {
                 dos.writeInt( num );
                 dos.flush();
             } catch ( IOException ioe ) {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
             result = baos.toByteArray();
         }
@@ -692,7 +692,7 @@ public class NFCUtils {
                 }
             }
         } catch ( IOException ioe ) {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
         return result;
     }
@@ -736,7 +736,7 @@ public class NFCUtils {
             }
             remember( msgID, token );
         } catch ( IOException ioe ) {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
         return result;
     }

@@ -208,7 +208,7 @@ abstract class XWFragment extends Fragment implements Delegator {
 
     public void finish()
     {
-        Assert.fail();
+        Assert.failDbg();
     }
 
     public void setTitle() { m_dlgt.setTitle(); }

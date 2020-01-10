@@ -108,7 +108,7 @@ public class NFCCardService extends HostApduService {
                             }
                         }
                     } catch ( IOException ioe ) {
-                        Assert.assertFalse( BuildConfig.DEBUG );
+                        Assert.failDbg();
                     }
                 }
             }
@@ -129,7 +129,7 @@ public class NFCCardService extends HostApduService {
                 }
             }
         } catch ( IOException ioe ) {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
         byte[] result = baos.toByteArray();
 

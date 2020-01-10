@@ -23,9 +23,9 @@ package org.eehouse.android.xw4;
 public class Assert {
     private static final String TAG = Assert.class.getSimpleName();
 
-    public static void fail() {
-        assertTrue(false);
-    }
+    public static void fail() { assertTrue(false); }
+
+    public static void failDbg() { assertFalse( BuildConfig.DEBUG ); }
 
     public static void assertFalse(boolean val)
     {

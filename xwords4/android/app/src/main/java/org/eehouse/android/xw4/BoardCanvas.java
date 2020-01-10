@@ -588,7 +588,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                     sSaveMethod = cls.getDeclaredMethod( "save", new Class[] {int.class} );
                 } catch ( NoSuchMethodException | ClassNotFoundException ex ) {
                     Log.e( TAG, "%s", ex );
-                    Assert.fail();
+                    Assert.failDbg();
                 }
             }
 
@@ -599,7 +599,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             } catch ( java.lang.reflect.InvocationTargetException
                       | IllegalAccessException ex ) {
                 Log.e( TAG, "%s", ex );
-                Assert.fail();
+                Assert.failDbg();
             }
         }
     }

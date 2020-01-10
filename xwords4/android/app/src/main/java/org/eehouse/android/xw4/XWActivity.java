@@ -261,13 +261,13 @@ public class XWActivity extends FragmentActivity
 
     public void addFragment( XWFragment fragment, Bundle extras )
     {
-        Assert.fail();
+        Assert.failDbg();
     }
 
     public void addFragmentForResult( XWFragment fragment, Bundle extras,
                                       RequestCode request  )
     {
-        Assert.fail();
+        Assert.failDbg();
     }
 
     protected void show( XWDialogFragment df )

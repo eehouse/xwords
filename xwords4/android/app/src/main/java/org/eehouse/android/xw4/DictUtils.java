@@ -319,7 +319,7 @@ public class DictUtils {
             context.deleteFile( name );
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
         }
 
         if ( null != path ) {
@@ -441,7 +441,7 @@ public class DictUtils {
             path = context.getFileStreamPath( name );
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
             path = null;
         }
         return path;

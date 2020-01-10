@@ -223,7 +223,7 @@ public class NetLaunchInfo implements Serializable {
                         default:
                             doAdd = false;
                             Log.d( TAG, "unexpected type: %s", typ );
-                            Assert.assertFalse( BuildConfig.DEBUG );
+                            Assert.failDbg();
                         }
                         if ( doAdd ) {
                             m_addrs.add( typ );
@@ -301,7 +301,7 @@ public class NetLaunchInfo implements Serializable {
                 addNFCInfo();
                 break;
             default:
-                Assert.fail();
+                Assert.failDbg();
                 break;
             }
         }
@@ -457,7 +457,7 @@ public class NetLaunchInfo implements Serializable {
             case COMMS_CONN_NFC:
                 break;
             default:
-                Assert.fail();
+                Assert.failDbg();
                 break;
             }
         }
@@ -516,7 +516,7 @@ public class NetLaunchInfo implements Serializable {
                 break;
             default:
                 doAdd = false;
-                Assert.fail();
+                Assert.failDbg();
             }
             if ( doAdd ) {
                 m_addrs.add( typ );
@@ -654,14 +654,14 @@ public class NetLaunchInfo implements Serializable {
             das.writeUTF( makeLaunchJSON() );
             result = bas.toByteArray();
         } catch ( java.io.IOException ex ) {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
         return result;
     }
 
     public static void putExtras( Intent intent, int gameID, String btAddr )
     {
-        Assert.fail();
+        Assert.failDbg();
     }
 
     public void freezeAddrs()

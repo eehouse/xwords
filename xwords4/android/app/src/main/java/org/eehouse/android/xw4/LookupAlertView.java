@@ -159,7 +159,7 @@ public class LookupAlertView extends LinearLayout
         } else if ( STATE_URLS == m_state ) {
             m_urlIndex = position;
         } else {
-            Assert.fail();
+            Assert.failDbg();
         }
         switchState( 1 );
     }
@@ -220,7 +220,7 @@ public class LookupAlertView extends LinearLayout
             switchState( -1 );
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
             break;
         }
     } // switchState

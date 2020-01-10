@@ -177,7 +177,7 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
                         default:
                             Log.e( TAG, "unexpected button %d", button );
                             // ignore on release builds
-                            Assert.assertFalse( BuildConfig.DEBUG );
+                            Assert.failDbg();
                         }
                     }
                 }

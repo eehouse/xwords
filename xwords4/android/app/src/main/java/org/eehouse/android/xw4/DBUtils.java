@@ -387,7 +387,7 @@ public class DBUtils {
                 }
                 saveSummary( context, lock, summary );
             } else {
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
                 Log.e( TAG, "addRematchInfo(%d): unable to lock game" );
             }
         }
@@ -1126,7 +1126,7 @@ public class DBUtils {
                 deleteGame( context, lock );
             } else {
                 Log.e( TAG, "deleteGame: unable to lock rowid %d", rowid );
-                Assert.assertFalse( BuildConfig.DEBUG );
+                Assert.failDbg();
             }
         }
     }
@@ -2239,7 +2239,7 @@ public class DBUtils {
                             updateStmt.execute();
                         } catch ( Exception ex ) {
                             Log.ex( TAG, ex );
-                            Assert.fail();
+                            Assert.failDbg();
                         }
                     }
                 }

@@ -131,7 +131,7 @@ public class ConnViaViewLayout extends LinearLayout {
             enabled = WiDirWrapper.enabled();
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
             break;
         }
 
@@ -170,7 +170,7 @@ public class ConnViaViewLayout extends LinearLayout {
                 keyID = R.string.key_na_comms_p2p;
                 break;
             default:
-                Assert.fail();
+                Assert.failDbg();
                 break;
             }
 

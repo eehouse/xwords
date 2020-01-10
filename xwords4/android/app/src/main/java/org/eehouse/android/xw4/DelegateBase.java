@@ -100,7 +100,7 @@ public class DelegateBase implements DlgClickNotify,
     public Activity getActivity() { return m_activity; }
 
     // Does nothing unless overridden. These belong in an interface.
-    protected void init( Bundle savedInstanceState ) { Assert.fail(); }
+    protected void init( Bundle savedInstanceState ) { Assert.failDbg(); }
     protected void onSaveInstanceState( Bundle outState ) {}
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
@@ -176,7 +176,7 @@ public class DelegateBase implements DlgClickNotify,
         }
         if ( this != result ) {
             Log.d( TAG, "%s.curThis() => " + result, this.toString() );
-            Assert.fail();
+            Assert.failDbg();
         }
         return result;
     }
@@ -188,7 +188,7 @@ public class DelegateBase implements DlgClickNotify,
             inflater.inflate( m_optionsMenuID, menu );
             LocUtils.xlateMenu( m_activity, menu );
         } else {
-            Assert.fail();
+            Assert.failDbg();
         }
 
         return handled;
@@ -504,7 +504,7 @@ public class DelegateBase implements DlgClickNotify,
             df = InviteChoicesAlert.newInstance( state );
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
         }
 
         show( df );
@@ -516,7 +516,7 @@ public class DelegateBase implements DlgClickNotify,
         if ( m_activity instanceof XWActivity ) {
             ((XWActivity)m_activity).show( df );
         } else {
-            Assert.assertTrue( !BuildConfig.DEBUG );
+            Assert.failDbg();
         }
     }
 

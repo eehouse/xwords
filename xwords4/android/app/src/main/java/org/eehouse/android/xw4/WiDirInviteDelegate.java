@@ -86,7 +86,7 @@ public class WiDirInviteDelegate extends InviteDelegate
     protected void onBarButtonClicked( int id )
     {
         // not implemented yet as there's no bar button
-        Assert.assertFalse( BuildConfig.DEBUG );
+        Assert.failDbg();
     }
 
     @Override

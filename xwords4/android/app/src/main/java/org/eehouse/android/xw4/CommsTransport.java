@@ -447,7 +447,7 @@ public class CommsTransport implements TransportProcs,
             nSent = NFCUtils.addMsgFor( buf, gameID );
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
             break;
         }
         Log.d( TAG, "sendForAddr(typ=%s, len=%d) => %d", conType,

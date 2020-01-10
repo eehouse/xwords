@@ -81,7 +81,7 @@ public class DUtilCtxt {
             DevID.clearRelayDevID( m_context );
             break;
         default:
-            Assert.fail();
+            Assert.failDbg();
             break;
         }
     }

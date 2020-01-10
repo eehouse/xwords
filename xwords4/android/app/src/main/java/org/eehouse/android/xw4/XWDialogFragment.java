@@ -139,7 +139,7 @@ abstract class XWDialogFragment extends DialogFragment {
         if ( null != listener ) {
             listener.onClick( getDialog(), button );
         } else {
-            Assert.assertFalse( BuildConfig.DEBUG );
+            Assert.failDbg();
         }
     }
 }

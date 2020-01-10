@@ -162,7 +162,7 @@ public class TilePickAlert extends XWDialogFragment
             DlgClickNotify notify = (DlgClickNotify)activity;
             notify.onPosButton( m_action, m_state, m_selTiles );
         } else {
-            Assert.assertTrue( !BuildConfig.DEBUG );
+            Assert.failDbg();
         }
         dismiss();
     }
