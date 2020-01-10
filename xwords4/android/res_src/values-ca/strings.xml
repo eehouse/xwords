@@ -835,7 +835,7 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="newgame_invite_more">Més informació</string>
     <string name="invite_choice_relay">Internet/repetidor</string>
     <string name="invite_choice_p2p">Directe per Wifi</string>
-    <string name="chat_hint">Escriviu aquí...</string>
+    <string name="chat_hint">Escriviu aquí…</string>
     <string name="notify_title_turn_fmt">Teniu el torn en la partida %1$s</string>
     <string name="invite_notice_title">Partida nova via invitació</string>
     <string name="new_relay_body">Toqueu per a obrir una partida nova</string>
@@ -974,4 +974,5 @@ aparells seleccionats?</string>
     <string name="invite_choice_data_sms">SMS de dades</string>
     <string name="empty_bt_inviter">Encara no s\'ha detectat cap aparell aparellat.</string>
     <string name="checkbox_archive">Mou a l\'arxiu</string>
+    <string name="invite_sms_fmt">Toca l\'enllaç per a acceptar la invitació i unir-te al joc de Crosswords: %1$s</string>
 </resources>
