@@ -367,7 +367,7 @@
   <string name="default_name_title">Welkom</string>
   <string name="default_name_message">Bedankt voor het installeren van CrossWords!\n\nVul je naam hieronder in. Het wordt gebruikt als je een nieuw spel maakt. (Je kan dit later wijzigen onder \"Standaardinstellingen nieuw spel\" in Instellingen.)</string>
   <string name="about_vers_fmt">CrossWords voor Android, %1$s variant, Versio %2$s, revisie %3$s, gebouwd op %4$s.</string>
-  <string name="about_copyright">Copyright (C) 1998-2015 Eric House. Dit is vrije/open source software uitgebracht onder de GNU Public License.</string>
+  <string name="about_copyright">Copyright (C) 1998-2020 Eric House. Dit is vrije/open source software uitgebracht onder de GNU Public License.</string>
   <string name="about_web">Voor een handleiding of de broncode kijk op http://xwords.sf.net/android.php. Om bugs te rapporteren, functies aan te vragen, hulp aan te bieden, etc., stuur een mail naar xwords@eehouse.org.</string>
   <string name="xlator">[leeg]</string>
   <string name="about_credits">Toolbar iconen door Sarah Chu.</string>
