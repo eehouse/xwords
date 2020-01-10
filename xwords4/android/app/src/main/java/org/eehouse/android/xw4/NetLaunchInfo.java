@@ -217,9 +217,13 @@ public class NetLaunchInfo implements Serializable {
                             p2pMacAddress = data.getQueryParameter( P2P_MAC_KEY );
                             doAdd = !hasAddrs && null != p2pMacAddress;
                             break;
+                        case COMMS_CONN_NFC:
+                            doAdd = true;
+                            break;
                         default:
                             doAdd = false;
-                            Assert.fail();
+                            Log.d( TAG, "unexpected type: %s", typ );
+                            Assert.assertFalse( BuildConfig.DEBUG );
                         }
                         if ( doAdd ) {
                             m_addrs.add( typ );
@@ -691,7 +695,7 @@ public class NetLaunchInfo implements Serializable {
     private void calcValid()
     {
         boolean valid = hasCommon() && null != m_addrs;
-        // DbgUtils.logf( "calcValid(%s)", toString() );
+        // Log.d( TAG, "calcValid(%s); valid (so far): %b", this, valid );
         if ( valid ) {
             for ( Iterator<CommsConnType> iter = m_addrs.iterator();
                   valid && iter.hasNext(); ) {
