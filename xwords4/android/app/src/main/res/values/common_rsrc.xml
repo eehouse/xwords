@@ -145,6 +145,7 @@
   <string name="key_na_bt_badproto">key_na_bt_badproto</string>
   <string name="key_na_sms_banned">key_na_sms_banned</string>
   <string name="key_na_longtap_lookup">key_na_longtap_lookup</string>
+  <string name="key_na_perms_phonestate">key_na_perms_phonestate</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>

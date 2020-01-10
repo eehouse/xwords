@@ -792,9 +792,20 @@ public class DelegateBase implements DlgClickNotify,
 
     public boolean onDismissed( Action action, Object[] params )
     {
-        Log.d( TAG, "%s.dlgDismissed(%s)", getClass().getSimpleName(),
+        boolean handled = false;
+        Log.d( TAG, "%s.onDismissed(%s)", getClass().getSimpleName(),
                action.toString() );
-        return false;
+
+        switch( action ) {
+        case PERMS_QUERY:
+            handled = true;
+            Perms23.onGotPermsAction( this, false, params );
+            break;
+        default:
+            Log.e( TAG, "onDismissed(): not handling action %s", action );
+        }
+
+        return handled;
     }
 
     public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object... params )

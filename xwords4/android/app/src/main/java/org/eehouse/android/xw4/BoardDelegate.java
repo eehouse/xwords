@@ -755,9 +755,10 @@ public class BoardDelegate extends DelegateBase
     // straight to asking for the permission.
     private void callInviteChoices( final SentInvitesInfo info )
     {
-        Perms23.tryGetPerms( this, Perm.READ_PHONE_STATE,
-                             R.string.phone_state_rationale,
-                             Action.ASKED_PHONE_STATE, info );
+        Perms23.tryGetPermsNA( this, Perm.READ_PHONE_STATE,
+                               R.string.phone_state_rationale,
+                               R.string.key_na_perms_phonestate,
+                               Action.ASKED_PHONE_STATE, info );
     }
 
     private void showInviteChoicesThen( Object[] params )
@@ -1260,7 +1261,8 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            handled = false;
+            handled = super.onDismissed( action, params );
+            break;
         }
         return handled;
     }

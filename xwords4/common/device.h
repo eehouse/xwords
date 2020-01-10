@@ -1,7 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001-2014 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,15 +16,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#ifdef PLATFORM_GTK
 
-#include "xptypes.h"
-#include "gtkboard.h"
 
-/* return true if not cancelled */
-XP_Bool gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, 
-                      /*inout*/ gint* nPlayers, /* out */ XP_U32* relayDevID );
+#ifndef _DEVICE_H_
+#define _DEVICE_H_
+
+#include "dutil.h"
+
+// void device_load( XW_DUtilCtxt dctxt );
+# ifdef XWFEATURE_DEVICE
+void device_store( XW_DUtilCtxt* dctxt );
+# else
+#  define device_store(dctxt)
+# endif
 
 #endif
-
-

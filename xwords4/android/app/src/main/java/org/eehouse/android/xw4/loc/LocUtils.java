@@ -265,6 +265,16 @@ public class LocUtils {
         return getString( context, true, id );
     }
 
+    public static String getStringOrNull( int id )
+    {
+        String result = null;
+        if ( 0 != id ) {
+            Context context = XWApp.getContext();
+            result = getString( context, true, id );
+        }
+        return result;
+    }
+
     public static String getString( Context context, boolean canUseDB, int id )
     {
         String result = null;
