@@ -254,9 +254,9 @@ CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT,
                                     wantsPublic, connNameBuf, 
                                     sizeof(connNameBuf), &alreadyHere, &cid );
         if ( !*seenSeed ) {
-            cid = m_db->FindOpen( cookie, langCode, nPlayersT, nPlayersH, 
-                                  wantsPublic, connNameBuf, sizeof(connNameBuf), 
-                                  &alreadyHere );
+            cid = m_db->FindRecentOpen( cookie, langCode, nPlayersT, nPlayersH,
+                                        wantsPublic, connNameBuf, sizeof(connNameBuf),
+                                        &alreadyHere );
         }
 
         if ( cid > 0 ) {

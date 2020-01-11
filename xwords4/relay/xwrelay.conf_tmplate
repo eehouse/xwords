@@ -76,6 +76,14 @@ DB_PORT=5432
 LOGLEVEL=0
 LOGFILE_PATH=./xwrelay.log
 
+# How long after an unjoined game has last been heard from will we
+# refuse to add another device to it? The problem I'm addressing is
+# that with 16-bit ints being used as room names on Android sometimes
+# a new game si generated with the same room as a game whose creating
+# device has been in a landfill for years. Passed into a sql interval
+# statement, e.g.  WHERE ctime >= now() - interval '2 weeks'
+NEWGAME_INTERVAL=14 days
+
 # Delay sending packets so devices/emulators on the same machine as
 # relay have a bit more natural experience
 # SEND_DELAY_MILLIS=500

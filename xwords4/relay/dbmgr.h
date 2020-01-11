@@ -93,9 +93,9 @@ class DBMgr {
                    char* connNameBuf, int bufLen, int* nPlayersHP,
                    CookieID* cid );
 
-    CookieID FindOpen( const char* cookie, int lang, int nPlayersT, 
-                       int nPlayersH, bool wantsPublic, 
-                       char* connNameBuf, int bufLen, int* nPlayersHP );
+    CookieID FindRecentOpen( const char* cookie, int lang, int nPlayersT,
+                             int nPlayersH, bool wantsPublic,
+                             char* connNameBuf, int bufLen, int* nPlayersHP );
     bool AllDevsAckd( const char* const connName );
 
     DevIDRelay RegisterDevice( const DevID* host );
@@ -195,6 +195,8 @@ class DBMgr {
     void conn_key_alloc();
     pthread_key_t m_conn_key;
     bool m_useB64;
+
+    char m_interval[64];
 
     pthread_mutex_t m_haveNoMessagesMutex;
     set<DevIDRelay> m_haveNoMessagesDevID;

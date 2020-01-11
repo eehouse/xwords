@@ -66,6 +66,12 @@ DBMgr::DBMgr()
     m_useB64 = tmp != 0;
     logf( XW_LOGINFO, "%s: m_useB64=%d", __func__, m_useB64 );
 
+    if ( !RelayConfigs::GetConfigs()->GetValueFor( "NEWGAME_INTERVAL",
+                                                   m_interval,
+                                                   sizeof(m_interval) ) ) {
+        assert(0);
+    }
+
     pthread_key_create( &m_conn_key, destr_function );
 
     pthread_mutex_init( &m_haveNoMessagesMutex, NULL );
@@ -330,20 +336,21 @@ DBMgr::SeenSeed( const char* cookie, unsigned short seed,
 }
 
 CookieID
-DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
-                 bool wantsPublic, char* connNameBuf, int bufLen,
-                 int* nPlayersHP )
+DBMgr::FindRecentOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
+                       bool wantsPublic, char* connNameBuf, int bufLen,
+                       int* nPlayersHP )
 {
     QueryBuilder qb;
     qb.appendQueryf("SELECT cid, connName, sum_array(nPerDevice) FROM "
                     GAMES_TABLE
                     " WHERE NOT dead"
+                    " AND now() - interval '%s' < ANY(mtimes) "
                     " AND room ILIKE $$"
                     " AND lang = $$"
                     " AND nTotal = $$"
                     " AND $$ <= nTotal-sum_array(nPerDevice)"
                     " AND $$ = pub"
-                    " LIMIT 1")
+                    " LIMIT 1", m_interval )
         .appendParam(cookie)
         .appendParam(lang)
         .appendParam(nPlayersT)
@@ -366,7 +373,7 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
     PQclear( result );
     logf( XW_LOGINFO, "%s=>%d", __func__, cid );
     return cid;
-} /* FindOpen */
+} /* FindRecentOpen */
 
 bool
 DBMgr::AllDevsAckd( const char* const connName )
