@@ -180,6 +180,15 @@ public class ConnStatusHandler {
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context, true )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
+                    SuccessRecord record = recordFor( context, typ, false );
+
+                    // Don't show e.g. NFC unless it's been used
+                    if ( !typ.isSelectable() ) {
+                        if ( !record.haveFailure() && !record.haveSuccess() ) {
+                            continue;
+                        }
+                    }
+
                     sb.append( String.format( "\n\n*** %s ", typ.longName( context ) ) );
                     String did = addDebugInfo( context, gamePtr, addr, typ );
                     if ( null != did ) {
@@ -188,7 +197,6 @@ public class ConnStatusHandler {
                     sb.append( "***\n" );
 
                     // For sends we list failures too.
-                    SuccessRecord record = recordFor( context, typ, false );
                     tmp = LocUtils.getString( context, record.successNewer?
                                               R.string.connstat_succ :
                                               R.string.connstat_unsucc );
