@@ -1359,6 +1359,9 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
             logf( XW_LOGVERBOSE0, "%s(): wrote %d bytes to socket %d", __func__,
                   nWritten, sock );
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
+
+            // This seems still needed on the server. PENDING
+            // dbmgr->RemoveStoredMessages( msgIDs );
         } else {
             assert(0);
         }
