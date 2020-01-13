@@ -706,10 +706,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="not_again_turnchanged">E jugador amb el torn apareix apareix amb el marcador més gros.\n\nAguanteu el dit en un nom del marcador per a obtenir detalls sobre la jugada més recent del jugador.</string>
     <string name="not_again_newfrom">Crea una partida llesta per a jugar usant la configuració d\'aquesta. Això és, usa aquesta partida com a plantilla.</string>
     <string name="sms_bad_proto_fmt">La versió del CrossWords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS de dades. Heu d\'actualitzar abans de continuar.</string>
-    <plurals name="invite_bt_desc_fmt">
-        <item quantity="one">Seleccioneu l\'aparell que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
-        <item quantity="other">Seleccioneu fins a %1$d aparells que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
-    </plurals>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">Comproveu el número de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
         <item quantity="other">Comproveu els %1$d números de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>

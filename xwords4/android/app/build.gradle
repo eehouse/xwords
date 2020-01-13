@@ -302,10 +302,16 @@ task mkImages(type: Exec) {
     commandLine './scripts/mkimages.sh'
 }
 
-task copyStrings(type: Exec) {
+task copyLocStrings(type: Exec) {
     workingDir '../'
-    commandLine './scripts/copy-strings.py'
+    commandLine 'make', '-f', './scripts/copy-strings.mk'
 }
+
+task cleanLocStrings(type: Exec) {
+    workingDir '../'
+    commandLine 'make', '-f', './scripts/copy-strings.mk', 'clean'
+}
+clean.dependsOn cleanLocStrings
 
 task ndkSetupDebug(type: Exec) {
     workingDir '../'
@@ -323,7 +329,7 @@ task ndkSetupRelease(type: Exec) {
     commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
 }
 
-task myPreBuild(dependsOn: ['mkImages', 'copyStrings', 'mkXml']) {
+task myPreBuild(dependsOn: ['mkImages', 'copyLocStrings', 'mkXml']) {
 }
 preBuild.dependsOn myPreBuild
 

@@ -85,7 +85,7 @@ def main():
         usage()
 
     parser = etree.XMLParser(remove_blank_text=True)
-    doc = etree.parse("res/values/strings.xml", parser)
+    doc = etree.parse("app/src/main/res/values/strings.xml", parser)
     for elem in doc.getroot().iter():
         if 'string' == elem.tag or 'item' == elem.tag:
             text = elem.text

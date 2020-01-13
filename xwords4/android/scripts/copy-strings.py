@@ -25,7 +25,7 @@ def exitWithError(msg):
     sys.exit(1)
 
 def usage():
-    print "usage:", sys.argv[0], '[-k <list-o-dirs>]'
+    print "usage:", sys.argv[0], '[-k <list-o-dirs>] [-f inFile]'
     sys.exit(1)
 
 def sameOrSameWithPrefix( str1, str2 ):
@@ -227,11 +227,13 @@ def main():
     # add these via params later
     excepts = ['values-ca_PS', 'values-ba_CK']
     verboses = ['values-ja']
+    srcFiles = []
 
     try:
-        pairs, rest = getopt.getopt(sys.argv[1:], "k:")
+        pairs, rest = getopt.getopt(sys.argv[1:], "k:f:")
         for option, value in pairs:
             if option == '-k': excepts += value.split(' ')
+            if option == '-f': srcFiles.append(value)
             else: usage()
     except:
         print "Unexpected error:", sys.exc_info()[0]
@@ -257,19 +259,23 @@ def main():
             engNames[name] = item
     # print engNames
     
-    # iterate over src files
-    for subdir, dirs, files in os.walk('res_src'):
-        for file in [file for file in files if file == "strings.xml"]:
-            path = "%s/%s" % (subdir, file)
-            for excpt in excepts:
-                if excpt in path :
-                    path = None
-                    break
-            if path: 
-                verbose = 0 == len(verboses) or 0 < len([verb for verb in verboses if verb in path])
-                print "*** looking at %s ***" % (path)
-                dest = path.replace( 'res_src', 'app/src/main/res', 1 )
-                checkAndCopy( parser, engNames, engFormats, path, dest, verbose )
+    # if -f option not used, iterate over src files to collect them all
+    if not srcFiles:
+        for subdir, dirs, files in os.walk('res_src'):
+            for file in [file for file in files if file == "strings.xml"]:
+                path = "%s/%s" % (subdir, file)
+                if path:
+                    for excpt in excepts:
+                        if path and excpt in path:
+                            path = None
+                if path:
+                    srcFiles.append(path)
+
+    # Finally, do the work
+    for path in srcFiles:
+        verbose = 0 == len(verboses) or 0 < len([verb for verb in verboses if verb in path])
+        dest = path.replace( 'res_src', 'app/src/main/res', 1 )
+        checkAndCopy( parser, engNames, engFormats, path, dest, verbose )
 
 ##############################################################################
 if __name__ == '__main__':
