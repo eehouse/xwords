@@ -267,8 +267,11 @@ public class DBUtils {
         long endMS = System.currentTimeMillis();
 
         // Might want to be cacheing this...
-        Log.d( TAG, "getSummary(rowid=%d) => %s (took %dms)",
-               lock.getRowid(), summary, endMS - startMS );
+        long elapsed = endMS - startMS;
+        if ( elapsed > 10 ) {
+            Log.d( TAG, "getSummary(rowid=%d) => %s (took>10: %dms)",
+                   lock.getRowid(), summary, elapsed );
+        }
         return summary;
     } // getSummary
 

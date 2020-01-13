@@ -31,21 +31,25 @@ public class BoardDims {
     public int cellSize, maxCellSize;
     public int timerWidth;
 
+    // @Override
     // public String toString()
     // {
-    //     return "width: " + width
-    //         + " height: " + height
-    //         + " left: " + left
-    //         + " top: " + top
-    //         + " scoreLeft: " + scoreLeft
-    //         + " scoreHt: " + scoreHt
-    //         + " scoreWidth: " + scoreWidth
-    //         + " boardHt: " + boardHt
-    //         + " trayLeft: " + trayLeft
-    //         + " trayTop: " + trayTop
-    //         + " trayWidth: " + trayWidth
-    //         + " trayHt: " + trayHt
-    //         + " cellSize: " + cellSize
-    //         + " maxCellSize: " + maxCellSize;
+    //     StringBuilder sb = new StringBuilder()
+    //         .append( "width: " ).append( width )
+    //         .append(" height: ").append( height )
+    //         .append(" left: " ).append( left )
+    //         .append(" top: " ).append( top )
+    //         .append(" scoreLeft: " ).append( scoreLeft )
+    //         .append(" scoreHt: " ).append( scoreHt )
+    //         .append(" scoreWidth: " ).append( scoreWidth )
+    //         .append(" boardHt: " ).append( boardHt )
+    //         .append(" trayLeft: " ).append( trayLeft )
+    //         .append(" trayTop: " ).append( trayTop )
+    //         .append(" trayWidth: " ).append( trayWidth )
+    //         .append(" trayHt: " ).append( trayHt )
+    //         .append(" cellSize: " ).append(cellSize)
+    //         .append(" maxCellSize: " ).append(maxCellSize)
+    //         ;
+    //     return sb.toString();
     // }
 }

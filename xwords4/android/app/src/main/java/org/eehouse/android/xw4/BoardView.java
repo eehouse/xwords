@@ -149,9 +149,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     @Override
     protected void onMeasure( int widthMeasureSpec, int heightMeasureSpec )
     {
-        // DbgUtils.logf( "BoardView.onMeasure(width: %s, height: %s)",
-        //                MeasureSpec.toString( widthMeasureSpec ),
-        //                MeasureSpec.toString( heightMeasureSpec ) );
+        // Log.d( TAG, "onMeasure(width: %s, height: %s)",
+        //        MeasureSpec.toString( widthMeasureSpec ),
+        //        MeasureSpec.toString( heightMeasureSpec ) );
 
         if ( null != m_dims ) {
             if ( BoardContainer.getIsPortrait() != (m_dims.height > m_dims.width) ) {
@@ -160,6 +160,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 if ( ++m_dimsTossCount < 4 ) {
                     m_dims = null;
                     m_layoutWidth = m_layoutHeight = 0;
+                } else {
+                    Assert.failDbg();
                 }
             }
         }
@@ -200,7 +202,12 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     protected void onDraw( Canvas canvas )
     {
         synchronized( this ) {
-            if ( layoutBoardOnce() && m_measuredFromDims ) {
+            if ( !layoutBoardOnce() ) {
+                // Log.d( TAG, "onDraw(): layoutBoardOnce() failed" );
+            } else if ( ! m_measuredFromDims ) {
+                // Log.d( TAG, "onDraw(): m_measuredFromDims not set" );
+            } else {
+                Log.d( TAG, "onDraw(): ready to go!" );
                 Bitmap bitmap = s_bitmap;
                 if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ) {
                     bitmap = Bitmap.createBitmap(bitmap);
@@ -209,8 +216,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
                 ConnStatusHandler.draw( m_context, canvas, getResources(),
                                         m_connTypes, m_isSolo );
-            } else {
-                Log.d( TAG, "onDraw(): board not laid out yet" );
             }
         }
     }
@@ -285,6 +290,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     } // layoutBoardOnce
 
     // BoardHandler interface implementation
+    @Override
     public void startHandling( Activity parent, JNIThread thread,
                                CommsConnTypeSet connTypes )
     {
@@ -312,6 +318,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         invalidate();
     }
 
+    @Override
     public void stopHandling()
     {
         m_jniThread = null;
@@ -322,6 +329,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     }
 
     // SyncedDraw interface implementation
+    @Override
     public void doJNIDraw()
     {
         boolean drew = false;
@@ -339,8 +347,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         }
     }
 
+    @Override
     public void dimsChanged( BoardDims dims )
     {
+        Log.d( TAG, "dimsChanged(%s)", dims );
         m_dims = dims;
         m_parent.runOnUiThread( new Runnable() {
                 public void run()

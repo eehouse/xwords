@@ -209,6 +209,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
 
     // DrawCtxt interface implementation
+    @Override
     public boolean scoreBegin( Rect rect, int numPlayers, int[] scores,
                                int remCount )
     {
@@ -217,6 +218,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return true;
     }
 
+    @Override
     public boolean measureRemText( Rect r, int nTilesLeft, int[] width,
                                    int[] height )
     {
@@ -238,6 +240,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return showREM;
     }
 
+    @Override
     public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft,
                              boolean focussed )
     {
@@ -249,6 +252,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawCentered( m_remText, rInner, null );
     }
 
+    @Override
     public void measureScoreText( Rect rect, DrawScoreInfo dsi,
                                   int[] width, int[] height )
     {
@@ -299,6 +303,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         height[0] = rect.height();
     }
 
+    @Override
     public void score_drawPlayer( Rect rInner, Rect rOuter,
                                   int gotPct, DrawScoreInfo dsi )
     {
@@ -326,6 +331,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
+    @Override
     public void drawTimer( Rect rect, final int player,
                            int secondsLeft )
     {
@@ -358,6 +364,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
+    @Override
     public boolean drawCell( Rect rect, String text, int tile, int value,
                              int owner, int bonus, int hintAtts, int flags )
     {
@@ -434,6 +441,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return canDraw;
     } // drawCell
 
+    @Override
     public void drawBoardArrow( Rect rect, int bonus, boolean vert,
                                 int hintAtts, int flags )
     {
@@ -463,6 +471,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         postNAHint( R.string.not_again_arrow, R.string.key_notagain_arrow );
     }
 
+    @Override
     public boolean trayBegin( Rect rect, int owner, int score )
     {
         m_trayOwner = owner;
@@ -470,22 +479,26 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return true;
     }
 
+    @Override
     public boolean drawTile( Rect rect, String text, int val, int flags )
     {
         return drawTileImpl( rect, text, val, flags, true );
     }
 
+    @Override
     public boolean drawTileMidDrag( Rect rect, String text, int val, int owner,
                                  int flags )
     {
         return drawTileImpl( rect, text, val, flags, false );
     }
 
+    @Override
     public boolean drawTileBack( Rect rect, int flags )
     {
         return drawTileImpl( rect, "?", -1, flags, true );
     }
 
+    @Override
     public void drawTrayDivider( Rect rect, int flags )
     {
         boolean isCursor = 0 != (flags & CELL_ISCURSOR);
@@ -502,6 +515,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
+    @Override
     public void score_pendingScore( Rect rect, int score, int playerNum,
                                     int curTurn, int flags )
     {
@@ -528,6 +542,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                       rect, null );
     }
 
+    @Override
     public void objFinished( /*BoardObjectType*/int typ, Rect rect )
     {
         if ( DrawCtx.OBJ_BOARD == typ ) {
