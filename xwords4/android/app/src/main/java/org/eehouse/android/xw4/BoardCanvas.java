@@ -184,10 +184,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     {
         DbgUtils.assertOnUIThread();
         if ( null == jniThread ) {
+            // do nothing
         } else if ( ! jniThread.equals( m_jniThread ) ) {
             Log.w( TAG, "changing threads" );
         }
         m_jniThread = jniThread;
+        updateDictChars();
     }
 
     public int getCurPlayer()
@@ -567,6 +569,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     public void dictChanged( final long newPtr )
     {
         long curPtr = m_dict.getDictPtr();
+        boolean doPost = false;
         if ( curPtr != newPtr ) {
             if ( 0 == newPtr ) {
                 m_fontDims = null;
@@ -575,19 +578,33 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                         || !XwJNI.dict_tilesAreSame( curPtr, newPtr ) ) {
                 m_fontDims = null;
                 m_dictChars = null;
-                m_activity.runOnUiThread( new Runnable() {
-                        public void run() {
-                            if ( null != m_jniThread ) {
-                                m_dictChars = XwJNI.dict_getChars( newPtr );
-                                // draw again
-                                m_jniThread.handle( JNIThread.JNICmd
-                                                    .CMD_INVALALL );
-                            }
-                        }
-                    });
+                doPost = true;
             }
             m_dict.release();
             m_dict = new DictWrapper( newPtr );
+        }
+
+        // If we're on the UI thread this is run inline, so make sure it's
+        // after m_dict is set above.
+        if ( doPost ) {
+            m_activity.runOnUiThread( new Runnable() {
+                    public void run() {
+                        updateDictChars();
+                    }
+                });
+        }
+    }
+
+    private void updateDictChars()
+    {
+        if ( null == m_jniThread ) {
+            // Log.d( TAG, "updateDictChars(): m_jniThread still null!!" );
+        } else if ( null == m_dict ) {
+            // Log.d( TAG, "updateDictChars(): m_dict still null!!" );
+        } else {
+            m_dictChars = XwJNI.dict_getChars( m_dict.getDictPtr() );
+            // draw again
+            m_jniThread.handle( JNIThread.JNICmd.CMD_INVALALL );
         }
     }
 
