@@ -9,27 +9,9 @@ RES_SRC = ./res_src
 RES_DEST = ./app/src/main/res
 
 all: $(TARGETS)
-	pwd
-	echo $(SRCS)
-	echo $(TARGETS)
-
-# all: $(TARGETS)
 
 $(RES_DEST)/value%/strings.xml: $(RES_SRC)/value%/strings.xml
 	./scripts/copy-strings.py -f $<
 
 clean:
 	rm -f $(TARGETS)
-
-# SRC = $(wildcard *.html)
-# TAR = $(SRC:.html=.markdown)
-
-# .PHONY: all clean
-
-# all: $(TAR)
-
-# %.markdown: %.html
-#     pandoc -o $< $@
-
-# clean:
-#     rm -f $(TAR)

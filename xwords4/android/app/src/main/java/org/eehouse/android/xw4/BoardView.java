@@ -207,7 +207,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             } else if ( ! m_measuredFromDims ) {
                 // Log.d( TAG, "onDraw(): m_measuredFromDims not set" );
             } else {
-                Log.d( TAG, "onDraw(): ready to go!" );
                 Bitmap bitmap = s_bitmap;
                 if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ) {
                     bitmap = Bitmap.createBitmap(bitmap);
@@ -350,7 +349,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     @Override
     public void dimsChanged( BoardDims dims )
     {
-        Log.d( TAG, "dimsChanged(%s)", dims );
         m_dims = dims;
         m_parent.runOnUiThread( new Runnable() {
                 public void run()
