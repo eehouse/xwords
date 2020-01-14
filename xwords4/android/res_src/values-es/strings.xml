@@ -198,7 +198,7 @@
 \n</string>
     <plurals name="strd_remains_header_fmt">
         <item quantity="one">%1$d fichas restantes en la bolsa.</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">Una ficha restante en la bandeja oculta:
@@ -247,4 +247,27 @@
     <string name="show_arrow">Mostrar flecha del tablero</string>
     <string name="show_arrow_summary">Las fichas del atril se colocarán sobre la flecha cuando sea visible</string>
     <string name="keep_screenon">Mantener pantalla encendida</string>
+    <string name="keep_screenon_summary">Mantener pantalla encendida durante 10 min</string>
+    <string name="prefs_colors">Colores</string>
+    <string name="prefs_colors_summary">Editar color del tablero</string>
+    <string name="bonus_l2x">Letra doble</string>
+    <string name="bonus_l3x">Letra triple</string>
+    <string name="bonus_w2x">Palabra x2</string>
+    <string name="bonus_w3x">Palabra x3</string>
+    <string name="clr_crosshairs">Color de las líneas</string>
+    <string name="tile_back">Color de fondo de las fichas</string>
+    <string name="empty">Color de fondo de las fichas vacías</string>
+    <string name="background">Fondo del tablero</string>
+    <string name="red">Rojo</string>
+    <string name="green">Verde</string>
+    <string name="blue">Azul</string>
+    <string name="prefs_behavior">Funcionamiento</string>
+    <string name="prefs_behavior_summary">Ajustes de control del funcionamiento de la aplicación</string>
+    <string name="explain_robot">Explicar jugadas</string>
+    <string name="explain_robot_summary">Mostrar resumen de puntuación después de la jugada de cada robot o jugador remoto</string>
+    <string name="skip_confirm_turn">Omitir confirmación de la jugada</string>
+    <string name="skip_confirm_turn_summary">NO mostrar resumen de puntuación después de cada turno de jugador</string>
+    <string name="title_sort_tiles">Ordenar nuevas fichas</string>
+    <string name="summary_sort_tiles">Ordenar atriles cuando se añadan nuevas fichas</string>
+    <string name="peek_other">Ver las fichas descartadas</string>
 </resources>
