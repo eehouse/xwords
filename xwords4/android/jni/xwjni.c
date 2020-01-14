@@ -910,7 +910,6 @@ struct _JNIState {
     XWGame game;
     JNIGlobalState* globalJNI;
     AndGameGlobals globals;
-    // pthread_mutex_t msgMutex;
     XP_U16 curSaveCount;
     XP_U16 lastSavedSize;
 #ifdef DEBUG
@@ -1029,7 +1028,6 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
     MAP_REMOVE( &state->globalJNI->ti, env );
-    /* pthread_mutex_destroy( &state->msgMutex ); */
 
     XP_FREE( mpool, state );
 } /* game_dispose */

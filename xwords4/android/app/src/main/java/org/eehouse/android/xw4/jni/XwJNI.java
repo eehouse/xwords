@@ -73,10 +73,13 @@ public class XwJNI {
             //        getClass().getName(), this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
                 if ( 0 != m_ptrGame ) {
-                    if ( !haveEnv( getJNI().m_ptrGlobals ) ) {
-                        Assert.fail();
+                    if ( haveEnv( getJNI().m_ptrGlobals ) ) {
+                        game_dispose( this ); // will crash if haveEnv fails
+                    } else {
+                        Log.d( TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
+                               this, m_rowid );
+                        Assert.failDbg(); // seen on Play Store console
                     }
-                    game_dispose( this ); // will crash if haveEnv fails
                     m_ptrGame = 0;
                 }
             } else {
