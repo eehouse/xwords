@@ -1060,7 +1060,11 @@ static bool
 handleFlip( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    bGlobals->doDraw = board_flip( bGlobals->cGlobals.game.board );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    if ( board_flip( cGlobals->game.board ) ) {
+        board_draw( cGlobals->game.board );
+    }
+
     return XP_TRUE;
 } /* handleFlip */
 
