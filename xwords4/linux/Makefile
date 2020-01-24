@@ -21,6 +21,7 @@ BUILD_DIR ?= .
 ifeq ($(MEMDEBUG),TRUE)
 DEFINES = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DNUMBER_KEY_AS_INDEX 
 DEFINES += -DCOMMS_CHECKSUM
+DEFINES += -DLOG_COMMS_MSGNOS
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 # DEFINES += -DDEBUG_HASHING
 CFLAGS += -DDEBUG_TS -rdynamic 
@@ -144,8 +145,6 @@ DEFINES += -DCURSES_CELL_WIDTH=$(CURSES_CELL_WIDTH)
 endif
 DEFINES += $(UNICODE)
 
-DEFINES += -DLOG_COMMS_MSGNOS
-
 # Networking-related features.  Only set these if STANDALONE is not set
 ifeq ($(STANDALONE),)
 
@@ -210,15 +209,18 @@ endif
 ifdef DO_CURSES
 CURSES_OBJS = \
 	$(BUILD_PLAT_DIR)/cursesmain.o \
+	$(BUILD_PLAT_DIR)/cursesboard.o \
+	$(BUILD_PLAT_DIR)/cursesmenu.o \
+	$(BUILD_PLAT_DIR)/curgamlistwin.o \
 	$(BUILD_PLAT_DIR)/cursesdraw.o \
 	$(BUILD_PLAT_DIR)/cursesask.o \
 	$(BUILD_PLAT_DIR)/cursesdlgutil.o \
 	$(BUILD_PLAT_DIR)/cursesletterask.o
 endif
 ifndef LIB_NO_UI
-MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o
+MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o \
+	$(BUILD_PLAT_DIR)/gsrcwrap.o
 endif
-
 
 OBJ = \
 	$(BUILD_PLAT_DIR)/filestream.o \

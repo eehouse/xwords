@@ -28,13 +28,16 @@
 #include "comtypes.h"
 
 typedef struct _GameInfo {
+    sqlite3_int64 rowid;
     XP_UCHAR name[128];
     XP_UCHAR room[128];
     XP_UCHAR conn[128];
+    XP_UCHAR scores[128];
     XP_UCHAR relayID[32];
 #ifdef PLATFORM_GTK
     GdkPixbuf* snap;
 #endif
+    XP_LangCode dictLang;
     XP_U32 gameID;
     XP_S16 nMoves;
     XP_Bool gameOver;
@@ -43,7 +46,9 @@ typedef struct _GameInfo {
     XP_U16 nTotal;
     XP_S16 nMissing;
     XP_U16 seed;
+    XP_U16 nPending;
     XP_U32 lastMoveTime;
+    XP_U16 role;
 } GameInfo;
 
 sqlite3* openGamesDB( const char* dbName );

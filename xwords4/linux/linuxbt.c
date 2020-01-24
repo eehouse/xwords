@@ -44,6 +44,7 @@
 #include "comms.h"
 #include "strutils.h"
 #include "uuidhack.h"
+#include "gsrcwrap.h"
 
 #define MAX_CLIENTS 1
 
@@ -186,7 +187,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
              // connect to server
              && (0 == connect( sock, (struct sockaddr *)&saddr, sizeof(saddr) )) ) {
             CommonGlobals* globals = btStuff->globals;
-            (*globals->socketAdded)( globals->socketAddedClosure, sock, bt_socket_proc );
+            ADD_SOCKET( globals->socketAddedClosure, sock, bt_socket_proc );
             btStuff->socket = sock;
         } else {
             XP_LOGF( "%s: connect->%s; closing socket %d", __func__, strerror(errno), sock );
@@ -215,7 +216,7 @@ lbt_accept( int listener, void* ctxt )
     
     success = sock >= 0;
     if ( success ) {
-        (*globals->socketAdded)( globals->socketAddedClosure, sock, bt_socket_proc );
+        ADD_SOCKET( globals->socketAddedClosure, sock, bt_socket_proc );
         XP_ASSERT( btStuff->socket == -1 );
         btStuff->socket = sock;
     } else {

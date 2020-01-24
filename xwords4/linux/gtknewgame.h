@@ -26,9 +26,9 @@
 
 #include "gtkboard.h"
 
-gboolean newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, 
-                        CommsAddrRec* addr, XP_Bool isNewGame, 
-                        XP_Bool fireConnDlg );
+gboolean gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi,
+                           CommsAddrRec* addr, XP_Bool isNewGame,
+                           XP_Bool fireConnDlg );
 
 #endif /* _GTKNEWGAME_H_ */
 #endif /* PLATFORM_GTK */

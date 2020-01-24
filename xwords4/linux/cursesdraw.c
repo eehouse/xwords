@@ -646,4 +646,12 @@ cursesDrawCtxtMake( WINDOW* boardWin )
     return (DrawCtx*)dctx;
 } /* curses_drawctxt_init */
 
+void
+cursesDrawCtxtFree( DrawCtx* pdctx )
+{
+    CursesDrawCtx* dctx = (CursesDrawCtx*)pdctx;
+    free( dctx->vtable );
+    free( dctx );
+}
+
 #endif /* PLATFORM_NCURSES */

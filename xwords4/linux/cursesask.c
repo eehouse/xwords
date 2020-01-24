@@ -32,11 +32,12 @@
 /* Figure out how many lines there are and how wide the widest is.
  */
 int
-cursesask( CursesAppGlobals* globals, const char* question, short numButtons, 
+cursesask( WINDOW* window, const char* question, short numButtons, 
            const char** buttons )
 {
     WINDOW* confWin;
     int x, y, rows, row, nLines;
+    int left, top;
     short newSelButton = 0;
     short curSelButton = 1;	/* force draw by being different */
     short spacePerButton, num;
@@ -45,7 +46,8 @@ cursesask( CursesAppGlobals* globals, const char* question, short numButtons,
     FormatInfo fi;
     int len;
 
-    getmaxyx(globals->boardWin, y, x);
+    getmaxyx( window, y, x);
+    getbegyx( window, top, left );
 
     measureAskText( question, x-2, &fi );
     len = fi.maxLen;
@@ -62,8 +64,8 @@ cursesask( CursesAppGlobals* globals, const char* question, short numButtons,
     }
 
     nLines = ASK_HEIGHT + rows - 1;
-    confWin = newwin( nLines, len+(PAD*2), 
-                      (y/2) - (nLines/2), (x-len-2)/2 );
+    confWin = newwin( nLines, len+(PAD*2), top + ((y/2) - (nLines/2)),
+                      left + ((x-len-2)/2) );
     keypad( confWin, TRUE );
     wclear( confWin );
     box( confWin, '|', '-');
@@ -120,9 +122,9 @@ cursesask( CursesAppGlobals* globals, const char* question, short numButtons,
     delwin( confWin );
 
     /* this leaves a ghost line, but I can't figure out a better way. */
-    wtouchln( globals->boardWin, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
-    wrefresh( globals->boardWin );
+    wtouchln( window, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
+    wrefresh( window );
     return curSelButton;
-} /* ask */
+} /* cursesask */
 
 #endif /* PLATFORM_NCURSES */

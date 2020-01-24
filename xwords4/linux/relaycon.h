@@ -34,7 +34,6 @@ typedef struct _Procs {
                            XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
     void (*inviteReceived)( void* closure, NetLaunchInfo* invit );
-    SocketAddedFunc socketAdded;
 } RelayConnProcs;
 
 void relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 

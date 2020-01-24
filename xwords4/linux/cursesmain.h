@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
 /* 
- * Copyright 1997-2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,11 +39,17 @@
 #include "server.h"
 #include "xwstate.h"
 #include "util.h"
+#include "cursesmenu.h"
+#include "cursesboard.h"
 /* #include "compipe.h" */
 
 typedef struct CursesAppGlobals CursesAppGlobals;
+typedef struct CursesBoardGlobals CursesBoardGlobals;
 
 typedef XP_Bool (*EventFunc)(CursesAppGlobals* globals, int ch);
+void onCursesBoardClosing( CursesAppGlobals* aGlobals, CursesBoardGlobals* bGlobals );
+void onCursesGameSaved( CursesAppGlobals* aGlobals, sqlite3_int64 rowid );
+
 /* typedef void (*MenuDrawer)(CursesAppGlobals* globals); */
 
 #define FD_MAX 6
@@ -51,56 +57,10 @@ typedef XP_Bool (*EventFunc)(CursesAppGlobals* globals, int ch);
 #define FD_TIMEEVT 1
 #define FD_FIRSTSOCKET 2
 
-struct CursesAppGlobals {
-    CommonGlobals cGlobals;
-
-    struct CursesDrawCtx* draw;
-
-    DictionaryCtxt* dictionary;
-    EngineCtxt* engine;
-
-    XP_Bool amServer;	/* this process acting as server */
-
-    WINDOW* mainWin;
-    WINDOW* menuWin;
-    WINDOW* boardWin;
-
-    XP_Bool doDraw;
-    const struct MenuList* menuList;
-    XP_U16 nLinesMenu;
-    gchar* lastErr;
-
-    XP_U16 nChatsSent;
-    XP_U16 nextQueryTimeSecs;
-
-    union {
-        struct {
-            XWStreamCtxt* stream; /* how we can reach the server */
-        } client;
-        struct {
-            int serverSocket;
-            XP_Bool socketOpen;
-        } server;
-    } csInfo;
-
-    short statusLine;
-    XWGameState state;
-    CommsRelayState commsRelayState; 
-
-    struct sockaddr_in listenerSockAddr;
-#ifdef USE_GLIBLOOP
-    GMainLoop* loop;
-    GList* sources;
-    int quitpipe[2];
-#else
-    XP_Bool timeToExit;
-    short fdCount;
-    struct pollfd fdArray[FD_MAX]; /* one for stdio, one for listening socket */
-    int timepipe[2];		/* for reading/writing "user events" */
-#endif
-};
+// typedef struct CursesBoardGlobals;
 
 DrawCtx* cursesDrawCtxtMake( WINDOW* boardWin );
+void cursesDrawCtxtFree( DrawCtx* dctx );
 
 /* Ports: Client and server pick a port at startup on which they'll listen.
  * If both are to be on the same device using localhost as their ip address,
@@ -114,5 +74,6 @@ DrawCtx* cursesDrawCtxtMake( WINDOW* boardWin );
 
 
 void cursesmain( XP_Bool isServer, LaunchParams* params );
+bool handleQuit( void* closure, int unused_key );
 
 #endif

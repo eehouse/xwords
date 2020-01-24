@@ -237,8 +237,10 @@ syncPlayers( ServerCtxt* server )
 
 static XP_Bool
 amServer( const ServerCtxt* server )
-{ 
-    return SERVER_ISSERVER == server->vol.gi->serverRole;
+{
+    XP_Bool result = SERVER_ISSERVER == server->vol.gi->serverRole;
+    // LOG_RETURNF( "%d (seed=%d)", result, comms_getChannelSeed( server->vol.comms ) );
+    return result;
 }
 
 static void
@@ -867,7 +869,6 @@ makeRobotMove( ServerCtxt* server )
     XP_Bool result = XP_FALSE;
     XP_Bool searchComplete;
     XP_S16 turn;
-    const TrayTileSet* tileSet;
     MoveInfo newMove = {0};
     ModelCtxt* model = server->vol.model;
     CurGameInfo* gi = server->vol.gi;
@@ -899,7 +900,7 @@ makeRobotMove( ServerCtxt* server )
     model_resetCurrentTurn( model, turn );
 
     if ( !forceTrade ) {
-        tileSet = model_getPlayerTiles( model, turn );
+        const TrayTileSet* tileSet = model_getPlayerTiles( model, turn );
 #ifdef XWFEATURE_BONUSALL
         XP_U16 allTilesBonus = server_figureFinishBonus( server, turn );
 #endif
@@ -1143,7 +1144,7 @@ server_do( ServerCtxt* server )
     } else {
         XP_Bool moreToDo = XP_FALSE;
         server->serverDoing = XP_TRUE;
-
+        XP_LOGF( "%s(): gameState: %s", __func__, getStateStr(server->nv.gameState) );
         switch( server->nv.gameState ) {
         case XWSTATE_BEGIN:
             if ( server->nv.pendingRegistrations == 0 ) { /* all players on
@@ -2952,6 +2953,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
     XP_Bool accepted = XP_FALSE;
     XP_Bool isServer = amServer( server );
     const XW_Proto code = readProto( server, incoming );
+    XP_LOGF( "%s(code=%s)", __func__, codeToStr(code) );
 
     if ( code == XWPROTO_DEVICE_REGISTRATION ) {
         accepted = isServer;

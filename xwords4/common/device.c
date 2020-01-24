@@ -53,7 +53,7 @@ load( XW_DUtilCtxt* dutil )
         if ( 0 < stream_getSize( stream ) ) {
             state->devCount = stream_getU16( stream );
             ++state->devCount;  /* for testing until something's there */
-            XP_LOGF( "%s(): read devCount: %d", __func__, state->devCount );
+            /* XP_LOGF( "%s(): read devCount: %d", __func__, state->devCount ); */
         } else {
             XP_LOGF( "%s(): empty stream!!", __func__ );
         }

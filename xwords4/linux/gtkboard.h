@@ -94,9 +94,7 @@ typedef struct _DropTypeData {
 
 typedef struct GtkGameGlobals {
     CommonGlobals cGlobals;
-    CurGameInfo gi;
     GtkWidget* window;
-    GtkDrawCtx* draw;
     GtkAppGlobals* apg;
 /*     GdkPixmap* pixmap; */
     GtkWidget* drawing_area;
@@ -184,8 +182,8 @@ typedef struct GtkGameGlobals {
 #define GTK_BOTTOM_MARGIN GTK_TOP_MARGIN
 #define GTK_RIGHT_MARGIN GTK_BOARD_LEFT_MARGIN
 
-void initGlobals( GtkGameGlobals* globals, LaunchParams* params, 
-                  CurGameInfo* gi );
+void initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
+                          CurGameInfo* gi );
 void freeGlobals( GtkGameGlobals* globals );
 XP_Bool makeNewGame( GtkGameGlobals* globals );
 XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 

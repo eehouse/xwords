@@ -70,7 +70,7 @@ void writeToFile( XWStreamCtxt* stream, void* closure );
 XP_Bool getDictPath( const LaunchParams *params, const char* name, 
                      char* result, int resultLen );
 GSList* listDicts( const LaunchParams *params );
-void saveGame( CommonGlobals* cGlobals );
+void linuxSaveGame( CommonGlobals* cGlobals );
 
 void linux_close_socket( CommonGlobals* cGlobals );
 
@@ -87,18 +87,18 @@ void do_nbs_then_close( CommonGlobals* cGlobals,
 
 #ifdef USE_GLIBLOOP
 void setOneSecondTimer( CommonGlobals* cGlobals );
+void clearOneSecondTimer( CommonGlobals* cGlobals );
 #else
 # define setOneSecondTimer( cGlobals )
 #endif
 
 void setupLinuxUtilCallbacks( XW_UtilCtxt* util );
-void initFromParams( CommonGlobals* cGlobals, LaunchParams* params );
+void assertAllCallbacksSet( XW_UtilCtxt* util );
 void setupUtil( CommonGlobals* cGlobals );
+void disposeUtil( CommonGlobals* cGlobals );
 
 DictionaryCtxt* makeDictForStream( CommonGlobals* cGlobals, 
                                    XWStreamCtxt* stream );
-void linuxSetIsServer( CommonGlobals* cGlobals, XP_Bool isServer );
-void linuxChangeRoles( CommonGlobals* cGlobals );
 
 void sendRelayReg( LaunchParams* params, sqlite3* pDb );
 void gameGotBuf( CommonGlobals* globals, XP_Bool haveDraw, 
@@ -111,6 +111,8 @@ void linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew );
 XP_Bool linux_setupDevidParams( LaunchParams* params );
 
 unsigned int makeRandomInt();
+void linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs );
+void tryConnectToServer( CommonGlobals* cGlobals );
 
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */

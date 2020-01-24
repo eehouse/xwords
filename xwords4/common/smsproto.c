@@ -257,7 +257,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
 }
 
 static SMSMsgArray*
-appendLocMsg( SMSProto* state, SMSMsgArray* arr, SMSMsgLoc* msg )
+appendLocMsg( SMSProto* XP_UNUSED_DBG(state), SMSMsgArray* arr, SMSMsgLoc* msg )
 {
     if ( NULL == arr ) {
         arr = XP_CALLOC( state->mpool, sizeof(*arr) );
@@ -273,7 +273,7 @@ appendLocMsg( SMSProto* state, SMSMsgArray* arr, SMSMsgLoc* msg )
 }
 
 static SMSMsgArray*
-appendNetMsg( SMSProto* state, SMSMsgArray* arr, SMSMsgNet* msg )
+appendNetMsg( SMSProto* XP_UNUSED_DBG(state), SMSMsgArray* arr, SMSMsgNet* msg )
 {
     if ( NULL == arr ) {
         arr = XP_CALLOC( state->mpool, sizeof(*arr) );
@@ -396,7 +396,7 @@ smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
 }
 
 static void
-freeMsg( SMSProto* state, MsgRec** msgp )
+freeMsg( SMSProto* XP_UNUSED_DBG(state), MsgRec** msgp )
 {
     XP_FREEP( state->mpool, &(*msgp)->msgNet.data );
     XP_FREEP( state->mpool, msgp );
@@ -595,7 +595,7 @@ rmFromPhoneRec( SMSProto* state, int fromPhoneIndex )
 }
 
 static void
-freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex, int msgIDIndex )
+freeMsgIDRec( SMSProto* state, MsgIDRec* XP_UNUSED_DBG(rec), int fromPhoneIndex, int msgIDIndex )
 {
     FromPhoneRec* fromPhoneRec = &state->fromPhoneRecs[fromPhoneIndex];
     MsgIDRec* msgIDRec = &fromPhoneRec->msgIDRecs[msgIDIndex];

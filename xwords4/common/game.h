@@ -89,6 +89,7 @@ XP_Bool game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
 void game_dispose( XWGame* game );
 
 void game_getState( const XWGame* game, GameStateInfo* gsi );
+XP_Bool game_getIsServer( const XWGame* game );
 
 void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, 
                         const XP_UCHAR* nameTemplate );

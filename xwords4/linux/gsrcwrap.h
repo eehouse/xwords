@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,14 +17,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _CURSESLETTERASK_H_
-#define _CURSESLETTERASK_H_
 
-#include "linuxmain.h"
-#include "cursesmain.h"
+#ifndef _GSRCWRAP_H_
+#define _GSRCWRAP_H_
 
-XP_S16 curses_askLetter( WINDOW* window, XP_UCHAR* query,
-                         const XP_UCHAR** texts, XP_U16 nTiles );
+guint _wrapIdle( GSourceFunc function, gpointer data, const char* procName,
+                 const char* caller );
+guint _wrapWatch( gpointer data, int socket, GIOFunc func,
+                  const char* procName, const char* caller );
 
+void gsw_logIdles();
 
+#define ADD_ONETIME_IDLE( PROC, CLOSURE )       \
+    _wrapIdle( PROC, CLOSURE, #PROC, __func__ )
+
+#define ADD_SOCKET( CLOSURE, SOCKET, PROC )                 \
+    _wrapWatch( CLOSURE, SOCKET, PROC, #PROC, __func__ )
+    
 #endif

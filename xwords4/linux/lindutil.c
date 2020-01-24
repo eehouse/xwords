@@ -94,7 +94,7 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     return result;
 }
 
-void dutils_free( XW_DUtilCtxt** ducp )
+void dutils_free( XW_DUtilCtxt** XP_UNUSED_DBG(ducp) )
 {
 # ifdef MEM_DEBUG
     XP_FREEP( (*ducp)->mpool, ducp );

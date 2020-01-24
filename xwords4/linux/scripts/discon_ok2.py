@@ -163,7 +163,7 @@ class Device():
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     
-    def __init__(self, args, game, indx, params, room, peers, db, log, nInGame):
+    def __init__(self, args, game, indx, params, room, peers, db, log, script, nInGame):
         self.game = game
         self.indx = indx
         self.args = args
@@ -173,6 +173,7 @@ class Device():
         self.room = room
         self.db = db
         self.logPath = log
+        self.script = script
         self.nInGame = nInGame
         # runtime stuff; init now
         self.app = args.APP_OLD
@@ -198,6 +199,8 @@ class Device():
             if pct >= random.randint(0, 99):
                 print('launch(): upgrading from ', self.app, ' to ', self.args.APP_NEW)
                 self.app = self.args.APP_NEW
+                # nuke script to force regeneration
+                os.unlink(self.script)
 
     def logReaderMain(self):
         assert self and self.proc
@@ -234,19 +237,26 @@ class Device():
 
         # print('logReaderMain done, wrote lines:', nLines, 'to', self.logPath);
 
+    def checkScript(self):
+        if not os.path.exists(self.script):
+            args = ['exec']     # without exec means terminate() won't work
+            if self.args.VALGRIND:
+                args += ['valgrind']
+                # args += ['--leak-check=full']
+                # args += ['--track-origins=yes']
+            args += [self.app] + [str(p) for p in self.params]
+            if self.devID: args.extend( ' '.split(self.devID))
+            args += [ '$*' ]
+            with open( self.script, 'w' ) as fil:
+                fil.write( "#!/bin/sh\n" )
+                fil.write( ' '.join(args) + '\n' )
+            os.chmod(self.script, 0o755)
+
     def launch(self):
-        args = []
-        if self.args.VALGRIND:
-            args += ['valgrind']
-            # args += ['--leak-check=full']
-            # args += ['--track-origins=yes']
-
-        # Upgrade if appropriate
         self.setApp(self.args.UPGRADE_PCT)
-
-        args += [self.app] + [str(p) for p in self.params]
-        if self.devID: args.extend( ' '.split(self.devID))
+        self.checkScript()
         self.launchCount += 1
+        args = [ self.script ]
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
         self.pid = self.proc.pid
@@ -287,8 +297,8 @@ class Device():
 
     def moveFiles(self):
         assert not self.running()
-        shutil.move(self.logPath, self.args.LOGDIR + '/done')
-        shutil.move(self.db, self.args.LOGDIR + '/done')
+        for fil in [ self.logPath, self.db, self.script ]:
+            shutil.move(fil, self.args.LOGDIR + '/done')
 
     def send_dead(self):
         if self.args.ADD_RELAY:
@@ -393,6 +403,7 @@ def build_cmds(args):
             DEV += 1
             DB = '{}/{:02d}_{:02d}_DB.sql3'.format(args.LOGDIR, GAME, DEV)
             LOG = '{}/{:02d}_{:02d}_LOG.txt'.format(args.LOGDIR, GAME, DEV)
+            SCRIPT = '{}/start_{:02d}_{:02d}.sh'.format(args.LOGDIR, GAME, DEV)
 
             PARAMS = player_params(args, NLOCALS, NPLAYERS, DEV)
             PARAMS += PLAT_PARMS
@@ -442,7 +453,7 @@ def build_cmds(args):
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device(args, GAME, COUNTER, PARAMS, ROOM, peers, DB, LOG, len(LOCALS))
+            dev = Device(args, GAME, COUNTER, PARAMS, ROOM, peers, DB, LOG, SCRIPT, len(LOCALS))
             peers.add(dev)
             dev.update_ldevid()
             devs.append(dev)
@@ -515,7 +526,7 @@ def summarizeTileCounts(devs, endTime, state):
         state['lastChange'] = now
         state['tilesStr'] = tilesStr
 
-    return now - state['lastChange'] < datetime.timedelta(minutes = 1)
+    return now - state['lastChange'] < datetime.timedelta(seconds = 30)
 
 def countCores():
     return len(glob.glob1('/tmp',"core*"))
@@ -549,18 +560,7 @@ def run_cmds(args, devs):
             if dev.handleAllDone():
                 devs.remove(dev)
             else:
-#             if [ -n "$ONE_PER_ROOM" -a 0 -ne ${ROOM_PIDS[$ROOM]} ]; then
-#                 continue
-#             fi
-#             try_upgrade $KEY
-#             try_upgrade_upd $KEY
                 dev.launch()
-#             PID=$!
-#             # renice doesn't work on one of my machines...
-#             renice -n 1 -p $PID >/dev/null 2>&1 || /bin/true
-#             PIDS[$KEY]=$PID
-#             ROOM_PIDS[$ROOM]=$PID
-#             MINEND[$KEY]=$(($NOW + $MINRUN))
         elif dev.minTimeExpired():
             dev.kill()
             if dev.handleAllDone():

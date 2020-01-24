@@ -1,0 +1,42 @@
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* 
+ * Copyright 2000 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#ifndef _CURSESBOARD_H_
+#define _CURSESBOARD_H_
+
+#include "cursesmain.h"
+
+typedef struct CursesAppGlobals CursesAppGlobals;
+typedef struct CursesBoardState CursesBoardState;
+
+typedef void (*OnGameSaved)( CursesAppGlobals* aGlobals, sqlite3_int64 rowid, bool isNew );
+
+CursesBoardState* cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
+                           CursesMenuState* menuState, OnGameSaved onGameSaved );
+
+void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid,
+              int width, int top, int height );
+void cb_new( CursesBoardState* cbState, int width, int top, int height );
+
+XP_U16 cb_feedBuffer( CursesBoardState* cbState, sqlite3_int64 rowid,
+                      const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
+void cb_closeAll( CursesBoardState* cbState );
+
+#endif

@@ -47,7 +47,7 @@ sizeTextsAsButtons( XP_U16 maxLen, XP_U16 nTiles, XP_U16* textsCols,
 } /* sizeTextsAsButtons */
 
 XP_S16
-curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
+curses_askLetter( WINDOW* window, XP_UCHAR* query,
                   const XP_UCHAR** texts, XP_U16 nTiles )
 {
     XP_S16 result;
@@ -70,7 +70,7 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
         textPtrs[i] = (char*)&texts[i];
     }
 
-    getmaxyx( globals->boardWin, y, x );
+    getmaxyx( window, y, x );
 
     numCtlButtons = VSIZE(ctlButtons);
 
@@ -209,8 +209,8 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
     delwin( confWin );
 
     /* this leaves a ghost line, but I can't figure out a better way. */
-    wtouchln( globals->boardWin, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
-    wrefresh( globals->boardWin );
+    wtouchln( window, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
+    wrefresh( window );
     
     return result;
 } /* curses_askLetter */

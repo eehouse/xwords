@@ -114,6 +114,7 @@ typedef struct LaunchParams {
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
     XP_U16 askTimeout;
+    int cursesListWinHt;
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
 #endif
@@ -170,7 +171,7 @@ typedef struct LaunchParams {
 
 typedef struct CommonGlobals CommonGlobals;
 
-typedef void (*SocketAddedFunc)( void* closure, int newsock, GIOFunc func );
+typedef guint (*SocketAddedFunc)( void* closure, int newsock, GIOFunc func );
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals, void** storage );
@@ -189,11 +190,13 @@ typedef void (*OnSaveFunc)( void* closure, sqlite3_int64 rowid,
                             XP_Bool firstTime );
 
 struct CommonGlobals {
+    CurGameInfo _gi;
     LaunchParams* params;
     CommonPrefs cp;
     XW_UtilCtxt* util;
 
     XWGame game;
+    DrawCtx* draw;
     CurGameInfo* gi;
     CommsAddrRec addr;
     DictionaryCtxt* dict;
@@ -202,9 +205,8 @@ struct CommonGlobals {
     XP_U16 lastStreamSize;
     XP_U16 nMissing;
     XP_Bool manualFinal;        /* use asked for final scores */
-    sqlite3_int64 selRow;
+    sqlite3_int64 rowid;
 
-    SocketAddedFunc socketAdded;
     void* socketAddedClosure;
     OnSaveFunc onSave;
     void* onSaveClosure;
@@ -248,9 +250,15 @@ struct CommonGlobals {
 #endif
 
     TimerInfo timerInfo[NUM_TIMERS_PLUS_ONE];
+    guint secondsTimerID;
 
     XP_U16 curSaveToken;
 };
+
+typedef struct _CommonAppGlobals {
+    LaunchParams* params;
+    GSList* globalsList;
+} CommonAppGlobals;
 
 typedef struct _SourceData {
     GIOChannel* channel;
@@ -261,9 +269,8 @@ typedef struct _SourceData {
 
 #ifdef PLATFORM_GTK
 typedef struct _GtkAppGlobals {
+    CommonAppGlobals cag;
     GArray* selRows;
-    LaunchParams* params;
-    GSList* globalsList;
     GList* sources;
     GtkWidget* window;
     GtkWidget* listWidget;

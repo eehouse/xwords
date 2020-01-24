@@ -28,6 +28,7 @@
 #include "linuxmain.h"
 #include "comtypes.h"
 #include "gamesdb.h"
+#include "gsrcwrap.h"
 
 #define MAX_MOVE_CHECK_MS ((XP_U16)(1000 * 60 * 60 * 24))
 #define RELAY_API_PROTO "http"
@@ -265,7 +266,7 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
         XP_MEMCPY( storage->host, host, XP_STRLEN(host) + 1 );
     } else {
         storage->socket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-        (*procs->socketAdded)( storage, storage->socket, relaycon_receive );
+        ADD_SOCKET( storage, storage->socket, relaycon_receive );
 
         XP_MEMSET( &storage->saddr, 0, sizeof(storage->saddr) );
         storage->saddr.sin_family = PF_INET;
@@ -705,6 +706,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
         XP_LOGF( "%s: error reading udp socket: %d (%s)", __func__, 
                  errno, strerror(errno) );
     }
+    LOG_RETURNF( "%d", TRUE );
     return TRUE;
 }
 
@@ -719,21 +721,24 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
     socklen_t fromlen = sizeof(from);
 
     int socket = g_io_channel_unix_get_fd( source );
-    XP_LOGF( "%s: calling recvfrom on socket %d", __func__, socket );
 
     ssize_t nRead = recvfrom( socket, buf, sizeof(buf), 0, /* flags */
                               (struct sockaddr*)&from, &fromlen );
 
     gchar* b64 = g_base64_encode( (const guchar*)buf,
                                   ((0 <= nRead)? nRead : 0) );
-    XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
 #ifdef COMMS_CHECKSUM
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
     XP_LOGF( "%s: read %zd bytes ('%s')(sum=%s)", __func__, nRead, b64, sum );
     g_free( sum );
+#else
+    XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
 #endif
     g_free( b64 );
-    return process( storage, buf, nRead );
+
+    gboolean result = process( storage, buf, nRead );
+    // LOG_RETURNF( "%d", result );
+    return result;
 }
 
 void

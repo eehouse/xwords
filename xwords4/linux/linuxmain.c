@@ -72,6 +72,7 @@
 #include "strutils.h"
 #include "dbgutil.h"
 #include "dictiter.h"
+#include "gsrcwrap.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
@@ -79,6 +80,12 @@
 
 #define DEFAULT_PORT 10997
 #define DEFAULT_LISTEN_PORT 4998
+
+#ifdef MEM_DEBUG
+# define MEMPOOL cGlobals->util->mpool,
+#else
+# define MEMPOOL
+#endif
 
 static int blocking_read( int fd, unsigned char* buf, const int len );
 
@@ -119,6 +126,191 @@ streamFromFile( CommonGlobals* cGlobals, char* name )
 
     return stream;
 } /* streamFromFile */
+
+void
+tryConnectToServer( CommonGlobals* cGlobals )
+{
+    LaunchParams* params = cGlobals->params;
+    XWStreamCtxt* stream =
+        mem_stream_make( MPPARM(cGlobals->util->mpool) params->vtMgr,
+                         cGlobals, CHANNEL_NONE,
+                         sendOnClose );
+    (void)server_initClientConnection( cGlobals->game.server,
+                                       stream );
+}
+
+static bool
+canMakeFromGI( const CurGameInfo* gi )
+{
+    LOG_FUNC();
+    bool result = 0 < gi->nPlayers
+        && 0 < gi->dictLang
+        ;
+    bool haveDict = !!gi->dictName;
+    bool allHaveDicts = true;
+    for ( int ii = 0; result && ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* lp = &gi->players[ii];
+        result = !lp->isLocal || '\0' != lp->name[0];
+        if ( allHaveDicts ) {
+            allHaveDicts = !!lp->dictName;
+        }
+    }
+
+    result = result && (haveDict || allHaveDicts);
+
+    LOG_RETURNF( "%d", result );
+    XP_ASSERT( result );
+    return result;
+}
+
+void
+linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
+{
+    LOG_FUNC();
+    XWStreamCtxt* stream = NULL;
+    XP_Bool opened = XP_FALSE;
+
+    LaunchParams* params = cGlobals->params;
+    if ( !!params->fileName && file_exists( params->fileName ) ) {
+        stream = streamFromFile( cGlobals, params->fileName );
+#ifdef USE_SQLITE
+    } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
+        XP_UCHAR buf[32];
+        XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
+        mpool_setTag( MEMPOOL buf );
+        stream = streamFromDB( cGlobals );
+#endif
+    } else if ( !!params->pDb && 0 <= cGlobals->rowid ) {
+        stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                      params->vtMgr );
+        if ( !loadGame( stream, params->pDb, cGlobals->rowid ) ) {
+            stream_destroy( stream );
+            stream = NULL;
+        }
+    }
+
+    if ( !!stream ) {
+        if ( NULL == cGlobals->dict ) {
+            cGlobals->dict = makeDictForStream( cGlobals, stream );
+        }
+
+        opened = game_makeFromStream( MEMPOOL stream, &cGlobals->game,
+                                      cGlobals->gi, cGlobals->dict,
+                                      &cGlobals->dicts, cGlobals->util,
+                                      cGlobals->draw,
+                                      &cGlobals->cp, procs );
+        XP_LOGF( "%s: loaded gi at %p", __func__, &cGlobals->gi );
+        stream_destroy( stream );
+    }
+
+    if ( !opened && canMakeFromGI( cGlobals->gi ) ) {
+
+#ifdef XWFEATURE_RELAY
+        /* if ( addr.conType == COMMS_CONN_RELAY ) { */
+        /*     XP_ASSERT( !!params->connInfo.relay.relayName ); */
+        /*     globals->cGlobals.defaultServerName */
+        /*         = params->connInfo.relay.relayName; */
+        /* } */
+#endif
+        game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
+                          cGlobals->util, cGlobals->draw,
+                          &cGlobals->cp, procs
+#ifdef SET_GAMESEED
+                          , params->gameSeed
+#endif
+                          );
+
+        CommsAddrRec addr = cGlobals->addr;
+        // addr.conType = params->conType;
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            if ( params->commsDisableds[typ][0] ) {
+                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_FALSE, XP_TRUE );
+            }
+            if ( params->commsDisableds[typ][1] ) {
+                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_TRUE, XP_TRUE );
+            }
+            switch( typ ) {
+#ifdef XWFEATURE_RELAY
+            case COMMS_CONN_RELAY:
+                /* addr.u.ip_relay.ipAddr = 0; */
+                /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
+                /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
+                /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
+                /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
+                /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
+                /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
+                /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
+                break;
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+            case COMMS_CONN_BT:
+                XP_ASSERT( sizeof(addr.u.bt.btAddr)
+                           >= sizeof(params->connInfo.bt.hostAddr));
+                XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                           sizeof(params->connInfo.bt.hostAddr) );
+                break;
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+            case COMMS_CONN_IP_DIRECT:
+                XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
+                            sizeof(addr.u.ip.hostName_ip) - 1 );
+                addr.u.ip.port_ip = params->connInfo.ip.port;
+                break;
+#endif
+#ifdef XWFEATURE_SMS
+            case COMMS_CONN_SMS:
+                /* No! Don't overwrite what may be a return address with local
+                   stuff */
+                /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
+                /*             sizeof(addr.u.sms.phone) - 1 ); */
+                /* addr.u.sms.port = params->connInfo.sms.port; */
+                break;
+#endif
+            default:
+                break;
+            }
+        }
+
+        model_setDictionary( cGlobals->game.model, cGlobals->dict );
+        setSquareBonuses( cGlobals );
+        model_setPlayerDicts( cGlobals->game.model, &cGlobals->dicts );
+
+        /* Need to save in order to have a valid selRow for the first send */
+        linuxSaveGame( cGlobals );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+        /* This may trigger network activity */
+        if ( !!cGlobals->game.comms ) {
+            comms_setAddr( cGlobals->game.comms, &addr );
+        }
+#endif
+
+#ifdef XWFEATURE_SEARCHLIMIT
+        cGlobals->gi->allowHintRect = params->allowHintRect;
+#endif
+
+        if ( params->needsNewGame ) {
+            XP_ASSERT(0);
+            // new_game_impl( globals, XP_FALSE );
+#ifndef XWFEATURE_STANDALONE_ONLY
+        } else {
+            DeviceRole serverRole = cGlobals->gi->serverRole;
+            if ( serverRole == SERVER_ISCLIENT ) {
+                tryConnectToServer( cGlobals );
+            }
+#endif
+        }
+    }
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    if ( !!cGlobals->game.comms ) {
+        comms_start( cGlobals->game.comms );
+    }
+#endif
+    server_do( cGlobals->game.server );
+    linuxSaveGame( cGlobals );   /* again, to include address etc. */
+}
 
 #ifdef USE_SQLITE
 XWStreamCtxt*
@@ -189,7 +381,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
     if ( !!stream ) {
         redraw = game_receiveMessage( game, stream, from );
         if ( redraw ) {
-            saveGame( cGlobals );
+            linuxSaveGame( cGlobals );
         }
         stream_destroy( stream );
 
@@ -328,7 +520,7 @@ strFromStream( XWStreamCtxt* stream )
 } /* strFromStream */
 
 void
-saveGame( CommonGlobals* cGlobals )
+linuxSaveGame( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
     sqlite3* pDb = cGlobals->params->pDb;
@@ -336,7 +528,7 @@ saveGame( CommonGlobals* cGlobals )
          (!!cGlobals->params->fileName || !!pDb) ) {
         XP_Bool doSave = XP_TRUE;
         XP_Bool newGame = !file_exists( cGlobals->params->fileName )
-            || -1 == cGlobals->selRow;
+            || -1 == cGlobals->rowid;
         /* don't fail to save first time!  */
         if ( 0 < cGlobals->params->saveFailPct && !newGame ) {
             XP_U16 pct = XP_RANDOM() % 100;
@@ -550,7 +742,14 @@ secondTimerFired( gpointer data )
 void
 setOneSecondTimer( CommonGlobals* cGlobals )
 {
-    (void)g_timeout_add_seconds( 1, secondTimerFired, cGlobals );
+    guint id = g_timeout_add_seconds( 1, secondTimerFired, cGlobals );
+    cGlobals->secondsTimerID = id;
+}
+
+void
+clearOneSecondTimer( CommonGlobals* cGlobals )
+{
+    g_source_remove( cGlobals->secondsTimerID );
 }
 #endif
 
@@ -603,6 +802,7 @@ typedef enum {
     ,CMD_NOHEARTBEAT
     ,CMD_HOSTNAME
     ,CMD_CLOSESTDIN
+    ,CMD_NOCLOSESTDIN
     ,CMD_QUITAFTER
     ,CMD_BOARDSIZE
     ,CMD_HIDEVALUES
@@ -655,6 +855,7 @@ typedef enum {
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,CMD_GTK
     ,CMD_CURSES
+    ,CMD_CURSES_LIST_HT
 #endif
 #if defined PLATFORM_GTK
     ,CMD_ASKNEWGAME
@@ -725,6 +926,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_NOHEARTBEAT, false, "no-heartbeat", "don't send heartbeats" }
     ,{ CMD_HOSTNAME, true, "host", "name of remote host" }
     ,{ CMD_CLOSESTDIN, false, "close-stdin", "close stdin on start" }
+    ,{ CMD_NOCLOSESTDIN, false, "no-close-stdin", "do not close stdin on start" }
     ,{ CMD_QUITAFTER, true, "quit-after", "exit <n> seconds after game's done" }
     ,{ CMD_BOARDSIZE, true, "board-size", "board is <n> by <n> cells" }
     ,{ CMD_HIDEVALUES, false, "hide-values", "show letters, not nums, on tiles" }
@@ -784,6 +986,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,{ CMD_GTK, false, "gtk", "use GTK for display" }
     ,{ CMD_CURSES, false, "curses", "use curses for display" }
+    ,{ CMD_CURSES_LIST_HT, true, "curses-list-ht", "how many cols tall is the games list" }
 #endif
 #if defined PLATFORM_GTK
     ,{ CMD_ASKNEWGAME, false, "ask-new", "put up ui for new game params" }
@@ -1121,7 +1324,8 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
         unsigned char buf[1024];
         int sock = g_io_channel_unix_get_fd( source );
         if ( cGlobals->relaySocket != sock ) {
-            XP_LOGF( "%s: changing relaySocket from %d to %d", __func__, cGlobals->relaySocket, sock );
+            XP_LOGF( "%s: changing relaySocket from %d to %d", __func__,
+                     cGlobals->relaySocket, sock );
             cGlobals->relaySocket = sock;
         }
         int nBytes = linux_relay_receive( cGlobals, sock, buf, sizeof(buf) );
@@ -1164,9 +1368,9 @@ linux_relay_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
 {
     XP_S16 result = 0;
     if ( cGlobals->params->useUdp ) {
-        XP_ASSERT( -1 != cGlobals->selRow );
+        XP_ASSERT( -1 != cGlobals->rowid );
         XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
-        XP_U32 clientToken = makeClientToken( cGlobals->selRow, seed );
+        XP_U32 clientToken = makeClientToken( cGlobals->rowid, seed );
         result = relaycon_send( cGlobals->params, buf, buflen, 
                                 clientToken, addrRec );
     } else {
@@ -1176,7 +1380,7 @@ linux_relay_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         if ( sock == -1 ) {
             XP_LOGF( "%s: socket uninitialized", __func__ );
             sock = linux_init_relay_socket( cGlobals, addrRec );
-            (*cGlobals->socketAdded)( cGlobals, sock, linux_relay_ioproc );
+            ADD_SOCKET( cGlobals, sock, linux_relay_ioproc );
         }
 
         if ( sock != -1 ) {
@@ -1262,7 +1466,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo
 #endif
 #if defined XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT: {
-        XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
+        XP_Bool isServer = game_getIsServer( &cGlobals->game );
         linux_bt_open( cGlobals, isServer );
         nSent = linux_bt_send( buf, buflen, addrRec, cGlobals );
     }
@@ -1506,7 +1710,7 @@ linux_util_addrChange( XW_UtilCtxt* uc,
         switch ( typ ) {
 #ifdef XWFEATURE_BLUETOOTH
         case COMMS_CONN_BT: {
-            XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
+            XP_Bool isServer = game_getIsServer( &cGlobals->game );
             linux_bt_open( cGlobals, isServer );
         }
             break;
@@ -1530,18 +1734,10 @@ linux_util_addrChange( XW_UtilCtxt* uc,
     }
 }
 
-void
-linuxSetIsServer( CommonGlobals* cGlobals, XP_Bool isServer )
+static gint
+changeRolesIdle( gpointer data )
 {
-    XP_LOGF( "%s(isServer=%d)", __func__, isServer );
-    DeviceRole newRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
-    cGlobals->params->serverRole = newRole;
-    cGlobals->gi->serverRole = newRole;
-}
-
-void 
-linuxChangeRoles( CommonGlobals* cGlobals )
-{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
     ServerCtxt* server = cGlobals->game.server;
     server_reset( server, cGlobals->game.comms );
     if ( SERVER_ISCLIENT == cGlobals->gi->serverRole ) {
@@ -1551,7 +1747,23 @@ linuxChangeRoles( CommonGlobals* cGlobals )
         (void)server_initClientConnection( server, stream );
     }
     (void)server_do( server );
+    return 0;
 }
+
+static void
+linux_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+{
+    XP_LOGF( "%s(isServer=%d)", __func__, isServer );
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+
+    DeviceRole newRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
+    cGlobals->params->serverRole = newRole;
+    cGlobals->gi->serverRole = newRole;
+
+    (void)ADD_ONETIME_IDLE( changeRolesIdle, cGlobals );
+    XP_ASSERT( isServer == game_getIsServer( &cGlobals->game ) );
+}
+
 #endif
 
 unsigned int
@@ -1906,59 +2118,22 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_informMissing = linux_util_informMissing;
     util->vtable->m_util_addrChange = linux_util_addrChange;
+    util->vtable->m_util_setIsServer = linux_util_setIsServer;
 #endif
 }
 
-/* Set up cGlobals->gi and cGlobals->addr based on params fields */
 void
-initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
+assertAllCallbacksSet( XW_UtilCtxt* util )
 {
     LOG_FUNC();
-    /* CurGameInfo */
-    cGlobals->gi = &params->pgi;
-
-    /* addr */
-    CommsAddrRec* addr = &cGlobals->addr;
-    XP_MEMSET( addr, 0, sizeof(*addr) );
-
-    CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( &params->addr, &typ, &st ); ) {
-        switch( typ ) {
-#ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            addr_addType( addr, COMMS_CONN_RELAY );
-            addr->u.ip_relay.ipAddr = 0;       /* ??? */
-            addr->u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-            addr->u.ip_relay.seeksPublicRoom = 
-                params->connInfo.relay.seeksPublicRoom;
-            addr->u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-            XP_STRNCPY( addr->u.ip_relay.hostName, 
-                        params->connInfo.relay.relayName,
-                        sizeof(addr->u.ip_relay.hostName) - 1 );
-            XP_STRNCPY( addr->u.ip_relay.invite, params->connInfo.relay.invite,
-                        sizeof(addr->u.ip_relay.invite) - 1 );
-            break;
-#endif
-#ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            addr_addType( addr, COMMS_CONN_SMS );
-            XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.myPhone,
-                        sizeof(addr->u.sms.phone) - 1 );
-            addr->u.sms.port = params->connInfo.sms.port;
-            break;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT:
-            addr_addType( addr, COMMS_CONN_BT );
-            XP_ASSERT( sizeof(addr->u.bt.btAddr) 
-                       >= sizeof(params->connInfo.bt.hostAddr));
-            XP_MEMCPY( &addr->u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                       sizeof(params->connInfo.bt.hostAddr) );
-            break;
-#endif
-        default:
-            break;
+    XWStreamCtxt* (**proc)(XW_UtilCtxt*, XP_PlayerAddr ) =
+        &util->vtable->m_util_makeStreamFromAddr;
+    for ( int ii = 0; ii < sizeof(*util->vtable)/sizeof(*proc); ++ii ) {
+        if ( !*proc ) {
+            XP_LOGF( "%s(): null ptr at index %d", __func__, ii );
+            XP_ASSERT( 0 );
         }
+        ++proc;
     }
 }
 
@@ -1970,6 +2145,12 @@ setupUtil( CommonGlobals* cGlobals )
     linux_util_vt_init( MPPARM(cGlobals->params->mpool) util );
     util->gameInfo = cGlobals->gi;
     setupLinuxUtilCallbacks( util );
+}
+
+void
+disposeUtil( CommonGlobals* cGlobals )
+{
+    linux_util_vt_destroy( cGlobals->util );
 }
 
 static void
@@ -2000,6 +2181,9 @@ initParams( LaunchParams* params )
 static void
 freeParams( LaunchParams* params )
 {
+    closeGamesDB( params->pDb );
+    params->pDb = NULL;
+    
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
     dutils_free( &params->dutil );
     dmgr_destroy( params->dictMgr );
@@ -2116,6 +2300,7 @@ main( int argc, char** argv )
     mainParams.useMmap = XP_TRUE;
     mainParams.useUdp = true;
     mainParams.dbName = "xwgames.sqldb";
+    mainParams.cursesListWinHt = 5;
 
     char* envDictPath = getenv( "XW_DICTDIR" );
     XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );
@@ -2180,6 +2365,7 @@ main( int argc, char** argv )
             if ( !path ) {
                 path = ".";
             }
+            XP_LOGF( "%s(): appending dict path: %s", __func__, path );
             mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
             break;
 #ifdef XWFEATURE_WALKDICT
@@ -2376,6 +2562,9 @@ main( int argc, char** argv )
         case CMD_CLOSESTDIN:
             mainParams.closeStdin = XP_TRUE;
             break;
+        case CMD_NOCLOSESTDIN:
+            mainParams.closeStdin = XP_FALSE;
+            break;
         case CMD_QUITAFTER:
             mainParams.quitAfter = atoi(optarg);
             break;
@@ -2481,6 +2670,9 @@ main( int argc, char** argv )
         case CMD_CURSES:
             mainParams.useCurses = XP_TRUE;
             break;
+        case CMD_CURSES_LIST_HT:
+            mainParams.cursesListWinHt = atoi(optarg);
+            break;
 #endif
 #if defined PLATFORM_GTK
         case CMD_ASKNEWGAME:
@@ -2539,17 +2731,22 @@ main( int argc, char** argv )
             }
         }
 
+        XP_LOGF( "%s(): here: %s", __func__, mainParams.pgi.dictName );
         if ( !!mainParams.pgi.dictName ) {
+            XP_LOGF( "%s(): there", __func__ );
             /* char path[256]; */
             /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
-            /* mainParams.dict =  */
-            /*     linux_dictionary_make( MPPARM(mainParams.mpool) &mainParams, */
-            /*                            mainParams.pgi.dictName, */
-            /*                            mainParams.useMmap ); */
-            /* XP_ASSERT( !!mainParams.dict ); */
-            /* mainParams.pgi.dictLang = dict_getLangCode( mainParams.dict ); */
+            DictionaryCtxt* dict =
+                linux_dictionary_make( MPPARM(mainParams.mpool) &mainParams,
+                                       mainParams.pgi.dictName,
+                                       mainParams.useMmap );
+            XP_ASSERT( !!dict );
+            mainParams.pgi.dictLang = dict_getLangCode( dict );
+            XP_LOGF( "%s(): set lang code: %d", __func__, mainParams.pgi.dictLang );
+            dict_unref( dict );
         } else if ( isServer ) {
 #ifdef STUBBED_DICT
+            foo
             mainParams.dict = 
                 make_stubbed_dict( MPPARM_NOCOMMA(mainParams.util->mpool) );
             XP_WARNF( "no dictionary provided: using English stub dict\n" );
@@ -2666,21 +2863,19 @@ main( int argc, char** argv )
             mainParams.serverRole = SERVER_ISCLIENT;
         }
 
-        /* if ( mainParams.needsNewGame ) { */
-        /*     gi_disposePlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi ); */
-        /*     gi_initPlayerInfo( MPPARM(mainParams.mpool) &mainParams.pgi, NULL ); */
-        /* } */
-
+        XP_ASSERT( !!mainParams.dbName );
+        mainParams.pDb = openGamesDB( mainParams.dbName );
+        
         if ( mainParams.useCurses ) {
-            if ( mainParams.needsNewGame ) {
-                /* curses doesn't have newgame dialog */
-                usage( argv[0], "game params required for curses version, e.g. --name Eric --room MyRoom"
-                       " --remote-player --dict-dir ../ --game-dict CollegeEng_2to8.xwd");
-            } else {
+            /* if ( mainParams.needsNewGame ) { */
+            /*     /\* curses doesn't have newgame dialog *\/ */
+            /*     usage( argv[0], "game params required for curses version, e.g. --name Eric --room MyRoom" */
+            /*            " --remote-player --dict-dir ../ --game-dict CollegeEng_2to8.xwd"); */
+            /* } else { */
 #if defined PLATFORM_NCURSES
-                cursesmain( isServer, &mainParams );
+            cursesmain( isServer, &mainParams );
 #endif
-            }
+            /* } */
         } else {
 #if defined PLATFORM_GTK
             gtk_init( &argc, &argv );
@@ -2693,6 +2888,8 @@ main( int argc, char** argv )
 
     free( longopts );
     g_slist_free( mainParams.dictDirs );
+
+    gsw_logIdles();
 
     XP_LOGF( "%s exiting main, returning %d", argv[0], result );
     return result;

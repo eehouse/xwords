@@ -639,8 +639,8 @@ setDefaults( CurGameInfo* gi )
 }
 
 gboolean
-newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr, 
-               XP_Bool isNewGame, XP_Bool fireConnDlg )
+gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
+                  XP_Bool isNewGame, XP_Bool fireConnDlg )
 {
     GtkNewGameState state;
     XP_MEMSET( &state, 0, sizeof(state) );

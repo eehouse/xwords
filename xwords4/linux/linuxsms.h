@@ -34,7 +34,6 @@ typedef struct _SMSProcs {
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
                            XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
-    SocketAddedFunc socketAdded;
 } SMSProcs;
 
 

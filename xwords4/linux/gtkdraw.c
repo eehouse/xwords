@@ -1531,7 +1531,6 @@ removeSurface( GtkDrawCtx* dctx )
     dctx->surface = NULL;
 }
 
-#ifdef DEBUG
 static cairo_status_t
 write_func( void *closure, const unsigned char *data,
             unsigned int length )
@@ -1540,21 +1539,18 @@ write_func( void *closure, const unsigned char *data,
     stream_putBytes( stream, data, length );
     return CAIRO_STATUS_SUCCESS;
 }
-#endif
 
 void
-getImage( GtkDrawCtx* XP_UNUSED_DBG(dctx), XWStreamCtxt* XP_UNUSED_DBG(stream) )
+getImage( GtkDrawCtx* dctx, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     XP_ASSERT( !!dctx->surface );
 #ifdef DEBUG
     cairo_status_t status =
+#endif
         cairo_surface_write_to_png_stream( dctx->surface,
                                            write_func, stream );
     XP_ASSERT( CAIRO_STATUS_SUCCESS == status );
-#else
-    error Will Robinson
-#endif
 }
 
 void

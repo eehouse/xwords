@@ -22,7 +22,7 @@
 
 #include "cursesmain.h"
 
-int cursesask( CursesAppGlobals* globals, const char* question, 
+int cursesask( WINDOW* window, const char* question, 
                short numButtons, const char** buttons );
 
 

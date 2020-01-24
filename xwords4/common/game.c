@@ -388,6 +388,13 @@ game_getState( const XWGame* game, GameStateInfo* gsi )
         comms_countPendingPackets(game->comms) : 0;
 }
 
+XP_Bool
+game_getIsServer( const XWGame* game )
+{
+    XP_Bool result = comms_getIsServer( game->comms );
+    return result;
+}
+
 void
 game_dispose( XWGame* game )
 {
@@ -642,7 +649,6 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, NPLAYERS_NBITS, gi->nPlayers );
     stream_putBits( stream, nColsNBits, gi->boardSize );
     stream_putBits( stream, 2, gi->serverRole );
-    /* XP_LOGF( "%s: wrote serverRole of %d", __func__, gi->serverRole ); */
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );

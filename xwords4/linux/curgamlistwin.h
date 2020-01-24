@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,14 +17,27 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _CURSESLETTERASK_H_
-#define _CURSESLETTERASK_H_
+#ifndef _CURGAMLISTWIN_H_
+#define _CURGAMLISTWIN_H_
 
-#include "linuxmain.h"
-#include "cursesmain.h"
+#include <stdbool.h>
 
-XP_S16 curses_askLetter( WINDOW* window, XP_UCHAR* query,
-                         const XP_UCHAR** texts, XP_U16 nTiles );
+#include "gamesdb.h"
 
+typedef struct CursGameList CursGameList;
+
+CursGameList* cgl_init( sqlite3* pDb, int width, int height );
+void cgl_destroy( CursGameList* cgl );
+
+void cgl_refresh( CursGameList* cgl );
+void cgl_refreshOne( CursGameList* cgl, sqlite3_int64 rowid, bool select );
+void cgl_remove( CursGameList* cgl, sqlite3_int64 rowid );
+
+void cgl_moveSel( CursGameList* cgl, bool down );
+
+void cgl_draw( CursGameList* cgl );
+
+const GameInfo* cgl_getSel( CursGameList* cgl );
+int cgl_getNGames( CursGameList* cgl );
 
 #endif

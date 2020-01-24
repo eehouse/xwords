@@ -643,15 +643,14 @@ CommsCtxt*
 comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
                       const TransportProcs* procs, XP_U16 forceChannel )
 {
-    XP_Bool isServer;
-    XP_U16 nAddrRecs, nPlayersHere, nPlayersTotal;
+    XP_U16 nPlayersHere, nPlayersTotal;
     AddressRecord** prevsAddrNext;
     MsgQueueElem** prevsQueueNext;
     XP_U16 version = stream_getVersion( stream );
     CommsAddrRec addr;
     short ii;
 
-    isServer = stream_getU8( stream );
+    XP_Bool isServer = stream_getU8( stream );
     addrFromStream( &addr, stream );
 
     if ( version >= STREAM_VERS_DEVIDS
@@ -692,7 +691,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
     comms->queueLen = stream_getU8( stream );
 
-    nAddrRecs = stream_getU8( stream );
+    XP_U16 nAddrRecs = stream_getU8( stream );
     prevsAddrNext = &comms->recs;
     for ( ii = 0; ii < nAddrRecs; ++ii ) {
         AddressRecord* rec = (AddressRecord*)XP_CALLOC( mpool, sizeof(*rec));
@@ -1206,13 +1205,15 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 XP_U16
 comms_getChannelSeed( CommsCtxt* comms )
 {
-    while ( 0 == (comms->channelSeed & ~CHANNEL_MASK) ) {
-        comms->channelSeed = XP_RANDOM() & ~CHANNEL_MASK;
-        comms->channelSeed |= comms->forceChannel;
-        CNO_FMT( cbuf, comms->channelSeed );
-        XP_LOGF( "%s: made seed: %s(%d)", __func__, cbuf, comms->channelSeed );
+    XP_U16 result = !!comms ? comms->channelSeed : 0;
+    while ( !!comms && 0 == (result & ~CHANNEL_MASK) ) {
+        result = XP_RANDOM() & ~CHANNEL_MASK;
+        result |= comms->forceChannel;
+        CNO_FMT( cbuf, result );
+        XP_LOGF( "%s: made seed: %s(%d)", __func__, cbuf, result );
+        comms->channelSeed = result;
     }
-    return comms->channelSeed;
+    return result;
 }
 
 /* Send a message using the sequentially next MsgID.  Save the message so
@@ -1687,16 +1688,16 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     set_relay_state( comms, reconnected ? COMMS_RELAYSTATE_RECONNECTED
                      : COMMS_RELAYSTATE_CONNECTED );
     XWHostID myHostID = stream_getU8( stream );
-    XP_LOGF( "%s: changing rr.myHostID from %x to %x", __func__, 
-             comms->rr.myHostID, myHostID );
     if ( comms->rr.myHostID != myHostID ) {
+        XP_LOGF( "%s: changing rr.myHostID from %x to %x", __func__,
+                 comms->rr.myHostID, myHostID );
         comms->rr.myHostID = myHostID;
     }
 
     isServer = HOST_ID_SERVER == comms->rr.myHostID;
 
     if ( isServer != comms->isServer ) {
-        XP_LOGF( "%s: becoming a server", __func__ );
+        XP_LOGF( "%s: becoming%s a server", __func__, isServer ? "" : " NOT" );
         comms->isServer = isServer;
         util_setIsServer( comms->util, comms->isServer );
 
