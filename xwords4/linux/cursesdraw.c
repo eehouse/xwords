@@ -382,7 +382,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         } /* switch */
     }
 
-    mvwaddnstr( dctx->boardWin, rect->top, rect->left, loc, rect->width );
+    mvwaddnstr( dctx->boardWin, rect->top, rect->left, loc, -1 );
 
     if ( highlight ) {
         wstandend( dctx->boardWin );
