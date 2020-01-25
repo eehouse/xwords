@@ -50,8 +50,6 @@ struct CursesBoardGlobals {
 
     TransportProcs procs;
 
-    XP_Bool doDraw;
-
     union {
         struct {
             XWStreamCtxt* stream; /* how we can reach the server */
@@ -123,10 +121,12 @@ static bool handleUp( void* closure, int key );
 static bool handleDown( void* closure, int key );
 static bool handleClose( void* closure, int key );
 #endif
+#ifdef ALT_KEYS_WORKING
 static bool handleAltLeft( void* closure, int key );
 static bool handleAltRight( void* closure, int key );
 static bool handleAltUp( void* closure, int key );
 static bool handleAltDown( void* closure, int key );
+#endif
 static bool handleJuggle( void* closure, int key );
 static bool handleHide( void* closure, int key );
 /* static bool handleResend( void* closure, int key ); */
@@ -171,10 +171,12 @@ const MenuList g_allMenuList[] = {
 };
 
 const MenuList g_boardMenuList[] = {
+#ifdef ALT_KEYS_WORKING
     { handleAltLeft,  "Force left", "{", '{' },
     { handleAltRight, "Force right", "}", '}' },
     { handleAltUp,    "Force up", "_", '_' },
     { handleAltDown,  "Force down", "+", '+' },
+#endif
     { handleHint, "Hint", "?", '?' },
 
     { handleCommit, "Commit move", "C", 'C' },
@@ -191,9 +193,10 @@ const MenuList g_boardMenuList[] = {
 const MenuList g_trayMenuList[] = {
     { handleJuggle, "Juggle", "G", 'G' },
     { handleHide, "[un]hIde", "I", 'I' },
+#ifdef ALT_KEYS_WORKING
     { handleAltLeft, "Divider left", "{", '{' },
     { handleAltRight, "Divider right", "}", '}' },
-
+#endif
     { NULL, NULL, NULL, '\0'}
 };
 
@@ -1072,17 +1075,22 @@ static bool
 handleToggleValues( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    bGlobals->doDraw = board_toggle_showValues( bGlobals->cGlobals.game.board );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    if ( board_toggle_showValues( cGlobals->game.board ) ) {
+        board_draw( cGlobals->game.board );
+    }
     return XP_TRUE;
 } /* handleToggleValues */
 
 static bool
 handleBackspace( void* closure, int XP_UNUSED(key) )
 {
+    CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
     XP_Bool handled;
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    bGlobals->doDraw = board_handleKey( bGlobals->cGlobals.game.board,
-                                       XP_CURSOR_KEY_DEL, &handled );
+    if ( board_handleKey( cGlobals->game.board,
+                          XP_CURSOR_KEY_DEL, &handled ) ) {
+        board_draw( cGlobals->game.board );
+    }
     return XP_TRUE;
 } /* handleBackspace */
 
@@ -1090,15 +1098,20 @@ static bool
 handleUndo( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    bGlobals->doDraw = server_handleUndo( bGlobals->cGlobals.game.server, 0 );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    if ( server_handleUndo( cGlobals->game.server, 0 ) ) {
+        board_draw( cGlobals->game.board );
+    }
     return XP_TRUE;
 } /* handleUndo */
 
 static bool
 handleReplace( void* closure, int XP_UNUSED(key) )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    bGlobals->doDraw = board_replaceTiles( bGlobals->cGlobals.game.board );
+    CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
+    if ( board_replaceTiles( cGlobals->game.board ) ) {
+        board_draw( cGlobals->game.board );
+    }
     return XP_TRUE;
 } /* handleReplace */
 
@@ -1106,31 +1119,35 @@ static bool
 handleCommit( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    bGlobals->doDraw = board_commitTurn( bGlobals->cGlobals.game.board,
-                                         XP_FALSE, XP_FALSE, NULL );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    if ( board_commitTurn( cGlobals->game.board, XP_FALSE, XP_FALSE, NULL ) ) {
+        board_draw( cGlobals->game.board );
+    }
     return XP_TRUE;
 } /* handleCommit */
 
 static bool
 handleJuggle( void* closure, int XP_UNUSED(key) )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    bGlobals->doDraw = board_juggleTray( bGlobals->cGlobals.game.board );
+    CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
+    if ( board_juggleTray( cGlobals->game.board ) ) {
+        board_draw( cGlobals->game.board );
+    }
     return XP_TRUE;
 } /* handleJuggle */
 
 static bool
 handleHide( void* closure, int XP_UNUSED(key) )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
     XW_TrayVisState curState = 
         board_getTrayVisState( cGlobals->game.board );
 
-    if ( curState == TRAY_REVEALED ) {
-        bGlobals->doDraw = board_hideTray( cGlobals->game.board );
-    } else {
-        bGlobals->doDraw = board_showTray( cGlobals->game.board );
+    bool draw = curState == TRAY_REVEALED
+        ? board_hideTray( cGlobals->game.board )
+        : board_showTray( cGlobals->game.board );
+    if ( draw ) {
+        board_draw( cGlobals->game.board );
     }
 
     return XP_TRUE;
@@ -1168,6 +1185,7 @@ handleFocusKey( CursesBoardGlobals* bGlobals, XP_Key key )
     return XP_TRUE;
 } /* handleFocusKey */
 
+#ifdef ALT_KEYS_WORKING
 static bool
 handleAltLeft( void* closure, int XP_UNUSED(key) )
 {
@@ -1195,6 +1213,7 @@ handleAltDown( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     return handleFocusKey( bGlobals, XP_CURSOR_KEY_ALTDOWN );
 }
+#endif
 
 static bool
 handleHint( void* closure, int XP_UNUSED(key) )
