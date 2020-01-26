@@ -132,6 +132,7 @@ static bool handleHide( void* closure, int key );
 /* static bool handleResend( void* closure, int key ); */
 static bool handleSpace( void* closure, int key );
 static bool handleRet( void* closure, int key );
+static bool handleShowVals( void* closure, int key );
 static bool handleHint( void* closure, int key );
 static bool handleCommit( void* closure, int key );
 static bool handleFlip( void* closure, int key );
@@ -168,6 +169,7 @@ const MenuList g_allMenuList[] = {
     { handleClose, "Close", "W", 'W' },
     { handleSpace, "Raise focus", "<spc>", ' ' },
     { handleRet, "Click/tap", "<ret>", '\r' },
+    { handleShowVals, "Tile values", "T", 'T' },
 };
 
 const MenuList g_boardMenuList[] = {
@@ -457,7 +459,7 @@ static void
 getFromDict( const CommonGlobals* cGlobals, XP_U16* fontWidthP,
              XP_U16* fontHtP )
 {
-    int maxLen = 0;
+    int maxSide = 1;
 
     DictionaryCtxt* dict = cGlobals->dict;
     for ( Tile tile = 0; tile < dict->nFaces; ++tile ) {
@@ -465,14 +467,13 @@ getFromDict( const CommonGlobals* cGlobals, XP_U16* fontWidthP,
         int thisLen = utf8_len( face );
         /* XP_LOGF( "%s(): looking at face '%s' with len %d", __func__, */
         /*          face, thisLen ); */
-        if ( thisLen > maxLen ) {
-            maxLen = thisLen;
+        while ( thisLen > maxSide * maxSide ) {
+            ++maxSide;
         }
     }
 
     /* XP_LOGF( "%s(): width = %d", __func__, maxLen ); */
-    *fontWidthP = maxLen;
-    *fontHtP = 1;
+    *fontWidthP = *fontHtP = maxSide;
 }
 
 static void
@@ -705,6 +706,7 @@ curses_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
     XP_U16 len = stream_getSize( stream );
     XP_ASSERT( len <= VSIZE(cGlobals->question) );
     stream_getBytes( stream, cGlobals->question, len );
+    cGlobals->question[len] = '\0';
     (void)ADD_ONETIME_IDLE( ask_move, globals );
 } /* curses_util_not */
 
@@ -1299,6 +1301,29 @@ handleRet( void* closure, int XP_UNUSED(key) )
     board_draw( board );
     return XP_TRUE;
 } /* handleRet */
+
+static bool
+handleShowVals( void* closure, int XP_UNUSED(key) )
+{
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                                                cGlobals->params->vtMgr );
+    server_formatDictCounts( bGlobals->cGlobals.game.server, stream, 5 );
+    const XP_U8* data = stream_getPtr( stream );
+    XP_U16 len = stream_getSize( stream );
+    XP_UCHAR buf[len + 1];
+    XP_MEMCPY( buf, data, len );
+    buf[len] = '\0';
+
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( bGlobals->boardWin, buf, VSIZE(buttons), buttons );
+    stream_destroy( stream );
+
+    return XP_TRUE;
+}
+
 
 #endif
 
