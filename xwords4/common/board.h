@@ -50,6 +50,7 @@ typedef enum {
     XP_CURSOR_KEY_DEL,
     XP_RAISEFOCUS_KEY,
     XP_RETURN_KEY,
+    XP_ALTRETURN_KEY,
 
     XP_KEY_LAST
 } XP_Key;

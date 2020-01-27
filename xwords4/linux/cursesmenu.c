@@ -29,7 +29,11 @@
 struct CursesMenuState {
     WINDOW* menuWin;
     GSList* menuLists;
+    bool altPressed;
 };
+
+static bool handleKeyEvent( CursesMenuState* state, char ch, bool altPressed );
+
 
 static gboolean
 handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
@@ -42,7 +46,15 @@ handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
 #endif
         CursesMenuState* state = (CursesMenuState*)data;
         int ch = wgetch( state->menuWin );
-        cmenu_handleKeyEvent( state, ch );
+        // Alt (at least pressed with <ret>) comes in as a separate keypress
+        // immediately before. So don't distribute it, but instead OR a
+        // special bit into the key sent out.
+        if ( ch == 0x1b ) {
+            state->altPressed = true;
+        } else {
+            handleKeyEvent( state, ch, state->altPressed );
+            state->altPressed = false;
+        }
     }
     return TRUE;
 }
@@ -154,8 +166,8 @@ cmenu_removeMenus( CursesMenuState* state, ... )
     cmenu_draw( state );
 }
 
-bool
-cmenu_handleKeyEvent( CursesMenuState* state, char ch )
+static bool
+handleKeyEvent( CursesMenuState* state, char ch, bool altPressed )
 {
     bool result = false;
     for ( GSList* iter = state->menuLists; !!iter; iter = iter->next ) {
@@ -163,9 +175,11 @@ cmenu_handleKeyEvent( CursesMenuState* state, char ch )
         if ( PUSH_TOKEN == elem ) {
             break;
         }
+
+        int altBit = altPressed ? ALT_BIT : 0;
         for ( const MenuList* list = elem->list; !!list->handler; ++list ) {
             if ( list->key == ch ) {
-                result = (*list->handler)(elem->closure, ch);
+                result = (*list->handler)(elem->closure, ch | altBit);
                 goto done;
             }
         }

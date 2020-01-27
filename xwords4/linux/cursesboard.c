@@ -168,7 +168,7 @@ const MenuList g_allMenuList[] = {
     { handleDown, "Down", "K", 'K' },
     { handleClose, "Close", "W", 'W' },
     { handleSpace, "Raise focus", "<spc>", ' ' },
-    { handleRet, "Click/tap", "<ret>", '\r' },
+    { handleRet, "Tap", "<[alt-]ret>", '\r' },
     { handleShowVals, "Tile values", "T", 'T' },
 };
 
@@ -1307,13 +1307,15 @@ handleSpace( void* closure, int XP_UNUSED(key) )
 } /* handleSpace */
 
 static bool
-handleRet( void* closure, int XP_UNUSED(key) )
+handleRet( void* closure, int key )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     BoardCtxt* board = bGlobals->cGlobals.game.board;
     XP_Bool handled;
-    (void)board_handleKey( board, XP_RETURN_KEY, &handled );
-    board_draw( board );
+    XP_Key xpKey = (key & ALT_BIT) == 0 ? XP_RETURN_KEY : XP_ALTRETURN_KEY;
+    if ( board_handleKey( board, xpKey, &handled ) ) {
+        board_draw( board );
+    }
     return XP_TRUE;
 } /* handleRet */
 

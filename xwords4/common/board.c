@@ -2995,7 +2995,8 @@ penMoved( const BoardCtxt* board, XP_U16 curCol, XP_U16 curRow )
 }
 
 static XP_Bool
-handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
+handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
+                     XP_Bool altDown )
 {
     XP_Bool draw = XP_FALSE;
     XP_Bool dragged = XP_FALSE;
@@ -3027,7 +3028,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
             switch( onWhich ) {
             case OBJ_SCORE:
                 if ( prevObj == OBJ_SCORE ) {
-                    draw = handlePenUpScore( board, xx, yy ) || draw;
+                    draw = handlePenUpScore( board, xx, yy, altDown ) || draw;
                 }
                 break;
             case OBJ_BOARD:
@@ -3066,7 +3067,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
 XP_Bool
 board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
-    return handlePenUpInternal( board, x, y, XP_TRUE );
+    return handlePenUpInternal( board, x, y, XP_TRUE, XP_FALSE );
 }
 
 XP_Bool
@@ -3207,15 +3208,15 @@ board_handleKeyDown( BoardCtxt* XP_UNUSED_KEYBOARD_NAV(board),
 {
     XP_Bool draw = XP_FALSE;
 #ifdef KEYBOARD_NAV
-    XP_U16 x, y;
+    XP_U16 xx, yy;
 
     board->srcIsPen = XP_FALSE;
 
     *pHandled = XP_FALSE;
 
-    if ( key == XP_RETURN_KEY ) {
-        if ( focusToCoords( board, &x, &y ) ) {
-            draw = handleLikeDown( board, board->focussed, x, y );
+    if ( key == XP_RETURN_KEY || key == XP_ALTRETURN_KEY ) {
+        if ( focusToCoords( board, &xx, &yy ) ) {
+            draw = handleLikeDown( board, board->focussed, xx, yy );
             *pHandled = draw;
         }
     } else if ( board->focussed != OBJ_NONE ) {
@@ -3276,13 +3277,15 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
         break;
 
     case XP_RETURN_KEY:
+    case XP_ALTRETURN_KEY: {
+        XP_Bool altDown = XP_ALTRETURN_KEY == key;
         if ( unhideFocus( board ) ) {
             handled = XP_TRUE;
         } else if ( board->focussed != OBJ_NONE ) {
             if ( board->focusHasDived ) {
                 XP_U16 xx, yy;
                 if ( focusToCoords( board, &xx, &yy ) ) {
-                    redraw = handlePenUpInternal( board, xx, yy, XP_FALSE );
+                    redraw = handlePenUpInternal( board, xx, yy, XP_FALSE, altDown );
                     handled = XP_TRUE;
                 }
             } else {
@@ -3292,6 +3295,7 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
                 handled = XP_TRUE;
             }
         }
+    }
         break;
 #endif
 

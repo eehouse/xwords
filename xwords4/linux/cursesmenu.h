@@ -30,6 +30,8 @@
 # define BOARD_OFFSET 1
 #endif
 
+#define ALT_BIT (1 << 8)        /* ORd into key when alt key was down */
+
 typedef bool (*CursesMenuHandler)( void* closure, int key );
 typedef struct MenuList {
     CursesMenuHandler handler;
@@ -49,6 +51,5 @@ void cmenu_addMenus( CursesMenuState* state, void* closure, ... );
 void cmenu_push( CursesMenuState* state, void* closure, ... );
 void cmenu_pop( CursesMenuState* state );
 void cmenu_removeMenus( CursesMenuState* state, ... );
-bool cmenu_handleKeyEvent( CursesMenuState* state, char ch );
 
 #endif

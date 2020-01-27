@@ -411,7 +411,7 @@ figureScoreRectTapped( const BoardCtxt* board, XP_U16 xx, XP_U16 yy )
  */
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool
-handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
+handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool altDown )
 {
     XP_Bool result = XP_TRUE;
 
@@ -421,10 +421,10 @@ handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
         util_remSelected( board->util );
     } else if ( --rectNum >= 0 ) {
         XP_Bool canSwitch = board->gameOver || board->allowPeek;
-        if ( canSwitch ) {
-            board_selectPlayer( board, rectNum, XP_TRUE );
-        } else {
+        if ( altDown || !canSwitch ) {
             penTimerFiredScore( board );
+        } else {
+            board_selectPlayer( board, rectNum, XP_TRUE );
         }
     } else {
         result = XP_FALSE;

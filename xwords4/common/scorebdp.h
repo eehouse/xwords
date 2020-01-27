@@ -28,7 +28,7 @@ void drawTimer( BoardCtxt* board );
 void penTimerFiredScore( const BoardCtxt* board );
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
-XP_Bool handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y );
+XP_Bool handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool altDown );
 #endif
 
 
