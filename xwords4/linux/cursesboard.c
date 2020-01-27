@@ -506,6 +506,21 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid )
     LOG_FUNC();
     CursesBoardGlobals* bGlobals = commonInit( cbState, rowid );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    LaunchParams* params = cGlobals->params;
+
+    cGlobals->cp.showBoardArrow = XP_TRUE;
+    cGlobals->cp.showRobotScores = params->showRobotScores;
+    cGlobals->cp.hideTileValues = params->hideValues;
+    cGlobals->cp.skipCommitConfirm = params->skipCommitConfirm;
+    cGlobals->cp.sortNewTiles = params->sortNewTiles;
+    cGlobals->cp.showColors = params->showColors;
+    cGlobals->cp.allowPeek = params->allowPeek;
+#ifdef XWFEATURE_SLOW_ROBOT
+    cGlobals->cp.robotThinkMin = params->robotThinkMin;
+    cGlobals->cp.robotThinkMax = params->robotThinkMax;
+    cGlobals->cp.robotTradePct = params->robotTradePct;
+#endif
+
     if ( -1 == rowid ) {
         cGlobals->rowid = -1;
     }
