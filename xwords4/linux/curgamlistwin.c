@@ -221,8 +221,8 @@ cgl_draw( CursGameList* cgl )
         mvwaddstr( win, 0, cgl->width-1, "+" );
     }
 
-    const char* cols[] = {"Row", "RowID", "Lang", "Scores", "GameID", "Role", "Room",
-                          "nTotal", "nMissing", "Seed", "nMoves", "Turn", "nPend", };
+    const char* cols[] = {"#", "RowID", "Lang", "Scores", "GameID", "Role", "Room",
+                          "nTot", "nMiss", "Seed", "#Mv", "Turn", "nPend", };
 
     int nShown = nGames <= cgl->height - 2 ? nGames : cgl->height - 2;
     char* data[nShown + 1][VSIZE(cols)];
@@ -235,7 +235,7 @@ cgl_draw( CursGameList* cgl )
         int col = 0;
         data[line][col++] = g_strdup_printf( "%d", ii + cgl->yOffset + 1 ); /* 1-based */
         data[line][col++] = g_strdup_printf( "%05lld", gi->rowid );
-        data[line][col++] = g_strdup( codeToLang(gi->dictLang) );
+        data[line][col++] = g_strndup( codeToLang(gi->dictLang), 4 );
         data[line][col++] = g_strdup( gi->scores );
         data[line][col++] = g_strdup_printf( "%d", gi->gameID );
         data[line][col++] = g_strdup_printf( "%d", gi->role );
