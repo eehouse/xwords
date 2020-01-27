@@ -59,7 +59,6 @@ drawScoreBoard( BoardCtxt* board )
                               scores.arr, nTilesInPool, dfs ) ) {
             XP_S16 curTurn = server_getCurrentTurn( board->server );
             XP_U16 selPlayer = board->selPlayer;
-            XP_Rect scoreRect;
             XP_Rect playerRects[nPlayers];
             XP_U16 remDim;
             XP_Bool isVertical = !board->scoreSplitHor;
@@ -82,7 +81,7 @@ drawScoreBoard( BoardCtxt* board )
             XP_MEMSET( playerRects, 0, sizeof(playerRects) );
             XP_MEMSET( data, 0, sizeof(data) );
 
-            scoreRect = board->scoreBdBounds;
+            XP_Rect scoreRect = board->scoreBdBounds;
             if ( !draw_drawRemText( board->draw, nTilesInPool, 
                                     focusAll || remFocussed, 
                                     &scoreRect ) ) {
@@ -302,7 +301,7 @@ drawScoreBoard( BoardCtxt* board )
                                           focusAll || remFocussed );
                         *adjustPt += remDim;
 #ifdef KEYBOARD_NAV
-                        board->remRect = scoreRect;
+                        board->remRect = innerRect;
                         /* Hack: don't let the cursor disappear if Rem: goes
                            away */
                     } else if ( board->scoreCursorLoc == CURSOR_LOC_REM ) {
