@@ -584,7 +584,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
 
     TransportProcs procs;
     setTransportProcs( &procs, globals );
-    linuxOpenGame( cGlobals, &procs );
+    linuxOpenGame( cGlobals, &procs, NULL, NULL );
 
     if ( !params->fileName && !!params->dbName ) {
         XP_UCHAR buf[64];
@@ -1381,26 +1381,7 @@ static void
 handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
-    /* const CurGameInfo* gi = cGlobals->gi; */
-
-    /* gchar* countStr; */
-    /* gchar* phone = NULL; */
-    /* gchar* portstr = NULL; */
-    /* gchar* forceChannelStr; */
-    /* AskMInfo infos[] = { */
-    /*     { "Number of players", &countStr }, */
-    /*     { "Remote phone#", &phone }, */
-    /*     { "Remote port", &portstr }, */
-    /*     { "Force channel", &forceChannelStr }, */
-    /* }; */
-
     XP_U16 nMissing = server_getPendingRegs( globals->cGlobals.game.server );
-    /* gchar buf[64]; */
-    /* sprintf( buf, "%d", nMissing ); */
-    /* countStr = buf; */
-    /* gchar forceChannelBuf[64]; */
-    /* sprintf( forceChannelBuf, "%d", 1 ); */
-    /* forceChannelStr = forceChannelBuf; */
 
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;

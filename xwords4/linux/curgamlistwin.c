@@ -142,15 +142,18 @@ cgl_moveSel( CursGameList* cgl, bool down )
 static void
 adjustCurSel( CursGameList* cgl )
 {
-    XP_LOGF( "%s() start: curSel: %d; yOffset: %d", __func__, cgl->curSel, cgl->yOffset );
     int nGames = g_slist_length( cgl->games );
+    XP_LOGF( "%s() start: curSel: %d; yOffset: %d; nGames: %d", __func__,
+             cgl->curSel, cgl->yOffset, nGames );
     if ( cgl->curSel >= nGames ) {
         cgl->curSel = nGames - 1;
     }
 
     /* Now adjust yOffset */
     int nVisRows = cgl->height - 2; /* 1 for the title and header rows */
-    if ( cgl->curSel - cgl->yOffset >= nVisRows ) {
+    if ( nGames < nVisRows ) {
+        cgl->yOffset = 0;
+    } else if ( cgl->curSel - cgl->yOffset >= nVisRows ) {
         cgl->yOffset = cgl->curSel - nVisRows + 1;
     } else {
         while ( cgl->curSel < cgl->yOffset ) {

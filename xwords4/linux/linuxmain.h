@@ -111,9 +111,11 @@ const XP_U32 linux_getDevIDRelay( LaunchParams* params );
 const XP_UCHAR* linux_getDevID( LaunchParams* params, DevIDType* typ );
 void linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew );
 XP_Bool linux_setupDevidParams( LaunchParams* params );
+XP_Bool parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort );
 
 unsigned int makeRandomInt();
-bool linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs );
+bool linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
+                    const CurGameInfo* gi, const CommsAddrRec* addrP );
 void tryConnectToServer( CommonGlobals* cGlobals );
 
 /* void initParams( LaunchParams* params ); */

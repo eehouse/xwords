@@ -163,7 +163,8 @@ canMakeFromGI( const CurGameInfo* gi )
 }
 
 bool
-linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
+linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
+               const CurGameInfo* gi, const CommsAddrRec* addrP )
 {
     LOG_FUNC();
     XWStreamCtxt* stream = NULL;
@@ -202,108 +203,115 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
         stream_destroy( stream );
     }
 
-    if ( !opened && canMakeFromGI( cGlobals->gi ) ) {
-        opened = XP_TRUE;
+    if ( !opened ) {
+        if ( !gi ) {
+            gi = cGlobals->gi;
+        }
+        if ( canMakeFromGI( gi ) ) {
+            opened = XP_TRUE;
 
 #ifdef XWFEATURE_RELAY
-        /* if ( addr.conType == COMMS_CONN_RELAY ) { */
-        /*     XP_ASSERT( !!params->connInfo.relay.relayName ); */
-        /*     globals->cGlobals.defaultServerName */
-        /*         = params->connInfo.relay.relayName; */
-        /* } */
+            /* if ( addr.conType == COMMS_CONN_RELAY ) { */
+            /*     XP_ASSERT( !!params->connInfo.relay.relayName ); */
+            /*     globals->cGlobals.defaultServerName */
+            /*         = params->connInfo.relay.relayName; */
+            /* } */
 #endif
-        game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
-                          cGlobals->util, cGlobals->draw,
-                          &cGlobals->cp, procs
+            game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
+                              cGlobals->util, cGlobals->draw,
+                              &cGlobals->cp, procs
 #ifdef SET_GAMESEED
-                          , params->gameSeed
+                              , params->gameSeed
 #endif
-                          );
+                              );
 
-        CommsAddrRec addr = cGlobals->addr;
-        // addr.conType = params->conType;
-        CommsConnType typ;
-        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
-            if ( params->commsDisableds[typ][0] ) {
-                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_FALSE, XP_TRUE );
-            }
-            if ( params->commsDisableds[typ][1] ) {
-                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_TRUE, XP_TRUE );
-            }
-            switch( typ ) {
+            CommsAddrRec addr = !!addrP ? *addrP : cGlobals->addr;
+            // addr.conType = params->conType;
+            CommsConnType typ;
+            for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+                if ( params->commsDisableds[typ][0] ) {
+                    comms_setAddrDisabled( cGlobals->game.comms, typ, XP_FALSE, XP_TRUE );
+                }
+                if ( params->commsDisableds[typ][1] ) {
+                    comms_setAddrDisabled( cGlobals->game.comms, typ, XP_TRUE, XP_TRUE );
+                }
+                switch( typ ) {
 #ifdef XWFEATURE_RELAY
-            case COMMS_CONN_RELAY:
-                /* addr.u.ip_relay.ipAddr = 0; */
-                /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
-                /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
-                /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
-                /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
-                /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
-                /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
-                /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
-                break;
+                case COMMS_CONN_RELAY:
+                    /* addr.u.ip_relay.ipAddr = 0; */
+                    /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
+                    /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
+                    /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
+                    /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
+                    /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
+                    /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
+                    /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
+                    break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-            case COMMS_CONN_BT:
-                XP_ASSERT( sizeof(addr.u.bt.btAddr)
-                           >= sizeof(params->connInfo.bt.hostAddr));
-                XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                           sizeof(params->connInfo.bt.hostAddr) );
-                break;
+                case COMMS_CONN_BT:
+                    XP_ASSERT( sizeof(addr.u.bt.btAddr)
+                               >= sizeof(params->connInfo.bt.hostAddr));
+                    XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                               sizeof(params->connInfo.bt.hostAddr) );
+                    break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-            case COMMS_CONN_IP_DIRECT:
-                XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
-                            sizeof(addr.u.ip.hostName_ip) - 1 );
-                addr.u.ip.port_ip = params->connInfo.ip.port;
-                break;
+                case COMMS_CONN_IP_DIRECT:
+                    XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
+                                sizeof(addr.u.ip.hostName_ip) - 1 );
+                    addr.u.ip.port_ip = params->connInfo.ip.port;
+                    break;
 #endif
 #ifdef XWFEATURE_SMS
-            case COMMS_CONN_SMS:
-                /* No! Don't overwrite what may be a return address with local
-                   stuff */
-                /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
-                /*             sizeof(addr.u.sms.phone) - 1 ); */
-                /* addr.u.sms.port = params->connInfo.sms.port; */
-                break;
+                case COMMS_CONN_SMS:
+                    XP_LOGF( "%s(): SMS is on at least", __func__ );
+                    /* No! Don't overwrite what may be a return address with local
+                       stuff */
+                    /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
+                    /*             sizeof(addr.u.sms.phone) - 1 ); */
+                    /* addr.u.sms.port = params->connInfo.sms.port; */
+                    break;
 #endif
-            default:
-                break;
+                default:
+                    break;
+                }
             }
-        }
 
-        model_setDictionary( cGlobals->game.model, cGlobals->dict );
-        setSquareBonuses( cGlobals );
-        model_setPlayerDicts( cGlobals->game.model, &cGlobals->dicts );
+            model_setDictionary( cGlobals->game.model, cGlobals->dict );
+            setSquareBonuses( cGlobals );
+            model_setPlayerDicts( cGlobals->game.model, &cGlobals->dicts );
 
-        /* Need to save in order to have a valid selRow for the first send */
-        linuxSaveGame( cGlobals );
+            /* Need to save in order to have a valid selRow for the first send */
+            linuxSaveGame( cGlobals );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        /* This may trigger network activity */
-        if ( !!cGlobals->game.comms ) {
-            comms_setAddr( cGlobals->game.comms, &addr );
-        }
+            /* This may trigger network activity */
+            if ( !!cGlobals->game.comms ) {
+                comms_setAddr( cGlobals->game.comms, &addr );
+            }
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        cGlobals->gi->allowHintRect = params->allowHintRect;
+            cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
 
-        if ( params->needsNewGame ) {
-            XP_ASSERT(0);
-            // new_game_impl( globals, XP_FALSE );
-#ifndef XWFEATURE_STANDALONE_ONLY
-        } else {
-            DeviceRole serverRole = cGlobals->gi->serverRole;
-            if ( serverRole == SERVER_ISCLIENT ) {
-                tryConnectToServer( cGlobals );
+            if ( params->needsNewGame ) {
+                XP_ASSERT(0);
+                // new_game_impl( globals, XP_FALSE );
             }
-#endif
         }
     }
 
     if ( opened ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
+        DeviceRole serverRole = cGlobals->gi->serverRole;
+        XP_LOGF( "%s(): server role: %d", __func__, serverRole );
+        if ( serverRole == SERVER_ISCLIENT ) {
+            tryConnectToServer( cGlobals );
+        }
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!cGlobals->game.comms ) {
             comms_start( cGlobals->game.comms );
@@ -564,7 +572,7 @@ linuxSaveGame( CommonGlobals* cGlobals )
             XP_LOGF( "%s: simulating save failure", __func__ );
         }
     }
-}
+} /* linuxSaveGame */
 
 static void
 handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
@@ -835,7 +843,7 @@ typedef enum {
 #endif
 #ifdef XWFEATURE_SMS
     ,CMD_SMSNUMBER		/* SMS phone number */
-    ,CMD_SERVER_SMSNUMBER
+    ,CMD_INVITEE_SMSNUMBER
     ,CMD_SMSPORT
 #endif
 #ifdef XWFEATURE_RELAY
@@ -963,7 +971,7 @@ static CmdInfoRec CmdInfoRecs[] = {
 #endif
 #ifdef XWFEATURE_SMS
     ,{ CMD_SMSNUMBER, true, "sms-number", "this devices's sms phone number" }
-    ,{ CMD_SERVER_SMSNUMBER, true, "server-sms-number", "number this device should connect to" }
+    ,{ CMD_INVITEE_SMSNUMBER, true, "invitee-sms-number", "number to send any invitation to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
 #ifdef XWFEATURE_RELAY
@@ -1168,6 +1176,29 @@ linux_setupDevidParams( LaunchParams* params )
         db_store( params->pDb, KEY_LDEVID, lDevID );
     }
     return idIsNew;
+}
+
+XP_Bool
+parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
+{
+    gchar buf[32];
+    const XP_UCHAR* phone = params->connInfo.sms.myPhone;
+    if ( !!phone ) {
+        db_store( params->pDb, KEY_SMSPHONE, *myPhone );
+        *myPhone = g_strdup( phone );
+    } else if ( !phone && db_fetch_safe( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+        params->connInfo.sms.myPhone = *myPhone = g_strdup(buf);
+    }
+
+    *myPort = params->connInfo.sms.port;
+    gchar portbuf[8];
+    if ( 0 < *myPort ) {
+        sprintf( portbuf, "%d", *myPort );
+        db_store( params->pDb, KEY_SMSPORT, portbuf );
+    } else if ( db_fetch_safe( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+        params->connInfo.sms.port = *myPort = atoi( portbuf );
+    }
+    return NULL != *myPhone && 0 < *myPort;
 }
 
 #ifdef XWFEATURE_RELAY
@@ -1496,12 +1527,9 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo
 
         // use serverphone if I'm a client, else hope one's provided (this is
         // a reply)
-        const XP_UCHAR* phone = cGlobals->params->connInfo.sms.serverPhone;
-        if ( !phone ) {
-            phone = addrRec->u.sms.phone;
-        }
         nSent = linux_sms_send( cGlobals->params, buf, buflen, 
-                                phone, addrRec->u.sms.port, gameID );
+                                addrRec->u.sms.phone, addrRec->u.sms.port,
+                                gameID );
     }
         break;
 #endif
@@ -2464,8 +2492,8 @@ main( int argc, char** argv )
             mainParams.connInfo.sms.myPhone = optarg;
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
-        case CMD_SERVER_SMSNUMBER:
-            mainParams.connInfo.sms.serverPhone = optarg;
+        case CMD_INVITEE_SMSNUMBER:
+            mainParams.connInfo.sms.inviteePhone = optarg;
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
         case CMD_SMSPORT:
@@ -2836,6 +2864,15 @@ main( int argc, char** argv )
             }
                 break;
 #endif
+/* #ifdef XWFEATURE_SMS */
+/*             case COMMS_CONN_SMS: */
+/*                 XP_MEMCPY( &mainParams.connInfo.sms.myPhone, sms-phone */
+/*                 const char* serverPhone; */
+/*                 int port; */
+
+
+/*                 break; */
+/* #endif */
             default:
                 break;
             }

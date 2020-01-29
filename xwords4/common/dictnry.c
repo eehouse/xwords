@@ -456,7 +456,9 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_UCHAR* localTexts[32];
     XP_U8 utf8[MAX_UNIQUE_TILES];
 
-    XP_ASSERT( !dict->destructor );
+    if ( !!dict->destructor ) {
+        XP_LOGF( "%s(): replacing destructor!!", __func__ );
+    }
     dict->destructor = common_destructor;
     dict->func_dict_getShortName = dict_getName; /* default */
 

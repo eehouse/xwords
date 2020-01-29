@@ -127,4 +127,11 @@ cursesask( WINDOW* window, const char* question, short numButtons,
     return curSelButton;
 } /* cursesask */
 
+void
+ca_inform( WINDOW* window, const char* message )
+{
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( window, message, VSIZE(buttons), buttons );
+}
+
 #endif /* PLATFORM_NCURSES */

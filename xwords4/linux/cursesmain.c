@@ -243,12 +243,12 @@ handleQuit( void* closure, int XP_UNUSED(key) )
 } /* handleQuit */
 
 static void
-figureDims( CursesAppGlobals* aGlobals, int* widthP, int* topP, int* heightP )
+figureDims( CursesAppGlobals* aGlobals, cb_dims* dims )
 {
     LaunchParams* params = aGlobals->cag.params;
-    *widthP = aGlobals->winWidth;
-    *topP = params->cursesListWinHt;
-    *heightP = aGlobals->winHeight - params->cursesListWinHt - MENU_WINDOW_HEIGHT;
+    dims->width = aGlobals->winWidth;
+    dims->top = params->cursesListWinHt;
+    dims->height = aGlobals->winHeight - params->cursesListWinHt - MENU_WINDOW_HEIGHT;
 }
 
 static bool
@@ -258,9 +258,9 @@ handleOpenGame( void* closure, int XP_UNUSED(key) )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     const GameInfo* gi = cgl_getSel( aGlobals->gameList );
     if ( !!gi ) {
-        int width, top, height;
-        figureDims( aGlobals, &width, &top, &height );
-        cb_open( aGlobals->cbState, gi->rowid, width, top, height );
+        cb_dims dims;
+        figureDims( aGlobals, &dims );
+        cb_open( aGlobals->cbState, gi->rowid, &dims );
     }
     return XP_TRUE;
 }
@@ -273,9 +273,9 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
 
     // aGlobals->cag.params->needsNewGame = XP_FALSE;
 
-    int width, top, height;
-    figureDims( aGlobals, &width, &top, &height );
-    if ( !cb_new( aGlobals->cbState, width, top, height ) ) {
+    cb_dims dims;
+    figureDims( aGlobals, &dims );
+    if ( !cb_new( aGlobals->cbState, &dims ) ) {
         /* This erases the whole screen. Fix later. PENDING */
         /* const char* buttons[] = { "Ok", }; */
         /* (void)cursesask( aGlobals->mainWin, "Unable to create game (check params?)", */
@@ -931,7 +931,7 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
     rowidFromToken( XP_NTOHL( clientToken ), &rowid, &gotSeed );
 
     /* Figure out if the device is live, or we need to open the game */
-    XP_U16 seed = cb_feedBuffer( aGlobals->cbState, rowid, buf, len, addr );
+    XP_U16 seed = cb_feedRow( aGlobals->cbState, rowid, buf, len, addr );
     XP_ASSERT( seed == 0 || gotSeed == seed );
     XP_USE( seed );
 
@@ -942,6 +942,35 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
     /*              __func__ ); */
     /* } */
     /* LOG_RETURN_VOID(); */
+}
+
+static void
+smsInviteReceivedCurses( void* closure, const NetLaunchInfo* nli,
+                         const CommsAddrRec* returnAddr )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    /* LaunchParams* params = aGlobals->cag.params; */
+    /* CurGameInfo gi = {0}; */
+    /* gi_copy( MPPARM(params->mpool) &gi, &params->pgi ); */
+
+    /* gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH ); */
+    /* gi.gameID = invite->gameID; */
+    /* gi.dictLang = invite->lang; */
+    /* gi.forceChannel = invite->forceChannel; */
+    /* gi.serverRole = SERVER_ISCLIENT; /\* recipient of invitation is client *\/ */
+    /* replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict ); */
+
+    cb_dims dims;
+    figureDims( aGlobals, &dims );
+    cb_newFor( aGlobals->cbState, nli, returnAddr, &dims );
+}
+
+static void
+smsMsgReceivedCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID, 
+                      const XP_U8* buf, XP_U16 len )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    cb_feedGame( aGlobals->cbState, gameID, buf, len, from );
 }
 
 static void
@@ -1205,6 +1234,18 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
         XP_Bool idIsNew = linux_setupDevidParams( params );
         linux_doInitialReg( params, idIsNew );
     }
+
+#ifdef XWFEATURE_SMS
+    gchar* myPhone = NULL;
+    XP_U16 myPort = 0;
+    if ( parseSMSParams( params, &myPhone, &myPort ) ) {
+        SMSProcs smsProcs = {
+            .inviteReceived = smsInviteReceivedCurses,
+            .msgReceived = smsMsgReceivedCurses,
+        };
+        linux_sms_init( params, myPhone, myPort, &smsProcs, &g_globals );
+    }
+#endif
 
     if ( 0 == cgl_getNGames( g_globals.gameList ) ) {
         handleNewGame( &g_globals, 0 );

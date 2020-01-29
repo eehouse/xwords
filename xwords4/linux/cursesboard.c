@@ -32,6 +32,8 @@
 #include "gamesdb.h"
 #include "game.h"
 #include "gsrcwrap.h"
+#include "linuxsms.h"
+#include "strutils.h"
 
 typedef struct CursesBoardState {
     CursesAppGlobals* aGlobals;
@@ -72,9 +74,10 @@ struct CursesBoardGlobals {
 };
 
 static CursesBoardGlobals* findOrOpen( CursesBoardState* cbState,
-                                       sqlite3_int64 rowid );
-static void enableDraw( CursesBoardGlobals* bGlobals,
-                        int width, int top, int height );
+                                       sqlite3_int64 rowid,
+                                       const CurGameInfo* gi,
+                                       const CommsAddrRec* addrP );
+static void enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims );
 static CursesBoardGlobals* ref( CursesBoardGlobals* bGlobals );
 static void unref( CursesBoardGlobals* bGlobals );
 static void setupBoard( CursesBoardGlobals* bGlobals );
@@ -92,12 +95,11 @@ cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
 }
 
 void
-cb_open( CursesBoardState* cbState, sqlite3_int64 rowid,
-         int width, int top, int height )
+cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
 {
     LOG_FUNC();
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid );
-    enableDraw( bGlobals, width, top, height );
+    CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL, NULL );
+    enableDraw( bGlobals, dims );
     setupBoard( bGlobals );
 
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -107,14 +109,37 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid,
 }
 
 bool
-cb_new( CursesBoardState* cbState, int width, int top, int height )
+cb_new( CursesBoardState* cbState, const cb_dims* dims )
 {
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1 );
+    CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, NULL, NULL );
     if ( !!bGlobals ) {
-        enableDraw( bGlobals, width, top, height );
+        enableDraw( bGlobals, dims );
         setupBoard( bGlobals );
     }
     return NULL != bGlobals;
+}
+
+void
+cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
+           const CommsAddrRec* returnAddr,
+           const cb_dims* dims )
+{
+    LaunchParams* params = cbState->params;
+    CurGameInfo gi = {0};
+    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+    gi_setNPlayers( &gi, nli->nPlayersT, nli->nPlayersH );
+    gi.gameID = nli->gameID;
+    gi.dictLang = nli->lang;
+    gi.forceChannel = nli->forceChannel;
+    gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
+    replaceStringIfDifferent( params->mpool, &gi.dictName, nli->dict );
+
+    CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, &gi, returnAddr );
+
+    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+
+    enableDraw( bGlobals, dims );
+    setupBoard( bGlobals );
 }
 
 #ifdef KEYBOARD_NAV
@@ -143,6 +168,7 @@ static bool handleToggleValues( void* closure, int key );
 static bool handleBackspace( void* closure, int key );
 static bool handleUndo( void* closure, int key );
 static bool handleReplace( void* closure, int key );
+static bool handleInvite( void* closure, int key );
 #ifdef CURSES_SMALL_SCREEN
 static bool handleRootKeyShow( void* closure, int key );
 static bool handleRootKeyHide( void* closure, int key );
@@ -191,6 +217,8 @@ const MenuList g_boardMenuList[] = {
     { handleBackspace, "Remove from board", "<del>", 8 },
     { handleUndo, "Undo prev", "U", 'U' },
     { handleReplace, "uNdo cur", "N", 'N' },
+
+    { handleInvite, "invitE", "E", 'E' },
 
     { NULL, NULL, NULL, '\0'}
 };
@@ -338,7 +366,8 @@ copyParmsAddr( CommonGlobals* cGlobals )
 }
 
 static CursesBoardGlobals*
-commonInit( CursesBoardState* cbState, sqlite3_int64 rowid )
+commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
+            const CurGameInfo* gip )
 {
     CursesBoardGlobals* bGlobals = g_malloc0( sizeof(*bGlobals) );
     XP_LOGF( "%s(): alloc'd bGlobals %p", __func__, bGlobals );
@@ -346,7 +375,7 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid )
     LaunchParams* params = cbState->params;
 
     cGlobals->gi = &cGlobals->_gi;
-    gi_copy( MPPARM(params->mpool) cGlobals->gi, &params->pgi );
+    gi_copy( MPPARM(params->mpool) cGlobals->gi, !!gip? gip : &params->pgi );
 
     cGlobals->rowid = rowid;
     bGlobals->cbState = cbState;
@@ -505,10 +534,11 @@ setupBoard( CursesBoardGlobals* bGlobals )
 }
 
 static CursesBoardGlobals*
-initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid )
+initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
+            const CurGameInfo* gi, const CommsAddrRec* addr )
 {
     LOG_FUNC();
-    CursesBoardGlobals* result = commonInit( cbState, rowid );
+    CursesBoardGlobals* result = commonInit( cbState, rowid, gi );
     CommonGlobals* cGlobals = &result->cGlobals;
     LaunchParams* params = cGlobals->params;
 
@@ -525,14 +555,10 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid )
     cGlobals->cp.robotTradePct = params->robotTradePct;
 #endif
 
-    if ( -1 == rowid ) {
-        cGlobals->rowid = -1;
-    }
-
     initMenus( result );
 
-    if ( linuxOpenGame( cGlobals, &result->procs ) ) {
-        result = ref( result );
+    if ( linuxOpenGame( cGlobals, &result->procs, gi, addr ) ) {
+         result = ref( result );
     } else {
         disposeBoard( result );
         result = NULL;
@@ -541,11 +567,11 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid )
 }
 
 static void
-enableDraw( CursesBoardGlobals* bGlobals, int width, int top, int height )
+enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
 {
     LOG_FUNC();
-    XP_ASSERT( 0 != width );
-    bGlobals->boardWin = newwin( height, width, top, 0 );
+    XP_ASSERT( !!dims );
+    bGlobals->boardWin = newwin( dims->height, dims->width, dims->top, 0 );
     getmaxyx( bGlobals->boardWin, bGlobals->winHeight, bGlobals->winWidth );
 
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -556,11 +582,12 @@ enableDraw( CursesBoardGlobals* bGlobals, int width, int top, int height )
 }
 
 static CursesBoardGlobals*
-findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid )
+findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid,
+            const CurGameInfo* gi, const CommsAddrRec* addr )
 {
     CursesBoardGlobals* result = NULL;
     for ( GSList* iter = cbState->games;
-          rowid != 0 && !!iter && !result; iter = iter->next ) {
+          rowid >= 0 && !!iter && !result; iter = iter->next ) {
         CursesBoardGlobals* one = (CursesBoardGlobals*)iter->data;
         if ( one->cGlobals.rowid == rowid ) {
             result = one;
@@ -568,7 +595,7 @@ findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid )
     }
 
     if ( !result ) {
-        result = initNoDraw( cbState, rowid );
+        result = initNoDraw( cbState, rowid, gi, addr );
         if ( !!result ) {
             setupBoard( result );
             cbState->games = g_slist_append( cbState->games, result );
@@ -578,14 +605,30 @@ findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid )
 }
 
 XP_U16
-cb_feedBuffer( CursesBoardState* cbState, sqlite3_int64 rowid,
-               const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
+cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
+            const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
 {
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid );
+    LOG_FUNC();
+    CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
     XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
     return seed;
+}
+
+void
+cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
+             const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
+{
+    LOG_FUNC();
+    sqlite3_int64 rowids[4];
+    int nRows = VSIZE( rowids );
+    LaunchParams* params = cbState->params;
+    getRowsForGameID( params->pDb, gameID, rowids, &nRows );
+    XP_LOGF( "%s(): found %d rows for gameID %d", __func__, nRows, gameID );
+    for ( int ii = 0; ii < nRows; ++ii ) {
+        (void)cb_feedRow( cbState, rowids[ii], buf, len, from );
+    }
 }
 
 static void
@@ -1145,6 +1188,33 @@ handleReplace( void* closure, int XP_UNUSED(key) )
     }
     return XP_TRUE;
 } /* handleReplace */
+
+static bool
+handleInvite( void* closure, int XP_UNUSED(key) )
+{
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    LaunchParams* params = cGlobals->params;
+    CommsAddrRec addr = {0};
+    CommsCtxt* comms = cGlobals->game.comms;
+    XP_ASSERT( comms );
+    comms_getAddr( comms, &addr );
+    if ( SERVER_ISSERVER != cGlobals->gi->serverRole ) {
+        ca_inform( bGlobals->boardWin, "Only hosts can invite" );
+    } else if ( !params->connInfo.sms.inviteePhone ) {
+        ca_inform( bGlobals->boardWin, "No way to invite; use --invitee-sms-number" );
+    } else {
+        /* These should both be settable/derivable */
+        XP_U16 nPlayers = 1;
+        gint forceChannel = 1;
+        NetLaunchInfo nli = {0};
+        nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
+
+        linux_sms_invite( params, &nli, params->connInfo.sms.inviteePhone,
+                          params->connInfo.sms.port );
+    }
+    return XP_TRUE;
+}
 
 static bool
 handleCommit( void* closure, int XP_UNUSED(key) )

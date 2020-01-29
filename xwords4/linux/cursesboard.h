@@ -22,6 +22,7 @@
 #define _CURSESBOARD_H_
 
 #include "cursesmain.h"
+#include "nli.h"
 
 typedef struct CursesAppGlobals CursesAppGlobals;
 typedef struct CursesBoardState CursesBoardState;
@@ -31,12 +32,21 @@ typedef void (*OnGameSaved)( CursesAppGlobals* aGlobals, sqlite3_int64 rowid, bo
 CursesBoardState* cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
                            CursesMenuState* menuState, OnGameSaved onGameSaved );
 
-void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid,
-              int width, int top, int height );
-bool cb_new( CursesBoardState* cbState, int width, int top, int height );
+typedef struct _cb_dims {
+    int width;
+    int top;
+    int height;
+} cb_dims;
 
-XP_U16 cb_feedBuffer( CursesBoardState* cbState, sqlite3_int64 rowid,
-                      const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
+void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims );
+bool cb_new( CursesBoardState* cbState, const cb_dims* dims );
+void cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
+                const CommsAddrRec* returnAddr, const cb_dims* dims );
+
+XP_U16 cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
+                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
+void cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
+                  const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
 void cb_closeAll( CursesBoardState* cbState );
 
 #endif

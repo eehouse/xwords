@@ -895,22 +895,9 @@ gtkmain( LaunchParams* params )
         }
 
 #ifdef XWFEATURE_SMS
-        gchar buf[32];
-        const gchar* myPhone = params->connInfo.sms.myPhone;
-        if ( !!myPhone ) {
-            db_store( params->pDb, KEY_SMSPHONE, myPhone );
-        } else if ( !myPhone && db_fetch_safe( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
-            params->connInfo.sms.myPhone = myPhone = buf;
-        }
-        XP_U16 myPort = params->connInfo.sms.port;
-        gchar portbuf[8];
-        if ( 0 < myPort ) {
-            sprintf( portbuf, "%d", myPort );
-            db_store( params->pDb, KEY_SMSPORT, portbuf );
-        } else if ( db_fetch_safe( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
-            params->connInfo.sms.port = myPort = atoi( portbuf );
-        }
-        if ( !!myPhone && 0 < myPort ) {
+        gchar* myPhone;
+        XP_U16 myPort;
+        if ( parseSMSParams( params, &myPhone, &myPort ) ) {
             SMSProcs smsProcs = {
                 .inviteReceived = smsInviteReceived,
                 .msgReceived = smsMsgReceivedGTK,
