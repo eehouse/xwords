@@ -26,3 +26,4 @@ cd $WD
 ./obj_linux_memdbg/xwords --curses --name Eric --name Kati \
 						  --dict-dir ./ --game-dict ../dict.xwd \
 						  $PARAMS \
+						  2>log.txt \
