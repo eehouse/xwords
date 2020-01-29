@@ -20,6 +20,8 @@
 #ifndef _LINUXMAIN_H_
 #define _LINUXMAIN_H_
 
+#include <stdbool.h>
+
 #include "main.h"
 #include "dictnry.h"
 #include "mempool.h"
@@ -111,7 +113,7 @@ void linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew );
 XP_Bool linux_setupDevidParams( LaunchParams* params );
 
 unsigned int makeRandomInt();
-void linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs );
+bool linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs );
 void tryConnectToServer( CommonGlobals* cGlobals );
 
 /* void initParams( LaunchParams* params ); */

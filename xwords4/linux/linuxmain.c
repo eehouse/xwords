@@ -159,11 +159,10 @@ canMakeFromGI( const CurGameInfo* gi )
     result = result && (haveDict || allHaveDicts);
 
     LOG_RETURNF( "%d", result );
-    XP_ASSERT( result );
     return result;
 }
 
-void
+bool
 linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
 {
     LOG_FUNC();
@@ -204,6 +203,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
     }
 
     if ( !opened && canMakeFromGI( cGlobals->gi ) ) {
+        opened = XP_TRUE;
 
 #ifdef XWFEATURE_RELAY
         /* if ( addr.conType == COMMS_CONN_RELAY ) { */
@@ -303,13 +303,16 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs )
         }
     }
 
+    if ( opened ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( !!cGlobals->game.comms ) {
-        comms_start( cGlobals->game.comms );
-    }
+        if ( !!cGlobals->game.comms ) {
+            comms_start( cGlobals->game.comms );
+        }
 #endif
-    server_do( cGlobals->game.server );
-    linuxSaveGame( cGlobals );   /* again, to include address etc. */
+        server_do( cGlobals->game.server );
+        linuxSaveGame( cGlobals );   /* again, to include address etc. */
+    }
+    return opened;
 }
 
 #ifdef USE_SQLITE
@@ -2125,7 +2128,6 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 void
 assertAllCallbacksSet( XW_UtilCtxt* util )
 {
-    LOG_FUNC();
     XWStreamCtxt* (**proc)(XW_UtilCtxt*, XP_PlayerAddr ) =
         &util->vtable->m_util_makeStreamFromAddr;
     for ( int ii = 0; ii < sizeof(*util->vtable)/sizeof(*proc); ++ii ) {
@@ -2220,7 +2222,7 @@ main( int argc, char** argv )
     // char* portNum = NULL;
     // char* hostName = "localhost";
     unsigned int seed = makeRandomInt();
-    LaunchParams mainParams;
+    LaunchParams mainParams = {0};
     XP_U16 nPlayerDicts = 0;
     XP_U16 robotCount = 0;
     /* XP_U16 ii; */
@@ -2302,6 +2304,9 @@ main( int argc, char** argv )
     mainParams.dbName = "xwgames.sqldb";
     mainParams.cursesListWinHt = 5;
 
+    trimDictPath( "./dict.xwd", dictbuf, VSIZE(dictbuf), &path, &dict );
+    mainParams.pgi.dictName = copyString( mainParams.mpool, dict );
+
     char* envDictPath = getenv( "XW_DICTDIR" );
     XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );
     if ( !!envDictPath ) {
@@ -2361,7 +2366,8 @@ main( int argc, char** argv )
             break;
         case CMD_DICT:
             trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
-            mainParams.pgi.dictName = copyString( mainParams.mpool, dict );
+            replaceStringIfDifferent( mainParams.mpool, &mainParams.pgi.dictName,
+                                      dict );
             if ( !path ) {
                 path = ".";
             }

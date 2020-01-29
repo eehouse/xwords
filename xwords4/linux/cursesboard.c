@@ -106,12 +106,15 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid,
     }
 }
 
-void
+bool
 cb_new( CursesBoardState* cbState, int width, int top, int height )
 {
     CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1 );
-    enableDraw( bGlobals, width, top, height );
-    setupBoard( bGlobals );
+    if ( !!bGlobals ) {
+        enableDraw( bGlobals, width, top, height );
+        setupBoard( bGlobals );
+    }
+    return NULL != bGlobals;
 }
 
 #ifdef KEYBOARD_NAV
@@ -234,7 +237,8 @@ changeMenuForFocus( CursesBoardGlobals* bGlobals, BoardObjectType focussed )
 
 static void setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util );
 
-static void initMenus( CursesBoardGlobals* bGlobals )
+static void
+initMenus( CursesBoardGlobals* bGlobals )
 {
     if ( !bGlobals->menuState ) {
         bGlobals->menuState = bGlobals->cbState->menuState;
@@ -375,8 +379,8 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid )
     CurGameInfo* gi = cGlobals->gi;
     if ( !!gi ) {
         XP_ASSERT( !cGlobals->dict );
-        cGlobals->dict = linux_dictionary_make( MPPARM(cGlobals->util->mpool) params,
-                                                gi->dictName, XP_TRUE );
+        cGlobals->dict = linux_dictionary_make( MPPARM(cGlobals->util->mpool)
+                                                params, gi->dictName, XP_TRUE );
         gi->dictLang = dict_getLangCode( cGlobals->dict );
     }
 
@@ -504,8 +508,8 @@ static CursesBoardGlobals*
 initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid )
 {
     LOG_FUNC();
-    CursesBoardGlobals* bGlobals = commonInit( cbState, rowid );
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    CursesBoardGlobals* result = commonInit( cbState, rowid );
+    CommonGlobals* cGlobals = &result->cGlobals;
     LaunchParams* params = cGlobals->params;
 
     cGlobals->cp.showBoardArrow = XP_TRUE;
@@ -524,8 +528,16 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid )
     if ( -1 == rowid ) {
         cGlobals->rowid = -1;
     }
-    linuxOpenGame( cGlobals, &bGlobals->procs );
-    return ref( bGlobals );
+
+    initMenus( result );
+
+    if ( linuxOpenGame( cGlobals, &result->procs ) ) {
+        result = ref( result );
+    } else {
+        disposeBoard( result );
+        result = NULL;
+    }
+    return result;
 }
 
 static void
@@ -541,8 +553,6 @@ enableDraw( CursesBoardGlobals* bGlobals, int width, int top, int height )
     board_setDraw( cGlobals->game.board, cGlobals->draw );
 
     setupBoard( bGlobals );
-
-    initMenus( bGlobals );
 }
 
 static CursesBoardGlobals*
@@ -559,8 +569,10 @@ findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid )
 
     if ( !result ) {
         result = initNoDraw( cbState, rowid );
-        setupBoard( result );
-        cbState->games = g_slist_append( cbState->games, result );
+        if ( !!result ) {
+            setupBoard( result );
+            cbState->games = g_slist_append( cbState->games, result );
+        }
     }
     return result;
 }
@@ -595,13 +607,15 @@ cursesUserError( CursesBoardGlobals* bGlobals, const char* format, ... )
     char buf[512];
     va_list ap;
     va_start( ap, format );
-
     vsprintf( buf, format, ap );
-
-    const char* buttons[] = {"OK"};
-    (void)cursesask( bGlobals->boardWin, buf, VSIZE(buttons), buttons );
-
     va_end(ap);
+
+    if ( !!bGlobals->boardWin ) {
+        const char* buttons[] = { "Ok" };
+        (void)cursesask( bGlobals->boardWin, buf, VSIZE(buttons), buttons );
+    } else {
+        XP_LOGF( "%s(msg=%s)", __func__, buf );
+    }
 } /* cursesUserError */
 
 static void

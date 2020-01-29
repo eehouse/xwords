@@ -33,7 +33,7 @@ CursesBoardState* cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
 
 void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid,
               int width, int top, int height );
-void cb_new( CursesBoardState* cbState, int width, int top, int height );
+bool cb_new( CursesBoardState* cbState, int width, int top, int height );
 
 XP_U16 cb_feedBuffer( CursesBoardState* cbState, sqlite3_int64 rowid,
                       const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );

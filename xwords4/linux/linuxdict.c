@@ -73,13 +73,13 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
 
         dict_super_init( &result->super );
         MPASSIGN( result->super.mpool, mpool );
+        result->super.destructor = linux_dictionary_destroy;
 
         result->useMMap = useMMap;
 
         if ( !!dictFileName ) {
             XP_Bool success = initFromDictFile( result, params, dictFileName );
             if ( success ) {
-                result->super.destructor = linux_dictionary_destroy;
                 result->super.func_dict_getShortName = linux_dict_getShortName;
                 setBlankTile( &result->super );
             } else {
@@ -89,6 +89,8 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
             }
 
             dmgr_put( params->dictMgr, dictFileName, &result->super );
+        } else {
+            XP_LOGF( "%s(): no file name!!", __func__ );
         }
         (void)dict_ref( &result->super );
     }
@@ -510,10 +512,10 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
 
     XP_FREEP( dict->mpool, &ctxt->super.desc );
     XP_FREEP( dict->mpool, &ctxt->super.md5Sum );
-    XP_FREE( dict->mpool, ctxt->super.countsAndValues );
-    XP_FREE( dict->mpool, ctxt->super.faces );
-    XP_FREE( dict->mpool, ctxt->super.facePtrs );
-    XP_FREE( dict->mpool, ctxt->super.name );
+    XP_FREEP( dict->mpool, &ctxt->super.countsAndValues );
+    XP_FREEP( dict->mpool, &ctxt->super.faces );
+    XP_FREEP( dict->mpool, &ctxt->super.facePtrs );
+    XP_FREEP( dict->mpool, &ctxt->super.name );
     XP_FREE( dict->mpool, ctxt );
 } /* linux_dictionary_destroy */
 

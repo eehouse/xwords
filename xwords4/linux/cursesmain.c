@@ -275,7 +275,12 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
 
     int width, top, height;
     figureDims( aGlobals, &width, &top, &height );
-    cb_new( aGlobals->cbState, width, top, height );
+    if ( !cb_new( aGlobals->cbState, width, top, height ) ) {
+        /* This erases the whole screen. Fix later. PENDING */
+        /* const char* buttons[] = { "Ok", }; */
+        /* (void)cursesask( aGlobals->mainWin, "Unable to create game (check params?)", */
+        /*                  VSIZE(buttons), buttons ); */
+    }
     return XP_TRUE;
 }
 
