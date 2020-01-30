@@ -424,7 +424,12 @@ def build_cmds(args):
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]
             PARAMS += [ '--game-dict', DICT]
-            PARAMS += ['--slow-robot', '1:3', '--skip-confirm']
+            # Removing --slow-robot for now. With it on (and
+            # successfully passed through to the curses client, which
+            # hasn't always been happening), 20% of games
+            # stall. PENDING...
+            # PARAMS += ['--slow-robot', '1:3']
+            PARAMS += ['--skip-confirm']
             PARAMS += ['--db', DB]
 
             PARAMS += ['--drop-nth-packet', g_DROP_N]
