@@ -57,6 +57,15 @@ cgl_destroy( CursGameList* cgl )
     g_free( cgl );
 }
 
+void
+cgl_resized( CursGameList* cgl, int width, int height )
+{
+    wresize( cgl->window, height, width );
+    cgl->width = width;
+    cgl->height = height;
+    cgl_draw( cgl );
+}
+
 static void
 addOne( CursGameList* cgl, sqlite3_int64 rowid )
 {

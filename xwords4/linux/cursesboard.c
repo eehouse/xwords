@@ -82,6 +82,7 @@ static CursesBoardGlobals* ref( CursesBoardGlobals* bGlobals );
 static void unref( CursesBoardGlobals* bGlobals );
 static void setupBoard( CursesBoardGlobals* bGlobals );
 static void initMenus( CursesBoardGlobals* bGlobals );
+static void disposeDraw( CursesBoardGlobals* bGlobals );
 
 CursesBoardState*
 cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
@@ -93,6 +94,16 @@ cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
     result->menuState = menuState;
     result->onGameSaved = onGameSaved;
     return result;
+}
+
+void
+cb_resized( CursesBoardState* cbState, const cb_dims* dims )
+{
+    for ( GSList* iter = cbState->games; !!iter; iter = iter->next ) {
+        CursesBoardGlobals* one = (CursesBoardGlobals*)iter->data;
+        disposeDraw( one );
+        enableDraw( one, dims );
+    }
 }
 
 void
@@ -420,17 +431,24 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
 } /* commonInit */
 
 static void
+disposeDraw( CursesBoardGlobals* bGlobals )
+{
+    if ( !!bGlobals->boardWin ) {
+        cursesDrawCtxtFree( bGlobals->cGlobals.draw );
+        wclear( bGlobals->boardWin );
+        wrefresh( bGlobals->boardWin );
+        delwin( bGlobals->boardWin );
+    }
+}
+
+static void
 disposeBoard( CursesBoardGlobals* bGlobals )
 {
     XP_LOGF( "%s(): passed bGlobals %p", __func__, bGlobals );
     /* XP_ASSERT( 0 == bGlobals->refCount ); */
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( !!bGlobals->boardWin ) {
-        cursesDrawCtxtFree( cGlobals->draw );
-        wclear( bGlobals->boardWin );
-        wrefresh( bGlobals->boardWin );
-        delwin( bGlobals->boardWin );
-    }
+
+    disposeDraw( bGlobals );
 
     if ( !!bGlobals->cbState->menuState ) {
         cmenu_pop( bGlobals->cbState->menuState );

@@ -44,6 +44,7 @@ typedef struct CursesMenuState CursesMenuState;
 
 CursesMenuState* cmenu_init( WINDOW* mainWindow );
 void cmenu_dispose( CursesMenuState* state );
+void cmenu_resized( CursesMenuState* state );
 
 void cmenu_clearMenus( CursesMenuState* state );
 void cmenu_draw( const CursesMenuState* state );

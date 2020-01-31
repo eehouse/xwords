@@ -29,6 +29,8 @@ typedef struct CursGameList CursGameList;
 CursGameList* cgl_init( sqlite3* pDb, int width, int height );
 void cgl_destroy( CursGameList* cgl );
 
+void cgl_resized( CursGameList* cgl, int width, int height );
+
 void cgl_refresh( CursGameList* cgl );
 void cgl_refreshOne( CursGameList* cgl, sqlite3_int64 rowid, bool select );
 void cgl_remove( CursGameList* cgl, sqlite3_int64 rowid );

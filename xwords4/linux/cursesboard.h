@@ -29,14 +29,15 @@ typedef struct CursesBoardState CursesBoardState;
 
 typedef void (*OnGameSaved)( CursesAppGlobals* aGlobals, sqlite3_int64 rowid, bool isNew );
 
-CursesBoardState* cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
-                           CursesMenuState* menuState, OnGameSaved onGameSaved );
-
 typedef struct _cb_dims {
     int width;
     int top;
     int height;
 } cb_dims;
+
+CursesBoardState* cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
+                           CursesMenuState* menuState, OnGameSaved onGameSaved );
+void cb_resized( CursesBoardState* cbState, const cb_dims* dims );
 
 void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims );
 bool cb_new( CursesBoardState* cbState, const cb_dims* dims );

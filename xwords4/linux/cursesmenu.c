@@ -28,12 +28,12 @@
 
 struct CursesMenuState {
     WINDOW* menuWin;
+    WINDOW* mainWin;
     GSList* menuLists;
     bool altPressed;
 };
 
 static bool handleKeyEvent( CursesMenuState* state, char ch, bool altPressed );
-
 
 static gboolean
 handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
@@ -59,16 +59,29 @@ handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
     return TRUE;
 }
 
+static void
+sizeWindow( CursesMenuState* state )
+{
+    int width, height;
+    getmaxyx( state->mainWin, height, width );
+    if ( !!state->menuWin ) {
+        werase( state->menuWin );
+        wrefresh( state->menuWin );
+        wresize( state->menuWin, MENU_WINDOW_HEIGHT, width );
+        mvwin( state->menuWin, height-MENU_WINDOW_HEIGHT, 0 );
+    } else {
+        state->menuWin = newwin( MENU_WINDOW_HEIGHT, width,
+                                 height-MENU_WINDOW_HEIGHT, 0 );
+    }
+}
 
 CursesMenuState*
 cmenu_init( WINDOW* mainWindow )
 {
     CursesMenuState* result = g_malloc0( sizeof(*result) );
+    result->mainWin = mainWindow;
 
-    int width, height;
-    getmaxyx( mainWindow, height, width );
-    result->menuWin = newwin( MENU_WINDOW_HEIGHT, width, 
-                              height-MENU_WINDOW_HEIGHT, 0 );
+    sizeWindow( result );
     nodelay( result->menuWin, 1 );		/* don't block on getch */
 
     ADD_SOCKET( result, 0, handle_stdin );
@@ -83,6 +96,14 @@ cmenu_dispose( CursesMenuState* state )
     g_free( state );
 }
 
+void
+cmenu_resized( CursesMenuState* state )
+{
+    XP_LOGF( "%s(%p)", __func__, state );
+    sizeWindow( state );
+    cmenu_draw( state );
+}
+
 typedef struct _MenuListElem {
     MenuList* list;
     void* closure;
@@ -93,7 +114,7 @@ void
 cmenu_pop( CursesMenuState* state )
 {
     /* pop off the front of the list until we've popped a PUSH_TOKEN */
-    for ( ; ; ) {
+    while ( !!state->menuLists ) {
         MenuListElem* elem = state->menuLists->data;
         state->menuLists = g_slist_remove_link( state->menuLists,
                                                 state->menuLists );

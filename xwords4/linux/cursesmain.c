@@ -1,6 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -31,7 +31,7 @@
 //#include <net/netinet.h>
 
 #include <sys/poll.h>
-
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -100,6 +100,7 @@ struct CursesAppGlobals {
     GMainLoop* loop;
     GList* sources;
     int quitpipe[2];
+    int winchpipe[2];
 #else
     XP_Bool timeToExit;
     short fdCount;
@@ -540,33 +541,74 @@ handleRootKeyHide( CursesAppGlobals* globals )
 /*     } */
 /* } /\* drawMenuFromList *\/ */
 
-static void 
+static void
+writeToPipe( int pipe )
+{
+    if ( 1 != write( pipe, "!", 1 ) ) {
+        XP_ASSERT(0);
+    }
+}
+
+static void
+readFromPipe( GIOChannel* source )
+{
+    int pipe = g_io_channel_unix_get_fd( source );
+    char ch;
+    ssize_t nRead = read( pipe, &ch, sizeof(ch) );
+    XP_ASSERT( nRead == sizeof(ch) && ch == '!' );
+}
+
+static void
 SIGWINCH_handler( int signal )
 {
     assert( signal == SIGWINCH );
 
-    endwin(); 
-
-    int height, width;
-    getmaxyx( stdscr, height, width );
-    XP_LOGF( "%s:, getmaxyx()->w:%d; h:%d", __func__, width, height );
-    wresize( g_globals.mainWin, height-MENU_WINDOW_HEIGHT, width );
+    /* Write to pipe to force update */
+    writeToPipe( g_globals.winchpipe[1] );
 } /* SIGWINCH_handler */
 
 static void 
 SIGINTTERM_handler( int XP_UNUSED(signal) )
 {
-    if ( 1 != write( g_globals.quitpipe[1], "!", 1 ) ) {
-        XP_ASSERT(0);
-    }
+    writeToPipe( g_globals.quitpipe[1] );
 }
 
 #ifdef USE_GLIBLOOP
 static gboolean
-handle_quitwrite( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition), gpointer data )
+handle_quitwrite( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer data )
 {
+    readFromPipe( source );
     CursesAppGlobals* globals = (CursesAppGlobals*)data;
     handleQuit( globals, 0 );
+    return TRUE;
+}
+
+static gboolean
+handle_winchwrite( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    XP_LOGF( "%s(condition=%x)", __func__, condition );
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
+
+    /* Read from the pipe so it won't call again */
+    readFromPipe( source );
+
+    struct winsize ws;
+    ioctl( STDIN_FILENO, TIOCGWINSZ, &ws );
+    XP_LOGF( "%s(): lines %d, columns %d", __func__, ws.ws_row, ws.ws_col );
+    aGlobals->winHeight = ws.ws_row;
+    aGlobals->winWidth = ws.ws_col;
+
+    resize_term( ws.ws_row, ws.ws_col );
+
+    cgl_resized( aGlobals->gameList, g_globals.winWidth,
+                 g_globals.cag.params->cursesListWinHt );
+    cmenu_resized( aGlobals->menuState );
+
+    cb_dims dims;
+    figureDims( aGlobals, &dims );
+    cb_resized( aGlobals->cbState, &dims );
+
+    LOG_RETURN_VOID();
     return TRUE;
 }
 
@@ -1399,6 +1441,9 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
         pipe( g_globals.quitpipe );
     XP_ASSERT( piperesult == 0 );
     ADD_SOCKET( &g_globals, g_globals.quitpipe[0], handle_quitwrite );
+
+    pipe( g_globals.winchpipe );
+    ADD_SOCKET( &g_globals, g_globals.winchpipe[0], handle_winchwrite );
 
     struct sigaction act = { .sa_handler = SIGINTTERM_handler };
     sigaction( SIGINT, &act, NULL );
