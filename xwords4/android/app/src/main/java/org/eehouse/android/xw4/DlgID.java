@@ -67,6 +67,7 @@ public enum DlgID {
     , GAMES_LIST_NEWGAME
     , CHANGE_CONN
     , GAMES_LIST_NAME_REMATCH
+    , ASK_DUP_PAUSE
     ;
 
     private boolean m_addToStack;

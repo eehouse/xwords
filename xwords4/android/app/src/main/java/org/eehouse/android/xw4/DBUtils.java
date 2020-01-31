@@ -85,7 +85,8 @@ public class DBUtils {
     };
 
     public static interface DBChangeListener {
-        public void gameSaved( long rowid, GameChangeType change );
+        public void gameSaved( Context context, long rowid,
+                               GameChangeType change );
     }
     private static HashSet<DBChangeListener> s_listeners =
         new HashSet<DBChangeListener>();
@@ -146,7 +147,7 @@ public class DBUtils {
                              DBHelper.SCORES,
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
                              DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
-                             DBHelper.EXTRAS,
+                             DBHelper.EXTRAS, DBHelper.NEXTDUPTIMER,
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -194,6 +195,8 @@ public class DBUtils {
                 summary.gameOver = tmp != 0;
                 summary.lastMoveTime =
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
+                summary.dupTimerExpires =
+                    cursor.getInt(cursor.getColumnIndex(DBHelper.NEXTDUPTIMER));
                 String str = cursor
                     .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
                 summary.setExtras( str );
@@ -298,6 +301,7 @@ public class DBUtils {
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
+            values.put( DBHelper.NEXTDUPTIMER, summary.dupTimerExpires );
 
             // Don't overwrite extras! Sometimes this method is called from
             // JNIThread which has created the summary from common code that
@@ -357,7 +361,7 @@ public class DBUtils {
                 long result = update( TABLE_NAMES.SUM, values, selection );
                 Assert.assertTrue( result >= 0 );
             }
-            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
+            notifyListeners( context, rowid, GameChangeType.GAME_CHANGED );
             invalGroupsCache();
         }
 
@@ -663,10 +667,10 @@ public class DBUtils {
         updateRow( null, TABLE_NAMES.SUM, rowid, values );
     }
 
-    public static void setMsgFlags( long rowid, int flags )
+    public static void setMsgFlags( Context context, long rowid, int flags )
     {
         setSummaryInt( rowid, DBHelper.HASMSGS, flags );
-        notifyListeners( rowid, GameChangeType.GAME_CHANGED );
+        notifyListeners( context, rowid, GameChangeType.GAME_CHANGED );
     }
 
     public static void setExpanded( long rowid, boolean expanded )
@@ -730,7 +734,7 @@ public class DBUtils {
             Assert.assertTrue( result >= 0 );
 
 
-            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
+            notifyListeners( context, rowid, GameChangeType.GAME_CHANGED );
         }
     }
 
@@ -742,7 +746,7 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             long result = update( TABLE_NAMES.SUM, values, null );
 
-            notifyListeners( ROWIDS_ALL, GameChangeType.GAME_CHANGED );
+            notifyListeners( context, ROWIDS_ALL, GameChangeType.GAME_CHANGED );
         }
     }
 
@@ -1066,7 +1070,7 @@ public class DBUtils {
 
             lock = GameLock.tryLock( rowid );
             Assert.assertNotNull( lock );
-            notifyListeners( rowid, GameChangeType.GAME_CREATED );
+            notifyListeners( context, rowid, GameChangeType.GAME_CREATED );
         }
 
         invalGroupsCache();     // then again after
@@ -1092,7 +1096,7 @@ public class DBUtils {
 
         setCached( rowid, null ); // force reread
         if ( ROWID_NOTFOUND != rowid ) {      // Means new game?
-            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
+            notifyListeners( context, rowid, GameChangeType.GAME_CHANGED );
         }
         invalGroupsCache();
         return rowid;
@@ -1154,7 +1158,7 @@ public class DBUtils {
             deleteCurChatsSync( s_db, rowid );
 
         }
-        notifyListeners( lock.getRowid(), GameChangeType.GAME_DELETED );
+        notifyListeners( context, lock.getRowid(), GameChangeType.GAME_DELETED );
         invalGroupsCache();
     }
 
@@ -1775,7 +1779,47 @@ public class DBUtils {
         values.put( DBHelper.GROUPID, groupID );
         updateRow( context, TABLE_NAMES.SUM, rowid, values );
         invalGroupsCache();
-        notifyListeners( rowid, GameChangeType.GAME_MOVED );
+        notifyListeners( context, rowid, GameChangeType.GAME_MOVED );
+    }
+
+    public static Map<Long, Integer> getDupModeGames( Context context )
+    {
+        return getDupModeGames( context, ROWID_NOTFOUND );
+    }
+
+    // Return all games whose DUP_MODE_MASK bit is set. Return also (as map
+    // value) the nextTimer value, which will be negative if the game's
+    // paused. As a bit of a hack, set it to 0 if the local player has already
+    // committed his turn so caller (DupeModeTimer) will know not to show a
+    // notification.
+    public static Map<Long, Integer> getDupModeGames( Context context, long rowid )
+    {
+        // select giflags from summaries where 0x100 & giflags != 0;
+        Map<Long, Integer> result = new HashMap<>();
+        String[] columns = { ROW_ID, DBHelper.NEXTDUPTIMER, DBHelper.TURN_LOCAL };
+        String selection = String.format( "%d & %s != 0",
+                                          GameSummary.DUP_MODE_MASK,
+                                          DBHelper.GIFLAGS );
+        if ( ROWID_NOTFOUND != rowid ) {
+            selection += String.format( " AND %s = %d", ROW_ID, rowid );
+        }
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
+            int count = cursor.getCount();
+            int indxRowid = cursor.getColumnIndex( ROW_ID );
+            int indxTimer = cursor.getColumnIndex( DBHelper.NEXTDUPTIMER );
+            int indxIsLocal = cursor.getColumnIndex( DBHelper.TURN_LOCAL );
+            while ( cursor.moveToNext() ) {
+                boolean isLocal = 0 != cursor.getInt( indxIsLocal );
+                int timer = isLocal ? cursor.getInt( indxTimer ) : 0;
+                result.put( cursor.getLong( indxRowid ), timer );
+            }
+            cursor.close();
+        }
+        Log.d( TAG, "getDupModeGames(%d) => %s", rowid, result );
+        return result;
     }
 
     private static String getChatHistoryStr( Context context, long rowid )
@@ -2592,12 +2636,13 @@ public class DBUtils {
         }
     }
 
-    private static void notifyListeners( long rowid, GameChangeType change )
+    private static void notifyListeners( Context context, long rowid,
+                                         GameChangeType change )
     {
         synchronized( s_listeners ) {
             Iterator<DBChangeListener> iter = s_listeners.iterator();
             while ( iter.hasNext() ) {
-                iter.next().gameSaved( rowid, change );
+                iter.next().gameSaved( context, rowid, change );
             }
         }
     }

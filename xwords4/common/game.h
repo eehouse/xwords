@@ -47,9 +47,12 @@ typedef struct _GameStateInfo {
     XP_Bool curTurnSelected;
     XP_Bool canHideRack;
     XP_Bool canTrade;
+    XP_Bool canPause;           /* duplicate-mode only */
+    XP_Bool canUnpause;         /* duplicate-mode only */
 } GameStateInfo;
 
 typedef struct XWGame {
+    XW_UtilCtxt* util;
     BoardCtxt* board;
     ModelCtxt* model;
     ServerCtxt* server;

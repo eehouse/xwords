@@ -95,6 +95,7 @@ struct EngineCtxt {
     XP_U16 nMovesToSave;
     XP_U16 star_row;
     XP_Bool returnNOW;
+    XP_Bool skipProgressCallback;
     XP_Bool isRobot;
     XP_Bool includePending;
     MoveIterationData miData;
@@ -376,7 +377,7 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
  */
 XP_Bool
 engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
-                 XP_S16 turn, XP_Bool includePending,
+                 XP_S16 turn, XP_Bool includePending, XP_Bool skipCallback,
                  const Tile* tiles, const XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                  XP_U16 allTilesBonus,
@@ -385,7 +386,8 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                  const BdHintLimits* searchLimits,
                  XP_Bool useTileLimits,
 #endif
-                 XP_U16 robotIQ, XP_Bool* canMoveP, MoveInfo* newMove )
+                 XP_U16 robotIQ, XP_Bool* canMoveP, MoveInfo* newMove,
+                 XP_U16* score )
 {
     XP_Bool result = XP_TRUE;
     XP_U16 star_row;
@@ -432,6 +434,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
     engine->usePrev = usePrev;
     engine->blankTile = dict_getBlankTile( engine->dict );
     engine->returnNOW = XP_FALSE;
+    engine->skipProgressCallback = skipCallback;
 #ifdef XWFEATURE_SEARCHLIMIT
     engine->searchLimits = searchLimits;
 #endif
@@ -525,6 +528,9 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
             if ( chooseMove( engine, &move ) ) {
                 XP_ASSERT( !!newMove );
                 XP_MEMCPY( newMove, &move->moveInfo, sizeof(*newMove) );
+                if ( !!score ) {
+                    *score = move->score;
+                }
             } else {
                 newMove->nTiles = 0;
                 canMove = XP_FALSE;
@@ -1060,7 +1066,7 @@ considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
     short col;
     BlankTuple blankTuples[MAX_NUM_BLANKS];
 
-    if ( !util_engineProgressCallback( engine->util ) ) {
+    if ( !engine->skipProgressCallback && !util_engineProgressCallback( engine->util ) ) {
         engine->returnNOW = XP_TRUE;
     } else {
 

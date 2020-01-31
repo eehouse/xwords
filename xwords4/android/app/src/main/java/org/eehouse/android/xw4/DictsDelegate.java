@@ -503,7 +503,7 @@ public class DictsDelegate extends ListDelegateBase
 
                     int lang = args.getInt( DICT_LANG_EXTRA, 0 );
                     if ( 0 < lang ) {
-                        m_filterLang = DictLangCache.getLangNames( m_activity )[lang];
+                        m_filterLang = DictLangCache.getLangName( m_activity, lang );
                         m_closedLangs.remove( m_filterLang );
                     }
                     String name = args.getString( DICT_NAME_EXTRA );

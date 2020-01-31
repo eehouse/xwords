@@ -49,6 +49,7 @@ public class CurGameInfo implements Serializable {
     private static final String TIMER = "TIMER";
     private static final String ALLOW_PICK = "ALLOW_PICK";
     private static final String PHONIES = "PHONIES";
+    private static final String DUP = "DUP";
 
     public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW };
     public enum DeviceRole { SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT };
@@ -63,6 +64,7 @@ public class CurGameInfo implements Serializable {
     public int forceChannel;
     public DeviceRole serverRole;
 
+    public boolean inDuplicateMode;
     public boolean hintsNotAllowed;
     public boolean timerEnabled;
     public boolean allowPickTiles;
@@ -83,8 +85,9 @@ public class CurGameInfo implements Serializable {
     {
         boolean isNetworked = null != inviteID;
         nPlayers = 2;
-        gameSeconds = 60 * nPlayers *
-            CommonPrefs.getDefaultPlayerMinutes( context );
+        inDuplicateMode = CommonPrefs.getDefaultDupMode( context );
+        gameSeconds = inDuplicateMode ? (5 * 60)
+            : 60 * nPlayers * CommonPrefs.getDefaultPlayerMinutes( context );
         boardSize = CommonPrefs.getDefaultBoardSize( context );
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = isNetworked ? DeviceRole.SERVER_ISCLIENT
@@ -142,6 +145,7 @@ public class CurGameInfo implements Serializable {
         dictName = src.dictName;
         dictLang = src.dictLang;
         hintsNotAllowed = src.hintsNotAllowed;
+        inDuplicateMode = src.inDuplicateMode;
         phoniesAction = src.phoniesAction;
         timerEnabled = src.timerEnabled;
         allowPickTiles = src.allowPickTiles;
@@ -169,6 +173,8 @@ public class CurGameInfo implements Serializable {
             }
             sb.append( "], gameID: ").append( gameID )
                 .append( ", hashCode: ").append( hashCode() )
+                .append( ", timerEnabled: ").append( timerEnabled )
+                .append( ", gameSeconds: ").append( gameSeconds )
                 .append('}');
 
             result = sb.toString();
@@ -185,6 +191,7 @@ public class CurGameInfo implements Serializable {
             JSONObject obj = new JSONObject()
                 .put( BOARD_SIZE, boardSize )
                 .put( NO_HINTS, hintsNotAllowed )
+                .put( DUP, inDuplicateMode )
                 .put( TIMER, timerEnabled )
                 .put( ALLOW_PICK, allowPickTiles )
                 .put( PHONIES, phoniesAction.ordinal() )
@@ -204,6 +211,7 @@ public class CurGameInfo implements Serializable {
                 JSONObject obj = new JSONObject( jsonData );
                 boardSize = obj.optInt( BOARD_SIZE, boardSize );
                 hintsNotAllowed = obj.optBoolean( NO_HINTS, hintsNotAllowed );
+                inDuplicateMode = obj.optBoolean( DUP, inDuplicateMode );
                 timerEnabled = obj.optBoolean( TIMER, timerEnabled );
                 allowPickTiles = obj.optBoolean( ALLOW_PICK, allowPickTiles );
                 int tmp = obj.optInt( PHONIES, phoniesAction.ordinal() );
@@ -280,6 +288,7 @@ public class CurGameInfo implements Serializable {
             || dictLang != other.dictLang
             || boardSize != other.boardSize
             || hintsNotAllowed != other.hintsNotAllowed
+            || inDuplicateMode != other.inDuplicateMode
             || allowPickTiles != other.allowPickTiles
             || phoniesAction != other.phoniesAction;
 
@@ -313,6 +322,7 @@ public class CurGameInfo implements Serializable {
                     && boardSize == other.boardSize
                     && forceChannel == other.forceChannel
                     && hintsNotAllowed == other.hintsNotAllowed
+                    && inDuplicateMode == other.inDuplicateMode
                     && timerEnabled == other.timerEnabled
                     && allowPickTiles == other.allowPickTiles
                     && allowHintRect == other.allowHintRect

@@ -65,6 +65,7 @@ public class NetLaunchInfo implements Serializable {
     private static final String FORCECHANNEL_KEY = "fc";
     private static final String NAME_KEY = "nm";
     private static final String P2P_MAC_KEY = "p2";
+    private static final String DUPMODE_KEY = "du";
 
     protected String gameName;
     protected String dict;
@@ -87,6 +88,7 @@ public class NetLaunchInfo implements Serializable {
     private CommsConnTypeSet m_addrs;
     private boolean m_valid;
     private String inviteID;
+    private boolean dupeMode;
 
     public NetLaunchInfo()
     {
@@ -244,6 +246,8 @@ public class NetLaunchInfo implements Serializable {
                     val = data.getQueryParameter( FORCECHANNEL_KEY );
                     forceChannel = null == val ? 0 : Integer.decode( val );
                     gameName = data.getQueryParameter( NAME_KEY );
+                    val = data.getQueryParameter( DUPMODE_KEY );
+                    dupeMode = null != val && Integer.decode(val) != 0;
                 }
                 calcValid();
             } catch ( Exception e ) {
@@ -254,7 +258,7 @@ public class NetLaunchInfo implements Serializable {
     }
 
     private NetLaunchInfo( int gamID, String gamNam, int dictLang,
-                           String dictName, int nPlayers )
+                           String dictName, int nPlayers, boolean dupMode )
     {
         this();
         gameName = gamNam;
@@ -263,6 +267,7 @@ public class NetLaunchInfo implements Serializable {
         nPlayersT = nPlayers;
         nPlayersH = 1;
         gameID = gamID;
+        dupeMode = dupMode;
     }
 
     public NetLaunchInfo( Context context, GameSummary summary, CurGameInfo gi,
@@ -275,7 +280,8 @@ public class NetLaunchInfo implements Serializable {
 
     public NetLaunchInfo( CurGameInfo gi )
     {
-        this( gi.gameID, gi.getName(), gi.dictLang, gi.dictName, gi.nPlayers );
+        this( gi.gameID, gi.getName(), gi.dictLang, gi.dictName, gi.nPlayers,
+              gi.inDuplicateMode );
     }
 
     public NetLaunchInfo( Context context, GameSummary summary, CurGameInfo gi )
@@ -350,12 +356,17 @@ public class NetLaunchInfo implements Serializable {
         bundle.putString( MultiService.GAMENAME, gameName );
         bundle.putInt( MultiService.NPLAYERST, nPlayersT );
         bundle.putInt( MultiService.NPLAYERSH, nPlayersH );
-        bundle.putBoolean( MultiService.REMOTES_ROBOTS, remotesAreRobots );
+        if ( remotesAreRobots ) {
+            bundle.putBoolean( MultiService.REMOTES_ROBOTS, true );
+        }
         bundle.putInt( MultiService.GAMEID, gameID() );
         bundle.putString( MultiService.BT_NAME, btName );
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
         bundle.putString( MultiService.P2P_MAC_ADDRESS, p2pMacAddress );
         bundle.putInt( MultiService.FORCECHANNEL, forceChannel );
+        if ( dupeMode ) {
+            bundle.putBoolean( MultiService.DUPEMODE, true );
+        }
 
         int flags = m_addrs.toInt();
         bundle.putInt( ADDRS_KEY, flags );
@@ -374,6 +385,7 @@ public class NetLaunchInfo implements Serializable {
                 && forceChannel == other.forceChannel
                 && nPlayersT == other.nPlayersT
                 && nPlayersH == other.nPlayersH
+                && dupeMode == other.dupeMode
                 && remotesAreRobots == other.remotesAreRobots
                 && TextUtils.equals( room, other.room )
                 && TextUtils.equals( btName, other.btName )
@@ -406,7 +418,12 @@ public class NetLaunchInfo implements Serializable {
                 .put( MultiService.NPLAYERSH, nPlayersH )
                 .put( MultiService.REMOTES_ROBOTS, remotesAreRobots )
                 .put( MultiService.GAMEID, gameID() )
-                .put( MultiService.FORCECHANNEL, forceChannel );
+                .put( MultiService.FORCECHANNEL, forceChannel )
+                ;
+
+            if ( dupeMode ) {
+                obj.put( MultiService.DUPEMODE, dupeMode );
+            }
 
             if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                 obj.put( MultiService.ROOM, room )
@@ -477,6 +494,7 @@ public class NetLaunchInfo implements Serializable {
 
         lang = json.optInt( MultiService.LANG, -1 );
         forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
+        dupeMode = json.optBoolean( MultiService.DUPEMODE, false );
         dict = json.optString( MultiService.DICT );
         gameName = json.optString( MultiService.GAMENAME );
         nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
@@ -549,6 +567,9 @@ public class NetLaunchInfo implements Serializable {
         appendInt( ub, FORCECHANNEL_KEY, forceChannel );
         appendInt( ub, ADDRS_KEY, addrs );
         ub.appendQueryParameter( NAME_KEY, gameName );
+        if ( dupeMode ) {
+            appendInt( ub, DUPMODE_KEY, 1 );
+        }
 
         if ( null != dict ) {
             ub.appendQueryParameter( WORDLIST_KEY, dict );

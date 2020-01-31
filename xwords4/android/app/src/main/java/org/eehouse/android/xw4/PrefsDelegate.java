@@ -36,8 +36,8 @@ import android.preference.PreferenceScreen;
 import android.view.View;
 import android.widget.Button;
 
-
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import java.io.File;
@@ -386,6 +386,10 @@ public class PrefsDelegate extends DelegateBase
 
         if ( null == FBMService.getFCMDevID( m_activity ) ) {
             hideOne( R.string.key_show_fcm, R.string.pref_group_relay_title );
+        }
+
+        if ( CommonPrefs.getDupModeHidden( m_activity ) ) {
+            hideOne( R.string.key_init_dupmodeon, R.string.key_prefs_defaults );
         }
     }
 

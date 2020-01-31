@@ -97,6 +97,8 @@ public class XWApp extends Application
 
         mPort = Short.valueOf( getString( R.string.nbs_port ) );
         NBSProxy.register( this, mPort, BuildConfig.APPLICATION_ID, this );
+
+        DupeModeTimer.init( this );
     }
 
     @OnLifecycleEvent(ON_ANY)

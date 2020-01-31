@@ -57,7 +57,6 @@ drawScoreBoard( BoardCtxt* board )
 
         if ( draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
                               scores.arr, nTilesInPool, dfs ) ) {
-            XP_S16 curTurn = server_getCurrentTurn( board->server );
             XP_U16 selPlayer = board->selPlayer;
             XP_Rect playerRects[nPlayers];
             XP_U16 remDim;
@@ -117,7 +116,7 @@ drawScoreBoard( BoardCtxt* board )
 #endif
                 dsi->playerNum = ii;
                 dsi->totalScore = scores.arr[ii];
-                dsi->isTurn = (ii == curTurn);
+                dsi->isTurn = server_isPlayersTurn( board->server, ii );
                 dsi->name = emptyStringIfNull(lp->name);
                 dsi->selected = board->trayVisState != TRAY_HIDDEN
                     && ii==selPlayer;
@@ -175,7 +174,6 @@ drawScoreBoard( BoardCtxt* board )
         XP_ASSERT( nPlayers <= MAX_NUM_PLAYERS );
         if ( nPlayers > 0 ) {
             ModelCtxt* model = board->model;
-            XP_S16 curTurn = server_getCurrentTurn( board->server, NULL );
             XP_U16 selPlayer = board->selPlayer;
             XP_S16 nTilesInPool = server_countTilesInPool( board->server );
             XP_Rect scoreRect = board->scoreBdBounds;
@@ -259,7 +257,7 @@ drawScoreBoard( BoardCtxt* board )
 #endif
                     dp->dsi.playerNum = ii;
                     dp->dsi.totalScore = scores.arr[ii];
-                    dp->dsi.isTurn = (ii == curTurn);
+                    dp->dsi.isTurn = server_isPlayersTurn( board->server, ii );
                     dp->dsi.name = emptyStringIfNull(lp->name);
                     dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
                         && ii==selPlayer;
@@ -341,25 +339,17 @@ drawScoreBoard( BoardCtxt* board )
 } /* drawScoreBoard */
 #endif
 
-static XP_S16
-figureSecondsLeft( BoardCtxt* board )
-{
-    CurGameInfo* gi = board->gi;
-    XP_U16 secondsUsed = gi->players[board->selPlayer].secondsUsed;
-    XP_U16 secondsAvailable = gi->gameSeconds / gi->nPlayers;
-    XP_ASSERT( gi->timerEnabled );
-    return secondsAvailable - secondsUsed;
-} /* figureSecondsLeft */
-
 void
-drawTimer( BoardCtxt* board )
+drawTimer( const BoardCtxt* board )
 {
-    if ( board->gi->timerEnabled && 0 < board->timerBounds.width
-          && 0 < board->timerBounds.height ) {
-        XP_S16 secondsLeft = figureSecondsLeft( board );
-
+    if ( !!board->draw && board->gi->timerEnabled ) {
+        XP_S16 secondsLeft = server_getTimerSeconds( board->server,
+                                                     board->selPlayer );
+        XP_Bool turnDone = board->gi->inDuplicateMode
+            ? server_dupTurnDone( board->server, board->selPlayer )
+            : XP_FALSE;
         draw_drawTimer( board->draw, &board->timerBounds,
-                        board->selPlayer, secondsLeft );
+                        board->selPlayer, secondsLeft, turnDone );
     }
 } /* drawTimer */
 

@@ -20,22 +20,27 @@
 
 package org.eehouse.android.xw4;
 
-import android.os.Build;
-import android.content.Context;
-import java.util.HashSet;
-import java.util.Set;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Channels {
+    private static final String TAG = Channels.class.getSimpleName();
 
-    enum ID {
-        NBSPROXY(R.string.nbsproxy_channel_expl,
-                 NotificationManager.IMPORTANCE_LOW),
-        GAME_EVENT(R.string.gameevent_channel_expl,
-                   NotificationManager.IMPORTANCE_LOW),
-        SERVICE_STALL(R.string.servicestall_channel_expl,
-                      NotificationManager.IMPORTANCE_LOW);
+    public enum ID {
+        NBSPROXY( R.string.nbsproxy_channel_expl )
+        ,GAME_EVENT( R.string.gameevent_channel_expl )
+        ,SERVICE_STALL( R.string.servicestall_channel_expl )
+        ,DUP_TIMER_RUNNING( R.string.dup_timer_expl )
+        ,DUP_PAUSED( R.string.dup_paused_expl )
+        ;
 
         private int mExpl;
         private int mImportance;
@@ -45,7 +50,15 @@ public class Channels {
             mImportance = imp;
         }
 
+        private ID( int expl )
+        {
+            this( expl, NotificationManager.IMPORTANCE_LOW );
+        }
+
         public int getDesc() { return mExpl; }
+        public int idFor( long rowid ) {
+            return notificationId( rowid, this );
+        }
         private int getImportance() { return mImportance; }
     }
 
@@ -70,5 +83,64 @@ public class Channels {
             }
         }
         return name;
+    }
+
+    private static final String IDS_KEY = TAG + "/ids_key";
+
+    private static class IdsData implements Serializable {
+        HashMap<ID, HashMap<Long, Integer>> mMap = new HashMap<>();
+        HashSet<Integer> mInts = new HashSet<>();
+
+        int newID()
+        {
+            int result;
+            for ( ; ; ) {
+                int one = Utils.nextRandomInt();
+                if ( !mInts.contains( one ) ) {
+                    mInts.add( one );
+                    result = one;
+                    break;
+                }
+            }
+            return result;
+        }
+    }
+    private static IdsData sData;
+
+    // I want each rowid to be able to have a notification active for it for
+    // each channel. So let's try generating and storing random ints.
+    private static int notificationId( long rowid, ID channel )
+    {
+        Context context = XWApp.getContext();
+        int result;
+        synchronized ( Channels.class ) {
+            if ( null == sData ) {
+                sData = (IdsData)DBUtils.getSerializableFor( context, IDS_KEY );
+                if ( null == sData ) {
+                    sData = new IdsData();
+                }
+            }
+        }
+
+        synchronized ( sData ) {
+            boolean dirty = false;
+            if ( ! sData.mMap.containsKey( channel ) ) {
+                sData.mMap.put( channel, new HashMap<Long, Integer>() );
+                dirty = true;
+            }
+            Map<Long, Integer> map = sData.mMap.get( channel );
+            if ( ! map.containsKey( rowid ) ) {
+                map.put( rowid, sData.newID() );
+                dirty = true;
+            }
+
+            if ( dirty ) {
+                DBUtils.setSerializableFor( context, IDS_KEY, sData );
+            }
+
+            result = map.get( rowid );
+        }
+        Log.d( TAG, "notificationId(%s, %d) => %d", channel, rowid, result );
+        return result;
     }
 }

@@ -99,16 +99,21 @@ public class DbgUtils {
         Log.d( tag, stackTrace );
     }
 
-    static String extrasToString( Intent intent )
+    static String extrasToString( Bundle extras )
     {
-        Bundle bundle = intent.getExtras();
         ArrayList<String> al = new ArrayList<String>();
-        if ( null != bundle ) {
-            for ( String key : bundle.keySet() ) {
-                al.add( key + ":" + bundle.get(key) );
+        if ( null != extras ) {
+            for ( String key : extras.keySet() ) {
+                al.add( key + ":" + extras.get(key) );
             }
         }
         return TextUtils.join( ", ", al );
+    }
+
+    static String extrasToString( Intent intent )
+    {
+        Bundle bundle = intent.getExtras();
+        return extrasToString( bundle );
     }
 
     public static void dumpCursor( Cursor cursor )

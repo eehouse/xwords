@@ -31,9 +31,9 @@ void
 and_assert( const char* test, int line, const char* file, const char* func )
 {
     XP_LOGF( "assertion \"%s\" failed: line %d in %s() in %s",
-             test, line, file, func );
+             test, line, func, file );
     __android_log_assert( test, "ASSERT", "line %d in %s() in %s",
-                          line, file, func  );
+                          line, func, file  );
 }
 
 #ifdef __LITTLE_ENDIAN
@@ -115,7 +115,7 @@ getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis 
 void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
-    // XP_LOGF( "%s(name=%s)", __func__, name );
+    // XP_LOGF( "%s(name=%s, val=%d)", __func__, name, value );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
@@ -341,6 +341,15 @@ makeIntArray( JNIEnv *env, int count, const void* vals, size_t elemSize )
     return array;
 }
 
+void
+setIntArray( JNIEnv *env, jobject jowner, const char* fieldName,
+             int count, const void* vals, size_t elemSize )
+{
+    jintArray jarr = makeIntArray( env, count, vals, elemSize );
+    setObject( env, jowner, fieldName, "[I", jarr );
+    deleteLocalRef( env, jarr );
+}
+
 jbyteArray
 makeByteArray( JNIEnv *env, int siz, const jbyte* vals )
 {
@@ -413,20 +422,29 @@ setIntInArray( JNIEnv* env, jintArray arr, int index, int val )
 }
 
 jobjectArray
-makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
+makeStringArray( JNIEnv *env, const int count, const XP_UCHAR** vals )
 {
     jclass clas = (*env)->FindClass(env, "java/lang/String");
     jstring empty = (*env)->NewStringUTF( env, "" );
-    jobjectArray jarray = (*env)->NewObjectArray( env, siz, clas, empty );
+    jobjectArray jarray = (*env)->NewObjectArray( env, count, clas, empty );
     deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
 
-    for ( int ii = 0; !!vals && ii < siz; ++ii ) {    
+    for ( int ii = 0; !!vals && ii < count; ++ii ) {
         jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
         (*env)->SetObjectArrayElement( env, jarray, ii, jstr );
         deleteLocalRef( env, jstr );
     }
 
     return jarray;
+}
+
+void
+setStringArray( JNIEnv *env, jobject jowner, const char* ownerField,
+                int count, const XP_UCHAR** vals )
+{
+    jobjectArray jaddrs = makeStringArray( env, count, vals );
+    setObject( env, jowner, ownerField, "[Ljava/lang/String;", jaddrs );
+    deleteLocalRef( env, jaddrs );
 }
 
 jobjectArray
@@ -771,6 +789,8 @@ android_debugf( const char* format, ... )
                                "xw4"
 # elif defined VARIANT_xw4d || defined VARIANT_xw4dNoSMS
                                "x4bg"
+# elif defined VARIANT_xw4dup || defined VARIANT_xw4dupNoSMS
+                               "x4du"
 # endif
                                , buf );
 }

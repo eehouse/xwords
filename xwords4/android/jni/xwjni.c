@@ -52,6 +52,7 @@
 typedef struct _EnvThreadEntry {
     JNIEnv* env;
     pthread_t owner;
+    XP_U16 refcount;
 #ifdef LOG_MAPPING
     const char* ownerFunc;
 #endif
@@ -186,6 +187,8 @@ map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
         XP_ASSERT( !!firstEmpty );
         firstEmpty->owner = self;
         firstEmpty->env = env;
+        XP_ASSERT( 0 == firstEmpty->refcount );
+        ++firstEmpty->refcount;
 #ifdef LOG_MAPPING
         firstEmpty->ownerFunc = caller;
         XP_LOGF( "%s: entry %zu: mapped env %p to thread %x", __func__,
@@ -216,12 +219,15 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
         EnvThreadEntry* entry = &ti->entries[ii];
         found = env == entry->env;
         if ( found ) {
+            XP_ASSERT( pthread_self() == entry->owner );
 #ifdef LOG_MAPPING
             XP_LOGF( "%s: UNMAPPED env %p to thread %x (from %s; mapped by %s)", __func__,
                      entry->env, (int)entry->owner, func, entry->ownerFunc );
             XP_LOGF( "%s: %d entries left", __func__, countUsed( ti ) );
             entry->ownerFunc = NULL;
 #endif
+            XP_ASSERT( 1 == entry->refcount );
+            --entry->refcount;
             entry->env = NULL;
             entry->owner = 0;
         }
@@ -359,6 +365,7 @@ static const SetInfo gi_bools[] = {
     ,ARR_MEMBER( CurGameInfo, timerEnabled )
     ,ARR_MEMBER( CurGameInfo, allowPickTiles )
     ,ARR_MEMBER( CurGameInfo, allowHintRect )
+    ,ARR_MEMBER( CurGameInfo, inDuplicateMode )
 };
 
 static const SetInfo pl_ints[] = {
@@ -701,13 +708,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 {
     jstring jstr = 
 #ifdef XWFEATURE_BLUETOOTH
-        (*env)->NewStringUTF( env,
-# if defined VARIANT_xw4NoSMS || defined VARIANT_xw4fdroid || defined VARIANT_xw4SMS
-        XW_BT_UUID
-# elif defined VARIANT_xw4d || defined VARIANT_xw4dNoSMS
-        XW_BT_UUID_DBG
-# endif
-                              )
+        (*env)->NewStringUTF( env, XW_BT_UUID )
 #else
         NULL
 #endif
@@ -1228,19 +1229,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScoreboardLoc
 }
 
 JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTimerLoc
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jint timerLeft, jint timerTop,
-  jint timerWidth, jint timerHeight )
-{
-    XWJNI_START();
-    XP_LOGF( "%s(%d,%d,%d,%d)", __func__, timerLeft, timerTop,
-             timerWidth, timerHeight );
-    board_setTimerLoc( state->game.board, timerLeft, timerTop, 
-                       timerWidth, timerHeight );
-    XWJNI_END();
-}
-
-JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTrayLoc
 ( JNIEnv *env, jclass C, GamePtrType gamePtr, jint left, jint top, 
   jint width, jint height, jint minDividerWidth )
@@ -1692,10 +1680,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
                                                player, &lmi );
     setBool( env, jlmi, "isValid", valid );
     if ( valid ) {
+        setBool( env, jlmi, "inDuplicateMode", lmi.inDuplicateMode );
         setInt( env, jlmi, "score", lmi.score );
         setInt( env, jlmi, "nTiles", lmi.nTiles );
         setInt( env, jlmi, "moveType", lmi.moveType );
-        setString( env, jlmi, "name", lmi.name );
+        setStringArray( env, jlmi, "names", lmi.nWinners, lmi.names );
         setString( env, jlmi, "word", lmi.word );
     }
     XWJNI_END();
@@ -1861,16 +1850,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
 {
     XWJNI_START();
     ModelCtxt* model = state->game.model;
+    ServerCtxt* server = state->game.server;
     XP_S16 nMoves = model_getNMoves( model );
     setInt( env, jsummary, "nMoves", nMoves );
-    XP_Bool gameOver = server_getGameIsOver( state->game.server );
+    XP_Bool gameOver = server_getGameIsOver( server );
     setBool( env, jsummary, "gameOver", gameOver );
     XP_Bool isLocal = XP_FALSE;
     setInt( env, jsummary, "turn", 
-            server_getCurrentTurn( state->game.server, &isLocal ) );
+            server_getCurrentTurn( server, &isLocal ) );
     setBool( env, jsummary, "turnIsLocal", isLocal );
     setInt( env, jsummary, "lastMoveTime", 
-            server_getLastMoveTime(state->game.server) );
+            server_getLastMoveTime(server) );
+    setInt( env, jsummary, "dupTimerExpires",
+            server_getDupTimerExpires(server) );
     
     if ( !!state->game.comms ) {
         CommsAddrRec addr;
@@ -1878,7 +1870,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         comms_getAddr( comms, &addr );
         setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
         setInt( env, jsummary, "missingPlayers", 
-                server_getMissingPlayers( state->game.server ) );
+                server_getMissingPlayers( server ) );
         setInt( env, jsummary, "nPacketsPending", 
                 comms_countPendingPackets( state->game.comms ) );
 
@@ -1917,10 +1909,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                     }
                     XP_LOGF( "%s: adding btaddr/phone/mac %s", __func__, addrps[ii] );
                 }
-                jobjectArray jaddrs = makeStringArray( env, count, addrps );
-                setObject( env, jsummary, "remoteDevs", "[Ljava/lang/String;", 
-                           jaddrs );
-                deleteLocalRef( env, jaddrs );
+                setStringArray( env, jsummary, "remoteDevs", count, addrps );
             }
                 break;
 #endif
@@ -1943,9 +1932,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             jvals[ii] = model_getPlayerScore( model, ii );
         }
     }
-    jintArray jarr = makeIntArray( env, nPlayers, jvals, sizeof(jvals[0]) );
-    setObject( env, jsummary, "scores", "[I", jarr );
-    deleteLocalRef( env, jarr );
+
+    setIntArray( env, jsummary, "scores", nPlayers, jvals, sizeof(jvals[0]) );
 
     XWJNI_END();
 }
@@ -2039,6 +2027,8 @@ static const SetInfo gsi_bools[] = {
     ARR_MEMBER( GameStateInfo, curTurnSelected ),
     ARR_MEMBER( GameStateInfo, canHideRack ),
     ARR_MEMBER( GameStateInfo, canTrade ),
+    ARR_MEMBER( GameStateInfo, canPause ),
+    ARR_MEMBER( GameStateInfo, canUnpause ),
 };
 
 JNIEXPORT void JNICALL
@@ -2265,6 +2255,30 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
     XWJNI_START();
     XP_ASSERT( !!state->game.server );
     server_endGame( state->game.server );
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_board_1pause
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jstring jmsg )
+{
+    XWJNI_START();
+    XP_ASSERT( !!state->game.board );
+
+    const char* msg = (*env)->GetStringUTFChars( env, jmsg, NULL );
+    board_pause( state->game.board, msg );
+    (*env)->ReleaseStringUTFChars( env, jmsg, msg );
+
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_board_1unpause
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jstring jmsg )
+{
+    XWJNI_START();
+    XP_ASSERT( !!state->game.board );
+    const char* msg = (*env)->GetStringUTFChars( env, jmsg, NULL );
+    board_unpause( state->game.board, msg );
+    (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }
 

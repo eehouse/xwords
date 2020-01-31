@@ -1330,6 +1330,10 @@ public class RelayService extends XWJIService
                 if ( null == udpSocket ) {
                     // will be null if e.g. device or emulator doesn't have network
                     udpSocket = getService().connectSocketOnce(); // block until this is done
+                    // Assert.assertTrue( null != udpSocket || !BuildConfig.DEBUG ); // firing
+                    if ( null == udpSocket ) {
+                        Log.e( TAG, "connectSocketOnce() failed; no socket" );
+                    }
                 }
 
                 byte[] buf = new byte[1024];

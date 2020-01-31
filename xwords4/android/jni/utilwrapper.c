@@ -243,6 +243,16 @@ and_util_informMove( XW_UtilCtxt* uc, XP_S16 turn, XWStreamCtxt* expl,
 }
 
 static void
+and_util_notifyDupStatus( XW_UtilCtxt* uc, XP_Bool amHost, const XP_UCHAR* msg )
+{
+    UTIL_CBK_HEADER( "notifyDupStatus", "(ZLjava/lang/String;)V" );
+    jstring jmsg = (*env)->NewStringUTF( env, msg );
+    (*env)->CallVoidMethod( env, util->jutil, mid, amHost, jmsg );
+    deleteLocalRefs( env, jmsg, DELETE_NO_REF );
+    UTIL_CBK_TAIL();
+}
+
+static void
 and_util_informUndo( XW_UtilCtxt* uc )
 {
     UTIL_CBK_HEADER( "informUndo", "()V" );
@@ -581,6 +591,34 @@ and_util_remSelected(XW_UtilCtxt* uc)
     UTIL_CBK_TAIL();
 }
 
+static void
+and_util_timerSelected( XW_UtilCtxt* uc, XP_Bool inDuplicateMode, XP_Bool canPause )
+{
+    UTIL_CBK_HEADER("timerSelected", "(ZZ)V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid, inDuplicateMode, canPause );
+    UTIL_CBK_TAIL();
+}
+
+static void
+and_util_formatPauseHistory( XW_UtilCtxt* uc, XWStreamCtxt* stream,
+                             DupPauseType typ, XP_S16 turn,
+                             XP_U32 secsPrev, XP_U32 secsCur,
+                             const XP_UCHAR* msg )
+{
+    UTIL_CBK_HEADER( "formatPauseHistory",
+                     "(IIIILjava/lang/String;)Ljava/lang/String;" );
+    jstring jmsg = !! msg ? (*env)->NewStringUTF( env, msg ) : NULL;
+
+    jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, typ,
+                                                turn, secsPrev, secsCur, jmsg );
+
+    const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+    stream_catString( stream, jchars );
+    (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+    deleteLocalRefs( env, jresult, jmsg, DELETE_NO_REF );
+    UTIL_CBK_TAIL();
+}
+
 #ifndef XWFEATURE_MINIWIN
 static void
 and_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
@@ -768,6 +806,28 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr, XP_U16 len )
 }
 #endif
 
+static void
+and_dutil_notifyPause( XW_DUtilCtxt* duc, XP_U32 gameID, DupPauseType pauseTyp,
+                       XP_U16 pauser, const XP_UCHAR* name,
+                       const XP_UCHAR* msg )
+{
+    DUTIL_CBK_HEADER( "notifyPause", "(IIILjava/lang/String;Ljava/lang/String;)V" );
+    jstring jname = (*env)->NewStringUTF( env, name );
+    jstring jmsg = (*env)->NewStringUTF( env, msg );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID, pauseTyp, pauser,
+                            jname, jmsg );
+    deleteLocalRefs( env, jname, jmsg, DELETE_NO_REF );
+    DUTIL_CBK_TAIL();
+}
+
+static void
+and_dutil_onDupTimerChanged( XW_DUtilCtxt* duc, XP_U32 gameID,
+                             XP_U32 oldVal, XP_U32 newVal )
+{
+    DUTIL_CBK_HEADER( "onDupTimerChanged", "(III)V" );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID, oldVal, newVal );
+    DUTIL_CBK_TAIL();
+}
 
 XW_UtilCtxt*
 makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
@@ -803,6 +863,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(turnChanged);
 #endif
     SET_PROC(informMove);
+    SET_PROC(notifyDupStatus);
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
     SET_PROC(notifyGameOver);
@@ -820,6 +881,8 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(showChat);
 #endif
     SET_PROC(remSelected);
+    SET_PROC(timerSelected);
+    SET_PROC(formatPauseHistory);
 
 #ifndef XWFEATURE_MINIWIN
     SET_PROC(bonusSquareHeld);
@@ -899,6 +962,8 @@ makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
 #ifdef COMMS_CHECKSUM
     SET_DPROC(md5sum);
 #endif
+    SET_DPROC(notifyPause);
+    SET_DPROC(onDupTimerChanged);
 
     return &dutil->dutil;
 }

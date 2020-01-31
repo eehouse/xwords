@@ -59,8 +59,6 @@ static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col,
                                  XP_U16 row );
 static void setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                              CellTile tile );
-static void assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
-                               const TrayTileSet* tiles );
 static void makeTileTrade( ModelCtxt* model, XP_S16 player, 
                            const TrayTileSet* oldTiles, 
                            const TrayTileSet* newTiles );
@@ -112,10 +110,10 @@ model_make( MPFORMAL DictionaryCtxt* dict, const PlayerDicts* dicts,
         result->vol.wni.proc = recordWord;
         result->vol.wni.closure = &result->vol.rwi;
 
-        model_setSize( result, nCols );
-
         XP_ASSERT( !!util->gameInfo );
         result->vol.gi = util->gameInfo;
+
+        model_setSize( result, nCols );
 
         model_setDictionary( result, dict );
         model_setPlayerDicts( result, dicts );
@@ -176,7 +174,6 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
 #endif
 
     stack_loadFromStream( model->vol.stack, stream );
-
 
     MovePrintFuncPre pre = NULL;
     MovePrintFuncPost post = NULL;
@@ -293,10 +290,11 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
     XP_MEMSET( model->vol.tiles, TILE_EMPTY_BIT, TILES_SIZE(model, nCols) );
 
     if ( !!model->vol.stack ) {
-        stack_init( model->vol.stack );
+        stack_init( model->vol.stack, model->vol.gi->inDuplicateMode );
     } else {
         model->vol.stack = stack_make( MPPARM(model->vol.mpool)
-                                       dutil_getVTManager(model->vol.dutil));
+                                       dutil_getVTManager(model->vol.dutil),
+                                       model->vol.gi->inDuplicateMode );
     }
 } /* model_setSize */
 
@@ -348,6 +346,7 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
             foundAt = ii;
             break;
         }
+
         if ( ! stack_popEntry( stack, &entries[ii] ) ) {
             break;
         }
@@ -356,6 +355,7 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 
     for ( XP_S16 ii = nPopped - 1; ii >= 0; --ii ) {
         stack_redo( stack, &entries[ii] );
+        stack_freeEntry( stack, &entries[ii] );
     }
 
     XP_Bool found = -1 != foundAt;
@@ -378,8 +378,9 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
     XP_LOGF( "%s(%X) => %s (nEntries=%d)", __func__, hash, boolToStr(found),
              nEntries );
 #endif
+
     return found;
-}
+} /* model_popToHash */
 
 #ifdef STREAM_VERS_BIGBOARD
 void
@@ -445,6 +446,40 @@ model_getSquareBonus( const ModelCtxt* model, XP_U16 col, XP_U16 row )
     return result;
 }
 
+static XP_U16
+makeAndCommit( ModelCtxt* model, XP_U16 turn, const MoveInfo* mi,
+               const TrayTileSet* tiles, XWStreamCtxt* stream,
+               XP_Bool useStack, WordNotifierInfo* wni )
+{
+    model_makeTurnFromMoveInfo( model, turn, mi );
+    XP_U16 moveScore = commitTurn( model, turn, tiles,
+                                   stream, wni, useStack );
+    return moveScore;
+}
+
+static void
+dupe_adjustScores( ModelCtxt* model, XP_Bool add, XP_U16 nScores, const XP_U16* scores )
+{
+    XP_S16 mult = add ? 1 : -1;
+    for ( XP_U16 ii = 0; ii < nScores; ++ii ) {
+        model->players[ii].score += mult * scores[ii];
+    }
+}
+
+void
+model_cloneDupeTrays( ModelCtxt* model )
+{
+    XP_ASSERT( model->vol.gi->inDuplicateMode );
+    XP_U16 nTiles = model->players[DUP_PLAYER].trayTiles.nTiles;
+    for ( XP_U16 ii = 0; ii < model->nPlayers; ++ii ) {
+        if ( ii != DUP_PLAYER ) {
+            model_resetCurrentTurn( model, ii );
+            model->players[ii].trayTiles = model->players[DUP_PLAYER].trayTiles;
+            notifyTrayListeners( model, ii, 0, nTiles );
+        }
+    }
+}
+
 static void
 modelAddEntry( ModelCtxt* model, XP_U16 indx, const StackEntry* entry, 
                XP_Bool useStack, XWStreamCtxt* stream, 
@@ -458,20 +493,29 @@ modelAddEntry( ModelCtxt* model, XP_U16 indx, const StackEntry* entry,
 
     switch ( entry->moveType ) {
     case MOVE_TYPE:
-
-        model_makeTurnFromMoveInfo( model, entry->playerNum,
-                                    &entry->u.move.moveInfo);
-        moveScore = commitTurn( model, entry->playerNum, 
-                                &entry->u.move.newTiles, 
-                                stream, wni, useStack );
+        moveScore = makeAndCommit( model, entry->playerNum, &entry->u.move.moveInfo,
+                                   &entry->u.move.newTiles, stream, useStack, wni );
+        if ( model->vol.gi->inDuplicateMode ) {
+            XP_ASSERT( DUP_PLAYER == entry->playerNum );
+            dupe_adjustScores( model, XP_TRUE, entry->u.move.dup.nScores,
+                               entry->u.move.dup.scores );
+            model_cloneDupeTrays( model );
+        }
         break;
     case TRADE_TYPE:
         makeTileTrade( model, entry->playerNum, &entry->u.trade.oldTiles,
                        &entry->u.trade.newTiles );
+        if ( model->vol.gi->inDuplicateMode ) {
+            XP_ASSERT( DUP_PLAYER == entry->playerNum );
+            model_cloneDupeTrays( model );
+        }
         break;
     case ASSIGN_TYPE:
-        assignPlayerTiles( model, entry->playerNum, 
-                           &entry->u.assign.tiles );
+        model_addNewTiles( model, entry->playerNum, &entry->u.assign.tiles );
+        if ( model->vol.gi->inDuplicateMode ) {
+            XP_ASSERT( DUP_PLAYER == entry->playerNum );
+            model_cloneDupeTrays( model );
+        }
         break;
     case PHONY_TYPE: /* nothing to add */
         model_makeTurnFromMoveInfo( model, entry->playerNum,
@@ -482,6 +526,9 @@ modelAddEntry( ModelCtxt* model, XP_U16 indx, const StackEntry* entry,
         moveScore = 0;
         model_resetCurrentTurn( model, entry->playerNum );
 
+        break;
+    case PAUSE_TYPE:
+        // XP_LOGF( "%s(): nothing to do with PAUSE_TYPE", __func__ );
         break;
     default:
         XP_ASSERT(0);
@@ -499,11 +546,10 @@ buildModelFromStack( ModelCtxt* model, StackCtxt* stack, XP_Bool useStack,
                      MovePrintFuncPost mpf_post, void* closure )
 {
     StackEntry entry;
-    XP_U16 ii;
-
-    for ( ii = initial; stack_getNthEntry( stack, ii, &entry ); ++ii ) {
+    for ( XP_U16 ii = initial; stack_getNthEntry( stack, ii, &entry ); ++ii ) {
         modelAddEntry( model, ii, &entry, useStack, stream, wni, 
                        mpf_pre, mpf_post, closure );
+        stack_freeEntry( stack, &entry );
     }
 } /* buildModelFromStack */
 
@@ -794,20 +840,19 @@ getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* getModelTileRaw */
 
 static void
-undoFromMoveInfo( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveInfo* mi )
+undoFromMove( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveRec* move )
 {
-    XP_U16 col, row, ii;
-    XP_U16* other;
-    MoveInfoTile* tinfo;
+    const MoveInfo* mi = &move->moveInfo;
 
+    XP_U16 col, row;
     col = row = mi->commonCoord;
-    other = mi->isHorizontal? &col: &row;
+    XP_U16* other = mi->isHorizontal? &col: &row;
 
+    const MoveInfoTile* tinfo;
+    XP_U16 ii;
     for ( tinfo = mi->tiles, ii = 0; ii < mi->nTiles; ++tinfo, ++ii ) {
-        Tile tile;
-
+        Tile tile = tinfo->tile;
         *other = tinfo->varCoord;
-        tile = tinfo->tile;
 
         setModelTileRaw( model, col, row, EMPTY_TILE );
         notifyBoardListeners( model, turn, col, row, XP_FALSE );
@@ -818,8 +863,13 @@ undoFromMoveInfo( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveInfo* mi )
         }
         model_addPlayerTile( model, turn, -1, tile );
     }
-    adjustScoreForUndone( model, mi, turn );
-} /* undoFromMoveInfo */
+
+    if ( model->vol.gi->inDuplicateMode ) {
+        dupe_adjustScores( model, XP_FALSE, move->dup.nScores, move->dup.scores );
+    } else {
+        adjustScoreForUndone( model, mi, turn );
+    }
+} /* undoFromMove */
 
 /* Remove tiles in a set from tray and put them back in the pool.
  */
@@ -857,12 +907,13 @@ model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool, XP_U16* turn )
     XP_ASSERT( entry.moveType == MOVE_TYPE );
 
     replaceNewTiles( model, pool, entry.playerNum, &entry.u.move.newTiles );
-    undoFromMoveInfo( model, entry.playerNum, blankTile,
-                      &entry.u.move.moveInfo );
+    XP_ASSERT( !model->vol.gi->inDuplicateMode );
+    undoFromMove( model, entry.playerNum, blankTile, &entry.u.move );
 
     stack_addPhony( stack, entry.playerNum, &entry.u.phony.moveInfo );
 
     *turn = entry.playerNum;
+    stack_freeEntry( stack, &entry );
 } /* model_rejectPreviousMove */
 
 XP_Bool
@@ -872,7 +923,8 @@ model_canUndo( const ModelCtxt* model )
     XP_U16 nStackEntries = stack_getNEntries( stack );
 
     /* More than just tile assignment? */
-    XP_Bool result = nStackEntries > model->nPlayers;
+    XP_U16 assignCount = model->vol.gi->inDuplicateMode ? 1 : model->nPlayers;
+    XP_Bool result = nStackEntries > assignCount;
     return result;
 }
 
@@ -887,10 +939,12 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
     XP_Bool success;
     XP_S16 moveSought = !!moveNumP ? *moveNumP : -1;
     XP_U16 nStackEntries = stack_getNEntries( stack );
+    const XP_U16 assignCount = model->vol.gi->inDuplicateMode
+        ? 1 : model->nPlayers;
 
     if ( (0 <= moveSought && moveSought >= nStackEntries)
          || ( nStackEntries < nMovesSought )
-         || ( nStackEntries <= model->nPlayers ) ) {
+         || ( nStackEntries <= assignCount ) ) {
         success = XP_FALSE;
     } else {
         XP_U16 nMovesUndone = 0;
@@ -911,17 +965,22 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
             if ( entry.moveType == MOVE_TYPE ) {
                 /* get the tiles out of player's tray and back into the
                    pool */
-                replaceNewTiles( model, pool, turn, &entry.u.move.newTiles);
+                replaceNewTiles( model, pool, turn, &entry.u.move.newTiles );
 
-                undoFromMoveInfo( model, turn, blankTile, 
-                                  &entry.u.move.moveInfo );
+                undoFromMove( model, turn, blankTile, &entry.u.move );
+                model_sortTiles( model, turn );
+
+                if ( model->vol.gi->inDuplicateMode ) {
+                    XP_ASSERT( DUP_PLAYER == turn );
+                    model_cloneDupeTrays( model );
+                }
             } else if ( entry.moveType == TRADE_TYPE ) {
                 replaceNewTiles( model, pool, turn, 
                                  &entry.u.trade.newTiles );
                 if ( pool != NULL ) {
                     pool_removeTiles( pool, &entry.u.trade.oldTiles );
                 }
-                assignPlayerTiles( model, turn, &entry.u.trade.oldTiles );
+                model_addNewTiles( model, turn, &entry.u.trade.oldTiles );
             } else if ( entry.moveType == PHONY_TYPE ) {
                 /* nothing to do, since nothing happened */
             } else {
@@ -940,6 +999,7 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
             } else if ( nMovesSought == nMovesUndone ) {
                 break;
             }
+            stack_freeEntry( stack, &entry );
         }
 
         /* Find the first MOVE still on the stack and highlight its tiles since
@@ -977,6 +1037,7 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                 }
                 break;
             }
+            stack_freeEntry( stack, &entry );
         }
 
         /* We fail if we didn't undo as many as requested UNLESS the lower
@@ -1021,22 +1082,62 @@ model_trayToStream( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream )
 } /* model_trayToStream */
 
 void
+model_currentMoveToMoveInfo( ModelCtxt* model, XP_S16 turn,
+                             MoveInfo* moveInfo )
+{
+    XP_ASSERT( turn >= 0 );
+    const XP_S16 numTiles = model->players[turn].nPending;
+    moveInfo->nTiles = numTiles;
+
+    XP_U16 cols[MAX_TRAY_TILES];
+    XP_U16 rows[MAX_TRAY_TILES];
+    for ( XP_S16 ii = 0; ii < numTiles; ++ii ) {
+        XP_Bool isBlank;
+        Tile tile;
+        model_getCurrentMoveTile( model, turn, &ii, &tile,
+                                  &cols[ii], &rows[ii], &isBlank );
+        if ( isBlank ) {
+            tile |= TILE_BLANK_BIT;
+        }
+        moveInfo->tiles[ii].tile = tile;
+    }
+
+    XP_Bool isHorizontal = XP_TRUE;
+    if ( 1 == numTiles ) {       /* horizonal/vertical makes no sense */
+        moveInfo->tiles[0].varCoord = cols[0];
+        moveInfo->commonCoord = rows[0];
+    } else if ( 1 < numTiles ) {
+        isHorizontal = rows[0] == rows[1];
+        moveInfo->commonCoord = isHorizontal ? rows[0] : cols[0];
+        for ( XP_U16 ii = 0; ii < numTiles; ++ii ) {
+            moveInfo->tiles[ii].varCoord =
+                isHorizontal ? cols[ii] : rows[ii];
+            /* MoveInfo assumes legal moves! Check here */
+            if ( isHorizontal ) {
+                XP_ASSERT( rows[ii] == rows[0] );
+            } else {
+                XP_ASSERT( cols[ii] == cols[0] );
+            }
+        }
+    }
+    moveInfo->isHorizontal = isHorizontal;
+
+    normalizeMI( moveInfo, moveInfo );
+}
+
+void
 model_currentMoveToStream( ModelCtxt* model, XP_S16 turn, 
                            XWStreamCtxt* stream )
 {
-    PlayerCtxt* player;
-    XP_S16 numTiles;
-    XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
-    nColsNBits = 16 <= model_numCols( model ) ? NUMCOLS_NBITS_5
+    XP_U16 nColsNBits = 16 <= model_numCols( model ) ? NUMCOLS_NBITS_5
         : NUMCOLS_NBITS_4;
 #else
-    nColsNBits = NUMCOLS_NBITS_4;
+    XP_U16 nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
     XP_ASSERT( turn >= 0 );
-    player = &model->players[turn];
-    numTiles = player->nPending;
+    XP_S16 numTiles = model->players[turn].nPending;
 
     stream_putBits( stream, NTILES_NBITS, numTiles );
 
@@ -1065,66 +1166,63 @@ XP_Bool
 model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                           XWStreamCtxt* stream )
 {
-    XP_Bool success = XP_TRUE;
-    XP_U16 numTiles, ii;
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
-    XP_U16 nColsNBits;
+    XP_U16 nColsNBits =
 #ifdef STREAM_VERS_BIGBOARD
-    nColsNBits = 16 <= model_numCols( model ) ? NUMCOLS_NBITS_5
-        : NUMCOLS_NBITS_4;
+        16 <= model_numCols( model ) ? NUMCOLS_NBITS_5 : NUMCOLS_NBITS_4
 #else
-    nColsNBits = NUMCOLS_NBITS_4;
+        NUMCOLS_NBITS_4
 #endif
+        ;
 
     model_resetCurrentTurn( model, playerNum );
-    if ( success ) {
-        numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
 
-        XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
+    XP_U16 numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
+    XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
 
-        Tile tileFaces[numTiles];
-        XP_U16 cols[numTiles];
-        XP_U16 rows[numTiles];
-        XP_Bool isBlanks[numTiles];
-        Tile moveTiles[numTiles];
-        TrayTileSet curTiles = *model_getPlayerTiles( model, playerNum );
+    Tile tileFaces[numTiles];
+    XP_U16 cols[numTiles];
+    XP_U16 rows[numTiles];
+    XP_Bool isBlanks[numTiles];
+    Tile moveTiles[numTiles];
+    TrayTileSet curTiles = *model_getPlayerTiles( model, playerNum );
 
-        for ( ii = 0; success && ii < numTiles; ++ii ) {
-            tileFaces[ii] = (Tile)stream_getBits( stream, TILE_NBITS );
-            cols[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
-            rows[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
-            isBlanks[ii] = stream_getBits( stream, 1 );
+    XP_Bool success = XP_TRUE;
+    for ( XP_U16 ii = 0; success && ii < numTiles; ++ii ) {
+        tileFaces[ii] = (Tile)stream_getBits( stream, TILE_NBITS );
+        cols[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
+        rows[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
+        isBlanks[ii] = stream_getBits( stream, 1 );
 
-            if ( isBlanks[ii] ) {
-                moveTiles[ii] = blank;
-            } else {
-                moveTiles[ii] = tileFaces[ii];
-            }
-
-            XP_S16 index = setContains( &curTiles, moveTiles[ii] );
-            if ( 0 <= index ) {
-                removeTile( &curTiles, index );
-            } else {
-                success = XP_FALSE;
-            }
+        if ( isBlanks[ii] ) {
+            moveTiles[ii] = blank;
+        } else {
+            moveTiles[ii] = tileFaces[ii];
         }
 
-        if ( success ) {
-            for ( ii = 0; ii < numTiles; ++ii ) {
-                XP_S16 foundAt = model_trayContains( model, playerNum, moveTiles[ii] );
-                if ( foundAt == -1 ) {
-                    XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum, 
-                                                                 0));
-                    /* Does this ever happen? */
-                    XP_LOGF( "%s: found empty tile and it's ok", __func__ );
+        XP_S16 index = setContains( &curTiles, moveTiles[ii] );
+        if ( 0 <= index ) {
+            removeTile( &curTiles, index );
+        } else {
+            success = XP_FALSE;
+        }
+    }
 
-                    (void)model_removePlayerTile( model, playerNum, -1 );
-                    model_addPlayerTile( model, playerNum, -1, moveTiles[ii] );
-                }
+    if ( success ) {
+        for ( XP_U16 ii = 0; ii < numTiles; ++ii ) {
+            XP_S16 foundAt = model_trayContains( model, playerNum, moveTiles[ii] );
+            if ( foundAt == -1 ) {
+                XP_ASSERT( EMPTY_TILE == model_getPlayerTile(model, playerNum,
+                                                             0));
+                /* Does this ever happen? */
+                XP_LOGF( "%s: found empty tile and it's ok", __func__ );
 
-                model_moveTrayToBoard( model, playerNum, cols[ii], rows[ii], foundAt, 
-                                       tileFaces[ii] );
+                (void)model_removePlayerTile( model, playerNum, -1 );
+                model_addPlayerTile( model, playerNum, -1, moveTiles[ii] );
             }
+
+            model_moveTrayToBoard( model, playerNum, cols[ii], rows[ii], foundAt,
+                                   tileFaces[ii] );
         }
     }
     return success;
@@ -1325,6 +1423,45 @@ model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
     notifyTrayListeners( model, turn, index, player->trayTiles.nTiles );
     return tile;
 } /* model_removePlayerTile */
+
+void
+model_removePlayerTiles( ModelCtxt* model, XP_S16 turn, const MoveInfo* mi )
+{
+    XP_ASSERT( turn >= 0 );
+    PlayerCtxt* player = &model->players[turn];
+    for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) {
+        Tile tile = mi->tiles[ii].tile;
+        if ( IS_BLANK( tile ) ) {
+            tile = dict_getBlankTile( model_getDictionary(model) );
+        }
+        XP_S16 index = -1;
+        for ( XP_U16 jj = 0; index < 0 && jj < player->trayTiles.nTiles; ++jj ) {
+            if ( tile == player->trayTiles.tiles[jj] ) {
+                index = jj;
+            }
+        }
+        XP_ASSERT( index >= 0 );
+        model_removePlayerTile( model, turn, index );
+    }
+}
+
+void
+model_removePlayerTiles2( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
+{
+    XP_ASSERT( turn >= 0 );
+    PlayerCtxt* player = &model->players[turn];
+    for ( XP_U16 ii = 0; ii < tiles->nTiles; ++ii ) {
+        Tile tile = tiles->tiles[ii];
+        XP_S16 index = -1;
+        for ( XP_U16 jj = 0; index < 0 && jj < player->trayTiles.nTiles; ++jj ) {
+            if ( tile == player->trayTiles.tiles[jj] ) {
+                index = jj;
+            }
+        }
+        XP_ASSERT( index >= 0 );
+        model_removePlayerTile( model, turn, index );
+    }
+}
 
 void
 model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
@@ -1593,8 +1730,8 @@ model_resetCurrentTurn( ModelCtxt* model, XP_S16 whose )
 XP_S16
 model_getNMoves( const ModelCtxt* model )
 {
-    XP_U16 result = stack_getNEntries( model->vol.stack );
-    result -= model->nPlayers;  /* tile assignment doesn't count */
+    XP_U16 nAssigns = model->vol.gi->inDuplicateMode ? 1 : model->nPlayers;
+    XP_U16 result = stack_getNEntries( model->vol.stack ) - nAssigns;
     return result;
 }
 
@@ -1689,6 +1826,14 @@ putBackOtherPlayersTiles( ModelCtxt* model, XP_U16 notMyTurn,
     }
 } /* putBackOtherPlayersTiles */
 
+static void
+invalidateScores( ModelCtxt* model )
+{
+    for ( int ii = 0; ii < model->nPlayers; ++ii ) {
+        invalidateScore( model, ii );
+    }
+}
+
 /* Make those tiles placed by 'turn' a permanent part of the board.  If any
  * other players have placed pending tiles on those same squares, replace them
  * in their trays.
@@ -1720,7 +1865,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
         XP_ASSERT( inLine );
         MoveInfo moveInfo = {0};
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
-    
+
         stack_addMove( model->vol.stack, turn, &moveInfo, newTiles );
     }
 
@@ -1751,12 +1896,11 @@ commitTurn( ModelCtxt* model, XP_S16 turn, const TrayTileSet* newTiles,
 
     (void)getCurrentMoveScoreIfLegal( model, turn, stream, wni, &score );
     XP_ASSERT( score >= 0 );
-    player->score += score;
-
-    /* Why is this next loop necessary? */
-    for ( int ii = 0; ii < model->nPlayers; ++ii ) {
-        invalidateScore( model, ii );
+    if ( ! model->vol.gi->inDuplicateMode ) {
+        player->score += score;
     }
+
+    invalidateScores( model );
 
     player->nPending = 0;
     player->nUndone = 0;
@@ -1776,6 +1920,34 @@ model_commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles )
     return 0 <= score;
 } /* model_commitTurn */
 
+void
+model_commitDupeTurn( ModelCtxt* model, const MoveInfo* moveInfo,
+                      XP_U16 nScores, XP_U16* scores, TrayTileSet* newTiles )
+{
+    model_resetCurrentTurn( model, DUP_PLAYER );
+    model_makeTurnFromMoveInfo( model, DUP_PLAYER, moveInfo );
+    (void)commitTurn( model, DUP_PLAYER, newTiles, NULL, NULL, XP_FALSE );
+    dupe_adjustScores( model, XP_TRUE, nScores, scores );
+    invalidateScores( model );
+
+    stack_addDupMove( model->vol.stack, moveInfo, nScores, scores, newTiles );
+}
+
+void
+model_commitDupeTrade( ModelCtxt* model, const TrayTileSet* oldTiles,
+                       const TrayTileSet* newTiles )
+{
+    stack_addDupTrade( model->vol.stack, oldTiles, newTiles );
+}
+
+void
+model_noteDupePause( ModelCtxt* model, DupPauseType typ, XP_S16 turn,
+                     const XP_UCHAR* msg )
+{
+    XP_U32 when = dutil_getCurSeconds( model->vol.dutil );
+    stack_addPause( model->vol.stack, typ, turn, when, msg );
+}
+
 /* Given a rack of new tiles and of old, remove all the old from the tray and
  * replace them with new.  Replace in the same place so that user sees an
  * in-place change.
@@ -1784,13 +1956,11 @@ static void
 makeTileTrade( ModelCtxt* model, XP_S16 player, const TrayTileSet* oldTiles, 
                const TrayTileSet* newTiles )
 {
-    XP_U16 ii;
-    XP_U16 nTiles;
-
     XP_ASSERT( newTiles->nTiles == oldTiles->nTiles );
     XP_ASSERT( oldTiles != &model->players[player].trayTiles );
 
-    for ( nTiles = newTiles->nTiles, ii = 0; ii < nTiles; ++ii ) {
+    const XP_U16 nTiles = newTiles->nTiles;
+    for ( XP_U16 ii = 0; ii < nTiles; ++ii ) {
         Tile oldTile = oldTiles->tiles[ii];
 
         XP_S16 tileIndex = model_trayContains( model, player, oldTile );
@@ -1911,8 +2081,8 @@ model_setDividerLoc( ModelCtxt* model, XP_S16 turn, XP_U16 loc )
     player->dividerLoc = (XP_U8)loc;
 }
 
-static void
-assignPlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
+void
+model_addNewTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
 {
     const Tile* tilep = tiles->tiles;
     XP_U16 nTiles = tiles->nTiles;
@@ -1926,12 +2096,20 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
                          const TrayTileSet* tiles )
 {
     XP_ASSERT( turn >= 0 );
+    XP_ASSERT( turn == DUP_PLAYER || !model->vol.gi->inDuplicateMode );
     TrayTileSet sorted;
     sortTiles( &sorted, tiles, 0 );
     stack_addAssign( model->vol.stack, turn, &sorted );
 
-    assignPlayerTiles( model, turn, tiles );
+    model_addNewTiles( model, turn, &sorted );
 } /* model_assignPlayerTiles */
+
+void
+model_assignDupeTiles( ModelCtxt* model, const TrayTileSet* tiles )
+{
+    model_assignPlayerTiles( model, DUP_PLAYER, tiles );
+    model_cloneDupeTrays( model );
+}
 
 void
 model_sortTiles( ModelCtxt* model, XP_S16 turn )
@@ -1946,7 +2124,7 @@ model_sortTiles( ModelCtxt* model, XP_S16 turn )
             removePlayerTile( model, turn, --nTiles );
         }
 
-        assignPlayerTiles( model, turn, &sorted );
+        model_addNewTiles( model, turn, &sorted );
     }
 } /* model_sortTiles */
 
@@ -1956,7 +2134,9 @@ model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn )
     PlayerCtxt* player;
     XP_ASSERT( turn >= 0 );
     player = &model->players[turn];
-    return player->trayTiles.nTiles;
+    XP_U16 result = player->trayTiles.nTiles;
+    // XP_LOGF( "%s(turn=%d) => %d", __func__, turn, result );
+    return result;
 } /* model_getNumTilesInTray */
 
 XP_U16
@@ -2060,6 +2240,7 @@ typedef struct MovePrintClosure {
     DictionaryCtxt* dict;
     XP_U16 nPrinted;
     XP_Bool keepHidden;
+    XP_U32 lastPauseWhen;
 } MovePrintClosure;
 
 static void
@@ -2077,8 +2258,11 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
                      entry->playerNum+1 );
         printString( stream, (XP_UCHAR*)buf );
 
-        if ( entry->moveType == TRADE_TYPE ) {
-        } else {
+        switch ( entry->moveType ) {
+        case TRADE_TYPE:
+        case PAUSE_TYPE:
+            break;
+        default: {
             XP_UCHAR letter[2] = {'\0','\0'};
             XP_Bool isHorizontal = entry->u.move.moveInfo.isHorizontal;
             XP_U16 col, row;
@@ -2116,15 +2300,17 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
                 XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
             }
             printString( stream, (XP_UCHAR*)buf );
-        }
 
-        if ( !closure->keepHidden ) {
-            format = dutil_getUserString( model->vol.dutil, STRS_TRAY_AT_START );
-            formatTray( model_getPlayerTiles( model, entry->playerNum ),
-                        closure->dict, (XP_UCHAR*)traybuf, sizeof(traybuf),
-                        XP_FALSE );
-            XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
-            printString( stream, buf );
+            if ( !closure->keepHidden ) {
+                format = dutil_getUserString( model->vol.dutil, STRS_TRAY_AT_START );
+                formatTray( model_getPlayerTiles( model, entry->playerNum ),
+                            closure->dict, (XP_UCHAR*)traybuf, sizeof(traybuf),
+                            XP_FALSE );
+                XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
+                printString( stream, buf );
+            }
+        }
+            break;
         }
     }
 } /* printMovePre */
@@ -2146,6 +2332,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
         XP_UCHAR traybuf2[MAX_TRAY_TILES+1];
         const MoveInfo* mi;
         XP_S16 totalScore = model_getPlayerScore( model, entry->playerNum );
+        XP_Bool addCR = XP_FALSE;
 
         switch( entry->moveType ) {
         case TRADE_TYPE:
@@ -2157,13 +2344,25 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
             format = dutil_getUserString( model->vol.dutil, STRSS_TRADED_FOR );
             XP_SNPRINTF( buf, sizeof(buf), format, traybuf1, traybuf2 );
             printString( stream, buf );
-            printString( stream, (XP_UCHAR*)XP_CR );
+            addCR = XP_TRUE;
             break;
 
         case PHONY_TYPE:
             format = dutil_getUserString( model->vol.dutil, STR_PHONY_REJECTED );
             printString( stream, format );
+            /* FALLTHRU */
         case MOVE_TYPE:
+            /* Duplicate case */
+            if ( model->vol.gi->inDuplicateMode ) {
+                XP_U16 offset = XP_SNPRINTF( buf, VSIZE(buf), "%s", "All scores: " );
+                for ( XP_U16 ii = 0; ii < entry->u.move.dup.nScores; ++ii ) {
+                    offset += XP_SNPRINTF( &buf[offset], VSIZE(buf) - offset, "%d,",
+                                           entry->u.move.dup.scores[ii] );
+                }
+                buf[offset-1] = '\n'; /* replace last ',' */
+                printString( stream, buf );
+            }
+
             format = dutil_getUserString( model->vol.dutil, STRD_CUMULATIVE_SCORE );
             XP_SNPRINTF( buf, sizeof(buf), format, totalScore );
             printString( stream, buf );
@@ -2185,11 +2384,25 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
                                              traybuf1, sizeof(traybuf1),
                                              XP_FALSE ) );
                     printString( stream, buf );
-                    stream_catString( stream, (XP_UCHAR*)XP_CR );
+                    addCR = XP_TRUE;
                 }
             }
 
             break;
+        case PAUSE_TYPE:
+            util_formatPauseHistory( model->vol.util, stream, entry->u.pause.pauseType,
+                                     entry->playerNum, closure->lastPauseWhen,
+                                     entry->u.pause.when, entry->u.pause.msg );
+            closure->lastPauseWhen = entry->u.pause.when;
+            addCR = XP_TRUE;
+            break;
+
+        default:
+            XP_ASSERT( 0 );
+        }
+
+        if ( addCR ) {
+            printString( stream, (XP_UCHAR*)XP_CR );
         }
 
         printString( stream, (XP_UCHAR*)XP_CR );
@@ -2231,16 +2444,15 @@ void
 model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
                         ServerCtxt* server, XP_Bool gameOver )
 {
-    ModelCtxt* tmpModel;
-    MovePrintClosure closure;
+    MovePrintClosure closure = {
+        .stream = stream,
+        .dict = model_getDictionary( model ),
+        .keepHidden = !gameOver && !model->vol.gi->inDuplicateMode,
+        .nPrinted = 0
+    };
 
-    closure.stream = stream;
-    closure.dict = model_getDictionary( model );
-    closure.keepHidden = !gameOver;
-    closure.nPrinted = 0;
-
-    tmpModel = makeTmpModel( model, stream, printMovePre, printMovePost, 
-                             &closure );
+    ModelCtxt* tmpModel = makeTmpModel( model, stream, printMovePre,
+                                        printMovePost, &closure );
     model_destroy( tmpModel );
 
     if ( gameOver ) {
@@ -2305,23 +2517,25 @@ model_getRecentPassCount( ModelCtxt* model )
 {
     StackCtxt* stack = model->vol.stack;
     XP_U16 nPasses = 0;
-    XP_S16 nEntries, which;
-    StackEntry entry;
 
     XP_ASSERT( !!stack );
 
-    nEntries = stack_getNEntries( stack );
-    for ( which = nEntries - 1; which >= 0; --which ) {
-        if ( stack_getNthEntry( stack, which, &entry ) ) {
-            if ( entry.moveType == MOVE_TYPE
-                    && entry.u.move.moveInfo.nTiles == 0 ) {
-                ++nPasses;
-            } else {
-                break;
-            }
-        } else {
+    XP_S16 nEntries = stack_getNEntries( stack );
+    for ( XP_S16 which = nEntries - 1; which >= 0; --which ) {
+        StackEntry entry;
+        if ( !stack_getNthEntry( stack, which, &entry ) ) {
             break;
         }
+        switch ( entry.moveType ) {
+        case MOVE_TYPE:
+            if ( entry.u.move.moveInfo.nTiles == 0 ) {
+                ++nPasses;
+            }
+            break;
+        default:
+            break;
+        }
+        stack_freeEntry( stack, &entry );
     }
     return nPasses;
 } /* model_getRecentPassCount */
@@ -2330,7 +2544,10 @@ XP_Bool
 model_recentPassCountOk( ModelCtxt* model )
 {
     XP_U16 count = model_getRecentPassCount( model );
-    XP_U16 okCount = model->nPlayers * MAX_PASSES;
+    XP_U16 okCount = MAX_PASSES;
+    if ( !model->vol.gi->inDuplicateMode ) {
+        okCount *= model->nPlayers;
+    }
     XP_ASSERT( count <= okCount ); /* should never be more than 1 over */
     return count < okCount;
 }
@@ -2410,8 +2627,15 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
         MoveInfo moveInfo = {0};
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
         model_makeTurnFromMoveInfo( tmpModel, turn, &moveInfo );
-        TrayTileSet newTiles = {0};
-        commitTurn( tmpModel, turn, &newTiles, NULL, NULL, XP_TRUE );
+
+        /* Might not be a legal move. If isn't, don't add it! */
+        if ( getCurrentMoveScoreIfLegal( tmpModel, turn, (XWStreamCtxt*)NULL,
+                                         (WordNotifierInfo*)NULL, NULL ) ) {
+            TrayTileSet newTiles = {.nTiles = 0};
+            commitTurn( tmpModel, turn, &newTiles, NULL, NULL, XP_TRUE );
+        } else {
+            model_resetCurrentTurn( tmpModel, turn );
+        }
     }
 
     XP_ASSERT( !!stream );
@@ -2451,6 +2675,26 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 } /* model_listWordsThrough */
 #endif
 
+/* Set array of 1-4 (>1 in case of tie) with highest scores' owners */
+static void
+listHighestScores( const ModelCtxt* model, LastMoveInfo* lmi, MoveRec* move )
+{
+    /* find highest */
+    XP_U16 max = 0;
+    lmi->nWinners = 0;
+    for ( XP_U16 ii = 0; ii < move->dup.nScores; ++ii ) {
+        XP_U16 score = move->dup.scores[ii];
+        if ( 0 == score || score < max ) {
+            continue;
+        } else if ( score > max ) {
+            max = score;
+            lmi->nWinners = 0;
+            lmi->score = score;
+        }
+        lmi->names[lmi->nWinners++] = model->vol.gi->players[ii].name;
+    }
+}
+
 XP_Bool
 model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
 {
@@ -2458,6 +2702,7 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
     XP_S16 nEntries, which;
     StackEntry entry;
     XP_Bool found = XP_FALSE;
+    XP_Bool inDuplicateMode = model->vol.gi->inDuplicateMode;
     XP_MEMSET( lmi, 0, sizeof(*lmi) );
 
     XP_ASSERT( !!stack );
@@ -2466,37 +2711,46 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
 
     for ( which = nEntries; which >= 0; ) {
         if ( stack_getNthEntry( stack, --which, &entry ) ) {
-            if ( -1 == player || entry.playerNum == player ) {
+            if ( -1 == player || inDuplicateMode || entry.playerNum == player ) {
                 found = XP_TRUE;
                 break;
             }
         }
+        stack_freeEntry( stack, &entry );
     }
 
-
     if ( found ) { /* success? */
-        XP_ASSERT( -1 == player || player == entry.playerNum );
+        XP_ASSERT( -1 == player || inDuplicateMode || player == entry.playerNum );
+
 
         XP_LOGF( "%s: found move %d", __func__, which );
-        lmi->name = model->vol.gi->players[entry.playerNum].name;
+        lmi->names[0] = model->vol.gi->players[entry.playerNum].name;
+        lmi->nWinners = 1;
         lmi->moveType = entry.moveType;
+        lmi->inDuplicateMode = inDuplicateMode;
 
         switch ( entry.moveType ) {
         case MOVE_TYPE:
+            XP_ASSERT( !inDuplicateMode || entry.playerNum == DUP_PLAYER );
             lmi->nTiles = entry.u.move.moveInfo.nTiles;
             if ( 0 < entry.u.move.moveInfo.nTiles ) {
-                scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which,
-                               lmi );
+                scoreLastMove( model, &entry.u.move.moveInfo,
+                               nEntries - which, lmi );
+                if ( inDuplicateMode ) {
+                    listHighestScores( model, lmi, &entry.u.move );
+                }
             }
             break;
         case TRADE_TYPE:
+            XP_ASSERT( !inDuplicateMode || entry.playerNum == DUP_PLAYER );
             lmi->nTiles = entry.u.trade.oldTiles.nTiles;
             break;
         case PHONY_TYPE:
-            break;
         case ASSIGN_TYPE:
-            // found = XP_FALSE;
+        case PAUSE_TYPE:
             break;
+        default:
+            XP_ASSERT( 0 );
         }
     }
 
@@ -2597,7 +2851,7 @@ static void
 assertDiffTurn( ModelCtxt* model, XP_U16 XP_UNUSED(turn), 
                 const StackEntry* entry, void* closure )
 {
-    if ( 1 < model->nPlayers ) {
+    if ( 1 < model->nPlayers && ! model->vol.gi->inDuplicateMode ) {
         DiffTurnState* state = (DiffTurnState*)closure;
         if ( -1 != state->lastPlayerNum ) {
             XP_ASSERT( state->lastPlayerNum != entry->playerNum );
@@ -2605,6 +2859,44 @@ assertDiffTurn( ModelCtxt* model, XP_U16 XP_UNUSED(turn),
         }
         state->lastPlayerNum = entry->playerNum;
         state->lastMoveNum = entry->moveNum;
+    }
+}
+
+void
+model_printTrays( const ModelCtxt* model )
+{
+    for ( XP_U16 ii = 0; ii < model->nPlayers; ++ii ) {
+        const PlayerCtxt* player = &model->players[ii];
+        XP_UCHAR buf[128];
+        XP_LOGF( "%s(): player %d: %s", __func__, ii,
+                 formatTileSet( &player->trayTiles, buf, VSIZE(buf) ) );
+    }
+}
+
+void
+model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg )
+{
+    XP_LOGF( "%s(msg=%s)", __func__, msg );
+
+    XP_UCHAR buf[256];
+    XP_U16 offset = 0;
+
+    for ( XP_U16 col = 0; col < model_numCols( model ); ++col ) {
+        offset += XP_SNPRINTF( &buf[offset], VSIZE(buf) - offset,
+                               "%.2d ", col );
+    }
+    XP_LOGF( "    %s", buf );
+
+    for ( XP_U16 row = 0; row < model_numRows( model ); ++row ) {
+        XP_UCHAR buf[256];
+        XP_U16 offset = 0;
+
+        for ( XP_U16 col = 0; col < model_numCols( model ); ++col ) {
+            Tile tile = getModelTileRaw( model, col, row );
+            offset += XP_SNPRINTF( &buf[offset], VSIZE(buf) - offset,
+                                   "%.2x ", tile );
+        }
+        XP_LOGF( "%.2d: %s", row, buf );
     }
 }
 #endif

@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j5 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001-2015 by Eric House (xwords@eehouse.org). All rights
+ * Copyright 2001 - 2019 by Eric House (xwords@eehouse.org). All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -41,27 +41,30 @@ extern "C" {
 
 struct StackCtxt {
     VTableMgr* vtmgr;
-
     XWStreamCtxt* data;
-
     XWStreamPos   top;
-
     XWStreamPos cachedPos;
-
     XP_U16 cacheNext;
     XP_U16 nEntries;
     XP_U16 bitsPerTile;
     XP_U16 highWaterMark;
+    XP_U16 typeBits;
+    XP_U8 flags;
+
+    XP_Bool inDuplicateMode;
 
     DIRTY_SLOT
     MPSLOT
 };
 
+#define HAVE_FLAGS_MASK ((XP_U16)0x8000)
+
 void
-stack_init( StackCtxt* stack )
+stack_init( StackCtxt* stack, XP_Bool inDuplicateMode )
 {
     stack->nEntries = stack->highWaterMark = 0;
     stack->top = START_OF_STREAM;
+    stack->inDuplicateMode = inDuplicateMode;
 
     /* I see little point in freeing or shrinking stack->data.  It'll get
        shrunk to fit as soon as we serialize/deserialize anyway. */
@@ -88,13 +91,14 @@ stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
 }
 
 StackCtxt*
-stack_make( MPFORMAL VTableMgr* vtmgr )
+stack_make( MPFORMAL VTableMgr* vtmgr, XP_Bool inDuplicateMode )
 {
     StackCtxt* result = (StackCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
     if ( !!result ) {
         XP_MEMSET( result, 0, sizeof(*result) );
         MPASSIGN(result->mpool, mpool);
         result->vtmgr = vtmgr;
+        result->inDuplicateMode = inDuplicateMode;
     }
 
     return result;
@@ -114,7 +118,24 @@ stack_destroy( StackCtxt* stack )
 void
 stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
 {
+    /* Problem: the moveType field is getting bigger to support
+     * DUP_MOVE_TYPE. So 3 bits are needed rather than 2.  I can't use the
+     * parent stream's version since the parent stream is re-written each time
+     * the game's saved (with the new version) but the stack is not rewritten,
+     * only appended to (normally). The solution is to take advantage of the
+     * extra bits at the top of the stack's data size (nBytes below). If the
+     * first bit's set, the stream was created by code that assumes 3 bits for
+     * the moveType field.
+     */
     XP_U16 nBytes = stream_getU16( stream );
+    if ( (HAVE_FLAGS_MASK & nBytes) != 0 ) {
+        stack->flags = stream_getU8( stream );
+        stack->typeBits = 3;
+    } else {
+        XP_ASSERT( 0 == stack->flags );
+        stack->typeBits = 2;
+    }
+    nBytes &= ~HAVE_FLAGS_MASK;
 
     if ( nBytes > 0 ) {
         stack->highWaterMark = stream_getU16( stream );
@@ -133,18 +154,23 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
 void
 stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
 {
-    XP_U16 nBytes;
+    XP_U16 nBytes = 0;
     XWStreamCtxt* data = stack->data;
     XWStreamPos oldPos = START_OF_STREAM;
+
+    /* XP_LOGF( "%s(): writing stream; hash: %X", __func__, hash ); */
+    /* XP_U32 hash = stream_getHash( data, START_OF_STREAM, XP_TRUE ); */
 
     if ( !!data ) {
         oldPos = stream_setPos( data, POS_READ, START_OF_STREAM );
         nBytes = stream_getSize( data );
-    } else {
-        nBytes = 0;
     }
 
-    stream_putU16( stream, nBytes );
+    XP_ASSERT( 0 == (HAVE_FLAGS_MASK & nBytes) ); /* under 32K? I hope so */
+    stream_putU16( stream, nBytes | (stack->typeBits == 3 ? HAVE_FLAGS_MASK : 0) );
+    if ( stack->typeBits == 3 ) {
+        stream_putU8( stream, stack->flags );
+    }
 
     if ( nBytes > 0 ) {
         stream_putU16( stream, stack->highWaterMark );
@@ -166,7 +192,8 @@ stack_copy( const StackCtxt* stack )
                                                 stack->vtmgr );
     stack_writeToStream( stack, stream );
 
-    newStack = stack_make( MPPARM(stack->mpool) stack->vtmgr );
+    newStack = stack_make( MPPARM(stack->mpool) stack->vtmgr,
+                           stack->inDuplicateMode );
     stack_loadFromStream( newStack, stream );
     stack_setBitsPerTile( newStack, stack->bitsPerTile );
     stream_destroy( stream );
@@ -176,46 +203,39 @@ stack_copy( const StackCtxt* stack )
 static void
 pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
 {
-    XP_U16 ii, bitsPerTile;
-    XWStreamPos oldLoc;
-    XP_U16 nTiles = entry->u.move.moveInfo.nTiles;
     XWStreamCtxt* stream = stack->data;
+
+    XP_LOGF( "%s(typ=%s, player=%d)", __func__,
+             StackMoveType_2str(entry->moveType), entry->playerNum );
 
     if ( !stream ) {
         stream = mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
         stack->data = stream;
+        stack->typeBits = stack->inDuplicateMode ? 3 : 2;     /* the new size */
+        XP_ASSERT( 0 == stack->flags );
     }
 
-    oldLoc = stream_setPos( stream, POS_WRITE, stack->top );
+    XWStreamPos oldLoc = stream_setPos( stream, POS_WRITE, stack->top );
 
-    stream_putBits( stream, 2, entry->moveType );
+    stream_putBits( stream, stack->typeBits, entry->moveType );
     stream_putBits( stream, 2, entry->playerNum );
 
     switch( entry->moveType ) {
     case MOVE_TYPE:
+        moveInfoToStream( stream, &entry->u.move.moveInfo, stack->bitsPerTile );
+        traySetToStream( stream, &entry->u.move.newTiles );
+        if ( stack->inDuplicateMode ) {
+            stream_putBits( stream, NPLAYERS_NBITS, entry->u.move.dup.nScores );
+            scoresToStream( stream, entry->u.move.dup.nScores, entry->u.move.dup.scores );
+        }
+        break;
     case PHONY_TYPE:
-
-        stream_putBits( stream, NTILES_NBITS, nTiles );
-        stream_putBits( stream, 5, entry->u.move.moveInfo.commonCoord );
-        stream_putBits( stream, 1, entry->u.move.moveInfo.isHorizontal );
-        bitsPerTile = stack->bitsPerTile;
-        XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
-        for ( ii = 0; ii < nTiles; ++ii ) {
-            Tile tile;
-            stream_putBits( stream, 5, 
-                            entry->u.move.moveInfo.tiles[ii].varCoord );
-
-            tile = entry->u.move.moveInfo.tiles[ii].tile;
-            stream_putBits( stream, bitsPerTile, tile & TILE_VALUE_MASK );
-            stream_putBits( stream, 1, (tile & TILE_BLANK_BIT) != 0 );
-        }
-        if ( entry->moveType == MOVE_TYPE ) {
-            traySetToStream( stream, &entry->u.move.newTiles );
-        }
+        moveInfoToStream( stream, &entry->u.phony.moveInfo, stack->bitsPerTile );
         break;
 
     case ASSIGN_TYPE:
         traySetToStream( stream, &entry->u.assign.tiles );
+        XP_ASSERT( entry->playerNum == DUP_PLAYER || !stack->inDuplicateMode );
         break;
 
     case TRADE_TYPE:
@@ -226,6 +246,13 @@ pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
            second guy */
         traySetToStream( stream, &entry->u.trade.newTiles );
         break;
+    case PAUSE_TYPE:
+        stream_putBits( stream, 2, entry->u.pause.pauseType );
+        stream_putU32( stream, entry->u.pause.when );
+        stringToStream( stream, entry->u.pause.msg );
+        break;
+    default:
+        XP_ASSERT(0);
     }
 
     ++stack->nEntries;
@@ -262,37 +289,22 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 static void
 readEntry( const StackCtxt* stack, StackEntry* entry )
 {
-    XP_U16 nTiles, ii, bitsPerTile;
     XWStreamCtxt* stream = stack->data;
 
-    entry->moveType = (StackMoveType)stream_getBits( stream, 2 );
+    entry->moveType = (StackMoveType)stream_getBits( stream, stack->typeBits );
     entry->playerNum = (XP_U8)stream_getBits( stream, 2 );
 
     switch( entry->moveType ) {
-
     case MOVE_TYPE:
+        moveInfoFromStream( stream, &entry->u.move.moveInfo, stack->bitsPerTile );
+        traySetFromStream( stream, &entry->u.move.newTiles );
+        if ( stack->inDuplicateMode ) {
+            entry->u.move.dup.nScores = stream_getBits( stream, NPLAYERS_NBITS );
+            scoresFromStream( stream, entry->u.move.dup.nScores, entry->u.move.dup.scores );
+        }
+        break;
     case PHONY_TYPE:
-        nTiles = entry->u.move.moveInfo.nTiles = 
-            (XP_U8)stream_getBits( stream, NTILES_NBITS );
-        XP_ASSERT( nTiles <= MAX_TRAY_TILES );
-        entry->u.move.moveInfo.commonCoord = (XP_U8)stream_getBits(stream, 5);
-        entry->u.move.moveInfo.isHorizontal = (XP_U8)stream_getBits(stream, 1);
-        bitsPerTile = stack->bitsPerTile;
-        XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
-        for ( ii = 0; ii < nTiles; ++ii ) {
-            Tile tile;
-            entry->u.move.moveInfo.tiles[ii].varCoord = 
-                (XP_U8)stream_getBits(stream, 5);
-            tile = (Tile)stream_getBits( stream, bitsPerTile );
-            if ( 0 != stream_getBits( stream, 1 ) ) {
-                tile |= TILE_BLANK_BIT;
-            }
-            entry->u.move.moveInfo.tiles[ii].tile = tile;
-        }
-
-        if ( entry->moveType == MOVE_TYPE ) {
-            traySetFromStream( stream, &entry->u.move.newTiles );
-        }
+        moveInfoFromStream( stream, &entry->u.phony.moveInfo, stack->bitsPerTile );
         break;
 
     case ASSIGN_TYPE:
@@ -305,13 +317,23 @@ readEntry( const StackCtxt* stack, StackEntry* entry )
         XP_ASSERT( entry->u.trade.newTiles.nTiles
                    == entry->u.trade.oldTiles.nTiles );
         break;
+
+    case PAUSE_TYPE:
+        entry->u.pause.pauseType = (DupPauseType)stream_getBits( stream, 2 );
+        entry->u.pause.when = stream_getU32( stream );
+        entry->u.pause.msg = stringFromStream( stack->mpool, stream );
+        break;
+
+    default:
+        XP_ASSERT(0);
     }
 
 } /* readEntry */
 
-void
-stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo, 
-               const TrayTileSet* newTiles )
+
+static void
+addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo,
+         XP_U16 nScores, XP_U16* scores, const TrayTileSet* newTiles )
 {
     StackEntry move = {.playerNum = (XP_U8)turn,
                        .moveType = MOVE_TYPE,
@@ -320,8 +342,30 @@ stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo,
     XP_MEMCPY( &move.u.move.moveInfo, moveInfo, sizeof(move.u.move.moveInfo));
     move.u.move.newTiles = *newTiles;
 
+    XP_ASSERT( 0 == nScores || stack->inDuplicateMode );
+    if ( stack->inDuplicateMode ) {
+        move.u.move.dup.nScores = nScores;
+        XP_MEMCPY( &move.u.move.dup.scores[0], scores,
+                   nScores * sizeof(move.u.move.dup.scores[0]) );
+    }
+
     pushEntry( stack, &move );
+}
+
+void
+stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo,
+               const TrayTileSet* newTiles )
+{
+    addMove( stack, turn, moveInfo, 0, NULL, newTiles );
 } /* stack_addMove */
+
+void
+stack_addDupMove( StackCtxt* stack, const MoveInfo* moveInfo,
+                  XP_U16 nScores, XP_U16* scores, const TrayTileSet* newTiles )
+{
+    XP_ASSERT( stack->inDuplicateMode );
+    addMove( stack, DUP_PLAYER, moveInfo, nScores, scores, newTiles );
+}
 
 void
 stack_addPhony( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo )
@@ -337,9 +381,20 @@ stack_addPhony( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo )
 } /* stack_addPhony */
 
 void
+stack_addDupTrade( StackCtxt* stack, const TrayTileSet* oldTiles,
+                   const TrayTileSet* newTiles )
+{
+    XP_ASSERT( stack->inDuplicateMode );
+    XP_ASSERT( oldTiles->nTiles == newTiles->nTiles );
+
+    stack_addTrade( stack, DUP_PLAYER, oldTiles, newTiles );
+}
+
+void
 stack_addTrade( StackCtxt* stack, XP_U16 turn, 
                 const TrayTileSet* oldTiles, const TrayTileSet* newTiles )
 {
+    XP_ASSERT( oldTiles->nTiles == newTiles->nTiles );
     StackEntry move = { .playerNum = (XP_U8)turn,
                         .moveType = TRADE_TYPE,
     };
@@ -362,6 +417,26 @@ stack_addAssign( StackCtxt* stack, XP_U16 turn, const TrayTileSet* tiles )
     pushEntry( stack, &move );
 } /* stack_addAssign */
 
+void
+stack_addPause( StackCtxt* stack, DupPauseType pauseType, XP_S16 turn,
+                XP_U32 when, const XP_UCHAR* msg )
+{
+    StackEntry move = { .moveType = PAUSE_TYPE,
+                        .u.pause.pauseType = pauseType,
+                        .u.pause.when = when,
+                        .u.pause.msg = copyString( stack->mpool, msg ),
+    };
+
+    if ( 0 <= turn ) {
+        move.playerNum = turn;  /* don't store the -1 case (pauseType==AUTOPAUSED) */
+    } else {
+        XP_ASSERT( AUTOPAUSED == pauseType );
+    }
+
+    pushEntry( stack, &move );
+    stack_freeEntry( stack, &move );
+}
+
 static XP_Bool
 setCacheReadyFor( StackCtxt* stack, XP_U16 nn )
 {
@@ -371,6 +446,7 @@ setCacheReadyFor( StackCtxt* stack, XP_U16 nn )
     for ( ii = 0; ii < nn; ++ii ) {
         StackEntry dummy;
         readEntry( stack, &dummy );
+        stack_freeEntry( stack, &dummy );
     }
 
     stack->cacheNext = nn;
@@ -386,7 +462,7 @@ stack_getNEntries( const StackCtxt* stack )
 } /* stack_getNEntries */
 
 XP_Bool
-stack_getNthEntry( StackCtxt* stack, XP_U16 nn, StackEntry* entry )
+stack_getNthEntry( StackCtxt* stack, const XP_U16 nn, StackEntry* entry )
 {
     XP_Bool found;
 
@@ -409,8 +485,10 @@ stack_getNthEntry( StackCtxt* stack, XP_U16 nn, StackEntry* entry )
 
         stack->cachedPos = stream_setPos( stack->data, POS_READ, oldPos );
         ++stack->cacheNext;
-    }
 
+        /* XP_LOGF( "%s(%d) (typ=%s, player=%d, num=%d)", __func__, nn, */
+        /*          StackMoveType_2str(entry->moveType), entry->playerNum, entry->moveNum ); */
+    }
     return found;
 } /* stack_getNthEntry */
 
@@ -445,6 +523,18 @@ stack_redo( StackCtxt* stack, StackEntry* entry )
     }
     return canRedo;
 } /* stack_redo */
+
+void
+stack_freeEntry( StackCtxt* stack, StackEntry* entry )
+{
+    XP_ASSERT( entry->moveType != __BOGUS );
+    switch( entry->moveType ) {
+    case PAUSE_TYPE:
+        XP_FREEP( stack->mpool, &entry->u.pause.msg );
+        break;
+    }
+    entry->moveType = __BOGUS;
+}
 
 #ifdef CPLUS
 }

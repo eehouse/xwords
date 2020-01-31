@@ -96,7 +96,9 @@ static void boardTurnChanged( void* board );
 static void boardGameOver( void* board, XP_S16 quitter );
 static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col, XP_Bool* vp );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
-
+static void board_setTimerLoc( BoardCtxt* board,
+                               XP_U16 timerLeft, XP_U16 timerTop,
+                               XP_U16 timerWidth, XP_U16 timerHeight );
 #ifdef XWFEATURE_MINIWIN
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 #else
@@ -657,7 +659,7 @@ board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top,
     figureBoardRect( board );
 } /* board_setPos */
 
-void
+static void
 board_setTimerLoc( BoardCtxt* board, 
                    XP_U16 timerLeft, XP_U16 timerTop,
                    XP_U16 timerWidth, XP_U16 timerHeight )
@@ -812,7 +814,7 @@ board_getYOffset( const BoardCtxt* board )
 XP_Bool
 board_curTurnSelected( const BoardCtxt* board )
 {
-    return MY_TURN( board );
+    return server_isPlayersTurn( board->server, board->selPlayer );
 }
 
 XP_U16
@@ -820,6 +822,21 @@ board_visTileCount( const BoardCtxt* board )
 {
     return model_visTileCount( board->model, board->selPlayer, 
                                TRAY_REVEALED == board->trayVisState );
+}
+
+void
+board_pause( BoardCtxt* board, const XP_UCHAR* msg )
+{
+    server_pause( board->server, board->selPlayer, msg );
+    board_invalAll( board );
+}
+
+void
+board_unpause( BoardCtxt* board, const XP_UCHAR* msg )
+{
+    server_unpause( board->server, board->selPlayer, msg );
+    setTimerIf( board );
+    board_invalAll( board );
 }
 
 XP_Bool
@@ -841,6 +858,7 @@ XP_Bool
 board_canTrade( BoardCtxt* board )
 {
     XP_Bool result = preflight( board, XP_FALSE )
+        && !board->gi->inDuplicateMode
         && MIN_TRADE_TILES(board) <= server_countTilesInPool( board->server );
     return result;
 }
@@ -1060,17 +1078,18 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
 {
     XP_Bool result = XP_FALSE;
     const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
-    PerTurnInfo* pti = board->pti + turn;
+    const XP_U16 selPlayer = board->selPlayer;
     ModelCtxt* model = board->model;
 
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
-    } else if ( turn != board->selPlayer ) {
+    } else if ( !server_isPlayersTurn( board->server, selPlayer ) ) {
         util_userError( board->util, ERR_NOT_YOUR_TURN );
-    } else if ( 0 == model_getNumTilesTotal( model, turn ) ) {
+    } else if ( 0 == model_getNumTilesTotal( model, selPlayer ) ) {
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
     } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board ) ) {
+        PerTurnInfo* pti = board->pti + selPlayer;
         if ( pti->tradeInProgress ) {
             TileBit traySelBits = pti->traySelBits;
             int count = 0;
@@ -1088,7 +1107,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                 TrayTileSet selTiles;
                 getSelTiles( board, traySelBits, &selTiles );
                 if ( turnConfirmed ) {
-                    if ( !server_askPickTiles( board->server, turn, newTiles,
+                    if ( !server_askPickTiles( board->server, selPlayer, newTiles,
                                                selTiles.nTiles ) ) {
                         /* server_commitTrade() changes selPlayer, so board_endTrade
                            must be called first() */
@@ -1111,8 +1130,9 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                 stream = mem_stream_make_raw( MPPARM(board->mpool)
                                               dutil_getVTManager(board->dutil) );
 
-                const XP_UCHAR* str = dutil_getUserString( board->dutil,
-                                                           STR_COMMIT_CONFIRM );
+                XP_U16 stringCode = board->gi->inDuplicateMode
+                    ? STR_SUBMIT_CONFIRM : STR_COMMIT_CONFIRM;
+                const XP_UCHAR* str = dutil_getUserString( board->dutil, stringCode );
                 stream_catString( stream, str );
 
                 XP_Bool warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
@@ -1121,14 +1141,14 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                     info.proc = saveBadWords;
                     info.closure = &bwl;
                 }
-                legal = model_checkMoveLegal( model, turn, stream,
+                legal = model_checkMoveLegal( model, selPlayer, stream,
                                               warn? &info:(WordNotifierInfo*)NULL);
             }
 
             if ( 0 < bwl.bwi.nWords && !phoniesConfirmed ) {
                 bwl.bwi.dictName =
-                    dict_getShortName( model_getPlayerDict( model, turn ) );
-                util_notifyIllegalWords( board->util, &bwl.bwi, turn, XP_FALSE );
+                    dict_getShortName( model_getPlayerDict( model, selPlayer ) );
+                util_notifyIllegalWords( board->util, &bwl.bwi, selPlayer, XP_FALSE );
             } else {
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
@@ -1140,10 +1160,11 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
 
                 if ( board->skipCommitConfirm || turnConfirmed ) {
                     XP_U16 nToPick = MAX_TRAY_TILES -
-                        model_getNumTilesInTray( model, turn );
-                    if ( !server_askPickTiles( board->server, turn, newTiles,
+                        model_getNumTilesInTray( model, selPlayer );
+                    if ( !server_askPickTiles( board->server, selPlayer, newTiles,
                                                nToPick ) ) {
-                        result = server_commitMove( board->server, newTiles )
+                        result = server_commitMove( board->server, selPlayer,
+                                                    newTiles )
                             || result;
                         /* invalidate all tiles in case we'll be drawing this tray
                            again rather than some other -- as is the case in a
@@ -1163,7 +1184,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
             }
 
             if ( result ) {
-                setArrowVisibleFor( board, turn, XP_FALSE );
+                setArrowVisibleFor( board, selPlayer, XP_FALSE );
             }
         }
     }
@@ -1386,7 +1407,9 @@ timerFiredForPen( BoardCtxt* board )
 static void
 setTimerIf( BoardCtxt* board )
 {
-    XP_Bool timerWanted = board->gi->timerEnabled && !board->gameOver;
+    XP_Bool timerWanted = board->gi->timerEnabled
+        && !board->gameOver
+        && !server_canUnpause( board->server );
 
     if ( timerWanted && !board->timerPending ) {
         util_setTimer( board->util, TIMER_TIMERTICK, 0, 
@@ -1399,15 +1422,19 @@ static void
 timerFiredForTimer( BoardCtxt* board )
 {
     board->timerPending = XP_FALSE;
-    if ( !board->gameOver ) {
-        XP_S16 turn = server_getCurrentTurn( board->server, NULL );
+    if ( !board->gameOver || !server_canUnpause( board->server ) ) {
+        XP_Bool doDraw = board->gi->inDuplicateMode;
+        if ( !doDraw ) {
+            XP_S16 turn = server_getCurrentTurn( board->server, NULL );
 
-        if ( turn >= 0 ) {
-            ++board->gi->players[turn].secondsUsed;
+            if ( turn >= 0 ) {
+                ++board->gi->players[turn].secondsUsed;
 
-            if ( turn == board->selPlayer ) {
-                drawTimer( board );
+                doDraw = turn == board->selPlayer;
             }
+        }
+        if ( doDraw ) {
+            drawTimer( board );
         }
     }
     setTimerIf( board );
@@ -2084,7 +2111,7 @@ static XP_Bool
 preflight( BoardCtxt* board, XP_Bool reveal )
 {
     return !board->gameOver
-        && server_getCurrentTurn(board->server, NULL) >= 0
+        && server_getCurrentTurn( board->server, NULL) >= 0
         && ( !reveal || checkRevealTray( board ) )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
@@ -2097,6 +2124,24 @@ MIN_TRADE_TILES( const BoardCtxt* board )
     /* 6 is Spanish, but I swear that's not defined anywhere! */
     return 6 == langCode ? 1 : MAX_TRAY_TILES;
 }
+
+#ifdef DEBUG
+/* static void */
+/* assertTilesInTiles( const BoardCtxt* board, const MoveInfo* mi, */
+/*                     const Tile* tiles, XP_U16 nTiles ) */
+/* { */
+/*     Tile blank = dict_getBlankTile( model_getDictionary( board->model ) ); */
+/*     for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) { */
+/*         Tile tile = mi->tiles[ii].tile; */
+/*         XP_Bool found = XP_FALSE; */
+/*         for ( XP_U16 jj = 0; !found && jj < nTiles; ++jj ) { */
+/*             found = tiles[jj] == tile */
+/*                 || (tiles[jj] == blank && IS_BLANK(tile)); */
+/*         } */
+/*         XP_ASSERT( found ); */
+/*     } */
+/* } */
+#endif
 
 /* Refuse with error message if any tiles are currently on board in this turn.
  * Then call the engine, and display the first move.  Return true if there's
@@ -2190,7 +2235,7 @@ board_requestHint( BoardCtxt* board,
 # endif
 #endif
             searchComplete = 
-                engine_findMove( engine, model, selPlayer, XP_FALSE,
+                engine_findMove( engine, model, selPlayer, XP_FALSE, XP_FALSE,
                                  tiles, nTiles, usePrev,
 #ifdef XWFEATURE_BONUSALL
                                  allTilesBonus, 
@@ -2199,12 +2244,13 @@ board_requestHint( BoardCtxt* board,
                                  lp, useTileLimits,
 #endif
                                  0, /* 0: not a robot */
-                                 &canMove, &newMove );
+                                 &canMove, &newMove, NULL );
             board_popTimerSave( board );
 
             if ( searchComplete && canMove ) {
+                // assertTilesInTiles( board, &newMove, tiles, nTiles );
                 juggleMoveIfDebug( &newMove );
-                model_makeTurnFromMoveInfo( model, selPlayer, &newMove);
+                model_makeTurnFromMoveInfo( model, selPlayer, &newMove );
             } else {
                 result = XP_FALSE;
                 XP_STATUSF( "unable to complete hint request\n" );
@@ -2492,6 +2538,9 @@ pointOnSomething( const BoardCtxt* board, XP_U16 xx, XP_U16 yy,
         *wp = OBJ_TRAY;
     } else if ( rectContainsPt( &board->scoreBdBounds, xx, yy ) ) {
         *wp = OBJ_SCORE;
+    } else if ( board->gi->timerEnabled
+                && rectContainsPt( &board->timerBounds, xx, yy ) ) {
+        *wp = OBJ_TIMER;
     } else {
         *wp = OBJ_NONE;
         result = XP_FALSE;
@@ -3055,6 +3104,10 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
                     draw = handlePenUpTray( board, xx, yy ) || draw;
                 }
                 break;
+            case OBJ_TIMER:
+                util_timerSelected( board->util, board->gi->inDuplicateMode,
+                                    server_canPause( board->server ) );
+                break;
             default:
                 XP_ASSERT( XP_FALSE );
             }
@@ -3117,6 +3170,7 @@ focusToCoords( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
     if ( result ) {
         switch( board->focussed ) {
         case OBJ_NONE:
+        case OBJ_TIMER:
             result = XP_FALSE;
             break;
         case OBJ_BOARD:
@@ -3380,6 +3434,7 @@ invalFocusOwner( BoardCtxt* board )
         }
         break;
     case OBJ_NONE:
+    case OBJ_TIMER:
         draw = XP_FALSE;
         break;
     }
@@ -3606,17 +3661,18 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
 #endif
 
 XP_Bool
-rectContainsPt( const XP_Rect* rect, XP_S16 x, XP_S16 y )
+rectContainsPt( const XP_Rect* rect, XP_S16 xx, XP_S16 yy )
 {
     /* 7/4 Made <= into <, etc., because a tap on the right boundary of the
        board was still mapped onto the board but dividing by scale put it in
        the 15th column.  If this causes other problems and the '=' chars have
        to be put back then deal with that, probably by forcing an
        out-of-bounds col/row to the nearest possible. */
-    return ( rect->top <= y
-             && rect->left <= x
-             && (rect->top + rect->height) >= y
-             && (rect->left + rect->width) >= x );
+    XP_Bool result = ( rect->top <= yy
+                       && rect->left <= xx
+                       && (rect->top + rect->height) >= yy
+                       && (rect->left + rect->width) >= xx );
+    return result;
 } /* rectContainsPt */
 
 XP_Bool

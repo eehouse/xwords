@@ -69,6 +69,8 @@ bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
                 jobject* ret );
 
 jintArray makeIntArray( JNIEnv *env, int size, const void* vals, size_t elemSize );
+void setIntArray( JNIEnv *env, jobject jowner, const char* ownerField,
+                  int count, const void* vals, size_t elemSize );
 void getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del );
 void setIntInArray( JNIEnv* env, jintArray arr, int index, int val );
 
@@ -80,6 +82,9 @@ void setBoolArray( JNIEnv* env, jbooleanArray jarr, int count,
                    const jboolean* vals );
 
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
+void setStringArray( JNIEnv *env, jobject jowner, const char* ownerField,
+                     int count, const XP_UCHAR** vals );
+
 jstring streamToJString( JNIEnv* env, XWStreamCtxt* stream );
 jbyteArray streamToBArray( JNIEnv *env, XWStreamCtxt* stream );
 

@@ -24,6 +24,7 @@
 #include "comtypes.h"
 #include "dictnry.h"
 #include "mempool.h"
+#include "dutil.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -48,8 +49,8 @@ extern "C" {
 #define TILE_PENDING_BIT 0x0100
 #define PREV_MOVE_BIT 0x200
 
-#define CELL_OWNER_MASK 0x0C00
 #define CELL_OWNER_OFFSET 10
+#define CELL_OWNER_MASK (0x0003 << CELL_OWNER_OFFSET)
 #define CELL_OWNER(t) (((t)&CELL_OWNER_MASK) >> CELL_OWNER_OFFSET)
 
 #define MAX_UNIQUE_TILES 64 /* max tile non-blank faces */
@@ -72,15 +73,17 @@ typedef struct MoveInfo {
 } MoveInfo;
 
 typedef struct _LastMoveInfo {
-    const XP_UCHAR* name;
-    XP_U8 moveType;
+    const XP_UCHAR* names[MAX_NUM_PLAYERS];
+    XP_U16 nWinners;            /* >1 possible in duplicate case only */
     XP_U16 score;
     XP_U16 nTiles;
-    XP_UCHAR word[MAX_COLS+1];
+    XP_UCHAR word[MAX_COLS * 2]; /* be safe */
+    XP_U8 moveType;
+    XP_Bool inDuplicateMode;
 } LastMoveInfo;
 
 typedef XP_U8 TrayTile;
-typedef struct TrayTileSet {
+typedef struct _TrayTileSet {
     XP_U8 nTiles;
     TrayTile tiles[MAX_TRAY_TILES];
 } TrayTileSet;
@@ -140,12 +143,17 @@ void model_listPlacedBlanks( ModelCtxt* model, XP_U16 turn,
                              XP_Bool includePending, BlankQueue* bcp );
 
 XP_U16 model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row );
-
+void model_addNewTiles( ModelCtxt* model, XP_S16 turn,
+                        const TrayTileSet* tiles );
 void model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
                               const TrayTileSet* tiles );
+void model_assignDupeTiles( ModelCtxt* model, const TrayTileSet* tiles );
+
 Tile model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index );
 
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
+void model_removePlayerTiles( ModelCtxt* model, XP_S16 turn, const MoveInfo* mi );
+void model_removePlayerTiles2( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles );
 void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
                           Tile tile );
 void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
@@ -159,6 +167,7 @@ const TrayTileSet* model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn );
 
 #ifdef DEBUG
 XP_UCHAR* formatTileSet( const TrayTileSet* tiles, XP_UCHAR* buf, XP_U16 len );
+void model_printTrays( const ModelCtxt* model );
 #endif
 
 void model_sortTiles( ModelCtxt* model, XP_S16 turn );
@@ -196,6 +205,15 @@ void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
 
 XP_Bool model_commitTurn( ModelCtxt* model, XP_S16 player, 
                           TrayTileSet* newTiles );
+void model_commitDupeTurn( ModelCtxt* model, const MoveInfo* moveInfo,
+                           XP_U16 nScores, XP_U16* scores,
+                           TrayTileSet* newTiles );
+void model_commitDupeTrade( ModelCtxt* model, const TrayTileSet* oldTiles,
+                            const TrayTileSet* newTiles );
+void model_noteDupePause( ModelCtxt* model, DupPauseType typ, XP_S16 turn,
+                          const XP_UCHAR* msg );
+void model_cloneDupeTrays( ModelCtxt* model );
+
 void model_commitRejectedPhony( ModelCtxt* model, XP_S16 player );
 void model_makeTileTrade( ModelCtxt* model, XP_S16 player,
                           const TrayTileSet* oldTiles, 
@@ -210,7 +228,9 @@ void model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool,
 void model_trayToStream( ModelCtxt* model, XP_S16 turn, 
                          XWStreamCtxt* stream );
 void model_currentMoveToStream( ModelCtxt* model, XP_S16 turn, 
-                                XWStreamCtxt* stream);
+                                XWStreamCtxt* stream );
+void model_currentMoveToMoveInfo( ModelCtxt* model, XP_S16 turn,
+                                  MoveInfo* moveInfo );
 XP_Bool model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                                   XWStreamCtxt* stream );
 void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
@@ -218,8 +238,10 @@ void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
 
 #ifdef DEBUG
 void juggleMoveIfDebug( MoveInfo* move );
+void model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg );
 #else
 # define juggleMoveIfDebug(newMove)
+# define model_dumpSelf( model, msg )
 #endif
 
 void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
@@ -304,9 +326,9 @@ void model_figureFinalScores( ModelCtxt* model, ScoresArray* scores,
                               ScoresArray* tilePenalties );
 
 /* figureMoveScore is meant only for the engine's use */
-XP_U16 figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* mvInfo, 
-                        EngineCtxt* engine, XWStreamCtxt* stream, 
-                        WordNotifierInfo* notifyInfo );
+XP_U16 figureMoveScore( const ModelCtxt* model, XP_U16 turn,
+                        const MoveInfo* mvInfo, EngineCtxt* engine,
+                        XWStreamCtxt* stream, WordNotifierInfo* notifyInfo );
 
 /* tap into internal WordNotifierInfo */
 WordNotifierInfo* model_initWordCounter( ModelCtxt* model, XWStreamCtxt* stream );

@@ -326,11 +326,11 @@ public class StudyListDelegate extends ListDelegateBase
                 startLang = startIntent.getIntExtra( START_LANG, NO_LANG );
             }
 
-            String[] names = DictLangCache.getLangNames( m_activity );
             String[] myNames = new String[m_langCodes.length];
             for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
                 int lang = m_langCodes[ii];
-                myNames[ii] = xlateLang( names[lang], true );
+                String name = DictLangCache.getLangName( m_activity, lang );
+                myNames[ii] = xlateLang( name, true );
                 if ( lang == startLang ) {
                     startIndex = ii;
                 }

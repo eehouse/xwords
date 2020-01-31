@@ -209,7 +209,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             } else {
                 Bitmap bitmap = s_bitmap;
                 if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ) {
-                    bitmap = Bitmap.createBitmap(bitmap);
+                    bitmap = Bitmap.createBitmap( bitmap );
                 }
                 canvas.drawBitmap( bitmap, 0, 0, new Paint() );
 

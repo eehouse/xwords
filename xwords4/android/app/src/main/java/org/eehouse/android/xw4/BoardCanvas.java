@@ -80,6 +80,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private CommonPrefs m_prefs;
     private int m_lastSecsLeft;
     private int m_lastTimerPlayer;
+    private boolean m_lastTimerTurnDone;
     private boolean m_inTrade;
     private boolean m_darkOnLight;
     private Drawable m_origin;
@@ -334,18 +335,48 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
 
     @Override
+    // public void drawTimer( Rect rect, int player, int secondsLeft,
+    //                        boolean turnDone )
+    // {
+    //     if ( m_lastSecsLeft != secondsLeft
+    //          || m_lastTimerPlayer != player
+    //          || m_lastTimerTurnDone != turnDone ) {
+    //         if ( null != m_activity && null != m_jniThread ) {
+    //             Rect rectCopy = new Rect(rect);
+    //             m_lastSecsLeft = secondsLeft;
+    //             m_lastTimerPlayer = player;
+    //             m_lastTimerTurnDone = turnDone;
+
+    //             String negSign = secondsLeft < 0? "-" : "";
+    //             secondsLeft = Math.abs( secondsLeft );
+    //             String time = String.format( "%s%d:%02d", negSign,
+    //                                          secondsLeft/60, secondsLeft%60 );
+
+    //             fillRectOther( rectCopy, CommonPrefs.COLOR_BACKGRND );
+
+    //             int color = m_playerColors[player];
+    //             if ( turnDone ) {
+    //                 color &= NOT_TURN_ALPHA;
+    //             }
+    //             m_fillPaint.setColor( color );
     public void drawTimer( Rect rect, final int player,
-                           int secondsLeft )
+                           int secondsLeft, final boolean turnDone )
     {
-        if ( m_lastSecsLeft != secondsLeft || m_lastTimerPlayer != player ) {
+        Activity activity = m_activity;
+        if ( null == activity ) {
+            // Do nothing
+        } else if ( m_lastSecsLeft != secondsLeft
+                    || m_lastTimerPlayer != player
+                    || m_lastTimerTurnDone != turnDone ) {
             final Rect rectCopy = new Rect(rect);
             final int secondsLeftCopy = secondsLeft;
-            m_activity.runOnUiThread( new Runnable() {
+            activity.runOnUiThread( new Runnable() {
                     @Override
                     public void run() {
                         if ( null != m_jniThread ) {
                             m_lastSecsLeft = secondsLeftCopy;
                             m_lastTimerPlayer = player;
+                            m_lastTimerTurnDone = turnDone;
 
                             String negSign = secondsLeftCopy < 0? "-":"";
                             int secondsLeft = Math.abs( secondsLeftCopy );
@@ -519,9 +550,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     @Override
     public void score_pendingScore( Rect rect, int score, int playerNum,
-                                    int curTurn, int flags )
+                                    boolean curTurn, int flags )
     {
-        Log.d( TAG, "pendingScore(playerNum=%d, curTurn=%d)",
+        Log.d( TAG, "pendingScore(playerNum=%d, curTurn=%b)",
                playerNum, curTurn );
 
         int otherIndx = (0 == (flags & CELL_ISCURSOR))
@@ -530,7 +561,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         fillRectOther( rect, otherIndx );
 
         int playerColor = m_playerColors[playerNum];
-        if ( playerNum != curTurn ) {
+        if ( !curTurn ) {
             playerColor &= NOT_TURN_ALPHA;
         }
         m_fillPaint.setColor( playerColor );

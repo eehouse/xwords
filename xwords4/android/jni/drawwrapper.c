@@ -369,16 +369,16 @@ and_draw_score_drawPlayer( DrawCtx* dctx, const XP_Rect* rInner,
 
 static void
 and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player, 
-                    XP_S16 secondsLeft )
+                    XP_S16 secondsLeft, XP_Bool inDuplicateMode )
 {
     if ( rect->width == 0 ) {
         XP_LOGF( "%s: exiting b/c rect empty", __func__ );
     } else {
-        DRAW_CBK_HEADER("drawTimer", "(Landroid/graphics/Rect;II)V" );
+        DRAW_CBK_HEADER("drawTimer", "(Landroid/graphics/Rect;IIZ)V" );
 
         jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
         (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                                jrect, player, secondsLeft );
+                                jrect, player, secondsLeft, inDuplicateMode );
         returnJRect( draw, JCACHE_RECT0, jrect );
     }
 }
@@ -526,9 +526,9 @@ and_draw_drawTrayDivider( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 static void
 and_draw_score_pendingScore( DrawCtx* dctx, const XP_Rect* rect, 
                              XP_S16 score, XP_U16 playerNum,
-                             XP_S16 curTurn, CellFlags flags )
+                             XP_Bool curTurn, CellFlags flags )
 {
-    DRAW_CBK_HEADER( "score_pendingScore", "(Landroid/graphics/Rect;IIII)V" );
+    DRAW_CBK_HEADER( "score_pendingScore", "(Landroid/graphics/Rect;IIZI)V" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 

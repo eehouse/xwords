@@ -20,13 +20,16 @@
 # define STRD_CUMULATIVE_SCORE             14
 # define STRS_NEW_TILES                    15
 # define STR_COMMIT_CONFIRM                16
-# define STR_BONUS_ALL                     17
-# define STRD_TURN_SCORE                   18
-# define STRD_REMAINS_HEADER               19
-# define STRD_REMAINS_EXPL                 20
-# define STRSD_RESIGNED                    21
-# define STRSD_WINNER                      22
-# define STRDSD_PLACER                     23
+# define STR_SUBMIT_CONFIRM                17
+# define STR_BONUS_ALL                     18
+# define STRD_TURN_SCORE                   19
+# define STRD_REMAINS_HEADER               20
+# define STRD_REMAINS_EXPL                 21
+# define STRSD_RESIGNED                    22
+# define STRSD_WINNER                      23
+# define STRDSD_PLACER                     24
+# define STR_DUP_CLIENT_SENT               25
+# define STRDD_DUP_HOST_RECEIVED           26
 
-# define N_AND_USER_STRINGS                23
+# define N_AND_USER_STRINGS                26
 #endif

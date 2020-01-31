@@ -439,7 +439,8 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 void
 formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len )
 {
-    const XP_UCHAR* name = lmi->name;
+    const XP_Bool inDuplicateMode = lmi->inDuplicateMode;
+    const XP_UCHAR* name = inDuplicateMode ? "all" : lmi->names[0];
     switch( lmi->moveType ) {
     case ASSIGN_TYPE:
         XP_SNPRINTF( buf, len, "Tiles assigned to %s", name );
@@ -447,16 +448,23 @@ formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len )
     case MOVE_TYPE:
         if ( 0 == lmi->nTiles ) {
             XP_SNPRINTF( buf, len, "%s passed", name );
-        } else {
-            XP_SNPRINTF( buf, len, "%s played %s for %d points", name,
+        } else if ( !inDuplicateMode || 1 == lmi->nWinners  ) {
+            XP_SNPRINTF( buf, len, "%s played %s for %d points", lmi->names[0],
                          lmi->word, lmi->score );
+        } else {
+            XP_SNPRINTF( buf, len, "%d players tied for %d points. %s was played",
+                         lmi->nWinners, lmi->score, lmi->word );
         }
         break;
     case TRADE_TYPE:
-        XP_SNPRINTF( buf, len, "%s traded %d tiles", 
-                     name, lmi->nTiles );
+        if ( inDuplicateMode ) {
+            XP_SNPRINTF( buf, len, "%d tiles were exchanged", lmi->nTiles );
+        } else {
+            XP_SNPRINTF( buf, len, "%s traded %d tiles", name, lmi->nTiles );
+        }
         break;
     case PHONY_TYPE:
+        XP_ASSERT( !inDuplicateMode );
         XP_SNPRINTF( buf, len, "%s lost a turn", name );
         break;
     default:

@@ -35,7 +35,6 @@ import java.util.Map;
 
 public class FBMService extends FirebaseMessagingService {
     private static final String TAG = FBMService.class.getSimpleName();
-    private static final String KEY_FCMID = TAG + "_fcmid";
 
     public static void init( Context context )
     {
@@ -121,7 +120,7 @@ public class FBMService extends FirebaseMessagingService {
 
     public static String getFCMDevID( Context context )
     {
-        String result = DBUtils.getStringFor( context, KEY_FCMID, null );
+        String result = DBUtils.getStringFor( context, BuildConfig.KEY_FCMID, null );
 
         if ( null == result ) {
             getTokenAsync( context );
@@ -158,7 +157,7 @@ public class FBMService extends FirebaseMessagingService {
         // Don't call this with empty tokens!!!
         Assert.assertTrue( token.length() > 0 || !BuildConfig.DEBUG );
 
-        DBUtils.setStringFor( context, KEY_FCMID, token );
+        DBUtils.setStringFor( context, BuildConfig.KEY_FCMID, token );
         DevID.setFCMDevID( context, token );
 
         RelayService.fcmConfirmed( context, true );

@@ -22,6 +22,7 @@
 #include "util.h"
 #include "engine.h"
 #include "game.h"
+#include "strutils.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef CPLUS
@@ -94,7 +95,7 @@ scoreCurrentMove( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream,
 } /* scoreCurrentMove */
 
 void
-adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn )
+adjustScoreForUndone( ModelCtxt* model, const MoveInfo* mi, XP_U16 turn )
 {
     XP_U16 moveScore;
     PlayerCtxt* player = &model->players[turn];
@@ -102,8 +103,8 @@ adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn )
     if ( mi->nTiles == 0 ) {
         moveScore = 0;
     } else {
-        moveScore = figureMoveScore( model, turn, mi, (EngineCtxt*)NULL, 
-                                     (XWStreamCtxt*)NULL, 
+        moveScore = figureMoveScore( model, turn, mi, (EngineCtxt*)NULL,
+                                     (XWStreamCtxt*)NULL,
                                      (WordNotifierInfo*)NULL );
     }
     player->score -= moveScore;
@@ -130,14 +131,16 @@ invalidateScore( ModelCtxt* model, XP_S16 turn )
 XP_Bool
 getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
                             XWStreamCtxt* stream, 
-                            WordNotifierInfo* wni, XP_S16* score )
+                            WordNotifierInfo* wni, XP_S16* scoreP )
 {
     PlayerCtxt* player = &model->players[turn];
     if ( !player->curMoveValid ) {
         scoreCurrentMove( model, turn, stream, wni );
     }
 
-    *score = player->curMoveScore;
+    if ( !!scoreP ) {
+        *scoreP = player->curMoveScore;
+    }
     return player->curMoveScore != ILLEGAL_MOVE_SCORE;
 } /* getCurrentMoveScoreIfLegal */
 
@@ -277,42 +280,56 @@ tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal )
 } /* tilesInLine */
 
 void
-normalizeMoves( const ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
-                MoveInfo* moveInfo )
+normalizeMI( MoveInfo* moveInfoOut, const MoveInfo* moveInfoIn )
 {
-    XP_S16 lowCol, ii, jj, thisCol; /* unsigned is a problem on palm */
-    const PlayerCtxt* player = &model->players[turn];
-    XP_U16 nTiles = player->nPending;
-    XP_S16 lastTaken;
-    short lowIndex = 0;
-    const PendingTile* pt;
+    /* use scratch in case in and out are same */
+    MoveInfo tmp = *moveInfoIn;
+    // const XP_Bool isHorizontal = tmp.isHorizontal;
 
-    moveInfo->isHorizontal = isHorizontal;
-    moveInfo->nTiles = (XP_U8)nTiles;
-
-    lastTaken = -1;
-    for ( ii = 0; ii < nTiles; ++ii ) {
-        lowCol = 100; /* high enough to always be changed */
-        for ( jj = 0; jj < nTiles; ++jj ) {
-            pt = &player->pendingTiles[jj];
-            thisCol = isHorizontal? pt->col:pt->row;
-            if (thisCol < lowCol && thisCol > lastTaken ) {
-                lowCol = thisCol;
+    XP_S16 lastTaken = -1;
+    XP_U16 next = 0;
+    for ( XP_U16 ii = 0; ii < tmp.nTiles; ++ii ) {
+        XP_U16 lowest = 100; /* high enough to always be changed */
+        XP_U16 lowIndex = 100;
+        for ( XP_U16 jj = 0; jj < tmp.nTiles; ++jj ) {
+            XP_U16 cur = moveInfoIn->tiles[jj].varCoord;
+            if ( cur < lowest && cur > lastTaken ) {
+                lowest = cur;
                 lowIndex = jj;
             }
         }
-        /* we've found the next to transfer (4 bytes smaller without a temp
-           local ptr. */
-        pt = &player->pendingTiles[lowIndex];
-        lastTaken = lowCol;
-        moveInfo->tiles[ii].varCoord = (XP_U8)lastTaken;
 
-        moveInfo->tiles[ii].tile = pt->tile;
+        XP_ASSERT( lowIndex < MAX_ROWS );
+        tmp.tiles[next++] = moveInfoIn->tiles[lowIndex];
+
+        lastTaken = lowest;
     }
 
+    XP_ASSERT( next == tmp.nTiles );
+    *moveInfoOut = tmp;
+}
+
+void
+normalizeMoves( const ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
+                MoveInfo* moveInfo )
+{
+    const PlayerCtxt* player = &model->players[turn];
+    const XP_U16 nTiles = player->nPending;
+
+    moveInfo->isHorizontal = isHorizontal;
+    moveInfo->nTiles = nTiles;
+
     if ( 0 < nTiles ) {
-        pt = &player->pendingTiles[0];
+        const PendingTile* pt = &player->pendingTiles[0];
         moveInfo->commonCoord = isHorizontal? pt->row:pt->col;
+
+        for ( XP_U16 ii = 0; ii < nTiles; ++ii ) {
+            const PendingTile* pt = &player->pendingTiles[ii];
+            moveInfo->tiles[ii].tile = pt->tile;
+            moveInfo->tiles[ii].varCoord = isHorizontal? pt->col:pt->row;
+        }
+
+        normalizeMI( moveInfo, moveInfo );
     }
 } /* normalizeMoves */
 
@@ -452,7 +469,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 } /* isLegalMove */
 
 XP_U16
-figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo, 
+figureMoveScore( const ModelCtxt* model, XP_U16 turn, const MoveInfo* moveInfo,
                  EngineCtxt* engine, XWStreamCtxt* stream, 
                  WordNotifierInfo* notifyInfo )
 {
@@ -464,7 +481,7 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, MoveInfo* moveInfo,
     short moveMultiplier = 1;
     short multipliers[MAX_TRAY_TILES];
     MoveInfo tmpMI;
-    MoveInfoTile* tiles;
+    const MoveInfoTile* tiles;
     XP_U16 nTiles = moveInfo->nTiles;
 
     XP_ASSERT( nTiles > 0 );
@@ -572,6 +589,8 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
     const MoveInfoTile* tiles = movei->tiles;
     XP_U16 firstCoord = tiles->varCoord;
     DictionaryCtxt* dict = model_getPlayerDict( model, turn );
+
+    assertSorted( movei );
 
     if ( movei->isHorizontal ) {
         row = movei->commonCoord;

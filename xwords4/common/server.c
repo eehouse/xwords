@@ -18,8 +18,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* #include <assert.h> */
-
 #include "comtypes.h"
 #include "server.h"
 #include "util.h"
@@ -27,7 +25,6 @@
 #include "comms.h"
 #include "memstream.h"
 #include "game.h"
-/* #include "board.h" */
 #include "states.h"
 #include "xwproto.h"
 #include "util.h"
@@ -50,6 +47,12 @@ enum {
     END_REASON_TOO_MANY_PASSES
 };
 typedef XP_U8 GameEndReason;
+
+typedef enum {DUPE_STUFF_TRADES_SERVER,
+              DUPE_STUFF_MOVES_SERVER,
+              DUPE_STUFF_MOVE_CLIENT,
+              DUPE_STUFF_PAUSE,
+} DUPE_STUFF;
 
 typedef struct ServerPlayer {
     EngineCtxt* engine; /* each needs his own so don't interfere each other */
@@ -76,8 +79,11 @@ typedef struct ServerVolatiles {
     CurGameInfo* gi;
     TurnChangeListener turnChangeListener;
     void* turnChangeData;
+    TimerChangeListener timerChangeListener;
+    void* timerChangeData;
     GameOverListener gameOverListener;
     void* gameOverData;
+    XP_U16 bitsPerTile;
     XP_Bool showPrevMove;
     XP_Bool pickTilesCalled[MAX_NUM_PLAYERS];
 } ServerVolatiles;
@@ -134,6 +140,8 @@ struct ServerCtxt {
 # define ROBOTWAITING(s) XP_FALSE
 #endif
 
+# define dupTimerRunning()    server_canPause(server)
+
 
 #define NPASSES_OK(s) model_recentPassCountOk((s)->vol.model)
 
@@ -141,7 +149,11 @@ struct ServerCtxt {
 static XP_Bool assignTilesToAll( ServerCtxt* server );
 static void makePoolOnce( ServerCtxt* server );
 
-static void resetEngines( ServerCtxt* server );
+static XP_S8 getIndexForDevice( const ServerCtxt* server,
+                                XP_PlayerAddr channelNo );
+static XP_S8 getIndexForStream( const ServerCtxt* server,
+                                const XWStreamCtxt* stream );
+
 static void nextTurn( ServerCtxt* server, XP_S16 nxtTurn );
 
 static void doEndGame( ServerCtxt* server, XP_S16 quitter );
@@ -154,6 +166,25 @@ static XWStreamCtxt* mkServerStream( ServerCtxt* server );
 static void fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
                         const TrayTileSet* tradedTiles,
                         TrayTileSet* resultTiles );
+static void finishMove( ServerCtxt* server, TrayTileSet* newTiles,
+                        XP_U16 turn );
+static XP_Bool dupe_checkTurns( ServerCtxt* server );
+static void dupe_forceCommits( ServerCtxt* server );
+
+static void dupe_clearState( ServerCtxt* server );
+static XP_U16 dupe_nextTurn( const ServerCtxt* server );
+static void dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
+                                      XP_U16 nPlayers, XP_U16* scores,
+                                      XP_U16 nTiles );
+static XP_Bool commitMoveImpl( ServerCtxt* server, XP_U16 player,
+                               TrayTileSet* newTilesP, XP_Bool forced );
+static void dupe_makeAndReportTrade( ServerCtxt* server );
+static void dupe_transmitPause( ServerCtxt* server, DupPauseType typ,
+                                XP_U16 turn, const XP_UCHAR* msg,
+                                XP_S16 skipDev );
+static void dupe_resetTimer( ServerCtxt* server );
+static XP_Bool setDupCheckTimer( ServerCtxt* server );
+static void sortTilesIf( ServerCtxt* server, XP_S16 turn );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server, 
@@ -198,20 +229,30 @@ getStateStr( XW_State st )
 #if 0 
 //def DEBUG
 static void
-logNewState( XW_State old, XW_State newst )
+logNewState( XW_State old, XW_State newst, const char* caller )
 {
     if ( old != newst ) {
         char* oldStr = getStateStr(old);
         char* newStr = getStateStr(newst);
-        XP_LOGF( "state transition %s => %s", oldStr, newStr );
+        XP_LOGF( "state transition %s => %s (from %s())", oldStr, newStr, caller );
     }
 }
-# define    SETSTATE( s, st ) { XW_State old = (s)->nv.gameState; \
-                                (s)->nv.gameState = (st); \
-                                logNewState(old, st); }
+# define SETSTATE( s, st ) {                                   \
+        XW_State old = (s)->nv.gameState;                      \
+        (s)->nv.gameState = (st);                              \
+        logNewState( old, st, __func__);                       \
+    }
 #else
-# define    SETSTATE( s, st ) (s)->nv.gameState = (st)
+# define SETSTATE( s, st ) (s)->nv.gameState = (st)
 #endif
+
+static XP_Bool
+inDuplicateMode( const ServerCtxt* server )
+{
+    XP_Bool result = server->vol.gi->inDuplicateMode;
+    // LOG_RETURNF( "%d", result );
+    return result;
+}
 
 /*****************************************************************************
  *
@@ -690,8 +731,7 @@ static void
 sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, const XP_UCHAR* msg,
                          XP_S8 from, XP_U32 timestamp )
 {
-    XP_U16 devIndex;
-    for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
+    for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
             sendChatTo( server, devIndex, msg, from, timestamp );
         }
@@ -708,6 +748,24 @@ server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from )
         sendChatToClientsExcept( server, SERVER_DEVICE, msg, from, timestamp );
     }
 }
+
+static XP_Bool
+receiveChat( ServerCtxt* server, XWStreamCtxt* incoming )
+{
+    XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
+    XP_S16 from = 1 <= stream_getSize( incoming )
+        ? stream_getU8( incoming ) : -1;
+    XP_U32 timestamp = sizeof(timestamp) <= stream_getSize( incoming )
+        ? stream_getU32( incoming ) : 0;
+    if ( amServer( server ) ) {
+        XP_U16 sourceClientIndex = getIndexForStream( server, incoming );
+        sendChatToClientsExcept( server, sourceClientIndex, msg, from,
+                                 timestamp );
+    }
+    util_showChat( server->vol.util, msg, from, timestamp );
+    XP_FREE( server->mpool, msg );
+    return XP_TRUE;
+}
 #endif
 
 static void
@@ -718,14 +776,24 @@ callTurnChangeListener( const ServerCtxt* server )
     }
 } /* callTurnChangeListener */
 
+static void
+callDupTimerListener( const ServerCtxt* server, XP_S32 oldVal, XP_S32 newVal )
+{
+    if ( server->vol.timerChangeListener != NULL ) {
+        (*server->vol.timerChangeListener)( server->vol.timerChangeData,
+                                            server->vol.gi->gameID, oldVal, newVal );
+    } else {
+        XP_LOGF( "%s(): no listener!!", __func__ );
+    }
+}
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 # ifdef STREAM_VERS_BIGBOARD
 static void
 setStreamVersion( ServerCtxt* server )
 {
-    XP_U16 devIndex;
     XP_U8 streamVersion = CUR_STREAM_VERS;
-    for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
+    for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         XP_U8 devVersion = server->nv.addresses[devIndex].streamVersion;
         if ( devVersion < streamVersion ) {
             streamVersion = devVersion;
@@ -816,6 +884,351 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 
     return success;
 } /* handleRegistrationMsg */
+
+static XP_U16
+bitsPerTile( ServerCtxt* server )
+{
+    if ( 0 == server->vol.bitsPerTile ) {
+        DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+        XP_U16 nFaces = dict_numTileFaces( dict );
+        server->vol.bitsPerTile = nFaces <= 32? 5 : 6;
+    }
+    return server->vol.bitsPerTile;
+}
+
+static void
+dupe_setupShowTrade( ServerCtxt* server, XP_U16 nTiles )
+{
+    if ( server->nv.showRobotScores ) {
+        XP_ASSERT( !server->nv.prevMoveStream );
+
+        XWStreamCtxt* stream = mkServerStream( server );
+
+        XP_UCHAR buf[64];
+        XP_SNPRINTF( buf, VSIZE(buf), "No moves made; traded %d tiles", nTiles );
+        stream_catString( stream, buf );
+
+        server->nv.prevMoveStream = stream;
+        server->vol.showPrevMove = XP_TRUE;
+    }
+}
+
+static void
+dupe_setupShowMove( ServerCtxt* server, XP_U16* scores )
+{
+    if ( server->nv.showRobotScores ) {
+        XP_ASSERT( !server->nv.prevMoveStream );
+
+        const CurGameInfo* gi = server->vol.gi;
+        const XP_U16 nPlayers = gi->nPlayers;
+
+        XWStreamCtxt* stream = mkServerStream( server );
+
+        XP_U16 lastMax = 0x7FFF;
+        for ( XP_U16 nDone = 0; nDone < nPlayers; ) {
+
+            /* Find the largest score we haven't already done */
+            XP_U16 thisMax = 0;
+            for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
+                XP_U16 score = scores[ii];
+                if ( score < lastMax && score > thisMax ) {
+                    thisMax = score;
+                }
+            }
+
+            /* Process everybody with that score */
+            for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
+                if ( scores[ii] == thisMax ) {
+                    ++nDone;
+                    XP_UCHAR buf[64];
+                    XP_SNPRINTF( buf, VSIZE(buf), "%s: %d points\n",
+                                 gi->players[ii].name, scores[ii] );
+                    stream_catString( stream, buf );
+                }
+            }
+            lastMax = thisMax;
+        }
+
+        server->nv.prevMoveStream = stream;
+        server->vol.showPrevMove = XP_TRUE;
+    }
+}
+
+static void
+addDupeStuffMark( XWStreamCtxt* stream, DUPE_STUFF typ )
+{
+    stream_putBits( stream, 3, typ );
+}
+
+static DUPE_STUFF
+getDupeStuffMark( XWStreamCtxt* stream )
+{
+    return (DUPE_STUFF)stream_getBits( stream, 3 );
+}
+
+/* Called on server when client has sent a message giving its local players'
+   duplicate moves for a single turn. */
+static XP_Bool
+dupe_handleClientMoves( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+    ModelCtxt* model = server->vol.model;
+    XP_Bool success = XP_TRUE;
+
+    XP_U16 movesInMsg = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
+    XP_LOGF( "%s(): reading %d moves", __func__, movesInMsg );
+    for ( XP_U16 ii = 0; success && ii < movesInMsg; ++ii ) {
+        XP_U16 turn = (XP_U16)stream_getBits( stream, PLAYERNUM_NBITS );
+        XP_Bool forced = (XP_Bool)stream_getBits( stream, 1 );
+
+        model_resetCurrentTurn( model, turn );
+        success = model_makeTurnFromStream( model, turn, stream );
+        XP_ASSERT( success );   /* shouldn't fail in duplicate case */
+        if ( success ) {
+            XP_ASSERT( !server->nv.dupTurnsMade[turn] ); /* firing */
+            XP_ASSERT( !server->vol.gi->players[turn].isLocal );
+            server->nv.dupTurnsMade[turn] = XP_TRUE;
+            server->nv.dupTurnsForced[turn] = forced;
+        }
+    }
+
+    if ( success ) {
+        dupe_checkTurns( server );
+        nextTurn( server, PICK_NEXT );
+    }
+
+    LOG_RETURNF( "%d", success );
+    return success;
+}
+
+static void
+updateOthersTiles( ServerCtxt* server )
+{
+    sortTilesIf( server, DUP_PLAYER );
+    model_cloneDupeTrays( server->vol.model );
+}
+
+static XP_Bool
+checkDupTimerProc( void* closure, XWTimerReason XP_why )
+{
+    XP_ASSERT( XP_why == TIMER_DUP_TIMERCHECK );
+    ServerCtxt* server = (ServerCtxt*)closure;
+    XP_ASSERT( inDuplicateMode( server ) );
+    // Don't call server_do() if the timer hasn't fired yet
+    return setDupCheckTimer( server ) || server_do( server );
+}
+
+static XP_Bool
+setDupCheckTimer( ServerCtxt* server )
+{
+    XP_Bool set = XP_FALSE;
+    XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
+    if ( server->nv.dupTimerExpires > 0 && server->nv.dupTimerExpires > now ) {
+        XP_U32 diff = server->nv.dupTimerExpires - now;
+        XP_ASSERT( diff <= 0x7FFF );
+        XP_U16 whenSeconds = (XP_U16) diff;
+        util_setTimer( server->vol.util, TIMER_DUP_TIMERCHECK, whenSeconds,
+                       checkDupTimerProc, server );
+        set = XP_TRUE;
+    }
+    return set;
+}
+
+static void
+setDupTimerExpires( ServerCtxt* server, XP_S32 newVal )
+{
+    XP_LOGF( "%s(%d)", __func__, newVal );
+    if ( newVal != server->nv.dupTimerExpires ) {
+        XP_S32 oldVal = server->nv.dupTimerExpires;
+        server->nv.dupTimerExpires = newVal;
+        callDupTimerListener( server, oldVal, newVal );
+    }
+}
+
+static void
+dupe_resetTimer( ServerCtxt* server )
+{
+    XP_S32 newVal = 0;
+    if ( server->vol.gi->timerEnabled && 0 < server->vol.gi->gameSeconds ) {
+        XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
+        newVal = now + server->vol.gi->gameSeconds;
+    } else {
+        XP_LOGF( "%s(): doing nothing because timers disabled", __func__ );
+    }
+
+    if ( server_canUnpause( server ) ) {
+        XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
+        newVal = -(newVal - now);
+    }
+    setDupTimerExpires( server, newVal );
+
+    setDupCheckTimer( server );
+}
+
+XP_S32
+server_getDupTimerExpires( const ServerCtxt* server )
+{
+    return server->nv.dupTimerExpires;
+}
+
+/* If we're in dup mode, this is 0 if no timer otherwise the number of seconds
+   left. */
+XP_S16
+server_getTimerSeconds( const ServerCtxt* server, XP_U16 turn )
+{
+    XP_S16 result;
+    if ( inDuplicateMode( server ) ) {
+        XP_S32 dupTimerExpires = server->nv.dupTimerExpires;
+        if ( dupTimerExpires <= 0 ) {
+            result = (XP_S16)-dupTimerExpires;
+        } else {
+            XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
+            result = dupTimerExpires > now ? dupTimerExpires - now : 0;
+        }
+        XP_ASSERT( result >= 0 ); /* should never go negative */
+    } else {
+        CurGameInfo* gi = server->vol.gi;
+        XP_U16 secondsUsed = gi->players[turn].secondsUsed;
+        XP_U16 secondsAvailable = gi->gameSeconds / gi->nPlayers;
+        XP_ASSERT( gi->timerEnabled );
+        result = secondsAvailable - secondsUsed;
+    }
+    return result;
+}
+
+XP_Bool
+server_canPause( const ServerCtxt* server )
+{
+    XP_Bool result = inDuplicateMode( server )
+        && 0 < server_getDupTimerExpires( server );
+    /* LOG_RETURNF( "%d", result ); */
+    return result;
+}
+
+XP_Bool
+server_canUnpause( const ServerCtxt* server )
+{
+    XP_Bool result = inDuplicateMode( server )
+        && 0 > server_getDupTimerExpires( server );
+    /* LOG_RETURNF( "%d", result ); */
+    return result;
+}
+
+static void
+pauseImpl( ServerCtxt* server )
+{
+    XP_ASSERT( server_canPause( server ) );
+    /* Figure out how many seconds are left on the timer, and set timer to the
+       negative of that (since negative is the flag) */
+    XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
+    setDupTimerExpires( server, -(server->nv.dupTimerExpires - now) );
+    XP_ASSERT( 0 > server->nv.dupTimerExpires );
+    XP_ASSERT( server_canUnpause( server ) );
+}
+
+void
+server_pause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg )
+{
+    XP_LOGF( "%s(turn=%d)", __func__, turn );
+    pauseImpl( server );
+    /* Figure out how many seconds are left on the timer, and set timer to the
+       negative of that (since negative is the flag) */
+    dupe_transmitPause( server, PAUSED, turn, msg, -1 );
+    model_noteDupePause( server->vol.model, PAUSED, turn, msg );
+    LOG_RETURN_VOID();
+}
+
+static void
+autoPause( ServerCtxt* server )
+{
+    XP_LOGF( "%s()", __func__ );
+
+    /* Reset timer: we're starting turn over */
+    dupe_resetTimer( server );
+    dupe_clearState( server );
+
+    /* Then pause us */
+    pauseImpl( server );
+
+    dupe_transmitPause( server, AUTOPAUSED, 0, NULL, -1 );
+    model_noteDupePause( server->vol.model, AUTOPAUSED, -1, NULL );
+    LOG_RETURN_VOID();
+}
+
+void
+server_unpause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg )
+{
+    XP_LOGF( "%s(turn=%d)", __func__, turn );
+    XP_ASSERT( server_canUnpause( server ) );
+    XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
+    /* subtract because it's negative */
+    setDupTimerExpires( server, now - server->nv.dupTimerExpires );
+    XP_ASSERT( server_canPause( server ) );
+    dupe_transmitPause( server, UNPAUSED, turn, msg, -1 );
+    model_noteDupePause( server->vol.model, UNPAUSED, turn, msg );
+    LOG_RETURN_VOID();
+}
+
+/* Called on client. Unpacks DUP move data and applies it. */
+static XP_Bool
+dupe_handleServerMoves( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+    MoveInfo moveInfo;
+    moveInfoFromStream( stream, &moveInfo, bitsPerTile(server) );
+    TrayTileSet newTiles;
+    traySetFromStream( stream, &newTiles );
+    XP_ASSERT( newTiles.nTiles <= moveInfo.nTiles );
+    XP_ASSERT( pool_containsTiles( server->pool, &newTiles ) );
+
+    XP_U16 nScores = stream_getBits( stream, NPLAYERS_NBITS );
+    XP_U16 scores[MAX_NUM_PLAYERS];
+    XP_ASSERT( nScores <= MAX_NUM_PLAYERS );
+    scoresFromStream( stream, nScores, scores );
+
+    dupe_resetTimer( server );
+
+    pool_removeTiles( server->pool, &newTiles );
+    model_commitDupeTurn( server->vol.model, &moveInfo, nScores, scores,
+                          &newTiles );
+
+    /* Need to remove the played tiles from all local trays */
+    updateOthersTiles( server );
+
+    dupe_setupShowMove( server, scores );
+
+    dupe_clearState( server );
+    nextTurn( server, PICK_NEXT );
+    LOG_RETURN_VOID();
+    return XP_TRUE;
+} /* dupe_handleServerMoves */
+
+static XP_Bool
+dupe_handleServerTrade( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    TrayTileSet oldTiles, newTiles;
+    traySetFromStream( stream, &oldTiles );
+    traySetFromStream( stream, &newTiles );
+
+    ModelCtxt* model = server->vol.model;
+    model_resetCurrentTurn( model, DUP_PLAYER );
+    model_removePlayerTiles2( model, DUP_PLAYER, &oldTiles );
+    pool_replaceTiles( server->pool, &oldTiles );
+    pool_removeTiles( server->pool, &newTiles );
+
+    model_commitDupeTrade( model, &oldTiles, &newTiles );
+
+    model_addNewTiles( model, DUP_PLAYER, &newTiles );
+    updateOthersTiles( server );
+
+    dupe_resetTimer( server );
+    dupe_setupShowTrade( server, newTiles.nTiles );
+
+    dupe_clearState( server );
+    nextTurn( server, PICK_NEXT );
+    return XP_TRUE;
+}
+
 #endif
 
 /* Just for grins....trade in all the tiles that weren't used in the
@@ -906,16 +1319,16 @@ makeRobotMove( ServerCtxt* server )
 #endif
         XP_ASSERT( !!server_getEngineFor( server, turn ) );
         searchComplete = engine_findMove( server_getEngineFor( server, turn ),
-                                          model, turn, XP_FALSE, tileSet->tiles,
-                                          tileSet->nTiles, XP_FALSE,
+                                          model, turn, XP_FALSE, XP_FALSE,
+                                          tileSet->tiles, tileSet->nTiles, XP_FALSE,
 #ifdef XWFEATURE_BONUSALL
                                           allTilesBonus, 
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
                                           NULL, XP_FALSE,
 #endif
-                                          server->vol.gi->players[turn].robotIQ,
-                                          &canMove, &newMove );
+                                          gi->players[turn].robotIQ,
+                                          &canMove, &newMove, NULL );
     }
     if ( forceTrade || searchComplete ) {
         const XP_UCHAR* str;
@@ -968,7 +1381,7 @@ makeRobotMove( ServerCtxt* server )
                     server->nv.prevMoveStream = stream;
                     server->nv.prevWordsStream = wordsStream;
                 }
-                result = server_commitMove( server, NULL );
+                result = server_commitMove( server, turn, NULL );
             } else {
                 result = XP_FALSE;
             }
@@ -1051,7 +1464,9 @@ showPrevScore( ServerCtxt* server )
         prevTurn = (server->nv.currentTurn + nPlayers - 1) % nPlayers;
         lp = &gi->players[prevTurn];
 
-        if ( LP_IS_LOCAL(lp) ) {
+        if ( inDuplicateMode( server ) ) {
+            str = "Duplicate turn complete. Scores:\n";
+        } else if ( LP_IS_LOCAL(lp) ) {
             str = dutil_getUserString( dutil, STR_ROBOT_MOVED );
         } else {
             str = dutil_getUserString( dutil, STRS_REMOTE_MOVED );
@@ -1062,12 +1477,11 @@ showPrevScore( ServerCtxt* server )
         stream = mkServerStream( server );
         stream_catString( stream, str );
 
-        if ( !!server->nv.prevMoveStream ) {
-            XWStreamCtxt* prevStream = server->nv.prevMoveStream;
-            XP_U16 len = stream_getSize( prevStream );
-
+        XWStreamCtxt* prevStream = server->nv.prevMoveStream;
+        if ( !!prevStream ) {
             server->nv.prevMoveStream = NULL;
 
+            XP_U16 len = stream_getSize( prevStream );
             stream_putBytes( stream, stream_getPtr( prevStream ), len );
             stream_destroy( prevStream );
         }
@@ -1095,6 +1509,7 @@ server_tilesPicked( ServerCtxt* server, XP_U16 player,
     pool_removeTiles( server->pool, &newTiles );
 
     fetchTiles( server, player, MAX_TRAY_TILES, NULL, &newTiles );
+    XP_ASSERT( !inDuplicateMode(server) );
     model_assignPlayerTiles( server->vol.model, player, &newTiles );
 
     util_requestTime( server->vol.util );
@@ -1152,6 +1567,9 @@ server_do( ServerCtxt* server )
                 if ( assignTilesToAll( server ) ) {
                     SETSTATE( server, XWSTATE_INTURN );
                     setTurn( server, 0 );
+                    if ( inDuplicateMode( server ) ) {
+                        dupe_resetTimer( server );
+                    }
                     moreToDo = XP_TRUE;
                 }
             }
@@ -1197,6 +1615,12 @@ server_do( ServerCtxt* server )
             moreToDo = XWSTATE_NEED_SHOWSCORE != server->nv.gameState;
             break;
         case XWSTATE_INTURN:
+            if ( inDuplicateMode( server ) ) {
+                /* For now, anyway; makes dev easier */
+                dupe_forceCommits( server );
+                dupe_checkTurns( server );
+            }
+
             if ( robotMovePending( server ) && !ROBOTWAITING(server) ) {
                 result = makeRobotMove( server );
                 /* if robot was interrupted, we need to schedule again */
@@ -1220,14 +1644,22 @@ server_do( ServerCtxt* server )
 } /* server_do */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+
 static XP_S8
-getIndexForDevice( ServerCtxt* server, XP_PlayerAddr channelNo )
+getIndexForStream( const ServerCtxt* server, const XWStreamCtxt* stream )
+{
+    XP_PlayerAddr channelNo = stream_getAddress( stream );
+    return getIndexForDevice( server, channelNo );
+}
+
+static XP_S8
+getIndexForDevice( const ServerCtxt* server, XP_PlayerAddr channelNo )
 {
     short ii;
     XP_S8 result = -1;
 
     for ( ii = 0; ii < server->nv.nDevices; ++ii ) {
-        RemoteAddress* addr = &server->nv.addresses[ii];
+        const RemoteAddress* addr = &server->nv.addresses[ii];
         if ( addr->channelNo == channelNo ) {
             result = ii;
             break;
@@ -1339,9 +1771,8 @@ clearLocalRobots( ServerCtxt* server )
 static void
 sortTilesIf( ServerCtxt* server, XP_S16 turn )
 {
-    ModelCtxt* model = server->vol.model;
     if ( server->nv.sortNewTiles ) {
-        model_sortTiles( model, turn );
+        model_sortTiles( server->vol.model, turn );
     }
 }
 
@@ -1359,11 +1790,6 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
     /* We should never get this message a second time, but very rarely we do.
        Drop it in that case. */
     if ( accepted ) {
-        DictionaryCtxt* newDict;
-        DictionaryCtxt* curDict;
-        XP_U16 nPlayers, nCols;
-        XP_PlayerAddr channelNo;
-        XP_U16 ii;
         ModelCtxt* model = server->vol.model;
         CurGameInfo* gi = server->vol.gi;
         CurGameInfo localGI;
@@ -1392,9 +1818,9 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         localGI.dictName = copyString( server->mpool, gi->dictName );
         gi_copy( MPPARM(server->mpool) gi, &localGI );
 
-        nCols = localGI.boardSize;
+        XP_U16 nCols = localGI.boardSize;
 
-        newDict = util_makeEmptyDict( server->vol.util );
+        DictionaryCtxt* newDict = util_makeEmptyDict( server->vol.util );
         dict_loadFromStream( newDict, stream );
 
 #ifdef STREAM_VERS_BIGBOARD
@@ -1406,14 +1832,14 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         }
 #endif
 
-        channelNo = stream_getAddress( stream );
+        XP_PlayerAddr channelNo = stream_getAddress( stream );
         XP_ASSERT( channelNo != 0 );
         server->nv.addresses[0].channelNo = channelNo;
         XP_LOGF( "%s: assigning channelNo %x for 0", __func__, channelNo );
 
         model_setSize( model, nCols );
 
-        nPlayers = localGI.nPlayers;
+        XP_U16 nPlayers = localGI.nPlayers;
         XP_LOGF( "%s: reading in %d players", __func__, localGI.nPlayers );
 
         gi_disposePlayerInfo( MPPARM(server->mpool) &localGI );
@@ -1421,7 +1847,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         gi->nPlayers = nPlayers;
         model_setNPlayers( model, nPlayers );
 
-        curDict = model_getDictionary( model );
+        DictionaryCtxt* curDict = model_getDictionary( model );
 
         XP_ASSERT( !!newDict );
 
@@ -1451,19 +1877,25 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
         /* now read the assigned tiles for each player from the stream, and
            remove them from the newly-created local pool. */
-        for ( ii = 0; ii < nPlayers; ++ii ) {
-            TrayTileSet tiles;
+        TrayTileSet tiles;
+        for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
 
-            traySetFromStream( stream, &tiles );
-            XP_ASSERT( tiles.nTiles <= MAX_TRAY_TILES );
-
+            /* Pull/remove only once if duplicate-mode game */
+            if ( ii == 0 || !inDuplicateMode(server) ) {
+                traySetFromStream( stream, &tiles );
+                XP_ASSERT( tiles.nTiles <= MAX_TRAY_TILES );
+                /* remove what the server's assigned so we won't conflict
+                   later. */
+                pool_removeTiles( pool, &tiles );
+            }
             XP_LOGF( "%s: got %d tiles for player %d", __func__, tiles.nTiles, ii );
 
-            model_assignPlayerTiles( model, ii, &tiles );
-
-            /* remove what the server's assigned so we won't conflict
-               later. */
-            pool_removeTiles( pool, &tiles );
+            if ( inDuplicateMode(server ) ) {
+                model_assignDupeTiles( model, &tiles );
+                break;
+            } else {
+                model_assignPlayerTiles( model, ii, &tiles );
+            }
 
             sortTilesIf( server, ii );
         }
@@ -1475,6 +1907,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         /* Give board a chance to redraw self with the full compliment of known
            players */
         setTurn( server, 0 );
+        dupe_resetTimer( server );
     } else {
         XP_LOGF( "%s: wanted 0; got %d", __func__, 
                  server->nv.addresses[0].channelNo );
@@ -1519,26 +1952,19 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
 static void
 server_sendInitialMessage( ServerCtxt* server )
 {
-    XP_U16 ii;
-    XP_U16 deviceIndex;
     ModelCtxt* model = server->vol.model;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
-    CurGameInfo localGI;
     XP_U32 gameID = server->vol.gi->gameID;
 #ifdef STREAM_VERS_BIGBOARD
     XP_U8 streamVersion = server->nv.streamVersion;
 #endif
 
     XP_ASSERT( server->nv.nDevices > 1 );
-    for ( deviceIndex = 1; deviceIndex < server->nv.nDevices;
+    for ( XP_U16 deviceIndex = 1; deviceIndex < server->nv.nDevices;
           ++deviceIndex ) {
-        RemoteAddress* addr = &server->nv.addresses[deviceIndex];
-        XWStreamCtxt* stream = util_makeStreamFromAddr( server->vol.util, 
-                                                        addr->channelNo );
-        DictionaryCtxt* dict = model_getDictionary(model);
+        XWStreamCtxt* stream = messageStreamWithHeader( server, deviceIndex,
+                                                        XWPROTO_CLIENT_SETUP );
         XP_ASSERT( !!stream );
-        stream_open( stream );
-        writeProto( server, stream, XWPROTO_CLIENT_SETUP );
 
 #ifdef STREAM_VERS_BIGBOARD
         XP_ASSERT( 0 < streamVersion );
@@ -1550,9 +1976,11 @@ server_sendInitialMessage( ServerCtxt* server )
         XP_LOGF( "putting gameID %x into msg", gameID );
         stream_putU32( stream, gameID );
 
+        CurGameInfo localGI;
         makeSendableGICopy( server, &localGI, deviceIndex );
         gi_writeToStream( stream, &localGI );
 
+        DictionaryCtxt* dict = model_getDictionary( model );
         dict_writeToStream( dict, stream );
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {
@@ -1561,8 +1989,11 @@ server_sendInitialMessage( ServerCtxt* server )
         }
 #endif
         /* send tiles currently in tray */
-        for ( ii = 0; ii < nPlayers; ++ii ) {
+        for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
             model_trayToStream( model, ii, stream );
+            if ( inDuplicateMode(server) ) {
+                break;
+            }
         }
 
         stream_destroy( stream );
@@ -1571,6 +2002,8 @@ server_sendInitialMessage( ServerCtxt* server )
     /* Set after messages are built so their connID will be 0, but all
        non-initial messages will have a non-0 connID. */
     comms_setConnID( server->vol.comms, gameID );
+
+    dupe_resetTimer( server );
 } /* server_sendInitialMessage */
 #endif
 
@@ -1639,10 +2072,10 @@ codeToStr( XW_Proto code )
         caseStr( XWPROTO_CLIENT_REQ_END_GAME );
         caseStr( XWPROTO_END_GAME );
         caseStr( XWPROTO_NEW_PROTO );
+        caseStr( XWPROTO_DUPE_STUFF );
     }
     return str;
 } /* codeToStr */
-
 
 #define PRINTCODE( intro, code ) \
     XP_STATUSF( "\t%s(): %s for %s", __func__, intro, codeToStr(code) )
@@ -1658,7 +2091,7 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
     XWStreamCtxt* stream;
     XP_PlayerAddr channelNo = server->nv.addresses[devIndex].channelNo;
 
-    PRINTCODE("making", code);
+    PRINTCODE( "making", code );
 
     stream = util_makeStreamFromAddr( server->vol.util, channelNo );
     stream_open( stream );
@@ -1666,17 +2099,6 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
 
     return stream;
 } /* messageStreamWithHeader */
-
-/* Check that the message belongs to this game, whatever.  Pull out the data
- * put in by messageStreamWithHeader -- except for the code, which will have
- * already come out.
- */
-static XP_Bool
-readStreamHeader( ServerCtxt* XP_UNUSED(server), 
-                  XWStreamCtxt* XP_UNUSED(stream) )
-{
-    return XP_TRUE;
-} /* readStreamHeader */
 
 static void
 sendBadWordMsgs( ServerCtxt* server )
@@ -1715,14 +2137,13 @@ badWordMoveUndoAndTellUser( ServerCtxt* server, BadWordInfo* bwi )
 EngineCtxt*
 server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
 {
-    ServerPlayer* player;
-    EngineCtxt* engine;
+    const CurGameInfo* gi = server->vol.gi;
+    XP_ASSERT( playerNum < gi->nPlayers );
 
-    XP_ASSERT( playerNum < server->vol.gi->nPlayers );
-
-    player = &server->players[playerNum];
-    engine = player->engine;
-    if ( !engine && server->vol.gi->players[playerNum].isLocal ) {
+    ServerPlayer* player = &server->players[playerNum];
+    EngineCtxt* engine = player->engine;
+    if ( !engine &&
+         (inDuplicateMode(server) || gi->players[playerNum].isLocal) ) {
         engine = engine_make( MPPARM(server->mpool)
                               server->vol.util );
         player->engine = engine;
@@ -1731,34 +2152,21 @@ server_getEngineFor( ServerCtxt* server, XP_U16 playerNum )
     return engine;
 } /* server_getEngineFor */
 
-#ifdef XWFEATURE_CHANGEDICT
-void
-server_resetEngines( ServerCtxt* server )
-{
-    XP_U16 nPlayers = server->vol.gi->nPlayers;
-    while ( 0 < nPlayers-- ) {
-        server_resetEngine( server, nPlayers );
-    }
-}
-#endif
-
 void
 server_resetEngine( ServerCtxt* server, XP_U16 playerNum )
 {
     ServerPlayer* player = &server->players[playerNum];
     if ( !!player->engine ) {
-        XP_ASSERT( player->deviceIndex == 0 );
+        XP_ASSERT( player->deviceIndex == 0 || inDuplicateMode(server) );
         engine_reset( player->engine );
     }
 } /* server_resetEngine */
 
-static void
-resetEngines( ServerCtxt* server )
+void
+server_resetEngines( ServerCtxt* server )
 {
-    XP_U16 ii;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
-
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
         server_resetEngine( server, ii );
     }
 } /* resetEngines */
@@ -1799,7 +2207,6 @@ makeNotAVowel( ServerCtxt* server, Tile* newTile )
         pool_replaceTiles( pool, &set );
 
         pool_requestTiles( pool, &tile, &numGot );
-
     }
 
 } /* makeNotAVowel */
@@ -1856,11 +2263,59 @@ XP_Bool
 server_askPickTiles( ServerCtxt* server, XP_U16 turn, TrayTileSet* newTiles,
                      XP_U16 nToPick )
 {
-    XP_Bool asked = newTiles == NULL && server->vol.gi->allowPickTiles;
+    /* May want to allow the host to pick tiles even in duplicate mode. Not
+       sure how that'll work! PENDING */
+    XP_Bool asked = newTiles == NULL && !inDuplicateMode(server)
+        && server->vol.gi->allowPickTiles;
     if ( asked ) {
         asked = informNeedPickTiles( server, XP_FALSE, turn, nToPick );
     }
     return asked;
+}
+
+/* dupe_trayAllowsMoves()
+ *
+ * Assuming a model with a turn loaded (but maybe not committed), build the
+ * tile set containing the current model tray tiles PLUS the new set we're
+ * considering, and see if the engine can find moves.
+ */
+static XP_Bool
+dupe_trayAllowsMoves( ServerCtxt* server, XP_U16 turn,
+                      const Tile* tiles, XP_U16 nTiles )
+{
+    ModelCtxt* model = server->vol.model;
+    XP_U16 nInTray = model_getNumTilesInTray( model, turn );
+    XP_LOGF( "%s(nTiles=%d): nInTray: %d", __func__, nTiles, nInTray );
+    XP_ASSERT( nInTray + nTiles <= MAX_TRAY_TILES ); /* fired! */
+    Tile tmpTiles[MAX_TRAY_TILES];
+    const TrayTileSet* tray = model_getPlayerTiles( model, turn );
+    XP_MEMCPY( tmpTiles, &tray->tiles[0], nInTray * sizeof(tmpTiles[0]) );
+    XP_MEMCPY( &tmpTiles[nInTray], &tiles[0], nTiles * sizeof(tmpTiles[0]) );
+
+    /* XP_LOGF( "%s(nTiles=%d)", __func__, nTiles ); */
+    EngineCtxt* engine = server_getEngineFor( server, turn );
+    XP_Bool canMove;
+    MoveInfo newMove = {0};
+    XP_U16 score = 0;
+    XP_Bool result = engine_findMove( engine, server->vol.model, turn,
+                                      XP_TRUE, XP_TRUE,
+                                      tmpTiles, nTiles + nInTray, XP_FALSE, 0,
+#ifdef XWFEATURE_SEARCHLIMIT
+                                      NULL, XP_FALSE,
+#endif
+                                      0, /* not a robot */
+                                      &canMove, &newMove, &score )
+        && canMove;
+
+    if ( result ) {
+        XP_LOGF( "%s(): first move found has score of %d", __func__, score );
+    } else {
+        XP_LOGF( "%s(): no moves found for tray!!!", __func__ );
+    }
+
+    server_resetEngine( server, turn );
+
+    return result;
 }
 
 /* Get tiles for one user.  If picking is available, let user pick until
@@ -1870,6 +2325,7 @@ static void
 fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch, 
             const TrayTileSet* tradedTiles, TrayTileSet* resultTiles )
 {
+    XP_ASSERT( server->vol.gi->serverRole != SERVER_ISCLIENT || !inDuplicateMode(server) );
     XP_Bool ask;
     XP_U16 nSoFar = resultTiles->nTiles;
     PoolContext* pool = server->pool;
@@ -1886,9 +2342,9 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     ask = XP_FALSE;
 #endif
     
-    XP_U16 nLeft = pool_getNTilesLeft( pool );
-    if ( nLeft < nToFetch ) {
-        nToFetch = nLeft;
+    XP_U16 nLeftInPool = pool_getNTilesLeft( pool );
+    if ( nLeftInPool < nToFetch ) {
+        nToFetch = nLeftInPool;
     }
 
     TrayTileSet oneTile = {.nTiles = 1};
@@ -1902,6 +2358,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 #ifdef FEATURE_TRAY_EDIT        /* good compiler would note ask==0, but... */
     /* First ask until cancelled */
     while ( ask && nSoFar < nToFetch ) {
+        XP_ASSERT( !inDuplicateMode(server) );
         const XP_UCHAR* texts[MAX_UNIQUE_TILES];
         Tile tiles[MAX_UNIQUE_TILES];
         XP_S16 chosen;
@@ -1920,7 +2377,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
                 TrayTileSet tiles;
                 tiles.nTiles = 1;
                 tiles.tiles[0] = resultTiles->tiles[--nSoFar];
-                pool_replaceTiles( server->pool, &tiles );
+                pool_replaceTiles( pool, &tiles );
                 --pi.nCurTiles;
                 --pi.thisPick;
             }
@@ -1935,12 +2392,25 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     }
 #endif
 
-    /* Then fetch the rest without asking */
-    if ( nSoFar < nToFetch ) {
-        XP_U8 nLeft = nToFetch - nSoFar;
+    /* Then fetch the rest without asking. But if we're in duplicate mode,
+       make sure the tray allows some moves (e.g. isn't all consonants when
+       the board's empty.) */
+    XP_ASSERT( nToFetch >= nSoFar );
+    XP_U16 nLeft = nToFetch - nSoFar;
+    for ( XP_U16 nBadTrays = 0; 0 < nLeft; ) {
         pool_requestTiles( pool, &resultTiles->tiles[nSoFar], &nLeft );
-        nSoFar += nLeft;
+
+        if ( !inDuplicateMode( server ) ) {
+            break;
+        } else if ( dupe_trayAllowsMoves( server, playerNum, &resultTiles->tiles[0],
+                                          nSoFar + nLeft )
+                    || ++nBadTrays >= 5 ) {
+            break;
+        }
+        pool_replaceTiles2( pool, nLeft, &resultTiles->tiles[nSoFar] );
     }
+
+    nSoFar += nLeft;
    
     XP_ASSERT( nSoFar < 0x00FF );
     resultTiles->nTiles = (XP_U8)nSoFar;
@@ -1953,7 +2423,7 @@ makePoolOnce( ServerCtxt* server )
     XP_ASSERT( model_getDictionary(model) != NULL );
     if ( server->pool == NULL ) {
         server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
-        XP_STATUSF( "initing pool" );
+        XP_STATUSF( "%s(): initing pool", __func__ );
         pool_initFromDict( server->pool, model_getDictionary(model));
     }
 }
@@ -1987,6 +2457,7 @@ assignTilesToAll( ServerCtxt* server )
 
     XP_Bool pickingTiles = gi->serverRole == SERVER_STANDALONE
         && gi->allowPickTiles;
+    TrayTileSet newTiles;
     for ( ii = 0; ii < nPlayers; ++ii ) {
         if ( 0 == model_getNumTilesInTray( model, ii ) ) {
             if ( pickingTiles && !LP_IS_ROBOT(&gi->players[ii])
@@ -1995,9 +2466,18 @@ assignTilesToAll( ServerCtxt* server )
                 allDone = XP_FALSE;
                 break;
             }
-            TrayTileSet newTiles = {0};
-            fetchTiles( server, ii, numAssigned, NULL, &newTiles );
-            model_assignPlayerTiles( model, ii, &newTiles );
+            if ( 0 == ii || !gi->inDuplicateMode ) {
+                newTiles.nTiles = 0;
+                fetchTiles( server, ii, numAssigned, NULL, &newTiles );
+            }
+
+            if ( gi->inDuplicateMode ) {
+                XP_ASSERT( ii == DUP_PLAYER );
+                model_assignDupeTiles( model, &newTiles );
+                break;
+            } else {
+                model_assignPlayerTiles( model, ii, &newTiles );
+            }
         }
         sortTilesIf( server, ii );
     }
@@ -2022,18 +2502,22 @@ getPlayerTime( ServerCtxt* server, XWStreamCtxt* stream, XP_U16 turn )
 static void
 nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 {
-    XP_U16 nPlayers = server->vol.gi->nPlayers;
-    XP_U16 playerTilesLeft = 0;
+    LOG_FUNC();
+    CurGameInfo* gi = server->vol.gi;
+    XP_U16 nPlayers = gi->nPlayers;
+    XP_Bool playerTilesLeft = XP_FALSE;
     XP_S16 currentTurn = server->nv.currentTurn;
     XP_Bool moreToDo = XP_FALSE;
 
     if ( nxtTurn == PICK_NEXT ) {
-        XP_ASSERT( server->nv.gameState == XWSTATE_INTURN );
+        XP_ASSERT( server->nv.gameState == XWSTATE_INTURN ); /* fired.... */
         if ( currentTurn >= 0 ) {
-            // XP_ASSERT( currentTurn >= 0 ); /* fired! */
-            playerTilesLeft = model_getNumTilesTotal( server->vol.model,
-                                                      currentTurn );
-            nxtTurn = (currentTurn+1) % nPlayers;
+            playerTilesLeft = tileCountsOk( server );
+            if ( inDuplicateMode(server) ) {
+                nxtTurn = dupe_nextTurn( server );
+            } else {
+                nxtTurn = (currentTurn+1) % nPlayers;
+            }
         } else {
             XP_LOGF( "%s(): turn == -1 so dropping", __func__ );
         }
@@ -2041,21 +2525,19 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
         /* We're doing an undo, and so won't bother figuring out who the
            previous turn was or how many tiles he had: it's a sure thing he
            "has" enough to be allowed to take the turn just undone. */
-        playerTilesLeft = MAX_TRAY_TILES;
+        playerTilesLeft = XP_TRUE;
     }
     SETSTATE( server, XWSTATE_INTURN ); /* even if game over, if undoing */
 
-    if ( (playerTilesLeft > 0) && tileCountsOk(server) && NPASSES_OK(server) ){
-
+    if ( playerTilesLeft && NPASSES_OK(server) ){
         setTurn( server, nxtTurn );
-
     } else {
         /* I discover that the game should end.  If I'm the client,
            though, should I wait for the server to deduce this and send
            out a message?  I think so.  Yes, but be sure not to compute
            another PASS move.  Just don't do anything! */
-        if ( server->vol.gi->serverRole != SERVER_ISCLIENT ) {
-            SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME );
+        if ( gi->serverRole != SERVER_ISCLIENT ) {
+            SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME ); /* this is it */
             moreToDo = XP_TRUE;
         } else if ( currentTurn >= 0 ) {
             XP_LOGF( "%s: Doing nothing; waiting for server to end game", 
@@ -2075,7 +2557,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     }
 
     /* It's safer, if perhaps not always necessary, to do this here. */
-    resetEngines( server );
+    server_resetEngines( server );
 
     XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
     callTurnChangeListener( server );
@@ -2094,9 +2576,19 @@ void
 server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,
                               void* data )
 {
+    XP_ASSERT( !server->vol.turnChangeListener );
     server->vol.turnChangeListener = tl;
     server->vol.turnChangeData = data;
 } /* server_setTurnChangeListener */
+
+void
+server_setTimerChangeListener( ServerCtxt* server, TimerChangeListener tl,
+                               void* data )
+{
+    XP_ASSERT( !server->vol.timerChangeListener );
+    server->vol.timerChangeListener = tl;
+    server->vol.timerChangeData = data;
+}
 
 void
 server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
@@ -2151,13 +2643,12 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
             XP_Bool legal, TrayTileSet* newTiles, 
             const TrayTileSet* tradedTiles ) /* null if a move, set if a trade */
 {
-    XWStreamCtxt* stream;
     XP_Bool isTrade = !!tradedTiles;
     CurGameInfo* gi = server->vol.gi;
     XW_Proto code = gi->serverRole == SERVER_ISCLIENT?
         XWPROTO_MOVEMADE_INFO_CLIENT : XWPROTO_MOVEMADE_INFO_SERVER;
 
-    stream = messageStreamWithHeader( server, devIndex, code );
+    XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex, code );
 
 #ifdef STREAM_VERS_BIGBOARD
     XP_U16 version = stream_getVersion( stream );
@@ -2218,10 +2709,9 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
-        success = model_hashMatches( server->vol.model, hashReceived );
-        if ( !success ) {
-            success = model_popToHash( server->vol.model, hashReceived, server->pool );
-        }
+        success = model_hashMatches( server->vol.model, hashReceived )
+            || model_popToHash( server->vol.model, hashReceived, server->pool );
+
         if ( !success ) {
             XP_LOGF( "%s: hash mismatch: %X not found",__func__, hashReceived );
 #ifdef DEBUG_HASHING
@@ -2235,6 +2725,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
         XP_U16 whoMoved = stream_getBits( stream, PLAYERNUM_NBITS );
         traySetFromStream( stream, newTiles );
         success = pool_containsTiles( server->pool, newTiles );
+        XP_ASSERT( success );
         if ( success ) {
             isTrade = stream_getBits( stream, 1 );
 
@@ -2266,9 +2757,7 @@ sendMoveToClientsExcept( ServerCtxt* server, XP_U16 whoMoved, XP_Bool legal,
                          TrayTileSet* newTiles, const TrayTileSet* tradedTiles,
                          XP_U16 skip )
 {
-    XP_U16 devIndex;
-
-    for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
+    for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
             sendMoveTo( server, devIndex, whoMoved, legal, 
                         newTiles, tradedTiles );
@@ -2325,8 +2814,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
     TrayTileSet newTiles;
     TrayTileSet tradedTiles;
     CurGameInfo* gi = server->vol.gi;
-    XP_U16 sourceClientIndex = 
-        getIndexForDevice( server, stream_getAddress( stream ) );
+    XP_U16 sourceClientIndex = getIndexForStream( server, stream );
     XWStreamCtxt* mvStream = NULL;
     XWStreamCtxt* wordsStream = NULL;
 
@@ -2367,7 +2855,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
             }
 
             success = model_commitTurn( model, whoMoved, &newTiles );
-            resetEngines( server );
+            server_resetEngines( server );
         }
 
         if ( success && isLegalMove ) {
@@ -2421,11 +2909,10 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     XWStreamCtxt* wordsStream = NULL;
 
     moveOk = XWSTATE_INTURN == server->nv.gameState
-        && server->nv.currentTurn >= 0;
-    if ( moveOk ) {
-        moveOk = readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
-                               &tradedTiles, &isLegal ); /* modifies model */
-    }
+        && server->nv.currentTurn >= 0
+        && readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
+                         &tradedTiles, &isLegal ); /* modifies model */
+
     if ( moveOk ) {
         if ( isTrade ) {
             model_makeTileTrade( model, whoMoved, &tradedTiles, &newTiles );
@@ -2446,7 +2933,7 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
             server->nv.prevWordsStream = wordsStream;
         }
 
-        resetEngines( server );
+        server_resetEngines( server );
 
         if ( !isLegal ) {
             XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
@@ -2459,6 +2946,530 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     return moveOk;
 } /* reflectMove */
 #endif /* XWFEATURE_STANDALONE_ONLY */
+
+static void
+chooseMove( const ServerCtxt* server, XP_U16 nPlayers, XP_U16 scores[],
+            XP_U16* winner, XP_U16* winningNTiles )
+{
+    ModelCtxt* model = server->vol.model;
+    struct {
+        XP_U16 score;
+        XP_U16 nTiles;
+        XP_U16 player;
+    } moveData[MAX_NUM_PLAYERS];
+    XP_U16 nWinners = 0;
+
+    /* Pick the best move. "Best" means highest scoring, or in case of a score
+       tie the largest number of tiles used. If there's still a tie, pick at
+       random. :-) */
+    for ( XP_U16 player = 0; player < nPlayers; ++player ) {
+        XP_S16 score;
+        if ( !getCurrentMoveScoreIfLegal( model, player, NULL, NULL, &score ) ) {
+            score = 0;
+        }
+        scores[player] = score;
+
+        XP_U16 nTiles = score == 0 ? 0 : model_getCurrentMoveCount( model, player );
+
+        XP_Bool saveIt = nWinners == 0;
+        if ( !saveIt ) {     /* not our first time through  */
+            if ( score > moveData[nWinners-1].score ) { /* score wins? Keep it! */
+                saveIt = XP_TRUE;
+                nWinners = 0;
+            } else if ( score < moveData[nWinners-1].score ) { /* score too low? */
+                // score lower than best; drop it!
+            } else if ( nTiles > moveData[nWinners-1].nTiles ) {
+                saveIt = XP_TRUE;
+                nWinners = 0;
+            } else if ( nTiles < moveData[nWinners-1].nTiles ) {
+                // number of tiles lower than best; drop it!
+            } else {
+                saveIt = XP_TRUE;
+            }
+        }
+
+        if ( saveIt ) {
+            moveData[nWinners].score = score;
+            moveData[nWinners].nTiles = nTiles;
+            moveData[nWinners].player = player;
+            ++nWinners;
+        }
+
+    }
+
+    const XP_U16 winnerIndx = XP_RANDOM() % nWinners;
+    *winner = moveData[winnerIndx].player;
+    *winningNTiles = moveData[winnerIndx].nTiles;
+    /* This fires: I need the reassign-no-moves thing */
+    if ( *winningNTiles == 0 ) {
+        XP_LOGF( "%s(): no scoring move found", __func__ );
+    } else {
+        XP_LOGF( "%s(): %d wins with %d points", __func__, *winner,
+                 scores[*winner] );
+    }
+}
+
+static XP_Bool
+allForced( const ServerCtxt* server )
+{
+    XP_Bool result = XP_TRUE;
+    for ( XP_U16 ii = 0; result && ii < server->vol.gi->nPlayers; ++ii ) {
+        result = server->nv.dupTurnsForced[ii];
+    }
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
+/* Called for host or standalone case when all moves for the turn are
+   present. Pick the best one and commit locally. In server case, transmit to
+   each guest device as well. */
+static void
+dupe_commitAndReport( ServerCtxt* server )
+{
+    const XP_U16 nPlayers = server->vol.gi->nPlayers;
+    XP_U16 scores[nPlayers];
+
+    XP_U16 winner;
+    XP_U16 nTiles;
+    chooseMove( server, nPlayers, scores, &winner, &nTiles );
+
+    /* If nobody can move AND there are tiles left, trade instead of recording
+       a 0. Unless we're running a timer, in which case it's most likely
+       noboby's playing, so pause the game instead. */
+    if ( 0 == scores[winner] && 0 < pool_getNTilesLeft(server->pool) ) {
+        if ( dupTimerRunning() && allForced( server ) ) {
+            autoPause( server );
+        } else {
+            dupe_makeAndReportTrade( server );
+        }
+    } else {
+        dupe_commitAndReportMove( server, winner, nPlayers, scores, nTiles );
+    }
+    dupe_clearState( server );
+} /* dupe_commitAndReport */
+
+static void
+sendStreamToDev( ServerCtxt* server, XP_U16 dev, XW_Proto code,
+                 XWStreamCtxt* data )
+{
+    XWStreamCtxt* stream = messageStreamWithHeader( server, dev, code );
+    const XP_U16 dataLen = stream_getSize( data );
+    const XP_U8* dataPtr = stream_getPtr( data );
+    stream_putBytes( stream, dataPtr, dataLen );
+    stream_destroy( stream );
+}
+
+/* Called in the case where nobody was able to move, does a trade. The goal is
+   to make it more likely that folks will be able to move with the next set of
+   tiles. For now I'll put them back first so there's a chance of getting some
+   of the same back.
+*/
+static void
+dupe_makeAndReportTrade( ServerCtxt* server )
+{
+    LOG_FUNC();
+    PoolContext* pool = server->pool;
+    ModelCtxt* model = server->vol.model;
+
+    model_resetCurrentTurn( model, DUP_PLAYER );
+
+    TrayTileSet oldTiles = *model_getPlayerTiles( model, DUP_PLAYER );
+    model_removePlayerTiles2( model, DUP_PLAYER, &oldTiles );
+    pool_replaceTiles( pool, &oldTiles );
+
+    TrayTileSet newTiles = {0};
+    fetchTiles( server, DUP_PLAYER, oldTiles.nTiles, NULL, &newTiles );
+
+    model_commitDupeTrade( model, &oldTiles, &newTiles );
+
+    model_addNewTiles( model, DUP_PLAYER, &newTiles );
+    updateOthersTiles( server );
+
+    if ( server->vol.gi->serverRole == SERVER_ISSERVER ) {
+        XWStreamCtxt* tmpStream =
+            mem_stream_make_raw( MPPARM(server->mpool)
+                                 dutil_getVTManager(server->vol.dutil) );
+
+        addDupeStuffMark( tmpStream, DUPE_STUFF_TRADES_SERVER );
+
+        traySetToStream( tmpStream, &oldTiles );
+        traySetToStream( tmpStream, &newTiles );
+
+        /* Send it to each one */
+        for ( XP_U16 dev = 1; dev < server->nv.nDevices; ++dev ) {
+            sendStreamToDev( server, dev, XWPROTO_DUPE_STUFF, tmpStream );
+        }
+
+        stream_destroy( tmpStream );
+    }
+
+    dupe_resetTimer( server );
+
+    dupe_setupShowTrade( server, newTiles.nTiles );
+    LOG_RETURN_VOID();
+} /* dupe_makeAndReportTrade */
+
+static void
+dupe_transmitPause( ServerCtxt* server, DupPauseType typ, XP_U16 turn,
+                    const XP_UCHAR* msg, XP_S16 skipDev )
+{
+    XP_LOGF( "%s(type=%d, msg=%s)", __func__, typ, msg );
+    CurGameInfo* gi = server->vol.gi;
+    if ( gi->serverRole != SERVER_STANDALONE ) {
+        XP_Bool amClient = SERVER_ISCLIENT == gi->serverRole;
+        XWStreamCtxt* tmpStream =
+            mem_stream_make_raw( MPPARM(server->mpool)
+                             dutil_getVTManager(server->vol.dutil) );
+
+        addDupeStuffMark( tmpStream, DUPE_STUFF_PAUSE );
+
+        stream_putBits( tmpStream, 1, amClient );
+        stream_putBits( tmpStream, 2, typ );
+        if ( AUTOPAUSED != typ ) {
+            stream_putBits( tmpStream, PLAYERNUM_NBITS, turn );
+        }
+        stream_putU32( tmpStream, server->nv.dupTimerExpires );
+        if ( AUTOPAUSED != typ ) {
+            stringToStream( tmpStream, msg );
+        }
+
+        if ( amClient ) {
+            sendStreamToDev( server, SERVER_DEVICE, XWPROTO_DUPE_STUFF, tmpStream );
+        } else {
+            for ( XP_U16 dev = 1; dev < server->nv.nDevices; ++dev ) {
+                if ( dev != skipDev ) {
+                    sendStreamToDev( server, dev, XWPROTO_DUPE_STUFF, tmpStream );
+                }
+            }
+        }
+        stream_destroy( tmpStream );
+    }
+}
+
+static XP_Bool
+dupe_receivePause( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+    XP_Bool isClient = (XP_Bool)stream_getBits( stream, 1 );
+    XP_Bool accept = isClient == amServer( server );
+    if ( accept ) {
+        const CurGameInfo* gi = server->vol.gi;
+        DupPauseType pauseType = (DupPauseType)stream_getBits( stream, 2 );
+        XP_S16 turn = -1;
+        if ( AUTOPAUSED != pauseType ) {
+            turn = (XP_S16)stream_getBits( stream, PLAYERNUM_NBITS );
+            XP_ASSERT( 0 <= turn );
+        } else {
+            dupe_clearState( server );
+        }
+
+        setDupTimerExpires( server, (XP_S32)stream_getU32( stream ) );
+
+        XP_UCHAR* msg = NULL;
+        if ( AUTOPAUSED != pauseType ) {
+            msg = stringFromStream( server->mpool, stream );
+            XP_LOGF( "%s(): pauseType: %d; guiltyParty: %d; msg: %s", __func__,
+                     pauseType, turn, msg );
+        }
+
+        if ( amServer( server ) ) {
+            XP_U16 senderDev = getIndexForStream( server, stream );
+            dupe_transmitPause( server, pauseType, turn, msg, senderDev );
+        }
+
+        model_noteDupePause( server->vol.model, pauseType, turn, msg );
+        callTurnChangeListener( server );
+
+        const XP_UCHAR* name = NULL;
+        if ( AUTOPAUSED != pauseType ) {
+            name = gi->players[turn].name;
+        }
+        dutil_notifyPause( server->vol.dutil, gi->gameID, pauseType, turn,
+                           name, msg );
+
+        XP_FREEP( server->mpool, &msg );
+    }
+    LOG_RETURNF( "%d", accept );
+    return accept;
+}
+
+static XP_Bool
+handleDupeStuff( ServerCtxt* server, XWStreamCtxt* stream )
+{
+    XP_Bool accepted;
+    XP_Bool isServer = amServer( server );
+    DUPE_STUFF typ = getDupeStuffMark( stream );
+    switch ( typ ) {
+    case DUPE_STUFF_MOVE_CLIENT:
+        accepted = isServer && dupe_handleClientMoves( server, stream );
+        break;
+    case DUPE_STUFF_MOVES_SERVER:
+        accepted = !isServer && dupe_handleServerMoves( server, stream );
+        break;
+    case DUPE_STUFF_TRADES_SERVER:
+        accepted = !isServer && dupe_handleServerTrade( server, stream );
+        break;
+    case DUPE_STUFF_PAUSE:
+        accepted = dupe_receivePause( server, stream );
+        break;
+    default:
+        XP_ASSERT(0);
+        accepted = XP_FALSE;
+    }
+    return accepted;
+}
+
+static void
+dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
+                          XP_U16 nPlayers, XP_U16* scores,
+                          XP_U16 nTiles )
+{
+    ModelCtxt* model = server->vol.model;
+
+    /* The winning move is the one we'll commit everywhere. Get it. Reset
+       everybody else then commit it there. */
+    MoveInfo moveInfo = {0};
+    model_currentMoveToMoveInfo( model, winner, &moveInfo );
+
+    TrayTileSet newTiles = {0};
+    fetchTiles( server, winner, nTiles, NULL, &newTiles );
+
+    for ( XP_U16 player = 0; player < nPlayers; ++player ) {
+        model_resetCurrentTurn( model, player );
+    }
+
+    model_commitDupeTurn( model, &moveInfo, nPlayers, scores, &newTiles );
+
+    updateOthersTiles( server );
+
+    if ( server->vol.gi->serverRole == SERVER_ISSERVER ) {
+        XWStreamCtxt* tmpStream =
+            mem_stream_make_raw( MPPARM(server->mpool)
+                                 dutil_getVTManager(server->vol.dutil) );
+
+        addDupeStuffMark( tmpStream, DUPE_STUFF_MOVES_SERVER );
+
+        moveInfoToStream( tmpStream, &moveInfo, bitsPerTile(server) );
+        traySetToStream( tmpStream, &newTiles );
+
+        /* Now write all the scores */
+        stream_putBits( tmpStream, NPLAYERS_NBITS, nPlayers );
+        scoresToStream( tmpStream, nPlayers, scores );
+
+        /* Send it to each one */
+        for ( XP_U16 dev = 1; dev < server->nv.nDevices; ++dev ) {
+            sendStreamToDev( server, dev, XWPROTO_DUPE_STUFF, tmpStream );
+        }
+
+        stream_destroy( tmpStream );
+    }
+
+    dupe_resetTimer( server );
+
+    dupe_setupShowMove( server, scores );
+} /* dupe_commitAndReportMove */
+
+static void
+dupe_forceCommits( ServerCtxt* server )
+{
+    if ( dupTimerRunning() ) {
+        XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
+        if ( server->nv.dupTimerExpires <= now  ) {
+
+            ModelCtxt* model = server->vol.model;
+            for ( XP_U16 ii = 0; ii < server->vol.gi->nPlayers; ++ii ) {
+                if ( server->vol.gi->players[ii].isLocal
+                     && !server->nv.dupTurnsMade[ii] ) {
+                    if ( !model_checkMoveLegal( model, ii, (XWStreamCtxt*)NULL,
+                                                (WordNotifierInfo*)NULL ) ) {
+                        model_resetCurrentTurn( model, ii );
+                    }
+                    commitMoveImpl( server, ii, NULL, XP_TRUE );
+                }
+            }
+        }
+    }
+}
+
+/* Figure out whether everything we care about is done for this turn. If I'm a
+   guest, I care only about local players. If I'm a host or standalone, I care
+   about everything.  */
+static void
+checkWhatsDone( const ServerCtxt* server, XP_Bool amServer,
+                XP_Bool* allDoneP, XP_Bool* allLocalsDoneP )
+{
+    XP_Bool allDone = XP_TRUE;
+    XP_Bool allLocalsDone = XP_TRUE;
+    for ( XP_U16 ii = 0;
+          (allLocalsDone || allDone) && ii < server->vol.gi->nPlayers;
+          ++ii ) {
+        XP_Bool done = server->nv.dupTurnsMade[ii];
+        XP_Bool isLocal = server->vol.gi->players[ii].isLocal;
+        if ( isLocal ) {
+            allLocalsDone = allLocalsDone & done;
+        }
+        if ( amServer || isLocal ) {
+            allDone = allDone && done;
+        }
+    }
+
+    // XP_LOGF( "%s(): allDone: %d; allLocalsDone: %d", __func__, allDone, allLocalsDone );
+    *allDoneP = allDone;
+    *allLocalsDoneP = allLocalsDone;
+}
+
+XP_Bool
+server_dupTurnDone( const ServerCtxt* server, XP_U16 turn )
+{
+    return server->vol.gi->players[turn].isLocal
+        && server->nv.dupTurnsMade[turn];
+}
+
+static XP_Bool
+dupe_checkTurns( ServerCtxt* server )
+{
+    /* If all local players have made moves, it's time to commit the moves
+       locally or notifiy the host */
+    XP_Bool allDone = XP_TRUE;
+    XP_Bool allLocalsDone = XP_TRUE;
+    XP_Bool amServer = server->vol.gi->serverRole == SERVER_ISSERVER
+        || server->vol.gi->serverRole == SERVER_STANDALONE;
+    checkWhatsDone( server, amServer, &allDone, &allLocalsDone );
+
+    XP_LOGF( "%s(): allDone: %d", __func__, allDone );
+
+    if ( allDone ) {            /* Yep: commit time */
+        if ( amServer ) {       /* I now have everything I need to move the
+                                   game foreward */
+            dupe_commitAndReport( server );
+        } else if ( ! server->nv.dupTurnsSent ) { /* I need to send info for
+                                                     local players to host */
+            XWStreamCtxt* stream =
+                messageStreamWithHeader( server, SERVER_DEVICE,
+                                         XWPROTO_DUPE_STUFF );
+
+            addDupeStuffMark( stream, DUPE_STUFF_MOVE_CLIENT );
+
+            /* XP_U32 hash = model_getHash( server->vol.model ); */
+            /* stream_putU32( stream, hash ); */
+
+            XP_U16 localCount = gi_countLocalPlayers( server->vol.gi, XP_FALSE );
+            XP_LOGF( "%s(): writing %d moves", __func__, localCount );
+            stream_putBits( stream, NPLAYERS_NBITS, localCount );
+            for ( XP_U16 ii = 0; ii < server->vol.gi->nPlayers; ++ii ) {
+                if ( server->vol.gi->players[ii].isLocal ) {
+                    stream_putBits( stream, PLAYERNUM_NBITS, ii );
+                    stream_putBits( stream, 1, server->nv.dupTurnsForced[ii] );
+                    model_currentMoveToStream( server->vol.model, ii, stream );
+                    XP_LOGF( "%s(): wrote move %d ", __func__, ii );
+                }
+            }
+
+            stream_destroy( stream ); /* sends it */
+            server->nv.dupTurnsSent = XP_TRUE;
+        }
+    }
+    return allDone;
+} /* dupe_checkTurns */
+
+static void
+dupe_postStatus( const ServerCtxt* server, XP_Bool allDone )
+{
+    /* Standalone case: say nothing here. Should be self evident what's
+       up.*/
+    /* If I'm a client and it's NOT a local turn, tell user that his
+       turn's been sent off and he has to wait.
+       *
+       * If I'm a server, tell user how many of the expected moves have not
+       * yet been received. If all have been, say nothing.
+       */
+
+    XP_UCHAR buf[256] = {0};
+    XP_Bool amHost = XP_FALSE;
+    switch ( server->vol.gi->serverRole ) {
+    case SERVER_STANDALONE:
+        /* do nothing */
+        break;
+    case SERVER_ISCLIENT:
+        if ( allDone ) {
+            const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil,
+                                                       STR_DUP_CLIENT_SENT );
+            XP_SNPRINTF( buf, VSIZE(buf), "%s", fmt );
+        }
+        break;
+    case SERVER_ISSERVER:
+        amHost = XP_TRUE;
+        if ( !allDone ) {
+            XP_U16 nHere = 0;
+            for ( XP_U16 ii = 0; ii < server->vol.gi->nPlayers; ++ii ) {
+                if ( server->nv.dupTurnsMade[ii] ) {
+                    ++nHere;
+                }
+            }
+            const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil,
+                                                       STRDD_DUP_HOST_RECEIVED );
+            XP_SNPRINTF( buf, VSIZE(buf), fmt, nHere, server->vol.gi->nPlayers );
+        }
+    }
+
+    if ( !!buf[0] ) {
+        XP_LOGF( "%s(): msg=%s", __func__, buf );
+        util_notifyDupStatus( server->vol.util, amHost, buf );
+    }
+}
+
+/* Called on client only? */
+static void
+dupe_storeTurn( ServerCtxt* server, XP_U16 turn, XP_Bool forced )
+{
+    XP_ASSERT( !server->nv.dupTurnsMade[turn] );
+    XP_ASSERT( server->vol.gi->players[turn].isLocal ); /* not if I'm the host! */
+    server->nv.dupTurnsMade[turn] = XP_TRUE;
+    server->nv.dupTurnsForced[turn] = forced;
+
+    XP_Bool allDone = dupe_checkTurns( server );
+    dupe_postStatus( server, allDone );
+    nextTurn( server, PICK_NEXT );
+
+    XP_LOGF( "%s(): player %d now has %d tiles", __func__, turn,
+             model_getNumTilesInTray( server->vol.model, turn ) );
+}
+
+static void
+dupe_clearState( ServerCtxt* server )
+{
+    for ( XP_U16 ii = 0; ii < server->vol.gi->nPlayers; ++ii ) {
+        server->nv.dupTurnsMade[ii] = XP_FALSE;
+        server->nv.dupTurnsForced[ii] = XP_FALSE;
+    }
+    server->nv.dupTurnsSent = XP_FALSE;
+}
+
+/* Make it the "turn" of the next local player who hasn't yet submitted a
+   turn. If all have, make it a non-local player's turn. */
+static XP_U16
+dupe_nextTurn( const ServerCtxt* server )
+{
+    CurGameInfo* gi = server->vol.gi;
+    XP_S16 result = -1;
+    XP_U16 nextNonLocal = DUP_PLAYER;
+    for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
+        if ( !server->nv.dupTurnsMade[ii] ) {
+            if ( gi->players[ii].isLocal ) {
+                result = ii;
+                break;
+            } else {
+                nextNonLocal = ii;
+            }
+        }
+    }
+
+    if ( -1 == result ) {
+        result = nextNonLocal;
+    }
+
+    return result;
+}
 
 /* A local player is done with his turn.  If a client device, broadcast
  * the move to the server (after which a response should be coming soon.)
@@ -2478,16 +3489,16 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
  * undoing it.  When client, send the move and go into a state waiting to hear
  * if it was legal -- but only if DISALLOW is set.
  */
-XP_Bool
-server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
+static XP_Bool
+commitMoveImpl( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP,
+                XP_Bool forced )
 {
-    XP_S16 turn = server->nv.currentTurn;
     ModelCtxt* model = server->vol.model;
     CurGameInfo* gi = server->vol.gi;
+    XP_Bool inDupeMode = inDuplicateMode(server);
+    XP_ASSERT( server->nv.currentTurn == player || inDupeMode );
+    XP_S16 turn = player;
     TrayTileSet newTiles = {0};
-    XP_U16 nTilesMoved;
-    XP_Bool isLegalMove = XP_TRUE;
-    XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
 
     if ( !!newTilesP ) {
         newTiles = *newTilesP;
@@ -2504,27 +3515,51 @@ server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
        if client, send to server.  */
     XP_ASSERT( turn >= 0 );
 
-    pool_removeTiles( server->pool, &newTiles );
+    if ( inDupeMode ) {
+        dupe_storeTurn( server, turn, forced );
+    } else {
+        finishMove( server, &newTiles, turn );
+    }
+
+    return XP_TRUE;
+}
+
+XP_Bool
+server_commitMove( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP )
+{
+    return commitMoveImpl( server, player, newTilesP, XP_FALSE );
+}
+
+static void
+finishMove( ServerCtxt* server, TrayTileSet* newTiles, XP_U16 turn )
+{
+    LOG_FUNC();
+    ModelCtxt* model = server->vol.model;
+    CurGameInfo* gi = server->vol.gi;
+
+    pool_removeTiles( server->pool, newTiles );
     server->vol.pickTilesCalled[turn] = XP_FALSE;
 
-    nTilesMoved = model_getCurrentMoveCount( model, turn );
-    fetchTiles( server, turn, nTilesMoved, NULL, &newTiles );
+    XP_U16 nTilesMoved = model_getCurrentMoveCount( model, turn );
+    fetchTiles( server, turn, nTilesMoved, NULL, newTiles );
 
+    XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
+    XP_Bool isLegalMove = XP_TRUE;
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( isClient ) {
         /* just send to server */
-        sendMoveTo( server, SERVER_DEVICE, turn, XP_TRUE, &newTiles,
+        sendMoveTo( server, SERVER_DEVICE, turn, XP_TRUE, newTiles,
                     (TrayTileSet*)NULL );
     } else {
         isLegalMove = checkMoveAllowed( server, turn );
-        sendMoveToClientsExcept( server, turn, isLegalMove, &newTiles,
+        sendMoveToClientsExcept( server, turn, isLegalMove, newTiles,
                                  (TrayTileSet*)NULL, SERVER_DEVICE );
     }
 #else
     isLegalMove = checkMoveAllowed( server, turn );
 #endif
 
-    model_commitTurn( model, turn, &newTiles );
+    model_commitTurn( model, turn, newTiles );
     sortTilesIf( server, turn );
 
     if ( !isLegalMove && !isClient ) {
@@ -2544,12 +3579,12 @@ server_commitMove( ServerCtxt* server, TrayTileSet* newTilesP )
     } else {
         nextTurn( server, PICK_NEXT );
     }
-
     XP_LOGF( "%s(): player %d now has %d tiles", __func__, turn,
              model_getNumTilesInTray( model, turn ) );
+} /* finishMove */
     
-    return XP_TRUE;
-} /* server_commitMove */
+/* return XP_TRUE; */
+/* } /\* server_commitMove *\/ */
 
 XP_Bool
 server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
@@ -2583,7 +3618,7 @@ server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
 } /* server_commitTrade */
 
 XP_S16
-server_getCurrentTurn( ServerCtxt* server, XP_Bool* isLocal )
+server_getCurrentTurn( const ServerCtxt* server, XP_Bool* isLocal )
 {
     XP_S16 turn = server->nv.currentTurn;
     if ( NULL != isLocal && turn >= 0 ) {
@@ -2593,7 +3628,25 @@ server_getCurrentTurn( ServerCtxt* server, XP_Bool* isLocal )
 } /* server_getCurrentTurn */
 
 XP_Bool
-server_getGameIsOver( ServerCtxt* server )
+server_isPlayersTurn( const ServerCtxt* server, XP_U16 turn )
+{
+    XP_Bool result = XP_FALSE;
+
+    if ( inDuplicateMode(server) ) {
+        if ( server->vol.gi->players[turn].isLocal
+             && ! server->nv.dupTurnsMade[turn] ) {
+            result = XP_TRUE;
+        }
+    } else {
+        result = turn == server_getCurrentTurn( server, NULL );
+    }
+
+    // XP_LOGF( "%s(%d) => %d", __func__, turn, result );
+    return result;
+}
+
+XP_Bool
+server_getGameIsOver( const ServerCtxt* server )
 {
     return server->nv.gameState == XWSTATE_GAMEOVER;
 } /* server_getGameIsOver */
@@ -2721,7 +3774,8 @@ server_endGame( ServerCtxt* server )
 } /* server_endGame */
 
 /* If game is about to end because one player's out of tiles, we don't want to
- * keep trying to move */
+ * keep trying to move. Note that in duplicate mode if ANY player has tiles
+ * the answer's yes. */
 static XP_Bool
 tileCountsOk( const ServerCtxt* server )
 {
@@ -2729,18 +3783,24 @@ tileCountsOk( const ServerCtxt* server )
     if ( maybeOver ) {
         ModelCtxt* model = server->vol.model;
         XP_U16 nPlayers = server->vol.gi->nPlayers;
-        XP_Bool zeroFound = XP_FALSE;
+        XP_Bool inDupMode = inDuplicateMode( server );
+        XP_Bool zeroFound = inDupMode;
 
-        while ( nPlayers-- ) {
-            XP_U16 count = model_getNumTilesTotal( model, nPlayers );
-            if ( count == 0 ) {
+        for ( XP_U16 player = 0; player < nPlayers; ++player ) {
+            XP_U16 count = model_getNumTilesTotal( model, player );
+            if ( inDupMode && count > 0 ) {
+                zeroFound = XP_FALSE;
+                break;
+            } else if ( !inDupMode && count == 0 ) {
                 zeroFound = XP_TRUE;
                 break;
             }
         }
         maybeOver = zeroFound;
     }
-    return !maybeOver;
+    XP_Bool result = !maybeOver;
+    // LOG_RETURNF( "%d", result );
+    return result;
 } /* tileCountsOk */
 
 static void
@@ -2748,7 +3808,11 @@ setTurn( ServerCtxt* server, XP_S16 turn )
 {
     XP_ASSERT( -1 == turn
                || (!amServer(server) || (0 == server->nv.pendingRegistrations)));
-    if ( server->nv.currentTurn != turn || 1 == server->vol.gi->nPlayers ) {
+    XP_Bool inDupMode = inDuplicateMode( server );
+    if ( inDupMode || server->nv.currentTurn != turn || 1 == server->vol.gi->nPlayers ) {
+        if ( DUP_PLAYER == turn && inDupMode ) {
+            turn = dupe_nextTurn( server );
+        }
         server->nv.currentTurn = turn;
         server->nv.lastMoveTime = dutil_getCurSeconds( server->vol.dutil );
         callTurnChangeListener( server );
@@ -2841,8 +3905,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
         sortTilesIf( server, turn );
 
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */
-            XP_U16 sourceClientIndex = 
-                getIndexForDevice( server, stream_getAddress( stream ) );
+            XP_U16 sourceClientIndex = getIndexForStream( server, stream );
 
             sendUndoToClientsExcept( server, sourceClientIndex, nUndone, 
                                      lastUndone );
@@ -2955,7 +4018,8 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
     const XW_Proto code = readProto( server, incoming );
     XP_LOGF( "%s(code=%s)", __func__, codeToStr(code) );
 
-    if ( code == XWPROTO_DEVICE_REGISTRATION ) {
+    switch ( code ) {
+    case XWPROTO_DEVICE_REGISTRATION:
         accepted = isServer;
         if ( accepted ) {
         /* This message is special: doesn't have the header that's possible
@@ -2964,104 +4028,84 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             XP_LOGF( "%s: somebody's registering!!!", __func__ );
             accepted = handleRegistrationMsg( server, incoming );
         }
-    } else if ( code == XWPROTO_CLIENT_SETUP ) {
+        break;
+    case XWPROTO_CLIENT_SETUP:
         accepted = !isServer;
         if ( accepted ) {
             XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
             accepted = client_readInitialMessage( server, incoming );
         }
+        break;
 #ifdef XWFEATURE_CHAT
-    } else if ( code == XWPROTO_CHAT ) {
-        XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
-        XP_S16 from = 1 <= stream_getSize( incoming ) 
-            ? stream_getU8( incoming ) : -1;
-        XP_U32 timestamp = sizeof(timestamp) <= stream_getSize( incoming )
-            ? stream_getU32( incoming ) : 0;
-        if ( isServer ) {
-            XP_U16 sourceClientIndex = 
-                getIndexForDevice( server, stream_getAddress( incoming ) );
-            sendChatToClientsExcept( server, sourceClientIndex, msg, from,
-                                     timestamp );
-        }
-        util_showChat( server->vol.util, msg, from, timestamp );
-        XP_FREE( server->mpool, msg );
-        accepted = XP_TRUE;
+    case XWPROTO_CHAT:
+        accepted = receiveChat( server, incoming );
+        break;
 #endif
-    } else if ( readStreamHeader( server, incoming ) ) {
+    case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
+        if ( XWSTATE_INTURN == server->nv.gameState ) {
+            accepted = reflectMoveAndInform( server, incoming );
+        } else {
+            XP_LOGF( "%s(): bad state: %s", __func__, getStateStr( server->nv.gameState ) );
+        }
+        break;
+
+    case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
+        if ( isServer ) {
+            XP_LOGF( "%s(): %s received by server!", __func__, codeToStr(code) );
+            accepted = XP_FALSE;
+        } else {
+            accepted = reflectMove( server, incoming );
+        }
+        if ( accepted ) {
+            nextTurn( server, PICK_NEXT );
+        }
+        break;
+
+    case XWPROTO_UNDO_INFO_CLIENT:
+    case XWPROTO_UNDO_INFO_SERVER:
+        accepted = reflectUndos( server, incoming, code );
+        /* nextTurn is called by reflectUndos */
+        break;
+
+    case XWPROTO_BADWORD_INFO:
+        accepted = handleIllegalWord( server, incoming );
+        if ( accepted && server->nv.gameState != XWSTATE_GAMEOVER ) {
+            nextTurn( server, PICK_NEXT );
+        }
+        break;
+
+    case XWPROTO_MOVE_CONFIRM:
+        accepted = handleMoveOk( server, incoming );
+        break;
+
+    case XWPROTO_CLIENT_REQ_END_GAME: {
         XP_S8 quitter;
-        switch( code ) {
-/*         case XWPROTO_MOVEMADE_INFO: */
-/*             accepted = client_reflectMoveMade( server, incoming ); */
-/*             if ( accepted ) { */
-/*                 nextTurn( server ); */
-/*             } */
-/*             break; */
-/*         case XWPROTO_TRADEMADE_INFO: */
-/*             accepted = client_reflectTradeMade( server, incoming ); */
-/*             if ( accepted ) { */
-/*                 nextTurn( server ); */
-/*             } */
-/*             break; */
-/*         case XWPROTO_CLIENT_MOVE_INFO: */
-/*             accepted = handleClientMoved( server, incoming ); */
-/*             break; */
-/*         case XWPROTO_CLIENT_TRADE_INFO: */
-/*             accepted = handleClientTraded( server, incoming ); */
-/*             break; */
-
-        case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
-            accepted = (XWSTATE_INTURN == server->nv.gameState)
-                && reflectMoveAndInform( server, incoming );
-            break;
-
-        case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
-            accepted = !isServer && reflectMove( server, incoming );
-            if ( accepted ) {
-                nextTurn( server, PICK_NEXT );
-            }
-            break;
-
-        case XWPROTO_UNDO_INFO_CLIENT:
-        case XWPROTO_UNDO_INFO_SERVER:
-            accepted = reflectUndos( server, incoming, code );
-            /* nextTurn is called by reflectUndos */
-            break;
-
-        case XWPROTO_BADWORD_INFO:
-            accepted = handleIllegalWord( server, incoming );
-            if ( accepted && server->nv.gameState != XWSTATE_GAMEOVER ) {
-                nextTurn( server, PICK_NEXT );
-            }
-            break;
-
-        case XWPROTO_MOVE_CONFIRM:
-            accepted = handleMoveOk( server, incoming );
-            break;
-
-        case XWPROTO_CLIENT_REQ_END_GAME:
-            getQuitter( server, incoming, &quitter );
-            endGameInternal( server, END_REASON_USER_REQUEST, quitter );
-            accepted = XP_TRUE;
-            break;
-        case XWPROTO_END_GAME:
-            getQuitter( server, incoming, &quitter );
-            doEndGame( server, quitter );
-            accepted = XP_TRUE;
-            break;
-        default:
-            XP_WARNF( "%s: Unknown code on incoming message: %d\n", 
-                      __func__, code );
-            break;
-        } /* switch */
+        getQuitter( server, incoming, &quitter );
+        endGameInternal( server, END_REASON_USER_REQUEST, quitter );
+        accepted = XP_TRUE;
     }
+        break;
+    case XWPROTO_END_GAME: {
+        XP_S8 quitter;
+        getQuitter( server, incoming, &quitter );
+        doEndGame( server, quitter );
+        accepted = XP_TRUE;
+    }
+        break;
+    case XWPROTO_DUPE_STUFF:
+        accepted = handleDupeStuff( server, incoming );
+        break;
+    default:
+        XP_WARNF( "%s: Unknown code on incoming message: %d\n",
+                  __func__, code );
+        XP_ASSERT( 0 );
+        break;
+    } /* switch */
 
     XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
     stream_close( incoming );
-    if ( !accepted ) {
-        XP_LOGF( "%s(): failure processing code %s", __func__, codeToStr(code) );
-        // XP_ASSERT( 0 );
-    }
-    XP_LOGF( "%s(%s) => %d", __func__, codeToStr(code), accepted );
+
+    XP_LOGF( "%s() => %d (code=%s)", __func__, accepted, codeToStr(code) );
     return accepted;
 } /* server_receiveMessage */
 #endif
@@ -3293,7 +4337,6 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         XP_UCHAR buf[128]; 
         XP_S16 thisScore = IMPOSSIBLY_LOW_SCORE;
         XP_S16 thisIndex = -1;
-        XP_UCHAR tmpbuf[48];
         XP_U16 ii, placeKey = 0;
         XP_Bool firstDone;
 
@@ -3335,12 +4378,15 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
             }
         }
 
-        firstDone = model_getNumTilesTotal( model, thisIndex) == 0;
-        XP_SNPRINTF( tmpbuf, sizeof(tmpbuf), 
-                     (firstDone? addString:subString),
-                     firstDone? 
-                     tilePenalties.arr[thisIndex]:
-                     -tilePenalties.arr[thisIndex] );
+        XP_UCHAR tmpbuf[48] = {0};
+        if ( !inDuplicateMode( server ) ) {
+            firstDone = model_getNumTilesTotal( model, thisIndex) == 0;
+            XP_SNPRINTF( tmpbuf, sizeof(tmpbuf),
+                         (firstDone? addString:subString),
+                         firstDone?
+                         tilePenalties.arr[thisIndex]:
+                         -tilePenalties.arr[thisIndex] );
+        }
 
         const XP_UCHAR* name = emptyStringIfNull(gi->players[thisIndex].name);
         if ( 0 == placeKey ) {
@@ -3350,16 +4396,18 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                          name, scores.arr[thisIndex] );
         } else {
             const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil,
-                                                      placeKey );
+                                                       placeKey );
             XP_SNPRINTF( buf, sizeof(buf), fmt, name,
                          scores.arr[thisIndex] );
         }
 
-        XP_UCHAR buf2[64];
-        XP_SNPRINTF( buf2, sizeof(buf2), XP_CR "  (%d %s%s)",
-                     model_getPlayerScore( model, thisIndex ),
-                     tmpbuf, timeStr );
-        XP_STRCAT( buf, buf2 );
+        if ( !inDuplicateMode( server ) ) {
+            XP_UCHAR buf2[64];
+            XP_SNPRINTF( buf2, sizeof(buf2), XP_CR "  (%d %s%s)",
+                         model_getPlayerScore( model, thisIndex ),
+                         tmpbuf, timeStr );
+            XP_STRCAT( buf, buf2 );
+        }
 
         if ( 1 < place ) {
             stream_catString( stream, XP_CR );

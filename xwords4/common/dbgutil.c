@@ -79,7 +79,10 @@ StackMoveType_2str( StackMoveType typ )
         CASESTR(MOVE_TYPE);
         CASESTR(TRADE_TYPE); 
         CASESTR(PHONY_TYPE);
-    default: return FUNC(__func__) " unknown";
+        CASESTR(PAUSE_TYPE);
+    default:
+        XP_ASSERT(0);
+        return "<unknown>";
     }
 }
 

@@ -1,6 +1,7 @@
  /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2019 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -60,6 +61,7 @@ typedef enum {
     ,NG_ATTR_NPLAYHEADER
     ,NG_ATTR_CANJUGGLE
     ,NG_ATTR_TIMER
+    ,NG_ATTR_DUPLICATE
 } NewGameAttr;
 
 typedef union NGValue {

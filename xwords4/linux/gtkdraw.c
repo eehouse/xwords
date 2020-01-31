@@ -1207,8 +1207,8 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
 
 static void
 gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
-                             XP_S16 score, XP_U16 playerNum,
-                             XP_S16 curTurn, CellFlags flags )
+                             XP_S16 score, XP_U16 XP_UNUSED(playerNum),
+                             XP_Bool curTurn, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_UCHAR buf[5];
@@ -1236,7 +1236,7 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
     ht = localR.height >> 2;
-    txtColor = (playerNum == curTurn) ? &dctx->black : &dctx->grey;
+    txtColor = curTurn ? &dctx->black : &dctx->grey;
     draw_string_at( dctx, NULL, "Pts:", ht,
                     &localR, XP_GTK_JUST_TOPLEFT, txtColor, cursor );
     draw_string_at( dctx, NULL, buf, ht,
@@ -1247,34 +1247,35 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 static void
 gtkFormatTimerText( XP_UCHAR* buf, XP_U16 bufLen, XP_S16 secondsLeft )
 {
-    XP_U16 minutes, seconds;
-
     if ( secondsLeft < 0 ) {
         *buf++ = '-';
         --bufLen;
         secondsLeft *= -1;
     }
 
-    minutes = secondsLeft / 60;
-    seconds = secondsLeft % 60;
+    XP_U16 minutes = secondsLeft / 60;
+    XP_U16 seconds = secondsLeft % 60;
     XP_SNPRINTF( buf, bufLen, "% 1d:%02d", minutes, seconds );
 } /* gtkFormatTimerText */
 
 static void
 gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                    XP_U16 playerNum, XP_S16 secondsLeft )
+                    XP_U16 playerNum, XP_S16 secondsLeft,
+                    XP_Bool localTurnDone )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Bool hadCairo = haveCairo( dctx );
     if ( hadCairo || initCairo( dctx ) ) {
-        XP_UCHAR buf[10];
+        gtkEraseRect( dctx, rInner );
 
+        GdkRGBA* color = localTurnDone ? &dctx->grey
+            : &dctx->playerColors[playerNum];
+
+        XP_UCHAR buf[10];
         gtkFormatTimerText( buf, VSIZE(buf), secondsLeft );
 
-        gtkEraseRect( dctx, rInner );
         draw_string_at( dctx, NULL, buf, rInner->height-1,
-                        rInner, XP_GTK_JUST_CENTER,
-                        &dctx->playerColors[playerNum], NULL );
+                        rInner, XP_GTK_JUST_CENTER, color, NULL );
         if ( !hadCairo ) {
             destroyCairo( dctx );
         }

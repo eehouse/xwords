@@ -404,6 +404,8 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
         --len;
     }
 
+    log_hex( ptr, len, __func__ );
+
     hash = augmentHash( 0, ptr, len );
     if ( 0 != bits ) {
         XP_U8 byt = ptr[len];
@@ -413,10 +415,11 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
             byt &= 1 << bits;
         }
         hash = augmentHash( hash, &byt, 1 );
+        log_hex( &byt, 1, __func__ );
     }
     hash = finishHash( hash );
 
-    LOG_RETURNF( "%X (nBytes=%d;nBits=%d)", hash, len, bits );
+    XP_LOGF( "%s(nBytes=%d, nBits=%d) => %X", __func__, len, bits, hash );
     return hash;
 } /* mem_stream_getHash */
 

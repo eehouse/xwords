@@ -116,6 +116,8 @@ typedef struct UtilVtable {
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     void (*m_util_turnChanged)(XW_UtilCtxt* uc, XP_S16 newTurn);
 #endif
+    void (*m_util_notifyDupStatus)( XW_UtilCtxt* uc, XP_Bool amHost,
+                                    const XP_UCHAR* msg );
     void (*m_util_informMove)( XW_UtilCtxt* uc, XP_S16 turn, 
                                XWStreamCtxt* expl, XWStreamCtxt* words );
     void (*m_util_informUndo)( XW_UtilCtxt* uc );
@@ -145,6 +147,14 @@ typedef struct UtilVtable {
                                        XP_U16 turn, XP_Bool turnLost );
 
     void (*m_util_remSelected)(XW_UtilCtxt* uc);
+
+    void (*m_util_timerSelected)(XW_UtilCtxt* uc, XP_Bool inDuplicateMode,
+                                 XP_Bool canPause);
+
+    void (*m_util_formatPauseHistory)( XW_UtilCtxt* uc, XWStreamCtxt* stream,
+                                       DupPauseType typ, XP_S16 turn,
+                                       XP_U32 secsPrev, XP_U32 secsCur,
+                                       const XP_UCHAR* msg );
 
 #ifndef XWFEATURE_MINIWIN
     void (*m_util_bonusSquareHeld)( XW_UtilCtxt* uc, XWBonusType bonus );
@@ -229,6 +239,8 @@ struct XW_UtilCtxt {
 # define util_turnChanged( uc, t )
 #endif
 
+#define util_notifyDupStatus(uc, h, m)                      \
+    (uc)->vtable->m_util_notifyDupStatus( (uc), (h), (m) )
 #define util_informMove(uc,t,e,w)                               \
          (uc)->vtable->m_util_informMove( (uc), (t), (e), (w))
 #define util_informUndo(uc) \
@@ -266,6 +278,13 @@ struct XW_UtilCtxt {
 
 #define util_remSelected( uc )              \
          (uc)->vtable->m_util_remSelected((uc))
+
+#define util_timerSelected( uc, dm, cp )                        \
+         (uc)->vtable->m_util_timerSelected((uc), (dm), (cp))
+
+#define util_formatPauseHistory( uc, s, typ, turn, secsPrev, secsCur, msg ) \
+    (uc)->vtable->m_util_formatPauseHistory( (uc), (s), (typ), (turn),  \
+                                             (secsPrev), (secsCur), (msg) )
 
 #ifndef XWFEATURE_MINIWIN
 # define util_bonusSquareHeld( uc, b )                                  \

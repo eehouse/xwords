@@ -24,7 +24,6 @@ import android.content.Intent;
 
 public class FBMService {
     private static final String TAG = FBMService.class.getSimpleName();
-    private static final String KEY_FCMID = TAG + "_fcmid";
 
     public static void init( Context context )
     {

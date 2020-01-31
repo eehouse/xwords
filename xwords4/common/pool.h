@@ -25,8 +25,10 @@
 #include "model.h"
 
 void pool_requestTiles( PoolContext* pool, Tile* tiles, 
-                        /*in out*/ XP_U8* maxNum );
+                        /*in out*/ XP_U16* maxNum );
 void pool_replaceTiles( PoolContext* pool, const TrayTileSet* tiles );
+void pool_replaceTiles2( PoolContext* pool, XP_U16 nTiles, const Tile* tilesP );
+
 void pool_removeTiles( PoolContext* pool, const TrayTileSet* tiles );
 XP_Bool pool_containsTiles( const PoolContext* pool, 
                             const TrayTileSet* tiles );
@@ -41,5 +43,9 @@ void pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict );
 
 void pool_writeToStream( PoolContext* pool, XWStreamCtxt* stream );
 PoolContext* pool_makeFromStream( MPFORMAL XWStreamCtxt* stream );
+
+#ifdef DEBUG
+void pool_dumpSelf( const PoolContext* pool );
+#endif
 
 #endif

@@ -53,6 +53,7 @@ struct NewGameCtx {
 #ifndef XWFEATURE_STANDALONE_ONLY
     XP_TriEnable settingsEnabled;
 #endif
+    XP_Bool duplicateEnabled;
 
     MPSLOT
 };
@@ -150,6 +151,15 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame?
                             TRI_ENAB_ENABLED : TRI_ENAB_DISABLED );
 
+
+    ngc->timerSeconds = gi->gameSeconds;
+    value.ng_u16 = ngc->timerSeconds;
+    (*ngc->setAttrProc)( closure, NG_ATTR_TIMER, value );
+
+    ngc->duplicateEnabled = gi->inDuplicateMode;
+    value.ng_bool = ngc->duplicateEnabled;
+    (*ngc->setAttrProc)( closure, NG_ATTR_DUPLICATE, value );
+
     ngc->timerSeconds = gi->gameSeconds;
     value.ng_u16 = ngc->timerSeconds;
     (*ngc->setAttrProc)( closure, NG_ATTR_TIMER, value );
@@ -220,7 +230,6 @@ XP_Bool
 newg_store( NewGameCtx* ngc, CurGameInfo* gi, 
             XP_Bool XP_UNUSED_STANDALONE(warn) )
 {
-    XP_U16 player;
     XP_Bool consistent = checkConsistent( ngc, warn );
 
     if ( consistent ) {
@@ -230,10 +239,15 @@ newg_store( NewGameCtx* ngc, CurGameInfo* gi,
         gi->serverRole = ngc->role;
         makeLocal = ngc->role != SERVER_ISSERVER;
 #endif
+
         gi->gameSeconds = ngc->timerSeconds;
         gi->timerEnabled = gi->gameSeconds > 0;
 
-        for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
+        gi->inDuplicateMode = ngc->duplicateEnabled;
+        gi->gameSeconds = ngc->timerSeconds;
+        gi->timerEnabled = gi->gameSeconds > 0;
+
+        for ( XP_U16 player = 0; player < MAX_NUM_PLAYERS; ++player ) {
             storePlayer( ngc, player, &gi->players[player] );
             if ( makeLocal ) {
                 gi->players[player].isLocal = XP_TRUE;
@@ -272,6 +286,9 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
 #endif
     case NG_ATTR_TIMER:
         ngc->timerSeconds = value.ng_u16;
+        break;
+    case NG_ATTR_DUPLICATE:
+        ngc->duplicateEnabled = value.ng_bool;
         break;
     default:
         XP_ASSERT( 0 );

@@ -78,7 +78,7 @@ typedef struct StreamCtxVTable {
                               DBG_LINE_FILE_FORMAL );
 
     void (*m_stream_getFromStream)( XWStreamCtxt* dctx, XWStreamCtxt* src,
-                                     XP_U16 nBytes );
+                                    XP_U16 nBytes );
 
     XWStreamPos (*m_stream_getPos)( const XWStreamCtxt* dctx, PosWhich which );
     XWStreamPos (*m_stream_setPos)( XWStreamCtxt* dctx, PosWhich which, 

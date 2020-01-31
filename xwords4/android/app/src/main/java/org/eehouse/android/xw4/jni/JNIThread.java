@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -33,11 +33,12 @@ import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
+import org.eehouse.android.xw4.DupeModeTimer;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
-import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -97,6 +98,8 @@ public class JNIThread extends Thread implements AutoCloseable {
             CMD_NETSTATS,
             CMD_PASS_PASSWD,
             CMD_SET_BLANK,
+            CMD_PAUSE,
+            CMD_UNPAUSE,
             // CMD_DRAW_CONNS_STATUS,
             // CMD_DRAW_BT_STATUS,
             // CMD_DRAW_SMS_STATUS,
@@ -106,7 +109,7 @@ public class JNIThread extends Thread implements AutoCloseable {
     public static final int DIALOG = 2;
     public static final int QUERY_ENDGAME = 3;
     public static final int TOOLBAR_STATES = 4;
-    public static final int GOT_WORDS = 5;
+    public static final int GOT_PAUSE = 5;
     public static final int GAME_OVER = 6;
     public static final int MSGS_SENT = 7;
 
@@ -124,6 +127,8 @@ public class JNIThread extends Thread implements AutoCloseable {
         public boolean curTurnSelected;
         public boolean canHideRack;
         public boolean canTrade;
+        public boolean canPause;
+        public boolean canUnpause;
         public GameStateInfo clone() {
             GameStateInfo obj = null;
             try {
@@ -167,7 +172,7 @@ public class JNIThread extends Thread implements AutoCloseable {
     {
         m_lock = lock.retain();
         m_rowid = lock.getRowid();
-        m_queue = new LinkedBlockingQueue<QueueElem>();
+        m_queue = new LinkedBlockingQueue<>();
     }
 
     public boolean configure( Context context, SyncedDraw drawer,
@@ -239,6 +244,8 @@ public class JNIThread extends Thread implements AutoCloseable {
             }
 
             m_lastSavedState = Arrays.hashCode( stream );
+
+            DupeModeTimer.gameOpened( m_context, m_rowid );
         }
         Log.d( TAG, "configure() => %b", success );
         return success;
@@ -729,6 +736,12 @@ public class JNIThread extends Thread implements AutoCloseable {
                                          ((Integer)args[2]).intValue() );
                 break;
 
+            case CMD_PAUSE:
+                XwJNI.board_pause( m_jniGamePtr, ((String)args[0]) );
+                break;
+            case CMD_UNPAUSE:
+                XwJNI.board_unpause( m_jniGamePtr, ((String)args[0]) );
+                break;
             case CMD_NONE:      // ignored
                 break;
             default:
@@ -785,6 +798,12 @@ public class JNIThread extends Thread implements AutoCloseable {
         handle( JNICmd.CMD_SENDCHAT, chat );
     }
 
+    public void notifyPause( int pauser, boolean isPause, String msg )
+    {
+        Message.obtain( m_handler, GOT_PAUSE, msg )
+                        .sendToTarget();
+    }
+
     public void handle( JNICmd cmd, Object... args )
     {
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
@@ -837,6 +856,7 @@ public class JNIThread extends Thread implements AutoCloseable {
 
         if ( stop ) {
             waitToStop( true );
+            DupeModeTimer.gameClosed( m_context, m_rowid );
         } else if ( save && 0 != m_lastSavedState ) { // has configure() run?
             handle( JNICmd.CMD_SAVE );         // in case releaser has made changes
         }
@@ -871,6 +891,16 @@ public class JNIThread extends Thread implements AutoCloseable {
                 result.retain_sync();
             }
         }
+        return result;
+    }
+
+    public static boolean gameIsOpen( long rowid )
+    {
+        boolean result = false;
+        try ( JNIThread thread = JNIThread.getRetained( rowid ) ) {
+            result = null != thread;
+        }
+        Log.d( TAG, "gameIsOpen(%d) => %b", rowid, result );
         return result;
     }
 }

@@ -20,9 +20,6 @@
 #ifndef _XWPROTO_H_
 #define _XWPROTO_H_
 
-
-
-
 typedef enum {
     XWPROTO_ERROR = 0 /* illegal value */
     ,XWPROTO_CHAT      /* broadcast text message for display */
@@ -46,6 +43,8 @@ typedef enum {
     ,XWPROTO_END_GAME               /* server says to end game */
 
     ,XWPROTO_NEW_PROTO
+
+    ,XWPROTO_DUPE_STUFF         /* used for all duplicate-mode messages */
 } XW_Proto;
 
 #define XWPROTO_NBITS 4

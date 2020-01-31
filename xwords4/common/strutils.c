@@ -28,13 +28,13 @@ extern "C" {
 #endif
 
 XP_U16
-bitsForMax( XP_U32 n )
+bitsForMax( XP_U32 nn )
 {
     XP_U16 result = 0;
-    XP_ASSERT( n > 0 );
+    XP_ASSERT( nn > 0 );
 
-    while ( n != 0 ) {
-        n >>= 1;
+    while ( nn != 0 ) {
+        nn >>= 1;
         ++result;
     }
 
@@ -66,12 +66,106 @@ tilesFromStream( XWStreamCtxt* stream, Tile* tiles, XP_U16 nTiles )
 } /* tilesFromStream */
 
 void
+scoresToStream( XWStreamCtxt* stream, XP_U16 nScores, const XP_U16* scores )
+{
+    if ( 0 < nScores ) {
+        XP_U16 maxScore = 1;    /* 0 will confuse bitsForMax */
+        for ( XP_U16 ii = 0; ii < nScores; ++ii ) {
+            XP_U16 score = scores[ii];
+            if ( score > maxScore ) {
+                maxScore = score;
+            }
+        }
+
+        XP_U16 bits = bitsForMax( maxScore );
+        stream_putBits( stream, 4, bits );
+        for ( XP_U16 ii = 0; ii < nScores; ++ii ) {
+            stream_putBits( stream, bits, scores[ii] );
+        }
+    }
+}
+
+void
+scoresFromStream( XWStreamCtxt* stream, XP_U16 nScores, XP_U16* scores )
+{
+    if ( 0 < nScores ) {
+        XP_U16 bits = (XP_U16)stream_getBits( stream, 4 );
+        for ( XP_U16 ii = 0; ii < nScores; ++ii ) {
+            scores[ii] = stream_getBits( stream, bits );
+        }
+    }
+}
+
+void
 traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts )
 {
     XP_U16 nTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
     tilesFromStream( stream, ts->tiles, nTiles );
     ts->nTiles = (XP_U8)nTiles;
 } /* traySetFromStream */
+
+#ifdef DEBUG
+void
+assertSorted( const MoveInfo* mi )
+{
+    for ( XP_U16 ii = 1; ii < mi->nTiles; ++ii ) {
+        XP_ASSERT( mi->tiles[ii-1].varCoord < mi->tiles[ii].varCoord );
+    }
+}
+#endif
+
+void
+moveInfoToStream( XWStreamCtxt* stream, const MoveInfo* mi, XP_U16 bitsPerTile )
+{
+#ifdef DEBUG
+    /* XP_UCHAR buf[64] = {0}; */
+    /* XP_U16 offset = 0; */
+#endif
+    assertSorted( mi );
+
+    stream_putBits( stream, NTILES_NBITS, mi->nTiles );
+    stream_putBits( stream, NUMCOLS_NBITS_5, mi->commonCoord );
+    stream_putBits( stream, 1, mi->isHorizontal );
+
+    XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
+    for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) {
+        stream_putBits( stream, NUMCOLS_NBITS_5, mi->tiles[ii].varCoord );
+
+        Tile tile = mi->tiles[ii].tile;
+#ifdef DEBUG
+        /* offset += XP_SNPRINTF( &buf[offset], VSIZE(buf)-offset, "%x,", tile ); */
+#endif
+        stream_putBits( stream, bitsPerTile, tile & TILE_VALUE_MASK );
+        stream_putBits( stream, 1, (tile & TILE_BLANK_BIT) != 0 );
+    }
+    // XP_LOGF( "%s(): tiles: %s", __func__, buf );
+}
+
+void
+moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi, XP_U16 bitsPerTile )
+{
+#ifdef DEBUG
+    /* XP_UCHAR buf[64] = {0}; */
+    /* XP_U16 offset = 0; */
+#endif
+    mi->nTiles = stream_getBits( stream, NTILES_NBITS );
+    XP_ASSERT( mi->nTiles <= MAX_TRAY_TILES );
+    mi->commonCoord = stream_getBits( stream, NUMCOLS_NBITS_5 );
+    mi->isHorizontal = stream_getBits( stream, 1 );
+    for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) {
+        mi->tiles[ii].varCoord = stream_getBits( stream, NUMCOLS_NBITS_5 );
+        Tile tile = stream_getBits( stream, bitsPerTile );
+        if ( 0 != stream_getBits( stream, 1 ) ) {
+            tile |= TILE_BLANK_BIT;
+        }
+        mi->tiles[ii].tile = tile;
+#ifdef DEBUG
+        /* offset += XP_SNPRINTF( &buf[offset], VSIZE(buf)-offset, "%x,", tile ); */
+#endif
+    }
+    assertSorted( mi );
+    // XP_LOGF( "%s(): tiles: %s", __func__, buf );
+}
 
 void
 removeTile( TrayTileSet* tiles, XP_U16 index )
@@ -465,6 +559,7 @@ smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 void
 log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
 {
+    XP_LOGF( "%s(len=%d[0x%x])", __func__, len, len );
     const char* hex = "0123456789ABCDEF";
     XP_U16 ii, jj;
     XP_U16 offset = 0;

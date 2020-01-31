@@ -350,6 +350,9 @@ public class XwJNI {
 
     public static native String board_formatRemainingTiles( GamePtr gamePtr );
     public static native void board_sendChat( GamePtr gamePtr, String msg );
+    // Duplicate mode to start and stop timer
+    public static native void board_pause( GamePtr gamePtr, String msg );
+    public static native void board_unpause( GamePtr gamePtr, String msg );
 
     public enum XP_Key {
         XP_KEY_NONE,

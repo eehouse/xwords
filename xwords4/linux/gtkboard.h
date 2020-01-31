@@ -115,6 +115,8 @@ typedef struct GtkGameGlobals {
 #ifdef XWFEATURE_CHAT
     GtkWidget* chat_button;
 #endif
+    GtkWidget* pause_button;
+    GtkWidget* unpause_button;
     GtkWidget* countLabel;
 
     EngineCtxt* engine;

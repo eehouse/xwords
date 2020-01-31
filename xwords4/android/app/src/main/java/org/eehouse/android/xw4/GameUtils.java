@@ -179,7 +179,7 @@ public class GameUtils {
                 tellDied( context, lock, true );
                 resetGame( context, lock, lock, DBUtils.GROUPID_UNSPEC, false );
 
-                Utils.cancelNotification( context, (int)rowidIn );
+                Utils.cancelNotification( context, rowidIn );
                 success = true;
             } else {
                 DbgUtils.toastNoLock( TAG, context, rowidIn,
@@ -299,11 +299,13 @@ public class GameUtils {
     }
 
     public static void deleteGame( Context context, GameLock lock,
-                                   boolean informNow )
+                                   boolean informNow, boolean skipTell )
     {
         if ( null != lock ) {
-            tellDied( context, lock, informNow );
-            Utils.cancelNotification( context, (int)lock.getRowid() );
+            if ( !skipTell ) {
+                tellDied( context, lock, informNow );
+            }
+            Utils.cancelNotification( context, lock.getRowid() );
             DBUtils.deleteGame( context, lock );
         } else {
             Log.e( TAG, "deleteGame(): null lock; doing nothing" );
@@ -311,13 +313,13 @@ public class GameUtils {
     }
 
     public static boolean deleteGame( Context context, long rowid,
-                                      boolean informNow )
+                                      boolean informNow, boolean skipTell )
     {
         boolean success;
         // does this need to be synchronized?
         try ( GameLock lock = GameLock.tryLock( rowid ) ) {
             if ( null != lock ) {
-                deleteGame( context, lock, informNow );
+                deleteGame( context, lock, informNow, skipTell );
                 success = true;
             } else {
                 DbgUtils.toastNoLock( TAG, context, rowid,
@@ -334,7 +336,7 @@ public class GameUtils {
         int nSuccesses = 0;
         long[] rowids = DBUtils.getGroupGames( context, groupid );
         for ( int ii = rowids.length - 1; ii >= 0; --ii ) {
-            if ( deleteGame( context, rowids[ii], ii == 0 ) ) {
+            if ( deleteGame( context, rowids[ii], ii == 0, false ) ) {
                 ++nSuccesses;
             }
         }
@@ -939,7 +941,17 @@ public class GameUtils {
     public static void launchGame( Delegator delegator, long rowid,
                                    boolean invited )
     {
+        launchGame( delegator, rowid, invited, null );
+    }
+
+    public static void launchGame( Delegator delegator, long rowid,
+                                   boolean invited, Bundle moreExtras )
+    {
         Bundle extras = makeLaunchExtras( rowid, invited );
+        if ( null != moreExtras ) {
+            extras.putAll( moreExtras );
+        }
+
         if ( delegator.inDPMode() ) {
             delegator.addFragment( BoardFrag.newInstance( delegator ), extras );
         } else {
@@ -1055,7 +1067,7 @@ public class GameUtils {
                         if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                             draw = true;
                             int curFlags = DBUtils.getMsgFlags( context, rowid );
-                            DBUtils.setMsgFlags( rowid, flags | curFlags );
+                            DBUtils.setMsgFlags( context, rowid, flags | curFlags );
                         }
                     }
                 }
@@ -1245,7 +1257,7 @@ public class GameUtils {
             if ( 0 != titleID ) {
                 String title = LocUtils.getString( context, titleID,
                                                    getName( context, rowid ) );
-                Utils.postNotification( context, intent, title, msg, (int)rowid );
+                Utils.postNotification( context, intent, title, msg, rowid );
             }
         } else {
             Log.d( TAG, "postMoveNotification(): posting nothing for lack"
@@ -1258,7 +1270,7 @@ public class GameUtils {
     {
         Intent intent = GamesListDelegate.makeGameIDIntent( context, gameID );
         Utils.postNotification( context, intent, R.string.invite_notice_title,
-                                body, (int)rowid );
+                                body, rowid );
     }
 
     private static void tellDied( Context context, GameLock lock,

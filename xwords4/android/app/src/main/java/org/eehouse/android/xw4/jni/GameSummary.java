@@ -37,6 +37,7 @@ import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -55,8 +56,10 @@ public class GameSummary implements Serializable {
     public static final int MSG_FLAGS_CHAT = 2;
     public static final int MSG_FLAGS_GAMEOVER = 4;
     public static final int MSG_FLAGS_ALL = 7;
+    public static final int DUP_MODE_MASK = 1 << (CurGameInfo.MAX_NUM_PLAYERS * 2);
 
     public int lastMoveTime;  // set by jni's server.c on move receipt
+    public int dupTimerExpires;
     public int nMoves;
     public int turn;
     public boolean turnIsLocal;
@@ -110,6 +113,7 @@ public class GameSummary implements Serializable {
                 GameSummary other = (GameSummary)obj;
                 result = lastMoveTime == other.lastMoveTime
                     && nMoves == other.nMoves
+                    && dupTimerExpires == other.dupTimerExpires
                     && turn == other.turn
                     && turnIsLocal == other.turnIsLocal
                     && nPlayers == other.nPlayers
@@ -361,8 +365,19 @@ public class GameSummary implements Serializable {
                     result |= 1 << (ii * 2);
                 }
             }
+
+            Assert.assertTrue( (result & DUP_MODE_MASK) == 0 );
+            if ( m_gi.inDuplicateMode ) {
+                result |= DUP_MODE_MASK;
+            }
         }
         return result;
+    }
+
+    public boolean inDuplicateMode()
+    {
+        int flags = giflags();
+        return (flags & DUP_MODE_MASK) != 0;
     }
 
     public void setGiFlags( int flags )

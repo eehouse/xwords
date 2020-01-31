@@ -373,7 +373,7 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
     XP_Bool success = XP_TRUE;
     XP_Rect cellRect = {0};
     Tile tile;
-    XP_Bool isBlank, isEmpty, recent = XP_FALSE, pending = XP_FALSE;
+    XP_Bool isBlank, isEmpty, pending = XP_FALSE;
     XWBonusType bonus;
     ModelCtxt* model = board->model;
     DictionaryCtxt* dict = model_getDictionary( model );
@@ -395,6 +395,7 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
         /* This 'while' is only here so I can 'break' below */
         while ( board->trayVisState == TRAY_HIDDEN ||
                 !rectContainsRect( &board->trayBounds, &cellRect ) ) {
+            XP_Bool recent = XP_FALSE;
             XP_UCHAR ch[4] = {'\0'};
             XP_S16 owner = -1;
             XP_Bitmaps bitmaps;

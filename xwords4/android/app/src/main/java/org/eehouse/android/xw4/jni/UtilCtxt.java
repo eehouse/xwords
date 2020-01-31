@@ -53,11 +53,14 @@ public interface UtilCtxt {
     public static final int TIMER_TIMERTICK = 2;
     public static final int TIMER_COMMS = 3;
     public static final int TIMER_SLOWROBOT = 4;
+    public static final int TIMER_DUP_TIMERCHECK = 5;
+    public static final int NUM_TIMERS_PLUS_ONE = 6;
     void setTimer( int why, int when, int handle );
     void clearTimer( int why );
 
     void requestTime();
     void remSelected();
+    void timerSelected( boolean inDuplicateMode, boolean canPause );
     void setIsServer( boolean isServer );
 
     void bonusSquareHeld( int bonus );
@@ -66,6 +69,7 @@ public interface UtilCtxt {
 
     void notifyMove( String query );
     void notifyTrade( String[] tiles );
+    void notifyDupStatus( boolean amHost, String msg );
 
     // These can't be an ENUM! The set is open-ended, with arbitrary values
     // added to ERR_RELAY_BASE, so no way to create an enum from an int in the
@@ -110,4 +114,7 @@ public interface UtilCtxt {
                              boolean turnLost );
 
     void showChat( String msg, int fromIndx, String fromName, int tsSeconds );
+
+    String formatPauseHistory( int pauseTyp, int player, int whenPrev,
+                               int whenCur, String msg );
 }

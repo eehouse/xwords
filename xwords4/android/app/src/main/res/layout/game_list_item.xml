@@ -38,11 +38,6 @@
                         android:paddingLeft="8dip"
                         android:paddingRight="8dip"
                         >
-            <!-- Shown only when BuildConfig.DEBUG == true -->
-            <TextView android:id="@+id/n_pending"
-	                  android:layout_width="wrap_content"
-	                  android:layout_height="wrap_content"
-                      />
             <ImageView android:id="@+id/game_type_marker"
 	                   android:layout_width="fill_parent"
 	                   android:layout_height="fill_parent"
@@ -54,6 +49,19 @@
                        android:src="@drawable/green_chat__gen"
                        android:layout_alignParentBottom="true"
                        />
+            <TextView android:id="@+id/dup_tag"
+                      android:layout_width="wrap_content"
+	                  android:layout_height="wrap_content"
+                      android:text="@string/dup_tag"
+                      android:layout_alignParentTop="true"
+                      android:textSize="14dp"
+                      android:visibility="gone"
+                      />
+            <TextView android:id="@+id/n_pending"
+	                  android:layout_width="wrap_content"
+	                  android:layout_height="wrap_content"
+                      android:layout_below="@id/dup_tag"
+                      />
         </RelativeLayout>
 
         <ImageView android:id="@+id/thumbnail"

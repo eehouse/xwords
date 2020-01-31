@@ -62,6 +62,7 @@ typedef struct GtkNewGameState {
     GtkWidget* nPlayersLabel;
     GtkWidget* juggleButton;
     GtkWidget* timerField;
+    GtkWidget* duplicateCheck;
 } GtkNewGameState;
 
 static void
@@ -257,6 +258,24 @@ addTimerWidget( GtkNewGameState* state, GtkWidget* parent )
     gtk_box_pack_start( GTK_BOX(hbox), state->timerField, FALSE, TRUE, 0 );
 }
 
+static void
+handle_duplicate_toggled( GtkWidget* item, GtkNewGameState* state )
+{
+    NGValue value = { .ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) ) };
+    newg_attrChanged( state->newGameCtxt, NG_ATTR_DUPLICATE, value );
+}
+
+static void
+addDuplicateCheckbox( GtkNewGameState* state, GtkWidget* parent )
+{
+    GtkWidget* duplicateCheck = gtk_check_button_new_with_label( "Duplicate mode" );
+    state->duplicateCheck = duplicateCheck;
+    g_signal_connect( duplicateCheck, "toggled",
+                      (GCallback)handle_duplicate_toggled, state );
+    gtk_widget_show( duplicateCheck );
+    gtk_box_pack_start( GTK_BOX(parent), duplicateCheck, FALSE, TRUE, 0 );
+}
+
 static GtkWidget*
 makeNewGameDialog( GtkNewGameState* state )
 {
@@ -437,6 +456,7 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     addTimerWidget( state, vbox );
+    addDuplicateCheckbox( state, vbox );
 
     /* buttons at the bottom */
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
@@ -622,6 +642,10 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
         snprintf( buf, VSIZE(buf), "%d", value.ng_u16 );
         gtk_label_set_text( GTK_LABEL(state->timerField), buf );
     }
+        break;
+    case NG_ATTR_DUPLICATE:
+        gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(state->duplicateCheck),
+                                      value.ng_bool );
         break;
     default:
         XP_ASSERT(0);

@@ -217,6 +217,7 @@ summarize( CommonGlobals* cGlobals )
     XP_Bool isLocal = -1;
     XP_S16 turn = server_getCurrentTurn( game->server, &isLocal );
     XP_U32 lastMoveTime = server_getLastMoveTime( game->server );
+    XP_U32 dupTimerExpires = server_getDupTimerExpires( game->server );
     XP_U16 seed = 0;
     XP_S16 nMissing = 0;
     XP_U16 nPending = 0;
@@ -289,12 +290,13 @@ summarize( CommonGlobals* cGlobals )
     const char* fmt = "UPDATE games "
         " SET room='%s', ended=%d, turn=%d, local=%d, ntotal=%d, "
         " nmissing=%d, nmoves=%d, seed=%d, dictlang=%d, gameid=%d, connvia='%s', "
-        " relayid='%s', lastMoveTime=%d, scores='%s', nPending=%d, role=%d"
+        " relayid='%s', lastMoveTime=%d, dupTimerExpires=%d, scores='%s', "
+        " nPending=%d, role=%d"
         " WHERE rowid=%lld";
     XP_UCHAR buf[2*256];
     snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, isLocal?1:0,
               nTotal, nMissing, nMoves, seed, dictLang, gameID, connvia, relayID, lastMoveTime,
-              scoresStr, nPending, gi->serverRole, cGlobals->rowid );
+              dupTimerExpires, scoresStr, nPending, gi->serverRole, cGlobals->rowid );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
     int result = sqlite3_prepare_v2( cGlobals->params->pDb, buf, -1, &stmt, NULL );
@@ -398,7 +400,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
     const char* fmt = "SELECT room, ended, turn, local, nmoves, ntotal, nmissing, "
-        "dictlang, seed, connvia, gameid, lastMoveTime, relayid, scores, nPending, role, snap "
+        "dictlang, seed, connvia, gameid, lastMoveTime, dupTimerExpires, relayid, scores, nPending, role, snap "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -425,6 +427,7 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         getColumnText( ppStmt, col++, gib->conn, &len );
         gib->gameID = sqlite3_column_int( ppStmt, col++ );
         gib->lastMoveTime = sqlite3_column_int( ppStmt, col++ );
+        gib->dupTimerExpires = sqlite3_column_int( ppStmt, col++ );
         len = sizeof(gib->relayID);
         getColumnText( ppStmt, col++, gib->relayID, &len );
         len = sizeof(gib->scores);

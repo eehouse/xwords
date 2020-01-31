@@ -48,8 +48,11 @@ void engine_init( EngineCtxt* ctxt );
 void engine_reset( EngineCtxt* ctxt );
 void engine_destroy( EngineCtxt* ctxt );
 
-XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, 
-                         XP_S16 turn, XP_Bool includePending,
+XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, XP_S16 turn,
+                         /* includePending: include pending tiles as part of words */
+                         XP_Bool includePending,
+                         /* skipCallback: skip the callback that lets client cancel */
+                         XP_Bool skipCallback,
                          const Tile* tiles, XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                          XP_U16 allTilesBonus, 
@@ -58,7 +61,8 @@ XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model,
                          const BdHintLimits* boardLimits,
                          XP_Bool useTileLimits,
 #endif
-                         XP_U16 robotIQ, XP_Bool* canMove, MoveInfo* result );
+                         XP_U16 robotIQ, XP_Bool* canMove,
+                         MoveInfo* result, XP_U16* score );
 XP_Bool engine_check( DictionaryCtxt* dict, Tile* buf, XP_U16 buflen );
 
 #ifdef CPLUS

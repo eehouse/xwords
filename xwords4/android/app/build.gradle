@@ -4,9 +4,28 @@ def VERSION_NAME = '4.4.154'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def BUILD_INFO_NAME = "build-info.txt"
 
+// Not all variants use the same BT_UUID. Those with the same talk to
+// each other
+def XW_UUID = '"7be0d084-ff89-4d6d-9c78-594773a6f963"' // from comms.h
+def XWD_UUID = '"b079b640-35fe-11e5-a432-0002a5d5c51b"' // from comms.h
+def XWDUP_UUID = '"92602f84-1bc5-11ea-978f-2e728ce88125"'
+def BT_UUIDS = [
+    'xw4fdroidDebug' : XW_UUID,
+    'xw4fdroidRelease' : XW_UUID,
+    'xw4NoSMSDebug' : XW_UUID,
+    'xw4NoSMSRelease' : XW_UUID,
+    'xw4SMSDebug' : XW_UUID,
+    'xw4SMSRelease' : XW_UUID,
+
+    'xw4dupDebug' : XWDUP_UUID,
+    'xw4dupRelease' : XWDUP_UUID,
+    'xw4dupNoSMSDebug' : XWDUP_UUID,
+    'xw4dupNoSMSRelease' : XWDUP_UUID,
+]
+
 // AID must start with F (first 4 bits) and be from 5 to 16 bytes long
 def NFC_AID_XW4 = "FC8FF510B360"
-def NFC_AID_XW4d = "FDDA0A3EB5E5"
+def NFC_AID_XW4dup = "F8960736B33C"
 
 boolean forFDroid = hasProperty('forFDroid')
 
@@ -79,7 +98,7 @@ android {
             buildConfigField "boolean", "UDP_ENABLED", "true"
             buildConfigField "boolean", "REPORT_LOCKS", "false"
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
-            buildConfigField "boolean", "MOVE_VIA_NFC", "false"
+            buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid\""
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
         }
 
@@ -111,38 +130,37 @@ android {
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
         }
-        xw4d {
+        xw4dup {
             dimension "variant"
-            buildConfigField "String", "DB_NAME", "\"xwddb\""
-            applicationId "org.eehouse.android.xw4dbg"
+            buildConfigField "String", "DB_NAME", "\"xwddb\"";
+            applicationId "org.eehouse.android.xw4dup"
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
-            resValue "string", "app_name", "CrossDbg"
+            resValue "string", "app_name", "CrossDup"
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
             buildConfigField "int", "VARIANT_CODE", "3"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
-            buildConfigField "boolean", "MOVE_VIA_NFC", "true"
-            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
-            resValue "string", "nfc_aid", "$NFC_AID_XW4d"
+            buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid1\""
+            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4dup}\""
+            resValue "string", "nfc_aid", "$NFC_AID_XW4dup"
         }
 
-        xw4dNoSMS {
+        xw4dupNoSMS {
             dimension "variant"
+            applicationId "org.eehouse.android.xw4dup"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
-            applicationId "org.eehouse.android.xw4dbg"
             manifestPlaceholders = [ FABRIC_API_KEY: "$FABRIC_API_KEY", APP_ID: applicationId, ]
-            resValue "string", "app_name", "CrossDbg"
+            resValue "string", "app_name", "CrossDup"
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
             buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug NoSMS\""
             buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
-            buildConfigField "boolean", "MOVE_VIA_NFC", "true"
-            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
-            resValue "string", "nfc_aid", "$NFC_AID_XW4d"
+            buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4dup}\""
+            resValue "string", "nfc_aid", "$NFC_AID_XW4dup"
         }
 
         xw4SMS {
@@ -223,20 +241,20 @@ android {
                 jniLibs.srcDir "../libs-xw4NoSMSDebug"
             }
         }
-        xw4d {
+        xw4dup {
             release {
-                jniLibs.srcDir "../libs-xw4dRelease"
+                jniLibs.srcDir "../libs-xw4dupRelease"
             }
             debug {
-                jniLibs.srcDir "../libs-xw4dDebug"
+                jniLibs.srcDir "../libs-xw4dupDebug"
             }
         }
-        xw4dNoSMS {
+        xw4dupNoSMS {
             release {
-                jniLibs.srcDir "../libs-xw4dNoSMSRelease"
+                jniLibs.srcDir "../libs-xw4dupNoSMSRelease"
             }
             debug {
-                jniLibs.srcDir "../libs-xw4dNoSMSDebug"
+                jniLibs.srcDir "../libs-xw4dupNoSMSDebug"
             }
         }
         xw4SMS {
@@ -284,10 +302,10 @@ dependencies {
 
     // 2.6.8 is probably as far forward as I can go without upping my
     // min-supported SDK version
-    xw4dImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
+    xw4dupImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
         transitive = true                                                     // rm-for-fdroid
     }                                                                         // rm-for-fdroid
-    xw4dNoSMSImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
+    xw4dupNoSMSImplementation('com.crashlytics.sdk.android:crashlytics:2.6.3@aar') { // rm-for-fdroid
         transitive = true                                                          // rm-for-fdroid
     }                                                                              // rm-for-fdroid
 
@@ -357,12 +375,13 @@ afterEvaluate {
         String nameLC = variant.getBuildType().getName().toLowerCase()
         String lib = "libs-${variant.name}"
         String ndkBuildTask = "ndkBuild${variantCaps}"
+        String btUUID = BT_UUIDS[variant.name]
         task "$ndkBuildTask"(type: Exec) {
-                 workingDir '../'
-                 commandLine './scripts/ndkbuild.sh', '-j3',
-                 "BUILD_TARGET=${nameLC}", "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
-                 "VARIANT=${FLAVOR}", "NDK_LIBS_OUT=${lib}",
-                 "NDK_OUT=./obj-${variant.name}"
+            workingDir '../'
+            commandLine './scripts/ndkbuild.sh', '-j3',
+                "BUILD_TARGET=${nameLC}", "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
+                "VARIANT=${FLAVOR}", "NDK_LIBS_OUT=${lib}",
+                "NDK_OUT=./obj-${variant.name}", "XW_BT_UUID=\"${btUUID}\""
             }
 
         String compileTask = "compile${variantCaps}Ndk"
@@ -383,18 +402,18 @@ afterEvaluate {
     String copyStringsTask = "copyStringsXw4D"
     task "$copyStringsTask"(type: Exec) {
                 workingDir './'
-                environment.put('APPNAME', 'CrossDbg')
+                environment.put('APPNAME', 'CrossDup')
                 commandLine 'make', '-f', '../scripts/Variant.mk',
-                "src/xw4d/res/values/strings.xml"
+                "src/xw4dup/res/values/strings.xml"
             }
     preBuild.dependsOn copyStringsTask
 
     String copyStringsTaskNoSMS = "copyStringsXw4DNoSMS"
     task "$copyStringsTaskNoSMS"(type: Exec) {
                 workingDir './'
-                environment.put('APPNAME', 'CrossDbg')
+                environment.put('APPNAME', 'CrossDup')
                 commandLine 'make', '-f', '../scripts/Variant.mk',
-                    "src/xw4dNoSMS/res/values/strings.xml"
+                    "src/xw4dupNoSMS/res/values/strings.xml"
             }
     preBuild.dependsOn copyStringsTaskNoSMS
 }

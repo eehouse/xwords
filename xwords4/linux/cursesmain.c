@@ -543,19 +543,14 @@ handleRootKeyHide( CursesAppGlobals* globals )
 static void 
 SIGWINCH_handler( int signal )
 {
-    int height, width;
-
     assert( signal == SIGWINCH );
 
     endwin(); 
 
-/*     (*globals.drawMenu)( &globals );  */
-
+    int height, width;
     getmaxyx( stdscr, height, width );
     XP_LOGF( "%s:, getmaxyx()->w:%d; h:%d", __func__, width, height );
     wresize( g_globals.mainWin, height-MENU_WINDOW_HEIGHT, width );
-
-    // board_draw( g_globals.cGlobals.game.board );
 } /* SIGWINCH_handler */
 
 static void 
@@ -853,7 +848,200 @@ initClientSocket( CursesAppGlobals* globals, char* serverName )
 } /* initClientSocket */
 #endif
 
+/* <<<<<<< HEAD */
+/* static void */
+/* curses_util_informNeedPassword( XW_UtilCtxt* XP_UNUSED(uc), */
+/*                                 XP_U16 XP_UNUSED_DBG(playerNum), */
+/*                                 const XP_UCHAR* XP_UNUSED_DBG(name) ) */
+/* { */
+/*     XP_WARNF( "curses_util_informNeedPassword(num=%d, name=%s", playerNum, name ); */
+/* } /\* curses_util_askPassword *\/ */
 
+/* static void */
+/* curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc),  */
+/*                            XP_U16 XP_UNUSED(maxOffset), */
+/*                            XP_U16 XP_UNUSED(oldOffset), XP_U16 XP_UNUSED(newOffset) ) */
+/* { */
+/*     /\* if ( oldOffset != newOffset ) { *\/ */
+/*     /\*     XP_WARNF( "curses_util_yOffsetChange(%d,%d,%d) not implemented", *\/ */
+/*     /\*               maxOffset, oldOffset, newOffset ); *\/ */
+/*     /\* } *\/ */
+/* } /\* curses_util_yOffsetChange *\/ */
+
+/* #ifdef XWFEATURE_TURNCHANGENOTIFY */
+/* static void */
+/* curses_util_turnChanged( XW_UtilCtxt* XP_UNUSED(uc), XP_S16 XP_UNUSED_DBG(newTurn) ) */
+/* { */
+/*     XP_LOGF( "%s(turn=%d)", __func__, newTurn ); */
+/* } */
+/* #endif */
+
+/* static void */
+/* curses_util_notifyDupStatus( XW_UtilCtxt* XP_UNUSED(uc), */
+/*                              XP_Bool amHost, */
+/*                              const XP_UCHAR* msg ) */
+/* { */
+/*     XP_LOGF( "%s(amHost=%d, msg=%s)", __func__, amHost, msg ); */
+/* } */
+
+/* static void */
+/* curses_util_notifyIllegalWords( XW_UtilCtxt* XP_UNUSED(uc), */
+/*                                 BadWordInfo* XP_UNUSED(bwi), */
+/*                                 XP_U16 XP_UNUSED(player), */
+/*                                 XP_Bool XP_UNUSED(turnLost) ) */
+/* { */
+/*     XP_WARNF( "curses_util_notifyIllegalWords not implemented" ); */
+/* } /\* curses_util_notifyIllegalWord *\/ */
+
+/* static void */
+/* curses_util_remSelected( XW_UtilCtxt* uc ) */
+/* { */
+/*     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure; */
+/*     XWStreamCtxt* stream; */
+/*     XP_UCHAR* text; */
+
+/*     stream = mem_stream_make_raw( MPPARM(globals->cGlobals.util->mpool) */
+/*                                   globals->cGlobals.params->vtMgr ); */
+/*     board_formatRemainingTiles( globals->cGlobals.game.board, stream ); */
+
+/*     text = strFromStream( stream ); */
+
+/*     const char* buttons[] = { "Ok" }; */
+/*     (void)cursesask( globals, text, VSIZE(buttons), buttons ); */
+
+/*     free( text ); */
+/* } */
+
+/* #ifndef XWFEATURE_STANDALONE_ONLY */
+/* static XWStreamCtxt* */
+/* curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo ) */
+/* { */
+/*     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure; */
+/*     LaunchParams* params = globals->cGlobals.params; */
+
+/*     XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) params->vtMgr, */
+/*                                             &globals->cGlobals, channelNo, */
+/*                                             sendOnClose ); */
+/*     return stream; */
+/* } /\* curses_util_makeStreamFromAddr *\/ */
+/* #endif */
+
+/* #ifdef XWFEATURE_CHAT */
+/* static void */
+/* curses_util_showChat( XW_UtilCtxt* uc,  */
+/*                       const XP_UCHAR* const XP_UNUSED_DBG(msg), */
+/*                       XP_S16 XP_UNUSED_DBG(from), XP_U32 XP_UNUSED(timestamp) ) */
+/* { */
+/*     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure; */
+/*     globals->nChatsSent = 0; */
+/* # ifdef DEBUG */
+/*     const XP_UCHAR* name = "<unknown>"; */
+/*     if ( 0 <= from ) { */
+/*         CommonGlobals* cGlobals = &globals->cGlobals; */
+/*         name = cGlobals->gi->players[from].name; */
+/*     } */
+/*     XP_LOGF( "%s: got \"%s\" from %s", __func__, msg, name ); */
+/* # endif */
+/* } */
+/* #endif */
+
+/* static void */
+/* setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util ) */
+/* { */
+/*     util->vtable->m_util_userError = curses_util_userError; */
+
+/*     util->vtable->m_util_informNeedPassword = curses_util_informNeedPassword; */
+/*     util->vtable->m_util_yOffsetChange = curses_util_yOffsetChange; */
+/* #ifdef XWFEATURE_TURNCHANGENOTIFY */
+/*     util->vtable->m_util_turnChanged = curses_util_turnChanged; */
+/* #endif */
+/*     util->vtable->m_util_notifyDupStatus = curses_util_notifyDupStatus; */
+/*     util->vtable->m_util_notifyIllegalWords = curses_util_notifyIllegalWords; */
+/*     util->vtable->m_util_remSelected = curses_util_remSelected; */
+/* #ifndef XWFEATURE_STANDALONE_ONLY */
+/*     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr; */
+/* #endif */
+/* #ifdef XWFEATURE_CHAT */
+/*     util->vtable->m_util_showChat = curses_util_showChat; */
+/* #endif */
+
+/*     util->vtable->m_util_notifyMove = curses_util_notifyMove; */
+/*     util->vtable->m_util_notifyTrade = curses_util_notifyTrade; */
+/*     util->vtable->m_util_notifyPickTileBlank = curses_util_notifyPickTileBlank; */
+/*     util->vtable->m_util_informNeedPickTiles = curses_util_informNeedPickTiles; */
+/*     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange; */
+/*     util->vtable->m_util_informMove = curses_util_informMove; */
+/*     util->vtable->m_util_informUndo = curses_util_informUndo; */
+/*     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver; */
+/*     util->vtable->m_util_informNetDict = curses_util_informNetDict; */
+/*     util->vtable->m_util_setIsServer = curses_util_setIsServer; */
+
+/* #ifdef XWFEATURE_HILITECELL */
+/*     util->vtable->m_util_hiliteCell = curses_util_hiliteCell; */
+/* #endif */
+/*     util->vtable->m_util_engineProgressCallback =  */
+/*         curses_util_engineProgressCallback; */
+
+/*     util->vtable->m_util_setTimer = curses_util_setTimer; */
+/*     util->vtable->m_util_clearTimer = curses_util_clearTimer; */
+/*     util->vtable->m_util_requestTime = curses_util_requestTime; */
+
+/*     util->closure = globals; */
+/* } /\* setupCursesUtilCallbacks *\/ */
+
+/* static CursesMenuHandler */
+/* getHandlerForKey( const MenuList* list, char ch ) */
+/* { */
+/*     CursesMenuHandler handler = NULL; */
+/*     while ( list->handler != NULL ) { */
+/*         if ( list->key == ch ) { */
+/*             handler = list->handler; */
+/*             break; */
+/*         } */
+/*         ++list; */
+/*     } */
+/*     return handler; */
+/* } */
+
+/* static XP_Bool */
+/* handleKeyEvent( CursesAppGlobals* globals, const MenuList* list, char ch ) */
+/* { */
+/*     CursesMenuHandler handler = getHandlerForKey( list, ch ); */
+/*     XP_Bool result = XP_FALSE; */
+/*     if ( !!handler ) { */
+/*         result = (*handler)(globals); */
+/*     } */
+/*     return result; */
+/* } /\* handleKeyEvent *\/ */
+
+/* static XP_Bool */
+/* passKeyToBoard( CursesAppGlobals* globals, char ch ) */
+/* { */
+/*     XP_Bool handled = ch >= 'a' && ch <= 'z'; */
+/*     if ( handled ) { */
+/*         ch += 'A' - 'a'; */
+/*         globals->doDraw = board_handleKey( globals->cGlobals.game.board,  */
+/*                                            ch, NULL ); */
+/*     } */
+/*     return handled; */
+/* } /\* passKeyToBoard *\/ */
+
+/* static void */
+/* positionSizeStuff( CursesAppGlobals* globals, int width, int height ) */
+/* { */
+/*     CommonGlobals* cGlobals = &globals->cGlobals; */
+/*     BoardCtxt* board = cGlobals->game.board; */
+/* #ifdef COMMON_LAYOUT */
+
+/*     BoardDims dims; */
+/*     board_figureLayout( board, cGlobals->gi,  */
+/*                         0, 0, width, height, 100, */
+/*                         150, 200, /\* percents *\/ */
+/*                         width*75/100, 2, 1,  */
+/*                         XP_FALSE, &dims ); */
+/*     board_applyLayout( board, &dims ); */
+/* ======= */
+/* >>>>>>> android_branch */
 
 /* static const MenuList* */
 /* getHandlerForKey( const MenuList* list, char ch ) */

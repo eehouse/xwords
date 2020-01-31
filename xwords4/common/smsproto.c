@@ -672,12 +672,12 @@ restorePartials( SMSProto* state )
             XP_UCHAR phone[32];
             (void)stringFromStreamHere( stream, phone, VSIZE(phone) );
             int nMsgIDs = stream_getU8( stream );
-            XP_LOGF( "%s(): got %d message records for phone %s", __func__,
-                     nMsgIDs, phone );
+            /* XP_LOGF( "%s(): got %d message records for phone %s", __func__, */
+            /*          nMsgIDs, phone ); */
             for ( int jj = 0; jj < nMsgIDs; ++jj ) {
                 XP_U16 msgID = stream_getU16( stream );
                 int count = stream_getU8( stream );
-                XP_LOGF( "%s(): got %d records for msgID %d", __func__, count, msgID );
+                /* XP_LOGF( "%s(): got %d records for msgID %d", __func__, count, msgID ); */
                 for ( int kk = 0; kk < count; ++kk ) {
                     int len = stream_getU8( stream );
                     if ( 0 < len ) {

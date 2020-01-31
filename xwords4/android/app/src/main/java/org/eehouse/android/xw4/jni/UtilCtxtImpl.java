@@ -95,6 +95,12 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     @Override
+    public void timerSelected( boolean inDuplicateMode, boolean canPause )
+    {
+        subclassOverride( "timerSelected" );
+    }
+
+    @Override
     public void setIsServer( boolean isServer )
     {
         subclassOverride( "setIsServer" );
@@ -125,6 +131,12 @@ public class UtilCtxtImpl implements UtilCtxt {
     public void notifyTrade( String[] tiles )
     {
         subclassOverride( "notifyTrade" );
+    }
+
+    @Override
+    public void notifyDupStatus( boolean amHost, String msg )
+    {
+        subclassOverride( "notifyDupStatus" );
     }
 
     @Override
@@ -181,6 +193,14 @@ public class UtilCtxtImpl implements UtilCtxt {
     public void showChat( String msg, int fromIndx, String fromName, int tsSeconds )
     {
         subclassOverride( "showChat" );
+    }
+
+    @Override
+    public String formatPauseHistory( int pauseTyp, int player, int whenPrev,
+                                      int whenCur, String msg )
+    {
+        subclassOverride( "formatPauseHistory" );
+        return null;
     }
 
     private void subclassOverride( String name ) {

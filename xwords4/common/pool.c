@@ -144,7 +144,7 @@ getRandomTile( PoolContext* pool )
 } /* getRandomTile */
 
 void
-pool_requestTiles( PoolContext* pool, Tile* tiles, XP_U8* maxNum )
+pool_requestTiles( PoolContext* pool, Tile* tiles, XP_U16* maxNum )
 {
     XP_S16 numWanted = *maxNum;
     XP_U16 numWritten = 0;
@@ -163,19 +163,24 @@ pool_requestTiles( PoolContext* pool, Tile* tiles, XP_U8* maxNum )
         *tiles++ = t;
         ++numWritten;
     }
-    *maxNum = (XP_U8)numWritten;
+    *maxNum = numWritten;
 
 #ifdef BLANKS_FIRST
     pool->lettersLeft[pool->blankIndex] = oldCount - 1;
 #endif
+
+    XP_LOGF( "%s: %d tiles left in pool", __func__, pool->numTilesLeft );
 } /* pool_requestTiles */
 
 void
 pool_replaceTiles( PoolContext* pool, const TrayTileSet* tiles )
 {
-    XP_U16 nTiles = tiles->nTiles;
-    const Tile* tilesP = tiles->tiles;
+    pool_replaceTiles2( pool, tiles->nTiles, tiles->tiles );
+}
 
+void
+pool_replaceTiles2( PoolContext* pool, XP_U16 nTiles, const Tile* tilesP )
+{
     while ( nTiles-- ) {
         Tile tile = *tilesP++; /* do I need to filter off high bits? */
 
@@ -238,8 +243,7 @@ pool_getNTilesLeftFor( const PoolContext* pool, Tile tile )
 void 
 pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict )
 {
-    XP_U16 numFaces = dict_numTileFaces( dict );
-    Tile ii;
+    const XP_U16 numFaces = dict_numTileFaces( dict );
 
     XP_FREEP( pool->mpool, &pool->lettersLeft );
 
@@ -248,7 +252,7 @@ pool_initFromDict( PoolContext* pool, DictionaryCtxt* dict )
                              numFaces * sizeof(pool->lettersLeft[0]) );
     pool->numTilesLeft = 0;
 
-    for ( ii = 0; ii < numFaces; ++ii ) {
+    for ( Tile ii = 0; ii < numFaces; ++ii ) {
         XP_U16 numTiles = dict_numTiles( dict, ii );
         pool->lettersLeft[ii] = (XP_U8)numTiles;
         pool->numTilesLeft += numTiles;
@@ -275,6 +279,21 @@ checkTilesLeft( const PoolContext* pool )
         count += pool->lettersLeft[ii];
     }
     XP_ASSERT( count == pool->numTilesLeft );
+}
+
+void
+pool_dumpSelf( const PoolContext* pool )
+{
+    XP_UCHAR buf[256] = {0};
+    XP_U16 offset = 0;
+    for ( Tile tile = 0; tile < pool->numFaces; ++tile ) {
+        XP_U16 count = pool->lettersLeft[tile];
+        if ( count > 0 ) {
+            offset += XP_SNPRINTF( &buf[offset], VSIZE(buf) - offset, "%x/%d,", tile, count );
+        }
+    }
+    XP_LOGF( "%s(): {numTiles: %d, pool: %s}", __func__,
+             pool->numTilesLeft,  buf );
 }
 #endif
 

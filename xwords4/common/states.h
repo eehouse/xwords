@@ -21,18 +21,18 @@
 #define _STATES_H_
 
 enum {
-    XWSTATE_NONE,
-    XWSTATE_BEGIN,
+    XWSTATE_NONE,               /* 0 */
+    XWSTATE_BEGIN,              /* 1 */
     __UNUSED1,                    /* was XWSTATE_POOL_INITED */
     XWSTATE_NEED_SHOWSCORE,       /* client-only */
-    __XWSTATE_WAITING_ALL_REG,      /* unused */
+    __XWSTATE_WAITING_ALL_REG,      /* 4 (unused) */
     XWSTATE_RECEIVED_ALL_REG,     /* includes waiting for dict from server */
-    XWSTATE_NEEDSEND_BADWORD_INFO,
+    XWSTATE_NEEDSEND_BADWORD_INFO, /* 6 */
     XWSTATE_MOVE_CONFIRM_WAIT,    /* client's waiting to hear back */
     XWSTATE_MOVE_CONFIRM_MUSTSEND,/* server should tell client asap */
-    XWSTATE_NEEDSEND_ENDGAME,
-    XWSTATE_INTURN,
-    XWSTATE_GAMEOVER,
+    XWSTATE_NEEDSEND_ENDGAME,     /* 9 */
+    XWSTATE_INTURN,               /* 10 */
+    XWSTATE_GAMEOVER,             /* 11 */
 
     XWSTATE_LAST                  /* for asserts only :-) */
 };

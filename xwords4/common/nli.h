@@ -46,6 +46,7 @@ typedef struct _InviteInfo {
     XP_U8 nPlayersT;
     XP_U8 nPlayersH;
     XP_Bool remotesAreRobots;
+    XP_Bool inDuplicateMode;
 
     /* Relay */
     XP_UCHAR room[MAX_INVITE_LEN + 1];

@@ -117,9 +117,6 @@ void board_setScoreboardLoc( BoardCtxt* board,
                              XP_U16 scoreLeft, XP_U16 scoreTop,
                              XP_U16 scoreWidth, XP_U16 scoreHeight,
                              XP_Bool divideHorizontally );
-void board_setTimerLoc( BoardCtxt* board, 
-                        XP_U16 timerLeft, XP_U16 timerTop,
-                        XP_U16 timerWidth, XP_U16 timerHeight );
 void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
                        XP_U16 trayWidth, XP_U16 trayHeight );
 
@@ -129,6 +126,8 @@ XP_U16 board_getYOffset( const BoardCtxt* board );
 
 XP_Bool board_curTurnSelected( const BoardCtxt* board );
 XP_U16 board_visTileCount( const BoardCtxt* board );
+void board_pause( BoardCtxt* board, const XP_UCHAR* msg );
+void board_unpause( BoardCtxt* board, const XP_UCHAR* msg );
 XP_Bool board_canShuffle( const BoardCtxt* board );
 XP_Bool board_canHideRack( const BoardCtxt* board );
 XP_Bool board_canTrade( BoardCtxt* board );

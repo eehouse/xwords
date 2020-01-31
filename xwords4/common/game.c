@@ -85,6 +85,26 @@ makeGameID( XW_UtilCtxt* util )
     return gameID;
 }
 
+static void
+timerChangeListener( void* data, const XP_U32 gameID,
+                     XP_S32 oldVal, XP_S32 newVal )
+{
+    XWGame* game = (XWGame*)data;
+    const CurGameInfo* gi = game->util->gameInfo;
+    XP_ASSERT( gi->gameID == gameID );
+    XP_LOGF( "%s(oldVal=%d, newVal=%d, id=%d)", __func__, oldVal, newVal, gameID );
+    dutil_onDupTimerChanged( util_getDevUtilCtxt( game->util ),
+                             gameID, oldVal, newVal );
+}
+
+static void
+setListeners( XWGame* game, const CommonPrefs* cp )
+{
+    server_prefsChanged( game->server, cp );
+    board_prefsChanged( game->board, cp );
+    server_setTimerChangeListener( game->server, timerChangeListener, game );
+}
+
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
@@ -104,6 +124,8 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
     if ( 0 == gi->gameID ) {
         gi->gameID = makeGameID( util );
     }
+
+    game->util = util;
 
     game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, NULL, util, 
                               gi->boardSize );
@@ -133,16 +155,15 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                               NULL, util );
     board_setCallbacks( game->board );
 
-    server_prefsChanged( game->server, cp );
-    board_prefsChanged( game->board, cp );
     board_setDraw( game->board, draw );
+    setListeners( game, cp );
 } /* game_makeNewGame */
 
 XP_Bool
-game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, 
-            XW_UtilCtxt* XP_UNUSED_STANDALONE(util), 
+game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
             CommonPrefs* cp, const TransportProcs* procs )
 {
+    XP_ASSERT( util == game->util );
     XP_Bool result = XP_FALSE;
     XP_U16 ii;
 
@@ -195,8 +216,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
             gi->players[ii].secondsUsed = 0;
         }
 
-        server_prefsChanged( game->server, cp );
-        board_prefsChanged( game->board, cp );
+        setListeners( game, cp );
         result = XP_TRUE;
     }
     return result;
@@ -242,6 +262,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                 XP_LOGF( "%s: gi was all we got; failing.", __func__ );
                 break;
             }
+            game->util = util;
 
             /* Previous stream versions didn't save anything if built
              * standalone.  Now we always save something.  But we need to know
@@ -274,8 +295,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
             game->board = board_makeFromStream( MPPARM(mpool) stream, 
                                                 game->model, game->server, 
                                                 NULL, util, gi->nPlayers );
-            server_prefsChanged( game->server, cp );
-            board_prefsChanged( game->board, cp );
+            setListeners( game, cp );
             board_setDraw( game->board, draw );
             success = XP_TRUE;
         } while( XP_FALSE );
@@ -370,9 +390,10 @@ game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
 void
 game_getState( const XWGame* game, GameStateInfo* gsi )
 {
-    XP_Bool gameOver = server_getGameIsOver( game->server );
-
+    const ServerCtxt* server = game->server;
     BoardCtxt* board = game->board;
+
+    XP_Bool gameOver = server_getGameIsOver( server );
     gsi->curTurnSelected = board_curTurnSelected( board );
     gsi->trayVisState = board_getTrayVisState( board );
     gsi->visTileCount = board_visTileCount( board );
@@ -386,6 +407,9 @@ game_getState( const XWGame* game, GameStateInfo* gsi )
     gsi->canTrade = board_canTrade( board );
     gsi->nPendingMessages = !!game->comms ? 
         comms_countPendingPackets(game->comms) : 0;
+
+    gsi->canPause = server_canPause( server );
+    gsi->canUnpause = server_canUnpause( server );
 }
 
 XP_Bool

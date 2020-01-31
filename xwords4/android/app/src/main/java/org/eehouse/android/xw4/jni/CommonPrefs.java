@@ -237,6 +237,16 @@ public class CommonPrefs extends XWPrefs {
         return getPrefsBoolean( context, key, true );
     }
 
+    public static boolean getDefaultDupMode( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_init_dupmodeon, false );
+    }
+
+    public static boolean getDupModeHidden( Context context )
+    {
+        return !getPrefsBoolean( context, R.string.key_unhide_dupmode, false );
+    }
+
     public static boolean getAutoJuggle( Context context )
     {
         return getPrefsBoolean( context, R.string.key_init_autojuggle, false );

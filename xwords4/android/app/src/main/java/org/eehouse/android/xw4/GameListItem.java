@@ -348,6 +348,9 @@ public class GameListItem extends LinearLayout
                 m_role.setText( roleSummary );
             }
 
+            findViewById( R.id.dup_tag )
+                .setVisibility( summary.inDuplicateMode() ? View.VISIBLE : View.GONE );
+
             update( expanded, summary.lastMoveTime, haveATurn,
                     haveALocalTurn );
         }

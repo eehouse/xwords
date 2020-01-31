@@ -57,6 +57,22 @@ static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr,
                                      XP_U16 len );
 #endif
 
+static void
+linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XP_U32 gameID,
+                         DupPauseType pauseTyp, XP_U16 pauser,
+                         const XP_UCHAR* name, const XP_UCHAR* msg )
+{
+    XP_LOGF( "%s(id=%d, turn=%d, name=%s, typ=%d, %s)", __func__, gameID, pauser,
+             name, pauseTyp, msg );
+}
+
+static void
+linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XP_U32 gameID,
+                               XP_U32 oldVal, XP_U32 newVal )
+{
+    XP_LOGF( "%s(id=%d, oldVal=%d, newVal=%d)", __func__, gameID, oldVal, newVal );
+}
+
 XW_DUtilCtxt*
 dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
@@ -87,6 +103,9 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 #ifdef COMMS_CHECKSUM
     SET_PROC(md5sum);
 #endif
+
+    SET_PROC(notifyPause);
+    SET_PROC(onDupTimerChanged);
 
 # undef SET_PROC
 
@@ -175,6 +194,11 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return "[Winner] %s: %d";
     case STRDSD_PLACER:
         return "[#%d] %s: %d";
+    case STR_DUP_CLIENT_SENT:
+        return "This device has sent its moves to the host. When all players "
+            "have sent their moves it will be your turn again.";
+    case STRDD_DUP_HOST_RECEIVED:
+        return "%d of %d players have reported their moves.";
 
     default:
         return (XP_UCHAR*)"unknown code to linux_util_getUserString";

@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014 - 2019 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -33,7 +35,8 @@ public class LastMoveInfo {
     private static final int PHONY_TYPE = 3;
 
     public boolean isValid = false; // modified in jni world
-    public String name;
+    public boolean inDuplicateMode;
+    public String[] names;
     public int moveType;
     public int score;
     public int nTiles;
@@ -45,25 +48,42 @@ public class LastMoveInfo {
         if ( isValid ) {
             switch( moveType ) {
             case ASSIGN_TYPE:
-                result = LocUtils.getString( context, R.string.lmi_tiles_fmt, name );
+                result = inDuplicateMode
+                    ? LocUtils.getString( context, R.string.lmi_tiles_dup )
+                    : LocUtils.getString( context, R.string.lmi_tiles_fmt, names[0] );
                 break;
             case MOVE_TYPE:
                 if ( 0 == nTiles ) {
-                    result = LocUtils.getString( context, R.string.lmi_pass_fmt,
-                                                 name );
+                    result = inDuplicateMode
+                        // Nobody scoring in dup mode is usually followed
+                        // automatically by a trade. So this first will be
+                        // rare.
+                        ? LocUtils.getString( context, R.string.lmi_pass_dup )
+                        : LocUtils.getString( context, R.string.lmi_pass_fmt, names[0] );
+                } else if ( inDuplicateMode ) {
+                    if ( names.length == 1 ) {
+                        result = LocUtils.getString( context, R.string.lmi_move_one_dup_fmt,
+                                            names[0], word, score );
+                    } else {
+                        String joiner = LocUtils.getString( context, R.string.name_concat_dup );
+                        String players = TextUtils.join( joiner, names);
+                        result = LocUtils.getString( context, R.string.lmi_move_tie_dup_fmt,
+                                                     players, score, word );
+                    }
                 } else {
                     result = LocUtils.getQuantityString( context, R.plurals.lmi_move_fmt,
-                                                         score, name, word, score );
+                                                         score, names[0], word, score );
                 }
                 break;
             case TRADE_TYPE:
-                result = LocUtils
-                    .getQuantityString( context, R.plurals.lmi_trade_fmt,
-                                        nTiles, name, nTiles );
+                result = inDuplicateMode
+                    ? LocUtils.getString( context, R.string.lmi_trade_dup_fmt, nTiles )
+                    : LocUtils.getQuantityString( context, R.plurals.lmi_trade_fmt,
+                                                  nTiles, names[0], nTiles );
                 break;
             case PHONY_TYPE:
                 result = LocUtils.getString( context, R.string.lmi_phony_fmt,
-                                             name );
+                                             names[0] );
                 break;
             }
         }

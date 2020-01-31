@@ -138,6 +138,7 @@
     <receiver android:name="RelayReceiver"/>
     <receiver android:name="NagTurnReceiver"/>
     <receiver android:name="SMSResendReceiver"/>
+    <receiver android:name="DupeModeTimer"/>
 
     <receiver android:name="UpdateCheckReceiver">
       <intent-filter>

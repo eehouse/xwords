@@ -127,7 +127,8 @@ typedef enum {
     OBJ_NONE,
     OBJ_BOARD,
     OBJ_SCORE,
-    OBJ_TRAY
+    OBJ_TRAY,
+    OBJ_TIMER,
 } BoardObjectType;
 
 enum {
@@ -177,6 +178,7 @@ typedef enum {
 #ifdef XWFEATURE_SLOW_ROBOT
     TIMER_SLOWROBOT,
 #endif
+    TIMER_DUP_TIMERCHECK,
     NUM_TIMERS_PLUS_ONE          /* must be last */
 } XWTimerReason;
 

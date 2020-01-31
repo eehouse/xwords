@@ -27,7 +27,8 @@
 
 /* Don't check in other than 0 for a few releases!!! */
 #ifndef NLI_VERSION
-# define NLI_VERSION 0
+// # define NLI_VERSION 0
+# define NLI_VERSION 1          /* adds inDuplicateMode */
 #endif
 
 void
@@ -41,6 +42,7 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
     nli->nPlayersT = gi->nPlayers;
     nli->nPlayersH = nPlayers;
     nli->forceChannel = forceChannel;
+    nli->inDuplicateMode = gi->inDuplicateMode;
 
     CommsConnType typ;
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
@@ -118,6 +120,7 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 
     if ( NLI_VERSION > 0 ) {
         stream_putBits( stream, 1, nli->remotesAreRobots ? 1 : 0 );
+        stream_putBits( stream, 1, nli->inDuplicateMode ? 1 : 0 );
     }
 }
 
@@ -157,9 +160,13 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
         nli->osVers = stream_getU32( stream );
     }
 
-    if ( version > 0 ) {
+    if ( version > 0 && 0 < stream_getSize( stream ) ) {
         nli->remotesAreRobots = 0 != stream_getBits( stream, 1 );
-        XP_LOGF( "%s(): remotesAreRobots: %d", __func__, nli->remotesAreRobots );
+        nli->inDuplicateMode = stream_getBits( stream, 1 );
+        XP_LOGF( "%s(): remotesAreRobots: %d; inDuplicateMode: %d", __func__,
+                 nli->remotesAreRobots, nli->inDuplicateMode );
+    } else {
+        nli->inDuplicateMode = XP_FALSE;
     }
 
     XP_ASSERT( 0 == stream_getSize( stream ) );

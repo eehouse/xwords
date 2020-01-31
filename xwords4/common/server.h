@@ -30,17 +30,6 @@
 extern "C" {
 #endif
 
-/* typedef struct ServerCtxt ServerCtxt; */
-
-/* typedef struct ServerVtable { */
-
-/*   void (*m_registerPlayer)( ServerCtxt* server, XP_U16 playerNum, */
-/*   XP_PlayerSocket socket ); */
-
-/*   void (*m_getTileValueInfo)( ServerCtxt* server, void* valueBuf ); */
-
-/* } ServerVtable; */
-
 ServerCtxt* server_make( MPFORMAL ModelCtxt* model, CommsCtxt* comms,
                          XW_UtilCtxt* util );
 
@@ -58,6 +47,11 @@ void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
 typedef void (*TurnChangeListener)( void* data );
 void server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,
                                    void* data );
+
+typedef void (*TimerChangeListener)( void* data, XP_U32 gameID,
+                                     XP_S32 oldVal, XP_S32 newVal );
+void server_setTimerChangeListener( ServerCtxt* server, TimerChangeListener tl,
+                                    void* data );
 
 typedef void (*GameOverListener)( void* data, XP_S16 quitter );
 void server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
@@ -80,8 +74,17 @@ XP_U16 server_secondsUsedBy( ServerCtxt* server, XP_U16 playerNum );
 XP_Bool server_handleUndo( ServerCtxt* server, XP_U16 limit );
 
 /* signed because negative number means nobody's turn yet */
-XP_S16 server_getCurrentTurn( ServerCtxt* server, XP_Bool* isLocal );
-XP_Bool server_getGameIsOver( ServerCtxt* server );
+XP_S16 server_getCurrentTurn( const ServerCtxt* server, XP_Bool* isLocal );
+XP_Bool server_isPlayersTurn( const ServerCtxt* server, XP_U16 turn );
+XP_Bool server_getGameIsOver( const ServerCtxt* server );
+XP_S32 server_getDupTimerExpires( const ServerCtxt* server );
+XP_S16 server_getTimerSeconds( const ServerCtxt* server, XP_U16 turn );
+XP_Bool server_dupTurnDone( const ServerCtxt* server, XP_U16 turn );
+XP_Bool server_canPause( const ServerCtxt* server );
+XP_Bool server_canUnpause( const ServerCtxt* server );
+void server_pause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg );
+void server_unpause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg );
+
 /* return bitvector marking players still not arrived in networked game */
 XP_U16 server_getMissingPlayers( const ServerCtxt* server );
 XP_U32 server_getLastMoveTime( const ServerCtxt* server );
@@ -97,7 +100,8 @@ XP_U16 server_getPendingRegs( const ServerCtxt* server );
 
 XP_Bool server_do( ServerCtxt* server );
 
-XP_Bool server_commitMove( ServerCtxt* server, TrayTileSet* newTiles );
+XP_Bool server_commitMove( ServerCtxt* server, XP_U16 player,
+                           TrayTileSet* newTiles );
 XP_Bool server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
                             TrayTileSet* newTiles );
 

@@ -51,6 +51,7 @@ public class MultiService {
     public static final String BT_ADDRESS = "BT_ADDRESS";
     public static final String P2P_MAC_ADDRESS = "P2P_MAC_ADDRESS";
     private static final String NLI_DATA = "nli";
+    public static final String DUPEMODE = "du";
 
     public enum DictFetchOwner { _NONE,
                                  OWNER_SMS,

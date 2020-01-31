@@ -57,7 +57,7 @@ public interface DrawCtx {
     // void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData,
     //                         Rect[] playerRects );
 
-    void drawTimer( Rect rect, int player, int secondsLeft );
+    void drawTimer( Rect rect, int player, int secondsLeft, boolean inDuplicateMode );
 
     boolean drawCell( Rect rect, String text, int tile, int value,
                       int owner, int bonus, int hintAtts, int flags );
@@ -69,8 +69,8 @@ public interface DrawCtx {
                               int flags );
     boolean drawTileBack( Rect rect, int flags );
     void drawTrayDivider( Rect rect, int flags );
-    void score_pendingScore( Rect rect, int score, int playerNum, int curTurn,
-                             int flags );
+    void score_pendingScore( Rect rect, int score, int playerNum,
+                             boolean curTurn, int flags );
 
     public static final int BONUS_NONE = 0;
     public static final int BONUS_DOUBLE_LETTER = 1;

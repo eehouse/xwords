@@ -5,6 +5,7 @@
 
   <PreferenceScreen android:title="@string/prefs_defaults"
                     android:summary="@string/prefs_defaults_summary"
+                    android:key="@string/key_prefs_defaults"
                     >
 
     <PreferenceScreen android:title="@string/prefs_names"
@@ -59,6 +60,12 @@
                         android:title="@string/hints_allowed"
                         android:summary="@string/hints_allowed_sum"
                         android:defaultValue="true"
+                        />
+
+    <CheckBoxPreference android:key="@string/key_init_dupmodeon"
+                        android:title="@string/offerdupmode_title"
+                        android:summary="@string/offerdupmode_sum"
+                        android:defaultValue="false"
                         />
 
     <CheckBoxPreference android:key="@string/key_init_nethintsallowed"
@@ -376,6 +383,13 @@
     <CheckBoxPreference android:key="@string/key_enable_debug"
                         android:title="@string/debug_features"
                         android:summary="@string/debug_features_summary"
+                        android:defaultValue="false"
+                        />
+
+    <!-- Keep all dup-mode related stuff hidden -->
+    <CheckBoxPreference android:key="@string/key_unhide_dupmode"
+                        android:title="@string/unhide_dupmode_title"
+                        android:summary="@string/unhide_dupmode_summary"
                         android:defaultValue="false"
                         />
 

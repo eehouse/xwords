@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -59,6 +60,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CurGameInfo;
+import org.eehouse.android.xw4.jni.DUtilCtxt;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.JNIThread.JNICmd;
 import org.eehouse.android.xw4.jni.JNIThread;
@@ -84,6 +86,8 @@ public class BoardDelegate extends DelegateBase
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
     private static final String SAVE_MYSIS = TAG + "/MYSIS";
+
+    static final String PAUSER_KEY = TAG + "/pauser";
 
     private Activity m_activity;
     private BoardView m_view;
@@ -366,6 +370,31 @@ public class BoardDelegate extends DelegateBase
         }
             break;
 
+        case ASK_DUP_PAUSE: {
+            final boolean isPause = (Boolean)params[0];
+            final ConfirmPauseView pauseView =
+                ((ConfirmPauseView)inflate( R.layout.pause_view ))
+                .setIsPause( isPause );
+            int buttonId = isPause ? R.string.board_menu_game_pause
+                : R.string.board_menu_game_unpause;
+            dialog = ab
+                .setTitle(isPause ? R.string.pause_title : R.string.unpause_title)
+                .setView( pauseView )
+                .setPositiveButton( buttonId, new OnClickListener() {
+                        @Override
+                        public void
+                            onClick( DialogInterface dlg,
+                                     int whichButton ) {
+                            String msg = pauseView.getMsg();
+                            handleViaThread( isPause ? JNICmd.CMD_PAUSE
+                                             : JNICmd.CMD_UNPAUSE, msg );
+                        }
+                    })
+                .setNegativeButton( android.R.string.cancel, null )
+                .create();
+        }
+            break;
+
         case QUERY_ENDGAME:
             dialog = ab.setTitle( R.string.query_title )
                 .setMessage( R.string.ids_endnow )
@@ -565,8 +594,8 @@ public class BoardDelegate extends DelegateBase
         mNFCWrapper = Wrapper.init( m_activity, this, devID );
 
         m_utils = new BoardUtilCtxt();
-        m_timers = new TimerRunnable[4]; // needs to be in sync with
-                                         // XWTimerReason
+        // needs to be in sync with XWTimerReason
+        m_timers = new TimerRunnable[UtilCtxt.NUM_TIMERS_PLUS_ONE];
         m_view = (BoardView)findViewById( R.id.board_view );
         if ( ! ABUtils.haveActionBar() ) {
             m_tradeButtons = findViewById( R.id.exchange_buttons );
@@ -644,6 +673,7 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    @Override
     protected void onPause()
     {
         Wrapper.setResumed( mNFCWrapper, false );
@@ -672,7 +702,6 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_jniThreadRef ) {
             m_jniThreadRef.release();
             m_jniThreadRef = null;
-            // Assert.assertNull( m_jniThreadRef ); // firing
         }
         GamesListDelegate.boardDestroyed( m_rowid );
         super.onDestroy();
@@ -770,7 +799,11 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void setTitle()
     {
-        setTitle( GameUtils.getName( m_activity, m_rowid ) );
+        String title = GameUtils.getName( m_activity, m_rowid );
+        if ( null != m_gi && m_gi.inDuplicateMode ) {
+            title = LocUtils.getString( m_activity, R.string.dupe_title_fmt, title );
+        }
+        setTitle( title );
     }
 
     private void initToolbar()
@@ -849,6 +882,11 @@ public class BoardDelegate extends DelegateBase
                                   m_gsi.canTrade );
             Utils.setItemVisible( menu, R.id.board_menu_undo_last,
                                   m_gsi.canUndo );
+
+            Utils.setItemVisible( menu, R.id.board_menu_game_pause,
+                                  m_gsi.canPause );
+            Utils.setItemVisible( menu, R.id.board_menu_game_unpause,
+                                  m_gsi.canUnpause );
         }
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
@@ -905,7 +943,7 @@ public class BoardDelegate extends DelegateBase
         JNICmd cmd = JNICmd.CMD_NONE;
         Runnable proc = null;
 
-        int id = item.getItemId();
+        final int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
             int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr,
@@ -983,6 +1021,11 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_undo_last:
             makeConfirmThenBuilder( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION )
                 .show();
+            break;
+
+        case R.id.board_menu_game_pause:
+        case R.id.board_menu_game_unpause:
+            getConfirmPause( R.id.board_menu_game_pause == id );
             break;
 
             // small devices only
@@ -1600,13 +1643,13 @@ public class BoardDelegate extends DelegateBase
 
     private void deleteAndClose( int gameID )
     {
-        if ( gameID == m_gi.gameID ) {
-            GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false );
-            waitCloseGame( false );
-            finish();
+        if ( null != m_gi && gameID == m_gi.gameID ) {
+            GameUtils.deleteGame( m_activity, m_jniThread.getLock(), false, false );
         } else {
             Log.e( TAG, "deleteAndClose() called with wrong gameID %d", gameID );
         }
+        waitCloseGame( false );
+        finish();
     }
 
     private void askDropRelay()
@@ -1758,6 +1801,19 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
+        public void timerSelected( boolean inDuplicateMode, final boolean canPause )
+        {
+            if ( inDuplicateMode ) {
+                runOnUiThread( new Runnable() {
+                        @Override
+                        public void run() {
+                            getConfirmPause( canPause );
+                        }
+                    } );
+            }
+        }
+
+        @Override
         public void setIsServer( boolean isServer )
         {
             DeviceRole newRole = isServer? DeviceRole.SERVER_ISSERVER
@@ -1843,6 +1899,7 @@ public class BoardDelegate extends DelegateBase
             int inHowLong;
             switch ( why ) {
             case UtilCtxt.TIMER_COMMS:
+            case UtilCtxt.TIMER_DUP_TIMERCHECK:
                 inHowLong = when * 1000;
                 break;
             case UtilCtxt.TIMER_TIMERTICK:
@@ -1940,6 +1997,20 @@ public class BoardDelegate extends DelegateBase
                 getQuantityString( R.plurals.query_trade_fmt, tiles.length,
                                    tiles.length, TextUtils.join( ", ", tiles ));
             showDialogFragment( DlgID.QUERY_TRADE, dlgBytes );
+        }
+
+        @Override
+        public void notifyDupStatus( boolean amHost, final String msg )
+        {
+            final int key = amHost ? R.string.key_na_dupstatus_host
+                : R.string.key_na_dupstatus_guest;
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        makeNotAgainBuilder( msg, key )
+                            .show();
+                    }
+                } );
         }
 
         @Override
@@ -2166,6 +2237,38 @@ public class BoardDelegate extends DelegateBase
                     }
                 } );
         }
+
+        @Override
+        public String formatPauseHistory( int pauseTyp, int player,
+                                          int whenPrev, int whenCur, String msg )
+        {
+            Log.d( TAG, "formatPauseHistory(prev: %d, cur: %d)", whenPrev, whenCur );
+            String result = null;
+            String name = 0 > player ? null : m_gi.players[player].name;
+            switch ( pauseTyp ) {
+            case DUtilCtxt.UNPAUSED:
+                String interval = DateUtils
+                    .formatElapsedTime( whenCur - whenPrev )
+                    .toString();
+                result = LocUtils.getString( m_activity, R.string.history_unpause_fmt,
+                                             name, interval );
+                break;
+            case DUtilCtxt.PAUSED:
+                result = LocUtils.getString( m_activity, R.string.history_pause_fmt,
+                                             name );
+                break;
+            case DUtilCtxt.AUTOPAUSED:
+                result = LocUtils.getString( m_activity, R.string.history_autopause );
+                break;
+            }
+
+            if ( null != msg ) {
+                result += " " + LocUtils
+                    .getString( m_activity, R.string.history_msg_fmt, msg );
+            }
+
+            return result;
+        }
     } // class BoardUtilCtxt
 
     private void doResume( boolean isStart )
@@ -2225,11 +2328,6 @@ public class BoardDelegate extends DelegateBase
                             invalidateOptionsMenuIf();
                         }
                         break;
-                    case JNIThread.GOT_WORDS:
-                        CurGameInfo gi = m_jniThreadRef.getGI();
-                        launchLookup( wordsToArray((String)msg.obj),
-                                      gi.dictLang );
-                        break;
                     case JNIThread.GAME_OVER:
                         if ( m_isFirstLaunch ) {
                             runOnUiThread( new Runnable() {
@@ -2248,6 +2346,16 @@ public class BoardDelegate extends DelegateBase
                         int nSent = (Integer)msg.obj;
                         showToast( getQuantityString( R.plurals.resent_msgs_fmt,
                                                       nSent, nSent ) );
+                        break;
+
+                    case JNIThread.GOT_PAUSE:
+                        runOnUiThread( new Runnable() {
+                                @Override
+                                public void run() {
+                                    makeOkOnlyBuilder( (String)msg.obj )
+                                        .show();
+                                }
+                            } );
                         break;
                     }
                 }
@@ -2303,10 +2411,11 @@ public class BoardDelegate extends DelegateBase
                 }
             }
             if ( 0 != flags ) {
-                DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
+                DBUtils.setMsgFlags( m_activity, m_rowid,
+                                     GameSummary.MSG_FLAGS_NONE );
             }
 
-            Utils.cancelNotification( m_activity, (int)m_rowid );
+            Utils.cancelNotification( m_activity, m_rowid );
 
             askNBSPermissions();
 
@@ -2314,6 +2423,11 @@ public class BoardDelegate extends DelegateBase
                 warnIfNoTransport();
                 tickle( isStart );
                 tryInvites();
+            }
+
+            Bundle args = getArguments();
+            if ( args.getBoolean( PAUSER_KEY, false ) ) {
+                getConfirmPause( true );
             }
         }
     } // resumeGame
@@ -2545,6 +2659,11 @@ public class BoardDelegate extends DelegateBase
         boolean[] locs = m_gi.playersLocal(); // to convert old histories
         ChatDelegate.start( getDelegator(), m_rowid, curPlayer,
                             names, locs );
+    }
+
+    private void getConfirmPause( boolean isPause )
+    {
+        showDialogFragment( DlgID.ASK_DUP_PAUSE, isPause );
     }
 
     private void closeIfFinishing( boolean force )

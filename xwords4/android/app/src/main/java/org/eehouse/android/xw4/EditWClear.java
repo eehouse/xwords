@@ -23,12 +23,31 @@ import android.widget.SearchView;
 import android.content.Context;
 import android.util.AttributeSet;
 
-public class EditWClear extends SearchView {
+import java.util.HashSet;
+import java.util.Set;
+
+public class EditWClear extends SearchView
+    implements SearchView.OnQueryTextListener {
     private static final String TAG = EditWClear.class.getSimpleName();
+
+    private Set<TextWatcher> mWatchers;
+
+    public interface TextWatcher {
+        void onTextChanged( String newText );
+    }
 
     public EditWClear( Context context, AttributeSet as )
     {
         super( context, as );
+    }
+
+    synchronized void addTextChangedListener( TextWatcher proc )
+    {
+        if ( null == mWatchers ) {
+            mWatchers = new HashSet<>();
+            setOnQueryTextListener( this );
+        }
+        mWatchers.add( proc );
     }
 
     void setText( String txt )
@@ -39,5 +58,23 @@ public class EditWClear extends SearchView {
     CharSequence getText()
     {
         return super.getQuery();
+    }
+
+    // from SearchView.OnQueryTextListener
+    @Override
+    public synchronized boolean onQueryTextChange( String newText )
+    {
+        for ( TextWatcher proc : mWatchers ) {
+            proc.onTextChanged( newText );
+        }
+        return true;
+    }
+
+    // from SearchView.OnQueryTextListener
+    @Override
+    public boolean onQueryTextSubmit( String query )
+    {
+        Assert.assertFalse( BuildConfig.DEBUG );
+        return true;
     }
 }

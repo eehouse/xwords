@@ -557,7 +557,7 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
 
     initMenus( result );
 
-    if ( linuxOpenGame( cGlobals, &result->procs, gi, addr ) ) {
+    if ( linuxOpenGame( cGlobals, &result->procs, addr ) ) {
          result = ref( result );
     } else {
         disposeBoard( result );
@@ -848,6 +848,14 @@ curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
 }
 
 static void
+curses_util_notifyDupStatus( XW_UtilCtxt* XP_UNUSED(uc),
+                             XP_Bool amHost,
+                             const XP_UCHAR* msg )
+{
+    XP_LOGF( "%s(amHost=%d, msg=%s)", __func__, amHost, msg );
+}
+
+static void
 curses_util_informUndo( XW_UtilCtxt* XP_UNUSED(uc))
 {
     LOG_FUNC();
@@ -1018,6 +1026,14 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 }
 
 static void
+curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc), XP_Bool inDuplicateMode,
+                           XP_Bool canPause )
+{
+    XP_LOGF( "%s(inDuplicateMode=%d, canPause=%d)", __func__, inDuplicateMode,
+             canPause );
+}
+
+static void
 curses_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 {
     LOG_FUNC();
@@ -1100,6 +1116,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     SET_PROC(turnChanged);
 #endif
+    SET_PROC(notifyDupStatus);
     SET_PROC(informMove);
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
@@ -1114,6 +1131,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
     SET_PROC(altKeyDown);       /* ?? */
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
+    SET_PROC(timerSelected);
 #ifndef XWFEATURE_MINIWIN
     SET_PROC(bonusSquareHeld);
     SET_PROC(playerScoreHeld);

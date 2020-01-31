@@ -21,14 +21,20 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.content.Intent;
 import android.telephony.PhoneNumberUtils;
 
 import org.eehouse.android.xw4.Assert;
+import org.eehouse.android.xw4.Channels;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DevID;
+import org.eehouse.android.xw4.DupeModeTimer;
 import org.eehouse.android.xw4.FBMService;
+import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.GamesListDelegate;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -102,15 +108,17 @@ public class DUtilCtxt {
     static final int STRD_CUMULATIVE_SCORE =             14;
     static final int STRS_NEW_TILES =                    15;
     static final int STR_COMMIT_CONFIRM =                16;
-    static final int STR_BONUS_ALL =                     17;
-    static final int STRD_TURN_SCORE =                   18;
-    static final int STRD_REMAINS_HEADER =               19;
-    static final int STRD_REMAINS_EXPL =                 20;
-    static final int STRSD_RESIGNED =                    21;
-    static final int STRSD_WINNER =                      22;
-    static final int STRDSD_PLACER  =                    23;
+    static final int STR_SUBMIT_CONFIRM =                17;
+    static final int STR_BONUS_ALL =                     18;
+    static final int STRD_TURN_SCORE =                   19;
+    static final int STRD_REMAINS_HEADER =               20;
+    static final int STRD_REMAINS_EXPL =                 21;
+    static final int STRSD_RESIGNED =                    22;
+    static final int STRSD_WINNER =                      23;
+    static final int STRDSD_PLACER  =                    24;
+    static final int STR_DUP_CLIENT_SENT =               25;
+    static final int STRDD_DUP_HOST_RECEIVED =           26;
 
-    
     public String getUserString( int stringCode )
     {
         Log.d( TAG, "getUserString(%d)", stringCode );
@@ -161,6 +169,9 @@ public class DUtilCtxt {
         case STR_COMMIT_CONFIRM:
             id = R.string.str_commit_confirm;
             break;
+        case STR_SUBMIT_CONFIRM:
+            id = R.string.str_submit_confirm;
+            break;
         case STR_BONUS_ALL:
             id = R.string.str_bonus_all;
             break;
@@ -176,6 +187,14 @@ public class DUtilCtxt {
         case STRDSD_PLACER:
             id = R.string.str_placer_fmt;
             break;
+
+        case STR_DUP_CLIENT_SENT:
+            id = R.string.dup_client_sent;
+            break;
+        case STRDD_DUP_HOST_RECEIVED:
+            id = R.string.dup_host_received_fmt;
+            break;
+
 
         default:
             Log.w( TAG, "no such stringCode: %d", stringCode );
@@ -235,5 +254,72 @@ public class DUtilCtxt {
 
         Log.d( TAG, "load(%s) returning %d bytes", key, resultLen );
         return result;
+    }
+
+
+    // Must match enum DupPauseType
+    public static final int UNPAUSED = 0;
+    public static final int PAUSED = 1;
+    public static final int AUTOPAUSED = 2;
+
+    // A pause can come in when a game's open or when it's not. If it's open,
+    // we want to post an alert. If it's not, we want to post a notification,
+    // or at least kick off DupeModeTimer to cancel or start the timer-running
+    // notification.
+    public void notifyPause( int gameID, int pauseType, int pauser,
+                             String pauserName, String expl )
+    {
+        long[] rowids = DBUtils.getRowIDsFor( m_context, gameID );
+        Log.d( TAG, "got %d games with gameid", null == rowids ? 0 : rowids.length );
+
+        final boolean isPause = UNPAUSED != pauseType;
+
+        for ( long rowid : rowids ) {
+            String msg = msgForPause( rowid, pauseType, pauserName, expl );
+            try ( JNIThread thread = JNIThread.getRetained( rowid ) ) {
+                if ( null != thread ) {
+                    thread.notifyPause( pauser, isPause, msg );
+                } else {
+                    Intent intent = GamesListDelegate
+                        .makeRowidIntent( m_context, rowid );
+                    int titleID = isPause ? R.string.game_paused_title
+                        : R.string.game_unpaused_title;
+                    Channels.ID channelID = Channels.ID.DUP_PAUSED;
+                    Utils.postNotification( m_context, intent, titleID, msg,
+                                            rowid, channelID );
+
+                    // DupeModeTimer.timerPauseChanged( m_context, rowid );
+                }
+            }
+        }
+    }
+
+    private String msgForPause( long rowid, int pauseType, String pauserName, String expl )
+    {
+        String msg;
+        final String gameName = GameUtils.getName( m_context, rowid );
+        if ( AUTOPAUSED == pauseType ) {
+            msg = LocUtils.getString( m_context, R.string.autopause_expl_fmt,
+                                      gameName );
+        } else {
+            boolean isPause = PAUSED == pauseType;
+            if ( null != expl && 0 < expl.length() ) {
+                msg = LocUtils.getString( m_context,
+                                          isPause ? R.string.pause_notify_expl_fmt
+                                          : R.string.unpause_notify_expl_fmt,
+                                          pauserName, expl );
+            } else {
+                msg = LocUtils.getString( m_context,
+                                          isPause ? R.string.pause_notify_fmt
+                                          : R.string.unpause_notify_fmt,
+                                          pauserName );
+            }
+        }
+        return msg;
+    }
+
+    public void onDupTimerChanged( int gameID, int oldVal, int newVal )
+    {
+        DupeModeTimer.timerChanged( m_context, gameID, newVal );
     }
 }

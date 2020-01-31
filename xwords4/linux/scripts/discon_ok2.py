@@ -145,7 +145,9 @@ def player_params(args, NLOCALS, NPLAYERS, NAME_INDX):
     PARAMS = []
     while NLOCALS > 0 or NREMOTES > 0:
         if 0 == random.randint(0, 2) and 0 < NLOCALS:
-            PARAMS += ['--robot',  g_NAMES[NAME_INDX], '--robot-iq', str(random.randint(1,100))]
+            PARAMS += ['--robot',  g_NAMES[NAME_INDX]]
+            if not args.IQS_SAME:
+                PARAMS += ['--robot-iq', str(random.randint(1,100))]
             NLOCALS -= 1
             NAME_INDX += 1
         elif 0 < NREMOTES:
@@ -158,12 +160,15 @@ def logReaderStub(dev): dev.logReaderMain()
 class Device():
     sHasLDevIDMap = {}
     sConnNamePat = re.compile('.*got_connect_cmd: connName: "([^"]+)".*$')
-    sGameOverPat = re.compile('.*\[unused tiles\].*')
-    sTilesLeftPoolPat = re.compile('.*pool_removeTiles: (\d+) tiles left in pool')
+    sGameOverPat = re.compile('^\[(\#\d|Winner)\] (.*): (\d+)')
+    sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
+    sScoresDup = []
+    sScoresReg = []
     
-    def __init__(self, args, game, indx, params, room, peers, db, log, script, nInGame):
+    def __init__(self, args, game, indx, params, room, peers, db,
+                 log, script, nInGame, inDupMode):
         self.game = game
         self.indx = indx
         self.args = args
@@ -175,6 +180,7 @@ class Device():
         self.logPath = log
         self.script = script
         self.nInGame = nInGame
+        self.inDupMode = inDupMode
         # runtime stuff; init now
         self.app = args.APP_OLD
         self.proc = None
@@ -204,8 +210,8 @@ class Device():
 
     def logReaderMain(self):
         assert self and self.proc
+        # print('logReaderMain called; opening:', self.logPath)
         stdout, stderr = self.proc.communicate()
-        # print('logReaderMain called; opening:', self.logPath, 'flag:', flag)
         nLines = 0
         with open(self.logPath, 'a') as log:
             for line in stderr.splitlines():
@@ -217,7 +223,13 @@ class Device():
                 # check for game over
                 if not self.gameOver:
                     match = Device.sGameOverPat.match(line)
-                    if match: self.gameOver = True
+                    if match:
+                        self.gameOver = True
+                        score = int(match.group(3))
+                        if self.inDupMode:
+                            Device.sScoresDup.append(score)
+                        else:
+                            Device.sScoresReg.append(score)
 
                 # Check every line for tiles left in pool
                 match = Device.sTilesLeftPoolPat.match(line)
@@ -398,6 +410,7 @@ def build_cmds(args):
         # make one in three games public
         PUBLIC = []
         if random.randint(0, 3) == 0: PUBLIC = ['--make-public', '--join-public']
+        useDupeMode = random.randint(0, 100) < args.DUP_PCT
         DEV = 0
         for NLOCALS in LOCALS:
             DEV += 1
@@ -412,7 +425,7 @@ def build_cmds(args):
             # We SHOULD support having both SMS and relay working...
             if args.ADD_RELAY:
                 PARAMS += [ '--relay-port', args.PORT, '--room', ROOM, '--host', args.HOST]
-                if random.randint(0,100) % 100 < g_UDP_PCT_START:
+                if random.randint(0, 100) < g_UDP_PCT_START:
                     PARAMS += ['--use-udp']
             if args.ADD_SMS:
                 PARAMS += [ '--sms-number', PHONE_BASE + str(DEV - 1) ]
@@ -458,7 +471,10 @@ def build_cmds(args):
 
             # print('PARAMS:', PARAMS)
 
-            dev = Device(args, GAME, COUNTER, PARAMS, ROOM, peers, DB, LOG, SCRIPT, len(LOCALS))
+            if useDupeMode: PARAMS += ['--duplicate-mode']
+
+            dev = Device(args, GAME, COUNTER, PARAMS, ROOM, peers,
+                         DB, LOG, SCRIPT, len(LOCALS), useDupeMode)
             peers.add(dev)
             dev.update_ldevid()
             devs.append(dev)
@@ -470,8 +486,10 @@ def summarizeTileCounts(devs, endTime, state):
     global gDeadLaunches
     shouldGoOn = True
     data = [dev.getTilesCount() for dev in devs]
+    dupModeFlags = [dev.inDupMode for dev in devs]
     nDevs = len(data)
-    totalTiles = 0
+    totalTilesStd = 0
+    totalTilesDup = 0
     colWidth = max(2, len(str(nDevs)))
     headWidth = 0
     fmtData = [{'head' : 'dev', },
@@ -484,17 +502,23 @@ def summarizeTileCounts(devs, endTime, state):
 
     # Group devices by game
     games = []
+    joinChars = []
     prev = -1
-    for datum in data:
+    for datum, inDupMode in zip(data, dupModeFlags):
         gameNo = datum['game']
         if gameNo != prev:
             games.append([])
+            if inDupMode: joinChars.append('.')
+            else: joinChars.append('+')
             prev = gameNo
         games[-1].append('{:0{width}d}'.format(datum['index'], width=colWidth))
-    fmtData[0]['data'] = ['+'.join(game) for game in games]
+
+    fmtData[0]['data'] = []
+    for game, joinChar in zip(games, joinChars):
+        fmtData[0]['data'].append( joinChar.join(game) )
 
     nLaunches = gDeadLaunches
-    for datum in data:
+    for datum, inDupMode in zip(data, dupModeFlags):
         launchCount = datum['launchCount']
         nLaunches += launchCount
         fmtData[1]['data'].append('{:{width}d}'.format(launchCount, width=colWidth))
@@ -510,12 +534,14 @@ def summarizeTileCounts(devs, endTime, state):
             txt = '{:+{width}d}'.format(nTilesTray, width=colWidth-1)
         else:
             txt = '{:{width}d}'.format(nTilesPool, width=colWidth)
-            totalTiles += int(nTilesPool)
+            if inDupMode: totalTilesDup += int(nTilesPool)
+            else: totalTilesStd += int(nTilesPool)
         fmtData[2]['data'].append(txt)
 
     print('')
-    print('devs left: {}; bag tiles left: {}; total launches: {}; {}/{}'
-          .format(nDevs, totalTiles, nLaunches, datetime.datetime.now(), endTime ))
+    print('devs left: {}; bag tiles left: {} (std: {}, dup: {}); total launches: {}; {}/{}'
+          .format(nDevs, totalTilesStd + totalTilesDup, totalTilesStd, totalTilesDup,
+                  nLaunches, datetime.datetime.now(), endTime ))
     fmt = '{head:>%d} {data}' % headWidth
     for datum in fmtData: datum['data'] = ' '.join(datum['data'])
     for datum in fmtData:
@@ -621,6 +647,14 @@ def run_cmds(args, devs):
 #     echo $2
 # }
 
+def log_scores( devs ):
+    if len(Device.sScoresReg) > 0:
+        print( "average score for regular games:",
+               sum(Device.sScoresReg) // len(Device.sScoresReg) )
+    if len(Device.sScoresDup) > 0:
+        print( "average score for dup games:",
+               sum(Device.sScoresDup) // len(Device.sScoresDup) )
+
 def mkParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--send-chat', dest = 'SEND_CHAT', type = str, default = None,
@@ -644,6 +678,10 @@ def mkParser():
     parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, help = 'send all packet twice')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
+
+    parser.add_argument('--duplicate-pct', dest = 'DUP_PCT', default = 0, type = int,
+                        help = 'this fraction played in duplicate mode')
+
     # # 
     # #     echo "    [--clean-start]                                         \\" >&2
     parser.add_argument('--game-dict', dest = 'DICTS', action = 'append', default = [])
@@ -655,6 +693,9 @@ def mkParser():
                         help = 'No game will have fewer devices than this')
     parser.add_argument('--max-devs', dest = 'MAXDEVS', type = int, default = 4,
                         help = 'No game will have more devices than this')
+
+    parser.add_argument('--robots-all-same-iq', dest = 'IQS_SAME', default = False,
+                        action = 'store_true', help = 'give all robots the same IQ')
 
     parser.add_argument('--min-run', dest = 'MINRUN', type = int, default = 2,
                         help = 'Keep each run alive at least this many seconds')
@@ -898,6 +939,7 @@ def main():
     nDevs = len(devs)
     run_cmds(args, devs)
     print('{} finished; took {} for {} devices'.format(sys.argv[0], datetime.datetime.now() - startTime, nDevs))
+    log_scores( devs )
 
 ##############################################################################
 if __name__ == '__main__':

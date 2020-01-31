@@ -169,11 +169,12 @@ typedef struct DrawCtxVTable {
                                                 const XP_Rect* rect, 
                                                 XP_S16 score, 
                                                 XP_U16 playerNum,
-                                                XP_S16 curTurn,
+                                                XP_Bool curTurn,
                                                 CellFlags flags );
 
     void DRAW_VTABLE_NAME(drawTimer) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                       XP_U16 player, XP_S16 secondsLeft );
+                                       XP_U16 player, XP_S16 secondsLeft,
+                                       XP_Bool turnDone );
 
     XP_Bool DRAW_VTABLE_NAME(drawCell) ( DrawCtx* dctx, const XP_Rect* rect, 
                                          /* at least one of these two will be
@@ -307,8 +308,8 @@ struct DrawCtx {
 #endif
 #define draw_score_pendingScore(dc, r, s, p, t, f )                  \
     CALL_DRAW_NAME5(score_pendingScore,(dc), (r), (s), (p), (t), (f))
-#define draw_drawTimer( dc, r, plyr, sec ) \
-    CALL_DRAW_NAME3(drawTimer,(dc),(r),(plyr),(sec))
+#define draw_drawTimer( dc, r, plyr, sec, dm )              \
+    CALL_DRAW_NAME4(drawTimer,(dc),(r),(plyr),(sec), (dm))
 #define draw_drawCell( dc, rect, txt, bmap, t, v,o, bon, hi, f )        \
     CALL_DRAW_NAME9(drawCell,(dc),(rect),(txt),(bmap),(t),(v),(o),(bon),(hi), \
     (f))

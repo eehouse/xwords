@@ -45,8 +45,8 @@ import java.util.Set;
 
 public class DictLangCache {
     private static final String TAG = DictLangCache.class.getSimpleName();
-    private static String[] s_langNames;
-    private static HashMap<String, Integer> s_langCodes;
+    private static Map<Integer, String> s_langNames;
+    private static Map<String, Integer> s_langCodes;
 
     private static int s_adaptedLang = -1;
     private static LangsArrayAdapter s_langsAdapter;
@@ -151,11 +151,12 @@ public class DictLangCache {
 
     public static String getLangName( Context context, int code )
     {
-        String[] namesArray = getLangNames( context );
-        if ( code < 0 || code >= namesArray.length ) {
-            code = 0;
+        Map<Integer, String> namesArray = getLangNames( context );
+        String name = namesArray.get( code );
+        if ( null == name ) {
+            name = namesArray.get( 0 );
         }
-        return namesArray[code];
+        return name;
     }
 
     // This populates the cache and will take significant time if it's
@@ -248,7 +249,7 @@ public class DictLangCache {
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
             int langCode = info.langCode;
-            if ( langCode >= s_langNames.length ) {
+            if ( !s_langNames.containsKey( langCode ) ) {
                 langCode = 0;
             }
             if ( null != info && code == langCode ) {
@@ -305,13 +306,11 @@ public class DictLangCache {
 
     public static int getLangLangCode( Context context, String lang )
     {
-        int code = 0;
-        String[] namesArray = getLangNames( context );
-        for ( int ii = 0; ii < namesArray.length; ++ii ) {
-            if ( namesArray[ii].equals( lang ) ) {
-                code = ii;
-                break;
-            }
+        getLangNames( context ); /* inits s_langCodes */
+
+        Integer code = s_langCodes.get( lang );
+        if ( null == code ) {
+            code = 0;
         }
         return code;
     }
@@ -431,16 +430,24 @@ public class DictLangCache {
         return s_dictsAdapter;
     }
 
-    public static String[] getLangNames( Context context )
+    private static Map<Integer, String> getLangNames( Context context )
     {
         if ( null == s_langNames ) {
             Resources res = context.getResources();
-            s_langNames = res.getStringArray( R.array.language_names );
+            String[] names = res.getStringArray( R.array.language_names );
 
-            s_langCodes = new HashMap<String, Integer>();
-            for ( int ii = 0; ii < s_langNames.length; ++ii ) {
-                s_langCodes.put( s_langNames[ii], ii );
+            s_langCodes = new HashMap<>();
+            s_langNames = new HashMap<>();
+            for ( int ii = 0; ii < names.length; ++ii ) {
+                String name = names[ii];
+                s_langCodes.put( name, ii );
+                s_langNames.put( ii, name );
             }
+
+            // Hex is out-of-order, so can't be in the res-based array. Hard
+            // code it: it's a hack anyway.
+            s_langCodes.put( "Hex", 127 );
+            s_langNames.put( 127, "Hex" );
         }
         return s_langNames;
     }

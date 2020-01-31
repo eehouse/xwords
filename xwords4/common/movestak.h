@@ -22,14 +22,20 @@
 
 #include "comtypes.h"
 #include "model.h"
+#include "dutil.h"
 #include "vtabmgr.h"
 
 #ifdef CPLUS
 extern "C" {
 #endif
 
-enum { ASSIGN_TYPE, MOVE_TYPE, TRADE_TYPE, PHONY_TYPE };
+enum { ASSIGN_TYPE, MOVE_TYPE, TRADE_TYPE, PHONY_TYPE, PAUSE_TYPE,
+       /* used for debugging, and can be changed because never stored: */
+       __BOGUS,
+};
 typedef XP_U8 StackMoveType;
+
+#define DUP_PLAYER 0
 
 typedef struct AssignRec {
     TrayTileSet tiles;
@@ -43,17 +49,28 @@ typedef struct TradeRec {
 typedef struct MoveRec {
     MoveInfo moveInfo;
     TrayTileSet newTiles;
+    struct {
+        XP_U16 nScores;
+        XP_U16 scores[MAX_NUM_PLAYERS];
+    } dup;
 } MoveRec;
 
 typedef struct PhonyRec {
     MoveInfo moveInfo;
 } PhonyRec;
 
+typedef struct _PauseRec {
+    DupPauseType pauseType;
+    XP_U32 when;
+    const XP_UCHAR* msg;        /* requires stack_freeEntry() */
+} PauseRec;
+
 typedef union EntryData {
     AssignRec assign;
     TradeRec trade;
     MoveRec move;
     PhonyRec phony;
+    PauseRec pause;
 } EntryData;
 
 typedef struct StackEntry {
@@ -65,10 +82,10 @@ typedef struct StackEntry {
 
 typedef struct StackCtxt StackCtxt;
 
-StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr );
+StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr, XP_Bool inDuplicateMode );
 void stack_destroy( StackCtxt* stack );
 
-void stack_init( StackCtxt* stack );
+void stack_init( StackCtxt* stack, XP_Bool inDuplicateMode );
 XP_U32 stack_getHash( const StackCtxt* stack, XP_Bool correct );
 void stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile );
 
@@ -78,12 +95,21 @@ StackCtxt* stack_copy( const StackCtxt* stack );
 
 void stack_addMove( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo, 
                     const TrayTileSet* newTiles );
+void stack_addDupMove( StackCtxt* stack, const MoveInfo* moveInfo,
+                       XP_U16 nScores, XP_U16* scores,
+                       const TrayTileSet* tiles );
 void stack_addPhony( StackCtxt* stack, XP_U16 turn, const MoveInfo* moveInfo );
 void stack_addTrade( StackCtxt* stack, XP_U16 turn, 
                      const TrayTileSet* oldTiles, 
                      const TrayTileSet* newTiles );
+void stack_addDupTrade( StackCtxt* stack, const TrayTileSet* oldTiles,
+                        const TrayTileSet* newTiles );
+
 void stack_addAssign( StackCtxt* stack, XP_U16 turn, 
                       const TrayTileSet* tiles );
+
+void stack_addPause( StackCtxt* stack, DupPauseType pauseTYpe, XP_S16 turn,
+                     XP_U32 when, const XP_UCHAR* msg );
 
 XP_U16 stack_getNEntries( const StackCtxt* stack );
 
@@ -91,6 +117,8 @@ XP_Bool stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry );
 
 XP_Bool stack_popEntry( StackCtxt* stack, StackEntry* entry );
 XP_Bool stack_redo( StackCtxt* stack, StackEntry* entry );
+
+void stack_freeEntry( StackCtxt* stack, StackEntry* entry );
     
 #ifdef CPLUS
 }

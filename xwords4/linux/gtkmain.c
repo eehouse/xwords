@@ -81,7 +81,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 
 enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM, ROLE_ITEM,
        CONN_ITEM, RELAYID_ITEM, OVER_ITEM, TURN_ITEM, LOCAL_ITEM, NMOVES_ITEM, NTOTAL_ITEM,
-       MISSING_ITEM, LASTTURN_ITEM, N_ITEMS };
+       MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM, N_ITEMS };
 
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
@@ -180,6 +180,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "NTotal", NTOTAL_ITEM );
     addTextColumn( list, "NMissing", MISSING_ITEM );
     addTextColumn( list, "LastTurn", LASTTURN_ITEM );
+    addTextColumn( list, "DupTimerFires", DUPTIMER_ITEM );
 
     GtkListStore* store = gtk_list_store_new( N_ITEMS, 
                                               G_TYPE_INT64,   /* ROW_ITEM */
@@ -197,7 +198,8 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT,     /* NMOVES_ITEM */
                                               G_TYPE_INT,     /* NTOTAL_ITEM */
                                               G_TYPE_INT,     /* MISSING_ITEM */
-                                              G_TYPE_STRING  /* LASTTURN_ITEM */
+                                              G_TYPE_STRING,  /* LASTTURN_ITEM */
+                                              G_TYPE_STRING  /* DUPTIMER_ITEM */
                                               );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
@@ -243,6 +245,8 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
 
     GTimeVal timeval = { tv_sec: gib->lastMoveTime, tv_usec: 0 };
     gchar* timeStr = g_time_val_to_iso8601( &timeval );
+    GTimeVal timerVal = { tv_sec: gib->dupTimerExpires, tv_usec: 0 };
+    gchar* timerStr = g_time_val_to_iso8601( &timerVal );
     gtk_list_store_set( store, &iter, 
                         ROW_ITEM, rowid,
                         ROW_THUMB, gib->snap,
@@ -260,6 +264,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         NTOTAL_ITEM, gib->nTotal,
                         MISSING_ITEM, gib->nMissing,
                         LASTTURN_ITEM, timeStr,
+                        DUPTIMER_ITEM, timerStr,
                         -1 );
     g_free( timeStr );
     XP_LOGF( "DONE adding" );
@@ -675,9 +680,12 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
 
     gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH );
+    ensureLocalPlayerNames( params, &gi );
+
     gi.gameID = invite->gameID;
     gi.dictLang = invite->lang;
     gi.forceChannel = invite->forceChannel;
+    gi.inDuplicateMode = invite->inDuplicateMode;
     gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
     replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict );
 
@@ -710,7 +718,7 @@ relayInviteReceived( void* closure, NetLaunchInfo* invite )
     getRowsForGameID( apg->cag.params->pDb, gameID, rowids, &nRowIDs );
     
     if ( 0 < nRowIDs ) {
-        gtktell( apg->window, "Duplicate invite rejected" );
+        gtktell( apg->window, "Duplicate invite rejected (FIXME!!!)" );
     } else {
         gameFromInvite( apg, invite, NULL );
     }

@@ -240,7 +240,6 @@ struct BoardCtxt {
 # define valHintMiniWindowActive( board ) \
      ((XP_Bool)((board)->miniWindowStuff[MINIWINDOW_VALHINT].text != NULL))
 #endif
-#define MY_TURN(b) ((b)->selPlayer == server_getCurrentTurn( (b)->server, NULL ))
 #define TRADE_IN_PROGRESS(b) ((b)->selInfo->tradeInProgress==XP_TRUE)
 
 /* tray-related functions */

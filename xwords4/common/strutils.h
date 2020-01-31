@@ -37,6 +37,14 @@ void traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts );
 void sortTiles( TrayTileSet* dest, const TrayTileSet* src, XP_U16 skip );
 void removeTile( TrayTileSet* tiles, XP_U16 index );
 
+void scoresToStream( XWStreamCtxt* stream, XP_U16 nScores, const XP_U16* scores );
+void scoresFromStream( XWStreamCtxt* stream, XP_U16 nScores, XP_U16* scores );
+
+void moveInfoToStream( XWStreamCtxt* stream, const MoveInfo* mi,
+                       XP_U16 bitsPerTile );
+void moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi,
+                         XP_U16 bitsPerTile );
+
 XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits );
 void signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num );
 
@@ -101,9 +109,11 @@ XP_Bool smsToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen )
 #endif
 
 #ifdef DEBUG
+void assertSorted( const MoveInfo* mi );
 void log_hex( const XP_U8* memp, XP_U16 len, const char* tag );
 # define LOG_HEX(m,l,t) log_hex((const XP_U8*)(m),(l),(t))
 #else
+# define assertSorted(mi)
 # define LOG_HEX(m,l,t)
 #endif
 

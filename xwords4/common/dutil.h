@@ -26,6 +26,11 @@
 #include "xwrelay.h"
 #include "vtabmgr.h"
 
+typedef enum { UNPAUSED,
+               PAUSED,
+               AUTOPAUSED,
+} DupPauseType;
+
 typedef struct _DUtilVtable {
     XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc );
     const XP_UCHAR* (*m_dutil_getUserString)( XW_DUtilCtxt* duc,
@@ -34,7 +39,7 @@ typedef struct _DUtilVtable {
                                                       XP_U16 stringCode,
                                                       XP_U16 quantity );
     void (*m_dutil_storeStream)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
-                           XWStreamCtxt* data );
+                                 XWStreamCtxt* data );
     /* Pass in an empty stream, and it'll be returned full */
     void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
                                 XWStreamCtxt* inOut );
@@ -56,6 +61,12 @@ typedef struct _DUtilVtable {
 #ifdef COMMS_CHECKSUM
     XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, const XP_U8* ptr, XP_U16 len );
 #endif
+
+    void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XP_U32 gameID,
+                                 DupPauseType pauseTyp, XP_U16 pauser,
+                                 const XP_UCHAR* name, const XP_UCHAR* msg );
+    void (*m_dutil_onDupTimerChanged)( XW_DUtilCtxt* duc, XP_U32 gameID,
+                                       XP_U32 oldVal, XP_U32 newVal );
 } DUtilVtable;
 
 struct XW_DUtilCtxt {
@@ -101,4 +112,9 @@ struct XW_DUtilCtxt {
 # define dutil_md5sum( duc, p, l ) (duc)->vtable.m_dutil_md5sum((duc), (p), (l))
 #endif
 
+#define dutil_notifyPause( duc, id, ip, p, n, m )                        \
+    (duc)->vtable.m_dutil_notifyPause( (duc), (id), (ip), (p), (n), (m) )
+
+#define dutil_onDupTimerChanged(duc, id, ov, nv)                        \
+    (duc)->vtable.m_dutil_onDupTimerChanged( (duc), (id), (ov), (nv))
 #endif

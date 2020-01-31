@@ -123,6 +123,7 @@ public class GameConfigDelegate extends DelegateBase
             R.id.room_spinner,
             R.id.refresh_button,
             R.id.hints_allowed,
+            R.id.duplicate_check,
             R.id.pick_faceup,
             R.id.boardsize_spinner,
             R.id.use_timer,
@@ -620,26 +621,66 @@ public class GameConfigDelegate extends DelegateBase
 
             setSmartnessSpinner();
 
+            tweakTimerStuff();
+
             setChecked( R.id.hints_allowed, !m_gi.hintsNotAllowed );
             setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
-            setInt( R.id.timer_minutes_edit,
-                    m_gi.gameSeconds/60/m_gi.nPlayers );
 
+            setBoardsizeSpinner();
+        }
+    } // loadGame
+
+    private boolean mTimerStuffInited = false;
+    private void tweakTimerStuff()
+    {
+        // one-time only stuff
+        if ( ! mTimerStuffInited ) {
+            mTimerStuffInited = true;
+
+            // dupe-mode check is GONE by default (in the .xml)
+            if ( CommonPrefs.getDupModeHidden( m_activity ) ) {
+                setChecked( R.id.duplicate_check, false );
+            } else {
+                CheckBox check = (CheckBox)findViewById( R.id.duplicate_check );
+                check.setVisibility( View.VISIBLE );
+                check.setChecked( m_gi.inDuplicateMode );
+                check.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged( CompoundButton buttonView,
+                                                      boolean checked ) {
+                            tweakTimerStuff();
+                        }
+                    } );
+            }
             CheckBox check = (CheckBox)findViewById( R.id.use_timer );
             OnCheckedChangeListener lstnr =
                 new OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton buttonView,
                                                   boolean checked ) {
-                        showTimerSet( checked );
+                        tweakTimerStuff();
                     }
                 };
             check.setOnCheckedChangeListener( lstnr );
-            setChecked( R.id.use_timer, m_gi.timerEnabled );
-            showTimerSet( m_gi.timerEnabled );
-
-            setBoardsizeSpinner();
+            check.setChecked( m_gi.timerEnabled );
         }
-    } // loadGame
+
+        boolean dupModeChecked = getChecked( R.id.duplicate_check );
+        CheckBox check = (CheckBox)findViewById( R.id.use_timer );
+        check.setText( dupModeChecked ? R.string.use_duptimer : R.string.use_timer );
+
+        boolean timerSet = getChecked( R.id.use_timer );
+        showTimerSet( timerSet );
+
+        int id = dupModeChecked ? R.string.dup_minutes_label : R.string.minutes_label;
+        TextView label = (TextView)findViewById(R.id.timer_label );
+        label.setText( id );
+
+        // setInt( R.id.timer_minutes_edit,
+        //         m_gi.gameSeconds/60/m_gi.nPlayers );
+
+        // setChecked( R.id.use_timer, m_gi.timerEnabled );
+        // showTimerSet( m_gi.timerEnabled );
+    }
 
     private void showTimerSet( boolean show )
     {
@@ -852,7 +893,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void deleteGame()
     {
-        GameUtils.deleteGame( m_activity, m_rowid, false );
+        GameUtils.deleteGame( m_activity, m_rowid, false, false );
     }
 
     private void loadPlayersList()
@@ -1199,11 +1240,19 @@ public class GameConfigDelegate extends DelegateBase
             }
         }
 
+        m_gi.inDuplicateMode = getChecked( R.id.duplicate_check );
         m_gi.hintsNotAllowed = !getChecked( R.id.hints_allowed );
         m_gi.allowPickTiles = getChecked( R.id.pick_faceup );
         m_gi.timerEnabled = getChecked( R.id.use_timer );
-        m_gi.gameSeconds =
-            60 * m_gi.nPlayers * getInt( R.id.timer_minutes_edit );
+
+        // Get timer value. It's per-move minutes in duplicate mode, otherwise
+        // it's for the whole game.
+        int seconds = 60 * getInt( R.id.timer_minutes_edit );
+        if ( m_gi.inDuplicateMode ) {
+            m_gi.gameSeconds = seconds;
+        } else {
+            m_gi.gameSeconds = seconds * m_gi.nPlayers;
+        }
 
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];

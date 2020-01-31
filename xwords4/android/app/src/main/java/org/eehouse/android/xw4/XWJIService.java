@@ -132,6 +132,7 @@ abstract class XWJIService extends JobIntentService {
         if ( stallCheckEnabled( context ) ) {
             long now = System.currentTimeMillis();
             long maxAge = 0;
+            String maxName = null;
             synchronized ( sPendingIntents ) {
                 for ( String simpleName : sPendingIntents.keySet() ) {
                     List<Intent> intents = sPendingIntents.get( simpleName );
@@ -141,6 +142,7 @@ abstract class XWJIService extends JobIntentService {
                         long age = now - timestamp;
                         if ( age > maxAge ) {
                             maxAge = age;
+                            maxName = simpleName;
                         }
                     }
                 }
@@ -148,7 +150,7 @@ abstract class XWJIService extends JobIntentService {
 
             if ( maxAge > AGE_THRESHOLD_MS ) {
                 // ConnStatusHandler.noteStall( sTypes.get( clazz ), maxAge );
-                Utils.showStallNotification( context, maxAge );
+                Utils.showStallNotification( context, maxName, maxAge );
             }
         }
     }

@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2019 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -1012,6 +1012,17 @@ public class GamesListDelegate extends ListDelegateBase
         } else if ( isFirstLaunch ) {
             warnSMSBannedIf();
         }
+
+        Set<Long> dupModeGames = DBUtils.getDupModeGames( m_activity ).keySet();
+        long[] asArray = new long[dupModeGames.size()];
+        int ii = 0;
+        for ( long rowid : dupModeGames ) {
+            Log.d( TAG, "row %d is dup-mode", rowid );
+            asArray[ii++] = rowid;
+        }
+        if ( false ) {
+            deleteGames( asArray, true );
+        }
     } // init
 
     @Override
@@ -1172,7 +1183,9 @@ public class GamesListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // DBUtils.DBChangeListener interface
     //////////////////////////////////////////////////////////////////////
-    public void gameSaved( final long rowid, final GameChangeType change )
+    @Override
+    public void gameSaved( Context context, final long rowid,
+                           final GameChangeType change )
     {
         post( new Runnable() {
                 public void run() {
@@ -1324,7 +1337,7 @@ public class GamesListDelegate extends ListDelegateBase
             mkListAdapter();
             break;
         case DELETE_GAMES:
-            deleteGames( (long[])params[0] );
+            deleteGames( (long[])params[0], false );
             break;
         case OPEN_GAME:
             doOpenGame( params );
@@ -2140,7 +2153,7 @@ public class GamesListDelegate extends ListDelegateBase
         return launched;
     }
 
-    private boolean startFirstHasDict( final long rowid )
+    private boolean startFirstHasDict( final long rowid, final Bundle extras )
     {
         boolean handled = -1 != rowid && DBUtils.haveGame( m_activity, rowid );
         if ( handled ) {
@@ -2154,7 +2167,7 @@ public class GamesListDelegate extends ListDelegateBase
                                                   .gameDictsHere( m_activity, lock );
                                               lock.release();
                                               if ( haveDict ) {
-                                                  launchGame( rowid );
+                                                  launchGame( rowid, extras );
                                               }
                                           }
                                       }
@@ -2171,7 +2184,7 @@ public class GamesListDelegate extends ListDelegateBase
             String[] relayIDs = intent.getStringArrayExtra( RELAYIDS_EXTRA );
             if ( !startFirstHasDict( relayIDs ) ) {
                 long rowid = intent.getLongExtra( ROWID_EXTRA, -1 );
-                result = startFirstHasDict( rowid );
+                result = startFirstHasDict( rowid, intent.getExtras() );
             }
         }
         return result;
@@ -2455,10 +2468,10 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void deleteGames( long[] rowids )
+    private void deleteGames( long[] rowids, boolean skipTell )
     {
         for ( long rowid : rowids ) {
-            GameUtils.deleteGame( m_activity, rowid, false );
+            GameUtils.deleteGame( m_activity, rowid, false, skipTell );
             m_mySIS.selGames.remove( rowid );
         }
         invalidateOptionsMenuIf();
@@ -2547,7 +2560,7 @@ public class GamesListDelegate extends ListDelegateBase
         return madeGame;
     }
 
-    private void launchGame( long rowid, boolean invited )
+    private void launchGame( long rowid, boolean invited, Bundle extras )
     {
         if ( DBUtils.ROWID_NOTFOUND == rowid ) {
             Log.d( TAG, "launchGame(): dropping bad rowid" );
@@ -2556,20 +2569,25 @@ public class GamesListDelegate extends ListDelegateBase
             if ( m_adapter.inExpandedGroup( rowid ) ) {
                 setSelGame( rowid );
             }
-            GameUtils.launchGame( getDelegator(), rowid, invited );
+            GameUtils.launchGame( getDelegator(), rowid, invited, extras );
         }
     }
 
     private void launchGame( long rowid )
     {
-        launchGame( rowid, false );
+        launchGame( rowid, false, null );
+    }
+
+    private void launchGame( long rowid, Bundle extras )
+    {
+        launchGame( rowid, false, extras );
     }
 
     private void makeNewNetGame( NetLaunchInfo nli )
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
         rowid = GameUtils.makeNewMultiGame( m_activity, nli );
-        launchGame( rowid, true );
+        launchGame( rowid, true, null );
     }
 
     private void tryStartsFromIntent( Intent intent )

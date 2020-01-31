@@ -87,7 +87,7 @@ static void gtkShowFinalScores( const GtkGameGlobals* globals,
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
                           XP_U32 relayDevID, const XP_UCHAR* relayID,
                           const CommsAddrRec* addrs );
-
+static void cancelTimers( GtkGameGlobals* globals );
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -584,18 +584,19 @@ createOrLoadObjects( GtkGameGlobals* globals )
 
     TransportProcs procs;
     setTransportProcs( &procs, globals );
-    linuxOpenGame( cGlobals, &procs, NULL, NULL );
+    if ( linuxOpenGame( cGlobals, &procs, NULL ) ) {
 
-    if ( !params->fileName && !!params->dbName ) {
-        XP_UCHAR buf[64];
-        snprintf( buf, sizeof(buf), "%s / %lld", params->dbName,
-                  cGlobals->rowid );
-        gtk_window_set_title( GTK_WINDOW(globals->window), buf );
+        if ( !params->fileName && !!params->dbName ) {
+            XP_UCHAR buf[64];
+            snprintf( buf, sizeof(buf), "%s / %lld", params->dbName,
+                      cGlobals->rowid );
+            gtk_window_set_title( GTK_WINDOW(globals->window), buf );
+        }
+
+
+        addDropChecks( globals );
+        disenable_buttons( globals );
     }
-
-
-    addDropChecks( globals );
-    disenable_buttons( globals );
 } /* createOrLoadObjects */
 
 /* Create a new backing pixmap of the appropriate size and set up contxt to
@@ -692,6 +693,8 @@ cleanup( GtkGameGlobals* globals )
     if ( 0 < globals->idleID ) {
         g_source_remove( globals->idleID );
     }
+
+    cancelTimers( globals );
 
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( cGlobals );
@@ -1155,6 +1158,9 @@ disenable_buttons( GtkGameGlobals* globals )
 #ifdef XWFEATURE_CHAT
     gtk_widget_set_sensitive( globals->chat_button, gsi.canChat );
 #endif
+
+    gtk_widget_set_sensitive( globals->pause_button, gsi.canPause );
+    gtk_widget_set_sensitive( globals->unpause_button, gsi.canUnpause );
 }
 
 static gboolean
@@ -1317,6 +1323,20 @@ handle_chat_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     }
 }
 #endif
+
+static void
+handle_pause_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    board_pause( globals->cGlobals.game.board, "whatever" );
+    disenable_buttons( globals );
+}
+
+static void
+handle_unpause_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    board_unpause( globals->cGlobals.game.board, "whatever" );
+    disenable_buttons( globals );
+}
 
 static void
 scroll_value_changed( GtkAdjustment *adj, GtkGameGlobals* globals )
@@ -1722,6 +1742,14 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
 } /* gtkShowFinalScores */
 
 static void
+gtk_util_notifyDupStatus( XW_UtilCtxt* uc, XP_Bool XP_UNUSED(amHost),
+                          const XP_UCHAR* msg )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK, NULL );
+}
+
+static void
 gtk_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn), 
                      XWStreamCtxt* expl, XWStreamCtxt* words )
 {
@@ -1843,6 +1871,15 @@ cancelTimer( GtkGameGlobals* globals, XWTimerReason why )
     }
 } /* cancelTimer */
 
+static void
+cancelTimers( GtkGameGlobals* globals )
+{
+    /* There is no 0. */
+    for ( XWTimerReason why = 1; why < NUM_TIMERS_PLUS_ONE; ++why ) {
+        cancelTimer( globals, why );
+    }
+}
+
 static gint
 pen_timer_func( gpointer data )
 {
@@ -1861,6 +1898,18 @@ score_timer_func( gpointer data )
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
 
     if ( linuxFireTimer( &globals->cGlobals, TIMER_TIMERTICK ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
+
+    return XP_FALSE;
+} /* score_timer_func */
+
+static gint
+dup_timer_func( gpointer data )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+
+    if ( linuxFireTimer( &globals->cGlobals, TIMER_DUP_TIMERCHECK ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 
@@ -1905,27 +1954,37 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
 
     cancelTimer( globals, why );
 
-    if ( why == TIMER_PENDOWN ) {
+    switch( why ) {
+    case TIMER_PENDOWN:
         if ( 0 != globals->timerSources[why-1] ) {
             g_source_remove( globals->timerSources[why-1] );
         }
         newSrc = g_timeout_add( 1000, pen_timer_func, globals );
-    } else if ( why == TIMER_TIMERTICK ) {
+        break;
+    case TIMER_TIMERTICK:
         /* one second */
         globals->scoreTimerInterval = 100 * 10000;
 
         (void)gettimeofday( &globals->scoreTv, NULL );
 
         newSrc = g_timeout_add( 1000, score_timer_func, globals );
+        break;
+
+    case TIMER_DUP_TIMERCHECK:
+        newSrc = g_timeout_add( 1000 * when, dup_timer_func, globals );
+        break;
+
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( why == TIMER_COMMS ) {
+    case TIMER_COMMS:
         newSrc = g_timeout_add( 1000 * when, comms_timer_func, globals );
+        break;
 #endif
 #ifdef XWFEATURE_SLOW_ROBOT
-    } else if ( why == TIMER_SLOWROBOT ) {
+    case TIMER_SLOWROBOT:
         newSrc = g_timeout_add( 1000 * when, slowrob_timer_func, globals );
+        break;
 #endif
-    } else {
+    default:
         XP_ASSERT( 0 );
     }
 
@@ -2028,6 +2087,20 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
 
     (void)gtkask( globals->window, text, GTK_BUTTONS_OK, NULL );
     free( text );
+}
+
+static void
+gtk_util_timerSelected( XW_UtilCtxt* uc, XP_Bool inDuplicateMode,
+                        XP_Bool canPause )
+{
+    if ( inDuplicateMode ) {
+        GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+        if ( canPause ) {
+            handle_pause_button( NULL, globals );
+        } else {
+            handle_unpause_button( NULL, globals );
+        }
+    }
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -2200,78 +2273,65 @@ makeShowButtonFromBitmap( void* closure, const gchar* filename,
     return button;
 } /* makeShowButtonFromBitmap */
 
+static GtkWidget*
+addVBarButton( GtkGameGlobals* globals, const gchar* icon, const gchar* title,
+               GCallback func, GtkWidget* vbox )
+{
+    GtkWidget* button = makeShowButtonFromBitmap( globals, icon, title,
+                                                  G_CALLBACK(func) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    return button;
+}
+
 static GtkWidget* 
 makeVerticalBar( GtkGameGlobals* globals, GtkWidget* XP_UNUSED(window) )
 {
-    GtkWidget* vbox;
-    GtkWidget* button;
+    GtkWidget* vbox = gtk_button_box_new( GTK_ORIENTATION_VERTICAL );
 
-    vbox = gtk_button_box_new( GTK_ORIENTATION_VERTICAL );
+    globals->flip_button = addVBarButton( globals, "../flip.xpm", "f",
+                                          G_CALLBACK(handle_flip_button),
+                                          vbox );
 
-    button = makeShowButtonFromBitmap( globals, "../flip.xpm", "f", 
-                                       G_CALLBACK(handle_flip_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    globals->flip_button = button;
+    addVBarButton( globals, "../value.xpm", "v",
+                   G_CALLBACK(handle_value_button), vbox );
+    globals->prevhint_button
+        = addVBarButton( globals, "../hint.xpm", "?-", G_CALLBACK(handle_prevhint_button), vbox );
+    globals->nexthint_button
+        = addVBarButton( globals, "../hint.xpm", "?+", G_CALLBACK(handle_nexthint_button), vbox );
+    addVBarButton( globals, "../hintNum.xpm", "n", G_CALLBACK(handle_nhint_button), vbox );
 
-    button = makeShowButtonFromBitmap( globals, "../value.xpm", "v",
-                                       G_CALLBACK(handle_value_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-
-    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?-",
-                                       G_CALLBACK(handle_prevhint_button) );
-    globals->prevhint_button = button;
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?+",
-                                       G_CALLBACK(handle_nexthint_button) );
-    globals->nexthint_button = button;
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-
-    button = makeShowButtonFromBitmap( globals, "../hintNum.xpm", "n",
-                                       G_CALLBACK(handle_nhint_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-
-    button = makeShowButtonFromBitmap( globals, "../colors.xpm", "c",
-                                       G_CALLBACK(handle_colors_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    addVBarButton( globals, "../colors.xpm", "c", G_CALLBACK(handle_colors_button), vbox );
 
     /* undo and redo buttons */
-    button = makeShowButtonFromBitmap( globals, "../undo.xpm", "U",
-                                       G_CALLBACK(handle_undo_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, "../redo.xpm", "R",
-                                       G_CALLBACK(handle_redo_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    addVBarButton( globals, "../undo.xpm", "U", G_CALLBACK(handle_undo_button), vbox );
 
-    button = makeShowButtonFromBitmap( globals, "", "u/r",
-                                       G_CALLBACK(handle_toggle_undo) );
-    globals->toggle_undo_button = button;
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    addVBarButton( globals, "../redo.xpm", "R", G_CALLBACK(handle_redo_button), vbox );
+
+    globals->toggle_undo_button
+        = addVBarButton( globals, "", "u/r", G_CALLBACK(handle_toggle_undo), vbox );
 
     /* the four buttons that on palm are beside the tray */
-    button = makeShowButtonFromBitmap( globals, "../juggle.xpm", "j",
-                                       G_CALLBACK(handle_juggle_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    addVBarButton( globals, "../juggle.xpm", "j", G_CALLBACK(handle_juggle_button), vbox );
 
-    button = makeShowButtonFromBitmap( globals, "../trade.xpm", "t",
-                                       G_CALLBACK(handle_trade_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, "../done.xpm", "d",
-                                       G_CALLBACK(handle_done_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, "../done.xpm", "+",
-                                       G_CALLBACK(handle_zoomin_button) );
-    globals->zoomin_button = button;
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, "../done.xpm", "-",
-                                       G_CALLBACK(handle_zoomout_button) );
-    globals->zoomout_button = button;
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    addVBarButton( globals, "../trade.xpm", "t", G_CALLBACK(handle_trade_button), vbox );
+
+    addVBarButton( globals, "../done.xpm", "d", G_CALLBACK(handle_done_button), vbox );
+
+    globals->zoomin_button
+        = addVBarButton( globals, "../done.xpm", "+", G_CALLBACK(handle_zoomin_button), vbox );
+
+    globals->zoomout_button
+        = addVBarButton( globals, "../done.xpm", "-", G_CALLBACK(handle_zoomout_button), vbox );
+
 #ifdef XWFEATURE_CHAT
-    button = makeShowButtonFromBitmap( globals, "", "chat",
-                                       G_CALLBACK(handle_chat_button) );
-    globals->chat_button = button;
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    globals->chat_button = addVBarButton( globals, "", "Chat",
+                                          G_CALLBACK(handle_chat_button), vbox );
 #endif
+
+    globals->pause_button = addVBarButton( globals, "", "Pause",
+                                           G_CALLBACK(handle_pause_button), vbox );
+    globals->unpause_button = addVBarButton( globals, "", "Unpause",
+                                             G_CALLBACK(handle_unpause_button), vbox );
 
     gtk_widget_show( vbox );
     return vbox;
@@ -2307,7 +2367,9 @@ static void
 setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 {
     util->closure = globals;
+
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = gtk_util_##NAM
+
     SET_PROC(userError);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);
@@ -2319,11 +2381,11 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     SET_PROC(turnChanged);
 #endif
+    SET_PROC(notifyDupStatus);
     SET_PROC(informMove);
     SET_PROC(informUndo);
     SET_PROC(notifyGameOver);
     SET_PROC(informNetDict);
-    /* SET_PROC(setIsServer); */
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
 #endif
@@ -2334,6 +2396,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
     SET_PROC(requestTime);
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
+    SET_PROC(timerSelected);
 #ifndef XWFEATURE_STANDALONE_ONLY
     SET_PROC(makeStreamFromAddr);
 #endif
@@ -2351,7 +2414,9 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_BOARDWORDS
     SET_PROC(cellSquareHeld);
 #endif
+
 #undef SET_PROC
+
     assertAllCallbacksSet( util );
 } /* setupGtkUtilCallbacks */
 

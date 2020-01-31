@@ -101,7 +101,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
                     }
                     Utils.postNotification( context, msgIntent,
                                             R.string.nag_title, body,
-                                            (int)rowid );
+                                            rowid );
 
                 }
                 DBUtils.updateNeedNagging( context, needNagging );

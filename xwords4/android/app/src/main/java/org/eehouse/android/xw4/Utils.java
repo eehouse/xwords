@@ -88,6 +88,8 @@ public class Utils {
     private static final String FIRST_VERSION_KEY = "FIRST_VERSION_KEY";
     private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
 
+    private static final Channels.ID sDefaultChannel = Channels.ID.GAME_EVENT;
+
     private static Boolean s_isFirstBootThisVersion = null;
     private static Boolean s_firstVersion = null;
     private static Boolean s_isFirstBootEver = null;
@@ -245,23 +247,67 @@ public class Utils {
     }
 
     public static void postNotification( Context context, Intent intent,
+                                         String title, String body, long rowid )
+    {
+        int id = sDefaultChannel.idFor( rowid );
+        postNotification( context, intent, title, body, id );
+    }
+
+    public static void postNotification( Context context, Intent intent,
+                                         int titleId, String body, long rowid )
+    {
+        postNotification( context, intent, titleId, body, rowid,
+                          sDefaultChannel );
+    }
+
+    public static void postNotification( Context context, Intent intent,
                                          int titleID, String body, int id )
     {
+        postNotification( context, intent, titleID, body, id,
+                          sDefaultChannel );
+    }
+
+    public static void postNotification( Context context, Intent intent,
+                                         int titleID, String body, long rowid,
+                                         Channels.ID channel )
+    {
+        int id = channel.idFor( rowid );
+        postNotification( context, intent, titleID, body, id, channel );
+    }
+
+    private static void postNotification( Context context, Intent intent,
+                                          int titleID, String body, int id,
+                                          Channels.ID channel )
+    {
         String title = LocUtils.getString( context, titleID );
-        postNotification( context, intent, title, body, id );
+        // Log.d( TAG, "posting with title %s", title );
+        postNotification( context, intent, title, body, id, channel, false,
+                          null, 0 );
     }
 
     public static void postNotification( Context context, Intent intent,
                                          String title, String body,
                                          int id )
     {
-        String channelID = Channels.getChannelID( context, Channels.ID.GAME_EVENT );
-        postNotification( context, intent, title, body, id, channelID );
+        postNotification( context, intent, title, body, id,
+                          sDefaultChannel, false, null, 0 );
+    }
+
+    static void postOngoingNotification( Context context, Intent intent,
+                                         String title, String body,
+                                         long rowid, Channels.ID channel,
+                                         Intent actionIntent,
+                                         int actionString )
+    {
+        int id = channel.idFor( rowid );
+        postNotification( context, intent, title, body, id, channel, true,
+                          actionIntent, actionString );
     }
 
     private static void postNotification( Context context, Intent intent,
                                           String title, String body,
-                                          int id, String channelID )
+                                          int id, Channels.ID channel, boolean ongoing,
+                                          Intent actionIntent, int actionString )
     {
         /* nextRandomInt: per this link
            http://stackoverflow.com/questions/10561419/scheduling-more-than-one-pendingintent-to-same-activity-using-alarmmanager
@@ -269,9 +315,8 @@ public class Utils {
            Intents is to send a different second param each time,
            though the docs say that param's ignored.
         */
-        PendingIntent pi = null == intent ? null
-            : PendingIntent.getActivity( context, nextRandomInt(), intent,
-                                         PendingIntent.FLAG_ONE_SHOT );
+        PendingIntent pi = null == intent
+            ? null : getPendingIntent( context, intent );
 
         int defaults = Notification.FLAG_AUTO_CANCEL;
         if ( CommonPrefs.getSoundNotify( context ) ) {
@@ -281,42 +326,63 @@ public class Utils {
             defaults |= Notification.DEFAULT_VIBRATE;
         }
 
-        Notification notification =
+        String channelID  = Channels.getChannelID( context, channel );
+        NotificationCompat.Builder builder =
             new NotificationCompat.Builder( context, channelID )
             .setContentIntent( pi )
             .setSmallIcon( R.drawable.notify )
             //.setTicker(body)
             //.setWhen(time)
+            .setOngoing( ongoing )
             .setAutoCancel( true )
             .setDefaults( defaults )
             .setContentTitle( title )
             .setContentText( body )
-            .build();
+                ;
+
+        if ( null != actionIntent ) {
+            PendingIntent actionPI = getPendingIntent( context, actionIntent );
+            builder.addAction( 0, LocUtils.getString(context, actionString),
+                               actionPI );
+        }
+
+        Notification notification = builder.build();
 
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
         nm.notify( id, notification );
     }
 
+    private static PendingIntent getPendingIntent( Context context, Intent intent )
+    {
+        PendingIntent pi = PendingIntent
+            .getActivity( context, Utils.nextRandomInt(), intent,
+                          PendingIntent.FLAG_ONE_SHOT );
+        return pi;
+    }
+
     private static final String KEY_LAST_STALL_NOT = TAG + ".last_stall_note";
     private static final long MIN_STALL_NOTE_INTERVAL_MS = 1000 * 60 * 30;
-    public static void showStallNotification( Context context, long ageMS )
+    public static void showStallNotification( Context context, String typ,
+                                              long ageMS )
     {
+        String body = LocUtils.getString( context, R.string.notify_stall_body_fmt,
+                                          typ, (ageMS + 500) / 1000,
+                                          MIN_STALL_NOTE_INTERVAL_MS / (1000 * 60));
+
         long now = System.currentTimeMillis();
         long lastStallNotify = DBUtils.getLongFor( context, KEY_LAST_STALL_NOT, 0 );
         if ( now - lastStallNotify > MIN_STALL_NOTE_INTERVAL_MS ) {
             String title = LocUtils.getString( context, R.string.notify_stall_title );
-            String body = LocUtils.getString( context, R.string.notify_stall_body_fmt,
-                                              (ageMS + 500) / 1000,
-                                              MIN_STALL_NOTE_INTERVAL_MS / (1000 * 60));
-            String channelID = Channels.getChannelID( context,
-                                                      Channels.ID.SERVICE_STALL );
-
             Intent intent = GamesListDelegate
                 .makeAlertWithEmailIntent( context, body );
             postNotification( context, intent, title, body,
-                              R.string.notify_stall_title, channelID );
+                              R.string.notify_stall_title,
+                              Channels.ID.SERVICE_STALL, false, null, 0 );
             DBUtils.setLongFor( context, KEY_LAST_STALL_NOT, now );
+        } else {
+            Log.e( TAG, "stalled, but too recent for notification: %s",
+                   body );
         }
     }
 
@@ -326,6 +392,18 @@ public class Utils {
     public static void clearStallNotification( Context context, long age )
     {
         cancelNotification( context, R.string.notify_stall_title );
+    }
+
+    public static void cancelNotification( Context context, Channels.ID channel,
+                                           long rowid )
+    {
+        int id = channel.idFor( rowid );
+        cancelNotification( context, id );
+    }
+
+    public static void cancelNotification( Context context, long rowid )
+    {
+        cancelNotification( context, sDefaultChannel, rowid );
     }
 
     public static void cancelNotification( Context context, int id )
@@ -522,6 +600,7 @@ public class Utils {
         return result;
     }
 
+    // Called from andutils.c in the jni world
     public static long getCurSeconds()
     {
         // Note: an int is big enough for *seconds* (not milliseconds) since 1970
