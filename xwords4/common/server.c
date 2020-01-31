@@ -3493,8 +3493,6 @@ static XP_Bool
 commitMoveImpl( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP,
                 XP_Bool forced )
 {
-    ModelCtxt* model = server->vol.model;
-    CurGameInfo* gi = server->vol.gi;
     XP_Bool inDupeMode = inDuplicateMode(server);
     XP_ASSERT( server->nv.currentTurn == player || inDupeMode );
     XP_S16 turn = player;
@@ -3505,7 +3503,9 @@ commitMoveImpl( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP,
     }
 
 #ifdef DEBUG
+    CurGameInfo* gi = server->vol.gi;
     if ( LP_IS_ROBOT( &gi->players[turn] ) ) {
+        ModelCtxt* model = server->vol.model;
         XP_ASSERT( model_checkMoveLegal( model, turn, (XWStreamCtxt*)NULL,
                                          (WordNotifierInfo*)NULL ) );
     }

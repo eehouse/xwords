@@ -404,7 +404,7 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
         --len;
     }
 
-    log_hex( ptr, len, __func__ );
+    LOG_HEX( ptr, len, __func__ );
 
     hash = augmentHash( 0, ptr, len );
     if ( 0 != bits ) {
@@ -415,7 +415,7 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
             byt &= 1 << bits;
         }
         hash = augmentHash( hash, &byt, 1 );
-        log_hex( &byt, 1, __func__ );
+        LOG_HEX( &byt, 1, __func__ );
     }
     hash = finishHash( hash );
 

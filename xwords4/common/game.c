@@ -90,8 +90,7 @@ timerChangeListener( void* data, const XP_U32 gameID,
                      XP_S32 oldVal, XP_S32 newVal )
 {
     XWGame* game = (XWGame*)data;
-    const CurGameInfo* gi = game->util->gameInfo;
-    XP_ASSERT( gi->gameID == gameID );
+    XP_ASSERT( game->util->gameInfo->gameID == gameID );
     XP_LOGF( "%s(oldVal=%d, newVal=%d, id=%d)", __func__, oldVal, newVal, gameID );
     dutil_onDupTimerChanged( util_getDevUtilCtxt( game->util ),
                              gameID, oldVal, newVal );
