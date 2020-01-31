@@ -15,6 +15,11 @@ def BT_UUIDS = [
     'xw4NoSMSRelease' : XW_UUID,
     'xw4SMSDebug' : XW_UUID,
     'xw4SMSRelease' : XW_UUID,
+
+    'xw4dRelease' : XWD_UUID,
+    'xw4dDebug' : XWD_UUID,
+    'xw4dNoSMSRelease' : XWD_UUID,
+    'xw4dNoSMSDebug' : XWD_UUID,
 ]
 
 // AID must start with F (first 4 bits) and be from 5 to 16 bytes long

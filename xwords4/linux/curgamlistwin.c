@@ -19,6 +19,8 @@
 
 #include <ncurses.h>
 #include <glib.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "curgamlistwin.h"
 
@@ -29,6 +31,7 @@ struct CursGameList {
     int yOffset;
     GSList* games;
     sqlite3* pDb;
+    int pid;
 };
 
 static void adjustCurSel( CursGameList* cgl );
@@ -42,6 +45,7 @@ cgl_init( sqlite3* pDb, int width, int height )
     XP_LOGF( "%s(): made window with height=%d, width=%d", __func__, height, width );
     cgl->width = width;
     cgl->height = height;
+    cgl->pid = getpid();
     return cgl;
 }
 
@@ -277,7 +281,7 @@ cgl_draw( CursGameList* cgl )
     }
 
     char buf[cgl->width + 1];
-    snprintf( buf, VSIZE(buf), "%d games total", nGames );
+    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d", cgl->pid, nGames );
     mvwaddstr( win, 0, 0, buf );
     
     wrefresh( win );
