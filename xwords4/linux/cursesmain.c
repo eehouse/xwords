@@ -1145,6 +1145,26 @@ onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
 #endif
 
 static void
+relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+
+    sqlite3_int64 rowids[1];
+    int nRowIDs = VSIZE(rowids);
+    getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
+    if ( 0 < nRowIDs ) {
+        ca_inform( aGlobals->mainWin, "Duplicate invite rejected (FIXME!!!)" );
+    } else {
+        CommsAddrRec returnAddr = {0};
+        nli_makeAddrRec( invite, &returnAddr );
+
+        cb_dims dims;
+        figureDims( aGlobals, &dims );
+        cb_newFor( aGlobals->cbState, invite, &returnAddr, &dims );
+    }
+}
+
+static void
 cursesGotBuf( void* closure, const CommsAddrRec* addr,
               const XP_U8* buf, XP_U16 len )
 {
@@ -1387,8 +1407,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
     g_globals.cbState = cb_init( &g_globals, params, g_globals.menuState,
                                  onGameSaved );
 
-    sqlite3* pDb = params->pDb;
-    g_globals.gameList = cgl_init( pDb, g_globals.winWidth, params->cursesListWinHt );
+    g_globals.gameList = cgl_init( params, g_globals.winWidth, params->cursesListWinHt );
     cgl_refresh( g_globals.gameList );
 
     // g_globals.amServer = isServer;
@@ -1453,6 +1472,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     if ( params->useUdp ) {
         RelayConnProcs procs = {
+            .inviteReceived = relayInviteReceivedCurses,
             .msgReceived = cursesGotBuf,
             .msgForRow = cursesGotForRow,
             .msgNoticeReceived = cursesNoticeRcvd,

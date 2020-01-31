@@ -23,24 +23,25 @@
 #include <unistd.h>
 
 #include "curgamlistwin.h"
+#include "linuxmain.h"
 
 struct CursGameList {
     WINDOW* window;
+    LaunchParams* params;
     int width, height;
     int curSel;
     int yOffset;
     GSList* games;
-    sqlite3* pDb;
     int pid;
 };
 
 static void adjustCurSel( CursGameList* cgl );
 
 CursGameList*
-cgl_init( sqlite3* pDb, int width, int height )
+cgl_init( LaunchParams* params, int width, int height )
 {
     CursGameList* cgl = g_malloc0( sizeof( *cgl ) );
-    cgl->pDb = pDb;
+    cgl->params = params;
     cgl->window = newwin( height, width, 0, 0 );
     XP_LOGF( "%s(): made window with height=%d, width=%d", __func__, height, width );
     cgl->width = width;
@@ -70,7 +71,7 @@ static void
 addOne( CursGameList* cgl, sqlite3_int64 rowid )
 {
     GameInfo gib;
-    if ( getGameInfo( cgl->pDb, rowid, &gib ) ) {
+    if ( getGameInfo( cgl->params->pDb, rowid, &gib ) ) {
         GameInfo* gibp = g_malloc( sizeof(*gibp) );
         *gibp = gib;
         cgl->games = g_slist_append( cgl->games, gibp );
@@ -84,7 +85,7 @@ cgl_refresh( CursGameList* cgl )
     g_slist_free_full( cgl->games, g_free );
     cgl->games = NULL;
 
-    sqlite3* pDb = cgl->pDb;
+    sqlite3* pDb = cgl->params->pDb;
     GSList* games = listGames( pDb );
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
         sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
@@ -113,7 +114,7 @@ cgl_refreshOne( CursGameList* cgl, sqlite3_int64 rowid, bool select )
     // elem
     
     GameInfo gib;
-    if ( getGameInfo( cgl->pDb, rowid, &gib ) ) {
+    if ( getGameInfo( cgl->params->pDb, rowid, &gib ) ) {
         GameInfo* found;
         GSList* elem = findFor( cgl, rowid );
         if ( !!elem ) {
@@ -289,8 +290,10 @@ cgl_draw( CursGameList* cgl )
         maxlen = 0;
     }
 
+    XP_U32 relayID = linux_getDevIDRelay( cgl->params );
     char buf[cgl->width + 1];
-    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d", cgl->pid, nGames );
+    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d, relayid: %d",
+              cgl->pid, nGames, relayID );
     mvwaddstr( win, 0, 0, buf );
     
     wrefresh( win );
