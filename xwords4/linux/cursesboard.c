@@ -81,6 +81,7 @@ static void enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims );
 static CursesBoardGlobals* ref( CursesBoardGlobals* bGlobals );
 static void unref( CursesBoardGlobals* bGlobals );
 static void setupBoard( CursesBoardGlobals* bGlobals );
+static void initMenus( CursesBoardGlobals* bGlobals );
 
 CursesBoardState*
 cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
@@ -99,6 +100,7 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
 {
     LOG_FUNC();
     CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL, NULL );
+    initMenus( bGlobals );
     enableDraw( bGlobals, dims );
     setupBoard( bGlobals );
 
@@ -554,8 +556,6 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
     cGlobals->cp.robotThinkMax = params->robotThinkMax;
     cGlobals->cp.robotTradePct = params->robotTradePct;
 #endif
-
-    initMenus( result );
 
     if ( linuxOpenGame( cGlobals, &result->procs, addr ) ) {
          result = ref( result );
