@@ -2276,7 +2276,7 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
 int
 main( int argc, char** argv )
 {
-    XP_LOGF( "%s(): ptr size: %zu", __func__, sizeof(argv) );
+    XP_LOGFF( "ptr size: %zu", sizeof(argv) );
 
     int opt;
     int totalPlayerCount = 0;

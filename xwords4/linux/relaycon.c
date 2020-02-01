@@ -1116,7 +1116,7 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeout
     }
 #ifdef COMMS_CHECKSUM
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, msgbuf, len );
-    XP_LOGF( "%s: sent %d bytes with sum %s", __func__, len, sum );
+    XP_LOGFF( "sent %d bytes with sum %s", len, sum );
     g_free( sum );
 #else
     XP_LOGF( "%s()=>%zd", __func__, nSent );

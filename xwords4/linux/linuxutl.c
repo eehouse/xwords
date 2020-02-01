@@ -1,6 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -63,6 +63,20 @@ linux_debugf( const char* format, ... )
     }
     
     fprintf( stderr, "%s\n", buf );
+}
+
+void
+linux_debugff( const char* func, const char* file, const char* fmt, ...)
+{
+    va_list ap;
+    va_start( ap, fmt );
+    gchar* header = g_strdup_printf( "%s/%s(): %s", file, func, fmt );
+    gchar* str = g_strdup_vprintf( header, ap );
+    va_end( ap );
+
+    fprintf( stderr, "%s\n", str );
+    g_free( header );
+    g_free( str );
 }
 
 void
