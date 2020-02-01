@@ -550,6 +550,7 @@ setupBoard( CursesBoardGlobals* bGlobals )
                         XP_FALSE, &dims );
     board_applyLayout( board, &dims );
     XP_LOGF( "%s(): calling board_draw()", __func__ );
+    board_invalAll( board );
     board_draw( board );
 }
 

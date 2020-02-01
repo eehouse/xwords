@@ -131,8 +131,14 @@ static void
 formatRemText( XP_S16 nTilesLeft, const XP_Rect* rect, char* buf, char** lines )
 {
     if ( 1 == rect->height ) {
+        const char* fmt;
+        if ( rect->width < 15 ) {
+            fmt = "%d";
+        } else {
+            fmt = "Rem: %.3d";
+        }
         *lines = buf;
-        sprintf( buf, "Rem: %.3d", nTilesLeft );
+        sprintf( buf, fmt, nTilesLeft );
     } else {
         sprintf( buf, "Rem:" );
         *lines++ = buf;
@@ -148,17 +154,20 @@ curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx),
                             XP_S16 nTilesLeft, 
                             XP_U16* width, XP_U16* height )
 {
-    char buf[64];
-    char* lines[2] = {0};
-    formatRemText( nTilesLeft, rect, buf, lines );
+    if ( 0 == nTilesLeft ) {
+        *width = *height = 0;
+    } else {
+        char buf[64];
+        char* lines[2] = {0};
+        formatRemText( nTilesLeft, rect, buf, lines );
     
-    *width = 0;
-    int ii;
-    for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
-        *width = XP_MAX( *width, strlen(lines[ii]) );
+        *width = 0;
+        int ii;
+        for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
+            *width = XP_MAX( *width, strlen(lines[ii]) );
+        }
+        *height = ii;
     }
-    *height = ii;
-
     return XP_TRUE;
 } /* curses_draw_measureRemText */
 
@@ -222,7 +231,11 @@ formatScoreText( XP_UCHAR* out, const DrawScoreInfo* dsi, const XP_Rect* rect,
         out += 4;
     }
 
-    sprintf( out, "%.3d", dsi->totalScore );
+    if ( 1 == rect->height ) {
+        sprintf( out, "%c:%.3d", dsi->name[0], dsi->totalScore );
+    } else {
+        sprintf( out, "%.3d", dsi->totalScore );
+    }
     *lines++ = out;
     out += 1 + strlen(out);
 
