@@ -1,6 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 1997-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997-2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
+#include <wchar.h>
 
 #include "cursesmain.h"
 #include "draw.h"
@@ -366,12 +367,6 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Bool highlight = (flags & (CELL_PENDING|CELL_RECENT|CELL_ISCURSOR)) != 0;
-    XP_UCHAR loc[rect->width+1];
-    if ( !!letter ) {
-        XP_MEMCPY( loc, letter, 1 + strlen(letter) );
-    } else {
-        XP_MEMSET( loc, '\0', sizeof(loc) );
-    }
 
     if ( highlight ) {
         wstandout( dctx->boardWin );
@@ -381,21 +376,37 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     eraseRect( dctx, rect );
 
     if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
+        char ch = ' ';
         switch ( bonus ) {
         case BONUS_DOUBLE_LETTER:
-            loc[0] = '+'; break;
+            ch = '+'; break;
         case BONUS_DOUBLE_WORD:
-            loc[0] = '*'; break;
+            ch = '*'; break;
         case BONUS_TRIPLE_LETTER:
-            loc[0] = '^'; break;
+            ch = '^'; break;
         case BONUS_TRIPLE_WORD:
-            loc[0] = '#'; break;
+            ch = '#'; break;
         default:
-            loc[0] = ' ';
+            break;
         } /* switch */
-    }
 
-    mvwaddnstr( dctx->boardWin, rect->top, rect->left, loc, -1 );
+        mvwaddch( dctx->boardWin, rect->top, rect->left, ch );
+    } else {
+        /* To deal with multibyte (basically just L·L at this point), draw one
+           char at a time, wrapping to the next line if we need to. */
+        mbstate_t ps = {0};
+        const char* end = letter + strlen( letter );
+        for ( int line = 0; line < rect->height; ++line ) {
+            for ( int col = 0; letter < end && col < rect->width; ++col ) {
+                // mbrlen returns len-in-bytes of next printable char
+                size_t nextLen = mbrlen( letter, end - letter, &ps );
+                XP_ASSERT( nextLen > 0 );
+                mvwaddnstr( dctx->boardWin, rect->top + line, rect->left + col,
+                            letter, nextLen );
+                letter += nextLen;
+            }
+        }
+    }
 
     if ( highlight ) {
         wstandend( dctx->boardWin );

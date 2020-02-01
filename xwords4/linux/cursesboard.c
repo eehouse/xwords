@@ -518,8 +518,6 @@ getFromDict( const CommonGlobals* cGlobals, XP_U16* fontWidthP,
     for ( Tile tile = 0; tile < dict->nFaces; ++tile ) {
         const XP_UCHAR* face = dict_getTileString( dict, tile );
         int thisLen = utf8_len( face );
-        /* XP_LOGF( "%s(): looking at face '%s' with len %d", __func__, */
-        /*          face, thisLen ); */
         while ( thisLen > maxSide * maxSide ) {
             ++maxSide;
         }
