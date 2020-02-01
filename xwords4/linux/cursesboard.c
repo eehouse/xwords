@@ -866,8 +866,8 @@ curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
 
 static void
 curses_util_notifyDupStatus( XW_UtilCtxt* XP_UNUSED(uc),
-                             XP_Bool amHost,
-                             const XP_UCHAR* msg )
+                             XP_Bool XP_UNUSED_DBG(amHost),
+                             const XP_UCHAR* XP_UNUSED_DBG(msg) )
 {
     XP_LOGF( "%s(amHost=%d, msg=%s)", __func__, amHost, msg );
 }
@@ -1043,8 +1043,9 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 }
 
 static void
-curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc), XP_Bool inDuplicateMode,
-                           XP_Bool canPause )
+curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc),
+                           XP_Bool XP_UNUSED_DBG(inDuplicateMode),
+                           XP_Bool XP_UNUSED_DBG(canPause) )
 {
     XP_LOGF( "%s(inDuplicateMode=%d, canPause=%d)", __func__, inDuplicateMode,
              canPause );

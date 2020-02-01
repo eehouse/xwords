@@ -58,17 +58,21 @@ static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr,
 #endif
 
 static void
-linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XP_U32 gameID,
-                         DupPauseType pauseTyp, XP_U16 pauser,
-                         const XP_UCHAR* name, const XP_UCHAR* msg )
+linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XP_U32 XP_UNUSED_DBG(gameID),
+                         DupPauseType XP_UNUSED_DBG(pauseTyp),
+                         XP_U16 XP_UNUSED_DBG(pauser),
+                         const XP_UCHAR* XP_UNUSED_DBG(name),
+                         const XP_UCHAR* XP_UNUSED_DBG(msg) )
 {
     XP_LOGF( "%s(id=%d, turn=%d, name=%s, typ=%d, %s)", __func__, gameID, pauser,
              name, pauseTyp, msg );
 }
 
 static void
-linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XP_U32 gameID,
-                               XP_U32 oldVal, XP_U32 newVal )
+linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc),
+                               XP_U32 XP_UNUSED_DBG(gameID),
+                               XP_U32 XP_UNUSED_DBG(oldVal),
+                               XP_U32 XP_UNUSED_DBG(newVal) )
 {
     XP_LOGF( "%s(id=%d, oldVal=%d, newVal=%d)", __func__, gameID, oldVal, newVal );
 }

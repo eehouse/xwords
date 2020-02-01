@@ -140,7 +140,7 @@ tryConnectToServer( CommonGlobals* cGlobals )
 }
 
 void
-ensureLocalPlayerNames( LaunchParams* params, CurGameInfo* gi )
+ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
 {
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* lp = &gi->players[ii];

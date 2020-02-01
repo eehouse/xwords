@@ -1009,7 +1009,7 @@ updateOthersTiles( ServerCtxt* server )
 }
 
 static XP_Bool
-checkDupTimerProc( void* closure, XWTimerReason XP_why )
+checkDupTimerProc( void* closure, XWTimerReason XP_UNUSED_DBG(XP_why) )
 {
     XP_ASSERT( XP_why == TIMER_DUP_TIMERCHECK );
     ServerCtxt* server = (ServerCtxt*)closure;

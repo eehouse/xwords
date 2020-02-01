@@ -525,7 +525,7 @@ stack_redo( StackCtxt* stack, StackEntry* entry )
 } /* stack_redo */
 
 void
-stack_freeEntry( StackCtxt* stack, StackEntry* entry )
+stack_freeEntry( StackCtxt* XP_UNUSED_DBG(stack), StackEntry* entry )
 {
     XP_ASSERT( entry->moveType != __BOGUS );
     switch( entry->moveType ) {
