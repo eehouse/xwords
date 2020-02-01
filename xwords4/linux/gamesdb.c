@@ -287,19 +287,37 @@ summarize( CommonGlobals* cGlobals )
         strcat( connvia, "local" );
     }
 
-    const char* fmt = "UPDATE games "
-        " SET room='%s', ended=%d, turn=%d, local=%d, ntotal=%d, "
-        " nmissing=%d, nmoves=%d, seed=%d, dictlang=%d, gameid=%d, connvia='%s', "
-        " relayid='%s', lastMoveTime=%d, dupTimerExpires=%d, scores='%s', "
-        " nPending=%d, role=%d"
-        " WHERE rowid=%lld";
-    XP_UCHAR buf[2*256];
-    snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, isLocal?1:0,
-              nTotal, nMissing, nMoves, seed, dictLang, gameID, connvia, relayID, lastMoveTime,
-              dupTimerExpires, scoresStr, nPending, gi->serverRole, cGlobals->rowid );
-    XP_LOGF( "query: %s", buf );
+    gchar* pairs[40];
+    int indx = 0;
+    pairs[indx++] = g_strdup_printf( "room='%s'", room );
+    pairs[indx++] = g_strdup_printf( "ended=%d", gameOver?1:0 );
+    pairs[indx++] = g_strdup_printf( "turn=%d", turn);
+    pairs[indx++] = g_strdup_printf( "local=%d", isLocal?1:0);
+    pairs[indx++] = g_strdup_printf( "ntotal=%d", nTotal );
+    pairs[indx++] = g_strdup_printf( "nmissing=%d", nMissing);
+    pairs[indx++] = g_strdup_printf( "nmoves=%d", nMoves);
+    pairs[indx++] = g_strdup_printf( "seed=%d", seed);
+    pairs[indx++] = g_strdup_printf( "dictlang=%d", dictLang);
+    pairs[indx++] = g_strdup_printf( "gameid=%d", gameID);
+    pairs[indx++] = g_strdup_printf( "connvia='%s'", connvia);
+    pairs[indx++] = g_strdup_printf( "relayid='%s'", relayID);
+    pairs[indx++] = g_strdup_printf( "lastMoveTime=%d", lastMoveTime );
+    pairs[indx++] = g_strdup_printf( "dupTimerExpires=%d", dupTimerExpires);
+    pairs[indx++] = g_strdup_printf( "scores='%s'", scoresStr);
+    pairs[indx++] = g_strdup_printf( "nPending=%d", nPending );
+    pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole);
+    pairs[indx++] = NULL;
+
+    gchar* vals = g_strjoinv( ",", pairs );
+    for ( int ii = 0; !!pairs[ii]; ++ii ) {
+        g_free( pairs[ii] );
+    }
+    gchar* query = g_strdup_printf( "UPDATE games SET %s WHERE rowid=%lld",
+                                    vals, cGlobals->rowid );
+    g_free( vals );
+    XP_LOGF( "query: %s", query );
     sqlite3_stmt* stmt = NULL;
-    int result = sqlite3_prepare_v2( cGlobals->params->pDb, buf, -1, &stmt, NULL );
+    int result = sqlite3_prepare_v2( cGlobals->params->pDb, query, -1, &stmt, NULL );
     assertPrintResult( cGlobals->params->pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
@@ -313,6 +331,7 @@ summarize( CommonGlobals* cGlobals )
         addSnapshot( cGlobals );
     }
     g_free( scoresStr );
+    g_free( query );
 }
 
 GSList*
