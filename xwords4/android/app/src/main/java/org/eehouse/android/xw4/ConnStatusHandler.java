@@ -350,7 +350,7 @@ public class ConnStatusHandler {
 
     public static void updateMoveCount( Context context, int newCount )
     {
-        if ( BuildConfig.DEBUG ) {
+        if ( XWPrefs.moveCountEnabled( context ) ) {
             s_moveCount = newCount;
             invalidateParent();
         }
