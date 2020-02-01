@@ -388,6 +388,13 @@ public class PrefsDelegate extends DelegateBase
             hideOne( R.string.key_show_fcm, R.string.pref_group_relay_title );
         }
 
+        if ( BuildConfig.DEBUG ) {
+            hideOne( R.string.key_logging_on, R.string.advanced_summary );
+            hideOne( R.string.key_enable_debug, R.string.advanced_summary );
+        } else {
+            hideOne( R.string.key_unhide_dupmode, R.string.advanced_summary );
+        }
+
         if ( CommonPrefs.getDupModeHidden( m_activity ) ) {
             hideOne( R.string.key_init_dupmodeon, R.string.key_prefs_defaults );
         }

@@ -765,7 +765,6 @@
     <string name="relay_via_http_first_summary">(zamiast jako powrót do niestandardowego protokołu)</string>
     <string name="dict_host">Adres URL pobierania listy słów kluczowych</string>
     <string name="logging_on">Włącz rejestrowanie</string>
-    <string name="logging_on_summary">(tylko wersje kompilacji)</string>
     <string name="debug_features">Włącz funkcje debugowania</string>
     <string name="debug_features_summary">Elementy menu itp. (Tylko wersje kompilacji)</string>
     <string name="board_menu_game_netstats">Statystyki sieci</string>

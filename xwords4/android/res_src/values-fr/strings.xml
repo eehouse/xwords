@@ -2864,9 +2864,6 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <!--<string name="logging_on">Enable logging</string>-->
     <string name="logging_on">Activer les logs</string>
     <!--XLATE-ME-->
-    <!--<string name="logging_on_summary">(release builds only)</string>-->
-    <string name="logging_on_summary">(seulement pour les release builds)</string>
-    <!--XLATE-ME-->
     <!--<string name="debug_features">Enable debug features</string>-->
     <string name="debug_features">Activer les fonctionnalités de débuggage</string>
     <!--XLATE-ME-->

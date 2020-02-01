@@ -710,7 +710,6 @@
     <string name="redir_host">リダイレクト ホストを招待</string>
     <string name="dict_host">単語リストのダウンロード URL</string>
     <string name="logging_on">ログを有効にする</string>
-    <string name="logging_on_summary">(リリース ビルドのみ)</string>
     <string name="debug_features">デバッグ機能を有効にする</string>
     <string name="debug_features_summary">メニュー項目等 (リリース ビルドのみ)</string>
     <string name="title_send_data_sms">データとして SMS を送信</string>

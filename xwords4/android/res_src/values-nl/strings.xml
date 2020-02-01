@@ -712,7 +712,6 @@
   <string name="redir_host">Host om uitnodigingen door te sturen</string>
   <string name="dict_host">Woordenlijst download URL</string>
   <string name="logging_on">Schakel logs in</string>
-  <string name="logging_on_summary">(enkel uitgegeven versies)</string>
   <string name="debug_features">Schakel debug functies in</string>
   <string name="debug_features_summary">Menuitems etc. (enkel uitgegeven versies)</string>
   <string name="title_send_data_sms">Verstuur SMS als data</string>

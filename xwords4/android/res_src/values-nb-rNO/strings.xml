@@ -666,7 +666,6 @@
     <string name="relay_host">Relé-vert</string>
     <string name="relay_via_http_first">Bruk vev-API-er først</string>
     <string name="dict_host">Ordlistenedlastingsnettadresse</string>
-    <string name="logging_on_summary">(kun utgivelsesbygg)</string>
     <string name="debug_features_summary">Menyelementer osv. (kun utgivelsesbygg)</string>
     <string name="netstats_title">Spillnettverksstatistikk</string>
     <string name="git_rev_title">Kildekodeversjons-ID</string>

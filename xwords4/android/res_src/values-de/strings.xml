@@ -733,7 +733,6 @@
     <string name="disable_nag_summary">Nicht benachrichtigen, egal wie lange ich schon am Zug bin</string>
     <string name="advanced">Zur Fehlersuche</string>
     <string name="logging_on">Protokollierung aktivieren</string>
-    <string name="logging_on_summary">(nur bei Release-Builds)</string>
     <string name="debug_features">Fehlersuche aktivieren</string>
     <string name="board_menu_game_netstats">Netzwerk-Statistiken</string>
     <string name="gamel_menu_loaddb">Partien von SD-Karte laden</string>

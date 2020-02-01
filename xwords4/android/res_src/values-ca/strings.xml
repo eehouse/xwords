@@ -652,7 +652,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="advanced">Per a depuració</string>
     <string name="advanced_summary">No hauríeu de necessitar això...</string>
     <string name="relay_host">Amfitrió de repetició</string>
-    <string name="logging_on_summary">(només construccions de desenvolupament)</string>
     <string name="debug_features">Habilita les característiques de depuració</string>
     <string name="debug_features_summary">Elements del menú, etc. (només construccions de depuració)</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
