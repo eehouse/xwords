@@ -716,10 +716,14 @@ relayInviteReceived( void* closure, NetLaunchInfo* invite )
     sqlite3_int64 rowids[1];
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( apg->cag.params->pDb, gameID, rowids, &nRowIDs );
-    
-    if ( 0 < nRowIDs ) {
-        gtktell( apg->window, "Duplicate invite rejected (FIXME!!!)" );
-    } else {
+
+    bool doIt = 0 == nRowIDs;
+    if ( ! doIt ) {
+        doIt = GTK_RESPONSE_YES == gtkask( apg->window,
+                                           "Duplicate invitation received. Accept anyway?",
+                                           GTK_BUTTONS_YES_NO, NULL );
+    }
+    if ( doIt ) {
         gameFromInvite( apg, invite, NULL );
     }
 }
