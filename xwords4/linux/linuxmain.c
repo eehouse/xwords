@@ -860,6 +860,7 @@ typedef enum {
     ,CMD_JOINADVERTISED
     ,CMD_PHONIES
     ,CMD_BONUSFILE
+    ,CMD_INVITEE_RELAYID
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     ,CMD_BTADDR
@@ -991,6 +992,7 @@ static CmdInfoRec CmdInfoRecs[] = {
        "ignore (0, default), warn (1) or lose turn (2)" }
     ,{ CMD_BONUSFILE, true, "bonus-file",
        "provides bonus info: . + * ^ and ! are legal" }
+    ,{ CMD_INVITEE_RELAYID, true, "invitee-relayid", "relayID to send any invitation to" }
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
@@ -2623,6 +2625,10 @@ main( int argc, char** argv )
             break;
         case CMD_BONUSFILE:
             mainParams.bonusFile = optarg;
+            break;
+        case CMD_INVITEE_RELAYID:
+            mainParams.connInfo.relay.inviteeRelayID = atoi(optarg);
+            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
             break;
 #endif
         case CMD_CLOSESTDIN:

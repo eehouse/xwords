@@ -139,6 +139,7 @@ typedef struct LaunchParams {
             short defaultSendPort;
             XP_Bool seeksPublicRoom;
             XP_Bool advertiseRoom;
+            XP_U32 inviteeRelayID;
         } relay;
 #endif
 #ifdef XWFEATURE_BLUETOOTH

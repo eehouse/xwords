@@ -1448,13 +1448,14 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     }
 #endif
 
-    if ( '\0' != addrs->u.sms.phone[0] && 0 < addrs->u.sms.port ) {
+    if ( !!addrs && '\0' != addrs->u.sms.phone[0] && 0 < addrs->u.sms.port ) {
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", cGlobals->gi->gameID );
 
         linux_sms_invite( cGlobals->params, &nli,
                           addrs->u.sms.phone, addrs->u.sms.port );
     }
+
     if ( 0 != relayDevID || !!relayID ) {
         XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
         relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );

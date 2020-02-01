@@ -1,4 +1,4 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
  * Copyright 2000 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -1235,19 +1235,22 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     CommsCtxt* comms = cGlobals->game.comms;
     XP_ASSERT( comms );
     comms_getAddr( comms, &addr );
+
+    XP_U16 nPlayers = 1;
+    gint forceChannel = 1;
+    NetLaunchInfo nli = {0};
+    nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
+
     if ( SERVER_ISSERVER != cGlobals->gi->serverRole ) {
         ca_inform( bGlobals->boardWin, "Only hosts can invite" );
-    } else if ( !params->connInfo.sms.inviteePhone ) {
-        ca_inform( bGlobals->boardWin, "No way to invite; use --invitee-sms-number" );
-    } else {
+    } else if ( 0 != params->connInfo.relay.inviteeRelayID ) {
+        relaycon_invite( params, params->connInfo.relay.inviteeRelayID, NULL, &nli );
+    } else if ( !!params->connInfo.sms.inviteePhone ) {
         /* These should both be settable/derivable */
-        XP_U16 nPlayers = 1;
-        gint forceChannel = 1;
-        NetLaunchInfo nli = {0};
-        nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
-
         linux_sms_invite( params, &nli, params->connInfo.sms.inviteePhone,
                           params->connInfo.sms.port );
+    } else {
+        ca_inform( bGlobals->boardWin, "No way to invite; use --invitee-sms-number or --invitee-relayid" );
     }
     return XP_TRUE;
 }
