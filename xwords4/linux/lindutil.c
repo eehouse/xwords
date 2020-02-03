@@ -140,6 +140,8 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return (XP_UCHAR*)"- %d [unused tiles]";
     case STR_COMMIT_CONFIRM:
         return (XP_UCHAR*)"Are you sure you want to commit the current move?\n";
+    case STR_SUBMIT_CONFIRM:
+        return (XP_UCHAR*)"Submit the current move?\n";
     case STRD_TURN_SCORE:
         return (XP_UCHAR*)"Score for turn: %d\n";
     case STR_BONUS_ALL:
@@ -205,7 +207,8 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return "%d of %d players have reported their moves.";
 
     default:
-        return (XP_UCHAR*)"unknown code to linux_util_getUserString";
+        XP_LOGF( "%s(code=%d)", __func__, code );
+        return (XP_UCHAR*)"unknown code";
     }
 } /* linux_dutil_getUserString */
 

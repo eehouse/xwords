@@ -419,7 +419,7 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
     }
     hash = finishHash( hash );
 
-    XP_LOGF( "%s(nBytes=%d, nBits=%d) => %X", __func__, len, bits, hash );
+    /* XP_LOGF( "%s(nBytes=%d, nBits=%d) => %X", __func__, len, bits, hash ); */
     return hash;
 } /* mem_stream_getHash */
 

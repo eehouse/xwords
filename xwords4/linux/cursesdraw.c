@@ -364,7 +364,6 @@ curses_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
     formatTimerText( buf, VSIZE(buf), secondsLeft );
     mvwprintw( dctx->boardWin, rInner->top, rInner->left, buf );
     wrefresh( dctx->boardWin );
-    XP_LOGF( "%s(): drew %s at %d,%d", __func__, buf, rInner->left, rInner->top );
 }
 
 static void

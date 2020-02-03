@@ -1118,9 +1118,9 @@ linux_getDevIDRelay( LaunchParams* params )
     gchar buf[32];
     if ( db_fetch_safe( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
         sscanf( buf, "%X", &result );
-        XP_LOGF( "%s(): %s => %x", __func__, buf, result );
+        /* XP_LOGF( "%s(): %s => %x", __func__, buf, result ); */
     }
-    LOG_RETURNF( "%d", result );
+    /* LOG_RETURNF( "%d", result ); */
     return result;
 }
 
