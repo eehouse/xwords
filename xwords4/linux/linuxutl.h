@@ -57,4 +57,6 @@ void setSquareBonuses( const CommonGlobals* cGlobals );
 
 XP_U32 linux_getCurSeconds();
 
+void formatTimerText( gchar* buf, int bufLen, int secondsLeft );
+
 #endif

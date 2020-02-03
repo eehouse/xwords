@@ -30,6 +30,7 @@
 #include "draw.h"
 #include "board.h"
 #include "linuxmain.h"
+#include "linuxutl.h"
 
 typedef enum {
     XP_GTK_JUST_NONE
@@ -1245,20 +1246,6 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* gtk_draw_score_pendingScore */
 
 static void
-gtkFormatTimerText( XP_UCHAR* buf, XP_U16 bufLen, XP_S16 secondsLeft )
-{
-    if ( secondsLeft < 0 ) {
-        *buf++ = '-';
-        --bufLen;
-        secondsLeft *= -1;
-    }
-
-    XP_U16 minutes = secondsLeft / 60;
-    XP_U16 seconds = secondsLeft % 60;
-    XP_SNPRINTF( buf, bufLen, "% 1d:%02d", minutes, seconds );
-} /* gtkFormatTimerText */
-
-static void
 gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
                     XP_U16 playerNum, XP_S16 secondsLeft,
                     XP_Bool localTurnDone )
@@ -1271,8 +1258,8 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
         GdkRGBA* color = localTurnDone ? &dctx->grey
             : &dctx->playerColors[playerNum];
 
-        XP_UCHAR buf[10];
-        gtkFormatTimerText( buf, VSIZE(buf), secondsLeft );
+        gchar buf[16];
+        formatTimerText( buf, VSIZE(buf), secondsLeft );
 
         draw_string_at( dctx, NULL, buf, rInner->height-1,
                         rInner, XP_GTK_JUST_CENTER, color, NULL );

@@ -594,6 +594,20 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
     cGlobals->noConnMsgs = NULL;
 } /* writeNoConnMsgs */
 
+void
+formatTimerText( gchar* buf, int bufLen, int secondsLeft )
+{
+    if ( secondsLeft < 0 ) {
+        *buf++ = '-';
+        --bufLen;
+        secondsLeft *= -1;
+    }
+
+    int minutes = secondsLeft / 60;
+    int seconds = secondsLeft % 60;
+    XP_SNPRINTF( buf, bufLen, "% 1d:%02d", minutes, seconds );
+} /* gtkFormatTimerText */
+
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */
 void

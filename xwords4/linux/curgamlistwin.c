@@ -239,7 +239,7 @@ cgl_draw( CursGameList* cgl )
     }
 
     const char* cols[] = {"#", "RowID", "Lang", "Scores", "GameID", "Role", "Room",
-                          "nTot", "nMiss", "Seed", "#Mv", "Turn", "nPend", };
+                          "nTot", "nMiss", "Seed", "#Mv", "Turn", "nPend", "DupTimer" };
 
     int nShown = nGames <= cgl->height - 2 ? nGames : cgl->height - 2;
     char* data[nShown + 1][VSIZE(cols)];
@@ -263,6 +263,9 @@ cgl_draw( CursGameList* cgl )
         data[line][col++] = g_strdup_printf( "%d", gi->nMoves );
         data[line][col++] = g_strdup_printf( "%d", gi->turn );
         data[line][col++] = g_strdup_printf( "%d", gi->nPending );
+        GTimeVal timerVal = { tv_sec: gi->dupTimerExpires, tv_usec: 0 };
+        data[line][col++] = g_time_val_to_iso8601( &timerVal );
+
         XP_ASSERT( col == VSIZE(data[line]) );
         ++line;
     }

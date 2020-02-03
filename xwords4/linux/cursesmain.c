@@ -1152,9 +1152,13 @@ relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
     sqlite3_int64 rowids[1];
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
-    if ( 0 < nRowIDs ) {
-        ca_inform( aGlobals->mainWin, "Duplicate invite rejected (FIXME!!!)" );
-    } else {
+    bool doIt = 0 == nRowIDs;
+    if ( ! doIt ) {
+        const gchar* question = "Duplicate invitation received. Accept anyway?";
+        const char* buttons[] = { "Yes", "No" };
+        doIt = 0 == cursesask( aGlobals->mainWin, question, VSIZE(buttons), buttons );
+    }
+    if ( doIt ) {
         CommsAddrRec returnAddr = {0};
         nli_makeAddrRec( invite, &returnAddr );
 

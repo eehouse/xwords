@@ -144,6 +144,7 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
     gi.gameID = nli->gameID;
     gi.dictLang = nli->lang;
     gi.forceChannel = nli->forceChannel;
+    gi.inDuplicateMode = nli->inDuplicateMode;
     gi.serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
     replaceStringIfDifferent( params->mpool, &gi.dictName, nli->dict );
 
@@ -1209,14 +1210,27 @@ handleInvite( void* closure, int XP_UNUSED(key) )
 
     if ( SERVER_ISSERVER != cGlobals->gi->serverRole ) {
         ca_inform( bGlobals->boardWin, "Only hosts can invite" );
-    } else if ( 0 != params->connInfo.relay.inviteeRelayID ) {
-        relaycon_invite( params, params->connInfo.relay.inviteeRelayID, NULL, &nli );
+
+        /* Invite first based on an invitee provided. Otherwise, fall back to
+           doing a send-to-self. Let the recipient code reject a duplicate if
+           the user so desires. */
     } else if ( !!params->connInfo.sms.inviteePhone ) {
         /* These should both be settable/derivable */
         linux_sms_invite( params, &nli, params->connInfo.sms.inviteePhone,
                           params->connInfo.sms.port );
+    } else if ( 0 != params->connInfo.relay.inviteeRelayID ) {
+        relaycon_invite( params, params->connInfo.relay.inviteeRelayID, NULL, &nli );
+
+    /* Try sending to self, using the phone number or relayID of this device */
+    } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) {
+        linux_sms_invite( params, &nli, addr.u.sms.phone, addr.u.sms.port );
+    } else if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+        XP_U32 relayID = linux_getDevIDRelay( params );
+        if ( 0 != relayID ) {
+            relaycon_invite( params, relayID, NULL, &nli );
+        }
     } else {
-        ca_inform( bGlobals->boardWin, "No way to invite; use --invitee-sms-number or --invitee-relayid" );
+        ca_inform( bGlobals->boardWin, "Cannot invite via relayID or by \"sms phone\"." );
     }
     return XP_TRUE;
 }

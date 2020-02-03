@@ -30,12 +30,12 @@
 #include "board.h"
 #include "dbgutil.h"
 #include "linuxmain.h"
+#include "linuxutl.h"
 
 typedef struct CursesDrawCtx {
     DrawCtxVTable* vtable;
 
     WINDOW* boardWin;
-
 } CursesDrawCtx;
 
 static void curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
@@ -353,11 +353,18 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_score_pendingScore */
 
 static void
-curses_draw_drawTimer( DrawCtx* XP_UNUSED(p_dctx), const XP_Rect* XP_UNUSED(rInner),
+curses_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
                        XP_U16 XP_UNUSED(playerNum), XP_S16 secondsLeft,
                        XP_Bool XP_UNUSED(localTurnDone) )
 {
-    XP_LOGF( "%s(secondsLeft=%d)", __func__, secondsLeft );
+    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    eraseRect( dctx, rInner );
+
+    gchar buf[16];
+    formatTimerText( buf, VSIZE(buf), secondsLeft );
+    mvwprintw( dctx->boardWin, rInner->top, rInner->left, buf );
+    wrefresh( dctx->boardWin );
+    XP_LOGF( "%s(): drew %s at %d,%d", __func__, buf, rInner->left, rInner->top );
 }
 
 static void
