@@ -672,8 +672,7 @@ cursesUserError( CursesBoardGlobals* bGlobals, const char* format, ... )
     va_end(ap);
 
     if ( !!bGlobals->boardWin ) {
-        const char* buttons[] = { "Ok" };
-        (void)cursesask( bGlobals->boardWin, buf, VSIZE(buttons), buttons );
+        (void)ca_inform( bGlobals->boardWin, buf );
     } else {
         XP_LOGF( "%s(msg=%s)", __func__, buf );
     }
@@ -705,6 +704,7 @@ curses_util_informNeedPickTiles( XW_UtilCtxt* XP_UNUSED(uc),
                                  const XP_UCHAR** XP_UNUSED(faces),
                                  const XP_U16* XP_UNUSED(counts) )
 {
+    XP_ASSERT(0);
     /* CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure; */
     /* char query[128]; */
     /* XP_S16 index; */
@@ -757,34 +757,40 @@ curses_util_informNeedPassword( XW_UtilCtxt* XP_UNUSED(uc),
                                 const XP_UCHAR* XP_UNUSED_DBG(name) )
 {
     XP_WARNF( "curses_util_informNeedPassword(num=%d, name=%s", playerNum, name );
+    XP_ASSERT(0);
 } /* curses_util_askPassword */
 
 static void
-curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), 
-                           XP_U16 XP_UNUSED(maxOffset),
-                           XP_U16 XP_UNUSED(oldOffset), XP_U16 XP_UNUSED(newOffset) )
+curses_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(maxOffset),
+                           XP_U16 oldOffset, XP_U16 newOffset )
 {
-    /* if ( oldOffset != newOffset ) { */
-    /*     XP_WARNF( "curses_util_yOffsetChange(%d,%d,%d) not implemented", */
-    /*               maxOffset, oldOffset, newOffset ); */
-    /* } */
+    if ( 0 != newOffset ) {
+        CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+        if ( !!bGlobals->boardWin ) {
+            ca_informf( bGlobals->boardWin, "%s(oldOffset=%d, newOffset=%d)", __func__,
+                        oldOffset, newOffset );
+        }
+    }
 } /* curses_util_yOffsetChange */
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 static void
-curses_util_turnChanged( XW_UtilCtxt* XP_UNUSED(uc), XP_S16 XP_UNUSED_DBG(newTurn) )
+curses_util_turnChanged( XW_UtilCtxt* uc, XP_S16 XP_UNUSED_DBG(newTurn) )
 {
-    XP_LOGF( "%s(turn=%d)", __func__, newTurn );
+    XP_LOGF( "%s(newTurn=%d)", __func__, newTurn );
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    linuxSaveGame( &bGlobals->cGlobals );
 }
 #endif
 
 static void
-curses_util_notifyIllegalWords( XW_UtilCtxt* XP_UNUSED(uc),
+curses_util_notifyIllegalWords( XW_UtilCtxt* uc,
                                 BadWordInfo* XP_UNUSED(bwi),
                                 XP_U16 XP_UNUSED(player),
                                 XP_Bool XP_UNUSED(turnLost) )
 {
-    XP_WARNF( "curses_util_notifyIllegalWords not implemented" );
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    ca_informf( bGlobals->boardWin, "%s() not implemented", __func__ );
 } /* curses_util_notifyIllegalWord */
 
 /* this needs to change!!! */
@@ -847,8 +853,7 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
 
     text = strFromStream( stream );
 
-    const char* buttons[] = { "Ok" };
-    (void)cursesask( bGlobals->boardWin, text, VSIZE(buttons), buttons );
+    (void)ca_inform( bGlobals->boardWin, text );
 
     free( text );
     stream_destroy( stream );
@@ -860,22 +865,25 @@ curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     char* question = strFromStream( expl );
-    const char* buttons[] = { "Ok" };
-    (void)cursesask( bGlobals->boardWin, question, VSIZE(buttons), buttons );
+    (void)ca_inform( bGlobals->boardWin, question );
     free( question );
 }
 
 static void
-curses_util_notifyDupStatus( XW_UtilCtxt* XP_UNUSED(uc),
-                             XP_Bool XP_UNUSED_DBG(amHost),
-                             const XP_UCHAR* XP_UNUSED_DBG(msg) )
+curses_util_notifyDupStatus( XW_UtilCtxt* uc,
+                             XP_Bool XP_UNUSED(amHost),
+                             const XP_UCHAR* msg )
 {
-    XP_LOGF( "%s(amHost=%d, msg=%s)", __func__, amHost, msg );
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    if ( !!bGlobals->boardWin ) {
+        ca_inform( bGlobals->boardWin, msg );
+    }
 }
 
 static void
 curses_util_informUndo( XW_UtilCtxt* XP_UNUSED(uc))
 {
+    XP_ASSERT(0);
     LOG_FUNC();
 }
 
@@ -947,43 +955,6 @@ curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
     return XP_TRUE;
 } /* curses_util_engineProgressCallback */
 
-static void
-curses_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
-{
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
-    globals->cGlobals.timerInfo[why].proc = NULL;
-}
-
-
-#ifdef USE_GLIBLOOP
-static gboolean
-onetime_idle( gpointer data )
-{
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
-    XP_LOGF( "%s(): passed bGlobals %p", __func__, bGlobals );
-    XWGame* game = &bGlobals->cGlobals.game;
-    if ( !!game->server && server_do( game->server ) ) {
-        if ( !!game->board ) {
-            board_draw( game->board );
-        }
-        linuxSaveGame( &bGlobals->cGlobals );
-    }
-    return FALSE;
-}
-#endif 
-
-static void
-curses_util_requestTime( XW_UtilCtxt* uc ) 
-{
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
-#if 1
-    (void)ADD_ONETIME_IDLE( onetime_idle, globals );
-#else
-    (void)g_timeout_add( 1,// interval,
-                         onetime_idle, globals );
-#endif
-} /* curses_util_requestTime */
-
 static XP_Bool
 curses_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc) )
 {
@@ -1004,8 +975,7 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 
     text = strFromStream( stream );
 
-    const char* buttons[] = { "Ok" };
-    (void)cursesask( bGlobals->boardWin, text, VSIZE(buttons), buttons );
+    (void)ca_inform( bGlobals->boardWin, text );
 
     free( text );
 }
@@ -1036,8 +1006,7 @@ curses_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
                                     player, &lmi ) ) {
         XP_UCHAR buf[128];
         formatLMI( &lmi, buf, VSIZE(buf) );
-        const char* buttons[] = { "Ok" };
-        (void)cursesask( bGlobals->boardWin, buf, VSIZE(buttons), buttons );
+        (void)ca_inform( bGlobals->boardWin, buf );
     }
 }
 
@@ -1111,8 +1080,6 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
     SET_PROC(hiliteCell);
 #endif
     SET_PROC(engineProgressCallback);
-    SET_PROC(clearTimer);
-    SET_PROC(requestTime);
     SET_PROC(altKeyDown);       /* ?? */
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
@@ -1437,8 +1404,7 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
     XP_MEMCPY( buf, data, len );
     buf[len] = '\0';
 
-    const char* buttons[] = { "Ok" };
-    (void)cursesask( bGlobals->boardWin, buf, VSIZE(buttons), buttons );
+    (void)ca_inform( bGlobals->boardWin, buf );
     stream_destroy( stream );
 
     return XP_TRUE;

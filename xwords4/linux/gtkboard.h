@@ -121,8 +121,6 @@ typedef struct GtkGameGlobals {
 
     EngineCtxt* engine;
 
-    guint idleID;
-
     GtkAdjustment* adjustment;
 
     ClientStreamRec clientRecs[MAX_NUM_PLAYERS];

@@ -689,8 +689,8 @@ cleanup( GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
     linuxSaveGame( cGlobals );
-    if ( 0 < globals->idleID ) {
-        g_source_remove( globals->idleID );
+    if ( 0 < cGlobals->idleID ) {
+        g_source_remove( cGlobals->idleID );
     }
 
     cancelTimers( cGlobals );
@@ -1861,41 +1861,6 @@ gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 #endif
 } /* gtk_util_engineProgressCallback */
 
-static void
-gtk_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    globals->cGlobals.timerInfo[why].proc = NULL;
-}
-
-static gint
-idle_func( gpointer data )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-/*     XP_DEBUGF( "idle_func called\n" ); */
-
-    /* remove before calling server_do.  If server_do puts up a dialog that
-       calls gtk_main, then this idle proc will also apply to that event loop
-       and bad things can happen.  So kill the idle proc asap. */
-    g_source_remove( globals->idleID );
-    globals->idleID = 0;        /* 0 is illegal event source ID */
-
-    ServerCtxt* server = globals->cGlobals.game.server;
-    if ( !!server && server_do( server ) ) {
-        if ( !!globals->cGlobals.game.board ) {
-            board_draw( globals->cGlobals.game.board );
-        }
-    }
-    return 0; /* 0 will stop it from being called again */
-} /* idle_func */
-
-static void
-gtk_util_requestTime( XW_UtilCtxt* uc ) 
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    globals->idleID = g_idle_add( idle_func, globals );
-} /* gtk_util_requestTime */
-
 static gint
 ask_bad_words( gpointer data )
 {
@@ -2258,8 +2223,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 #endif
     SET_PROC(altKeyDown);
     SET_PROC(engineProgressCallback);
-    SET_PROC(clearTimer);
-    SET_PROC(requestTime);
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
     SET_PROC(timerSelected);

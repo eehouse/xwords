@@ -218,6 +218,7 @@ struct CommonGlobals {
     guint timerSources[NUM_TIMERS_PLUS_ONE - 1];
     XP_U32 scoreTimerInterval;
     struct timeval scoreTv;		/* for timer */
+    guint idleID;
 
     CommsRelayState state;
 

@@ -2309,6 +2309,40 @@ linux_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     cGlobals->timerSources[why-1] = newSrc;
 } /* linux_util_setTimer */
 
+static void
+linux_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    cGlobals->timerInfo[why].proc = NULL;
+}
+
+static gint
+idle_func( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+
+    /* remove before calling server_do.  If server_do puts up a dialog that
+       calls gtk_main, then this idle proc will also apply to that event loop
+       and bad things can happen.  So kill the idle proc asap. */
+    g_source_remove( cGlobals->idleID );
+    cGlobals->idleID = 0;        /* 0 is illegal event source ID */
+
+    ServerCtxt* server = cGlobals->game.server;
+    if ( !!server && server_do( server ) ) {
+        if ( !!cGlobals->game.board ) {
+            board_draw( cGlobals->game.board );
+        }
+    }
+    return 0; /* 0 will stop it from being called again */
+} /* idle_func */
+
+static void
+linux_util_requestTime( XW_UtilCtxt* uc )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    cGlobals->idleID = g_idle_add( idle_func, cGlobals );
+} /* gtk_util_requestTime */
+
 void
 setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 {
@@ -2320,6 +2354,8 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 #endif
     SET_PROC(formatPauseHistory);
     SET_PROC(setTimer);
+    SET_PROC(clearTimer);
+    SET_PROC(requestTime);
 #undef SET_PROC
 }
 

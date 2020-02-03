@@ -134,4 +134,15 @@ ca_inform( WINDOW* window, const char* message )
     (void)cursesask( window, message, VSIZE(buttons), buttons );
 }
 
+void
+ca_informf( WINDOW* window, const char* fmt, ... )
+{
+    va_list args;
+    va_start( args, fmt );
+    gchar* msg = g_strdup_vprintf( fmt, args );
+    va_end( args );
+    ca_inform( window, msg );
+    g_free( msg );
+}
+
 #endif /* PLATFORM_NCURSES */

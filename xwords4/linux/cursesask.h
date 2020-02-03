@@ -26,6 +26,6 @@ int cursesask( WINDOW* window, const char* question,
                short numButtons, const char** buttons );
 
 void ca_inform( WINDOW* window, const char* message );
-
+void ca_informf( WINDOW* window, const char* fmt, ... );
 
 #endif
