@@ -354,10 +354,10 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 
 static void
 curses_draw_drawTimer( DrawCtx* XP_UNUSED(p_dctx), const XP_Rect* XP_UNUSED(rInner),
-                       XP_U16 XP_UNUSED(playerNum), XP_S16 XP_UNUSED(secondsLeft),
+                       XP_U16 XP_UNUSED(playerNum), XP_S16 secondsLeft,
                        XP_Bool XP_UNUSED(localTurnDone) )
 {
-    LOG_FUNC();
+    XP_LOGF( "%s(secondsLeft=%d)", __func__, secondsLeft );
 }
 
 static void

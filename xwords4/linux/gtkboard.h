@@ -123,15 +123,9 @@ typedef struct GtkGameGlobals {
 
     guint idleID;
 
-    struct timeval scoreTv;		/* for timer */
-    XP_U32 scoreTimerInterval;
-
     GtkAdjustment* adjustment;
 
     ClientStreamRec clientRecs[MAX_NUM_PLAYERS];
-
-    guint timerSources[NUM_TIMERS_PLUS_ONE - 1];
-
 #ifndef XWFEATURE_STANDALONE_ONLY
     XP_U16 netStatLeft, netStatTop;
     XP_UCHAR stateChar;

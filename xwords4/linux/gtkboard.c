@@ -87,7 +87,6 @@ static void gtkShowFinalScores( const GtkGameGlobals* globals,
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
                           XP_U32 relayDevID, const XP_UCHAR* relayID,
                           const CommsAddrRec* addrs );
-static void cancelTimers( GtkGameGlobals* globals );
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -694,7 +693,7 @@ cleanup( GtkGameGlobals* globals )
         g_source_remove( globals->idleID );
     }
 
-    cancelTimers( globals );
+    cancelTimers( cGlobals );
 
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( cGlobals );
@@ -1015,7 +1014,7 @@ inval_board_ontimer( gpointer data )
     BoardCtxt* board = globals->cGlobals.game.board;
     board_draw( board );
     return XP_FALSE;
-} /* pen_timer_func */
+} /* inval_board_ontimer */
 
 static void
 frame_active( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
@@ -1863,139 +1862,6 @@ gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 } /* gtk_util_engineProgressCallback */
 
 static void
-cancelTimer( GtkGameGlobals* globals, XWTimerReason why )
-{
-    guint src = globals->timerSources[why-1];
-    if ( src != 0 ) {
-        g_source_remove( src );
-        globals->timerSources[why-1] = 0;
-    }
-} /* cancelTimer */
-
-static void
-cancelTimers( GtkGameGlobals* globals )
-{
-    /* There is no 0. */
-    for ( XWTimerReason why = 1; why < NUM_TIMERS_PLUS_ONE; ++why ) {
-        cancelTimer( globals, why );
-    }
-}
-
-static gint
-pen_timer_func( gpointer data )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
-    if ( linuxFireTimer( &globals->cGlobals, TIMER_PENDOWN ) ) {
-        board_draw( globals->cGlobals.game.board );
-    }
-
-    return XP_FALSE;
-} /* pen_timer_func */
-
-static gint
-score_timer_func( gpointer data )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
-    if ( linuxFireTimer( &globals->cGlobals, TIMER_TIMERTICK ) ) {
-        board_draw( globals->cGlobals.game.board );
-    }
-
-    return XP_FALSE;
-} /* score_timer_func */
-
-static gint
-dup_timer_func( gpointer data )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
-    if ( linuxFireTimer( &globals->cGlobals, TIMER_DUP_TIMERCHECK ) ) {
-        board_draw( globals->cGlobals.game.board );
-    }
-
-    return XP_FALSE;
-} /* score_timer_func */
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-static gint
-comms_timer_func( gpointer data )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
-    if ( linuxFireTimer( &globals->cGlobals, TIMER_COMMS ) ) {
-        board_draw( globals->cGlobals.game.board );
-    }
-
-    return (gint)0;
-}
-#endif
-
-#ifdef XWFEATURE_SLOW_ROBOT
-static gint
-slowrob_timer_func( gpointer data )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
-    if ( linuxFireTimer( &globals->cGlobals, TIMER_SLOWROBOT ) ) {
-        board_draw( globals->cGlobals.game.board );
-    }
-
-    return (gint)0;
-}
-#endif
-
-static void
-gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
-                   XP_U16 XP_UNUSED_STANDALONE(when),
-                   XWTimerProc proc, void* closure )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    guint newSrc;
-
-    cancelTimer( globals, why );
-
-    switch( why ) {
-    case TIMER_PENDOWN:
-        if ( 0 != globals->timerSources[why-1] ) {
-            g_source_remove( globals->timerSources[why-1] );
-        }
-        newSrc = g_timeout_add( 1000, pen_timer_func, globals );
-        break;
-    case TIMER_TIMERTICK:
-        /* one second */
-        globals->scoreTimerInterval = 100 * 10000;
-
-        (void)gettimeofday( &globals->scoreTv, NULL );
-
-        newSrc = g_timeout_add( 1000, score_timer_func, globals );
-        break;
-
-    case TIMER_DUP_TIMERCHECK:
-        newSrc = g_timeout_add( 1000 * when, dup_timer_func, globals );
-        break;
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-    case TIMER_COMMS:
-        newSrc = g_timeout_add( 1000 * when, comms_timer_func, globals );
-        break;
-#endif
-#ifdef XWFEATURE_SLOW_ROBOT
-    case TIMER_SLOWROBOT:
-        newSrc = g_timeout_add( 1000 * when, slowrob_timer_func, globals );
-        break;
-#endif
-    default:
-        XP_ASSERT( 0 );
-    }
-
-    globals->cGlobals.timerInfo[why].proc = proc;
-    globals->cGlobals.timerInfo[why].closure = closure;
-    XP_ASSERT( newSrc != 0 );
-    globals->timerSources[why-1] = newSrc;
-} /* gtk_util_setTimer */
-
-static void
 gtk_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -2392,7 +2258,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 #endif
     SET_PROC(altKeyDown);
     SET_PROC(engineProgressCallback);
-    SET_PROC(setTimer);
     SET_PROC(clearTimer);
     SET_PROC(requestTime);
     SET_PROC(notifyIllegalWords);

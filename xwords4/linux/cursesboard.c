@@ -946,39 +946,6 @@ curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
     return XP_TRUE;
 } /* curses_util_engineProgressCallback */
 
-#ifdef USE_GLIBLOOP
-static gboolean
-timerFired( gpointer data )
-{
-    TimerInfo* ti = (TimerInfo*)data;
-    CommonGlobals* globals = ti->globals;
-    XWTimerReason why = ti - globals->timerInfo;
-    if ( linuxFireTimer( globals, why ) ) {
-        board_draw( globals->game.board );
-    }
-
-    return FALSE;
-}
-#endif
-
-static void
-curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
-                      XWTimerProc proc, void* closure )
-{
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
-    TimerInfo* ti = &globals->cGlobals.timerInfo[why];
-
-    ti->proc = proc;
-    ti->closure = closure;
-
-#ifdef USE_GLIBLOOP
-    ti->globals = &globals->cGlobals;
-    (void)g_timeout_add_seconds( when, timerFired, ti );
-#else
-    ti->when = util_getCurSeconds(uc) + when;
-#endif
-} /* curses_util_setTimer */
-
 static void
 curses_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
@@ -1143,7 +1110,6 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
     SET_PROC(hiliteCell);
 #endif
     SET_PROC(engineProgressCallback);
-    SET_PROC(setTimer);
     SET_PROC(clearTimer);
     SET_PROC(requestTime);
     SET_PROC(altKeyDown);       /* ?? */

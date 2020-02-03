@@ -214,6 +214,11 @@ struct CommonGlobals {
     GSList* packetQueue;
     XP_U32 nextPacketID;        /* for debugging */
 
+    /* timer stuff */
+    guint timerSources[NUM_TIMERS_PLUS_ONE - 1];
+    XP_U32 scoreTimerInterval;
+    struct timeval scoreTv;		/* for timer */
+
     CommsRelayState state;
 
     /* Allow listener sockets to be installed in either gtk or ncurses'

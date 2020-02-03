@@ -119,6 +119,7 @@ bool linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
                     const CommsAddrRec* addrP );
 void tryConnectToServer( CommonGlobals* cGlobals );
 void ensureLocalPlayerNames( LaunchParams* params, CurGameInfo* gi );
+void cancelTimers( CommonGlobals* cGlobals );
 
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */

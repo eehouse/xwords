@@ -1199,6 +1199,8 @@ parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
         *myPhone = g_strdup( phone );
     } else if ( !phone && db_fetch_safe( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
         params->connInfo.sms.myPhone = *myPhone = g_strdup(buf);
+    } else {
+        *myPhone = NULL;
     }
 
     *myPort = params->connInfo.sms.port;
@@ -2174,6 +2176,139 @@ linux_util_formatPauseHistory( XW_UtilCtxt* XP_UNUSED(uc), XWStreamCtxt* stream,
     stream_catString( stream, buf );
 }
 
+static void
+cancelTimer( CommonGlobals* cGlobals, XWTimerReason why )
+{
+    guint src = cGlobals->timerSources[why-1];
+    if ( src != 0 ) {
+        g_source_remove( src );
+        cGlobals->timerSources[why-1] = 0;
+    }
+} /* cancelTimer */
+
+void
+cancelTimers( CommonGlobals* cGlobals )
+{
+    /* There is no 0. */
+    for ( XWTimerReason why = 1; why < NUM_TIMERS_PLUS_ONE; ++why ) {
+        cancelTimer( cGlobals, why );
+    }
+}
+
+static gint
+dup_timer_func( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+
+    if ( linuxFireTimer( cGlobals, TIMER_DUP_TIMERCHECK ) ) {
+        board_draw( cGlobals->game.board );
+    }
+
+    return XP_FALSE;
+} /* score_timer_func */
+
+static gint
+score_timer_func( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+
+    if ( linuxFireTimer( cGlobals, TIMER_TIMERTICK ) ) {
+        board_draw( cGlobals->game.board );
+    }
+
+    return XP_FALSE;
+} /* score_timer_func */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+static gint
+comms_timer_func( gpointer data )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+
+    if ( linuxFireTimer( &globals->cGlobals, TIMER_COMMS ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
+
+    return (gint)0;
+}
+#endif
+
+static gint
+pen_timer_func( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+
+    if ( linuxFireTimer( cGlobals, TIMER_PENDOWN ) ) {
+        board_draw( cGlobals->game.board );
+    }
+
+    return XP_FALSE;
+} /* pen_timer_func */
+
+#ifdef XWFEATURE_SLOW_ROBOT
+static gint
+slowrob_timer_func( gpointer data )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)data;
+
+    if ( linuxFireTimer( cGlobals, TIMER_SLOWROBOT ) ) {
+        board_draw( cGlobals->game.board );
+    }
+
+    return (gint)0;
+}
+#endif
+
+static void
+linux_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
+                     XP_U16 XP_UNUSED_STANDALONE(when),
+                     XWTimerProc proc, void* closure )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    guint newSrc;
+
+    cancelTimer( cGlobals, why );
+
+    switch( why ) {
+    case TIMER_PENDOWN:
+        if ( 0 != cGlobals->timerSources[why-1] ) {
+            g_source_remove( cGlobals->timerSources[why-1] );
+        }
+        newSrc = g_timeout_add( 1000, pen_timer_func, cGlobals );
+        break;
+    case TIMER_TIMERTICK:
+        /* one second */
+        cGlobals->scoreTimerInterval = 100 * 10000;
+
+        (void)gettimeofday( &cGlobals->scoreTv, NULL );
+
+        newSrc = g_timeout_add( 1000, score_timer_func, cGlobals );
+        break;
+
+    case TIMER_DUP_TIMERCHECK:
+        newSrc = g_timeout_add( 1000 * when, dup_timer_func, cGlobals );
+        break;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case TIMER_COMMS:
+        newSrc = g_timeout_add( 1000 * when, comms_timer_func, cGlobals );
+        break;
+#endif
+#ifdef XWFEATURE_SLOW_ROBOT
+    case TIMER_SLOWROBOT:
+        newSrc = g_timeout_add( 1000 * when, slowrob_timer_func, cGlobals );
+        break;
+#endif
+    default:
+        XP_ASSERT( 0 );
+    }
+
+    cGlobals->timerInfo[why].proc = proc;
+    cGlobals->timerInfo[why].closure = closure;
+    XP_ASSERT( newSrc != 0 );
+    cGlobals->timerSources[why-1] = newSrc;
+} /* linux_util_setTimer */
+
 void
 setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 {
@@ -2184,6 +2319,7 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
     SET_PROC(setIsServer);
 #endif
     SET_PROC(formatPauseHistory);
+    SET_PROC(setTimer);
 #undef SET_PROC
 }
 
