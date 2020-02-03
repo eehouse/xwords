@@ -1476,6 +1476,8 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, gtk );
 #endif
 
+    assertDrawCallbacksSet( dctx->vtable );
+
     dctx->drawing_area = drawing_area;
     dctx->globals = globals;
 

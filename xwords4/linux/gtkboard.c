@@ -2418,7 +2418,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 
 #undef SET_PROC
 
-    assertAllCallbacksSet( util );
+    assertUtilCallbacksSet( util );
 } /* setupGtkUtilCallbacks */
 
 #ifndef XWFEATURE_STANDALONE_ONLY

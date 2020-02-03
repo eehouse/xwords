@@ -1166,7 +1166,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #endif
 #undef SET_PROC
 
-    assertAllCallbacksSet( util );
+    assertUtilCallbacksSet( util );
 } /* setupCursesUtilCallbacks */
 
 static bool

@@ -95,7 +95,8 @@ void clearOneSecondTimer( CommonGlobals* cGlobals );
 #endif
 
 void setupLinuxUtilCallbacks( XW_UtilCtxt* util );
-void assertAllCallbacksSet( XW_UtilCtxt* util );
+void assertUtilCallbacksSet( XW_UtilCtxt* util );
+void assertDrawCallbacksSet( const DrawCtxVTable* vtable );
 void setupUtil( CommonGlobals* cGlobals );
 void disposeUtil( CommonGlobals* cGlobals );
 

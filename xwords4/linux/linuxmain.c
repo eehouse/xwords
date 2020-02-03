@@ -2188,7 +2188,7 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 }
 
 void
-assertAllCallbacksSet( XW_UtilCtxt* util )
+assertUtilCallbacksSet( XW_UtilCtxt* util )
 {
     XWStreamCtxt* (**proc)(XW_UtilCtxt*, XP_PlayerAddr ) =
         &util->vtable->m_util_makeStreamFromAddr;
@@ -2199,6 +2199,22 @@ assertAllCallbacksSet( XW_UtilCtxt* util )
         }
         ++proc;
     }
+}
+
+void
+assertDrawCallbacksSet( const DrawCtxVTable* vtable )
+{
+    bool allSet = true;
+    void(**proc)() = (void(**)())vtable;
+    for ( int ii = 0; ii < sizeof(*vtable)/sizeof(*proc); ++ii ) {
+        XP_LOGFF( "looking at index %d", ii );
+        if ( !*proc ) {
+            XP_LOGF( "%s(): null ptr at index %d", __func__, ii );
+            allSet = false;
+        }
+        ++proc;
+    }
+    XP_ASSERT( allSet );
 }
 
 void
