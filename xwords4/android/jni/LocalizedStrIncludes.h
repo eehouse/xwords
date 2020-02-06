@@ -1,4 +1,4 @@
-/* Keep these in sync with the constants in UtilCtxt.java */
+/* Keep these in sync with the constants in DUtilCtxt.java */
 
 
 #ifndef _LOCALIZEDSTRINCLUDES_H_
@@ -30,6 +30,9 @@
 # define STRDSD_PLACER                     24
 # define STR_DUP_CLIENT_SENT               25
 # define STRDD_DUP_HOST_RECEIVED           26
+# define STR_DUP_MOVED                     27
+# define STRD_DUP_TRADED                   28
+# define STRSD_DUP_ONESCORE                29
 
-# define N_AND_USER_STRINGS                26
+# define N_AND_USER_STRINGS                29
 #endif

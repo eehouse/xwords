@@ -2421,7 +2421,6 @@
   <!-- Checkbox in game config dialog -->
   <string name="duplicate_check">Duplicate mode</string>
 
-  <!-- New strings for "Duplicate" mode -->
   <!-- Tags duplicate-mode games in Games List, above thumbnail of board -->
   <string name="dup_tag">Dup</string>
   <!-- Mark game title; will produce something like "Kati vs. Eric (dup.)" -->
@@ -2488,6 +2487,10 @@
     <string name="game_paused_title">Game paused</string>
     <!-- Title for notification that another player un-paused a duplicate-mode game -->
     <string name="game_unpaused_title">Game un-paused</string>
+
+    <string name="dup_moved">Duplicate turn complete. Scores:\n</string>
+    <string name="dup_traded_fmt">No moves made; traded %1$d tiles</string>
+    <string name="dup_onescore_fmt">%1$s: %2$d points\n</string>
 
     <!-- Title of pause confirm/message edit dialog -->
     <string name="pause_title">Game pause</string>

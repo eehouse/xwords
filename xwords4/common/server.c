@@ -899,59 +899,58 @@ bitsPerTile( ServerCtxt* server )
 static void
 dupe_setupShowTrade( ServerCtxt* server, XP_U16 nTiles )
 {
-    if ( server->nv.showRobotScores ) {
-        XP_ASSERT( !server->nv.prevMoveStream );
+    XP_ASSERT( inDuplicateMode(server) );
+    XP_ASSERT( !server->nv.prevMoveStream );
 
-        XWStreamCtxt* stream = mkServerStream( server );
+    XP_UCHAR buf[128];
+    const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil, STRD_DUP_TRADED );
+    XP_SNPRINTF( buf, VSIZE(buf), fmt, nTiles );
 
-        XP_UCHAR buf[64];
-        XP_SNPRINTF( buf, VSIZE(buf), "No moves made; traded %d tiles", nTiles );
-        stream_catString( stream, buf );
+    XWStreamCtxt* stream = mkServerStream( server );
+    stream_catString( stream, buf );
 
-        server->nv.prevMoveStream = stream;
-        server->vol.showPrevMove = XP_TRUE;
-    }
+    server->nv.prevMoveStream = stream;
+    server->vol.showPrevMove = XP_TRUE;
 }
 
 static void
 dupe_setupShowMove( ServerCtxt* server, XP_U16* scores )
 {
-    if ( server->nv.showRobotScores ) {
-        XP_ASSERT( !server->nv.prevMoveStream );
+    XP_ASSERT( inDuplicateMode(server) );
+    XP_ASSERT( !server->nv.prevMoveStream ); /* firing */
 
-        const CurGameInfo* gi = server->vol.gi;
-        const XP_U16 nPlayers = gi->nPlayers;
+    const CurGameInfo* gi = server->vol.gi;
+    const XP_U16 nPlayers = gi->nPlayers;
 
-        XWStreamCtxt* stream = mkServerStream( server );
+    XWStreamCtxt* stream = mkServerStream( server );
 
-        XP_U16 lastMax = 0x7FFF;
-        for ( XP_U16 nDone = 0; nDone < nPlayers; ) {
+    XP_U16 lastMax = 0x7FFF;
+    for ( XP_U16 nDone = 0; nDone < nPlayers; ) {
 
-            /* Find the largest score we haven't already done */
-            XP_U16 thisMax = 0;
-            for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
-                XP_U16 score = scores[ii];
-                if ( score < lastMax && score > thisMax ) {
-                    thisMax = score;
-                }
+        /* Find the largest score we haven't already done */
+        XP_U16 thisMax = 0;
+        for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
+            XP_U16 score = scores[ii];
+            if ( score < lastMax && score > thisMax ) {
+                thisMax = score;
             }
-
-            /* Process everybody with that score */
-            for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
-                if ( scores[ii] == thisMax ) {
-                    ++nDone;
-                    XP_UCHAR buf[64];
-                    XP_SNPRINTF( buf, VSIZE(buf), "%s: %d points\n",
-                                 gi->players[ii].name, scores[ii] );
-                    stream_catString( stream, buf );
-                }
-            }
-            lastMax = thisMax;
         }
 
-        server->nv.prevMoveStream = stream;
-        server->vol.showPrevMove = XP_TRUE;
+        /* Process everybody with that score */
+        const XP_UCHAR* fmt = dutil_getUserString( server->vol.dutil, STRSD_DUP_ONESCORE );
+        for ( XP_U16 ii = 0; ii < nPlayers; ++ii ) {
+            if ( scores[ii] == thisMax ) {
+                ++nDone;
+                XP_UCHAR buf[128];
+                XP_SNPRINTF( buf, VSIZE(buf), fmt, gi->players[ii].name, scores[ii] );
+                stream_catString( stream, buf );
+            }
+        }
+        lastMax = thisMax;
     }
+
+    server->nv.prevMoveStream = stream;
+    server->vol.showPrevMove = XP_TRUE;
 }
 
 static void
@@ -1339,7 +1338,7 @@ makeRobotMove( ServerCtxt* server )
              (server_countTilesInPool( server ) >= MAX_TRAY_TILES));
 
         server->vol.showPrevMove = XP_TRUE;
-        if ( server->nv.showRobotScores ) {
+        if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
             stream = mkServerStream( server );
         }
 
@@ -1450,11 +1449,11 @@ postponeRobotMove( ServerCtxt* server )
 static void
 showPrevScore( ServerCtxt* server )
 {
-    if ( server->nv.showRobotScores ) { /* this can be changed between turns */
+    /* showRobotScores can be changed between turns */
+    if ( inDuplicateMode( server ) || server->nv.showRobotScores ) {
         XW_UtilCtxt* util = server->vol.util;
         XW_DUtilCtxt* dutil = server->vol.dutil;
         XWStreamCtxt* stream;
-        const XP_UCHAR* str;
         XP_UCHAR buf[128];
         CurGameInfo* gi = server->vol.gi;
         XP_U16 nPlayers = gi->nPlayers;
@@ -1464,13 +1463,15 @@ showPrevScore( ServerCtxt* server )
         prevTurn = (server->nv.currentTurn + nPlayers - 1) % nPlayers;
         lp = &gi->players[prevTurn];
 
+        XP_U16 stringCode;
         if ( inDuplicateMode( server ) ) {
-            str = "Duplicate turn complete. Scores:\n";
+            stringCode = STR_DUP_MOVED;
         } else if ( LP_IS_LOCAL(lp) ) {
-            str = dutil_getUserString( dutil, STR_ROBOT_MOVED );
+            stringCode = STR_ROBOT_MOVED;
         } else {
-            str = dutil_getUserString( dutil, STRS_REMOTE_MOVED );
+            stringCode = STRS_REMOTE_MOVED;
         }
+        const XP_UCHAR* str = dutil_getUserString( dutil, stringCode );
         XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
         str = buf;
 
@@ -2549,7 +2550,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 
     if ( server->vol.showPrevMove ) {
         server->vol.showPrevMove = XP_FALSE;
-        if ( server->nv.showRobotScores ) {
+        if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
             server->nv.stateAfterShow = server->nv.gameState;
             SETSTATE( server, XWSTATE_NEED_SHOWSCORE );
             moreToDo = XP_TRUE;
@@ -2769,7 +2770,7 @@ static XWStreamCtxt*
 makeTradeReportIf( ServerCtxt* server, const TrayTileSet* tradedTiles )
 {
     XWStreamCtxt* stream = NULL;
-    if ( server->nv.showRobotScores ) {
+    if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
         XP_UCHAR tradeBuf[64];
         const XP_UCHAR* tradeStr = 
             dutil_getUserQuantityString( server->vol.dutil, STRD_ROBOT_TRADED,
@@ -2786,7 +2787,7 @@ static XWStreamCtxt*
 makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
 {
     XWStreamCtxt* stream = NULL;
-    if ( server->nv.showRobotScores ) {
+    if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
         ModelCtxt* model = server->vol.model;
         stream = mkServerStream( server );
         *wordsStream = mkServerStream( server );

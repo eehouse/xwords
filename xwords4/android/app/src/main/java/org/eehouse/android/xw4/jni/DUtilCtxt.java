@@ -92,32 +92,35 @@ public class DUtilCtxt {
         }
     }
 
-    static final int STRD_ROBOT_TRADED =                  1;
-    static final int STR_ROBOT_MOVED =                    2;
-    static final int STRS_VALUES_HEADER =                 3;
-    static final int STRD_REMAINING_TILES_ADD =           4;
-    static final int STRD_UNUSED_TILES_SUB =              5;
-    static final int STRS_REMOTE_MOVED =                  6;
-    static final int STRD_TIME_PENALTY_SUB =              7;
-    static final int STR_PASS =                           8;
-    static final int STRS_MOVE_ACROSS =                   9;
-    static final int STRS_MOVE_DOWN =                    10;
-    static final int STRS_TRAY_AT_START =                11;
-    static final int STRSS_TRADED_FOR =                  12;
-    static final int STR_PHONY_REJECTED =                13;
-    static final int STRD_CUMULATIVE_SCORE =             14;
-    static final int STRS_NEW_TILES =                    15;
-    static final int STR_COMMIT_CONFIRM =                16;
-    static final int STR_SUBMIT_CONFIRM =                17;
-    static final int STR_BONUS_ALL =                     18;
-    static final int STRD_TURN_SCORE =                   19;
-    static final int STRD_REMAINS_HEADER =               20;
-    static final int STRD_REMAINS_EXPL =                 21;
-    static final int STRSD_RESIGNED =                    22;
-    static final int STRSD_WINNER =                      23;
-    static final int STRDSD_PLACER  =                    24;
-    static final int STR_DUP_CLIENT_SENT =               25;
-    static final int STRDD_DUP_HOST_RECEIVED =           26;
+    private static final int STRD_ROBOT_TRADED =                  1;
+    private static final int STR_ROBOT_MOVED =                    2;
+    private static final int STRS_VALUES_HEADER =                 3;
+    private static final int STRD_REMAINING_TILES_ADD =           4;
+    private static final int STRD_UNUSED_TILES_SUB =              5;
+    private static final int STRS_REMOTE_MOVED =                  6;
+    private static final int STRD_TIME_PENALTY_SUB =              7;
+    private static final int STR_PASS =                           8;
+    private static final int STRS_MOVE_ACROSS =                   9;
+    private static final int STRS_MOVE_DOWN =                    10;
+    private static final int STRS_TRAY_AT_START =                11;
+    private static final int STRSS_TRADED_FOR =                  12;
+    private static final int STR_PHONY_REJECTED =                13;
+    private static final int STRD_CUMULATIVE_SCORE =             14;
+    private static final int STRS_NEW_TILES =                    15;
+    private static final int STR_COMMIT_CONFIRM =                16;
+    private static final int STR_SUBMIT_CONFIRM =                17;
+    private static final int STR_BONUS_ALL =                     18;
+    private static final int STRD_TURN_SCORE =                   19;
+    private static final int STRD_REMAINS_HEADER =               20;
+    private static final int STRD_REMAINS_EXPL =                 21;
+    private static final int STRSD_RESIGNED =                    22;
+    private static final int STRSD_WINNER =                      23;
+    private static final int STRDSD_PLACER  =                    24;
+    private static final int STR_DUP_CLIENT_SENT =               25;
+    private static final int STRDD_DUP_HOST_RECEIVED =           26;
+    private static final int STR_DUP_MOVED =                     27;
+    private static final int STRD_DUP_TRADED =                   28;
+    private static final int STRSD_DUP_ONESCORE =                29;
 
     public String getUserString( int stringCode )
     {
@@ -194,7 +197,15 @@ public class DUtilCtxt {
         case STRDD_DUP_HOST_RECEIVED:
             id = R.string.dup_host_received_fmt;
             break;
-
+        case STR_DUP_MOVED:
+            id = R.string.dup_moved;
+            break;
+        case STRD_DUP_TRADED:
+            id = R.string.dup_traded_fmt;
+            break;
+        case STRSD_DUP_ONESCORE:
+            id = R.string.dup_onescore_fmt;
+            break;
 
         default:
             Log.w( TAG, "no such stringCode: %d", stringCode );

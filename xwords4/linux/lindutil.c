@@ -176,7 +176,6 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return (XP_UCHAR*)"The robot \"%s\" moved:\n";
     case STRS_REMOTE_MOVED:
         return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
-
 #ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
         return (XP_UCHAR*)"Local players";
@@ -200,11 +199,17 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return "[Winner] %s: %d";
     case STRDSD_PLACER:
         return "[#%d] %s: %d";
+    case STR_DUP_MOVED:
+        return (XP_UCHAR*)"Duplicate turn complete. Scores:\n";
     case STR_DUP_CLIENT_SENT:
         return "This device has sent its moves to the host. When all players "
             "have sent their moves it will be your turn again.";
     case STRDD_DUP_HOST_RECEIVED:
         return "%d of %d players have reported their moves.";
+    case STRD_DUP_TRADED:
+        return "No moves made; traded %d tiles";
+    case STRSD_DUP_ONESCORE:
+        return "%s: %d points\n";
 
     default:
         XP_LOGF( "%s(code=%d)", __func__, code );
