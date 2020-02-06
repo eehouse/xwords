@@ -602,7 +602,9 @@ handle_winchwrite( GIOChannel* source, GIOCondition condition, gpointer data )
 
     cgl_resized( aGlobals->gameList, g_globals.winWidth,
                  g_globals.cag.params->cursesListWinHt );
-    cmenu_resized( aGlobals->menuState );
+    if ( !!aGlobals->menuState ) {
+        cmenu_resized( aGlobals->menuState );
+    }
 
     cb_dims dims;
     figureDims( aGlobals, &dims );

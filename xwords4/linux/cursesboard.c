@@ -126,6 +126,7 @@ cb_new( CursesBoardState* cbState, const cb_dims* dims )
 {
     CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, NULL, NULL );
     if ( !!bGlobals ) {
+        initMenus( bGlobals );
         enableDraw( bGlobals, dims );
         setupBoard( bGlobals );
     }
@@ -864,9 +865,11 @@ curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
                         XWStreamCtxt* expl, XWStreamCtxt* XP_UNUSED(words))
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-    char* question = strFromStream( expl );
-    (void)ca_inform( bGlobals->boardWin, question );
-    free( question );
+    if ( !!bGlobals->boardWin ) {
+        char* question = strFromStream( expl );
+        (void)ca_inform( bGlobals->boardWin, question );
+        free( question );
+    }
 }
 
 static void

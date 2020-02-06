@@ -1195,7 +1195,7 @@ parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
     gchar buf[32];
     const XP_UCHAR* phone = params->connInfo.sms.myPhone;
     if ( !!phone ) {
-        db_store( params->pDb, KEY_SMSPHONE, *myPhone );
+        db_store( params->pDb, KEY_SMSPHONE, phone );
         *myPhone = g_strdup( phone );
     } else if ( !phone && db_fetch_safe( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
         params->connInfo.sms.myPhone = *myPhone = g_strdup(buf);
@@ -2379,7 +2379,6 @@ assertDrawCallbacksSet( const DrawCtxVTable* vtable )
     bool allSet = true;
     void(**proc)() = (void(**)())vtable;
     for ( int ii = 0; ii < sizeof(*vtable)/sizeof(*proc); ++ii ) {
-        XP_LOGFF( "looking at index %d", ii );
         if ( !*proc ) {
             XP_LOGF( "%s(): null ptr at index %d", __func__, ii );
             allSet = false;
