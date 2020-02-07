@@ -17,7 +17,18 @@ usage() {
     echo "usage: $0 start | stop | restart | mkdb | debs_install"
 }
 
+setup_user() {
+    sudo -u postgres createuser --createdb $USER || true
+    if id | grep -q postgres; then
+	echo "user $USER already member of postgres group"
+    else
+	echo "adding $USER to group postgres; will need to login again to take advantage"
+	sudo usermod -a -G postgres $USER
+    fi
+}
+
 make_db() {
+    setup_user
     if [ ! -e $CONFFILE ]; then
         echo "unable to find $CONFFILE"
         exit 1
@@ -116,7 +127,7 @@ do_start() {
 }
 
 install_debs() {
-    sudo apt-get install postgresql-client postgresql
+    sudo apt-get install postgresql-client postgresql libpq-dev
 }
 
 case $1 in
