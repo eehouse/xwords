@@ -139,10 +139,10 @@ formatRemText( XP_S16 nTilesLeft, const XP_Rect* rect, char* buf, char** lines )
 {
     if ( 1 == rect->height ) {
         const char* fmt;
-        if ( rect->width < 15 ) {
+        if ( rect->width < 20 ) {
             fmt = "%d";
         } else {
-            fmt = "Rem: %.3d";
+            fmt = "Rem: %.2d";
         }
         *lines = buf;
         sprintf( buf, fmt, nTilesLeft );

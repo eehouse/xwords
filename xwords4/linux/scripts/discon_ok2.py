@@ -268,7 +268,7 @@ class Device():
         self.setApp(self.args.UPGRADE_PCT)
         self.checkScript()
         self.launchCount += 1
-        args = [ self.script ]
+        args = [ self.script, '--close-stdin' ]
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
         self.pid = self.proc.pid
@@ -396,7 +396,7 @@ def build_cmds(args):
     COUNTER = 0
     PLAT_PARMS = []
     if not args.USE_GTK:
-        PLAT_PARMS += ['--curses', '--close-stdin']
+        PLAT_PARMS += ['--curses']
 
     for GAME in range(1, args.NGAMES + 1):
         peers = set()
