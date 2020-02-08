@@ -577,9 +577,11 @@ SIGINTTERM_handler( int XP_UNUSED(signal) )
 static gboolean
 handle_quitwrite( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer data )
 {
+    LOG_FUNC();
     readFromPipe( source );
-    CursesAppGlobals* globals = (CursesAppGlobals*)data;
-    handleQuit( globals, 0 );
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
+    cb_closeAll( aGlobals->cbState );
+    handleQuit( aGlobals, 0 );
     return TRUE;
 }
 
@@ -1508,6 +1510,11 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     if ( 0 == cgl_getNGames( g_globals.gameList ) ) {
         handleNewGame( &g_globals, 0 );
+    } else {
+        /* Always open a game. Without that it won't attempt to connect and
+           stalls are likely in the test script case at least. If that's
+           annoying when running manually add a launch flag */
+        handleOpenGame( &g_globals, 0 );
     }
 
     g_main_loop_run( g_globals.loop );

@@ -308,7 +308,6 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
     hasHeader = 0 != (DICT_HEADER_MASK & flags);
     if ( hasHeader ) {
         flags &= ~DICT_HEADER_MASK;
-        XP_DEBUGF( "has header!" );
     }
 
     flags &= ~DICT_SYNONYMS_MASK;

@@ -611,7 +611,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
         if ( readHeader( &ptr, &header ) ) {
             sendAckIf( storage, &header );
 
-            XP_LOGF( "%s(): got %s", __func__, msgToStr(header.cmd) );
+            XP_LOGFF( "cmd: %s", msgToStr(header.cmd) );
 
             switch( header.cmd ) {
             case XWPDEV_REGRSP: {

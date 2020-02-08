@@ -42,11 +42,10 @@ static GSList* s_idleProcs = NULL;
 
 static void
 printElapsedFor( struct timespec* first, struct timespec* second,
-                 const char* XP_UNUSED_DBG(proc),
-                 const char* XP_UNUSED_DBG(action) )
-    /* time_t   tv_sec;        /\* seconds *\/ */
-    /* long     tv_nsec;       /\* nanoseconds *\/ */
+                 const char* proc, const char* action )
 {
+    XP_USE( proc );
+    XP_USE( action );
     time_t secs = second->tv_sec - first->tv_sec;
     long nsecs = second->tv_nsec - first->tv_nsec;
     while ( nsecs < 0 ) {
@@ -56,7 +55,7 @@ printElapsedFor( struct timespec* first, struct timespec* second,
     
     /* float firstSecs = (float)first->tv_sec + (((float)first->tv_nsec)/1000000000.0f); */
     /* float secondSecs = (float)second->tv_sec + (((float)second->tv_nsec)/1000000000.0f); */
-    XP_LOGF( TAG "elapsed %s %s(): %ld.%ld", action, proc, secs, nsecs );
+    /* XP_LOGF( TAG "elapsed %s %s(): %ld.%ld", action, proc, secs, nsecs ); */
 }
 
 
@@ -64,7 +63,7 @@ static gint
 idle_wrapper( gpointer data )
 {
     WrapperState* state = (WrapperState*)data;
-    XP_LOGF( TAG "%s(): CALLED for %s", __func__, state->procName );
+    /* XP_LOGF( TAG "%s(): CALLED for %s", __func__, state->procName ); */
 
     struct timespec callTime;
     clock_gettime(CLOCK_REALTIME, &callTime);
@@ -79,14 +78,15 @@ idle_wrapper( gpointer data )
 
 #ifdef DEBUG
     const char* procName = state->procName;
+    XP_USE( procName );
 #endif
     if ( 0 == result ) {        /* won't be getting called again */
         s_idleProcs = g_slist_remove( s_idleProcs, state );
         g_free( state );
     }
 
-    XP_LOGF( TAG "%s(): DONE for %s; now have %d", __func__, procName,
-             g_slist_length(s_idleProcs) );
+    /* XP_LOGF( TAG "%s(): DONE for %s; now have %d", __func__, procName, */
+    /*          g_slist_length(s_idleProcs) ); */
 
     return result;
 }
@@ -95,8 +95,8 @@ guint
 _wrapIdle( GSourceFunc function, gpointer data,
            const char* procName, const char* caller )
 {
-    XP_LOGF( TAG "%s(): installing proc %s from caller %s", __func__,
-             procName, caller );
+    /* XP_LOGF( TAG "%s(): installing proc %s from caller %s", __func__, */
+    /*          procName, caller ); */
     WrapperState* state = g_malloc0( sizeof(*state) );
     s_idleProcs = g_slist_append( s_idleProcs, state );
     state->proc.srcProc = function;
@@ -106,8 +106,8 @@ _wrapIdle( GSourceFunc function, gpointer data,
     clock_gettime(CLOCK_REALTIME, &state->spec);
     
     guint res = g_idle_add( idle_wrapper, state );
-    XP_LOGF( TAG "%s(): added idle for %s; now have %d", __func__,
-             procName, g_slist_length(s_idleProcs) );
+    /* XP_LOGF( TAG "%s(): added idle for %s; now have %d", __func__, */
+    /*          procName, g_slist_length(s_idleProcs) ); */
     return res;
 }
 
@@ -132,7 +132,7 @@ watch_wrapper( GIOChannel* source, GIOCondition condition, gpointer data )
 
     char buf[128] = {0};
     formatFlags( buf, VSIZE(buf), condition );
-    XP_LOGF( TAG "%s(%s): CALLED; flags: %s", __func__, state->procName, buf );
+    /* XP_LOGF( TAG "%s(%s): CALLED; flags: %s", __func__, state->procName, buf ); */
 
     struct timespec callTime;
     clock_gettime(CLOCK_REALTIME, &callTime);
@@ -144,7 +144,7 @@ watch_wrapper( GIOChannel* source, GIOCondition condition, gpointer data )
 
     printElapsedFor( &callTime, &returnTime, state->procName, "running" );
 
-    XP_LOGF( TAG "%s(%s): DONE", __func__, state->procName );
+    /* XP_LOGF( TAG "%s(%s): DONE", __func__, state->procName ); */
     
     if ( 0 == keep ) {        /* won't be getting called again */
         // g_source_destroy( source );
@@ -157,8 +157,8 @@ guint
 _wrapWatch( gpointer data, int socket, GIOFunc ioProc,
             const char* procName, const char* caller )
 {
-    XP_LOGF( TAG "%s(): installing proc %s from caller %s", __func__,
-             procName, caller );
+    /* XP_LOGF( TAG "%s(): installing proc %s from caller %s", __func__, */
+    /*          procName, caller ); */
 
     WrapperState* state = g_malloc0( sizeof(*state) );
     state->proc.ioProc = ioProc;
@@ -172,7 +172,7 @@ _wrapWatch( gpointer data, int socket, GIOFunc ioProc,
                                   watch_wrapper, state );
     g_io_channel_unref( channel ); /* only main loop holds it now */
 
-    XP_LOGF( TAG "%s(): added watch for %s", __func__, procName );
+    /* XP_LOGF( TAG "%s(): added watch for %s", __func__, procName ); */
     return watch;
 }
 
