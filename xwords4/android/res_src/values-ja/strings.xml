@@ -705,7 +705,7 @@
     <string name="disable_nag_summary">私の番がどんなに長くても通知しません</string>
     <string name="confirm_get_locdict_fmt">お使いのデバイスで %1$s が設定されました。%1$s でクロスワードがプレイできるように、単語リストをダウンロードしますか?</string>
     <string name="advanced">デバッグ用</string>
-    <string name="advanced_summary">これは必要ありません...</string>
+    <string name="advanced_summary">これは必要ありません…</string>
     <string name="relay_host">リレーホスト</string>
     <string name="redir_host">リダイレクト ホストを招待</string>
     <string name="dict_host">単語リストのダウンロード URL</string>
@@ -725,7 +725,9 @@
     <string name="enable_dupes_title">重複する招待を受け入れる</string>
     <string name="xlations_locale">翻訳の擬似地域</string>
     <string name="enable_dupes_summary">2 回以上の招待を受け入れます</string>
-    <string name="nag_intervals">リマインダーの間隔 (分1、分2、...)</string>
+    <string name="nag_intervals">リマインダーの間隔 (1分、2分、…)</string>
+    <string name="enable_nfc_toself_title">自分への NFC を有効にする</string>
+    <string name="enable_nfc_toself_summary">デバッグを支援するための擬似招待状</string>
     <string name="enable_sms_toself_title">自分に SMS を短絡させる</string>
     <string name="enable_sms_toself_summary">電話番号が同じときに無線をスキップします</string>
     <string name="force_radio_title">無線があるとみなす</string>
@@ -817,7 +819,7 @@
     <string name="rematch_sent_toast">再戦の招待状を送信しました</string>
     <string name="board_menu_game_showInvites">招待を表示</string>
     <string name="no_invites">このゲームは招待状を送信していません</string>
-    <string name="chat_hint">ここに入力...</string>
+    <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">概要は利用できません</string>
     <string name="activity_button">シングル ペイン</string>
