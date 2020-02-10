@@ -38,45 +38,42 @@
 #include "LocalizedStrIncludes.h"
 
 #ifdef DEBUG
+
+static void
+debugf( const char* format, va_list ap )
+{
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday( &tv, &tz );
+
+    struct tm* timp = localtime( &tv.tv_sec );
+
+    fprintf( stderr, "<%d:%lx>%.2d:%.2d:%.2d:", getpid(),
+             pthread_self(), timp->tm_hour, timp->tm_min, timp->tm_sec );
+
+    vfprintf(stderr, format, ap );
+    fprintf( stderr, "%c", '\n' );
+}
+
 void 
 linux_debugf( const char* format, ... )
 {
-    char buf[1024*8];
     va_list ap;
-    struct tm* timp;
-    struct timeval tv;
-    struct timezone tz;
-
-    gettimeofday( &tv, &tz );
-    timp = localtime( &tv.tv_sec );
-
-    size_t len = snprintf( buf, sizeof(buf), "<%d:%lx>%.2d:%.2d:%.2d:", getpid(),
-                           pthread_self(), timp->tm_hour, timp->tm_min, timp->tm_sec );
-    XP_ASSERT( len < sizeof(buf) );
-
     va_start(ap, format);
-    len = vsprintf(buf+strlen(buf), format, ap);
-    va_end(ap);
-
-    if ( len >= sizeof(buf) ) {
-        buf[sizeof(buf)-1] = '\0';
-    }
-    
-    fprintf( stderr, "%s\n", buf );
+    debugf( format, ap );
+    va_end( ap );
 }
 
 void
 linux_debugff( const char* func, const char* file, const char* fmt, ...)
 {
+    gchar* header = g_strdup_printf( "%s/%s(): %s", file, func, fmt );
+
     va_list ap;
     va_start( ap, fmt );
-    gchar* header = g_strdup_printf( "%s/%s(): %s", file, func, fmt );
-    gchar* str = g_strdup_vprintf( header, ap );
+    debugf( header, ap );
     va_end( ap );
-
-    fprintf( stderr, "%s\n", str );
     g_free( header );
-    g_free( str );
 }
 
 void

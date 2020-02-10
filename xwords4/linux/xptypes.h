@@ -79,10 +79,13 @@ extern void linux_debugff(const char* func, const char* file, const char* fmt, .
     __attribute__ ((format (printf, 3, 4)));
 # define XP_LOGFF( FMT, ... ) \
     linux_debugff( __func__, __FILE__, FMT, __VA_ARGS__ )
+#define XP_LOG(STR) \
+    linux_debugff( __func__, __FILE__, "%s", STR )
 
 #else
 # define XP_DEBUGF(ch,...)
 # define XP_LOGFF(fmt,...)
+# define XP_LOG(fmt)
 #endif
 
 #define XP_WARNF XP_DEBUGF

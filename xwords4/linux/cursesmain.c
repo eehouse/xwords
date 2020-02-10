@@ -554,7 +554,10 @@ readFromPipe( GIOChannel* source )
 {
     int pipe = g_io_channel_unix_get_fd( source );
     char ch;
-    ssize_t nRead = read( pipe, &ch, sizeof(ch) );
+#ifdef DEBUG
+    ssize_t nRead =
+#endif
+        read( pipe, &ch, sizeof(ch) );
     XP_ASSERT( nRead == sizeof(ch) && ch == '!' );
 }
 
@@ -586,7 +589,7 @@ handle_quitwrite( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointe
 }
 
 static gboolean
-handle_winchwrite( GIOChannel* source, GIOCondition condition, gpointer data )
+handle_winchwrite( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpointer data )
 {
     XP_LOGF( "%s(condition=%x)", __func__, condition );
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;

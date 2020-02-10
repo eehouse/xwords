@@ -2385,6 +2385,7 @@ assertDrawCallbacksSet( const DrawCtxVTable* vtable )
         }
         ++proc;
     }
+    XP_USE(allSet);
     XP_ASSERT( allSet );
 }
 
@@ -2463,7 +2464,7 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
 int
 main( int argc, char** argv )
 {
-    XP_LOGFF( "ptr size: %zu", sizeof(argv) );
+    XP_LOGFF( "%s starting; ptr size: %zu", argv[0], sizeof(argv) );
 
     int opt;
     int totalPlayerCount = 0;
@@ -2501,7 +2502,7 @@ main( int argc, char** argv )
 
     setlocale(LC_ALL, "");
 
-    XP_LOGF( "main started: pid = %d", getpid() );
+    XP_LOGFF( "pid = %d", getpid() );
 #ifdef DEBUG
     syslog( LOG_DEBUG, "main started: pid = %d", getpid() );
 #endif
@@ -2557,7 +2558,7 @@ main( int argc, char** argv )
     mainParams.pgi.dictName = copyString( mainParams.mpool, dict );
 
     char* envDictPath = getenv( "XW_DICTDIR" );
-    XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );
+    XP_LOGFF( "envDictPath=%s", envDictPath );
     if ( !!envDictPath ) {
         char *saveptr;
         for ( ; ; ) {
@@ -2620,7 +2621,7 @@ main( int argc, char** argv )
             if ( !path ) {
                 path = ".";
             }
-            XP_LOGF( "%s(): appending dict path: %s", __func__, path );
+            XP_LOGFF( "appending dict path: %s", path );
             mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
             break;
 #ifdef XWFEATURE_WALKDICT
@@ -2993,9 +2994,7 @@ main( int argc, char** argv )
             }
         }
 
-        XP_LOGF( "%s(): here: %s", __func__, mainParams.pgi.dictName );
         if ( !!mainParams.pgi.dictName ) {
-            XP_LOGF( "%s(): there", __func__ );
             /* char path[256]; */
             /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
             DictionaryCtxt* dict =
@@ -3004,7 +3003,7 @@ main( int argc, char** argv )
                                        mainParams.useMmap );
             XP_ASSERT( !!dict );
             mainParams.pgi.dictLang = dict_getLangCode( dict );
-            XP_LOGF( "%s(): set lang code: %d", __func__, mainParams.pgi.dictLang );
+            XP_LOGFF( "set lang code: %d", mainParams.pgi.dictLang );
             dict_unref( dict );
         } else if ( isServer ) {
 #ifdef STUBBED_DICT
@@ -3115,7 +3114,7 @@ main( int argc, char** argv )
         // mainParams.util->gameInfo = &mainParams.pgi;
 
         srandom( seed );	/* init linux random number generator */
-        XP_LOGF( "seeded srandom with %d", seed );
+        XP_LOGFF( "seeded srandom with %d", seed );
 
         if ( mainParams.closeStdin ) {
             fclose( stdin );
@@ -3162,6 +3161,6 @@ main( int argc, char** argv )
 
     gsw_logIdles();
 
-    XP_LOGF( "%s exiting main, returning %d", argv[0], result );
+    XP_LOGFF( "%s exiting, returning %d", argv[0], result );
     return result;
 } /* main */

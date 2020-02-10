@@ -381,6 +381,7 @@ curses_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XP_Rect* XP_UNUSED(rect),
                              XP_S16 XP_UNUSED(dist), DrawFocusState XP_UNUSED(dfs) )
 {
     XP_ASSERT(0);
+    return XP_TRUE;
 }
 
 #define MY_PAIR 1
@@ -552,6 +553,7 @@ curses_draw_drawTileMidDrag( DrawCtx* XP_UNUSED(dctx),
                              CellFlags XP_UNUSED(flags) )
 {
     XP_ASSERT( 0 );
+    return XP_TRUE;
 }
 
 static void
