@@ -1512,7 +1512,9 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 #endif
 
     if ( 0 == cgl_getNGames( g_globals.gameList ) ) {
-        handleNewGame( &g_globals, 0 );
+        if ( params->forceNewGame ) {
+            handleNewGame( &g_globals, 0 );
+        }
     } else {
         /* Always open a game. Without that it won't attempt to connect and
            stalls are likely in the test script case at least. If that's

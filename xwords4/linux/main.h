@@ -26,6 +26,7 @@
 #endif
 
 #include <sqlite3.h>
+#include <stdbool.h>
 
 #include "comtypes.h"
 #include "util.h"
@@ -111,6 +112,7 @@ typedef struct LaunchParams {
     XP_Bool useHTTP;
     XP_Bool runSMSTest;
     XP_Bool noHTTPAuto;
+    bool forceNewGame;
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
     XP_U16 askTimeout;

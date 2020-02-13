@@ -840,6 +840,7 @@ typedef enum {
     ,CMD_SMSFAILPCT
     ,CMD_DROPRCVSMS
     ,CMD_FORCECHANNEL
+    ,CMD_FORCE_GAME
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
@@ -968,6 +969,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SMSFAILPCT, true, "sms-fail-pct", "percent of sms sends, randomly chosen, never arrive" }
     ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
     ,{ CMD_FORCECHANNEL, true, "force-channel", "force (clients) to use this hostid/channel" }
+    ,{ CMD_FORCE_GAME, false, "force-game", "if there's no game on launch, create one" }
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
@@ -2889,6 +2891,10 @@ main( int argc, char** argv )
             break;
         case CMD_FORCECHANNEL:
             mainParams.pgi.forceChannel = atoi( optarg );
+            break;
+
+        case CMD_FORCE_GAME:
+            mainParams.forceNewGame = true;
             break;
 
 #ifdef XWFEATURE_CROSSHAIRS

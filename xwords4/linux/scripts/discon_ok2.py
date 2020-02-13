@@ -469,6 +469,8 @@ def build_cmds(args):
             else:
                 PARAMS += ['--server']
 
+            PARAMS += [ '--force-game' ]
+
             # print('PARAMS:', PARAMS)
 
             if useDupeMode: PARAMS += ['--duplicate-mode']
