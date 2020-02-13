@@ -1,6 +1,7 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2013 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2013 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +30,7 @@
 #include "comtypes.h"
 #include "gamesdb.h"
 #include "gsrcwrap.h"
+#include "dbgutil.h"
 
 #define MAX_MOVE_CHECK_MS ((XP_U16)(1000 * 60 * 60 * 24))
 #define RELAY_API_PROTO "http"
@@ -154,7 +156,7 @@ write_callback(void *contents, size_t size, size_t nmemb, void* data)
         ws->curSize = 1L;
     }
 
-    XP_LOGF( "%s(size=%zd, nmemb=%zd)", __func__, size, nmemb );
+    XP_LOGFF( "(size=%zd, nmemb=%zd)", size, nmemb );
     size_t oldLen = ws->curSize;
     const size_t newLength = size * nmemb;
     XP_ASSERT( (oldLen + newLength) > 0 );
@@ -184,7 +186,7 @@ mkJsonParams( CURL* curl, va_list ap )
     const char* asStr = json_object_get_string( params );
     char* curl_params = curl_easy_escape( curl, asStr, strlen(asStr) );
     gchar* result = g_strdup_printf( "params=%s", curl_params );
-    XP_LOGF( "%s: adding: params=%s (%s)", __func__, asStr, curl_params );
+    XP_LOGFF( "adding: params=%s (%s)", asStr, curl_params );
     curl_free( curl_params );
     json_object_put( params );
     return result;
@@ -219,12 +221,12 @@ runWitCurl( RelayTask* task, const gchar* proc, ...)
 
     res = curl_easy_perform(curl);
     XP_Bool success = res == CURLE_OK;
-    XP_LOGF( "%s(): curl_easy_perform(%s) => %d", __func__, proc, res );
+    XP_LOGFF( "curl_easy_perform(%s) => %d", proc, res );
     /* Check for errors */
     if ( ! success ) {
-        XP_LOGF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
+        XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
     } else {
-        XP_LOGF( "%s(): got for %s: \"%s\"", __func__, proc, task->ws.ptr );
+        XP_LOGFF( "got for %s: \"%s\"", proc, task->ws.ptr );
     }
     /* always cleanup */
     curl_easy_cleanup(curl);
@@ -290,7 +292,7 @@ void
 relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID, 
               DevIDType typ, const XP_UCHAR* devID )
 {
-    XP_LOGF( "%s(typ=%d)", __func__, typ );
+    XP_LOGFF( "(typ=%s)", devIDTypeToStr(typ) );
     XP_U8 tmpbuf[256];
     int indx = 0;
 
@@ -375,7 +377,7 @@ XP_S16
 relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
                      const XP_UCHAR* relayID, XP_U32 gameToken )
 {
-    XP_LOGF( "%s(relayID=%s)", __func__, relayID );
+    XP_LOGFF( "(relayID=%s)", relayID );
     XP_ASSERT( 0 != gameToken );
     XP_U16 indx = 0;
     ssize_t nSent = -1;
@@ -402,7 +404,7 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
 void
 relaycon_requestMsgs( LaunchParams* params, const XP_UCHAR* devID )
 {
-    XP_LOGF( "%s(devID=%s)", __func__, devID );
+    XP_LOGFF( "(devID=%s)", devID );
     RelayConStorage* storage = getStorage( params );
 
     XP_U8 tmpbuf[128];
@@ -496,7 +498,7 @@ relayThread( void* arg )
 
         pthread_mutex_unlock( &storage->relayMutex );
 
-        XP_LOGF( "%s(): processing first of %d (%s)", __func__, len, strs );
+        XP_LOGFF( "processing first of %d (%s)", len, strs );
         g_free( strs );
 
         switch ( task->typ ) {
@@ -541,7 +543,7 @@ addTask( RelayConStorage* storage, RelayTask* task )
     gchar* strs = listTasks( storage->relayTaskList );
     pthread_cond_signal( &storage->relayCondVar );
     pthread_mutex_unlock( &storage->relayMutex );
-    XP_LOGF( "%s(): task list now: %s", __func__, strs );
+    XP_LOGFF( "task list now: %s", strs );
     g_free( strs );
 }
 
@@ -562,7 +564,7 @@ freeRelayTask( RelayTask* task )
 {
     GSList faker = { .next = NULL, .data = task };
     gchar* str = listTasks(&faker);
-    XP_LOGF( "%s(): deleting %s", __func__, str );
+    XP_LOGFF( "deleting %s", str );
     g_free( str );
     g_free( task->ws.ptr );
     g_free( task );
@@ -622,7 +624,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
                 XP_UCHAR devID[len+1];
                 getNetString( &ptr, len, devID );
                 XP_U16 maxInterval = getNetShort( &ptr );
-                XP_LOGF( "%s: maxInterval=%d", __func__, maxInterval );
+                XP_LOGFF( "maxInterval=%d", maxInterval );
                 (*storage->procs.devIDReceived)( storage->procsClosure, devID,
                                                  maxInterval );
             }
@@ -644,7 +646,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
             case XWPDEV_UNAVAIL: {
 #ifdef DEBUG
                 XP_U32 unavail = getNetLong( &ptr );
-                XP_LOGF( "%s: unavail = %u", __func__, unavail );
+                XP_LOGFF( "unavail = %u", unavail );
 #endif
                 uint32_t len;
                 if ( !vli2un( &ptr, &len ) ) {
@@ -662,7 +664,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
                     assert( 0 );
                 }
                 XP_USE( packetID );
-                XP_LOGF( "%s(): got ack for packetID %d", __func__, packetID );
+                XP_LOGFF( "got ack for packetID %d", packetID );
                 break;
             }
             case XWPDEV_ALERT: {
@@ -672,11 +674,11 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
                 }
                 XP_UCHAR buf[len + 1];
                 getNetString( &ptr, len, buf );
-                XP_LOGF( "%s: got message: %s", __func__, buf );
+                XP_LOGFF( "got message: %s", buf );
                 break;
             }
             case XWPDEV_GOTINVITE: {
-                XP_LOGF( "%s(): got XWPDEV_GOTINVITE", __func__ );
+                XP_LOGFF( "%s", "got XWPDEV_GOTINVITE" );
 #ifdef DEBUG
                 XP_U32 sender = 
 #endif
@@ -698,13 +700,12 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
                 break;
 
             default:
-                XP_LOGF( "%s: Unexpected cmd %d", __func__, header.cmd );
+                XP_LOGFF( "Unexpected cmd %d", header.cmd );
                 XP_ASSERT( 0 );
             }
         }
     } else {
-        XP_LOGF( "%s: error reading udp socket: %d (%s)", __func__, 
-                 errno, strerror(errno) );
+        XP_LOGFF( "error reading udp socket: %d (%s)", errno, strerror(errno) );
     }
     LOG_RETURNF( "%d", TRUE );
     return TRUE;
@@ -729,10 +730,10 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
                                   ((0 <= nRead)? nRead : 0) );
 #ifdef COMMS_CHECKSUM
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
-    XP_LOGF( "%s: read %zd bytes ('%s')(sum=%s)", __func__, nRead, b64, sum );
+    XP_LOGFF( "read %zd bytes ('%s')(sum=%s)", nRead, b64, sum );
     g_free( sum );
 #else
-    XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
+    XP_LOGFF( "read %zd bytes ('%s')", nRead, b64 );
 #endif
     g_free( b64 );
 
@@ -760,7 +761,7 @@ relaycon_cleanup( LaunchParams* params )
         gchar* gotStrs = listTasks( storage->gotDataTaskList );
         pthread_mutex_unlock( &storage->gotDataMutex );
 
-        XP_LOGF( "%s(): sends pending: %d (%s); data tasks pending: %d (%s)", __func__,
+        XP_LOGFF( "sends pending: %d (%s); data tasks pending: %d (%s)", 
                  nRelayTasks, gotStrs, nDataTasks, taskStrs );
 
         g_free( gotStrs );
@@ -787,7 +788,7 @@ hostNameToIP( const XP_UCHAR* name )
 {
     XP_U32 ip;
     struct hostent* host;
-    XP_LOGF( "%s: looking up %s", __func__, name );
+    XP_LOGFF( "looking up %s", name );
     host = gethostbyname( name );
     if ( NULL == host ) {
         XP_WARNF( "gethostbyname returned NULL\n" );
@@ -795,7 +796,7 @@ hostNameToIP( const XP_UCHAR* name )
         XP_MEMCPY( &ip, host->h_addr_list[0], sizeof(ip) );
         ip = ntohl(ip);
     }
-    XP_LOGF( "%s found %x for %s", __func__, ip, name );
+    XP_LOGFF( "found %x for %s", ip, name );
     return ip;
 }
 
@@ -807,7 +808,7 @@ onGotJoinData( RelayTask* task )
     RelayConStorage* storage = task->storage;
     XP_ASSERT( onMainThread(storage) );
     if ( !!task->ws.ptr ) {
-        XP_LOGF( "%s(): got json? %s", __func__, task->ws.ptr );
+        XP_LOGFF( "got json? %s", task->ws.ptr );
         json_object* reply = json_tokener_parse( task->ws.ptr );
         json_object* jConnname = NULL;
         json_object* jHID = NULL;
@@ -875,7 +876,7 @@ handleJoin( RelayTask* task )
 static void
 handlePost( RelayTask* task )
 {
-    XP_LOGF( "%s(task.post.len=%d)", __func__, task->u.post.len );
+    XP_LOGFF( "(task.post.len=%d)", task->u.post.len );
     XP_ASSERT( !onMainThread(task->storage) );
     char* data = g_base64_encode( task->u.post.msgbuf, task->u.post.len );
     struct json_object* jstr = json_object_new_string(data);
@@ -896,7 +897,7 @@ handlePost( RelayTask* task )
 static ssize_t
 post( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeout )
 {
-    XP_LOGF( "%s(len=%d)", __func__, len );
+    XP_LOGFF( "(len=%d)", len );
     RelayTask* task = makeRelayTask( storage, POST );
     task->u.post.msgbuf = g_malloc(len);
     task->u.post.timeoutSecs = timeout;
@@ -922,14 +923,14 @@ onGotQueryData( RelayTask* task )
             json_object* jMsgs;
             if ( json_object_object_get_ex( reply, "msgs", &jMsgs ) ) {
                 /* Currently there's an array of arrays for each relayID (value) */
-                XP_LOGF( "%s: got result of len %d", __func__, json_object_object_length(jMsgs) );
+                XP_LOGFF( "got result of len %d", json_object_object_length(jMsgs) );
                 XP_ASSERT( json_object_object_length(jMsgs) <= 1 );
                 json_object_object_foreach(jMsgs, relayID, arrOfArrOfMoves) {
                     XP_ASSERT( 0 == strcmp( relayID, ids->data ) );
                     int len1 = json_object_array_length( arrOfArrOfMoves );
                     if ( len1 > 0 ) {
                         sqlite3_int64 rowid = *(sqlite3_int64*)g_hash_table_lookup( task->u.query.map, relayID );
-                        XP_LOGF( "%s(): got row %lld for relayID %s", __func__, rowid, relayID );
+                        XP_LOGFF( "got row %lld for relayID %s", rowid, relayID );
                         for ( int ii = 0; ii < len1; ++ii ) {
                             json_object* forGameArray = json_object_array_get_idx( arrOfArrOfMoves, ii );
                             int len2 = json_object_array_length( forGameArray );
@@ -1045,7 +1046,7 @@ addToGotData( RelayTask* task )
     RelayConStorage* storage = task->storage;
     pthread_mutex_lock( &storage->gotDataMutex );
     storage->gotDataTaskList = g_slist_append( storage->gotDataTaskList, task );
-    XP_LOGF( "%s(): added id %d; len now %d", __func__, task->id,
+    XP_LOGFF( "added id %d; len now %d", task->id,
              g_slist_length(storage->gotDataTaskList) );
     pthread_mutex_unlock( &storage->gotDataMutex );
 }
@@ -1065,7 +1066,7 @@ getFromGotData( RelayConStorage* storage )
                                    storage->gotDataTaskList );
         task = head->data;
         g_slist_free( head );
-        XP_LOGF( "%s(): got task id %d", __func__, task->id );
+        XP_LOGFF( "got task id %d", task->id );
     }
     // XP_LOGF( "%s(): len now %d", __func__, g_slist_length(storage->gotDataTaskList) );
     pthread_mutex_unlock( &storage->gotDataMutex );
@@ -1119,7 +1120,7 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len, float timeout
     XP_LOGFF( "sent %d bytes with sum %s", len, sum );
     g_free( sum );
 #else
-    XP_LOGF( "%s()=>%zd", __func__, nSent );
+    XP_LOGFF( "=>%zd", nSent );
 #endif
     return nSent;
 }
@@ -1210,7 +1211,7 @@ writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd )
 {
     int indx = 0;
     dest[indx++] = storage->proto;
-    XP_LOGF( "%s: wrote proto %d", __func__, storage->proto );
+    XP_LOGFF( "wrote proto %d", storage->proto );
     uint32_t packetNum = 0;
     if ( XWPDEV_ACK != cmd ) {
         packetNum = storage->nextID++;
@@ -1236,7 +1237,7 @@ readHeader( const XP_U8** buf, MsgHeader* header )
     if ( !vli2un( &ptr, &header->packetID ) ) {
         assert( 0 );
     }
-    XP_LOGF( "%s: got packet %d", __func__, header->packetID );
+    XP_LOGFF( "got packet %d", header->packetID );
 
     header->cmd = *ptr++;
     *buf = ptr;

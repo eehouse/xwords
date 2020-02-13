@@ -86,8 +86,6 @@ StackMoveType_2str( StackMoveType typ )
     }
 }
 
-#undef CASESTR
-
 #endif /* ENABLE_LOGGING */
 
 #ifdef DEBUG
@@ -108,4 +106,25 @@ dbg_logstream( const XWStreamCtxt* stream, const char* func, int line )
                  line, func );
     }
 }
+
+const char*
+devIDTypeToStr(DevIDType typ)
+{
+    switch( typ ) {
+        CASESTR(ID_TYPE_NONE);
+        CASESTR(ID_TYPE_RELAY);
+        CASESTR(ID_TYPE_LINUX);
+        CASESTR(ID_TYPE_ANDROID_GCM_UNUSED);
+        CASESTR(ID_TYPE_ANDROID_OTHER);
+        CASESTR(ID_TYPE_ANON);
+        CASESTR(ID_TYPE_ANDROID_FCM);
+
+        CASESTR(ID_TYPE_NTYPES);
+    default:
+        XP_ASSERT(0);
+    }
+}
+
+#undef CASESTR
+
 #endif

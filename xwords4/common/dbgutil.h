@@ -31,10 +31,12 @@ const char* StackMoveType_2str( StackMoveType typ );
 
 # ifdef DEBUG
 void dbg_logstream( const XWStreamCtxt* stream, const char* func, int line );
+const char* devIDTypeToStr(DevIDType typ);
 #  define XP_LOGSTREAM( s )                      \
     dbg_logstream( s, __func__, __LINE__ )
 # else
 #  define XP_LOGSTREAM( s )
+# define devIDTypeToStr(s) ""
 # endif
 
 #define boolToStr(b) ((b)?"true" : "false")

@@ -164,6 +164,8 @@ class Device():
     sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
+    sDevIDPat = re.compile('.*linux_getDevID => ([\da-fA-F]+) .*typ=ID_TYPE_RELAY.*')
+
     sScoresDup = []
     sScoresReg = []
     
@@ -244,6 +246,12 @@ class Device():
                     if match:
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
+
+                if not self.devID:
+                    match = Device.sDevIDPat.match(line)
+                    if match:
+                        self.devID = int(match.group(1), 16)
+                        print( 'read devid:', self.devID )
 
                 self.locked = False
 

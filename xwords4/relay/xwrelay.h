@@ -200,15 +200,15 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
 ;
 
 typedef enum {
-    ID_TYPE_NONE
-    ,ID_TYPE_RELAY              /* assigned by relay as replacement for one of the below */
-    ,ID_TYPE_LINUX
-    ,ID_TYPE_ANDROID_GCM
-    ,ID_TYPE_ANDROID_OTHER
-    ,ID_TYPE_ANON               /* please assign me one based on nothing */
-    ,ID_TYPE_ANDROID_FCM
+    ID_TYPE_NONE,
+    ID_TYPE_RELAY,              /* assigned by relay as replacement for one of the below */
+    ID_TYPE_LINUX,
+    ID_TYPE_ANDROID_GCM_UNUSED,
+    ID_TYPE_ANDROID_OTHER,
+    ID_TYPE_ANON,               /* please assign me one based on nothing */
+    ID_TYPE_ANDROID_FCM,
 
-    ,ID_TYPE_NTYPES
+    ID_TYPE_NTYPES,
 } DevIDType;
 
 #ifndef CANT_DO_TYPEDEF
