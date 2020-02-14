@@ -32,9 +32,11 @@
 /* Figure out how many lines there are and how wide the widest is.
  */
 int
-cursesask( WINDOW* window, const char* question, short numButtons, 
+cursesask( WINDOW* parentWin, const char* question, short numButtons,
            const char** buttons )
 {
+    XP_LOGFF( "(question=%s, parentWin=%p)", question, parentWin );
+    XP_ASSERT( !!parentWin );
     WINDOW* confWin;
     int x, y, rows, row, nLines;
     int left, top;
@@ -46,8 +48,8 @@ cursesask( WINDOW* window, const char* question, short numButtons,
     FormatInfo fi;
     int len;
 
-    getmaxyx( window, y, x);
-    getbegyx( window, top, left );
+    getmaxyx( parentWin, y, x);
+    getbegyx( parentWin, top, left );
 
     measureAskText( question, x-2, &fi );
     len = fi.maxLen;
@@ -122,8 +124,8 @@ cursesask( WINDOW* window, const char* question, short numButtons,
     delwin( confWin );
 
     /* this leaves a ghost line, but I can't figure out a better way. */
-    wtouchln( window, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
-    wrefresh( window );
+    wtouchln( parentWin, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
+    wrefresh( parentWin );
     return curSelButton;
 } /* cursesask */
 

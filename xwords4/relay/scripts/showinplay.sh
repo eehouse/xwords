@@ -60,7 +60,7 @@ if [ -n "$LIMIT" ]; then
 fi
 
 # Games
-echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as npd,nsents as snts, seeds,devids,tokens,ack, mtimes "\
+echo "SELECT dead as d,connname,cid,room,ack,lang as lg,clntVers as cv ,ntotal as t,nperdevice as npd,nsents as snts, seeds,devids,tokens, mtimes "\
      "FROM games $QUERY $ORDER $LIMIT;" \
     | psql xwgames
 

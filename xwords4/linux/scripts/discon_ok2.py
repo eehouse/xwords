@@ -164,13 +164,14 @@ class Device():
     sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
-    sDevIDPat = re.compile('.*linux_getDevID => ([\da-fA-F]+) .*typ=ID_TYPE_RELAY.*')
+    sDevIDPat = re.compile('.*storing new devid: ([\da-fA-F]+).*')
+    sConnPat = re.compile('.*linux_util_informMissing\(isServer.*nMissing=0\).*')
 
     sScoresDup = []
     sScoresReg = []
     
-    def __init__(self, args, game, indx, params, room, peers, db,
-                 log, script, nInGame, inDupMode):
+    def __init__(self, args, game, indx, params, room, peers, order,
+                 db, log, script, nInGame, inDupMode, usePublic):
         self.game = game
         self.indx = indx
         self.args = args
@@ -178,11 +179,13 @@ class Device():
         self.gameOver = False
         self.params = params
         self.room = room
+        self.order = order
         self.db = db
         self.logPath = log
         self.script = script
         self.nInGame = nInGame
         self.inDupMode = inDupMode
+        self.usePublic = usePublic
         # runtime stuff; init now
         self.app = args.APP_OLD
         self.proc = None
@@ -193,6 +196,9 @@ class Device():
         self.nTilesLeftPool = None
         self.nTilesLeftTray = None
         self.relayID = None
+        self.inviteeDevID = None
+        self.inviteeDevIDs = [] # only servers use this
+        self.connected = False
         self.relaySeed = 0
         self.locked = False
 
@@ -247,11 +253,13 @@ class Device():
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
 
-                if not self.devID:
+                if not self.inviteeDevID:
                     match = Device.sDevIDPat.match(line)
-                    if match:
-                        self.devID = int(match.group(1), 16)
-                        print( 'read devid:', self.devID )
+                    if match: self.inviteeDevID = int(match.group(1), 16)
+
+                if not self.connected:
+                    match = Device.sConnPat.match(line)
+                    if match: self.connected = True
 
                 self.locked = False
 
@@ -277,6 +285,24 @@ class Device():
         self.checkScript()
         self.launchCount += 1
         args = [ self.script, '--close-stdin' ]
+
+        # If I'm an unconnected server and I know a client's relayid,
+        # append it so invitation can happen. When more than one
+        # device will be invited, the invitations must always go in
+        # the same order so channels will be assigned consistently. So
+        # keep them in an array as they're encountered, and use in
+        # that order
+        if not self.usePublic and self.order == 1 and self.inviteeDevID and not self.connected:
+            for peer in self.peers:
+                if peer.inviteeDevID and not peer == self:
+                    if not peer.inviteeDevID in self.inviteeDevIDs:
+                        self.inviteeDevIDs.append(peer.inviteeDevID)
+
+            if self.inviteeDevIDs:
+                args += [ '--force-invite' ]
+                for inviteeDevID in self.inviteeDevIDs:
+                    args += ['--invitee-relayid', str(inviteeDevID)]
+
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
         self.pid = self.proc.pid
@@ -416,8 +442,7 @@ def build_cmds(args):
         assert(len(LOCALS) == NDEVS)
         DICT = args.DICTS[GAME % len(args.DICTS)]
         # make one in three games public
-        PUBLIC = []
-        if random.randint(0, 3) == 0: PUBLIC = ['--make-public', '--join-public']
+        usePublic = random.randint(0, 3) == 0
         useDupeMode = random.randint(0, 100) < args.DUP_PCT
         DEV = 0
         for NLOCALS in LOCALS:
@@ -471,20 +496,18 @@ def build_cmds(args):
             # passed in the old bash version of this script, so fixing
             # it isn't a priority.
             # PARAMS += ['--seed', args.SEED]
-            PARAMS += PUBLIC
-            if DEV > 1:
-                PARAMS += ['--force-channel', DEV - 1]
-            else:
-                PARAMS += ['--server']
 
-            PARAMS += [ '--force-game' ]
+            if DEV == 1: PARAMS += ['--server']
+            if DEV == 1 or usePublic: PARAMS += ['--force-game']
+            if DEV > 1: PARAMS += ['--force-channel', DEV - 1]
+
+            if useDupeMode: PARAMS += ['--duplicate-mode']
+            if usePublic: PARAMS += ['--make-public', '--join-public']
 
             # print('PARAMS:', PARAMS)
 
-            if useDupeMode: PARAMS += ['--duplicate-mode']
-
-            dev = Device(args, GAME, COUNTER, PARAMS, ROOM, peers,
-                         DB, LOG, SCRIPT, len(LOCALS), useDupeMode)
+            dev = Device( args, GAME, COUNTER, PARAMS, ROOM, peers,
+                          DEV, DB, LOG, SCRIPT, len(LOCALS), useDupeMode, usePublic )
             peers.add(dev)
             dev.update_ldevid()
             devs.append(dev)

@@ -190,16 +190,18 @@ static void
 initCurses( CursesAppGlobals* aGlobals )
 {
     /* ncurses man page says most apps want this sequence  */
-    aGlobals->mainWin = initscr();
-    cbreak(); 
-    noecho();
-    nonl();
-    intrflush(stdscr, FALSE);
-    keypad(stdscr, TRUE);       /* effects wgetch only? */
+    if ( !aGlobals->cag.params->closeStdin ) {
+        aGlobals->mainWin = initscr();
+        cbreak();
+        noecho();
+        nonl();
+        intrflush(stdscr, FALSE);
+        keypad(stdscr, TRUE);       /* effects wgetch only? */
 
-    getmaxyx( aGlobals->mainWin, aGlobals->winHeight, aGlobals->winWidth );
-    XP_LOGF( "%s: getmaxyx()->w:%d; h:%d", __func__, aGlobals->winWidth,
-             aGlobals->winHeight );
+        getmaxyx( aGlobals->mainWin, aGlobals->winHeight, aGlobals->winWidth );
+        XP_LOGF( "%s: getmaxyx()->w:%d; h:%d", __func__, aGlobals->winWidth,
+                 aGlobals->winHeight );
+    }
 
     /* globals->statusLine = height - MENU_WINDOW_HEIGHT - 1; */
     /* globals->menuWin = newwin( MENU_WINDOW_HEIGHT, width,  */
@@ -258,11 +260,10 @@ handleOpenGame( void* closure, int XP_UNUSED(key) )
     LOG_FUNC();
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     const GameInfo* gi = cgl_getSel( aGlobals->gameList );
-    if ( !!gi ) {
-        cb_dims dims;
-        figureDims( aGlobals, &dims );
-        cb_open( aGlobals->cbState, gi->rowid, &dims );
-    }
+    XP_ASSERT( !!gi );
+    cb_dims dims;
+    figureDims( aGlobals, &dims );
+    cb_open( aGlobals->cbState, gi->rowid, &dims );
     return XP_TRUE;
 }
 
@@ -1160,7 +1161,7 @@ relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
     bool doIt = 0 == nRowIDs;
-    if ( ! doIt ) {
+    if ( ! doIt && !!aGlobals->mainWin ) {
         const gchar* question = "Duplicate invitation received. Accept anyway?";
         const char* buttons[] = { "Yes", "No" };
         doIt = 0 == cursesask( aGlobals->mainWin, question, VSIZE(buttons), buttons );
@@ -1286,10 +1287,9 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
                      XP_U16 maxInterval )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    // CommonGlobals* cGlobals = &globals->cGlobals;
     sqlite3* pDb = aGlobals->cag.params->pDb;
     if ( !!devID ) {
-        XP_LOGF( "%s(devID=%s)", __func__, devID );
+        XP_LOGF( "%s(devID='%s')", __func__, devID );
 
         /* If we already have one, make sure it's the same! Else store. */
         gchar buf[64];
@@ -1297,10 +1297,12 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
             && 0 == strcmp( buf, devID );
         if ( !have ) {
             db_store( pDb, KEY_RDEVID, devID );
+            XP_LOGFF( "storing new devid: %s", devID );
+            cgl_draw( aGlobals->gameList );
         }
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, aGlobals );
     } else {
-        XP_LOGF( "%s: bad relayid", __func__ );
+        XP_LOGFF( "%s", "bad relayid" );
         db_remove( pDb, KEY_RDEVID );
 
         DevIDType typ;

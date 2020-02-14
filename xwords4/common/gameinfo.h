@@ -63,6 +63,12 @@ typedef struct CurGameInfo {
     XP_Bool confirmBTConnect;   /* only used for BT */
 } CurGameInfo;
 
+#ifdef DEBUG
+    void game_logGI( const CurGameInfo* gi, const char* msg );
+#else
+# define game_logGI(gi, msg)
+#endif
+
 #ifdef CPLUS
 }
 #endif

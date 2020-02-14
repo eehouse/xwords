@@ -113,6 +113,7 @@ typedef struct LaunchParams {
     XP_Bool runSMSTest;
     XP_Bool noHTTPAuto;
     bool forceNewGame;
+    bool forceInvite;
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
     XP_U16 askTimeout;
@@ -141,7 +142,7 @@ typedef struct LaunchParams {
             short defaultSendPort;
             XP_Bool seeksPublicRoom;
             XP_Bool advertiseRoom;
-            XP_U32 inviteeRelayID;
+            GSList* inviteeRelayIDs;
         } relay;
 #endif
 #ifdef XWFEATURE_BLUETOOTH

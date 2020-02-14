@@ -151,6 +151,7 @@ ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
     }
 }
 
+#if 0
 static bool
 canMakeFromGI( const CurGameInfo* gi )
 {
@@ -171,8 +172,10 @@ canMakeFromGI( const CurGameInfo* gi )
     result = result && (haveDict || allHaveDicts);
 
     LOG_RETURNF( "%d", result );
+    XP_ASSERT( result );
     return result;
 }
+#endif
 
 bool
 linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
@@ -215,7 +218,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         stream_destroy( stream );
     }
 
-    if ( !opened && canMakeFromGI( cGlobals->gi ) ) {
+    if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
         opened = XP_TRUE;
 
 #ifdef XWFEATURE_RELAY
@@ -841,6 +844,7 @@ typedef enum {
     ,CMD_DROPRCVSMS
     ,CMD_FORCECHANNEL
     ,CMD_FORCE_GAME
+    ,CMD_FORCE_INVITE
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
@@ -970,6 +974,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
     ,{ CMD_FORCECHANNEL, true, "force-channel", "force (clients) to use this hostid/channel" }
     ,{ CMD_FORCE_GAME, false, "force-game", "if there's no game on launch, create one" }
+    ,{ CMD_FORCE_INVITE, false, "force-invite", "if we can, send an invitation by relay or sms" }
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
@@ -2817,7 +2822,9 @@ main( int argc, char** argv )
             mainParams.bonusFile = optarg;
             break;
         case CMD_INVITEE_RELAYID:
-            mainParams.connInfo.relay.inviteeRelayID = atoi(optarg);
+            mainParams.connInfo.relay.inviteeRelayIDs =
+                g_slist_append(mainParams.connInfo.relay.inviteeRelayIDs,
+                               (void*)(uint64_t)atoi(optarg));
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
             break;
 #endif
@@ -2895,6 +2902,10 @@ main( int argc, char** argv )
 
         case CMD_FORCE_GAME:
             mainParams.forceNewGame = true;
+            break;
+
+        case CMD_FORCE_INVITE:
+            mainParams.forceInvite = true;
             break;
 
 #ifdef XWFEATURE_CROSSHAIRS

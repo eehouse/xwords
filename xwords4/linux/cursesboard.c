@@ -84,6 +84,54 @@ static void setupBoard( CursesBoardGlobals* bGlobals );
 static void initMenus( CursesBoardGlobals* bGlobals );
 static void disposeDraw( CursesBoardGlobals* bGlobals );
 
+#ifdef KEYBOARD_NAV
+static bool handleLeft( void* closure, int key );
+static bool handleRight( void* closure, int key );
+static bool handleUp( void* closure, int key );
+static bool handleDown( void* closure, int key );
+static bool handleClose( void* closure, int key );
+#endif
+#ifdef ALT_KEYS_WORKING
+static bool handleAltLeft( void* closure, int key );
+static bool handleAltRight( void* closure, int key );
+static bool handleAltUp( void* closure, int key );
+static bool handleAltDown( void* closure, int key );
+#endif
+static bool handleJuggle( void* closure, int key );
+static bool handleHide( void* closure, int key );
+/* static bool handleResend( void* closure, int key ); */
+static bool handleSpace( void* closure, int key );
+static bool handleRet( void* closure, int key );
+static bool handleShowVals( void* closure, int key );
+static bool handleHint( void* closure, int key );
+static bool handleCommit( void* closure, int key );
+static bool handleFlip( void* closure, int key );
+static bool handleToggleValues( void* closure, int key );
+static bool handleBackspace( void* closure, int key );
+static bool handleUndo( void* closure, int key );
+static bool handleReplace( void* closure, int key );
+#ifdef CURSES_SMALL_SCREEN
+static bool handleRootKeyShow( void* closure, int key );
+static bool handleRootKeyHide( void* closure, int key );
+#endif
+static bool handleInvite( void* closure, int key );
+
+static void relay_connd_curses( void* closure, XP_UCHAR* const room,
+                                XP_Bool reconnect, XP_U16 devOrder,
+                                XP_Bool allHere, XP_U16 nMissing );
+static void relay_status_curses( void* closure, CommsRelayState state );
+static void relay_error_curses( void* closure, XWREASON relayErr );
+static XP_Bool relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
+                                        const XP_UCHAR* msgNo,
+                                        const XP_UCHAR* relayID, void* closure );
+static void curses_countChanged( void* closure, XP_U16 newCount );
+static XP_U32 curses_getFlags( void* closure );
+#ifdef RELAY_VIA_HTTP
+static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
+                                      const XP_UCHAR* room, XP_U16 nPlayersHere,
+                                      XP_U16 nPlayersTotal, XP_U16 seed, XP_U16 lang );
+#endif
+
 CursesBoardState*
 cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
          CursesMenuState* menuState, OnGameSaved onGameSaved )
@@ -106,6 +154,16 @@ cb_resized( CursesBoardState* cbState, const cb_dims* dims )
     }
 }
 
+static gint
+inviteIdle( gpointer data )
+{
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
+    if ( !!bGlobals->cGlobals.params->connInfo.relay.inviteeRelayIDs ) {
+        handleInvite( bGlobals, 0 );
+    }
+    return FALSE;
+}
+
 void
 cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
 {
@@ -118,6 +176,9 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if ( !!cGlobals->game.comms ) {
         comms_resendAll( cGlobals->game.comms, COMMS_CONN_NONE, XP_FALSE );
+    }
+    if ( bGlobals->cGlobals.params->forceInvite ) {
+        (void)ADD_ONETIME_IDLE( inviteIdle, bGlobals);
     }
 }
 
@@ -156,54 +217,6 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
     enableDraw( bGlobals, dims );
     setupBoard( bGlobals );
 }
-
-#ifdef KEYBOARD_NAV
-static bool handleLeft( void* closure, int key );
-static bool handleRight( void* closure, int key );
-static bool handleUp( void* closure, int key );
-static bool handleDown( void* closure, int key );
-static bool handleClose( void* closure, int key );
-#endif
-#ifdef ALT_KEYS_WORKING
-static bool handleAltLeft( void* closure, int key );
-static bool handleAltRight( void* closure, int key );
-static bool handleAltUp( void* closure, int key );
-static bool handleAltDown( void* closure, int key );
-#endif
-static bool handleJuggle( void* closure, int key );
-static bool handleHide( void* closure, int key );
-/* static bool handleResend( void* closure, int key ); */
-static bool handleSpace( void* closure, int key );
-static bool handleRet( void* closure, int key );
-static bool handleShowVals( void* closure, int key );
-static bool handleHint( void* closure, int key );
-static bool handleCommit( void* closure, int key );
-static bool handleFlip( void* closure, int key );
-static bool handleToggleValues( void* closure, int key );
-static bool handleBackspace( void* closure, int key );
-static bool handleUndo( void* closure, int key );
-static bool handleReplace( void* closure, int key );
-static bool handleInvite( void* closure, int key );
-#ifdef CURSES_SMALL_SCREEN
-static bool handleRootKeyShow( void* closure, int key );
-static bool handleRootKeyHide( void* closure, int key );
-#endif
-
-static void relay_connd_curses( void* closure, XP_UCHAR* const room,
-                                XP_Bool reconnect, XP_U16 devOrder,
-                                XP_Bool allHere, XP_U16 nMissing );
-static void relay_status_curses( void* closure, CommsRelayState state );
-static void relay_error_curses( void* closure, XWREASON relayErr );
-static XP_Bool relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
-                                        const XP_UCHAR* msgNo,
-                                        const XP_UCHAR* relayID, void* closure );
-static void curses_countChanged( void* closure, XP_U16 newCount );
-static XP_U32 curses_getFlags( void* closure );
-#ifdef RELAY_VIA_HTTP
-static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
-                                      const XP_UCHAR* room, XP_U16 nPlayersHere,
-                                      XP_U16 nPlayersTotal, XP_U16 seed, XP_U16 lang );
-#endif
 
 const MenuList g_allMenuList[] = {
     { handleLeft, "Left", "H", 'H' },
@@ -594,8 +607,10 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
     getmaxyx( bGlobals->boardWin, bGlobals->winHeight, bGlobals->winWidth );
 
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    cGlobals->draw = cursesDrawCtxtMake( bGlobals->boardWin );
-    board_setDraw( cGlobals->game.board, cGlobals->draw );
+    if( !!bGlobals->boardWin ) {
+        cGlobals->draw = cursesDrawCtxtMake( bGlobals->boardWin );
+        board_setDraw( cGlobals->game.board, cGlobals->draw );
+    }
 
     setupBoard( bGlobals );
 }
@@ -1188,9 +1203,16 @@ handleInvite( void* closure, int XP_UNUSED(key) )
         /* These should both be settable/derivable */
         linux_sms_invite( params, &nli, params->connInfo.sms.inviteePhone,
                           params->connInfo.sms.port );
-    } else if ( 0 != params->connInfo.relay.inviteeRelayID ) {
-        relaycon_invite( params, params->connInfo.relay.inviteeRelayID, NULL, &nli );
-
+    } else if ( !!params->connInfo.relay.inviteeRelayIDs ) {
+        GSList* inviteeRelayIDs = params->connInfo.relay.inviteeRelayIDs;
+        for ( int ii = 0; ii < g_slist_length(inviteeRelayIDs); ++ii ) {
+            XP_U16 nPlayers = 1;
+            gint forceChannel = ii + 1;
+            NetLaunchInfo nli = {0};
+            nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
+            uint64_t inviteeRelayID = (uint64_t)g_slist_nth_data(inviteeRelayIDs, ii);
+            relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
+        }
     /* Try sending to self, using the phone number or relayID of this device */
     } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) {
         linux_sms_invite( params, &nli, addr.u.sms.phone, addr.u.sms.port );
