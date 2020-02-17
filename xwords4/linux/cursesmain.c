@@ -1153,10 +1153,9 @@ onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
 #endif
 
 static void
-relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
+inviteReceivedCurses( CursesAppGlobals* aGlobals, const NetLaunchInfo* invite,
+                      const CommsAddrRec* returnAddr )
 {
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-
     sqlite3_int64 rowids[1];
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
@@ -1167,13 +1166,21 @@ relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
         doIt = 0 == cursesask( aGlobals->mainWin, question, VSIZE(buttons), buttons );
     }
     if ( doIt ) {
-        CommsAddrRec returnAddr = {0};
-        nli_makeAddrRec( invite, &returnAddr );
-
         cb_dims dims;
         figureDims( aGlobals, &dims );
-        cb_newFor( aGlobals->cbState, invite, &returnAddr, &dims );
+        cb_newFor( aGlobals->cbState, invite, returnAddr, &dims );
+    } else {
+        XP_LOGFF( "%s", "Not accepting duplicate invitation" );
     }
+}
+
+static void
+relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    CommsAddrRec addr = {0};
+    nli_makeAddrRec( invite, &addr );
+    inviteReceivedCurses( aGlobals, invite, &addr );
 }
 
 static void
@@ -1211,20 +1218,7 @@ smsInviteReceivedCurses( void* closure, const NetLaunchInfo* nli,
                          const CommsAddrRec* returnAddr )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    /* LaunchParams* params = aGlobals->cag.params; */
-    /* CurGameInfo gi = {0}; */
-    /* gi_copy( MPPARM(params->mpool) &gi, &params->pgi ); */
-
-    /* gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH ); */
-    /* gi.gameID = invite->gameID; */
-    /* gi.dictLang = invite->lang; */
-    /* gi.forceChannel = invite->forceChannel; */
-    /* gi.serverRole = SERVER_ISCLIENT; /\* recipient of invitation is client *\/ */
-    /* replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict ); */
-
-    cb_dims dims;
-    figureDims( aGlobals, &dims );
-    cb_newFor( aGlobals->cbState, nli, returnAddr, &dims );
+    inviteReceivedCurses( aGlobals, nli, returnAddr );
 }
 
 static void

@@ -2722,7 +2722,8 @@ main( int argc, char** argv )
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
         case CMD_INVITEE_SMSNUMBER:
-            mainParams.connInfo.sms.inviteePhone = optarg;
+            mainParams.connInfo.sms.inviteePhones =
+                g_slist_append( mainParams.connInfo.sms.inviteePhones, optarg );
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
         case CMD_SMSPORT:

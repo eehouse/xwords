@@ -253,7 +253,7 @@ class Device():
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
 
-                if not self.inviteeDevID:
+                if self.args.ADD_RELAY and not self.inviteeDevID:
                     match = Device.sDevIDPat.match(line)
                     if match: self.inviteeDevID = int(match.group(1), 16)
 
@@ -292,16 +292,17 @@ class Device():
         # the same order so channels will be assigned consistently. So
         # keep them in an array as they're encountered, and use in
         # that order
-        if not self.usePublic and self.order == 1 and self.inviteeDevID and not self.connected:
-            for peer in self.peers:
-                if peer.inviteeDevID and not peer == self:
-                    if not peer.inviteeDevID in self.inviteeDevIDs:
-                        self.inviteeDevIDs.append(peer.inviteeDevID)
+        if self.args.ADD_RELAY:
+            if not self.usePublic and self.order == 1 and self.inviteeDevID and not self.connected:
+                for peer in self.peers:
+                    if peer.inviteeDevID and not peer == self:
+                        if not peer.inviteeDevID in self.inviteeDevIDs:
+                            self.inviteeDevIDs.append(peer.inviteeDevID)
 
-            if self.inviteeDevIDs:
-                args += [ '--force-invite' ]
-                for inviteeDevID in self.inviteeDevIDs:
-                    args += ['--invitee-relayid', str(inviteeDevID)]
+                if self.inviteeDevIDs:
+                    args += [ '--force-invite' ]
+                    for inviteeDevID in self.inviteeDevIDs:
+                        args += ['--invitee-relayid', str(inviteeDevID)]
 
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
@@ -464,8 +465,10 @@ def build_cmds(args):
                 PARAMS += [ '--sms-number', PHONE_BASE + str(DEV - 1) ]
                 if args.SMS_FAIL_PCT > 0:
                     PARAMS += [ '--sms-fail-pct', args.SMS_FAIL_PCT ]
-                if DEV > 1:
-                    PARAMS += [ '--server-sms-number', PHONE_BASE + '0' ]
+                if DEV == 1:
+                    PARAMS += [ '--force-invite' ]
+                    for dev in range(2, NDEVS + 1):
+                        PARAMS += [ '--invitee-sms-number', PHONE_BASE + str(dev - 1) ]
 
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]

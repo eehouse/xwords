@@ -115,15 +115,12 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
 
     if ( skipWrite ) {
         nSent = buflen;
-        XP_LOGF( "%s(): dropping sms msg of len %d to phone %s", __func__,
-                 nSent, phone );
+        XP_LOGFF( "dropping sms msg of len %d to phone %s", nSent, phone );
     } else {
         LinSMSData* storage = getStorage( params );
-        XP_LOGF( "%s(phone=%s, port=%d, len=%d)", __func__, phone,
-                 port, buflen );
+        XP_LOGFF( "(phone=%s, port=%d, len=%d)", phone, port, buflen );
 
         XP_ASSERT( !!storage );
-        char path[256];
 
         lock_queue( storage );
 
@@ -131,6 +128,7 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
         gchar* str64 = g_base64_encode( buf, buflen );
 #endif
 
+        char path[256];
         formatQueuePath( phone, port, path, sizeof(path) );
 
         /* Random-number-based name is fine, as we pick based on age. */
@@ -143,7 +141,7 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
         XP_U16 smslen = sizeof(sms);
         binToSms( sms, &smslen, buf, buflen );
         XP_ASSERT( smslen == strlen(sms) );
-        XP_LOGF( "%s: writing msg to %s", __func__, path );
+        XP_LOGFF( "writing msg to %s", path );
 
 #ifdef DEBUG
         XP_ASSERT( !strcmp( str64, sms ) );
@@ -202,7 +200,7 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
         *strstr(eol, "\n" ) = '\0';
 
         XP_U16 inlen = strlen(eol);      /* skip \n */
-        XP_LOGF( "%s(): decoding message from file %s", __func__, name );
+        XP_LOGFF( "decoding message from file %s", name );
         XP_U8 out[inlen];
         XP_U16 outlen = sizeof(out);
         XP_Bool valid = smsToBin( out, &outlen, eol, inlen );
@@ -212,8 +210,7 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
             nRead = outlen;
             addr_setType( addr, COMMS_CONN_SMS );
             XP_STRNCPY( addr->u.sms.phone, phone, sizeof(addr->u.sms.phone) );
-            XP_LOGF( "%s: message came from phone: %s, port: %d", __func__,
-                     phone, port );
+            XP_LOGFF( " message came from phone: %s, port: %d", phone, port );
             addr->u.sms.port = port;
         }
     } else {
@@ -272,7 +269,7 @@ linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort,
     storage->protoState = smsproto_init( MPPARM(params->mpool) params->dutil );
 
     formatQueuePath( myPhone, myPort, storage->myQueue, sizeof(storage->myQueue) );
-    XP_LOGF( "%s: my queue: %s", __func__, storage->myQueue );
+    XP_LOGFF( " my queue: %s", storage->myQueue );
     storage->myPort = params->connInfo.sms.port;
 
     (void)g_mkdir_with_parents( storage->myQueue, 0777 );
@@ -400,8 +397,7 @@ check_for_files_once( gpointer data )
             snprintf( fullPath, sizeof(fullPath), "%s/%s", storage->myQueue, name );
             int err = stat( fullPath, &statbuf );
             if ( err != 0 ) {
-                XP_LOGF( "%s(); %d from stat (error: %s)", __func__,
-                         err, strerror(errno) );
+                XP_LOGF( "%d from stat (error: %s)", err, strerror(errno) );
                 XP_ASSERT( 0 );
             } else {
                 XP_Bool replace = !oldestFile[0]; /* always replace empty/unset :-) */
@@ -416,7 +412,7 @@ check_for_files_once( gpointer data )
                 if ( replace ) {
                     oldestModTime = statbuf.st_mtim;
                     if ( !!oldestFile[0] ) {
-                        XP_LOGF( "%s(): replacing %s with older %s", __func__, oldestFile, name );
+                        XP_LOGFF( "replacing %s with older %s", oldestFile, name );
                     }
                     snprintf( oldestFile, sizeof(oldestFile), "%s", name );
                 }

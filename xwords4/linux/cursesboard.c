@@ -158,7 +158,9 @@ static gint
 inviteIdle( gpointer data )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
-    if ( !!bGlobals->cGlobals.params->connInfo.relay.inviteeRelayIDs ) {
+    LaunchParams* params = bGlobals->cGlobals.params;
+    if ( !!params->connInfo.relay.inviteeRelayIDs
+         || !!params->connInfo.sms.inviteePhones ) {
         handleInvite( bGlobals, 0 );
     }
     return FALSE;
@@ -1178,6 +1180,31 @@ handleReplace( void* closure, int XP_UNUSED(key) )
 } /* handleReplace */
 
 static bool
+inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
+            bool useRelay )
+{
+    bool haveAddressees = !!invitees;
+    if ( haveAddressees ) {
+        LaunchParams* params = cGlobals->params;
+        for ( int ii = 0; ii < g_slist_length(invitees); ++ii ) {
+            const XP_U16 nPlayers = 1;
+            gint forceChannel = ii + 1;
+            NetLaunchInfo nli = {0};
+            nli_init( &nli, cGlobals->gi, addr, nPlayers, forceChannel );
+            if ( useRelay ) {
+                uint64_t inviteeRelayID = (uint64_t)g_slist_nth_data( invitees, ii );
+                relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
+            } else {
+                const gchar* inviteePhone = (const gchar*)g_slist_nth_data( invitees, ii );
+                linux_sms_invite( params, &nli, inviteePhone,
+                                  params->connInfo.sms.port );
+            }
+        }
+    }
+    return haveAddressees;
+}
+
+static bool
 handleInvite( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
@@ -1199,20 +1226,10 @@ handleInvite( void* closure, int XP_UNUSED(key) )
         /* Invite first based on an invitee provided. Otherwise, fall back to
            doing a send-to-self. Let the recipient code reject a duplicate if
            the user so desires. */
-    } else if ( !!params->connInfo.sms.inviteePhone ) {
-        /* These should both be settable/derivable */
-        linux_sms_invite( params, &nli, params->connInfo.sms.inviteePhone,
-                          params->connInfo.sms.port );
-    } else if ( !!params->connInfo.relay.inviteeRelayIDs ) {
-        GSList* inviteeRelayIDs = params->connInfo.relay.inviteeRelayIDs;
-        for ( int ii = 0; ii < g_slist_length(inviteeRelayIDs); ++ii ) {
-            XP_U16 nPlayers = 1;
-            gint forceChannel = ii + 1;
-            NetLaunchInfo nli = {0};
-            nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
-            uint64_t inviteeRelayID = (uint64_t)g_slist_nth_data(inviteeRelayIDs, ii);
-            relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
-        }
+    } else if ( inviteList( cGlobals, &addr, params->connInfo.sms.inviteePhones, false ) ) {
+        /* do nothing */
+    } else if ( inviteList( cGlobals, &addr, params->connInfo.relay.inviteeRelayIDs, true ) ) {
+        /* do nothing */
     /* Try sending to self, using the phone number or relayID of this device */
     } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) {
         linux_sms_invite( params, &nli, addr.u.sms.phone, addr.u.sms.port );
