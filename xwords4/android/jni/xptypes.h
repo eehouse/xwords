@@ -91,12 +91,16 @@ void and_assert( const char* test, int line, const char* file, const char* func 
 
 #ifdef ENABLE_LOGGING
 void android_debugf(const char*, ...) __attribute__ ((format (printf, 1, 2)));
+void android_debugff(const char* func, const char* file, const char* fmt, ...)
+    __attribute__ ((format (printf, 3, 4)));
 #define XP_DEBUGF(...) android_debugf( __VA_ARGS__ )
 #define XP_LOGF(...) android_debugf( __VA_ARGS__ )
+#define XP_LOGFF(...) android_debugff( __func__, __FILE__, __VA_ARGS__ )
 #define XP_WARNF(...) android_debugf( __VA_ARGS__ )
 #else
 #define XP_DEBUGF(...)
 #define XP_LOGF(...)
+#define XP_LOGFF(...)
 #define XP_WARNF(...)
 #endif
 

@@ -901,10 +901,12 @@ curses_util_notifyDupStatus( XW_UtilCtxt* uc,
 }
 
 static void
-curses_util_informUndo( XW_UtilCtxt* XP_UNUSED(uc))
+curses_util_informUndo( XW_UtilCtxt* uc )
 {
-    XP_ASSERT(0);
-    LOG_FUNC();
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    if ( !!bGlobals->boardWin ) {
+        ca_inform( bGlobals->boardWin, "informUndo(): undo was done" );
+    }
 }
 
 static void
