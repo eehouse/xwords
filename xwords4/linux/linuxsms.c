@@ -71,7 +71,7 @@ typedef struct _LinSMSData {
 static gboolean retrySend( gpointer data );
 static void sendOrRetry( LaunchParams* params, SMSMsgArray* arr, SMS_CMD cmd,
                          XP_U16 waitSecs, const XP_UCHAR* phone, XP_U16 port,
-                         XP_U32 gameID );
+                         XP_U32 gameID, const XP_UCHAR* msgNo );
 static gint check_for_files( gpointer data );
 static gint check_for_files_once( gpointer data );
 
@@ -107,7 +107,7 @@ unlock_queue( LinSMSData* storage )
 
 static XP_S16
 write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
-                const XP_UCHAR* phone, XP_U16 port )
+                const XP_UCHAR* msgNo, const XP_UCHAR* phone, XP_U16 port )
 {
     XP_S16 nSent;
     XP_U16 pct = XP_RANDOM() % 100;
@@ -132,11 +132,14 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
         formatQueuePath( phone, port, path, sizeof(path) );
 
         /* Random-number-based name is fine, as we pick based on age. */
-        int rint = makeRandomInt();
         g_mkdir_with_parents( path, 0777 ); /* just in case */
         int len = strlen( path );
-        snprintf( &path[len], sizeof(path)-len, "/%u", rint );
-
+        int rint = makeRandomInt();
+        if ( !!msgNo ) {
+            snprintf( &path[len], sizeof(path)-len, "/%s_%u", msgNo, rint );
+        } else {
+            snprintf( &path[len], sizeof(path)-len, "/%u", rint );
+        }
         XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
         XP_U16 smslen = sizeof(sms);
         binToSms( sms, &smslen, buf, buflen );
@@ -293,20 +296,21 @@ linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
         = smsproto_prepOutbound( storage->protoState, INVITE, nli->gameID, nli,
                                  sizeof(*nli), toPhone, toPort, XP_FALSE,
                                  &waitSecs );
-    sendOrRetry( params, arr, INVITE, waitSecs, toPhone, toPort, nli->gameID );
+    sendOrRetry( params, arr, INVITE, waitSecs, toPhone, toPort,
+                 nli->gameID, "invite" );
 }
 
 XP_S16
 linux_sms_send( LaunchParams* params, const XP_U8* buf,
-                XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port,
-                XP_U32 gameID )
+                XP_U16 buflen, const XP_UCHAR* msgNo, const XP_UCHAR* phone,
+                XP_U16 port, XP_U32 gameID )
 {
     LinSMSData* storage = getStorage( params );
     XP_U16 waitSecs;
     SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, DATA, gameID,
                                               buf, buflen, phone, port,
                                               XP_TRUE, &waitSecs );
-    sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID );
+    sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID, msgNo );
     return buflen;
 }
 
@@ -315,19 +319,20 @@ typedef struct _RetryClosure {
     SMS_CMD cmd;
     XP_U16 port;
     XP_U32 gameID;
+    XP_UCHAR msgNo[32];
     XP_UCHAR phone[32];
 } RetryClosure;
 
 static void
 sendOrRetry( LaunchParams* params, SMSMsgArray* arr, SMS_CMD cmd,
              XP_U16 waitSecs, const XP_UCHAR* phone, XP_U16 port,
-             XP_U32 gameID )
+             XP_U32 gameID, const XP_UCHAR* msgNo )
 {
     if ( !!arr ) {
         for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {
             const SMSMsgNet* msg = &arr->u.msgsNet[ii];
             // doSend( params, msg->data, msg->len, phone, port, gameID );
-            (void)write_fake_sms( params, msg->data, msg->len,
+            (void)write_fake_sms( params, msg->data, msg->len, msgNo, 
                                   phone, port );
         }
 
@@ -338,6 +343,7 @@ sendOrRetry( LaunchParams* params, SMSMsgArray* arr, SMS_CMD cmd,
                                                           sizeof(*closure) );
         closure->params = params;
         XP_STRCAT( closure->phone, phone );
+        XP_STRCAT( closure->msgNo, msgNo );
         closure->port = port;
         closure->gameID = gameID;
         closure->cmd = cmd;
@@ -356,7 +362,7 @@ retrySend( gpointer data )
                                               closure->phone, closure->port,
                                               XP_TRUE, &waitSecs );
     sendOrRetry( closure->params, arr, closure->cmd, waitSecs, closure->phone,
-                 closure->port, closure->gameID );
+                 closure->port, closure->gameID, closure->msgNo );
     XP_FREEP( closure->params->mpool, &closure );
     return FALSE;
 }

@@ -1547,7 +1547,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo
 
         // use serverphone if I'm a client, else hope one's provided (this is
         // a reply)
-        nSent = linux_sms_send( cGlobals->params, buf, buflen, 
+        nSent = linux_sms_send( cGlobals->params, buf, buflen, msgNo,
                                 addrRec->u.sms.phone, addrRec->u.sms.port,
                                 gameID );
     }

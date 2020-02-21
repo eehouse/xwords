@@ -478,8 +478,8 @@ addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
     rec->msgs = XP_REALLOC( state->mpool, rec->msgs, (1 + rec->nMsgs) * sizeof(*rec->msgs) );
     rec->msgs[rec->nMsgs++] = mRec;
     rec->totalSize += len;
-    XP_LOGF( "%s(): added msg to %s of len %d; total now %d", __func__, rec->phone,
-             len, rec->totalSize );
+    XP_LOGFF( "added msg to %s of len %d; total now %d", rec->phone, len,
+              rec->totalSize );
 
     if ( rec->nMsgs == 1 ) {
         rec->createSeconds = nowSeconds;
