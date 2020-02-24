@@ -1170,7 +1170,8 @@ inviteReceivedCurses( CursesAppGlobals* aGlobals, const NetLaunchInfo* invite,
         figureDims( aGlobals, &dims );
         cb_newFor( aGlobals->cbState, invite, returnAddr, &dims );
     } else {
-        XP_LOGFF( "%s", "Not accepting duplicate invitation" );
+        XP_LOGFF( "Not accepting duplicate invitation (nRowIDs(gameID=%d) was %d",
+                  invite->gameID, nRowIDs );
     }
 }
 

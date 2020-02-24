@@ -549,7 +549,9 @@ gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
     }
 
     if ( nHere != curLocal ) {
-        XP_ASSERT(0);
+        /* This will happen when a device has more than on player. Not sure I
+           handle that correctly, but don't assert for now. */
+        XP_LOGFF( "nHere: %d; curLocal: %d; a problem?", nHere, curLocal );
         /* for ( XP_U16 ii = 0; ii < nTotal; ++ii ) { */
         /*     gi->players[ii].isLocal = ii < nHere; */
         /* } */

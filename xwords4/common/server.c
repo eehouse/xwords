@@ -2657,7 +2657,7 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
         XP_ASSERT( version == server->nv.streamVersion );
         XP_U32 hash = model_getHash( server->vol.model );
 #ifdef DEBUG_HASHING
-        XP_LOGF( "%s: adding hash %X", __func__, (unsigned int)hash );
+        XP_LOGFF( "adding hash %X", (unsigned int)hash );
 #endif
         stream_putU32( stream, hash );
     }
@@ -4028,6 +4028,8 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
            established. */
             XP_LOGF( "%s: somebody's registering!!!", __func__ );
             accepted = handleRegistrationMsg( server, incoming );
+        } else {
+            XP_LOGFF( "%s", "WTF: I'm not a server!!" );
         }
         break;
     case XWPROTO_CLIENT_SETUP:

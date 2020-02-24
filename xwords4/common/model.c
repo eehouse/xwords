@@ -942,9 +942,17 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
     const XP_U16 assignCount = model->vol.gi->inDuplicateMode
         ? 1 : model->nPlayers;
 
-    if ( (0 <= moveSought && moveSought >= nStackEntries)
-         || ( nStackEntries < nMovesSought )
-         || ( nStackEntries <= assignCount ) ) {
+    if ( 0 <= moveSought && moveSought >= nStackEntries ) {
+        XP_LOGFF( "BAD: moveSought (%d) >= nStackEntries (%d)", moveSought,
+                  nStackEntries );
+        success = XP_FALSE;
+    } else if ( nStackEntries < nMovesSought ) {
+        XP_LOGFF( "BAD: nStackEntries (%d) < nMovesSought (%d)", nStackEntries,
+                  nMovesSought );
+        success = XP_FALSE;
+    } else if ( nStackEntries <= assignCount ) {
+        XP_LOGFF( "BAD: nStackEntries (%d) <= assignCount (%d)", nStackEntries,
+                  assignCount );
         success = XP_FALSE;
     } else {
         XP_U16 nMovesUndone = 0;

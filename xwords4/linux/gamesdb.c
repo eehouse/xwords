@@ -74,7 +74,7 @@ openGamesDB( const char* dbName )
     const char* createValuesStr = 
         "CREATE TABLE pairs ( key TEXT UNIQUE,value TEXT )";
     result = sqlite3_exec( pDb, createValuesStr, NULL, NULL, NULL );
-    XP_LOGF( "sqlite3_exec=>%d", result );
+    XP_LOGFF( "sqlite3_exec=>%d", result );
     XP_USE( result );
 
     return pDb;
@@ -84,14 +84,14 @@ void
 closeGamesDB( sqlite3* pDb )
 {
     sqlite3_close( pDb );
-    XP_LOGF( "%s finished", __func__ );
+    LOG_RETURN_VOID();
 }
 
 static sqlite3_int64
 writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* pDb,
                      sqlite3_int64 curRow, const char* column )
 {
-    XP_LOGF( "%s(col=%s)", __func__, column );
+    XP_LOGFF( "(col=%s)", column );
     int result;
     char buf[256];
     char* query;
@@ -114,14 +114,14 @@ writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* p
     assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
-        XP_LOGF( "%s: sqlite3_step => %s", __func__, sqliteErr2str( result ) );
+        XP_LOGFF( "sqlite3_step => %s", sqliteErr2str( result ) );
         XP_ASSERT(0);
     }
     XP_USE( result );
 
     if ( newGame ) {         /* new row; need to insert blob first */
         curRow = sqlite3_last_insert_rowid( pDb );
-        XP_LOGF( "%s: new rowid: %lld", __func__, curRow );
+        XP_LOGFF( "new rowid: %lld", curRow );
     }
 
     sqlite3_blob* blob;
@@ -173,7 +173,7 @@ writeToDB( XWStreamCtxt* stream, void* closure )
 
     if ( newGame ) {         /* new row; need to insert blob first */
         cGlobals->rowid = selRow;
-        XP_LOGF( "%s(): new game at row %lld", __func__, selRow );
+        XP_LOGFF( "new game at row %lld", selRow );
     } else {
         assert( selRow == cGlobals->rowid );
     }
@@ -315,13 +315,13 @@ summarize( CommonGlobals* cGlobals )
     gchar* query = g_strdup_printf( "UPDATE games SET %s WHERE rowid=%lld",
                                     vals, cGlobals->rowid );
     g_free( vals );
-    XP_LOGF( "query: %s", query );
+    XP_LOGFF( "query: %s", query );
     sqlite3_stmt* stmt = NULL;
     int result = sqlite3_prepare_v2( cGlobals->params->pDb, query, -1, &stmt, NULL );
     assertPrintResult( cGlobals->params->pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
-        XP_LOGF( "sqlite3_step=>%s", sqliteErr2str( result ) );
+        XP_LOGFF( "sqlite3_step=>%s", sqliteErr2str( result ) );
         XP_ASSERT( 0 );
     }
     sqlite3_finalize( stmt );
@@ -351,7 +351,7 @@ listGames( sqlite3* pDb )
         {
             sqlite3_int64* data = g_malloc( sizeof( *data ) );
             *data = sqlite3_column_int64( ppStmt, 0 );
-            XP_LOGF( "%s: got a row; id=%lld", __func__, *data );
+            XP_LOGFF( "got a row; id=%lld", *data );
             list = g_slist_append( list, data );
         }
         break;
@@ -538,6 +538,7 @@ loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
     return loadBlobColumn( stream, pDb, rowid, "game" );
 }
 
+/* Used for rematch only. But do I need it? */
 void
 saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
 {
@@ -703,7 +704,7 @@ assertPrintResult( sqlite3* pDb, int XP_UNUSED_DBG(result), int expect )
     int code = sqlite3_errcode( pDb );
     XP_ASSERT( code == result ); /* do I need to pass it? */
     if ( code != expect ) {
-        XP_LOGF( "sqlite3 error: %s", sqlite3_errmsg( pDb ) );
+        XP_LOGFF( "sqlite3 error: %s", sqlite3_errmsg( pDb ) );
         XP_ASSERT(0);
     }
 }

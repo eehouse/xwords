@@ -425,25 +425,23 @@ class Device():
 #     fi
 # }
 
+def makeSMSPhoneNo( game, dev ):
+    return '{:03d}{:03d}'.format( game, dev )
 
 def build_cmds(args):
     devs = []
     COUNTER = 0
-    PLAT_PARMS = []
-    if not args.USE_GTK:
-        PLAT_PARMS += ['--curses']
 
     for GAME in range(1, args.NGAMES + 1):
         peers = set()
         ROOM = 'ROOM_%.3d' % (GAME % args.NROOMS)
-        PHONE_BASE = '%.4d' % (GAME % args.NROOMS)
         NDEVS = pick_ndevs(args)
         LOCALS = figure_locals(args, NDEVS) # as array
         NPLAYERS = sum(LOCALS)
         assert(len(LOCALS) == NDEVS)
         DICT = args.DICTS[GAME % len(args.DICTS)]
         # make one in three games public
-        usePublic = random.randint(0, 3) == 0
+        usePublic = args.ADD_RELAY and random.randint(0, 3) == 0
         useDupeMode = random.randint(0, 100) < args.DUP_PCT
         DEV = 0
         for NLOCALS in LOCALS:
@@ -453,7 +451,7 @@ def build_cmds(args):
             SCRIPT = '{}/start_{:02d}_{:02d}.sh'.format(args.LOGDIR, GAME, DEV)
 
             PARAMS = player_params(args, NLOCALS, NPLAYERS, DEV)
-            PARAMS += PLAT_PARMS
+            if not args.USE_GTK: PARAMS += ['--curses']
             PARAMS += ['--board-size', '15', '--trade-pct', args.TRADE_PCT, '--sort-tiles']
 
             # We SHOULD support having both SMS and relay working...
@@ -462,13 +460,13 @@ def build_cmds(args):
                 if random.randint(0, 100) < g_UDP_PCT_START:
                     PARAMS += ['--use-udp']
             if args.ADD_SMS:
-                PARAMS += [ '--sms-number', PHONE_BASE + str(DEV - 1) ]
+                PARAMS += [ '--sms-number', makeSMSPhoneNo(GAME, DEV) ]
                 if args.SMS_FAIL_PCT > 0:
                     PARAMS += [ '--sms-fail-pct', args.SMS_FAIL_PCT ]
                 if DEV == 1:
                     PARAMS += [ '--force-invite' ]
                     for dev in range(2, NDEVS + 1):
-                        PARAMS += [ '--invitee-sms-number', PHONE_BASE + str(dev - 1) ]
+                        PARAMS += [ '--invitee-sms-number', makeSMSPhoneNo(GAME, dev) ]
 
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]

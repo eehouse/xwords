@@ -571,7 +571,7 @@ setupBoard( CursesBoardGlobals* bGlobals )
 
 static CursesBoardGlobals*
 initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
-            const CurGameInfo* gi, const CommsAddrRec* addr )
+            const CurGameInfo* gi, const CommsAddrRec* returnAddr )
 {
     LOG_FUNC();
     CursesBoardGlobals* result = commonInit( cbState, rowid, gi );
@@ -591,7 +591,7 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
     cGlobals->cp.robotTradePct = params->robotTradePct;
 #endif
 
-    if ( linuxOpenGame( cGlobals, &result->procs, addr ) ) {
+    if ( linuxOpenGame( cGlobals, &result->procs, returnAddr ) ) {
          result = ref( result );
     } else {
         disposeBoard( result );
@@ -619,7 +619,7 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
 
 static CursesBoardGlobals*
 findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid,
-            const CurGameInfo* gi, const CommsAddrRec* addr )
+            const CurGameInfo* gi, const CommsAddrRec* returnAddr )
 {
     CursesBoardGlobals* result = NULL;
     for ( GSList* iter = cbState->games;
@@ -631,7 +631,7 @@ findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid,
     }
 
     if ( !result ) {
-        result = initNoDraw( cbState, rowid, gi, addr );
+        result = initNoDraw( cbState, rowid, gi, returnAddr );
         if ( !!result ) {
             setupBoard( result );
             cbState->games = g_slist_append( cbState->games, result );
@@ -1243,6 +1243,7 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     } else {
         ca_inform( bGlobals->boardWin, "Cannot invite via relayID or by \"sms phone\"." );
     }
+    LOG_RETURNF( "%s", "TRUE" );
     return XP_TRUE;
 }
 
