@@ -516,7 +516,7 @@ def build_cmds(args):
             COUNTER += 1
     return devs
 
-def summarizeTileCounts(devs, endTime, state):
+def summarizeTileCounts(devs, endTime, state, changeSecs):
     global gDeadLaunches
     shouldGoOn = True
     data = [dev.getTilesCount() for dev in devs]
@@ -591,7 +591,7 @@ def summarizeTileCounts(devs, endTime, state):
         state['lastChange'] = now
         state['tilesStr'] = tilesStr
 
-    return now - state['lastChange'] < datetime.timedelta(seconds = 30)
+    return now - state['lastChange'] < datetime.timedelta(seconds = changeSecs)
 
 def countCores(args):
     count = 0
@@ -619,7 +619,7 @@ def run_cmds(args, devs):
         # print stats every 5 seconds
         if now - lastPrint > datetime.timedelta(seconds = 5):
             lastPrint = now
-            if not summarizeTileCounts(devs, endTime, printState):
+            if not summarizeTileCounts(devs, endTime, printState, args.NO_CHANGE_SECS):
                 print('no change in too long; exiting')
                 break
 
@@ -711,6 +711,8 @@ def mkParser():
                         help = 'number of roooms (default to --num-games)')
     parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
                         help = 'minutes after which to timeout')
+    parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
+                        help = 'seconds without change after which to timeout')
     parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
     parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, help = 'send all packet twice')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
@@ -755,8 +757,8 @@ def mkParser():
     parser.add_argument('--http-pct', dest = 'HTTP_PCT', default = 0, type = int,
                         help = 'pct of games to be using web api')
 
-    parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
-    parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 0, type = int)
+    parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 5, type = int)
+    parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
 
     parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
     parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
