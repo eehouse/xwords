@@ -82,10 +82,10 @@ typedef struct StackEntry {
 
 typedef struct StackCtxt StackCtxt;
 
-StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr, XP_Bool inDuplicateMode );
+StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr, XP_U16 nPlayers, XP_Bool inDuplicateMode );
 void stack_destroy( StackCtxt* stack );
 
-void stack_init( StackCtxt* stack, XP_Bool inDuplicateMode );
+void stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode );
 XP_U32 stack_getHash( const StackCtxt* stack, XP_Bool correct );
 void stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile );
 
@@ -116,6 +116,7 @@ XP_U16 stack_getNEntries( const StackCtxt* stack );
 XP_Bool stack_getNthEntry( StackCtxt* stack, XP_U16 n, StackEntry* entry );
 
 XP_Bool stack_popEntry( StackCtxt* stack, StackEntry* entry );
+XP_S16 stack_getNextTurn( StackCtxt* stack );
 XP_Bool stack_redo( StackCtxt* stack, StackEntry* entry );
 
 void stack_freeEntry( StackCtxt* stack, StackEntry* entry );

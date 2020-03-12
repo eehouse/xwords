@@ -679,7 +679,10 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
             XP_UCHAR* name;
             XP_U8 len;
 
-            XP_ASSERT( ii++ < MAX_NUM_PLAYERS );
+#ifdef DEBUG
+            XP_ASSERT( ii < MAX_NUM_PLAYERS );
+            ++ii;
+#endif
             if ( !lp->isLocal ) {
                 continue;
             }
@@ -1369,7 +1372,7 @@ makeRobotMove( ServerCtxt* server )
             if ( canMove || NPASSES_OK(server) ) {
                 juggleMoveIfDebug( &newMove );
                 model_makeTurnFromMoveInfo( model, turn, &newMove );
-                XP_LOGF( "%s: robot making %d tile move", __func__, newMove.nTiles );
+                XP_LOGFF( "robot making %d tile move for player %d", newMove.nTiles, turn );
 
                 if ( !!stream ) {
                     XWStreamCtxt* wordsStream = mkServerStream( server );
@@ -2505,7 +2508,6 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 {
     LOG_FUNC();
     CurGameInfo* gi = server->vol.gi;
-    XP_U16 nPlayers = gi->nPlayers;
     XP_Bool playerTilesLeft = XP_FALSE;
     XP_S16 currentTurn = server->nv.currentTurn;
     XP_Bool moreToDo = XP_FALSE;
@@ -2517,10 +2519,10 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
             if ( inDuplicateMode(server) ) {
                 nxtTurn = dupe_nextTurn( server );
             } else {
-                nxtTurn = (currentTurn+1) % nPlayers;
+                nxtTurn = model_getNextTurn( server->vol.model );
             }
         } else {
-            XP_LOGF( "%s(): turn == -1 so dropping", __func__ );
+            XP_LOGFF( "%s", "turn == -1 so dropping" );
         }
     } else {
         /* We're doing an undo, and so won't bother figuring out who the
@@ -2670,9 +2672,7 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
     stream_putBits( stream, 1, isTrade );
 
     if ( isTrade ) {
-
         traySetToStream( stream, tradedTiles );
-
     } else {
         stream_putBits( stream, 1, legal );
 
@@ -2828,7 +2828,6 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 
     if ( success ) {
         if ( isTrade ) {
-
             sendMoveToClientsExcept( server, whoMoved, XP_TRUE, &newTiles, 
                                      &tradedTiles, sourceClientIndex );
 
@@ -3580,8 +3579,8 @@ finishMove( ServerCtxt* server, TrayTileSet* newTiles, XP_U16 turn )
     } else {
         nextTurn( server, PICK_NEXT );
     }
-    XP_LOGF( "%s(): player %d now has %d tiles", __func__, turn,
-             model_getNumTilesInTray( model, turn ) );
+    XP_LOGFF( "player %d now has %d tiles", turn,
+              model_getNumTilesInTray( model, turn ) );
 } /* finishMove */
     
 /* return XP_TRUE; */
@@ -3815,6 +3814,9 @@ setTurn( ServerCtxt* server, XP_S16 turn )
             turn = dupe_nextTurn( server );
         }
         server->nv.currentTurn = turn;
+        if ( 0 <= turn ) {
+            XP_ASSERT( turn == model_getNextTurn( server->vol.model ) );
+        }
         server->nv.lastMoveTime = dutil_getCurSeconds( server->vol.dutil );
         callTurnChangeListener( server );
     }

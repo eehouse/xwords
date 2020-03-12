@@ -49,6 +49,7 @@ struct StackCtxt {
     XP_U16 bitsPerTile;
     XP_U16 highWaterMark;
     XP_U16 typeBits;
+    XP_U16 nPlayers;
     XP_U8 flags;
 
     XP_Bool inDuplicateMode;
@@ -60,10 +61,11 @@ struct StackCtxt {
 #define HAVE_FLAGS_MASK ((XP_U16)0x8000)
 
 void
-stack_init( StackCtxt* stack, XP_Bool inDuplicateMode )
+stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode )
 {
     stack->nEntries = stack->highWaterMark = 0;
     stack->top = START_OF_STREAM;
+    stack->nPlayers = nPlayers;
     stack->inDuplicateMode = inDuplicateMode;
 
     /* I see little point in freeing or shrinking stack->data.  It'll get
@@ -91,13 +93,14 @@ stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
 }
 
 StackCtxt*
-stack_make( MPFORMAL VTableMgr* vtmgr, XP_Bool inDuplicateMode )
+stack_make( MPFORMAL VTableMgr* vtmgr, XP_U16 nPlayers, XP_Bool inDuplicateMode )
 {
     StackCtxt* result = (StackCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
     if ( !!result ) {
         XP_MEMSET( result, 0, sizeof(*result) );
         MPASSIGN(result->mpool, mpool);
         result->vtmgr = vtmgr;
+        result->nPlayers = nPlayers;
         result->inDuplicateMode = inDuplicateMode;
     }
 
@@ -193,7 +196,7 @@ stack_copy( const StackCtxt* stack )
     stack_writeToStream( stack, stream );
 
     newStack = stack_make( MPPARM(stack->mpool) stack->vtmgr,
-                           stack->inDuplicateMode );
+                           stack->nPlayers, stack->inDuplicateMode );
     stack_loadFromStream( newStack, stream );
     stack_setBitsPerTile( newStack, stack->bitsPerTile );
     stream_destroy( stream );
@@ -205,8 +208,8 @@ pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
 {
     XWStreamCtxt* stream = stack->data;
 
-    XP_LOGF( "%s(typ=%s, player=%d)", __func__,
-             StackMoveType_2str(entry->moveType), entry->playerNum );
+    XP_LOGFF( "(typ=%s, player=%d)", StackMoveType_2str(entry->moveType),
+              entry->playerNum );
 
     if ( !stream ) {
         stream = mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
@@ -270,6 +273,12 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 #ifdef DEBUG_HASHING
     XP_Bool correct = XP_TRUE;
     XP_U32 origHash = stack_getHash( stack, correct );
+
+    StackEntry prevTop;
+    if ( 1 < stack->nPlayers &&
+         stack_getNthEntry( stack, stack->nEntries - 1, &prevTop ) ) {
+        XP_ASSERT( prevTop.playerNum != entry->playerNum );
+    }
 #endif
 
     pushEntryImpl( stack, entry );
@@ -281,7 +290,11 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
         XP_ASSERT( origHash == stack_getHash( stack, correct ) );
         pushEntryImpl( stack, &lastEntry );
         XP_ASSERT( newHash == stack_getHash( stack, correct ) );
-        XP_LOGF( "%s: all ok", __func__ );
+        XP_LOGFF( "all ok; pushed type %s for player %d into pos #%d, hash now %X (was %X)",
+                  StackMoveType_2str(entry->moveType), entry->playerNum,
+                  stack->nEntries, newHash, origHash );
+    } else {
+        XP_ASSERT(0);
     }
 #endif
 }
@@ -508,6 +521,22 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
 #endif
     return found;
 } /* stack_popEntry */
+
+XP_S16
+stack_getNextTurn( StackCtxt* stack )
+{
+    XP_S16 result = -1;
+    XP_U16 nn = stack->nEntries - 1;
+
+    StackEntry dummy;
+    if ( stack_getNthEntry( stack, nn, &dummy ) ) {
+        result = (dummy.playerNum + 1) % stack->nPlayers;
+        stack_freeEntry( stack, &dummy );
+    }
+
+    LOG_RETURNF( "%d", result );
+    return result;
+}
 
 XP_Bool
 stack_redo( StackCtxt* stack, StackEntry* entry )

@@ -270,7 +270,7 @@ model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
 void
 model_setSize( ModelCtxt* model, XP_U16 nCols )
 {
-    ModelVolatiles vol = model->vol; /* save vol so we don't wipe it out */
+    ModelVolatiles saveVol = model->vol; /* save vol so we don't wipe it out */
     XP_U16 oldSize = model->nCols;   /* zero when called from model_make() */
 
     XP_ASSERT( MAX_COLS >= nCols );
@@ -279,22 +279,23 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
 
     model->nCols = nCols;
     model->nRows = nCols;
-    model->vol = vol;
+    model->vol = saveVol;
 
+    ModelVolatiles* vol = &model->vol;
     if ( oldSize != nCols ) {
-        if ( !!model->vol.tiles ) {
-            XP_FREE( model->vol.mpool, model->vol.tiles );
+        if ( !!vol->tiles ) {
+            XP_FREE( vol->mpool, vol->tiles );
         }
-        model->vol.tiles = XP_MALLOC( model->vol.mpool, TILES_SIZE(model, nCols) );
+        vol->tiles = XP_MALLOC( vol->mpool, TILES_SIZE(model, nCols) );
     }
-    XP_MEMSET( model->vol.tiles, TILE_EMPTY_BIT, TILES_SIZE(model, nCols) );
+    XP_MEMSET( vol->tiles, TILE_EMPTY_BIT, TILES_SIZE(model, nCols) );
 
-    if ( !!model->vol.stack ) {
-        stack_init( model->vol.stack, model->vol.gi->inDuplicateMode );
+    if ( !!vol->stack ) {
+        stack_init( vol->stack, vol->gi->nPlayers, vol->gi->inDuplicateMode );
     } else {
-        model->vol.stack = stack_make( MPPARM(model->vol.mpool)
-                                       dutil_getVTManager(model->vol.dutil),
-                                       model->vol.gi->inDuplicateMode );
+        vol->stack = stack_make( MPPARM(vol->mpool)
+                                 dutil_getVTManager(vol->dutil),
+                                 vol->gi->nPlayers, vol->gi->inDuplicateMode );
     }
 } /* model_setSize */
 
@@ -2111,6 +2112,14 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 
     model_addNewTiles( model, turn, &sorted );
 } /* model_assignPlayerTiles */
+
+XP_S16
+model_getNextTurn( const ModelCtxt* model )
+{
+    XP_S16 result = stack_getNextTurn( model->vol.stack );
+    // LOG_RETURNF( "%d", result );
+    return result;
+}
 
 void
 model_assignDupeTiles( ModelCtxt* model, const TrayTileSet* tiles )
