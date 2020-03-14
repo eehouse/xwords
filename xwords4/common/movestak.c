@@ -74,11 +74,11 @@ stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode )
 
 #ifdef STREAM_VERS_HASHSTREAM
 XP_U32
-stack_getHash( const StackCtxt* stack, XP_Bool correct )
+stack_getHash( const StackCtxt* stack )
 {
     XP_U32 hash = 0;
     if ( !!stack->data ) {
-        hash = stream_getHash( stack->data, stack->top, correct );
+        hash = stream_getHash( stack->data, stack->top );
     }
     return hash;
 } /* stack_getHash */
@@ -271,8 +271,7 @@ static void
 pushEntry( StackCtxt* stack, const StackEntry* entry )
 {
 #ifdef DEBUG_HASHING
-    XP_Bool correct = XP_TRUE;
-    XP_U32 origHash = stack_getHash( stack, correct );
+    XP_U32 origHash = stack_getHash( stack );
 
     StackEntry prevTop;
     if ( 1 < stack->nPlayers &&
@@ -284,12 +283,12 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     pushEntryImpl( stack, entry );
 
 #ifdef DEBUG_HASHING
-    XP_U32 newHash = stack_getHash( stack, XP_TRUE );
+    XP_U32 newHash = stack_getHash( stack );
     StackEntry lastEntry;
     if ( stack_popEntry( stack, &lastEntry ) ) {
-        XP_ASSERT( origHash == stack_getHash( stack, correct ) );
+        XP_ASSERT( origHash == stack_getHash( stack ) );
         pushEntryImpl( stack, &lastEntry );
-        XP_ASSERT( newHash == stack_getHash( stack, correct ) );
+        XP_ASSERT( newHash == stack_getHash( stack ) );
         XP_LOGFF( "all ok; pushed type %s for player %d into pos #%d, hash now %X (was %X)",
                   StackMoveType_2str(entry->moveType), entry->playerNum,
                   stack->nEntries, newHash, origHash );

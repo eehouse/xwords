@@ -86,7 +86,7 @@ StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr, XP_U16 nPlayers, XP_Bool inDup
 void stack_destroy( StackCtxt* stack );
 
 void stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode );
-XP_U32 stack_getHash( const StackCtxt* stack, XP_Bool correct );
+XP_U32 stack_getHash( const StackCtxt* stack );
 void stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile );
 
 void stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream );

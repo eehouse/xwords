@@ -320,15 +320,14 @@ model_getHash( const ModelCtxt* model )
 #endif
     StackCtxt* stack = model->vol.stack;
     XP_ASSERT( !!stack );
-    return stack_getHash( stack, XP_TRUE );
+    return stack_getHash( stack );
 }
 
 XP_Bool
 model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 {
     StackCtxt* stack = model->vol.stack;
-    XP_Bool matches = hash == stack_getHash( stack, XP_TRUE )
-        || hash == stack_getHash( stack, XP_FALSE );
+    XP_Bool matches = hash == stack_getHash( stack );
     return matches;
 }
 
@@ -342,8 +341,7 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
     XP_S16 foundAt = -1;
 
     for ( XP_U16 ii = 0; ii < nEntries; ++ii ) {
-        if ( hash == stack_getHash( stack, XP_TRUE )
-             || hash == stack_getHash( stack, XP_FALSE ) ) {
+        if ( hash == stack_getHash( stack ) ) {
             foundAt = ii;
             break;
         }
@@ -369,8 +367,7 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
             model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
         XP_ASSERT( success );
         /* Assert not needed for long */
-        XP_ASSERT( hash == stack_getHash( model->vol.stack, XP_TRUE )
-                   || hash == stack_getHash( model->vol.stack, XP_FALSE ) );
+        XP_ASSERT( hash == stack_getHash( model->vol.stack ) );
     } else {
         XP_ASSERT( nEntries == stack_getNEntries(stack) );
     }
