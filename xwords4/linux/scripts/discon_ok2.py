@@ -595,19 +595,22 @@ def summarizeTileCounts(devs, endTime, state):
 
     return now - state['lastChange'] < datetime.timedelta(seconds = 30)
 
-def countCores():
-    return len(glob.glob1('/tmp',"core*"))
+def countCores(args):
+    count = 0
+    if args.CORE_PAT:
+        count = len( glob.glob(args.CORE_PAT) )
+    return count
 
 gDone = False
 
 def run_cmds(args, devs):
-    nCores = countCores()
+    nCores = countCores(args)
     endTime = datetime.datetime.now() + datetime.timedelta(minutes = args.TIMEOUT_MINS)
     printState = {}
     lastPrint = datetime.datetime.now()
 
     while len(devs) > 0 and not gDone:
-        if countCores() > nCores:
+        if countCores(args) > nCores:
             print('core file count increased; exiting')
             break
         now = datetime.datetime.now()
@@ -760,6 +763,9 @@ def mkParser():
     parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
     parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
     parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
+
+    parser.add_argument('--core-pat', dest = 'CORE_PAT', default = "/tmp/core*",
+                        help = "pattern for core files that should stop the script" )
 
     parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
                         action = 'store_true')
