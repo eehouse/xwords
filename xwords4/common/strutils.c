@@ -371,9 +371,6 @@ augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
-#ifdef DEBUG_HASHING
-    XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
-#endif
     return hash;
 }
 

@@ -403,14 +403,11 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos )
         --len;
     }
 
-    LOG_HEX( ptr, len, __func__ );
-
     hash = augmentHash( 0, ptr, len );
     if ( 0 != bits ) {
         XP_U8 byt = ptr[len];
         byt &= ~(0xFF << bits);
         hash = augmentHash( hash, &byt, 1 );
-        LOG_HEX( &byt, 1, __func__ );
     }
     hash = finishHash( hash );
 

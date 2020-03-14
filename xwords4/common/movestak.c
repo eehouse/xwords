@@ -261,9 +261,6 @@ pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
     stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
-#ifdef DEBUG_HASHING
-    XP_LOGSTREAM( stack->data );
-#endif
     SET_DIRTY( stack );
 } /* pushEntryImpl */
 
@@ -515,9 +512,6 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
         setCacheReadyFor( stack, nn ); /* set cachedPos by side-effect */
         stack->top = stack->cachedPos;
     }
-#ifdef DEBUG_HASHING
-    XP_LOGSTREAM( stack->data );
-#endif
     return found;
 } /* stack_popEntry */
 

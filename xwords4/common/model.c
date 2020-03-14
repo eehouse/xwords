@@ -328,12 +328,14 @@ model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 {
     StackCtxt* stack = model->vol.stack;
     XP_Bool matches = hash == stack_getHash( stack );
+    XP_LOGFF( "(hash=%X) => %d", hash, matches );
     return matches;
 }
 
 XP_Bool
 model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 {
+    LOG_FUNC();
     XP_U16 nPopped = 0;
     StackCtxt* stack = model->vol.stack;
     const XP_U16 nEntries = stack_getNEntries( stack );
@@ -341,12 +343,16 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
     XP_S16 foundAt = -1;
 
     for ( XP_U16 ii = 0; ii < nEntries; ++ii ) {
-        if ( hash == stack_getHash( stack ) ) {
+        XP_U32 hash1 = stack_getHash( stack );
+        XP_LOGFF( "#%d: comparing %X with %X", nEntries-ii-1, hash, hash1 );
+        if ( hash == hash1 ) {
             foundAt = ii;
             break;
         }
 
         if ( ! stack_popEntry( stack, &entries[ii] ) ) {
+            XP_LOGFF( "stack_popEntry(%d) failed", ii );
+            XP_ASSERT(0);
             break;
         }
         ++nPopped;
@@ -359,24 +365,22 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 
     XP_Bool found = -1 != foundAt;
     if ( found ) {
-        XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
-                 foundAt, hash );
+        if ( 0 < foundAt ) {    /* if 0, nothing to do */
+            XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
+                     foundAt, hash );
 #ifdef DEBUG
-        XP_Bool success =
+            XP_Bool success =
 #endif
-            model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
-        XP_ASSERT( success );
+                model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
+            XP_ASSERT( success );
+        }
         /* Assert not needed for long */
         XP_ASSERT( hash == stack_getHash( model->vol.stack ) );
     } else {
         XP_ASSERT( nEntries == stack_getNEntries(stack) );
     }
 
-#ifdef DEBUG_HASHING
-    XP_LOGF( "%s(%X) => %s (nEntries=%d)", __func__, hash, boolToStr(found),
-             nEntries );
-#endif
-
+    LOG_RETURNF( "%s (hash=%X, nEntries=%d)", boolToStr(found), hash, nEntries );
     return found;
 } /* model_popToHash */
 
@@ -933,6 +937,7 @@ XP_Bool
 model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
                        XP_U16 nMovesSought, XP_U16* turnP, XP_S16* moveNumP )
 {
+    XP_ASSERT( 0 < nMovesSought ); /* this case isn't handled correctly */
     StackCtxt* stack = model->vol.stack;
     XP_Bool success;
     XP_S16 moveSought = !!moveNumP ? *moveNumP : -1;

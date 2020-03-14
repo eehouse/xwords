@@ -195,7 +195,9 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
     char phone[32];
     int port;
     int matched = sscanf( contents, ADDR_FMT, phone, &port );
-    if ( 2 == matched ) {
+    if ( 2 != matched ) {
+        XP_LOGFF( "ERROR: found %d matches instead of 2", matched );
+    } else {
         gchar* eol = strstr( contents, "\n" );
         *eol = '\0';
         XP_ASSERT( !*eol );
@@ -216,8 +218,6 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
             XP_LOGFF( " message came from phone: %s, port: %d", phone, port );
             addr->u.sms.port = port;
         }
-    } else {
-        XP_ASSERT(0);
     }
 
     g_free( contents );

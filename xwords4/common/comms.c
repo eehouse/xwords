@@ -2427,15 +2427,14 @@ comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
             removeAddrRec( comms, state->rec );
         }
 #ifdef LOG_COMMS_MSGNOS
-        XP_LOGF( "%s(): msg rejected; NOT upping lastMsgRcd to %d", __func__,
-                 state->msgID );
+        XP_LOGFF( "msg rejected; NOT upping lastMsgRcd to %d", state->msgID );
 #endif
     } else {
         AddressRecord* rec = getRecordFor( comms, NULL, state->channelNo, XP_TRUE );
         XP_ASSERT( !!rec );
         if ( !!rec && rec->lastMsgRcd < state->msgID ) {
 #ifdef LOG_COMMS_MSGNOS
-            XP_LOGF( "%s(): upping lastMsgRcd from %d to %d", __func__, rec->lastMsgRcd, state->msgID );
+            XP_LOGFF( "upping lastMsgRcd from %d to %d", rec->lastMsgRcd, state->msgID );
 #endif
             rec->lastMsgRcd = state->msgID;
         }

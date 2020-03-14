@@ -332,7 +332,7 @@ class Device():
         else:
             print('NOT killing')
         self.proc = None
-        self.check_game()
+        self.check_game_over()
 
     def handleAllDone(self):
         global gDeadLaunches
@@ -386,7 +386,7 @@ class Device():
             elif RNUM < 10:
                 self.devID += 'x'
 
-    def check_game(self):
+    def check_game_over(self):
         if self.gameOver and not self.allDone:
             allDone = True
             for dev in self.peers:
@@ -399,31 +399,6 @@ class Device():
                 for dev in self.peers:
                     assert self.game == dev.game
                     dev.allDone = True
-
-            # print('Closing', self.connname, datetime.datetime.now())
-            # for dev in Device.sConnnameMap[self.connname]:
-            #     dev.kill()
-#         # kill_from_logs $OTHERS $KEY
-#         for ID in $OTHERS $KEY; do
-#             echo -n "${ID}:${LOGS[$ID]}, "
-#             kill_from_log ${LOGS[$ID]} || /bin/true
-# 			send_dead $ID
-#             close_device $ID $DONEDIR "game over"
-#         done
-#         echo ""
-#         # XWRELAY_ERROR_DELETED may be old
-#     elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
-#         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-#         kill_from_log $LOG || /bin/true
-#         close_device $KEY $DEADDIR "other resigned"
-#     elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
-#         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-#         kill_from_log $LOG || /bin/true
-#         close_device $KEY $DEADDIR "other resigned"
-#     else
-#         maybe_resign $KEY
-#     fi
-# }
 
 def makeSMSPhoneNo( game, dev ):
     return '{:03d}{:03d}'.format( game, dev )

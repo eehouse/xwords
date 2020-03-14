@@ -1281,6 +1281,7 @@ mkServerStream( ServerCtxt* server )
 static XP_Bool
 makeRobotMove( ServerCtxt* server )
 {
+    LOG_FUNC();
     XP_Bool result = XP_FALSE;
     XP_Bool searchComplete;
     XP_S16 turn;
@@ -1397,6 +1398,7 @@ makeRobotMove( ServerCtxt* server )
         XP_ASSERT( gi->players[turn].secondsUsed == 0 );
     }
 
+    LOG_RETURNF( "%s", boolToStr(result) );
     return result; /* always return TRUE after robot move? */
 } /* makeRobotMove */
 
@@ -1563,7 +1565,7 @@ server_do( ServerCtxt* server )
     } else {
         XP_Bool moreToDo = XP_FALSE;
         server->serverDoing = XP_TRUE;
-        XP_LOGF( "%s(): gameState: %s", __func__, getStateStr(server->nv.gameState) );
+        XP_LOGFF( "gameState: %s", getStateStr(server->nv.gameState) );
         switch( server->nv.gameState ) {
         case XWSTATE_BEGIN:
             if ( server->nv.pendingRegistrations == 0 ) { /* all players on
@@ -2506,7 +2508,7 @@ getPlayerTime( ServerCtxt* server, XWStreamCtxt* stream, XP_U16 turn )
 static void
 nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(nxtTurn=%d)", nxtTurn );
     CurGameInfo* gi = server->vol.gi;
     XP_Bool playerTilesLeft = XP_FALSE;
     XP_S16 currentTurn = server->nv.currentTurn;
@@ -2529,6 +2531,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
            previous turn was or how many tiles he had: it's a sure thing he
            "has" enough to be allowed to take the turn just undone. */
         playerTilesLeft = XP_TRUE;
+        XP_ASSERT( nxtTurn == model_getNextTurn( server->vol.model ) );
     }
     SETSTATE( server, XWSTATE_INTURN ); /* even if game over, if undoing */
 
@@ -2543,8 +2546,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
             SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME ); /* this is it */
             moreToDo = XP_TRUE;
         } else if ( currentTurn >= 0 ) {
-            XP_LOGF( "%s: Doing nothing; waiting for server to end game", 
-                     __func__ );
+            XP_LOGFF( "%s", "Doing nothing; waiting for server to end game" );
             setTurn( server, -1 );
             /* I'm the client. Do ++nothing++. */
         }
@@ -2700,7 +2702,7 @@ static XP_Bool
 readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
               XP_U16* whoMovedP, XP_Bool* isTradeP,
               TrayTileSet* newTiles, TrayTileSet* tradedTiles, 
-              XP_Bool* legalP )
+              XP_Bool* legalP, XP_Bool* badStackP )
 {
     LOG_FUNC();
     XP_Bool success = XP_TRUE;
@@ -2714,7 +2716,8 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
             || model_popToHash( server->vol.model, hashReceived, server->pool );
 
         if ( !success ) {
-            XP_LOGF( "%s: hash mismatch: %X not found",__func__, hashReceived );
+            XP_LOGFF( "hash mismatch: %X not found", hashReceived );
+            *badStackP = XP_TRUE;
 #ifdef DEBUG_HASHING
         } else {
             XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
@@ -2750,6 +2753,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
             }
         }
     }
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 } /* readMoveInfo */
 
@@ -2821,8 +2825,9 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 
     XP_ASSERT( gi->serverRole == SERVER_ISSERVER );
 
+    XP_Bool badStack = XP_FALSE;
     success = readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
-                            &tradedTiles, &isLegalMove ); /* modifies model */
+                            &tradedTiles, &isLegalMove, &badStack ); /* modifies model */
     XP_ASSERT( !success || isLegalMove ); /* client should always report as true */
     isLegalMove = XP_TRUE;
 
@@ -2891,6 +2896,8 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
         if ( doRequest ) {
             util_requestTime( server->vol.util );
         }
+    } else if ( badStack ) {
+        success = XP_TRUE;      /* so we don't reject the move forever */
     }
     return success;
 } /* reflectMoveAndInform */
@@ -2898,7 +2905,6 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 static XP_Bool
 reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
 {
-    XP_Bool moveOk;
     XP_Bool isTrade;
     XP_Bool isLegal;
     XP_U16 whoMoved;
@@ -2908,10 +2914,19 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     XWStreamCtxt* mvStream = NULL;
     XWStreamCtxt* wordsStream = NULL;
 
-    moveOk = XWSTATE_INTURN == server->nv.gameState
-        && server->nv.currentTurn >= 0
-        && readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
-                         &tradedTiles, &isLegal ); /* modifies model */
+    XP_Bool badStack = XP_FALSE;
+    XP_Bool moveOk = XP_FALSE;
+
+    if ( XWSTATE_INTURN != server->nv.gameState ) {
+        XP_LOGFF( "BAD: game state: %s, not XWSTATE_INTURN", getStateStr(server->nv.gameState ) );
+    } else if ( server->nv.currentTurn < 0 ) {
+        XP_LOGFF( "BAD: currentTurn %d < 0", server->nv.currentTurn );
+    } else if ( ! readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
+                                &tradedTiles, &isLegal, &badStack ) ) { /* modifies model */
+        XP_LOGFF( "%s", "BAD: readMoveInfo() failed" );
+    } else {
+        moveOk = XP_TRUE;
+    }
 
     if ( moveOk ) {
         if ( isTrade ) {
@@ -2939,9 +2954,10 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
             XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
             handleIllegalWord( server, stream );
         }
+    } else if ( badStack ) {
+        moveOk = XP_TRUE;
     } else {
-        XP_LOGF( "%s: dropping move: state=%s", __func__,
-                 getStateStr(server->nv.gameState ) );
+        XP_LOGFF( "dropping move: state=%s", getStateStr(server->nv.gameState ) );
     }
     return moveOk;
 } /* reflectMove */
@@ -3862,7 +3878,7 @@ handleMoveOk( ServerCtxt* server, XWStreamCtxt* XP_UNUSED(incoming) )
 
 static void
 sendUndoTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 nUndone, 
-            XP_U16 lastUndone )
+            XP_U16 lastUndone, XP_U32 newHash )
 {
     XWStreamCtxt* stream;
     CurGameInfo* gi = server->vol.gi;
@@ -3873,19 +3889,20 @@ sendUndoTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 nUndone,
 
     stream_putU16( stream, nUndone );
     stream_putU16( stream, lastUndone );
+    stream_putU32( stream, newHash );
 
     stream_destroy( stream );
 } /* sendUndoTo */
 
 static void
-sendUndoToClientsExcept( ServerCtxt* server, XP_U16 skip, 
-                         XP_U16 nUndone, XP_U16 lastUndone )
+sendUndoToClientsExcept( ServerCtxt* server, XP_U16 skip, XP_U16 nUndone,
+                         XP_U16 lastUndone, XP_U32 newHash )
 {
     XP_U16 devIndex;
 
     for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
-            sendUndoTo( server, devIndex, nUndone, lastUndone );
+            sendUndoTo( server, devIndex, nUndone, lastUndone, newHash );
         }
     }
 } /* sendUndoToClientsExcept */
@@ -3893,6 +3910,7 @@ sendUndoToClientsExcept( ServerCtxt* server, XP_U16 skip,
 static XP_Bool
 reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 {
+    LOG_FUNC();
     XP_U16 nUndone;
     XP_S16 lastUndone;
     XP_U16 turn;
@@ -3901,23 +3919,40 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 
     nUndone = stream_getU16( stream );
     lastUndone = stream_getU16( stream );
+    XP_U32 newHash = 0;
+    if ( 0 < stream_getSize( stream ) ) {
+        newHash = stream_getU32( stream );
+    }
+    XP_ASSERT( 0 == stream_getSize( stream ) );
 
-    success = model_undoLatestMoves( model, server->pool, nUndone, &turn, 
-                                     &lastUndone );
+    if ( 0 == newHash ) {
+        success = model_undoLatestMoves( model, server->pool, nUndone, &turn,
+                                         &lastUndone );
+        XP_ASSERT( turn == model_getNextTurn( model ) );
+    } else {
+        success = model_popToHash( model, newHash, server->pool );
+        turn = model_getNextTurn( model );
+    }
+
     if ( success ) {
+        XP_LOGFF( "popped down to %X", model_getHash( model ) );
         sortTilesIf( server, turn );
 
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */
             XP_U16 sourceClientIndex = getIndexForStream( server, stream );
 
             sendUndoToClientsExcept( server, sourceClientIndex, nUndone, 
-                                     lastUndone );
+                                     lastUndone, newHash );
         }
 
         util_informUndo( server->vol.util );
         nextTurn( server, turn );
+    } else {
+        XP_ASSERT(0);
+        success = XP_TRUE;      /* Otherwise we'll stall */
     }
 
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 } /* reflectUndos */
 #endif
@@ -3925,6 +3960,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 XP_Bool
 server_handleUndo( ServerCtxt* server, XP_U16 limit )
 {
+    LOG_FUNC();
     XP_Bool result = XP_FALSE;
     XP_U16 lastTurnUndone = 0; /* quiet compiler good */
     XP_U16 nUndone = 0;
@@ -3958,13 +3994,15 @@ server_handleUndo( ServerCtxt* server, XP_U16 limit )
 
     result = nUndone > 0 ;
     if ( result ) {
+        XP_U32 newHash = model_getHash( model );
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_ASSERT( lastUndone != 0xFFFF );
+        XP_LOGFF( "popped to hash %X", newHash );
         if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-            sendUndoTo( server, SERVER_DEVICE, nUndone, lastUndone );
+            sendUndoTo( server, SERVER_DEVICE, nUndone, lastUndone, newHash );
         } else {
             sendUndoToClientsExcept( server, SERVER_DEVICE, nUndone, 
-                                     lastUndone );
+                                     lastUndone, newHash );
         }
 #endif
         sortTilesIf( server, lastTurnUndone );
@@ -3975,6 +4013,7 @@ server_handleUndo( ServerCtxt* server, XP_U16 limit )
         util_userError( server->vol.util, ERR_CANT_UNDO_TILEASSIGN );
     }
 
+    LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 } /* server_handleUndo */
 
@@ -4110,7 +4149,8 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
     XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
     stream_close( incoming );
 
-    XP_LOGF( "%s() => %d (code=%s)", __func__, accepted, codeToStr(code) );
+    XP_LOGFF( "=> %d (code=%s)", accepted, codeToStr(code) );
+    // XP_ASSERT( accepted );      /* do not commit!!! */
     return accepted;
 } /* server_receiveMessage */
 #endif
