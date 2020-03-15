@@ -344,7 +344,7 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 
     for ( XP_U16 ii = 0; ii < nEntries; ++ii ) {
         XP_U32 hash1 = stack_getHash( stack );
-        XP_LOGFF( "#%d: comparing %X with %X", nEntries-ii-1, hash, hash1 );
+        XP_LOGFF( "comparing %X with entry #%d %X", hash, nEntries - ii, hash1 );
         if ( hash == hash1 ) {
             foundAt = ii;
             break;

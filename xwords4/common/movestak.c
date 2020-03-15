@@ -60,6 +60,8 @@ struct StackCtxt {
 
 #define HAVE_FLAGS_MASK ((XP_U16)0x8000)
 
+static XP_Bool popEntryImpl( StackCtxt* stack, StackEntry* entry );
+
 void
 stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode )
 {
@@ -282,7 +284,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 #ifdef DEBUG_HASHING
     XP_U32 newHash = stack_getHash( stack );
     StackEntry lastEntry;
-    if ( stack_popEntry( stack, &lastEntry ) ) {
+    if ( popEntryImpl( stack, &lastEntry ) ) {
         XP_ASSERT( origHash == stack_getHash( stack ) );
         pushEntryImpl( stack, &lastEntry );
         XP_ASSERT( newHash == stack_getHash( stack ) );
@@ -293,6 +295,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
         XP_ASSERT(0);
     }
 #endif
+    XP_LOGFF( "hash now %X", stack_getHash( stack ) );
 }
 
 static void
@@ -501,8 +504,8 @@ stack_getNthEntry( StackCtxt* stack, const XP_U16 nn, StackEntry* entry )
     return found;
 } /* stack_getNthEntry */
 
-XP_Bool
-stack_popEntry( StackCtxt* stack, StackEntry* entry )
+static XP_Bool
+popEntryImpl( StackCtxt* stack, StackEntry* entry )
 {
     XP_U16 nn = stack->nEntries - 1;
     XP_Bool found = stack_getNthEntry( stack, nn, entry );
@@ -513,6 +516,16 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
         stack->top = stack->cachedPos;
     }
     return found;
+}
+
+XP_Bool
+stack_popEntry( StackCtxt* stack, StackEntry* entry )
+{
+    XP_Bool result = popEntryImpl( stack, entry );
+    if ( result ) {
+        XP_LOGFF( "hash now %X", stack_getHash( stack ) );
+    }
+    return result;
 } /* stack_popEntry */
 
 XP_S16

@@ -4089,7 +4089,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         if ( XWSTATE_INTURN == server->nv.gameState ) {
             accepted = reflectMoveAndInform( server, incoming );
         } else {
-            XP_LOGF( "%s(): bad state: %s", __func__, getStateStr( server->nv.gameState ) );
+            XP_LOGFF( "bad state: %s", getStateStr( server->nv.gameState ) );
         }
         break;
 
