@@ -1150,6 +1150,12 @@ comms_getConTypes( const CommsCtxt* comms )
     return typ;
 } /* comms_getConTypes */
 
+void
+comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ )
+{
+    addr_rmType( &comms->addr, typ );
+}
+
 XP_Bool
 comms_getIsServer( const CommsCtxt* comms )
 {

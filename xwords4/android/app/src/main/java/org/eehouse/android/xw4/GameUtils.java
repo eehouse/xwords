@@ -153,7 +153,7 @@ public class GameUtils {
             }
 
             if ( null != addr ) {
-                XwJNI.comms_setAddr( gamePtr, addr );
+                XwJNI.comms_augmentHostAddr( gamePtr, addr );
             }
 
             if ( null == lockDest ) {
@@ -1183,7 +1183,7 @@ public class GameUtils {
                                       GameLock lock, GamePtr gamePtr )
     {
         if ( null != car ) {
-            XwJNI.comms_setAddr( gamePtr, car );
+            XwJNI.comms_augmentHostAddr( gamePtr, car );
         }
 
         if ( BuildConfig.DEBUG && null != disab ) {

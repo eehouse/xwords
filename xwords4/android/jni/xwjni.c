@@ -1805,14 +1805,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
 }
 
 JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddr
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1augmentHostAddr
 ( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jaddr )
 {
     XWJNI_START();
     if ( state->game.comms ) {
         CommsAddrRec addr = {0};
         getJAddrRec( env, &addr, jaddr );
-        comms_setAddr( state->game.comms, &addr );
+        comms_augmentHostAddr( state->game.comms, &addr );
     } else {
         XP_LOGF( "%s: no comms this game", __func__ );
     }
@@ -2205,6 +2205,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
     XWJNI_END();
 #endif
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1dropHostAddr
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject jConnTyp )
+{
+    LOG_FUNC();
+    XWJNI_START();
+    if ( NULL != state->game.comms ) {
+        CommsConnType connType = jEnumToInt( env, jConnTyp );
+        comms_dropHostAddr( state->game.comms, connType );
+    }
+    XWJNI_END();
+    LOG_RETURN_VOID();
 }
 
 #ifdef DEBUG

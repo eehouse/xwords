@@ -225,6 +225,7 @@ XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
 #endif
 
 CommsConnTypes comms_getConTypes( const CommsCtxt* comms );
+void comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ );
 XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
