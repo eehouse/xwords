@@ -15,10 +15,8 @@ SRC_SVGS = \
 	down.svg \
 	download.svg \
 	email.svg \
-	in_arrow.svg \
 	multigame.svg \
 	new_group.svg \
-	out_arrow.svg \
 	prefs.svg \
 	relabel.svg \
 	rematch.svg \

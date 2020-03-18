@@ -499,7 +499,7 @@ public class ConnStatusHandler {
     {
         boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
         int color = showSuccesses ? ORANGE : Color.WHITE;
-        int arrowID = isIn ? R.drawable.in_arrow__gen : R.drawable.out_arrow__gen;
+        int arrowID = isIn ? R.drawable.ic_in_arrow : R.drawable.ic_out_arrow;
         drawIn( canvas, res, arrowID, rect, color );
     }
 
