@@ -4,12 +4,42 @@ IMG_SRC = ./img_src
 IMG_DEST = app/src/main/res
 PARAMS = -transparent white -negate
 
-# $(IMG_DEST)/drawable/%_gen.png:
-# 	pwd
-# 	touch $@
+SRC_SVGS = \
+	archive.svg \
+	clear_all.svg \
+	content_copy.svg \
+	content_discard.svg \
+	content_new_net.svg \
+	content_new_solo.svg \
+	dict.svg \
+	down.svg \
+	download.svg \
+	email.svg \
+	in_arrow.svg \
+	multigame.svg \
+	new_group.svg \
+	out_arrow.svg \
+	prefs.svg \
+	relabel.svg \
+	rematch.svg \
+	reset.svg \
+	save.svg \
+	search.svg \
+	select_all.svg \
+	send.svg \
+	sologame.svg \
+	trade.svg \
+	untrade.svg \
+	up.svg \
 
-# $(IMG_DEST)/drawable/%_gen.png: $(IMG_SRC)/%.svg
-# 	convert -extent 48x48 $< $@
+XHDPI_IMGS:=$(foreach img,$(SRC_SVGS:.svg=__gen.png),$(IMG_DEST)/drawable-xhdpi/$(img))
+MDPI_IMGS:=$(foreach img,$(SRC_SVGS:.svg=__gen.png),$(IMG_DEST)/drawable-mdpi/$(img))
+HDPI_IMGS:=$(foreach img,$(SRC_SVGS:.svg=__gen.png),$(IMG_DEST)/drawable-hdpi/$(img))
+
+all: $(XHDPI_IMGS) $(MDPI_IMGS) $(HDPI_IMGS)
+
+clean:
+	rm -f $(XHDPI_IMGS) $(MDPI_IMGS) $(HDPI_IMGS)
 
 $(IMG_DEST)/drawable-xhdpi/%__gen.png: $(IMG_SRC)/%.svg
 	convert $(PARAMS) -scale 64x64 $< $@
