@@ -12,7 +12,6 @@ SRC_SVGS = \
 	content_new_net.svg \
 	content_new_solo.svg \
 	dict.svg \
-	down.svg \
 	download.svg \
 	email.svg \
 	new_group.svg \
@@ -26,7 +25,6 @@ SRC_SVGS = \
 	send.svg \
 	trade.svg \
 	untrade.svg \
-	up.svg \
 
 XHDPI_IMGS:=$(foreach img,$(SRC_SVGS:.svg=__gen.png),$(IMG_DEST)/drawable-xhdpi/$(img))
 MDPI_IMGS:=$(foreach img,$(SRC_SVGS:.svg=__gen.png),$(IMG_DEST)/drawable-mdpi/$(img))
