@@ -15,7 +15,6 @@ SRC_SVGS = \
 	down.svg \
 	download.svg \
 	email.svg \
-	multigame.svg \
 	new_group.svg \
 	prefs.svg \
 	relabel.svg \
@@ -25,7 +24,6 @@ SRC_SVGS = \
 	search.svg \
 	select_all.svg \
 	send.svg \
-	sologame.svg \
 	trade.svg \
 	untrade.svg \
 	up.svg \

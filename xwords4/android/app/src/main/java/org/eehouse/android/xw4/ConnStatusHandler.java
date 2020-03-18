@@ -472,7 +472,7 @@ public class ConnStatusHandler {
                 Assert.assertTrue( !BuildConfig.DEBUG
                                    || 1 >= Math.abs(scratchR.width()
                                                     - scratchR.height()) );
-                drawIn( canvas, res, R.drawable.multigame__gen, scratchR );
+                drawIn( canvas, res, R.drawable.ic_multigame, scratchR );
 
                 if ( 0 < s_moveCount && XWPrefs.moveCountEnabled( context ) ) {
                     String str = String.format( "%d", s_moveCount );
