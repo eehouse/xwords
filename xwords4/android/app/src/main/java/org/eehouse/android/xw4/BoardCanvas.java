@@ -164,7 +164,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
 
-        m_origin = res.getDrawable( R.drawable.origin );
+        m_origin = res.getDrawable( R.drawable.ic_origin );
 
         m_prefs = CommonPrefs.get( m_context );
         m_playerColors = m_prefs.playerColors;
