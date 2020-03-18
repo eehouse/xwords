@@ -487,12 +487,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         Drawable arrow;
         if ( vert ) {
             if ( null == m_downArrow ) {
-                m_downArrow = loadAndRecolor( R.drawable.downarrow, useDark );
+                m_downArrow = loadAndRecolor( R.drawable.ic_downarrow, useDark );
             }
             arrow = m_downArrow;
         } else {
             if ( null == m_rightArrow ) {
-                m_rightArrow = loadAndRecolor( R.drawable.rightarrow, useDark );
+                m_rightArrow = loadAndRecolor( R.drawable.ic_rightarrow, useDark );
             }
             arrow = m_rightArrow;
         }
