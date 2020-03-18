@@ -760,6 +760,7 @@ player_timePenalty( CurGameInfo* gi, XP_U16 playerNum )
     return result;
 } /* player_timePenalty */
 
+#ifdef DEBUG
 void
 game_logGI( const CurGameInfo* gi, const char* msg )
 {
@@ -776,6 +777,7 @@ game_logGI( const CurGameInfo* gi, const char* msg )
     XP_LOGF( "  gameID: %d", gi->gameID );
     XP_LOGF( "  dictName: %s", gi->dictName );
 }
+#endif
 
 #ifdef CPLUS
 }

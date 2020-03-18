@@ -232,6 +232,8 @@ static void logAddrs( const CommsCtxt* comms, const char* caller );
 
 # else
 # define printQueue( comms )
+# define logAddr( comms, addr, caller)
+# define logAddrs( comms, caller )
 # endif
 #endif
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
