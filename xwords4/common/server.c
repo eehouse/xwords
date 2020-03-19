@@ -1338,7 +1338,7 @@ makeRobotMove( ServerCtxt* server )
         XWStreamCtxt* stream = NULL;
 
         XP_Bool trade = forceTrade || 
-            ((newMove.nTiles == 0) && canMove &&
+            ((newMove.nTiles == 0) && !canMove &&
              (server_countTilesInPool( server ) >= MAX_TRAY_TILES));
 
         server->vol.showPrevMove = XP_TRUE;
@@ -1349,7 +1349,7 @@ makeRobotMove( ServerCtxt* server )
         /* trade if unable to find a move */
         if ( trade ) {
             TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
-            XP_LOGF( "%s: robot trading %d tiles", __func__, oldTiles.nTiles );
+            XP_LOGFF( "robot trading %d tiles", oldTiles.nTiles );
             result = server_commitTrade( server, &oldTiles, NULL );
 
             /* Quick hack to fix gremlin bug where all-robot game seen none
@@ -2515,8 +2515,12 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     XP_Bool moreToDo = XP_FALSE;
 
     if ( nxtTurn == PICK_NEXT ) {
-        XP_ASSERT( server->nv.gameState == XWSTATE_INTURN ); /* fired.... */
-        if ( currentTurn >= 0 ) {
+        if ( server->nv.gameState != XWSTATE_INTURN ) {
+            XP_LOGFF( "doing nothing; state %s != XWSTATE_INTURN",
+                      getStateStr(server->nv.gameState) );
+            XP_ASSERT( !moreToDo );
+            goto exit;
+        } else if ( currentTurn >= 0 ) {
             playerTilesLeft = tileCountsOk( server );
             if ( inDuplicateMode(server) ) {
                 nxtTurn = dupe_nextTurn( server );
@@ -2572,6 +2576,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
         moreToDo = XP_TRUE;
     }
 
+ exit:
     if ( moreToDo ) {
         util_requestTime( server->vol.util );
     }
@@ -2956,8 +2961,6 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
         }
     } else if ( badStack ) {
         moveOk = XP_TRUE;
-    } else {
-        XP_LOGFF( "dropping move: state=%s", getStateStr(server->nv.gameState ) );
     }
     return moveOk;
 } /* reflectMove */
@@ -3948,7 +3951,8 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
         util_informUndo( server->vol.util );
         nextTurn( server, turn );
     } else {
-        XP_ASSERT(0);
+        XP_LOGFF( "unable to pop to hash %X; dropping", newHash );
+        // XP_ASSERT(0);
         success = XP_TRUE;      /* Otherwise we'll stall */
     }
 
@@ -4058,7 +4062,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
     XP_Bool accepted = XP_FALSE;
     XP_Bool isServer = amServer( server );
     const XW_Proto code = readProto( server, incoming );
-    XP_LOGF( "%s(code=%s)", __func__, codeToStr(code) );
+    XP_LOGFF( "(code=%s)", codeToStr(code) );
 
     switch ( code ) {
     case XWPROTO_DEVICE_REGISTRATION:
@@ -4089,7 +4093,8 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         if ( XWSTATE_INTURN == server->nv.gameState ) {
             accepted = reflectMoveAndInform( server, incoming );
         } else {
-            XP_LOGFF( "bad state: %s", getStateStr( server->nv.gameState ) );
+            XP_LOGFF( "bad state: %s; dropping", getStateStr( server->nv.gameState ) );
+            accepted = XP_TRUE;
         }
         break;
 
@@ -4102,6 +4107,9 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         }
         if ( accepted ) {
             nextTurn( server, PICK_NEXT );
+        } else {
+            accepted = XP_TRUE; /* don't stall.... */
+            XP_LOGFF( "dropping move: state=%s", getStateStr(server->nv.gameState ) );
         }
         break;
 
