@@ -98,11 +98,11 @@ def languageCodeFor( lang ):
 
 def getInternalSum( filePath ):
     filePath = k_filebase + "and_wordlists/" + filePath
-    proc = subprocess.Popen(['/usr/bin/perl', 
+    proc = subprocess.Popen(['/usr/bin/python3',
                              '--',
-                             k_filebase + 'xw4/dawg2dict.pl', 
-                             '-get-sum',
-                             '-dict', filePath ],
+                             k_filebase + 'xw4/dawg2dict.py',
+                             '--get-sum',
+                             '--dict', filePath ],
                             stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE)
     results = proc.communicate()
