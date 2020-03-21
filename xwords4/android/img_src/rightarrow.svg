@@ -59,7 +59,7 @@
      transform="translate(0,-97)">
     <path
        style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 63.5,111.79167 74.08333,0 V 201.75 H 190.5 L 100.54167,291.70833 10.583333,201.75 H 63.5 Z"
+       d="M 10.583336,238.79167 V 164.70834 H 100.54167 V 111.79167 L 190.5,201.75 100.54167,291.70833 v -52.91666 z"
        id="path7105"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccccccc" />
