@@ -1769,4 +1769,8 @@
         <item quantity="other">Este jogo está aguardando %1$d jogadores remotos. Gostaria de convidar alguém para se juntar -- supondo que você ainda não o fez\?</item>
     </plurals>
     <string name="list_item_netstats">Conexões…</string>
+    <string name="confirm_deleteonly_dicts_fmt">Deletar %1$s vai deixar você sem nenhuma lista de palavras em %2$s. Um ou mais jogos ficarão injogáveis (até que você faça download de uma lista para substituir.)</string>
+    <string name="use_duptimer">Ativar cronômetro de movimento</string>
+    <string name="dup_minutes_label">Minutos por turno</string>
+    <string name="robot_iq_label">QI do Robô</string>
 </resources>
