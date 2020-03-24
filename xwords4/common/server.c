@@ -234,7 +234,7 @@ logNewState( XW_State old, XW_State newst, const char* caller )
     if ( old != newst ) {
         char* oldStr = getStateStr(old);
         char* newStr = getStateStr(newst);
-        XP_LOGF( "state transition %s => %s (from %s())", oldStr, newStr, caller );
+        XP_LOGFF( "state transition %s => %s (from %s())", oldStr, newStr, caller );
     }
 }
 # define SETSTATE( s, st ) {                                   \
