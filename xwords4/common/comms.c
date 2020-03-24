@@ -1471,6 +1471,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
         logAddr( comms, &addr, "default case" );
     } else {
         addr = *addrP;
+        if ( addr_hasType( &comms->addr, COMMS_CONN_NFC ) ) {
+            addr_addType( &addr, COMMS_CONN_NFC );
+        }
     }
 
     CommsConnType typ;
@@ -1498,7 +1501,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
                     XP_UCHAR msgNo[16];
                     formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                     if ( send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
-                                         elem->msg, elem->len, msgNo ) ){
+                                         elem->msg, elem->len, msgNo ) ) {
                         nSent = elem->len;
                     }
                 } else {
@@ -2826,7 +2829,7 @@ logAddrs( const CommsCtxt* comms, const char* caller )
 #endif
 
 static void
-augmentChannelAddr( AddressRecord * const rec, const CommsAddrRec* addr,
+augmentChannelAddr( AddressRecord* const rec, const CommsAddrRec* addr,
                     XWHostID hostID )
 {
     augmentAddr( &rec->addr, addr );
