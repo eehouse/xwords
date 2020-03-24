@@ -1000,7 +1000,7 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 \n
 \nこの機能を使用して、考えている単語の有効性を確認したり、ヒントとして提供される見慣れない単語を調べたりします。</string>
     <plurals name="invite_p2p_desc_fmt">
-        <item quantity="other">新しいゲームに招待するWiFiDirectデバイスの名前を選択して、「%2$s」をタップしてください。</item>
+        <item quantity="other">新しいゲームに招待するWiFiDirectデバイスの名前を%1$dつ選択して、「%2$s」をタップしてください。</item>
     </plurals>
     <string name="use_duptimer">移動ごとのタイマーを有効にする</string>
     <string name="dup_minutes_label">ターンごとの分</string>
@@ -1021,8 +1021,8 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="lmi_tiles_dup">同じタイルがすべてのプレイヤーに割り当てられた</string>
     <string name="lmi_pass_dup">プレーヤーが動きを発見しなかった（すべて合格）</string>
     <string name="lmi_trade_dup_fmt">%1$d個のタイルがすべてのプレイヤーと交換されました</string>
-    <string name="lmi_move_one_dup_fmt">%1$sがこのラウンドで勝ち、％3 $ dポイントで％2 $ sをプレイしました</string>
-    <string name="lmi_move_tie_dup_fmt">プレイヤー%1$sはそれぞれ%2$ dポイントで結ばれています。 %3$sがプレイされました。</string>
+    <string name="lmi_move_one_dup_fmt">%1$sがこのラウンドで勝ち、%3$dポイントで%2$sをプレイしました</string>
+    <string name="lmi_move_tie_dup_fmt">プレイヤー%1$sはそれぞれ%2$dポイントで結ばれています。 %3$sがプレイされました。</string>
     <string name="name_concat_dup">" そして "</string>
     <string name="dup_client_sent">このデバイスは、移動をホストに送信しました。すべてのデバイスが動きを送信したら、再びあなたの番になります。</string>
     <string name="dup_host_received_fmt">%1$d・%2$dプレーヤーが彼らの動きを報告しました。すべての動きが受信されているときにそれはあなたの番になります。</string>
@@ -1046,13 +1046,13 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="pause_save_msg">メッセージを記憶する</string>
     <string name="pause_forget_msg">メッセージを忘れる</string>
     <string name="pause_expl_hint">なぜ私はこれをやっているのか</string>
-    <string name="pause_notify_fmt">プレイヤー％1 $ sがこのゲームを一時停止しました。</string>
-    <string name="unpause_notify_fmt">プレイヤー％1 $ sはこのゲームの一時停止を解除しました。</string>
+    <string name="pause_notify_fmt">プレイヤー%1$sがこのゲームを一時停止しました。</string>
+    <string name="unpause_notify_fmt">プレイヤー%1$sはこのゲームの一時停止を解除しました。</string>
     <string name="pause_notify_expl_fmt">プレイヤー%1$sがこのゲームを一時停止しました。説明：%2$s</string>
-    <string name="unpause_notify_expl_fmt">プレイヤー％1 $ sがこのゲームの一時停止を解除しました。説明：%2$s</string>
+    <string name="unpause_notify_expl_fmt">プレイヤー%1$sがこのゲームの一時停止を解除しました。説明：%2$s</string>
     <string name="autopause_expl_fmt">ゲーム「%1$s」のタイマーは、移動することなく期限切れになったため、一時停止されています。</string>
-    <string name="history_unpause_fmt">％2 $ s後：％1 $ sで一時停止を解除しました。</string>
-    <string name="history_pause_fmt">一時停止：％1 $ s。</string>
+    <string name="history_unpause_fmt">%2$s後：%1$sで一時停止を解除しました。</string>
+    <string name="history_pause_fmt">一時停止：%1$s。</string>
     <string name="history_msg_fmt">メッセージ: %1$s。</string>
     <string name="history_autopause">自動一時停止。</string>
 </resources>
