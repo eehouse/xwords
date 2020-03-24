@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="195.92358mm"
-   height="79.111778mm"
-   viewBox="0 0 195.92358 79.111778"
+   width="200mm"
+   height="200mm"
+   viewBox="0 0 200 200"
    version="1.1"
-   id="svg3810"
+   id="svg1593"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="in_arrow.svg">
+   sodipodi:docname="downarrow.svg">
   <defs
-     id="defs3804" />
+     id="defs1587" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -25,26 +25,30 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="-143.37062"
-     inkscape:cy="51.719447"
+     inkscape:zoom="0.7"
+     inkscape:cx="-180"
+     inkscape:cy="560"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
-     showgrid="false"
+     showgrid="true"
      inkscape:window-width="1920"
      inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid6508" />
+  </sodipodi:namedview>
   <metadata
-     id="metadata3807">
+     id="metadata1590">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -52,17 +56,12 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-6.7984033,-83.405656)">
+     transform="translate(0,-97)">
     <path
-       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 17.756454,94.630975 H 193.88707 v 24.856065 l -124.013059,0.26726 0.267269,33.14143 z"
-       id="path113"
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 10.583336,238.79167 V 164.70834 H 100.54167 V 111.79167 L 190.5,201.75 100.54167,291.70833 v -52.91666 z"
+       id="path7105"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccccc" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 62.390464,122.15973 Z"
-       id="path136"
-       inkscape:connector-curvature="0" />
+       sodipodi:nodetypes="cccccccc" />
   </g>
 </svg>

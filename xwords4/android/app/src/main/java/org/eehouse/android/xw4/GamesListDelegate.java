@@ -869,7 +869,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             boolean canDoDefaults = solo ||
                 0 < XWPrefs.getAddrTypes( m_activity ).size();
-            int iconResID = solo ? R.drawable.sologame__gen : R.drawable.multigame__gen;
+            int iconResID = solo ? R.drawable.ic_sologame : R.drawable.ic_multigame;
             int titleID = solo ? R.string.new_game : R.string.new_game_networked;
 
             String msg = getString( canDoDefaults ? R.string.new_game_message
@@ -908,13 +908,13 @@ public class GamesListDelegate extends ListDelegateBase
         case GAMES_LIST_NAME_REMATCH: {
             final LinearLayout view = (LinearLayout)
                 LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
-            int iconResID = R.drawable.sologame__gen;
+            int iconResID = R.drawable.ic_sologame;
             if ( null != m_rematchExtras ) {
                 EditWClear edit = (EditWClear)view.findViewById( R.id.edit );
                 edit.setText( m_rematchExtras.getString( REMATCH_NEWNAME_EXTRA ));
                 boolean solo = m_rematchExtras.getBoolean( REMATCH_IS_SOLO, true );
                 if ( !solo ) {
-                    iconResID = R.drawable.multigame__gen;
+                    iconResID = R.drawable.ic_multigame;
                 }
                 view.findViewById( R.id.msg ).setVisibility( View.GONE );
             }

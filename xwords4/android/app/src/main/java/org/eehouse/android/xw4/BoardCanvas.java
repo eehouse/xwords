@@ -164,7 +164,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
 
-        m_origin = res.getDrawable( R.drawable.origin );
+        m_origin = res.getDrawable( R.drawable.ic_origin );
 
         m_prefs = CommonPrefs.get( m_context );
         m_playerColors = m_prefs.playerColors;
@@ -487,12 +487,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         Drawable arrow;
         if ( vert ) {
             if ( null == m_downArrow ) {
-                m_downArrow = loadAndRecolor( R.drawable.downarrow, useDark );
+                m_downArrow = loadAndRecolor( R.drawable.ic_downarrow, useDark );
             }
             arrow = m_downArrow;
         } else {
             if ( null == m_rightArrow ) {
-                m_rightArrow = loadAndRecolor( R.drawable.rightarrow, useDark );
+                m_rightArrow = loadAndRecolor( R.drawable.ic_rightarrow, useDark );
             }
             arrow = m_rightArrow;
         }

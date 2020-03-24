@@ -22,6 +22,7 @@
 #include "engine.h"
 #include "dictnry.h"
 #include "util.h"
+#include "dbgutil.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -416,7 +417,8 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                 engine->nTilesMaxUser = nTilesMax;
             } else {
                 *canMoveP = XP_FALSE;                
-                return XP_TRUE;
+                result = XP_TRUE;
+                goto exit;
             }
         }
 
@@ -557,12 +559,16 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
         engine_reset( engine ); 
         if ( !isRetry ) {
             isRetry = XP_TRUE;
-            XP_LOGF( "%s: no moves found so retrying", __func__ );
+            XP_LOGFF( "%s", "no moves found so retrying" );
             goto retry;
         }
     }
 
     *canMoveP = canMove;
+#ifdef XWFEATURE_SEARCHLIMIT
+ exit:
+#endif
+    LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 } /* engine_findMove */
 
@@ -1147,7 +1153,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
         } else {
 #ifdef XWFEATURE_BONUSALL
             if ( 0 != engine->allTilesBonus && 0 == engine->nTilesMax ) {
-                XP_LOGF( "%s: adding bonus: %d becoming %d", __func__, score ,
+                XP_LOGFF( "adding bonus: %d becoming %d", score,
                          score + engine->allTilesBonus );
                 score += engine->allTilesBonus;
             }

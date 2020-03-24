@@ -90,12 +90,10 @@
     <!-- Group items -->
     <item android:id="@+id/games_group_moveup"
           android:title="@string/list_group_moveup"
-          android:icon="@drawable/up__gen"
           android:showAsAction="ifRoom"
           />
     <item android:id="@+id/games_group_movedown"
           android:title="@string/list_group_movedown"
-          android:icon="@drawable/down__gen"
           android:showAsAction="ifRoom"
           />
     <item android:id="@+id/games_group_delete"

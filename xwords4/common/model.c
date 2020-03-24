@@ -270,7 +270,7 @@ model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
 void
 model_setSize( ModelCtxt* model, XP_U16 nCols )
 {
-    ModelVolatiles vol = model->vol; /* save vol so we don't wipe it out */
+    ModelVolatiles saveVol = model->vol; /* save vol so we don't wipe it out */
     XP_U16 oldSize = model->nCols;   /* zero when called from model_make() */
 
     XP_ASSERT( MAX_COLS >= nCols );
@@ -279,22 +279,23 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
 
     model->nCols = nCols;
     model->nRows = nCols;
-    model->vol = vol;
+    model->vol = saveVol;
 
+    ModelVolatiles* vol = &model->vol;
     if ( oldSize != nCols ) {
-        if ( !!model->vol.tiles ) {
-            XP_FREE( model->vol.mpool, model->vol.tiles );
+        if ( !!vol->tiles ) {
+            XP_FREE( vol->mpool, vol->tiles );
         }
-        model->vol.tiles = XP_MALLOC( model->vol.mpool, TILES_SIZE(model, nCols) );
+        vol->tiles = XP_MALLOC( vol->mpool, TILES_SIZE(model, nCols) );
     }
-    XP_MEMSET( model->vol.tiles, TILE_EMPTY_BIT, TILES_SIZE(model, nCols) );
+    XP_MEMSET( vol->tiles, TILE_EMPTY_BIT, TILES_SIZE(model, nCols) );
 
-    if ( !!model->vol.stack ) {
-        stack_init( model->vol.stack, model->vol.gi->inDuplicateMode );
+    if ( !!vol->stack ) {
+        stack_init( vol->stack, vol->gi->nPlayers, vol->gi->inDuplicateMode );
     } else {
-        model->vol.stack = stack_make( MPPARM(model->vol.mpool)
-                                       dutil_getVTManager(model->vol.dutil),
-                                       model->vol.gi->inDuplicateMode );
+        vol->stack = stack_make( MPPARM(vol->mpool)
+                                 dutil_getVTManager(vol->dutil),
+                                 vol->gi->nPlayers, vol->gi->inDuplicateMode );
     }
 } /* model_setSize */
 
@@ -319,21 +320,22 @@ model_getHash( const ModelCtxt* model )
 #endif
     StackCtxt* stack = model->vol.stack;
     XP_ASSERT( !!stack );
-    return stack_getHash( stack, XP_TRUE );
+    return stack_getHash( stack );
 }
 
 XP_Bool
 model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 {
     StackCtxt* stack = model->vol.stack;
-    XP_Bool matches = hash == stack_getHash( stack, XP_TRUE )
-        || hash == stack_getHash( stack, XP_FALSE );
+    XP_Bool matches = hash == stack_getHash( stack );
+    XP_LOGFF( "(hash=%X) => %d", hash, matches );
     return matches;
 }
 
 XP_Bool
 model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 {
+    LOG_FUNC();
     XP_U16 nPopped = 0;
     StackCtxt* stack = model->vol.stack;
     const XP_U16 nEntries = stack_getNEntries( stack );
@@ -341,13 +343,16 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
     XP_S16 foundAt = -1;
 
     for ( XP_U16 ii = 0; ii < nEntries; ++ii ) {
-        if ( hash == stack_getHash( stack, XP_TRUE )
-             || hash == stack_getHash( stack, XP_FALSE ) ) {
+        XP_U32 hash1 = stack_getHash( stack );
+        XP_LOGFF( "comparing %X with entry #%d %X", hash, nEntries - ii, hash1 );
+        if ( hash == hash1 ) {
             foundAt = ii;
             break;
         }
 
         if ( ! stack_popEntry( stack, &entries[ii] ) ) {
+            XP_LOGFF( "stack_popEntry(%d) failed", ii );
+            XP_ASSERT(0);
             break;
         }
         ++nPopped;
@@ -360,25 +365,22 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 
     XP_Bool found = -1 != foundAt;
     if ( found ) {
-        XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
-                 foundAt, hash );
+        if ( 0 < foundAt ) {    /* if 0, nothing to do */
+            XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
+                     foundAt, hash );
 #ifdef DEBUG
-        XP_Bool success =
+            XP_Bool success =
 #endif
-            model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
-        XP_ASSERT( success );
+                model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
+            XP_ASSERT( success );
+        }
         /* Assert not needed for long */
-        XP_ASSERT( hash == stack_getHash( model->vol.stack, XP_TRUE )
-                   || hash == stack_getHash( model->vol.stack, XP_FALSE ) );
+        XP_ASSERT( hash == stack_getHash( model->vol.stack ) );
     } else {
         XP_ASSERT( nEntries == stack_getNEntries(stack) );
     }
 
-#ifdef DEBUG_HASHING
-    XP_LOGF( "%s(%X) => %s (nEntries=%d)", __func__, hash, boolToStr(found),
-             nEntries );
-#endif
-
+    LOG_RETURNF( "%s (hash=%X, nEntries=%d)", boolToStr(found), hash, nEntries );
     return found;
 } /* model_popToHash */
 
@@ -935,6 +937,7 @@ XP_Bool
 model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
                        XP_U16 nMovesSought, XP_U16* turnP, XP_S16* moveNumP )
 {
+    XP_ASSERT( 0 < nMovesSought ); /* this case isn't handled correctly */
     StackCtxt* stack = model->vol.stack;
     XP_Bool success;
     XP_S16 moveSought = !!moveNumP ? *moveNumP : -1;
@@ -942,9 +945,17 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
     const XP_U16 assignCount = model->vol.gi->inDuplicateMode
         ? 1 : model->nPlayers;
 
-    if ( (0 <= moveSought && moveSought >= nStackEntries)
-         || ( nStackEntries < nMovesSought )
-         || ( nStackEntries <= assignCount ) ) {
+    if ( 0 <= moveSought && moveSought >= nStackEntries ) {
+        XP_LOGFF( "BAD: moveSought (%d) >= nStackEntries (%d)", moveSought,
+                  nStackEntries );
+        success = XP_FALSE;
+    } else if ( nStackEntries < nMovesSought ) {
+        XP_LOGFF( "BAD: nStackEntries (%d) < nMovesSought (%d)", nStackEntries,
+                  nMovesSought );
+        success = XP_FALSE;
+    } else if ( nStackEntries <= assignCount ) {
+        XP_LOGFF( "BAD: nStackEntries (%d) <= assignCount (%d)", nStackEntries,
+                  assignCount );
         success = XP_FALSE;
     } else {
         XP_U16 nMovesUndone = 0;
@@ -2103,6 +2114,14 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 
     model_addNewTiles( model, turn, &sorted );
 } /* model_assignPlayerTiles */
+
+XP_S16
+model_getNextTurn( const ModelCtxt* model )
+{
+    XP_S16 result = stack_getNextTurn( model->vol.stack );
+    // LOG_RETURNF( "%d", result );
+    return result;
+}
 
 void
 model_assignDupeTiles( ModelCtxt* model, const TrayTileSet* tiles )

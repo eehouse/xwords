@@ -2394,11 +2394,11 @@
     <string name="summary_enable_stallnotify">Notify when Android\'s
   slow to process outgoing invitations and moves</string>
     <string name="notify_stall_title">Message sending is stalled</string>
-    <string name="notify_stall_body_fmt">Could not send outbound messages for %1$d seconds.
+    <string name="notify_stall_body_fmt">%1$s could not send outbound messages for %2$d seconds.
 \n
 \nIf it happens again, e-mail the developer logs and info about your device.
 \n
-\nThis message will be seen at most once every %2$d minutes.</string>
+\nThis message will be seen at most once every %3$d minutes.</string>
 
     <string name="sms_banned_ok_only">The Google Play version of CrossWords no longer supports invitations or play via data SMS.</string>
     <string name="button_more_info">Read more</string>

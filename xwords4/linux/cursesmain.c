@@ -190,16 +190,18 @@ static void
 initCurses( CursesAppGlobals* aGlobals )
 {
     /* ncurses man page says most apps want this sequence  */
-    aGlobals->mainWin = initscr();
-    cbreak(); 
-    noecho();
-    nonl();
-    intrflush(stdscr, FALSE);
-    keypad(stdscr, TRUE);       /* effects wgetch only? */
+    if ( !aGlobals->cag.params->closeStdin ) {
+        aGlobals->mainWin = initscr();
+        cbreak();
+        noecho();
+        nonl();
+        intrflush(stdscr, FALSE);
+        keypad(stdscr, TRUE);       /* effects wgetch only? */
 
-    getmaxyx( aGlobals->mainWin, aGlobals->winHeight, aGlobals->winWidth );
-    XP_LOGF( "%s: getmaxyx()->w:%d; h:%d", __func__, aGlobals->winWidth,
-             aGlobals->winHeight );
+        getmaxyx( aGlobals->mainWin, aGlobals->winHeight, aGlobals->winWidth );
+        XP_LOGF( "%s: getmaxyx()->w:%d; h:%d", __func__, aGlobals->winWidth,
+                 aGlobals->winHeight );
+    }
 
     /* globals->statusLine = height - MENU_WINDOW_HEIGHT - 1; */
     /* globals->menuWin = newwin( MENU_WINDOW_HEIGHT, width,  */
@@ -258,11 +260,10 @@ handleOpenGame( void* closure, int XP_UNUSED(key) )
     LOG_FUNC();
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     const GameInfo* gi = cgl_getSel( aGlobals->gameList );
-    if ( !!gi ) {
-        cb_dims dims;
-        figureDims( aGlobals, &dims );
-        cb_open( aGlobals->cbState, gi->rowid, &dims );
-    }
+    XP_ASSERT( !!gi );
+    cb_dims dims;
+    figureDims( aGlobals, &dims );
+    cb_open( aGlobals->cbState, gi->rowid, &dims );
     return XP_TRUE;
 }
 
@@ -1152,27 +1153,35 @@ onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
 #endif
 
 static void
-relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
+inviteReceivedCurses( CursesAppGlobals* aGlobals, const NetLaunchInfo* invite,
+                      const CommsAddrRec* returnAddr )
 {
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-
     sqlite3_int64 rowids[1];
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
     bool doIt = 0 == nRowIDs;
-    if ( ! doIt ) {
+    if ( ! doIt && !!aGlobals->mainWin ) {
         const gchar* question = "Duplicate invitation received. Accept anyway?";
         const char* buttons[] = { "Yes", "No" };
         doIt = 0 == cursesask( aGlobals->mainWin, question, VSIZE(buttons), buttons );
     }
     if ( doIt ) {
-        CommsAddrRec returnAddr = {0};
-        nli_makeAddrRec( invite, &returnAddr );
-
         cb_dims dims;
         figureDims( aGlobals, &dims );
-        cb_newFor( aGlobals->cbState, invite, &returnAddr, &dims );
+        cb_newFor( aGlobals->cbState, invite, returnAddr, &dims );
+    } else {
+        XP_LOGFF( "Not accepting duplicate invitation (nRowIDs(gameID=%d) was %d",
+                  invite->gameID, nRowIDs );
     }
+}
+
+static void
+relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    CommsAddrRec addr = {0};
+    nli_makeAddrRec( invite, &addr );
+    inviteReceivedCurses( aGlobals, invite, &addr );
 }
 
 static void
@@ -1210,20 +1219,7 @@ smsInviteReceivedCurses( void* closure, const NetLaunchInfo* nli,
                          const CommsAddrRec* returnAddr )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    /* LaunchParams* params = aGlobals->cag.params; */
-    /* CurGameInfo gi = {0}; */
-    /* gi_copy( MPPARM(params->mpool) &gi, &params->pgi ); */
-
-    /* gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH ); */
-    /* gi.gameID = invite->gameID; */
-    /* gi.dictLang = invite->lang; */
-    /* gi.forceChannel = invite->forceChannel; */
-    /* gi.serverRole = SERVER_ISCLIENT; /\* recipient of invitation is client *\/ */
-    /* replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict ); */
-
-    cb_dims dims;
-    figureDims( aGlobals, &dims );
-    cb_newFor( aGlobals->cbState, nli, returnAddr, &dims );
+    inviteReceivedCurses( aGlobals, nli, returnAddr );
 }
 
 static void
@@ -1286,10 +1282,9 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
                      XP_U16 maxInterval )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    // CommonGlobals* cGlobals = &globals->cGlobals;
     sqlite3* pDb = aGlobals->cag.params->pDb;
     if ( !!devID ) {
-        XP_LOGF( "%s(devID=%s)", __func__, devID );
+        XP_LOGF( "%s(devID='%s')", __func__, devID );
 
         /* If we already have one, make sure it's the same! Else store. */
         gchar buf[64];
@@ -1297,10 +1292,12 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
             && 0 == strcmp( buf, devID );
         if ( !have ) {
             db_store( pDb, KEY_RDEVID, devID );
+            XP_LOGFF( "storing new devid: %s", devID );
+            cgl_draw( aGlobals->gameList );
         }
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, aGlobals );
     } else {
-        XP_LOGF( "%s: bad relayid", __func__ );
+        XP_LOGFF( "%s", "bad relayid" );
         db_remove( pDb, KEY_RDEVID );
 
         DevIDType typ;
@@ -1512,7 +1509,9 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 #endif
 
     if ( 0 == cgl_getNGames( g_globals.gameList ) ) {
-        handleNewGame( &g_globals, 0 );
+        if ( params->forceNewGame ) {
+            handleNewGame( &g_globals, 0 );
+        }
     } else {
         /* Always open a game. Without that it won't attempt to connect and
            stalls are likely in the test script case at least. If that's

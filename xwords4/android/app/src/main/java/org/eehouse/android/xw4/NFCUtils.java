@@ -297,7 +297,8 @@ public class NFCUtils {
                     result = msgs.toArray( new byte[msgs.size()][] );
                 }
             }
-            Log.d( TAG, "getMsgsFor() => %d msgs", result == null ? 0 : result.length );
+            Log.d( TAG, "getMsgsFor(gameID=%d) => %d msgs", gameID,
+                   result == null ? 0 : result.length );
             return result;
         }
 

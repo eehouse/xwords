@@ -26,6 +26,7 @@
 #endif
 
 #include <sqlite3.h>
+#include <stdbool.h>
 
 #include "comtypes.h"
 #include "util.h"
@@ -111,6 +112,8 @@ typedef struct LaunchParams {
     XP_Bool useHTTP;
     XP_Bool runSMSTest;
     XP_Bool noHTTPAuto;
+    bool forceNewGame;
+    bool forceInvite;
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
     XP_U16 askTimeout;
@@ -139,7 +142,7 @@ typedef struct LaunchParams {
             short defaultSendPort;
             XP_Bool seeksPublicRoom;
             XP_Bool advertiseRoom;
-            XP_U32 inviteeRelayID;
+            GSList* inviteeRelayIDs;
         } relay;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
@@ -157,7 +160,7 @@ typedef struct LaunchParams {
 #ifdef XWFEATURE_SMS
         struct {
             const char* myPhone;
-            const char* inviteePhone;
+            GSList* inviteePhones;
             int port;
         } sms;
 #endif

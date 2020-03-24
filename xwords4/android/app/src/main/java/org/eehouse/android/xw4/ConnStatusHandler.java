@@ -472,7 +472,7 @@ public class ConnStatusHandler {
                 Assert.assertTrue( !BuildConfig.DEBUG
                                    || 1 >= Math.abs(scratchR.width()
                                                     - scratchR.height()) );
-                drawIn( canvas, res, R.drawable.multigame__gen, scratchR );
+                drawIn( canvas, res, R.drawable.ic_multigame, scratchR );
 
                 if ( 0 < s_moveCount && XWPrefs.moveCountEnabled( context ) ) {
                     String str = String.format( "%d", s_moveCount );
@@ -499,7 +499,7 @@ public class ConnStatusHandler {
     {
         boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
         int color = showSuccesses ? ORANGE : Color.WHITE;
-        int arrowID = isIn ? R.drawable.in_arrow__gen : R.drawable.out_arrow__gen;
+        int arrowID = isIn ? R.drawable.ic_in_arrow : R.drawable.ic_out_arrow;
         drawIn( canvas, res, arrowID, rect, color );
     }
 

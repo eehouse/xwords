@@ -211,7 +211,7 @@ XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,
                          XW_UtilCtxt* util );
 
 void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
-void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
+void comms_augmentHostAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], 
                      XP_U16* nRecs );
 XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
@@ -225,6 +225,7 @@ XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
 #endif
 
 CommsConnTypes comms_getConTypes( const CommsCtxt* comms );
+void comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ );
 XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 

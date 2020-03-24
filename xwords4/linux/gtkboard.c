@@ -665,7 +665,7 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         if ( loadInviteAddrs( stream, cGlobals->params->pDb, cGlobals->rowid ) ) {
             CommsAddrRec addr = {0};
             addrFromStream( &addr, stream );
-            comms_setAddr( cGlobals->game.comms, &addr );
+            comms_augmentHostAddr( cGlobals->game.comms, &addr );
 
             XP_U16 nRecs = stream_getU8( stream );
             XP_LOGF( "%s: got invite info: %d records", __func__, nRecs );
@@ -818,30 +818,12 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 #endif
         };
 
-        if ( !game_reset( MEMPOOL &cGlobals->game, gi,
-                          cGlobals->util,
-                          &cGlobals->cp, &procs ) ) {
-            /* if ( NULL == globals->draw ) { */
-            /*     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area, */
-            /*                                                   globals ); */
-            /* } */
-            /* game_makeNewGame( MEMPOOL &globals->cGlobals.game, gi, */
-            /*                   globals->cGlobals.params->util, */
-            /*                   (DrawCtx*)globals->draw, */
-            /*                   &globals->cGlobals.cp, &procs,  */
-            /*                   globals->cGlobals.params->gameSeed ); */
-            /* ModelCtxt* model = globals->cGlobals.game.model; */
-            /* if ( NULL == model_getDictionary( model ) ) { */
-            /*     DictionaryCtxt* dict = */
-            /*         linux_dictionary_make( MEMPOOL globals->cGlobals.params, */
-            /*                                gi->dictName, XP_TRUE ); */
-            /*     model_setDictionary( model, dict ); */
-            /* } */
-        }
+        (void)game_reset( MEMPOOL &cGlobals->game, gi, cGlobals->util,
+                          &cGlobals->cp, &procs );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!cGlobals->game.comms ) {
-            comms_setAddr( cGlobals->game.comms, &addr );
+            comms_augmentHostAddr( cGlobals->game.comms, &addr );
         } else if ( gi->serverRole != SERVER_STANDALONE ) {
             XP_ASSERT(0);
         }

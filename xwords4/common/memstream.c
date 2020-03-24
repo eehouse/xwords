@@ -391,8 +391,7 @@ mem_stream_getSize( const XWStreamCtxt* p_sctx )
 } /* mem_stream_getSize */
 
 static XP_U32
-mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
-                    XP_Bool correct )
+mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos )
 {
     XP_U32 hash = 0;
     const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
@@ -404,18 +403,11 @@ mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
         --len;
     }
 
-    LOG_HEX( ptr, len, __func__ );
-
     hash = augmentHash( 0, ptr, len );
     if ( 0 != bits ) {
         XP_U8 byt = ptr[len];
-        if ( correct ) {
-            byt &= ~(0xFF << bits);
-        } else {
-            byt &= 1 << bits;
-        }
+        byt &= ~(0xFF << bits);
         hash = augmentHash( hash, &byt, 1 );
-        LOG_HEX( &byt, 1, __func__ );
     }
     hash = finishHash( hash );
 

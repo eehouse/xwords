@@ -409,7 +409,8 @@ public class XwJNI {
     public static native void comms_resetSame( GamePtr gamePtr );
     public static native void comms_getAddr( GamePtr gamePtr, CommsAddrRec addr );
     public static native CommsAddrRec[] comms_getAddrs( GamePtr gamePtr );
-    public static native void comms_setAddr( GamePtr gamePtr, CommsAddrRec addr );
+    public static native void comms_augmentHostAddr( GamePtr gamePtr, CommsAddrRec addr );
+    public static native void comms_dropHostAddr( GamePtr gamePtr, CommsConnType typ );
     public static native int comms_resendAll( GamePtr gamePtr, boolean force,
                                               CommsConnType filter,
                                               boolean andAck );

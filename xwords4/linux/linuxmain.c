@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -151,6 +151,7 @@ ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
     }
 }
 
+#if 0
 static bool
 canMakeFromGI( const CurGameInfo* gi )
 {
@@ -171,12 +172,14 @@ canMakeFromGI( const CurGameInfo* gi )
     result = result && (haveDict || allHaveDicts);
 
     LOG_RETURNF( "%d", result );
+    XP_ASSERT( result );
     return result;
 }
+#endif
 
 bool
 linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
-               const CommsAddrRec* addrP )
+               const CommsAddrRec* returnAddrP )
 {
     LOG_FUNC();
     XWStreamCtxt* stream = NULL;
@@ -204,6 +207,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
     if ( !!stream ) {
         if ( NULL == cGlobals->dict ) {
             cGlobals->dict = makeDictForStream( cGlobals, stream );
+            XP_ASSERT( !!cGlobals->dict );
         }
 
         opened = game_makeFromStream( MEMPOOL stream, &cGlobals->game,
@@ -215,16 +219,9 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         stream_destroy( stream );
     }
 
-    if ( !opened && canMakeFromGI( cGlobals->gi ) ) {
+    if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
         opened = XP_TRUE;
 
-#ifdef XWFEATURE_RELAY
-        /* if ( addr.conType == COMMS_CONN_RELAY ) { */
-        /*     XP_ASSERT( !!params->connInfo.relay.relayName ); */
-        /*     globals->cGlobals.defaultServerName */
-        /*         = params->connInfo.relay.relayName; */
-        /* } */
-#endif
         game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                           cGlobals->util, cGlobals->draw,
                           &cGlobals->cp, procs
@@ -233,70 +230,98 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
 #endif
                           );
 
-        CommsAddrRec addr = !!addrP ? *addrP : cGlobals->addr;
-        // addr.conType = params->conType;
-        CommsConnType typ;
-        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
-            if ( params->commsDisableds[typ][0] ) {
-                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_FALSE, XP_TRUE );
-            }
-            if ( params->commsDisableds[typ][1] ) {
-                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_TRUE, XP_TRUE );
-            }
-            switch( typ ) {
+        bool savedGame = false;
+        CommsAddrRec returnAddr = {0};
+        if ( !!returnAddrP ) {
+            returnAddr = *returnAddrP;
+            CommsConnType typ;
+            for ( XP_U32 st = 0; addr_iter( &returnAddr, &typ, &st ); ) {
+                if ( params->commsDisableds[typ][0] ) {
+                    comms_setAddrDisabled( cGlobals->game.comms, typ, XP_FALSE, XP_TRUE );
+                }
+                if ( params->commsDisableds[typ][1] ) {
+                    comms_setAddrDisabled( cGlobals->game.comms, typ, XP_TRUE, XP_TRUE );
+                }
+                switch( typ ) {
 #ifdef XWFEATURE_RELAY
-            case COMMS_CONN_RELAY:
-                /* addr.u.ip_relay.ipAddr = 0; */
-                /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
-                /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
-                /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
-                /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
-                /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
-                /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
-                /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
-                break;
+                case COMMS_CONN_RELAY:
+                    /* addr.u.ip_relay.ipAddr = 0; */
+                    /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
+                    /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
+                    /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
+                    /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
+                    /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
+                    /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
+                    /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
+                    break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-            case COMMS_CONN_BT:
-                XP_ASSERT( sizeof(addr.u.bt.btAddr)
-                           >= sizeof(params->connInfo.bt.hostAddr));
-                XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                           sizeof(params->connInfo.bt.hostAddr) );
-                break;
+                case COMMS_CONN_BT:
+                    XP_ASSERT( sizeof(returnAddr.u.bt.btAddr)
+                               >= sizeof(params->connInfo.bt.hostAddr));
+                    XP_MEMCPY( &returnAddr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                               sizeof(params->connInfo.bt.hostAddr) );
+                    break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-            case COMMS_CONN_IP_DIRECT:
-                XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
-                            sizeof(addr.u.ip.hostName_ip) - 1 );
-                addr.u.ip.port_ip = params->connInfo.ip.port;
-                break;
+                case COMMS_CONN_IP_DIRECT:
+                    XP_STRNCPY( returnAddr.u.ip.hostName_ip, params->connInfo.ip.hostName,
+                                sizeof(addr.u.ip.hostName_ip) - 1 );
+                    returnAddr.u.ip.port_ip = params->connInfo.ip.port;
+                    break;
 #endif
 #ifdef XWFEATURE_SMS
-            case COMMS_CONN_SMS:
-                XP_LOGF( "%s(): SMS is on at least", __func__ );
-                /* No! Don't overwrite what may be a return address with local
-                   stuff */
-                /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
-                /*             sizeof(addr.u.sms.phone) - 1 ); */
-                /* addr.u.sms.port = params->connInfo.sms.port; */
-                break;
+                case COMMS_CONN_SMS:
+                    XP_LOGF( "%s(): SMS is on at least", __func__ );
+                    /* No! Don't overwrite what may be a return address with local
+                       stuff */
+                    /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
+                    /*             sizeof(addr.u.sms.phone) - 1 ); */
+                    /* addr.u.sms.port = params->connInfo.sms.port; */
+                    break;
 #endif
-            default:
-                break;
+                default:
+                    break;
+                }
             }
         }
 
+        XP_ASSERT( !!cGlobals->dict );
         model_setDictionary( cGlobals->game.model, cGlobals->dict );
         setSquareBonuses( cGlobals );
         model_setPlayerDicts( cGlobals->game.model, &cGlobals->dicts );
 
         /* Need to save in order to have a valid selRow for the first send */
         linuxSaveGame( cGlobals );
+        savedGame = true;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        /* This may trigger network activity */
-        if ( !!cGlobals->game.comms ) {
-            comms_setAddr( cGlobals->game.comms, &addr );
+        /* If this is to be a relay connected game, tell it so. Otherwise
+           let the invitation process and receipt of messages populate
+           comms' addressbook */
+        if ( cGlobals->gi->serverRole != SERVER_STANDALONE
+             && addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) {
+            
+            if ( ! savedGame ) {
+                linuxSaveGame( cGlobals );
+                savedGame = true;
+            }
+            CommsAddrRec addr = {0};
+            comms_getInitialAddr( &addr, params->connInfo.relay.relayName,
+                                  params->connInfo.relay.defaultSendPort );
+            XP_MEMCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
+                       1 + XP_STRLEN(params->connInfo.relay.invite) );
+            addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
+            addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
+            comms_augmentHostAddr( cGlobals->game.comms, &addr ); /* sends stuff */
+        }
+
+        if ( !!returnAddrP ) {
+            /* This may trigger network activity */
+            CommsCtxt* comms = cGlobals->game.comms;
+            if ( !!comms ) {
+                comms_augmentHostAddr( cGlobals->game.comms, &returnAddr );
+            }
         }
 #endif
 
@@ -314,7 +339,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
 #ifndef XWFEATURE_STANDALONE_ONLY
         DeviceRole serverRole = cGlobals->gi->serverRole;
         XP_LOGF( "%s(): server role: %d", __func__, serverRole );
-        if ( serverRole == SERVER_ISCLIENT ) {
+        if ( /*!!returnAddrP && */serverRole == SERVER_ISCLIENT ) {
             tryConnectToServer( cGlobals );
         }
 #endif
@@ -328,7 +353,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         linuxSaveGame( cGlobals );   /* again, to include address etc. */
     }
     return opened;
-}
+} /* linuxOpenGame */
 
 #ifdef USE_SQLITE
 XWStreamCtxt*
@@ -746,7 +771,7 @@ secondTimerFired( gpointer data )
         XP_U16 undoRatio = cGlobals->params->undoRatio;
         if ( 0 != undoRatio ) {
             if ( (XP_RANDOM() % 1000) < undoRatio ) {
-                XP_LOGF( "%s: calling server_handleUndo", __func__ );
+                XP_LOGFF( "%s", "calling server_handleUndo()" );
                 if ( server_handleUndo( game->server, 1 ) ) {
                     board_draw( game->board );
                 }
@@ -840,6 +865,8 @@ typedef enum {
     ,CMD_SMSFAILPCT
     ,CMD_DROPRCVSMS
     ,CMD_FORCECHANNEL
+    ,CMD_FORCE_GAME
+    ,CMD_FORCE_INVITE
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
@@ -968,6 +995,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SMSFAILPCT, true, "sms-fail-pct", "percent of sms sends, randomly chosen, never arrive" }
     ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
     ,{ CMD_FORCECHANNEL, true, "force-channel", "force (clients) to use this hostid/channel" }
+    ,{ CMD_FORCE_GAME, false, "force-game", "if there's no game on launch, create one" }
+    ,{ CMD_FORCE_INVITE, false, "force-invite", "if we can, send an invitation by relay or sms" }
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
@@ -1484,7 +1513,7 @@ linux_reset( void* closure )
 #endif
 
 XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo),
+linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
             const CommsAddrRec* addrRec, CommsConnType conType, XP_U32 gameID, 
             void* closure )
 {
@@ -1540,7 +1569,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* XP_UNUSED_DBG(msgNo
 
         // use serverphone if I'm a client, else hope one's provided (this is
         // a reply)
-        nSent = linux_sms_send( cGlobals->params, buf, buflen, 
+        nSent = linux_sms_send( cGlobals->params, buf, buflen, msgNo,
                                 addrRec->u.sms.phone, addrRec->u.sms.port,
                                 gameID );
     }
@@ -2715,7 +2744,8 @@ main( int argc, char** argv )
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
         case CMD_INVITEE_SMSNUMBER:
-            mainParams.connInfo.sms.inviteePhone = optarg;
+            mainParams.connInfo.sms.inviteePhones =
+                g_slist_append( mainParams.connInfo.sms.inviteePhones, optarg );
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
         case CMD_SMSPORT:
@@ -2815,7 +2845,9 @@ main( int argc, char** argv )
             mainParams.bonusFile = optarg;
             break;
         case CMD_INVITEE_RELAYID:
-            mainParams.connInfo.relay.inviteeRelayID = atoi(optarg);
+            mainParams.connInfo.relay.inviteeRelayIDs =
+                g_slist_append(mainParams.connInfo.relay.inviteeRelayIDs,
+                               (void*)(uint64_t)atoi(optarg));
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
             break;
 #endif
@@ -2889,6 +2921,14 @@ main( int argc, char** argv )
             break;
         case CMD_FORCECHANNEL:
             mainParams.pgi.forceChannel = atoi( optarg );
+            break;
+
+        case CMD_FORCE_GAME:
+            mainParams.forceNewGame = true;
+            break;
+
+        case CMD_FORCE_INVITE:
+            mainParams.forceInvite = true;
             break;
 
 #ifdef XWFEATURE_CROSSHAIRS

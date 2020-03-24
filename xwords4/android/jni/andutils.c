@@ -763,11 +763,10 @@ deleteLocalRefs( JNIEnv* env, ... )
 }
 
 #ifdef DEBUG
-void 
-android_debugf( const char* format, ... )
+static void
+debugf( const char* format, va_list ap )
 {
     char buf[1024];
-    va_list ap;
     int len;
     struct tm* timp;
     struct timeval tv;
@@ -779,9 +778,7 @@ android_debugf( const char* format, ... )
     len = snprintf( buf, sizeof(buf), "%.2d:%.2d:%.2d: ", 
                     timp->tm_hour, timp->tm_min, timp->tm_sec );
     if ( len < sizeof(buf) ) {
-        va_start(ap, format);
         vsnprintf( buf + len, sizeof(buf)-len, format, ap );
-        va_end(ap);
     }
     
     (void)__android_log_write( ANDROID_LOG_DEBUG, 
@@ -793,6 +790,27 @@ android_debugf( const char* format, ... )
                                "x4du"
 # endif
                                , buf );
+}
+
+void
+android_debugf( const char* format, ... )
+{
+    va_list ap;
+    va_start( ap, format );
+    debugf( format, ap );
+    va_end(ap);
+}
+
+void
+android_debugff(const char* func, const char* file, const char* fmt, ...)
+{
+    char buf[256];
+    snprintf( buf, sizeof(buf), "%s:%s(): %s", file, func, fmt );
+
+    va_list ap;
+    va_start( ap, fmt );
+    debugf( buf, ap );
+    va_end( ap );
 }
 
 /* Print an object's class name into buffer.

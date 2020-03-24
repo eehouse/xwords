@@ -478,8 +478,8 @@ addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
     rec->msgs = XP_REALLOC( state->mpool, rec->msgs, (1 + rec->nMsgs) * sizeof(*rec->msgs) );
     rec->msgs[rec->nMsgs++] = mRec;
     rec->totalSize += len;
-    XP_LOGF( "%s(): added msg to %s of len %d; total now %d", __func__, rec->phone,
-             len, rec->totalSize );
+    XP_LOGFF( "added msg to %s of len %d; total now %d", rec->phone, len,
+              rec->totalSize );
 
     if ( rec->nMsgs == 1 ) {
         rec->createSeconds = nowSeconds;
@@ -543,7 +543,7 @@ static void
 addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID, int indx,
             int count, const XP_U8* data, XP_U16 len )
 {
-    XP_LOGF( "phone=%s, msgID=%d, %d/%d", fromPhone, msgID, indx, count );
+    XP_LOGFF( "phone=%s, msgID=%d, %d/%d", fromPhone, msgID, indx, count );
     XP_ASSERT( 0 < len );
     MsgIDRec* msgIDRec;
     for ( ; ; ) {
@@ -648,7 +648,7 @@ savePartials( SMSProto* state )
 
     XP_U16 newSize = stream_getSize( stream );
     if ( state->lastStoredSize == 2 && newSize == 2 ) {
-        XP_LOGF( "%s(): not storing empty again", __func__ );
+        XP_LOGFF( "%s", "not storing empty again" );
     } else {
         dutil_storeStream( state->dutil, KEY_PARTIALS, stream );
         state->lastStoredSize = newSize;
@@ -700,7 +700,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
     MsgIDRec* rec = getMsgIDRec( state, fromPhone, msgID, XP_FALSE,
                                  &fromPhoneIndex, &msgIDIndex);
     if ( !rec ) {
-        XP_LOGF( "%s(): no rec for phone %s, msgID %d", __func__, fromPhone, msgID );
+        XP_LOGFF( "no rec for phone %s, msgID %d", fromPhone, msgID );
         XP_ASSERT( 0 );
     }
 
@@ -734,8 +734,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
             if ( stream_gotBytes( stream, msg.data, len ) && port == wantPort ) {
                 arr = appendLocMsg( state, arr, &msg );
             } else {
-                XP_LOGF( "%s(): expected port %d, got %d", __func__,
-                         wantPort, port );
+                XP_LOGFF( "expected port %d, got %d", wantPort, port );
                 XP_FREEP( state->mpool, &msg.data );
             }
         }
@@ -773,8 +772,7 @@ toNetMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld )
         if ( last > ii ) {
             int nMsgs = last - ii;
             if ( nMsgs > 1 ) {
-                XP_LOGF( "%s(): combining %d through %d (%d msgs)", __func__, ii,
-                         last - 1, nMsgs );
+                XP_LOGFF( "combining %d through %d (%d msgs)", ii, last - 1, nMsgs );
             }
             int len = 1 + sum + (nMsgs * 2); /* 1: len & msgID */
             SMSMsgNet newMsg = { .len = len,

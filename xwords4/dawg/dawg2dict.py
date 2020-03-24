@@ -160,6 +160,10 @@ def process(args):
             md5Sum = getNullTermParam(header)
             print( 'header: read sum: {}'.format(md5Sum), file=sys.stderr )
 
+            if args.GET_SUM:
+                print( '{}'.format(md5Sum), file=sys.stdout )
+                sys.exit(0)
+
         nodeSize = 0
         isUTF8 = False
         flags &= ~DICT_SYNONYMS_MASK
@@ -232,7 +236,8 @@ def mkParser():
                         action = 'store_true', help = 'write tile metadata to stdout')
     parser.add_argument('--dump-msg', dest = 'DUMP_MSG', default = False,
                         action = 'store_true', help = 'write header user-visible message to stdout')
-
+    parser.add_argument('--get-sum', dest = 'GET_SUM', default = False,
+                        action = 'store_true', help = 'write md5sum to stdout')
 
     # [-raw | -json]  [-get-sum] [-get-desc] -dict <xwdORpdb>
 

@@ -915,9 +915,9 @@ processConnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
 
             uint8_t clientIndx = getClientIndex( &bufp, end, nPlayersT );
             
-            logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; "
+            logf( XW_LOGINFO, "%s(): cookie='%s', langCode=%d; nPlayersT=%d; "
                   "wantsPublic=%d; seed=%.4X; indx=%d",
-                  __func__, langCode, nPlayersT, wantsPublic, seed, clientIndx );
+                  __func__, cookie, langCode, nPlayersT, wantsPublic, seed, clientIndx );
 
             /* Make sure second thread can't create new cref for same cookie
                this one just handled.*/

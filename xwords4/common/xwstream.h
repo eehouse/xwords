@@ -88,8 +88,7 @@ typedef struct StreamCtxVTable {
     void (*m_stream_close)( XWStreamCtxt* dctx );
 
     XP_U16 (*m_stream_getSize)( const XWStreamCtxt* dctx );
-    XP_U32 (*m_stream_getHash)( const XWStreamCtxt* dctx, XWStreamPos pos,
-                                XP_Bool correct );
+    XP_U32 (*m_stream_getHash)( const XWStreamCtxt* dctx, XWStreamPos pos );
     
     const XP_U8* (*m_stream_getPtr)( const XWStreamCtxt* dctx );
 
@@ -171,8 +170,8 @@ struct XWStreamCtxt {
 #define stream_getSize(sc) \
          (sc)->vtable->m_stream_getSize((sc))
 
-#define stream_getHash(sc, p, c)                        \
-        (sc)->vtable->m_stream_getHash((sc), (p), (c))
+#define stream_getHash(sc, p)                       \
+        (sc)->vtable->m_stream_getHash((sc), (p))
 
 #define stream_getPtr(sc) \
          (sc)->vtable->m_stream_getPtr((sc))

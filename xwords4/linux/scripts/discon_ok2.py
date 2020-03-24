@@ -164,11 +164,14 @@ class Device():
     sTilesLeftPoolPat = re.compile('.*pool_r.*Tiles: (\d+) tiles left in pool')
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
+    sDevIDPat = re.compile('.*storing new devid: ([\da-fA-F]+).*')
+    sConnPat = re.compile('.*linux_util_informMissing\(isServer.*nMissing=0\).*')
+
     sScoresDup = []
     sScoresReg = []
     
-    def __init__(self, args, game, indx, params, room, peers, db,
-                 log, script, nInGame, inDupMode):
+    def __init__(self, args, game, indx, params, room, peers, order,
+                 db, log, script, nInGame, inDupMode, usePublic):
         self.game = game
         self.indx = indx
         self.args = args
@@ -176,11 +179,13 @@ class Device():
         self.gameOver = False
         self.params = params
         self.room = room
+        self.order = order
         self.db = db
         self.logPath = log
         self.script = script
         self.nInGame = nInGame
         self.inDupMode = inDupMode
+        self.usePublic = usePublic
         # runtime stuff; init now
         self.app = args.APP_OLD
         self.proc = None
@@ -191,6 +196,9 @@ class Device():
         self.nTilesLeftPool = None
         self.nTilesLeftTray = None
         self.relayID = None
+        self.inviteeDevID = None
+        self.inviteeDevIDs = [] # only servers use this
+        self.connected = False
         self.relaySeed = 0
         self.locked = False
 
@@ -245,6 +253,14 @@ class Device():
                         self.relaySeed = int(match.group(1))
                         self.relayID = match.group(2)
 
+                if self.args.ADD_RELAY and not self.inviteeDevID:
+                    match = Device.sDevIDPat.match(line)
+                    if match: self.inviteeDevID = int(match.group(1), 16)
+
+                if not self.connected:
+                    match = Device.sConnPat.match(line)
+                    if match: self.connected = True
+
                 self.locked = False
 
         # print('logReaderMain done, wrote lines:', nLines, 'to', self.logPath);
@@ -269,6 +285,25 @@ class Device():
         self.checkScript()
         self.launchCount += 1
         args = [ self.script, '--close-stdin' ]
+
+        # If I'm an unconnected server and I know a client's relayid,
+        # append it so invitation can happen. When more than one
+        # device will be invited, the invitations must always go in
+        # the same order so channels will be assigned consistently. So
+        # keep them in an array as they're encountered, and use in
+        # that order
+        if self.args.ADD_RELAY:
+            if not self.usePublic and self.order == 1 and self.inviteeDevID and not self.connected:
+                for peer in self.peers:
+                    if peer.inviteeDevID and not peer == self:
+                        if not peer.inviteeDevID in self.inviteeDevIDs:
+                            self.inviteeDevIDs.append(peer.inviteeDevID)
+
+                if self.inviteeDevIDs:
+                    args += [ '--force-invite' ]
+                    for inviteeDevID in self.inviteeDevIDs:
+                        args += ['--invitee-relayid', str(inviteeDevID)]
+
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
         self.pid = self.proc.pid
@@ -297,7 +332,7 @@ class Device():
         else:
             print('NOT killing')
         self.proc = None
-        self.check_game()
+        self.check_game_over()
 
     def handleAllDone(self):
         global gDeadLaunches
@@ -351,7 +386,7 @@ class Device():
             elif RNUM < 10:
                 self.devID += 'x'
 
-    def check_game(self):
+    def check_game_over(self):
         if self.gameOver and not self.allDone:
             allDone = True
             for dev in self.peers:
@@ -365,51 +400,23 @@ class Device():
                     assert self.game == dev.game
                     dev.allDone = True
 
-            # print('Closing', self.connname, datetime.datetime.now())
-            # for dev in Device.sConnnameMap[self.connname]:
-            #     dev.kill()
-#         # kill_from_logs $OTHERS $KEY
-#         for ID in $OTHERS $KEY; do
-#             echo -n "${ID}:${LOGS[$ID]}, "
-#             kill_from_log ${LOGS[$ID]} || /bin/true
-# 			send_dead $ID
-#             close_device $ID $DONEDIR "game over"
-#         done
-#         echo ""
-#         # XWRELAY_ERROR_DELETED may be old
-#     elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
-#         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-#         kill_from_log $LOG || /bin/true
-#         close_device $KEY $DEADDIR "other resigned"
-#     elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
-#         echo "deleting $LOG $(connName $LOG) b/c another resigned"
-#         kill_from_log $LOG || /bin/true
-#         close_device $KEY $DEADDIR "other resigned"
-#     else
-#         maybe_resign $KEY
-#     fi
-# }
-
+def makeSMSPhoneNo( game, dev ):
+    return '{:03d}{:03d}'.format( game, dev )
 
 def build_cmds(args):
     devs = []
     COUNTER = 0
-    PLAT_PARMS = []
-    if not args.USE_GTK:
-        PLAT_PARMS += ['--curses']
 
     for GAME in range(1, args.NGAMES + 1):
         peers = set()
         ROOM = 'ROOM_%.3d' % (GAME % args.NROOMS)
-        PHONE_BASE = '%.4d' % (GAME % args.NROOMS)
         NDEVS = pick_ndevs(args)
         LOCALS = figure_locals(args, NDEVS) # as array
         NPLAYERS = sum(LOCALS)
         assert(len(LOCALS) == NDEVS)
         DICT = args.DICTS[GAME % len(args.DICTS)]
         # make one in three games public
-        PUBLIC = []
-        if random.randint(0, 3) == 0: PUBLIC = ['--make-public', '--join-public']
+        usePublic = args.ADD_RELAY and random.randint(0, 3) == 0
         useDupeMode = random.randint(0, 100) < args.DUP_PCT
         DEV = 0
         for NLOCALS in LOCALS:
@@ -419,7 +426,7 @@ def build_cmds(args):
             SCRIPT = '{}/start_{:02d}_{:02d}.sh'.format(args.LOGDIR, GAME, DEV)
 
             PARAMS = player_params(args, NLOCALS, NPLAYERS, DEV)
-            PARAMS += PLAT_PARMS
+            if not args.USE_GTK: PARAMS += ['--curses']
             PARAMS += ['--board-size', '15', '--trade-pct', args.TRADE_PCT, '--sort-tiles']
 
             # We SHOULD support having both SMS and relay working...
@@ -428,11 +435,13 @@ def build_cmds(args):
                 if random.randint(0, 100) < g_UDP_PCT_START:
                     PARAMS += ['--use-udp']
             if args.ADD_SMS:
-                PARAMS += [ '--sms-number', PHONE_BASE + str(DEV - 1) ]
+                PARAMS += [ '--sms-number', makeSMSPhoneNo(GAME, DEV) ]
                 if args.SMS_FAIL_PCT > 0:
                     PARAMS += [ '--sms-fail-pct', args.SMS_FAIL_PCT ]
-                if DEV > 1:
-                    PARAMS += [ '--server-sms-number', PHONE_BASE + '0' ]
+                if DEV == 1:
+                    PARAMS += [ '--force-invite' ]
+                    for dev in range(2, NDEVS + 1):
+                        PARAMS += [ '--invitee-sms-number', makeSMSPhoneNo(GAME, dev) ]
 
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]
@@ -463,18 +472,18 @@ def build_cmds(args):
             # passed in the old bash version of this script, so fixing
             # it isn't a priority.
             # PARAMS += ['--seed', args.SEED]
-            PARAMS += PUBLIC
-            if DEV > 1:
-                PARAMS += ['--force-channel', DEV - 1]
-            else:
-                PARAMS += ['--server']
+
+            if DEV == 1: PARAMS += ['--server']
+            if DEV == 1 or usePublic: PARAMS += ['--force-game']
+            if DEV > 1: PARAMS += ['--force-channel', DEV - 1]
+
+            if useDupeMode: PARAMS += ['--duplicate-mode']
+            if usePublic: PARAMS += ['--make-public', '--join-public']
 
             # print('PARAMS:', PARAMS)
 
-            if useDupeMode: PARAMS += ['--duplicate-mode']
-
-            dev = Device(args, GAME, COUNTER, PARAMS, ROOM, peers,
-                         DB, LOG, SCRIPT, len(LOCALS), useDupeMode)
+            dev = Device( args, GAME, COUNTER, PARAMS, ROOM, peers,
+                          DEV, DB, LOG, SCRIPT, len(LOCALS), useDupeMode, usePublic )
             peers.add(dev)
             dev.update_ldevid()
             devs.append(dev)
@@ -482,7 +491,7 @@ def build_cmds(args):
             COUNTER += 1
     return devs
 
-def summarizeTileCounts(devs, endTime, state):
+def summarizeTileCounts(devs, endTime, state, changeSecs):
     global gDeadLaunches
     shouldGoOn = True
     data = [dev.getTilesCount() for dev in devs]
@@ -557,21 +566,24 @@ def summarizeTileCounts(devs, endTime, state):
         state['lastChange'] = now
         state['tilesStr'] = tilesStr
 
-    return now - state['lastChange'] < datetime.timedelta(seconds = 30)
+    return now - state['lastChange'] < datetime.timedelta(seconds = changeSecs)
 
-def countCores():
-    return len(glob.glob1('/tmp',"core*"))
+def countCores(args):
+    count = 0
+    if args.CORE_PAT:
+        count = len( glob.glob(args.CORE_PAT) )
+    return count
 
 gDone = False
 
 def run_cmds(args, devs):
-    nCores = countCores()
+    nCores = countCores(args)
     endTime = datetime.datetime.now() + datetime.timedelta(minutes = args.TIMEOUT_MINS)
     printState = {}
     lastPrint = datetime.datetime.now()
 
     while len(devs) > 0 and not gDone:
-        if countCores() > nCores:
+        if countCores(args) > nCores:
             print('core file count increased; exiting')
             break
         now = datetime.datetime.now()
@@ -582,7 +594,7 @@ def run_cmds(args, devs):
         # print stats every 5 seconds
         if now - lastPrint > datetime.timedelta(seconds = 5):
             lastPrint = now
-            if not summarizeTileCounts(devs, endTime, printState):
+            if not summarizeTileCounts(devs, endTime, printState, args.NO_CHANGE_SECS):
                 print('no change in too long; exiting')
                 break
 
@@ -674,6 +686,8 @@ def mkParser():
                         help = 'number of roooms (default to --num-games)')
     parser.add_argument('--timeout-mins', dest = 'TIMEOUT_MINS', default = 10000, type = int,
                         help = 'minutes after which to timeout')
+    parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
+                        help = 'seconds without change after which to timeout')
     parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
     parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, help = 'send all packet twice')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
@@ -718,12 +732,15 @@ def mkParser():
     parser.add_argument('--http-pct', dest = 'HTTP_PCT', default = 0, type = int,
                         help = 'pct of games to be using web api')
 
-    parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 0, type = int)
-    parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 0, type = int)
+    parser.add_argument('--undo-pct', dest = 'UNDO_PCT', default = 5, type = int)
+    parser.add_argument('--trade-pct', dest = 'TRADE_PCT', default = 10, type = int)
 
     parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
     parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
     parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
+
+    parser.add_argument('--core-pat', dest = 'CORE_PAT', default = "/tmp/core*",
+                        help = "pattern for core files that should stop the script" )
 
     parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
                         action = 'store_true')

@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001 - 2014 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -190,8 +190,9 @@ static AddressRecord* rememberChannelAddress( CommsCtxt* comms,
                                               XP_PlayerAddr channelNo, 
                                               XWHostID id, 
                                               const CommsAddrRec* addr );
-static void augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, 
-                                const CommsAddrRec* addr, XWHostID hostID );
+static void augmentChannelAddr( AddressRecord* rec, const CommsAddrRec* addr,
+                                XWHostID hostID );
+static void augmentAddr( CommsAddrRec* dest, const CommsAddrRec* src );
 static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
                                  const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
@@ -231,7 +232,8 @@ static void logAddrs( const CommsCtxt* comms, const char* caller );
 
 # else
 # define printQueue( comms )
-# define logAddr( comms, addr, caller )
+# define logAddr( comms, addr, caller)
+# define logAddrs( comms, caller )
 # endif
 #endif
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
@@ -828,7 +830,7 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
     }
 
     setHeartbeatTimer( comms );
-} /* comms_start */
+} /* sendConnect */
 
 static void
 addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* addrP )
@@ -962,7 +964,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 static void
 resetBackoff( CommsCtxt* comms )
 {
-    XP_LOGF( "%s: resetting backoff", __func__ );
+    XP_LOGFF( "%s", "resetting backoff" );
     comms->resendBackoff = 0;
     comms->nextResend = 0;
 }
@@ -994,17 +996,28 @@ comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr )
 } /* comms_getAddr */
 
 void
-comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
+comms_augmentHostAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
+    logAddr( comms, addr, __func__ );
     XP_ASSERT( comms != NULL );
-    util_addrChange( comms->util, &comms->addr, addr );
-    XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
+
+    XP_Bool addingRelay = addr_hasType( addr, COMMS_CONN_RELAY )
+        && ! addr_hasType( &comms->addr, COMMS_CONN_RELAY );
+
+    CommsAddrRec tmp = comms->addr;
+    augmentAddr( &tmp, addr );
+    util_addrChange( comms->util, &comms->addr, &tmp );
+    comms->addr = tmp;
+
+    logAddr( comms, &comms->addr, "after" );
 
 #ifdef COMMS_HEARTBEAT
     setDoHeartbeat( comms );
 #endif
-    sendConnect( comms, XP_TRUE );
-} /* comms_setAddr */
+    if ( addingRelay ) {
+        sendConnect( comms, XP_TRUE );
+    }
+} /* comms_setHostAddr */
 
 void
 comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], XP_U16* nRecs )
@@ -1139,6 +1152,12 @@ comms_getConTypes( const CommsCtxt* comms )
     return typ;
 } /* comms_getConTypes */
 
+void
+comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ )
+{
+    addr_rmType( &comms->addr, typ );
+}
+
 XP_Bool
 comms_getIsServer( const CommsCtxt* comms )
 {
@@ -1210,7 +1229,7 @@ comms_getChannelSeed( CommsCtxt* comms )
         result = XP_RANDOM() & ~CHANNEL_MASK;
         result |= comms->forceChannel;
         CNO_FMT( cbuf, result );
-        XP_LOGF( "%s: made seed: %s(%d)", __func__, cbuf, result );
+        XP_LOGFF( "made seed: %s(%d)", cbuf, result );
         comms->channelSeed = result;
     }
     return result;
@@ -1443,8 +1462,22 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
              elem->len, cbuf, elem->checksum );
 #endif
 
+    CommsAddrRec addr;
+    const CommsAddrRec* addrP;
+    (void)channelToAddress( comms, channelNo, &addrP );
+    if ( NULL == addrP ) {
+        XP_LOGF( TAGFMT() "no addr for channel so using comms'", TAGPRMS );
+        comms_getAddr( comms, &addr );
+        logAddr( comms, &addr, "default case" );
+    } else {
+        addr = *addrP;
+        if ( addr_hasType( &comms->addr, COMMS_CONN_NFC ) ) {
+            addr_addType( &addr, COMMS_CONN_NFC );
+        }
+    }
+
     CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( &comms->addr, &typ, &st ); ) {
+    for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
         XP_S16 nSent = -1;
         if ( comms_getAddrDisabled( comms, typ, XP_TRUE ) ) {
             XP_LOGF( "%s: dropping message because %s disabled", __func__, 
@@ -1468,7 +1501,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
                     XP_UCHAR msgNo[16];
                     formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
                     if ( send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
-                                         elem->msg, elem->len, msgNo ) ){
+                                         elem->msg, elem->len, msgNo ) ) {
                         nSent = elem->len;
                     }
                 } else {
@@ -1488,17 +1521,6 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
                 break;
 #endif
             default: {
-                CommsAddrRec addr;
-                const CommsAddrRec* addrP;
-                (void)channelToAddress( comms, channelNo, &addrP );
-
-                if ( NULL == addrP || !addr_hasType( addrP, typ ) ) {
-                    XP_LOGF( TAGFMT() "no addr for channel or addr type %s"
-                             " so using comms'", TAGPRMS, ConnType2Str(typ) );
-                    comms_getAddr( comms, &addr );
-                } else {
-                    addr = *addrP;
-                }
                 XP_ASSERT( addr_hasType( &addr, typ ) );
 
                 XP_ASSERT( !!comms->procs.send );
@@ -1527,8 +1549,8 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
                  elem->sendCount );
     }
     CNO_FMT( cbuf1, elem->channelNo );
-    XP_LOGF( "%s(%s; msgID=" XP_LD ", len=%d)=>%d", __func__,
-             cbuf1, elem->msgID, elem->len, result );
+    XP_LOGFF( "(%s; msgID=" XP_LD ", len=%d)=>%d", cbuf1, elem->msgID,
+              elem->len, result );
     XP_ASSERT( result < 0 || elem->len == result );
     return result;
 } /* sendMsg */
@@ -2177,7 +2199,7 @@ validateInitialMessage( CommsCtxt* comms,
         XP_LOGF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
         rec = getRecordFor( comms, addr, *channelNo, XP_TRUE );
         if ( !!rec ) {
-            augmentChannelAddr( comms, rec, addr, senderID );
+            augmentChannelAddr( rec, addr, senderID );
             /* reject: we've already seen init message on channel */
             XP_LOGF( TAGFMT() "rejecting duplicate INIT message", TAGPRMS );
             rec = NULL;
@@ -2252,7 +2274,7 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
     if ( !!rec ) {
         removeFromQueue( comms, channelNo, lastMsgRcd );
 
-        augmentChannelAddr( comms, rec, addr, senderID );
+        augmentChannelAddr( rec, addr, senderID );
 
         if ( msgID == rec->lastMsgRcd + 1 ) {
             XP_LOGF( TAGFMT() "expected %d AND got %d", TAGPRMS,
@@ -2289,10 +2311,10 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     if ( comms_getAddrDisabled( comms, addrType, XP_FALSE ) ) {
         XP_LOGF( "%s: dropping message because %s disabled", __func__,
                  ConnType2Str( addrType ) );
-    } else if (0 == (comms->addr._conTypes & retAddr->_conTypes)) {
-        /* we don't expect messages with that address type; drop it */
-        XP_LOGF( "%s: not expecting %s messages", __func__, 
-                 ConnType2Str( addrType ) );
+    /* } else if (0 == (comms->addr._conTypes & retAddr->_conTypes)) { */
+    /*     /\* we don't expect messages with that address type; drop it *\/ */
+    /*     XP_LOGF( "%s: not expecting %s messages", __func__,  */
+    /*              ConnType2Str( addrType ) ); */
     } else {
         XWHostID senderID = 0;      /* unset; default for non-relay cases */
         XP_Bool usingRelay = XP_FALSE;
@@ -2416,15 +2438,14 @@ comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
             removeAddrRec( comms, state->rec );
         }
 #ifdef LOG_COMMS_MSGNOS
-        XP_LOGF( "%s(): msg rejected; NOT upping lastMsgRcd to %d", __func__,
-                 state->msgID );
+        XP_LOGFF( "msg rejected; NOT upping lastMsgRcd to %d", state->msgID );
 #endif
     } else {
         AddressRecord* rec = getRecordFor( comms, NULL, state->channelNo, XP_TRUE );
         XP_ASSERT( !!rec );
         if ( !!rec && rec->lastMsgRcd < state->msgID ) {
 #ifdef LOG_COMMS_MSGNOS
-            XP_LOGF( "%s(): upping lastMsgRcd from %d to %d", __func__, rec->lastMsgRcd, state->msgID );
+            XP_LOGFF( "upping lastMsgRcd from %d to %d", rec->lastMsgRcd, state->msgID );
 #endif
             rec->lastMsgRcd = state->msgID;
         }
@@ -2808,59 +2829,57 @@ logAddrs( const CommsCtxt* comms, const char* caller )
 #endif
 
 static void
-augmentChannelAddr( CommsCtxt* XP_UNUSED_DBG(comms), AddressRecord * const rec,
-                    const CommsAddrRec* addr, XWHostID hostID )
+augmentChannelAddr( AddressRecord* const rec, const CommsAddrRec* addr,
+                    XWHostID hostID )
 {
-    if ( !!addr ) {
-        XP_Bool augmented = XP_FALSE;
+    augmentAddr( &rec->addr, addr );
+    if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
+        if ( 0 != hostID ) {
+            rec->rr.hostID = hostID;
+            XP_LOGF( "%s: set hostID for rec %p to %d", __func__, rec, hostID );
+        }
+    }
+}
+
+static void
+augmentAddr( CommsAddrRec* destAddr, const CommsAddrRec* srcAddr )
+{
+    if ( !!srcAddr ) {
         CommsConnType typ;
-        for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
-            if ( ! addr_hasType( &rec->addr, typ ) ) {
-                CNO_FMT( cbuf, rec->channelNo );
-                XP_LOGF( "%s: adding type %s to rec %p with %s", __func__, 
-                         ConnType2Str(typ), rec, cbuf );
-            }
-
-            if ( ! addr_hasType( &rec->addr, typ ) ) {
-                augmented = XP_TRUE;
-                logAddr( comms, &rec->addr, __func__ );
-                logAddr( comms, addr, __func__ );
-
-                addr_addType( &rec->addr, typ );
+        for ( XP_U32 st = 0; addr_iter( srcAddr, &typ, &st ); ) {
+            if ( ! addr_hasType( destAddr, typ ) ) {
+                XP_LOGFF( "adding new type %s to rec", ConnType2Str(typ) );
+                addr_addType( destAddr, typ );
             }
 
             const void* src = NULL;
             void* dest = NULL;
-            XP_U32 siz;
+            size_t siz;
 
             switch( typ ) {
             case COMMS_CONN_RELAY:
-                dest = &rec->addr.u.ip_relay;
-                src = &addr->u.ip_relay;
-                siz = sizeof( rec->addr.u.ip_relay );
-                if ( 0 != hostID ) {
-                    rec->rr.hostID = hostID;
-                    XP_LOGF( "%s: set hostID for rec %p to %d", __func__, rec, hostID );
-                }
+                dest = &destAddr->u.ip_relay;
+                src = &srcAddr->u.ip_relay;
+                siz = sizeof( destAddr->u.ip_relay );
                 break;
             case COMMS_CONN_SMS:
-                XP_ASSERT( 0 != addr->u.sms.port );
-                XP_ASSERT( '\0' != addr->u.sms.phone[0] );
-                dest = &rec->addr.u.sms;
-                src = &addr->u.sms;
-                siz = sizeof(rec->addr.u.sms);
+                XP_ASSERT( 0 != srcAddr->u.sms.port );
+                XP_ASSERT( '\0' != srcAddr->u.sms.phone[0] );
+                dest = &destAddr->u.sms;
+                src = &srcAddr->u.sms;
+                siz = sizeof(destAddr->u.sms);
                 break;
             case COMMS_CONN_P2P:
-                XP_ASSERT( '\0' != addr->u.p2p.mac_addr[0] );
-                dest = &rec->addr.u.p2p;
-                src = &addr->u.p2p;
-                siz = sizeof(rec->addr.u.p2p);
+                XP_ASSERT( '\0' != srcAddr->u.p2p.mac_addr[0] );
+                dest = &destAddr->u.p2p;
+                src = &srcAddr->u.p2p;
+                siz = sizeof(destAddr->u.p2p);
                 break;
 #ifdef XWFEATURE_BLUETOOTH
             case COMMS_CONN_BT:
-                dest = &rec->addr.u.bt;
-                src = &addr->u.bt;
-                siz = sizeof(rec->addr.u.bt);
+                dest = &destAddr->u.bt;
+                src = &srcAddr->u.bt;
+                siz = sizeof(destAddr->u.bt);
                 break;
 #endif
             case COMMS_CONN_NFC:
@@ -2871,14 +2890,10 @@ augmentChannelAddr( CommsCtxt* XP_UNUSED_DBG(comms), AddressRecord * const rec,
             }
             if ( !!dest ) {
                 if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
-                    XP_LOGF( "%s: actually changing addr info for typ %s",
-                             __func__, ConnType2Str(typ) );
+                    XP_LOGFF( "actually changing addr info for typ %s", ConnType2Str(typ) );
                     XP_MEMCPY( dest, src, siz );
                 }
             }
-        }
-        if ( augmented ) {
-            logAddr( comms, &rec->addr, __func__ );
         }
     }
 }

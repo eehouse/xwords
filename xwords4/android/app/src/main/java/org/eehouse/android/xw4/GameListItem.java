@@ -324,7 +324,7 @@ public class GameListItem extends LinearLayout
             m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
             int iconID = summary.isMultiGame() ?
-                R.drawable.multigame__gen : R.drawable.sologame__gen;
+                R.drawable.ic_multigame : R.drawable.ic_sologame;
             m_gameTypeImage.setImageResource( iconID );
 
             boolean hasChat = summary.isMultiGame();

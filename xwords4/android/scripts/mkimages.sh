@@ -28,21 +28,7 @@ done
 
 # There needs to be target in the makefile for each of these (giving
 # the output .png size)
-
-TARGET_DIRS="drawable-hdpi drawable-mdpi drawable-xhdpi"
-
-for SVG in img_src/*.svg; do
-    for DIR in $TARGET_DIRS; do
-        SVG=$(basename $SVG)
-        OUT=app/src/main/res/$DIR/${SVG/.svg/__gen.png}
-        mkdir -p $(dirname $OUT)
-        if [ -z "$CLEAN" ]; then
-            make -f $(dirname $0)/images.mk $OUT >/dev/null 2>&1
-        else
-            rm -f $OUT
-        fi
-    done
-done
+make -f $(dirname $0)/images.mk >/dev/null 2>&1
 
 OTHER_IMAGES="app/src/main/res/drawable/green_chat__gen.png"
 for IMAGE in $OTHER_IMAGES; do

@@ -536,15 +536,25 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 void
 gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
 {
-    XP_ASSERT( nTotal < MAX_NUM_PLAYERS );
+    XP_ASSERT( nTotal <= MAX_NUM_PLAYERS );
     XP_ASSERT( nHere < nTotal );
 
     gi->nPlayers = nTotal;
 
-    XP_U16 ii;
-    for ( ii = 0; ii < nTotal; ++ii ) {
-        gi->players[ii].isLocal = ii < nHere;
-        XP_ASSERT( !LP_IS_ROBOT(&gi->players[ii]) );
+    XP_U16 curLocal = 0;
+    for ( XP_U16 ii = 0; ii < nTotal; ++ii ) {
+        if ( gi->players[ii].isLocal ) {
+            ++curLocal;
+        }
+    }
+
+    if ( nHere != curLocal ) {
+        /* This will happen when a device has more than on player. Not sure I
+           handle that correctly, but don't assert for now. */
+        XP_LOGFF( "nHere: %d; curLocal: %d; a problem?", nHere, curLocal );
+        /* for ( XP_U16 ii = 0; ii < nTotal; ++ii ) { */
+        /*     gi->players[ii].isLocal = ii < nHere; */
+        /* } */
     }
 }
 
@@ -749,6 +759,25 @@ player_timePenalty( CurGameInfo* gi, XP_U16 playerNum )
     }
     return result;
 } /* player_timePenalty */
+
+#ifdef DEBUG
+void
+game_logGI( const CurGameInfo* gi, const char* msg )
+{
+    XP_LOGFF( "msg: %s", msg );
+
+    XP_LOGF( "  nPlayers: %d", gi->nPlayers );
+    for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* lp = &gi->players[ii];
+        XP_LOGF( "  player[%d]: local: %d; robotIQ: %d; name: %s", ii,
+                 lp->isLocal, lp->robotIQ, lp->name );
+    }
+    XP_LOGF( "  forceChannel: %d", gi->forceChannel );
+    XP_LOGF( "  serverRole: %d", gi->serverRole );
+    XP_LOGF( "  gameID: %d", gi->gameID );
+    XP_LOGF( "  dictName: %s", gi->dictName );
+}
+#endif
 
 #ifdef CPLUS
 }

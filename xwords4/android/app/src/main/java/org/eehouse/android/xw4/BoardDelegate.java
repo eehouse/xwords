@@ -1147,7 +1147,7 @@ public class BoardDelegate extends DelegateBase
             launchLookup( m_mySIS.words, m_gi.dictLang );
             break;
         case DROP_RELAY_ACTION:
-            dropConViaAndRestart(CommsConnType.COMMS_CONN_RELAY);
+            dropConViaAndRestart( CommsConnType.COMMS_CONN_RELAY );
             break;
         case DELETE_AND_EXIT:
             deleteAndClose( m_gi.gameID );
@@ -1241,7 +1241,7 @@ public class BoardDelegate extends DelegateBase
             m_dropRelayOnDismiss = true;
             break;
         case DROP_SMS_ACTION:
-            dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS);
+            dropConViaAndRestart( CommsConnType.COMMS_CONN_SMS );
             break;
         case DELETE_AND_EXIT:
             finish();
@@ -1666,10 +1666,7 @@ public class BoardDelegate extends DelegateBase
 
     private void dropConViaAndRestart( CommsConnType typ )
     {
-        CommsAddrRec addr = new CommsAddrRec();
-        XwJNI.comms_getAddr( m_jniGamePtr, addr );
-        addr.remove( typ );
-        XwJNI.comms_setAddr( m_jniGamePtr, addr );
+        XwJNI.comms_dropHostAddr( m_jniGamePtr, typ );
 
         finish();
 

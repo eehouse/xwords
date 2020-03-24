@@ -125,7 +125,7 @@ void linux_lowerstr( XP_UCHAR* str );
 #define XP_ABS(a)   ((a)>=0?(a):-(a))
 
 #ifdef DEBUG
-# define XP_ASSERT(b) assert(b)
+# define XP_ASSERT(B) do { if (!(B)) { XP_LOGFF( "%s", "firing assert"); } assert(B); } while (0)
 void linux_backtrace( void );
 # define XP_BACKTRACE linux_backtrace
 #else
