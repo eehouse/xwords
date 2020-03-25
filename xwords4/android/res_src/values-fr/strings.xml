@@ -2869,8 +2869,7 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     <!--XLATE-ME-->
     <!--<string name="debug_features_summary">Menuitems etc. (release builds
   only)</string>-->
-    <string name="debug_features_summary">Items de menu, etc. (uniquement pour
-les release builds)</string>
+    <string name="debug_features_summary">Items de menu, etc.</string>
     <!--XLATE-ME-->
     <!--<string name="title_send_data_sms">Send SMS as data</string>-->
     <string name="title_send_data_sms">Envoyer les SMS comme données</string>
@@ -3230,5 +3229,7 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
     <string name="empty_bt_inviter">Aucun périphérique appairé détecté pour le moment.</string>
     <string name="checkbox_archive">Archiver</string>
     <string name="button_more_info">Lire davantage</string>
+    <string name="dup_minutes_label">Minutes par tour</string>
+    <string name="robot_iq_label">QI du robot</string>
+    <string name="enable_pending_count_title">Montrer les messages en attente</string>
 </resources>
-
