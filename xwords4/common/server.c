@@ -722,6 +722,7 @@ sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR* msg,
         XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex,
                                                         XWPROTO_CHAT );
         stringToStream( stream, msg );
+        XP_ASSERT( from < server->vol.gi->nPlayers );
         stream_putU8( stream, from );
         stream_putU32( stream, timestamp );
         stream_destroy( stream );
@@ -765,6 +766,7 @@ receiveChat( ServerCtxt* server, XWStreamCtxt* incoming )
         sendChatToClientsExcept( server, sourceClientIndex, msg, from,
                                  timestamp );
     }
+    XP_ASSERT( from < server->vol.gi->nPlayers );
     util_showChat( server->vol.util, msg, from, timestamp );
     XP_FREE( server->mpool, msg );
     return XP_TRUE;
