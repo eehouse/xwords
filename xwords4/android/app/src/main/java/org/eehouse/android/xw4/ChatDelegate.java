@@ -162,8 +162,9 @@ public class ChatDelegate extends DelegateBase {
         TextView view = (TextView)row.findViewById( R.id.chat_row_text );
         view.setText( msg );
         view = (TextView)row.findViewById( R.id.chat_row_name );
-        view.setText( getString( R.string.chat_sender_fmt,
-                                 m_names[playerIndx] ) );
+
+        String name = playerIndx < m_names.length ? m_names[playerIndx] : "<???>";
+        view.setText( getString( R.string.chat_sender_fmt, name ) );
 
         if ( tsSeconds > 0 ) {
             long now = 1000L * Utils.getCurSeconds();
