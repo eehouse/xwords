@@ -1868,7 +1868,7 @@ public class DBUtils {
     {
         Assert.assertNotNull( msg );
         Assert.assertFalse( -1 == fromPlayer );
-        ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
+        ArrayList<ContentValues> valuess = new ArrayList<>();
         valuess.add( cvForChat( rowid, msg, fromPlayer, tsSeconds ) );
         appendChatHistory( context, valuess );
         Log.i( TAG, "appendChatHistory: inserted \"%s\" from player %d",

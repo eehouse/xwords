@@ -267,8 +267,12 @@ stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen )
 void
 stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
 {
-    XP_U16 len = str==NULL? 0: XP_STRLEN( str );
-    XP_ASSERT( len < 0xFF );
+    XP_U16 len = str == NULL? 0: XP_STRLEN( str );
+    if ( len > 0xFF ) {
+        XP_LOGFF( "truncating string '%s', dropping len from %d to %d",
+                  str, len, 0xFF );
+        len = 0xFF;
+    }
     stream_putU8( stream, (XP_U8)len );
     stream_putBytes( stream, str, len );
 } /* putStringToStream */
