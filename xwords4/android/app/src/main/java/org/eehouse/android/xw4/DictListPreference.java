@@ -47,8 +47,8 @@ public class DictListPreference extends XWListPreference {
         int langCode = DictLangCache.getLangLangCode( context, curLang );
 
         DictUtils.DictAndLoc[] dals = DictUtils.dictList( context  );
-        ArrayList<String> dictEntries = new ArrayList<String>();
-        ArrayList<String> values = new ArrayList<String>();
+        ArrayList<String> dictEntries = new ArrayList<>();
+        ArrayList<String> values = new ArrayList<>();
         for ( int ii = 0; ii < dals.length; ++ii ) {
             String name = dals[ii].name;
             if ( langCode == DictLangCache.getDictLangCode( context, name ) ) {

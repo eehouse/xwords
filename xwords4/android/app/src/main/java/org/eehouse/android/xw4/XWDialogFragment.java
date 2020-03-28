@@ -128,7 +128,7 @@ abstract class XWDialogFragment extends DialogFragment {
     private Map<Integer, DialogInterface.OnClickListener> getButtonMap()
     {
         if ( null == m_buttonMap ) {
-            m_buttonMap = new HashMap<Integer, DialogInterface.OnClickListener>();
+            m_buttonMap = new HashMap<>();
         }
         return m_buttonMap;
     }

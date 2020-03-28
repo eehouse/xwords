@@ -64,7 +64,7 @@ public class JNIUtilsImpl implements JNIUtils {
     @Override
     public String[][] splitFaces( byte[] chars, boolean isUTF8 )
     {
-        ArrayList<String[]> faces = new ArrayList<String[]>();
+        ArrayList<String[]> faces = new ArrayList<>();
         ByteArrayInputStream bais = new ByteArrayInputStream( chars );
         InputStreamReader isr;
         try {
@@ -115,7 +115,7 @@ public class JNIUtilsImpl implements JNIUtils {
                 }
                 lastWasDelim = false;
                 if ( null == face ) {
-                    face = new ArrayList<String>();
+                    face = new ArrayList<>();
                 }
                 face.add( letter );
             }

@@ -48,7 +48,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
     public XWExpListAdapter( Class[] childClasses )
     {
         m_groupClass = childClasses[0];
-        m_types = new HashMap<Class, Integer>();
+        m_types = new HashMap<>();
         for ( int ii = 0; ii < childClasses.length; ++ii ) {
             m_types.put( childClasses[ii], ii );
         }

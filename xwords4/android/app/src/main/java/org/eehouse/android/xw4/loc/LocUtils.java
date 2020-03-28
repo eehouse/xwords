@@ -121,7 +121,7 @@ public class LocUtils {
     public static String xlateLang( Context context, String lang, boolean caps )
     {
         if ( null == s_langMap ) {
-            s_langMap = new HashMap<String, String>();
+            s_langMap = new HashMap<>();
             s_langMap.put( "English", context.getString( R.string.lang_name_english ) );
             s_langMap.put( "French", context.getString( R.string.lang_name_french ) );
             s_langMap.put( "German", context.getString( R.string.lang_name_german ) );
@@ -156,7 +156,7 @@ public class LocUtils {
     {
         int result = 0;
         if ( null == s_langCodeMap ) {
-            s_langCodeMap = new HashMap<String, Integer>();
+            s_langCodeMap = new HashMap<>();
             String[] langCodes =
                 context.getResources().getStringArray( R.array.language_codes );
             for ( int ii = 0; ii < langCodes.length; ++ii ) {
@@ -199,7 +199,7 @@ public class LocUtils {
         if ( XWApp.LOCUTILS_ENABLED ) {
             pareMenus();
 
-            xlateMenu( activity, new WeakReference<Menu>( menu ), menu, 0 );
+            xlateMenu( activity, new WeakReference<>( menu ), menu, 0 );
         }
     }
 
@@ -456,8 +456,7 @@ public class LocUtils {
                            pairs.length(), newVersion );
 
                     int len = pairs.length();
-                    Map<String,String> newXlations =
-                        new HashMap<String,String>( len );
+                    Map<String,String> newXlations = new HashMap<>( len );
                     for ( int jj = 0; jj < len; ++jj ) {
                         JSONObject pair = pairs.getJSONObject( jj );
                         int id = pair.getInt( "id" );
@@ -619,8 +618,7 @@ public class LocUtils {
     {
         if ( null == s_idsToKeys ) {
             Map<String,Integer> map = LocIDs.getS_MAP( context );
-            HashMap<Integer, String> idsToKeys =
-                new HashMap<Integer, String>( map.size() );
+            HashMap<Integer, String> idsToKeys = new HashMap<>( map.size() );
 
             Iterator<String> iter = map.keySet().iterator();
             while ( iter.hasNext() ) {
@@ -783,7 +781,7 @@ public class LocUtils {
     {
         HashSet<String> keys = s_menuSets.get( ref );
         if ( null == keys ) {
-            keys = new HashSet<String>();
+            keys = new HashSet<>();
             s_menuSets.put( ref, keys );
         }
         keys.add( key );
@@ -798,7 +796,7 @@ public class LocUtils {
     {
         HashSet<String> keys = s_contextSets.get( contextName );
         if ( null == keys ) {
-            keys = new HashSet<String>();
+            keys = new HashSet<>();
             s_contextSets.put( contextName, keys );
             // DbgUtils.logf( "adding keys hash to %s", contextName );
         }

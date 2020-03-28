@@ -68,7 +68,7 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
     @Override
     protected String[] doInBackground( Void...unused )
     {
-        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<String> names = new ArrayList<>();
         Log.i( TAG, "doInBackground()" );
 
         try {
@@ -125,9 +125,9 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
      {
          Log.i( TAG, "onPostExecute()" );
          ArrayAdapter<String> adapter =
-             new ArrayAdapter<String>( m_context,
-                                       android.R.layout.simple_spinner_item,
-                                       result );
+             new ArrayAdapter<>( m_context,
+                                 android.R.layout.simple_spinner_item,
+                                 result );
          int resID = android.R.layout.simple_spinner_dropdown_item;
          adapter.setDropDownViewResource( resID );
          m_resultSpinner.setAdapter( adapter );

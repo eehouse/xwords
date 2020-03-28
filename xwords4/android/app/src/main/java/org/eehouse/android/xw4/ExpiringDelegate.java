@@ -69,11 +69,11 @@ public class ExpiringDelegate {
         private Handler m_handler;
         private ArrayList<WeakReference<ExpiringDelegate>> m_refs
             = new ArrayList<WeakReference<ExpiringDelegate>>();
-        private Set<Integer> m_hashes = new HashSet<Integer>();
+        private Set<Integer> m_hashes = new HashSet<>();
 
         public void run() {
             int sizeBefore;
-            ArrayList<ExpiringDelegate> dlgts = new ArrayList<ExpiringDelegate>();
+            ArrayList<ExpiringDelegate> dlgts = new ArrayList<>();
             synchronized( this ) {
                 sizeBefore = m_refs.size();
                 m_hashes.clear();
@@ -111,7 +111,7 @@ public class ExpiringDelegate {
             synchronized( this ) {
                 if ( ! m_hashes.contains( hash ) ) {
                     m_hashes.add( hash );
-                    m_refs.add( new WeakReference<ExpiringDelegate>(self) );
+                    m_refs.add( new WeakReference<>(self) );
                 }
             }
         }

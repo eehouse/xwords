@@ -577,7 +577,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     //             Spinner spinner = (Spinner)
     //                 item.findViewById(R.id.nperdev_spinner);
     //             ArrayAdapter<String> adapter =
-    //                 new ArrayAdapter<String>( m_activity, android.R.layout
+    //                 new ArrayAdapter<>( m_activity, android.R.layout
     //                                           .simple_spinner_item );
     //             for ( int ii = 1; ii <= m_nMissing; ++ii ) {
     //                 String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
@@ -642,7 +642,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     //             }
 
     //             if ( null != reply ) {
-    //                 result = new HashSet<String>();
+    //                 result = new HashSet<>();
 
     //                 setProgressMsg( R.string.processing_games );
 
@@ -673,7 +673,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     //         if ( null == devIDs ) {
     //             Log.w( TAG, "onPostExecute: no results from server?" );
     //         } else {
-    //             m_devIDRecs = new ArrayList<DevIDRec>(devIDs.size());
+    //             m_devIDRecs = new ArrayList<>(devIDs.size());
     //             Iterator<String> iter = devIDs.iterator();
     //             while ( iter.hasNext() ) {
     //                 String devID = iter.next();

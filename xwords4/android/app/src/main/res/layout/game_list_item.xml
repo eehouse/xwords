@@ -39,8 +39,8 @@
                         android:paddingRight="8dip"
                         >
             <ImageView android:id="@+id/game_type_marker"
-	                   android:layout_width="fill_parent"
-	                   android:layout_height="fill_parent"
+                       android:layout_width="fill_parent"
+                       android:layout_height="fill_parent"
                        android:src="@drawable/ic_multigame"
                        />
             <ImageView android:id="@+id/has_chat_marker"

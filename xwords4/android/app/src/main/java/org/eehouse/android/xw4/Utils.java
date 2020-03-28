@@ -94,8 +94,7 @@ public class Utils {
     private static Boolean s_firstVersion = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
-    private static HashMap<String,String> s_phonesHash =
-        new HashMap<String,String>();
+    private static HashMap<String,String> s_phonesHash = new HashMap<>();
     private static Boolean s_hasSmallScreen = null;
     private static Random s_random = new Random();
 

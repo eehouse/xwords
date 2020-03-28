@@ -66,7 +66,7 @@ public class DictLangCache {
 
         public void rebuild()
         {
-            m_map = new HashMap<String, String>();
+            m_map = new HashMap<>();
             DictAndLoc[] dals = DictUtils.dictList( m_context );
             for ( DictAndLoc dal : dals ) {
                 String lang = getLangName( m_context, dal.name );
@@ -175,7 +175,7 @@ public class DictLangCache {
 
     private static DictInfo[] getInfosHaveLang( Context context, int code )
     {
-        ArrayList<DictInfo> al = new ArrayList<DictInfo>();
+        ArrayList<DictInfo> al = new ArrayList<>();
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
@@ -221,7 +221,7 @@ public class DictLangCache {
             Arrays.sort( infos, comp );
         }
 
-        ArrayList<String> al = new ArrayList<String>();
+        ArrayList<String> al = new ArrayList<>();
         String fmt = "%s (%d)"; // must match stripCount below
         for ( DictInfo info : infos ) {
             String name = info.name;
@@ -244,7 +244,7 @@ public class DictLangCache {
 
     public static DictAndLoc[] getDALsHaveLang( Context context, int code )
     {
-        ArrayList<DictAndLoc> al = new ArrayList<DictAndLoc>();
+        ArrayList<DictAndLoc> al = new ArrayList<>();
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
@@ -356,7 +356,7 @@ public class DictLangCache {
 
     public static String[] listLangs( Context context, DictAndLoc[] dals )
     {
-        Set<String> langs = new HashSet<String>();
+        Set<String> langs = new HashSet<>();
         for ( DictAndLoc dal : dals ) {
             String name = getLangName( context, dal.name );
             if ( null == name || 0 == name.length() ) {
@@ -422,8 +422,7 @@ public class DictLangCache {
     {
         if ( lang != s_adaptedLang ) {
             s_dictsAdapter =
-                new ArrayAdapter<String>( context,
-                                          android.R.layout.simple_spinner_item );
+                new ArrayAdapter<>(context, android.R.layout.simple_spinner_item);
             rebuildAdapter( s_dictsAdapter, getHaveLang( context, lang ) );
             s_adaptedLang = lang;
         }

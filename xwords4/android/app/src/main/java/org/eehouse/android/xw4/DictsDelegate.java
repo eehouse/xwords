@@ -102,7 +102,7 @@ public class DictsDelegate extends ListDelegateBase
     private String[] m_locNames;
     private String m_finishOnName;
     private Map<String, XWListItem> m_selViews;
-    private Map<String, Object> m_selDicts = new HashMap<String, Object>();
+    private Map<String, Object> m_selDicts = new HashMap<>();
     private String m_origTitle;
     private boolean m_showRemote = false;
     private String m_filterLang;
@@ -123,7 +123,7 @@ public class DictsDelegate extends ListDelegateBase
                              String curDict, int lang ) {
 
             final HashMap<MenuItem, DictAndLoc> itemData
-                = new HashMap<MenuItem, DictAndLoc>();
+                = new HashMap<>();
 
             MenuItem.OnMenuItemClickListener listener =
                 new MenuItem.OnMenuItemClickListener() {
@@ -207,7 +207,7 @@ public class DictsDelegate extends ListDelegateBase
         @Override
         public Object[] makeListData()
         {
-            ArrayList<Object> alist = new ArrayList<Object>();
+            ArrayList<Object> alist = new ArrayList<>();
             int nLangs = m_langs.length;
             for ( int ii = 0; ii < nLangs; ++ii ) {
                 String langName = m_langs[ii];
@@ -317,9 +317,9 @@ public class DictsDelegate extends ListDelegateBase
 
         private ArrayList<Object> makeLangItems( String langName )
         {
-            ArrayList<Object> result = new ArrayList<Object>();
+            ArrayList<Object> result = new ArrayList<>();
 
-            HashSet<String> locals = new HashSet<String>();
+            HashSet<String> locals = new HashSet<>();
             int lang = DictLangCache.getLangLangCode( m_context, langName );
             DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
             if ( null != dals ) {
@@ -470,13 +470,13 @@ public class DictsDelegate extends ListDelegateBase
     protected void init( Bundle savedInstanceState )
     {
         m_onServerStr = getString( R.string.dict_on_server );
-        m_closedLangs = new HashSet<String>();
+        m_closedLangs = new HashSet<>();
         String[] closed = XWPrefs.getClosedLangs( m_activity );
         if ( null != closed ) {
             m_closedLangs.addAll( Arrays.asList( closed ) );
         }
 
-        m_expandedItems = new HashSet<DictInfo>();
+        m_expandedItems = new HashSet<>();
 
         m_locNames = getStringArray( R.array.loc_names );
         m_noteNone = getString( R.string.note_none );
@@ -829,7 +829,7 @@ public class DictsDelegate extends ListDelegateBase
 
         class LangDelData {
             public LangDelData( int langCode ) {
-                delDicts = new HashSet<String>();
+                delDicts = new HashSet<>();
                 langName = DictLangCache.getLangName( m_activity, langCode );
                 nDicts = DictLangCache.getDALsHaveLang( m_activity, langCode ).length;
             }
@@ -847,8 +847,8 @@ public class DictsDelegate extends ListDelegateBase
             int nDicts;
         }
 
-        Map<Integer, LangDelData> dels = new HashMap<Integer, LangDelData>();
-        Set<Integer> skipLangs = new HashSet<Integer>();
+        Map<Integer, LangDelData> dels = new HashMap<>();
+        Set<Integer> skipLangs = new HashSet<>();
         for ( String dict : m_selDicts.keySet() ) {
             int langCode = DictLangCache.getDictLangCode( m_activity, dict );
             if ( skipLangs.contains( langCode ) ) {
@@ -963,7 +963,7 @@ public class DictsDelegate extends ListDelegateBase
 
     private void resetLangs()
     {
-        Set<String> langs = new HashSet<String>();
+        Set<String> langs = new HashSet<>();
         langs.addAll( Arrays.asList(DictLangCache.listLangs( m_activity )) );
         if ( m_showRemote && null != m_remoteInfo ) {
             langs.addAll( m_remoteInfo.keySet() );
@@ -978,7 +978,7 @@ public class DictsDelegate extends ListDelegateBase
         m_adapter = new DictListAdapter( m_activity );
         setListAdapterKeepScroll( m_adapter );
 
-        m_selViews = new HashMap<String, XWListItem>();
+        m_selViews = new HashMap<>();
     }
 
     private void saveClosed()
@@ -1370,11 +1370,11 @@ public class DictsDelegate extends ListDelegateBase
             boolean success = false;
             JSONArray langs = null;
 
-            m_needUpdates = new HashMap<String, Uri>();
+            m_needUpdates = new HashMap<>();
             if ( null != jsonData ) {
-                Set<String> closedLangs = new HashSet<String>();
+                Set<String> closedLangs = new HashSet<>();
                 final Set<String> curLangs =
-                    new HashSet<String>( Arrays.asList( m_langs ) );
+                    new HashSet<>( Arrays.asList( m_langs ) );
 
                 // DictLangCache hits the DB hundreds of times below. Fix!
                 Log.w( TAG, "Fix me I'm stupid" );
@@ -1384,7 +1384,7 @@ public class DictsDelegate extends ListDelegateBase
                     langs = obj.optJSONArray( "langs" );
 
                     int nLangs = langs.length();
-                    m_remoteInfo = new HashMap<String, DictInfo[]>();
+                    m_remoteInfo = new HashMap<>();
                     for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
                         JSONObject langObj = langs.getJSONObject( ii );
                         String langName = langObj.getString( "lang" );
@@ -1400,8 +1400,7 @@ public class DictsDelegate extends ListDelegateBase
 
                         JSONArray dicts = langObj.getJSONArray( "dicts" );
                         int nDicts = dicts.length();
-                        ArrayList<DictInfo> dictNames =
-                            new ArrayList<DictInfo>();
+                        ArrayList<DictInfo> dictNames = new ArrayList<>();
                         for ( int jj = 0; !isCancelled() && jj < nDicts;
                               ++jj ) {
                             JSONObject dict = dicts.getJSONObject( jj );

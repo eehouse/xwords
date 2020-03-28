@@ -48,7 +48,7 @@ public class GameListItem extends LinearLayout
 
     private static final int SUMMARY_WAIT_MSECS = 1000;
 
-    private static HashSet<Long> s_invalRows = new HashSet<Long>();
+    private static HashSet<Long> s_invalRows = new HashSet<>();
 
     private Activity m_activity;
     private Context m_context;
@@ -455,7 +455,7 @@ public class GameListItem extends LinearLayout
         GameListItem m_item;
     }
     private static LinkedBlockingQueue<ThumbQueueElem> s_queue
-        = new LinkedBlockingQueue<ThumbQueueElem>();
+        = new LinkedBlockingQueue<>();
     private static Thread s_thumbThread;
 
     private static void enqueueGetThumbnail( GameListItem item, long rowid )

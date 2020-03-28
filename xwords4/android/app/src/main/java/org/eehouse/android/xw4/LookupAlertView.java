@@ -103,8 +103,7 @@ public class LookupAlertView extends LinearLayout
         m_wordIndex = bundle.getInt( WORDINDEX, 0 );
         m_urlIndex = bundle.getInt( URLINDEX, 0 );
 
-        m_wordsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT,
-                                                   m_words );
+        m_wordsAdapter = new ArrayAdapter<>( m_context, LIST_LAYOUT, m_words );
         m_listView = (ListView)findViewById( android.R.id.list );
         m_listView.setOnItemClickListener( this );
 
@@ -248,8 +247,8 @@ public class LookupAlertView extends LinearLayout
 
         if ( s_lang != lang ) {
             String[] urls = context.getResources().getStringArray( R.array.lookup_urls );
-            ArrayList<String> tmpUrls = new ArrayList<String>();
-            ArrayList<String> tmpNames = new ArrayList<String>();
+            ArrayList<String> tmpUrls = new ArrayList<>();
+            ArrayList<String> tmpNames = new ArrayList<>();
             String langCode = String.format( ":%s:", s_langCodes[lang] );
             for ( int ii = 0; ii < urls.length; ii += 3 ) {
                 String codes = urls[ii+1];
@@ -263,8 +262,8 @@ public class LookupAlertView extends LinearLayout
             }
             s_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
-            s_urlsAdapter = new ArrayAdapter<String>( context, LIST_LAYOUT,
-                                                      s_lookupNames );
+            s_urlsAdapter = new ArrayAdapter<>( context, LIST_LAYOUT,
+                                                s_lookupNames );
             s_lang = lang;
             String langName = DictLangCache.getLangName( context, lang );
             s_langName = LocUtils.xlateLang( context, langName );

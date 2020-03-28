@@ -111,7 +111,7 @@ public class LocSearcher {
                         break;
                     }
 
-                    ArrayList<Pair> matches = new ArrayList<Pair>();
+                    ArrayList<Pair> matches = new ArrayList<>();
                     for ( Pair pair : m_pairs ) {
                         if ( proc.passes( m_context, pair ) ) {
                             matches.add( pair );
@@ -135,7 +135,7 @@ public class LocSearcher {
             Pair[] usePairs = null != m_lastTerm && term.contains(m_lastTerm)
                 ? m_matchingPairs : m_filteredPairs;
             Log.i( TAG, "start: searching %d pairs", usePairs.length );
-            ArrayList<Pair> matches = new ArrayList<Pair>();
+            ArrayList<Pair> matches = new ArrayList<>();
             for ( Pair pair : usePairs ) {
                 if ( pair.matches( term ) ) {
                     matches.add( pair );

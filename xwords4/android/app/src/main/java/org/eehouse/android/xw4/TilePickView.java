@@ -51,7 +51,7 @@ public class TilePickView extends LinearLayout {
     private ArrayList<Integer> m_pendingTiles;
     private TilePickListener m_listner;
     private TilePickState m_state;
-    private Map<Integer, Button> m_buttons = new HashMap<Integer, Button>();
+    private Map<Integer, Button> m_buttons = new HashMap<>();
 
     public TilePickView( Context context, AttributeSet as ) {
         super( context, as );
@@ -65,7 +65,7 @@ public class TilePickView extends LinearLayout {
         m_pendingTiles = (ArrayList<Integer>)bundle.getSerializable( NEW_TILES );
         if ( null == m_pendingTiles ) {
             Log.d( TAG, "creating new m_pendingTiles" );
-            m_pendingTiles = new ArrayList<Integer>();
+            m_pendingTiles = new ArrayList<>();
         }
 
         showPending();
@@ -156,7 +156,7 @@ public class TilePickView extends LinearLayout {
         if ( m_state.forBlank() ) {
             desc.setVisibility( View.GONE );
         } else {
-            List<String> faces = new ArrayList<String>();
+            List<String> faces = new ArrayList<>();
             for ( int indx : m_pendingTiles ) {
                 faces.add( m_state.faces[indx] );
             }

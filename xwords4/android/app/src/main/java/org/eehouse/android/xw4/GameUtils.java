@@ -883,7 +883,7 @@ public class GameUtils {
         HashSet<String> missingSet;
         DictUtils.DictAndLoc[] installed = DictUtils.dictList( context );
 
-        missingSet = new HashSet<String>( Arrays.asList( gameDicts ) );
+        missingSet = new HashSet<>( Arrays.asList( gameDicts ) );
         missingSet.remove( null );
         boolean allHere = 0 != missingSet.size(); // need some non-null!
         if ( allHere ) {

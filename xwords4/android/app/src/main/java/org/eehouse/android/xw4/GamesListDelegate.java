@@ -144,7 +144,7 @@ public class GamesListDelegate extends ListDelegateBase
         protected Object[] makeListData()
         {
             final Map<Long,GameGroupInfo> gameInfo = DBUtils.getGroups( m_activity );
-            ArrayList<Object> alist = new ArrayList<Object>();
+            ArrayList<Object> alist = new ArrayList<>();
             long[] positions = getGroupPositions();
             for ( int ii = 0; ii < positions.length; ++ii ) {
                 long groupID = positions[ii];
@@ -425,7 +425,7 @@ public class GamesListDelegate extends ListDelegateBase
         private List<Object> makeChildren( long groupID )
         {
             long[] rows = DBUtils.getGroupGames( m_activity, groupID );
-            List<Object> alist = new ArrayList<Object>( rows.length );
+            List<Object> alist = new ArrayList<>( rows.length );
             for ( long row : rows ) {
                 alist.add( new GameRec( row ) );
             }
@@ -457,7 +457,7 @@ public class GamesListDelegate extends ListDelegateBase
                                                int start, int len )
         {
             Log.d( TAG, "removeRange(start=%d, len=%d)", start, len );
-            ArrayList<Object> result = new ArrayList<Object>(len);
+            ArrayList<Object> result = new ArrayList<>(len);
             for ( int ii = 0; ii < len; ++ii ) {
                 result.add( list.remove( start ) );
             }
@@ -466,7 +466,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         private Set<GameListGroup> getGroupWithID( long groupID )
         {
-            Set<Long> groupIDs = new HashSet<Long>();
+            Set<Long> groupIDs = new HashSet<>();
             groupIDs.add( groupID );
             Set<GameListGroup> result = getGroupsWithIDs( groupIDs );
             return result;
@@ -477,7 +477,7 @@ public class GamesListDelegate extends ListDelegateBase
         // get to page out when they scroll offscreen.
         private Set<GameListGroup> getGroupsWithIDs( Set<Long> groupIDs )
         {
-            Set<GameListGroup> result = new HashSet<GameListGroup>();
+            Set<GameListGroup> result = new HashSet<>();
             ListView listView = getListView();
             int count = listView.getChildCount();
             for ( int ii = 0; ii < count; ++ii ) {
@@ -494,14 +494,14 @@ public class GamesListDelegate extends ListDelegateBase
 
         private Set<GameListItem> getGamesFromElems( long rowID )
         {
-            HashSet<Long> rowSet = new HashSet<Long>();
+            HashSet<Long> rowSet = new HashSet<>();
             rowSet.add( rowID );
             return getGamesFromElems( rowSet );
         }
 
         private Set<GameListItem> getGamesFromElems( Set<Long> rowIDs )
         {
-            Set<GameListItem> result = new HashSet<GameListItem>();
+            Set<GameListItem> result = new HashSet<>();
             ListView listView = getListView();
             int count = listView.getChildCount();
             for ( int ii = 0; ii < count; ++ii ) {
@@ -619,7 +619,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
         m_activity = delegator.getActivity();
-        m_launchedGames = new HashSet<Long>();
+        m_launchedGames = new HashSet<>();
         s_self = this;
     }
 
@@ -1013,14 +1013,14 @@ public class GamesListDelegate extends ListDelegateBase
             warnSMSBannedIf();
         }
 
-        Set<Long> dupModeGames = DBUtils.getDupModeGames( m_activity ).keySet();
-        long[] asArray = new long[dupModeGames.size()];
-        int ii = 0;
-        for ( long rowid : dupModeGames ) {
-            Log.d( TAG, "row %d is dup-mode", rowid );
-            asArray[ii++] = rowid;
-        }
         if ( false ) {
+            Set<Long> dupModeGames = DBUtils.getDupModeGames( m_activity ).keySet();
+            long[] asArray = new long[dupModeGames.size()];
+            int ii = 0;
+            for ( long rowid : dupModeGames ) {
+                Log.d( TAG, "row %d is dup-mode", rowid );
+                asArray[ii++] = rowid;
+            }
             deleteGames( asArray, true );
         }
     } // init
@@ -2522,7 +2522,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean needsClear = 0 < m_mySIS.selGames.size();
         if ( needsClear ) {
             // long[] rowIDs = getSelRowIDs();
-            Set<Long> selGames = new HashSet<Long>( m_mySIS.selGames );
+            Set<Long> selGames = new HashSet<>( m_mySIS.selGames );
             m_mySIS.selGames.clear();
             m_adapter.clearSelectedGames( selGames );
         }

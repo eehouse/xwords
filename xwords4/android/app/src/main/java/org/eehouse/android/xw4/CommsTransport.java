@@ -69,7 +69,7 @@ public class CommsTransport implements TransportProcs,
         m_context = context;
         m_tpHandler = handler;
         m_rowid = rowid;
-        m_buffersOut = new Vector<ByteBuffer>();
+        m_buffersOut = new Vector<>();
         m_bytesIn = ByteBuffer.allocate( 2048 );
 
         NetStateCache.register( context, this );

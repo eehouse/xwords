@@ -47,7 +47,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     private boolean m_hasOptionsMenu = false;
     private int m_commitID;
 
-    private static Set<XWFragment> sActiveFrags = new HashSet<XWFragment>();
+    private static Set<XWFragment> sActiveFrags = new HashSet<>();
     public static XWFragment findOwnsView( View view )
     {
         XWFragment result = null;

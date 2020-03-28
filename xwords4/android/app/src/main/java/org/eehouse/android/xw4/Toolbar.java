@@ -64,7 +64,7 @@ public class Toolbar implements BoardContainer.SizeChangeListener {
     private boolean m_visible;
     private Map<Buttons, Object> m_onClickListeners = new HashMap<>();
     private Map<Buttons, Object> m_onLongClickListeners = new HashMap<>();
-    private Set<Buttons> m_enabled = new HashSet<Buttons>();
+    private Set<Buttons> m_enabled = new HashSet<>();
 
     public Toolbar( Activity activity, HasDlgDelegate dlgDlgt )
     {

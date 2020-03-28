@@ -88,7 +88,7 @@ public class DwnldDelegate extends ListDelegateBase {
         public DownloadFinishedListener m_lstnr;
     }
     private static Map<Uri,ListenerData> s_listeners =
-        new HashMap<Uri,ListenerData>();
+        new HashMap<>();
 
     private class DownloadFilesTask extends AsyncTask<Void, Void, Void>
         implements DictUtils.DownProgListener {
@@ -249,7 +249,7 @@ public class DwnldDelegate extends ListDelegateBase {
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        m_dfts = new ArrayList<DownloadFilesTask>();
+        m_dfts = new ArrayList<>();
         DownloadFilesTask dft = null;
         Uri[] uris = null;
         LinearLayout item = null;
@@ -269,7 +269,7 @@ public class DwnldDelegate extends ListDelegateBase {
                 }
             }
             if ( null != uris ) {
-                m_views = new ArrayList<LinearLayout>();
+                m_views = new ArrayList<>();
                 for ( int ii = 0; ii < uris.length; ++ii ) {
                     item = (LinearLayout)inflate( R.layout.import_dict_item );
                     m_dfts.add( new DownloadFilesTask( uris[ii], item, isApp ));
@@ -287,7 +287,7 @@ public class DwnldDelegate extends ListDelegateBase {
         if ( null != dft ) {
             Assert.assertTrue( 0 == m_dfts.size() );
             m_dfts.add( dft );
-            m_views = new ArrayList<LinearLayout>( 1 );
+            m_views = new ArrayList<>( 1 );
             m_views.add( item );
             dft = null;
         }

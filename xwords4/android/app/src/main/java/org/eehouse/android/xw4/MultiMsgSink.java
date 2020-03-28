@@ -36,7 +36,7 @@ public class MultiMsgSink implements TransportProcs {
     private Context m_context;
     // Use set to count so message sent over both BT and Relay is counted only
     // once.
-    private Set<String> m_sentSet = new HashSet<String>();
+    private Set<String> m_sentSet = new HashSet<>();
 
     public MultiMsgSink( Context context, long rowid )
     {

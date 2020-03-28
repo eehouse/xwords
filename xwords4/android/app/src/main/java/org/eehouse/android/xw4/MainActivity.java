@@ -54,7 +54,7 @@ public class MainActivity extends XWActivity
     // Used only if m_dpEnabled is true
     private LinearLayout m_root;
     private boolean m_safeToCommit;
-    private ArrayList<Runnable> m_runWhenSafe = new ArrayList<Runnable>();
+    private ArrayList<Runnable> m_runWhenSafe = new ArrayList<>();
     private Intent m_newIntent; // work in progress...
 
     // for tracking launchForResult callback recipients
@@ -270,7 +270,7 @@ public class MainActivity extends XWActivity
         public Intent m_data;
         public PendingResultCache( Fragment target, int request,
                                    int result, Intent data ) {
-            m_frag = new WeakReference<Fragment>(target);
+            m_frag = new WeakReference<>(target);
             m_request = request;
             m_result = result;
             m_data = data;
