@@ -101,7 +101,7 @@ public class DbgUtils {
 
     static String extrasToString( Bundle extras )
     {
-        ArrayList<String> al = new ArrayList<String>();
+        ArrayList<String> al = new ArrayList<>();
         if ( null != extras ) {
             for ( String key : extras.keySet() ) {
                 al.add( key + ":" + extras.get(key) );

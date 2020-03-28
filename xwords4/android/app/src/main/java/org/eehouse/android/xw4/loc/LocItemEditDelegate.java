@@ -172,7 +172,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
     // searching for them anyway.
     private HashSet<String> getFmtSet( String txt, TextView owner )
     {
-        HashSet<String> fmts = new HashSet<String>();
+        HashSet<String> fmts = new HashSet<>();
         Spannable spanText = null; // null unless used
 
         Matcher matcher = s_patFormat.matcher( txt );

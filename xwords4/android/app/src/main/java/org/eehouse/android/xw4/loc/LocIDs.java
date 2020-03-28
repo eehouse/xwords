@@ -50,7 +50,7 @@ public class LocIDs extends LocIDsData {
     protected static HashMap<String, Integer> getS_MAP( Context context )
     {
         if ( null == S_MAP ) {
-            S_MAP = new HashMap<String, Integer>(S_IDS.length);
+            S_MAP = new HashMap<>(S_IDS.length);
             for ( int id : S_IDS ) {
                 String str = context.getString( id );
                 S_MAP.put( str, id );

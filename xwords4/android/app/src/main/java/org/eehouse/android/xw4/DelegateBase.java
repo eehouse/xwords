@@ -76,7 +76,7 @@ public class DelegateBase implements DlgClickNotify,
     private boolean m_finishCalled;
     private View m_rootView;
     private boolean m_isVisible;
-    private ArrayList<Runnable> m_visibleProcs = new ArrayList<Runnable>();
+    private ArrayList<Runnable> m_visibleProcs = new ArrayList<>();
     private static Map<Class, WeakReference<DelegateBase>> s_instances
         = new HashMap<Class, WeakReference<DelegateBase>>();
 
@@ -146,7 +146,7 @@ public class DelegateBase implements DlgClickNotify,
             if ( s_instances.containsKey( clazz ) ) {
                 Log.d( TAG, "onStart(): replacing curThis" );
             }
-            s_instances.put( clazz, new WeakReference<DelegateBase>(this) );
+            s_instances.put( clazz, new WeakReference<>(this) );
         }
     }
 

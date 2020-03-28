@@ -139,7 +139,7 @@ public class PrefsDelegate extends DelegateBase
     protected void init( Bundle savedInstanceState )
     {
         if ( null == s_keysHash ) {
-            s_keysHash = new HashMap<String, Integer>();
+            s_keysHash = new HashMap<>();
             for ( int key : s_keys ) {
                 String str = getString( key );
                 s_keysHash.put( str, key );

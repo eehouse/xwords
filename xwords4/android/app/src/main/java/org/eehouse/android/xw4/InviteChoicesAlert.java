@@ -55,9 +55,8 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
     public void populateBuilder( final Context context, final DlgState state,
                                  AlertDialog.Builder builder )
     {
-        final ArrayList<InviteMeans> means =
-            new ArrayList<InviteMeans>();
-        ArrayList<String> items = new ArrayList<String>();
+        final ArrayList<InviteMeans> means = new ArrayList<>();
+        ArrayList<String> items = new ArrayList<>();
         InviteMeans lastMeans = null;
         if ( null != state.m_params
              && state.m_params[0] instanceof SentInvitesInfo ) {

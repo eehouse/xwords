@@ -89,13 +89,13 @@ public class DBUtils {
                                GameChangeType change );
     }
     private static HashSet<DBChangeListener> s_listeners =
-        new HashSet<DBChangeListener>();
+        new HashSet<>();
 
     public static interface StudyListListener {
         void onWordAdded( String word, int langCode );
     }
     private static Set<StudyListListener> s_slListeners
-        = new HashSet<StudyListListener>();
+        = new HashSet<>();
 
     private static SQLiteOpenHelper s_dbHelper = null;
     private static SQLiteDatabase s_db = null;
@@ -500,9 +500,9 @@ public class DBUtils {
 
         private SentInvitesInfo( long rowID ) {
             m_rowid = rowID;
-            m_means = new ArrayList<InviteMeans>();
-            m_targets = new ArrayList<String>();
-            m_timestamps = new ArrayList<Date>();
+            m_means = new ArrayList<>();
+            m_targets = new ArrayList<>();
+            m_timestamps = new ArrayList<>();
         }
 
         private void addEntry( InviteMeans means, String target, Date ts )
@@ -543,7 +543,7 @@ public class DBUtils {
                     InviteMeans means = m_means.get(ii);
                     Set<String> devs;
                     if ( ! hashes.containsKey( means ) ) {
-                        devs = new HashSet<String>();
+                        devs = new HashSet<>();
                         hashes.put( means, devs );
                     }
                     devs = hashes.get( means );
@@ -770,7 +770,7 @@ public class DBUtils {
     public static HashMap<Long,CommsConnTypeSet>
         getGamesWithSendsPending( Context context )
     {
-        HashMap<Long, CommsConnTypeSet> result = new HashMap<Long,CommsConnTypeSet>();
+        HashMap<Long, CommsConnTypeSet> result = new HashMap<>();
         String[] columns = { ROW_ID, DBHelper.CONTYPE };
         String selection = String.format( "%s > 0 AND %s != %d", DBHelper.NPACKETSPENDING,
                                           DBHelper.GROUPID, getArchiveGroup( context ) );
@@ -892,7 +892,7 @@ public class DBUtils {
                     for ( String dev : TextUtils.split( devs, "\n" ) ) {
                         set = map.get( dev );
                         if ( null == set ) {
-                            set = new HashSet<Integer>();
+                            set = new HashSet<>();
                             map.put( dev, set );
                         }
                         set.add( new Integer(gameID) );
@@ -943,7 +943,7 @@ public class DBUtils {
         String[] result = null;
         String[] columns = { ROW_ID, DBHelper.RELAYID };
         String selection = DBHelper.RELAYID + " NOT null";
-        ArrayList<String> ids = new ArrayList<String>();
+        ArrayList<String> ids = new ArrayList<>();
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1000,7 +1000,7 @@ public class DBUtils {
     public static Obit[] listObits( Context context )
     {
         Obit[] result = null;
-        ArrayList<Obit> al = new ArrayList<Obit>();
+        ArrayList<Obit> al = new ArrayList<>();
         String[] columns = { DBHelper.RELAYID, DBHelper.SEED };
 
         initDB( context );
@@ -1214,8 +1214,8 @@ public class DBUtils {
         if ( null != oldHistory ) {
             Log.d( TAG, "convertChatString(): got string: %s", oldHistory );
 
-            ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
-            ArrayList<HistoryPair> pairs = new ArrayList<HistoryPair>();
+            ArrayList<ContentValues> valuess = new ArrayList<>();
+            ArrayList<HistoryPair> pairs = new ArrayList<>();
             String localPrefix = LocUtils.getString( context, R.string.chat_local_id );
             String rmtPrefix = LocUtils.getString( context, R.string.chat_other_id );
             Log.d( TAG, "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix );
@@ -1477,7 +1477,7 @@ public class DBUtils {
 
     private static HashMap<Long, Integer> getGameCounts( SQLiteDatabase db )
     {
-        HashMap<Long, Integer> result = new HashMap<Long, Integer>();
+        HashMap<Long, Integer> result = new HashMap<>();
         String query = "SELECT %s, count(%s) as cnt FROM %s GROUP BY %s";
         query = String.format( query, DBHelper.GROUPID, DBHelper.GROUPID,
                                DBHelper.TABLE_NAMES.SUM, DBHelper.GROUPID );
@@ -2298,8 +2298,8 @@ public class DBUtils {
     // caller cast.
     public static Object[] getXlations( Context context, String locale )
     {
-        HashMap<String, String> local = new HashMap<String, String>();
-        HashMap<String, String> blessed = new HashMap<String, String>();
+        HashMap<String, String> local = new HashMap<>();
+        HashMap<String, String> blessed = new HashMap<>();
 
         String selection = String.format( "%s = '%s'", DBHelper.LOCALE,
                                           locale );

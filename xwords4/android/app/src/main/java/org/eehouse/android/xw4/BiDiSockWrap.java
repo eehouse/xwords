@@ -125,7 +125,7 @@ public class BiDiSockWrap {
     private void init( Socket socket )
     {
         mSocket = socket;
-        mQueue = new LinkedBlockingQueue<byte[]>();
+        mQueue = new LinkedBlockingQueue<>();
         startThreads();
     }
 

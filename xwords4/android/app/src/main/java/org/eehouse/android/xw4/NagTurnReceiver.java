@@ -171,7 +171,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
                 result = s_lastIntervals;
             } else {
                 String[] strs = TextUtils.split( pref, "," );
-                ArrayList<Long> al = new ArrayList<Long>();
+                ArrayList<Long> al = new ArrayList<>();
                 for ( String str : strs ) {
                     try {
                         long value = Long.parseLong(str);
@@ -203,7 +203,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
     private static String formatMillis( Context context, long millis )
     {
         long seconds = millis / 1000;
-        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<String> results = new ArrayList<>();
         for ( int[] datum : s_fmtData ) {
             long val = seconds / datum[0];
             if ( 1 <= val ) {

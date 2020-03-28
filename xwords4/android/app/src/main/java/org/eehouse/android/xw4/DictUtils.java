@@ -452,7 +452,7 @@ public class DictUtils {
         byte[][] dictBytes = new byte[names.length][];
         String[] dictPaths = new String[names.length];
 
-        HashMap<String,byte[]> seen = new HashMap<String,byte[]>();
+        HashMap<String,byte[]> seen = new HashMap<>();
         for ( int ii = 0; ii < names.length; ++ii ) {
             byte[] bytes = null;
             String path = null;

@@ -260,7 +260,7 @@ public class NetUtils {
     private static String runConn( HttpsURLConnection conn, String param )
     {
         String result = null;
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put( k_PARAMS, param );
         String paramsString = getPostDataString( params );
 
@@ -338,7 +338,7 @@ public class NetUtils {
     {
         String result = null;
         try {
-            ArrayList<String> pairs = new ArrayList<String>();
+            ArrayList<String> pairs = new ArrayList<>();
             // StringBuilder sb = new StringBuilder();
             // String[] pair = { null, null };
             for ( Map.Entry<String, String> entry : params.entrySet() ){

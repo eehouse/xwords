@@ -57,7 +57,7 @@ public class BoardContainer extends ViewGroup {
 
     public static void registerSizeChangeListener(SizeChangeListener scl)
     {
-        s_scl = new WeakReference<SizeChangeListener>(scl);
+        s_scl = new WeakReference<>(scl);
         callSCL();
     }
 

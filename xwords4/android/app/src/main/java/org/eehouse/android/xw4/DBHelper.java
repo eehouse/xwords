@@ -497,7 +497,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
             if ( null != columnNames ) {
                 ArrayList<String> oldCols =
-                    new ArrayList<String>( Arrays.asList( columnNames ) );
+                    new ArrayList<>( Arrays.asList( columnNames ) );
 
                 // Make a list of columns in the new DB, using it to
                 // remove from the old list any that aren't in the
@@ -507,7 +507,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 // the newly-created table doesn't work, perhaps
                 // because we're in a transaction and nothing's been
                 // committed.
-                ArrayList<String> newCols = new ArrayList<String>();
+                ArrayList<String> newCols = new ArrayList<>();
                 for ( int ii = 0; ii < data.length; ++ii ) {
                     newCols.add( data[ii][0] );
                 }

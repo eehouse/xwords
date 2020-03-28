@@ -34,7 +34,7 @@ public class MountEventReceiver extends BroadcastReceiver {
         void cardMounted( boolean nowMounted );
     }
 
-    private static HashSet<SDCardNotifiee> s_procs = new HashSet<SDCardNotifiee>();
+    private static HashSet<SDCardNotifiee> s_procs = new HashSet<>();
 
     @Override
     public void onReceive( Context context, Intent intent )

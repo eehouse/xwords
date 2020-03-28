@@ -312,7 +312,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     {
         JSONObject phones = XWPrefs.getSMSPhones( m_activity );
 
-        m_phoneRecs = new ArrayList<PhoneRec>();
+        m_phoneRecs = new ArrayList<>();
         for ( Iterator<String> iter = phones.keys(); iter.hasNext(); ) {
             String phone = iter.next();
             String name = phones.optString( phone, null );

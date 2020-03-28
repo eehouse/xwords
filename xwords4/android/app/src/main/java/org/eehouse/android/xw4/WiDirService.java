@@ -113,14 +113,12 @@ public class WiDirService extends XWService {
     private static Thread sAcceptThread;
     private static ServerSocket sServerSock;
     private static BiDiSockWrap.Iface sIface;
-    private static Map<String, BiDiSockWrap> sSocketWrapMap
-        = new HashMap<String, BiDiSockWrap>();
-    private static Map<String, String> sUserMap = new HashMap<String, String>();
-    private static Map<String, Long> sPendingDevs = new HashMap<String, Long>();
+    private static Map<String, BiDiSockWrap> sSocketWrapMap = new HashMap<>();
+    private static Map<String, String> sUserMap = new HashMap<>();
+    private static Map<String, Long> sPendingDevs = new HashMap<>();
     private static String sMacAddress;
     private static String sDeviceName;
-    private static Set<DevSetListener> s_devListeners
-        = new HashSet<DevSetListener>();
+    private static Set<DevSetListener> s_devListeners = new HashSet<>();
     private static Set<String> s_peersSet;
 
     private P2pMsgSink m_sink;
@@ -190,7 +188,7 @@ public class WiDirService extends XWService {
                                              false );
 
         Assert.assertNull( s_peersSet );
-        s_peersSet = new HashSet<String>();
+        s_peersSet = new HashSet<>();
         String peers = DBUtils.getStringFor( context, PEERS_LIST_KEY, null );
         if ( null != peers ) {
             String[] macs = TextUtils.split( peers, "," );
@@ -583,7 +581,7 @@ public class WiDirService extends XWService {
                 break;
 
             case ADD_LOCAL_SERVICES:
-                Map<String, String> record = new HashMap<String, String>();
+                Map<String, String> record = new HashMap<>();
                 record.put( "AVAILABLE", "visible");
                 record.put( "PORT", "" + OWNER_PORT );
                 record.put( "NAME", sDeviceName );
@@ -937,7 +935,7 @@ public class WiDirService extends XWService {
     {
         Map<String, String> macToName;
         synchronized ( sUserMap ) {
-            macToName = new HashMap<String, String>(sUserMap);
+            macToName = new HashMap<>(sUserMap);
         }
         return macToName;
     }
@@ -1053,7 +1051,7 @@ public class WiDirService extends XWService {
 
     private static void updatePeersList( WifiP2pDeviceList peerList )
     {
-        Set<String> newSet = new HashSet<String>();
+        Set<String> newSet = new HashSet<>();
         for ( WifiP2pDevice device : peerList.getDeviceList() ) {
             String macAddress = device.deviceAddress;
             newSet.add( macAddress );

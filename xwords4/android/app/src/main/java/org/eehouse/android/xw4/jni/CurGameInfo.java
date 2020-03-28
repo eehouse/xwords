@@ -425,7 +425,7 @@ public class CurGameInfo implements Serializable {
     {
         String[] dicts =
             DictLangCache.getHaveLang( context, dictLang );
-        HashSet<String> installed = new HashSet<String>( Arrays.asList(dicts) );
+        HashSet<String> installed = new HashSet<>( Arrays.asList(dicts) );
 
         if ( !installed.contains( dictName ) ) {
             dictName = newDict;

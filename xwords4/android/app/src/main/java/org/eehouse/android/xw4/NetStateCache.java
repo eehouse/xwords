@@ -153,7 +153,7 @@ public class NetStateCache {
                 context.getApplicationContext()
                     .registerReceiver( s_receiver, filter );
 
-                s_ifs = new HashSet<StateChangedIf>();
+                s_ifs = new HashSet<>();
                 s_haveReceiver.set( true );
             }
         }

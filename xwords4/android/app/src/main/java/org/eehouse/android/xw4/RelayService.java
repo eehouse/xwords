@@ -115,7 +115,7 @@ public class RelayService extends XWJIService
     private static final String MSGNUM = "MSGNUM";
 
     private static LinkedBlockingQueue<PacketData> s_queue =
-        new LinkedBlockingQueue<PacketData>();
+        new LinkedBlockingQueue<>();
     private static List<PacketData> s_packetsSentUDP = new ArrayList<>();
     private static List<PacketData> s_packetsSentWeb = new ArrayList<>();
     private static final PacketData sEOQPacket = new PacketData();
@@ -1254,10 +1254,9 @@ public class RelayService extends XWJIService
         if ( null != msgs ) {
             RelayMsgSink sink = new RelayMsgSink();
             int nameCount = relayIDs.length;
-            ArrayList<String> idsWMsgs = new ArrayList<String>( nameCount );
-            ArrayList<Boolean> isLocals = new ArrayList<Boolean>( nameCount );
-            ArrayList<BackMoveResult> bmrs =
-                new ArrayList<BackMoveResult>( nameCount );
+            ArrayList<String> idsWMsgs = new ArrayList<>( nameCount );
+            ArrayList<Boolean> isLocals = new ArrayList<>( nameCount );
+            ArrayList<BackMoveResult> bmrs = new ArrayList<>( nameCount );
 
             boolean[] isLocalP = new boolean[1];
             for ( int ii = 0; ii < nameCount; ++ii ) {
@@ -1512,7 +1511,7 @@ public class RelayService extends XWJIService
 
                 ArrayList<byte[]> list = m_msgLists.get( relayID );
                 if ( list == null ) {
-                    list = new ArrayList<byte[]>();
+                    list = new ArrayList<>();
                     m_msgLists.put( relayID, list );
                 }
                 list.add( buf );

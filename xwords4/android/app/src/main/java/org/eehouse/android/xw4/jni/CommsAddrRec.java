@@ -199,7 +199,7 @@ public class CommsAddrRec {
             if ( 0 == types.length ) {
                 result = LocUtils.getString( context, R.string.note_none );
             } else {
-                List<String> strs = new ArrayList<String>();
+                List<String> strs = new ArrayList<>();
                 for ( CommsConnType typ : types ) {
                     if ( typ.isSelectable() ) {
                         String str = longVersion?

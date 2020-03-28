@@ -335,30 +335,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
 
     @Override
-    // public void drawTimer( Rect rect, int player, int secondsLeft,
-    //                        boolean turnDone )
-    // {
-    //     if ( m_lastSecsLeft != secondsLeft
-    //          || m_lastTimerPlayer != player
-    //          || m_lastTimerTurnDone != turnDone ) {
-    //         if ( null != m_activity && null != m_jniThread ) {
-    //             Rect rectCopy = new Rect(rect);
-    //             m_lastSecsLeft = secondsLeft;
-    //             m_lastTimerPlayer = player;
-    //             m_lastTimerTurnDone = turnDone;
-
-    //             String negSign = secondsLeft < 0? "-" : "";
-    //             secondsLeft = Math.abs( secondsLeft );
-    //             String time = String.format( "%s%d:%02d", negSign,
-    //                                          secondsLeft/60, secondsLeft%60 );
-
-    //             fillRectOther( rectCopy, CommonPrefs.COLOR_BACKGRND );
-
-    //             int color = m_playerColors[player];
-    //             if ( turnDone ) {
-    //                 color &= NOT_TURN_ALPHA;
-    //             }
-    //             m_fillPaint.setColor( color );
     public void drawTimer( Rect rect, final int player,
                            int secondsLeft, final boolean turnDone )
     {

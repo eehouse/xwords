@@ -824,7 +824,7 @@ public class JNIThread extends Thread implements AutoCloseable {
         return XwJNI.server_do( gamePtr );
     }
 
-    private static Map<Long, JNIThread> s_instances = new HashMap<Long, JNIThread>();
+    private static Map<Long, JNIThread> s_instances = new HashMap<>();
     private void retain_sync()
     {
         ++m_refCount;

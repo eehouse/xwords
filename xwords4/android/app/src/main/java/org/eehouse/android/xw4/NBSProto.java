@@ -56,7 +56,7 @@ public class NBSProto {
     private static int s_nReceived = 0;
     private static int s_nSent = 0;
 
-    private static Set<Integer> s_sentDied = new HashSet<Integer>();
+    private static Set<Integer> s_sentDied = new HashSet<>();
 
     public static void handleFrom( Context context, byte[] buffer,
                                    String phone, short port )
