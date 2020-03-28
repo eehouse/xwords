@@ -1283,7 +1283,7 @@ makeRobotMove( ServerCtxt* server )
 {
     LOG_FUNC();
     XP_Bool result = XP_FALSE;
-    XP_Bool searchComplete;
+    XP_Bool searchComplete = XP_FALSE;
     XP_S16 turn;
     MoveInfo newMove = {0};
     ModelCtxt* model = server->vol.model;
@@ -1299,10 +1299,12 @@ makeRobotMove( ServerCtxt* server )
     }
 
 #ifdef XWFEATURE_SLOW_ROBOT
-    if ( 0 != server->nv.robotTradePct
-         && (server_countTilesInPool( server ) >= MAX_TRAY_TILES) ) {
-        XP_U16 pct = XP_RANDOM() % 100;
-        forceTrade = pct < server->nv.robotTradePct ;
+    if ( 0 != server->nv.robotTradePct ) {
+        XP_ASSERT( ! inDuplicateMode( server ) );
+        if ( server_countTilesInPool( server ) >= MAX_TRAY_TILES ) {
+            XP_U16 pct = XP_RANDOM() % 100;
+            forceTrade = pct < server->nv.robotTradePct ;
+        }
     }
 #endif
 
@@ -3831,11 +3833,10 @@ setTurn( ServerCtxt* server, XP_S16 turn )
     if ( inDupMode || server->nv.currentTurn != turn || 1 == server->vol.gi->nPlayers ) {
         if ( DUP_PLAYER == turn && inDupMode ) {
             turn = dupe_nextTurn( server );
-        }
-        server->nv.currentTurn = turn;
-        if ( 0 <= turn ) {
+        } else if ( 0 <= turn && !inDupMode ) {
             XP_ASSERT( turn == model_getNextTurn( server->vol.model ) );
         }
+        server->nv.currentTurn = turn;
         server->nv.lastMoveTime = dutil_getCurSeconds( server->vol.dutil );
         callTurnChangeListener( server );
     }

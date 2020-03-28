@@ -427,7 +427,8 @@ def build_cmds(args):
 
             PARAMS = player_params(args, NLOCALS, NPLAYERS, DEV)
             if not args.USE_GTK: PARAMS += ['--curses']
-            PARAMS += ['--board-size', '15', '--trade-pct', args.TRADE_PCT, '--sort-tiles']
+            PARAMS += ['--board-size', '15', '--sort-tiles']
+            if not useDupeMode: PARAMS += ['--trade-pct', args.TRADE_PCT]
 
             # We SHOULD support having both SMS and relay working...
             if args.ADD_RELAY:
@@ -739,8 +740,9 @@ def mkParser():
     parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
     parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
 
-    parser.add_argument('--core-pat', dest = 'CORE_PAT', default = "/tmp/core*",
-                        help = "pattern for core files that should stop the script" )
+    parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get('DISCON_COREPAT'),
+                        help = "pattern for core files that should stop the script " \
+                        + "(default from env $DISCON_COREPAT)" )
 
     parser.add_argument('--with-valgrind', dest = 'VALGRIND', default = False,
                         action = 'store_true')

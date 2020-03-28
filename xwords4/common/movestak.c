@@ -275,7 +275,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     StackEntry prevTop;
     if ( 1 < stack->nPlayers &&
          stack_getNthEntry( stack, stack->nEntries - 1, &prevTop ) ) {
-        XP_ASSERT( prevTop.playerNum != entry->playerNum );
+        XP_ASSERT( stack->inDuplicateMode || prevTop.playerNum != entry->playerNum );
     }
 #endif
 
@@ -531,6 +531,7 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
 XP_S16
 stack_getNextTurn( StackCtxt* stack )
 {
+    XP_ASSERT( !stack->inDuplicateMode );
     XP_S16 result = -1;
     XP_U16 nn = stack->nEntries - 1;
 
