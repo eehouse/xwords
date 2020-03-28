@@ -48,10 +48,10 @@ enum {
 };
 typedef XP_U8 GameEndReason;
 
-typedef enum {DUPE_STUFF_TRADES_SERVER,
-              DUPE_STUFF_MOVES_SERVER,
-              DUPE_STUFF_MOVE_CLIENT,
-              DUPE_STUFF_PAUSE,
+typedef enum { DUPE_STUFF_TRADES_SERVER,
+               DUPE_STUFF_MOVES_SERVER,
+               DUPE_STUFF_MOVE_CLIENT,
+               DUPE_STUFF_PAUSE,
 } DUPE_STUFF;
 
 typedef struct ServerPlayer {
@@ -140,7 +140,7 @@ struct ServerCtxt {
 # define ROBOTWAITING(s) XP_FALSE
 #endif
 
-# define dupTimerRunning()    server_canPause(server)
+# define dupe_timerRunning()    server_canPause(server)
 
 
 #define NPASSES_OK(s) model_recentPassCountOk((s)->vol.model)
@@ -1141,7 +1141,7 @@ server_pause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg )
 }
 
 static void
-autoPause( ServerCtxt* server )
+dupe_autoPause( ServerCtxt* server )
 {
     XP_LOGF( "%s()", __func__ );
 
@@ -1214,7 +1214,7 @@ dupe_handleServerTrade( ServerCtxt* server, XWStreamCtxt* stream )
 
     ModelCtxt* model = server->vol.model;
     model_resetCurrentTurn( model, DUP_PLAYER );
-    model_removePlayerTiles2( model, DUP_PLAYER, &oldTiles );
+    model_removePlayerTiles( model, DUP_PLAYER, &oldTiles );
     pool_replaceTiles( server->pool, &oldTiles );
     pool_removeTiles( server->pool, &newTiles );
 
@@ -2969,7 +2969,7 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
 #endif /* XWFEATURE_STANDALONE_ONLY */
 
 static void
-chooseMove( const ServerCtxt* server, XP_U16 nPlayers, XP_U16 scores[],
+dupe_chooseMove( const ServerCtxt* server, XP_U16 nPlayers, XP_U16 scores[],
             XP_U16* winner, XP_U16* winningNTiles )
 {
     ModelCtxt* model = server->vol.model;
@@ -3018,7 +3018,7 @@ chooseMove( const ServerCtxt* server, XP_U16 nPlayers, XP_U16 scores[],
 
     }
 
-    const XP_U16 winnerIndx = XP_RANDOM() % nWinners;
+    const XP_U16 winnerIndx = 1 == nWinners ? 0 : XP_RANDOM() % nWinners;
     *winner = moveData[winnerIndx].player;
     *winningNTiles = moveData[winnerIndx].nTiles;
     /* This fires: I need the reassign-no-moves thing */
@@ -3031,7 +3031,7 @@ chooseMove( const ServerCtxt* server, XP_U16 nPlayers, XP_U16 scores[],
 }
 
 static XP_Bool
-allForced( const ServerCtxt* server )
+dupe_allForced( const ServerCtxt* server )
 {
     XP_Bool result = XP_TRUE;
     for ( XP_U16 ii = 0; result && ii < server->vol.gi->nPlayers; ++ii ) {
@@ -3052,14 +3052,14 @@ dupe_commitAndReport( ServerCtxt* server )
 
     XP_U16 winner;
     XP_U16 nTiles;
-    chooseMove( server, nPlayers, scores, &winner, &nTiles );
+    dupe_chooseMove( server, nPlayers, scores, &winner, &nTiles );
 
     /* If nobody can move AND there are tiles left, trade instead of recording
        a 0. Unless we're running a timer, in which case it's most likely
        noboby's playing, so pause the game instead. */
     if ( 0 == scores[winner] && 0 < pool_getNTilesLeft(server->pool) ) {
-        if ( dupTimerRunning() && allForced( server ) ) {
-            autoPause( server );
+        if ( dupe_timerRunning() && dupe_allForced( server ) ) {
+            dupe_autoPause( server );
         } else {
             dupe_makeAndReportTrade( server );
         }
@@ -3095,7 +3095,7 @@ dupe_makeAndReportTrade( ServerCtxt* server )
     model_resetCurrentTurn( model, DUP_PLAYER );
 
     TrayTileSet oldTiles = *model_getPlayerTiles( model, DUP_PLAYER );
-    model_removePlayerTiles2( model, DUP_PLAYER, &oldTiles );
+    model_removePlayerTiles( model, DUP_PLAYER, &oldTiles );
     pool_replaceTiles( pool, &oldTiles );
 
     TrayTileSet newTiles = {0};
@@ -3215,7 +3215,7 @@ dupe_receivePause( ServerCtxt* server, XWStreamCtxt* stream )
 }
 
 static XP_Bool
-handleDupeStuff( ServerCtxt* server, XWStreamCtxt* stream )
+dupe_handleStuff( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_Bool accepted;
     XP_Bool isServer = amServer( server );
@@ -3293,7 +3293,7 @@ dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
 static void
 dupe_forceCommits( ServerCtxt* server )
 {
-    if ( dupTimerRunning() ) {
+    if ( dupe_timerRunning() ) {
         XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
         if ( server->nv.dupTimerExpires <= now  ) {
 
@@ -3316,7 +3316,7 @@ dupe_forceCommits( ServerCtxt* server )
    guest, I care only about local players. If I'm a host or standalone, I care
    about everything.  */
 static void
-checkWhatsDone( const ServerCtxt* server, XP_Bool amServer,
+dupe_checkWhatsDone( const ServerCtxt* server, XP_Bool amServer,
                 XP_Bool* allDoneP, XP_Bool* allLocalsDoneP )
 {
     XP_Bool allDone = XP_TRUE;
@@ -3355,7 +3355,7 @@ dupe_checkTurns( ServerCtxt* server )
     XP_Bool allLocalsDone = XP_TRUE;
     XP_Bool amServer = server->vol.gi->serverRole == SERVER_ISSERVER
         || server->vol.gi->serverRole == SERVER_STANDALONE;
-    checkWhatsDone( server, amServer, &allDone, &allLocalsDone );
+    dupe_checkWhatsDone( server, amServer, &allDone, &allLocalsDone );
 
     XP_LOGF( "%s(): allDone: %d", __func__, allDone );
 
@@ -3604,9 +3604,6 @@ finishMove( ServerCtxt* server, TrayTileSet* newTiles, XP_U16 turn )
               model_getNumTilesInTray( model, turn ) );
 } /* finishMove */
     
-/* return XP_TRUE; */
-/* } /\* server_commitMove *\/ */
-
 XP_Bool
 server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
                     TrayTileSet* newTilesP )
@@ -4146,7 +4143,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
     }
         break;
     case XWPROTO_DUPE_STUFF:
-        accepted = handleDupeStuff( server, incoming );
+        accepted = dupe_handleStuff( server, incoming );
         break;
     default:
         XP_WARNF( "%s: Unknown code on incoming message: %d\n",

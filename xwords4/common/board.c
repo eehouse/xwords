@@ -2125,24 +2125,6 @@ MIN_TRADE_TILES( const BoardCtxt* board )
     return 6 == langCode ? 1 : MAX_TRAY_TILES;
 }
 
-#ifdef DEBUG
-/* static void */
-/* assertTilesInTiles( const BoardCtxt* board, const MoveInfo* mi, */
-/*                     const Tile* tiles, XP_U16 nTiles ) */
-/* { */
-/*     Tile blank = dict_getBlankTile( model_getDictionary( board->model ) ); */
-/*     for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) { */
-/*         Tile tile = mi->tiles[ii].tile; */
-/*         XP_Bool found = XP_FALSE; */
-/*         for ( XP_U16 jj = 0; !found && jj < nTiles; ++jj ) { */
-/*             found = tiles[jj] == tile */
-/*                 || (tiles[jj] == blank && IS_BLANK(tile)); */
-/*         } */
-/*         XP_ASSERT( found ); */
-/*     } */
-/* } */
-#endif
-
 /* Refuse with error message if any tiles are currently on board in this turn.
  * Then call the engine, and display the first move.  Return true if there's
  * any redrawing to be done.

@@ -1436,28 +1436,7 @@ model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 } /* model_removePlayerTile */
 
 void
-model_removePlayerTiles( ModelCtxt* model, XP_S16 turn, const MoveInfo* mi )
-{
-    XP_ASSERT( turn >= 0 );
-    PlayerCtxt* player = &model->players[turn];
-    for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) {
-        Tile tile = mi->tiles[ii].tile;
-        if ( IS_BLANK( tile ) ) {
-            tile = dict_getBlankTile( model_getDictionary(model) );
-        }
-        XP_S16 index = -1;
-        for ( XP_U16 jj = 0; index < 0 && jj < player->trayTiles.nTiles; ++jj ) {
-            if ( tile == player->trayTiles.tiles[jj] ) {
-                index = jj;
-            }
-        }
-        XP_ASSERT( index >= 0 );
-        model_removePlayerTile( model, turn, index );
-    }
-}
-
-void
-model_removePlayerTiles2( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
+model_removePlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
 {
     XP_ASSERT( turn >= 0 );
     PlayerCtxt* player = &model->players[turn];

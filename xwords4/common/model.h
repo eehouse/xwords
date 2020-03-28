@@ -152,8 +152,7 @@ void model_assignDupeTiles( ModelCtxt* model, const TrayTileSet* tiles );
 Tile model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index );
 
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
-void model_removePlayerTiles( ModelCtxt* model, XP_S16 turn, const MoveInfo* mi );
-void model_removePlayerTiles2( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles );
+void model_removePlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles );
 void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
                           Tile tile );
 void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,

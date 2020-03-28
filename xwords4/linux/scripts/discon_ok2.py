@@ -694,7 +694,7 @@ def mkParser():
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
 
-    parser.add_argument('--duplicate-pct', dest = 'DUP_PCT', default = 0, type = int,
+    parser.add_argument('--duplicate-pct', dest = 'DUP_PCT', default = 50, type = int,
                         help = 'this fraction played in duplicate mode')
 
     # # 

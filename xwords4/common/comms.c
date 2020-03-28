@@ -2316,6 +2316,12 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     /*     XP_LOGF( "%s: not expecting %s messages", __func__,  */
     /*              ConnType2Str( addrType ) ); */
     } else {
+#ifdef DEBUG
+        if (0 == (comms->addr._conTypes & retAddr->_conTypes)) {
+            XP_LOGFF( "not expecting %s messages (but proceeding)",
+                      ConnType2Str( addrType ) );
+        }
+#endif
         XWHostID senderID = 0;      /* unset; default for non-relay cases */
         XP_Bool usingRelay = XP_FALSE;
 

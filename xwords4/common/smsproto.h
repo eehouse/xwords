@@ -105,6 +105,6 @@ void smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr );
 # ifdef DEBUG
 void smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil );
 # else
-#  define  smsproto_runTests( p1, p2 )
+#  define smsproto_runTests( p1, p2 )
 # endif
 #endif
