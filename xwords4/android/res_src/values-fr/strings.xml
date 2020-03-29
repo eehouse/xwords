@@ -2180,7 +2180,7 @@ illimités ? Annulez si vous n\'êtes pas sûr.</string>
     <string name="connstat_sms">SMS</string>
     <!--  -->
     <!--<string name="enable_sms">Allow games via SMS</string>-->
-    <string name="enable_sms">Autoriser les parties par SMS</string>
+    <string name="enable_sms">Autoriser les parties par MMS</string>
     <!--  -->
     <!--<string name="enable_sms_summary">Only if you have unlimited texting!</string>-->
     <string name="enable_sms_summary">Seulement si vous avez un forfait SMS
@@ -2195,15 +2195,12 @@ illimité !</string>
     played. If you don\'t have an unlimited plan your carrier may
     charge you for each and every message!\n\nShould play via SMS be
     enabled?</string>-->
-    <string name="confirm_sms_expl">Attention : Cette fonctionnalité est faite
-pour les téléphones avec un forfait SMS illimités. Une fois que vous l\'aurez
-activée, des douzaines de SMS seront envoyés (de façon invisible) pour chaque
-partie jouée. Si vous n\'avez pas un forfait illimité votre opérateur pourrait
-vous faire payer pour chaque message !\n\nLes parties par SMS devraient-elles
-être activées ?</string>
+    <string name="confirm_sms_expl">Attention : Cette fonctionnalité est faite pour les téléphones avec un forfait SMS/MMS illimités. Une fois que vous l\'aurez activée, des douzaines de MMS seront envoyés (de façon invisible) pour chaque partie jouée. Si vous n\'avez pas un forfait illimité votre opérateur pourrait vous faire payer pour chaque message !
+\n
+\nLes parties par MMS devraient-elles être activées \?</string>
     <!--  -->
     <!--<string name="confirm_sms_prompt">Enable play via SMS?</string>-->
-    <string name="confirm_sms_prompt">Activer les parties par SMS ?</string>
+    <string name="confirm_sms_prompt">Activer les parties par MMS \?</string>
     <!--  -->
     <!--<string name="confirm_sms_leave">No: leave disabled</string>-->
     <string name="confirm_sms_leave">Non : laisser désactivé</string>
@@ -2222,9 +2219,9 @@ vous faire payer pour chaque message !\n\nLes parties par SMS devraient-elles
 désactivées, donc aucun coup ne sera envoyé pour cette partie. (Si vous voulez
 activer les parties par SMS, allez dans Paramètres->Paramètres des parties en
 réseau.)</string>-->
-    <string name="warn_sms_disabled">Les parties par SMS sont actuellement désactivées. Aucun coup ne sera envoyé par SMS.
-\n
-\nVous pouvez activer les parties par SMS maintenant, ou plus tard.</string>
+    <string name="warn_sms_disabled">Les parties par MMS sont actuellement désactivées. Aucun coup ne sera envoyé par MMS. 
+\n 
+\nVous pouvez activer les parties par MMS maintenant, ou plus tard.</string>
     <!--  -->
     <!--<string name="gamel_menu_checkupdates">Check for updates</string>-->
     <string name="gamel_menu_checkupdates">Vérifier les mises à jour</string>
@@ -2694,9 +2691,7 @@ parties sur l\'écran principal permet de voir plus de parties</string>
     phone with number \"%1$s\" is incompatible with this one for play
     using SMS. One of you may need to upgrade before you can
     continue.</string>-->
-    <string name="sms_bad_proto_fmt">La version de CrossWords sur le téléphone
-de numéro \"%1$s\" est incompatible avec celle-ci pour jouer par SMS. L\'un de
-vous doit faire une mise à jour avant de pouvoir continuer.</string>
+    <string name="sms_bad_proto_fmt">La version de CrossWords sur le téléphone de numéro « %1$s » est incompatible avec celle-ci pour jouer par MMS. L\'un de vous doit faire une mise à jour avant de pouvoir continuer.</string>
     <!--XLATE-ME-->
     <!--<string name="game_name_title">Name your game</string>-->
     <string name="game_name_title">Nommez votre partie</string>
@@ -2716,7 +2711,7 @@ vous doit faire une mise à jour avant de pouvoir continuer.</string>
 \nVous pouvez activer le Bluetooth maintenant, ou plus tard.</string>
     <!--XLATE-ME-->
     <!--<string name="button_enable_sms">Enable SMS</string>-->
-    <string name="button_enable_sms">Activer les SMS</string>
+    <string name="button_enable_sms">Activer les MMS</string>
     <!--XLATE-ME-->
     <!--<string name="button_enable_bt">Enable Bluetooth</string>-->
     <string name="button_enable_bt">Activer le Bluetooth</string>
@@ -2743,8 +2738,7 @@ avant de pouvoir être ouverte.</string>
     <!--XLATE-ME-->
     <!--<string name="new_game_message_net">(You will have a chance to
     invite other players when it is open.)</string>-->
-    <string name="new_game_message_net">(Vous aurez la possibilité d\'inviter
-d\'autres joueurs quand elle sera ouverte.)</string>
+    <string name="new_game_message_net">(Vous aurez la possibilité d\'inviter d\'autres joueurs après qu\'elle soit ouverte.)</string>
     <!--XLATE-ME-->
     <!--<string name="use_defaults">Use defaults</string>-->
     <string name="use_defaults">Utiliser param. par défaut</string>
@@ -3009,8 +3003,7 @@ pour la langue</string>
     <string name="wifi_warning">\u0020Vous pourriez, par exemple,
   avoir besoin d\'être sur un réseau Wi-Fi différent.</string>
     <string name="confirm_drop_relay_bt">Le Bluetooth ne marche que pour les appareils proches.</string>
-    <string name="confirm_drop_relay_sms">Jouer par SMS n\'est pas
-  possible avec tous les opérateurs.</string>
+    <string name="confirm_drop_relay_sms">Jouer par MMS n\'est pas possible avec tous les opérateurs.</string>
     <string name="notify_chat_title_fmt">Message de discussion dans la partie %1$s</string>
     <string name="notify_chat_body_fmt">%1$s : %2$s</string>
     <plurals name="confirm_clear_fmt">
@@ -3019,7 +3012,7 @@ pour la langue</string>
     </plurals>
     <string name="button_enable">Activer</string>
     <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner CrossWords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
-    <string name="not_again_comms_sms">Les parties par SMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
+    <string name="not_again_comms_sms">Les parties par MMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
     <string name="not_again_comms_bt">"Utilisez le Bluetooth  pour jouer contre un appareil à proximité appairé avec le votre."</string>
     <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
     <plurals name="resent_msgs_fmt">
@@ -3078,7 +3071,7 @@ pour la langue</string>
     <string name="rematch_name_fmt">Revanche : %1$s</string>
     <string name="waiting_rematch_title">Revanche en cours</string>
     <string name="rematch_sent_toast">Invitations à la revanche envoyées</string>
-    <string name="invit_expl_sms_fmt">Invitation envoyée par SMS au numéro de téléphone %1$s sur %2$s</string>
+    <string name="invit_expl_sms_fmt">Invitation envoyée par MMS au numéro de téléphone %1$s sur %2$s</string>
     <string name="invit_expl_bt_fmt">Invitation envoyée par Bluetooth à l\'appareil appairé \"%1$s\" sur %2$s</string>
     <string name="invit_expl_relay_fmt">Invitation transmise par le relai à un autre appareil sur %1$s</string>
     <string name="invit_expl_notarget_fmt">Invitation envoyée par %1$s sur %2$s. Destinataire inconnu.</string>
@@ -3133,9 +3126,9 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
 
 Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouvez retirer le réglage de communication par SMS.</string>
     <string name="download_rationale">Crosswords a besoin d\'accéder à un stockage temporaire pour conserver ce que vous êtes sur le point de télécharger.</string>
-    <string name="sms_invite_rationale">Crosswords a besoin de la permission d\'envoyer une invitation par SMS.</string>
+    <string name="sms_invite_rationale">Crosswords a besoin de la permission d\'envoyer une invitation par MMS.</string>
     <string name="toast_no_permission">Permission non accordée</string>
-    <string name="contacts_rationale">Crosswords veut accéder à vos contacts pour pouvoir mettre un nom sur les numéros de téléphones qui vous envoient des invitations par SMS. Vous pourrez toujours recevoir des invitations si vous n\'accordez pas cette permission, mais seul le numéro de téléphone de l\'expéditeur s\'affichera.</string>
+    <string name="contacts_rationale">Crosswords veut accéder à vos contacts pour pouvoir mettre un nom sur les numéros de téléphones qui vous envoient des invitations par MMS. Vous pourrez toujours recevoir des invitations si vous n\'accordez pas cette permission, mais seul le numéro de téléphone de l\'expéditeur s\'affichera.</string>
     <string name="button_ask_again">Redemander</string>
     <string name="contact_not_found">Pas dans les contacts</string>
     <string name="sms_send_failed">Échec de l\'envoi de SMS</string>
@@ -3170,9 +3163,9 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
     <string name="dicts_storage_rationale">CrossWords peut enregistrer et accéder à des listes de mots dans l\'espace de Téléchargements de votre appareil mais a besoin de la permission d\'y accéder à cet endroit.
 \n
 \nVous pouvez refuser cette permission sans crainte si vous ne téléchargerez jamais de listes de mots excepté depuis CrossWords et n\'en avez jamais enregistrées là.</string>
-    <string name="phone_lookup_rationale">Pour rejouer une revanche qui utilise les SMS, CrossWords a besoin de la permission d\'accéder à votre numéro de téléphone.</string>
-    <string name="phone_lookup_rationale_drop">Jouer cette revanche par SMS uniquement n\'est pas possible sans cette permission.</string>
-    <string name="phone_lookup_rationale_others">Sans cette permission, la revanche continuera mais créera une partie qui ne peut pas être jouée par SMS.</string>
+    <string name="phone_lookup_rationale">Pour rejouer une revanche qui utilise les MMS, CrossWords a besoin de la permission d\'accéder à votre numéro de téléphone.</string>
+    <string name="phone_lookup_rationale_drop">Jouer cette revanche par MMS uniquement n\'est pas possible sans cette permission.</string>
+    <string name="phone_lookup_rationale_others">Sans cette permission, la revanche continuera mais créera une partie qui ne peut pas être jouée par MMS.</string>
     <string name="move_dict_rationale">Enregistrer une liste de mots dans l\'espace de Téléchargements nécessite la permission.</string>
     <string name="relay_via_http_first">Utiliser les API web en premier</string>
     <string name="enable_smsproto_title">Utiliser le code SMS expérimental/nouveau</string>
