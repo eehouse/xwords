@@ -23,7 +23,7 @@ usage() {
 
 getPackage() {
 	APK=$1
-	PACK=$($AAPT dumb badging $APK | grep '^package: ' | sed "s,^.*name='\([^']*\)'.*\$,\1,")
+	PACK=$($AAPT dumb badging $APK | grep '^package: ' | sed "s,^.* name='\([^']*\)'.*\$,\1,")
 	echo $PACK
 }
 
