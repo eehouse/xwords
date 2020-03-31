@@ -3122,13 +3122,13 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
     <string name="invite_p2p_desc_extra">Seuls les appareils actuellement disponibles sont affichés. Si un appareil à proximité ne s\'affiche pas, assurez-vous que le WiFi est allumé, que CrossWords est installé, et que le WiFi Direct est activé.</string>
     <string name="empty_p2p_inviter">Il n\'y a actuellement pas d\'appareils accessibles par WiFi Direct qui ont CrossWords installé.</string>
     <string name="not_again_comms_p2p">Utiliser le WiFi Direct pour jouer contre un appareil faisant du WiFi Direct, sur lequel CrossWords est installé.</string>
-    <string name="missing_sms_perms">Cette partie est configurée pour communiquer par SMS mais Crosswords n\'a pas la permission de le faire. Vous pouvez toujours ouvrir cette partie, mais elle pourrait ne pas être en capacité d\'envoyer ou recevoir des coups.
+    <string name="missing_sms_perms">Cette partie est configurée pour communiquer par SMS mais CrossWords n\'a pas la permission de le faire. Vous pouvez toujours ouvrir cette partie, mais elle pourrait ne pas être en capacité d\'envoyer ou recevoir des coups.
 
 Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouvez retirer le réglage de communication par SMS.</string>
-    <string name="download_rationale">Crosswords a besoin d\'accéder à un stockage temporaire pour conserver ce que vous êtes sur le point de télécharger.</string>
-    <string name="sms_invite_rationale">Crosswords a besoin de la permission d\'envoyer une invitation par MMS.</string>
+    <string name="download_rationale">CrossWords a besoin d\'accéder à un stockage temporaire pour conserver ce que vous êtes sur le point de télécharger.</string>
+    <string name="sms_invite_rationale">CrossWords a besoin de la permission d\'envoyer une invitation par MMS.</string>
     <string name="toast_no_permission">Permission non accordée</string>
-    <string name="contacts_rationale">Crosswords veut accéder à vos contacts pour pouvoir mettre un nom sur les numéros de téléphones qui vous envoient des invitations par MMS. Vous pourrez toujours recevoir des invitations si vous n\'accordez pas cette permission, mais seul le numéro de téléphone de l\'expéditeur s\'affichera.</string>
+    <string name="contacts_rationale">CrossWords veut accéder à vos contacts pour pouvoir mettre un nom sur les numéros de téléphones qui vous envoient des invitations par MMS. Vous pourrez toujours recevoir des invitations si vous n\'accordez pas cette permission, mais seul le numéro de téléphone de l\'expéditeur s\'affichera.</string>
     <string name="button_ask_again">Redemander</string>
     <string name="contact_not_found">Pas dans les contacts</string>
     <string name="sms_send_failed">Échec de l\'envoi de SMS</string>

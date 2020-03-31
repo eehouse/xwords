@@ -953,7 +953,7 @@
     <string name="loc_item_copy_bless">Offiziell kopieren</string>
     <string name="bt_scan_age_fmt">Letzter Kontakt von: %1$s</string>
     <string name="button_close">Schließen</string>
-    <string name="btservice_expl">Diese Anzeige wird immer dann gezeigt, wenn Crosswords im Hintergrund läuft, um Bluetooth-Nachrichten zu empfangen. Normalerweise läuft es 15 Minuten lang nach dem Start oder nach Empfang der letzten Bluetooth-Nachricht.</string>
+    <string name="btservice_expl">Diese Anzeige wird immer dann gezeigt, wenn CrossWords im Hintergrund läuft, um Bluetooth-Nachrichten zu empfangen. Normalerweise läuft es 15 Minuten lang nach dem Start oder nach Empfang der letzten Bluetooth-Nachricht.</string>
     <string name="foreground_channel_expl">Bluetooth-Nachrichten im Hintergrund empfangen</string>
     <string name="gameevent_channel_expl">Ereignisse während der Partie</string>
     <string name="not_again_emptybtscan">Wenn beim Scannen das erwartete Gerät nicht gefunden wird:
