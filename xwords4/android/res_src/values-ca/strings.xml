@@ -856,7 +856,7 @@ aparells seleccionats?</string>
     <string name="list_item_select">Selecciona</string>
     <string name="list_item_deselect">Treu la selecció</string>
     <string name="no_invites">Aquesta partida no té cap invitació</string>
-    <string name="post_dualpane_title">Tornar a iniciar el Crosswords</string>
+    <string name="post_dualpane_title">Tornar a iniciar el CrossWords</string>
     <string name="dualpane_restart">S\'està sortint de l\'aplicació…</string>
     <string name="button_enable_relay">Habilita el joc via repetidor</string>
     <string name="button_disable_relay">Inhabilitat el joc via repetidor</string>
@@ -969,5 +969,5 @@ aparells seleccionats?</string>
     <string name="invite_choice_data_sms">SMS de dades</string>
     <string name="empty_bt_inviter">Encara no s\'ha detectat cap aparell aparellat.</string>
     <string name="checkbox_archive">Mou a l\'arxiu</string>
-    <string name="invite_sms_fmt">Toca l\'enllaç per a acceptar la invitació i unir-te al joc de Crosswords: %1$s</string>
+    <string name="invite_sms_fmt">Toca l\'enllaç per a acceptar la invitació i unir-te al joc de CrossWords: %1$s</string>
 </resources>
