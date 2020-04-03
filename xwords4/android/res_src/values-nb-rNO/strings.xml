@@ -112,8 +112,8 @@
     <string name="strd_turn_score_fmt">Poengsum for tur: %1$d
 \n</string>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">%1$d flis igjen å trekke fra.</item>
-        <item quantity="other"/>
+        <item quantity="one">Ei flis igjen å trekke fra.</item>
+        <item quantity="other">%1$d flis igjen å trekke fra.</item>
     </plurals>
     <string name="button_revert_colors">Gjenopprett farger</string>
     <string name="confirm_revert_all">Er du sikker på at du ønsker å tilbakestille alle innstillingene til forvalg?</string>
@@ -388,8 +388,8 @@
     <string name="nag_warn_last_fmt">Siste advarsel: %1$s</string>
     <string name="prev_player">Din motstander</string>
     <plurals name="lmi_move_fmt">
-        <item quantity="one">%1$s spilte %2$s for 1 poeng</item>
-        <item quantity="other"/>
+        <item quantity="one">%1$s spilte %2$s for ett poeng</item>
+        <item quantity="other">%1$s spilte %2$s for ett poeng</item>
     </plurals>
     <string name="lmi_phony_fmt">%1$s mistet en tur</string>
     <string name="default_language">Forvalgt språk</string>
