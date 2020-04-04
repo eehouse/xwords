@@ -389,7 +389,7 @@
     <string name="prev_player">Din motstander</string>
     <plurals name="lmi_move_fmt">
         <item quantity="one">%1$s spilte %2$s for ett poeng</item>
-        <item quantity="other">%1$s spilte %2$s for ett poeng</item>
+        <item quantity="other">%1$s spilte %2$s for %3$d poeng</item>
     </plurals>
     <string name="lmi_phony_fmt">%1$s mistet en tur</string>
     <string name="default_language">Forvalgt språk</string>
