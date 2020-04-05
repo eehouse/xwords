@@ -20,10 +20,8 @@
 package org.eehouse.android.xw4;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v4.app.DialogFragment;
+import androidx.fragment.app.DialogFragment;
 import android.view.View.OnClickListener;
 import android.view.View;
 

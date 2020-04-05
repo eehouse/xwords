@@ -23,11 +23,10 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.JobIntentService;
+import androidx.core.app.JobIntentService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;

@@ -22,12 +22,10 @@ package org.eehouse.android.xw4;
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import android.text.TextUtils;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;

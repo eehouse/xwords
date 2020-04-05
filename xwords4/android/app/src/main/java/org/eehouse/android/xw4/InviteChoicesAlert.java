@@ -19,14 +19,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
-import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.widget.Button;
 
 import java.util.ArrayList;
@@ -34,11 +30,8 @@ import java.util.List;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
-import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
 import org.eehouse.android.xw4.Perms23.Perm;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class InviteChoicesAlert extends DlgDelegateAlert {
 

@@ -21,11 +21,11 @@
 package org.eehouse.android.xw4;
 
 import android.app.Application;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.LifecycleOwner;
-import android.arch.lifecycle.OnLifecycleEvent;
-import android.arch.lifecycle.ProcessLifecycleOwner;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
@@ -39,7 +39,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import java.util.UUID;
 
 
-import static android.arch.lifecycle.Lifecycle.Event.ON_ANY;
+import static androidx.lifecycle.Lifecycle.Event.ON_ANY;
 
 public class XWApp extends Application
     implements LifecycleObserver, NBSProxy.Callbacks {
