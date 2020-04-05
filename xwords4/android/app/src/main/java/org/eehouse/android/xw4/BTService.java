@@ -261,7 +261,7 @@ public class BTService extends XWJIService {
 
     public static void onACLConnected( Context context )
     {
-        Log.d( TAG, "onACLConnected()" );
+        Log.d( TAG, "onACLConnected(); enqueuing work" );
         enqueueWork( context,
                      getIntentTo( context, BTAction.ACL_CONN ) );
     }
