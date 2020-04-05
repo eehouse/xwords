@@ -2092,6 +2092,7 @@
     <string name="prev_player">Your opponent</string>
     <!-- formatting for last move summary in notifications -->
     <string name="lmi_pass_fmt">%1$s passed (0 points)</string>
+    <!-- Example: Eric played BINGO for 58 points -->
     <plurals name="lmi_move_fmt">
         <item quantity="one">%1$s played %2$s for one point</item>
         <item quantity="other">%1$s played %2$s for %3$d points</item>
@@ -2103,9 +2104,10 @@
     <string name="lmi_phony_fmt">%1$s lost a turn</string>
     <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
     <string name="bt_no_devs">You currently have no paired Bluetooth
-	devices (or Bluetooth is turned off). Would you like to open the
-	Android Settings Panel to add one or more?\n\n(You may also need
-	to open it on the device you want to pair with.)</string>
+    devices (or Bluetooth is turned off). Would you like to open the
+    Android Settings Panel to add one or more?\n\n(You may also need
+    to open the Settings panel on the device you want to pair
+    with.)</string>
     <string name="app_not_found_fmt">Unable to connect via Bluetooth
 	to CrossWords on the device %1$s.  Please check that the device is
 	within Bluetooth range and that CrossWords is installed on
