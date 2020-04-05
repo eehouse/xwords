@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 // Implements read-locks and write-locks per game.  A read lock is
 // obtainable when other read locks are granted but not when a
