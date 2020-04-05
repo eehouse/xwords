@@ -63,10 +63,6 @@ typedef enum {
 } CommsRelayState;
 
 #ifdef XWFEATURE_BLUETOOTH
-# ifndef XW_BT_UUID
-#  define XW_BT_UUID "7be0d084-ff89-4d6d-9c78-594773a6f963"
-# endif
-
 # define XW_BT_NAME "CrossWords"
 #endif
 
