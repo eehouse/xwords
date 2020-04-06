@@ -33,6 +33,6 @@
 # define STR_DUP_MOVED                     27
 # define STRD_DUP_TRADED                   28
 # define STRSD_DUP_ONESCORE                29
-
-# define N_AND_USER_STRINGS                29
+# define STR_PENDING_PLAYER                30
+# define N_AND_USER_STRINGS                30
 #endif

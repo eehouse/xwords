@@ -121,6 +121,7 @@ public class DUtilCtxt {
     private static final int STR_DUP_MOVED =                     27;
     private static final int STRD_DUP_TRADED =                   28;
     private static final int STRSD_DUP_ONESCORE =                29;
+    private static final int STR_PENDING_PLAYER =                30;
 
     public String getUserString( int stringCode )
     {
@@ -205,6 +206,10 @@ public class DUtilCtxt {
             break;
         case STRSD_DUP_ONESCORE:
             id = R.string.dup_onescore_fmt;
+            break;
+
+        case STR_PENDING_PLAYER:
+            id = R.string.missing_player;
             break;
 
         default:

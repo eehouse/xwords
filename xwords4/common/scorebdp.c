@@ -23,6 +23,7 @@
 #include "game.h"
 #include "strutils.h"
 #include "dbgutil.h"
+#include "LocalizedStrIncludes.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -244,8 +245,10 @@ drawScoreBoard( BoardCtxt* board )
                 /* figure spacing for each scoreboard entry */
                 XP_MEMSET( &datum, 0, sizeof(datum) );
                 totalDim = 0;
+                XP_U16 missingPlayers = server_getMissingPlayers( board->server );
                 for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
                     LocalPlayer* lp = &board->gi->players[ii];
+                    XP_Bool isMissing = 0 != ((1 << ii) & missingPlayers);
 
                     /* This is a hack! */
                     dp->dsi.lsc = board_ScoreCallback;
@@ -258,11 +261,16 @@ drawScoreBoard( BoardCtxt* board )
                     dp->dsi.playerNum = ii;
                     dp->dsi.totalScore = scores.arr[ii];
                     dp->dsi.isTurn = server_isPlayersTurn( board->server, ii );
-                    dp->dsi.name = emptyStringIfNull(lp->name);
                     dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
                         && ii==selPlayer;
                     dp->dsi.isRobot = LP_IS_ROBOT(lp);
                     dp->dsi.isRemote = !lp->isLocal;
+                    XP_ASSERT( !isMissing || dp->dsi.isRemote );
+                    if ( dp->dsi.isRemote && isMissing ) {
+                        dp->dsi.name = dutil_getUserString( board->dutil, STR_PENDING_PLAYER );
+                    } else {
+                        dp->dsi.name = emptyStringIfNull( lp->name );
+                    }
                     dp->dsi.nTilesLeft = (nTilesInPool > 0)? -1:
                         model_getNumTilesTotal( model, ii );
 
