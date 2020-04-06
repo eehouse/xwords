@@ -165,6 +165,17 @@ public class ConnStatusHandler {
         return s_downOnMe && s_rect.contains( xx, yy );
     }
 
+
+    private static final CommsConnType[] sDisplayOrder = {
+        CommsConnType.COMMS_CONN_RELAY,
+        CommsConnType.COMMS_CONN_BT,
+        CommsConnType.COMMS_CONN_IR,
+        CommsConnType.COMMS_CONN_IP_DIRECT,
+        CommsConnType.COMMS_CONN_SMS,
+        CommsConnType.COMMS_CONN_P2P,
+        CommsConnType.COMMS_CONN_NFC,
+    };
+
     public static String getStatusText( Context context, XwJNI.GamePtr gamePtr,
                                         CommsConnTypeSet connTypes,
                                         CommsAddrRec addr )
@@ -179,7 +190,10 @@ public class ConnStatusHandler {
                 sb.append( LocUtils.getString( context,
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context, true )));
-                for ( CommsConnType typ : connTypes.getTypes() ) {
+                for ( CommsConnType typ : sDisplayOrder ) {
+                    if ( !connTypes.contains(typ) ) {
+                        continue;
+                    }
                     SuccessRecord record = recordFor( context, typ, false );
 
                     // Don't show e.g. NFC unless it's been used
