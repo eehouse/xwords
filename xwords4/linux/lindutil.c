@@ -146,10 +146,8 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return (XP_UCHAR*)"Score for turn: %d\n";
     case STR_BONUS_ALL:
         return (XP_UCHAR*)"Bonus for using all tiles: 50\n";
-    case STR_LOCAL_NAME:
-        return (XP_UCHAR*)"%s";
-    case STR_NONLOCAL_NAME:
-        return (XP_UCHAR*)"%s (remote)";
+    case STR_PENDING_PLAYER:
+        return (XP_UCHAR*)"(remote)";
     case STRD_TIME_PENALTY_SUB:
         return (XP_UCHAR*)" - %d [time]";
         /* added.... */
