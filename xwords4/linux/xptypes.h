@@ -78,7 +78,7 @@ extern void linux_debugf(const char*, ...)
 extern void linux_debugff(const char* func, const char* file, const char* fmt, ...)
     __attribute__ ((format (printf, 3, 4)));
 # define XP_LOGFF( FMT, ... ) \
-    linux_debugff( __func__, __FILE__, FMT, __VA_ARGS__ )
+    linux_debugff( __func__, __FILE__, FMT, ##__VA_ARGS__ )
 #define XP_LOG(STR) \
     linux_debugff( __func__, __FILE__, "%s", STR )
 
@@ -125,7 +125,7 @@ void linux_lowerstr( XP_UCHAR* str );
 #define XP_ABS(a)   ((a)>=0?(a):-(a))
 
 #ifdef DEBUG
-# define XP_ASSERT(B) do { if (!(B)) { XP_LOGFF( "%s", "firing assert"); } assert(B); } while (0)
+# define XP_ASSERT(B) do { if (!(B)) { XP_LOGFF( "firing assert"); } assert(B); } while (0)
 void linux_backtrace( void );
 # define XP_BACKTRACE linux_backtrace
 #else

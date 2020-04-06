@@ -964,7 +964,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 static void
 resetBackoff( CommsCtxt* comms )
 {
-    XP_LOGFF( "%s", "resetting backoff" );
+    XP_LOGFF( "resetting backoff" );
     comms->resendBackoff = 0;
     comms->nextResend = 0;
 }
