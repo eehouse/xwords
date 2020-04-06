@@ -2530,7 +2530,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
                 nxtTurn = model_getNextTurn( server->vol.model );
             }
         } else {
-            XP_LOGFF( "%s", "turn == -1 so dropping" );
+            XP_LOGFF( "turn == -1 so dropping" );
         }
     } else {
         /* We're doing an undo, and so won't bother figuring out who the
@@ -2552,7 +2552,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
             SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME ); /* this is it */
             moreToDo = XP_TRUE;
         } else if ( currentTurn >= 0 ) {
-            XP_LOGFF( "%s", "Doing nothing; waiting for server to end game" );
+            XP_LOGFF( "Doing nothing; waiting for server to end game" );
             setTurn( server, -1 );
             /* I'm the client. Do ++nothing++. */
         }
@@ -2930,7 +2930,7 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
         XP_LOGFF( "BAD: currentTurn %d < 0", server->nv.currentTurn );
     } else if ( ! readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
                                 &tradedTiles, &isLegal, &badStack ) ) { /* modifies model */
-        XP_LOGFF( "%s", "BAD: readMoveInfo() failed" );
+        XP_LOGFF( "BAD: readMoveInfo() failed" );
     } else {
         moveOk = XP_TRUE;
     }
@@ -4072,7 +4072,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             XP_LOGF( "%s: somebody's registering!!!", __func__ );
             accepted = handleRegistrationMsg( server, incoming );
         } else {
-            XP_LOGFF( "%s", "WTF: I'm not a server!!" );
+            XP_LOGFF( "WTF: I'm not a server!!" );
         }
         break;
     case XWPROTO_CLIENT_SETUP:

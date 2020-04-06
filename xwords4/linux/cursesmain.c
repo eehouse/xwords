@@ -1297,7 +1297,7 @@ cursesDevIDReceived( void* closure, const XP_UCHAR* devID,
         }
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, aGlobals );
     } else {
-        XP_LOGFF( "%s", "bad relayid" );
+        XP_LOGFF( "bad relayid" );
         db_remove( pDb, KEY_RDEVID );
 
         DevIDType typ;

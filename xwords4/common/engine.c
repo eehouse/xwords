@@ -559,7 +559,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
         engine_reset( engine ); 
         if ( !isRetry ) {
             isRetry = XP_TRUE;
-            XP_LOGFF( "%s", "no moves found so retrying" );
+            XP_LOGFF( "no moves found so retrying" );
             goto retry;
         }
     }
