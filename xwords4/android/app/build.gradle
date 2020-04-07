@@ -223,6 +223,9 @@ android {
             externalNativeBuild {
                 ndkBuild.arguments += ['BUILD_TARGET=release']
             }
+            ndk {
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
+            }
         }
         debug {
             debuggable true
@@ -237,6 +240,10 @@ android {
                     cFlags += ['-DDEBUG']
                     arguments += ['BUILD_TARGET=debug']
                 }
+            }
+
+            ndk {
+                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             }
         }
     }
