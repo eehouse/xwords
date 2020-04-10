@@ -1123,6 +1123,7 @@ public class DBUtils {
             }
             setCached( rowid, result );
         }
+        Assert.assertTrueNR( null != result );
         return result;
     }
 
