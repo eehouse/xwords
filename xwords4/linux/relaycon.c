@@ -678,7 +678,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
                 break;
             }
             case XWPDEV_GOTINVITE: {
-                XP_LOGFF( "%s", "got XWPDEV_GOTINVITE" );
+                XP_LOGFF( "got XWPDEV_GOTINVITE" );
 #ifdef DEBUG
                 XP_U32 sender = 
 #endif

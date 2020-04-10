@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 9
-def VERSION_CODE_BASE = 151
-def VERSION_NAME = '4.4.155'
+def VERSION_CODE_BASE = 152
+def VERSION_NAME = '4.4.156'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def BUILD_INFO_NAME = "build-info.txt"
 
@@ -8,19 +8,6 @@ def BUILD_INFO_NAME = "build-info.txt"
 // each other
 def XW_UUID = '"7be0d084-ff89-4d6d-9c78-594773a6f963"' // from comms.h
 def XWD_UUID = '"b079b640-35fe-11e5-a432-0002a5d5c51b"' // from comms.h
-def BT_UUIDS = [
-    'xw4fdroidDebug' : XW_UUID,
-    'xw4fdroidRelease' : XW_UUID,
-    'xw4NoSMSDebug' : XW_UUID,
-    'xw4NoSMSRelease' : XW_UUID,
-    'xw4SMSDebug' : XW_UUID,
-    'xw4SMSRelease' : XW_UUID,
-
-    'xw4dRelease' : XWD_UUID,
-    'xw4dDebug' : XWD_UUID,
-    'xw4dNoSMSRelease' : XWD_UUID,
-    'xw4dNoSMSDebug' : XWD_UUID,
-]
 
 // AID must start with F (first 4 bits) and be from 5 to 16 bytes long
 def NFC_AID_XW4 = "FC8FF510B360"
@@ -55,7 +42,8 @@ repositories {
 android {
     // Specify buildToolsVersion so gradle will inform when the
     // default changes and .travis.yml can be kept in sync
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
+    ndkVersion '21.0.6113669'
     defaultConfig {
         // HostApduService requires 19. But is it a problem?
         minSdkVersion 14
@@ -113,6 +101,8 @@ android {
             buildConfigField "int", "VARIANT_CODE", "1"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4NoSMS']
+            externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
         }
 
         xw4fdroid {
@@ -128,6 +118,8 @@ android {
             buildConfigField "boolean", "FOR_FDROID", "true"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4fdroid']
+            externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
         }
         xw4d {
             dimension "variant"
@@ -144,6 +136,8 @@ android {
             buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid1\""
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
+            externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
         }
 
         xw4dNoSMS {
@@ -160,6 +154,8 @@ android {
             buildConfigField "boolean", "REPORT_LOCKS", "true"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dNoSMS']
+            externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
         }
 
         xw4SMS {
@@ -174,6 +170,8 @@ android {
             buildConfigField "int", "VARIANT_CODE", "5"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4"
+            externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4SMS']
+            externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
         }
 
         // WARNING: "all" breaks things. Seems to be a keyword. Need
@@ -210,12 +208,24 @@ android {
     }
 
     buildTypes {
+        all {
+            externalNativeBuild {
+                ndkBuild.arguments += ["INITIAL_CLIENT_VERS=" + INITIAL_CLIENT_VERS]
+            }
+        }
+
         release {
             debuggable false
             minifyEnabled false // PENDING
             // proguard crashes when I do this (the optimize part)
             // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             resValue "bool", "DEBUG", "false"
+            externalNativeBuild {
+                ndkBuild.arguments += ['BUILD_TARGET=release']
+            }
+            ndk {
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
+            }
         }
         debug {
             debuggable true
@@ -224,6 +234,23 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // This doesn't work on marshmallow: duplicate permission error
             // applicationIdSuffix ".debug"
+
+            externalNativeBuild {
+                ndkBuild {
+                    cFlags += ['-DDEBUG']
+                    arguments += ['BUILD_TARGET=debug']
+                }
+            }
+
+            ndk {
+                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path "../jni/Android.mk"
         }
     }
 
@@ -293,11 +320,11 @@ ext {
 }
 
 dependencies {
-    implementation "com.android.support:support-v4:$SUPPORT_LIB_VERSION"
-    implementation "com.android.support:support-compat:$SUPPORT_LIB_VERSION"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.core:core:1.0.0'
 
-    implementation "android.arch.lifecycle:extensions:1.1.1"
-    annotationProcessor "android.arch.lifecycle:compiler:1.1.1"
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+    annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.0.0'
 
     // 2.6.8 is probably as far forward as I can go without upping my
     // min-supported SDK version
@@ -330,23 +357,11 @@ task cleanLocStrings(type: Exec) {
 }
 clean.dependsOn cleanLocStrings
 
-task ndkSetupDebug(type: Exec) {
-    workingDir '../'
-    // remove ', "--arm-only"' for Genymotion builds
-
-    // I'm putting ARM back for a while. It's too much trouble having
-    // builds, including those built by travis, that don't run on the
-    // emulator. Maybe remove this change before each release?
-    commandLine "./scripts/ndksetup.sh", "--with-clang"
-    // commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
-}
-
-task ndkSetupRelease(type: Exec) {
-    workingDir '../'
-    commandLine "./scripts/ndksetup.sh", "--with-clang", "--arm-only"
-}
-
-task myPreBuild(dependsOn: ['mkImages', 'copyLocStrings', 'mkXml']) {
+task myPreBuild(dependsOn: ['mkImages',
+                            'copyLocStrings',
+                            'mkXml',
+                            'copyStringsXw4D',
+                            'copyStringsXw4DNoSMS']) {
 }
 preBuild.dependsOn myPreBuild
 
@@ -357,64 +372,18 @@ task mkXml(type: Exec) {
         '-t', "debug"
 }
 
-afterEvaluate {
-    ArrayList<String> cleanCmdLst = new ArrayList<>(["rm", "-rf"])
-    android.applicationVariants.all { variant ->
-        // print "variant: " + variant.name + "\n"
-        String BUILD = variant.getBuildType().getName()
-        // println "type: " + BUILD
-        String FLAVOR = variant.getFlavorName()
-        // print "flavor: " + variant.getFlavorName() + "\n"
-        // print "variant: " + variant + "\n"
+task copyStringsXw4D(type: Exec) {
+    workingDir './'
+    environment.put('APPNAME', 'CrossDbg')
+    commandLine 'make', '-f', '../scripts/Variant.mk',
+    "src/xw4d/res/values/strings.xml"
+}
 
-        String ndkSetup = "ndkSetup" + BUILD.capitalize()
-        // println "ndkSetup: " + ndkSetup
-
-        String variantCaps = variant.name.capitalize()
-        String nameLC = variant.getBuildType().getName().toLowerCase()
-        String lib = "libs-${variant.name}"
-        String ndkBuildTask = "ndkBuild${variantCaps}"
-        String btUUID = BT_UUIDS[variant.name]
-        task "$ndkBuildTask"(type: Exec) {
-            workingDir '../'
-            commandLine './scripts/ndkbuild.sh', '-j3',
-                "BUILD_TARGET=${nameLC}", "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS",
-                "VARIANT=${FLAVOR}", "NDK_LIBS_OUT=${lib}",
-                "NDK_OUT=./obj-${variant.name}", "XW_BT_UUID=\"${btUUID}\""
-            }
-
-        String compileTask = "compile${variantCaps}Ndk"
-        tasks.getByName(ndkBuildTask).dependsOn ndkSetup
-        tasks.getByName(compileTask).dependsOn ndkBuildTask
-
-        // For clean task
-        cleanCmdLst.add("libs-${variant.name}")
-        cleanCmdLst.add("./obj-${variant.name}")
-    }
-
-    task cleanNDK(type: Exec) {
-        workingDir '../'
-        commandLine cleanCmdLst
-    }
-    clean.dependsOn 'cleanNDK'
-
-    String copyStringsTask = "copyStringsXw4D"
-    task "$copyStringsTask"(type: Exec) {
-                workingDir './'
-                environment.put('APPNAME', 'CrossDbg')
-                commandLine 'make', '-f', '../scripts/Variant.mk',
-                "src/xw4d/res/values/strings.xml"
-            }
-    preBuild.dependsOn copyStringsTask
-
-    String copyStringsTaskNoSMS = "copyStringsXw4DNoSMS"
-    task "$copyStringsTaskNoSMS"(type: Exec) {
-                workingDir './'
-                environment.put('APPNAME', 'CrossDbg')
-                commandLine 'make', '-f', '../scripts/Variant.mk',
-                    "src/xw4dNoSMS/res/values/strings.xml"
-            }
-    preBuild.dependsOn copyStringsTaskNoSMS
+task copyStringsXw4DNoSMS(type: Exec) {
+    workingDir './'
+    environment.put('APPNAME', 'CrossDbg')
+    commandLine 'make', '-f', '../scripts/Variant.mk',
+    "src/xw4dNoSMS/res/values/strings.xml"
 }
 
 task makeBuildAssets() {

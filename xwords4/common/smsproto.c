@@ -648,7 +648,7 @@ savePartials( SMSProto* state )
 
     XP_U16 newSize = stream_getSize( stream );
     if ( state->lastStoredSize == 2 && newSize == 2 ) {
-        XP_LOGFF( "%s", "not storing empty again" );
+        XP_LOGFF( "not storing empty again" );
     } else {
         dutil_storeStream( state->dutil, KEY_PARTIALS, stream );
         state->lastStoredSize = newSize;
