@@ -614,7 +614,10 @@ public class BoardDelegate extends DelegateBase
         Log.i( TAG, "opening rowid %d", m_rowid );
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
+    } // init
 
+    private void getLock()
+    {
         GameLock.getLockThen( m_rowid, 100L, new Handler(), // this doesn't unlock
                               new GameLock.GotLockProc() {
                 @Override
@@ -648,7 +651,7 @@ public class BoardDelegate extends DelegateBase
                     }
                 }
             } );
-    } // init
+    } // getLock
 
     @Override
     protected void onStart()
@@ -670,6 +673,7 @@ public class BoardDelegate extends DelegateBase
             doResume( false );
         } else {
             m_resumeSkipped = true;
+            getLock();
         }
     }
 
@@ -688,9 +692,11 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void onStop()
     {
-        if ( isFinishing() && null != m_jniThreadRef ) {
+        if ( null != m_jniThreadRef ) {
             m_jniThreadRef.release();
             m_jniThreadRef = null;
+        } else {
+            Log.d( TAG, "onStop(): m_jniThreadRef already null" );
         }
         super.onStop();
     }
