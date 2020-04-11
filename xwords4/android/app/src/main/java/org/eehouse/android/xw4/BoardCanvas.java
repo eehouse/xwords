@@ -919,17 +919,21 @@ public class BoardCanvas extends Canvas implements DrawCtx {
          Drawable arrow = res.getDrawable( resID );
 
          if ( !useDark ) {
-             Bitmap src = ((BitmapDrawable)arrow).getBitmap();
-             Bitmap bitmap = src.copy( Bitmap.Config.ARGB_8888, true );
+             Bitmap bitmap = Bitmap.createBitmap( arrow.getIntrinsicWidth(),
+                                                  arrow.getIntrinsicHeight(),
+                                                  Bitmap.Config.ARGB_8888 );
+             Canvas canvas = new Canvas( bitmap );
+             arrow.setBounds( 0, 0, canvas.getWidth(), canvas.getHeight() );
+             arrow.draw( canvas );
+
              for ( int xx = 0; xx < bitmap.getWidth(); ++xx ) {
-                 for( int yy = 0; yy < bitmap.getHeight(); ++yy ) {
+                 for ( int yy = 0; yy < bitmap.getHeight(); ++yy ) {
                      if ( BLACK == bitmap.getPixel( xx, yy ) ) {
                          bitmap.setPixel( xx, yy, WHITE );
                      }
                  }
              }
-
-             arrow = new BitmapDrawable(bitmap);
+             arrow = new BitmapDrawable( bitmap );
          }
          return arrow;
     }
