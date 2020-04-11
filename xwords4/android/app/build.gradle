@@ -230,7 +230,8 @@ android {
         debug {
             debuggable true
             resValue "bool", "DEBUG", "true"
-            minifyEnabled true // for testing
+            // Drop this. Takes too long to build
+            // minifyEnabled true // for testing
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // This doesn't work on marshmallow: duplicate permission error
             // applicationIdSuffix ".debug"
