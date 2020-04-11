@@ -1874,7 +1874,7 @@ public class BoardDelegate extends DelegateBase
             post( new Runnable() {
                     @Override
                     public void run() {
-                        showToast( text );
+                        makeOkOnlyBuilder( text ).show();
                     }
                 } );
         }
