@@ -640,16 +640,21 @@ findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid,
     return result;
 }
 
-XP_U16
-cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
+bool
+cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid, XP_U16 expectSeed,
             const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
 {
     LOG_FUNC();
     CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
     XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
-    return seed;
+    bool success = 0 == expectSeed || seed == expectSeed;
+    if ( success ) {
+        gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
+    } else {
+        XP_LOGFF( "msg for seed %d but I opened %d", expectSeed, seed );
+    }
+    return success;
 }
 
 void
@@ -663,7 +668,8 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
     getRowsForGameID( params->pDb, gameID, rowids, &nRows );
     XP_LOGF( "%s(): found %d rows for gameID %d", __func__, nRows, gameID );
     for ( int ii = 0; ii < nRows; ++ii ) {
-        (void)cb_feedRow( cbState, rowids[ii], buf, len, from );
+        bool success = cb_feedRow( cbState, rowids[ii], 0, buf, len, from );
+        XP_ASSERT( success );
     }
 }
 
