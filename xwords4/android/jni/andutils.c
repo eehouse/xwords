@@ -424,10 +424,13 @@ setIntInArray( JNIEnv* env, jintArray arr, int index, int val )
 jobjectArray
 makeStringArray( JNIEnv *env, const int count, const XP_UCHAR** vals )
 {
-    jclass clas = (*env)->FindClass(env, "java/lang/String");
-    jstring empty = (*env)->NewStringUTF( env, "" );
-    jobjectArray jarray = (*env)->NewObjectArray( env, count, clas, empty );
-    deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
+    jobjectArray jarray;
+    {
+        jclass clas = (*env)->FindClass(env, "java/lang/String");
+        jstring empty = (*env)->NewStringUTF( env, "" );
+        jarray = (*env)->NewObjectArray( env, count, clas, empty );
+        deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
+    }
 
     for ( int ii = 0; !!vals && ii < count; ++ii ) {
         jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
