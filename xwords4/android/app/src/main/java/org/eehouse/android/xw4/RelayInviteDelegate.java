@@ -57,6 +57,8 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 public class RelayInviteDelegate extends InviteDelegate {
     private static final String TAG = RelayInviteDelegate.class.getSimpleName();
     private static final String RECS_KEY = "TAG" + "/recs";
+    private static final boolean RELAYINVITE_SUPPORTED
+        = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
 
     private static int[] BUTTONIDS = {
         R.id.button_relay_add,
@@ -77,7 +79,7 @@ public class RelayInviteDelegate extends InviteDelegate {
                                         SentInvitesInfo info,
                                         RequestCode requestCode )
     {
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( RELAYINVITE_SUPPORTED ) {
             Intent intent =
                 InviteDelegate.makeIntent( activity, RelayInviteActivity.class,
                                            nMissing, info );
@@ -94,7 +96,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( RELAYINVITE_SUPPORTED ) {
             super.init( savedInstanceState );
 
             String msg = getString( R.string.button_invite );
@@ -137,7 +139,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected void onBarButtonClicked( int id )
     {
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( RELAYINVITE_SUPPORTED ) {
             switch( id ) {
             case R.id.button_relay_add:
                 Utils.notImpl( m_activity );
@@ -189,7 +191,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     protected Dialog makeDialog( DBAlert alert, Object[] params )
     {
         Dialog dialog = null;
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( RELAYINVITE_SUPPORTED ) {
             DialogInterface.OnClickListener lstnr;
             switch( alert.getDlgID() ) {
             case GET_NUMBER: {
@@ -334,7 +336,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     @Override
     protected void tryEnable()
     {
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( RELAYINVITE_SUPPORTED ) {
             super.tryEnable();
 
             Button button = (Button)findViewById( R.id.button_clear );
@@ -353,7 +355,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     public boolean onPosButton( Action action, Object[] params )
     {
         boolean handled = true;
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( RELAYINVITE_SUPPORTED ) {
             switch( action ) {
             case CLEAR_ACTION:
                 clearSelectedImpl();
@@ -373,7 +375,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     public boolean onDismissed( Action action, Object[] params )
     {
         boolean handled = true;
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( RELAYINVITE_SUPPORTED ) {
             if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
                 makeConfirmThenBuilder( R.string.warn_unlimited,
                                         Action.POST_WARNING_ACTION )
