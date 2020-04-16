@@ -23,17 +23,42 @@
 #include "gtkdraw.h"
 #include "linuxutl.h"
 #include "main.h"
+#include "dbgutil.h"
 
 #define SNAP_WIDTH 150
 #define SNAP_HEIGHT 150
+#define KEY_DB_VERSION "dbvers"
+
+#define VERS_0_TO_1 \
+        "nPending INT" \
+        ",role INT" \
+        ",dictlang INT" \
+        ",scores TEXT" \
+
 
 static XP_Bool getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                               int* len );
+static bool db_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP );
+static void db_storeInt( sqlite3* pDb, const gchar* key, int32_t val );
+static void createTables( sqlite3* pDb );
+static bool gamesTableExists( sqlite3* pDb );
+static void upgradeTables( sqlite3* pDb, int32_t oldVersion );
+static void execNoResult( sqlite3* pDb, const gchar* query, bool errOK );
+
 
 #ifdef DEBUG
 static char* sqliteErr2str( int err );
 #endif
 static void assertPrintResult( sqlite3* pDb, int result, int expect );
+
+/* Versioning:
+ *
+ * Version 0 is defined, and not having a version code means you're 0. For
+ * each subsequent version there needs to be a recipe for upgrading, whether
+ * it's adding new fields or whatever.
+ */
+
+#define CUR_DB_VERSION 1
 
 sqlite3* 
 openGamesDB( const char* dbName )
@@ -44,6 +69,79 @@ openGamesDB( const char* dbName )
     sqlite3* pDb = NULL;
     result = sqlite3_open( dbName, &pDb );
     XP_ASSERT( SQLITE_OK == result );
+
+    if ( gamesTableExists( pDb ) ) {
+        int32_t oldVersion;
+        if ( !db_fetchInt( pDb, KEY_DB_VERSION, &oldVersion ) ) {
+            oldVersion = 0;
+            XP_LOGFF( "no version found; assuming %d", oldVersion );
+        }
+        if ( oldVersion < CUR_DB_VERSION ) {
+            upgradeTables( pDb, oldVersion );
+        }
+    } else {
+        createTables( pDb );
+    }
+
+    return pDb;
+}
+
+static void
+upgradeTables( sqlite3* pDb, int32_t oldVersion )
+{
+    gchar* newCols = NULL;
+    switch ( oldVersion ) {
+    case 0:
+        XP_ASSERT( 1 == CUR_DB_VERSION );
+        newCols = VERS_0_TO_1;
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
+    }
+
+    if ( !!newCols ) {
+        gchar** strs = g_strsplit( newCols, ",", -1 );
+        for ( int ii = 0; !!strs[ii]; ++ii ) {
+            gchar* str = strs[ii];
+            if ( 0 < strlen(str) ) {
+                gchar* query = g_strdup_printf( "ALTER TABLE games ADD COLUMN %s", strs[ii] );
+                XP_LOGFF( "query: \"%s\"", query );
+                execNoResult( pDb, query, true );
+                g_free( query );
+            }
+        }
+        g_strfreev( strs );
+
+        db_storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
+    }
+}
+
+static bool
+gamesTableExists( sqlite3* pDb )
+{
+    const gchar* query = "SELECT COUNT(*) FROM sqlite_master "
+        "WHERE type = 'table' AND name = 'games'";
+
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, SQLITE_OK );
+    result = sqlite3_step( ppStmt );
+    XP_ASSERT( SQLITE_ROW == result );
+    bool exists = 1 == sqlite3_column_int( ppStmt, 0 );
+    sqlite3_finalize( ppStmt );
+    LOG_RETURNF( "%s", boolToStr(exists) );
+    return exists;
+}
+
+static void
+createTables( sqlite3* pDb )
+{
+    /* This can never change! Versioning counts on it. */
+    const char* createValuesStr =
+        "CREATE TABLE pairs ( key TEXT UNIQUE, value TEXT )";
+    int result = sqlite3_exec( pDb, createValuesStr, NULL, NULL, NULL );
+    XP_LOGFF( "sqlite3_exec(%s)=>%d", createValuesStr, result );
 
     const char* createGamesStr = 
         "CREATE TABLE games ( "
@@ -59,25 +157,17 @@ openGamesDB( const char* dbName )
         ",local INT(1)"
         ",nmoves INT"
         ",seed INT"
-        ",nPending INT"
-        ",role INT"
-        ",dictlang INT"
         ",gameid INT"
         ",ntotal INT(2)"
         ",nmissing INT(2)"
         ",lastMoveTime INT"
-        ",scores TEXT"
-        ",dupTimerExpires INT"
+         ",dupTimerExpires INT"
+        ","VERS_0_TO_1
+        // ",dupTimerExpires INT"
         ")";
     result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
 
-    const char* createValuesStr = 
-        "CREATE TABLE pairs ( key TEXT UNIQUE,value TEXT )";
-    result = sqlite3_exec( pDb, createValuesStr, NULL, NULL, NULL );
-    XP_LOGFF( "sqlite3_exec=>%d", result );
-    XP_USE( result );
-
-    return pDb;
+    db_storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
 }
 
 void
@@ -558,30 +648,46 @@ deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
     XP_ASSERT( !!pDb );
     char query[256];
     snprintf( query, sizeof(query), "DELETE FROM games WHERE rowid = %lld", rowid );
-    sqlite3_stmt* ppStmt;
-    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );        
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_step( ppStmt );
-    assertPrintResult( pDb, result, SQLITE_DONE );
-    XP_USE( result );
-    sqlite3_finalize( ppStmt );
+    execNoResult( pDb, query, false );
 }
 
 void
 db_store( sqlite3* pDb, const gchar* key, const gchar* value )
 {
     XP_ASSERT( !!pDb );
-    gchar* buf =
+    gchar* query =
         g_strdup_printf( "INSERT OR REPLACE INTO pairs (key, value) VALUES ('%s', '%s')",
                          key, value );
-    sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_step( ppStmt );
-    assertPrintResult( pDb, result, SQLITE_DONE );
-    XP_USE( result );
-    sqlite3_finalize( ppStmt );
-    g_free( buf );
+    execNoResult( pDb, query, false );
+    g_free( query );
+}
+
+static bool
+db_fetchInt( sqlite3* pDb, const gchar* key, int32_t* resultP )
+{
+    gint buflen = 16;
+    gchar buf[buflen];
+    FetchResult fr = db_fetch( pDb, key, buf, &buflen );
+    bool gotIt = SUCCESS == fr;
+    if ( gotIt ) {
+        buf[buflen] = '\0';
+        sscanf( buf, "%x", resultP );
+    }
+    return gotIt;
+}
+
+static void
+db_storeInt( sqlite3* pDb, const gchar* key, int32_t val )
+{
+    gchar buf[32];
+    snprintf( buf, VSIZE(buf), "%x", val );
+    db_store( pDb, key, buf );
+
+#ifdef DEBUG
+    int32_t tmp;
+    bool worked = db_fetchInt( pDb, key, &tmp );
+    XP_ASSERT( worked && tmp == val );
+#endif
 }
 
 FetchResult
@@ -632,13 +738,7 @@ db_remove( sqlite3* pDb, const gchar* key )
     XP_ASSERT( !!pDb );
     char query[256];
     snprintf( query, sizeof(query), "DELETE FROM pairs WHERE key = '%s'", key );
-    sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_step( ppStmt );
-    assertPrintResult( pDb, result, SQLITE_DONE );
-    XP_USE( result );
-    sqlite3_finalize( ppStmt );
+    execNoResult( pDb, query, false );
 }
 
 static XP_Bool
@@ -654,6 +754,21 @@ getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, int *len )
         buf[colLen] = '\0';
     }
     return success;
+}
+
+static void
+execNoResult( sqlite3* pDb, const gchar* query, bool errOk )
+{
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    if ( ! errOk ) {
+        assertPrintResult( pDb, result, SQLITE_OK );
+    }
+    result = sqlite3_step( ppStmt );
+    if ( ! errOk ) {
+        assertPrintResult( pDb, result, SQLITE_DONE );
+    }
+    sqlite3_finalize( ppStmt );
 }
 
 #ifdef DEBUG
@@ -704,7 +819,7 @@ assertPrintResult( sqlite3* pDb, int XP_UNUSED_DBG(result), int expect )
     int code = sqlite3_errcode( pDb );
     XP_ASSERT( code == result ); /* do I need to pass it? */
     if ( code != expect ) {
-        XP_LOGFF( "sqlite3 error: %s", sqlite3_errmsg( pDb ) );
+        XP_LOGFF( "sqlite3 error: %d (%s)", code, sqlite3_errmsg( pDb ) );
         XP_ASSERT(0);
     }
 }
