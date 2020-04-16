@@ -210,11 +210,15 @@ class Device():
 
     def setApp(self, pct):
         if self.app == self.args.APP_OLD and not self.app == self.args.APP_NEW:
-            if pct >= random.randint(0, 99):
-                print('launch(): upgrading from ', self.app, ' to ', self.args.APP_NEW)
+            if os.path.exists(self.script) and pct >= random.randint(0, 99):
+                print('launch(): upgrading {} from {} to {}' \
+                      .format(self.devName(), self.app, self.args.APP_NEW))
                 self.app = self.args.APP_NEW
                 # nuke script to force regeneration
                 os.unlink(self.script)
+
+    def devName(self):
+        return 'dev_' + str(self.indx)
 
     def logReaderMain(self):
         assert self and self.proc
@@ -679,7 +683,7 @@ def mkParser():
                         help = 'the app we\'ll upgrade from')
     parser.add_argument('--start-pct', dest = 'START_PCT', default = 50, type = int,
                         help = 'odds of starting with the new app, 0 <= n < 100')
-    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 5, type = int,
+    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 20, type = int,
                         help = 'odds of upgrading at any launch, 0 <= n < 100')
 
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
