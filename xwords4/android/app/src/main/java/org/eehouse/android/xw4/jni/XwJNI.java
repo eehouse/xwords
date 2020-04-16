@@ -308,8 +308,10 @@ public class XwJNI {
     //                                              int timerHeight );
     public static native boolean board_zoom( GamePtr gamePtr, int zoomBy,
                                              boolean[] canZoom );
-    public static native boolean board_getActiveRect( GamePtr gamePtr, Rect rect,
-                                                      int[] dims );
+
+    // Not available if XWFEATURE_ACTIVERECT not #defined in C
+    // public static native boolean board_getActiveRect( GamePtr gamePtr, Rect rect,
+    //                                                   int[] dims );
 
     public static native boolean board_handlePenDown( GamePtr gamePtr,
                                                       int xx, int yy,
