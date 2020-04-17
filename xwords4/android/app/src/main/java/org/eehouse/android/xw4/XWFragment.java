@@ -183,7 +183,7 @@ abstract class XWFragment extends Fragment implements Delegator {
     @Override
     public void onActivityResult( int requestCode, int resultCode, Intent data )
     {
-        Log.d( TAG, "%P/%s.onActivityResult() called", this, getClass().getSimpleName() );
+        Log.d( TAG, "%H/%s.onActivityResult() called", this, getClass().getSimpleName() );
         m_dlgt.onActivityResult( RequestCode.values()[requestCode], 
                                  resultCode, data );
     }
