@@ -1149,7 +1149,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                 bwl.bwi.dictName =
                     dict_getShortName( model_getPlayerDict( model, selPlayer ) );
                 util_notifyIllegalWords( board->util, &bwl.bwi, selPlayer, XP_FALSE );
-            } else {
+            } else if ( legal ) {
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
                    passwords and peek at tiles. */
