@@ -190,7 +190,7 @@ public class DBHelper extends SQLiteOpenHelper {
         { DICTNAME,    "TEXT" }
         ,{ LOC,        "UNSIGNED INTEGER(1)" }
         ,{ WORDCOUNTS, "TEXT" }
-        ,{ ITERMIN,    "INTEGRE(4)" }
+        ,{ ITERMIN,    "INTEGER(4)" }
         ,{ ITERMAX,    "INTEGER(4)" }
         ,{ ITERPOS,    "INTEGER" }
         ,{ ITERTOP,    "INTEGER" }
