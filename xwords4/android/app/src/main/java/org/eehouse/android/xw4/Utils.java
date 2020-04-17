@@ -65,6 +65,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.MessageDigest;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -174,9 +175,10 @@ public class Utils {
         }
     }
 
-    public static void showToast( Context context, int id )
+    public static void showToast( Context context, int id, Object... args )
     {
         String msg = LocUtils.getString( context, id );
+        msg = new Formatter().format( msg, args ).toString();
         showToast( context, msg );
     }
 

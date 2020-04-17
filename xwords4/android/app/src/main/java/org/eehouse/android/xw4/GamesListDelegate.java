@@ -62,6 +62,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -574,6 +575,10 @@ public class GamesListDelegate extends ListDelegateBase
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
         R.id.games_menu_writegit,
+        R.id.games_menu_enableLogStorage,
+        R.id.games_menu_disableLogStorage,
+        R.id.games_menu_clearLogStorage,
+        R.id.games_menu_dumpLogStorage,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,
@@ -1380,6 +1385,11 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.emailAuthor( m_activity );
             break;
 
+        case CLEAR_LOG_DB:
+            int nDumped = Log.clearStored();
+            Utils.showToast( m_activity, R.string.logstore_cleared_fmt, nDumped );
+            break;
+
         case ASKED_PHONE_STATE:
             rematchWithNameAndPerm( true, params );
             break;
@@ -1662,6 +1672,28 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_menu_writegit:
             Utils.gitInfoToClip( m_activity );
+            break;
+
+        case R.id.games_menu_enableLogStorage:
+            Log.setStoreLogs( true );
+            break;
+        case R.id.games_menu_disableLogStorage:
+            Log.setStoreLogs( false );
+            break;
+        case R.id.games_menu_clearLogStorage:
+            makeConfirmThenBuilder( R.string.logstore_clear_confirm,
+                                    Action.CLEAR_LOG_DB )
+                .setPosButton( R.string.button_delete )
+                .show();
+            break;
+        case R.id.games_menu_dumpLogStorage:
+            File logLoc = Log.dumpStored();
+            if ( null != logLoc ) {
+                String dumpMsg = LocUtils
+                    .getString( m_activity, R.string.logstore_dumped_fmt,
+                                logLoc.getPath() );
+                makeOkOnlyBuilder( dumpMsg ).show();
+            }
             break;
 
         default:

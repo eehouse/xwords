@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009 - 2017 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,20 +20,85 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.lang.ref.WeakReference;
 import java.util.Formatter;
 
 public class Log {
+    private static final String TAG = Log.class.getSimpleName();
     private static final String PRE_TAG = BuildConfig.FLAVOR + "-";
+    private static final String KEY_USE_DB = TAG + "/useDB";
     private static final boolean LOGGING_ENABLED
         = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
     private static final boolean ERROR_LOGGING_ENABLED = true;
+    private static final String LOGS_DB_NAME = "logs_db";
+    private static final String LOGS_TABLE_NAME = "logs";
+    private static final String COL_ENTRY = "entry";
+    private static final String COL_ROWID = "rowid";
+    private static final String COL_TAG = "tag";
+    private static final String COL_LEVEL = "level";
+
+    private static final int DB_VERSION = 1;
     private static boolean sEnabled = BuildConfig.DEBUG;
+    private static boolean sUseDB;
+    private static WeakReference<Context> sContextRef;
+
+    private static enum LOG_LEVEL {
+        INFO,
+        ERROR,
+        WARN,
+        DEBUG,
+    }
+
+    public static void init( Context context )
+    {
+        sContextRef = new WeakReference<>( context );
+        sUseDB = DBUtils.getBoolFor( context, KEY_USE_DB, false );
+    }
+
+    public static void setStoreLogs( boolean enable )
+    {
+        Context context = sContextRef.get();
+        if ( null != context ) {
+            DBUtils.setBoolFor( context, KEY_USE_DB, enable );
+        }
+        sUseDB = enable;
+    }
 
     public static void enable( boolean newVal )
     {
         sEnabled = newVal;
+    }
+
+    public static int clearStored()
+    {
+        int result = 0;
+        LogDBHelper helper = initDB();
+        if ( null != helper ) {
+            result = helper.clear();
+        }
+        return result;
+    }
+
+    public static File dumpStored()
+    {
+        File result = null;
+        LogDBHelper helper = initDB();
+        if ( null != helper ) {
+            result = helper.dumpToFile();
+        }
+        return result;
     }
 
     public static void enable( Context context )
@@ -47,33 +112,52 @@ public class Log {
     public static void d( String tag, String fmt, Object... args )
     {
         if ( sEnabled ) {
-            String str = new Formatter().format( fmt, args ).toString();
-            android.util.Log.d( PRE_TAG + tag, str );
+            dolog( LOG_LEVEL.DEBUG, tag, fmt, args );
         }
     }
 
     public static void w( String tag, String fmt, Object... args )
     {
         if ( sEnabled ) {
-            String str = new Formatter().format( fmt, args ).toString();
-            android.util.Log.w( PRE_TAG + tag, str );
+            dolog( LOG_LEVEL.WARN, tag, fmt, args );
         }
     }
 
     public static void e( String tag, String fmt, Object... args )
     {
         if ( ERROR_LOGGING_ENABLED ) {
-            String str = new Formatter().format( fmt, args ).toString();
-            android.util.Log.e( PRE_TAG + tag, str );
+            dolog( LOG_LEVEL.ERROR, tag, fmt, args );
         }
     }
 
     public static void i( String tag, String fmt, Object... args )
     {
         if ( sEnabled ) {
-            String str = new Formatter().format( fmt, args ).toString();
-            android.util.Log.i( PRE_TAG + tag, str );
+            dolog( LOG_LEVEL.INFO, tag, fmt, args );
         }
+    }
+
+    private static void dolog( LOG_LEVEL level, String tag, String fmt, Object[] args )
+    {
+        String str = new Formatter().format( fmt, args ).toString();
+        String fullTag = PRE_TAG + tag;
+        switch ( level ) {
+        case DEBUG:
+            android.util.Log.d( fullTag, str );
+            break;
+        case ERROR:
+            android.util.Log.e( fullTag, str );
+            break;
+        case WARN:
+            android.util.Log.w( fullTag, str );
+            break;
+        case INFO:
+            android.util.Log.e( fullTag, str );
+            break;
+        default:
+            Assert.failDbg();
+        }
+        store( level, fullTag, str );
     }
 
     public static void ex( String tag, Exception exception )
@@ -81,6 +165,125 @@ public class Log {
         if ( sEnabled ) {
             w( tag, "Exception: %s", exception.toString() );
             DbgUtils.printStack( tag, exception.getStackTrace() );
+        }
+    }
+
+    private static void llog( String fmt, Object... args )
+    {
+        String str = new Formatter().format( fmt, args ).toString();
+        android.util.Log.d( TAG, str );
+    }
+
+    private static LogDBHelper s_dbHelper;
+    private synchronized static LogDBHelper initDB()
+    {
+        if ( null == s_dbHelper ) {
+            Context context = sContextRef.get();
+            if ( null != context ) {
+                s_dbHelper = new LogDBHelper( context );
+                // force any upgrade
+                s_dbHelper.getWritableDatabase().close();
+            }
+        }
+        return s_dbHelper;
+    }
+
+    // Called from jni
+    public static void store( String tag, String msg )
+    {
+        llog( "store(%s) called from jni", msg );
+        store( LOG_LEVEL.DEBUG, tag, msg );
+    }
+
+    private static void store( LOG_LEVEL level, String tag, String msg )
+    {
+        if ( sUseDB ) {
+            LogDBHelper helper = initDB();
+            if ( null != helper ) {
+                helper.store( level, tag, msg );
+            }
+        }
+    }
+
+    private static class LogDBHelper extends SQLiteOpenHelper {
+        private Context mContext;
+
+        LogDBHelper( Context context )
+        {
+            super( context, LOGS_DB_NAME, null, DB_VERSION );
+            mContext = context;
+        }
+
+        @Override
+        public void onCreate( SQLiteDatabase db )
+        {
+            String query = "CREATE TABLE " + LOGS_TABLE_NAME + "("
+                + COL_ROWID + " INTEGER PRIMARY KEY AUTOINCREMENT"
+                + "," + COL_ENTRY + " TEXT"
+                + "," + COL_TAG + " TEXT"
+                + "," + COL_LEVEL + " INTEGER(2)"
+                + ");";
+
+            db.execSQL( query );
+        }
+
+        @Override
+        @SuppressWarnings("fallthrough")
+        public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
+        {
+            String msg = String.format("onUpgrade(%s): old: %d; new: %d", db, oldVersion, newVersion );
+            android.util.Log.i( TAG, msg );
+            Assert.failDbg();
+        }
+
+        void store( LOG_LEVEL level, String tag, String msg )
+        {
+            ContentValues values = new ContentValues();
+            values.put( COL_ENTRY, msg );
+            values.put( COL_TAG, tag );
+            values.put( COL_LEVEL, level.ordinal() );
+            long res = getWritableDatabase().insert( LOGS_TABLE_NAME, null, values );
+        }
+
+        File dumpToFile()
+        {
+            File storage = Environment.getExternalStorageDirectory();
+            File db = new File( storage, LOGS_DB_NAME );
+
+            try {
+                OutputStream os = new FileOutputStream( db );
+                OutputStreamWriter osw = new OutputStreamWriter(os);
+
+                String[] columns = { COL_ENTRY, COL_TAG };
+                String selection = null;
+                String orderBy = COL_ROWID;
+                Cursor cursor = getReadableDatabase().query( LOGS_TABLE_NAME, columns,
+                                                             selection, null, null, null,
+                                                             orderBy );
+                llog( "dumpToFile(): got %d results", cursor.getCount() );
+                int indx0 = cursor.getColumnIndex( columns[0] );
+                int indx1 = cursor.getColumnIndex( columns[1] );
+                while ( cursor.moveToNext() ) {
+                    String data = cursor.getString(indx0);
+                    String tag = cursor.getString(indx1);
+                    osw.write( tag );
+                    osw.write( ":" );
+                    osw.write(data);
+                    osw.write( "\n" );
+                }
+                osw.close();
+            } catch ( IOException ioe ) {
+                llog( "dumpToFile(): ioe: %s", ioe );
+            }
+            return db;
+        }
+
+        // Return the number of rows
+        int clear()
+        {
+            int result = getWritableDatabase()
+                .delete( LOGS_TABLE_NAME, "1", null );
+            return result;
         }
     }
 }
