@@ -1961,9 +1961,10 @@ gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
 static void
 gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 {
-    LOG_FUNC();
-    XP_USE( uc );
-    XP_USE( bonus );
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    gchar* msg = g_strdup_printf( "bonusSquareHeld(bonus=%d)", bonus );
+    gtkask_timeout( globals->window, msg, GTK_BUTTONS_OK, NULL, 1000 );
+    g_free( msg );
 }
 
 static void

@@ -1366,8 +1366,7 @@ timerFiredForPen( BoardCtxt* board )
                 if ( listWords ) {
                     util_cellSquareHeld( board->util, stream );
                     if ( dragDropInProgress( board ) ) {
-                        XP_Bool dragged;
-                        dragDropEnd( board, board->penDownX, board->penDownY, &dragged );
+                        dragDropEnd( board, board->penDownX, board->penDownY, NULL );
                     }
                 }
                 stream_destroy( stream );
@@ -3035,7 +3034,6 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
                      XP_Bool altDown )
 {
     XP_Bool draw = XP_FALSE;
-    XP_Bool dragged = XP_FALSE;
     BoardObjectType prevObj = board->penDownObject;
 
     /* prevent timer from firing after pen lifted.  Set now rather than later
@@ -3043,6 +3041,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
        exiting this function (which might give timer time to fire. */
     board->penDownObject = OBJ_NONE;
 
+    XP_Bool dragged = XP_FALSE;
     if ( dragDropInProgress(board) ) {
         draw = dragDropEnd( board, xx, yy, &dragged );
     }
