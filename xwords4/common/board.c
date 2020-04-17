@@ -1341,7 +1341,7 @@ timerFiredForPen( BoardCtxt* board )
 
             if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
                 /* even if we aren't calling dragDropSetAdd we want to avoid
-                   putting up a sqare bonus if we're on a sqare with
+                   putting up a square bonus if we're on a square with
                    something that can be dragged */
 #ifdef XWFEATURE_RAISETILE
                 draw = dragDropSetAdd( board );
@@ -1351,20 +1351,25 @@ timerFiredForPen( BoardCtxt* board )
             /* We calculate words even for a pending tile set, meaning
                dragDrop might be happening too. */
             XP_Bool listWords = XP_FALSE;
-#ifdef XWFEATURE_BOARDWORDS     /* here it is */
+#ifdef XWFEATURE_BOARDWORDS
             XP_U16 modelCol, modelRow;
             flipIf( board, col, row, &modelCol, &modelRow );
             listWords = model_getTile( board->model, modelCol, modelRow,
                                        XP_TRUE, board->selPlayer, NULL,
                                        NULL, NULL, NULL );
             if ( listWords ) {
-                XP_LOGF( "%s(): listWords came back true", __func__ );
                 XWStreamCtxt* stream =
                     mem_stream_make_raw( MPPARM(board->mpool)
                                          dutil_getVTManager(board->dutil) );
-                model_listWordsThrough( board->model, modelCol, modelRow,
-                                        board->selPlayer, stream );
-                util_cellSquareHeld( board->util, stream );
+                listWords = model_listWordsThrough( board->model, modelCol, modelRow,
+                                                    board->selPlayer, stream );
+                if ( listWords ) {
+                    util_cellSquareHeld( board->util, stream );
+                    if ( dragDropInProgress( board ) ) {
+                        XP_Bool dragged;
+                        dragDropEnd( board, board->penDownX, board->penDownY, &dragged );
+                    }
+                }
                 stream_destroy( stream );
             }
 #endif

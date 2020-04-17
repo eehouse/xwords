@@ -2613,10 +2613,11 @@ listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
 /* List every word played that includes the tile on {col,row}.
  *
  * How?   Undo backwards until we find the move that placed that tile.*/
-void
+XP_Bool
 model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                         XP_S16 turn, XWStreamCtxt* stream )
 {
+    XP_Bool found = XP_FALSE;
     ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
     copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
@@ -2667,9 +2668,12 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
             modelAddEntry( tmpModel, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
                            NULL, NULL, NULL );
         }
+        XP_LOGFF( "nWords: %d", lwtInfo.nWords );
+        found = 0 < lwtInfo.nWords;
     }
 
     model_destroy( tmpModel );
+    return found;
 } /* model_listWordsThrough */
 #endif
 
