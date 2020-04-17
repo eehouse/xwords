@@ -62,16 +62,16 @@
                         android:defaultValue="true"
                         />
 
-    <CheckBoxPreference android:key="@string/key_init_dupmodeon"
-                        android:title="@string/offerdupmode_title"
-                        android:summary="@string/offerdupmode_sum"
-                        android:defaultValue="false"
-                        />
-
     <CheckBoxPreference android:key="@string/key_init_nethintsallowed"
                         android:title="@string/nethints_allowed"
                         android:summary="@string/nethints_allowed_sum"
                         android:defaultValue="true"
+                        />
+
+    <CheckBoxPreference android:key="@string/key_init_dupmodeon"
+                        android:title="@string/offerdupmode_title"
+                        android:summary="@string/offerdupmode_sum"
+                        android:defaultValue="false"
                         />
 
     <CheckBoxPreference android:key="@string/key_init_autojuggle"
