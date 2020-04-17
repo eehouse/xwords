@@ -46,10 +46,11 @@ gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons,
 }
 
 gint
-gtkask_timeout( GtkWidget* parent, const gchar *message, 
+gtkask_timeout( GtkWidget* parent, const gchar* message,
                 GtkButtonsType buttons, const AskPair* buttxts,
                 XP_U16 timeout )
 {
+    XP_LOGFF( "(msg: \"%s\")", message );
     guint src = 0;
     GtkWidget* dlg = gtk_message_dialog_new( (GtkWindow*)parent, 
                                              GTK_MESSAGE_QUESTION,

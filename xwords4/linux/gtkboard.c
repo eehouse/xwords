@@ -1987,9 +1987,12 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 static void
 gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 {
-    XP_USE( uc );
-    catOnClose( words, NULL );
-    fprintf( stderr, "\n" );
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    const XP_U8* bytes = stream_getPtr( words );
+    gchar* msg = g_strdup_printf( "words for lookup:\n%s",
+                                  (XP_UCHAR*)bytes );
+    gtktell( globals->window, msg );
+    g_free( msg );
 }
 #endif
 
