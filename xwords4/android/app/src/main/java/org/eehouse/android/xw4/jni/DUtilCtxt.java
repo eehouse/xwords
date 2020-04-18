@@ -123,9 +123,8 @@ public class DUtilCtxt {
     private static final int STRSD_DUP_ONESCORE =                29;
     private static final int STR_PENDING_PLAYER =                30;
 
-    public String getUserString( int stringCode )
+    public String getUserString( final int stringCode )
     {
-        Log.d( TAG, "getUserString(%d)", stringCode );
         int id = 0;
         switch( stringCode ) {
         case STR_ROBOT_MOVED:
@@ -217,7 +216,7 @@ public class DUtilCtxt {
         }
 
         String result = (0 == id) ? "" : LocUtils.getString( m_context, id );
-        Log.d( TAG, "getUserString() => %s", result );
+        Log.d( TAG, "getUserString(%d) => %s", stringCode, result );
         return result;
     }
 

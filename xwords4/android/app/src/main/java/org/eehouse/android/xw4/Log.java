@@ -43,6 +43,7 @@ public class Log {
     private static final boolean LOGGING_ENABLED
         = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
     private static final boolean ERROR_LOGGING_ENABLED = true;
+    private static final String LOGS_FILE_NAME = BuildConfig.FLAVOR + "_logsDB.txt";
     private static final String LOGS_DB_NAME = "xwlogs_db";
     private static final String LOGS_TABLE_NAME = "logs";
     private static final String COL_ENTRY = "entry";
@@ -259,7 +260,7 @@ public class Log {
         {
             File dir = Environment.getExternalStorageDirectory();
             dir = new File( dir, Environment.DIRECTORY_DOWNLOADS );
-            File db = new File( dir, LOGS_DB_NAME + ".txt" );
+            File db = new File( dir, LOGS_FILE_NAME );
 
             try {
                 OutputStream os = new FileOutputStream( db );
