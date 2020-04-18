@@ -1106,24 +1106,27 @@ public class DBUtils {
 
     public static byte[] loadGame( Context context, GameLock lock )
     {
+        byte[] result = null;
         long rowid = lock.getRowid();
         Assert.assertTrue( ROWID_NOTFOUND != rowid );
-        byte[] result = getCached( rowid );
-        if ( null == result ) {
-            String[] columns = { DBHelper.SNAPSHOT };
-            String selection = String.format( ROW_ID_FMT, rowid );
-            initDB( context );
-            synchronized( s_dbHelper ) {
-                Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
-                if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                    result = cursor.getBlob( cursor
-                                             .getColumnIndex(DBHelper.SNAPSHOT));
-                } else {
-                    Log.e( TAG, "loadGame: none for rowid=%d", rowid );
+        if ( Quarantine.safeToOpen( rowid ) ) {
+            result = getCached( rowid );
+            if ( null == result ) {
+                String[] columns = { DBHelper.SNAPSHOT };
+                String selection = String.format( ROW_ID_FMT, rowid );
+                initDB( context );
+                synchronized( s_dbHelper ) {
+                    Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
+                    if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                        result = cursor.getBlob( cursor
+                                                 .getColumnIndex(DBHelper.SNAPSHOT));
+                    } else {
+                        Log.e( TAG, "loadGame: none for rowid=%d", rowid );
+                    }
+                    cursor.close();
                 }
-                cursor.close();
+                setCached( rowid, result );
             }
-            setCached( rowid, result );
         }
         return result;
     }

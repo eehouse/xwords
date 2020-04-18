@@ -53,6 +53,7 @@ public class DlgDelegate {
         SEND_EMAIL,
         WRITE_LOG_DB,
         CLEAR_LOG_DB,
+        CLEAR_QUARANTINE,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

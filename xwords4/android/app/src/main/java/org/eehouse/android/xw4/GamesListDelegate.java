@@ -1226,6 +1226,25 @@ public class GamesListDelegate extends ListDelegateBase
             } );
     }
 
+    private void openWithChecks( long rowid, GameSummary summary )
+    {
+        if ( ! m_launchedGames.contains( rowid ) ) {
+            if ( Quarantine.safeToOpen( rowid ) ) {
+                makeNotAgainBuilder( R.string.not_again_newselect,
+                                     R.string.key_notagain_newselect,
+                                     Action.OPEN_GAME )
+                    .setParams( rowid, summary )
+                    .show();
+            } else {
+                makeConfirmThenBuilder( R.string.unsafe_open_warning,
+                                        Action.CLEAR_QUARANTINE )
+                    .setPosButton( R.string.unsafe_open_disregard )
+                    .setParams( rowid, summary )
+                    .show();
+            }
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////
     // SelectableItem interface
     //////////////////////////////////////////////////////////////////////
@@ -1237,13 +1256,7 @@ public class GamesListDelegate extends ListDelegateBase
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
             long rowid = ((GameListItem)clicked).getRowID();
-            if ( ! m_launchedGames.contains( rowid ) ) {
-                makeNotAgainBuilder( R.string.not_again_newselect,
-                                     R.string.key_notagain_newselect,
-                                     Action.OPEN_GAME )
-                    .setParams( rowid, summary )
-                    .show();
-            }
+            openWithChecks( rowid, summary );
         }
     }
 
@@ -1344,6 +1357,13 @@ public class GamesListDelegate extends ListDelegateBase
         case OPEN_GAME:
             doOpenGame( params );
             break;
+        case CLEAR_QUARANTINE:
+            long rowid = (long)params[0];
+            Quarantine.clear( rowid );
+            GameSummary summary = (GameSummary)params[0];
+            openWithChecks( rowid, summary );
+            break;
+
         case CLEAR_SELS:
             clearSelections();
             break;
