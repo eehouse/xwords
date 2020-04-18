@@ -3843,11 +3843,12 @@ setTurn( ServerCtxt* server, XP_S16 turn )
 static void
 tellMoveWasLegal( ServerCtxt* server )
 {
-    XWStreamCtxt* stream;
-
-    stream = messageStreamWithHeader( server, server->lastMoveSource,
-                                      XWPROTO_MOVE_CONFIRM );
+    XWStreamCtxt* stream =
+        messageStreamWithHeader( server, server->lastMoveSource,
+                                 XWPROTO_MOVE_CONFIRM );
     stream_destroy( stream );
+
+    SETSTATE( server, XWSTATE_INTURN );
 } /* tellMoveWasLegal */
 
 static XP_Bool
@@ -3872,6 +3873,7 @@ handleMoveOk( ServerCtxt* server, XWStreamCtxt* XP_UNUSED(incoming) )
     XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
     XP_ASSERT( server->nv.gameState == XWSTATE_MOVE_CONFIRM_WAIT );
 
+    SETSTATE( server, XWSTATE_INTURN );
     nextTurn( server, PICK_NEXT );
 
     return accepted;
