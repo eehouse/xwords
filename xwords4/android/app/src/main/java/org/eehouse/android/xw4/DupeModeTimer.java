@@ -73,7 +73,7 @@ public class DupeModeTimer extends BroadcastReceiver {
                 public void gameSaved( Context context, long rowid,
                                        GameChangeType change )
                 {
-                    Log.d( TAG, "gameSaved(rowid=%d,change=%s) called", rowid, change );
+                    // Log.d( TAG, "gameSaved(rowid=%d,change=%s) called", rowid, change );
                     switch( change ) {
                     case GAME_CHANGED:
                     case GAME_CREATED:
@@ -81,7 +81,7 @@ public class DupeModeTimer extends BroadcastReceiver {
                             if ( sDirtyVals.containsKey( rowid ) ) {
                                 sQueue.addOne( context, rowid );
                             } else {
-                                Log.d( TAG, "skipping; not dirty" );
+                                // Log.d( TAG, "skipping; not dirty" );
                             }
                         }
                         break;

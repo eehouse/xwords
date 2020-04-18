@@ -992,7 +992,7 @@ public class NFCUtils {
                         mAdapter.disableReaderMode( mActivity );
                     }
                     mInReadMode = wantReadMode;
-                    Log.d( TAG, "run(): inReadMode now: %b", mInReadMode );
+                    // Log.d( TAG, "run(): inReadMode now: %b", mInReadMode );
 
                     // Now sleep. If we aren't going to want to toggle read
                     // mode soon, sleep until interrupted by a state change,

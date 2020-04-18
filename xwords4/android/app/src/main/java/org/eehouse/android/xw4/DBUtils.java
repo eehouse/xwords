@@ -1541,7 +1541,7 @@ public class DBUtils {
             }
             s_groupsCache = result;
         }
-        Log.d( TAG, "getGroups() => %s", result );
+        // Log.d( TAG, "getGroups() => %s", result );
         return result;
     } // getGroups
 
