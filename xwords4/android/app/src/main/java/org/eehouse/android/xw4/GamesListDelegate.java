@@ -1793,6 +1793,7 @@ public class GamesListDelegate extends ListDelegateBase
                         && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
                 }
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
+                Utils.setItemVisible( menu, R.id.games_game_markbad, enable );
                 Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
 
                 enable = !m_launchedGames.contains( rowID );
@@ -1987,6 +1988,11 @@ public class GamesListDelegate extends ListDelegateBase
                 msg += "\n\n" + info.getAsText( m_activity );
             }
             makeOkOnlyBuilder( msg ).show();
+            break;
+
+            // DEBUG only
+        case R.id.games_game_markbad:
+            Quarantine.recordOpened( selRowIDs[0] );
             break;
 
         default:
