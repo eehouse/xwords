@@ -478,9 +478,13 @@ def build_cmds(args):
             # it isn't a priority.
             # PARAMS += ['--seed', args.SEED]
 
-            if DEV == 1: PARAMS += ['--server']
             if DEV == 1 or usePublic: PARAMS += ['--force-game']
-            if DEV > 1: PARAMS += ['--force-channel', DEV - 1]
+            if DEV == 1:
+                if args.PHONIES == -1: phonies = GAME % 3
+                else: phonies = args.PHONIES
+                PARAMS += ['--server', '--phonies', phonies ]
+            else:
+                PARAMS += ['--force-channel', DEV - 1]
 
             if useDupeMode: PARAMS += ['--duplicate-mode']
             if usePublic: PARAMS += ['--make-public', '--join-public']
@@ -694,7 +698,10 @@ def mkParser():
     parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
                         help = 'seconds without change after which to timeout')
     parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
-    parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, help = 'send all packet twice')
+    parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False,
+                        help = 'send all packet twice')
+    parser.add_argument('--phonies', dest = 'PHONIES', default = -1, type = int,
+                        help = '0 (ignore), 1 (warn)) or 2 (lose turn); default is pick at random')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
 
