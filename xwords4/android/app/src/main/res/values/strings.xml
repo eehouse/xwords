@@ -2520,6 +2520,7 @@
     <string name="history_msg_fmt"> Message: %1$s.</string>
     <string name="history_autopause">Auto-paused.</string>
 
+    <string name="gamel_menu_logs">Debug logs</string>
     <!-- Debug-build-only menu to turn on saving of logs -->
     <string name="gamel_menu_logstore_on">Enable log storage</string>
     <!-- Debug-build-only menu to turn off saving of logs -->

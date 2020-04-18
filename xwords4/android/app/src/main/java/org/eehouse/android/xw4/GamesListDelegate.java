@@ -575,10 +575,7 @@ public class GamesListDelegate extends ListDelegateBase
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
         R.id.games_menu_writegit,
-        R.id.games_menu_enableLogStorage,
-        R.id.games_menu_disableLogStorage,
-        R.id.games_menu_clearLogStorage,
-        R.id.games_menu_dumpLogStorage,
+        R.id.games_submenu_logs,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,

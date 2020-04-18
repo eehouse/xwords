@@ -122,16 +122,22 @@
           android:title="@string/gamel_menu_writegit"
           />
 
-    <item android:id="@+id/games_menu_enableLogStorage"
-          android:title="@string/gamel_menu_logstore_on"
-          />
-    <item android:id="@+id/games_menu_disableLogStorage"
-          android:title="@string/gamel_menu_logstore_off"
-          />
-    <item android:id="@+id/games_menu_dumpLogStorage"
-          android:title="@string/gamel_menu_logstore_dump"
-          />
-    <item android:id="@+id/games_menu_clearLogStorage"
-          android:title="@string/gamel_menu_logstore_clear"
-          />
+    <item android:id="@+id/games_submenu_logs"
+          android:title="@string/gamel_menu_logs"
+          >
+      <menu>
+        <item android:id="@+id/games_menu_enableLogStorage"
+              android:title="@string/gamel_menu_logstore_on"
+              />
+        <item android:id="@+id/games_menu_disableLogStorage"
+              android:title="@string/gamel_menu_logstore_off"
+              />
+        <item android:id="@+id/games_menu_dumpLogStorage"
+              android:title="@string/gamel_menu_logstore_dump"
+              />
+        <item android:id="@+id/games_menu_clearLogStorage"
+              android:title="@string/gamel_menu_logstore_clear"
+              />
+      </menu>
+    </item>
 </menu>
