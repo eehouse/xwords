@@ -1237,8 +1237,10 @@ public class GamesListDelegate extends ListDelegateBase
                     .show();
             } else {
                 makeConfirmThenBuilder( R.string.unsafe_open_warning,
-                                        Action.CLEAR_QUARANTINE )
+                                        Action.QUARANTINE_CLEAR )
                     .setPosButton( R.string.unsafe_open_disregard )
+                    .setActionPair( Action.QUARANTINE_DELETE,
+                                    R.string.button_delete )
                     .setParams( rowid, summary )
                     .show();
             }
@@ -1357,11 +1359,16 @@ public class GamesListDelegate extends ListDelegateBase
         case OPEN_GAME:
             doOpenGame( params );
             break;
-        case CLEAR_QUARANTINE:
+        case QUARANTINE_CLEAR:
             long rowid = (long)params[0];
             Quarantine.clear( rowid );
-            GameSummary summary = (GameSummary)params[0];
+            GameSummary summary = (GameSummary)params[1];
             openWithChecks( rowid, summary );
+            break;
+
+        case QUARANTINE_DELETE:
+            rowid = (long)params[0];
+            deleteGames( new long[] {rowid}, true );
             break;
 
         case CLEAR_SELS:

@@ -2521,8 +2521,8 @@
     <string name="history_autopause">Auto-paused.</string>
 
     <string name="unsafe_open_warning">This game has caused CrossWords
-    to crash recently and is likely corrupt. Do you want to open it
-    anyway?</string>
+    to crash recently and is likely damaged. Opening it might cause
+    another crash. Do you want to open it anyway?</string>
     <string name="unsafe_open_disregard">Open anyway</string>
 
     <string name="gamel_menu_logs">Debug logs</string>
