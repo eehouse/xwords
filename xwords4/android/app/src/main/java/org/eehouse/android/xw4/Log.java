@@ -26,6 +26,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
+import android.os.Process;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -242,11 +243,13 @@ public class Log {
 
         void store( LOG_LEVEL level, String tag, String msg )
         {
-            long tid = Thread.currentThread().getId();
+            int tid = Process.myTid();
+            int pid = Process.myPid();
 
             ContentValues values = new ContentValues();
             values.put( COL_ENTRY, msg );
             values.put( COL_THREAD, tid );
+            values.put( COL_PID, pid );
             values.put( COL_TAG, tag );
             values.put( COL_LEVEL, level.ordinal() );
             long res = getWritableDatabase().insert( LOGS_TABLE_NAME, null, values );
@@ -262,7 +265,7 @@ public class Log {
                 OutputStream os = new FileOutputStream( db );
                 OutputStreamWriter osw = new OutputStreamWriter(os);
 
-                String[] columns = { COL_ENTRY, COL_TAG, COL_THREAD };
+                String[] columns = { COL_ENTRY, COL_TAG, COL_THREAD, COL_PID };
                 String selection = null;
                 String orderBy = COL_ROWID;
                 Cursor cursor = getReadableDatabase().query( LOGS_TABLE_NAME, columns,
@@ -272,12 +275,14 @@ public class Log {
                 int indx0 = cursor.getColumnIndex( columns[0] );
                 int indx1 = cursor.getColumnIndex( columns[1] );
                 int indx2 = cursor.getColumnIndex( columns[2] );
+                int indx3 = cursor.getColumnIndex( columns[3] );
                 while ( cursor.moveToNext() ) {
                     String data = cursor.getString(indx0);
                     String tag = cursor.getString(indx1);
-                    long tid =  cursor.getLong(indx2);
+                    int tid =  cursor.getInt(indx2);
+                    int pid =  cursor.getInt(indx3);
                     StringBuilder builder = new StringBuilder()
-                        .append(tid).append(":")
+                        .append(String.format("% 5d % 5d", pid, tid)).append(":")
                         .append(tag).append(":")
                         .append(data).append("\n")
                         ;

@@ -1702,7 +1702,7 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_menu_clearLogStorage:
             makeConfirmThenBuilder( R.string.logstore_clear_confirm,
                                     Action.CLEAR_LOG_DB )
-                .setPosButton( R.string.button_delete )
+                .setPosButton( R.string.loc_item_clear )
                 .show();
             break;
         case R.id.games_menu_dumpLogStorage:
