@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 9
-def VERSION_CODE_BASE = 152
-def VERSION_NAME = '4.4.156'
+def VERSION_CODE_BASE = 153
+def VERSION_NAME = '4.4.157'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def BUILD_INFO_NAME = "build-info.txt"
 
