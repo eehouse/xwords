@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2019 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1589,7 +1589,7 @@ server_do( ServerCtxt* server )
 #ifndef XWFEATURE_STANDALONE_ONLY
             sendBadWordMsgs( server );
 #endif
-            nextTurn( server, PICK_NEXT ); /* sets server->nv.gameState */
+            nextTurn( server, PICK_NEXT );
             //moreToDo = XP_TRUE;   /* why? */
             break;
 
@@ -1605,7 +1605,7 @@ server_do( ServerCtxt* server )
 
         case XWSTATE_MOVE_CONFIRM_MUSTSEND:
             XP_ASSERT( server->vol.gi->serverRole == SERVER_ISSERVER );
-            tellMoveWasLegal( server );
+            tellMoveWasLegal( server ); /* sets state */
             nextTurn( server, PICK_NEXT );
             break;
 
@@ -2125,6 +2125,7 @@ sendBadWordMsgs( ServerCtxt* server )
 
         freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
     }
+    SETSTATE( server, XWSTATE_INTURN );
 } /* sendBadWordMsgs */
 #endif
 
@@ -2517,6 +2518,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     XP_Bool moreToDo = XP_FALSE;
 
     if ( nxtTurn == PICK_NEXT ) {
+        XP_ASSERT( server->nv.gameState == XWSTATE_INTURN );
         if ( server->nv.gameState != XWSTATE_INTURN ) {
             XP_LOGFF( "doing nothing; state %s != XWSTATE_INTURN",
                       getStateStr(server->nv.gameState) );
@@ -3863,6 +3865,7 @@ handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incoming )
 
     freeBWI( MPPARM(server->mpool) &bwi );
 
+    SETSTATE( server, XWSTATE_INTURN );
     return XP_TRUE;
 } /* handleIllegalWord */
 
