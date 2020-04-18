@@ -1385,6 +1385,25 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.emailAuthor( m_activity );
             break;
 
+        case WRITE_LOG_DB:
+            final File logLoc = Log.dumpStored();
+            post( new Runnable() {
+                    @Override
+                    public void run() {
+                        String dumpMsg;
+                        if ( null == logLoc ) {
+                            dumpMsg = LocUtils.getString( m_activity,
+                                                          R.string.logstore_notdumped );
+                        } else {
+                            dumpMsg = LocUtils
+                                .getString( m_activity, R.string.logstore_dumped_fmt,
+                                            logLoc.getPath() );
+                        }
+                        makeOkOnlyBuilder( dumpMsg ).show();
+                    }
+                } );
+            break;
+
         case CLEAR_LOG_DB:
             int nDumped = Log.clearStored();
             Utils.showToast( m_activity, R.string.logstore_cleared_fmt, nDumped );
@@ -1687,13 +1706,8 @@ public class GamesListDelegate extends ListDelegateBase
                 .show();
             break;
         case R.id.games_menu_dumpLogStorage:
-            File logLoc = Log.dumpStored();
-            if ( null != logLoc ) {
-                String dumpMsg = LocUtils
-                    .getString( m_activity, R.string.logstore_dumped_fmt,
-                                logLoc.getPath() );
-                makeOkOnlyBuilder( dumpMsg ).show();
-            }
+            Perms23.tryGetPerms( this, Perm.STORAGE, null,
+                                 Action.WRITE_LOG_DB );
             break;
 
         default:
@@ -1907,6 +1921,7 @@ public class GamesListDelegate extends ListDelegateBase
             } else {
                 dropSels = true;    // will select the new game instead
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             Activity self = m_activity;
                             byte[] stream =

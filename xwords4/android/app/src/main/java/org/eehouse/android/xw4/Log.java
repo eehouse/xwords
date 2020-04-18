@@ -42,9 +42,11 @@ public class Log {
     private static final boolean LOGGING_ENABLED
         = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
     private static final boolean ERROR_LOGGING_ENABLED = true;
-    private static final String LOGS_DB_NAME = "logs_db";
+    private static final String LOGS_DB_NAME = "xwlogs_db";
     private static final String LOGS_TABLE_NAME = "logs";
     private static final String COL_ENTRY = "entry";
+    private static final String COL_THREAD = "tid";
+    private static final String COL_PID = "pid";
     private static final String COL_ROWID = "rowid";
     private static final String COL_TAG = "tag";
     private static final String COL_LEVEL = "level";
@@ -188,10 +190,10 @@ public class Log {
         return s_dbHelper;
     }
 
-    // Called from jni
+    // Called from jni. Keep name and signature in sync with what's in
+    // passToJava() in andutils.c
     public static void store( String tag, String msg )
     {
-        llog( "store(%s) called from jni", msg );
         store( LOG_LEVEL.DEBUG, tag, msg );
     }
 
@@ -220,6 +222,8 @@ public class Log {
             String query = "CREATE TABLE " + LOGS_TABLE_NAME + "("
                 + COL_ROWID + " INTEGER PRIMARY KEY AUTOINCREMENT"
                 + "," + COL_ENTRY + " TEXT"
+                + "," + COL_THREAD + " INTEGER"
+                + "," + COL_PID + " INTEGER"
                 + "," + COL_TAG + " TEXT"
                 + "," + COL_LEVEL + " INTEGER(2)"
                 + ");";
@@ -238,8 +242,11 @@ public class Log {
 
         void store( LOG_LEVEL level, String tag, String msg )
         {
+            long tid = Thread.currentThread().getId();
+
             ContentValues values = new ContentValues();
             values.put( COL_ENTRY, msg );
+            values.put( COL_THREAD, tid );
             values.put( COL_TAG, tag );
             values.put( COL_LEVEL, level.ordinal() );
             long res = getWritableDatabase().insert( LOGS_TABLE_NAME, null, values );
@@ -247,14 +254,15 @@ public class Log {
 
         File dumpToFile()
         {
-            File storage = Environment.getExternalStorageDirectory();
-            File db = new File( storage, LOGS_DB_NAME );
+            File dir = Environment.getExternalStorageDirectory();
+            dir = new File( dir, Environment.DIRECTORY_DOWNLOADS );
+            File db = new File( dir, LOGS_DB_NAME + ".txt" );
 
             try {
                 OutputStream os = new FileOutputStream( db );
                 OutputStreamWriter osw = new OutputStreamWriter(os);
 
-                String[] columns = { COL_ENTRY, COL_TAG };
+                String[] columns = { COL_ENTRY, COL_TAG, COL_THREAD };
                 String selection = null;
                 String orderBy = COL_ROWID;
                 Cursor cursor = getReadableDatabase().query( LOGS_TABLE_NAME, columns,
@@ -263,17 +271,22 @@ public class Log {
                 llog( "dumpToFile(): got %d results", cursor.getCount() );
                 int indx0 = cursor.getColumnIndex( columns[0] );
                 int indx1 = cursor.getColumnIndex( columns[1] );
+                int indx2 = cursor.getColumnIndex( columns[2] );
                 while ( cursor.moveToNext() ) {
                     String data = cursor.getString(indx0);
                     String tag = cursor.getString(indx1);
-                    osw.write( tag );
-                    osw.write( ":" );
-                    osw.write(data);
-                    osw.write( "\n" );
+                    long tid =  cursor.getLong(indx2);
+                    StringBuilder builder = new StringBuilder()
+                        .append(tid).append(":")
+                        .append(tag).append(":")
+                        .append(data).append("\n")
+                        ;
+                    osw.write( builder.toString() );
                 }
                 osw.close();
             } catch ( IOException ioe ) {
                 llog( "dumpToFile(): ioe: %s", ioe );
+                db = null;
             }
             return db;
         }

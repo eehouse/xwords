@@ -768,43 +768,25 @@ deleteLocalRefs( JNIEnv* env, ... )
 }
 
 #ifdef DEBUG
-static int g_log_count = 0;
-static pthread_mutex_t g_log_count_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* A bunch of threads are generating log statements. */
 static void
 passToJava( const char* tag, const char* msg )
 {
-    if ( 1 ) {
-        pthread_mutex_lock( &g_log_count_lock );
-        int lockCount = ++g_log_count;
-        RAW_LOG( "lockCount: %d", lockCount );
-        pthread_mutex_unlock( &g_log_count_lock );
+    JNIEnv* env = waitEnvFromGlobals();
+    if ( !!env ) {
+        jstring jtag = (*env)->NewStringUTF( env, tag );
+        jstring jbuf = (*env)->NewStringUTF( env, msg );
+        jclass clazz = (*env)->FindClass( env, PKG_PATH("Log") );
+        XP_ASSERT( !!clazz );
+        jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "store",
+                                                   "(Ljava/lang/String;Ljava/lang/String;)V" );
+        (*env)->CallStaticVoidMethod( env, clazz, mid, jtag, jbuf );
+        deleteLocalRefs( env, clazz, jtag, jbuf, DELETE_NO_REF );
 
-        /* Now pass into Log.java for possible writing to DB */
-        if ( 1 == lockCount ) {
-            JNIEnv* env = waitEnvFromGlobals();
-            if ( !!env ) {
-                jstring jtag = (*env)->NewStringUTF( env, tag );
-                jstring jbuf = (*env)->NewStringUTF( env, msg );
-                jclass clazz = (*env)->FindClass( env, PKG_PATH("Log") );
-                XP_ASSERT( !!clazz );
-                jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "store",
-                                                           "(Ljava/lang/String;Ljava/lang/String;)V" );
-                (*env)->CallStaticVoidMethod( env, clazz, mid, jtag, jbuf );
-                deleteLocalRefs( env, clazz, jtag, jbuf, DELETE_NO_REF );
-
-                releaseEnvFromGlobals( env );
-            } else {
-                RAW_LOG( "env is NULL; dropping" );
-            }
-        } else {
-            RAW_LOG( "recursing! Skipping msg %s", msg );
-        }
-
-        pthread_mutex_lock( &g_log_count_lock );
-        --g_log_count;
-        pthread_mutex_unlock( &g_log_count_lock );
+        releaseEnvFromGlobals( env );
+    } else {
+        RAW_LOG( "env is NULL; dropping" );
     }
 }
 

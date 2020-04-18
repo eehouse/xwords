@@ -2530,6 +2530,8 @@
     <string name="gamel_menu_logstore_dump">Write stored logs to file</string>
     <!-- Debug-build-only status message shown after logs successfully written to file -->
     <string name="logstore_dumped_fmt">Logs written to file %1$s</string>
+    <!-- Debug-build-only status message shown when unable to write logs -->
+    <string name="logstore_notdumped">Unable to write logs</string>
     <!-- Debug-build-only status message shown after logs successfully cleared -->
     <string name="logstore_cleared_fmt">%1$d log entries deleted</string>
     <!-- Debug-build-only question asked to confirm deletion of saved logs -->

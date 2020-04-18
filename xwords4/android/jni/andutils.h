@@ -113,7 +113,11 @@ JNIEnv* waitEnvFromGlobals();
 void releaseEnvFromGlobals( JNIEnv* env );
 
 void raw_log( const char* func, const char* fmt, ... );
-#define RAW_LOG(...) raw_log(  __func__, __VA_ARGS__ )
+#ifdef DEBUG
+# define RAW_LOG(...) raw_log(  __func__, __VA_ARGS__ )
+#else
+# define RAW_LOG(...)
+#endif
 
 # define DELETE_NO_REF ((jobject)-1)    /* terminates above varargs list */
 #endif
