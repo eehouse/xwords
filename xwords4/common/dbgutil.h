@@ -53,4 +53,10 @@ const char* devIDTypeToStr(DevIDType typ);
 #  define SET_DIRTY( ptr )
 # endif
 
+# ifdef DEBUG
+void assertTableFull( void* table, size_t sizeInBytes, const XP_UCHAR* tableName );
+# else
+#  define assertTableFull( table, sizeInBytes, tableName )
+# endif
+
 #endif

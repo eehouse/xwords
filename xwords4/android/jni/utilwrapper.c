@@ -27,6 +27,7 @@
 #include "andutils.h"
 #include "paths.h"
 #include "LocalizedStrIncludes.h"
+#include "dbgutil.h"
 
 #define MAX_QUANTITY_STRS 4
 
@@ -909,6 +910,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(getDevUtilCtxt);
 
 #undef SET_PROC
+    assertTableFull( vtable, sizeof(*vtable), "util" );
     return (XW_UtilCtxt*)util;
 } /* makeUtil */
 
@@ -965,6 +967,9 @@ makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
     SET_DPROC(notifyPause);
     SET_DPROC(onDupTimerChanged);
 
+#undef SET_DPROC
+
+    assertTableFull( vtable, sizeof(*vtable), "dutil" );
     return &dutil->dutil;
 }
 

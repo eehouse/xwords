@@ -2389,20 +2389,6 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 }
 
 void
-assertUtilCallbacksSet( XW_UtilCtxt* util )
-{
-    XWStreamCtxt* (**proc)(XW_UtilCtxt*, XP_PlayerAddr ) =
-        &util->vtable->m_util_makeStreamFromAddr;
-    for ( int ii = 0; ii < sizeof(*util->vtable)/sizeof(*proc); ++ii ) {
-        if ( !*proc ) {
-            XP_LOGF( "%s(): null ptr at index %d", __func__, ii );
-            XP_ASSERT( 0 );
-        }
-        ++proc;
-    }
-}
-
-void
 assertDrawCallbacksSet( const DrawCtxVTable* vtable )
 {
     bool allSet = true;

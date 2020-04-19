@@ -34,6 +34,7 @@
 #include "gsrcwrap.h"
 #include "linuxsms.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 typedef struct CursesBoardState {
     CursesAppGlobals* aGlobals;
@@ -1128,7 +1129,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #endif
 #undef SET_PROC
 
-    assertUtilCallbacksSet( util );
+    assertTableFull( util->vtable, sizeof(*util->vtable), "curses util" );
 } /* setupCursesUtilCallbacks */
 
 static bool
