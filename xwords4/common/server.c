@@ -2613,24 +2613,18 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 } /* server_setGameOverListener */
 
 static void
-storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
-               const DictionaryCtxt* dict,
-#ifdef XWFEATURE_BOARDWORDS
-               const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
-               XP_U16 XP_UNUSED(end), 
-#endif
-               void* closure )
+storeBadWords( const WNParams* wnp )
 {
-    if ( !isLegal ) {
-        ServerCtxt* server = (ServerCtxt*)closure;
-        const XP_UCHAR* name = dict_getShortName( dict );
+    if ( !wnp->isLegal ) {
+        ServerCtxt* server = (ServerCtxt*)wnp->closure;
+        const XP_UCHAR* name = dict_getShortName( wnp->dict );
 
-        XP_LOGF( "storeBadWords called with \"%s\" (name=%s)", word, name );
+        XP_LOGF( "storeBadWords called with \"%s\" (name=%s)", wnp->word, name );
         if ( NULL == server->illegalWordInfo.dictName ) {
             server->illegalWordInfo.dictName = copyString( server->mpool, name );
         }
         server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
-            = copyString( server->mpool, word );
+            = copyString( server->mpool, wnp->word );
     }
 } /* storeBadWords */
 

@@ -695,11 +695,14 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
                 XP_UCHAR buf[(MAX_ROWS*2)+1];
                 dict_tilesToString( dict, checkWordBuf, len, buf, 
                                     sizeof(buf) );
-                (void)(*notifyInfo->proc)( buf, legal, dict,
+
+                WNParams wnp = { .word = buf, .isLegal =legal, .dict =  dict,
 #ifdef XWFEATURE_BOARDWORDS
-                                           movei, start, end, 
+                                 .movei = movei, .start = start, .end = end,
 #endif
-                                           notifyInfo->closure );
+                                 .closure = notifyInfo->closure,
+                };
+                (void)(*notifyInfo->proc)( &wnp );
             }
 
             if ( !!stream ) {

@@ -77,13 +77,7 @@ static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                              const PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-static void recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
-                        const DictionaryCtxt* dict,
-
-#ifdef XWFEATURE_BOARDWORDS
-                        const MoveInfo* movei, XP_U16 start, XP_U16 end,
-#endif
-                        void* clsur );
+static void recordWord( const WNParams* wnp );
 #ifdef DEBUG 
 typedef struct _DiffTurnState {
     XP_S16 lastPlayerNum;
@@ -2465,17 +2459,11 @@ typedef struct _FirstWordData {
 } FirstWordData;
 
 static void
-getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
-              const DictionaryCtxt* XP_UNUSED(dict),
-#ifdef XWFEATURE_BOARDWORDS
-              const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
-              XP_U16 XP_UNUSED(end),
-#endif
-              void* closure )
+getFirstWord( const WNParams* wnp )
 {
-    FirstWordData* data = (FirstWordData*)closure;
-    if ( '\0' == data->word[0] && '\0' != word[0] ) {
-        XP_STRCAT( data->word, word );
+    FirstWordData* data = (FirstWordData*)wnp->closure;
+    if ( '\0' == data->word[0] && '\0' != wnp->word[0] ) {
+        XP_STRCAT( data->word, wnp->word );
     }
 }
 
@@ -2560,17 +2548,10 @@ appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
 }
 
 static void
-recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
-            const DictionaryCtxt* XP_UNUSED(dict),
-#ifdef XWFEATURE_BOARDWORDS
-            const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
-            XP_U16 XP_UNUSED(end),
-#endif
-            void* closure )
-
+recordWord( const WNParams* wnp )
 {
-    RecordWordsInfo* info = (RecordWordsInfo*)closure;
-    appendWithCR( info->stream, word, &info->nWords );
+    RecordWordsInfo* info = (RecordWordsInfo*)wnp->closure;
+    appendWithCR( info->stream, wnp->word, &info->nWords );
 }
 
 WordNotifierInfo* 
@@ -2591,22 +2572,20 @@ typedef struct _ListWordsThroughInfo {
 } ListWordsThroughInfo;
 
 static void
-listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
-                  const DictionaryCtxt* XP_UNUSED(dict),
-                  const MoveInfo* movei, XP_U16 start, XP_U16 end, 
-                  void* closure )
+listWordsThrough( const WNParams* wnp )
 {
-    ListWordsThroughInfo* info = (ListWordsThroughInfo*)closure;
+    ListWordsThroughInfo* info = (ListWordsThroughInfo*)wnp->closure;
+    const MoveInfo* movei = wnp->movei;
 
     XP_Bool contained = XP_FALSE;
     if ( movei->isHorizontal && movei->commonCoord == info->row ) {
-        contained = start <= info->col && end >= info->col;
+        contained = wnp->start <= info->col && wnp->end >= info->col;
     } else if ( !movei->isHorizontal && movei->commonCoord == info->col ) {
-        contained = start <= info->row && end >= info->row;
+        contained = wnp->start <= info->row && wnp->end >= info->row;
     }
 
     if ( contained ) {
-        appendWithCR( info->stream, word, &info->nWords );
+        appendWithCR( info->stream, wnp->word, &info->nWords );
     }
 }
 

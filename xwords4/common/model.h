@@ -282,13 +282,19 @@ void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 
 /********************* scoring ********************/
 
-typedef void (*WordNotifierProc)( const XP_UCHAR* word, XP_Bool isLegal, 
-                                  const DictionaryCtxt* dict,
+typedef struct _WNParams {
+    const XP_UCHAR* word;
+    XP_Bool isLegal;
+    const DictionaryCtxt* dict;
 #ifdef XWFEATURE_BOARDWORDS
-                                  const MoveInfo* movei, XP_U16 start, 
-                                  XP_U16 end,
+    const MoveInfo* movei;
+    XP_U16 start;
+    XP_U16 end;
 #endif
-                                  void* closure );
+    void* closure;
+} WNParams;
+
+typedef void (*WordNotifierProc)( const WNParams* wnp );
 typedef struct WordNotifierInfo {
     WordNotifierProc proc;
     void* closure;

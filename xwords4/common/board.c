@@ -1040,19 +1040,13 @@ typedef struct _BadWordList {
 } BadWordList;
 
 static void
-saveBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
-              const DictionaryCtxt* XP_UNUSED(dict),
-#ifdef XWFEATURE_BOARDWORDS
-              const MoveInfo* XP_UNUSED(movei), 
-              XP_U16 XP_UNUSED(start), XP_U16 XP_UNUSED(end),
-#endif
-              void* closure )
+saveBadWords( const WNParams* wnp )
 {
-    if ( !isLegal ) {
-        BadWordList* bwlp = (BadWordList*)closure;
+    if ( !wnp->isLegal ) {
+        BadWordList* bwlp = (BadWordList*)wnp->closure;
         bwlp->bwi.words[bwlp->bwi.nWords] = &bwlp->buf[bwlp->index];
-        XP_STRCAT( &bwlp->buf[bwlp->index], word );
-        bwlp->index += XP_STRLEN(word) + 1;
+        XP_STRCAT( &bwlp->buf[bwlp->index], wnp->word );
+        bwlp->index += XP_STRLEN(wnp->word) + 1;
         ++bwlp->bwi.nWords;
     }
 } /* saveBadWords */
