@@ -3598,6 +3598,7 @@ finishMove( ServerCtxt* server, TrayTileSet* newTiles, XP_U16 turn )
     } else if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
                && nTilesMoved > 0 ) {
         SETSTATE( server, XWSTATE_MOVE_CONFIRM_WAIT );
+        setTurn( server, -1 );
 #endif
     } else {
         nextTurn( server, PICK_NEXT );
@@ -3877,6 +3878,7 @@ handleMoveOk( ServerCtxt* server, XWStreamCtxt* XP_UNUSED(incoming) )
     XP_ASSERT( server->nv.gameState == XWSTATE_MOVE_CONFIRM_WAIT );
 
     SETSTATE( server, XWSTATE_INTURN );
+    setTurn( server, 0 );
     nextTurn( server, PICK_NEXT );
 
     return accepted;
@@ -4125,6 +4127,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
     case XWPROTO_BADWORD_INFO:
         accepted = handleIllegalWord( server, incoming );
         if ( accepted && server->nv.gameState != XWSTATE_GAMEOVER ) {
+            setTurn( server, 0 );
             nextTurn( server, PICK_NEXT );
         }
         break;
