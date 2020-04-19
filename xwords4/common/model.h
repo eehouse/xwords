@@ -291,10 +291,9 @@ typedef struct _WNParams {
     XP_U16 start;
     XP_U16 end;
 #endif
-    void* closure;
 } WNParams;
 
-typedef void (*WordNotifierProc)( const WNParams* wnp );
+typedef void (*WordNotifierProc)( const WNParams* wnp, void* closure );
 typedef struct WordNotifierInfo {
     WordNotifierProc proc;
     void* closure;

@@ -1018,7 +1018,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
     ,{ CMD_JOINADVERTISED, false, "join-public", "look for a public room" }
     ,{ CMD_PHONIES, true, "phonies", 
-       "ignore (0, default), warn (1) or lose turn (2)" }
+       "ignore (0, default), warn (1), lose turn (2), or refuse to commit (3)" }
     ,{ CMD_BONUSFILE, true, "bonus-file",
        "provides bonus info: . + * ^ and ! are legal" }
     ,{ CMD_INVITEE_RELAYID, true, "invitee-relayid", "relayID to send any invitation to" }
@@ -2823,8 +2823,11 @@ main( int argc, char** argv )
             case 2:
                 mainParams.pgi.phoniesAction = PHONIES_DISALLOW;
                 break;
+            case 3:
+                mainParams.pgi.phoniesAction = PHONIES_BLOCK;
+                break;
             default:
-                usage( argv[0], "phonies takes 0 or 1 or 2" );
+                usage( argv[0], "phonies takes 0 or 1 or 2 or 3" );
             }
             break;
         case CMD_BONUSFILE:

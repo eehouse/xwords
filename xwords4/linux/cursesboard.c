@@ -1049,6 +1049,11 @@ curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 }
 #endif
 
+static void
+curses_util_informWordBlocked( XW_UtilCtxt* XP_UNUSED(uc) )
+{
+    LOG_FUNC();
+}
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt*
@@ -1120,6 +1125,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_BOARDWORDS
     SET_PROC(cellSquareHeld);
 #endif
+    SET_PROC(informWordBlocked);
 
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);

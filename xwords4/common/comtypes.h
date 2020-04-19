@@ -140,8 +140,12 @@ typedef XP_U8 DeviceRole;
 
 enum {
     PHONIES_IGNORE,
+    /* You can commit a phony after viewing a warning  */
     PHONIES_WARN,
-    PHONIES_DISALLOW
+    /* You can commit a phony, but you'll lose your turn */
+    PHONIES_DISALLOW,
+    /* a phony is an illegal move, like tiles out-of-line */
+    PHONIES_BLOCK,
 };
 typedef XP_U8 XWPhoniesChoice;
 

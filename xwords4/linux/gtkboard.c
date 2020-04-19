@@ -1998,6 +1998,13 @@ gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 static void
+gtk_util_informWordBlocked( XW_UtilCtxt* uc )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    gtkUserError( globals, "Word blocked by phonies setting" );
+}
+
+static void
 gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -2229,7 +2236,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_BOARDWORDS
     SET_PROC(cellSquareHeld);
 #endif
-
+    SET_PROC(informWordBlocked);
 #undef SET_PROC
 
     assertTableFull( util->vtable, sizeof(*util->vtable), "gtk util" );

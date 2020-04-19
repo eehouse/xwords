@@ -1104,9 +1104,9 @@ considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
 } /* considerMove */
 
 static void
-countWords( const WNParams* wnp )
+countWords( const WNParams* wnp, void* closure )
 {
-    XP_U16* wcp = (XP_U16*)wnp->closure;
+    XP_U16* wcp = (XP_U16*)closure;
     if ( wnp->isLegal ) {
         ++*wcp;
     }

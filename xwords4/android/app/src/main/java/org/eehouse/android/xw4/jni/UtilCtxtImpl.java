@@ -107,6 +107,12 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     @Override
+    public void informWordBlocked()
+    {
+        subclassOverride( "informWordBlocked" );
+    }
+
+    @Override
     public void bonusSquareHeld( int bonus )
     {
     }

@@ -218,7 +218,7 @@ addPhoniesCombo( GtkNewGameState* state, GtkWidget* parent )
                         FALSE, TRUE, 0 );
     GtkWidget* phoniesCombo = gtk_combo_box_text_new();
 
-    const char* ptxts[] = { "IGNORE", "WARN", "DISALLOW" };
+    const char* ptxts[] = { "IGNORE", "WARN", "LOSE TURN", "BLOCK" };
 
     for ( int ii = 0; ii < VSIZE(ptxts); ++ii ) {
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(phoniesCombo),
@@ -227,6 +227,8 @@ addPhoniesCombo( GtkNewGameState* state, GtkWidget* parent )
 
     g_signal_connect( phoniesCombo, "changed",
                       G_CALLBACK(phonies_combo_changed), state );
+    XWPhoniesChoice startChoice = state->globals->cGlobals.params->pgi.phoniesAction;
+    gtk_combo_box_set_active( GTK_COMBO_BOX(phoniesCombo), startChoice );
     gtk_widget_show( phoniesCombo );
     gtk_box_pack_start( GTK_BOX(hbox), phoniesCombo, FALSE, TRUE, 0 );
     gtk_widget_show( hbox );

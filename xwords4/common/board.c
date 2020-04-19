@@ -1040,10 +1040,10 @@ typedef struct _BadWordList {
 } BadWordList;
 
 static void
-saveBadWords( const WNParams* wnp )
+saveBadWords( const WNParams* wnp, void* closure )
 {
     if ( !wnp->isLegal ) {
-        BadWordList* bwlp = (BadWordList*)wnp->closure;
+        BadWordList* bwlp = (BadWordList*)closure;
         bwlp->bwi.words[bwlp->bwi.nWords] = &bwlp->buf[bwlp->index];
         XP_STRCAT( &bwlp->buf[bwlp->index], wnp->word );
         bwlp->index += XP_STRLEN(wnp->word) + 1;

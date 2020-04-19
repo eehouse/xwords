@@ -706,6 +706,14 @@ and_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
     UTIL_CBK_TAIL();
 }
 
+static void
+and_util_informWordBlocked( XW_UtilCtxt* uc )
+{
+    UTIL_CBK_HEADER( "informWordBlocked", "()V" );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
+}
+
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
 and_dutil_getDevID( XW_DUtilCtxt* duc, DevIDType* typ )
@@ -908,6 +916,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
 #endif
 
     SET_PROC(getDevUtilCtxt);
+    SET_PROC(informWordBlocked);
 
 #undef SET_PROC
     assertTableFull( vtable, sizeof(*vtable), "util" );

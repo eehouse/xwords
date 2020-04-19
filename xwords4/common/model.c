@@ -77,7 +77,7 @@ static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                              const PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-static void recordWord( const WNParams* wnp );
+static void recordWord( const WNParams* wnp, void *closure );
 #ifdef DEBUG 
 typedef struct _DiffTurnState {
     XP_S16 lastPlayerNum;
@@ -2459,9 +2459,9 @@ typedef struct _FirstWordData {
 } FirstWordData;
 
 static void
-getFirstWord( const WNParams* wnp )
+getFirstWord( const WNParams* wnp, void* closure )
 {
-    FirstWordData* data = (FirstWordData*)wnp->closure;
+    FirstWordData* data = (FirstWordData*)closure;
     if ( '\0' == data->word[0] && '\0' != wnp->word[0] ) {
         XP_STRCAT( data->word, wnp->word );
     }
@@ -2548,9 +2548,9 @@ appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
 }
 
 static void
-recordWord( const WNParams* wnp )
+recordWord( const WNParams* wnp, void* closure )
 {
-    RecordWordsInfo* info = (RecordWordsInfo*)wnp->closure;
+    RecordWordsInfo* info = (RecordWordsInfo*)closure;
     appendWithCR( info->stream, wnp->word, &info->nWords );
 }
 
@@ -2572,9 +2572,9 @@ typedef struct _ListWordsThroughInfo {
 } ListWordsThroughInfo;
 
 static void
-listWordsThrough( const WNParams* wnp )
+listWordsThrough( const WNParams* wnp, void* closure )
 {
-    ListWordsThroughInfo* info = (ListWordsThroughInfo*)wnp->closure;
+    ListWordsThroughInfo* info = (ListWordsThroughInfo*)closure;
     const MoveInfo* movei = wnp->movei;
 
     XP_Bool contained = XP_FALSE;

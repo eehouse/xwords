@@ -1862,6 +1862,18 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
+        public void informWordBlocked()
+        {
+            runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        makeOkOnlyBuilder( "Word blocked" )
+                            .show();
+                    }
+                } );
+        }
+
+        @Override
         public void playerScoreHeld( int player )
         {
             LastMoveInfo lmi = new LastMoveInfo();

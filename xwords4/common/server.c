@@ -2613,10 +2613,10 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
 } /* server_setGameOverListener */
 
 static void
-storeBadWords( const WNParams* wnp )
+storeBadWords( const WNParams* wnp, void* closure )
 {
     if ( !wnp->isLegal ) {
-        ServerCtxt* server = (ServerCtxt*)wnp->closure;
+        ServerCtxt* server = (ServerCtxt*)closure;
         const XP_UCHAR* name = dict_getShortName( wnp->dict );
 
         XP_LOGF( "storeBadWords called with \"%s\" (name=%s)", wnp->word, name );

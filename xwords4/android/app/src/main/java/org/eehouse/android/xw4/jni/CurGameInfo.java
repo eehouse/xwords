@@ -51,7 +51,7 @@ public class CurGameInfo implements Serializable {
     private static final String PHONIES = "PHONIES";
     private static final String DUP = "DUP";
 
-    public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW };
+    public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW, PHONIES_BLOCK, };
     public enum DeviceRole { SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT };
 
     public String dictName;

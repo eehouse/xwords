@@ -217,6 +217,24 @@ model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
     }
 } /* model_figureFinalScores */
 
+typedef struct _BlockCheckState {
+    WordNotifierInfo* chainNI;
+    XP_Bool allLegal;
+} BlockCheckState;
+
+static void
+blockCheck( const WNParams* wnp, void* closure )
+{
+    BlockCheckState* bcs = (BlockCheckState*)closure;
+
+    if ( !!bcs->chainNI ) {
+        (bcs->chainNI->proc)( wnp, bcs->chainNI->closure );
+    }
+    if ( !wnp->isLegal ) {
+        bcs->allLegal = XP_FALSE;
+    }
+}
+
 /* checkScoreMove.
  * Negative score means illegal.
  */
@@ -238,17 +256,38 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
             formatSummary( stream, model, 0 );
         }
 
-    } else if ( tilesInLine( model, turn, &isHorizontal ) ) {
+    } else if ( !tilesInLine( model, turn, &isHorizontal ) ) {
+        if ( !silent ) { /* tiles out of line */
+            util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
+        }
+    } else {
         MoveInfo moveInfo;
-
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
 
         if ( isLegalMove( model, &moveInfo, silent ) ) {
-            score = figureMoveScore( model, turn, &moveInfo, engine, stream, 
-                                     notifyInfo );
+            /* If I'm testing for blocking, I need to chain my test onto any
+               existing WordNotifierInfo. blockCheck() does that. */
+            XP_Bool checkDict = PHONIES_BLOCK == model->vol.gi->phoniesAction;
+            WordNotifierInfo blockWNI;
+            BlockCheckState bcs;
+            if ( checkDict ) {
+                bcs.allLegal = XP_TRUE;
+                bcs.chainNI = notifyInfo;
+                blockWNI.proc = blockCheck;
+                blockWNI.closure = &bcs;
+                notifyInfo = &blockWNI;
+            }
+
+            XP_S16 tmpScore = figureMoveScore( model, turn, &moveInfo,
+                                               engine, stream, notifyInfo );
+            if ( checkDict && !bcs.allLegal ) {
+                if ( !silent ) {
+                    util_informWordBlocked( model->vol.util );
+                }
+            } else {
+                score = tmpScore;
+            }
         }
-    } else if ( !silent ) { /* tiles out of line */
-        util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
     }
     return score;
 } /* checkScoreMove */
@@ -700,9 +739,8 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
 #ifdef XWFEATURE_BOARDWORDS
                                  .movei = movei, .start = start, .end = end,
 #endif
-                                 .closure = notifyInfo->closure,
                 };
-                (void)(*notifyInfo->proc)( &wnp );
+                (void)(*notifyInfo->proc)( &wnp, notifyInfo->closure );
             }
 
             if ( !!stream ) {
