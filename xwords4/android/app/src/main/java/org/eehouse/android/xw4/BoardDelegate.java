@@ -1862,12 +1862,14 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informWordBlocked( final String word )
+        public void informWordBlocked( final String word, final String dict )
         {
             runOnUiThread( new Runnable() {
                     @Override
                     public void run() {
-                        String msg = String.format( "Word \"%s\" blocked", word );
+                        String msg = LocUtils
+                            .getString( m_activity, R.string.word_blocked_by_phony,
+                                        word, dict );
                         makeOkOnlyBuilder( msg ).show();
                     }
                 } );

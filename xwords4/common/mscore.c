@@ -282,7 +282,8 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
                                                engine, stream, notifyInfo );
             if ( checkDict && '\0' != bcs.word[0] ) {
                 if ( !silent ) {
-                    util_informWordBlocked( model->vol.util, bcs.word );
+                    DictionaryCtxt* dict = model_getPlayerDict( model, turn );
+                    util_informWordBlocked( model->vol.util, bcs.word, dict_getName( dict ) );
                 }
             } else {
                 score = tmpScore;

@@ -107,7 +107,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     @Override
-    public void informWordBlocked( String word )
+    public void informWordBlocked( String word, String dict )
     {
         subclassOverride( "informWordBlocked" );
     }

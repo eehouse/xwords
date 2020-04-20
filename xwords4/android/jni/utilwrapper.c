@@ -707,12 +707,13 @@ and_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
 }
 
 static void
-and_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word )
+and_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word, const XP_UCHAR* dict )
 {
-    UTIL_CBK_HEADER( "informWordBlocked", "(Ljava/lang/String;)V" );
+    UTIL_CBK_HEADER( "informWordBlocked", "(Ljava/lang/String;Ljava/lang/String;)V" );
     jstring jword = (*env)->NewStringUTF( env, word );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jword );
-    deleteLocalRef( env, jword );
+    jstring jdict = (*env)->NewStringUTF( env, dict );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jword, jdict );
+    deleteLocalRefs( env, jword, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 

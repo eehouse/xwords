@@ -1998,10 +1998,10 @@ gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 static void
-gtk_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word )
+gtk_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word, const XP_UCHAR* dict )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    gchar* msg = g_strdup_printf( "Word \"%s\" blocked by phonies setting", word );
+    gchar* msg = g_strdup_printf( "Word \"%s\" not found in %s", word, dict );
     gtkUserError( globals, msg );
     g_free( msg );
 }
