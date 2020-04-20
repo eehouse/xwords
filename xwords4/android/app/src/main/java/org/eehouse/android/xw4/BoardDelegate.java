@@ -1862,13 +1862,13 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informWordBlocked()
+        public void informWordBlocked( final String word )
         {
             runOnUiThread( new Runnable() {
                     @Override
                     public void run() {
-                        makeOkOnlyBuilder( "Word blocked" )
-                            .show();
+                        String msg = String.format( "Word \"%s\" blocked", word );
+                        makeOkOnlyBuilder( msg ).show();
                     }
                 } );
         }

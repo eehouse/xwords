@@ -173,7 +173,7 @@ typedef struct UtilVtable {
     void (*m_util_setIsServer)(XW_UtilCtxt* uc, XP_Bool isServer );
 #endif
 
-    void (*m_util_informWordBlocked)( XW_UtilCtxt* uc );
+    void (*m_util_informWordBlocked)( XW_UtilCtxt* uc, const XP_UCHAR* word );
 
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, 
@@ -310,7 +310,7 @@ struct XW_UtilCtxt {
 # define util_addrChange( uc, addro, addrn )
 #endif
 
-#define util_informWordBlocked(uc) (uc)->vtable->m_util_informWordBlocked( uc )
+#define util_informWordBlocked(uc, w) (uc)->vtable->m_util_informWordBlocked( (uc), (w) )
 
 #ifdef XWFEATURE_SEARCHLIMIT
 #define util_getTraySearchLimits(uc,min,max) \

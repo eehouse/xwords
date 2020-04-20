@@ -219,7 +219,7 @@ model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
 
 typedef struct _BlockCheckState {
     WordNotifierInfo* chainNI;
-    XP_Bool allLegal;
+    XP_UCHAR word[32];
 } BlockCheckState;
 
 static void
@@ -230,8 +230,8 @@ blockCheck( const WNParams* wnp, void* closure )
     if ( !!bcs->chainNI ) {
         (bcs->chainNI->proc)( wnp, bcs->chainNI->closure );
     }
-    if ( !wnp->isLegal ) {
-        bcs->allLegal = XP_FALSE;
+    if ( !wnp->isLegal && '\0' == bcs->word[0] ) {
+        XP_STRCAT( bcs->word, wnp->word );
     }
 }
 
@@ -271,7 +271,7 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
             WordNotifierInfo blockWNI;
             BlockCheckState bcs;
             if ( checkDict ) {
-                bcs.allLegal = XP_TRUE;
+                XP_MEMSET( &bcs, 0, sizeof(bcs) );
                 bcs.chainNI = notifyInfo;
                 blockWNI.proc = blockCheck;
                 blockWNI.closure = &bcs;
@@ -280,9 +280,9 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
 
             XP_S16 tmpScore = figureMoveScore( model, turn, &moveInfo,
                                                engine, stream, notifyInfo );
-            if ( checkDict && !bcs.allLegal ) {
+            if ( checkDict && '\0' != bcs.word[0] ) {
                 if ( !silent ) {
-                    util_informWordBlocked( model->vol.util );
+                    util_informWordBlocked( model->vol.util, bcs.word );
                 }
             } else {
                 score = tmpScore;

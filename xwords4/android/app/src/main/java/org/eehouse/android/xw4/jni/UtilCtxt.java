@@ -62,7 +62,7 @@ public interface UtilCtxt {
     void remSelected();
     void timerSelected( boolean inDuplicateMode, boolean canPause );
     void setIsServer( boolean isServer );
-    void informWordBlocked();
+    void informWordBlocked( String word );
 
     void bonusSquareHeld( int bonus );
     void playerScoreHeld( int player );

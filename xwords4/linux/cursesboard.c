@@ -1050,9 +1050,10 @@ curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 static void
-curses_util_informWordBlocked( XW_UtilCtxt* XP_UNUSED(uc) )
+curses_util_informWordBlocked( XW_UtilCtxt* XP_UNUSED(uc),
+                               const XP_UCHAR* XP_UNUSED_DBG(word) )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(word=%s)", word );
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
