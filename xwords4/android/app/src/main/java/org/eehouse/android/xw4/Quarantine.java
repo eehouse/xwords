@@ -37,7 +37,9 @@ public class Quarantine {
             count = get().getFor( rowid );
         }
         boolean result = count == 0; // Not too strict?
-        Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
+        if ( !result ) {
+            Log.d( TAG, "safeToOpen(%d) => %b (count=%d)", rowid, result, count );
+        }
         return result;
     }
 
