@@ -32,7 +32,8 @@ public class Assert {
         assertTrue(! val);
     }
     
-    public static void assertTrue(boolean val) {
+    public static void assertTrue( boolean val )
+    {
         if (! val) {
             Log.e( TAG, "firing assert!" );
             DbgUtils.printStack( TAG );

@@ -168,6 +168,7 @@ public class XwJNI {
 
     public static void gi_from_stream( CurGameInfo gi, byte[] stream )
     {
+        Assert.assertNotNull( stream );
         gi_from_stream( getJNI().m_ptrGlobals, gi, stream ); // called here
     }
 
