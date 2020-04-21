@@ -123,9 +123,7 @@ struct ServerCtxt {
     PoolContext* pool;
 
     BadWordInfo illegalWordInfo;
-#ifndef XWFEATURE_STANDALONE_ONLY
     XP_U16 lastMoveSource;
-#endif
 
     ServerPlayer players[MAX_NUM_PLAYERS];
     XP_Bool serverDoing;
@@ -159,8 +157,7 @@ static void nextTurn( ServerCtxt* server, XP_S16 nxtTurn );
 
 static void doEndGame( ServerCtxt* server, XP_S16 quitter );
 static void endGameInternal( ServerCtxt* server, GameEndReason why, XP_S16 quitter );
-static void badWordMoveUndoAndTellUser( ServerCtxt* server, 
-                                        BadWordInfo* bwi );
+static void badWordMoveUndoAndTellUser( ServerCtxt* server, BadWordInfo* bwi );
 static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XP_S16 turn );
 static XWStreamCtxt* mkServerStream( ServerCtxt* server );
@@ -203,6 +200,7 @@ static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream,
 #endif
 
 #define PICK_NEXT -1
+#define PICK_CUR -2
 
 #if defined DEBUG && ! defined XWFEATURE_STANDALONE_ONLY
 static char*
@@ -227,8 +225,7 @@ getStateStr( XW_State st )
 }
 #endif
 
-#if 0 
-//def DEBUG
+#ifdef DEBUG
 static void
 logNewState( XW_State old, XW_State newst, const char* caller )
 {
@@ -238,10 +235,10 @@ logNewState( XW_State old, XW_State newst, const char* caller )
         XP_LOGFF( "state transition %s => %s (from %s())", oldStr, newStr, caller );
     }
 }
-# define SETSTATE( s, st ) {                                   \
-        XW_State old = (s)->nv.gameState;                      \
-        (s)->nv.gameState = (st);                              \
-        logNewState( old, st, __func__);                       \
+# define SETSTATE( server, st ) {                                   \
+        XW_State old = (server)->nv.gameState;                      \
+        (server)->nv.gameState = (st);                              \
+        logNewState( old, st, __func__);                            \
     }
 #else
 # define SETSTATE( s, st ) (s)->nv.gameState = (st)
@@ -405,6 +402,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     stream_putBits( stream, XWSTATE_NBITS, nv->stateAfterShow );
 
     /* +1: make -1 (NOTURN) into a positive number */
+    XP_ASSERT( -1 <= nv->currentTurn && nv->currentTurn < MAX_NUM_PLAYERS );
     stream_putBits( stream, NPLAYERS_NBITS, nv->currentTurn+1 );
     stream_putBits( stream, NPLAYERS_NBITS, nv->quitter+1 );
     stream_putBits( stream, NPLAYERS_NBITS, nv->pendingRegistrations );
@@ -546,11 +544,7 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
         }
     }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     stream_putBits( stream, 2, server->lastMoveSource );
-#else
-    stream_putBits( stream, 2, 0 );
-#endif
 
     writeStreamIf( stream, server->nv.prevMoveStream );
     writeStreamIf( stream, server->nv.prevWordsStream );
@@ -2057,14 +2051,14 @@ static void
 bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
 {
     XP_U16 nWords = stream_getBits( stream, 4 );
-    const XP_UCHAR** sp = bwi->words;
 
     bwi->nWords = nWords;
     bwi->dictName = ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) )
         ? stringFromStream( mpool, stream ) : NULL;
-    for ( sp = bwi->words; nWords; ++sp, --nWords ) {
-        *sp = (const XP_UCHAR*)stringFromStream( mpool, stream );
+    for ( int ii = 0; ii < nWords; ++ii ) {
+        bwi->words[ii] = (const XP_UCHAR*)stringFromStream( mpool, stream );
     }
+    bwi->words[nWords] = NULL;
 } /* bwiFromStream */
 
 #ifdef DEBUG
@@ -2128,6 +2122,10 @@ sendBadWordMsgs( ServerCtxt* server )
         stream_putBits( stream, PLAYERNUM_NBITS, server->nv.currentTurn );
 
         bwiToStream( stream, &server->illegalWordInfo );
+
+        /* XP_U32 hash = model_getHash( server->vol.model ); */
+        /* stream_putU32( stream, hash ); */
+        /* XP_LOGFF( "wrote hash: %X", hash ); */
 
         stream_destroy( stream );
 
@@ -2521,11 +2519,12 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
 {
     XP_LOGFF( "(nxtTurn=%d)", nxtTurn );
     CurGameInfo* gi = server->vol.gi;
-    XP_Bool playerTilesLeft = XP_FALSE;
     XP_S16 currentTurn = server->nv.currentTurn;
     XP_Bool moreToDo = XP_FALSE;
 
-    if ( nxtTurn == PICK_NEXT ) {
+    if ( nxtTurn == PICK_CUR ) {
+        nxtTurn = model_getNextTurn( server->vol.model );
+    } else if ( nxtTurn == PICK_NEXT ) {
         XP_ASSERT( server->nv.gameState == XWSTATE_INTURN );
         if ( server->nv.gameState != XWSTATE_INTURN ) {
             XP_LOGFF( "doing nothing; state %s != XWSTATE_INTURN",
@@ -2533,7 +2532,6 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
             XP_ASSERT( !moreToDo );
             goto exit;
         } else if ( currentTurn >= 0 ) {
-            playerTilesLeft = tileCountsOk( server );
             if ( inDuplicateMode(server) ) {
                 nxtTurn = dupe_nextTurn( server );
             } else {
@@ -2546,9 +2544,9 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
         /* We're doing an undo, and so won't bother figuring out who the
            previous turn was or how many tiles he had: it's a sure thing he
            "has" enough to be allowed to take the turn just undone. */
-        playerTilesLeft = XP_TRUE;
         XP_ASSERT( nxtTurn == model_getNextTurn( server->vol.model ) );
     }
+    XP_Bool playerTilesLeft = tileCountsOk( server );
     SETSTATE( server, XWSTATE_INTURN ); /* even if game over, if undoing */
 
     if ( playerTilesLeft && NPASSES_OK(server) ){
@@ -3835,6 +3833,9 @@ setTurn( ServerCtxt* server, XP_S16 turn )
     if ( inDupMode || server->nv.currentTurn != turn || 1 == server->vol.gi->nPlayers ) {
         if ( DUP_PLAYER == turn && inDupMode ) {
             turn = dupe_nextTurn( server );
+        } else if ( PICK_CUR == turn ) {
+            XP_ASSERT( !inDupMode );
+            turn = model_getNextTurn( server->vol.model );
         } else if ( 0 <= turn && !inDupMode ) {
             XP_ASSERT( turn == model_getNextTurn( server->vol.model ) );
         }
@@ -3851,6 +3852,7 @@ tellMoveWasLegal( ServerCtxt* server )
     XWStreamCtxt* stream =
         messageStreamWithHeader( server, server->lastMoveSource,
                                  XWPROTO_MOVE_CONFIRM );
+
     stream_destroy( stream );
 
     SETSTATE( server, XWSTATE_INTURN );
@@ -3880,8 +3882,7 @@ handleMoveOk( ServerCtxt* server, XWStreamCtxt* XP_UNUSED(incoming) )
     XP_ASSERT( server->nv.gameState == XWSTATE_MOVE_CONFIRM_WAIT );
 
     SETSTATE( server, XWSTATE_INTURN );
-    setTurn( server, 0 );
-    nextTurn( server, PICK_NEXT );
+    nextTurn( server, PICK_CUR );
 
     return accepted;
 } /* handleMoveOk */
@@ -4129,8 +4130,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
     case XWPROTO_BADWORD_INFO:
         accepted = handleIllegalWord( server, incoming );
         if ( accepted && server->nv.gameState != XWSTATE_GAMEOVER ) {
-            setTurn( server, 0 );
-            nextTurn( server, PICK_NEXT );
+            nextTurn( server, PICK_CUR );
         }
         break;
 

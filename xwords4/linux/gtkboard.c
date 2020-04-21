@@ -1870,7 +1870,7 @@ gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         XP_UCHAR* name = cGlobals->gi->players[player].name;
         XP_ASSERT( !!name );
 
-        sprintf( buf, "Player %d (%s) played illegal word[s] %s; loses turn.",
+        sprintf( buf, "Player %d (%s) played illegal word[s] \"%s\"; loses turn.",
                  player+1, name, strs );
 
         if ( cGlobals->params->skipWarnings ) {

@@ -71,10 +71,11 @@ typedef struct PickInfo {
     XP_U16 thisPick;            /* <= nTotal */
 } PickInfo;
 
-typedef struct BadWordInfo {
+typedef struct _BadWordInfo {
     XP_U16 nWords;
     const XP_UCHAR* dictName;
-    const XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
+    /* Null-terminated array of ptrs */
+    const XP_UCHAR* words[MAX_TRAY_TILES+2]; /* can form in both directions */
 } BadWordInfo;
 
 /* XWTimerProc returns true if redraw was necessitated by what the proc did */

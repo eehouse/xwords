@@ -536,6 +536,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 void
 gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
 {
+    LOGGI( gi, "before" );
     XP_ASSERT( nTotal <= MAX_NUM_PLAYERS );
     XP_ASSERT( nHere < nTotal );
 
@@ -564,7 +565,7 @@ gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
             }
         }
     }
-    LOGGI( gi, __func__ );
+    LOGGI( gi, "after" );
 }
 
 XP_U16
