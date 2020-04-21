@@ -197,9 +197,13 @@ public class JNIThread extends Thread implements AutoCloseable {
             m_queue.clear();
         }
 
+        boolean success = false;
+        DictUtils.DictPairs pairs = null;
         String[] dictNames = GameUtils.dictNames( context, m_lock );
-        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
-        boolean success = !pairs.anyMissing( dictNames );
+        if ( null != dictNames ) {
+            pairs = DictUtils.openDicts( context, dictNames );
+            success = !pairs.anyMissing( dictNames );
+        }
 
         if ( success ) {
             byte[] stream = GameUtils.savedGame( context, m_lock );

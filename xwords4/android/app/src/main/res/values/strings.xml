@@ -2527,7 +2527,7 @@
     another crash. Do you want to open it anyway?</string>
     <string name="unsafe_open_disregard">Open anyway</string>
 
-    <string name="word_blocked_by_phony">Word %1$s not found in wordlist %2$s</string>
+    <string name="word_blocked_by_phony">Word %1$s not found in wordlist %2$s.</string>
 
     <string name="gamel_menu_logs">Debug logs</string>
     <!-- Debug-build-only menu to turn on saving of logs -->
