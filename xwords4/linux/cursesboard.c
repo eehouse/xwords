@@ -809,13 +809,21 @@ curses_util_turnChanged( XW_UtilCtxt* uc, XP_S16 XP_UNUSED_DBG(newTurn) )
 #endif
 
 static void
-curses_util_notifyIllegalWords( XW_UtilCtxt* uc,
-                                BadWordInfo* XP_UNUSED(bwi),
-                                XP_U16 XP_UNUSED(player),
-                                XP_Bool XP_UNUSED(turnLost) )
+curses_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
+                                XP_U16 player, XP_Bool turnLost )
 {
+    gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
+    gchar* msg = g_strdup_printf( "Player %d played bad word[s]: \"%s\". "
+                                  "Turn lost: %s", player, strs, boolToStr(turnLost) );
+
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-    ca_informf( bGlobals->boardWin, "%s() not implemented", __func__ );
+    if ( !!bGlobals->boardWin ) {
+        ca_inform( bGlobals->boardWin, msg );
+    } else {
+        XP_LOGFF( "msg: %s", msg );
+    }
+    g_free( strs );
+    g_free( msg );
 } /* curses_util_notifyIllegalWord */
 
 /* this needs to change!!! */
