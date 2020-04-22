@@ -672,8 +672,9 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
         nPlayers = gi->nPlayers;
         XP_ASSERT( nPlayers > 0 );
-        stream_putBits( stream, NPLAYERS_NBITS, 
-                        gi_countLocalPlayers( gi, XP_FALSE) );
+        XP_U16 localPlayers = gi_countLocalPlayers( gi, XP_FALSE);
+        XP_ASSERT( 0 < localPlayers );
+        stream_putBits( stream, NPLAYERS_NBITS, localPlayers );
 
         for ( lp = gi->players; nPlayers-- > 0; ++lp ) {
             XP_UCHAR* name;

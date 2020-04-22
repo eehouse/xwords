@@ -583,7 +583,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
 
     TransportProcs procs;
     setTransportProcs( &procs, globals );
-    if ( linuxOpenGame( cGlobals, &procs, NULL ) ) {
+
+    if ( linuxOpenGame( cGlobals, &procs, &cGlobals->addr ) ) {
 
         if ( !params->fileName && !!params->dbName ) {
             XP_UCHAR buf[64];

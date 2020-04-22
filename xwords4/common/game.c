@@ -549,13 +549,22 @@ gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
     }
 
     if ( nHere != curLocal ) {
-        /* This will happen when a device has more than on player. Not sure I
+        /* This will happen when a device has more than one player. Not sure I
            handle that correctly, but don't assert for now. */
         XP_LOGFF( "nHere: %d; curLocal: %d; a problem?", nHere, curLocal );
-        /* for ( XP_U16 ii = 0; ii < nTotal; ++ii ) { */
-        /*     gi->players[ii].isLocal = ii < nHere; */
-        /* } */
+        for ( XP_U16 ii = 0; ii < nTotal; ++ii ) {
+            if ( !gi->players[ii].isLocal ) {
+                gi->players[ii].isLocal = XP_TRUE;
+                XP_LOGFF( "making player #%d local when wasn't before", ii );
+                ++curLocal;
+                XP_ASSERT( curLocal <= nHere );
+                if ( curLocal == nHere ) {
+                    break;
+                }
+            }
+        }
     }
+    LOGGI( gi, __func__ );
 }
 
 XP_U16
@@ -762,20 +771,21 @@ player_timePenalty( CurGameInfo* gi, XP_U16 playerNum )
 
 #ifdef DEBUG
 void
-game_logGI( const CurGameInfo* gi, const char* msg )
+game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
 {
-    XP_LOGFF( "msg: %s", msg );
-
-    XP_LOGF( "  nPlayers: %d", gi->nPlayers );
-    for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
-        const LocalPlayer* lp = &gi->players[ii];
-        XP_LOGF( "  player[%d]: local: %d; robotIQ: %d; name: %s", ii,
-                 lp->isLocal, lp->robotIQ, lp->name );
+    XP_LOGFF( "msg: %s from %s() line %d; addr: %p", msg, func, line, gi );
+    if ( !!gi ) {
+        XP_LOGF( "  nPlayers: %d", gi->nPlayers );
+        for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
+            const LocalPlayer* lp = &gi->players[ii];
+            XP_LOGF( "  player[%d]: local: %d; robotIQ: %d; name: %s", ii,
+                     lp->isLocal, lp->robotIQ, lp->name );
+        }
+        XP_LOGF( "  forceChannel: %d", gi->forceChannel );
+        XP_LOGF( "  serverRole: %d", gi->serverRole );
+        XP_LOGF( "  gameID: %d", gi->gameID );
+        XP_LOGF( "  dictName: %s", gi->dictName );
     }
-    XP_LOGF( "  forceChannel: %d", gi->forceChannel );
-    XP_LOGF( "  serverRole: %d", gi->serverRole );
-    XP_LOGF( "  gameID: %d", gi->gameID );
-    XP_LOGF( "  dictName: %s", gi->dictName );
 }
 #endif
 
