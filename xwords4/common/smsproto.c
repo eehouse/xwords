@@ -108,6 +108,11 @@ static void freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex,
 static void freeForPhone( SMSProto* state, const XP_UCHAR* phone );
 static void freeMsg( SMSProto* state, MsgRec** msg );
 static void freeRec( SMSProto* state, ToPhoneRec* rec );
+#ifdef DEBUG
+static void logResult( const SMSProto* state, const SMSMsgArray* result, const char* caller );
+#else
+# define logResult( state, result, caller )
+#endif
 
 SMSProto*
 smsproto_init( MPFORMAL XW_DUtilCtxt* dutil )
@@ -216,8 +221,8 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
 
 #ifdef DEBUG
     XP_UCHAR* checksum = dutil_md5sum( state->dutil, buf, buflen );
-    XP_LOGF( "%s(cmd=%d, gameID=%d): len=%d, sum=%s, toPhone=%s", __func__, cmd,
-             gameID, buflen, checksum, toPhone );
+    XP_LOGFF( "(cmd=%d, gameID=%d): len=%d, sum=%s, toPhone=%s", cmd,
+              gameID, buflen, checksum, toPhone );
     XP_FREEP( state->mpool, &checksum );
 #endif
 
@@ -225,7 +230,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
 
     /* First, add the new message (if present) to the array */
     XP_U32 nowSeconds = dutil_getCurSeconds( state->dutil );
-    if ( cmd != NONE ) {
+    if ( cmd != NONE && 0 < buflen ) {
         addToOutRec( state, rec, cmd, toPort, gameID, buf, buflen, nowSeconds );
     }
 
@@ -249,12 +254,13 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
     }
     *waitSecsP = waitSecs;
 
-    XP_LOGF( "%s() => %p (len=%d, *waitSecs=%d)", __func__, result,
+    XP_LOGF( "%s() => %p (count=%d, *waitSecs=%d)", __func__, result,
              !!result ? result->nMsgs : 0, *waitSecsP );
 
     pthread_mutex_unlock( &state->mutex );
+    logResult( state, result, __func__ );
     return result;
-}
+} /* smsproto_prepOutbound */
 
 static SMSMsgArray*
 appendLocMsg( SMSProto* XP_UNUSED_DBG(state), SMSMsgArray* arr, SMSMsgLoc* msg )
@@ -292,7 +298,14 @@ SMSMsgArray*
 smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
                       XP_U16 wantPort, const XP_U8* data, XP_U16 len )
 {
-    XP_LOGF( "%s(): len=%d, fromPhone=%s", __func__, len, fromPhone );
+    XP_LOGFF( "len=%d, fromPhone=%s", len, fromPhone );
+
+#ifdef DEBUG
+    XP_UCHAR* checksum = dutil_md5sum( state->dutil, data, len );
+    XP_LOGFF( "(fromPhone=%s, len=%d); sum=%s", fromPhone, len, checksum );
+    XP_FREEP( state->mpool, &checksum );
+#endif
+
     SMSMsgArray* result = NULL;
     pthread_mutex_lock( &state->mutex );
 
@@ -361,7 +374,8 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
 
     stream_destroy( stream );
 
-    XP_LOGF( "%s() => %p (len=%d)", __func__, result, (!!result) ? result->nMsgs : 0 );
+    XP_LOGFF( "=> %p (len=%d)", result, (!!result) ? result->nMsgs : 0 );
+    logResult( state, result, __func__ );
 
     pthread_mutex_unlock( &state->mutex );
     return result;
@@ -394,6 +408,39 @@ smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
     XP_FREEP( state->mpool, &arr );
     pthread_mutex_unlock( &state->mutex );
 }
+
+#ifdef DEBUG
+static void
+logResult( const SMSProto* state, const SMSMsgArray* result, const char* caller )
+{
+    if ( !!result ) {
+        for ( int ii = 0; ii < result->nMsgs; ++ii ) {
+            XP_U8* data;
+            XP_U16 len;
+            switch ( result->format ) {
+            case FORMAT_LOC: {
+                SMSMsgLoc* msgsLoc = &result->u.msgsLoc[ii];
+                data = msgsLoc->data;
+                len = msgsLoc->len;
+            }
+                break;
+            case FORMAT_NET: {
+                SMSMsgNet* msgsNet = &result->u.msgsNet[ii];
+                data = msgsNet->data;
+                len = msgsNet->len;
+            }
+                break;
+            default:
+                XP_ASSERT(0);
+            }
+            XP_ASSERT( 0 < len );
+            XP_UCHAR* checksum = dutil_md5sum( state->dutil, data, len );
+            XP_LOGFF( "%s() => datum[%d] sum: %s, len: %d", caller, ii, checksum, len );
+            XP_FREEP( state->mpool, &checksum );
+        }
+    }
+}
+#endif
 
 static void
 freeMsg( SMSProto* XP_UNUSED_DBG(state), MsgRec** msgp )
