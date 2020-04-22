@@ -33,14 +33,14 @@
 
 void
 nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
-          XP_U16 nPlayers, XP_U16 forceChannel )
+          XP_U16 nPlayersH, XP_U16 forceChannel )
 {
     XP_MEMSET( nli, 0, sizeof(*nli) );
     nli->gameID = gi->gameID;
     XP_STRCAT( nli->dict, gi->dictName );
     nli->lang = gi->dictLang;
     nli->nPlayersT = gi->nPlayers;
-    nli->nPlayersH = nPlayers;
+    nli->nPlayersH = nPlayersH;
     nli->forceChannel = forceChannel;
     nli->inDuplicateMode = gi->inDuplicateMode;
 
@@ -202,4 +202,18 @@ nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
         }
     }
 }
+
+# ifdef DEBUG
+void
+logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
+{
+    XP_LOGFF( "called by %s(), line %d", callerFunc, callerLine );
+
+    XP_UCHAR buf[256];
+    XP_SNPRINTF( buf, VSIZE(buf), "{nPlayersT: %d; nPlayersH: %d; "
+                 "gameID: %d; inviteID: %s}",
+                 nli->nPlayersT, nli->nPlayersH, nli->gameID, nli->inviteID );
+    XP_LOGF( "%s", buf );
+}
+# endif
 #endif
