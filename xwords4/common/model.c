@@ -902,6 +902,8 @@ model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool, XP_U16* turn )
     stack_popEntry( stack, &entry );
     XP_ASSERT( entry.moveType == MOVE_TYPE );
 
+    model_resetCurrentTurn( model, entry.playerNum );
+
     replaceNewTiles( model, pool, entry.playerNum, &entry.u.move.newTiles );
     XP_ASSERT( !model->vol.gi->inDuplicateMode );
     undoFromMove( model, entry.playerNum, blankTile, &entry.u.move );
