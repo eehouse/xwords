@@ -89,6 +89,7 @@ nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID )
 void 
 nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 {
+    LOGNLI( nli );
     stream_putU8( stream, NLI_VERSION );
 
     stream_putU16( stream, nli->_conTypes );
@@ -172,6 +173,7 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
     XP_ASSERT( 0 == stream_getSize( stream ) );
 
     LOG_RETURNF( "%s", boolToStr(success) );
+    LOGNLI( nli );
     return success;
 }
 

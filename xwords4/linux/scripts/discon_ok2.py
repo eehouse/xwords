@@ -483,6 +483,9 @@ def build_cmds(args):
             if DEV == 1 or usePublic: PARAMS += ['--force-game']
             if DEV == 1:
                 PARAMS += ['--server', '--phonies', phonies ]
+                # IFF there are any non-1 player counts, tell inviter which
+                if sum(LOCALS) > NDEVS:
+                    PARAMS += ['--invitee-counts', ":".join(str(n) for n in LOCALS[1:])]
             else:
                 PARAMS += ['--force-channel', DEV - 1]
             if args.PHONY_PCT and phonies == 2: PARAMS += [ '--make-phony-pct', args.PHONY_PCT ]

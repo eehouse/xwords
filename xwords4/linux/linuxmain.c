@@ -329,7 +329,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
 
-        if ( params->needsNewGame ) {
+        if ( params->needsNewGame && !opened ) {
             XP_ASSERT(0);
             // new_game_impl( globals, XP_FALSE );
         }
@@ -881,6 +881,7 @@ typedef enum {
     ,CMD_INVITEE_SMSNUMBER
     ,CMD_SMSPORT
 #endif
+    ,CMD_INVITEE_COUNTS
 #ifdef XWFEATURE_RELAY
     ,CMD_ROOMNAME
     ,CMD_ADVERTISEROOM
@@ -1014,6 +1015,9 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_INVITEE_SMSNUMBER, true, "invitee-sms-number", "number to send any invitation to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
+    ,{ CMD_INVITEE_COUNTS, true, "invitee-counts",
+       "When invitations sent, how many on each device? e.g. \"1:2\" for a "
+       "three-dev game with two players on second guest" }
 #ifdef XWFEATURE_RELAY
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
@@ -2537,6 +2541,9 @@ main( int argc, char** argv )
     initParams( &mainParams );
 
     /* defaults */
+    for ( int ii = 0; ii < VSIZE(mainParams.connInfo.inviteeCounts); ++ii ) {
+        mainParams.connInfo.inviteeCounts[ii] = 1;
+    }
 #ifdef XWFEATURE_RELAY
     mainParams.connInfo.relay.defaultSendPort = DEFAULT_PORT;
     mainParams.connInfo.relay.relayName = "localhost";
@@ -2736,6 +2743,16 @@ main( int argc, char** argv )
             mainParams.connInfo.sms.inviteePhones =
                 g_slist_append( mainParams.connInfo.sms.inviteePhones, optarg );
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            break;
+        case CMD_INVITEE_COUNTS: {
+            gchar** strs = g_strsplit( optarg, ":", -1 );
+            for ( int ii = 0;
+                  !!strs[ii] && ii < VSIZE(mainParams.connInfo.inviteeCounts);
+                  ++ii ) {
+                mainParams.connInfo.inviteeCounts[ii] = atoi(strs[ii]);
+            }
+            g_strfreev( strs );
+        }
             break;
         case CMD_SMSPORT:
             mainParams.connInfo.sms.port = atoi(optarg);

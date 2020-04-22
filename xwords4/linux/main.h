@@ -136,6 +136,7 @@ typedef struct LaunchParams {
 
     CommsAddrRec  addr;
     struct {
+        XP_U16 inviteeCounts[MAX_NUM_PLAYERS];
 #ifdef XWFEATURE_RELAY
         struct {
             char* relayName;

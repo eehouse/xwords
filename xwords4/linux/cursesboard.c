@@ -1213,10 +1213,12 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
     if ( haveAddressees ) {
         LaunchParams* params = cGlobals->params;
         for ( int ii = 0; ii < g_slist_length(invitees); ++ii ) {
-            const XP_U16 nPlayers = 1;
-            gint forceChannel = ii + 1;
+            const XP_U16 nPlayersH = params->connInfo.inviteeCounts[ii];
+            const gint forceChannel = ii + 1;
+            XP_LOGFF( "using nPlayersH of %d, forceChannel of %d for guest device %d",
+                      nPlayersH, forceChannel, ii );
             NetLaunchInfo nli = {0};
-            nli_init( &nli, cGlobals->gi, addr, nPlayers, forceChannel );
+            nli_init( &nli, cGlobals->gi, addr, nPlayersH, forceChannel );
             if ( useRelay ) {
                 uint64_t inviteeRelayID = (uint64_t)g_slist_nth_data( invitees, ii );
                 relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
@@ -1241,8 +1243,8 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     XP_ASSERT( comms );
     comms_getAddr( comms, &addr );
 
-    XP_U16 nPlayers = 1;
     gint forceChannel = 1;
+    const XP_U16 nPlayers = params->connInfo.inviteeCounts[forceChannel-1];
     NetLaunchInfo nli = {0};
     nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
 
