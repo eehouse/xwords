@@ -591,6 +591,7 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
     cGlobals->cp.robotThinkMax = params->robotThinkMax;
     cGlobals->cp.robotTradePct = params->robotTradePct;
 #endif
+    cGlobals->cp.makePhonyPct = params->makePhonyPct;
 
     if ( linuxOpenGame( cGlobals, &result->procs, returnAddr ) ) {
          result = ref( result );

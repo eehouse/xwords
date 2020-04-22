@@ -896,6 +896,7 @@ typedef enum {
     ,CMD_SLOWROBOT
     ,CMD_TRADEPCT
 #endif
+    ,CMD_MAKE_PHONY_PCT
 #ifdef USE_GLIBLOOP		/* just because hard to implement otherwise */
     ,CMD_UNDOPCT
 #endif
@@ -1030,6 +1031,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SLOWROBOT, true, "slow-robot", "make robot slower to test network" }
     ,{ CMD_TRADEPCT, true, "trade-pct", "what pct of the time should robot trade" }
 #endif
+    ,{ CMD_MAKE_PHONY_PCT, true, "make-phony-pct",
+       "what pct of the time should robot play a bad word" }
 #ifdef USE_GLIBLOOP
     ,{ CMD_UNDOPCT, true, "undo-pct",
        "each second, what are the odds of doing an undo" }
@@ -2941,6 +2944,13 @@ main( int argc, char** argv )
         case CMD_TRADEPCT:
             mainParams.robotTradePct = atoi( optarg );
             if ( mainParams.robotTradePct < 0 || mainParams.robotTradePct > 100 ) {
+                usage(argv[0], "must be 0 <= n <= 100" );
+            }
+            break;
+
+        case CMD_MAKE_PHONY_PCT:
+            mainParams.makePhonyPct = atoi( optarg );
+            if ( mainParams.makePhonyPct < 0 || mainParams.makePhonyPct > 100 ) {
                 usage(argv[0], "must be 0 <= n <= 100" );
             }
             break;

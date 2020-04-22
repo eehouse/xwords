@@ -57,7 +57,7 @@ extern "C" {
 #define MAX_NUM_BLANKS 4
 
 /* Used by scoring code and engine as fast representation of moves. */
-typedef struct MoveInfoTile {
+typedef struct _MoveInfoTile {
     XP_U8 varCoord; /* 5 bits ok (0-16 for 17x17 board) */
     Tile tile;      /* 6 bits will do */
 } MoveInfoTile;
@@ -237,6 +237,7 @@ void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
 
 #ifdef DEBUG
 void juggleMoveIfDebug( MoveInfo* move );
+void reverseTiles( MoveInfo* move );
 void model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg );
 #else
 # define juggleMoveIfDebug(newMove)

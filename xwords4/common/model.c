@@ -1253,6 +1253,20 @@ juggleMoveIfDebug( MoveInfo* move )
         }
     }
 }
+
+/* Reverse the *letters on* the tiles */
+void
+reverseTiles( MoveInfo* move )
+{
+    MoveInfoTile* start = &move->tiles[0];
+    MoveInfoTile* end = start + move->nTiles - 1;
+    while ( start < end ) {
+        Tile tmp = start->tile;
+        start->tile = end->tile;
+        end->tile = tmp;
+        --end; ++start;
+    }
+}
 #endif
 
 void

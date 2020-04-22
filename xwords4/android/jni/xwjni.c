@@ -1026,7 +1026,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     }
     globals->dctx = dctx;
     globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, j_procs );
-    CommonPrefs cp;
+    CommonPrefs cp = {0};
     loadCommonPrefs( env, &cp, j_cp );
 
     game_makeNewGame( MPPARM(mpool) &state->game, gi, globals->util, dctx, &cp,

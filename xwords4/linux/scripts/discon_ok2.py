@@ -422,6 +422,8 @@ def build_cmds(args):
         # make one in three games public
         usePublic = args.ADD_RELAY and random.randint(0, 3) == 0
         useDupeMode = random.randint(0, 100) < args.DUP_PCT
+        if args.PHONIES == -1: phonies = GAME % 3
+        else: phonies = args.PHONIES
         DEV = 0
         for NLOCALS in LOCALS:
             DEV += 1
@@ -480,11 +482,10 @@ def build_cmds(args):
 
             if DEV == 1 or usePublic: PARAMS += ['--force-game']
             if DEV == 1:
-                if args.PHONIES == -1: phonies = GAME % 3
-                else: phonies = args.PHONIES
                 PARAMS += ['--server', '--phonies', phonies ]
             else:
                 PARAMS += ['--force-channel', DEV - 1]
+            if args.PHONY_PCT and phonies == 2: PARAMS += [ '--make-phony-pct', args.PHONY_PCT ]
 
             if useDupeMode: PARAMS += ['--duplicate-mode']
             if usePublic: PARAMS += ['--make-public', '--join-public']
@@ -702,6 +703,8 @@ def mkParser():
                         help = 'send all packet twice')
     parser.add_argument('--phonies', dest = 'PHONIES', default = -1, type = int,
                         help = '0 (ignore), 1 (warn)) or 2 (lose turn); default is pick at random')
+    parser.add_argument('--make-phony-pct', dest = 'PHONY_PCT', default = 0, type = int,
+                        help = 'how often a robot should play a phony (only applies when --phonies==2')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
 
