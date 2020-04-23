@@ -24,18 +24,21 @@
 #include "gtkask.h"
 
 static void
-set_bool_and_quit( GtkWidget* XP_UNUSED(widget), gpointer closure )
+set_bool_and_quit( GtkWidget* widget, gpointer closure )
 {
     XP_Bool* whichSet = (XP_Bool*)closure;
     *whichSet = XP_TRUE;
-    gtk_main_quit();
+
+    GtkWidget* dialog = gtk_widget_get_toplevel( widget );
+    gtk_dialog_response( GTK_DIALOG(dialog), 1000 );
 } /* button_event */
 
 #ifdef FEATURE_TRAY_EDIT
 static void
-abort_button_event( GtkWidget* XP_UNUSED(widget), gpointer XP_UNUSED(closure) )
+abort_button_event( GtkWidget* widget, gpointer XP_UNUSED(closure) )
 {
-    gtk_main_quit();
+    GtkWidget* dialog = gtk_widget_get_toplevel( widget );
+    gtk_dialog_response( GTK_DIALOG(dialog), 1000 );
 } /* abort_button_event */
 #endif
 
@@ -51,7 +54,6 @@ gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
     GtkWidget* vbox;
     GtkWidget* hbox = NULL;
     char* txt;
-    XP_S16 ii;
     GtkWidget* button;	
     XP_UCHAR buf[64];
     XP_Bool backedUp = XP_FALSE;
@@ -60,7 +62,7 @@ gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
 
     vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
-    for ( ii = 0; ii < nTiles; ++ii ) {
+    for ( int ii = 0; ii < nTiles; ++ii ) {
 
         if ( ii % BUTTONS_PER_ROW == 0 ) {
             hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
@@ -114,7 +116,7 @@ gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
         char curTilesBuf[64];
         int len = snprintf( curTilesBuf, sizeof(curTilesBuf), "%s", 
                             "Tiles so far: " );
-        for ( ii = 0; ii < curPick->nTiles; ++ii ) {
+        for ( int ii = 0; ii < curPick->nTiles; ++ii ) {
             Tile tile = curPick->tiles[ii];
             len += snprintf( &curTilesBuf[len], sizeof(curTilesBuf) - len, "%s ", 
                              texts[tile] );
@@ -129,24 +131,25 @@ gtkletterask( const TrayTileSet* curPick, XP_Bool forTray, const XP_UCHAR* name,
     gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
     gtk_widget_show_all( dialog );
 
-    gtk_dialog_run( GTK_DIALOG( dialog ) );
+    // gint dlgResult =
+    (void)gtk_dialog_run( GTK_DIALOG( dialog ) );
 
     gtk_widget_destroy( dialog );
 
+    XP_S16 result;
     if ( backedUp ) {
-        ii = PICKER_BACKUP;
+        result = PICKER_BACKUP;
     } else {
-        for ( ii = 0; ii < nTiles; ++ii ) {
+        result = PICKER_PICKALL;
+        for ( int ii = 0; ii < nTiles; ++ii ) {
             if ( results[ii] ) {
+                result = ii;
                 break;
             }
         }
-        if ( ii == nTiles ) {
-            ii = PICKER_PICKALL;
-        }
     }
 
-    return ii;
+    return result;
 } /* gtkletterask */
 
 #endif /* PLATFORM_GTK */
