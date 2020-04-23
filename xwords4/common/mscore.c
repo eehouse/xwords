@@ -736,7 +736,7 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
                 dict_tilesToString( dict, checkWordBuf, len, buf, 
                                     sizeof(buf) );
 
-                WNParams wnp = { .word = buf, .isLegal =legal, .dict =  dict,
+                WNParams wnp = { .word = buf, .isLegal = legal, .dict = dict,
 #ifdef XWFEATURE_BOARDWORDS
                                  .movei = movei, .start = start, .end = end,
 #endif

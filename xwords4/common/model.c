@@ -1572,6 +1572,9 @@ model_setBlankValue( ModelCtxt* model, XP_U16 turn,
                                      &nUsed, tfaces, tiles );
 
                 pt->tile = tiles[newIndex] | TILE_BLANK_BIT;
+
+                /* force a recalc in case phonies==PHONIES_BLOCK */
+                invalidateScore( model, turn );
             }
             break;
         }
