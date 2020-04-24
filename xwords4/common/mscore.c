@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1998 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1998 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -218,8 +218,11 @@ model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
 } /* model_figureFinalScores */
 
 typedef struct _BlockCheckState {
+    ModelCtxt* model;
+    XWStreamCtxt* stream;
     WordNotifierInfo* chainNI;
-    XP_UCHAR word[32];
+    XP_U16 nBadWords;
+    XP_Bool silent;
 } BlockCheckState;
 
 static void
@@ -230,8 +233,17 @@ blockCheck( const WNParams* wnp, void* closure )
     if ( !!bcs->chainNI ) {
         (bcs->chainNI->proc)( wnp, bcs->chainNI->closure );
     }
-    if ( !wnp->isLegal && '\0' == bcs->word[0] ) {
-        XP_STRCAT( bcs->word, wnp->word );
+    if ( !wnp->isLegal ) {
+        ++bcs->nBadWords;
+        if ( !bcs->silent ) {
+            if ( NULL == bcs->stream ) {
+                bcs->stream =
+                    mem_stream_make_raw( MPPARM(bcs->model->vol.mpool)
+                                         dutil_getVTManager(bcs->model->vol.dutil));
+            }
+            stream_catString( bcs->stream, wnp->word );
+            stream_putU8( bcs->stream, '\n' );
+        }
     }
 }
 
@@ -272,7 +284,9 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
             BlockCheckState bcs;
             if ( checkDict ) {
                 XP_MEMSET( &bcs, 0, sizeof(bcs) );
+                bcs.model = model;
                 bcs.chainNI = notifyInfo;
+                bcs.silent = silent;
                 blockWNI.proc = blockCheck;
                 blockWNI.closure = &bcs;
                 notifyInfo = &blockWNI;
@@ -280,10 +294,13 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
 
             XP_S16 tmpScore = figureMoveScore( model, turn, &moveInfo,
                                                engine, stream, notifyInfo );
-            if ( checkDict && '\0' != bcs.word[0] ) {
+            if ( checkDict && 0 < bcs.nBadWords ) {
                 if ( !silent ) {
+                    XP_ASSERT( !!bcs.stream );
                     DictionaryCtxt* dict = model_getPlayerDict( model, turn );
-                    util_informWordBlocked( model->vol.util, bcs.word, dict_getName( dict ) );
+                    util_informWordsBlocked( model->vol.util, bcs.nBadWords,
+                                             bcs.stream, dict_getName( dict ) );
+                    stream_destroy( bcs.stream );
                 }
             } else {
                 score = tmpScore;

@@ -1999,10 +1999,15 @@ gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 static void
-gtk_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word, const XP_UCHAR* dict )
+gtk_util_informWordsBlocked( XW_UtilCtxt* uc, XP_U16 nBadWords,
+                             XWStreamCtxt* words, const XP_UCHAR* dict )
 {
+    XP_U16 len = stream_getSize( words );
+    XP_UCHAR buf[len];
+    stream_getBytes( words, buf, len );
+    buf[len-1] = '\0';          /* overwrite \n */
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    gchar* msg = g_strdup_printf( "Word \"%s\" not found in %s", word, dict );
+    gchar* msg = g_strdup_printf( "%d word[s] not found in %s:\n%s", nBadWords, dict, buf );
     gtkUserError( globals, msg );
     g_free( msg );
 }
@@ -2239,7 +2244,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_BOARDWORDS
     SET_PROC(cellSquareHeld);
 #endif
-    SET_PROC(informWordBlocked);
+    SET_PROC(informWordsBlocked);
 #undef SET_PROC
 
     assertTableFull( util->vtable, sizeof(*util->vtable), "gtk util" );

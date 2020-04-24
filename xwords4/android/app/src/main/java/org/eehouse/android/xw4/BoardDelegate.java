@@ -46,6 +46,7 @@ import android.widget.TextView;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -1862,14 +1863,15 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informWordBlocked( final String word, final String dict )
+        public void informWordsBlocked( int nWords, final String words, final String dict )
         {
             runOnUiThread( new Runnable() {
                     @Override
                     public void run() {
+                        String fmtd = TextUtils.join( ", ", wordsToArray( words ) );
                         String msg = LocUtils
                             .getString( m_activity, R.string.word_blocked_by_phony,
-                                        word, dict );
+                                        fmtd, dict );
                         makeOkOnlyBuilder( msg ).show();
                     }
                 } );
@@ -2922,11 +2924,13 @@ public class BoardDelegate extends DelegateBase
     private String[] wordsToArray( String words )
     {
         String[] tmp = TextUtils.split( words, "\n" );
-        String[] wordsArray = new String[tmp.length];
-        for ( int ii = 0, jj = tmp.length; ii < tmp.length; ++ii, --jj ) {
-            wordsArray[ii] = tmp[jj-1];
+        List<String> list = new ArrayList<>();
+        for ( String one : tmp ) {
+            if ( 0 < one.length() ) {
+                list.add( one );
+            }
         }
-        return wordsArray;
+        return list.toArray( new String[list.size()] );
     }
 
     private boolean inArchiveGroup()

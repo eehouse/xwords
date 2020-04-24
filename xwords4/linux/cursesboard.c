@@ -1064,11 +1064,12 @@ curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 static void
-curses_util_informWordBlocked( XW_UtilCtxt* XP_UNUSED(uc),
-                               const XP_UCHAR* XP_UNUSED_DBG(word),
-                               const XP_UCHAR* XP_UNUSED_DBG(dict) )
+curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc),
+                                XP_U16 XP_UNUSED_DBG(nBadWords),
+                                XWStreamCtxt* XP_UNUSED(words),
+                                const XP_UCHAR* XP_UNUSED_DBG(dictName) )
 {
-    XP_LOGFF( "(word=%s, dict=%s)", word, dict );
+    XP_LOGFF( "(nBadWords=%d, dict=%s)", nBadWords, dictName );
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -1141,7 +1142,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_BOARDWORDS
     SET_PROC(cellSquareHeld);
 #endif
-    SET_PROC(informWordBlocked);
+    SET_PROC(informWordsBlocked);
 
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);

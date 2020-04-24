@@ -707,13 +707,14 @@ and_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
 }
 
 static void
-and_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word, const XP_UCHAR* dict )
+and_util_informWordsBlocked( XW_UtilCtxt* uc, XP_U16 nBadWords,
+                             XWStreamCtxt* words, const XP_UCHAR* dict )
 {
-    UTIL_CBK_HEADER( "informWordBlocked", "(Ljava/lang/String;Ljava/lang/String;)V" );
-    jstring jword = (*env)->NewStringUTF( env, word );
+    UTIL_CBK_HEADER( "informWordsBlocked", "(ILjava/lang/String;Ljava/lang/String;)V" );
+    jstring jwords = streamToJString( env, words );
     jstring jdict = (*env)->NewStringUTF( env, dict );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jword, jdict );
-    deleteLocalRefs( env, jword, DELETE_NO_REF );
+    (*env)->CallVoidMethod( env, util->jutil, mid, nBadWords, jwords, jdict );
+    deleteLocalRefs( env, jwords, jdict, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 
@@ -919,7 +920,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
 #endif
 
     SET_PROC(getDevUtilCtxt);
-    SET_PROC(informWordBlocked);
+    SET_PROC(informWordsBlocked);
 
 #undef SET_PROC
     assertTableFull( vtable, sizeof(*vtable), "util" );
