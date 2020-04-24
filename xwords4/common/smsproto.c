@@ -416,7 +416,7 @@ logResult( const SMSProto* state, const SMSMsgArray* result, const char* caller 
     if ( !!result ) {
         for ( int ii = 0; ii < result->nMsgs; ++ii ) {
             XP_U8* data;
-            XP_U16 len;
+            XP_U16 len = 0;
             switch ( result->format ) {
             case FORMAT_LOC: {
                 SMSMsgLoc* msgsLoc = &result->u.msgsLoc[ii];
