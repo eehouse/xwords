@@ -237,7 +237,9 @@ typedef struct CommonPrefs {
 #ifdef XWFEATURE_CROSSHAIRS
     XP_Bool         hideCrosshairs;  /* applies to all games */
 #endif
+#ifdef XWFEATURE_ROBOTPHONIES
     XP_U16          makePhonyPct;
+#endif
 } CommonPrefs;
 
 typedef struct _PlayerDicts {

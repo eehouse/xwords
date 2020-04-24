@@ -106,7 +106,9 @@ typedef struct ServerNonvolatiles {
     XP_U16 robotThinkMin, robotThinkMax;   /* not saved (yet) */
     XP_U16 robotTradePct;
 #endif
+#ifdef XWFEATURE_ROBOTPHONIES
     XP_U16 makePhonyPct;
+#endif
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
     XWStreamCtxt* prevMoveStream;     /* save it to print later */
@@ -625,7 +627,9 @@ server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp )
     server->nv.robotThinkMax = cp->robotThinkMax;
     server->nv.robotTradePct = cp->robotTradePct;
 #endif
+#ifdef XWFEATURE_ROBOTPHONIES
     server->nv.makePhonyPct = cp->makePhonyPct;
+#endif
 } /* server_prefsChanged */
 
 XP_S16
@@ -1370,7 +1374,7 @@ makeRobotMove( ServerCtxt* server )
             /* if canMove is false, this is a fake move, a pass */
 
             if ( canMove || NPASSES_OK(server) ) {
-#ifdef DEBUG
+#ifdef XWFEATURE_ROBOTPHONIES
                 if ( server->nv.makePhonyPct > XP_RANDOM() % 100 ) {
                     reverseTiles( &newMove );
                 }

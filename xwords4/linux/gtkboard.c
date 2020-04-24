@@ -2372,7 +2372,9 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     cGlobals->cp.robotThinkMax = params->robotThinkMax;
     cGlobals->cp.robotTradePct = params->robotTradePct;
 #endif
+#ifdef XWFEATURE_ROBOTPHONIES
     cGlobals->cp.makePhonyPct = params->makePhonyPct;
+#endif
 #ifdef XWFEATURE_CROSSHAIRS
     cGlobals->cp.hideCrosshairs = params->hideCrosshairs;
 #endif

@@ -1255,8 +1255,10 @@ juggleMoveIfDebug( MoveInfo* move )
         }
     }
 }
+#endif
 
 /* Reverse the *letters on* the tiles */
+#ifdef XWFEATURE_ROBOTPHONIES
 void
 reverseTiles( MoveInfo* move )
 {
