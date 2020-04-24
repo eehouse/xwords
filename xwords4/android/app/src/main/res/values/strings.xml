@@ -2025,6 +2025,7 @@
     <string name="lang_name_czech">Czech</string>
     <string name="lang_name_greek">Greek</string>
     <string name="lang_name_slovak">Slovak</string>
+    <string name="lang_name_hungarian">Hungarian</string>
     <!-- for loc item edit menu -->
     <string name="loc_item_clear">Clear</string>
     <string name="loc_item_check">Check</string>
