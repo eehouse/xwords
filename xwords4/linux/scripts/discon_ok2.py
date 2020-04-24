@@ -706,12 +706,12 @@ def mkParser():
                         help = 'send all packet twice')
     parser.add_argument('--phonies', dest = 'PHONIES', default = -1, type = int,
                         help = '0 (ignore), 1 (warn)) or 2 (lose turn); default is pick at random')
-    parser.add_argument('--make-phony-pct', dest = 'PHONY_PCT', default = 0, type = int,
+    parser.add_argument('--make-phony-pct', dest = 'PHONY_PCT', default = 20, type = int,
                         help = 'how often a robot should play a phony (only applies when --phonies==2')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
 
-    parser.add_argument('--duplicate-pct', dest = 'DUP_PCT', default = 50, type = int,
+    parser.add_argument('--dup-pct', dest = 'DUP_PCT', default = 0, type = int,
                         help = 'this fraction played in duplicate mode')
 
     # # 
