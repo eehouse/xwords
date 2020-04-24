@@ -583,7 +583,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
 
     TransportProcs procs;
     setTransportProcs( &procs, globals );
-    if ( linuxOpenGame( cGlobals, &procs, NULL ) ) {
+
+    if ( linuxOpenGame( cGlobals, &procs, &cGlobals->addr ) ) {
 
         if ( !params->fileName && !!params->dbName ) {
             XP_UCHAR buf[64];
@@ -1869,7 +1870,7 @@ gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         XP_UCHAR* name = cGlobals->gi->players[player].name;
         XP_ASSERT( !!name );
 
-        sprintf( buf, "Player %d (%s) played illegal word[s] %s; loses turn.",
+        sprintf( buf, "Player %d (%s) played illegal word[s] \"%s\"; loses turn.",
                  player+1, name, strs );
 
         if ( cGlobals->params->skipWarnings ) {
@@ -1961,9 +1962,10 @@ gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
 static void
 gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 {
-    LOG_FUNC();
-    XP_USE( uc );
-    XP_USE( bonus );
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    gchar* msg = g_strdup_printf( "bonusSquareHeld(bonus=%d)", bonus );
+    gtkask_timeout( globals->window, msg, GTK_BUTTONS_OK, NULL, 1000 );
+    g_free( msg );
 }
 
 static void
@@ -1987,11 +1989,23 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 static void
 gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 {
-    XP_USE( uc );
-    catOnClose( words, NULL );
-    fprintf( stderr, "\n" );
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    const XP_U8* bytes = stream_getPtr( words );
+    gchar* msg = g_strdup_printf( "words for lookup:\n%s",
+                                  (XP_UCHAR*)bytes );
+    gtktell( globals->window, msg );
+    g_free( msg );
 }
 #endif
+
+static void
+gtk_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word, const XP_UCHAR* dict )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
+    gchar* msg = g_strdup_printf( "Word \"%s\" not found in %s", word, dict );
+    gtkUserError( globals, msg );
+    g_free( msg );
+}
 
 static void
 gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
@@ -2225,10 +2239,10 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_BOARDWORDS
     SET_PROC(cellSquareHeld);
 #endif
-
+    SET_PROC(informWordBlocked);
 #undef SET_PROC
 
-    assertUtilCallbacksSet( util );
+    assertTableFull( util->vtable, sizeof(*util->vtable), "gtk util" );
 } /* setupGtkUtilCallbacks */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -2358,6 +2372,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     cGlobals->cp.robotThinkMax = params->robotThinkMax;
     cGlobals->cp.robotTradePct = params->robotTradePct;
 #endif
+    cGlobals->cp.makePhonyPct = params->makePhonyPct;
 #ifdef XWFEATURE_CROSSHAIRS
     cGlobals->cp.hideCrosshairs = params->hideCrosshairs;
 #endif

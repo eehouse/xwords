@@ -27,6 +27,7 @@
 #include "andutils.h"
 #include "paths.h"
 #include "LocalizedStrIncludes.h"
+#include "dbgutil.h"
 
 #define MAX_QUANTITY_STRS 4
 
@@ -705,6 +706,17 @@ and_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
     UTIL_CBK_TAIL();
 }
 
+static void
+and_util_informWordBlocked( XW_UtilCtxt* uc, const XP_UCHAR* word, const XP_UCHAR* dict )
+{
+    UTIL_CBK_HEADER( "informWordBlocked", "(Ljava/lang/String;Ljava/lang/String;)V" );
+    jstring jword = (*env)->NewStringUTF( env, word );
+    jstring jdict = (*env)->NewStringUTF( env, dict );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jword, jdict );
+    deleteLocalRefs( env, jword, DELETE_NO_REF );
+    UTIL_CBK_TAIL();
+}
+
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
 and_dutil_getDevID( XW_DUtilCtxt* duc, DevIDType* typ )
@@ -907,8 +919,10 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
 #endif
 
     SET_PROC(getDevUtilCtxt);
+    SET_PROC(informWordBlocked);
 
 #undef SET_PROC
+    assertTableFull( vtable, sizeof(*vtable), "util" );
     return (XW_UtilCtxt*)util;
 } /* makeUtil */
 
@@ -965,6 +979,9 @@ makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
     SET_DPROC(notifyPause);
     SET_DPROC(onDupTimerChanged);
 
+#undef SET_DPROC
+
+    assertTableFull( vtable, sizeof(*vtable), "dutil" );
     return &dutil->dutil;
 }
 

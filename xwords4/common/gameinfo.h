@@ -64,9 +64,11 @@ typedef struct CurGameInfo {
 } CurGameInfo;
 
 #ifdef DEBUG
-    void game_logGI( const CurGameInfo* gi, const char* msg );
+# define LOGGI( gip, msg ) game_logGI( (gip), (msg), __func__, __LINE__ )
+    void game_logGI( const CurGameInfo* gi, const char* msg,
+                     const char* func, int line );
 #else
-# define game_logGI(gi, msg)
+# define LOGGI(gi, msg)
 #endif
 
 #ifdef CPLUS

@@ -44,8 +44,9 @@ bool cb_new( CursesBoardState* cbState, const cb_dims* dims );
 void cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
                 const CommsAddrRec* returnAddr, const cb_dims* dims );
 
-XP_U16 cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
-                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
+bool cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
+                 XP_U16 expectSeed, const XP_U8* buf, XP_U16 len,
+                 const CommsAddrRec* from );
 void cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
 void cb_closeAll( CursesBoardState* cbState );

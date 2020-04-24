@@ -204,7 +204,7 @@ def getOrderedApks( path, appID, debug ):
     files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
     for mtime, file in sorted(files, reverse=True):
         info = getAAPTInfo(file)
-        if info['appID'] == appID:
+        if info and 'appID' in info and info['appID'] == appID:
             apkToCode[file] = info['versionCode']
             apkToMtime[file] = mtime
     result = sorted(apkToCode.keys(), reverse=True, key=lambda file: (apkToCode[file], apkToMtime[file]))
@@ -326,7 +326,7 @@ def getApp( params, name = None, debug = False):
             apache.log_error( "name: %s; installer: %s; gvers: %s"
                            % (name, installer, vers) )
             print "name: %s; installer: %s; vers: %s" % (name, installer, vers)
-            dir = k_filebase + k_apkDir + 'rel/'
+            dir = k_filebase + k_apkDir
             apk = getNextAfter( dir, name, vers, debug )
             if apk:
                 apk = apk[len(k_filebase):] # strip fs path
@@ -569,7 +569,7 @@ def getUpdates( req, params ):
     #         result[k_XLATEINFO] = xlateResult;
         
     result = json.dumps( result )
-    # apache.log_error( result )
+    apache.log_error( 'getUpdates() => ' + result )
     return result
 
 def clearShelf():

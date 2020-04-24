@@ -46,9 +46,9 @@ gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons,
 }
 
 gint
-gtkask_timeout( GtkWidget* parent, const gchar *message, 
+gtkask_timeout( GtkWidget* parent, const gchar* message,
                 GtkButtonsType buttons, const AskPair* buttxts,
-                XP_U16 timeout )
+                uint32_t timeoutMS )
 {
     guint src = 0;
     GtkWidget* dlg = gtk_message_dialog_new( (GtkWindow*)parent, 
@@ -56,9 +56,9 @@ gtkask_timeout( GtkWidget* parent, const gchar *message,
                                              GTK_DIALOG_MODAL,
                                              buttons, "%s", message );
 
-    if ( timeout > 0 ) {
-        XP_LOGF( "%s(%s)", __func__, message ); /* log since times out... */
-        src = g_timeout_add( timeout, timer_func, dlg );
+    if ( timeoutMS > 0 ) {
+        XP_LOGF( "%s(\"%s\")", __func__, message ); /* log since times out... */
+        src = g_timeout_add( timeoutMS, timer_func, dlg );
     }
 
     while ( !!buttxts && !!buttxts->txt ) {

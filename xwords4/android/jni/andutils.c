@@ -30,6 +30,8 @@
 void
 and_assert( const char* test, int line, const char* file, const char* func )
 {
+    RAW_LOG( "assertion \"%s\" failed: line %d in %s() in %s",
+             test, line, func, file );
     XP_LOGF( "assertion \"%s\" failed: line %d in %s() in %s",
              test, line, func, file );
     __android_log_assert( test, "ASSERT", "line %d in %s() in %s",
@@ -424,10 +426,13 @@ setIntInArray( JNIEnv* env, jintArray arr, int index, int val )
 jobjectArray
 makeStringArray( JNIEnv *env, const int count, const XP_UCHAR** vals )
 {
-    jclass clas = (*env)->FindClass(env, "java/lang/String");
-    jstring empty = (*env)->NewStringUTF( env, "" );
-    jobjectArray jarray = (*env)->NewObjectArray( env, count, clas, empty );
-    deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
+    jobjectArray jarray;
+    {
+        jclass clas = (*env)->FindClass(env, "java/lang/String");
+        jstring empty = (*env)->NewStringUTF( env, "" );
+        jarray = (*env)->NewObjectArray( env, count, clas, empty );
+        deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
+    }
 
     for ( int ii = 0; !!vals && ii < count; ++ii ) {
         jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
@@ -763,6 +768,28 @@ deleteLocalRefs( JNIEnv* env, ... )
 }
 
 #ifdef DEBUG
+
+/* A bunch of threads are generating log statements. */
+static void
+passToJava( const char* tag, const char* msg )
+{
+    JNIEnv* env = waitEnvFromGlobals();
+    if ( !!env ) {
+        jstring jtag = (*env)->NewStringUTF( env, tag );
+        jstring jbuf = (*env)->NewStringUTF( env, msg );
+        jclass clazz = (*env)->FindClass( env, PKG_PATH("Log") );
+        XP_ASSERT( !!clazz );
+        jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "store",
+                                                   "(Ljava/lang/String;Ljava/lang/String;)V" );
+        (*env)->CallStaticVoidMethod( env, clazz, mid, jtag, jbuf );
+        deleteLocalRefs( env, clazz, jtag, jbuf, DELETE_NO_REF );
+
+        releaseEnvFromGlobals( env );
+    } else {
+        RAW_LOG( "env is NULL; dropping" );
+    }
+}
+
 static void
 debugf( const char* format, va_list ap )
 {
@@ -780,8 +807,8 @@ debugf( const char* format, va_list ap )
     if ( len < sizeof(buf) ) {
         vsnprintf( buf + len, sizeof(buf)-len, format, ap );
     }
-    
-    (void)__android_log_write( ANDROID_LOG_DEBUG, 
+
+    const char* tag =
 # if defined VARIANT_xw4NoSMS || defined VARIANT_xw4fdroid || defined VARIANT_xw4SMS
                                "xw4"
 # elif defined VARIANT_xw4d || defined VARIANT_xw4dNoSMS
@@ -789,7 +816,27 @@ debugf( const char* format, va_list ap )
 # elif defined VARIANT_xw4dup || defined VARIANT_xw4dupNoSMS
                                "x4du"
 # endif
-                               , buf );
+        ;
+
+    (void)__android_log_write( ANDROID_LOG_DEBUG, tag, buf );
+
+    passToJava( tag, buf );
+}
+
+void
+raw_log( const char* func, const char* fmt, ... )
+{
+    char buf[1024];
+    int len = snprintf( buf, VSIZE(buf) - 1, "in %s(): %s", func, fmt );
+    buf[len] = '\0';
+
+    va_list ap;
+    va_start( ap, fmt );
+    char buf2[1024];
+    len = vsnprintf( buf2, VSIZE(buf2) - 1, buf, ap );
+    va_end( ap );
+
+    (void)__android_log_write( ANDROID_LOG_DEBUG, "raw", buf2 );
 }
 
 void

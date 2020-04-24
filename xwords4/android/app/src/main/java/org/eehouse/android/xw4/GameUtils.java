@@ -386,6 +386,16 @@ public class GameUtils {
         return loadMakeGame( context, gi, util, tp, stream, lock.getRowid() );
     }
 
+    private static CurGameInfo giFromStream( Context context, byte[] stream )
+    {
+        CurGameInfo gi = null;
+        if ( null != stream ) {
+            gi = new CurGameInfo( context );
+            XwJNI.gi_from_stream( gi, stream );
+        }
+        return gi;
+    }
+
     private static GamePtr loadMakeGame( Context context, CurGameInfo gi,
                                          UtilCtxt util, TransportProcs tp,
                                          byte[] stream, long rowid )
@@ -832,22 +842,28 @@ public class GameUtils {
 
     public static String[] dictNames( Context context, GameLock lock )
     {
+        String[] result = null;
         byte[] stream = savedGame( context, lock );
-        CurGameInfo gi = new CurGameInfo( context );
-        XwJNI.gi_from_stream( gi, stream );
-        return gi.dictNames();
+        CurGameInfo gi = giFromStream( context, stream );
+        if ( null != gi ) {
+            result = gi.dictNames();
+        }
+        return result;
     }
 
     public static String[] dictNames( Context context, long rowid,
                                       int[] missingLang )
     {
+        String[] result = null;
         byte[] stream = savedGame( context, rowid );
-        CurGameInfo gi = new CurGameInfo( context );
-        XwJNI.gi_from_stream( gi, stream );
-        if ( null != missingLang ) {
-            missingLang[0] = gi.dictLang;
+        CurGameInfo gi = giFromStream( context, stream );
+        if ( null != gi ) {
+            if ( null != missingLang ) {
+                missingLang[0] = gi.dictLang;
+            }
+            result = gi.dictNames();
         }
-        return gi.dictNames();
+        return result;
     }
 
     public static String[] dictNames( Context context, long rowid )
@@ -863,7 +879,7 @@ public class GameUtils {
     public static boolean gameDictsHere( Context context, GameLock lock )
     {
         String[] gameDicts = dictNames( context, lock );
-        return gameDictsHere( context, null, gameDicts );
+        return null != gameDicts && gameDictsHere( context, null, gameDicts );
     }
 
     // Return true if all dicts present.  Return list of those that
@@ -873,7 +889,8 @@ public class GameUtils {
                                          int[] missingLang )
     {
         String[] gameDicts = dictNames( context, rowid, missingLang );
-        return gameDictsHere( context, missingNames, gameDicts );
+        return null != gameDicts
+            && gameDictsHere( context, missingNames, gameDicts );
     }
 
     public static boolean gameDictsHere( Context context,
@@ -1089,34 +1106,37 @@ public class GameUtils {
         boolean success;
         try ( GameLock lock = GameLock.lock( rowid, 300 ) ) {
             success = null != lock;
-            if ( success ) {
-                byte[] stream = savedGame( context, lock );
-                CurGameInfo gi = new CurGameInfo( context );
-                XwJNI.gi_from_stream( gi, stream );
-
-                // first time required so dictNames() will work
-                gi.replaceDicts( context, newDict );
-
-                String[] dictNames = gi.dictNames();
-                DictUtils.DictPairs pairs = DictUtils.openDicts( context,
-                                                                 dictNames );
-
-                try ( GamePtr gamePtr =
-                    XwJNI.initFromStream( rowid, stream, gi, dictNames,
-                                          pairs.m_bytes, pairs.m_paths,
-                                          gi.langName( context ), null,
-                                          null, CommonPrefs.get( context ), null ) ) {
-                    // second time required as game_makeFromStream can overwrite
-                    gi.replaceDicts( context, newDict );
-
-                    saveGame( context, gamePtr, gi, lock, false );
-
-                    summarize( context, lock, gamePtr, gi );
-                }
-            } else {
+            if ( !success ) {
                 DbgUtils.toastNoLock( TAG, context, rowid,
                                       "replaceDicts(): rowid %d",
                                       rowid );
+            } else {
+                byte[] stream = savedGame( context, lock );
+                CurGameInfo gi = giFromStream( context, stream );
+                success = null != gi;
+                if ( !success ) {
+                    Log.e( TAG, "replaceDicts(): unable to load rowid %d", rowid );
+                } else {
+                    // first time required so dictNames() will work
+                    gi.replaceDicts( context, newDict );
+
+                    String[] dictNames = gi.dictNames();
+                    DictUtils.DictPairs pairs = DictUtils.openDicts( context,
+                                                                     dictNames );
+
+                    try ( GamePtr gamePtr =
+                          XwJNI.initFromStream( rowid, stream, gi, dictNames,
+                                                pairs.m_bytes, pairs.m_paths,
+                                                gi.langName( context ), null,
+                                                null, CommonPrefs.get( context ), null ) ) {
+                        // second time required as game_makeFromStream can overwrite
+                        gi.replaceDicts( context, newDict );
+
+                        saveGame( context, gamePtr, gi, lock, false );
+
+                        summarize( context, lock, gamePtr, gi );
+                    }
+                }
             }
         }
         return success;

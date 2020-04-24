@@ -779,7 +779,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
         formatRect.width -= 6;
 
         if ( notEmpty ) {
-            if ( !!bitmaps ) {
+            if ( !!bitmaps && !!bitmaps->bmps[1] ) {
                 drawBitmapFromLBS( dctx, bitmaps->bmps[1], &insetR );
             } else if ( !!textP ) {
                 if ( *textP != LETTER_NONE ) { /* blank */

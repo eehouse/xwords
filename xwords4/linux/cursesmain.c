@@ -1201,9 +1201,7 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
     rowidFromToken( XP_NTOHL( clientToken ), &rowid, &gotSeed );
 
     /* Figure out if the device is live, or we need to open the game */
-    XP_U16 seed = cb_feedRow( aGlobals->cbState, rowid, buf, len, addr );
-    XP_ASSERT( seed == 0 || gotSeed == seed );
-    XP_USE( seed );
+    cb_feedRow( aGlobals->cbState, rowid, gotSeed, buf, len, addr );
 
     /* if ( seed == comms_getChannelSeed( cGlobals->game.comms ) ) { */
     /*     gameGotBuf( cGlobals, XP_TRUE, buf, len, addr ); */

@@ -231,7 +231,8 @@ pool_containsTiles( const PoolContext* pool, const TrayTileSet* tiles )
 XP_U16
 pool_getNTilesLeft( const PoolContext* pool )
 {
-    return pool->numTilesLeft;
+    XP_ASSERT( !!pool );
+    return NULL == pool ? 0 : pool->numTilesLeft;
 } /* pool_remainingTileCount */
 
 XP_U16

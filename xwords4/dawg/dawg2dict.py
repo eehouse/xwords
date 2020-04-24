@@ -220,15 +220,16 @@ def process(args):
 
         nodes = loadNodes( dawg, nodeSize )
         words = []
-        expandDAWG( nodes, nodeSize, offset, data, words )
-        assert len(words) == nWords
+        if nodes:
+            expandDAWG( nodes, nodeSize, offset, data, words )
+            assert len(words) == nWords
         if args.DUMP_WORDS:
             for word in words:
                 print(word)
 
 def mkParser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dict', dest = 'DAWG', type = str, required = True,
+    parser.add_argument('--dawg', dest = 'DAWG', type = str, required = True,
                         help = 'the .xwd file to load')
     parser.add_argument('--dump-words', dest = 'DUMP_WORDS', default = False,
                         action = 'store_true', help = 'write wordlist to stdout')

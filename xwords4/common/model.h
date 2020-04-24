@@ -57,7 +57,7 @@ extern "C" {
 #define MAX_NUM_BLANKS 4
 
 /* Used by scoring code and engine as fast representation of moves. */
-typedef struct MoveInfoTile {
+typedef struct _MoveInfoTile {
     XP_U8 varCoord; /* 5 bits ok (0-16 for 17x17 board) */
     Tile tile;      /* 6 bits will do */
 } MoveInfoTile;
@@ -237,6 +237,7 @@ void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
 
 #ifdef DEBUG
 void juggleMoveIfDebug( MoveInfo* move );
+void reverseTiles( MoveInfo* move );
 void model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg );
 #else
 # define juggleMoveIfDebug(newMove)
@@ -282,13 +283,18 @@ void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 
 /********************* scoring ********************/
 
-typedef void (*WordNotifierProc)( const XP_UCHAR* word, XP_Bool isLegal, 
-                                  const DictionaryCtxt* dict,
+typedef struct _WNParams {
+    const XP_UCHAR* word;
+    XP_Bool isLegal;
+    const DictionaryCtxt* dict;
 #ifdef XWFEATURE_BOARDWORDS
-                                  const MoveInfo* movei, XP_U16 start, 
-                                  XP_U16 end,
+    const MoveInfo* movei;
+    XP_U16 start;
+    XP_U16 end;
 #endif
-                                  void* closure );
+} WNParams;
+
+typedef void (*WordNotifierProc)( const WNParams* wnp, void* closure );
 typedef struct WordNotifierInfo {
     WordNotifierProc proc;
     void* closure;
@@ -302,8 +308,8 @@ XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
                                    LastMoveInfo* info );
 #ifdef XWFEATURE_BOARDWORDS
-void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
-                             XP_S16 turn, XWStreamCtxt* stream );
+XP_Bool model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
+                                XP_S16 turn, XWStreamCtxt* stream );
 #endif
 
 /* Have there been too many passes (so game should end)? */

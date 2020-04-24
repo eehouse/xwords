@@ -227,6 +227,20 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
 } /* decodeAndDelete */
 
 static void
+nliFromData( LaunchParams* params, const SMSMsgLoc* msg, NetLaunchInfo* nliOut )
+{
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
+    stream_putBytes( stream, msg->data, msg->len );
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        nli_makeFromStream( nliOut, stream );
+    XP_ASSERT( success );
+    stream_destroy( stream );
+}
+
+static void
 parseAndDispatch( LaunchParams* params, uint8_t* buf, int len, 
                   CommsAddrRec* addr )
 {
@@ -244,9 +258,12 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
                                                 msg->gameID,
                                                 msg->data, msg->len );
                 break;
-            case INVITE:
+            case INVITE: {
+                NetLaunchInfo nli = {0};
+                nliFromData( params, msg, &nli );
                 (*storage->procs->inviteReceived)( storage->procClosure,
-                                                   (NetLaunchInfo*)msg->data, addr );
+                                                   &nli, addr );
+            }
                 break;
             default:
                 XP_ASSERT(0);   /* implement me!! */
@@ -291,13 +308,21 @@ linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
     LOG_FUNC();
     LinSMSData* storage = getStorage( params );
 
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
+    nli_saveToStream( nli, stream );
+    const XP_U8* ptr = stream_getPtr( stream );
+    XP_U16 len = stream_getSize( stream );
+
     XP_U16 waitSecs;
+    const XP_Bool forceOld = XP_TRUE; /* Send NOW in case test app kills us */
     SMSMsgArray* arr
-        = smsproto_prepOutbound( storage->protoState, INVITE, nli->gameID, nli,
-                                 sizeof(*nli), toPhone, toPort, XP_FALSE,
-                                 &waitSecs );
+        = smsproto_prepOutbound( storage->protoState, INVITE, nli->gameID, ptr,
+                                 len, toPhone, toPort, forceOld, &waitSecs );
+    XP_ASSERT( !!arr || !forceOld );
     sendOrRetry( params, arr, INVITE, waitSecs, toPhone, toPort,
                  nli->gameID, "invite" );
+    stream_destroy( stream );
 }
 
 XP_S16

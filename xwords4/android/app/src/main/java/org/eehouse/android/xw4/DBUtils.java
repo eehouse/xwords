@@ -22,13 +22,15 @@ package org.eehouse.android.xw4;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.text.TextUtils;
@@ -1104,26 +1106,28 @@ public class DBUtils {
 
     public static byte[] loadGame( Context context, GameLock lock )
     {
+        byte[] result = null;
         long rowid = lock.getRowid();
         Assert.assertTrue( ROWID_NOTFOUND != rowid );
-        byte[] result = getCached( rowid );
-        if ( null == result ) {
-            String[] columns = { DBHelper.SNAPSHOT };
-            String selection = String.format( ROW_ID_FMT, rowid );
-            initDB( context );
-            synchronized( s_dbHelper ) {
-                Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
-                if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                    result = cursor.getBlob( cursor
-                                             .getColumnIndex(DBHelper.SNAPSHOT));
-                } else {
-                    Log.e( TAG, "loadGame: none for rowid=%d", rowid );
+        if ( Quarantine.safeToOpen( rowid ) ) {
+            result = getCached( rowid );
+            if ( null == result ) {
+                String[] columns = { DBHelper.SNAPSHOT };
+                String selection = String.format( ROW_ID_FMT, rowid );
+                initDB( context );
+                synchronized( s_dbHelper ) {
+                    Cursor cursor = query( TABLE_NAMES.SUM, columns, selection );
+                    if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                        result = cursor.getBlob( cursor
+                                                 .getColumnIndex(DBHelper.SNAPSHOT));
+                    } else {
+                        Log.e( TAG, "loadGame: none for rowid=%d", rowid );
+                    }
+                    cursor.close();
                 }
-                cursor.close();
+                setCached( rowid, result );
             }
-            setCached( rowid, result );
         }
-        Assert.assertTrueNR( null != result );
         return result;
     }
 
@@ -1539,7 +1543,7 @@ public class DBUtils {
             }
             s_groupsCache = result;
         }
-        Log.d( TAG, "getGroups() => %s", result );
+        // Log.d( TAG, "getGroups() => %s", result );
         return result;
     } // getGroups
 
@@ -2560,6 +2564,32 @@ public class DBUtils {
             }
         } catch( java.io.FileNotFoundException fnfe ) {
             Log.ex( TAG, fnfe );
+        }
+    }
+
+    // Copy my .apk to the Downloads directory, from which a user could more
+    // easily share it with somebody else. Should be blocked for apks
+    // installed from the Play store since viral distribution isn't allowed,
+    // but might be helpful in other cases. Need to figure out how to expose
+    // it, and how to recommend transmissions. E.g. gmail doesn't let me
+    // attach an .apk even if I rename it.
+    static void copyApkToDownloads( Context context )
+    {
+        try {
+            String myName = context.getPackageName();
+            PackageManager pm = context.getPackageManager();
+            ApplicationInfo appInfo = pm.getApplicationInfo( myName, 0 );
+
+            File srcPath = new File( appInfo.publicSourceDir );
+            File destPath = Environment
+                .getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS );
+            destPath = new File( destPath, context.getString(R.string.app_name) + ".apk" );
+
+            FileInputStream src = new FileInputStream( srcPath );
+            FileOutputStream dest = new FileOutputStream( destPath );
+            copyFileStream( dest, src );
+        } catch ( Exception ex ) {
+            Log.e( TAG, "copyApkToDownloads(): got ex: %s", ex );
         }
     }
 

@@ -217,6 +217,24 @@ model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
     }
 } /* model_figureFinalScores */
 
+typedef struct _BlockCheckState {
+    WordNotifierInfo* chainNI;
+    XP_UCHAR word[32];
+} BlockCheckState;
+
+static void
+blockCheck( const WNParams* wnp, void* closure )
+{
+    BlockCheckState* bcs = (BlockCheckState*)closure;
+
+    if ( !!bcs->chainNI ) {
+        (bcs->chainNI->proc)( wnp, bcs->chainNI->closure );
+    }
+    if ( !wnp->isLegal && '\0' == bcs->word[0] ) {
+        XP_STRCAT( bcs->word, wnp->word );
+    }
+}
+
 /* checkScoreMove.
  * Negative score means illegal.
  */
@@ -238,17 +256,39 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
             formatSummary( stream, model, 0 );
         }
 
-    } else if ( tilesInLine( model, turn, &isHorizontal ) ) {
+    } else if ( !tilesInLine( model, turn, &isHorizontal ) ) {
+        if ( !silent ) { /* tiles out of line */
+            util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
+        }
+    } else {
         MoveInfo moveInfo;
-
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
 
         if ( isLegalMove( model, &moveInfo, silent ) ) {
-            score = figureMoveScore( model, turn, &moveInfo, engine, stream, 
-                                     notifyInfo );
+            /* If I'm testing for blocking, I need to chain my test onto any
+               existing WordNotifierInfo. blockCheck() does that. */
+            XP_Bool checkDict = PHONIES_BLOCK == model->vol.gi->phoniesAction;
+            WordNotifierInfo blockWNI;
+            BlockCheckState bcs;
+            if ( checkDict ) {
+                XP_MEMSET( &bcs, 0, sizeof(bcs) );
+                bcs.chainNI = notifyInfo;
+                blockWNI.proc = blockCheck;
+                blockWNI.closure = &bcs;
+                notifyInfo = &blockWNI;
+            }
+
+            XP_S16 tmpScore = figureMoveScore( model, turn, &moveInfo,
+                                               engine, stream, notifyInfo );
+            if ( checkDict && '\0' != bcs.word[0] ) {
+                if ( !silent ) {
+                    DictionaryCtxt* dict = model_getPlayerDict( model, turn );
+                    util_informWordBlocked( model->vol.util, bcs.word, dict_getName( dict ) );
+                }
+            } else {
+                score = tmpScore;
+            }
         }
-    } else if ( !silent ) { /* tiles out of line */
-        util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
     }
     return score;
 } /* checkScoreMove */
@@ -695,11 +735,13 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
                 XP_UCHAR buf[(MAX_ROWS*2)+1];
                 dict_tilesToString( dict, checkWordBuf, len, buf, 
                                     sizeof(buf) );
-                (void)(*notifyInfo->proc)( buf, legal, dict,
+
+                WNParams wnp = { .word = buf, .isLegal = legal, .dict = dict,
 #ifdef XWFEATURE_BOARDWORDS
-                                           movei, start, end, 
+                                 .movei = movei, .start = start, .end = end,
 #endif
-                                           notifyInfo->closure );
+                };
+                (void)(*notifyInfo->proc)( &wnp, notifyInfo->closure );
             }
 
             if ( !!stream ) {

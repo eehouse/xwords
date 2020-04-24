@@ -28,6 +28,7 @@ import org.eehouse.android.xw4.Assert;
 import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.Log;
 import org.eehouse.android.xw4.NetLaunchInfo;
+import org.eehouse.android.xw4.Quarantine;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
@@ -46,6 +47,7 @@ public class XwJNI {
             m_ptrGame = ptr;
             m_rowid = rowid;
             mStack = android.util.Log.getStackTraceString(new Exception());
+            Quarantine.recordOpened( rowid );
         }
 
         public synchronized long ptr()
@@ -73,6 +75,7 @@ public class XwJNI {
             //        getClass().getName(), this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
                 if ( 0 != m_ptrGame ) {
+                    Quarantine.recordClosed( m_rowid );
                     if ( haveEnv( getJNI().m_ptrGlobals ) ) {
                         game_dispose( this ); // will crash if haveEnv fails
                     } else {
@@ -165,6 +168,7 @@ public class XwJNI {
 
     public static void gi_from_stream( CurGameInfo gi, byte[] stream )
     {
+        Assert.assertNotNull( stream );
         gi_from_stream( getJNI().m_ptrGlobals, gi, stream ); // called here
     }
 
@@ -308,8 +312,10 @@ public class XwJNI {
     //                                              int timerHeight );
     public static native boolean board_zoom( GamePtr gamePtr, int zoomBy,
                                              boolean[] canZoom );
-    public static native boolean board_getActiveRect( GamePtr gamePtr, Rect rect,
-                                                      int[] dims );
+
+    // Not available if XWFEATURE_ACTIVERECT not #defined in C
+    // public static native boolean board_getActiveRect( GamePtr gamePtr, Rect rect,
+    //                                                   int[] dims );
 
     public static native boolean board_handlePenDown( GamePtr gamePtr,
                                                       int xx, int yy,

@@ -242,6 +242,7 @@
     <item>Czech</item>
     <item>Greek</item>
     <item>Slovak</item>
+    <item>Hungarian</item>
   </string-array>
 
   <string-array name="language_codes">
@@ -265,6 +266,7 @@
     <item>cs</item>
     <item>el</item>
     <item>sk</item>
+    <item>hu</item>
   </string-array>
 
   <!-- Triples of Name, supported codes, and URL format string -->

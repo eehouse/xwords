@@ -197,9 +197,13 @@ public class JNIThread extends Thread implements AutoCloseable {
             m_queue.clear();
         }
 
+        boolean success = false;
+        DictUtils.DictPairs pairs = null;
         String[] dictNames = GameUtils.dictNames( context, m_lock );
-        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
-        boolean success = !pairs.anyMissing( dictNames );
+        if ( null != dictNames ) {
+            pairs = DictUtils.openDicts( context, dictNames );
+            success = !pairs.anyMissing( dictNames );
+        }
 
         if ( success ) {
             byte[] stream = GameUtils.savedGame( context, m_lock );
@@ -401,7 +405,7 @@ public class JNIThread extends Thread implements AutoCloseable {
         // PENDING: once certain this is true, stop saving the full array and
         // instead save the hash. Also, update it after each save.
         if ( hashesEqual ) {
-            Log.d( TAG, "save_jni(): no change in game; can skip saving" );
+            // Log.d( TAG, "save_jni(): no change in game; can skip saving" );
         } else {
             // Don't need this!!!! this only runs on the run() thread
             synchronized( this ) {

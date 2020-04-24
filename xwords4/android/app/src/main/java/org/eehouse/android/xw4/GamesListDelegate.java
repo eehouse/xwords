@@ -62,6 +62,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -574,6 +575,7 @@ public class GamesListDelegate extends ListDelegateBase
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
         R.id.games_menu_writegit,
+        R.id.games_submenu_logs,
     };
     private static final int[] NOSEL_ITEMS = {
         R.id.games_menu_newgroup,
@@ -1224,6 +1226,27 @@ public class GamesListDelegate extends ListDelegateBase
             } );
     }
 
+    private void openWithChecks( long rowid, GameSummary summary )
+    {
+        if ( ! m_launchedGames.contains( rowid ) ) {
+            if ( Quarantine.safeToOpen( rowid ) ) {
+                makeNotAgainBuilder( R.string.not_again_newselect,
+                                     R.string.key_notagain_newselect,
+                                     Action.OPEN_GAME )
+                    .setParams( rowid, summary )
+                    .show();
+            } else {
+                makeConfirmThenBuilder( R.string.unsafe_open_warning,
+                                        Action.QUARANTINE_CLEAR )
+                    .setPosButton( R.string.unsafe_open_disregard )
+                    .setActionPair( Action.QUARANTINE_DELETE,
+                                    R.string.button_delete )
+                    .setParams( rowid, summary )
+                    .show();
+            }
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////
     // SelectableItem interface
     //////////////////////////////////////////////////////////////////////
@@ -1235,13 +1258,7 @@ public class GamesListDelegate extends ListDelegateBase
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
             long rowid = ((GameListItem)clicked).getRowID();
-            if ( ! m_launchedGames.contains( rowid ) ) {
-                makeNotAgainBuilder( R.string.not_again_newselect,
-                                     R.string.key_notagain_newselect,
-                                     Action.OPEN_GAME )
-                    .setParams( rowid, summary )
-                    .show();
-            }
+            openWithChecks( rowid, summary );
         }
     }
 
@@ -1342,6 +1359,18 @@ public class GamesListDelegate extends ListDelegateBase
         case OPEN_GAME:
             doOpenGame( params );
             break;
+        case QUARANTINE_CLEAR:
+            long rowid = (long)params[0];
+            Quarantine.clear( rowid );
+            GameSummary summary = (GameSummary)params[1];
+            openWithChecks( rowid, summary );
+            break;
+
+        case QUARANTINE_DELETE:
+            rowid = (long)params[0];
+            deleteGames( new long[] {rowid}, true );
+            break;
+
         case CLEAR_SELS:
             clearSelections();
             break;
@@ -1378,6 +1407,30 @@ public class GamesListDelegate extends ListDelegateBase
 
         case SEND_EMAIL:
             Utils.emailAuthor( m_activity );
+            break;
+
+        case WRITE_LOG_DB:
+            final File logLoc = Log.dumpStored();
+            post( new Runnable() {
+                    @Override
+                    public void run() {
+                        String dumpMsg;
+                        if ( null == logLoc ) {
+                            dumpMsg = LocUtils.getString( m_activity,
+                                                          R.string.logstore_notdumped );
+                        } else {
+                            dumpMsg = LocUtils
+                                .getString( m_activity, R.string.logstore_dumped_fmt,
+                                            logLoc.getPath() );
+                        }
+                        makeOkOnlyBuilder( dumpMsg ).show();
+                    }
+                } );
+            break;
+
+        case CLEAR_LOG_DB:
+            int nDumped = Log.clearStored();
+            Utils.showToast( m_activity, R.string.logstore_cleared_fmt, nDumped );
             break;
 
         case ASKED_PHONE_STATE:
@@ -1664,6 +1717,23 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.gitInfoToClip( m_activity );
             break;
 
+        case R.id.games_menu_enableLogStorage:
+            Log.setStoreLogs( true );
+            break;
+        case R.id.games_menu_disableLogStorage:
+            Log.setStoreLogs( false );
+            break;
+        case R.id.games_menu_clearLogStorage:
+            makeConfirmThenBuilder( R.string.logstore_clear_confirm,
+                                    Action.CLEAR_LOG_DB )
+                .setPosButton( R.string.loc_item_clear )
+                .show();
+            break;
+        case R.id.games_menu_dumpLogStorage:
+            Perms23.tryGetPerms( this, Perm.STORAGE, null,
+                                 Action.WRITE_LOG_DB );
+            break;
+
         default:
             handled = handleSelGamesItem( itemID, selRowIDs )
                 || handleSelGroupsItem( itemID, getSelGroupIDs() );
@@ -1723,6 +1793,7 @@ public class GamesListDelegate extends ListDelegateBase
                         && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
                 }
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
+                Utils.setItemVisible( menu, R.id.games_game_markbad, enable );
                 Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
 
                 enable = !m_launchedGames.contains( rowID );
@@ -1875,6 +1946,7 @@ public class GamesListDelegate extends ListDelegateBase
             } else {
                 dropSels = true;    // will select the new game instead
                 post( new Runnable() {
+                        @Override
                         public void run() {
                             Activity self = m_activity;
                             byte[] stream =
@@ -1916,6 +1988,11 @@ public class GamesListDelegate extends ListDelegateBase
                 msg += "\n\n" + info.getAsText( m_activity );
             }
             makeOkOnlyBuilder( msg ).show();
+            break;
+
+            // DEBUG only
+        case R.id.games_game_markbad:
+            Quarantine.recordOpened( selRowIDs[0] );
             break;
 
         default:

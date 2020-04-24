@@ -80,5 +80,13 @@ void nli_setDevID( NetLaunchInfo* invit, XP_U32 devID );
 void nli_setInviteID( NetLaunchInfo* invit, const XP_UCHAR* inviteID );
 void nli_setGameName( NetLaunchInfo* invit, const XP_UCHAR* gameName );
 
+# ifdef DEBUG
+void logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine );
+# define LOGNLI(nli) \
+    logNLI( (nli), __func__, __LINE__ )
+# else
+#  define LOGNLI(nli)
+# endif
+
 
 #endif

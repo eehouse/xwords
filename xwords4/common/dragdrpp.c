@@ -237,7 +237,7 @@ dragDropContinue( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 }
 
 XP_Bool
-dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
+dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* draggedP )
 {
     DragState* ds = &board->dragState;
     BoardObjectType newObj;
@@ -245,7 +245,9 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
     XP_ASSERT( dragDropInProgress(board) );
 
     (void)dragDropContinueImpl( board, xx, yy, &newObj );
-    *dragged = ds->didMove;
+    if ( !!draggedP ) {
+        *draggedP = ds->didMove;
+    }
 
     /* If we've dropped on something, put the tile there!  Since we
        don't remove it from its earlier location until it's dropped,

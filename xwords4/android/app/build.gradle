@@ -1,6 +1,6 @@
 def INITIAL_CLIENT_VERS = 9
-def VERSION_CODE_BASE = 152
-def VERSION_NAME = '4.4.156'
+def VERSION_CODE_BASE = 154
+def VERSION_NAME = '4.4.158'
 def FABRIC_API_KEY = System.getenv("FABRIC_API_KEY")
 def BUILD_INFO_NAME = "build-info.txt"
 
@@ -96,7 +96,6 @@ android {
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
-            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"Google Play Store\""
             buildConfigField "int", "VARIANT_CODE", "1"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
@@ -112,7 +111,6 @@ android {
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
-            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"F-Droid\""
             buildConfigField "int", "VARIANT_CODE", "2"
             buildConfigField "boolean", "FOR_FDROID", "true"
@@ -129,7 +127,6 @@ android {
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
-            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug\""
             buildConfigField "int", "VARIANT_CODE", "3"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
@@ -148,7 +145,6 @@ android {
             resValue "string", "app_name", "CrossDbg"
             resValue "string", "nbs_port", "3345"
             buildConfigField "boolean", "WIDIR_ENABLED", "true"
-            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "true"
             buildConfigField "String", "VARIANT_NAME", "\"Dev/Debug NoSMS\""
             buildConfigField "int", "VARIANT_CODE", "4"
             buildConfigField "boolean", "REPORT_LOCKS", "true"
@@ -165,7 +161,6 @@ android {
             resValue "string", "app_name", "CrossWords"
             resValue "string", "nbs_port", "3344"
             buildConfigField "boolean", "WIDIR_ENABLED", "false"
-            buildConfigField "boolean", "RELAYINVITE_SUPPORTED", "false"
             buildConfigField "String", "VARIANT_NAME", "\"FOSS\""
             buildConfigField "int", "VARIANT_CODE", "5"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4}\""
@@ -230,7 +225,8 @@ android {
         debug {
             debuggable true
             resValue "bool", "DEBUG", "true"
-            minifyEnabled true // for testing
+            // Drop this. Takes too long to build
+            // minifyEnabled true // for testing
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // This doesn't work on marshmallow: duplicate permission error
             // applicationIdSuffix ".debug"

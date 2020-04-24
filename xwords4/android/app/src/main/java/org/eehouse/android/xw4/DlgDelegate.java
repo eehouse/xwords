@@ -51,6 +51,10 @@ public class DlgDelegate {
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,
         SEND_EMAIL,
+        WRITE_LOG_DB,
+        CLEAR_LOG_DB,
+        QUARANTINE_CLEAR,
+        QUARANTINE_DELETE,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

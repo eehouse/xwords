@@ -65,7 +65,7 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         if ( Utils.deviceSupportsNBS(context) ) {
             add( items, means, R.string.invite_choice_data_sms, InviteMeans.SMS_DATA );
         }
-        if ( BuildConfig.RELAYINVITE_SUPPORTED ) {
+        if ( BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD ) {
             add( items, means, R.string.invite_choice_relay, InviteMeans.RELAY );
         }
         if ( WiDirWrapper.enabled() ) {

@@ -38,7 +38,7 @@ gint gtkask( GtkWidget* parent, const gchar *message,
              GtkButtonsType buttons, const AskPair* buttxts );
 gint gtkask_timeout( GtkWidget* parent, const gchar *message, 
                      GtkButtonsType buttons, const AskPair* buttxts, 
-                     XP_U16 timeout );
+                     uint32_t timeoutMS );
 
 #endif
 #endif /* PLATFORM_GTK */

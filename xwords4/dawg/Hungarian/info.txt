@@ -1,0 +1,50 @@
+# -*- mode: conf; coding: utf-8; -*-
+
+LANGCODE:hu_HU
+CHARSET: utf-8
+
+# High bit means "official".  Next 7 bits are an enum where
+# Hungarian==0x14.  Low byte is padding
+XLOC_HEADER:0x9400
+
+<BEGIN_TILES>
+2	0	{"_"}
+6	1	'A|a'
+4	1	'Á|á'
+3	2	'B|b'
+1	5	'C|c'
+1   7   {"CS|cs"}
+3	2	'D|d'
+6	1	'E|e'
+3	3	'É|é'
+2	4	'F|f'
+3	2	'G|g'
+2	4	{"GY|gy"}
+2	3	'H|h'
+3	1	'I|i'
+1	5	'Í|í'
+2	4	'J|j'
+6	1	'K|k'
+4	1	'L|l'
+1	8	{"LY|ly"}
+3	1	'M|m'
+4	1	'N|n'
+1	5	{"NY|ny"}
+3	1	'O|o'
+3	2	'Ó|ó'
+2	4	'Ö|ö'
+1	7	'Ő|ö'
+2	4	'P|p'
+4	1	'R|r'
+3	1	'S|s'
+2	3	{"SZ|sz"}
+5	1	'T|t'
+1	10	{"TY|ty"}
+2	4	'U|u'
+1	7	'Ú|ú'
+2	4	'Ü|ü'
+1	7	'Ű|ű'
+2	3	'V|v'
+2	4	'Z|z'
+1	8	{"ZS|zs"}
+<END_TILES>

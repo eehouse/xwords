@@ -129,12 +129,14 @@ typedef struct LaunchParams {
     XP_U16 robotThinkMin, robotThinkMax;
     XP_U16 robotTradePct;
 #endif
+    XP_U16 makePhonyPct;
     XP_Bool commsDisableds[COMMS_CONN_NTYPES][2];
 
     DeviceRole serverRole;
 
     CommsAddrRec  addr;
     struct {
+        XP_U16 inviteeCounts[MAX_NUM_PLAYERS];
 #ifdef XWFEATURE_RELAY
         struct {
             char* relayName;

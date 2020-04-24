@@ -126,5 +126,24 @@ devIDTypeToStr(DevIDType typ)
 }
 
 #undef CASESTR
+typedef void (*ProcPtr)();
+void
+assertTableFull( void* table, size_t sizeInBytes, const XP_UCHAR* tableName )
+{
+    if ( 0 != sizeInBytes % sizeof(ProcPtr) ) {
+        XP_LOGFF( "bad call? vtable size: %zu; proc ptr size: %zu", sizeInBytes, sizeof(ProcPtr) );
+        XP_ASSERT( 0 );
+    }
 
-#endif
+    ProcPtr* proc = (ProcPtr*)table;
+    int count = sizeInBytes / sizeof(ProcPtr);
+    for ( int ii = 0; ii < count; ++ii ) {
+        if ( !*proc ) {
+            XP_LOGFF( "%s.vtable[%d] missing", tableName, ii );
+            XP_ASSERT( 0 );
+        }
+        ++proc;
+    }
+}
+
+#endif  /* DEBUG */

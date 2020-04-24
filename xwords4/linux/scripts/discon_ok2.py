@@ -210,11 +210,15 @@ class Device():
 
     def setApp(self, pct):
         if self.app == self.args.APP_OLD and not self.app == self.args.APP_NEW:
-            if pct >= random.randint(0, 99):
-                print('launch(): upgrading from ', self.app, ' to ', self.args.APP_NEW)
+            if os.path.exists(self.script) and pct >= random.randint(0, 99):
+                print('launch(): upgrading {} from {} to {}' \
+                      .format(self.devName(), self.app, self.args.APP_NEW))
                 self.app = self.args.APP_NEW
                 # nuke script to force regeneration
                 os.unlink(self.script)
+
+    def devName(self):
+        return 'dev_' + str(self.indx)
 
     def logReaderMain(self):
         assert self and self.proc
@@ -418,6 +422,8 @@ def build_cmds(args):
         # make one in three games public
         usePublic = args.ADD_RELAY and random.randint(0, 3) == 0
         useDupeMode = random.randint(0, 100) < args.DUP_PCT
+        if args.PHONIES == -1: phonies = GAME % 3
+        else: phonies = args.PHONIES
         DEV = 0
         for NLOCALS in LOCALS:
             DEV += 1
@@ -474,9 +480,15 @@ def build_cmds(args):
             # it isn't a priority.
             # PARAMS += ['--seed', args.SEED]
 
-            if DEV == 1: PARAMS += ['--server']
             if DEV == 1 or usePublic: PARAMS += ['--force-game']
-            if DEV > 1: PARAMS += ['--force-channel', DEV - 1]
+            if DEV == 1:
+                PARAMS += ['--server', '--phonies', phonies ]
+                # IFF there are any non-1 player counts, tell inviter which
+                if sum(LOCALS) > NDEVS:
+                    PARAMS += ['--invitee-counts', ":".join(str(n) for n in LOCALS[1:])]
+            else:
+                PARAMS += ['--force-channel', DEV - 1]
+            if args.PHONY_PCT and phonies == 2: PARAMS += [ '--make-phony-pct', args.PHONY_PCT ]
 
             if useDupeMode: PARAMS += ['--duplicate-mode']
             if usePublic: PARAMS += ['--make-public', '--join-public']
@@ -679,7 +691,7 @@ def mkParser():
                         help = 'the app we\'ll upgrade from')
     parser.add_argument('--start-pct', dest = 'START_PCT', default = 50, type = int,
                         help = 'odds of starting with the new app, 0 <= n < 100')
-    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 5, type = int,
+    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 20, type = int,
                         help = 'odds of upgrading at any launch, 0 <= n < 100')
 
     parser.add_argument('--num-games', dest = 'NGAMES', type = int, default = 1, help = 'number of games')
@@ -690,11 +702,16 @@ def mkParser():
     parser.add_argument('--nochange-secs', dest = 'NO_CHANGE_SECS', default = 30, type = int,
                         help = 'seconds without change after which to timeout')
     parser.add_argument('--log-root', dest='LOGROOT', default = '.', help = 'where logfiles go')
-    parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False, help = 'send all packet twice')
+    parser.add_argument('--dup-packets', dest = 'DUP_PACKETS', default = False,
+                        help = 'send all packet twice')
+    parser.add_argument('--phonies', dest = 'PHONIES', default = -1, type = int,
+                        help = '0 (ignore), 1 (warn)) or 2 (lose turn); default is pick at random')
+    parser.add_argument('--make-phony-pct', dest = 'PHONY_PCT', default = 20, type = int,
+                        help = 'how often a robot should play a phony (only applies when --phonies==2')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
 
-    parser.add_argument('--duplicate-pct', dest = 'DUP_PCT', default = 50, type = int,
+    parser.add_argument('--dup-pct', dest = 'DUP_PCT', default = 0, type = int,
                         help = 'this fraction played in duplicate mode')
 
     # # 

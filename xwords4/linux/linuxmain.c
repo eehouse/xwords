@@ -329,7 +329,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
 
-        if ( params->needsNewGame ) {
+        if ( params->needsNewGame && !opened ) {
             XP_ASSERT(0);
             // new_game_impl( globals, XP_FALSE );
         }
@@ -881,6 +881,7 @@ typedef enum {
     ,CMD_INVITEE_SMSNUMBER
     ,CMD_SMSPORT
 #endif
+    ,CMD_INVITEE_COUNTS
 #ifdef XWFEATURE_RELAY
     ,CMD_ROOMNAME
     ,CMD_ADVERTISEROOM
@@ -896,6 +897,7 @@ typedef enum {
     ,CMD_SLOWROBOT
     ,CMD_TRADEPCT
 #endif
+    ,CMD_MAKE_PHONY_PCT
 #ifdef USE_GLIBLOOP		/* just because hard to implement otherwise */
     ,CMD_UNDOPCT
 #endif
@@ -1013,12 +1015,15 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_INVITEE_SMSNUMBER, true, "invitee-sms-number", "number to send any invitation to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
+    ,{ CMD_INVITEE_COUNTS, true, "invitee-counts",
+       "When invitations sent, how many on each device? e.g. \"1:2\" for a "
+       "three-dev game with two players on second guest" }
 #ifdef XWFEATURE_RELAY
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
     ,{ CMD_JOINADVERTISED, false, "join-public", "look for a public room" }
     ,{ CMD_PHONIES, true, "phonies", 
-       "ignore (0, default), warn (1) or lose turn (2)" }
+       "ignore (0, default), warn (1), lose turn (2), or refuse to commit (3)" }
     ,{ CMD_BONUSFILE, true, "bonus-file",
        "provides bonus info: . + * ^ and ! are legal" }
     ,{ CMD_INVITEE_RELAYID, true, "invitee-relayid", "relayID to send any invitation to" }
@@ -1030,6 +1035,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SLOWROBOT, true, "slow-robot", "make robot slower to test network" }
     ,{ CMD_TRADEPCT, true, "trade-pct", "what pct of the time should robot trade" }
 #endif
+    ,{ CMD_MAKE_PHONY_PCT, true, "make-phony-pct",
+       "what pct of the time should robot play a bad word" }
 #ifdef USE_GLIBLOOP
     ,{ CMD_UNDOPCT, true, "undo-pct",
        "each second, what are the odds of doing an undo" }
@@ -2389,20 +2396,6 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util )
 }
 
 void
-assertUtilCallbacksSet( XW_UtilCtxt* util )
-{
-    XWStreamCtxt* (**proc)(XW_UtilCtxt*, XP_PlayerAddr ) =
-        &util->vtable->m_util_makeStreamFromAddr;
-    for ( int ii = 0; ii < sizeof(*util->vtable)/sizeof(*proc); ++ii ) {
-        if ( !*proc ) {
-            XP_LOGF( "%s(): null ptr at index %d", __func__, ii );
-            XP_ASSERT( 0 );
-        }
-        ++proc;
-    }
-}
-
-void
 assertDrawCallbacksSet( const DrawCtxVTable* vtable )
 {
     bool allSet = true;
@@ -2548,6 +2541,9 @@ main( int argc, char** argv )
     initParams( &mainParams );
 
     /* defaults */
+    for ( int ii = 0; ii < VSIZE(mainParams.connInfo.inviteeCounts); ++ii ) {
+        mainParams.connInfo.inviteeCounts[ii] = 1;
+    }
 #ifdef XWFEATURE_RELAY
     mainParams.connInfo.relay.defaultSendPort = DEFAULT_PORT;
     mainParams.connInfo.relay.relayName = "localhost";
@@ -2748,6 +2744,16 @@ main( int argc, char** argv )
                 g_slist_append( mainParams.connInfo.sms.inviteePhones, optarg );
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
+        case CMD_INVITEE_COUNTS: {
+            gchar** strs = g_strsplit( optarg, ":", -1 );
+            for ( int ii = 0;
+                  !!strs[ii] && ii < VSIZE(mainParams.connInfo.inviteeCounts);
+                  ++ii ) {
+                mainParams.connInfo.inviteeCounts[ii] = atoi(strs[ii]);
+            }
+            g_strfreev( strs );
+        }
+            break;
         case CMD_SMSPORT:
             mainParams.connInfo.sms.port = atoi(optarg);
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
@@ -2837,8 +2843,11 @@ main( int argc, char** argv )
             case 2:
                 mainParams.pgi.phoniesAction = PHONIES_DISALLOW;
                 break;
+            case 3:
+                mainParams.pgi.phoniesAction = PHONIES_BLOCK;
+                break;
             default:
-                usage( argv[0], "phonies takes 0 or 1 or 2" );
+                usage( argv[0], "phonies takes 0 or 1 or 2 or 3" );
             }
             break;
         case CMD_BONUSFILE:
@@ -2952,6 +2961,13 @@ main( int argc, char** argv )
         case CMD_TRADEPCT:
             mainParams.robotTradePct = atoi( optarg );
             if ( mainParams.robotTradePct < 0 || mainParams.robotTradePct > 100 ) {
+                usage(argv[0], "must be 0 <= n <= 100" );
+            }
+            break;
+
+        case CMD_MAKE_PHONY_PCT:
+            mainParams.makePhonyPct = atoi( optarg );
+            if ( mainParams.makePhonyPct < 0 || mainParams.makePhonyPct > 100 ) {
                 usage(argv[0], "must be 0 <= n <= 100" );
             }
             break;

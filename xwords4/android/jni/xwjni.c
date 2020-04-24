@@ -118,7 +118,7 @@ typedef long GamePtrType;
 #ifdef LOG_MAPPING
 # ifdef DEBUG
 static int 
-countUsed(const EnvThreadInfo* ti)
+countUsed( const EnvThreadInfo* ti )
 {
     int count = 0;
     for ( int ii = 0; ii < ti->nEntries; ++ii ) {
@@ -157,8 +157,8 @@ map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
             found = true;
             if ( env != entry->env ) {
                 /* this DOES happen!!! */
-                XP_LOGF( "%s (ti=%p): replacing env %p with env %p for thread %x",
-                         __func__, ti, entry->env, env, (int)self );
+                RAW_LOG( "(ti=%p): replacing env %p with env %p for thread %x",
+                         ti, entry->env, env, (int)self );
                 entry->env = env;
             }
         }
@@ -180,7 +180,7 @@ map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
             ti->entries = entries;
             ti->nEntries = nEntries;
 #ifdef LOG_MAPPING
-            XP_LOGF( "%s: num env entries now %d", __func__, nEntries );
+            RAW_LOG( "num env entries now %d", nEntries );
 #endif
         }
 
@@ -191,9 +191,9 @@ map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
         ++firstEmpty->refcount;
 #ifdef LOG_MAPPING
         firstEmpty->ownerFunc = caller;
-        XP_LOGF( "%s: entry %zu: mapped env %p to thread %x", __func__,
+        RAW_LOG( "entry %zu: mapped env %p to thread %x",
                  firstEmpty - ti->entries, env, (int)self );
-        XP_LOGF( "%s: num entries USED now %d", __func__, countUsed(ti) );
+        RAW_LOG( "num entries USED now %d", countUsed(ti) );
 #endif
     }
 
@@ -221,9 +221,9 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* func )
         if ( found ) {
             XP_ASSERT( pthread_self() == entry->owner );
 #ifdef LOG_MAPPING
-            XP_LOGF( "%s: UNMAPPED env %p to thread %x (from %s; mapped by %s)", __func__,
+            RAW_LOG( "UNMAPPED env %p to thread %x (from %s; mapped by %s)",
                      entry->env, (int)entry->owner, func, entry->ownerFunc );
-            XP_LOGF( "%s: %d entries left", __func__, countUsed( ti ) );
+            RAW_LOG( "%d entries left", countUsed( ti ) );
             entry->ownerFunc = NULL;
 #endif
             XP_ASSERT( 1 == entry->refcount );
@@ -257,6 +257,46 @@ prvEnvForMe( EnvThreadInfo* ti )
     pthread_mutex_unlock( &ti->mtxThreads );
     return result;
 }
+
+#ifdef DEBUG
+static pthread_mutex_t g_globalStateLock = PTHREAD_MUTEX_INITIALIZER;
+static JNIGlobalState* g_globalState = NULL;
+
+void setGlobalState( JNIGlobalState* state )
+{
+    pthread_mutex_lock( &g_globalStateLock );
+    g_globalState = state;
+    pthread_mutex_unlock( &g_globalStateLock );
+}
+
+JNIEnv*
+waitEnvFromGlobals()            /* hanging */
+{
+    JNIEnv* result = NULL;
+    pthread_mutex_lock( &g_globalStateLock );
+    JNIGlobalState* state = g_globalState;
+    if ( !!state ) {
+        result = prvEnvForMe( &state->ti );
+    }
+    if ( !result ) {
+        pthread_mutex_unlock( &g_globalStateLock );
+    }
+    return result;
+}
+
+void
+releaseEnvFromGlobals( JNIEnv* env )
+{
+    XP_ASSERT( !!env );
+    JNIGlobalState* state = g_globalState;
+    XP_ASSERT( !!state );
+    XP_ASSERT( env == prvEnvForMe( &state->ti ) );
+    pthread_mutex_unlock( &g_globalStateLock );
+}
+
+#else
+# define setGlobalState(s)
+#endif
 
 JNIEnv*
 envForMe( EnvThreadInfo* ti, const char* caller )
@@ -325,6 +365,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
     globalState->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
     globalState->smsProto = smsproto_init( MPPARM( mpool ) globalState->dutil );
     MPASSIGN( globalState->mpool, mpool );
+    setGlobalState( globalState );
     // LOG_RETURNF( "%p", globalState );
     return (jlong)globalState;
 }
@@ -335,6 +376,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
 {
     // LOG_FUNC();
     if ( 0 != jniGlobalPtr ) {
+        setGlobalState( NULL );
         JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = GETMPOOL( globalState );
@@ -984,7 +1026,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     }
     globals->dctx = dctx;
     globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, j_procs );
-    CommonPrefs cp;
+    CommonPrefs cp = {0};
     loadCommonPrefs( env, &cp, j_cp );
 
     game_makeNewGame( MPPARM(mpool) &state->game, gi, globals->util, dctx, &cp,

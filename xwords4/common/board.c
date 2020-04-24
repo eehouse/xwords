@@ -1040,19 +1040,13 @@ typedef struct _BadWordList {
 } BadWordList;
 
 static void
-saveBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
-              const DictionaryCtxt* XP_UNUSED(dict),
-#ifdef XWFEATURE_BOARDWORDS
-              const MoveInfo* XP_UNUSED(movei), 
-              XP_U16 XP_UNUSED(start), XP_U16 XP_UNUSED(end),
-#endif
-              void* closure )
+saveBadWords( const WNParams* wnp, void* closure )
 {
-    if ( !isLegal ) {
+    if ( !wnp->isLegal ) {
         BadWordList* bwlp = (BadWordList*)closure;
         bwlp->bwi.words[bwlp->bwi.nWords] = &bwlp->buf[bwlp->index];
-        XP_STRCAT( &bwlp->buf[bwlp->index], word );
-        bwlp->index += XP_STRLEN(word) + 1;
+        XP_STRCAT( &bwlp->buf[bwlp->index], wnp->word );
+        bwlp->index += XP_STRLEN(wnp->word) + 1;
         ++bwlp->bwi.nWords;
     }
 } /* saveBadWords */
@@ -1149,7 +1143,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                 bwl.bwi.dictName =
                     dict_getShortName( model_getPlayerDict( model, selPlayer ) );
                 util_notifyIllegalWords( board->util, &bwl.bwi, selPlayer, XP_FALSE );
-            } else {
+            } else if ( legal ) {
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
                    passwords and peek at tiles. */
@@ -1341,7 +1335,7 @@ timerFiredForPen( BoardCtxt* board )
 
             if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
                 /* even if we aren't calling dragDropSetAdd we want to avoid
-                   putting up a sqare bonus if we're on a sqare with
+                   putting up a square bonus if we're on a square with
                    something that can be dragged */
 #ifdef XWFEATURE_RAISETILE
                 draw = dragDropSetAdd( board );
@@ -1351,20 +1345,24 @@ timerFiredForPen( BoardCtxt* board )
             /* We calculate words even for a pending tile set, meaning
                dragDrop might be happening too. */
             XP_Bool listWords = XP_FALSE;
-#ifdef XWFEATURE_BOARDWORDS     /* here it is */
+#ifdef XWFEATURE_BOARDWORDS
             XP_U16 modelCol, modelRow;
             flipIf( board, col, row, &modelCol, &modelRow );
             listWords = model_getTile( board->model, modelCol, modelRow,
                                        XP_TRUE, board->selPlayer, NULL,
                                        NULL, NULL, NULL );
             if ( listWords ) {
-                XP_LOGF( "%s(): listWords came back true", __func__ );
                 XWStreamCtxt* stream =
                     mem_stream_make_raw( MPPARM(board->mpool)
                                          dutil_getVTManager(board->dutil) );
-                model_listWordsThrough( board->model, modelCol, modelRow,
-                                        board->selPlayer, stream );
-                util_cellSquareHeld( board->util, stream );
+                listWords = model_listWordsThrough( board->model, modelCol, modelRow,
+                                                    board->selPlayer, stream );
+                if ( listWords ) {
+                    util_cellSquareHeld( board->util, stream );
+                    if ( dragDropInProgress( board ) ) {
+                        dragDropEnd( board, board->penDownX, board->penDownY, NULL );
+                    }
+                }
                 stream_destroy( stream );
             }
 #endif
@@ -3030,7 +3028,6 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
                      XP_Bool altDown )
 {
     XP_Bool draw = XP_FALSE;
-    XP_Bool dragged = XP_FALSE;
     BoardObjectType prevObj = board->penDownObject;
 
     /* prevent timer from firing after pen lifted.  Set now rather than later
@@ -3038,6 +3035,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
        exiting this function (which might give timer time to fire. */
     board->penDownObject = OBJ_NONE;
 
+    XP_Bool dragged = XP_FALSE;
     if ( dragDropInProgress(board) ) {
         draw = dragDropEnd( board, xx, yy, &dragged );
     }

@@ -34,6 +34,7 @@
 #include "gsrcwrap.h"
 #include "linuxsms.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 typedef struct CursesBoardState {
     CursesAppGlobals* aGlobals;
@@ -590,6 +591,7 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
     cGlobals->cp.robotThinkMax = params->robotThinkMax;
     cGlobals->cp.robotTradePct = params->robotTradePct;
 #endif
+    cGlobals->cp.makePhonyPct = params->makePhonyPct;
 
     if ( linuxOpenGame( cGlobals, &result->procs, returnAddr ) ) {
          result = ref( result );
@@ -640,16 +642,21 @@ findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid,
     return result;
 }
 
-XP_U16
-cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid,
+bool
+cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid, XP_U16 expectSeed,
             const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
 {
     LOG_FUNC();
     CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL, NULL );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
     XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
-    return seed;
+    bool success = 0 == expectSeed || seed == expectSeed;
+    if ( success ) {
+        gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
+    } else {
+        XP_LOGFF( "msg for seed %d but I opened %d", expectSeed, seed );
+    }
+    return success;
 }
 
 void
@@ -663,7 +670,11 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
     getRowsForGameID( params->pDb, gameID, rowids, &nRows );
     XP_LOGF( "%s(): found %d rows for gameID %d", __func__, nRows, gameID );
     for ( int ii = 0; ii < nRows; ++ii ) {
-        (void)cb_feedRow( cbState, rowids[ii], buf, len, from );
+#ifdef DEBUG
+        bool success =
+#endif
+            cb_feedRow( cbState, rowids[ii], 0, buf, len, from );
+        XP_ASSERT( success );
     }
 }
 
@@ -802,13 +813,21 @@ curses_util_turnChanged( XW_UtilCtxt* uc, XP_S16 XP_UNUSED_DBG(newTurn) )
 #endif
 
 static void
-curses_util_notifyIllegalWords( XW_UtilCtxt* uc,
-                                BadWordInfo* XP_UNUSED(bwi),
-                                XP_U16 XP_UNUSED(player),
-                                XP_Bool XP_UNUSED(turnLost) )
+curses_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
+                                XP_U16 player, XP_Bool turnLost )
 {
+    gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
+    gchar* msg = g_strdup_printf( "Player %d played bad word[s]: \"%s\". "
+                                  "Turn lost: %s", player, strs, boolToStr(turnLost) );
+
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-    ca_informf( bGlobals->boardWin, "%s() not implemented", __func__ );
+    if ( !!bGlobals->boardWin ) {
+        ca_inform( bGlobals->boardWin, msg );
+    } else {
+        XP_LOGFF( "msg: %s", msg );
+    }
+    g_free( strs );
+    g_free( msg );
 } /* curses_util_notifyIllegalWord */
 
 /* this needs to change!!! */
@@ -1042,6 +1061,13 @@ curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 }
 #endif
 
+static void
+curses_util_informWordBlocked( XW_UtilCtxt* XP_UNUSED(uc),
+                               const XP_UCHAR* XP_UNUSED_DBG(word),
+                               const XP_UCHAR* XP_UNUSED_DBG(dict) )
+{
+    XP_LOGFF( "(word=%s, dict=%s)", word, dict );
+}
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt*
@@ -1113,6 +1139,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_BOARDWORDS
     SET_PROC(cellSquareHeld);
 #endif
+    SET_PROC(informWordBlocked);
 
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);
@@ -1122,7 +1149,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #endif
 #undef SET_PROC
 
-    assertUtilCallbacksSet( util );
+    assertTableFull( util->vtable, sizeof(*util->vtable), "curses util" );
 } /* setupCursesUtilCallbacks */
 
 static bool
@@ -1189,10 +1216,12 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
     if ( haveAddressees ) {
         LaunchParams* params = cGlobals->params;
         for ( int ii = 0; ii < g_slist_length(invitees); ++ii ) {
-            const XP_U16 nPlayers = 1;
-            gint forceChannel = ii + 1;
+            const XP_U16 nPlayersH = params->connInfo.inviteeCounts[ii];
+            const gint forceChannel = ii + 1;
+            XP_LOGFF( "using nPlayersH of %d, forceChannel of %d for guest device %d",
+                      nPlayersH, forceChannel, ii );
             NetLaunchInfo nli = {0};
-            nli_init( &nli, cGlobals->gi, addr, nPlayers, forceChannel );
+            nli_init( &nli, cGlobals->gi, addr, nPlayersH, forceChannel );
             if ( useRelay ) {
                 uint64_t inviteeRelayID = (uint64_t)g_slist_nth_data( invitees, ii );
                 relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
@@ -1217,8 +1246,8 @@ handleInvite( void* closure, int XP_UNUSED(key) )
     XP_ASSERT( comms );
     comms_getAddr( comms, &addr );
 
-    XP_U16 nPlayers = 1;
     gint forceChannel = 1;
+    const XP_U16 nPlayers = params->connInfo.inviteeCounts[forceChannel-1];
     NetLaunchInfo nli = {0};
     nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
 

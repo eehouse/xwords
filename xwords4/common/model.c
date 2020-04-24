@@ -77,13 +77,7 @@ static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                              const PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-static void recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
-                        const DictionaryCtxt* dict,
-
-#ifdef XWFEATURE_BOARDWORDS
-                        const MoveInfo* movei, XP_U16 start, XP_U16 end,
-#endif
-                        void* clsur );
+static void recordWord( const WNParams* wnp, void *closure );
 #ifdef DEBUG 
 typedef struct _DiffTurnState {
     XP_S16 lastPlayerNum;
@@ -908,6 +902,8 @@ model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool, XP_U16* turn )
     stack_popEntry( stack, &entry );
     XP_ASSERT( entry.moveType == MOVE_TYPE );
 
+    model_resetCurrentTurn( model, entry.playerNum );
+
     replaceNewTiles( model, pool, entry.playerNum, &entry.u.move.newTiles );
     XP_ASSERT( !model->vol.gi->inDuplicateMode );
     undoFromMove( model, entry.playerNum, blankTile, &entry.u.move );
@@ -1259,6 +1255,20 @@ juggleMoveIfDebug( MoveInfo* move )
         }
     }
 }
+
+/* Reverse the *letters on* the tiles */
+void
+reverseTiles( MoveInfo* move )
+{
+    MoveInfoTile* start = &move->tiles[0];
+    MoveInfoTile* end = start + move->nTiles - 1;
+    while ( start < end ) {
+        Tile tmp = start->tile;
+        start->tile = end->tile;
+        end->tile = tmp;
+        --end; ++start;
+    }
+}
 #endif
 
 void
@@ -1562,6 +1572,9 @@ model_setBlankValue( ModelCtxt* model, XP_U16 turn,
                                      &nUsed, tfaces, tiles );
 
                 pt->tile = tiles[newIndex] | TILE_BLANK_BIT;
+
+                /* force a recalc in case phonies==PHONIES_BLOCK */
+                invalidateScore( model, turn );
             }
             break;
         }
@@ -2465,17 +2478,11 @@ typedef struct _FirstWordData {
 } FirstWordData;
 
 static void
-getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
-              const DictionaryCtxt* XP_UNUSED(dict),
-#ifdef XWFEATURE_BOARDWORDS
-              const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
-              XP_U16 XP_UNUSED(end),
-#endif
-              void* closure )
+getFirstWord( const WNParams* wnp, void* closure )
 {
     FirstWordData* data = (FirstWordData*)closure;
-    if ( '\0' == data->word[0] && '\0' != word[0] ) {
-        XP_STRCAT( data->word, word );
+    if ( '\0' == data->word[0] && '\0' != wnp->word[0] ) {
+        XP_STRCAT( data->word, wnp->word );
     }
 }
 
@@ -2560,17 +2567,10 @@ appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
 }
 
 static void
-recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
-            const DictionaryCtxt* XP_UNUSED(dict),
-#ifdef XWFEATURE_BOARDWORDS
-            const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
-            XP_U16 XP_UNUSED(end),
-#endif
-            void* closure )
-
+recordWord( const WNParams* wnp, void* closure )
 {
     RecordWordsInfo* info = (RecordWordsInfo*)closure;
-    appendWithCR( info->stream, word, &info->nWords );
+    appendWithCR( info->stream, wnp->word, &info->nWords );
 }
 
 WordNotifierInfo* 
@@ -2591,32 +2591,31 @@ typedef struct _ListWordsThroughInfo {
 } ListWordsThroughInfo;
 
 static void
-listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
-                  const DictionaryCtxt* XP_UNUSED(dict),
-                  const MoveInfo* movei, XP_U16 start, XP_U16 end, 
-                  void* closure )
+listWordsThrough( const WNParams* wnp, void* closure )
 {
     ListWordsThroughInfo* info = (ListWordsThroughInfo*)closure;
+    const MoveInfo* movei = wnp->movei;
 
     XP_Bool contained = XP_FALSE;
     if ( movei->isHorizontal && movei->commonCoord == info->row ) {
-        contained = start <= info->col && end >= info->col;
+        contained = wnp->start <= info->col && wnp->end >= info->col;
     } else if ( !movei->isHorizontal && movei->commonCoord == info->col ) {
-        contained = start <= info->row && end >= info->row;
+        contained = wnp->start <= info->row && wnp->end >= info->row;
     }
 
     if ( contained ) {
-        appendWithCR( info->stream, word, &info->nWords );
+        appendWithCR( info->stream, wnp->word, &info->nWords );
     }
 }
 
 /* List every word played that includes the tile on {col,row}.
  *
  * How?   Undo backwards until we find the move that placed that tile.*/
-void
+XP_Bool
 model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                         XP_S16 turn, XWStreamCtxt* stream )
 {
+    XP_Bool found = XP_FALSE;
     ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
     copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
@@ -2667,9 +2666,12 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
             modelAddEntry( tmpModel, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
                            NULL, NULL, NULL );
         }
+        XP_LOGFF( "nWords: %d", lwtInfo.nWords );
+        found = 0 < lwtInfo.nWords;
     }
 
     model_destroy( tmpModel );
+    return found;
 } /* model_listWordsThrough */
 #endif
 
