@@ -670,7 +670,10 @@ cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
     getRowsForGameID( params->pDb, gameID, rowids, &nRows );
     XP_LOGF( "%s(): found %d rows for gameID %d", __func__, nRows, gameID );
     for ( int ii = 0; ii < nRows; ++ii ) {
-        bool success = cb_feedRow( cbState, rowids[ii], 0, buf, len, from );
+#ifdef DEBUG
+        bool success =
+#endif
+            cb_feedRow( cbState, rowids[ii], 0, buf, len, from );
         XP_ASSERT( success );
     }
 }

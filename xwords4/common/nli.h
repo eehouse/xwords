@@ -85,7 +85,7 @@ void logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerL
 # define LOGNLI(nli) \
     logNLI( (nli), __func__, __LINE__ )
 # else
-#  define logNLI(nli)
+#  define LOGNLI(nli)
 # endif
 
 

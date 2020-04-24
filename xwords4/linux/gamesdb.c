@@ -63,11 +63,17 @@ static void assertPrintResult( sqlite3* pDb, int result, int expect );
 sqlite3* 
 openGamesDB( const char* dbName )
 {
-    int result = sqlite3_initialize();
+#ifdef DEBUG
+    int result =
+#endif
+        sqlite3_initialize();
     XP_ASSERT( SQLITE_OK == result );
 
     sqlite3* pDb = NULL;
-    result = sqlite3_open( dbName, &pDb );
+#ifdef DEBUG
+    result =
+#endif
+        sqlite3_open( dbName, &pDb );
     XP_ASSERT( SQLITE_OK == result );
 
     if ( gamesTableExists( pDb ) ) {
@@ -140,7 +146,10 @@ createTables( sqlite3* pDb )
     /* This can never change! Versioning counts on it. */
     const char* createValuesStr =
         "CREATE TABLE pairs ( key TEXT UNIQUE, value TEXT )";
-    int result = sqlite3_exec( pDb, createValuesStr, NULL, NULL, NULL );
+#ifdef DEBUG
+    int result =
+#endif
+        sqlite3_exec( pDb, createValuesStr, NULL, NULL, NULL );
     XP_LOGFF( "sqlite3_exec(%s)=>%d", createValuesStr, result );
 
     const char* createGamesStr = 
@@ -165,7 +174,7 @@ createTables( sqlite3* pDb )
         ","VERS_0_TO_1
         // ",dupTimerExpires INT"
         ")";
-    result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
+    (void)sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
 
     db_storeInt( pDb, KEY_DB_VERSION, CUR_DB_VERSION );
 }

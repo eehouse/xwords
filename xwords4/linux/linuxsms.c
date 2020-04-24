@@ -232,7 +232,10 @@ nliFromData( LaunchParams* params, const SMSMsgLoc* msg, NetLaunchInfo* nliOut )
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );
     stream_putBytes( stream, msg->data, msg->len );
-    XP_Bool success = nli_makeFromStream( nliOut, stream );
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        nli_makeFromStream( nliOut, stream );
     XP_ASSERT( success );
     stream_destroy( stream );
 }
