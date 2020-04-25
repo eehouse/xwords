@@ -628,7 +628,7 @@ setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits )
 #endif
 
 static XP_Bool
-scrollTimerProc( void* closure, XWEnv XP_UNUSED(xwe), XWTimerReason XP_UNUSED_DBG(why) )
+scrollTimerProc( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
 {
     XP_Bool draw = XP_FALSE;
     BoardCtxt* board = (BoardCtxt*)closure;
@@ -653,7 +653,7 @@ scrollTimerProc( void* closure, XWEnv XP_UNUSED(xwe), XWTimerReason XP_UNUSED_DB
             }
             if ( scrollIntoView( board, ds->cur.u.board.col, 
                                  ds->cur.u.board.row ) ) {
-                board_draw( board ); /* may fail, e.g. on wince */
+                board_draw( board, xwe ); /* may fail, e.g. on wince */
                 startScrollTimerIf( board );
                 draw = XP_TRUE;
             }

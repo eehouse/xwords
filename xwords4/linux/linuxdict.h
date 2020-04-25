@@ -22,7 +22,7 @@
 #ifndef _LINUXDICT_H_
 #define _LINUXDICT_H_
 
-DictionaryCtxt* linux_dictionary_make( MPFORMAL 
+DictionaryCtxt* linux_dictionary_make( MPFORMAL XWEnv xwe,
                                        const LaunchParams* mainParams,
                                        const char* dictFileName, 
                                        XP_Bool useMMap );

@@ -88,7 +88,7 @@ static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col,
                               XP_U16 row, XP_Bool added );
 static void boardTilesChanged( void* board, XP_U16 turn, XP_S16 index1, 
                                XP_S16 index2 );
-static void dictChanged( void* p_board, XP_S16 playerNum, 
+static void dictChanged( void* p_board, XWEnv xwe, XP_S16 playerNum,
                          const DictionaryCtxt* oldDict, 
                          const DictionaryCtxt* newDict );
 
@@ -294,12 +294,12 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 } /* board_makeFromStream */
 
 void
-board_setDraw( BoardCtxt* board, DrawCtx* draw )
+board_setDraw( BoardCtxt* board, XWEnv xwe, DrawCtx* draw )
 {
     board->draw = draw;
     if ( !!draw ) {
         DictionaryCtxt* langDict = model_getDictionary( board->model );
-        draw_dictChanged( draw, -1, langDict );
+        draw_dictChanged( draw, xwe, -1, langDict );
     }
 }
 
@@ -403,13 +403,13 @@ board_reset( BoardCtxt* board )
 } /* board_reset */
 
 void
-board_drawSnapshot( const BoardCtxt* curBoard, DrawCtx* dctx,
+board_drawSnapshot( const BoardCtxt* curBoard, XWEnv xwe, DrawCtx* dctx,
                     XP_U16 width, XP_U16 height )
 {
     BoardCtxt* newBoard = board_make( MPPARM(curBoard->mpool)
                                       curBoard->model,
                                       curBoard->server, dctx, curBoard->util );
-    board_setDraw( newBoard, dctx ); /* so draw_dictChanged() will get called */
+    board_setDraw( newBoard, xwe, dctx ); /* so draw_dictChanged() will get called */
     XP_U16 fontWidth = width / curBoard->gi->boardSize;
     board_figureLayout( newBoard, curBoard->gi, 0, 0, width, height,
                         100, 0, 0, 0, fontWidth, width, XP_FALSE, NULL );
@@ -417,7 +417,7 @@ board_drawSnapshot( const BoardCtxt* curBoard, DrawCtx* dctx,
     newBoard->showColors = curBoard->showColors;
     newBoard->showGrid = curBoard->showGrid;
 
-    board_draw( newBoard );
+    board_draw( newBoard, xwe );
     board_destroy( newBoard, XP_FALSE );
 }
 
@@ -1258,13 +1258,13 @@ board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer, XP_Bool canSwitch )
 } /* board_selectPlayer */
 
 void
-board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row )
+board_hiliteCellAt( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row )
 {
     XP_Rect cellRect;
 
     flipIf( board, col, row, &col, &row );
     if ( getCellRect( board, col, row, &cellRect ) ) {
-        draw_invertCell( board->draw, &cellRect );
+        draw_invertCell( board->draw, xwe, &cellRect );
         invalCell( board, col, row );
     }
     /*     sleep(1); */
@@ -1417,7 +1417,7 @@ setTimerIf( BoardCtxt* board )
 } /* setTimerIf */
 
 static void
-timerFiredForTimer( BoardCtxt* board )
+timerFiredForTimer( BoardCtxt* board, XWEnv xwe )
 {
     board->timerPending = XP_FALSE;
     if ( !board->gameOver || !server_canUnpause( board->server ) ) {
@@ -1432,7 +1432,7 @@ timerFiredForTimer( BoardCtxt* board )
             }
         }
         if ( doDraw ) {
-            drawTimer( board );
+            drawTimer( board, xwe );
         }
     }
     setTimerIf( board );
@@ -1447,7 +1447,7 @@ p_board_timerFired( void* closure, XWEnv xwe, XWTimerReason why )
         draw = timerFiredForPen( board, xwe );
     } else {
         XP_ASSERT( why == TIMER_TIMERTICK );
-        timerFiredForTimer( board );
+        timerFiredForTimer( board, xwe );
     }
     return draw;
 } /* board_timerFired */
@@ -2128,7 +2128,7 @@ MIN_TRADE_TILES( const BoardCtxt* board )
  * any redrawing to be done.
  */
 XP_Bool
-board_requestHint( BoardCtxt* board, 
+board_requestHint( BoardCtxt* board, XWEnv xwe,
 #ifdef XWFEATURE_SEARCHLIMIT
                    XP_Bool useTileLimits,
 #endif
@@ -2170,7 +2170,7 @@ board_requestHint( BoardCtxt* board,
                    that it's ok to wait until we've found the move anyway. */
                 redraw = XP_TRUE;
 #else
-                board_draw( board );
+                board_draw( board, xwe );
 #endif
             }
 
@@ -3907,13 +3907,14 @@ boardTilesChanged( void* p_board, XP_U16 turn, XP_S16 index1, XP_S16 index2 )
 } /* boardTilesChanged */
 
 static void
-dictChanged( void* p_board, XP_S16 playerNum, const DictionaryCtxt* oldDict, 
+dictChanged( void* p_board, XWEnv xwe, XP_S16 playerNum,
+             const DictionaryCtxt* oldDict,
              const DictionaryCtxt* newDict )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     if ( !!board->draw ) {
         if ( (NULL == oldDict) || (oldDict != newDict) ) {
-            draw_dictChanged( board->draw, playerNum, newDict );
+            draw_dictChanged( board->draw, xwe, playerNum, newDict );
         }
     }
 }

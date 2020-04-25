@@ -314,7 +314,7 @@ onGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime )
 
     BoardCtxt* board = cGlobals->game.board;
     board_invalAll( board );
-    board_draw( board );
+    board_draw( board, NULL_XWE );
     /* May not be recorded */
     XP_ASSERT( cGlobals->rowid == rowid );
     // cGlobals->rowid = rowid;
@@ -440,7 +440,7 @@ commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
     if ( !!gi ) {
         XP_ASSERT( !cGlobals->dict );
         cGlobals->dict = linux_dictionary_make( MPPARM(cGlobals->util->mpool)
-                                                params, gi->dictName, XP_TRUE );
+                                                NULL_XWE, params, gi->dictName, XP_TRUE );
         gi->dictLang = dict_getLangCode( cGlobals->dict );
     }
 
@@ -567,7 +567,7 @@ setupBoard( CursesBoardGlobals* bGlobals )
     board_applyLayout( board, &dims );
     XP_LOGF( "%s(): calling board_draw()", __func__ );
     board_invalAll( board );
-    board_draw( board );
+    board_draw( board, NULL_XWE );
 }
 
 static CursesBoardGlobals*
@@ -615,7 +615,7 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if( !!bGlobals->boardWin ) {
         cGlobals->draw = cursesDrawCtxtMake( bGlobals->boardWin );
-        board_setDraw( cGlobals->game.board, cGlobals->draw );
+        board_setDraw( cGlobals->game.board, NULL_XWE, cGlobals->draw );
     }
 
     setupBoard( bGlobals );
@@ -774,7 +774,7 @@ ask_move( gpointer data )
                        VSIZE(answers)-1, answers) ) {
         BoardCtxt* board = cGlobals->game.board;
         if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
-            board_draw( board );
+            board_draw( board, NULL_XWE );
             linuxSaveGame( &bGlobals->cGlobals );
         }
     }
@@ -856,7 +856,7 @@ ask_trade( gpointer data )
                         VSIZE(buttons), buttons ) ) {
         BoardCtxt* board = cGlobals->game.board;
         if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
-            board_draw( board );
+            board_draw( board, NULL_XWE );
             linuxSaveGame( cGlobals );
         }
     }
@@ -936,7 +936,7 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
-    board_draw( cGlobals->game.board );
+    board_draw( cGlobals->game.board, NULL_XWE );
 
     /* game belongs in cGlobals... */
     if ( params->printHistory ) {
@@ -1161,7 +1161,7 @@ handleFlip( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if ( board_flip( cGlobals->game.board ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
 
     return XP_TRUE;
@@ -1173,7 +1173,7 @@ handleToggleValues( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if ( board_toggle_showValues( cGlobals->game.board ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleToggleValues */
@@ -1185,7 +1185,7 @@ handleBackspace( void* closure, int XP_UNUSED(key) )
     XP_Bool handled;
     if ( board_handleKey( cGlobals->game.board,
                           XP_CURSOR_KEY_DEL, &handled ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleBackspace */
@@ -1196,7 +1196,7 @@ handleUndo( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if ( server_handleUndo( cGlobals->game.server, 0 ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleUndo */
@@ -1206,7 +1206,7 @@ handleReplace( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
     if ( board_replaceTiles( cGlobals->game.board ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleReplace */
@@ -1285,7 +1285,7 @@ handleCommit( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if ( board_commitTurn( cGlobals->game.board, XP_FALSE, XP_FALSE, NULL ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleCommit */
@@ -1295,7 +1295,7 @@ handleJuggle( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
     if ( board_juggleTray( cGlobals->game.board ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleJuggle */
@@ -1311,7 +1311,7 @@ handleHide( void* closure, int XP_UNUSED(key) )
         ? board_hideTray( cGlobals->game.board )
         : board_showTray( cGlobals->game.board );
     if ( draw ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
 
     return XP_TRUE;
@@ -1344,7 +1344,7 @@ handleFocusKey( CursesBoardGlobals* bGlobals, XP_Key key )
     }
 
     if ( draw ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleFocusKey */
@@ -1385,13 +1385,13 @@ handleHint( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     XP_Bool redo;
-    XP_Bool draw = board_requestHint( cGlobals->game.board, 
+    XP_Bool draw = board_requestHint( cGlobals->game.board, NULL_XWE,
  #ifdef XWFEATURE_SEARCHLIMIT
                                       XP_FALSE,
  #endif
                                       XP_FALSE, &redo );
     if ( draw ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
 }
@@ -1449,7 +1449,7 @@ handleSpace( void* closure, int XP_UNUSED(key) )
     checkAssignFocus( board );
     XP_Bool handled;
     (void)board_handleKey( board, XP_RAISEFOCUS_KEY, &handled );
-    board_draw( board );
+    board_draw( board, NULL_XWE );
     return XP_TRUE;
 } /* handleSpace */
 
@@ -1461,7 +1461,7 @@ handleRet( void* closure, int key )
     XP_Bool handled;
     XP_Key xpKey = (key & ALT_BIT) == 0 ? XP_RETURN_KEY : XP_ALTRETURN_KEY;
     if ( board_handleKey( board, xpKey, &handled ) ) {
-        board_draw( board );
+        board_draw( board, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleRet */

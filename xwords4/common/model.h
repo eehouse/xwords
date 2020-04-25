@@ -263,7 +263,7 @@ typedef void (*TrayListener)( void* data, XP_U16 turn,
                               XP_S16 index1, XP_S16 index2 );
 void model_setTrayListener( ModelCtxt* model, TrayListener bl, 
                             void* data );
-typedef void (*DictListener)( void* data, XP_S16 playerNum, 
+typedef void (*DictListener)( void* data, XWEnv xwe, XP_S16 playerNum,
                               const DictionaryCtxt* oldDict,
                               const DictionaryCtxt* newDict );
 void model_setDictListener( ModelCtxt* model, DictListener dl, 

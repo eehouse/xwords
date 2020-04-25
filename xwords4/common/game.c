@@ -154,7 +154,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                               NULL, util );
     board_setCallbacks( game->board );
 
-    board_setDraw( game->board, draw );
+    board_setDraw( game->board, xwe, draw );
     setListeners( game, cp );
 } /* game_makeNewGame */
 
@@ -295,7 +295,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
                                                 game->model, game->server, 
                                                 NULL, util, gi->nPlayers );
             setListeners( game, cp );
-            board_setDraw( game->board, draw );
+            board_setDraw( game->board, xwe, draw );
             success = XP_TRUE;
         } while( XP_FALSE );
     }

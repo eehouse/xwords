@@ -1021,7 +1021,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     globals->jniutil = state->globalJNI->jniutil;
     DrawCtx* dctx = NULL;
     if ( !!j_draw ) {
-        dctx = makeDraw( MPPARM(mpool) ti, j_draw );
+        dctx = makeDraw( MPPARM(mpool) env, j_draw );
     }
     globals->dctx = dctx;
     globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, j_procs );
@@ -1064,7 +1064,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 
     game_dispose( &state->game, env );
 
-    destroyDraw( &globals->dctx );
+    destroyDraw( &globals->dctx, env );
     destroyXportProcs( &globals->xportProcs );
     destroyUtil( &globals->util );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
@@ -1093,7 +1093,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
                globals->jniutil, &dict, &dicts, jdictNames, jdicts, jpaths, 
                jlang );
     if ( !!jdraw ) {
-        globals->dctx = makeDraw( MPPARM(mpool) ti, jdraw );
+        globals->dctx = makeDraw( MPPARM(mpool) env, jdraw );
     }
     globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, jprocs );
 
@@ -1169,10 +1169,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
 {
     XWJNI_START_GLOBALS();
 
-    DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->globalJNI->ti, jdraw );
-    board_setDraw( state->game.board, newDraw );
+    DrawCtx* newDraw = makeDraw( MPPARM(mpool) env, jdraw );
+    board_setDraw( state->game.board, env, newDraw );
 
-    destroyDraw( &globals->dctx );
+    destroyDraw( &globals->dctx, env );
     globals->dctx = newDraw;
 
     XWJNI_END();
@@ -1193,7 +1193,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 {
     jboolean result;
     XWJNI_START();
-    result = board_draw( state->game.board );
+    result = board_draw( state->game.board, env );
     XWJNI_END();
     return result;
 }
@@ -1204,9 +1204,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1drawSnapshot
   jint height )
 {
     XWJNI_START();
-    DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->globalJNI->ti, jdraw );
-    board_drawSnapshot( state->game.board, newDraw, width, height );
-    destroyDraw( &newDraw );
+    DrawCtx* newDraw = makeDraw( MPPARM(mpool) env, jdraw );
+    board_drawSnapshot( state->game.board, env, newDraw, width, height );
+    destroyDraw( &newDraw, env );
     XWJNI_END();
 }
 
@@ -1603,7 +1603,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
     jboolean result;
     XWJNI_START();
     XP_Bool tmpbool;
-    result = board_requestHint( state->game.board, 
+    result = board_requestHint( state->game.board, env,
 #ifdef XWFEATURE_SEARCHLIMIT
                                 useLimits, 
 #endif

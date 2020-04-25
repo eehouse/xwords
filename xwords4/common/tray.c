@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 /****************************** prototypes ******************************/
-static void drawPendingScore( BoardCtxt* board, XP_S16 turnScore, 
+static void drawPendingScore( BoardCtxt* board, XWEnv xwe, XP_S16 turnScore,
                               XP_Bool hasCursor );
 static XP_S16 figurePendingScore( const BoardCtxt* board );
 static XP_U16 countTilesToShow( BoardCtxt* board );
@@ -130,7 +130,7 @@ figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect )
  */
 
 void 
-drawTray( BoardCtxt* board )
+drawTray( BoardCtxt* board, XWEnv xwe )
 {
     XP_Rect tileRect;
 
@@ -140,7 +140,7 @@ drawTray( BoardCtxt* board )
 
         XP_S16 turnScore = figurePendingScore( board );
 
-        if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
+        if ( draw_trayBegin( board->draw, xwe, &board->trayBounds, turn,
                              turnScore, dfsFor( board, OBJ_TRAY ) ) ) {
             DictionaryCtxt* dictionary = model_getDictionary( board->model );
             XP_U16 trayInvalBits = board->trayInvalBits;
@@ -195,7 +195,7 @@ drawTray( BoardCtxt* board )
 
                         XP_Bool drew;
                         if ( ii >= numInTray ) {
-                            drew = draw_drawTile( board->draw, &tileRect, NULL,
+                            drew = draw_drawTile( board->draw, xwe, &tileRect, NULL,
                                                   NULL, -1, 
                                                   flags | CELL_ISEMPTY );
                         } else if ( showFaces ) {
@@ -235,12 +235,12 @@ drawTray( BoardCtxt* board )
                                 flags |= CELL_ISBLANK;
                             }
 
-                            drew = draw_drawTile( board->draw, &tileRect, textP,
+                            drew = draw_drawTile( board->draw, xwe, &tileRect, textP,
                                                   ( bitmaps.nBitmaps > 0
                                                     ? &bitmaps : NULL ),
                                                   value, flags );
                         } else {
-                            drew = draw_drawTileBack( board->draw, &tileRect, 
+                            drew = draw_drawTileBack( board->draw, xwe, &tileRect,
                                                       flags );
                         }
                         
@@ -258,14 +258,14 @@ drawTray( BoardCtxt* board )
                          || dragDropIsDividerDrag(board) ) {
                         flags |= CELL_PENDING;
                     }
-                    draw_drawTrayDivider( board->draw, &divider, flags );
+                    draw_drawTrayDivider( board->draw, xwe, &divider, flags );
                     board->dividerInvalid = XP_FALSE;
                 }
-                drawPendingScore( board, turnScore,
+                drawPendingScore( board, xwe, turnScore,
                                   (cursorBits & (1<<(MAX_TRAY_TILES-1))) != 0);
             }
 
-            draw_objFinished( board->draw, OBJ_TRAY, &board->trayBounds,
+            draw_objFinished( board->draw, xwe, OBJ_TRAY, &board->trayBounds,
                               dfsFor( board, OBJ_TRAY ) );
 
             board->trayInvalBits = trayInvalBits;
@@ -333,7 +333,7 @@ figurePendingScore( const BoardCtxt* board )
 }
 
 static void
-drawPendingScore( BoardCtxt* board, XP_S16 turnScore, XP_Bool hasCursor )
+drawPendingScore( BoardCtxt* board, XWEnv xwe, XP_S16 turnScore, XP_Bool hasCursor )
 {
     /* Draw the pending score down in the last tray's rect */
     if ( countTilesToShow( board ) < MAX_TRAY_TILES ) {
@@ -343,7 +343,7 @@ drawPendingScore( BoardCtxt* board, XP_S16 turnScore, XP_Bool hasCursor )
 
         figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
         if ( 0 < lastTileR.width && 0 < lastTileR.height ) {
-            draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
+            draw_score_pendingScore( board->draw, xwe, &lastTileR, turnScore,
                                      selPlayer, curTurn,
                                      hasCursor?CELL_ISCURSOR:CELL_NONE );
         }

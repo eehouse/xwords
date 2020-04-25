@@ -56,7 +56,7 @@ drawScoreBoard( BoardCtxt* board )
             }
         }
 
-        if ( draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
+        if ( draw_scoreBegin( board->draw, xwe, &board->scoreBdBounds, nPlayers,
                               scores.arr, nTilesInPool, dfs ) ) {
             XP_U16 selPlayer = board->selPlayer;
             XP_Rect playerRects[nPlayers];
@@ -82,7 +82,7 @@ drawScoreBoard( BoardCtxt* board )
             XP_MEMSET( data, 0, sizeof(data) );
 
             XP_Rect scoreRect = board->scoreBdBounds;
-            if ( !draw_drawRemText( board->draw, nTilesInPool, 
+            if ( !draw_drawRemText( board->draw, xwe, nTilesInPool,
                                     focusAll || remFocussed, 
                                     &scoreRect ) ) {
                 scoreRect.height = scoreRect.width = 0;
@@ -127,8 +127,8 @@ drawScoreBoard( BoardCtxt* board )
                     model_getNumTilesTotal( model, ii );
             }
 
-            draw_score_drawPlayers( board->draw, &scoreRect, nPlayers, data, 
-                                    playerRects );
+            draw_score_drawPlayers( board->draw, xwe, &scoreRect, nPlayers,
+                                    data, playerRects );
             for ( ii = 0; ii < nPlayers; ++ii ) {
                 XP_Rect* rp = &playerRects[ii];
                 board->pti[ii].scoreDims = isVertical ? rp->height : rp->width;
@@ -137,7 +137,7 @@ drawScoreBoard( BoardCtxt* board )
                            sizeof(board->pti[ii].scoreRects) );
 #endif
             }
-            draw_objFinished( board->draw, OBJ_SCORE, 
+            draw_objFinished( board->draw, xwe, OBJ_SCORE,
                               &board->scoreBdBounds, dfs );
 
             board->scoreBoardInvalid = XP_FALSE;
@@ -166,7 +166,7 @@ typedef struct _DrawScoreData {
 } DrawScoreData;
 
 void
-drawScoreBoard( BoardCtxt* board )
+drawScoreBoard( BoardCtxt* board, XWEnv xwe )
 {
     if ( board->scoreBoardInvalid ) {
         short ii;
@@ -208,7 +208,7 @@ drawScoreBoard( BoardCtxt* board )
                 }
             }
 
-            if ( draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
+            if ( draw_scoreBegin( board->draw, xwe, &board->scoreBdBounds, nPlayers,
                                   scores.arr, nTilesInPool, 
                                   dfsFor( board, OBJ_SCORE ) ) ) {
                 XP_U16 totalDim = 0; /* not counting rem */
@@ -217,7 +217,7 @@ drawScoreBoard( BoardCtxt* board )
                 /* Let platform decide whether the rem: string should be given
                    any space once there are no tiles left.  On Palm that space
                    is clickable to drop a menu, so will probably leave it. */
-                if ( !draw_measureRemText( board->draw, &board->scoreBdBounds, 
+                if ( !draw_measureRemText( board->draw, xwe, &board->scoreBdBounds,
                                            nTilesInPool, &remWidth, 
                                            &remHeight ) ) {
                     remWidth = remHeight = 0;
@@ -274,7 +274,7 @@ drawScoreBoard( BoardCtxt* board )
                     dp->dsi.nTilesLeft = (nTilesInPool > 0)? -1:
                         model_getNumTilesTotal( model, ii );
 
-                    draw_measureScoreText( board->draw, &scoreRect,
+                    draw_measureScoreText( board->draw, xwe, &scoreRect,
                                            &dp->dsi, &dp->width, 
                                            &dp->height );
 
@@ -302,7 +302,7 @@ drawScoreBoard( BoardCtxt* board )
                         XP_Rect innerRect;
                         *adjustDim = remDim;
                         centerIn( &innerRect, &scoreRect, remWidth, remHeight );
-                        draw_drawRemText( board->draw, &innerRect, &scoreRect, 
+                        draw_drawRemText( board->draw, xwe, &innerRect, &scoreRect,
                                           nTilesInPool, 
                                           focusAll || remFocussed );
                         *adjustPt += remDim;
@@ -324,7 +324,7 @@ drawScoreBoard( BoardCtxt* board )
 
                         centerIn( &innerRect, &scoreRect, dp->width, 
                                   dp->height );
-                        draw_score_drawPlayer( board->draw, &innerRect, 
+                        draw_score_drawPlayer( board->draw, xwe, &innerRect,
                                                &scoreRect, gotPct, &dp->dsi );
 #ifdef KEYBOARD_NAV
                         XP_MEMCPY( &board->pti[ii].scoreRects, &scoreRect, 
@@ -334,7 +334,7 @@ drawScoreBoard( BoardCtxt* board )
                     }
                 }
 
-                draw_objFinished( board->draw, OBJ_SCORE, 
+                draw_objFinished( board->draw, xwe, OBJ_SCORE,
                                   &board->scoreBdBounds, 
                                   dfsFor( board, OBJ_SCORE ) );
 
@@ -343,12 +343,12 @@ drawScoreBoard( BoardCtxt* board )
         }
     }
 
-    drawTimer( board );
+    drawTimer( board, xwe );
 } /* drawScoreBoard */
 #endif
 
 void
-drawTimer( const BoardCtxt* board )
+drawTimer( const BoardCtxt* board, XWEnv xwe )
 {
     if ( !!board->draw && board->gi->timerEnabled ) {
         XP_S16 secondsLeft = server_getTimerSeconds( board->server,
@@ -356,7 +356,7 @@ drawTimer( const BoardCtxt* board )
         XP_Bool turnDone = board->gi->inDuplicateMode
             ? server_dupTurnDone( board->server, board->selPlayer )
             : XP_FALSE;
-        draw_drawTimer( board->draw, &board->timerBounds,
+        draw_drawTimer( board->draw, xwe, &board->timerBounds,
                         board->selPlayer, secondsLeft, turnDone );
     }
 } /* drawTimer */

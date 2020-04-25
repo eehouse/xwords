@@ -50,7 +50,7 @@ static void notifyBoardListeners( ModelCtxt* model, XP_U16 turn,
                                   XP_U16 col, XP_U16 row, XP_Bool added );
 static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, 
                                  XP_S16 index1, XP_S16 index2 );
-static void notifyDictListeners( ModelCtxt* model, XP_S16 playerNum, 
+static void notifyDictListeners( ModelCtxt* model, XWEnv xwe, XP_S16 playerNum,
                                  DictionaryCtxt* oldDict,
                                  DictionaryCtxt* newDict );
 static void model_unrefDicts( ModelCtxt* model, XWEnv xwe );
@@ -582,7 +582,7 @@ model_setDictionary( ModelCtxt* model, XWEnv xwe, DictionaryCtxt* dict )
         setStackBits( model, dict );
     }
 
-    notifyDictListeners( model, -1, oldDict, dict );
+    notifyDictListeners( model, xwe, -1, oldDict, dict );
     dict_unref( oldDict, xwe );
 } /* model_setDictionary */
 
@@ -602,7 +602,7 @@ model_setPlayerDicts( ModelCtxt* model, XWEnv xwe, const PlayerDicts* dicts )
                            || dict_tilesAreSame( gameDict, newDict ) );
                 model->vol.dicts.dicts[ii] = dict_ref( newDict, xwe );
 
-                notifyDictListeners( model, ii, oldDict, newDict );
+                notifyDictListeners( model, xwe, ii, oldDict, newDict );
                 setStackBits( model, newDict );
 
                 dict_unref( oldDict, xwe );
@@ -2216,12 +2216,12 @@ notifyTrayListeners( ModelCtxt* model, XP_U16 turn, XP_S16 index1,
 } /* notifyTrayListeners */
 
 static void
-notifyDictListeners( ModelCtxt* model, XP_S16 playerNum,
+notifyDictListeners( ModelCtxt* model, XWEnv xwe, XP_S16 playerNum,
                      DictionaryCtxt* oldDict, DictionaryCtxt* newDict )
 {
     if ( model->vol.dictListenerFunc != NULL ) {
-        (*model->vol.dictListenerFunc)( model->vol.dictListenerData, playerNum, 
-                                        oldDict, newDict );
+        (*model->vol.dictListenerFunc)( model->vol.dictListenerData, xwe,
+                                        playerNum, oldDict, newDict );
     }
 } /* notifyDictListeners */
 

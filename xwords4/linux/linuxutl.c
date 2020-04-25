@@ -104,10 +104,10 @@ linux_freep( void** ptrp )
 #endif
 
 static DictionaryCtxt*
-linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx), XWEnv XP_UNUSED(xwe) )
+linux_util_makeEmptyDict( XW_UtilCtxt* XP_UNUSED_DBG(uctx), XWEnv xwe )
 {
     XP_DEBUGF( "linux_util_makeEmptyDict called" );
-    return linux_dictionary_make( MPPARM(uctx->mpool) NULL, NULL, XP_FALSE );
+    return linux_dictionary_make( MPPARM(uctx->mpool) xwe, NULL, NULL, XP_FALSE );
 } /* linux_util_makeEmptyDict */
 
 #define EM BONUS_NONE

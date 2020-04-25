@@ -100,102 +100,102 @@ typedef struct DrawCtxVTable {
 #endif
 
 #ifdef DRAW_WITH_PRIMITIVES
-    void DRAW_VTABLE_NAME(setClip)( DrawCtx* dctx, const XP_Rect* newClip, 
+    void DRAW_VTABLE_NAME(setClip)( DrawCtx* dctx, XWEnv xwe, XWEnv xwe, const XP_Rect* newClip,
                                     const XP_Rect* oldClip );
-    void DRAW_VTABLE_NAME(frameRect)( DrawCtx* dctx, const XP_Rect* rect );
-    void DRAW_VTABLE_NAME(invertRect)( DrawCtx* dctx, const XP_Rect* rect );
-    void DRAW_VTABLE_NAME(drawString)( DrawCtx* dctx, const XP_UCHAR* str, 
+    void DRAW_VTABLE_NAME(frameRect)( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect );
+    void DRAW_VTABLE_NAME(invertRect)( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect );
+    void DRAW_VTABLE_NAME(drawString)( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* str,
                                        XP_U16 x, XP_U16 y );
-    void DRAW_VTABLE_NAME(drawBitmap)( DrawCtx* dctx, const XP_Bitmap bm, 
+    void DRAW_VTABLE_NAME(drawBitmap)( DrawCtx* dctx, XWEnv xwe, const XP_Bitmap bm,
                                        XP_U16 x, XP_U16 y );
-    void DRAW_VTABLE_NAME(measureText)( DrawCtx* dctx, const XP_UCHAR* buf, 
+    void DRAW_VTABLE_NAME(measureText)( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* buf,
                                         XP_U16* widthP, XP_U16* heightP );
 #endif
 
-    void DRAW_VTABLE_NAME(destroyCtxt) ( DrawCtx* dctx );
+    void DRAW_VTABLE_NAME(destroyCtxt) ( DrawCtx* dctx, XWEnv xwe );
 
-    void DRAW_VTABLE_NAME(dictChanged)( DrawCtx* dctx, XP_S16 playerNum,
+    void DRAW_VTABLE_NAME(dictChanged)( DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
                                         const DictionaryCtxt* dict );
 
-    XP_Bool DRAW_VTABLE_NAME(beginDraw) ( DrawCtx* dctx );
-    void DRAW_VTABLE_NAME(endDraw) ( DrawCtx* dctx );
+    XP_Bool DRAW_VTABLE_NAME(beginDraw) ( DrawCtx* dctx, XWEnv xwe );
+    void DRAW_VTABLE_NAME(endDraw) ( DrawCtx* dctx, XWEnv xwe );
 
-    XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, 
+    XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, XWEnv xwe,
                                            const XP_Rect* rect, 
                                            XP_U16 hScale, XP_U16 vScale,
                                            DrawFocusState dfs );
-    void DRAW_VTABLE_NAME(objFinished)( DrawCtx* dctx, BoardObjectType typ, 
+    void DRAW_VTABLE_NAME(objFinished)( DrawCtx* dctx, XWEnv xwe, BoardObjectType typ,
                                         const XP_Rect* rect, 
                                         DrawFocusState dfs );
 
     /* rect is not const: set by callee */
-    XP_Bool DRAW_VTABLE_NAME(vertScrollBoard) (DrawCtx* dctx, XP_Rect* rect, 
+    XP_Bool DRAW_VTABLE_NAME(vertScrollBoard) (DrawCtx* dctx, XWEnv xwe, XP_Rect* rect,
                                                XP_S16 dist, DrawFocusState dfs );
 
-    XP_Bool DRAW_VTABLE_NAME(trayBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
+    XP_Bool DRAW_VTABLE_NAME(trayBegin) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                           XP_U16 owner, XP_S16 score,
                                           DrawFocusState dfs );
 
-    XP_Bool DRAW_VTABLE_NAME(scoreBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
+    XP_Bool DRAW_VTABLE_NAME(scoreBegin) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                            XP_U16 numPlayers, 
                                            const XP_S16* const scores,
                                            XP_S16 remCount, DrawFocusState dfs );
 #ifdef XWFEATURE_SCOREONEPASS
-    XP_Bool DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, XP_S16 nTilesLeft, 
+    XP_Bool DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, XWEnv xwe, XP_S16 nTilesLeft,
                                             XP_Bool focussed, XP_Rect* rect );
-    void DRAW_VTABLE_NAME(score_drawPlayers)( DrawCtx* dctx, 
+    void DRAW_VTABLE_NAME(score_drawPlayers)( DrawCtx* dctx, XWEnv xwe,
                                               const XP_Rect* scoreRect,
                                               XP_U16 nPlayers, 
-                                              DrawScoreInfo playerData[], 
+                                              DrawScoreInfo playerData[],
                                               XP_Rect playerRects[] );
 #else
-    XP_Bool DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
-                                               XP_S16 nTilesLeft, 
+    XP_Bool DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* r,
+                                               XP_S16 nTilesLeft,
                                                XP_U16* width, XP_U16* height );
-    void DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, const XP_Rect* rInner,
-                                         const XP_Rect* rOuter, 
+    void DRAW_VTABLE_NAME(drawRemText) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
+                                         const XP_Rect* rOuter,
                                          XP_S16 nTilesLeft, XP_Bool focussed );
-    void DRAW_VTABLE_NAME(measureScoreText) ( DrawCtx* dctx, 
+    void DRAW_VTABLE_NAME(measureScoreText) ( DrawCtx* dctx, XWEnv xwe,
                                               const XP_Rect* r, 
                                               const DrawScoreInfo* dsi,
                                               XP_U16* width, XP_U16* height );
-    void DRAW_VTABLE_NAME(score_drawPlayer) ( DrawCtx* dctx,
+    void DRAW_VTABLE_NAME(score_drawPlayer) ( DrawCtx* dctx, XWEnv xwe,
                                               const XP_Rect* rInner, 
                                               const XP_Rect* rOuter, 
                                               XP_U16 gotPct, 
                                               const DrawScoreInfo* dsi );
 #endif
-    void DRAW_VTABLE_NAME(score_pendingScore) ( DrawCtx* dctx, 
-                                                const XP_Rect* rect, 
-                                                XP_S16 score, 
+    void DRAW_VTABLE_NAME(score_pendingScore) ( DrawCtx* dctx, XWEnv xwe,
+                                                const XP_Rect* rect,
+                                                XP_S16 score,
                                                 XP_U16 playerNum,
                                                 XP_Bool curTurn,
                                                 CellFlags flags );
 
-    void DRAW_VTABLE_NAME(drawTimer) ( DrawCtx* dctx, const XP_Rect* rect, 
+    void DRAW_VTABLE_NAME(drawTimer) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                        XP_U16 player, XP_S16 secondsLeft,
                                        XP_Bool turnDone );
 
-    XP_Bool DRAW_VTABLE_NAME(drawCell) ( DrawCtx* dctx, const XP_Rect* rect, 
+    XP_Bool DRAW_VTABLE_NAME(drawCell) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                          /* at least one of these two will be
                                             null */
-                                         const XP_UCHAR* text, 
+                                         const XP_UCHAR* text,
                                          const XP_Bitmaps* bitmaps,
                                          Tile tile, XP_U16 value,
                                          XP_S16 owner, /* -1 means don't use */
                                          XWBonusType bonus, HintAtts hintAtts,
                                          CellFlags flags );
 
-    void DRAW_VTABLE_NAME(invertCell) ( DrawCtx* dctx, const XP_Rect* rect );
+    void DRAW_VTABLE_NAME(invertCell) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect );
 
-    XP_Bool DRAW_VTABLE_NAME(drawTile) ( DrawCtx* dctx, const XP_Rect* rect, 
+    XP_Bool DRAW_VTABLE_NAME(drawTile) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                          /* at least 1 of these 2 will be
                                             null*/
-                                         const XP_UCHAR* text, 
+                                         const XP_UCHAR* text,
                                          const XP_Bitmaps* bitmaps,
                                          XP_U16 val, CellFlags flags );
 #ifdef POINTER_SUPPORT
-    XP_Bool DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, 
+    XP_Bool DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, XWEnv xwe,
                                                 const XP_Rect* rect, 
                                                 /* at least 1 of these 2 will
                                                    be null*/
@@ -204,24 +204,24 @@ typedef struct DrawCtxVTable {
                                                 XP_U16 val, XP_U16 owner, 
                                                 CellFlags flags );
 #endif
-    XP_Bool DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
+    XP_Bool DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                              CellFlags flags );
-    void DRAW_VTABLE_NAME(drawTrayDivider) ( DrawCtx* dctx, const XP_Rect* rect, 
+    void DRAW_VTABLE_NAME(drawTrayDivider) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                              CellFlags flags );
 
-    void DRAW_VTABLE_NAME(clearRect) ( DrawCtx* dctx, const XP_Rect* rect );
+    void DRAW_VTABLE_NAME(clearRect) ( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect );
 
-    void DRAW_VTABLE_NAME(drawBoardArrow) ( DrawCtx* dctx, 
+    void DRAW_VTABLE_NAME(drawBoardArrow) ( DrawCtx* dctx, XWEnv xwe,
                                             const XP_Rect* rect, 
                                             XWBonusType bonus, XP_Bool vert,
                                             HintAtts hintAtts,
                                             CellFlags flags);
 #ifdef XWFEATURE_MINIWIN
-    const XP_UCHAR* DRAW_VTABLE_NAME(getMiniWText) ( DrawCtx* dctx, 
+    const XP_UCHAR* DRAW_VTABLE_NAME(getMiniWText) ( DrawCtx* dctx, XWEnv xwe,
                                                      XWMiniTextType textHint );
-    void DRAW_VTABLE_NAME(measureMiniWText) ( DrawCtx* dctx, const XP_UCHAR* textP, 
+    void DRAW_VTABLE_NAME(measureMiniWText) ( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* textP,
                                               XP_U16* width, XP_U16* height );
-    void DRAW_VTABLE_NAME(drawMiniWindow)( DrawCtx* dctx, const XP_UCHAR* text,
+    void DRAW_VTABLE_NAME(drawMiniWindow)( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* text,
                                            const XP_Rect* rect, void** closure );
 #endif
 #ifndef DRAW_LINK_DIRECT
@@ -254,98 +254,98 @@ struct DrawCtx {
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
    (p8),(p9),(p10))
 #else
-# define CALL_DRAW_NAME0(name,dc)    ((dc)->vtable->m_draw_##name)(dc)
-# define CALL_DRAW_NAME1(name,dc,p1)    ((dc)->vtable->m_draw_##name)(dc,(p1))
-# define CALL_DRAW_NAME2(name,dc,p1,p2) \
-   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2))
-# define CALL_DRAW_NAME3(name,dc,p1,p2,p3) \
-   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3))
-# define CALL_DRAW_NAME4(name,dc,p1,p2,p3,p4) \
-   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4))
-# define CALL_DRAW_NAME5(name,dc,p1,p2,p3,p4,p5) \
-   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5))
-# define CALL_DRAW_NAME6(name,dc,p1,p2,p3,p4,p5,p6) \
-   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6))
-# define CALL_DRAW_NAME8(name,dc,p1,p2,p3,p4,p5,p6,p7,p8) \
-    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7), \
+# define CALL_DRAW_NAME0(name,dc,e)    ((dc)->vtable->m_draw_##name)((dc), (e))
+# define CALL_DRAW_NAME1(name,dc,e,p1)    ((dc)->vtable->m_draw_##name)((dc),(e),(p1))
+# define CALL_DRAW_NAME2(name,dc,e,p1,p2)       \
+    ((dc)->vtable->m_draw_##name)(dc,(e),(p1),(p2))
+# define CALL_DRAW_NAME3(name,dc,e,p1,p2,p3)        \
+    ((dc)->vtable->m_draw_##name)((dc),(e),(p1),(p2),(p3))
+# define CALL_DRAW_NAME4(name,dc,e,p1,p2,p3,p4)                 \
+    ((dc)->vtable->m_draw_##name)((dc),(e),(p1),(p2),(p3),(p4))
+# define CALL_DRAW_NAME5(name,dc,e,p1,p2,p3,p4,p5)                  \
+    ((dc)->vtable->m_draw_##name)((dc),(e),(p1),(p2),(p3),(p4),(p5))
+# define CALL_DRAW_NAME6(name,dc,e,p1,p2,p3,p4,p5,p6)                   \
+    ((dc)->vtable->m_draw_##name)((dc),(e),(p1),(p2),(p3),(p4),(p5),(p6))
+# define CALL_DRAW_NAME8(name,dc,e,p1,p2,p3,p4,p5,p6,p7,p8)             \
+    ((dc)->vtable->m_draw_##name)((dc),(e),(p1),(p2),(p3),(p4),(p5),(p6),(p7), \
                                   (p8))
-# define CALL_DRAW_NAME9(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9)             \
-    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7), \
+# define CALL_DRAW_NAME9(name,dc,e,p1,p2,p3,p4,p5,p6,p7,p8,p9)          \
+    ((dc)->vtable->m_draw_##name)((dc),(e),(p1),(p2),(p3),(p4),(p5),(p6),(p7), \
                                   (p8),(p9))
-# define CALL_DRAW_NAME10(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10) \
-   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
-   (p8),(p9),(p10))
+# define CALL_DRAW_NAME10(name,dc,e,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10)     \
+    ((dc)->vtable->m_draw_##name)((dc),(e),(p1),(p2),(p3),(p4),(p5),(p6),(p7), \
+                                  (p8),(p9),(p10))
 #endif
 
-#define draw_destroyCtxt(dc) CALL_DRAW_NAME0(destroyCtxt, dc)
-#define draw_dictChanged( dc, n, d ) CALL_DRAW_NAME2(dictChanged, (dc), (n), (d))
-#define draw_beginDraw( dc ) CALL_DRAW_NAME0(beginDraw, (dc))
-#define draw_endDraw( dc ) CALL_DRAW_NAME0(endDraw, (dc))
-#define draw_boardBegin( dc,r,h,v,f ) CALL_DRAW_NAME4(boardBegin, (dc),\
+#define draw_destroyCtxt(dc,e) CALL_DRAW_NAME0(destroyCtxt, (dc), (e))
+#define draw_dictChanged( dc, e, n, d ) CALL_DRAW_NAME2(dictChanged, (dc),(e),(n),(d))
+#define draw_beginDraw( dc,e ) CALL_DRAW_NAME0(beginDraw, (dc), (e))
+#define draw_endDraw( dc,e ) CALL_DRAW_NAME0(endDraw, (dc), (e))
+#define draw_boardBegin( dc,e,r,h,v,f ) CALL_DRAW_NAME4(boardBegin, (dc), (e), \
                                                       (r),(h),(v),(f))
-#define draw_objFinished( dc, t, r, d ) \
-    CALL_DRAW_NAME3(objFinished, (dc), (t), (r), (d))
-#define draw_trayBegin( dc, r, o, s, f ) \
-    CALL_DRAW_NAME4(trayBegin, dc, r, o, s, f)
-#define draw_vertScrollBoard( dc, r, d, f ) \
-    CALL_DRAW_NAME3(vertScrollBoard, (dc),(r),(d),(f))
-#define draw_scoreBegin( dc, r, t, s, c, f ) \
-    CALL_DRAW_NAME5( scoreBegin,(dc), (r), (t), (s), (c), (f))
+#define draw_objFinished( dc, e, t, r, d )                  \
+    CALL_DRAW_NAME3(objFinished, (dc),(e), (t), (r), (d))
+#define draw_trayBegin( dc, e, r, o, s, f )      \
+    CALL_DRAW_NAME4(trayBegin, dc, e, r, o, s, f)
+#define draw_vertScrollBoard( dc, e, r, d, f ) \
+    CALL_DRAW_NAME3(vertScrollBoard, (dc),(e),(r),(d),(f))
+#define draw_scoreBegin( dc, e, r, t, s, c, f ) \
+    CALL_DRAW_NAME5( scoreBegin,(dc),(e), (r), (t), (s), (c), (f))
 #ifdef XWFEATURE_SCOREONEPASS
-# define draw_drawRemText( dc, nt, f, ro )			\
-    CALL_DRAW_NAME3(drawRemText, (dc), (nt), (f), (ro) )
-# define draw_score_drawPlayers( dc, r, np, pd, pr )			\
-    CALL_DRAW_NAME4(score_drawPlayers, (dc), (r), (np), (pd), (pr) )
+# define draw_drawRemText( dc, e, nt, f, ro )			\
+    CALL_DRAW_NAME3(drawRemText, (dc),(e), (nt), (f), (ro) )
+# define draw_score_drawPlayers( dc, e, r, np, pd, pr )			\
+    CALL_DRAW_NAME4(score_drawPlayers, (dc),(e), (r), (np), (pd), (pr) )
 #else
-# define draw_measureRemText( dc, r, n, wp, hp ) \
-    CALL_DRAW_NAME4(measureRemText, (dc), (r), (n), (wp), (hp) )
-# define draw_drawRemText( dc, ri, ro, n, f )                  \
-    CALL_DRAW_NAME4(drawRemText, (dc), (ri), (ro), (n), (f) )
-# define draw_measureScoreText(dc,r,dsi,wp,hp) \
-    CALL_DRAW_NAME4(measureScoreText,(dc),(r),(dsi),(wp),(hp))
-# define draw_score_drawPlayer(dc, ri, ro, gp, dsi)           \
-    CALL_DRAW_NAME4(score_drawPlayer,(dc),(ri),(ro),(gp),(dsi))
+# define draw_measureRemText( dc, e, r, n, wp, hp ) \
+    CALL_DRAW_NAME4(measureRemText, (dc),(e), (r), (n), (wp), (hp) )
+# define draw_drawRemText( dc, e, ri, ro, n, f )                  \
+    CALL_DRAW_NAME4(drawRemText, (dc),(e), (ri), (ro), (n), (f) )
+# define draw_measureScoreText(dc, e, r, dsi, wp, hp)               \
+    CALL_DRAW_NAME4(measureScoreText,(dc),(e),(r),(dsi),(wp),(hp))
+# define draw_score_drawPlayer(dc, e, ri, ro, gp, dsi)           \
+    CALL_DRAW_NAME4(score_drawPlayer,(dc),(e),(ri),(ro),(gp),(dsi))
 #endif
-#define draw_score_pendingScore(dc, r, s, p, t, f )                  \
-    CALL_DRAW_NAME5(score_pendingScore,(dc), (r), (s), (p), (t), (f))
-#define draw_drawTimer( dc, r, plyr, sec, dm )              \
-    CALL_DRAW_NAME4(drawTimer,(dc),(r),(plyr),(sec), (dm))
-#define draw_drawCell( dc, rect, txt, bmap, t, v,o, bon, hi, f )        \
-    CALL_DRAW_NAME9(drawCell,(dc),(rect),(txt),(bmap),(t),(v),(o),(bon),(hi), \
+#define draw_score_pendingScore(dc, e, r, s, p, t, f )                  \
+    CALL_DRAW_NAME5(score_pendingScore,(dc),(e), (r), (s), (p), (t), (f))
+#define draw_drawTimer( dc, e, r, plyr, sec, dm )              \
+    CALL_DRAW_NAME4(drawTimer,(dc),(e),(r),(plyr),(sec), (dm))
+#define draw_drawCell( dc, e, rect, txt, bmap, t, v,o, bon, hi, f )        \
+    CALL_DRAW_NAME9(drawCell,(dc),(e),(rect),(txt),(bmap),(t),(v),(o),(bon),(hi), \
     (f))
-#define draw_invertCell( dc, rect ) CALL_DRAW_NAME1(invertCell,(dc),(rect))
-#define draw_drawTile( dc, rect, text, bmp, val, hil ) \
-    CALL_DRAW_NAME5(drawTile,(dc),(rect),(text),(bmp),(val),(hil))
+#define draw_invertCell( dc, e, rect ) CALL_DRAW_NAME1(invertCell,(dc),(e),(rect))
+#define draw_drawTile( dc, e, rect, text, bmp, val, hil )                \
+    CALL_DRAW_NAME5(drawTile,(dc),(e),(rect),(text),(bmp),(val),(hil))
 #ifdef POINTER_SUPPORT
-#define draw_drawTileMidDrag( dc, rect, text, bmp, val, ownr, hil )      \
-    CALL_DRAW_NAME6(drawTileMidDrag,(dc),(rect),(text),(bmp),(val),(ownr),(hil))
+#define draw_drawTileMidDrag( dc, e, rect, text, bmp, val, ownr, hil )      \
+    CALL_DRAW_NAME6(drawTileMidDrag,(dc),(e),(rect),(text),(bmp),(val),(ownr),(hil))
 #endif  /* POINTER_SUPPORT */
-#define draw_drawTileBack( dc, rect, f ) \
-    CALL_DRAW_NAME2(drawTileBack, (dc), (rect), (f) )
-#define draw_drawTrayDivider( dc, rect, s ) \
-    CALL_DRAW_NAME2(drawTrayDivider,(dc),(rect), (s))
-#define draw_clearRect( dc, rect ) CALL_DRAW_NAME1(clearRect,(dc),(rect))
-#define draw_drawBoardArrow( dc, r, b, v, h, f ) \
-    CALL_DRAW_NAME5(drawBoardArrow,(dc),(r),(b), (v), (h), (f))
+#define draw_drawTileBack( dc, e, rect, f ) \
+    CALL_DRAW_NAME2(drawTileBack, (dc),(e), (rect), (f) )
+#define draw_drawTrayDivider( dc, e, rect, s ) \
+    CALL_DRAW_NAME2(drawTrayDivider,(dc),(e),(rect), (s))
+#define draw_clearRect( dc, e, rect ) CALL_DRAW_NAME1(clearRect,(dc),(e),(rect))
+#define draw_drawBoardArrow( dc, e, r, b, v, h, f )                  \
+    CALL_DRAW_NAME5(drawBoardArrow,(dc),(e),(r),(b), (v), (h), (f))
 
 #ifdef XWFEATURE_MINIWIN
-# define draw_getMiniWText( dc, b ) CALL_DRAW_NAME1(getMiniWText, (dc),(b) )
-# define draw_measureMiniWText( dc, t, wp, hp) \
-    CALL_DRAW_NAME3(measureMiniWText, (dc),(t), (wp), (hp) )
-# define draw_drawMiniWindow( dc, t, r, c ) \
-    CALL_DRAW_NAME3(drawMiniWindow, (dc), (t), (r), (c) )
+# define draw_getMiniWText( dc, e, b ) CALL_DRAW_NAME1(getMiniWText, (dc),(e),(b) )
+# define draw_measureMiniWText( dc, e, t, wp, hp) \
+    CALL_DRAW_NAME3(measureMiniWText, (dc),(e),(t), (wp), (hp) )
+# define draw_drawMiniWindow( dc, e, t, r, c ) \
+    CALL_DRAW_NAME3(drawMiniWindow, (dc),(e), (t), (r), (c) )
 #endif
 
 #ifdef DRAW_WITH_PRIMITIVES
-# define draw_setClip( dc, rn, ro ) CALL_DRAW_NAME2(setClip, (dc), (rn), (ro))
-# define draw_frameRect( dc, r ) CALL_DRAW_NAME1(frameRect, (dc), (r) )
-# define draw_invertRect( dc, r ) CALL_DRAW_NAME1(invertCell, (dc), (r) )
-# define draw_drawString( dc, s, x, y) \
-    CALL_DRAW_NAME3(drawString, (dc), (s), (x), (y) )
-# define draw_drawBitmap( dc, bm, x, y ) \
-    CALL_DRAW_NAME3(drawBitmap, (dc), (bm), (x), (y) )
-# define draw_measureText( dc, t, wp, hp ) \
-    CALL_DRAW_NAME3(measureText, (dc), (t), (wp), (hp) )
+# define draw_setClip( dc, e, rn, ro ) CALL_DRAW_NAME2(setClip, (dc),(e), (rn), (ro))
+# define draw_frameRect( dc, e, r ) CALL_DRAW_NAME1(frameRect, (dc),(e), (r) )
+# define draw_invertRect( dc, e, r ) CALL_DRAW_NAME1(invertCell, (dc),(e), (r) )
+# define draw_drawString( dc, e, s, x, y) \
+    CALL_DRAW_NAME3(drawString, (dc),(e), (s), (x), (y) )
+# define draw_drawBitmap( dc, e, bm, x, y ) \
+    CALL_DRAW_NAME3(drawBitmap, (dc),(e), (bm), (x), (y) )
+# define draw_measureText( dc, e, t, wp, hp ) \
+    CALL_DRAW_NAME3(measureText, (dc),(e), (t), (wp), (hp) )
 
 void InitDrawDefaults( DrawCtxVTable* vtable );
 #endif /* DRAW_WITH_PRIMITIVES */

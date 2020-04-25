@@ -22,9 +22,9 @@
 
 #include "boardp.h"
 
-void drawScoreBoard( BoardCtxt* board );
+void drawScoreBoard( BoardCtxt* board, XWEnv xwe );
 XP_S16 figureScoreRectTapped( const BoardCtxt* board, XP_U16 x, XP_U16 y );
-void drawTimer( const BoardCtxt* board );
+void drawTimer( const BoardCtxt* board, XWEnv xwe );
 void penTimerFiredScore( const BoardCtxt* board );
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV

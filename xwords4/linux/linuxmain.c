@@ -406,7 +406,7 @@ makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream )
     stream_setPos( stream, POS_READ, pos );
 
     DictionaryCtxt* dict =
-        linux_dictionary_make( MPPARM(cGlobals->util->mpool) cGlobals->params, 
+        linux_dictionary_make( MPPARM(cGlobals->util->mpool) NULL_XWE, cGlobals->params,
                                gi.dictName, XP_TRUE );
     gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
     XP_ASSERT( !!dict );
@@ -440,7 +440,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
             }
         }
         if ( hasDraw && redraw ) {
-            board_draw( game->board );
+            board_draw( game->board, NULL_XWE );
         }
     }
 }
@@ -773,7 +773,7 @@ secondTimerFired( gpointer data )
             if ( (XP_RANDOM() % 1000) < undoRatio ) {
                 XP_LOGFF( "calling server_handleUndo()" );
                 if ( server_handleUndo( game->server, 1 ) ) {
-                    board_draw( game->board );
+                    board_draw( game->board, NULL_XWE );
                 }
             } 
         }
@@ -2087,7 +2087,7 @@ walk_dict_test_all( MPFORMAL const LaunchParams* params, GSList* testDicts,
     for ( ii = 0; ii < count; ++ii ) {
         gchar* name = (gchar*)g_slist_nth_data( testDicts, ii );
         DictionaryCtxt* dict = 
-            linux_dictionary_make( MPPARM(mpool) params, name,
+            linux_dictionary_make( MPPARM(mpool) NULL_XWE, params, name,
                                    params->useMmap );
         if ( NULL != dict ) {
             XP_LOGF( "walk_dict_test(%s)", name );
@@ -2250,7 +2250,7 @@ dup_timer_func( gpointer data )
     CommonGlobals* cGlobals = (CommonGlobals*)data;
 
     if ( linuxFireTimer( cGlobals, TIMER_DUP_TIMERCHECK ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
 
     return XP_FALSE;
@@ -2262,7 +2262,7 @@ score_timer_func( gpointer data )
     CommonGlobals* cGlobals = (CommonGlobals*)data;
 
     if ( linuxFireTimer( cGlobals, TIMER_TIMERTICK ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
 
     return XP_FALSE;
@@ -2275,7 +2275,7 @@ comms_timer_func( gpointer data )
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
 
     if ( linuxFireTimer( &globals->cGlobals, TIMER_COMMS ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 
     return (gint)0;
@@ -2288,7 +2288,7 @@ pen_timer_func( gpointer data )
     CommonGlobals* cGlobals = (CommonGlobals*)data;
 
     if ( linuxFireTimer( cGlobals, TIMER_PENDOWN ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
 
     return XP_FALSE;
@@ -2301,7 +2301,7 @@ slowrob_timer_func( gpointer data )
     CommonGlobals* cGlobals = (CommonGlobals*)data;
 
     if ( linuxFireTimer( cGlobals, TIMER_SLOWROBOT ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
 
     return (gint)0;
@@ -2379,7 +2379,7 @@ idle_func( gpointer data )
     ServerCtxt* server = cGlobals->game.server;
     if ( !!server && server_do( server ) ) {
         if ( !!cGlobals->game.board ) {
-            board_draw( cGlobals->game.board );
+            board_draw( cGlobals->game.board, NULL_XWE );
         }
     }
     return 0; /* 0 will stop it from being called again */
@@ -2485,7 +2485,7 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
     guint count = g_slist_length( testDicts );
     for ( int ii = 0; ii < count; ++ii ) {
         DictionaryCtxt* dict = 
-            linux_dictionary_make( MPPARM(params->mpool) params, 
+            linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params,
                                    g_slist_nth_data( testDicts, ii ),
                                    params->useMmap );
         if ( NULL != dict ) {
@@ -3068,7 +3068,7 @@ main( int argc, char** argv )
             /* char path[256]; */
             /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
             DictionaryCtxt* dict =
-                linux_dictionary_make( MPPARM(mainParams.mpool) &mainParams,
+                linux_dictionary_make( MPPARM(mainParams.mpool) NULL_XWE, &mainParams,
                                        mainParams.pgi.dictName,
                                        mainParams.useMmap );
             XP_ASSERT( !!dict );

@@ -69,10 +69,10 @@
 extern "C" {
 #endif
 
-static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+static XP_Bool drawCell( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row,
                          XP_Bool skipBlanks );
-static void drawBoard( BoardCtxt* board );
-static void scrollIfCan( BoardCtxt* board );
+static void drawBoard( BoardCtxt* board, XWEnv xwe );
+static void scrollIfCan( BoardCtxt* board, XWEnv xwe );
 #ifdef KEYBOARD_NAV
 static XP_Bool cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row );
 #endif
@@ -97,7 +97,7 @@ static XP_UCHAR* formatFlags(XP_UCHAR* buf, XP_U16 len, CellFlags flags);
 #endif
 
 #ifdef POINTER_SUPPORT
-static void drawDragTileIf( BoardCtxt* board );
+static void drawDragTileIf( BoardCtxt* board, XWEnv xwe );
 #endif
 
 #ifdef KEYBOARD_NAV
@@ -263,10 +263,10 @@ flagsForCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row )
 #endif
 
 static void
-drawBoard( BoardCtxt* board )
+drawBoard( BoardCtxt* board, XWEnv xwe )
 {
     if ( board->needsDrawing 
-         && draw_boardBegin( board->draw, &board->boardBounds, 
+         && draw_boardBegin( board->draw, xwe, &board->boardBounds,
                              board->sd[SCROLL_H].scale,
                              board->sd[SCROLL_V].scale,
                              dfsFor( board, OBJ_BOARD ) ) ) {
@@ -280,7 +280,7 @@ drawBoard( BoardCtxt* board )
         ScrollData* vsd = &board->sd[SCROLL_V];
         BlankQueue bq;
 
-        scrollIfCan( board ); /* this must happen before we count blanks
+        scrollIfCan( board, xwe ); /* this must happen before we count blanks
                                  since it invalidates squares */
 
         /* This is freaking expensive!!!! PENDING FIXME Can't we start from
@@ -313,7 +313,7 @@ drawBoard( BoardCtxt* board )
                 for ( col = 0; col < nVisCols; ++col ) {
                     RowFlags colMask = 1 << (col + hsd->offset);
                     if ( 0 != (rowFlags & colMask) ) {
-                        if ( !drawCell( board, col + hsd->offset,
+                        if ( !drawCell( board, xwe, col + hsd->offset,
                                         row, XP_TRUE )) {
                             failedBits |= colMask;
                             allDrawn = XP_FALSE;
@@ -326,7 +326,7 @@ drawBoard( BoardCtxt* board )
 
         /* draw the blanks we skipped before */
         for ( ii = 0; ii < bq.nBlanks; ++ii ) {
-            if ( !drawCell( board, bq.col[ii], bq.row[ii], XP_FALSE ) ) {
+            if ( !drawCell( board, xwe, bq.col[ii], bq.row[ii], XP_FALSE ) ) {
                 allDrawn = XP_FALSE;
             }
         }
@@ -350,7 +350,7 @@ drawBoard( BoardCtxt* board )
                 flags |= flagsForCrosshairs( board, col, row );
 #endif
 
-                draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
+                draw_drawBoardArrow( board->draw, xwe, &arrowRect, bonus,
                                      arrow->vert, hintAtts, flags );
             }
         }
@@ -358,9 +358,9 @@ drawBoard( BoardCtxt* board )
         /* I doubt the two of these can happen at the same time */
         drawTradeWindowIf( board );
 #ifdef POINTER_SUPPORT
-        drawDragTileIf( board );
+        drawDragTileIf( board, xwe );
 #endif
-        draw_objFinished( board->draw, OBJ_BOARD, &board->boardBounds, 
+        draw_objFinished( board->draw, xwe, OBJ_BOARD, &board->boardBounds,
                           dfsFor( board, OBJ_BOARD ) );
 
         board->needsDrawing = !allDrawn;
@@ -368,7 +368,7 @@ drawBoard( BoardCtxt* board )
 } /* drawBoard */
 
 static XP_Bool
-drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlanks )
+drawCell( BoardCtxt* board, XWEnv xwe, const XP_U16 col, const XP_U16 row, XP_Bool skipBlanks )
 {
     XP_Bool success = XP_TRUE;
     XP_Rect cellRect = {0};
@@ -466,7 +466,7 @@ drawCell( BoardCtxt* board, const XP_U16 col, const XP_U16 row, XP_Bool skipBlan
             flags |= flagsForCrosshairs( board, col, row );
 #endif
 
-            success = draw_drawCell( board->draw, &cellRect, textP, bptr,
+            success = draw_drawCell( board->draw, xwe, &cellRect, textP, bptr,
                                      tile, value, owner, bonus, hintAtts, 
                                      flags );
 #ifdef LOG_CELL_DRAW
@@ -526,7 +526,7 @@ cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
 
 #ifdef POINTER_SUPPORT
 static void
-drawDragTileIf( BoardCtxt* board )
+drawDragTileIf( BoardCtxt* board, XWEnv xwe )
 {
     if ( dragDropInProgress( board ) ) {
         XP_U16 col, row;
@@ -553,7 +553,7 @@ drawDragTileIf( BoardCtxt* board )
             if ( board->hideValsInTray && !board->showCellValues ) {
                 flags |= CELL_VALHIDDEN;
             }
-            draw_drawTileMidDrag( board->draw, &rect, face, 
+            draw_drawTileMidDrag( board->draw, xwe, &rect, face,
                                   bitmaps.nBitmaps > 0 ? &bitmaps : NULL, 
                                   value, board->selPlayer, flags );
         }
@@ -579,7 +579,7 @@ sumRowHeights( const BoardCtxt* board, XP_U16 row1, XP_U16 row2 )
 }
 
 static void
-scrollIfCan( BoardCtxt* board )
+scrollIfCan( BoardCtxt* board, XWEnv xwe )
 {
     ScrollData* vsd = &board->sd[SCROLL_V];
     if ( vsd->offset != board->prevYScrollOffset ) {
@@ -597,7 +597,7 @@ scrollIfCan( BoardCtxt* board )
         invalSelTradeWindow( board );
 
         dist = sumRowHeights( board, board->prevYScrollOffset, vsd->offset );
-        scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist, 
+        scrolled = draw_vertScrollBoard( board->draw, xwe, &scrollR, dist,
                                          dfsFor( board, OBJ_BOARD ) );
 
         if ( scrolled ) {
@@ -632,16 +632,16 @@ drawTradeWindowIf( BoardCtxt* board )
 #endif
 
 XP_Bool
-board_draw( BoardCtxt* board )
+board_draw( BoardCtxt* board, XWEnv xwe )
 {
     if ( !!board->draw && board->boardBounds.width > 0 ) {
-        if ( draw_beginDraw( board->draw ) ) {
+        if ( draw_beginDraw( board->draw, xwe ) ) {
 
-            drawScoreBoard( board );
-            drawTray( board );
-            drawBoard( board );
+            drawScoreBoard( board, xwe );
+            drawTray( board, xwe );
+            drawBoard( board, xwe );
 
-            draw_endDraw( board->draw );
+            draw_endDraw( board->draw, xwe );
         }
     }
     return !board->needsDrawing && 0 == board->trayInvalBits;

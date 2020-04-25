@@ -244,7 +244,7 @@ struct BoardCtxt {
 
 /* tray-related functions */
 XP_Bool handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
-void drawTray( BoardCtxt* board );
+void drawTray( BoardCtxt* board, XWEnv xwe );
 XP_Bool moveTileToArrowLoc( BoardCtxt* board, XP_U8 index );
 XP_U16 indexForBits( XP_U8 bits );
 XP_Bool rectContainsPt( const XP_Rect* rect1, XP_S16 x, XP_S16 y );

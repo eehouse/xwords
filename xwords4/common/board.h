@@ -66,7 +66,7 @@ BoardCtxt* board_makeFromStream( MPFORMAL XWStreamCtxt* stream,
                                  DrawCtx* draw, XW_UtilCtxt* util,
                                  XP_U16 nPlayers );
 void board_setCallbacks( BoardCtxt* board );
-void board_setDraw( BoardCtxt* board, DrawCtx* draw );
+void board_setDraw( BoardCtxt* board, XWEnv xwe, DrawCtx* draw );
 DrawCtx* board_getDraw( const BoardCtxt* board );
 
 void board_destroy( BoardCtxt* board, XP_Bool ownsUtil );
@@ -75,7 +75,7 @@ void board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream );
 
 void board_reset( BoardCtxt* board );
 
-void board_drawSnapshot( const BoardCtxt* board, DrawCtx* dctx,
+void board_drawSnapshot( const BoardCtxt* board, XWEnv xwe, DrawCtx* dctx,
                          XP_U16 width, XP_U16 height );
 
     /* Layout.  Either done internally or by client */
@@ -145,7 +145,7 @@ XP_Bool board_getActiveRect( const BoardCtxt* board, XP_Rect* rect,
                              XP_U16* nCols, XP_U16* nRows );
 #endif
 
-XP_Bool board_draw( BoardCtxt* board );
+XP_Bool board_draw( BoardCtxt* board, XWEnv xwe );
 
 XP_Bool board_get_flipped( const BoardCtxt* board );
 XP_Bool board_flip( BoardCtxt* board );
@@ -160,7 +160,7 @@ XP_U16 board_getSelPlayer(const BoardCtxt* board );
 XP_Bool board_passwordProvided( BoardCtxt* board, XP_U16 player, const
                                 XP_UCHAR* pass );
 
-XP_Bool board_requestHint( BoardCtxt* board, 
+XP_Bool board_requestHint( BoardCtxt* board, XWEnv xwe,
 #ifdef XWFEATURE_SEARCHLIMIT
                            XP_Bool useTileLimits,
 #endif
@@ -170,7 +170,7 @@ XP_Bool board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp );
 
 BoardObjectType board_getFocusOwner( BoardCtxt* board );
 
-void board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row );
+void board_hiliteCellAt( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row );
 XP_Bool board_setBlankValue( BoardCtxt* board, XP_U16 XP_UNUSED(player),
                              XP_U16 col, XP_U16 row, XP_U16 tileIndex );
 

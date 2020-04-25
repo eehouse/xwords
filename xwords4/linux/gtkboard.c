@@ -145,7 +145,7 @@ button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
         redraw = board_handlePenDown( globals->cGlobals.game.board, 
                                       event->x, event->y, &handled );
         if ( redraw ) {
-            board_draw( globals->cGlobals.game.board );
+            board_draw( globals->cGlobals.game.board, NULL_XWE );
             disenable_buttons( globals );
         }
     }
@@ -164,7 +164,7 @@ motion_notify_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
         handled = board_handlePenMove( globals->cGlobals.game.board, event->x, 
                                        event->y );
         if ( handled ) {
-            board_draw( globals->cGlobals.game.board );
+            board_draw( globals->cGlobals.game.board, NULL_XWE );
             disenable_buttons( globals );
         }
     } else {
@@ -187,7 +187,7 @@ button_release_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                                     event->x, 
                                     event->y );
         if ( redraw ) {
-            board_draw( globals->cGlobals.game.board );
+            board_draw( globals->cGlobals.game.board, NULL_XWE );
             disenable_buttons( globals );
         }
         globals->mouseDown = XP_FALSE;
@@ -267,7 +267,7 @@ key_press_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
             : board_handleKeyDown( globals->cGlobals.game.board, xpkey,
                                    &handled );
         if ( draw ) {
-            board_draw( globals->cGlobals.game.board );
+            board_draw( globals->cGlobals.game.board, NULL_XWE );
         }
     }
     globals->keyDown = XP_TRUE;
@@ -297,7 +297,7 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
         }
 #endif
         if ( draw ) {
-            board_draw( globals->cGlobals.game.board );
+            board_draw( globals->cGlobals.game.board, NULL_XWE );
         }
     }
 
@@ -847,7 +847,7 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 #endif
         (void)server_do( cGlobals->game.server ); /* assign tiles, etc. */
         board_invalAll( cGlobals->game.board );
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
     return success;
 } /* new_game_impl */
@@ -869,7 +869,7 @@ game_info( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CurGameInfo* gi = globals->cGlobals.gi;
     if ( gtkNewGameDialog( globals, gi, &addr, XP_FALSE, XP_FALSE ) ) {
         if ( server_do( globals->cGlobals.game.server ) ) {
-            board_draw( globals->cGlobals.game.board );
+            board_draw( globals->cGlobals.game.board, NULL_XWE );
         }
     }
 }
@@ -897,8 +897,8 @@ change_dictionary( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 	gchar* name = gtkaskdict( dicts, buf, VSIZE(buf) );
 	if ( !!name ) {
 		DictionaryCtxt* dict = 
-			linux_dictionary_make( MPPARM(cGlobals->util->mpool) params, name,
-								   params->useMmap );
+			linux_dictionary_make( MPPARM(cGlobals->util->mpool) NULL_XWE,
+                                   params, name, params->useMmap );
 		game_changeDict( MPPARM(cGlobals->util->mpool) &cGlobals->game, NULL_XWE,
                          cGlobals->gi, dict );
 	}
@@ -942,7 +942,7 @@ handle_trade_cancel( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     BoardCtxt* board = globals->cGlobals.game.board;
     if ( board_endTrade( board ) ) {
-        board_draw( board );
+        board_draw( board, NULL_XWE );
     }
 }
 
@@ -1007,7 +1007,7 @@ inval_board_ontimer( gpointer data )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
     BoardCtxt* board = globals->cGlobals.game.board;
-    board_draw( board );
+    board_draw( board, NULL_XWE );
     return XP_FALSE;
 } /* inval_board_ontimer */
 
@@ -1164,7 +1164,7 @@ handle_flip_button( GtkWidget* XP_UNUSED(widget), gpointer _globals )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)_globals;
     if ( board_flip( globals->cGlobals.game.board ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
     return TRUE;
 } /* handle_flip_button */
@@ -1174,7 +1174,7 @@ handle_value_button( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     if ( board_toggle_showValues( globals->cGlobals.game.board ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
     return TRUE;
 } /* handle_value_button */
@@ -1183,12 +1183,12 @@ static void
 handle_hint_button( GtkGameGlobals* globals, XP_Bool prev )
 {
     XP_Bool redo;
-    if ( board_requestHint( globals->cGlobals.game.board, 
+    if ( board_requestHint( globals->cGlobals.game.board, NULL_XWE,
 #ifdef XWFEATURE_SEARCHLIMIT
                             XP_FALSE,
 #endif
                             prev, &redo ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
         disenable_buttons( globals );
     }
 } /* handle_hint_button */
@@ -1211,12 +1211,12 @@ handle_nhint_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     XP_Bool redo;
 
     board_resetEngine( globals->cGlobals.game.board );
-    if ( board_requestHint( globals->cGlobals.game.board, 
+    if ( board_requestHint( globals->cGlobals.game.board, NULL_XWE,
 #ifdef XWFEATURE_SEARCHLIMIT
                             XP_TRUE, 
 #endif
                             XP_FALSE, &redo ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* handle_nhint_button */
 
@@ -1234,7 +1234,7 @@ static void
 handle_juggle_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     if ( board_juggleTray( globals->cGlobals.game.board ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* handle_juggle_button */
 
@@ -1242,7 +1242,7 @@ static void
 handle_undo_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     if ( server_handleUndo( globals->cGlobals.game.server, 0 ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* handle_undo_button */
 
@@ -1258,7 +1258,7 @@ handle_toggle_undo( GtkWidget* XP_UNUSED(widget),
 {
     BoardCtxt* board = globals->cGlobals.game.board;
     if ( board_redoReplacedTiles( board ) || board_replaceTiles( board ) ) {
-        board_draw( board );
+        board_draw( board, NULL_XWE );
     }
 }
 
@@ -1266,7 +1266,7 @@ static void
 handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     if ( board_beginTrade( globals->cGlobals.game.board ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
         disenable_buttons( globals );
     }
 } /* handle_juggle_button */
@@ -1276,7 +1276,7 @@ handle_done_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE,
                            XP_FALSE, NULL ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
         disenable_buttons( globals );
     }
 } /* handle_done_button */
@@ -1293,7 +1293,7 @@ handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     XP_Bool inOut[2];
     if ( board_zoom( globals->cGlobals.game.board, 1, inOut ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
         setZoomButtons( globals, inOut );
     }
 } /* handle_zoomin_button */
@@ -1303,7 +1303,7 @@ handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     XP_Bool inOut[2];
     if ( board_zoom( globals->cGlobals.game.board, -1, inOut ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
         setZoomButtons( globals, inOut );
     }
 } /* handle_zoomout_button */
@@ -1345,7 +1345,7 @@ scroll_value_changed( GtkAdjustment *adj, GtkGameGlobals* globals )
     newValue = (XP_U16)newValueF;
 
     if ( board_setYOffset( globals->cGlobals.game.board, newValue ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* scroll_value_changed */
 
@@ -1355,7 +1355,7 @@ handle_grid_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     globals->gridOn = !globals->gridOn;
 
     board_invalAll( globals->cGlobals.game.board );
-    board_draw( globals->cGlobals.game.board );
+    board_draw( globals->cGlobals.game.board, NULL_XWE );
 } /* handle_grid_button */
 
 static void
@@ -1380,7 +1380,7 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         draw = board_showTray( board );
     }
     if ( draw ) {
-        board_draw( board );
+        board_draw( board, NULL_XWE );
     }
 } /* handle_hide_button */
 
@@ -1389,7 +1389,7 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     if ( board_commitTurn( globals->cGlobals.game.board, XP_FALSE,
                            XP_FALSE, NULL ) ) {
-        board_draw( globals->cGlobals.game.board );
+        board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* handle_commit_button */
 
@@ -1528,7 +1528,7 @@ ask_blank( gpointer data )
          && board_setBlankValue( cGlobals->game.board, cGlobals->selPlayer,
                                  cGlobals->blankCol, cGlobals->blankRow,
                                  result ) ) {
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     }
 
     return 0;
@@ -1596,7 +1596,7 @@ ask_tiles( gpointer data )
     }
 
     if ( draw ) {
-        board_draw( board );
+        board_draw( board, NULL_XWE );
     }
 
     return 0;
@@ -1633,7 +1633,7 @@ ask_password( gpointer data )
     if ( gtkpasswdask( cGlobals->askPassName, buf, &len ) ) {
         BoardCtxt* board = cGlobals->game.board;
         if ( board_passwordProvided( board, cGlobals->selPlayer, buf ) ) {
-            board_draw( board );
+            board_draw( board, NULL_XWE );
         }
     }
     return 0;
@@ -1781,7 +1781,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
         destroy_board_window( NULL, globals );
     } else if ( cGlobals->params->undoWhenDone ) {
         server_handleUndo( cGlobals->game.server, 0 );
-        board_draw( cGlobals->game.board );
+        board_draw( cGlobals->game.board, NULL_XWE );
     } else if ( !cGlobals->params->skipGameOver ) {
         gtkShowFinalScores( globals, XP_TRUE );
     }
@@ -1820,7 +1820,7 @@ gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
     gboolean pending;
 #endif
 
-    board_hiliteCellAt( globals->cGlobals.game.board, col, row );
+    board_hiliteCellAt( globals->cGlobals.game.board, NULL_XWE, col, row );
     if ( globals->cGlobals.params->sleepOnAnchor ) {
         usleep( 10000 );
     }
@@ -2049,7 +2049,7 @@ ask_move( gpointer data )
     if ( GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES ) {
         BoardCtxt* board = cGlobals->game.board;
         if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
-            board_draw( board );
+            board_draw( board, NULL_XWE );
         }
     }
     return 0;
@@ -2080,7 +2080,7 @@ ask_trade( gpointer data )
                                      GTK_BUTTONS_YES_NO, NULL ) ) {
         BoardCtxt* board = cGlobals->game.board;
         if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
-            board_draw( board );
+            board_draw( board, NULL_XWE );
         }
     }
     return 0;
@@ -2420,7 +2420,7 @@ on_draw_event( GtkWidget* widget, cairo_t* cr, gpointer user_data )
     GtkGameGlobals* globals = (GtkGameGlobals*)user_data;
     CommonGlobals* cGlobals = &globals->cGlobals;
     board_invalAll( cGlobals->game.board );
-    board_draw( cGlobals->game.board );
+    board_draw( cGlobals->game.board, NULL_XWE );
     draw_gtk_status( (GtkDrawCtx*)cGlobals->draw, globals->stateChar );
 
     XP_USE(widget);
@@ -2443,7 +2443,7 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
     initGlobalsNoDraw( globals, params, gi );
     if ( !!gi ) {
         XP_ASSERT( !cGlobals->dict );
-        cGlobals->dict = linux_dictionary_make( MEMPOOL params,
+        cGlobals->dict = linux_dictionary_make( MEMPOOL NULL_XWE, params,
                                                 gi->dictName, XP_TRUE );
         gi->dictLang = dict_getLangCode( cGlobals->dict );
     }
@@ -2656,7 +2656,7 @@ makeNewGame( GtkGameGlobals* globals )
                                         XP_TRUE, XP_FALSE );
     if ( success && !!gi->dictName && !cGlobals->dict ) {
         cGlobals->dict =
-            linux_dictionary_make( MEMPOOL cGlobals->params,
+            linux_dictionary_make( MEMPOOL NULL_XWE, cGlobals->params,
                                    gi->dictName, XP_TRUE );
         gi->dictLang = dict_getLangCode( cGlobals->dict );
     }

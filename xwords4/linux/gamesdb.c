@@ -290,7 +290,7 @@ addSnapshot( CommonGlobals* cGlobals )
     GtkDrawCtx* dctx = (GtkDrawCtx*)board_getDraw( board );
     if ( !!dctx ) {
         addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
-        board_drawSnapshot( board, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
+        board_drawSnapshot( board, NULL_XWE, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
 
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                     cGlobals->params->vtMgr );

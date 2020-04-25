@@ -38,7 +38,7 @@ typedef struct CursesDrawCtx {
     WINDOW* boardWin;
 } CursesDrawCtx;
 
-static void curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
+static void curses_draw_clearRect( DrawCtx* p_dctx, XWEnv xwe, const XP_Rect* rectP );
 static void getTops( const XP_Rect* rect, int* toptop, int* topbot );
 
 static void
@@ -68,31 +68,31 @@ cursesHiliteRect( WINDOW* window, const XP_Rect* rect )
 }
 
 static void
-curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx) )
+curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe) )
 {
     // CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 } /* draw_setup */
 
 static void
-curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx),
+curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                          XP_S16 XP_UNUSED(playerNum),
                          const DictionaryCtxt* XP_UNUSED(dict) )
 {
 }
 
 static XP_Bool
-curses_draw_beginDraw( DrawCtx* XP_UNUSED(p_dctx) )
+curses_draw_beginDraw( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe) )
 {
     return XP_TRUE;
 }
 
 static void
-curses_draw_endDraw( DrawCtx* XP_UNUSED(dctx) )
+curses_draw_endDraw( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe) )
 {
 }
 
 static XP_Bool
-curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), 
+curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                         const XP_Rect* XP_UNUSED(rect), 
                         XP_U16 XP_UNUSED(width), XP_U16 XP_UNUSED(height),
                         DrawFocusState XP_UNUSED(dfs) )
@@ -101,7 +101,7 @@ curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx),
 } /* curses_draw_boardBegin */
 
 static XP_Bool
-curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx), 
+curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                        const XP_Rect* XP_UNUSED(rect), 
                        XP_U16 XP_UNUSED(owner), 
                        XP_S16 XP_UNUSED(score), 
@@ -111,7 +111,7 @@ curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx),
 } /* curses_draw_trayBegin */
 
 static XP_Bool
-curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+curses_draw_scoreBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                         XP_U16 XP_UNUSED(numPlayers), 
                         const XP_S16* const XP_UNUSED(scores), 
                         XP_S16 XP_UNUSED(remCount), 
@@ -124,7 +124,7 @@ curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 
 #ifdef XWFEATURE_SCOREONEPASS
 static XP_Bool
-curses_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
+curses_draw_drawRemText( DrawCtx* p_dctx, XWEnv xwe, XP_S16 nTilesLeft,
                          XP_Bool focussed, XP_Rect* rect )
 {
     XP_USE(p_dctx);
@@ -156,7 +156,7 @@ formatRemText( XP_S16 nTilesLeft, const XP_Rect* rect, char* buf, char** lines )
 } /* formatRemText */
 
 static XP_Bool
-curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx), 
+curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
                             const XP_Rect* rect, 
                             XP_S16 nTilesLeft, 
                             XP_U16* width, XP_U16* height )
@@ -179,7 +179,7 @@ curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx),
 } /* curses_draw_measureRemText */
 
 static void
-curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
+curses_draw_drawRemText( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rInner,
                          const XP_Rect* rOuter, XP_S16 nTilesLeft,
                          XP_Bool focussed )
 {
@@ -284,7 +284,7 @@ formatScoreText( XP_UCHAR* out, const DrawScoreInfo* dsi, const XP_Rect* rect,
 } /* formatScoreText */
 
 static void
-curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx), 
+curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                               const XP_Rect* rect, 
                               const DrawScoreInfo* dsi,
                               XP_U16* width, XP_U16* height )
@@ -305,14 +305,14 @@ curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx),
 } /* curses_draw_measureScoreText */
 
 static void
-curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                              const XP_Rect* rOuter, 
+curses_draw_score_drawPlayer( DrawCtx* p_dctx, XWEnv xwe,
+                              const XP_Rect* rInner, const XP_Rect* rOuter,
                               XP_U16 XP_UNUSED(gotPct), const DrawScoreInfo* dsi )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[100];
 
-    curses_draw_clearRect( p_dctx, rOuter );
+    curses_draw_clearRect( p_dctx, xwe, rOuter );
 
     /* print the name and turn/remoteness indicator */
     char* lines[3] = {0};
@@ -331,7 +331,7 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 #endif
 
 static void
-curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
+curses_draw_score_pendingScore( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                                 XP_S16 score, XP_U16 XP_UNUSED(playerNum),
                                 XP_Bool XP_UNUSED(curTurn),
                                 CellFlags XP_UNUSED(flags) )
@@ -353,7 +353,7 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_score_pendingScore */
 
 static void
-curses_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
+curses_draw_drawTimer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rInner,
                        XP_U16 XP_UNUSED(playerNum), XP_S16 secondsLeft,
                        XP_Bool XP_UNUSED(localTurnDone) )
 {
@@ -367,7 +367,8 @@ curses_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
 }
 
 static void
-curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ), 
+curses_draw_objFinished( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                         BoardObjectType XP_UNUSED(typ),
                          const XP_Rect* XP_UNUSED(rect), 
                          DrawFocusState XP_UNUSED(dfs) )
 {
@@ -377,8 +378,9 @@ curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ),
 
 
 static XP_Bool
-curses_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XP_Rect* XP_UNUSED(rect),
-                             XP_S16 XP_UNUSED(dist), DrawFocusState XP_UNUSED(dfs) )
+curses_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
+                             XP_Rect* XP_UNUSED(rect), XP_S16 XP_UNUSED(dist),
+                             DrawFocusState XP_UNUSED(dfs) )
 {
     XP_ASSERT(0);
     return XP_TRUE;
@@ -387,7 +389,7 @@ curses_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XP_Rect* XP_UNUSED(rect),
 #define MY_PAIR 1
 
 static XP_Bool
-curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
+curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                       const XP_UCHAR* letter, 
                       const XP_Bitmaps* XP_UNUSED(bitmaps),
                       Tile XP_UNUSED(tile), XP_U16 XP_UNUSED(value), 
@@ -445,7 +447,8 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawCell */
 
 static void
-curses_draw_invertCell( DrawCtx* XP_UNUSED(dctx), const XP_Rect* XP_UNUSED(rect) )
+curses_draw_invertCell( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
+                        const XP_Rect* XP_UNUSED(rect) )
 {
     XP_ASSERT(0);
 }
@@ -488,7 +491,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 } /* curses_stringInTile */
 
 static XP_Bool
-curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
+curses_draw_drawTile( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                       const XP_UCHAR* textP, const XP_Bitmaps* XP_UNUSED(bitmaps),
                       XP_U16 val, CellFlags flags )
 {
@@ -533,8 +536,8 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawTile */
 
 static XP_Bool
-curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
-                          CellFlags flags )
+curses_draw_drawTileBack( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                          const XP_Rect* rect, CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     curses_stringInTile( dctx, rect, "?", "?" );
@@ -545,7 +548,7 @@ curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawTileBack */
 
 static XP_Bool
-curses_draw_drawTileMidDrag( DrawCtx* XP_UNUSED(dctx),
+curses_draw_drawTileMidDrag( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
                              const XP_Rect* XP_UNUSED(rect),
                              const XP_UCHAR* XP_UNUSED(text),
                              const XP_Bitmaps* XP_UNUSED(bitmaps),
@@ -557,8 +560,8 @@ curses_draw_drawTileMidDrag( DrawCtx* XP_UNUSED(dctx),
 }
 
 static void
-curses_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
-                             CellFlags flags )
+curses_draw_drawTrayDivider( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                             const XP_Rect* rect, CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     eraseRect( dctx, rect );
@@ -571,7 +574,8 @@ curses_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawTrayDivider */
 
 static void
-curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect, 
+curses_draw_drawBoardArrow( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                            const XP_Rect* rect,
                             XWBonusType XP_UNUSED(cursorBonus), 
                             XP_Bool vertical, HintAtts XP_UNUSED(hintAtts),
                             CellFlags XP_UNUSED(flags) )
@@ -589,7 +593,7 @@ curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawBoardArrow */
 
 static void 
-curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
+curses_draw_clearRect( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rectP )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Rect rect = *rectP;
@@ -599,15 +603,15 @@ curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 
 #ifdef XWFEATURE_MINIWIN
 static const XP_UCHAR*
-curses_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), 
+curses_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                           XWMiniTextType XP_UNUSED(textHint) )
 {
     return "Trading...";
 } /* curses_draw_getMiniWText */
 
 static void
-curses_draw_measureMiniWText( DrawCtx* XP_UNUSED(p_dctx), const XP_UCHAR* str, 
-                              XP_U16* widthP, XP_U16* heightP )
+curses_draw_measureMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
+                              const XP_UCHAR* str, XP_U16* widthP, XP_U16* heightP )
 {
     *widthP = strlen(str) + 4;
     *heightP = 3;
@@ -628,8 +632,9 @@ drawRect( WINDOW* win, const XP_Rect* rect, char vert, char hor )
 } /* drawRect */
 
 static void
-curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
-                            const XP_Rect* rect, void** XP_UNUSED(closure) )
+curses_draw_drawMiniWindow( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                            const XP_UCHAR* text, const XP_Rect* rect,
+                            void** XP_UNUSED(closure) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Rect smallerR;
@@ -651,7 +656,7 @@ curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 
 #if 0
 static void
-curses_draw_frameTray( DrawCtx* p_dctx, XP_Rect* rect )
+curses_draw_frameTray( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XP_Rect* rect )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     box( dctx->boardWin, '*', '+');
