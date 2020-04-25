@@ -1,1 +1,1 @@
-/home/eehouse/dev/git/ANDROID_BRANCH/xwords4/dawg/Catalan/Makefile.DISC2
+Makefile.DISC2
