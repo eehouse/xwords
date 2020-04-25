@@ -116,7 +116,7 @@ def parseNode( node, nodeSize ):
     
     return (nextEdge, chrIndex, accepting, isLast )
 
-def expandDAWG( nodes, nodeSize, indx, data, words, letters = [] ):
+def expandDAWG( nodes, nodeSize, delim, indx, data, words, letters = [] ):
     if len(letters) > 15: error( "infinite recursion???" )
 
     while True:
@@ -126,10 +126,10 @@ def expandDAWG( nodes, nodeSize, indx, data, words, letters = [] ):
 
         letters.append( data[chrIndex]['faces'][0] )
         if accepting:
-            words.append( ''.join(letters) )
+            words.append( delim.join(letters) )
 
         if nextEdge != 0:
-            expandDAWG( nodes, nodeSize, nextEdge, data, words, letters )
+            expandDAWG( nodes, nodeSize, delim, nextEdge, data, words, letters )
 
         letters.pop()
 
@@ -221,7 +221,7 @@ def process(args):
         nodes = loadNodes( dawg, nodeSize )
         words = []
         if nodes:
-            expandDAWG( nodes, nodeSize, offset, data, words )
+            expandDAWG( nodes, nodeSize, args.DELIM, offset, data, words )
             assert len(words) == nWords
         if args.DUMP_WORDS:
             for word in words:
@@ -239,6 +239,7 @@ def mkParser():
                         action = 'store_true', help = 'write header user-visible message to stdout')
     parser.add_argument('--get-sum', dest = 'GET_SUM', default = False,
                         action = 'store_true', help = 'write md5sum to stdout')
+    parser.add_argument('--separator', dest = 'DELIM', default = '', help = 'printed between tiles')
 
     # [-raw | -json]  [-get-sum] [-get-desc] -dict <xwdORpdb>
 
