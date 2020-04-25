@@ -34,14 +34,14 @@ void destroyJNIUtil( JNIEnv* env, JNIUtilCtxt** jniu );
 
 jobject and_util_makeJBitmap( JNIUtilCtxt* jniu, int nCols, int nRows, 
                               const jboolean* colors );
-jobject and_util_splitFaces( JNIUtilCtxt* jniu, const XP_U8* bytes, int len,
-                             XP_Bool isUTF8 );
+jobject and_util_splitFaces( JNIUtilCtxt* jniu, JNIEnv* env, const XP_U8* bytes,
+                             int len, XP_Bool isUTF8 );
 
-jstring and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
-                                   const XP_U8* bytes, jsize len );
+jstring and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, JNIEnv* env,
+                                   const XP_UCHAR* name, const XP_U8* bytes, jsize len );
 
 #ifdef COMMS_CHECKSUM
-jstring and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, const XP_U8* bytes, 
-                                    jsize len );
+jstring and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, JNIEnv* env,
+                                    const XP_U8* bytes, jsize len );
 #endif
 #endif

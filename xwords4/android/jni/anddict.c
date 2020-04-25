@@ -236,7 +236,7 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
     int offsets[nFaces];
     int nBytes;
 
-    jobject jstrarr = and_util_splitFaces( ctxt->jniutil, ptr, nFaceBytes,
+    jobject jstrarr = and_util_splitFaces( ctxt->jniutil, env, ptr, nFaceBytes,
                                            isUTF8 );
     XP_ASSERT( (*env)->GetArrayLength( env, jstrarr ) == nFaces );
 
@@ -367,7 +367,7 @@ parseDict( AndDictionaryCtxt* ctxt, XWEnv xwe, XP_U8 const* ptr,
          || XP_TRUE 
 #endif
          ) {
-        jstring jsum = and_util_getMD5SumForDict( ctxt->jniutil, 
+        jstring jsum = and_util_getMD5SumForDict( ctxt->jniutil, env,
                                                   ctxt->super.name, NULL, 0 );
         XP_UCHAR* md5Sum = NULL;
         /* If we have a cached sum, check that it's correct. */
@@ -382,8 +382,8 @@ parseDict( AndDictionaryCtxt* ctxt, XWEnv xwe, XP_U8 const* ptr,
         }
 
         if ( NULL == jsum ) {
-            jsum = and_util_getMD5SumForDict( ctxt->jniutil, ctxt->super.name,
-                                              ptr, end - ptr );
+            jsum = and_util_getMD5SumForDict( ctxt->jniutil, env,
+                                              ctxt->super.name, ptr, end - ptr );
         }
         if ( NULL == md5Sum ) {
             md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );

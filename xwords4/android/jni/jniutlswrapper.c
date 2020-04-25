@@ -57,7 +57,6 @@ and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows,
                       const jboolean* colors )
 {
     jobject bitmap;
-    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid
         = getMethodID( env, jniutil->jjniutil, "makeBitmap", 
                        "(II[Z)Landroid/graphics/drawable/BitmapDrawable;" );
@@ -73,11 +72,10 @@ and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows,
 #endif
 
 jobject
-and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
-                     XP_Bool isUTF8 )
+and_util_splitFaces( JNIUtilCtxt* jniutil, JNIEnv* env, const XP_U8* bytes,
+                     jsize len, XP_Bool isUTF8 )
 {
     jobject strarray = NULL;
-    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid
         = getMethodID( env, jniutil->jjniutil, "splitFaces",
                        "([BZ)[[Ljava/lang/String;" );
@@ -91,10 +89,9 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
 }
 
 jstring
-and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
+and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, JNIEnv* env, const XP_UCHAR* name,
                            const XP_U8* bytes, jsize len )
 {
-    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
                                  "(Ljava/lang/String;[B)Ljava/lang/String;" );
     jstring jname = (*env)->NewStringUTF( env, name );
@@ -117,9 +114,9 @@ and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
 
 #ifdef COMMS_CHECKSUM
 jstring
-and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len )
+and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, JNIEnv* env,
+                            const XP_U8* bytes, jsize len )
 {
-    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
                                  "([B)Ljava/lang/String;" );
 

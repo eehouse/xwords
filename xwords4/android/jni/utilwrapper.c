@@ -811,7 +811,7 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr, XP_U16 len )
     AndDUtil* dutil = (AndDUtil*)duc;
     JNIEnv* env = ENVFORME( dutil->ti );
     struct JNIUtilCtxt* jniutil = dutil->jniutil;
-    jstring jsum = and_util_getMD5SumForBytes( jniutil, ptr, len );
+    jstring jsum = and_util_getMD5SumForBytes( jniutil, env, ptr, len );
     XP_UCHAR* result = getStringCopy( MPPARM(duc->mpool) env, jsum );
     deleteLocalRef( env, jsum );
     return result;
