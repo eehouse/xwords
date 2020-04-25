@@ -108,7 +108,7 @@ static XP_Bool invalCellsWithTiles( BoardCtxt* board );
 
 static void setTimerIf( BoardCtxt* board );
 
-static XP_Bool p_board_timerFired( void* closure, XWTimerReason why );
+static XP_Bool p_board_timerFired( void* closure, XWEnv xwe, XWTimerReason why );
 
 static XP_Bool replaceLastTile( BoardCtxt* board );
 static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
@@ -1317,7 +1317,7 @@ positionMiniWRect( BoardCtxt* board, XP_Rect* rect, XP_Bool center )
 #endif
 
 static XP_Bool
-timerFiredForPen( BoardCtxt* board ) 
+timerFiredForPen( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool draw = XP_FALSE;
     const XP_UCHAR* text = (XP_UCHAR*)NULL;
@@ -1355,7 +1355,7 @@ timerFiredForPen( BoardCtxt* board )
                 XWStreamCtxt* stream =
                     mem_stream_make_raw( MPPARM(board->mpool)
                                          dutil_getVTManager(board->dutil) );
-                listWords = model_listWordsThrough( board->model, modelCol, modelRow,
+                listWords = model_listWordsThrough( board->model, xwe, modelCol, modelRow,
                                                     board->selPlayer, stream );
                 if ( listWords ) {
                     util_cellSquareHeld( board->util, stream );
@@ -1439,12 +1439,12 @@ timerFiredForTimer( BoardCtxt* board )
 } /* timerFiredForTimer */
 
 static XP_Bool
-p_board_timerFired( void* closure, XWTimerReason why )
+p_board_timerFired( void* closure, XWEnv xwe, XWTimerReason why )
 {
     XP_Bool draw = XP_FALSE;
     BoardCtxt* board = (BoardCtxt*)closure;
     if ( why == TIMER_PENDOWN ) {
-        draw = timerFiredForPen( board );
+        draw = timerFiredForPen( board, xwe );
     } else {
         XP_ASSERT( why == TIMER_TIMERTICK );
         timerFiredForTimer( board );
@@ -1454,7 +1454,7 @@ p_board_timerFired( void* closure, XWTimerReason why )
 
 #ifdef XWFEATURE_RAISETILE
 static XP_Bool
-p_tray_timerFired( void* closure, XWTimerReason why )
+p_tray_timerFired( void* closure, XWEnv xwe, XWTimerReason why )
 {
     XP_Bool draw = XP_FALSE;
     BoardCtxt* board = (BoardCtxt*)closure;

@@ -475,10 +475,10 @@ disposeBoard( CursesBoardGlobals* bGlobals )
     clearOneSecondTimer( cGlobals );
 
     gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) cGlobals->gi );
-    game_dispose( &cGlobals->game );
+    game_dispose( &cGlobals->game, NULL_XWE );
 
     if ( !!cGlobals->dict ) {
-        dict_unref( cGlobals->dict );
+        dict_unref( cGlobals->dict, NULL_XWE );
     }
 
     disposeUtil( cGlobals );
@@ -1045,7 +1045,7 @@ curses_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     LastMoveInfo lmi;
-    if ( model_getPlayersLastScore( bGlobals->cGlobals.game.model,
+    if ( model_getPlayersLastScore( bGlobals->cGlobals.game.model, NULL_XWE,
                                     player, &lmi ) ) {
         XP_UCHAR buf[128];
         formatLMI( &lmi, buf, VSIZE(buf) );

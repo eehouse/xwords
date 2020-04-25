@@ -30,10 +30,10 @@ extern "C" {
 #endif
 
 static XP_Bool
-board_ScoreCallback( void* closure, XP_S16 player, LastMoveInfo* lmi )
+board_ScoreCallback( void* closure, XWEnv xwe, XP_S16 player, LastMoveInfo* lmi )
 {
     ModelCtxt* model = (ModelCtxt*)closure;
-    return model_getPlayersLastScore( model, player, lmi );
+    return model_getPlayersLastScore( model, xwe, player, lmi );
 } /* board_ScoreCallback */
 
 #ifdef XWFEATURE_SCOREONEPASS
@@ -159,7 +159,7 @@ centerIn( XP_Rect* rInner, const XP_Rect* rOuter, XP_U16 width, XP_U16 height )
     rInner->top = rOuter->top + ( (rOuter->height - height) / 2 );
 }
 
-typedef struct DrawScoreData {
+typedef struct _DrawScoreData {
     DrawScoreInfo dsi;
     XP_U16 height;
     XP_U16 width;

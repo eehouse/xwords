@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -59,7 +59,7 @@ typedef struct _XP_Bitmaps {
 } XP_Bitmaps;
 
 struct DictionaryCtxt {
-    void (*destructor)( DictionaryCtxt* dict );
+    void (*destructor)( DictionaryCtxt* dict, XWEnv xwe );
 
     array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, 
                                         XP_U32 index );
@@ -147,24 +147,24 @@ struct DictionaryCtxt {
     ((Tile)(((array_edge_old*)(edge))->bits & \
             ((d)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
 
-DictionaryCtxt* p_dict_ref( DictionaryCtxt* dict
+DictionaryCtxt* p_dict_ref( DictionaryCtxt* dict, XWEnv xwe
 #ifdef DEBUG_REF
                           ,const char* func, const char* file, int line
 #endif
  );
-void p_dict_unref( DictionaryCtxt* dict
+void p_dict_unref( DictionaryCtxt* dict, XWEnv xwe
 #ifdef DEBUG_REF
                           ,const char* func, const char* file, int line
 #endif
  );
-void dict_unref_all( PlayerDicts* dicts );
+void dict_unref_all( PlayerDicts* dicts, XWEnv xwe );
 
 #ifdef DEBUG_REF
-# define dict_ref(dict) p_dict_ref( dict, __func__, __FILE__, __LINE__ )
-# define dict_unref(dict) p_dict_unref( dict, __func__, __FILE__, __LINE__ )
+# define dict_ref(dict, xwe) p_dict_ref( dict, xwe, __func__, __FILE__, __LINE__ )
+# define dict_unref(dict, xwe) p_dict_unref( (dict), (xwe), __func__, __FILE__, __LINE__ )
 #else
-# define dict_ref(dict) p_dict_ref( dict )
-# define dict_unref(dict) p_dict_unref( dict )
+# define dict_ref(dict, xwe) p_dict_ref( (dict), (xwe) )
+# define dict_unref(dict, xwe) p_dict_unref( (dict), (xwe) )
 #endif
 
 XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1, 
@@ -200,7 +200,7 @@ const XP_UCHAR* dict_getDesc( const DictionaryCtxt* dict );
 const XP_UCHAR* dict_getMd5Sum( const DictionaryCtxt* dict );
 
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
-void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );
+void dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream );
 
 #ifdef TEXT_MODEL
 /* Return the strlen of the longest face, e.g. 1 for English and Italian;
@@ -219,8 +219,8 @@ DictionaryCtxt* make_stubbed_dict( MPFORMAL_NOCOMMA );
 /* To be called only by subclasses!!! */
 void dict_super_init( DictionaryCtxt* ctxt );
 /* Must be implemented by subclass */
-void dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes, 
-                      XP_U16 nBytes, XP_U16 nFaces );
+void dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
+                      XP_U16 nBytes, XP_U16 nFaceos );
 
 XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
 

@@ -109,7 +109,7 @@ XP_Bool server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
 void server_endGame( ServerCtxt* server );
 
 /* called when running as either client or server */
-XP_Bool server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming );
+XP_Bool server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming );
 
 /* client-side messages.  Client (platform code)owns the stream used to talk
  * to the server, and passes it in. */

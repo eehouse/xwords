@@ -497,7 +497,8 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
 #ifdef XWFEATURE_RELAY
 
 static XP_Bool
-p_comms_resetTimer( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
+p_comms_resetTimer( void* closure, XWEnv XP_UNUSED(xwe),
+                    XWTimerReason XP_UNUSED_DBG(why) )
 {
     CommsCtxt* comms = (CommsCtxt*)closure;
     LOG_FUNC();
@@ -2590,7 +2591,7 @@ heartbeat_checks( CommsCtxt* comms )
 
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
 static XP_Bool
-p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
+p_comms_timerFired( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
 {
     CommsCtxt* comms = (CommsCtxt*)closure;
     XP_ASSERT( why == TIMER_COMMS );

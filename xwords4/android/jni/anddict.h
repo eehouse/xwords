@@ -27,7 +27,7 @@
 #include "jniutlswrapper.h"
 
 void
-dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
+dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces );
 
 DictionaryCtxt* makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, 
@@ -40,8 +40,7 @@ void makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil
 
 void destroyDicts( PlayerDicts* dicts );
 
-DictionaryCtxt* and_dictionary_make_empty( MPFORMAL JNIEnv *env,
-                                           JNIUtilCtxt* jniutil );
+DictionaryCtxt* and_dictionary_make_empty( MPFORMAL JNIUtilCtxt* jniutil );
 
 jobject and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict );
 

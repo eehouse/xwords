@@ -105,10 +105,10 @@ typedef XP_U8 TileBit;    /* bits indicating selection of tiles in tray */
                                           only */
 
 
-ModelCtxt* model_make( MPFORMAL DictionaryCtxt* dict, const PlayerDicts* dicts,
-                       XW_UtilCtxt* util, XP_U16 nCols );
+ModelCtxt* model_make( MPFORMAL XWEnv xwe, DictionaryCtxt* dict,
+                       const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols );
 
-ModelCtxt* model_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
+ModelCtxt* model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                                  DictionaryCtxt* dict, const PlayerDicts* dicts,
                                  XW_UtilCtxt* util );
 
@@ -119,7 +119,7 @@ void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
 #endif
 
 void model_setSize( ModelCtxt* model, XP_U16 boardSize );
-void model_destroy( ModelCtxt* model );
+void model_destroy( ModelCtxt* model, XWEnv xwe );
 XP_U32 model_getHash( const ModelCtxt* model );
 XP_Bool model_hashMatches( const ModelCtxt* model, XP_U32 hash );
 XP_Bool model_popToHash( ModelCtxt* model, const XP_U32 hash,
@@ -128,10 +128,10 @@ XP_Bool model_popToHash( ModelCtxt* model, const XP_U32 hash,
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 XP_U16 model_getNPlayers( const ModelCtxt* model );
 
-void model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict );
+void model_setDictionary( ModelCtxt* model, XWEnv xwe, DictionaryCtxt* dict );
 DictionaryCtxt* model_getDictionary( const ModelCtxt* model );
 
-void model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts );
+void model_setPlayerDicts( ModelCtxt* model, XWEnv xwe, const PlayerDicts* dicts );
 DictionaryCtxt* model_getPlayerDict( const ModelCtxt* model, XP_S16 playerNum );
 
 XP_Bool model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
@@ -272,7 +272,7 @@ void model_foreachPendingCell( ModelCtxt* model, XP_S16 turn,
                                BoardListener bl, void* data );
 void model_foreachPrevCell( ModelCtxt* model, BoardListener bl, void* data );
 
-void model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
+void model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
                              ServerCtxt* server, /* for player names */
                              XP_Bool gameOver );
 
@@ -305,10 +305,10 @@ XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
                                     WordNotifierInfo* wni, XP_S16* score );
 XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
-XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
+XP_Bool model_getPlayersLastScore( ModelCtxt* model, XWEnv xwe, XP_S16 player,
                                    LastMoveInfo* info );
 #ifdef XWFEATURE_BOARDWORDS
-XP_Bool model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
+XP_Bool model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
                                 XP_S16 turn, XWStreamCtxt* stream );
 #endif
 

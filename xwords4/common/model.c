@@ -53,7 +53,7 @@ static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn,
 static void notifyDictListeners( ModelCtxt* model, XP_S16 playerNum, 
                                  DictionaryCtxt* oldDict,
                                  DictionaryCtxt* newDict );
-static void model_unrefDicts( ModelCtxt* model );
+static void model_unrefDicts( ModelCtxt* model, XWEnv xwe );
 
 static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col, 
                                  XP_U16 row );
@@ -91,7 +91,7 @@ static void assertDiffTurn( ModelCtxt* model, XP_U16 turn,
  *
  ****************************************************************************/
 ModelCtxt*
-model_make( MPFORMAL DictionaryCtxt* dict, const PlayerDicts* dicts,
+model_make( MPFORMAL XWEnv xwe, DictionaryCtxt* dict, const PlayerDicts* dicts,
             XW_UtilCtxt* util, XP_U16 nCols )
 {
     ModelCtxt* result = (ModelCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
@@ -109,16 +109,17 @@ model_make( MPFORMAL DictionaryCtxt* dict, const PlayerDicts* dicts,
 
         model_setSize( result, nCols );
 
-        model_setDictionary( result, dict );
-        model_setPlayerDicts( result, dicts );
+        model_setDictionary( result, xwe, dict );
+        model_setPlayerDicts( result, xwe, dicts );
     }
 
     return result;
 } /* model_make */
 
 ModelCtxt* 
-model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict, 
-                      const PlayerDicts* dicts, XW_UtilCtxt* util )
+model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+                      DictionaryCtxt* dict, const PlayerDicts* dicts,
+                      XW_UtilCtxt* util )
 {
     ModelCtxt* model;
     XP_U16 nCols;
@@ -145,12 +146,12 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
     nPlayers = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
 
     if ( hasDict ) {
-        DictionaryCtxt* savedDict = util_makeEmptyDict( util );
-        dict_loadFromStream( savedDict, stream );
-        dict_unref( savedDict );
+        DictionaryCtxt* savedDict = util_makeEmptyDict( util, xwe );
+        dict_loadFromStream( savedDict, xwe, stream );
+        dict_unref( savedDict, xwe );
     }
 
-    model = model_make( MPPARM(mpool) dict, dicts, util, nCols );
+    model = model_make( MPPARM(mpool) xwe, dict, dicts, util, nCols );
     model->nPlayers = nPlayers;
 
 #ifdef STREAM_VERS_BIGBOARD
@@ -294,9 +295,9 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
 } /* model_setSize */
 
 void
-model_destroy( ModelCtxt* model )
+model_destroy( ModelCtxt* model, XWEnv xwe )
 {
-    model_unrefDicts( model );
+    model_unrefDicts( model, xwe );
     stack_destroy( model->vol.stack );
     /* is this it!? */
     if ( !!model->vol.bonuses ) {
@@ -572,21 +573,21 @@ setStackBits( ModelCtxt* model, const DictionaryCtxt* dict )
 }
 
 void
-model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
+model_setDictionary( ModelCtxt* model, XWEnv xwe, DictionaryCtxt* dict )
 {
     DictionaryCtxt* oldDict = model->vol.dict;
-    model->vol.dict = dict_ref( dict );
+    model->vol.dict = dict_ref( dict, xwe );
     
     if ( !!dict ) {
         setStackBits( model, dict );
     }
 
     notifyDictListeners( model, -1, oldDict, dict );
-    dict_unref( oldDict );
+    dict_unref( oldDict, xwe );
 } /* model_setDictionary */
 
 void
-model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts )
+model_setPlayerDicts( ModelCtxt* model, XWEnv xwe, const PlayerDicts* dicts )
 {
     if ( !!dicts ) {
         XP_U16 ii;
@@ -599,12 +600,12 @@ model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts )
             if ( oldDict != newDict ) {
                 XP_ASSERT( NULL == newDict || NULL == gameDict 
                            || dict_tilesAreSame( gameDict, newDict ) );
-                model->vol.dicts.dicts[ii] = dict_ref( newDict );
+                model->vol.dicts.dicts[ii] = dict_ref( newDict, xwe );
 
                 notifyDictListeners( model, ii, oldDict, newDict );
                 setStackBits( model, newDict );
 
-                dict_unref( oldDict );
+                dict_unref( oldDict, xwe );
             }
         }
     }
@@ -636,14 +637,14 @@ model_getPlayerDict( const ModelCtxt* model, XP_S16 playerNum )
 }
 
 static void
-model_unrefDicts( ModelCtxt* model )
+model_unrefDicts( ModelCtxt* model, XWEnv xwe )
 {
     XP_U16 ii;
     for ( ii = 0; ii < VSIZE(model->vol.dicts.dicts); ++ii ) {
-        dict_unref( model->vol.dicts.dicts[ii] );
+        dict_unref( model->vol.dicts.dicts[ii], xwe );
         model->vol.dicts.dicts[ii] = NULL;
     }
-    dict_unref( model->vol.dict );
+    dict_unref( model->vol.dict, xwe );
     model->vol.dict = NULL;
 }
 
@@ -2437,12 +2438,12 @@ copyStack( const ModelCtxt* model, StackCtxt* destStack,
 } /* copyStack */
 
 static ModelCtxt*
-makeTmpModel( const ModelCtxt* model, XWStreamCtxt* stream,
+makeTmpModel( const ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
               MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
               void* closure )
 {
     ModelCtxt* tmpModel = model_make( MPPARM(model->vol.mpool) 
-                                      model_getDictionary(model), NULL,
+                                      xwe, model_getDictionary(model), NULL,
                                       model->vol.util, model_numCols(model) );
     tmpModel->loaner = model;
     model_setNPlayers( tmpModel, model->nPlayers );
@@ -2454,7 +2455,7 @@ makeTmpModel( const ModelCtxt* model, XWStreamCtxt* stream,
 } /* makeTmpModel */
 
 void
-model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
+model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
                         ServerCtxt* server, XP_Bool gameOver )
 {
     MovePrintClosure closure = {
@@ -2464,9 +2465,9 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
         .nPrinted = 0
     };
 
-    ModelCtxt* tmpModel = makeTmpModel( model, stream, printMovePre,
+    ModelCtxt* tmpModel = makeTmpModel( model, xwe, stream, printMovePre,
                                         printMovePost, &closure );
-    model_destroy( tmpModel );
+    model_destroy( tmpModel, xwe );
 
     if ( gameOver ) {
         /* if the game's over, it shouldn't matter which model I pass to this
@@ -2489,14 +2490,14 @@ getFirstWord( const WNParams* wnp, void* closure )
 }
 
 static void
-scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
+scoreLastMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moveInfo, XP_U16 howMany,
                LastMoveInfo* lmi )
 {
     XP_U16 score;
     WordNotifierInfo notifyInfo;
     FirstWordData data;
 
-    ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+    ModelCtxt* tmpModel = makeTmpModel( model, xwe, NULL, NULL, NULL, NULL );
     XP_U16 turn;
     XP_S16 moveNum = -1;
 
@@ -2513,7 +2514,7 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
     score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
                              (XWStreamCtxt*)NULL, &notifyInfo );
 
-    model_destroy( tmpModel );
+    model_destroy( tmpModel, xwe );
 
     lmi->score = score;
     XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
@@ -2614,11 +2615,11 @@ listWordsThrough( const WNParams* wnp, void* closure )
  *
  * How?   Undo backwards until we find the move that placed that tile.*/
 XP_Bool
-model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row, 
+model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
                         XP_S16 turn, XWStreamCtxt* stream )
 {
     XP_Bool found = XP_FALSE;
-    ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+    ModelCtxt* tmpModel = makeTmpModel( model, xwe, NULL, NULL, NULL, NULL );
     copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
     XP_Bool isHorizontal;
@@ -2672,7 +2673,7 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
         found = 0 < lwtInfo.nWords;
     }
 
-    model_destroy( tmpModel );
+    model_destroy( tmpModel, xwe );
     return found;
 } /* model_listWordsThrough */
 #endif
@@ -2698,7 +2699,8 @@ listHighestScores( const ModelCtxt* model, LastMoveInfo* lmi, MoveRec* move )
 }
 
 XP_Bool
-model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
+model_getPlayersLastScore( ModelCtxt* model, XWEnv xwe,
+                           XP_S16 player, LastMoveInfo* lmi )
 {
     StackCtxt* stack = model->vol.stack;
     XP_S16 nEntries, which;
@@ -2736,7 +2738,7 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
             XP_ASSERT( !inDuplicateMode || entry.playerNum == DUP_PLAYER );
             lmi->nTiles = entry.u.move.moveInfo.nTiles;
             if ( 0 < entry.u.move.moveInfo.nTiles ) {
-                scoreLastMove( model, &entry.u.move.moveInfo,
+                scoreLastMove( model, xwe, &entry.u.move.moveInfo,
                                nEntries - which, lmi );
                 if ( inDuplicateMode ) {
                     listHighestScores( model, lmi, &entry.u.move );

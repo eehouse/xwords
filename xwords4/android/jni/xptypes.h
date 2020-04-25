@@ -20,6 +20,7 @@
 #ifndef _XPTYPES_H_
 #define _XPTYPES_H_
 
+#include <jni.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -117,6 +118,8 @@ XP_U16 and_htons(XP_U16 s);
 #ifdef CPLUS
 extern "C" {
 #endif
+
+typedef JNIEnv* XWEnv;
 
 #ifdef CPLUS
 }

@@ -65,6 +65,8 @@ typedef guint32 XP_Time;
 typedef unsigned long XP_Time;
 #endif
 
+typedef void* XWEnv;
+
 #define XP_CR XP_L("\n")
 
 #define XP_STATUSF XP_DEBUGF

@@ -38,7 +38,6 @@
 typedef struct _AndDictionaryCtxt {
     DictionaryCtxt super;
     JNIUtilCtxt* jniutil;
-    JNIEnv *env;
     off_t bytesSize;
     jbyte* bytes;
     jbyteArray byteArray;
@@ -58,11 +57,11 @@ static void splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt,
                                  int nFaceBytes, int nFaces, XP_Bool isUTF8 );
 
 void
-dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
+dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
-    splitFaces_via_java( ctxt->env, ctxt, bytes, nBytes, nFaces, 
+    splitFaces_via_java( xwe, ctxt, bytes, nBytes, nFaces,
                          dict->isUTF8 );
 }
 
@@ -300,8 +299,8 @@ getNullTermParam( AndDictionaryCtxt* dctx, const XP_U8** ptr,
 }
 
 static XP_Bool
-parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
-           XP_U32* numEdges )
+parseDict( AndDictionaryCtxt* ctxt, XWEnv xwe, XP_U8 const* ptr,
+           XP_U32 dictLength, XP_U32* numEdges )
 {
     XP_Bool success = XP_TRUE;
     XP_ASSERT( !!ptr );
@@ -362,12 +361,12 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
         goto error;
     }
 
+    JNIEnv* env = xwe;
     if ( NULL == ctxt->super.md5Sum
 #ifdef DEBUG
          || XP_TRUE 
 #endif
          ) {
-        JNIEnv* env = ctxt->env;
         jstring jsum = and_util_getMD5SumForDict( ctxt->jniutil, 
                                                   ctxt->super.name, NULL, 0 );
         XP_UCHAR* md5Sum = NULL;
@@ -409,7 +408,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
 
     if ( isUTF8 ) {
         CHECK_PTR( ptr, numFaceBytes, end );
-        splitFaces_via_java( ctxt->env, ctxt, ptr, numFaceBytes, nFaces,
+        splitFaces_via_java( env, ctxt, ptr, numFaceBytes, nFaces,
                              XP_TRUE );
         ptr += numFaceBytes;
     } else {
@@ -426,8 +425,7 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
             nBytes += 1;
         }
         XP_ASSERT( nFaces == nBytes );
-        splitFaces_via_java( ctxt->env, ctxt, tmp, nBytes, nFaces, 
-                             XP_FALSE );
+        splitFaces_via_java( env, ctxt, tmp, nBytes, nFaces, XP_FALSE );
     }
 
     ctxt->super.is_4_byte = (ctxt->super.nodeSize == 4);
@@ -481,12 +479,12 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
 } /* parseDict */
 
 static void
-and_dictionary_destroy( DictionaryCtxt* dict )
+and_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
 {
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
     XP_LOGF( "%s(dict=%p); code=%x", __func__, ctxt, ctxt->dbgid );
     XP_U16 nSpecials = andCountSpecials( ctxt );
-    JNIEnv* env = ctxt->env;
+    JNIEnv* env = xwe;
 
     if ( !!ctxt->super.chars ) {
         for ( int ii = 0; ii < nSpecials; ++ii ) {
@@ -547,11 +545,10 @@ and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict )
 }
 
 DictionaryCtxt* 
-and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
+and_dictionary_make_empty( MPFORMAL JNIUtilCtxt* jniutil )
 {
     AndDictionaryCtxt* anddict
         = (AndDictionaryCtxt*)XP_CALLOC( mpool, sizeof( *anddict ) );
-    anddict->env = env;
     anddict->jniutil = jniutil;
 #ifdef DEBUG
     anddict->dbgid = rand();
@@ -597,8 +594,8 @@ makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
 }
 
 DictionaryCtxt* 
-makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstring jname, 
-          jbyteArray jbytes, jstring jpath, jstring jlangname, jboolean check )
+makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
+          jstring jname, jbyteArray jbytes, jstring jpath, jstring jlangname, jboolean check )
 {
     jbyte* bytes = NULL;
     jbyteArray byteArray = NULL;
@@ -606,7 +603,8 @@ makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstr
 
     const char* name = (*env)->GetStringUTFChars( env, jname, NULL );
     /* remember: dmgr_get calls dict_ref() */
-    AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)dmgr_get( dictMgr, name );
+    AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)dmgr_get( dictMgr,
+                                                               env, name );
 
     if ( NULL == anddict ) {
         if ( NULL == jpath ) {
@@ -634,7 +632,7 @@ makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstr
 
         if ( NULL != bytes ) {
             anddict = (AndDictionaryCtxt*)
-                and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
+                and_dictionary_make_empty( MPPARM(mpool) jniutil );
             anddict->bytes = bytes;
             anddict->byteArray = byteArray;
             anddict->bytesSize = bytesSize;
@@ -649,16 +647,16 @@ makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstr
                                                      env, jlangname );
 
             XP_U32 numEdges = 0;
-            XP_Bool parses = parseDict( anddict, (XP_U8*)anddict->bytes, 
+            XP_Bool parses = parseDict( anddict, env, (XP_U8*)anddict->bytes,
                                         bytesSize, &numEdges );
             if ( !parses || (check && !checkSanity( &anddict->super, 
                                                     numEdges ) ) ) {
-                and_dictionary_destroy( (DictionaryCtxt*)anddict );
+                and_dictionary_destroy( (DictionaryCtxt*)anddict, env );
                 anddict = NULL;
             }
         }
-        dmgr_put( dictMgr, name, &anddict->super );
-        dict_ref( &anddict->super );
+        dmgr_put( dictMgr, env, name, &anddict->super );
+        dict_ref( &anddict->super, env );
     }
     
     (*env)->ReleaseStringUTFChars( env, jname, name );

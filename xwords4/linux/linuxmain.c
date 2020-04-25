@@ -210,7 +210,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
             XP_ASSERT( !!cGlobals->dict );
         }
 
-        opened = game_makeFromStream( MEMPOOL stream, &cGlobals->game,
+        opened = game_makeFromStream( MEMPOOL NULL_XWE, stream, &cGlobals->game,
                                       cGlobals->gi, cGlobals->dict,
                                       &cGlobals->dicts, cGlobals->util,
                                       cGlobals->draw,
@@ -222,7 +222,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
     if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
         opened = XP_TRUE;
 
-        game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
+        game_makeNewGame( MEMPOOL NULL_XWE, &cGlobals->game, cGlobals->gi,
                           cGlobals->util, cGlobals->draw,
                           &cGlobals->cp, procs
 #ifdef SET_GAMESEED
@@ -287,9 +287,9 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         }
 
         XP_ASSERT( !!cGlobals->dict );
-        model_setDictionary( cGlobals->game.model, cGlobals->dict );
+        model_setDictionary( cGlobals->game.model, NULL_XWE, cGlobals->dict );
         setSquareBonuses( cGlobals );
-        model_setPlayerDicts( cGlobals->game.model, &cGlobals->dicts );
+        model_setPlayerDicts( cGlobals->game.model, NULL_XWE, &cGlobals->dicts );
 
         /* Need to save in order to have a valid selRow for the first send */
         linuxSaveGame( cGlobals );
@@ -399,8 +399,8 @@ makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream )
 {
     CurGameInfo gi = {0};
     XWStreamPos pos = stream_getPos( stream, POS_READ );
-    if ( !game_makeFromStream( MPPARM(cGlobals->util->mpool) stream, NULL, &gi,
-                               NULL, NULL, NULL, NULL, NULL, NULL ) ) {
+    if ( !game_makeFromStream( MPPARM(cGlobals->util->mpool) NULL_XWE, stream,
+                               NULL, &gi, NULL, NULL, NULL, NULL, NULL, NULL ) ) {
         XP_ASSERT(0);
     }
     stream_setPos( stream, POS_READ, pos );
@@ -422,7 +422,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
     XWGame* game = &cGlobals->game;
     XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
     if ( !!stream ) {
-        redraw = game_receiveMessage( game, stream, from );
+        redraw = game_receiveMessage( game, NULL_XWE, stream, from );
         if ( redraw ) {
             linuxSaveGame( cGlobals );
         }
@@ -524,7 +524,7 @@ catGameHistory( CommonGlobals* cGlobals )
             mem_stream_make( MPPARM(cGlobals->util->mpool)
                              cGlobals->params->vtMgr,
                              NULL, CHANNEL_NONE, catOnClose );
-        model_writeGameHistory( cGlobals->game.model, stream, 
+        model_writeGameHistory( cGlobals->game.model, NULL_XWE, stream,
                                 cGlobals->game.server, gameOver );
         stream_putU8( stream, '\n' );
         stream_destroy( stream );
@@ -618,7 +618,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
     XP_Bool opened = 
 #endif
         game_makeFromStream( MPPARM(cGlobals->util->mpool) 
-                             stream, &cGlobals->game, 
+                             NULL_XWE, stream, &cGlobals->game,
                              cGlobals->gi, cGlobals->dict, 
                              &cGlobals->dicts, cGlobals->util, 
                              NULL /*draw*/,
@@ -647,7 +647,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                       params->vtMgr );
         stream_putBytes( stream, buf, len );
-        (void)game_receiveMessage( &cGlobals->game, stream, NULL );
+        (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
         stream_destroy( stream );
     }
 
@@ -665,7 +665,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
     XP_Bool opened = 
 #endif
         game_makeFromStream( MPPARM(cGlobals->util->mpool) 
-                             stream, &cGlobals->game, 
+                             NULL_XWE, stream, &cGlobals->game,
                              cGlobals->gi, cGlobals->dict, 
                              &cGlobals->dicts, cGlobals->util, 
                              NULL /*draw*/,
@@ -697,7 +697,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
             stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                           params->vtMgr );
             stream_putBytes( stream, buf, len );
-            (void)game_receiveMessage( &cGlobals->game, stream, NULL );
+            (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
             stream_destroy( stream );
         }
 
@@ -1431,8 +1431,7 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
             if ( !!inboundS ) {
                 CommsAddrRec addr = {0};
                 addr_addType( &addr, COMMS_CONN_RELAY );
-
-                redraw = game_receiveMessage( &cGlobals->game, inboundS, &addr );
+                redraw = game_receiveMessage( &cGlobals->game, NULL_XWE, inboundS, &addr );
 
                 stream_destroy( inboundS );
             }
@@ -1764,7 +1763,7 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
     tip->proc = NULL;
 
     if ( !!proc ) {
-        draw = (*proc)( closure, why );
+        draw = (*proc)( closure, NULL_XWE, why );
     } else {
         XP_LOGF( "%s: skipping timer %d; cancelled?", __func__, why );
     }
@@ -2093,7 +2092,7 @@ walk_dict_test_all( MPFORMAL const LaunchParams* params, GSList* testDicts,
         if ( NULL != dict ) {
             XP_LOGF( "walk_dict_test(%s)", name );
             walk_dict_test( MPPARM(mpool) dict, testPrefixes, testMinMax );
-            dict_unref( dict );
+            dict_unref( dict, NULL_XWE );
         }
     }
 }
@@ -2474,7 +2473,7 @@ freeParams( LaunchParams* params )
     
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
     dutils_free( &params->dutil );
-    dmgr_destroy( params->dictMgr );
+    dmgr_destroy( params->dictMgr, NULL_XWE );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
     mpool_destroy( params->mpool );
@@ -2491,7 +2490,7 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
                                    params->useMmap );
         if ( NULL != dict ) {
             dumpDict( dict );
-            dict_unref( dict );
+            dict_unref( dict, NULL_XWE );
         }
     }
     return 0;
@@ -3075,7 +3074,7 @@ main( int argc, char** argv )
             XP_ASSERT( !!dict );
             mainParams.pgi.dictLang = dict_getLangCode( dict );
             XP_LOGFF( "set lang code: %d", mainParams.pgi.dictLang );
-            dict_unref( dict );
+            dict_unref( dict, NULL_XWE );
         } else if ( isServer ) {
 #ifdef STUBBED_DICT
             foo

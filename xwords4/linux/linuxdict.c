@@ -53,20 +53,20 @@ typedef struct LinuxDictionaryCtxt {
 static XP_Bool initFromDictFile( LinuxDictionaryCtxt* dctx, 
                                  const LaunchParams* params,
                                  const char* fileName );
-static void linux_dictionary_destroy( DictionaryCtxt* dict );
+static void linux_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe );
 static const XP_UCHAR* linux_dict_getShortName( const DictionaryCtxt* dict );
 
 /*****************************************************************************
  *
  ****************************************************************************/
 DictionaryCtxt* 
-linux_dictionary_make( MPFORMAL const LaunchParams* params,
+linux_dictionary_make( MPFORMAL XWEnv xwe, const LaunchParams* params,
                        const char* dictFileName, XP_Bool useMMap )
 {
     LinuxDictionaryCtxt* result = NULL;
     if ( !!dictFileName ) {
         /* dmgr_get increments ref count before returning! */
-        result = (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, dictFileName );
+        result = (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, xwe, dictFileName );
     }
     if ( !result ) {
         result = (LinuxDictionaryCtxt*)XP_CALLOC(mpool, sizeof(*result));
@@ -88,11 +88,11 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
                 result = NULL;
             }
 
-            dmgr_put( params->dictMgr, dictFileName, &result->super );
+            dmgr_put( params->dictMgr, xwe, dictFileName, &result->super );
         } else {
             XP_LOGF( "%s(): no file name!!", __func__ );
         }
-        (void)dict_ref( &result->super );
+        (void)dict_ref( &result->super, xwe );
     }
 
     return &result->super;
@@ -215,7 +215,7 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, const XP_U8** ptrp )
 } /* skipBitmaps */
 
 void
-dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
+dict_splitFaces( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe), const XP_U8* utf8,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
@@ -408,7 +408,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
         memcpy( tmp, ptr, numFaceBytes );
         ptr += numFaceBytes;
 
-        dict_splitFaces( &dctx->super, tmp, numFaceBytes, numFaces );
+        dict_splitFaces( &dctx->super, NULL, tmp, numFaceBytes, numFaces );
 
         memcpy( &xloc, ptr, sizeof(xloc) );
         ptr += sizeof(xloc);
@@ -495,7 +495,7 @@ freeSpecials( LinuxDictionaryCtxt* ctxt )
 } /* freeSpecials */
 
 static void
-linux_dictionary_destroy( DictionaryCtxt* dict )
+linux_dictionary_destroy( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
 {
     LinuxDictionaryCtxt* ctxt = (LinuxDictionaryCtxt*)dict;
 

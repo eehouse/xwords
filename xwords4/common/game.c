@@ -105,7 +105,7 @@ setListeners( XWGame* game, const CommonPrefs* cp )
 }
 
 void
-game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
+game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
                   const CommonPrefs* cp, const TransportProcs* procs
 #ifdef SET_GAMESEED
@@ -126,8 +126,8 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 
     game->util = util;
 
-    game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, NULL, util, 
-                              gi->boardSize );
+    game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
+                              NULL, util, gi->boardSize );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( gi->serverRole != SERVER_STANDALONE ) {
@@ -223,16 +223,16 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
 
 #ifdef XWFEATURE_CHANGEDICT
 void
-game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, DictionaryCtxt* dict )
+game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, DictionaryCtxt* dict )
 {
-    model_setDictionary( game->model, dict );
+    model_setDictionary( game->model, xwe, dict );
     gi_setDict( MPPARM(mpool) gi, dict );
     server_resetEngines( game->server );
 }
 #endif
 
 XP_Bool
-game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
+game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
                      CurGameInfo* gi, DictionaryCtxt* dict, 
                      const PlayerDicts* dicts, XW_UtilCtxt* util, 
                      DrawCtx* draw, CommonPrefs* cp, 
@@ -284,7 +284,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                 game->comms = NULL;
             }
 
-            game->model = model_makeFromStream( MPPARM(mpool) stream, dict, 
+            game->model = model_makeFromStream( MPPARM(mpool) xwe, stream, dict,
                                                 dicts, util );
 
             game->server = server_makeFromStream( MPPARM(mpool) stream, 
@@ -303,14 +303,14 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 } /* game_makeFromStream */
 
 void
-game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
+game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,
                   const CommonPrefs* cp, XWStreamCtxt* out )
 {
     XWGame newGame = {0};
     CurGameInfo newGI = {0};
     gi_copy( MPPARM(mpool) &newGI, gi );
 
-    game_makeNewGame( MPPARM(mpool) &newGame, &newGI, util, 
+    game_makeNewGame( MPPARM(mpool) xwe, &newGame, &newGI, util,
                       NULL, /* DrawCtx*,  */
                       cp, NULL /* TransportProcs* procs */
 #ifdef SET_GAMESEED
@@ -320,7 +320,7 @@ game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
 
     game_saveToStream( &newGame, &newGI, out, 1 );
     game_saveSucceeded( &newGame, 1 );
-    game_dispose( &newGame );
+    game_dispose( &newGame, xwe );
     gi_disposePlayerInfo( MPPARM(mpool) &newGI );
 }
 
@@ -358,7 +358,7 @@ game_saveSucceeded( const XWGame* game, XP_U16 saveToken )
 }
 
 XP_Bool
-game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
+game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
                      const CommsAddrRec* retAddr )
 {
     ServerCtxt* server = game->server;
@@ -368,7 +368,7 @@ game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
     if ( result ) {
         (void)server_do( server );
 
-        result = server_receiveMessage( server, stream );
+        result = server_receiveMessage( server, xwe, stream );
     }
     comms_msgProcessed( game->comms, &commsState, !result );
 
@@ -419,7 +419,7 @@ game_getIsServer( const XWGame* game )
 }
 
 void
-game_dispose( XWGame* game )
+game_dispose( XWGame* game, XWEnv xwe )
 {
     /* The board should be reused!!! PENDING(ehouse) */
     if ( !!game->board ) {
@@ -435,7 +435,7 @@ game_dispose( XWGame* game )
     }
 #endif
     if ( !!game->model ) { 
-        model_destroy( game->model );
+        model_destroy( game->model, xwe );
         game->model = NULL;
     }
     if ( !!game->server ) {

@@ -28,8 +28,8 @@
 /* typedef struct DrawCtx DrawCtx; */
 
 
-typedef XP_Bool (*LastScoreCallback)( void* closure, XP_S16 player,
-                                      LastMoveInfo* lmi );
+typedef XP_Bool (*LastScoreCallback)( void* closure, XWEnv xwe,
+                                      XP_S16 player, LastMoveInfo* lmi );
 
 typedef enum {
     CELL_NONE = 0x00
@@ -47,7 +47,7 @@ typedef enum {
     , CELL_ALL = 0x7FF
 } CellFlags;
 
-typedef struct DrawScoreInfo {
+typedef struct _DrawScoreInfo {
     LastScoreCallback lsc;
     void* lscClosure;
     const XP_UCHAR* name;

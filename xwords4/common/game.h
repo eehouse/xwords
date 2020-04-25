@@ -61,7 +61,7 @@ typedef struct XWGame {
 #endif
 } XWGame;
 
-void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi, 
+void game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
                        XW_UtilCtxt* util, DrawCtx* draw, 
                        const CommonPrefs* cp, const TransportProcs* procs
 #ifdef SET_GAMESEED
@@ -70,26 +70,26 @@ void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                        );
 XP_Bool game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
                     CommonPrefs* cp, const TransportProcs* procs );
-void game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, 
+void game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
                       DictionaryCtxt* dict );
 
-XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
-                             CurGameInfo* gi, DictionaryCtxt* dict, 
-                             const PlayerDicts* dicts, XW_UtilCtxt* util, 
-                             DrawCtx* draw, CommonPrefs* cp,
-                             const TransportProcs* procs );
+XP_Bool game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+                             XWGame* game, CurGameInfo* gi,
+                             DictionaryCtxt* dict, const PlayerDicts* dicts,
+                             XW_UtilCtxt* util, DrawCtx* draw,
+                             CommonPrefs* cp, const TransportProcs* procs );
 
-void game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
+void game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,
                        const CommonPrefs* cp, XWStreamCtxt* out );
 
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                         XWStreamCtxt* stream, XP_U16 saveToken );
 void game_saveSucceeded( const XWGame* game, XP_U16 saveToken );
 
-XP_Bool game_receiveMessage( XWGame* game, XWStreamCtxt* stream,
+XP_Bool game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
                              const CommsAddrRec* retAddr );
 
-void game_dispose( XWGame* game );
+void game_dispose( XWGame* game, XWEnv xwe );
 
 void game_getState( const XWGame* game, GameStateInfo* gsi );
 XP_Bool game_getIsServer( const XWGame* game );

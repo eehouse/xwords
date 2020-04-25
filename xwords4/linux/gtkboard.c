@@ -708,9 +708,9 @@ cleanup( GtkGameGlobals* globals )
 #ifdef XWFEATURE_RELAY
     linux_close_socket( cGlobals );
 #endif
-    game_dispose( &cGlobals->game );
+    game_dispose( &cGlobals->game, NULL_XWE );
     gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
-    dict_unref( cGlobals->dict );
+    dict_unref( cGlobals->dict, NULL_XWE );
 
     linux_util_vt_destroy( cGlobals->util );
     free( cGlobals->util );
@@ -899,7 +899,7 @@ change_dictionary( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 		DictionaryCtxt* dict = 
 			linux_dictionary_make( MPPARM(cGlobals->util->mpool) params, name,
 								   params->useMmap );
-		game_changeDict( MPPARM(cGlobals->util->mpool) &cGlobals->game, 
+		game_changeDict( MPPARM(cGlobals->util->mpool) &cGlobals->game, NULL_XWE,
                          cGlobals->gi, dict );
 	}
 	g_slist_free( dicts );
@@ -1991,7 +1991,7 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
     LastMoveInfo lmi;
     if ( model_getPlayersLastScore( globals->cGlobals.game.model,
-                                    player, &lmi ) ) {
+                                    NULL_XWE, player, &lmi ) ) {
         XP_UCHAR buf[128];
         formatLMI( &lmi, buf, VSIZE(buf) );
         (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
@@ -2612,7 +2612,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
         if ( NULL == cGlobals->dict ) {
             cGlobals->dict = makeDictForStream( cGlobals, stream );
         }
-        loaded = game_makeFromStream( MEMPOOL stream, &cGlobals->game, 
+        loaded = game_makeFromStream( MEMPOOL NULL_XWE, stream, &cGlobals->game,
                                       cGlobals->gi, cGlobals->dict,
                                       &cGlobals->dicts, cGlobals->util, 
                                       (DrawCtx*)NULL, &cGlobals->cp, &procs );
@@ -2625,7 +2625,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
             }
 #endif
         } else {
-            game_dispose( &cGlobals->game );
+            game_dispose( &cGlobals->game, NULL_XWE );
         }
     }
     stream_destroy( stream );

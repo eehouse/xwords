@@ -344,7 +344,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
         gi.serverRole = SERVER_ISSERVER;
         gi.forceChannel = 0;
     }
-    game_saveNewGame( MPPARM(cGlobals->util->mpool) &gi, 
+    game_saveNewGame( MPPARM(cGlobals->util->mpool) NULL_XWE, &gi,
                       cGlobals->util, &cGlobals->cp, stream );
 
     sqlite3_int64 rowID = writeNewGameToDB( stream, params->pDb );

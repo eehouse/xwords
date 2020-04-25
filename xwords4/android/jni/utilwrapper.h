@@ -38,6 +38,6 @@ XW_UtilCtxt* makeUtil( MPFORMAL EnvThreadInfo* ti, jobject j_util,
                        CurGameInfo* gi, AndGameGlobals* globals );
 void destroyUtil( XW_UtilCtxt** util );
 
-bool utilTimerFired( XW_UtilCtxt* util, XWTimerReason why, int handle );
+bool utilTimerFired( XW_UtilCtxt* util, XWEnv xwe, XWTimerReason why, int handle );
 
 #endif

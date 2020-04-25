@@ -69,12 +69,12 @@ dmgr_make( MPFORMAL_NOCOMMA )
 }
 
 void
-dmgr_destroy( DictMgrCtxt* dmgr )
+dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe )
 {
     XP_U16 ii;
     for ( ii = 0; ii < DMGR_MAX_DICTS; ++ii ) {
         DictPair* pair = &dmgr->pairs[ii];
-        dict_unref( pair->dict );
+        dict_unref( pair->dict, xwe );
         XP_FREEP( dmgr->mpool, &pair->key );
     }
     pthread_mutex_destroy( &dmgr->mutex );
@@ -82,7 +82,7 @@ dmgr_destroy( DictMgrCtxt* dmgr )
 }
 
 DictionaryCtxt* 
-dmgr_get( DictMgrCtxt* dmgr, const XP_UCHAR* key )
+dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
 {
     DictionaryCtxt* result = NULL;
 
@@ -90,7 +90,7 @@ dmgr_get( DictMgrCtxt* dmgr, const XP_UCHAR* key )
 
     XP_S16 index = findFor( dmgr, key );
     if ( 0 <= index ) {
-        result = dict_ref( dmgr->pairs[index].dict ); /* so doesn't get nuked in a race */
+        result = dict_ref( dmgr->pairs[index].dict, xwe ); /* so doesn't get nuked in a race */
         moveToFront( dmgr, index );
     }
 
@@ -101,7 +101,7 @@ dmgr_get( DictMgrCtxt* dmgr, const XP_UCHAR* key )
 }
 
 void
-dmgr_put( DictMgrCtxt* dmgr, const XP_UCHAR* key, DictionaryCtxt* dict )
+dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, DictionaryCtxt* dict )
 {
     pthread_mutex_lock( &dmgr->mutex );
 
@@ -109,8 +109,8 @@ dmgr_put( DictMgrCtxt* dmgr, const XP_UCHAR* key, DictionaryCtxt* dict )
     if ( NOT_FOUND == loc ) { /* reuse the last one */
         moveToFront( dmgr, VSIZE(dmgr->pairs) - 1 );
         DictPair* pair = dmgr->pairs; /* the head */
-        dict_unref( pair->dict );
-        pair->dict = dict_ref( dict );
+        dict_unref( pair->dict, xwe );
+        pair->dict = dict_ref( dict, xwe );
         replaceStringIfDifferent( dmgr->mpool, &pair->key, key );
     } else {
         moveToFront( dmgr, loc );

@@ -313,7 +313,7 @@ and_util_engineProgressCallback( XW_UtilCtxt* uc )
 
 /* This is added for java, not part of the util api */
 bool
-utilTimerFired( XW_UtilCtxt* uc, XWTimerReason why, int handle )
+utilTimerFired( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, int handle )
 {
     bool handled = false;
     AndUtil* util = (AndUtil*)uc;
@@ -321,7 +321,7 @@ utilTimerFired( XW_UtilCtxt* uc, XWTimerReason why, int handle )
     if ( handle == (int)timerStorage ) {
         XWTimerProc proc = timerStorage->proc;
         if ( !!proc ) {
-            handled = (*proc)( timerStorage->closure, why );
+            handled = (*proc)( timerStorage->closure, xwe, why );
         } else {
             XP_LOGF( "%s(why=%d): ERROR: no proc set", __func__, why );
         }
@@ -383,17 +383,16 @@ and_dutil_getCurSeconds( XW_DUtilCtxt* duc )
 }
 
 static DictionaryCtxt* 
-and_util_makeEmptyDict( XW_UtilCtxt* uc )
+and_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
 {
 #ifdef STUBBED_DICT
     XP_ASSERT(0);
 #else
     AndGameGlobals* globals = (AndGameGlobals*)uc->closure;
-    AndUtil* andutil = (AndUtil*)uc;
     DictionaryCtxt* result =  
         and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
-                                   ENVFORME( andutil->ti ), globals->jniutil );
-    return dict_ref( result );
+                                   globals->jniutil );
+    return dict_ref( result, xwe );
 #endif
 }
 

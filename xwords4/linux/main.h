@@ -296,4 +296,6 @@ typedef struct _GtkAppGlobals {
 } GtkAppGlobals;
 #endif
 
+#define NULL_XWE ((XWEnv*)NULL)
+
 #endif

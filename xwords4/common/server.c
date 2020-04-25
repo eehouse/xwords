@@ -1012,7 +1012,7 @@ updateOthersTiles( ServerCtxt* server )
 }
 
 static XP_Bool
-checkDupTimerProc( void* closure, XWTimerReason XP_UNUSED_DBG(XP_why) )
+checkDupTimerProc( void* closure, XWEnv XP_UNUSED(xwe), XWTimerReason XP_UNUSED_DBG(XP_why) )
 {
     XP_ASSERT( XP_why == TIMER_DUP_TIMERCHECK );
     ServerCtxt* server = (ServerCtxt*)closure;
@@ -1412,7 +1412,7 @@ makeRobotMove( ServerCtxt* server )
 
 #ifdef XWFEATURE_SLOW_ROBOT
 static XP_Bool 
-wakeRobotProc( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
+wakeRobotProc( void* closure, XWEnv XP_UNUSED(xwe), XWTimerReason XP_UNUSED_DBG(why) )
 {
     XP_ASSERT( TIMER_SLOWROBOT == why );
     ServerCtxt* server = (ServerCtxt*)closure;
@@ -1796,7 +1796,7 @@ sortTilesIf( ServerCtxt* server, XP_S16 turn )
  * tray contents.
  */
 static XP_Bool
-client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
+client_readInitialMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     XP_Bool accepted = 0 == server->nv.addresses[0].channelNo;
@@ -1834,8 +1834,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
         XP_U16 nCols = localGI.boardSize;
 
-        DictionaryCtxt* newDict = util_makeEmptyDict( server->vol.util );
-        dict_loadFromStream( newDict, stream );
+        DictionaryCtxt* newDict = util_makeEmptyDict( server->vol.util, xwe );
+        dict_loadFromStream( newDict, xwe, stream );
 
 #ifdef STREAM_VERS_BIGBOARD
         if ( STREAM_VERS_DICTNAME <= streamVersion ) {
@@ -1866,7 +1866,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         XP_ASSERT( !!newDict );
 
         if ( curDict == NULL ) {
-            model_setDictionary( model, newDict );
+            model_setDictionary( model, xwe, newDict );
         } else if ( dict_tilesAreSame( newDict, curDict ) ) {
             /* keep the dict the local user installed */
 #ifdef STREAM_VERS_BIGBOARD
@@ -1879,11 +1879,11 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             }
 #endif
         } else {
-            model_setDictionary( model, newDict );
+            model_setDictionary( model, xwe, newDict );
             util_userError( server->vol.util, ERR_SERVER_DICT_WINS );
             clearLocalRobots( server );
         }
-        dict_unref( newDict );  /* new owner will have ref'd */
+        dict_unref( newDict, xwe );  /* new owner will have ref'd */
 
         XP_ASSERT( !server->pool );
         makePoolOnce( server );
@@ -4069,7 +4069,7 @@ readProto( ServerCtxt* server, XWStreamCtxt* stream )
 }
 
 XP_Bool
-server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
+server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 {
     XP_Bool accepted = XP_FALSE;
     XP_Bool isServer = amServer( server );
@@ -4093,7 +4093,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         accepted = !isServer;
         if ( accepted ) {
             XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
-            accepted = client_readInitialMessage( server, incoming );
+            accepted = client_readInitialMessage( server, xwe, incoming );
         }
         break;
 #ifdef XWFEATURE_CHAT

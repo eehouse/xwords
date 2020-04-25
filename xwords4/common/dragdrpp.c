@@ -628,7 +628,7 @@ setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits )
 #endif
 
 static XP_Bool
-scrollTimerProc( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
+scrollTimerProc( void* closure, XWEnv XP_UNUSED(xwe), XWTimerReason XP_UNUSED_DBG(why) )
 {
     XP_Bool draw = XP_FALSE;
     BoardCtxt* board = (BoardCtxt*)closure;

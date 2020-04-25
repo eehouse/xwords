@@ -1,7 +1,6 @@
-
-/* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright © 2009 - 2018 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright © 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -384,7 +383,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
         XP_ASSERT( ENVFORME(&globalState->ti) == env );
         smsproto_free( globalState->smsProto );
         vtmgr_destroy( MPPARM(mpool) globalState->vtMgr );
-        dmgr_destroy( globalState->dictMgr );
+        dmgr_destroy( globalState->dictMgr, env );
         destroyDUtil( &globalState->dutil );
         destroyJNIUtil( env, &globalState->jniutil );
         map_destroy( &globalState->ti );
@@ -671,7 +670,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 
     CurGameInfo gi;
     XP_MEMSET( &gi, 0, sizeof(gi) );
-    if ( game_makeFromStream( MPPARM(mpool) stream, NULL,
+    if ( game_makeFromStream( MPPARM(mpool) env, stream, NULL,
                               &gi, NULL, NULL, NULL, NULL, NULL, NULL ) ) {
         setJGI( env, jgi, &gi );
     } else {
@@ -764,7 +763,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1ref
 {
     if ( 0 != dictPtr ) {
         DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
-        dict_ref( dict );
+        dict_ref( dict, env );
     }
 }
 
@@ -774,7 +773,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1unref
 {
     if ( 0 != dictPtr ) {
         DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
-        dict_unref( dict );
+        dict_unref( dict, env );
     }
 }
 
@@ -802,7 +801,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
             setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
             setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
         }
-        dict_unref( dict );
+        dict_unref( dict, env );
         result = true;
     }
 
@@ -1029,8 +1028,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     CommonPrefs cp = {0};
     loadCommonPrefs( env, &cp, j_cp );
 
-    game_makeNewGame( MPPARM(mpool) &state->game, gi, globals->util, dctx, &cp,
-                      globals->xportProcs );
+    game_makeNewGame( MPPARM(mpool) env, &state->game, gi,
+                      globals->util, dctx, &cp, globals->xportProcs );
 
     DictionaryCtxt* dict;
     PlayerDicts dicts;
@@ -1044,10 +1043,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
         dict = make_stubbed_dict( MPPARM_NOCOMMA(mpool) );
     }
 #endif
-    model_setDictionary( state->game.model, dict );
-    dict_unref( dict );         /* game owns it now */
-    model_setPlayerDicts( state->game.model, &dicts );
-    dict_unref_all( &dicts );
+    model_setDictionary( state->game.model, env, dict );
+    dict_unref( dict, env );         /* game owns it now */
+    model_setPlayerDicts( state->game.model, env, &dicts );
+    dict_unref_all( &dicts, env );
     XWJNI_END();
 } /* makeNewGame */
 
@@ -1063,7 +1062,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 
     destroyGI( MPPARM(mpool) &globals->gi );
 
-    game_dispose( &state->game );
+    game_dispose( &state->game, env );
 
     destroyDraw( &globals->dctx );
     destroyXportProcs( &globals->xportProcs );
@@ -1103,13 +1102,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
-    result = game_makeFromStream( MPPARM(mpool) stream, &state->game, 
+    result = game_makeFromStream( MPPARM(mpool) env, stream, &state->game,
                                   globals->gi, dict, &dicts,
                                   globals->util, globals->dctx, &cp,
                                   globals->xportProcs );
     stream_destroy( stream );
-    dict_unref( dict );         /* game owns it now */
-    dict_unref_all( &dicts );
+    dict_unref( dict, env );         /* game owns it now */
+    dict_unref_all( &dicts, env );
 
     /* If game_makeFromStream() fails, the platform-side caller still needs to
        call game_dispose. That requirement's better than having cleanup code
@@ -1625,7 +1624,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_timerFired
     jboolean result;
     XWJNI_START_GLOBALS();
     XW_UtilCtxt* util = globals->util;
-    result = utilTimerFired( util, why, handle );
+    result = utilTimerFired( util, env, why, handle );
     XWJNI_END();
     return result;
 }
@@ -1678,8 +1677,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
     jstring result;
     XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
-    model_writeGameHistory( state->game.model, stream, state->game.server,
-                            gameOver );
+    model_writeGameHistory( state->game.model, env, stream,
+                            state->game.server, gameOver );
     result = streamToJString( env, stream );
     stream_destroy( stream );
     XWJNI_END();
@@ -1718,7 +1717,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
     XWJNI_START();
     XP_ASSERT( !!state->game.model );
     LastMoveInfo lmi;
-    XP_Bool valid = model_getPlayersLastScore( state->game.model, 
+    XP_Bool valid = model_getPlayersLastScore( state->game.model, env,
                                                player, &lmi );
     setBool( env, jlmi, "isValid", valid );
     if ( valid ) {
@@ -1878,7 +1877,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         addrp = &addr;
     }
 
-    result = game_receiveMessage( &state->game, stream, addrp );
+    result = game_receiveMessage( &state->game, env, stream, addrp );
 
     stream_destroy( stream );
 
@@ -2423,8 +2422,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = data->mpool;
 #endif
-
-        dict_unref( data->dict );
+        dict_unref( data->dict, env );
         freeIndices( data );
 
         MAP_REMOVE( &data->globalState->ti, env );

@@ -40,7 +40,7 @@ extern "C" {
  ****************************************************************************/
 
 DictionaryCtxt*
-p_dict_ref( DictionaryCtxt* dict
+p_dict_ref( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
 #ifdef DEBUG_REF
             ,const char* func, const char* file, int line
 #endif
@@ -59,7 +59,7 @@ p_dict_ref( DictionaryCtxt* dict
 }
 
 void
-p_dict_unref( DictionaryCtxt* dict
+p_dict_unref( DictionaryCtxt* dict, XWEnv xwe
 #ifdef DEBUG_REF
             ,const char* func, const char* file, int line
 #endif
@@ -76,17 +76,17 @@ p_dict_unref( DictionaryCtxt* dict
         pthread_mutex_unlock( &dict->mutex );
         if ( 0 == dict->refCount ) {
             pthread_mutex_destroy( &dict->mutex );
-            (*dict->destructor)( dict );
+            (*dict->destructor)( dict, xwe );
         }
     }
 }
 
 void
-dict_unref_all( PlayerDicts* pd )
+dict_unref_all( PlayerDicts* pd, XWEnv xwe )
 {
     XP_U16 ii;
     for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
-        dict_unref( pd->dicts[ii] );
+        dict_unref( pd->dicts[ii], xwe );
     }
 }
 
@@ -435,7 +435,7 @@ freeSpecials( DictionaryCtxt* dict )
 } /* freeSpecials */
 
 static void
-common_destructor( DictionaryCtxt* dict )
+common_destructor( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
 {
     freeSpecials( dict );
 
@@ -448,7 +448,7 @@ common_destructor( DictionaryCtxt* dict )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 void
-dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
+dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_U8 nFaces, nFaceBytes;
     XP_U16 maxCountBits, maxValueBits;
@@ -483,7 +483,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_ASSERT( nFaceBytes < VSIZE(utf8) );
     stream_getBytes( stream, utf8, nFaceBytes );
     dict->isUTF8 = XP_TRUE;     /* need to communicate this in stream */
-    dict_splitFaces( dict, utf8, nFaceBytes, nFaces );
+    dict_splitFaces( dict, xwe, utf8, nFaceBytes, nFaces );
 
     for ( nSpecials = ii = 0; ii < nFaces; ++ii ) {
         const XP_UCHAR* facep = dict_getTileStringRaw( dict, (Tile)ii );

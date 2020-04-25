@@ -30,10 +30,10 @@ extern "C" {
 typedef struct DictMgrCtxt DictMgrCtxt;
 
 DictMgrCtxt* dmgr_make( MPFORMAL_NOCOMMA );
-void dmgr_destroy( DictMgrCtxt* dmgr );
+void dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe );
 
-void dmgr_put( DictMgrCtxt* dmgr, const XP_UCHAR* key, DictionaryCtxt* dict );
-DictionaryCtxt* dmgr_get( DictMgrCtxt* dmgr, const XP_UCHAR* key );
+void dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, DictionaryCtxt* dict );
+DictionaryCtxt* dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key );
 
 #ifdef CPLUS
 }

@@ -79,7 +79,7 @@ typedef struct _BadWordInfo {
 } BadWordInfo;
 
 /* XWTimerProc returns true if redraw was necessitated by what the proc did */
-typedef XP_Bool (*XWTimerProc)( void* closure, XWTimerReason why );
+typedef XP_Bool (*XWTimerProc)( void* closure, XWEnv xwe, XWTimerReason why );
 
 /* Platform-specific utility functions that need to be
  */
@@ -142,7 +142,7 @@ typedef struct UtilVtable {
     void (*m_util_requestTime)( XW_UtilCtxt* uc );
 
     XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc );
-    DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc );
+    DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc, XWEnv xwe );
 
     void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, BadWordInfo* bwi,
                                        XP_U16 turn, XP_Bool turnLost );
@@ -274,8 +274,8 @@ struct XW_UtilCtxt {
 #define util_altKeyDown( uc ) \
          (uc)->vtable->m_util_altKeyDown((uc))
 
-#define util_makeEmptyDict( uc ) \
-         (uc)->vtable->m_util_makeEmptyDict((uc))
+#define util_makeEmptyDict( uc, xwe )                   \
+         (uc)->vtable->m_util_makeEmptyDict((uc), (xwe))
 
 #define util_notifyIllegalWords( uc, w, p, b ) \
          (uc)->vtable->m_util_notifyIllegalWords((uc),(w),(p),(b))
