@@ -2156,14 +2156,24 @@ getDictPath( const LaunchParams *params, const char* name,
     XP_Bool success = XP_FALSE;
     GSList* iter;
     result[0] = '\0';
-    for ( iter = params->dictDirs; !!iter; iter = iter->next ) {
+    for ( iter = params->dictDirs; !!iter && !success; iter = iter->next ) {
         const char* path = iter->data;
-        char buf[256];
-        int len = snprintf( buf, VSIZE(buf), "%s/%s.xwd", path, name );
-        if ( len < VSIZE(buf) && file_exists( buf ) ) {
-            snprintf( result, resultLen, "%s", buf );
-            success = XP_TRUE;
-            break;
+
+        for ( bool firstPass = true; ; firstPass = false ) {
+            char buf[256];
+            int len = snprintf( buf, VSIZE(buf), "%s/%s%s", path, name,
+                                firstPass ? "" : ".xwd" );
+            XP_ASSERT( len < VSIZE(buf) );
+            if ( len < VSIZE(buf) && file_exists( buf ) ) {
+                snprintf( result, resultLen, "%s", buf );
+                success = XP_TRUE;
+                break;
+            } else {
+                XP_LOGFF( "nothing found at %s", buf );
+                if ( !firstPass ) {
+                    break;
+                }
+            }
         }
     }
     XP_LOGF( "%s(%s)=>%d", __func__, name, success );
