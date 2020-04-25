@@ -1653,7 +1653,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
     jstring result;
     XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
-    server_formatDictCounts( state->game.server, stream, nCols );
+    server_formatDictCounts( state->game.server, stream, nCols, XP_FALSE );
     result = streamToJString( env, stream );
     stream_destroy( stream );
     XWJNI_END();

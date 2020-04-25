@@ -4177,7 +4177,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 
 void 
 server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
-                         XP_U16 nCols )
+                         XP_U16 nCols, XP_Bool allFaces )
 {
     DictionaryCtxt* dict;
     Tile tile;
@@ -4206,14 +4206,14 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
             const XP_UCHAR* face = NULL;
             XP_UCHAR faces[48] = {0};
             XP_U16 len = 0;
-            for ( ; ; ) {
+            do {
                 face = dict_getNextTileString( dict, tile, face );
                 if ( !face ) {
                     break;
                 }
                 const XP_UCHAR* fmt = len == 0? "%s" : ",%s";
                 len += XP_SNPRINTF( faces + len, sizeof(faces) - len, fmt, face );
-            }
+            } while ( allFaces );
             value = dict_getTileValue( dict, tile );
 
             XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d/%d", 

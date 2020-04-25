@@ -122,7 +122,7 @@ void server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from );
 #endif
 
 void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
-                              XP_U16 nCols );
+                              XP_U16 nCols, XP_Bool allFaces );
 void server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
                                   XP_S16 player );
 

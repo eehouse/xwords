@@ -1474,7 +1474,7 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                 cGlobals->params->vtMgr );
-    server_formatDictCounts( bGlobals->cGlobals.game.server, stream, 5 );
+    server_formatDictCounts( bGlobals->cGlobals.game.server, stream, 5, XP_FALSE );
     const XP_U8* data = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
     XP_UCHAR buf[len + 1];

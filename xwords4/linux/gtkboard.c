@@ -734,7 +734,7 @@ makeAddSubmenu( GtkWidget* menubar, gchar* label )
 } /* makeAddSubmenu */
 
 static void
-tile_values( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+tile_values_impl( GtkGameGlobals* globals, bool full )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
     if ( !!cGlobals->game.server ) {
@@ -744,12 +744,24 @@ tile_values( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                              globals, 
                              CHANNEL_NONE, 
                              catOnClose );
-        server_formatDictCounts( cGlobals->game.server, stream, 5 );
+        server_formatDictCounts( cGlobals->game.server, stream, 5, full );
         stream_putU8( stream, '\n' );
         stream_destroy( stream );
     }
     
 } /* tile_values */
+
+static void
+tile_values( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    tile_values_impl( globals, false );
+}
+
+static void
+tile_values_full( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    tile_values_impl( globals, true );
+}
 
 static void
 game_history( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
@@ -1037,6 +1049,8 @@ makeMenus( GtkGameGlobals* globals )
     fileMenu = makeAddSubmenu( menubar, "File" );
     (void)createAddItem( fileMenu, "Tile values", 
                          (GCallback)tile_values, globals );
+    (void)createAddItem( fileMenu, "Tile values full",
+                         (GCallback)tile_values_full, globals );
     (void)createAddItem( fileMenu, "Game history", 
                          (GCallback)game_history, globals );
 #ifdef TEXT_MODEL
