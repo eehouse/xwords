@@ -1616,6 +1616,10 @@ public class GamesListDelegate extends ListDelegateBase
                     0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
                 Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
 
+                enable = Log.getStoreLogs();
+                Utils.setItemVisible( menu, R.id.games_menu_enableLogStorage, !enable );
+                Utils.setItemVisible( menu, R.id.games_menu_disableLogStorage, enable );
+
                 Assert.assertTrue( m_menuPrepared );
             }
         }

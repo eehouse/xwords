@@ -80,6 +80,11 @@ public class Log {
         sUseDB = enable;
     }
 
+    public static boolean getStoreLogs()
+    {
+        return sUseDB;
+    }
+
     public static void enable( boolean newVal )
     {
         sEnabled = newVal;
