@@ -114,7 +114,7 @@ static void freeRec( SMSProto* state, ToPhoneRec* rec );
 static void logResult( const SMSProto* state, XWEnv xwe,
                        const SMSMsgArray* result, const char* caller );
 #else
-# define logResult( state, result, caller )
+# define logResult( state, xwe, result, caller )
 #endif
 
 SMSProto*

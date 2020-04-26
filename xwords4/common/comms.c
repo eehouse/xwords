@@ -235,7 +235,7 @@ static void logAddrs( const CommsCtxt* comms, XWEnv xwe,
 
 # else
 # define printQueue( comms )
-# define logAddr( comms, addr, caller)
+# define logAddr( comms, xwe, addr, caller)
 # define logAddrs( comms, caller )
 # endif
 #endif
@@ -420,7 +420,7 @@ cleanupAddrRecs( CommsCtxt* comms )
 } /* cleanupAddrRecs */
 
 static void
-removeAddrRec( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec )
+removeAddrRec( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe), AddressRecord* rec )
 {
     XP_LOGF( TAGFMT(%p), TAGPRMS, rec );
 #ifdef DEBUG
@@ -891,8 +891,8 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 }
 
 void
-comms_writeToStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
-                     XP_U16 saveToken )
+comms_writeToStream( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
+                     XWStreamCtxt* stream, XP_U16 saveToken )
 {
     XP_U16 nAddrRecs;
     AddressRecord* rec;
@@ -1023,7 +1023,8 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
 } /* comms_setHostAddr */
 
 void
-comms_getAddrs( const CommsCtxt* comms, XWEnv xwe, CommsAddrRec addr[], XP_U16* nRecs )
+comms_getAddrs( const CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe),
+                CommsAddrRec addr[], XP_U16* nRecs )
 {
     AddressRecord* recs;
     XP_U16 count;
@@ -3030,7 +3031,7 @@ addr_setType( CommsAddrRec* addr, CommsConnType type )
 
 #ifdef XWFEATURE_RELAY
 static XWHostID
-getDestID( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo )
+getDestID( CommsCtxt* comms, XWEnv XP_UNUSED_DBG(xwe), XP_PlayerAddr channelNo )
 {
     XWHostID id = HOST_ID_NONE;
     XP_Bool missingRelay = XP_FALSE;

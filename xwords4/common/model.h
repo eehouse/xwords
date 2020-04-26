@@ -239,11 +239,14 @@ void model_makeTurnFromMoveInfo( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
 
 #ifdef DEBUG
 void juggleMoveIfDebug( MoveInfo* move );
-void reverseTiles( MoveInfo* move );
 void model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg );
 #else
 # define juggleMoveIfDebug(newMove)
 # define model_dumpSelf( model, msg )
+#endif
+
+#ifdef XWFEATURE_ROBOTPHONIES
+void reverseTiles( MoveInfo* move );
 #endif
 
 void model_resetCurrentTurn( ModelCtxt* model, XWEnv xwe, XP_S16 turn );
