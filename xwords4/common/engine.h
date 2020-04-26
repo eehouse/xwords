@@ -48,7 +48,7 @@ void engine_init( EngineCtxt* ctxt );
 void engine_reset( EngineCtxt* ctxt );
 void engine_destroy( EngineCtxt* ctxt );
 
-XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, XP_S16 turn,
+XP_Bool engine_findMove( EngineCtxt* ctxt, XWEnv xwe, const ModelCtxt* model, XP_S16 turn,
                          /* includePending: include pending tiles as part of words */
                          XP_Bool includePending,
                          /* skipCallback: skip the callback that lets client cancel */

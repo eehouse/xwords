@@ -87,10 +87,11 @@ struct SMSProto {
 #define KEY_PARTIALS PERSIST_KEY("partials")
 #define KEY_NEXTID PERSIST_KEY("nextID")
 
-static int nextMsgID( SMSProto* state );
+static int nextMsgID( SMSProto* state, XWEnv xwe );
 static XWStreamCtxt* mkStream( SMSProto* state );
 static void destroyStream( XWStreamCtxt* stream );
-static SMSMsgArray* toNetMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld );
+static SMSMsgArray* toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec,
+                               XP_Bool forceOld );
 static ToPhoneRec* getForPhone( SMSProto* state, const XP_UCHAR* phone,
                                 XP_Bool create );
 static void addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
@@ -101,8 +102,8 @@ static void addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID,
 static SMSMsgArray* completeMsgs( SMSProto* state, SMSMsgArray* arr,
                                   const XP_UCHAR* fromPhone, XP_U16 wantPort,
                                   int msgID );
-static void savePartials( SMSProto* state );
-static void restorePartials( SMSProto* state );
+static void savePartials( SMSProto* state, XWEnv xwe );
+static void restorePartials( SMSProto* state, XWEnv xwe );
 static void rmFromPhoneRec( SMSProto* state, int fromPhoneIndex );
 static void freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex,
                           int msgIDIndex );
@@ -110,13 +111,14 @@ static void freeForPhone( SMSProto* state, const XP_UCHAR* phone );
 static void freeMsg( SMSProto* state, MsgRec** msg );
 static void freeRec( SMSProto* state, ToPhoneRec* rec );
 #ifdef DEBUG
-static void logResult( const SMSProto* state, const SMSMsgArray* result, const char* caller );
+static void logResult( const SMSProto* state, XWEnv xwe,
+                       const SMSMsgArray* result, const char* caller );
 #else
 # define logResult( state, result, caller )
 #endif
 
 SMSProto*
-smsproto_init( MPFORMAL XW_DUtilCtxt* dutil )
+smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
 {
     SMSProto* state = (SMSProto*)XP_CALLOC( mpool, sizeof(*state) );
     pthread_mutex_init( &state->mutex, NULL );
@@ -124,10 +126,10 @@ smsproto_init( MPFORMAL XW_DUtilCtxt* dutil )
     MPASSIGN( state->mpool, mpool );
 
     XP_U16 siz = sizeof(state->nNextID);
-    dutil_loadPtr( state->dutil, KEY_NEXTID, &state->nNextID, &siz );
+    dutil_loadPtr( state->dutil, xwe, KEY_NEXTID, &state->nNextID, &siz );
     XP_LOGF( "%s(): loaded nextMsgID: %d", __func__, state->nNextID );
 
-    restorePartials( state );
+    restorePartials( state, xwe );
 
     return state;
 }
@@ -212,7 +214,7 @@ headerFromStream( XWStreamCtxt* stream, SMS_CMD* cmd, XP_U16* port, XP_U32* game
  * UtilCtxt around.
  */
 SMSMsgArray*
-smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
+smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
                        const void* buf, XP_U16 buflen, const XP_UCHAR* toPhone,
                        int toPort, XP_Bool forceOld, XP_U16* waitSecsP )
 {
@@ -221,7 +223,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
     pthread_mutex_lock( &state->mutex );
 
 #ifdef DEBUG
-    XP_UCHAR* checksum = dutil_md5sum( state->dutil, buf, buflen );
+    XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, buf, buflen );
     XP_LOGFF( "(cmd=%d, gameID=%d): len=%d, sum=%s, toPhone=%s", cmd,
               gameID, buflen, checksum, toPhone );
     XP_FREEP( state->mpool, &checksum );
@@ -230,7 +232,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
     ToPhoneRec* rec = getForPhone( state, toPhone, cmd != NONE );
 
     /* First, add the new message (if present) to the array */
-    XP_U32 nowSeconds = dutil_getCurSeconds( state->dutil );
+    XP_U32 nowSeconds = dutil_getCurSeconds( state->dutil, xwe );
     if ( cmd != NONE && 0 < buflen ) {
         addToOutRec( state, rec, cmd, toPort, gameID, buf, buflen, nowSeconds );
     }
@@ -245,7 +247,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
     }
 
     if ( doSend ) {
-        result = toNetMsgs( state, rec, forceOld );
+        result = toNetMsgs( state, xwe, rec, forceOld );
         freeForPhone( state, toPhone );
     }
 
@@ -259,7 +261,7 @@ smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd, XP_U32 gameID,
              !!result ? result->nMsgs : 0, *waitSecsP );
 
     pthread_mutex_unlock( &state->mutex );
-    logResult( state, result, __func__ );
+    logResult( state, xwe, result, __func__ );
     return result;
 } /* smsproto_prepOutbound */
 
@@ -296,13 +298,13 @@ appendNetMsg( SMSProto* XP_UNUSED_DBG(state), SMSMsgArray* arr, SMSMsgNet* msg )
 }
 
 SMSMsgArray*
-smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
+smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
                       XP_U16 wantPort, const XP_U8* data, XP_U16 len )
 {
     XP_LOGFF( "len=%d, fromPhone=%s", len, fromPhone );
 
 #ifdef DEBUG
-    XP_UCHAR* checksum = dutil_md5sum( state->dutil, data, len );
+    XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, data, len );
     XP_LOGFF( "(fromPhone=%s, len=%d); sum=%s", fromPhone, len, checksum );
     XP_FREEP( state->mpool, &checksum );
 #endif
@@ -327,7 +329,7 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
                 stream_getBytes( stream, buf, len );
                 addMessage( state, fromPhone, msgID, indx, count, buf, len );
                 result = completeMsgs( state, result, fromPhone, wantPort, msgID );
-                savePartials( state );
+                savePartials( state, xwe );
             }
         }
             break;
@@ -376,7 +378,7 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
     destroyStream( stream );
 
     XP_LOGFF( "=> %p (len=%d)", result, (!!result) ? result->nMsgs : 0 );
-    logResult( state, result, __func__ );
+    logResult( state, xwe, result, __func__ );
 
     pthread_mutex_unlock( &state->mutex );
     return result;
@@ -412,7 +414,8 @@ smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
 
 #ifdef DEBUG
 static void
-logResult( const SMSProto* state, const SMSMsgArray* result, const char* caller )
+logResult( const SMSProto* state, XWEnv xwe, const SMSMsgArray* result,
+           const char* caller )
 {
     if ( !!result ) {
         for ( int ii = 0; ii < result->nMsgs; ++ii ) {
@@ -435,7 +438,7 @@ logResult( const SMSProto* state, const SMSMsgArray* result, const char* caller 
                 XP_ASSERT(0);
             }
             XP_ASSERT( 0 < len );
-            XP_UCHAR* checksum = dutil_md5sum( state->dutil, data, len );
+            XP_UCHAR* checksum = dutil_md5sum( state->dutil, xwe, data, len );
             XP_LOGFF( "%s() => datum[%d] sum: %s, len: %d", caller, ii, checksum, len );
             XP_FREEP( state->mpool, &checksum );
         }
@@ -670,7 +673,7 @@ freeMsgIDRec( SMSProto* state, MsgIDRec* XP_UNUSED_DBG(rec), int fromPhoneIndex,
 }
 
 static void
-savePartials( SMSProto* state )
+savePartials( SMSProto* state, XWEnv xwe )
 {
     XWStreamCtxt* stream = mkStream( state );
     stream_putU8( stream, PARTIALS_FORMAT );
@@ -698,7 +701,7 @@ savePartials( SMSProto* state )
     if ( state->lastStoredSize == 2 && newSize == 2 ) {
         XP_LOGFF( "not storing empty again" );
     } else {
-        dutil_storeStream( state->dutil, KEY_PARTIALS, stream );
+        dutil_storeStream( state->dutil, xwe, KEY_PARTIALS, stream );
         state->lastStoredSize = newSize;
     }
 
@@ -708,11 +711,11 @@ savePartials( SMSProto* state )
 } /* savePartials */
 
 static void
-restorePartials( SMSProto* state )
+restorePartials( SMSProto* state, XWEnv xwe )
 {
     XWStreamCtxt* stream = mkStream( state );
 
-    dutil_loadStream( state->dutil, KEY_PARTIALS, stream );
+    dutil_loadStream( state->dutil, xwe, KEY_PARTIALS, stream );
     if ( stream_getSize( stream ) >= 1
          && PARTIALS_FORMAT == stream_getU8( stream ) ) {
         int nFromPhones = stream_getU8( stream );
@@ -795,7 +798,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
 }
 
 static SMSMsgArray*
-toNetMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld )
+toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec, XP_Bool forceOld )
 {
     SMSMsgArray* result = NULL;
 
@@ -831,14 +834,14 @@ toNetMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld )
             for ( int jj = ii; jj < last; ++jj ) {
                 const SMSMsgNet* msg = &rec->msgs[jj]->msgNet;
                 newMsg.data[indx++] = msg->len;
-                newMsg.data[indx++] = nextMsgID( state );
+                newMsg.data[indx++] = nextMsgID( state, xwe );
                 XP_MEMCPY( &newMsg.data[indx], msg->data, msg->len ); /* bad! */
                 indx += msg->len;
             }
             result = appendNetMsg( state, result, &newMsg );
             ii = last;
         } else {
-            int msgID = nextMsgID( state );
+            int msgID = nextMsgID( state, xwe );
             const SMSMsgNet* msg = &rec->msgs[ii]->msgNet;
             XP_U8* nextStart = msg->data;
             XP_U16 lenLeft = msg->len;
@@ -870,10 +873,10 @@ toNetMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld )
 } /* toMsgs */
 
 static int
-nextMsgID( SMSProto* state )
+nextMsgID( SMSProto* state, XWEnv xwe )
 {
     int result = ++state->nNextID % 0x000000FF;
-    dutil_storePtr( state->dutil, KEY_NEXTID, &state->nNextID,
+    dutil_storePtr( state->dutil, xwe, KEY_NEXTID, &state->nNextID,
                     sizeof(state->nNextID) );
     LOG_RETURNF( "%d", result );
     return result;
@@ -895,10 +898,10 @@ destroyStream( XWStreamCtxt* stream )
 
 #ifdef DEBUG
 void
-smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
+smsproto_runTests( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
 {
     LOG_FUNC();
-    SMSProto* state = smsproto_init( mpool, dutil );
+    SMSProto* state = smsproto_init( mpool, xwe, dutil );
 
     const int smallSiz = 20;
     const char* phones[] = {"1234", "3456", "5467", "9877"};
@@ -923,10 +926,10 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
             XP_U16 waitSecs;
             if ( firstTime ) {
                 XP_U16 len = (ii + 1) * 30;
-                arrs[ii] = smsproto_prepOutbound( state, DATA, gameID, buf, len, phones[ii],
+                arrs[ii] = smsproto_prepOutbound( state, xwe, DATA, gameID, buf, len, phones[ii],
                                                   port, forceOld, &waitSecs );
             } else if ( NULL == arrs[ii]) {
-                arrs[ii] = smsproto_prepOutbound( state, DATA, gameID, NULL, 0, phones[ii],
+                arrs[ii] = smsproto_prepOutbound( state, xwe, DATA, gameID, NULL, 0, phones[ii],
                                                   port, forceOld, &waitSecs );
             } else {
                 continue;
@@ -946,7 +949,7 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
             if (!!arrs[ii] && indx < arrs[ii]->nMsgs) {
                 XP_ASSERT( arrs[ii]->format == FORMAT_NET );
                 haveOne = XP_TRUE;
-                SMSMsgArray* outArr = smsproto_prepInbound( state, phones[ii], port,
+                SMSMsgArray* outArr = smsproto_prepInbound( state, xwe, phones[ii], port,
                                                             arrs[ii]->u.msgsNet[indx].data,
                                                             arrs[ii]->u.msgsNet[indx].len );
                 if ( !!outArr ) {
@@ -972,7 +975,7 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
     /* Now let's send a bunch of small messages that should get combined */
     for ( int nUsed = 0; ; ++nUsed ) {
         XP_U16 waitSecs;
-        SMSMsgArray* sendArr = smsproto_prepOutbound( state, DATA, gameID, &buf[nUsed],
+        SMSMsgArray* sendArr = smsproto_prepOutbound( state, xwe, DATA, gameID, &buf[nUsed],
                                                       smallSiz, phones[0], port,
                                                       XP_FALSE, &waitSecs );
         if ( sendArr == NULL ) {
@@ -984,7 +987,7 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
         XP_ASSERT( sendArr->format == FORMAT_NET );
         int totalBack = 0;
         for ( int jj = 0; jj < sendArr->nMsgs; ++jj ) {
-            SMSMsgArray* recvArr = smsproto_prepInbound( state, phones[0], port,
+            SMSMsgArray* recvArr = smsproto_prepInbound( state, xwe, phones[0], port,
                                                          sendArr->u.msgsNet[jj].data,
                                                          sendArr->u.msgsNet[jj].len );
 
@@ -1013,21 +1016,21 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
     /* Now let's add a too-long message and unpack only the first part. Make
        sure it's cleaned up correctly */
     XP_U16 waitSecs;
-    SMSMsgArray* arr = smsproto_prepOutbound( state, DATA, gameID, buf, 200, "33333",
+    SMSMsgArray* arr = smsproto_prepOutbound( state, xwe, DATA, gameID, buf, 200, "33333",
                                               port, XP_TRUE, &waitSecs );
     XP_ASSERT( !!arr && arr->nMsgs > 1 );
     /* add only part 1 */
-    SMSMsgArray* out = smsproto_prepInbound( state, "33333", port, arr->u.msgsNet[0].data,
+    SMSMsgArray* out = smsproto_prepInbound( state, xwe, "33333", port, arr->u.msgsNet[0].data,
                                              arr->u.msgsNet[0].len );
     XP_ASSERT( !out );
     smsproto_freeMsgArray( state, arr );
 
     /* Try the no-buffer messages */
     XP_LOGF( "%s(): trying DEATH", __func__ );
-    arr = smsproto_prepOutbound( state, DEATH, gameID, NULL, 0, "33333",
+    arr = smsproto_prepOutbound( state, xwe, DEATH, gameID, NULL, 0, "33333",
                                  port, XP_TRUE, &waitSecs );
     XP_ASSERT( arr->format == FORMAT_NET );
-    out = smsproto_prepInbound( state, "33333", port,
+    out = smsproto_prepInbound( state, xwe, "33333", port,
                                 arr->u.msgsNet[0].data,
                                 arr->u.msgsNet[0].len );
     XP_ASSERT( out->format == FORMAT_LOC );
@@ -1038,10 +1041,10 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
     XP_LOGF( "%s(): DEATH checked out", __func__ );
 
     /* Test port mismatch */
-    arr = smsproto_prepOutbound( state, DEATH, gameID, NULL, 0, "33333",
+    arr = smsproto_prepOutbound( state, xwe, DEATH, gameID, NULL, 0, "33333",
                                  port, XP_TRUE, &waitSecs );
     XP_ASSERT( arr->format == FORMAT_NET );
-    out = smsproto_prepInbound( state, "33333", port + 1,
+    out = smsproto_prepInbound( state, xwe, "33333", port + 1,
                                 arr->u.msgsNet[0].data,
                                 arr->u.msgsNet[0].len );
     XP_ASSERT( out == NULL );
@@ -1050,10 +1053,10 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
 
     /* now a message that's unpacked across multiple sessions to test store/load */
     XP_LOGF( "%s(): testing store/restore", __func__ );
-    arr = smsproto_prepOutbound( state, DATA, gameID, (XP_U8*)buf, 200, "33333",
+    arr = smsproto_prepOutbound( state, xwe, DATA, gameID, (XP_U8*)buf, 200, "33333",
                                  port, XP_TRUE, &waitSecs );
     for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
-        SMSMsgArray* out = smsproto_prepInbound( state, "33333", port,
+        SMSMsgArray* out = smsproto_prepInbound( state, xwe, "33333", port,
                                                  arr->u.msgsNet[ii].data,
                                                  arr->u.msgsNet[ii].len );
         if ( !!out ) {
@@ -1066,7 +1069,7 @@ smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil )
             break;
         }
         smsproto_free( state ); /* give it a chance to store state */
-        state = smsproto_init( mpool, dutil );
+        state = smsproto_init( mpool, xwe, dutil );
     }
 
     /* Really bad to pass a different state than was created with, but now

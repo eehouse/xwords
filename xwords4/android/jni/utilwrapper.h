@@ -29,14 +29,14 @@
 #include "andglobals.h"
 #include "jniutlswrapper.h"
 
-XW_DUtilCtxt* makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject j_dutil,
+XW_DUtilCtxt* makeDUtil( MPFORMAL JNIEnv* env, jobject j_dutil,
                          VTableMgr* vtMgr, JNIUtilCtxt* jniutil,
                          void* closure );
-void destroyDUtil( XW_DUtilCtxt** dutilp );
+void destroyDUtil( XW_DUtilCtxt** dutilp, JNIEnv* env );
 
-XW_UtilCtxt* makeUtil( MPFORMAL EnvThreadInfo* ti, jobject j_util,
+XW_UtilCtxt* makeUtil( MPFORMAL JNIEnv* env, jobject j_util,
                        CurGameInfo* gi, AndGameGlobals* globals );
-void destroyUtil( XW_UtilCtxt** util );
+void destroyUtil( XW_UtilCtxt** util, JNIEnv* env );
 
 bool utilTimerFired( XW_UtilCtxt* util, XWEnv xwe, XWTimerReason why, int handle );
 

@@ -93,7 +93,8 @@ XP_Bool tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal );
 void normalizeMoves( const ModelCtxt* model, XP_S16 turn,
                      XP_Bool isHorizontal, MoveInfo* moveInfo );
 void normalizeMI( MoveInfo* moveInfoOut, const MoveInfo* moveInfoIn );
-void adjustScoreForUndone( ModelCtxt* model, const MoveInfo* mi, XP_U16 turn );
+void adjustScoreForUndone( ModelCtxt* model, XWEnv xwe, const MoveInfo* mi,
+                           XP_U16 turn );
 #ifdef CPLUS
 }
 #endif

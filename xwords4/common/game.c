@@ -75,24 +75,24 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere,
 } /* checkServerRole */
 
 static XP_U32
-makeGameID( XW_UtilCtxt* util )
+makeGameID( XW_UtilCtxt* util, XWEnv xwe )
 {
     XP_U32 gameID = 0;
     assertUtilOK( util );
     while ( 0 == gameID ) {
-        gameID = dutil_getCurSeconds( util_getDevUtilCtxt( util ) );
+        gameID = dutil_getCurSeconds( util_getDevUtilCtxt( util, xwe ), xwe );
     }
     return gameID;
 }
 
 static void
-timerChangeListener( void* data, const XP_U32 gameID,
+timerChangeListener( XWEnv xwe, void* data, const XP_U32 gameID,
                      XP_S32 oldVal, XP_S32 newVal )
 {
     XWGame* game = (XWGame*)data;
     XP_ASSERT( game->util->gameInfo->gameID == gameID );
     XP_LOGF( "%s(oldVal=%d, newVal=%d, id=%d)", __func__, oldVal, newVal, gameID );
-    dutil_onDupTimerChanged( util_getDevUtilCtxt( game->util ),
+    dutil_onDupTimerChanged( util_getDevUtilCtxt( game->util, xwe ), xwe,
                              gameID, oldVal, newVal );
 }
 
@@ -121,7 +121,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
     assertUtilOK( util );
 
     if ( 0 == gi->gameID ) {
-        gi->gameID = makeGameID( util );
+        gi->gameID = makeGameID( util, xwe );
     }
 
     game->util = util;
@@ -143,16 +143,16 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
         game->comms = (CommsCtxt*)NULL;
     }
 #endif
-    game->server = server_make( MPPARM(mpool) game->model, 
+    game->server = server_make( MPPARM(mpool) xwe, game->model,
 #ifndef XWFEATURE_STANDALONE_ONLY
                                 game->comms, 
 #else
                                 (CommsCtxt*)NULL,
 #endif
                                 util );
-    game->board = board_make( MPPARM(mpool) game->model, game->server, 
+    game->board = board_make( MPPARM(mpool) xwe, game->model, game->server,
                               NULL, util );
-    board_setCallbacks( game->board );
+    board_setCallbacks( game->board, xwe );
 
     board_setDraw( game->board, xwe, draw );
     setListeners( game, cp );
@@ -170,7 +170,7 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
         XP_ASSERT( !!game->model );
         XP_ASSERT( !!gi );
 
-        gi->gameID = makeGameID( util );
+        gi->gameID = makeGameID( util, xwe );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_U16 nPlayersHere = 0;
@@ -179,7 +179,7 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
 
         if ( !!game->comms ) {
             if ( gi->serverRole == SERVER_STANDALONE ) {
-                comms_destroy( game->comms );
+                comms_destroy( game->comms, xwe );
                 game->comms = NULL;
             } else {
                 comms_reset( game->comms, xwe, gi->serverRole != SERVER_ISCLIENT,
@@ -209,7 +209,7 @@ game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util
                       NULL
 #endif
                       );
-        board_reset( game->board );
+        board_reset( game->board, xwe );
 
         for ( ii = 0; ii < gi->nPlayers; ++ii ) {
             gi->players[ii].secondsUsed = 0;
@@ -287,11 +287,11 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
             game->model = model_makeFromStream( MPPARM(mpool) xwe, stream, dict,
                                                 dicts, util );
 
-            game->server = server_makeFromStream( MPPARM(mpool) stream, 
+            game->server = server_makeFromStream( MPPARM(mpool) xwe, stream,
                                                   game->model, game->comms, 
                                                   util, gi->nPlayers );
 
-            game->board = board_makeFromStream( MPPARM(mpool) stream, 
+            game->board = board_makeFromStream( MPPARM(mpool) xwe, stream,
                                                 game->model, game->server, 
                                                 NULL, util, gi->nPlayers );
             setListeners( game, cp );
@@ -387,7 +387,7 @@ game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
 }
 
 void
-game_getState( const XWGame* game, GameStateInfo* gsi )
+game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
 {
     const ServerCtxt* server = game->server;
     BoardCtxt* board = game->board;
@@ -403,7 +403,7 @@ game_getState( const XWGame* game, GameStateInfo* gsi )
     gsi->canChat = !!game->comms && comms_canChat( game->comms );
     gsi->canShuffle = board_canShuffle( board );
     gsi->canHideRack = board_canHideRack( board );
-    gsi->canTrade = board_canTrade( board );
+    gsi->canTrade = board_canTrade( board, xwe );
     gsi->nPendingMessages = !!game->comms ? 
         comms_countPendingPackets(game->comms) : 0;
 
@@ -423,14 +423,14 @@ game_dispose( XWGame* game, XWEnv xwe )
 {
     /* The board should be reused!!! PENDING(ehouse) */
     if ( !!game->board ) {
-        board_destroy( game->board, XP_TRUE );
+        board_destroy( game->board, xwe, XP_TRUE );
         game->board = NULL;
     }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!game->comms ) {
         comms_stop( game->comms, xwe );
-        comms_destroy( game->comms );
+        comms_destroy( game->comms, xwe );
         game->comms = NULL;
     }
 #endif

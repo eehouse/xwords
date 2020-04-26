@@ -86,113 +86,113 @@ typedef XP_Bool (*XWTimerProc)( void* closure, XWEnv xwe, XWTimerReason why );
 typedef struct UtilVtable {
     
 #ifndef XWFEATURE_STANDALONE_ONLY
-    XWStreamCtxt* (*m_util_makeStreamFromAddr )(XW_UtilCtxt* uc,
+    XWStreamCtxt* (*m_util_makeStreamFromAddr )(XW_UtilCtxt* uc, XWEnv xwe,
                                                 XP_PlayerAddr channelNo );
 #endif
     
-    XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, XP_U16 boardSize,
+    XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 boardSize,
                                           XP_U16 col, XP_U16 row );
-    void (*m_util_userError)( XW_UtilCtxt* uc, UtilErrID id );
+    void (*m_util_userError)( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id );
 
-    void (*m_util_notifyMove)( XW_UtilCtxt* uc, XWStreamCtxt* stream );
-    void (*m_util_notifyTrade)( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
+    void (*m_util_notifyMove)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream );
+    void (*m_util_notifyTrade)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles,
                                 XP_U16 nTiles );
-    void (*m_util_notifyPickTileBlank)( XW_UtilCtxt* uc, XP_U16 playerNum,
+    void (*m_util_notifyPickTileBlank)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 playerNum,
                                         XP_U16 col, XP_U16 row,
                                         const XP_UCHAR** tileFaces, 
                                         XP_U16 nTiles );
-    void (*m_util_informNeedPickTiles)( XW_UtilCtxt* uc, XP_Bool isInitial,
+    void (*m_util_informNeedPickTiles)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isInitial,
                                         XP_U16 player, XP_U16 nToPick,
                                         XP_U16 nFaces, const XP_UCHAR** faces,
                                         const XP_U16* counts );
 
-    void (*m_util_informNeedPassword)( XW_UtilCtxt* uc, XP_U16 playerNum,
+    void (*m_util_informNeedPassword)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 playerNum,
                                        const XP_UCHAR* name );
 
-    void (*m_util_trayHiddenChange)(XW_UtilCtxt* uc, 
+    void (*m_util_trayHiddenChange)(XW_UtilCtxt* uc, XWEnv xwe, 
                                     XW_TrayVisState newState,
                                     XP_U16 nVisibleRows );
-    void (*m_util_yOffsetChange)(XW_UtilCtxt* uc, XP_U16 maxOffset,
+    void (*m_util_yOffsetChange)(XW_UtilCtxt* uc, XWEnv xwe, XP_U16 maxOffset,
                                  XP_U16 oldOffset, XP_U16 newOffset );
 #ifdef XWFEATURE_TURNCHANGENOTIFY
-    void (*m_util_turnChanged)(XW_UtilCtxt* uc, XP_S16 newTurn);
+    void (*m_util_turnChanged)(XW_UtilCtxt* uc, XWEnv xwe, XP_S16 newTurn);
 #endif
-    void (*m_util_notifyDupStatus)( XW_UtilCtxt* uc, XP_Bool amHost,
+    void (*m_util_notifyDupStatus)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool amHost,
                                     const XP_UCHAR* msg );
-    void (*m_util_informMove)( XW_UtilCtxt* uc, XP_S16 turn, 
+    void (*m_util_informMove)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn, 
                                XWStreamCtxt* expl, XWStreamCtxt* words );
-    void (*m_util_informUndo)( XW_UtilCtxt* uc );
-    void (*m_util_informNetDict)( XW_UtilCtxt* uc, XP_LangCode lang,
+    void (*m_util_informUndo)( XW_UtilCtxt* uc, XWEnv xwe );
+    void (*m_util_informNetDict)( XW_UtilCtxt* uc, XWEnv xwe, XP_LangCode lang,
                                   const XP_UCHAR* oldName,
                                   const XP_UCHAR* newName,
                                   const XP_UCHAR* newSum,
                                   XWPhoniesChoice phoniesAction );
 
-    void (*m_util_notifyGameOver)( XW_UtilCtxt* uc, XP_S16 quitter );
+    void (*m_util_notifyGameOver)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter );
 #ifdef XWFEATURE_HILITECELL
-    XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row );
+    XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 col, XP_U16 row );
 #endif
 
-    XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc );
+    XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc, XWEnv xwe );
 
-    void (*m_util_setTimer)( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+    void (*m_util_setTimer)( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, XP_U16 when,
                              XWTimerProc proc, void* closure );
-    void (*m_util_clearTimer)( XW_UtilCtxt* uc, XWTimerReason why );
+    void (*m_util_clearTimer)( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why );
 
-    void (*m_util_requestTime)( XW_UtilCtxt* uc );
+    void (*m_util_requestTime)( XW_UtilCtxt* uc, XWEnv xwe );
 
-    XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc );
+    XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc, XWEnv xwe );
     DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc, XWEnv xwe );
 
-    void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, BadWordInfo* bwi,
+    void (*m_util_notifyIllegalWords)( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
                                        XP_U16 turn, XP_Bool turnLost );
 
-    void (*m_util_remSelected)(XW_UtilCtxt* uc);
+    void (*m_util_remSelected)(XW_UtilCtxt* uc, XWEnv xwe);
 
-    void (*m_util_timerSelected)(XW_UtilCtxt* uc, XP_Bool inDuplicateMode,
+    void (*m_util_timerSelected)(XW_UtilCtxt* uc, XWEnv xwe, XP_Bool inDuplicateMode,
                                  XP_Bool canPause);
 
-    void (*m_util_formatPauseHistory)( XW_UtilCtxt* uc, XWStreamCtxt* stream,
+    void (*m_util_formatPauseHistory)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream,
                                        DupPauseType typ, XP_S16 turn,
                                        XP_U32 secsPrev, XP_U32 secsCur,
                                        const XP_UCHAR* msg );
 
 #ifndef XWFEATURE_MINIWIN
-    void (*m_util_bonusSquareHeld)( XW_UtilCtxt* uc, XWBonusType bonus );
-    void (*m_util_playerScoreHeld)( XW_UtilCtxt* uc, XP_U16 player );
+    void (*m_util_bonusSquareHeld)( XW_UtilCtxt* uc, XWEnv xwe, XWBonusType bonus );
+    void (*m_util_playerScoreHeld)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player );
 #endif
 #ifdef XWFEATURE_BOARDWORDS
-    void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWStreamCtxt* words );
+    void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words );
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    void (*m_util_informMissing)(XW_UtilCtxt* uc, XP_Bool isServer, 
+    void (*m_util_informMissing)(XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer, 
                                  const CommsAddrRec* addr, XP_U16 nDevs,
                                  XP_U16 nMissing );
-    void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+    void (*m_util_addrChange)( XW_UtilCtxt* uc, XWEnv xwe, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
-    void (*m_util_setIsServer)(XW_UtilCtxt* uc, XP_Bool isServer );
+    void (*m_util_setIsServer)(XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer );
 #endif
 
-    void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XP_U16 nBadWords,
+    void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                                        XWStreamCtxt* words, const XP_UCHAR* dictName );
 
 #ifdef XWFEATURE_SEARCHLIMIT
-    XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, 
+    XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, XWEnv xwe, 
                                           XP_U16* min, XP_U16* max );
 #endif
 
 #ifdef XWFEATURE_CHAT
-    void (*m_util_showChat)( XW_UtilCtxt* uc, const XP_UCHAR* const msg, 
+    void (*m_util_showChat)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* const msg, 
                              XP_S16 from, XP_U32 timestamp );
 #endif
 
 #ifdef SHOW_PROGRESS
-    void (*m_util_engineStarting)( XW_UtilCtxt* uc, XP_U16 nBlanks );
-    void (*m_util_engineStopping)( XW_UtilCtxt* uc );
+    void (*m_util_engineStarting)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBlanks );
+    void (*m_util_engineStopping)( XW_UtilCtxt* uc, XWEnv xwe );
 #endif
 
-    XW_DUtilCtxt* (*m_util_getDevUtilCtxt)( XW_UtilCtxt* uc );
+    XW_DUtilCtxt* (*m_util_getDevUtilCtxt)( XW_UtilCtxt* uc, XWEnv xwe );
 
 } UtilVtable;
 
@@ -206,135 +206,135 @@ struct XW_UtilCtxt {
     MPSLOT
 };
 
-#define util_makeStreamFromAddr(uc,a) \
-         (uc)->vtable->m_util_makeStreamFromAddr((uc),(a))
+#define util_makeStreamFromAddr(uc,e,a) \
+         (uc)->vtable->m_util_makeStreamFromAddr((uc), (e),(a))
 
-#define util_getSquareBonus(uc,b,c,r)                           \
-         (uc)->vtable->m_util_getSquareBonus((uc),(b),(c),(r))
+#define util_getSquareBonus(uc,e,b,c,r)                           \
+         (uc)->vtable->m_util_getSquareBonus((uc), (e),(b),(c),(r))
 
-#define util_userError(uc,err) \
-         (uc)->vtable->m_util_userError((uc),(err))
+#define util_userError(uc,e,err)                    \
+         (uc)->vtable->m_util_userError((uc),(e),(err))
 
-#define util_notifyMove(uc, str)                         \
-         (uc)->vtable->m_util_notifyMove((uc), (str))
+#define util_notifyMove(uc,e, str)                         \
+         (uc)->vtable->m_util_notifyMove((uc), (e), (str))
 
-#define util_notifyTrade(uc, tx, nt)                            \
-        (uc)->vtable->m_util_notifyTrade((uc), (tx), (nt))
+#define util_notifyTrade(uc,e, tx, nt)                            \
+        (uc)->vtable->m_util_notifyTrade((uc), (e), (tx), (nt))
 
-#define util_notifyPickTileBlank( uc, c, r, n, tx, nt )                  \
-        (uc)->vtable->m_util_notifyPickTileBlank( (uc), (c), (r), (n), (tx), (nt) )
+#define util_notifyPickTileBlank( uc,e, c, r, n, tx, nt )                  \
+        (uc)->vtable->m_util_notifyPickTileBlank( (uc), (e), (c), (r), (n), (tx), (nt) )
 
-#define util_informNeedPickTiles( uc, ii, pl, np, nt, fc, cn )           \
-        (uc)->vtable->m_util_informNeedPickTiles( (uc), (ii), (pl), (np), (nt), (fc), (cn) )
+#define util_informNeedPickTiles( uc,e, ii, pl, np, nt, fc, cn )           \
+        (uc)->vtable->m_util_informNeedPickTiles( (uc), (e), (ii), (pl), (np), (nt), (fc), (cn) )
 
-#define util_informNeedPassword( uc, pn, n ) \
-         (uc)->vtable->m_util_informNeedPassword( (uc), (pn), (n) )
+#define util_informNeedPassword( uc,e, pn, n ) \
+         (uc)->vtable->m_util_informNeedPassword( (uc), (e), (pn), (n) )
 
-#define util_trayHiddenChange( uc, b, n ) \
-         (uc)->vtable->m_util_trayHiddenChange((uc), (b), (n))
+#define util_trayHiddenChange( uc,e, b, n ) \
+         (uc)->vtable->m_util_trayHiddenChange((uc), (e), (b), (n))
 
-#define util_yOffsetChange( uc, m, o, n )                        \
-         (uc)->vtable->m_util_yOffsetChange((uc), (m), (o), (n) )
+#define util_yOffsetChange( uc,e, m, o, n )                        \
+         (uc)->vtable->m_util_yOffsetChange((uc), (e), (m), (o), (n) )
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
-# define util_turnChanged( uc, t )                    \
-        (uc)->vtable->m_util_turnChanged( (uc), (t) )
+# define util_turnChanged( uc,e, t )                    \
+        (uc)->vtable->m_util_turnChanged( (uc), (e), (t) )
 #else
-# define util_turnChanged( uc, t )
+# define util_turnChanged( uc,e, t )
 #endif
 
-#define util_notifyDupStatus(uc, h, m)                      \
-    (uc)->vtable->m_util_notifyDupStatus( (uc), (h), (m) )
-#define util_informMove(uc,t,e,w)                               \
-         (uc)->vtable->m_util_informMove( (uc), (t), (e), (w))
-#define util_informUndo(uc) \
-         (uc)->vtable->m_util_informUndo( (uc))
-#define util_informNetDict(uc, cd, on, nn, ns, pa )                      \
-         (uc)->vtable->m_util_informNetDict( (uc), (cd), (on), (nn), (ns), \
+#define util_notifyDupStatus(uc,e, h, m)                      \
+    (uc)->vtable->m_util_notifyDupStatus( (uc), (e), (h), (m) )
+#define util_informMove(uc,e,t,ex,w)                               \
+         (uc)->vtable->m_util_informMove( (uc), (e), (t), (ex), (w))
+#define util_informUndo(uc,e) \
+         (uc)->vtable->m_util_informUndo( (uc), (e))
+#define util_informNetDict(uc,e, cd, on, nn, ns, pa )                      \
+         (uc)->vtable->m_util_informNetDict( (uc), (e), (cd), (on), (nn), (ns), \
                                              (pa) )
-#define util_notifyGameOver( uc, q )                  \
-         (uc)->vtable->m_util_notifyGameOver((uc), (q))
+#define util_notifyGameOver( uc,e, q )                  \
+         (uc)->vtable->m_util_notifyGameOver((uc), (e), (q))
 
 #ifdef XWFEATURE_HILITECELL
-# define util_hiliteCell( uc, c, r ) \
-         (uc)->vtable->m_util_hiliteCell((uc), (c), (r))
+# define util_hiliteCell( uc,e, c, r ) \
+         (uc)->vtable->m_util_hiliteCell((uc), (e), (c), (r))
 #endif
 
-#define util_engineProgressCallback( uc ) \
-         (uc)->vtable->m_util_engineProgressCallback((uc))
+#define util_engineProgressCallback( uc,e ) \
+         (uc)->vtable->m_util_engineProgressCallback((uc), (e))
 
-#define util_setTimer( uc, why, when, proc, clos ) \
-         (uc)->vtable->m_util_setTimer((uc),(why),(when),(proc),(clos))
-#define util_clearTimer( uc, why ) \
-         (uc)->vtable->m_util_clearTimer((uc),(why))
+#define util_setTimer( uc,e, why, when, proc, clos ) \
+         (uc)->vtable->m_util_setTimer((uc), (e),(why),(when),(proc),(clos))
+#define util_clearTimer( uc,e, why ) \
+         (uc)->vtable->m_util_clearTimer((uc), (e),(why))
 
-#define util_requestTime( uc ) \
-         (uc)->vtable->m_util_requestTime((uc))
+#define util_requestTime( uc,e ) \
+         (uc)->vtable->m_util_requestTime((uc), (e))
 
-#define util_altKeyDown( uc ) \
-         (uc)->vtable->m_util_altKeyDown((uc))
+#define util_altKeyDown( uc,e )                 \
+    (uc)->vtable->m_util_altKeyDown((uc),(e))
 
-#define util_makeEmptyDict( uc, xwe )                   \
-         (uc)->vtable->m_util_makeEmptyDict((uc), (xwe))
+#define util_makeEmptyDict( uc, e )                     \
+    (uc)->vtable->m_util_makeEmptyDict((uc), (e))
 
-#define util_notifyIllegalWords( uc, w, p, b ) \
-         (uc)->vtable->m_util_notifyIllegalWords((uc),(w),(p),(b))
+#define util_notifyIllegalWords( uc,e, w, p, b ) \
+         (uc)->vtable->m_util_notifyIllegalWords((uc), (e),(w),(p),(b))
 
-#define util_remSelected( uc )              \
-         (uc)->vtable->m_util_remSelected((uc))
+#define util_remSelected( uc,e )              \
+         (uc)->vtable->m_util_remSelected((uc), (e))
 
-#define util_timerSelected( uc, dm, cp )                        \
-         (uc)->vtable->m_util_timerSelected((uc), (dm), (cp))
+#define util_timerSelected( uc,e, dm, cp )                        \
+         (uc)->vtable->m_util_timerSelected((uc), (e), (dm), (cp))
 
-#define util_formatPauseHistory( uc, s, typ, turn, secsPrev, secsCur, msg ) \
-    (uc)->vtable->m_util_formatPauseHistory( (uc), (s), (typ), (turn),  \
+#define util_formatPauseHistory( uc,e, s, typ, turn, secsPrev, secsCur, msg ) \
+    (uc)->vtable->m_util_formatPauseHistory( (uc), (e), (s), (typ), (turn),  \
                                              (secsPrev), (secsCur), (msg) )
 
 #ifndef XWFEATURE_MINIWIN
-# define util_bonusSquareHeld( uc, b )                                  \
-         (uc)->vtable->m_util_bonusSquareHeld( (uc), (b) )
-# define util_playerScoreHeld( uc, player )                                \
-         (uc)->vtable->m_util_playerScoreHeld( (uc), (player) )
+# define util_bonusSquareHeld( uc,e, b )                                  \
+         (uc)->vtable->m_util_bonusSquareHeld( (uc), (e), (b) )
+# define util_playerScoreHeld( uc,e, player )                                \
+         (uc)->vtable->m_util_playerScoreHeld( (uc), (e), (player) )
 #endif
 #ifdef XWFEATURE_BOARDWORDS
-#define util_cellSquareHeld(uc, s)                      \
-    (uc)->vtable->m_util_cellSquareHeld( (uc), (s) )
+#define util_cellSquareHeld(uc,e, s)                      \
+    (uc)->vtable->m_util_cellSquareHeld( (uc), (e), (s) )
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-# define util_informMissing( uc, is, ct, nd, nm )                       \
-    (uc)->vtable->m_util_informMissing((uc), (is), (ct), (nd), (nm) )
-# define util_addrChange( uc, addro, addrn ) \
-         (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))
-# define util_setIsServer( uc, is ) \
-         (uc)->vtable->m_util_setIsServer((uc), (is))
+# define util_informMissing( uc,e, is, ct, nd, nm )                       \
+    (uc)->vtable->m_util_informMissing((uc), (e), (is), (ct), (nd), (nm) )
+# define util_addrChange( uc,e, addro, addrn ) \
+         (uc)->vtable->m_util_addrChange((uc), (e), (addro), (addrn))
+# define util_setIsServer( uc,e, is ) \
+         (uc)->vtable->m_util_setIsServer((uc), (e), (is))
 # else
-# define util_addrChange( uc, addro, addrn )
+# define util_addrChange( uc,e, addro, addrn )
 #endif
 
-#define util_informWordsBlocked(uc, c, w, d)                        \
-    (uc)->vtable->m_util_informWordsBlocked( (uc), (c), (w), (d) )
+#define util_informWordsBlocked(uc,e, c, w, d)                        \
+    (uc)->vtable->m_util_informWordsBlocked( (uc), (e), (c), (w), (d) )
 
 #ifdef XWFEATURE_SEARCHLIMIT
-#define util_getTraySearchLimits(uc,min,max) \
-         (uc)->vtable->m_util_getTraySearchLimits((uc), (min), (max))
+#define util_getTraySearchLimits(uc,e,min,max) \
+         (uc)->vtable->m_util_getTraySearchLimits((uc), (e), (min), (max))
 #endif
 
 #ifdef XWFEATURE_CHAT
-# define util_showChat( uc, m, f, ts ) (uc)->vtable->m_util_showChat((uc),(m),(f), (ts))
+# define util_showChat( uc,e, m, f, ts ) (uc)->vtable->m_util_showChat((uc), (e),(m),(f), (ts))
 #endif
 
 # ifdef SHOW_PROGRESS
-# define util_engineStarting( uc, nb ) \
-         (uc)->vtable->m_util_engineStarting((uc),(nb))
-# define util_engineStopping( uc ) \
-         (uc)->vtable->m_util_engineStopping((uc))
+# define util_engineStarting( uc,e, nb ) \
+         (uc)->vtable->m_util_engineStarting((uc), (e),(nb))
+# define util_engineStopping( uc,e ) \
+         (uc)->vtable->m_util_engineStopping((uc), (e))
 # else
-# define util_engineStarting( uc, nb )
-# define util_engineStopping( uc )
+# define util_engineStarting( uc,e, nb )
+# define util_engineStopping( uc,e )
 # endif
 
-# define util_getDevUtilCtxt(uc) \
-    (uc)->vtable->m_util_getDevUtilCtxt( (uc) )
+# define util_getDevUtilCtxt(uc,e) \
+    (uc)->vtable->m_util_getDevUtilCtxt( (uc), (e) )
 
 #endif

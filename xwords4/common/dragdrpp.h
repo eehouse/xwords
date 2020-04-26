@@ -31,10 +31,11 @@ extern "C" {
 XP_Bool dragDropInProgress( const BoardCtxt* board );
 XP_Bool dragDropHasMoved( const BoardCtxt* board );
 
-XP_Bool dragDropStart( BoardCtxt* board, BoardObjectType obj,
+XP_Bool dragDropStart( BoardCtxt* board, XWEnv xwe, BoardObjectType obj,
                        XP_U16 xx, XP_U16 yy );
-XP_Bool dragDropContinue( BoardCtxt* board, XP_U16 xx, XP_U16 yy );
-XP_Bool dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged );
+XP_Bool dragDropContinue( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy );
+XP_Bool dragDropEnd( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
+                     XP_Bool* dragged );
 
 #ifdef XWFEATURE_RAISETILE
 XP_Bool dragDropSetAdd( BoardCtxt* board );

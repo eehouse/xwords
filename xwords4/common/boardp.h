@@ -245,15 +245,15 @@ struct BoardCtxt {
 /* tray-related functions */
 XP_Bool handlePenUpTray( BoardCtxt* board, XWEnv xwe, XP_U16 x, XP_U16 y );
 void drawTray( BoardCtxt* board, XWEnv xwe );
-XP_Bool moveTileToArrowLoc( BoardCtxt* board, XP_U8 index );
+XP_Bool moveTileToArrowLoc( BoardCtxt* board, XWEnv xwe, XP_U8 index );
 XP_U16 indexForBits( XP_U8 bits );
 XP_Bool rectContainsPt( const XP_Rect* rect1, XP_S16 x, XP_S16 y );
-XP_Bool checkRevealTray( BoardCtxt* board );
+XP_Bool checkRevealTray( BoardCtxt* board, XWEnv xwe );
 void figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect );
 XP_Bool rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 );
 XP_S16 pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, 
                          XP_Bool* onDividerP );
-void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer, XP_Bool canPeek );
+void board_selectPlayer( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer, XP_Bool canPeek );
 void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
              XP_U16* fCol, XP_U16* fRow );
 XP_Bool pointOnSomething( const BoardCtxt* board, XP_U16 xx, XP_U16 yy,
@@ -264,9 +264,9 @@ XP_Bool cellOccupied( const BoardCtxt* board, XP_U16 col, XP_U16 row,
                       XP_Bool inclPending );
 XP_Bool holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow );
 
-XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+XP_Bool moveTileToBoard( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row,
                          XP_U16 tileIndex, Tile blankFace );
-XP_Bool board_replaceNTiles( BoardCtxt* board, XP_U16 nTiles );
+XP_Bool board_replaceNTiles( BoardCtxt* board, XWEnv xwe, XP_U16 nTiles );
 
 void invalTilesUnderRect( BoardCtxt* board, const XP_Rect* rect );
 void invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
@@ -312,11 +312,10 @@ const XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile,
                                  XP_S16* value );
 XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
-XP_Bool scrollIntoView( BoardCtxt* board, XP_U16 col, XP_U16 row );
-XP_Bool onBorderCanScroll( const BoardCtxt* board, SDIndex indx, XP_U16 row, 
-                           XP_S16* change );
+XP_Bool scrollIntoView( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row );
+XP_Bool onBorderCanScroll( const BoardCtxt* board, SDIndex indx, XP_U16 row, XP_S16* change );
 XP_Bool adjustXOffset( BoardCtxt* board, XP_S16 moveBy );
-XP_Bool adjustYOffset( BoardCtxt* board, XP_S16 moveBy );
+XP_Bool adjustYOffset( BoardCtxt* board, XWEnv xwe, XP_S16 moveBy );
 XP_Bool rectContainsRect( const XP_Rect* rect1, const XP_Rect* rect2 );
 
 

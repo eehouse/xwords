@@ -32,40 +32,41 @@ typedef enum { UNPAUSED,
 } DupPauseType;
 
 typedef struct _DUtilVtable {
-    XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc );
-    const XP_UCHAR* (*m_dutil_getUserString)( XW_DUtilCtxt* duc,
+    XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc, XWEnv xwe );
+    const XP_UCHAR* (*m_dutil_getUserString)( XW_DUtilCtxt* duc, XWEnv xwe,
                                               XP_U16 stringCode );
     const XP_UCHAR* (*m_dutil_getUserQuantityString)( XW_DUtilCtxt* duc,
+                                                      XWEnv xwe,
                                                       XP_U16 stringCode,
                                                       XP_U16 quantity );
-    void (*m_dutil_storeStream)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+    void (*m_dutil_storeStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                  XWStreamCtxt* data );
     /* Pass in an empty stream, and it'll be returned full */
-    void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+    void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                 XWStreamCtxt* inOut );
-    void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+    void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                               const void* data, XP_U16 len );
-    void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+    void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                              void* data, XP_U16* lenp );
 #ifdef XWFEATURE_SMS
-    XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, const XP_UCHAR* p1,
+    XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, XWEnv xwe, const XP_UCHAR* p1,
                                          const XP_UCHAR* p2 );
 #endif
 
 #ifdef XWFEATURE_DEVID
-    const XP_UCHAR* (*m_dutil_getDevID)( XW_DUtilCtxt* duc, DevIDType* typ );
-    void (*m_dutil_deviceRegistered)( XW_DUtilCtxt* duc, DevIDType typ, 
+    const XP_UCHAR* (*m_dutil_getDevID)( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ );
+    void (*m_dutil_deviceRegistered)( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
                                      const XP_UCHAR* idRelay );
 #endif
 
 #ifdef COMMS_CHECKSUM
-    XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, const XP_U8* ptr, XP_U16 len );
+    XP_UCHAR* (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U16 len );
 #endif
 
-    void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XP_U32 gameID,
+    void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                  DupPauseType pauseTyp, XP_U16 pauser,
                                  const XP_UCHAR* name, const XP_UCHAR* msg );
-    void (*m_dutil_onDupTimerChanged)( XW_DUtilCtxt* duc, XP_U32 gameID,
+    void (*m_dutil_onDupTimerChanged)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        XP_U32 oldVal, XP_U32 newVal );
 } DUtilVtable;
 
@@ -80,41 +81,42 @@ struct XW_DUtilCtxt {
 /* This one cheats: direct access */
 #define dutil_getVTManager(duc) (duc)->vtMgr
 
-#define dutil_getCurSeconds(duc)                    \
-    (duc)->vtable.m_dutil_getCurSeconds((duc))
-#define dutil_getUserString( duc, c )               \
-    (duc)->vtable.m_dutil_getUserString((duc),(c))
-#define dutil_getUserQuantityString( duc, c, q )                \
-    (duc)->vtable.m_dutil_getUserQuantityString((duc),(c),(q))
+#define dutil_getCurSeconds(duc, e)               \
+    (duc)->vtable.m_dutil_getCurSeconds((duc), (e))
+#define dutil_getUserString( duc, e, c )             \
+    (duc)->vtable.m_dutil_getUserString((duc),(e), (c))
+#define dutil_getUserQuantityString( duc, e, c, q )                 \
+    (duc)->vtable.m_dutil_getUserQuantityString((duc),(e), (c),(q))
 
-#define dutil_storeStream(duc, k, s)                \
-    (duc)->vtable.m_dutil_storeStream((duc), (k), (s));
-#define dutil_storePtr(duc, k, p, l)                \
-    (duc)->vtable.m_dutil_storePtr((duc), (k), (p), (l));
-#define dutil_loadStream(duc, k, s)                 \
-    (duc)->vtable.m_dutil_loadStream((duc), (k), (s));
-#define dutil_loadPtr(duc, k, p, l)                 \
-    (duc)->vtable.m_dutil_loadPtr((duc), (k), (p), (l));
+#define dutil_storeStream(duc, e,k, s)                  \
+    (duc)->vtable.m_dutil_storeStream((duc), (e), (k), (s));
+#define dutil_storePtr(duc, e, k, p, l)                      \
+    (duc)->vtable.m_dutil_storePtr((duc), (e), (k), (p), (l));
+#define dutil_loadStream(duc, e, k, s)                   \
+    (duc)->vtable.m_dutil_loadStream((duc), (e), (k), (s));
+#define dutil_loadPtr(duc, e, k, p, l)                           \
+    (duc)->vtable.m_dutil_loadPtr((duc), (e), (k), (p), (l));
 
 #ifdef XWFEATURE_SMS
-# define dutil_phoneNumbersSame(duc,p1,p2)                      \
-    (duc)->vtable.m_dutil_phoneNumbersSame( (duc), (p1), (p2) )
+# define dutil_phoneNumbersSame(duc,e,p1,p2)                    \
+    (duc)->vtable.m_dutil_phoneNumbersSame( (duc), (e), (p1), (p2) )
 #endif
 
 #ifdef XWFEATURE_DEVID
-# define dutil_getDevID( duc, t )                     \
-         (duc)->vtable.m_dutil_getDevID((duc),(t))
-# define dutil_deviceRegistered( duc, typ, id )                       \
-         (duc)->vtable.m_dutil_deviceRegistered( (duc), (typ), (id) )
+# define dutil_getDevID( duc, e, t )             \
+    (duc)->vtable.m_dutil_getDevID((duc), (e),(t))
+# define dutil_deviceRegistered( duc, e, typ, id )                       \
+    (duc)->vtable.m_dutil_deviceRegistered( (duc), (e), (typ), (id) )
 #endif
 
 #ifdef COMMS_CHECKSUM
-# define dutil_md5sum( duc, p, l ) (duc)->vtable.m_dutil_md5sum((duc), (p), (l))
+# define dutil_md5sum( duc, e, p, l )                   \
+    (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l))
 #endif
 
-#define dutil_notifyPause( duc, id, ip, p, n, m )                        \
-    (duc)->vtable.m_dutil_notifyPause( (duc), (id), (ip), (p), (n), (m) )
+#define dutil_notifyPause( duc, e, id, ip, p, n, m )                     \
+    (duc)->vtable.m_dutil_notifyPause( (duc), (e), (id), (ip), (p), (n), (m) )
 
-#define dutil_onDupTimerChanged(duc, id, ov, nv)                        \
-    (duc)->vtable.m_dutil_onDupTimerChanged( (duc), (id), (ov), (nv))
+#define dutil_onDupTimerChanged(duc, e, id, ov, nv)                      \
+    (duc)->vtable.m_dutil_onDupTimerChanged( (duc), (e), (id), (ov), (nv))
 #endif

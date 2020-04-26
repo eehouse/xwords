@@ -30,10 +30,10 @@
 extern "C" {
 #endif
 
-ServerCtxt* server_make( MPFORMAL ModelCtxt* model, CommsCtxt* comms,
+ServerCtxt* server_make( MPFORMAL XWEnv xwe, ModelCtxt* model, CommsCtxt* comms,
                          XW_UtilCtxt* util );
 
-ServerCtxt* server_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
+ServerCtxt* server_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                                    ModelCtxt* model, CommsCtxt* comms,
                                    XW_UtilCtxt* util, XP_U16 nPlayers );
 
@@ -44,16 +44,16 @@ void server_destroy( ServerCtxt* server, XWEnv xwe );
 
 void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
 
-typedef void (*TurnChangeListener)( void* data );
+typedef void (*TurnChangeListener)( XWEnv xwe, void* data );
 void server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,
                                    void* data );
 
-typedef void (*TimerChangeListener)( void* data, XP_U32 gameID,
+typedef void (*TimerChangeListener)( XWEnv xwe, void* data, XP_U32 gameID,
                                      XP_S32 oldVal, XP_S32 newVal );
 void server_setTimerChangeListener( ServerCtxt* server, TimerChangeListener tl,
                                     void* data );
 
-typedef void (*GameOverListener)( void* data, XP_S16 quitter );
+typedef void (*GameOverListener)( XWEnv xwe, void* data, XP_S16 quitter );
 void server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
                                  void* data );
 
@@ -78,7 +78,7 @@ XP_S16 server_getCurrentTurn( const ServerCtxt* server, XP_Bool* isLocal );
 XP_Bool server_isPlayersTurn( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_getGameIsOver( const ServerCtxt* server );
 XP_S32 server_getDupTimerExpires( const ServerCtxt* server );
-XP_S16 server_getTimerSeconds( const ServerCtxt* server, XP_U16 turn );
+XP_S16 server_getTimerSeconds( const ServerCtxt* server, XWEnv xwe, XP_U16 turn );
 XP_Bool server_dupTurnDone( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_canPause( const ServerCtxt* server );
 XP_Bool server_canUnpause( const ServerCtxt* server );
@@ -91,9 +91,9 @@ XP_U32 server_getLastMoveTime( const ServerCtxt* server );
 /* Signed in case no dictionary available */
 XP_S16 server_countTilesInPool( ServerCtxt* server );
 
-XP_Bool server_askPickTiles( ServerCtxt* server, XP_U16 player,
+XP_Bool server_askPickTiles( ServerCtxt* server, XWEnv xwe, XP_U16 player,
                              TrayTileSet* newTiles, XP_U16 nToPick );
-void server_tilesPicked( ServerCtxt* server, XP_U16 player,
+void server_tilesPicked( ServerCtxt* server, XWEnv xwe, XP_U16 player,
                          const TrayTileSet* newTiles );
 
 XP_U16 server_getPendingRegs( const ServerCtxt* server );
@@ -124,12 +124,12 @@ void server_sendChat( ServerCtxt* server, XWEnv xwe,
                       const XP_UCHAR* msg, XP_S16 from );
 #endif
 
-void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
+void server_formatDictCounts( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream,
                               XP_U16 nCols, XP_Bool allFaces );
-void server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
-                                  XP_S16 player );
+void server_formatRemainingTiles( ServerCtxt* server, XWEnv xwe,
+                                  XWStreamCtxt* stream, XP_S16 player );
 
-void server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream );
+void server_writeFinalScores( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream );
 
 #ifdef XWFEATURE_BONUSALL
 XP_U16 server_figureFinishBonus( const ServerCtxt* server, XP_U16 turn );

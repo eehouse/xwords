@@ -33,7 +33,6 @@
 
 typedef struct _AndDUtil {
     XW_DUtilCtxt dutil;
-    EnvThreadInfo* ti;
     JNIUtilCtxt* jniutil;
     jobject jdutil;  /* global ref to object implementing XW_DUtilCtxt */
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
@@ -50,14 +49,14 @@ typedef struct _TimerStorage {
 
 typedef struct _AndUtil {
     XW_UtilCtxt util;
-    EnvThreadInfo* ti;
     jobject jutil;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
 } AndUtil;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt*
-and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
+and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                             XP_PlayerAddr channelNo )
 {
 #ifdef DEBUG
     AndUtil* util = (AndUtil*)uc;
@@ -73,7 +72,7 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #define UTIL_CBK_HEADER(nam,sig)                                        \
     AndUtil* util = (AndUtil*)uc;                                       \
-    JNIEnv* env = ENVFORME( util->ti );                                 \
+    JNIEnv* env = xwe;                                                  \
     if ( NULL != util->jutil ) {                                        \
         jmethodID mid = getMethodID( env, util->jutil, nam, sig )
 
@@ -85,13 +84,14 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #define DUTIL_CBK_HEADER(nam,sig)                                       \
     AndDUtil* dutil = (AndDUtil*)duc;                                   \
-    JNIEnv* env = ENVFORME( dutil->ti );                                \
+    JNIEnv* env = xwe;                                                  \
     if ( NULL != dutil->jdutil ) {                                      \
         jmethodID mid = getMethodID( env, dutil->jdutil, nam, sig )
 
 #define DUTIL_CBK_TAIL() UTIL_CBK_TAIL()
     
-static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc), 
+static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc),
+                                            XWEnv XP_UNUSED(xwe),
                                             XP_U16 boardSize,
                                             XP_U16 col, XP_U16 row )
 {
@@ -119,7 +119,7 @@ static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc),
 }
 
 static void
-and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
+and_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
 {
     UTIL_CBK_HEADER( "userError", "(I)V" );
     (*env)->CallVoidMethod( env, util->jutil, mid, id );
@@ -132,7 +132,7 @@ and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 }
 
 static void
-and_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
+and_util_notifyMove( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream )
 {
     UTIL_CBK_HEADER("notifyMove", "(Ljava/lang/String;)V" );
 
@@ -146,7 +146,7 @@ and_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
 }
 
 static void
-and_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
+and_util_notifyTrade( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles, XP_U16 nTiles )
 {
     UTIL_CBK_HEADER("notifyTrade", "([Ljava/lang/String;)V" );
     jobjectArray jtiles = makeStringArray( env, nTiles, tiles );
@@ -156,7 +156,7 @@ and_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
 }
 
 static void
-and_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
+and_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 playerNum,
                               XP_U16 col, XP_U16 row,
                               const XP_UCHAR** tileFaces, XP_U16 nTiles )
 {
@@ -171,7 +171,7 @@ and_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
 }
 
 static void
-and_util_informNeedPickTiles( XW_UtilCtxt* uc, XP_Bool isInitial,
+and_util_informNeedPickTiles( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isInitial,
                               XP_U16 player, XP_U16 nToPick,
                               XP_U16 nFaces, const XP_UCHAR** faces,
                               const XP_U16* counts )
@@ -189,7 +189,7 @@ and_util_informNeedPickTiles( XW_UtilCtxt* uc, XP_Bool isInitial,
 } /* and_util_informNeedPickTiles */
 
 static void
-and_util_informNeedPassword( XW_UtilCtxt* uc, XP_U16 player,
+and_util_informNeedPassword( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player,
                              const XP_UCHAR* name )
 {
     UTIL_CBK_HEADER("informNeedPassword", "(ILjava/lang/String;)V" );
@@ -201,13 +201,14 @@ and_util_informNeedPassword( XW_UtilCtxt* uc, XP_U16 player,
 }
 
 static void
-and_util_trayHiddenChange(XW_UtilCtxt* uc, XW_TrayVisState newState,
+and_util_trayHiddenChange(XW_UtilCtxt* uc, XWEnv xwe,
+                          XW_TrayVisState newState,
                           XP_U16 nVisibleRows )
 {
 }
 
 static void
-and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 maxOffset, 
+and_util_yOffsetChange(XW_UtilCtxt* uc, XWEnv xwe, XP_U16 maxOffset,
                        XP_U16 oldOffset, XP_U16 newOffset )
 {
 #if 0
@@ -223,7 +224,7 @@ and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 maxOffset,
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 static void
-and_util_turnChanged( XW_UtilCtxt* uc, XP_S16 turn )
+and_util_turnChanged( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn )
 {
     UTIL_CBK_HEADER( "turnChanged", "(I)V" );
     (*env)->CallVoidMethod( env, util->jutil, mid, turn );
@@ -232,7 +233,7 @@ and_util_turnChanged( XW_UtilCtxt* uc, XP_S16 turn )
 #endif
 
 static void
-and_util_informMove( XW_UtilCtxt* uc, XP_S16 turn, XWStreamCtxt* expl, 
+and_util_informMove( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn, XWStreamCtxt* expl,
                      XWStreamCtxt* words )
 {
     UTIL_CBK_HEADER( "informMove", "(ILjava/lang/String;Ljava/lang/String;)V" );
@@ -244,7 +245,7 @@ and_util_informMove( XW_UtilCtxt* uc, XP_S16 turn, XWStreamCtxt* expl,
 }
 
 static void
-and_util_notifyDupStatus( XW_UtilCtxt* uc, XP_Bool amHost, const XP_UCHAR* msg )
+and_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool amHost, const XP_UCHAR* msg )
 {
     UTIL_CBK_HEADER( "notifyDupStatus", "(ZLjava/lang/String;)V" );
     jstring jmsg = (*env)->NewStringUTF( env, msg );
@@ -254,7 +255,7 @@ and_util_notifyDupStatus( XW_UtilCtxt* uc, XP_Bool amHost, const XP_UCHAR* msg )
 }
 
 static void
-and_util_informUndo( XW_UtilCtxt* uc )
+and_util_informUndo( XW_UtilCtxt* uc, XWEnv xwe )
 {
     UTIL_CBK_HEADER( "informUndo", "()V" );
     (*env)->CallVoidMethod( env, util->jutil, mid );
@@ -262,7 +263,7 @@ and_util_informUndo( XW_UtilCtxt* uc )
 }
 
 static void
-and_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode lang,
+and_util_informNetDict( XW_UtilCtxt* uc, XWEnv xwe, XP_LangCode lang,
                         const XP_UCHAR* oldName,
                         const XP_UCHAR* newName, const XP_UCHAR* newSum,
                         XWPhoniesChoice phoniesAction )
@@ -285,7 +286,7 @@ and_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode lang,
 }
 
 static void
-and_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(quitter) )
+and_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 XP_UNUSED(quitter) )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
     (*env)->CallVoidMethod( env, util->jutil, mid );
@@ -302,7 +303,7 @@ and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 #endif
 
 static XP_Bool
-and_util_engineProgressCallback( XW_UtilCtxt* uc )
+and_util_engineProgressCallback( XW_UtilCtxt* uc, XWEnv xwe )
 {
     XP_Bool result = XP_FALSE;
     UTIL_CBK_HEADER("engineProgressCallback","()Z" );
@@ -333,7 +334,7 @@ utilTimerFired( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, int handle )
 }
 
 static void
-and_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+and_util_setTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, XP_U16 when,
                    XWTimerProc proc, void* closure )
 {
     UTIL_CBK_HEADER("setTimer", "(III)V" );
@@ -348,7 +349,7 @@ and_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
 }
 
 static void
-and_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
+and_util_clearTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why )
 {
     UTIL_CBK_HEADER("clearTimer", "(I)V" );
     (*env)->CallVoidMethod( env, util->jutil, mid, why );
@@ -357,7 +358,7 @@ and_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 
 
 static void
-and_util_requestTime( XW_UtilCtxt* uc )
+and_util_requestTime( XW_UtilCtxt* uc, XWEnv xwe )
 {
     UTIL_CBK_HEADER("requestTime", "()V" );
     (*env)->CallVoidMethod( env, util->jutil, mid );
@@ -365,20 +366,16 @@ and_util_requestTime( XW_UtilCtxt* uc )
 }
 
 static XP_Bool
-and_util_altKeyDown( XW_UtilCtxt* uc )
+and_util_altKeyDown( XW_UtilCtxt* uc, XWEnv xwe )
 {
     LOG_FUNC();
     return XP_FALSE;
 }
 
 XP_U32
-and_dutil_getCurSeconds( XW_DUtilCtxt* duc )
+and_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe )
 {
-    AndDUtil* anddutil = (AndDUtil*)duc;
-    XP_U32 curSeconds = getCurSeconds( ENVFORME( anddutil->ti ) );
-    /* struct timeval tv; */
-    /* gettimeofday( &tv, NULL ); */
-    /* XP_LOGF( "%s: %d vs %d", __func__, (int)tv.tv_sec, (int)curSeconds ); */
+    XP_U32 curSeconds = getCurSeconds( xwe );
     return curSeconds;
 }
 
@@ -397,7 +394,7 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc, XWEnv xwe )
 }
 
 static const XP_UCHAR*
-and_dutil_getUserString( XW_DUtilCtxt* duc, XP_U16 stringCode )
+and_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 stringCode )
 {
     XP_UCHAR* result = "";
     DUTIL_CBK_HEADER("getUserString", "(I)Ljava/lang/String;" );
@@ -426,7 +423,8 @@ and_dutil_getUserString( XW_DUtilCtxt* duc, XP_U16 stringCode )
 }
 
 static const XP_UCHAR*
-and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 stringCode, XP_U16 quantity )
+and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe,
+                                 XP_U16 stringCode, XP_U16 quantity )
 {
     XP_UCHAR* result = "";
     DUTIL_CBK_HEADER("getUserQuantityString", "(II)Ljava/lang/String;" );
@@ -473,7 +471,7 @@ and_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 stringCode, XP_U16 qu
 }
 
 static void
-and_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+and_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                     const void* data, XP_U16 len )
 {
     DUTIL_CBK_HEADER( "store", "(Ljava/lang/String;[B)V" );
@@ -489,17 +487,17 @@ and_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 }
 
 static void
-and_dutil_storeStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+and_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                        XWStreamCtxt* stream )
 {
     const void* ptr = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
 
-    and_dutil_storePtr( duc, key, ptr, len );
+    and_dutil_storePtr( duc, xwe, key, ptr, len );
 }
 
 static jbyteArray
-loadToByteArray( XW_DUtilCtxt* duc, const XP_UCHAR* key )
+loadToByteArray( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key )
 {
     jbyteArray result = NULL;
     DUTIL_CBK_HEADER( "load", "(Ljava/lang/String;)[B");
@@ -512,12 +510,11 @@ loadToByteArray( XW_DUtilCtxt* duc, const XP_UCHAR* key )
 }
 
 static void
-and_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                    void* data, XP_U16* lenp )
 {
-    AndDUtil* dutil = (AndDUtil*)duc;
-    JNIEnv* env = ENVFORME( dutil->ti );
-    jbyteArray jvalue = loadToByteArray( duc, key );
+    JNIEnv* env = xwe;
+    jbyteArray jvalue = loadToByteArray( duc, env, key );
     if ( jvalue != NULL ) {
         jsize len = (*env)->GetArrayLength( env, jvalue );
         if ( len <= *lenp ) {
@@ -531,11 +528,11 @@ and_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 }
 
 static void
-and_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+and_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
+                      const XP_UCHAR* key, XWStreamCtxt* stream )
 {
-    AndDUtil* dutil = (AndDUtil*)duc;
-    JNIEnv* env = ENVFORME( dutil->ti );
-    jbyteArray jvalue = loadToByteArray( duc, key );
+    JNIEnv* env = xwe;
+    jbyteArray jvalue = loadToByteArray( duc, xwe, key );
     if ( jvalue != NULL ) {
         jbyte* jelems = (*env)->GetByteArrayElements( env, jvalue, NULL );
         jsize len = (*env)->GetArrayLength( env, jvalue );
@@ -546,7 +543,7 @@ and_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stre
 }
 
 static void
-and_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
+and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe, BadWordInfo* bwi,
                              XP_U16 turn, XP_Bool turnLost )
 {
     UTIL_CBK_HEADER("notifyIllegalWords",
@@ -566,7 +563,7 @@ and_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #ifdef XWFEATURE_CHAT
 static void
-and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* msg, XP_S16 from, XP_U32 timestamp )
+and_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* msg, XP_S16 from, XP_U32 timestamp )
 {
     UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;ILjava/lang/String;I)V" );
     jstring jname = NULL;
@@ -584,7 +581,7 @@ and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* msg, XP_S16 from, XP_U32 tim
 #endif
 
 static void
-and_util_remSelected(XW_UtilCtxt* uc)
+and_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
 {
     UTIL_CBK_HEADER("remSelected", "()V" );
     (*env)->CallVoidMethod( env, util->jutil, mid );
@@ -592,7 +589,7 @@ and_util_remSelected(XW_UtilCtxt* uc)
 }
 
 static void
-and_util_timerSelected( XW_UtilCtxt* uc, XP_Bool inDuplicateMode, XP_Bool canPause )
+and_util_timerSelected( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool inDuplicateMode, XP_Bool canPause )
 {
     UTIL_CBK_HEADER("timerSelected", "(ZZ)V" );
     (*env)->CallVoidMethod( env, util->jutil, mid, inDuplicateMode, canPause );
@@ -600,7 +597,7 @@ and_util_timerSelected( XW_UtilCtxt* uc, XP_Bool inDuplicateMode, XP_Bool canPau
 }
 
 static void
-and_util_formatPauseHistory( XW_UtilCtxt* uc, XWStreamCtxt* stream,
+and_util_formatPauseHistory( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream,
                              DupPauseType typ, XP_S16 turn,
                              XP_U32 secsPrev, XP_U32 secsCur,
                              const XP_UCHAR* msg )
@@ -621,7 +618,7 @@ and_util_formatPauseHistory( XW_UtilCtxt* uc, XWStreamCtxt* stream,
 
 #ifndef XWFEATURE_MINIWIN
 static void
-and_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
+and_util_bonusSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWBonusType bonus )
 {
     UTIL_CBK_HEADER( "bonusSquareHeld", "(I)V" );
     (*env)->CallVoidMethod( env, util->jutil, mid, bonus );
@@ -629,7 +626,7 @@ and_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 }
 
 static void
-and_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
+and_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 player )
 {
     UTIL_CBK_HEADER( "playerScoreHeld", "(I)V" );
     (*env)->CallVoidMethod( env, util->jutil, mid, player );
@@ -639,7 +636,7 @@ and_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
 #ifdef XWFEATURE_SMS
 static XP_Bool
-and_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, const XP_UCHAR* p1,
+and_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* p1,
                             const XP_UCHAR* p2 )
 {
     XP_Bool same = 0 == strcmp( p1, p2 );
@@ -658,7 +655,7 @@ and_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, const XP_UCHAR* p1,
 
 #ifdef XWFEATURE_BOARDWORDS
 static void
-and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
+and_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
 {
     if ( NULL != words ) {
         UTIL_CBK_HEADER( "cellSquareHeld", "(Ljava/lang/String;)V" );
@@ -673,7 +670,7 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #ifndef XWFEATURE_STANDALONE_ONLY
 
 static void
-and_util_informMissing( XW_UtilCtxt* uc, XP_Bool isServer, 
+and_util_informMissing( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer,
                         const CommsAddrRec* addr, XP_U16 nDevs, XP_U16 nMissing)
 {
     UTIL_CBK_HEADER( "informMissing", 
@@ -689,14 +686,15 @@ and_util_informMissing( XW_UtilCtxt* uc, XP_Bool isServer,
 }
 
 static void
-and_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+and_util_addrChange( XW_UtilCtxt* uc, XWEnv xwe,
+                     const CommsAddrRec* oldAddr,
                      const CommsAddrRec* newAddr )
 {
     // LOG_FUNC();
 }
 
 static void
-and_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+and_util_setIsServer( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isServer )
 {
     /* Change both the C and Java structs, which need to stay in sync */
     uc->gameInfo->serverRole = isServer? SERVER_ISSERVER : SERVER_ISCLIENT;
@@ -706,7 +704,7 @@ and_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
 }
 
 static void
-and_util_informWordsBlocked( XW_UtilCtxt* uc, XP_U16 nBadWords,
+and_util_informWordsBlocked( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                              XWStreamCtxt* words, const XP_UCHAR* dict )
 {
     UTIL_CBK_HEADER( "informWordsBlocked", "(ILjava/lang/String;Ljava/lang/String;)V" );
@@ -719,7 +717,7 @@ and_util_informWordsBlocked( XW_UtilCtxt* uc, XP_U16 nBadWords,
 
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
-and_dutil_getDevID( XW_DUtilCtxt* duc, DevIDType* typ )
+and_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ )
 {
     const XP_UCHAR* result = NULL;
     *typ = ID_TYPE_NONE;
@@ -752,7 +750,7 @@ and_dutil_getDevID( XW_DUtilCtxt* duc, DevIDType* typ )
 }
 
 static void
-and_dutil_deviceRegistered( XW_DUtilCtxt* duc, DevIDType typ,
+and_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
                             const XP_UCHAR* idRelay )
 {
     DUTIL_CBK_HEADER( "deviceRegistered",
@@ -797,7 +795,7 @@ and_util_engineStopping( XW_UtilCtxt* uc )
 #endif
 
 static XW_DUtilCtxt*
-and_util_getDevUtilCtxt( XW_UtilCtxt* uc )
+and_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
 {
     AndGameGlobals* globals = (AndGameGlobals*)uc->closure;
     XP_ASSERT( !!globals->dutil );
@@ -806,10 +804,10 @@ and_util_getDevUtilCtxt( XW_UtilCtxt* uc )
 
 #ifdef COMMS_CHECKSUM
 static XP_UCHAR*
-and_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr, XP_U16 len )
+and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U16 len )
 {
     AndDUtil* dutil = (AndDUtil*)duc;
-    JNIEnv* env = ENVFORME( dutil->ti );
+    JNIEnv* env = xwe;
     struct JNIUtilCtxt* jniutil = dutil->jniutil;
     jstring jsum = and_util_getMD5SumForBytes( jniutil, env, ptr, len );
     XP_UCHAR* result = getStringCopy( MPPARM(duc->mpool) env, jsum );
@@ -819,7 +817,7 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr, XP_U16 len )
 #endif
 
 static void
-and_dutil_notifyPause( XW_DUtilCtxt* duc, XP_U32 gameID, DupPauseType pauseTyp,
+and_dutil_notifyPause( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, DupPauseType pauseTyp,
                        XP_U16 pauser, const XP_UCHAR* name,
                        const XP_UCHAR* msg )
 {
@@ -833,7 +831,7 @@ and_dutil_notifyPause( XW_DUtilCtxt* duc, XP_U32 gameID, DupPauseType pauseTyp,
 }
 
 static void
-and_dutil_onDupTimerChanged( XW_DUtilCtxt* duc, XP_U32 gameID,
+and_dutil_onDupTimerChanged( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                              XP_U32 oldVal, XP_U32 newVal )
 {
     DUTIL_CBK_HEADER( "onDupTimerChanged", "(III)V" );
@@ -842,13 +840,11 @@ and_dutil_onDupTimerChanged( XW_DUtilCtxt* duc, XP_U32 gameID,
 }
 
 XW_UtilCtxt*
-makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
+makeUtil( MPFORMAL JNIEnv* env, jobject jutil, CurGameInfo* gi,
           AndGameGlobals* closure )
 {
     AndUtil* util = (AndUtil*)XP_CALLOC( mpool, sizeof(*util) );
     UtilVtable* vtable = (UtilVtable*)XP_CALLOC( mpool, sizeof(*vtable) );
-    util->ti = ti;
-    JNIEnv* env = ENVFORME( util->ti );
     if ( NULL != jutil ) {
         util->jutil = (*env)->NewGlobalRef( env, jutil );
     }
@@ -927,10 +923,9 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
 } /* makeUtil */
 
 void
-destroyUtil( XW_UtilCtxt** utilc )
+destroyUtil( XW_UtilCtxt** utilc, JNIEnv* env )
 {
     AndUtil* util = (AndUtil*)*utilc;
-    JNIEnv* env = ENVFORME( util->ti );
 
     if ( NULL != util->jutil ) {
         (*env)->DeleteGlobalRef( env, util->jutil );
@@ -941,17 +936,15 @@ destroyUtil( XW_UtilCtxt** utilc )
 }
 
 XW_DUtilCtxt*
-makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
+makeDUtil( MPFORMAL JNIEnv* env, jobject jdutil, VTableMgr* vtMgr,
            JNIUtilCtxt* jniutil, void* closure )
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
-    dutil->ti = ti;
     dutil->jniutil = jniutil;
     dutil->dutil.closure = closure;
     dutil->dutil.vtMgr = vtMgr;
 
     if ( NULL != jdutil ) {
-        JNIEnv* env = ENVFORME( ti );
         dutil->jdutil = (*env)->NewGlobalRef( env, jdutil );
     }
 
@@ -986,10 +979,9 @@ makeDUtil( MPFORMAL EnvThreadInfo* ti, jobject jdutil, VTableMgr* vtMgr,
 }
 
 void
-destroyDUtil( XW_DUtilCtxt** dutilp )
+destroyDUtil( XW_DUtilCtxt** dutilp, JNIEnv* env )
 {
     AndDUtil* dutil = (AndDUtil*)*dutilp;
-    JNIEnv* env = ENVFORME( dutil->ti );
     if ( NULL != dutil->jdutil ) {
         (*env)->DeleteGlobalRef( env, dutil->jdutil );
     }

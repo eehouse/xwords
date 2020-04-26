@@ -193,10 +193,11 @@ static AddressRecord* rememberChannelAddress( CommsCtxt* comms, XWEnv xwe,
 static void augmentChannelAddr( AddressRecord* rec, const CommsAddrRec* addr,
                                 XWHostID hostID );
 static void augmentAddr( CommsAddrRec* dest, const CommsAddrRec* src );
-static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
+static XP_Bool channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                                  const CommsAddrRec** addr );
-static AddressRecord* getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
-                                    XP_PlayerAddr channelNo, XP_Bool maskChnl );
+static AddressRecord* getRecordFor( CommsCtxt* comms, XWEnv xwe,
+                                    const CommsAddrRec* addr, XP_PlayerAddr channelNo,
+                                    XP_Bool maskChnl );
 static XP_S16 sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        CommsConnType filter );
 static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newMsgElem );
@@ -218,11 +219,11 @@ static XP_Bool send_via_relay( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd,
 static XP_Bool sendNoConn( CommsCtxt* comms, XWEnv xwe,
                            const MsgQueueElem* elem, XWHostID destID );
 static XWHostID getDestID( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo );
-static void set_reset_timer( CommsCtxt* comms );
+static void set_reset_timer( CommsCtxt* comms, XWEnv xwe );
 # ifdef XWFEATURE_DEVID
-static void putDevID( const CommsCtxt* comms, XWStreamCtxt* stream );
+static void putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 # else
-#  define putDevID( comms, stream )
+#  define putDevID( comms, xwe, stream )
 # endif
 # ifdef DEBUG
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
@@ -378,9 +379,9 @@ comms_make( MPFORMAL XWEnv xwe, XW_UtilCtxt* util, XP_Bool isServer,
         comms->xportFlags = comms->procs.flags;
 #endif
     }
-    comms->dutil = util_getDevUtilCtxt( util );
+    comms->dutil = util_getDevUtilCtxt( util, xwe );
     comms->util = util;
-    comms->dutil = util_getDevUtilCtxt( util );
+    comms->dutil = util_getDevUtilCtxt( util, xwe );
 
 #ifdef XWFEATURE_RELAY
     init_relay( comms, xwe, nPlayersHere, nPlayersTotal );
@@ -516,7 +517,7 @@ p_comms_resetTimer( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
             setHeartbeatTimer( comms );  /* in case we killed it with this
                                             one.... */
         } else {
-            set_reset_timer( comms );
+            set_reset_timer( comms, xwe );
         }
     }
 
@@ -524,12 +525,12 @@ p_comms_resetTimer( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
 } /* p_comms_resetTimer */
 
 static void
-set_reset_timer( CommsCtxt* comms )
+set_reset_timer( CommsCtxt* comms, XWEnv xwe )
 {
     /* This timer is allowed to overwrite a heartbeat timer, but not
        vice-versa.  Make sure we can restart it. */
     comms->hbTimerPending = XP_FALSE;
-    util_setTimer( comms->util, TIMER_COMMS, 15,
+    util_setTimer( comms->util, xwe, TIMER_COMMS, 15,
                    p_comms_resetTimer, comms );
     comms->reconTimerPending = XP_TRUE;
 } /* set_reset_timer */
@@ -543,26 +544,26 @@ comms_transportFailed( CommsCtxt* comms, XWEnv xwe, CommsConnType failed )
          && comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
         relayDisconnect( comms, xwe );
 
-        set_reset_timer( comms );
+        set_reset_timer( comms, xwe );
     }
     LOG_RETURN_VOID();
 }
 #endif  /* XWFEATURE_RELAY */
 
 void
-comms_destroy( CommsCtxt* comms )
+comms_destroy( CommsCtxt* comms, XWEnv xwe )
 {
     /* did I call comms_stop()? */
     XP_ASSERT( ! addr_hasType( &comms->addr, COMMS_CONN_RELAY )
                || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
 
     CommsAddrRec aNew = {0};
-    util_addrChange( comms->util, &comms->addr, &aNew );
+    util_addrChange( comms->util, xwe, &comms->addr, &aNew );
 
     cleanupInternal( comms );
     cleanupAddrRecs( comms );
 
-    util_clearTimer( comms->util, TIMER_COMMS );
+    util_clearTimer( comms->util, xwe, TIMER_COMMS );
 
     XP_FREE( comms->mpool, comms );
 } /* comms_destroy */
@@ -733,7 +734,7 @@ comms_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XW_UtilCtxt* uti
         msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
         stream_getBytes( stream, msg->msg, msg->len );
 #ifdef COMMS_CHECKSUM
-        msg->checksum = dutil_md5sum( comms->dutil, msg->msg, msg->len );
+        msg->checksum = dutil_md5sum( comms->dutil, xwe, msg->msg, msg->len );
 #endif
         msg->next = (MsgQueueElem*)NULL;
         *prevsQueueNext = comms->msgQueueTail = msg;
@@ -808,7 +809,7 @@ sendConnect( CommsCtxt* comms, XWEnv xwe, XP_Bool breakExisting )
                 set_relay_state( comms, xwe, COMMS_RELAYSTATE_UNCONNECTED );
                 if ( !relayConnect( comms, xwe ) ) {
                     XP_LOGF( "%s: relayConnect failed", __func__ );
-                    set_reset_timer( comms );
+                    set_reset_timer( comms, xwe );
                 }
             }
             break;
@@ -1008,7 +1009,7 @@ comms_augmentHostAddr( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr )
 
     CommsAddrRec tmp = comms->addr;
     augmentAddr( &tmp, addr );
-    util_addrChange( comms->util, &comms->addr, &tmp );
+    util_addrChange( comms->util, xwe, &comms->addr, &tmp );
     comms->addr = tmp;
 
     logAddr( comms, xwe, &comms->addr, "after" );
@@ -1123,7 +1124,8 @@ comms_getInitialAddr( CommsAddrRec* addr
 } /* comms_getInitialAddr */
 
 XP_Bool
-comms_checkAddr( DeviceRole role, const CommsAddrRec* addr, XW_UtilCtxt* util )
+comms_checkAddr( XWEnv xwe, DeviceRole role, const CommsAddrRec* addr,
+                 XW_UtilCtxt* util )
 {
     XP_Bool ok = XP_TRUE;
     /* make sure the user's given us enough information to make a connection */
@@ -1133,7 +1135,7 @@ comms_checkAddr( DeviceRole role, const CommsAddrRec* addr, XW_UtilCtxt* util )
             if ( !XP_MEMCMP( &empty, &addr->u.bt.btAddr, sizeof(empty) ) ) {
                 ok = XP_FALSE;
                 if ( !!util ) {
-                    util_userError( util, STR_NEED_BT_HOST_ADDR );
+                    util_userError( util, xwe, STR_NEED_BT_HOST_ADDR );
                 }
             }
         }
@@ -1217,7 +1219,7 @@ makeElemWithID( CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* rec,
     }
 
 #ifdef COMMS_CHECKSUM
-    newMsgElem->checksum = dutil_md5sum( comms->dutil, newMsgElem->msg,
+    newMsgElem->checksum = dutil_md5sum( comms->dutil, xwe, newMsgElem->msg,
                                          newMsgElem->len );
 #endif
     return newMsgElem;
@@ -1249,7 +1251,7 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
         XP_PlayerAddr channelNo = stream_getAddress( stream );
         CNO_FMT( cbuf, channelNo );
         XP_LOGF( "%s: %s", __func__, cbuf );
-        AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
+        AddressRecord* rec = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
         MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
         MsgQueueElem* elem;
 
@@ -1386,7 +1388,7 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
     XP_LOGF( "%s(channelNo=%d): remove msgs <= " XP_LD " for %s (queueLen: %d)",
              __func__, channelNo, msgID, cbuf, comms->queueLen );
 
-    if ((channelNo == 0) || !!getRecordFor( comms, NULL, channelNo, XP_FALSE)) {
+    if ((channelNo == 0) || !!getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE)) {
 
         MsgQueueElem* elem = comms->msgQueueHead;
         MsgQueueElem* next;
@@ -1466,7 +1468,7 @@ sendMsg( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem, const CommsConnType fi
 
     CommsAddrRec addr;
     const CommsAddrRec* addrP;
-    (void)channelToAddress( comms, channelNo, &addrP );
+    (void)channelToAddress( comms, xwe, channelNo, &addrP );
     if ( NULL == addrP ) {
         XP_LOGF( TAGFMT() "no addr for channel so using comms'", TAGPRMS );
         comms_getAddr( comms, &addr );
@@ -1576,7 +1578,7 @@ resendImpl( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force,
     XP_Bool success = XP_TRUE;
     XP_ASSERT( !!comms );
 
-    XP_U32 now = dutil_getCurSeconds( comms->dutil );
+    XP_U32 now = dutil_getCurSeconds( comms->dutil, xwe );
     if ( !force && (now < comms->nextResend) ) {
         XP_LOGF( "%s: aborting: %d seconds left in backoff", __func__, 
                  comms->nextResend - now );
@@ -1725,7 +1727,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     if ( isServer != comms->isServer ) {
         XP_LOGF( "%s: becoming%s a server", __func__, isServer ? "" : " NOT" );
         comms->isServer = isServer;
-        util_setIsServer( comms->util, comms->isServer );
+        util_setIsServer( comms->util, xwe, comms->isServer );
 
         reset_internal( comms, xwe, isServer, comms->rr.nPlayersHere,
                         comms->rr.nPlayersTotal, XP_FALSE );
@@ -1766,7 +1768,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     }
     if ( ID_TYPE_NONE == typ    /* error case */
          || '\0' != devID[0] ) /* new info case */ {
-        dutil_deviceRegistered( comms->dutil, typ, devID );
+        dutil_deviceRegistered( comms->dutil, xwe, typ, devID );
     }
 #endif
 
@@ -1904,7 +1906,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
             } else {
                 set_relay_state( comms, xwe, COMMS_RELAYSTATE_RECONNECTED );
             /* we will eventually want to tell the user which player's gone */
-                util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+                util_userError( comms->util, xwe, ERR_RELAY_BASE + relayErr );
             }
         }
         break;
@@ -1912,7 +1914,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
     case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
         relayErr = stream_getU8( stream );
         set_relay_state( comms, xwe, COMMS_RELAYSTATE_UNCONNECTED );
-        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        util_userError( comms->util, xwe, ERR_RELAY_BASE + relayErr );
         break;
 
     case XWRELAY_MSG_STATUS:
@@ -1928,7 +1930,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         if ( XWRELAY_ERROR_NORECONN == relayErr ) {
             init_relay( comms, xwe, comms->rr.nPlayersHere, comms->rr.nPlayersTotal );
         } else {
-            util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+            util_userError( comms->util, xwe, ERR_RELAY_BASE + relayErr );
             /* requires action, not just notification */
             (*comms->procs.rerror)( xwe, comms->procs.closure, relayErr );
         }
@@ -1949,7 +1951,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
 static void
 noteHBReceived( CommsCtxt* comms/* , const CommsAddrRec* addr */ )
 {
-    comms->lastMsgRcvdTime = dutil_getCurSeconds( comms->dutil );
+    comms->lastMsgRcvdTime = dutil_getCurSeconds( comms->dutil, xwe );
     setHeartbeatTimer( comms );
 }
 #else
@@ -2028,7 +2030,7 @@ preProcess( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* useAddr,
 } /* preProcess */
 
 static AddressRecord* 
-getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr, 
+getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
               const XP_PlayerAddr channelNo, XP_Bool maskChannel )
 {
     LOG_FUNC();
@@ -2083,8 +2085,8 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
             case COMMS_CONN_SMS:
 #ifdef XWFEATURE_SMS
                 {
-                    XW_DUtilCtxt* duc = util_getDevUtilCtxt( comms->util );
-                    if ( dutil_phoneNumbersSame( duc, addr->u.sms.phone,
+                    XW_DUtilCtxt* duc = util_getDevUtilCtxt( comms->util, xwe );
+                    if ( dutil_phoneNumbersSame( duc, xwe, addr->u.sms.phone,
                                                  rec->addr.u.sms.phone )
                          && addr->u.sms.port == rec->addr.u.sms.port ) {
                         matched = XP_TRUE;
@@ -2163,7 +2165,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
     } else if ( comms->doHeartbeat ) {
         XP_Bool addRec = XP_FALSE;
         /* This (with mask) is untested!!! */
-        rec = getRecordFor( comms, addr, *channelNo, XP_TRUE );
+        rec = getRecordFor( comms, xwe, addr, *channelNo, XP_TRUE );
 
         if ( hasPayload ) {
             if ( rec ) {
@@ -2201,7 +2203,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
     } else {
         CNO_FMT( cbuf, *channelNo );
         XP_LOGF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
-        rec = getRecordFor( comms, addr, *channelNo, XP_TRUE );
+        rec = getRecordFor( comms, xwe, addr, *channelNo, XP_TRUE );
         if ( !!rec ) {
             augmentChannelAddr( rec, addr, senderID );
             /* reject: we've already seen init message on channel */
@@ -2274,7 +2276,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
     AddressRecord* rec;
     LOG_FUNC();
 
-    rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
+    rec = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
     if ( !!rec ) {
         removeFromQueue( comms, xwe, channelNo, lastMsgRcd );
 
@@ -2345,7 +2347,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                 XP_U16 len = stream_getSize( stream );
                 // stream_getPtr pts at base, but sum excludes relay header
                 const XP_U8* ptr = initialLen - len + stream_getPtr( stream );
-                XP_UCHAR* sum = dutil_md5sum( comms->dutil, ptr, len );
+                XP_UCHAR* sum = dutil_md5sum( comms->dutil, xwe, ptr, len );
                 XP_LOGF( TAGFMT() "got message of len %d with sum %s",
                          TAGPRMS, len, sum );
                 XP_FREE( comms->mpool, sum );
@@ -2452,7 +2454,7 @@ comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
         XP_LOGFF( "msg rejected; NOT upping lastMsgRcd to %d", state->msgID );
 #endif
     } else {
-        AddressRecord* rec = getRecordFor( comms, NULL, state->channelNo, XP_TRUE );
+        AddressRecord* rec = getRecordFor( comms, xwe, NULL, state->channelNo, XP_TRUE );
         XP_ASSERT( !!rec );
         if ( !!rec && rec->lastMsgRcd < state->msgID ) {
 #ifdef LOG_COMMS_MSGNOS
@@ -2567,7 +2569,7 @@ heartbeat_checks( CommsCtxt* comms )
 
     do {
         if ( comms->lastMsgRcvdTime > 0 ) {
-            XP_U32 now = dutil_getCurSeconds( comms->dutil );
+            XP_U32 now = dutil_getCurSeconds( comms->dutil, xwe );
             XP_U32 tooLongAgo = now - (HB_INTERVAL * 2);
             if ( comms->lastMsgRcvdTime < tooLongAgo ) {
                 XP_LOGF( "%s: calling reset proc; last was %ld secs too long "
@@ -2641,7 +2643,7 @@ setHeartbeatTimer( CommsCtxt* comms )
         }
 #endif
         if ( when != 0 ) {
-            util_setTimer( comms->util, TIMER_COMMS, when,
+            util_setTimer( comms->util, xwe, TIMER_COMMS, when,
                            p_comms_timerFired, comms );
             comms->hbTimerPending = XP_TRUE;
         }
@@ -2735,7 +2737,7 @@ rememberChannelAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
 
     logAddr( comms, xwe, addr, __func__ );
     AddressRecord* rec = NULL;
-    rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
+    rec = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
     if ( !rec ) {
         /* not found; add a new entry */
         rec = (AddressRecord*)XP_CALLOC( comms->mpool, sizeof(*rec) );
@@ -2911,10 +2913,10 @@ augmentAddr( CommsAddrRec* destAddr, const CommsAddrRec* srcAddr )
 }
 
 static XP_Bool
-channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
+channelToAddress( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
                   const CommsAddrRec** addr )
 {
-    AddressRecord* recs = getRecordFor( comms, NULL, channelNo, XP_FALSE );
+    AddressRecord* recs = getRecordFor( comms, xwe, NULL, channelNo, XP_FALSE );
     XP_Bool found = !!recs;
     *addr = found? &recs->addr : NULL;
     return found;
@@ -3119,7 +3121,7 @@ relay_msg_to_stream( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID dest
             stream_putU8( stream, comms->rr.nPlayersTotal );
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
-            putDevID( comms, stream );
+            putDevID( comms, xwe, stream );
             stream_putU8( stream, comms->forceChannel ); /* "clientIndx" on relay */
 
             set_relay_state( comms, xwe, COMMS_RELAYSTATE_CONNECT_PENDING );
@@ -3143,7 +3145,7 @@ relay_msg_to_stream( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID dest
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
             stringToStream( stream, comms->rr.connName );
-            putDevID( comms, stream );
+            putDevID( comms, xwe, stream );
             set_relay_state( comms, xwe, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 
@@ -3259,7 +3261,7 @@ relayConnect( CommsCtxt* comms, XWEnv xwe )
             comms_getAddr( comms, &addr );
             DevIDType ignored;  /*  but should it be? */
             (*comms->procs.requestJoin)( comms->procs.closure,
-                                         util_getDevID( comms->util, &ignored ),
+                                         util_getDevID( comms->util, xwe, &ignored ),
                                          addr.u.ip_relay.invite, /* room */
                                          comms->rr.nPlayersHere,
                                          comms->rr.nPlayersTotal,
@@ -3292,7 +3294,7 @@ send_via_bt_or_ip( CommsCtxt* comms, XWEnv xwe, BTIPMsgType msgTyp, XP_PlayerAdd
     buf = XP_MALLOC( comms->mpool, dlen + 1 );
     if ( !!buf ) {
         const CommsAddrRec* addr;
-        (void)channelToAddress( comms, channelNo, &addr );
+        (void)channelToAddress( comms, xwe, channelNo, &addr );
 
         buf[0] = msgTyp;
         if ( dlen > 0 ) {
@@ -3327,11 +3329,11 @@ relayDisconnect( CommsCtxt* comms, XWEnv xwe )
 
 #ifdef XWFEATURE_DEVID
 static void
-putDevID( const CommsCtxt* comms, XWStreamCtxt* stream )
+putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 {
 # if XWRELAY_PROTO_VERSION >= XWRELAY_PROTO_VERSION_CLIENTID
     DevIDType typ;
-    const XP_UCHAR* devID = dutil_getDevID( comms->dutil, &typ );
+    const XP_UCHAR* devID = dutil_getDevID( comms->dutil, xwe, &typ );
     XP_ASSERT( ID_TYPE_NONE <= typ && typ < ID_TYPE_NTYPES );
     stream_putU8( stream, typ );
     if ( ID_TYPE_NONE != typ ) {

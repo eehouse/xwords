@@ -123,30 +123,30 @@ struct EngineCtxt {
     MPSLOT
 }; /* EngineCtxt */
 
-static void findMovesOneRow( EngineCtxt* engine );
+static void findMovesOneRow( EngineCtxt* engine, XWEnv xwe );
 static Tile localGetBoardTile( EngineCtxt* engine, XP_U16 col, 
                                XP_U16 row, XP_Bool substBlank );
-static void findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 
-                                XP_U16 col, XP_U16 row ) ;
+static void findMovesForAnchor( EngineCtxt* engine, XWEnv xwe,
+                                XP_S16* prevAnchor, XP_U16 col, XP_U16 row ) ;
 static void figureCrosschecks( EngineCtxt* engine, XP_U16 col, 
                                XP_U16 row, XP_U16* scoreP,
                                Crosscheck* check );
 static XP_Bool isAnchorSquare( EngineCtxt* engine, XP_U16 col, XP_U16 row );
 static array_edge* edge_from_tile( const DictionaryCtxt* dict, 
                                    array_edge* from, Tile tile );
-static void leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength, 
+static void leftPart( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_U16 tileLength,
                       array_edge* edge, XP_U16 limit, XP_U16 firstCol,
                       XP_U16 anchorCol, XP_U16 row );
-static void extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength, 
+static void extendRight( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_U16 tileLength,
                          array_edge* edge, XP_Bool accepting,
                          XP_U16 firstCol, XP_U16 col, XP_U16 row );
 static array_edge* consumeFromLeft( EngineCtxt* engine, array_edge* edge, 
                                     short col, short row );
 static XP_Bool rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank );
 static void rack_replace( EngineCtxt* engine, Tile tile, XP_Bool isBlank );
-static void considerMove( EngineCtxt* engine, Tile* tiles, short tileLength,
+static void considerMove( EngineCtxt* engine, XWEnv xwe, Tile* tiles, short tileLength,
                           short firstCol, short lastRow );
-static void considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
+static void considerScoreWordHasBlanks( EngineCtxt* engine, XWEnv xwe, XP_U16 blanksLeft,
                                         PossibleMove* posmove,
                                         XP_U16 lastRow,
                                         BlankTuple* usedBlanks,
@@ -170,8 +170,8 @@ static XP_S16 cmpMoves( PossibleMove* m1, PossibleMove* m2 );
 /* #define CROSSCHECK_CONTAINS(chk,tile) (((chk) & (1L<<(tile))) != 0) */
 #define CROSSCHECK_CONTAINS(chk,tile) checkIsSet( (chk), (tile) )
 
-#define HILITE_CELL( engine, col, row ) \
-    util_hiliteCell( (engine)->util, (col), (row) )
+#define HILITE_CELL( engine, xwe, col, row )         \
+    util_hiliteCell( (engine)->util, (xwe), (col), (row) )
 
 /* not implemented yet */
 XP_U16
@@ -377,7 +377,7 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
  * filled in in *newMove.
  */
 XP_Bool
-engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
+engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
                  XP_S16 turn, XP_Bool includePending, XP_Bool skipCallback,
                  const Tile* tiles, const XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
@@ -410,7 +410,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
             XP_U16 nTilesMin = engine->nTilesMinUser;
             XP_U16 nTilesMax = engine->nTilesMaxUser;
 
-            if ( util_getTraySearchLimits( engine->util, 
+            if ( util_getTraySearchLimits( engine->util, xwe,
                                            &nTilesMin, &nTilesMax ) ) {
                 engine->tileLimitsKnown = XP_TRUE;
                 engine->nTilesMinUser = nTilesMin;
@@ -454,7 +454,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
         && initTray( engine, tiles, nTiles );
     if ( canMove  ) {
 
-        util_engineStarting( engine->util, 
+        util_engineStarting( engine->util, xwe,
                              engine->rack[engine->blankTile] );
 
         normalizeIQ( engine, robotIQ );
@@ -503,7 +503,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                     if ( engine->isFirstMove && (engine->curRow != star_row)) {
                         continue;
                     }
-                    findMovesOneRow( engine );
+                    findMovesOneRow( engine, xwe );
                     if ( engine->returnNOW ) {
                         goto outer;
                     }
@@ -540,7 +540,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
             XP_ASSERT( result );
         }
 
-        util_engineStopping( engine->util );
+        util_engineStopping( engine->util, xwe );
     } else {
         /* set up a PASS.  I suspect the caller should be deciding how to
            handle this case itself, but this doesn't preclude its doing
@@ -573,7 +573,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
 } /* engine_findMove */
 
 static void
-findMovesOneRow( EngineCtxt* engine )
+findMovesOneRow( EngineCtxt* engine, XWEnv xwe )
 {
     XP_U16 lastCol = engine->numCols - 1;
     XP_U16 col, row = engine->curRow;
@@ -614,7 +614,7 @@ findMovesOneRow( EngineCtxt* engine )
     for ( col = firstSearchCol; col <= lastSearchCol && !engine->returnNOW; 
           ++col ) {
         if ( isAnchorSquare( engine, col, row ) ) { 
-            findMovesForAnchor( engine, &prevAnchor, col, row );
+            findMovesForAnchor( engine, xwe, &prevAnchor, col, row );
         }
     }
 } /* findMovesOneRow */
@@ -824,7 +824,7 @@ isAnchorSquare( EngineCtxt* engine, XP_U16 col, XP_U16 row )
 
 #ifdef XWFEATURE_HILITECELL
 static void
-hiliteForAnchor( EngineCtxt* engine, XP_U16 col, XP_U16 row )
+hiliteForAnchor( EngineCtxt* engine, XWEnv xwe, XP_U16 col, XP_U16 row )
 {
     if ( !engine->searchHorizontal ) {
         XP_U16 tmp = col;
@@ -832,16 +832,16 @@ hiliteForAnchor( EngineCtxt* engine, XP_U16 col, XP_U16 row )
         row = tmp;
     }
 
-    if ( !HILITE_CELL( engine, col, row ) ) {
+    if ( !HILITE_CELL( engine, xwe, col, row ) ) {
         engine->returnNOW = XP_TRUE;
     }
 } /* hiliteForAnchor */
 #else
-# define hiliteForAnchor( engine, col, row )
+# define hiliteForAnchor( engine, xwe, col, row )
 #endif
 
 static void
-findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 
+findMovesForAnchor( EngineCtxt* engine, XWEnv xwe, XP_S16* prevAnchor,
                     XP_U16 col, XP_U16 row ) 
 {
     XP_S16 limit;
@@ -849,7 +849,7 @@ findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor,
     array_edge* topEdge;
     Tile tiles[MAX_ROWS];
 
-    hiliteForAnchor( engine, col, row );
+    hiliteForAnchor( engine, xwe, col, row );
 
     if ( engine->returnNOW ) {
         /* time to bail */
@@ -865,13 +865,13 @@ findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor,
             edge = topEdge;
         } else if ( localGetBoardTile( engine, col-1, row, XP_FALSE ) 
                     == EMPTY_TILE ) {
-            leftPart( engine, tiles, 0, topEdge, limit, col, col, row );
+            leftPart( engine, xwe, tiles, 0, topEdge, limit, col, col, row );
             goto done;
         } else {
             edge = consumeFromLeft( engine, topEdge, col, row );
         }
         DEBUG_ASSIGN(engine->curLimit, 0);
-        extendRight( engine, tiles, 0, edge,
+        extendRight( engine, xwe, tiles, 0, edge,
                      XP_FALSE, // can't accept without the anchor square
                      col-limit, col, row );
 
@@ -913,13 +913,13 @@ consumeFromLeft( EngineCtxt* engine, array_edge* edge, short col, short row )
 } /* consumeFromLeft */
 
 static void
-leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength, 
+leftPart( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_U16 tileLength,
           array_edge* edge, XP_U16 limit, XP_U16 firstCol,
           XP_U16 anchorCol, XP_U16 row )
 {
     DEBUG_ASSIGN( engine->curLimit, tileLength );
 
-    extendRight( engine, tiles, tileLength, edge, XP_FALSE, firstCol, 
+    extendRight( engine, xwe, tiles, tileLength, edge, XP_FALSE, firstCol,
                  anchorCol, row );
     if ( !engine->returnNOW ) {
         if ( (limit > 0) && (edge != NULL) ) {
@@ -930,7 +930,7 @@ leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                     Tile tile = EDGETILE( engine->dict, edge );
                     if ( rack_remove( engine, tile, &isBlank ) ) {
                         tiles[tileLength] = tile;
-                        leftPart( engine, tiles, tileLength+1, 
+                        leftPart( engine, xwe, tiles, tileLength+1,
                                   dict_follow( engine->dict, edge ), 
                                   limit-1, firstCol-1, anchorCol, row );
                         rack_replace( engine, tile, isBlank );
@@ -947,7 +947,7 @@ leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
 } /* leftPart */
 
 static void
-extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength, 
+extendRight( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_U16 tileLength,
              array_edge* edge, XP_Bool accepting,
              XP_U16 firstCol, XP_U16 col, XP_U16 row )
 {
@@ -989,7 +989,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                     XP_Bool isBlank;
                     if ( rack_remove( engine, tile, &isBlank ) ) {
                         tiles[tileLength] = tile;
-                        extendRight( engine, tiles, tileLength+1, 
+                        extendRight( engine, xwe, tiles, tileLength+1,
                                      edge_from_tile( dict, edge, tile ), 
                                      ISACCEPTING( dict, edge ), firstCol, 
                                      col+1, row );
@@ -1009,7 +1009,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
 
     } else if ( (edge = dict_edge_with_tile( dict, edge, tile ) ) != NULL ) {
         accepting = ISACCEPTING( dict, edge );
-        extendRight( engine, tiles, tileLength, dict_follow(dict, edge), 
+        extendRight( engine, xwe, tiles, tileLength, dict_follow(dict, edge),
                      accepting, firstCol, col+1, row );
         goto no_check; /* don't do the check at the end */
     } else {
@@ -1021,7 +1021,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
          && tileLength >= engine->nTilesMin
 #endif
          ) {
-        considerMove( engine, tiles, tileLength, firstCol, row );
+        considerMove( engine, xwe, tiles, tileLength, firstCol, row );
     }
  no_check:
     return;
@@ -1065,14 +1065,15 @@ rack_replace( EngineCtxt* engine, Tile tile, XP_Bool isBlank )
 } /* rack_replace */
 
 static void
-considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
+considerMove( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_S16 tileLength,
               XP_S16 firstCol, XP_S16 lastRow )
 {
     PossibleMove posmove;
     short col;
     BlankTuple blankTuples[MAX_NUM_BLANKS];
 
-    if ( !engine->skipProgressCallback && !util_engineProgressCallback( engine->util ) ) {
+    if ( !engine->skipProgressCallback
+         && !util_engineProgressCallback( engine->util, xwe ) ) {
         engine->returnNOW = XP_TRUE;
     } else {
 
@@ -1098,7 +1099,7 @@ considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
         posmove.moveInfo.isHorizontal = engine->searchHorizontal;
         posmove.moveInfo.commonCoord = (XP_U8)lastRow;
 
-        considerScoreWordHasBlanks( engine, engine->blankCount, &posmove, 
+        considerScoreWordHasBlanks( engine, xwe, engine->blankCount, &posmove,
                                     lastRow, blankTuples, 0 );
     }
 } /* considerMove */
@@ -1113,7 +1114,7 @@ countWords( const WNParams* wnp, void* closure )
 }
 
 static void
-considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
+considerScoreWordHasBlanks( EngineCtxt* engine, XWEnv xwe, XP_U16 blanksLeft,
                             PossibleMove* posmove,
                             XP_U16 lastRow, BlankTuple* usedBlanks,
                             XP_U16 usedBlanksCount )
@@ -1137,7 +1138,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
             wiip = &wii;
         }
 
-        XP_U16 score = figureMoveScore( engine->model, engine->turn,
+        XP_U16 score = figureMoveScore( engine->model, xwe, engine->turn,
                                         &posmove->moveInfo,
                                         engine, (XWStreamCtxt*)NULL, wiip );
 
@@ -1179,7 +1180,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
                 posmove->moveInfo.tiles[ii].tile |= TILE_BLANK_BIT;
                 bt->col = ii;
                 bt->tile = bTile;
-                considerScoreWordHasBlanks( engine, blanksLeft,
+                considerScoreWordHasBlanks( engine, xwe, blanksLeft,
                                             posmove, lastRow,
                                             usedBlanks,
                                             usedBlanksCount );

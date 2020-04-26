@@ -101,11 +101,11 @@ NewGameCtx* newg_make( MPFORMAL XP_Bool isNewGame,
                        void* closure );
 void newg_destroy( NewGameCtx* ngc );
 
-void newg_load( NewGameCtx* ngc, const CurGameInfo* gi );
-XP_Bool newg_store( NewGameCtx* ngc, CurGameInfo* gi, XP_Bool warn );
+void newg_load( NewGameCtx* ngc, XWEnv xwe, const CurGameInfo* gi );
+XP_Bool newg_store( NewGameCtx* ngc, XWEnv xwe, CurGameInfo* gi, XP_Bool warn );
 
 void newg_colChanged( NewGameCtx* ngc, XP_U16 player );
-void newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, 
+void newg_attrChanged( NewGameCtx* ngc, XWEnv xwe, NewGameAttr attr,
                        NGValue value );
 
 /** newg_juggle: Return XP_TRUE if a juggle happened, XP_FALSE if randomness

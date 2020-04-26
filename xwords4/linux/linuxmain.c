@@ -433,7 +433,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
            before giving the server another shot.  So just call the idle
            proc. */
         if ( hasDraw && redraw ) {
-            util_requestTime( cGlobals->util );
+            util_requestTime( cGlobals->util, NULL_XWE );
         } else {
             for ( int ii = 0; ii < 4; ++ii ) {
                 redraw = server_do( game->server, NULL_XWE ) || redraw;
@@ -547,7 +547,7 @@ catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
                      cGlobals->gi->players[quitter].name );
         stream_catString( stream, buf );
     }
-    server_writeFinalScores( cGlobals->game.server, stream );
+    server_writeFinalScores( cGlobals->game.server, NULL_XWE, stream );
     stream_putU8( stream, '\n' );
     stream_destroy( stream, NULL_XWE );
 } /* printFinalScores */
@@ -1142,7 +1142,7 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
     curIndex %= 3;
 
     nxt = order[curIndex];
-    handled = board_focusChanged( board, nxt, XP_TRUE );
+    handled = board_focusChanged( board, NULL_XWE, nxt, XP_TRUE );
 
     if ( !!nxtP ) {
         *nxtP = nxt;
@@ -1442,7 +1442,7 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
                that on the screen before giving the server another
                shot.  So just call the idle proc. */
             if ( redraw ) {
-                util_requestTime( cGlobals->util );
+                util_requestTime( cGlobals->util, NULL_XWE );
             }
         }
     }
@@ -1730,7 +1730,7 @@ streamClosed( XWStreamCtxt* stream, XP_PlayerAddr addr, void* closure )
 } /* streamClosed */
 
 static XWStreamCtxt*
-linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XP_U16 channelNo )
+linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XWEnv XP_UNUSED(xwe), XP_U16 channelNo )
 {
 #if 1
 /*     XWStreamCtxt* stream = linux_mem_stream_make( uctx->closure, channelNo,  */
@@ -1773,7 +1773,7 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), 
+linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                           XP_Bool XP_UNUSED_DBG(isServer), 
                           const CommsAddrRec* XP_UNUSED_DBG(addr),
                           XP_U16 XP_UNUSED_DBG(nDevs),
@@ -1784,7 +1784,7 @@ linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc),
 }
 
 static void
-linux_util_addrChange( XW_UtilCtxt* uc, 
+linux_util_addrChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                        const CommsAddrRec* XP_UNUSED(oldAddr),
                        const CommsAddrRec* newAddr )
 {
@@ -1835,7 +1835,7 @@ changeRolesIdle( gpointer data )
 }
 
 static void
-linux_util_setIsServer( XW_UtilCtxt* uc, XP_Bool isServer )
+linux_util_setIsServer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),XP_Bool isServer )
 {
     XP_LOGF( "%s(isServer=%d)", __func__, isServer );
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
@@ -2207,7 +2207,8 @@ listDicts( const LaunchParams *params )
 }
 
 static void
-linux_util_formatPauseHistory( XW_UtilCtxt* XP_UNUSED(uc), XWStreamCtxt* stream,
+linux_util_formatPauseHistory( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
+                               XWStreamCtxt* stream,
                                DupPauseType typ, XP_S16 turn,
                                XP_U32 whenPrev, XP_U32 whenCur, const XP_UCHAR* msg )
 {
@@ -2310,7 +2311,7 @@ slowrob_timer_func( gpointer data )
 #endif
 
 static void
-linux_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
+linux_util_setTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why,
                      XP_U16 XP_UNUSED_STANDALONE(when),
                      XWTimerProc proc, void* closure )
 {
@@ -2360,7 +2361,7 @@ linux_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
 } /* linux_util_setTimer */
 
 static void
-linux_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
+linux_util_clearTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     cGlobals->timerInfo[why].proc = NULL;
@@ -2387,7 +2388,7 @@ idle_func( gpointer data )
 } /* idle_func */
 
 static void
-linux_util_requestTime( XW_UtilCtxt* uc )
+linux_util_requestTime( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     cGlobals->idleID = g_idle_add( idle_func, cGlobals );

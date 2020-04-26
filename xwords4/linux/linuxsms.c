@@ -246,8 +246,9 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
 {
     LinSMSData* storage = getStorage( params );
     const XP_UCHAR* fromPhone = addr->u.sms.phone;
-    SMSMsgArray* arr = smsproto_prepInbound( storage->protoState, fromPhone,
-                                             storage->myPort, buf, len );
+    SMSMsgArray* arr =
+        smsproto_prepInbound( storage->protoState, NULL_XWE, fromPhone,
+                              storage->myPort, buf, len );
     if ( NULL != arr ) {
         XP_ASSERT( arr->format == FORMAT_LOC );
         for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {
@@ -286,7 +287,7 @@ linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort,
     storage->myPort = myPort;
     storage->procs = procs;
     storage->procClosure = procClosure;
-    storage->protoState = smsproto_init( MPPARM(params->mpool) params->dutil );
+    storage->protoState = smsproto_init( MPPARM(params->mpool) NULL_XWE, params->dutil );
 
     formatQueuePath( myPhone, myPort, storage->myQueue, sizeof(storage->myQueue) );
     XP_LOGFF( " my queue: %s", storage->myQueue );
@@ -317,7 +318,7 @@ linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
     XP_U16 waitSecs;
     const XP_Bool forceOld = XP_TRUE; /* Send NOW in case test app kills us */
     SMSMsgArray* arr
-        = smsproto_prepOutbound( storage->protoState, INVITE, nli->gameID, ptr,
+        = smsproto_prepOutbound( storage->protoState, NULL_XWE, INVITE, nli->gameID, ptr,
                                  len, toPhone, toPort, forceOld, &waitSecs );
     XP_ASSERT( !!arr || !forceOld );
     sendOrRetry( params, arr, INVITE, waitSecs, toPhone, toPort,
@@ -332,7 +333,7 @@ linux_sms_send( LaunchParams* params, const XP_U8* buf,
 {
     LinSMSData* storage = getStorage( params );
     XP_U16 waitSecs;
-    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, DATA, gameID,
+    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, NULL_XWE, DATA, gameID,
                                               buf, buflen, phone, port,
                                               XP_TRUE, &waitSecs );
     sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID, msgNo );
@@ -382,7 +383,8 @@ retrySend( gpointer data )
     RetryClosure* closure = (RetryClosure*)data;
     LinSMSData* storage = getStorage( closure->params );
     XP_U16 waitSecs;
-    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, closure->cmd,
+    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, NULL_XWE,
+                                              closure->cmd,
                                               closure->gameID, NULL, 0,
                                               closure->phone, closure->port,
                                               XP_TRUE, &waitSecs );

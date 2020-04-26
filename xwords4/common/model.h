@@ -122,7 +122,7 @@ void model_setSize( ModelCtxt* model, XP_U16 boardSize );
 void model_destroy( ModelCtxt* model, XWEnv xwe );
 XP_U32 model_getHash( const ModelCtxt* model );
 XP_Bool model_hashMatches( const ModelCtxt* model, XP_U32 hash );
-XP_Bool model_popToHash( ModelCtxt* model, const XP_U32 hash,
+XP_Bool model_popToHash( ModelCtxt* model, XWEnv xwe, const XP_U32 hash,
                          PoolContext* pool );
 
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
@@ -147,7 +147,7 @@ void model_addNewTiles( ModelCtxt* model, XP_S16 turn,
                         const TrayTileSet* tiles );
 void model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
                               const TrayTileSet* tiles );
-void model_assignDupeTiles( ModelCtxt* model, const TrayTileSet* tiles );
+void model_assignDupeTiles( ModelCtxt* model, XWEnv xwe, const TrayTileSet* tiles );
 
 Tile model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index );
 
@@ -172,13 +172,14 @@ void model_printTrays( const ModelCtxt* model );
 void model_sortTiles( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn );
-void model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, 
+void model_moveBoardToTray( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                             XP_U16 col, XP_U16 row, XP_U16 trayOffset );
-void model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, 
+void model_moveTrayToBoard( ModelCtxt* model, XWEnv xwe, XP_S16 turn, XP_U16 col,
                             XP_U16 row, XP_S16 tileIndex, Tile blankFace );
-XP_Bool model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
-                               XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew );
-XP_Bool model_redoPendingTiles( ModelCtxt* model, XP_S16 turn );
+XP_Bool model_moveTileOnBoard( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
+                               XP_U16 colCur,  XP_U16 rowCur, XP_U16 colNew,
+                               XP_U16 rowNew );
+XP_Bool model_redoPendingTiles( ModelCtxt* model, XWEnv xwe, XP_S16 turn );
 XP_Bool model_setBlankValue( ModelCtxt* model, XP_U16 XP_UNUSED(player),
                              XP_U16 col, XP_U16 row, XP_U16 tileIndex );
  
@@ -210,20 +211,20 @@ void model_commitDupeTurn( ModelCtxt* model, XWEnv xwe,
                            TrayTileSet* newTiles );
 void model_commitDupeTrade( ModelCtxt* model, const TrayTileSet* oldTiles,
                             const TrayTileSet* newTiles );
-void model_noteDupePause( ModelCtxt* model, DupPauseType typ, XP_S16 turn,
-                          const XP_UCHAR* msg );
-void model_cloneDupeTrays( ModelCtxt* model );
+void model_noteDupePause( ModelCtxt* model, XWEnv xwe, DupPauseType typ,
+                          XP_S16 turn, const XP_UCHAR* msg );
+void model_cloneDupeTrays( ModelCtxt* model, XWEnv xwe );
 
 void model_commitRejectedPhony( ModelCtxt* model, XP_S16 player );
 void model_makeTileTrade( ModelCtxt* model, XP_S16 player,
                           const TrayTileSet* oldTiles, 
                           const TrayTileSet* newTiles );
 XP_Bool model_canUndo( const ModelCtxt* model );
-XP_Bool model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
+XP_Bool model_undoLatestMoves( ModelCtxt* model, XWEnv xwe, PoolContext* pool,
                                XP_U16 nMovesSought, XP_U16* turn, 
                                XP_S16* moveNum );
-void model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool,
-                               XP_U16* turn );
+void model_rejectPreviousMove( ModelCtxt* model, XWEnv xwe,
+                               PoolContext* pool, XP_U16* turn );
 
 void model_trayToStream( ModelCtxt* model, XP_S16 turn, 
                          XWStreamCtxt* stream );
@@ -231,9 +232,9 @@ void model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
                                 XWStreamCtxt* stream );
 void model_currentMoveToMoveInfo( ModelCtxt* model, XP_S16 turn,
                                   MoveInfo* moveInfo );
-XP_Bool model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
+XP_Bool model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                                   XWStreamCtxt* stream );
-void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
+void model_makeTurnFromMoveInfo( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                                  const MoveInfo* newMove );
 
 #ifdef DEBUG
@@ -245,7 +246,7 @@ void model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg );
 # define model_dumpSelf( model, msg )
 #endif
 
-void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
+void model_resetCurrentTurn( ModelCtxt* model, XWEnv xwe, XP_S16 turn );
 XP_S16 model_getNMoves( const ModelCtxt* model );
 
 /* Are there two or more tiles visible */
@@ -256,8 +257,8 @@ XP_Bool model_canShuffle( const ModelCtxt* model, XP_U16 turn,
 XP_Bool model_canTogglePending( const ModelCtxt* model, XP_U16 turn );
 
 /********************* notification ********************/
-typedef void (*BoardListener)(void* data, XP_U16 turn, XP_U16 col, 
-                              XP_U16 row, XP_Bool added );
+typedef void (*BoardListener)( XWEnv xwe, void* data, XP_U16 turn, XP_U16 col,
+                               XP_U16 row, XP_Bool added );
 void model_setBoardListener( ModelCtxt* model, BoardListener bl, 
                              void* data );
 typedef void (*TrayListener)( void* data, XP_U16 turn, 
@@ -269,9 +270,9 @@ typedef void (*DictListener)( void* data, XWEnv xwe, XP_S16 playerNum,
                               const DictionaryCtxt* newDict );
 void model_setDictListener( ModelCtxt* model, DictListener dl, 
                             void* data );
-void model_foreachPendingCell( ModelCtxt* model, XP_S16 turn,
+void model_foreachPendingCell( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                                BoardListener bl, void* data );
-void model_foreachPrevCell( ModelCtxt* model, BoardListener bl, void* data );
+void model_foreachPrevCell( ModelCtxt* model, XWEnv xwe, BoardListener bl, void* data );
 
 void model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
                              ServerCtxt* server, /* for player names */
@@ -317,7 +318,7 @@ XP_Bool model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col,
 XP_Bool model_recentPassCountOk( ModelCtxt* model );
 
 XWBonusType model_getSquareBonus( const ModelCtxt* model,
-                                  XP_U16 col, XP_U16 row );
+                                  XWEnv xwe, XP_U16 col, XP_U16 row );
 #ifdef STREAM_VERS_BIGBOARD
 void model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, 
                              XP_U16 nBonuses );
@@ -332,7 +333,7 @@ void model_figureFinalScores( ModelCtxt* model, ScoresArray* scores,
                               ScoresArray* tilePenalties );
 
 /* figureMoveScore is meant only for the engine's use */
-XP_U16 figureMoveScore( const ModelCtxt* model, XP_U16 turn,
+XP_U16 figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
                         const MoveInfo* mvInfo, EngineCtxt* engine,
                         XWStreamCtxt* stream, WordNotifierInfo* notifyInfo );
 
@@ -352,7 +353,8 @@ void model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
                           XP_U16* nUsed, const XP_UCHAR** texts,
                           Tile* tiles );
 
-Tile model_askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row);
+Tile model_askBlankTile( ModelCtxt* model, XWEnv xwe, XP_U16 turn,
+                         XP_U16 col, XP_U16 row);
 
 XP_S16 model_getNextTurn( const ModelCtxt* model );
 

@@ -39,13 +39,13 @@ mkStream( XW_DUtilCtxt* dutil )
 }
 
 static DevCtxt*
-load( XW_DUtilCtxt* dutil )
+load( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
         XWStreamCtxt* stream = mkStream( dutil );
-        dutil_loadStream( dutil, KEY_DEVSTATE, stream );
+        dutil_loadStream( dutil, xwe, KEY_DEVSTATE, stream );
 
         state = XP_CALLOC( dutil->mpool, sizeof(*state) );
         dutil->devCtxt = state;
@@ -64,13 +64,13 @@ load( XW_DUtilCtxt* dutil )
 }
 
 void
-device_store( XW_DUtilCtxt* dutil )
+device_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
-    DevCtxt* state = load( dutil );
+    DevCtxt* state = load( dutil, xwe );
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putU16( stream, state->devCount );
-    dutil_storeStream( dutil, KEY_DEVSTATE, stream );
+    dutil_storeStream( dutil, xwe, KEY_DEVSTATE, stream );
     stream_destroy( stream, NULL );
 
     XP_FREEP( dutil->mpool, &dutil->devCtxt );

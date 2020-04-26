@@ -32,8 +32,9 @@ extern "C" {
 #define IMPOSSIBLY_LOW_PENALTY (-20*MAX_TRAY_TILES)
 
 /****************************** prototypes ******************************/
-static XP_Bool isLegalMove( ModelCtxt* model, MoveInfo* moves, XP_Bool silent );
-static XP_U16 word_multiplier( const ModelCtxt* model, 
+static XP_Bool isLegalMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moves,
+                            XP_Bool silent );
+static XP_U16 word_multiplier( const ModelCtxt* model, XWEnv xwe,
                                XP_U16 col, XP_U16 row );
 static XP_U16 find_end( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
                         XP_Bool isHorizontal );
@@ -42,7 +43,7 @@ static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 static XP_S16 checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                               EngineCtxt* engine, XWStreamCtxt* stream, 
                               XP_Bool silent, WordNotifierInfo* notifyInfo );
-static XP_U16 scoreWord( const ModelCtxt* model, XP_U16 turn, 
+static XP_U16 scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
                          const MoveInfo* movei, EngineCtxt* engine, 
                          XWStreamCtxt* stream, WordNotifierInfo* notifyInfo );
 
@@ -68,7 +69,7 @@ static void wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word,
                                       XWStreamCtxt* stream );
 static void formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore, 
                              XP_U16 moveMultiplier );
-static void formatSummary( XWStreamCtxt* stream, const ModelCtxt* model, 
+static void formatSummary( XWStreamCtxt* stream, XWEnv xwe, const ModelCtxt* model,
                            XP_U16 score );
 
 
@@ -95,7 +96,7 @@ scoreCurrentMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, XWStreamCtxt* stream
 } /* scoreCurrentMove */
 
 void
-adjustScoreForUndone( ModelCtxt* model, const MoveInfo* mi, XP_U16 turn )
+adjustScoreForUndone( ModelCtxt* model, XWEnv xwe, const MoveInfo* mi, XP_U16 turn )
 {
     XP_U16 moveScore;
     PlayerCtxt* player = &model->players[turn];
@@ -103,7 +104,7 @@ adjustScoreForUndone( ModelCtxt* model, const MoveInfo* mi, XP_U16 turn )
     if ( mi->nTiles == 0 ) {
         moveScore = 0;
     } else {
-        moveScore = figureMoveScore( model, turn, mi, (EngineCtxt*)NULL,
+        moveScore = figureMoveScore( model, xwe, turn, mi, (EngineCtxt*)NULL,
                                      (XWStreamCtxt*)NULL,
                                      (WordNotifierInfo*)NULL );
     }
@@ -265,18 +266,18 @@ checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
         score = 0;
 
         if ( !!stream ) {
-            formatSummary( stream, model, 0 );
+            formatSummary( stream, xwe, model, 0 );
         }
 
     } else if ( !tilesInLine( model, turn, &isHorizontal ) ) {
         if ( !silent ) { /* tiles out of line */
-            util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
+            util_userError( model->vol.util, xwe, ERR_TILES_NOT_IN_LINE );
         }
     } else {
         MoveInfo moveInfo;
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
 
-        if ( isLegalMove( model, &moveInfo, silent ) ) {
+        if ( isLegalMove( model, xwe, &moveInfo, silent ) ) {
             /* If I'm testing for blocking, I need to chain my test onto any
                existing WordNotifierInfo. blockCheck() does that. */
             XP_Bool checkDict = PHONIES_BLOCK == model->vol.gi->phoniesAction;
@@ -292,13 +293,13 @@ checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
                 notifyInfo = &blockWNI;
             }
 
-            XP_S16 tmpScore = figureMoveScore( model, turn, &moveInfo,
+            XP_S16 tmpScore = figureMoveScore( model, xwe, turn, &moveInfo,
                                                engine, stream, notifyInfo );
             if ( checkDict && 0 < bcs.nBadWords ) {
                 if ( !silent ) {
                     XP_ASSERT( !!bcs.stream );
                     DictionaryCtxt* dict = model_getPlayerDict( model, turn );
-                    util_informWordsBlocked( model->vol.util, bcs.nBadWords,
+                    util_informWordsBlocked( model->vol.util, xwe, bcs.nBadWords,
                                              bcs.stream, dict_getName( dict ) );
                     stream_destroy( bcs.stream, xwe );
                 }
@@ -415,7 +416,7 @@ modelIsEmptyAt( const ModelCtxt* model, XP_U16 col, XP_U16 row )
  * handles dragging the tiles, will have taken care of that.
  ****************************************************************************/
 static XP_Bool
-isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
+isLegalMove( ModelCtxt* model, XWEnv xwe, MoveInfo* mInfo, XP_Bool silent )
 {
     XP_Bool result = XP_TRUE;
     XP_S16 high, low;
@@ -453,7 +454,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
                 ++newTile;
             } else if ( modelIsEmptyAt( model, col, row ) ) {
                 if ( !silent ) {
-                    util_userError( model->vol.util, ERR_NO_EMPTIES_IN_TURN );
+                    util_userError( model->vol.util, xwe, ERR_NO_EMPTIES_IN_TURN );
                 }
                 result = XP_FALSE;
                 goto exit;
@@ -507,14 +508,14 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
                 goto exit;
             } else {
                 if ( !silent ) {
-                    util_userError(model->vol.util, ERR_TWO_TILES_FIRST_MOVE);
+                    util_userError(model->vol.util, xwe, ERR_TWO_TILES_FIRST_MOVE);
                 }
                 result = XP_FALSE;
                 goto exit;
             }
         } else {
             if ( !silent ) {
-                util_userError( model->vol.util, ERR_TILES_MUST_CONTACT );
+                util_userError( model->vol.util, xwe, ERR_TILES_MUST_CONTACT );
             }
             result = XP_FALSE;
             goto exit;
@@ -526,7 +527,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 } /* isLegalMove */
 
 XP_U16
-figureMoveScore( const ModelCtxt* model, XP_U16 turn, const MoveInfo* moveInfo,
+figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn, const MoveInfo* moveInfo,
                  EngineCtxt* engine, XWStreamCtxt* stream, 
                  WordNotifierInfo* notifyInfo )
 {
@@ -553,11 +554,12 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, const MoveInfo* moveInfo,
 
     for ( ii = 0; ii < nTiles; ++ii ) {
         *incr = moveInfo->tiles[ii].varCoord;
-        moveMultiplier *= multipliers[ii] = word_multiplier( model, col, row );
+        moveMultiplier *= multipliers[ii] =
+            word_multiplier( model, xwe, col, row );
     }
 
-    oneScore = scoreWord( model, turn, moveInfo, (EngineCtxt*)NULL, stream,
-                          notifyInfo );
+    oneScore = scoreWord( model, xwe, turn, moveInfo, (EngineCtxt*)NULL,
+                          stream, notifyInfo );
     if ( !!stream ) {
         formatWordScore( stream, oneScore, moveMultiplier );
     }
@@ -574,7 +576,7 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, const MoveInfo* moveInfo,
         tmpMI.commonCoord = tiles->varCoord;
         tmpMI.tiles[0].tile = tiles->tile;
 
-        oneScore = scoreWord( model, turn, &tmpMI, engine, stream, notifyInfo );
+        oneScore = scoreWord( model, xwe, turn, &tmpMI, engine, stream, notifyInfo );
         if ( !!stream ) {
             formatWordScore( stream, oneScore, multipliers[ii] );
         }
@@ -588,22 +590,22 @@ figureMoveScore( const ModelCtxt* model, XP_U16 turn, const MoveInfo* moveInfo,
 
         if ( !!stream ) {
             const XP_UCHAR* bstr = dutil_getUserString( model->vol.dutil,
-                                                        STR_BONUS_ALL );
+                                                        xwe, STR_BONUS_ALL );
             stream_catString( stream, bstr );
         }
     }
 
     if ( !!stream ) {
-        formatSummary( stream, model, score );
+        formatSummary( stream, xwe, model, score );
     }
 
     return score;
 } /* figureMoveScore */
 
 static XP_U16
-word_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
+word_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
 {
-    XWBonusType bonus = model_getSquareBonus( model, col, row );
+    XWBonusType bonus = model_getSquareBonus( model, xwe, col, row );
     switch ( bonus ) {
     case BONUS_DOUBLE_WORD:
         return 2;
@@ -615,9 +617,9 @@ word_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* word_multiplier */
 
 static XP_U16
-tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
+tile_multiplier( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
 {
-    XWBonusType bonus = model_getSquareBonus( model, col, row );
+    XWBonusType bonus = model_getSquareBonus( model, xwe, col, row );
     switch ( bonus ) {
     case BONUS_DOUBLE_LETTER:
         return 2;
@@ -629,7 +631,7 @@ tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* tile_multiplier */
 
 static XP_U16
-scoreWord( const ModelCtxt* model, XP_U16 turn,
+scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
            const MoveInfo* movei, /* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
@@ -678,7 +680,7 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
         thisTileValue = dict_getTileValue( dict, tile );
 
         XP_ASSERT( *incr == tiles[0].varCoord );
-        thisTileValue *= tile_multiplier( model, col, row );
+        thisTileValue *= tile_multiplier( model, xwe, col, row );
 
         XP_ASSERT( engine == NULL || nTiles == 1 );
 
@@ -714,7 +716,7 @@ scoreWord( const ModelCtxt* model, XP_U16 turn,
                      * mode, as the blank won't be known there.  (Assert will
                      * fail.) */
 
-                    tileMultiplier = tile_multiplier( model, col, row );
+                    tileMultiplier = tile_multiplier( model, xwe, col, row );
                     ++tiles;
                     --nTiles;
                 } else { /* placed on the board before this move */
@@ -919,11 +921,12 @@ formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore,
 } /* formatWordScore */
 
 static void
-formatSummary( XWStreamCtxt* stream, const ModelCtxt* model, XP_U16 score )
+formatSummary( XWStreamCtxt* stream, XWEnv xwe,
+               const ModelCtxt* model, XP_U16 score )
 {
     XP_UCHAR buf[60];
     XP_SNPRINTF( buf, sizeof(buf),
-                 dutil_getUserString(model->vol.dutil, STRD_TURN_SCORE),
+                 dutil_getUserString(model->vol.dutil, xwe, STRD_TURN_SCORE),
                  score );
     XP_ASSERT( XP_STRLEN(buf) < sizeof(buf) );
     stream_catString( stream, buf );

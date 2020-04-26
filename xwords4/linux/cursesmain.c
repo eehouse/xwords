@@ -1535,7 +1535,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     endwin();
 
-    device_store( params->dutil );
+    device_store( params->dutil, NULL_XWE );
 
     if ( params->useUdp ) {
         relaycon_cleanup( params );

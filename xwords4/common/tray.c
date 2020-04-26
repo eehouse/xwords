@@ -432,7 +432,7 @@ handleActionInTray( BoardCtxt* board, XWEnv xwe, XP_S16 index, XP_Bool onDivider
             result = handleTrayDuringTrade( board, index );
         }
     } else if ( index >= 0 ) {
-        result = moveTileToArrowLoc( board, (XP_U8)index );
+        result = moveTileToArrowLoc( board, xwe, (XP_U8)index );
 #ifndef DISABLE_TILE_SEL
         if ( !result ) {
             TileBit newBits = 1 << index;
@@ -468,7 +468,7 @@ handleActionInTray( BoardCtxt* board, XWEnv xwe, XP_S16 index, XP_Bool onDivider
 #elif defined XWFEATURE_TRAYUNDO_ONE
     } else if ( index < 0 ) { /* other empty area */
         /* it better be true */
-        (void)board_replaceNTiles( board, 1 );
+        (void)board_replaceNTiles( board, xwe, 1 );
         result = XP_TRUE;
 #endif
     }
@@ -561,12 +561,12 @@ invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1,
 } /* invalTrayTilesBetween */
 
 XP_Bool
-board_juggleTray( BoardCtxt* board )
+board_juggleTray( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool result = XP_FALSE;
     const XP_S16 turn = board->selPlayer;
     
-    if ( checkRevealTray( board ) ) {
+    if ( checkRevealTray( board, xwe ) ) {
         XP_S16 nTiles;
         XP_U16 dividerLoc = getDividerLoc( board );
         ModelCtxt* model = board->model;

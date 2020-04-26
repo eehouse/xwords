@@ -142,7 +142,7 @@ button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
 
     if ( !globals->mouseDown ) {
         globals->mouseDown = XP_TRUE;
-        redraw = board_handlePenDown( globals->cGlobals.game.board, 
+        redraw = board_handlePenDown( globals->cGlobals.game.board, NULL_XWE,
                                       event->x, event->y, &handled );
         if ( redraw ) {
             board_draw( globals->cGlobals.game.board, NULL_XWE );
@@ -161,8 +161,8 @@ motion_notify_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
     gtkSetAltState( globals, event->state );
 
     if ( globals->mouseDown ) {
-        handled = board_handlePenMove( globals->cGlobals.game.board, event->x, 
-                                       event->y );
+        handled = board_handlePenMove( globals->cGlobals.game.board,
+                                       NULL_XWE, event->x, event->y );
         if ( handled ) {
             board_draw( globals->cGlobals.game.board, NULL_XWE );
             disenable_buttons( globals );
@@ -264,7 +264,7 @@ key_press_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
             board_handleKeyRepeat( globals->cGlobals.game.board, NULL_XWE,
                                    xpkey, &handled )
             : board_handleKeyDown( globals->cGlobals.game.board,
-                                   xpkey, &handled );
+                                   NULL_XWE, xpkey, &handled );
         if ( draw ) {
             board_draw( globals->cGlobals.game.board, NULL_XWE );
         }
@@ -622,16 +622,16 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     XP_ASSERT( !cGlobals->params->verticalScore ); /* not supported */
 
     BoardDims dims;
-    board_figureLayout( board, cGlobals->gi, 
+    board_figureLayout( board, NULL_XWE, cGlobals->gi,
                         GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
                         110, 150, 200, bdWidth-25, 16, 16, XP_FALSE, &dims );
-    board_applyLayout( board, &dims );
+    board_applyLayout( board, NULL_XWE, &dims );
 
     setCtrlsForTray( globals );
     board_invalAll( board );
 
     XP_Bool inOut[2];
-    board_zoom( board, 0, inOut );
+    board_zoom( board, NULL_XWE, 0, inOut );
     setZoomButtons( globals, inOut );
 
     return TRUE;
@@ -743,7 +743,8 @@ tile_values_impl( GtkGameGlobals* globals, bool full )
                              globals, 
                              CHANNEL_NONE, 
                              catOnClose );
-        server_formatDictCounts( cGlobals->game.server, stream, 5, full );
+        server_formatDictCounts( cGlobals->game.server, NULL_XWE,
+                                 stream, 5, full );
         stream_putU8( stream, '\n' );
         stream_destroy( stream, NULL_XWE );
     }
@@ -1134,7 +1135,7 @@ disenable_buttons( GtkGameGlobals* globals )
     }
 
     GameStateInfo gsi;
-    game_getState( &globals->cGlobals.game, &gsi );
+    game_getState( &globals->cGlobals.game, NULL_XWE, &gsi );
 
     XP_Bool canFlip = 1 < board_visTileCount( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->flip_button, canFlip );
@@ -1232,7 +1233,7 @@ handle_colors_button( GtkWidget* XP_UNUSED(widget),
 static void
 handle_juggle_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_juggleTray( globals->cGlobals.game.board ) ) {
+    if ( board_juggleTray( globals->cGlobals.game.board, NULL_XWE ) ) {
         board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* handle_juggle_button */
@@ -1256,7 +1257,8 @@ handle_toggle_undo( GtkWidget* XP_UNUSED(widget),
                     GtkGameGlobals* globals )
 {
     BoardCtxt* board = globals->cGlobals.game.board;
-    if ( board_redoReplacedTiles( board ) || board_replaceTiles( board ) ) {
+    if ( board_redoReplacedTiles( board, NULL_XWE )
+         || board_replaceTiles( board, NULL_XWE ) ) {
         board_draw( board, NULL_XWE );
     }
 }
@@ -1264,7 +1266,7 @@ handle_toggle_undo( GtkWidget* XP_UNUSED(widget),
 static void
 handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( board_beginTrade( globals->cGlobals.game.board ) ) {
+    if ( board_beginTrade( globals->cGlobals.game.board, NULL_XWE ) ) {
         board_draw( globals->cGlobals.game.board, NULL_XWE );
         disenable_buttons( globals );
     }
@@ -1291,7 +1293,7 @@ static void
 handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     XP_Bool inOut[2];
-    if ( board_zoom( globals->cGlobals.game.board, 1, inOut ) ) {
+    if ( board_zoom( globals->cGlobals.game.board, NULL_XWE, 1, inOut ) ) {
         board_draw( globals->cGlobals.game.board, NULL_XWE );
         setZoomButtons( globals, inOut );
     }
@@ -1301,7 +1303,7 @@ static void
 handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     XP_Bool inOut[2];
-    if ( board_zoom( globals->cGlobals.game.board, -1, inOut ) ) {
+    if ( board_zoom( globals->cGlobals.game.board, NULL_XWE, -1, inOut ) ) {
         board_draw( globals->cGlobals.game.board, NULL_XWE );
         setZoomButtons( globals, inOut );
     }
@@ -1343,7 +1345,7 @@ scroll_value_changed( GtkAdjustment *adj, GtkGameGlobals* globals )
     /*            && newValueF <= globals->cGlobals.params->nHidden ); */
     newValue = (XP_U16)newValueF;
 
-    if ( board_setYOffset( globals->cGlobals.game.board, newValue ) ) {
+    if ( board_setYOffset( globals->cGlobals.game.board, NULL_XWE, newValue ) ) {
         board_draw( globals->cGlobals.game.board, NULL_XWE );
     }
 } /* scroll_value_changed */
@@ -1374,9 +1376,9 @@ handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     board = globals->cGlobals.game.board;
     if ( TRAY_REVEALED == board_getTrayVisState( board ) ) {
-        draw = board_hideTray( board );
+        draw = board_hideTray( board, NULL_XWE );
     } else {
-        draw = board_showTray( board );
+        draw = board_showTray( board, NULL_XWE );
     }
     if ( draw ) {
         board_draw( board, NULL_XWE );
@@ -1533,7 +1535,8 @@ ask_blank( gpointer data )
     return 0;
 }
 static void
-gtk_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum, XP_U16 col,
+gtk_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                              XP_U16 playerNum, XP_U16 col,
                               XP_U16 row, const XP_UCHAR** texts, XP_U16 nTiles )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -1587,8 +1590,8 @@ ask_tiles( gpointer data )
     BoardCtxt* board = cGlobals->game.board;
     XP_Bool draw = XP_TRUE;
     if ( cGlobals->pickIsInitial ) {
-        server_tilesPicked( cGlobals->game.server, cGlobals->selPlayer,
-                            &newTiles );
+        server_tilesPicked( cGlobals->game.server, NULL_XWE,
+                            cGlobals->selPlayer, &newTiles );
     } else {
         draw = board_commitTurn( cGlobals->game.board, NULL_XWE,
                                  XP_TRUE, XP_TRUE, &newTiles );
@@ -1602,8 +1605,8 @@ ask_tiles( gpointer data )
 }
 
 static void
-gtk_util_informNeedPickTiles( XW_UtilCtxt* uc, XP_Bool isInitial,
-                              XP_U16 player, XP_U16 nToPick,
+gtk_util_informNeedPickTiles( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                              XP_Bool isInitial, XP_U16 player, XP_U16 nToPick,
                               XP_U16 nFaces, const XP_UCHAR** faces,
                               const XP_U16* counts )
 {
@@ -1631,7 +1634,7 @@ ask_password( gpointer data )
     XP_U16 len = VSIZE(buf);
     if ( gtkpasswdask( cGlobals->askPassName, buf, &len ) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_passwordProvided( board, cGlobals->selPlayer, buf ) ) {
+        if ( board_passwordProvided( board, NULL_XWE, cGlobals->selPlayer, buf ) ) {
             board_draw( board, NULL_XWE );
         }
     }
@@ -1639,7 +1642,8 @@ ask_password( gpointer data )
 }
 
 static void
-gtk_util_informNeedPassword( XW_UtilCtxt* uc, XP_U16 player, const XP_UCHAR* name )
+gtk_util_informNeedPassword( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                             XP_U16 player, const XP_UCHAR* name )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -1676,7 +1680,8 @@ setCtrlsForTray( GtkGameGlobals* XP_UNUSED(globals) )
 } /* setCtrlsForTray */
 
 static void
-gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(state),
+gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                           XW_TrayVisState XP_UNUSED(state),
                            XP_U16 XP_UNUSED(nVisibleRows) )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -1684,7 +1689,7 @@ gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(state),
 } /* gtk_util_trayHiddenChange */
 
 static void
-gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset, 
+gtk_util_yOffsetChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 maxOffset,
                         XP_U16 XP_UNUSED(oldOffset), 
                         XP_U16 newOffset )
 {
@@ -1700,7 +1705,7 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 static void
-gtk_util_turnChanged( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(newTurn) )
+gtk_util_turnChanged( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 XP_UNUSED(newTurn) )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     linuxSaveGame( &globals->cGlobals );
@@ -1716,7 +1721,7 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
 
     stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                   cGlobals->params->vtMgr );
-    server_writeFinalScores( cGlobals->game.server, stream );
+    server_writeFinalScores( cGlobals->game.server, NULL_XWE, stream );
 
     text = strFromStream( stream );
     stream_destroy( stream, NULL_XWE );
@@ -1738,7 +1743,7 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
 } /* gtkShowFinalScores */
 
 static void
-gtk_util_notifyDupStatus( XW_UtilCtxt* uc, XP_Bool XP_UNUSED(amHost),
+gtk_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_Bool XP_UNUSED(amHost),
                           const XP_UCHAR* msg )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -1746,7 +1751,7 @@ gtk_util_notifyDupStatus( XW_UtilCtxt* uc, XP_Bool XP_UNUSED(amHost),
 }
 
 static void
-gtk_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn), 
+gtk_util_informMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 XP_UNUSED(turn),
                      XWStreamCtxt* expl, XWStreamCtxt* words )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -1756,7 +1761,7 @@ gtk_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
 }
 
 static void
-gtk_util_informUndo( XW_UtilCtxt* uc )
+gtk_util_informUndo( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     (void)gtkask_timeout( globals->window, "Remote player undid a move",
@@ -1764,7 +1769,7 @@ gtk_util_informUndo( XW_UtilCtxt* uc )
 }
 
 static void
-gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
+gtk_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitter )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -1787,7 +1792,8 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
 } /* gtk_util_notifyGameOver */
 
 static void
-gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
+gtk_util_informNetDict( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                        XP_LangCode XP_UNUSED(lang),
                         const XP_UCHAR* oldName,
                         const XP_UCHAR* newName, const XP_UCHAR* newSum,
                         XWPhoniesChoice phoniesAction )
@@ -1812,7 +1818,7 @@ gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
 
 #ifdef XWFEATURE_HILITECELL
 static XP_Bool
-gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
+gtk_util_hiliteCell( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 col, XP_U16 row )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
 #ifndef DONT_ABORT_ENGINE
@@ -1837,14 +1843,14 @@ gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 #endif
 
 static XP_Bool
-gtk_util_altKeyDown( XW_UtilCtxt* uc )
+gtk_util_altKeyDown( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     return globals->altKeyDown;
 }
 
 static XP_Bool
-gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
+gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
 {
 #ifdef DONT_ABORT_ENGINE
     return XP_TRUE;		/* keep going */
@@ -1871,7 +1877,8 @@ ask_bad_words( gpointer data )
 }
 
 static void
-gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
+gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                             BadWordInfo* bwi, XP_U16 player,
                              XP_Bool turnLost )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -1901,7 +1908,7 @@ gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
 } /* gtk_util_notifyIllegalWords */
 
 static void
-gtk_util_remSelected( XW_UtilCtxt* uc )
+gtk_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     XWStreamCtxt* stream;
@@ -1909,7 +1916,7 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
 
     stream = mem_stream_make_raw( MEMPOOL
                                   globals->cGlobals.params->vtMgr );
-    board_formatRemainingTiles( globals->cGlobals.game.board, stream );
+    board_formatRemainingTiles( globals->cGlobals.game.board, NULL_XWE, stream );
     text = strFromStream( stream );
     stream_destroy( stream, NULL_XWE );
 
@@ -1918,7 +1925,7 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
 }
 
 static void
-gtk_util_timerSelected( XW_UtilCtxt* uc, XP_Bool inDuplicateMode,
+gtk_util_timerSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_Bool inDuplicateMode,
                         XP_Bool canPause )
 {
     if ( inDuplicateMode ) {
@@ -1933,7 +1940,7 @@ gtk_util_timerSelected( XW_UtilCtxt* uc, XP_Bool inDuplicateMode,
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* 
-gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
+gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_PlayerAddr channelNo )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
 
@@ -1946,7 +1953,8 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_CHAT
 static void
-gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg, XP_S16 from,
+gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                   const XP_UCHAR* const msg, XP_S16 from,
                    XP_U32 timestamp )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
@@ -1963,7 +1971,7 @@ gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg, XP_S16 from,
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool 
-gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc), 
+gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                               XP_U16* XP_UNUSED(min), XP_U16* max )
 {
     *max = askNTiles( MAX_TRAY_TILES, *max );
@@ -1973,7 +1981,7 @@ gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
 
 #ifndef XWFEATURE_MINIWIN
 static void
-gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
+gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWBonusType bonus )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     gchar* msg = g_strdup_printf( "bonusSquareHeld(bonus=%d)", bonus );
@@ -1982,7 +1990,7 @@ gtk_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 }
 
 static void
-gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
+gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 player )
 {
     LOG_FUNC();
 
@@ -2000,7 +2008,7 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
 #ifdef XWFEATURE_BOARDWORDS
 static void
-gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
+gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* words )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     const XP_U8* bytes = stream_getPtr( words );
@@ -2012,7 +2020,7 @@ gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 static void
-gtk_util_informWordsBlocked( XW_UtilCtxt* uc, XP_U16 nBadWords,
+gtk_util_informWordsBlocked( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 nBadWords,
                              XWStreamCtxt* words, const XP_UCHAR* dict )
 {
     XP_U16 len = stream_getSize( words );
@@ -2026,7 +2034,7 @@ gtk_util_informWordsBlocked( XW_UtilCtxt* uc, XP_U16 nBadWords,
 }
 
 static void
-gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
+gtk_util_userError( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), UtilErrID id )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     XP_Bool silent;
@@ -2055,7 +2063,7 @@ ask_move( gpointer data )
 }
 
 static void
-gtk_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
+gtk_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -2086,7 +2094,8 @@ ask_trade( gpointer data )
 }
 
 static void
-gtk_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
+gtk_util_notifyTrade( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                      const XP_UCHAR** tiles, XP_U16 nTiles )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     formatConfirmTrade( &globals->cGlobals, tiles, nTiles );

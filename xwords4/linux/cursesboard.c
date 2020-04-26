@@ -558,13 +558,13 @@ setupBoard( CursesBoardGlobals* bGlobals )
     XP_U16 fontWidth, fontHt;
     getFromDict( cGlobals, &fontWidth, &fontHt );
     BoardDims dims;
-    board_figureLayout( board, cGlobals->gi,
+    board_figureLayout( board, NULL_XWE, cGlobals->gi,
                         0, 0, width, height, 100,
                         150, 200, /* percents */
                         width*75/100,
                         fontWidth, fontHt,
                         XP_FALSE, &dims );
-    board_applyLayout( board, &dims );
+    board_applyLayout( board, NULL_XWE, &dims );
     XP_LOGF( "%s(): calling board_draw()", __func__ );
     board_invalAll( board );
     board_draw( board, NULL_XWE );
@@ -710,7 +710,7 @@ cursesUserError( CursesBoardGlobals* bGlobals, const char* format, ... )
 } /* cursesUserError */
 
 static void
-curses_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
+curses_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 playerNum,
                                  XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row),
                                  const XP_UCHAR** texts, XP_U16 nTiles )
 {
@@ -728,6 +728,7 @@ curses_util_notifyPickTileBlank( XW_UtilCtxt* uc, XP_U16 playerNum,
 
 static void
 curses_util_informNeedPickTiles( XW_UtilCtxt* XP_UNUSED(uc),
+                                 XWEnv XP_UNUSED(xwe),
                                  XP_Bool XP_UNUSED(isInitial),
                                  XP_U16 XP_UNUSED(player),
                                  XP_U16 XP_UNUSED(nToPick),
@@ -750,7 +751,7 @@ curses_util_informNeedPickTiles( XW_UtilCtxt* XP_UNUSED(uc),
 }
 
 static void
-curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
+curses_util_userError( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), UtilErrID id )
 {
     CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
     XP_Bool silent;
@@ -784,6 +785,7 @@ ask_move( gpointer data )
 
 static void
 curses_util_informNeedPassword( XW_UtilCtxt* XP_UNUSED(uc),
+                                XWEnv XP_UNUSED(xwe),
                                 XP_U16 XP_UNUSED_DBG(playerNum),
                                 const XP_UCHAR* XP_UNUSED_DBG(name) )
 {
@@ -792,7 +794,8 @@ curses_util_informNeedPassword( XW_UtilCtxt* XP_UNUSED(uc),
 } /* curses_util_askPassword */
 
 static void
-curses_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(maxOffset),
+curses_util_yOffsetChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                           XP_U16 XP_UNUSED(maxOffset),
                            XP_U16 oldOffset, XP_U16 newOffset )
 {
     if ( 0 != newOffset ) {
@@ -806,7 +809,8 @@ curses_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(maxOffset),
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 static void
-curses_util_turnChanged( XW_UtilCtxt* uc, XP_S16 XP_UNUSED_DBG(newTurn) )
+curses_util_turnChanged( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                         XP_S16 XP_UNUSED_DBG(newTurn) )
 {
     XP_LOGF( "%s(newTurn=%d)", __func__, newTurn );
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
@@ -815,7 +819,7 @@ curses_util_turnChanged( XW_UtilCtxt* uc, XP_S16 XP_UNUSED_DBG(newTurn) )
 #endif
 
 static void
-curses_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
+curses_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), BadWordInfo* bwi,
                                 XP_U16 player, XP_Bool turnLost )
 {
     gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
@@ -834,7 +838,7 @@ curses_util_notifyIllegalWords( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 /* this needs to change!!! */
 static void
-curses_util_notifyMove( XW_UtilCtxt* uc, XWStreamCtxt* stream )
+curses_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
 {
     CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -864,7 +868,8 @@ ask_trade( gpointer data )
 }
 
 static void
-curses_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles )
+curses_util_notifyTrade( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                         const XP_UCHAR** tiles, XP_U16 nTiles )
 {
     CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
     formatConfirmTrade( &globals->cGlobals, tiles, nTiles );
@@ -872,7 +877,7 @@ curses_util_notifyTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles, XP_U16 nTiles 
 }
 
 static void
-curses_util_trayHiddenChange( XW_UtilCtxt* XP_UNUSED(uc), 
+curses_util_trayHiddenChange( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                               XW_TrayVisState XP_UNUSED(state),
                               XP_U16 XP_UNUSED(nVisibleRows) )
 {
@@ -888,7 +893,7 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                   cGlobals->params->vtMgr );
-    server_writeFinalScores( cGlobals->game.server, stream );
+    server_writeFinalScores( cGlobals->game.server, NULL_XWE, stream );
 
     text = strFromStream( stream );
 
@@ -899,8 +904,9 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
 } /* cursesShowFinalScores */
 
 static void
-curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
-                        XWStreamCtxt* expl, XWStreamCtxt* XP_UNUSED(words))
+curses_util_informMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                        XP_S16 XP_UNUSED(turn), XWStreamCtxt* expl,
+                        XWStreamCtxt* XP_UNUSED(words))
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     if ( !!bGlobals->boardWin ) {
@@ -911,7 +917,7 @@ curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
 }
 
 static void
-curses_util_notifyDupStatus( XW_UtilCtxt* uc,
+curses_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                              XP_Bool XP_UNUSED(amHost),
                              const XP_UCHAR* msg )
 {
@@ -922,7 +928,7 @@ curses_util_notifyDupStatus( XW_UtilCtxt* uc,
 }
 
 static void
-curses_util_informUndo( XW_UtilCtxt* uc )
+curses_util_informUndo( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     if ( !!bGlobals->boardWin ) {
@@ -931,7 +937,7 @@ curses_util_informUndo( XW_UtilCtxt* uc )
 }
 
 static void
-curses_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
+curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_S16 quitter )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
@@ -957,7 +963,8 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
 } /* curses_util_notifyGameOver */
 
 static void
-curses_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
+curses_util_informNetDict( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                           XP_LangCode XP_UNUSED(lang),
                            const XP_UCHAR* XP_UNUSED_DBG(oldName),
                            const XP_UCHAR* XP_UNUSED_DBG(newName), 
                            const XP_UCHAR* XP_UNUSED_DBG(newSum),
@@ -970,7 +977,7 @@ curses_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool
-curses_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
+curses_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),XWEnv XP_UNUSED(xwe),
                                  XP_U16* XP_UNUSED(min), XP_U16* XP_UNUSED(max) )
 {
     XP_ASSERT(0);
@@ -981,7 +988,7 @@ curses_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
 
 #ifdef XWFEATURE_HILITECELL
 static XP_Bool
-curses_util_hiliteCell( XW_UtilCtxt* uc, 
+curses_util_hiliteCell( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                         XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row) )
 {
     CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
@@ -993,19 +1000,19 @@ curses_util_hiliteCell( XW_UtilCtxt* uc,
 #endif
 
 static XP_Bool
-curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
+curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
 {
     return XP_TRUE;
 } /* curses_util_engineProgressCallback */
 
 static XP_Bool
-curses_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc) )
+curses_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
 {
     return XP_FALSE;
 }
 
 static void
-curses_util_remSelected( XW_UtilCtxt* uc )
+curses_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
@@ -1014,7 +1021,7 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 
     stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                   cGlobals->params->vtMgr );
-    board_formatRemainingTiles( cGlobals->game.board, stream );
+    board_formatRemainingTiles( cGlobals->game.board, NULL_XWE, stream );
 
     text = strFromStream( stream );
 
@@ -1024,7 +1031,7 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 }
 
 static void
-curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc),
+curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                            XP_Bool XP_UNUSED_DBG(inDuplicateMode),
                            XP_Bool XP_UNUSED_DBG(canPause) )
 {
@@ -1033,7 +1040,8 @@ curses_util_timerSelected( XW_UtilCtxt* XP_UNUSED(uc),
 }
 
 static void
-curses_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
+curses_util_bonusSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                             XWBonusType bonus )
 {
     LOG_FUNC();
     XP_USE( uc );
@@ -1041,7 +1049,7 @@ curses_util_bonusSquareHeld( XW_UtilCtxt* uc, XWBonusType bonus )
 }
 
 static void
-curses_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
+curses_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 player )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
     LastMoveInfo lmi;
@@ -1055,7 +1063,8 @@ curses_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
 #ifdef XWFEATURE_BOARDWORDS
 static void
-curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
+curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                            XWStreamCtxt* words )
 {
     XP_USE( uc );
     catOnClose( words, NULL_XWE, NULL );
@@ -1064,7 +1073,7 @@ curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #endif
 
 static void
-curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc),
+curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                                 XP_U16 XP_UNUSED_DBG(nBadWords),
                                 XWStreamCtxt* XP_UNUSED(words),
                                 const XP_UCHAR* XP_UNUSED_DBG(dictName) )
@@ -1074,7 +1083,8 @@ curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc),
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt*
-curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
+curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                               XP_PlayerAddr channelNo )
 {
     CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
     LaunchParams* params = globals->cGlobals.params;
@@ -1088,7 +1098,7 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_CHAT
 static void
-curses_util_showChat( XW_UtilCtxt* uc, 
+curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                       const XP_UCHAR* const XP_UNUSED_DBG(msg),
                       XP_S16 XP_UNUSED_DBG(from), XP_U32 XP_UNUSED(timestamp) )
 {
@@ -1205,7 +1215,7 @@ static bool
 handleReplace( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
-    if ( board_replaceTiles( cGlobals->game.board ) ) {
+    if ( board_replaceTiles( cGlobals->game.board, NULL_XWE ) ) {
         board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
@@ -1295,7 +1305,7 @@ static bool
 handleJuggle( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
-    if ( board_juggleTray( cGlobals->game.board ) ) {
+    if ( board_juggleTray( cGlobals->game.board, NULL_XWE ) ) {
         board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
@@ -1309,8 +1319,8 @@ handleHide( void* closure, int XP_UNUSED(key) )
         board_getTrayVisState( cGlobals->game.board );
 
     bool draw = curState == TRAY_REVEALED
-        ? board_hideTray( cGlobals->game.board )
-        : board_showTray( cGlobals->game.board );
+        ? board_hideTray( cGlobals->game.board, NULL_XWE )
+        : board_showTray( cGlobals->game.board, NULL_XWE );
     if ( draw ) {
         board_draw( cGlobals->game.board, NULL_XWE );
     }
@@ -1323,7 +1333,7 @@ static void
 checkAssignFocus( BoardCtxt* board )
 {
     if ( OBJ_NONE == board_getFocusOwner(board) ) {
-        board_focusChanged( board, OBJ_BOARD, XP_TRUE );
+        board_focusChanged( board, NULL_XWE, OBJ_BOARD, XP_TRUE );
     }
 }
 
@@ -1476,7 +1486,8 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                                 cGlobals->params->vtMgr );
-    server_formatDictCounts( bGlobals->cGlobals.game.server, stream, 5, XP_FALSE );
+    server_formatDictCounts( bGlobals->cGlobals.game.server, NULL_XWE,
+                             stream, 5, XP_FALSE );
     const XP_U8* data = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
     XP_UCHAR buf[len + 1];

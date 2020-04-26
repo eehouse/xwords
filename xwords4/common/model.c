@@ -38,15 +38,15 @@ extern "C" {
 #define MAX_PASSES 2 /* how many times can all players pass? */
 
 /****************************** prototypes ******************************/
-typedef void (*MovePrintFuncPre)(ModelCtxt*, XP_U16, const StackEntry*, void*);
-typedef void (*MovePrintFuncPost)(ModelCtxt*, XP_U16, const StackEntry*,
+typedef void (*MovePrintFuncPre)(ModelCtxt*, XWEnv, XP_U16, const StackEntry*, void*);
+typedef void (*MovePrintFuncPost)(ModelCtxt*, XWEnv, XP_U16, const StackEntry*,
                                   XP_S16, void*);
 
 static void incrPendingTileCountAt( ModelCtxt* model, XP_U16 col, 
                                     XP_U16 row );
 static void decrPendingTileCountAt( ModelCtxt* model, XP_U16 col, 
                                     XP_U16 row );
-static void notifyBoardListeners( ModelCtxt* model, XP_U16 turn, 
+static void notifyBoardListeners( ModelCtxt* model, XWEnv xwe, XP_U16 turn,
                                   XP_U16 col, XP_U16 row, XP_Bool added );
 static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, 
                                  XP_S16 index1, XP_S16 index2 );
@@ -83,7 +83,7 @@ typedef struct _DiffTurnState {
     XP_S16 lastPlayerNum;
     XP_S16 lastMoveNum;
 } DiffTurnState;
-static void assertDiffTurn( ModelCtxt* model, XP_U16 turn, 
+static void assertDiffTurn( ModelCtxt* model, XWEnv xwe, XP_U16 turn,
                             const StackEntry* entry, void* closure);
 #endif
 
@@ -100,7 +100,7 @@ model_make( MPFORMAL XWEnv xwe, DictionaryCtxt* dict, const PlayerDicts* dicts,
         MPASSIGN(result->vol.mpool, mpool);
 
         result->vol.util = util;
-        result->vol.dutil = util_getDevUtilCtxt( util );
+        result->vol.dutil = util_getDevUtilCtxt( util, xwe );
         result->vol.wni.proc = recordWord;
         result->vol.wni.closure = &result->vol.rwi;
 
@@ -328,7 +328,7 @@ model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 }
 
 XP_Bool
-model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
+model_popToHash( ModelCtxt* model, XWEnv xwe, const XP_U32 hash, PoolContext* pool )
 {
     LOG_FUNC();
     XP_U16 nPopped = 0;
@@ -366,7 +366,7 @@ model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 #ifdef DEBUG
             XP_Bool success =
 #endif
-                model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
+                model_undoLatestMoves( model, xwe, pool, foundAt, NULL, NULL );
             XP_ASSERT( success );
         }
         /* Assert not needed for long */
@@ -405,7 +405,7 @@ model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses, XP_U16 nBonuses 
 #endif
 
 XWBonusType
-model_getSquareBonus( const ModelCtxt* model, XP_U16 col, XP_U16 row )
+model_getSquareBonus( const ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row )
 {
     XWBonusType result = BONUS_NONE;
 #ifdef STREAM_VERS_BIGBOARD
@@ -437,7 +437,8 @@ model_getSquareBonus( const ModelCtxt* model, XP_U16 col, XP_U16 row )
         }
 #endif
     } else {
-        result = util_getSquareBonus( model->vol.util, model_numRows(model), 
+        result = util_getSquareBonus( model->vol.util, xwe,
+                                      model_numRows(model),
                                       col, row );
     }
     return result;
@@ -448,7 +449,7 @@ makeAndCommit( ModelCtxt* model, XWEnv xwe, XP_U16 turn, const MoveInfo* mi,
                const TrayTileSet* tiles, XWStreamCtxt* stream,
                XP_Bool useStack, WordNotifierInfo* wni )
 {
-    model_makeTurnFromMoveInfo( model, turn, mi );
+    model_makeTurnFromMoveInfo( model, xwe, turn, mi );
     XP_U16 moveScore = commitTurn( model, xwe, turn, tiles,
                                    stream, wni, useStack );
     return moveScore;
@@ -464,13 +465,13 @@ dupe_adjustScores( ModelCtxt* model, XP_Bool add, XP_U16 nScores, const XP_U16* 
 }
 
 void
-model_cloneDupeTrays( ModelCtxt* model )
+model_cloneDupeTrays( ModelCtxt* model, XWEnv xwe )
 {
     XP_ASSERT( model->vol.gi->inDuplicateMode );
     XP_U16 nTiles = model->players[DUP_PLAYER].trayTiles.nTiles;
     for ( XP_U16 ii = 0; ii < model->nPlayers; ++ii ) {
         if ( ii != DUP_PLAYER ) {
-            model_resetCurrentTurn( model, ii );
+            model_resetCurrentTurn( model, xwe, ii );
             model->players[ii].trayTiles = model->players[DUP_PLAYER].trayTiles;
             notifyTrayListeners( model, ii, 0, nTiles );
         }
@@ -485,7 +486,7 @@ modelAddEntry( ModelCtxt* model, XWEnv xwe, XP_U16 indx, const StackEntry* entry
 {
     XP_S16 moveScore = 0; /* keep compiler happy */
     if ( !!mpf_pre ) {
-        (*mpf_pre)( model, indx, entry, closure );
+        (*mpf_pre)( model, xwe, indx, entry, closure );
     }
 
     switch ( entry->moveType ) {
@@ -496,7 +497,7 @@ modelAddEntry( ModelCtxt* model, XWEnv xwe, XP_U16 indx, const StackEntry* entry
             XP_ASSERT( DUP_PLAYER == entry->playerNum );
             dupe_adjustScores( model, XP_TRUE, entry->u.move.dup.nScores,
                                entry->u.move.dup.scores );
-            model_cloneDupeTrays( model );
+            model_cloneDupeTrays( model, xwe );
         }
         break;
     case TRADE_TYPE:
@@ -504,24 +505,24 @@ modelAddEntry( ModelCtxt* model, XWEnv xwe, XP_U16 indx, const StackEntry* entry
                        &entry->u.trade.newTiles );
         if ( model->vol.gi->inDuplicateMode ) {
             XP_ASSERT( DUP_PLAYER == entry->playerNum );
-            model_cloneDupeTrays( model );
+            model_cloneDupeTrays( model, xwe );
         }
         break;
     case ASSIGN_TYPE:
         model_addNewTiles( model, entry->playerNum, &entry->u.assign.tiles );
         if ( model->vol.gi->inDuplicateMode ) {
             XP_ASSERT( DUP_PLAYER == entry->playerNum );
-            model_cloneDupeTrays( model );
+            model_cloneDupeTrays( model, xwe );
         }
         break;
     case PHONY_TYPE: /* nothing to add */
-        model_makeTurnFromMoveInfo( model, entry->playerNum,
+        model_makeTurnFromMoveInfo( model, xwe, entry->playerNum,
                                     &entry->u.phony.moveInfo);
         /* do something here to cause it to print */
         (void)getCurrentMoveScoreIfLegal( model, xwe, entry->playerNum, stream,
                                           wni, &moveScore );
         moveScore = 0;
-        model_resetCurrentTurn( model, entry->playerNum );
+        model_resetCurrentTurn( model, xwe, entry->playerNum );
 
         break;
     case PAUSE_TYPE:
@@ -532,7 +533,7 @@ modelAddEntry( ModelCtxt* model, XWEnv xwe, XP_U16 indx, const StackEntry* entry
     }
 
     if ( !!mpf_post ) {
-        (*mpf_post)( model, indx, entry, moveScore, closure );
+        (*mpf_post)( model, xwe, indx, entry, moveScore, closure );
     }
 } /* modelAddEntry */
 
@@ -747,7 +748,7 @@ model_listPlacedBlanks( ModelCtxt* model, XP_U16 turn,
 } /* model_listPlacedBlanks */
 
 void
-model_foreachPrevCell( ModelCtxt* model, BoardListener bl, void* closure )
+model_foreachPrevCell( ModelCtxt* model, XWEnv xwe, BoardListener bl, void* closure )
 {
     XP_U16 col, row;
 
@@ -755,41 +756,41 @@ model_foreachPrevCell( ModelCtxt* model, BoardListener bl, void* closure )
         for ( row = 0; row < model->nRows; ++row) {
             CellTile tile = getModelTileRaw( model, col, row );
             if ( (tile & PREV_MOVE_BIT) != 0 ) {
-                (*bl)( closure, (XP_U16)CELL_OWNER(tile), col, row, XP_FALSE );
+                (*bl)( xwe, closure, (XP_U16)CELL_OWNER(tile), col, row, XP_FALSE );
             }
         }
     }
 } /* model_foreachPrevCell */
 
 static void
-clearAndNotify( void* closure, XP_U16 XP_UNUSED(turn), XP_U16 col, XP_U16 row, 
-                XP_Bool XP_UNUSED(added) )
+clearAndNotify( XWEnv xwe, void* closure, XP_U16 XP_UNUSED(turn),
+                XP_U16 col, XP_U16 row, XP_Bool XP_UNUSED(added) )
 {
     ModelCtxt* model = (ModelCtxt*)closure;
     CellTile tile = getModelTileRaw( model, col, row );
     setModelTileRaw( model, col, row, (CellTile)(tile & ~PREV_MOVE_BIT) );
     
-    notifyBoardListeners( model, (XP_U16)CELL_OWNER(tile), col, row, 
+    notifyBoardListeners( model, xwe, (XP_U16)CELL_OWNER(tile), col, row,
                           XP_FALSE );
 } /* clearAndNotify */
 
 static void
-clearLastMoveInfo( ModelCtxt* model )
+clearLastMoveInfo( ModelCtxt* model, XWEnv xwe )
 {
-    model_foreachPrevCell( model, clearAndNotify, model );
+    model_foreachPrevCell( model, xwe, clearAndNotify, model );
 } /* clearLastMoveInfo */
 
 static void
-invalLastMove( ModelCtxt* model )
+invalLastMove( ModelCtxt* model, XWEnv xwe )
 {
     if ( !!model->vol.boardListenerFunc ) {
-        model_foreachPrevCell( model, model->vol.boardListenerFunc,
+        model_foreachPrevCell( model, xwe, model->vol.boardListenerFunc,
                                model->vol.boardListenerData );
     }
 } /* invalLastMove */
 
 void
-model_foreachPendingCell( ModelCtxt* model, XP_S16 turn,
+model_foreachPendingCell( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                           BoardListener bl, void* closure )
 {
     PendingTile* pt;
@@ -801,7 +802,7 @@ model_foreachPendingCell( ModelCtxt* model, XP_S16 turn,
     count = player->nPending;
 
     for ( pt = player->pendingTiles; count--; ++pt ) {
-        (*bl)( closure, turn, pt->col, pt->row, XP_FALSE );
+        (*bl)( xwe, closure, turn, pt->col, pt->row, XP_FALSE );
     }
 } /* model_foreachPendingCell */
 
@@ -837,7 +838,7 @@ getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* getModelTileRaw */
 
 static void
-undoFromMove( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveRec* move )
+undoFromMove( ModelCtxt* model, XWEnv xwe, XP_U16 turn, Tile blankTile, MoveRec* move )
 {
     const MoveInfo* mi = &move->moveInfo;
 
@@ -852,7 +853,7 @@ undoFromMove( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveRec* move )
         *other = tinfo->varCoord;
 
         setModelTileRaw( model, col, row, EMPTY_TILE );
-        notifyBoardListeners( model, turn, col, row, XP_FALSE );
+        notifyBoardListeners( model, xwe, turn, col, row, XP_FALSE );
         --model->vol.nTilesOnBoard;
 
         if ( IS_BLANK(tile) ) {
@@ -864,7 +865,7 @@ undoFromMove( ModelCtxt* model, XP_U16 turn, Tile blankTile, MoveRec* move )
     if ( model->vol.gi->inDuplicateMode ) {
         dupe_adjustScores( model, XP_FALSE, move->dup.nScores, move->dup.scores );
     } else {
-        adjustScoreForUndone( model, mi, turn );
+        adjustScoreForUndone( model, xwe, mi, turn );
     }
 } /* undoFromMove */
 
@@ -894,7 +895,8 @@ replaceNewTiles( ModelCtxt* model, PoolContext* pool, XP_U16 turn,
 /* Turn the most recent move into a phony.
  */
 void
-model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool, XP_U16* turn )
+model_rejectPreviousMove( ModelCtxt* model, XWEnv xwe,
+                          PoolContext* pool, XP_U16* turn )
 {
     StackCtxt* stack = model->vol.stack;
     StackEntry entry;
@@ -903,11 +905,11 @@ model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool, XP_U16* turn )
     stack_popEntry( stack, &entry );
     XP_ASSERT( entry.moveType == MOVE_TYPE );
 
-    model_resetCurrentTurn( model, entry.playerNum );
+    model_resetCurrentTurn( model, xwe, entry.playerNum );
 
     replaceNewTiles( model, pool, entry.playerNum, &entry.u.move.newTiles );
     XP_ASSERT( !model->vol.gi->inDuplicateMode );
-    undoFromMove( model, entry.playerNum, blankTile, &entry.u.move );
+    undoFromMove( model, xwe, entry.playerNum, blankTile, &entry.u.move );
 
     stack_addPhony( stack, entry.playerNum, &entry.u.phony.moveInfo );
 
@@ -931,7 +933,7 @@ model_canUndo( const ModelCtxt* model )
  * indicated by *moveNumP, if >= 0).
  */
 XP_Bool
-model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
+model_undoLatestMoves( ModelCtxt* model, XWEnv xwe, PoolContext* pool,
                        XP_U16 nMovesSought, XP_U16* turnP, XP_S16* moveNumP )
 {
     XP_ASSERT( 0 < nMovesSought ); /* this case isn't handled correctly */
@@ -968,19 +970,19 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
             ++nMovesUndone;
 
             turn = entry.playerNum;
-            model_resetCurrentTurn( model, turn );
+            model_resetCurrentTurn( model, xwe, turn );
 
             if ( entry.moveType == MOVE_TYPE ) {
                 /* get the tiles out of player's tray and back into the
                    pool */
                 replaceNewTiles( model, pool, turn, &entry.u.move.newTiles );
 
-                undoFromMove( model, turn, blankTile, &entry.u.move );
+                undoFromMove( model, xwe, turn, blankTile, &entry.u.move );
                 model_sortTiles( model, turn );
 
                 if ( model->vol.gi->inDuplicateMode ) {
                     XP_ASSERT( DUP_PLAYER == turn );
-                    model_cloneDupeTrays( model );
+                    model_cloneDupeTrays( model, xwe );
                 }
             } else if ( entry.moveType == TRADE_TYPE ) {
                 replaceNewTiles( model, pool, turn, 
@@ -1040,7 +1042,7 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                     tile = getModelTileRaw( model, col, row );
                     setModelTileRaw( model, col, row, 
                                      (CellTile)(tile | PREV_MOVE_BIT) );
-                    notifyBoardListeners( model, entry.playerNum, col, row, 
+                    notifyBoardListeners( model, xwe, entry.playerNum, col, row,
                                           XP_FALSE );
                 }
                 break;
@@ -1171,7 +1173,7 @@ model_currentMoveToStream( ModelCtxt* model, XP_S16 turn,
  * board.
  */
 XP_Bool
-model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
+model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                           XWStreamCtxt* stream )
 {
     Tile blank = dict_getBlankTile( model_getDictionary(model) );
@@ -1183,7 +1185,7 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 #endif
         ;
 
-    model_resetCurrentTurn( model, playerNum );
+    model_resetCurrentTurn( model, xwe, playerNum );
 
     XP_U16 numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
     XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
@@ -1229,7 +1231,7 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
                 model_addPlayerTile( model, playerNum, -1, moveTiles[ii] );
             }
 
-            model_moveTrayToBoard( model, playerNum, cols[ii], rows[ii], foundAt,
+            model_moveTrayToBoard( model, xwe, playerNum, cols[ii], rows[ii], foundAt,
                                    tileFaces[ii] );
         }
     }
@@ -1275,7 +1277,7 @@ reverseTiles( MoveInfo* move )
 #endif
 
 void
-model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum, 
+model_makeTurnFromMoveInfo( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                             const MoveInfo* newMove )
 {
     XP_U16 col, row, ii;
@@ -1300,7 +1302,7 @@ model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
         XP_ASSERT( tileIndex >= 0 );
 
         *other = tinfo->varCoord;
-        model_moveTrayToBoard( model, (XP_S16)playerNum, col, row, tileIndex, 
+        model_moveTrayToBoard( model, xwe, (XP_S16)playerNum, col, row, tileIndex,
                                (Tile)(tinfo->tile & TILE_VALUE_MASK) );
     }
 } /* model_makeTurnFromMoveInfo */
@@ -1502,7 +1504,7 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
 /* setup async query for blank value, but while at it return a reasonable
    default.  */
 Tile
-model_askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row )
+model_askBlankTile( ModelCtxt* model, XWEnv xwe, XP_U16 turn, XP_U16 col, XP_U16 row )
 {
     XP_U16 nUsed = MAX_UNIQUE_TILES;
     const XP_UCHAR* tfaces[MAX_UNIQUE_TILES];
@@ -1511,13 +1513,13 @@ model_askBlankTile( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row )
     model_packTilesUtil( model, NULL, XP_FALSE,
                          &nUsed, tfaces, tiles );
 
-    util_notifyPickTileBlank( model->vol.util, turn, col, row,
+    util_notifyPickTileBlank( model->vol.util, xwe, turn, col, row,
                               tfaces, nUsed );
     return tiles[0];
 } /* model_askBlankTile */
 
 void
-model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
+model_moveTrayToBoard( ModelCtxt* model, XWEnv xwe, XP_S16 turn, XP_U16 col, XP_U16 row,
                        XP_S16 tileIndex, Tile blankFace )
 {
     PlayerCtxt* player;
@@ -1531,7 +1533,7 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
         } else {
             XP_ASSERT( turn >= 0 );
             tile = TILE_BLANK_BIT
-                | model_askBlankTile( model, (XP_U16)turn, col, row );
+                | model_askBlankTile( model, xwe, (XP_U16)turn, col, row );
         }
         tile |= TILE_BLANK_BIT;
     }
@@ -1539,7 +1541,7 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
     player = &model->players[turn];
 
     if ( player->nPending == 0 ) {
-        invalLastMove( model );
+        invalLastMove( model, xwe );
     }
 
     player->nUndone = 0;
@@ -1553,7 +1555,7 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
     invalidateScore( model, turn );
     incrPendingTileCountAt( model, col, row );
 
-    notifyBoardListeners( model, turn, col, row, XP_TRUE );
+    notifyBoardListeners( model, xwe, turn, col, row, XP_TRUE );
 } /* model_moveTrayToBoard */
 
 XP_Bool
@@ -1586,7 +1588,7 @@ model_setBlankValue( ModelCtxt* model, XP_U16 turn,
 }
 
 XP_Bool
-model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
+model_redoPendingTiles( ModelCtxt* model, XWEnv xwe, XP_S16 turn )
 {
     XP_U16 actualCnt = 0;
     PlayerCtxt* player;
@@ -1618,9 +1620,9 @@ model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
 
             if ( !model_getTile( model, pt->col, pt->row, XP_FALSE, turn, 
                                  NULL, NULL, NULL, NULL ) ) {
-                 model_moveTrayToBoard( model, turn, pt->col, pt->row,
+                model_moveTrayToBoard( model, xwe, turn, pt->col, pt->row,
                                         foundAt, pt->tile & ~TILE_BLANK_BIT );
-                 ++actualCnt;
+                ++actualCnt;
             }
         }
     }
@@ -1628,7 +1630,7 @@ model_redoPendingTiles( ModelCtxt* model, XP_S16 turn )
 }
 
 void
-model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, 
+model_moveBoardToTray( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                        XP_U16 col, XP_U16 row, XP_U16 trayOffset )
 {
     XP_S16 index;
@@ -1652,7 +1654,7 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
     if ( index < player->nPending ) {
         PendingTile tmpPending;
         decrPendingTileCountAt( model, col, row );
-        notifyBoardListeners( model, turn, col, row, XP_FALSE );
+        notifyBoardListeners( model, xwe, turn, col, row, XP_FALSE );
 
         tile = pt->tile;
         if ( (tile & TILE_BLANK_BIT) != 0 ) {
@@ -1672,7 +1674,7 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
         //XP_LOGF( "%s: nUndone(%d): %d", __func__, turn, player->nUndone );
 
         if ( player->nPending == 0 ) {
-            invalLastMove( model );
+            invalLastMove( model, xwe );
         }
 
         invalidateScore( model, turn );
@@ -1680,7 +1682,7 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
 } /* model_moveBoardToTray */
 
 XP_Bool
-model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
+model_moveTileOnBoard( ModelCtxt* model, XWEnv xwe, XP_S16 turn, XP_U16 colCur,
                        XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew )
 {
     XP_Bool found = XP_FALSE;
@@ -1703,7 +1705,7 @@ model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur,
             pt->col = colNew;
             pt->row = rowNew;
             if ( isBlank ) {
-                (void)model_askBlankTile( model, turn, colNew, rowNew );
+                (void)model_askBlankTile( model, xwe, turn, colNew, rowNew );
             }
 
             decrPendingTileCountAt( model, colCur, rowCur );
@@ -1718,7 +1720,7 @@ model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur,
 } /* model_moveTileOnBoard */
 
 void
-model_resetCurrentTurn( ModelCtxt* model, XP_S16 whose )
+model_resetCurrentTurn( ModelCtxt* model, XWEnv xwe, XP_S16 whose )
 {
     PlayerCtxt* player;
 
@@ -1726,7 +1728,7 @@ model_resetCurrentTurn( ModelCtxt* model, XP_S16 whose )
     player = &model->players[whose];
 
     while ( player->nPending > 0 ) {
-        model_moveBoardToTray( model, whose, 
+        model_moveBoardToTray( model, xwe, whose,
                                player->pendingTiles[0].col,
                                player->pendingTiles[0].row,
                                -1 );
@@ -1819,7 +1821,7 @@ decrPendingTileCountAt( ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* decrPendingTileCountAt */
 
 static void
-putBackOtherPlayersTiles( ModelCtxt* model, XP_U16 notMyTurn, 
+putBackOtherPlayersTiles( ModelCtxt* model, XWEnv xwe, XP_U16 notMyTurn,
                           XP_U16 col, XP_U16 row )
 {
     XP_U16 turn;
@@ -1828,7 +1830,7 @@ putBackOtherPlayersTiles( ModelCtxt* model, XP_U16 notMyTurn,
         if ( turn == notMyTurn ) {
             continue;
         }
-        model_moveBoardToTray( model, turn, col, row, -1 );
+        model_moveBoardToTray( model, xwe, turn, col, row, -1 );
     }
 } /* putBackOtherPlayersTiles */
 
@@ -1858,7 +1860,7 @@ commitTurn( ModelCtxt* model, XWEnv xwe, XP_S16 turn, const TrayTileSet* newTile
 
     XP_ASSERT( turn >= 0 && turn < MAX_NUM_PLAYERS);
 
-    clearLastMoveInfo( model );
+    clearLastMoveInfo( model, xwe );
 
     PlayerCtxt* player = &model->players[turn];
 
@@ -1886,7 +1888,7 @@ commitTurn( ModelCtxt* model, XWEnv xwe, XP_S16 turn, const TrayTileSet* newTile
 
         XP_U16 val = tile & TILE_VALUE_MASK;
         if ( val > 1 ) { /* somebody else is using this square too! */
-            putBackOtherPlayersTiles( model, turn, col, row );
+            putBackOtherPlayersTiles( model, xwe, turn, col, row );
         }
 
         tile = pt->tile;
@@ -1895,7 +1897,7 @@ commitTurn( ModelCtxt* model, XWEnv xwe, XP_S16 turn, const TrayTileSet* newTile
 
         setModelTileRaw( model, col, row, tile );
 
-        notifyBoardListeners( model, turn, col, row, XP_FALSE );
+        notifyBoardListeners( model, xwe, turn, col, row, XP_FALSE );
 
         ++model->vol.nTilesOnBoard;
     }
@@ -1930,8 +1932,8 @@ void
 model_commitDupeTurn( ModelCtxt* model, XWEnv xwe, const MoveInfo* moveInfo,
                       XP_U16 nScores, XP_U16* scores, TrayTileSet* newTiles )
 {
-    model_resetCurrentTurn( model, DUP_PLAYER );
-    model_makeTurnFromMoveInfo( model, DUP_PLAYER, moveInfo );
+    model_resetCurrentTurn( model, xwe, DUP_PLAYER );
+    model_makeTurnFromMoveInfo( model, xwe, DUP_PLAYER, moveInfo );
     (void)commitTurn( model, xwe, DUP_PLAYER, newTiles, NULL, NULL, XP_FALSE );
     dupe_adjustScores( model, XP_TRUE, nScores, scores );
     invalidateScores( model );
@@ -1947,10 +1949,10 @@ model_commitDupeTrade( ModelCtxt* model, const TrayTileSet* oldTiles,
 }
 
 void
-model_noteDupePause( ModelCtxt* model, DupPauseType typ, XP_S16 turn,
+model_noteDupePause( ModelCtxt* model, XWEnv xwe, DupPauseType typ, XP_S16 turn,
                      const XP_UCHAR* msg )
 {
-    XP_U32 when = dutil_getCurSeconds( model->vol.dutil );
+    XP_U32 when = dutil_getCurSeconds( model->vol.dutil, xwe );
     stack_addPause( model->vol.stack, typ, turn, when, msg );
 }
 
@@ -2119,10 +2121,10 @@ model_getNextTurn( const ModelCtxt* model )
 }
 
 void
-model_assignDupeTiles( ModelCtxt* model, const TrayTileSet* tiles )
+model_assignDupeTiles( ModelCtxt* model, XWEnv xwe, const TrayTileSet* tiles )
 {
     model_assignPlayerTiles( model, DUP_PLAYER, tiles );
-    model_cloneDupeTrays( model );
+    model_cloneDupeTrays( model, xwe );
 }
 
 void
@@ -2196,12 +2198,12 @@ model_setDictListener( ModelCtxt* model, DictListener dl, void* data )
 } /* model_setDictListener */
 
 static void
-notifyBoardListeners( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
-                      XP_Bool added )
+notifyBoardListeners( ModelCtxt* model, XWEnv xwe, XP_U16 turn, XP_U16 col,
+                      XP_U16 row, XP_Bool added )
 {
     if ( model->vol.boardListenerFunc != NULL ) {
-        (*model->vol.boardListenerFunc)( model->vol.boardListenerData, turn, 
-                                         col, row, added );
+        (*model->vol.boardListenerFunc)( xwe, model->vol.boardListenerData,
+                                         turn, col, row, added );
     }
 } /* notifyBoardListeners */
 
@@ -2258,8 +2260,8 @@ typedef struct MovePrintClosure {
 } MovePrintClosure;
 
 static void
-printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry, 
-              void* p_closure )
+printMovePre( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
+              const StackEntry* entry, void* p_closure )
 {
     if ( entry->moveType != ASSIGN_TYPE ) {
         const XP_UCHAR* format;
@@ -2293,13 +2295,13 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
             }
 
             if ( isPass ) {
-                format = dutil_getUserString( model->vol.dutil, STR_PASS );
+                format = dutil_getUserString( model->vol.dutil, xwe, STR_PASS );
                 XP_SNPRINTF( buf, VSIZE(buf), "%s", format );
             } else {
                 if ( isHorizontal ) {
-                    format = dutil_getUserString( model->vol.dutil, STRS_MOVE_ACROSS );
+                    format = dutil_getUserString( model->vol.dutil, xwe, STRS_MOVE_ACROSS );
                 } else {
-                    format = dutil_getUserString( model->vol.dutil, STRS_MOVE_DOWN );
+                    format = dutil_getUserString( model->vol.dutil, xwe, STRS_MOVE_DOWN );
                 }
 
                 row = mi->commonCoord;
@@ -2316,7 +2318,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
             printString( stream, (XP_UCHAR*)buf );
 
             if ( !closure->keepHidden ) {
-                format = dutil_getUserString( model->vol.dutil, STRS_TRAY_AT_START );
+                format = dutil_getUserString( model->vol.dutil, xwe, STRS_TRAY_AT_START );
                 formatTray( model_getPlayerTiles( model, entry->playerNum ),
                             closure->dict, (XP_UCHAR*)traybuf, sizeof(traybuf),
                             XP_FALSE );
@@ -2330,7 +2332,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
 } /* printMovePre */
 
 static void
-printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), 
+printMovePost( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
                const StackEntry* entry, XP_S16 XP_UNUSED(score),
                void* p_closure )
 {
@@ -2355,14 +2357,14 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
             formatTray( (const TrayTileSet*) &entry->u.trade.newTiles, 
                         dict, traybuf2, sizeof(traybuf2), closure->keepHidden );
 
-            format = dutil_getUserString( model->vol.dutil, STRSS_TRADED_FOR );
+            format = dutil_getUserString( model->vol.dutil, xwe, STRSS_TRADED_FOR );
             XP_SNPRINTF( buf, sizeof(buf), format, traybuf1, traybuf2 );
             printString( stream, buf );
             addCR = XP_TRUE;
             break;
 
         case PHONY_TYPE:
-            format = dutil_getUserString( model->vol.dutil, STR_PHONY_REJECTED );
+            format = dutil_getUserString( model->vol.dutil, xwe, STR_PHONY_REJECTED );
             printString( stream, format );
             /* FALLTHRU */
         case MOVE_TYPE:
@@ -2377,7 +2379,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
                 printString( stream, buf );
             }
 
-            format = dutil_getUserString( model->vol.dutil, STRD_CUMULATIVE_SCORE );
+            format = dutil_getUserString( model->vol.dutil, xwe, STRD_CUMULATIVE_SCORE );
             XP_SNPRINTF( buf, sizeof(buf), format, totalScore );
             printString( stream, buf );
 
@@ -2392,7 +2394,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
                 if ( entry->moveType == PHONY_TYPE ) {
                     /* printString( stream, (XP_UCHAR*)"phony rejected " ); */
                 } else if ( !closure->keepHidden ) {
-                    format = dutil_getUserString( model->vol.dutil, STRS_NEW_TILES );
+                    format = dutil_getUserString( model->vol.dutil, xwe, STRS_NEW_TILES );
                     XP_SNPRINTF( buf, sizeof(buf), format,
                                  formatTray( &entry->u.move.newTiles, dict,
                                              traybuf1, sizeof(traybuf1),
@@ -2404,7 +2406,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
 
             break;
         case PAUSE_TYPE:
-            util_formatPauseHistory( model->vol.util, stream, entry->u.pause.pauseType,
+            util_formatPauseHistory( model->vol.util, xwe, stream, entry->u.pause.pauseType,
                                      entry->playerNum, closure->lastPauseWhen,
                                      entry->u.pause.when, entry->u.pause.msg );
             closure->lastPauseWhen = entry->u.pause.when;
@@ -2472,7 +2474,7 @@ model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
     if ( gameOver ) {
         /* if the game's over, it shouldn't matter which model I pass to this
            method */
-        server_writeFinalScores( server, stream ); 
+        server_writeFinalScores( server, xwe, stream );
     }
 } /* model_writeGameHistory */
 
@@ -2503,7 +2505,7 @@ scoreLastMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moveInfo, XP_U16 howMany,
 
     copyStack( model, xwe, tmpModel->vol.stack, model->vol.stack );
 
-    if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
+    if ( !model_undoLatestMoves( tmpModel, xwe, NULL, howMany, &turn,
                                  &moveNum ) ) {
         XP_ASSERT( 0 );
     }
@@ -2511,7 +2513,7 @@ scoreLastMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moveInfo, XP_U16 howMany,
     data.word[0] = '\0';
     notifyInfo.proc = getFirstWord;
     notifyInfo.closure = &data;
-    score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
+    score = figureMoveScore( tmpModel, xwe, turn, moveInfo, (EngineCtxt*)NULL,
                              (XWStreamCtxt*)NULL, &notifyInfo );
 
     model_destroy( tmpModel, xwe );
@@ -2626,7 +2628,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
     if ( tilesInLine( model, turn, &isHorizontal ) ) {
         MoveInfo moveInfo = {0};
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
-        model_makeTurnFromMoveInfo( tmpModel, turn, &moveInfo );
+        model_makeTurnFromMoveInfo( tmpModel, xwe, turn, &moveInfo );
 
         /* Might not be a legal move. If isn't, don't add it! */
         if ( getCurrentMoveScoreIfLegal( tmpModel, xwe, turn, (XWStreamCtxt*)NULL,
@@ -2634,7 +2636,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
             TrayTileSet newTiles = {.nTiles = 0};
             commitTurn( tmpModel, xwe, turn, &newTiles, NULL, NULL, XP_TRUE );
         } else {
-            model_resetCurrentTurn( tmpModel, turn );
+            model_resetCurrentTurn( tmpModel, xwe, turn );
         }
     }
 
@@ -2644,7 +2646,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
     XP_U16 nEntriesAfter;
 
     /* Loop until we undo the move that placed the tile. */
-    while ( model_undoLatestMoves( tmpModel, NULL, 1, NULL, NULL ) ) {
+    while ( model_undoLatestMoves( tmpModel, xwe, NULL, 1, NULL, NULL ) ) {
         if ( 0 != (TILE_EMPTY_BIT & getModelTileRaw( tmpModel, col, row ) ) ) {
             break;
         }
@@ -2852,8 +2854,9 @@ setContains( const TrayTileSet* tiles, Tile tile )
 
 #ifdef DEBUG 
 static void 
-assertDiffTurn( ModelCtxt* model, XP_U16 XP_UNUSED(turn), 
-                const StackEntry* entry, void* closure )
+assertDiffTurn( ModelCtxt* model, XWEnv XP_UNUSED(xwe),
+                XP_U16 XP_UNUSED(turn), const StackEntry* entry,
+                void* closure )
 {
     if ( 1 < model->nPlayers && ! model->vol.gi->inDuplicateMode ) {
         DiffTurnState* state = (DiffTurnState*)closure;

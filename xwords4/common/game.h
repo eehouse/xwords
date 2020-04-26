@@ -92,7 +92,7 @@ XP_Bool game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
 
 void game_dispose( XWGame* game, XWEnv xwe );
 
-void game_getState( const XWGame* game, GameStateInfo* gsi );
+void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsServer( const XWGame* game );
 
 void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, 

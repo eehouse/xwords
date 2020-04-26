@@ -267,7 +267,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
                     dp->dsi.isRemote = !lp->isLocal;
                     XP_ASSERT( !isMissing || dp->dsi.isRemote );
                     if ( dp->dsi.isRemote && isMissing ) {
-                        dp->dsi.name = dutil_getUserString( board->dutil, STR_PENDING_PLAYER );
+                        dp->dsi.name = dutil_getUserString( board->dutil, xwe, STR_PENDING_PLAYER );
                     } else {
                         dp->dsi.name = emptyStringIfNull( lp->name );
                     }
@@ -351,7 +351,7 @@ void
 drawTimer( const BoardCtxt* board, XWEnv xwe )
 {
     if ( !!board->draw && board->gi->timerEnabled ) {
-        XP_S16 secondsLeft = server_getTimerSeconds( board->server,
+        XP_S16 secondsLeft = server_getTimerSeconds( board->server, xwe,
                                                      board->selPlayer );
         XP_Bool turnDone = board->gi->inDuplicateMode
             ? server_dupTurnDone( board->server, board->selPlayer )
@@ -409,20 +409,20 @@ figureScoreRectTapped( const BoardCtxt* board, XP_U16 xx, XP_U16 yy )
  */
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool
-handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool altDown )
+handlePenUpScore( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy, XP_Bool altDown )
 {
     XP_Bool result = XP_TRUE;
 
     XP_S16 rectNum = figureScoreRectTapped( board, xx, yy );
 
     if ( rectNum == CURSOR_LOC_REM ) {
-        util_remSelected( board->util );
+        util_remSelected( board->util, xwe );
     } else if ( --rectNum >= 0 ) {
         XP_Bool canSwitch = board->gameOver || board->allowPeek;
         if ( altDown || !canSwitch ) {
-            penTimerFiredScore( board );
+            penTimerFiredScore( board, xwe );
         } else {
-            board_selectPlayer( board, rectNum, XP_TRUE );
+            board_selectPlayer( board, xwe, rectNum, XP_TRUE );
         }
     } else {
         result = XP_FALSE;
@@ -432,7 +432,7 @@ handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool altDown )
 #endif
 
 void
-penTimerFiredScore( const BoardCtxt* board )
+penTimerFiredScore( const BoardCtxt* board, XWEnv xwe )
 {
     XP_S16 scoreIndex = figureScoreRectTapped( board, board->penDownX, 
                                                board->penDownY );
@@ -459,7 +459,7 @@ penTimerFiredScore( const BoardCtxt* board )
         }
         text = buf;
 #else
-        util_playerScoreHeld( board->util, player );
+        util_playerScoreHeld( board->util, xwe, player );
 #endif
     }
 

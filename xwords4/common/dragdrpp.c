@@ -30,8 +30,8 @@ extern "C" {
 # define SCROLL_DRAG_THRESHHOLD 1
 #endif
 
-static XP_Bool dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
-                                     BoardObjectType* onWhichP );
+static XP_Bool dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx,
+                                     XP_U16 yy, BoardObjectType* onWhichP );
 static void invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
                                const DragObjInfo* to );
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -49,7 +49,7 @@ static void crosshairs_clear( BoardCtxt* board );
 # define crosshairs_clear( board )
 #endif
 
-static void startScrollTimerIf( BoardCtxt* board );
+static void startScrollTimerIf( BoardCtxt* board, XWEnv xwe );
 
 XP_Bool
 dragDropInProgress( const BoardCtxt* board )
@@ -84,7 +84,7 @@ clearDS( DragState* ds )
 }
 
 static XP_Bool
-ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
+ddStartBoard( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy )
 {
     DragState* ds = &board->dragState;
     XP_Bool trayVisible;
@@ -128,7 +128,7 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 #ifdef XWFEATURE_SEARCHLIMIT
         } else if ( !board->gi->hintsNotAllowed && board->gi->allowHintRect
                     && trayVisible ) {
-            if ( !util_altKeyDown(board->util) ) {
+            if ( !util_altKeyDown(board->util, xwe) ) {
                 ds->dtype = DT_HINTRGN;
             } else if ( canScroll ) {
                 ds->dtype = DT_BOARD;
@@ -185,7 +185,7 @@ ddStartTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
  * tray.
  */
 XP_Bool
-dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
+dragDropStart( BoardCtxt* board, XWEnv xwe, BoardObjectType obj, XP_U16 xx, XP_U16 yy )
 {
     XP_Bool result = XP_FALSE;
     DragState* ds = &board->dragState;
@@ -197,9 +197,9 @@ dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
     ds->start.obj = obj;
 
     if ( OBJ_BOARD == obj ) {
-        result = ddStartBoard( board, x, y );
+        result = ddStartBoard( board, xwe, xx, yy );
     } else if ( OBJ_TRAY == obj ) {
-        result = ddStartTray( board, x, y );
+        result = ddStartTray( board, xx, yy );
     } else {
         XP_ASSERT(0);
     }
@@ -207,7 +207,7 @@ dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
     if ( result ) {
         ds->cur = ds->start;
         invalDragObj( board, &ds->start );
-        startScrollTimerIf( board );
+        startScrollTimerIf( board, xwe );
     }
 
     return result;
@@ -229,22 +229,22 @@ dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
  * just change it every time we can.
  */
 XP_Bool
-dragDropContinue( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
+dragDropContinue( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy )
 {
     XP_ASSERT( dragDropInProgress(board) );
 
-    return dragDropContinueImpl( board, xx, yy, NULL );
+    return dragDropContinueImpl( board, xwe, xx, yy, NULL );
 }
 
 XP_Bool
-dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* draggedP )
+dragDropEnd( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy, XP_Bool* draggedP )
 {
     DragState* ds = &board->dragState;
     BoardObjectType newObj;
 
     XP_ASSERT( dragDropInProgress(board) );
 
-    (void)dragDropContinueImpl( board, xx, yy, &newObj );
+    (void)dragDropContinueImpl( board, xwe, xx, yy, &newObj );
     if ( !!draggedP ) {
         *draggedP = ds->didMove;
     }
@@ -282,7 +282,7 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* draggedP )
 
         if ( newObj == OBJ_TRAY ) {
             if ( ds->start.obj == OBJ_BOARD ) { /* board->tray is pending */
-                model_moveBoardToTray( board->model, board->selPlayer, 
+                model_moveBoardToTray( board->model, xwe, board->selPlayer,
                                        mod_startc, mod_startr, 
                                        ds->cur.u.tray.index );
             } else {
@@ -295,14 +295,14 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* draggedP )
                                    ds->cur.u.board.row, XP_TRUE ) ) {
             if ( ds->start.obj == OBJ_TRAY ) {
                 /* moveTileToBoard flips its inputs */
-                (void)moveTileToBoard( board, ds->cur.u.board.col, 
+                (void)moveTileToBoard( board, xwe, ds->cur.u.board.col,
                                        ds->cur.u.board.row,
                                        ds->start.u.tray.index, EMPTY_TILE );
             } else if ( ds->start.obj == OBJ_BOARD ) {
                 XP_U16 mod_curc, mod_curr;
                 flipIf( board, ds->cur.u.board.col, ds->cur.u.board.row,
                         &mod_curc, &mod_curr );
-                if ( model_moveTileOnBoard( board->model, board->selPlayer, 
+                if ( model_moveTileOnBoard( board->model, xwe, board->selPlayer,
                                             mod_startc, mod_startr, mod_curc, 
                                             mod_curr ) ) {
                     /* inval points tile in case score changed */
@@ -329,7 +329,7 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* draggedP )
 
 #ifdef XWFEATURE_RAISETILE
 XP_Bool
-dragDropSetAdd( BoardCtxt* board )
+dragDropSetAdd( BoardCtxt* board, XWEnv xwe )
 {
     DragState* ds = &board->dragState;
     XP_Bool draw;
@@ -338,7 +338,7 @@ dragDropSetAdd( BoardCtxt* board )
     if ( draw ) {
         if ( draw ) {
             ds->yyAdd = (board->trayBounds.height * 2) / 3;
-            draw = dragDropContinueImpl( board, board->penDownX, 
+            draw = dragDropContinueImpl( board, xwe, board->penDownX,
                                          board->penDownY, NULL );
         }
     }
@@ -474,7 +474,7 @@ invalHintRectDiffs( BoardCtxt* board, const DragObjInfo* cur,
 #endif
 
 static XP_Bool
-dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
+dragDropContinueImpl( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
                       BoardObjectType* onWhichP )
 {
     XP_Bool moving = XP_FALSE;
@@ -532,7 +532,7 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
                 ds->cellChanged = XP_TRUE;
             }
             diff /= SCROLL_DRAG_THRESHHOLD;
-            moving = adjustYOffset( board, diff ) || moving;
+            moving = adjustYOffset( board, xwe, diff ) || moving;
         }
     } else if ( ds->dtype == DT_TILE ) {
         if ( newInfo.obj == OBJ_BOARD ) {
@@ -572,7 +572,7 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
             }
                 
             XP_MEMCPY( &ds->cur, &newInfo, sizeof(ds->cur) );
-            startScrollTimerIf( board );
+            startScrollTimerIf( board, xwe );
         }
     } else {
         XP_ASSERT( 0 );
@@ -651,10 +651,10 @@ scrollTimerProc( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
             if ( 0 != changeY ) {
                 ds->cur.u.board.row += (changeY >0 ? 1 : -1);
             }
-            if ( scrollIntoView( board, ds->cur.u.board.col, 
+            if ( scrollIntoView( board, xwe, ds->cur.u.board.col,
                                  ds->cur.u.board.row ) ) {
                 board_draw( board, xwe ); /* may fail, e.g. on wince */
-                startScrollTimerIf( board );
+                startScrollTimerIf( board, xwe );
                 draw = XP_TRUE;
             }
         }
@@ -663,7 +663,7 @@ scrollTimerProc( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(why) )
 } /* scrollTimerProc */
 
 static void
-startScrollTimerIf( BoardCtxt* board )
+startScrollTimerIf( BoardCtxt* board, XWEnv xwe )
 {
     DragState* ds = &board->dragState;
 
@@ -672,7 +672,7 @@ startScrollTimerIf( BoardCtxt* board )
         if ( onBorderCanScroll( board, SCROLL_H, ds->cur.u.board.col, &ignore )
              || onBorderCanScroll( board, SCROLL_V, ds->cur.u.board.row,
                                    &ignore ) ) {
-            util_setTimer( board->util, TIMER_PENDOWN, 0,
+            util_setTimer( board->util, xwe, TIMER_PENDOWN, 0,
                            scrollTimerProc, (void*) board );
             ds->scrollTimerSet = XP_TRUE;
         } else {

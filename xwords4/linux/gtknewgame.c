@@ -71,7 +71,7 @@ nplayers_menu_changed( GtkComboBox* combo, GtkNewGameState* state )
     gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
     if ( index >= 0 ) {
         NGValue value = { .ng_u16 = index + 1 };
-        newg_attrChanged( state->newGameCtxt, NG_ATTR_NPLAYERS, value );
+        newg_attrChanged( state->newGameCtxt, NULL_XWE, NG_ATTR_NPLAYERS, value );
     }
 } /* nplayers_menu_changed */
 
@@ -88,7 +88,7 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
         value.ng_role = role;
  
         if ( state->isNewGame ) {
-            newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
+            newg_attrChanged( state->newGameCtxt, NULL_XWE, NG_ATTR_ROLE, value );
         } else if ( state->loaded ) {
             /* put it back */
             gtk_combo_box_set_active( GTK_COMBO_BOX(combo), state->role );
@@ -243,7 +243,7 @@ on_timer_changed( GtkEditable *editable, gpointer data )
     XP_ASSERT( GTK_ENTRY(state->timerField) == GTK_ENTRY(editable) );
     gchar* text = gtk_editable_get_chars( editable, 0, -1 );
     NGValue value = { .ng_u16 = atoi(text) };
-    newg_attrChanged( state->newGameCtxt, NG_ATTR_TIMER, value );
+    newg_attrChanged( state->newGameCtxt, NULL_XWE, NG_ATTR_TIMER, value );
 }
 
 static void
@@ -264,7 +264,7 @@ static void
 handle_duplicate_toggled( GtkWidget* item, GtkNewGameState* state )
 {
     NGValue value = { .ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) ) };
-    newg_attrChanged( state->newGameCtxt, NG_ATTR_DUPLICATE, value );
+    newg_attrChanged( state->newGameCtxt, NULL_XWE, NG_ATTR_DUPLICATE, value );
 }
 
 static void
@@ -703,12 +703,12 @@ gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
 
         dialog = makeNewGameDialog( &state );
 
-        newg_load( state.newGameCtxt, gi );
+        newg_load( state.newGameCtxt, NULL_XWE, gi );
         state.loaded = XP_TRUE;
 
         gtk_main();
         if ( !state.cancelled && !state.revert ) {
-            if ( newg_store( state.newGameCtxt, gi, XP_TRUE ) ) {
+            if ( newg_store( state.newGameCtxt, NULL_XWE, gi, XP_TRUE ) ) {
                 gi->boardSize = state.nCols;
                 replaceStringIfDifferent( globals->cGlobals.util->mpool,
                                           &gi->dictName, state.dict );

@@ -192,7 +192,7 @@ void comms_reset( CommsCtxt* comms, XWEnv xwe, XP_Bool isServer,
 void comms_resetSame( CommsCtxt* comms, XWEnv xwe );
 void comms_transportFailed( CommsCtxt* comms, XWEnv xwe, CommsConnType failed );
 
-void comms_destroy( CommsCtxt* comms );
+void comms_destroy( CommsCtxt* comms, XWEnv xwe );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 
@@ -203,7 +203,7 @@ void comms_getInitialAddr( CommsAddrRec* addr
                            , XP_U16 relayPort
 #endif
  );
-XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,
+XP_Bool comms_checkAddr( XWEnv xwe, DeviceRole role, const CommsAddrRec* addr,
                          XW_UtilCtxt* util );
 
 void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );

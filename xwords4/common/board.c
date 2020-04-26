@@ -81,10 +81,10 @@ extern "C" {
 #endif
 
 /****************************** prototypes ******************************/
-static void figureBoardRect( BoardCtxt* board );
+static void figureBoardRect( BoardCtxt* board, XWEnv xwe );
 static void forceRectToBoard( const BoardCtxt* board, XP_Rect* rect );
 
-static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col, 
+static void boardCellChanged( XWEnv xwe, void* closure, XP_U16 turn, XP_U16 col,
                               XP_U16 row, XP_Bool added );
 static void boardTilesChanged( void* board, XP_U16 turn, XP_S16 index1, 
                                XP_S16 index2 );
@@ -92,9 +92,10 @@ static void dictChanged( void* p_board, XWEnv xwe, XP_S16 playerNum,
                          const DictionaryCtxt* oldDict, 
                          const DictionaryCtxt* newDict );
 
-static void boardTurnChanged( void* board );
-static void boardGameOver( void* board, XP_S16 quitter );
-static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col, XP_Bool* vp );
+static void boardTurnChanged( XWEnv xwe, void* closure );
+static void boardGameOver( XWEnv xwe, void* closure, XP_S16 quitter );
+static void setArrow( BoardCtxt* board, XWEnv xwe, XP_U16 row,
+                      XP_U16 col, XP_Bool* vp );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 static void board_setTimerLoc( BoardCtxt* board,
                                XP_U16 timerLeft, XP_U16 timerTop,
@@ -106,36 +107,37 @@ static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 #endif
 static XP_Bool invalCellsWithTiles( BoardCtxt* board );
 
-static void setTimerIf( BoardCtxt* board );
+static void setTimerIf( BoardCtxt* board, XWEnv xwe );
 
 static XP_Bool p_board_timerFired( void* closure, XWEnv xwe, XWTimerReason why );
 
-static XP_Bool replaceLastTile( BoardCtxt* board );
-static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
-static XP_Bool advanceArrow( BoardCtxt* board );
+static XP_Bool replaceLastTile( BoardCtxt* board, XWEnv xwe );
+static XP_Bool setTrayVisState( BoardCtxt* board, XWEnv xwe,
+                                XW_TrayVisState newState );
+static XP_Bool advanceArrow( BoardCtxt* board, XWEnv xwe );
 static XP_Bool exitTradeMode( BoardCtxt* board );
 
 static XP_Bool getArrow( const BoardCtxt* board, XP_U16* col, XP_U16* row );
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
-static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
+static XP_Bool board_moveArrow( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey );
 
 static XP_Bool board_setXOffset( BoardCtxt* board, XP_U16 offset );
-static XP_Bool preflight( BoardCtxt* board, XP_Bool reveal );
+static XP_Bool preflight( BoardCtxt* board, XWEnv xwe, XP_Bool reveal );
 static XP_U16 MIN_TRADE_TILES( const BoardCtxt* board );
 
 #ifdef KEY_SUPPORT
-static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
-                                   XP_Bool* gotArrow );
+static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XWEnv xwe,
+                                   XP_Key cursorKey, XP_Bool* gotArrow );
 static XP_S16 keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace );
 #endif
 
 #ifdef KEYBOARD_NAV
-static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
+static XP_Bool board_moveCursor( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey,
                                  XP_Bool preflightOnly, XP_Bool* up );
-static XP_Bool invalFocusOwner( BoardCtxt* board );
+static XP_Bool invalFocusOwner( BoardCtxt* board, XWEnv xwe );
 #else
-# define invalFocusOwner(board) 0
+# define invalFocusOwner(board, xwe) 0
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static void clearCurHintRect( BoardCtxt* board );
@@ -148,8 +150,8 @@ static void clearCurHintRect( BoardCtxt* board );
  *
  ****************************************************************************/
 BoardCtxt*
-board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw, 
-            XW_UtilCtxt* util )
+board_make( MPFORMAL XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
+            DrawCtx* draw, XW_UtilCtxt* util )
 {
     BoardCtxt* result = (BoardCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
     XP_ASSERT( !!server );
@@ -168,7 +170,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 
         result->draw = draw;
         result->util = util;
-        result->dutil = util_getDevUtilCtxt( util );
+        result->dutil = util_getDevUtilCtxt( util, xwe );
         result->gi = util->gameInfo;
         XP_ASSERT( !!result->gi );
 
@@ -194,16 +196,16 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 } /* board_make */
 
 void
-board_destroy( BoardCtxt* board, XP_Bool ownsUtil )
+board_destroy( BoardCtxt* board, XWEnv xwe, XP_Bool ownsUtil )
 {
     if ( ownsUtil ) {
-        util_clearTimer( board->util, TIMER_TIMERTICK );
+        util_clearTimer( board->util, xwe, TIMER_TIMERTICK );
     }
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
 BoardCtxt* 
-board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
+board_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
                       ServerCtxt* server, DrawCtx* draw, XW_UtilCtxt* util,
                       XP_U16 nPlayers )
 {
@@ -217,8 +219,8 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    board = board_make( MPPARM(mpool) model, server, draw, util );
-    board_setCallbacks( board );
+    board = board_make( MPPARM(mpool) xwe, model, server, draw, util );
+    board_setCallbacks( board, xwe );
 
     if ( version >= STREAM_VERS_4YOFFSET) {
         board->sd[SCROLL_H].offset = (XP_U16)stream_getBits( stream, 4 );
@@ -375,7 +377,7 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
 } /* board_writeToStream */
 
 void
-board_reset( BoardCtxt* board )
+board_reset( BoardCtxt* board, XWEnv xwe )
 {
     XP_U16 ii;
     XW_TrayVisState newState;
@@ -395,30 +397,30 @@ board_reset( BoardCtxt* board )
     board->star_row = (XP_U16)(model_numRows(board->model) / 2);
 
     newState = board->boardObscuresTray? TRAY_HIDDEN:TRAY_REVERSED;
-    setTrayVisState( board, newState );
+    setTrayVisState( board, xwe, newState );
 
     board_invalAll( board );
 
-    setTimerIf( board );
+    setTimerIf( board, xwe );
 } /* board_reset */
 
 void
 board_drawSnapshot( const BoardCtxt* curBoard, XWEnv xwe, DrawCtx* dctx,
                     XP_U16 width, XP_U16 height )
 {
-    BoardCtxt* newBoard = board_make( MPPARM(curBoard->mpool)
+    BoardCtxt* newBoard = board_make( MPPARM(curBoard->mpool) xwe,
                                       curBoard->model,
                                       curBoard->server, dctx, curBoard->util );
     board_setDraw( newBoard, xwe, dctx ); /* so draw_dictChanged() will get called */
     XP_U16 fontWidth = width / curBoard->gi->boardSize;
-    board_figureLayout( newBoard, curBoard->gi, 0, 0, width, height,
+    board_figureLayout( newBoard, xwe, curBoard->gi, 0, 0, width, height,
                         100, 0, 0, 0, fontWidth, width, XP_FALSE, NULL );
 
     newBoard->showColors = curBoard->showColors;
     newBoard->showGrid = curBoard->showGrid;
 
     board_draw( newBoard, xwe );
-    board_destroy( newBoard, XP_FALSE );
+    board_destroy( newBoard, xwe, XP_FALSE );
 }
 
 #ifdef COMMON_LAYOUT
@@ -454,7 +456,7 @@ printDims( const BoardDims* dimsp )
 // #define FORCE_SQUARE
 
 void
-board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
+board_figureLayout( BoardCtxt* board, XWEnv xwe, const CurGameInfo* gi,
                     XP_U16 bLeft, XP_U16 bTop,
                     XP_U16 bWidth, XP_U16 bHeight,
                     XP_U16 colPctMax, XP_U16 scorePct, XP_U16 trayPct,
@@ -607,15 +609,15 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     if ( !!dimsp ) {
         XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
     } else {
-        board_applyLayout( board, &ldims );
+        board_applyLayout( board, xwe, &ldims );
     }
 } /* board_figureLayout */
 
 void
-board_applyLayout( BoardCtxt* board, const BoardDims* dims )
+board_applyLayout( BoardCtxt* board, XWEnv xwe, const BoardDims* dims )
 {
     XP_U16 margin = (dims->width - dims->boardWidth) / 2;
-    board_setPos( board, dims->left + margin, dims->top + dims->scoreHt, 
+    board_setPos( board, xwe, dims->left + margin, dims->top + dims->scoreHt,
                   dims->boardWidth, dims->boardHt,
                   dims->maxCellSize, XP_FALSE );
 
@@ -625,13 +627,13 @@ board_applyLayout( BoardCtxt* board, const BoardDims* dims )
     board_setTimerLoc( board, dims->scoreLeft + dims->scoreWidth,
                        dims->top, dims->timerWidth, dims->scoreHt );
 
-    board_setTrayLoc( board, dims->trayLeft, dims->trayTop, 
+    board_setTrayLoc( board, xwe, dims->trayLeft, dims->trayTop,
                       dims->trayWidth, dims->trayHt );
 }
 #endif
 
 void
-board_setCallbacks( BoardCtxt* board )
+board_setCallbacks( BoardCtxt* board, XWEnv xwe )
 {
     model_setBoardListener( board->model, boardCellChanged, board );
     model_setTrayListener( board->model, boardTilesChanged, board );
@@ -639,11 +641,11 @@ board_setCallbacks( BoardCtxt* board )
     server_setTurnChangeListener( board->server, boardTurnChanged, board );
     server_setGameOverListener( board->server, boardGameOver, board );
 
-    setTimerIf( board );
+    setTimerIf( board, xwe );
 }
 
 void
-board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
+board_setPos( BoardCtxt* board, XWEnv xwe, XP_U16 left, XP_U16 top,
               XP_U16 width, XP_U16 height, XP_U16 maxCellSz,
               XP_Bool leftHanded )
 {
@@ -656,7 +658,7 @@ board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top,
     board->maxCellSz = maxCellSz;
     board->leftHanded = leftHanded;
 
-    figureBoardRect( board );
+    figureBoardRect( board, xwe );
 } /* board_setPos */
 
 static void
@@ -748,7 +750,7 @@ adjustXOffset( BoardCtxt* board, XP_S16 moveBy )
 } /* adjustXOffset */
 
 XP_Bool
-adjustYOffset( BoardCtxt* board, XP_S16 moveBy )
+adjustYOffset( BoardCtxt* board, XWEnv xwe, XP_S16 moveBy )
 {
     ScrollData* vsd = &board->sd[SCROLL_V];
     XP_U16 nVisible = vsd->lastVisible - vsd->offset + 1;
@@ -761,7 +763,7 @@ adjustYOffset( BoardCtxt* board, XP_S16 moveBy )
         newOffset = nRows - nVisible;
     }
 
-    return board_setYOffset( board, newOffset );
+    return board_setYOffset( board, xwe, newOffset );
 } /* adjustYOffset */
 
 static XP_Bool
@@ -779,7 +781,7 @@ board_setXOffset( BoardCtxt* board, XP_U16 offset )
 }
 
 XP_Bool
-board_setYOffset( BoardCtxt* board, XP_U16 offset )
+board_setYOffset( BoardCtxt* board, XWEnv xwe, XP_U16 offset )
 {
     ScrollData* vsd = &board->sd[SCROLL_V];
     XP_U16 oldOffset = vsd->offset;
@@ -793,8 +795,8 @@ board_setYOffset( BoardCtxt* board, XP_U16 offset )
         if ( result ) {
             invalSelTradeWindow( board );
             vsd->offset = offset;
-            figureBoardRect( board );
-            util_yOffsetChange( board->util, vsd->maxOffset,
+            figureBoardRect( board, xwe );
+            util_yOffsetChange( board->util, xwe, vsd->maxOffset,
                                 oldOffset, offset );
             invalSelTradeWindow( board );
             board->needsDrawing = XP_TRUE;
@@ -835,7 +837,7 @@ void
 board_unpause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
     server_unpause( board->server, xwe, board->selPlayer, msg );
-    setTimerIf( board );
+    setTimerIf( board, xwe );
     board_invalAll( board );
 }
 
@@ -855,9 +857,9 @@ board_canHideRack( const BoardCtxt* board )
 }
 
 XP_Bool
-board_canTrade( BoardCtxt* board )
+board_canTrade( BoardCtxt* board, XWEnv xwe )
 {
-    XP_Bool result = preflight( board, XP_FALSE )
+    XP_Bool result = preflight( board, xwe, XP_FALSE )
         && !board->gi->inDuplicateMode
         && MIN_TRADE_TILES(board) <= server_countTilesInPool( board->server );
     return result;
@@ -913,7 +915,7 @@ canZoomIn( const BoardCtxt* board, XP_S16 newCount )
 }
 
 XP_Bool
-board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut )
+board_zoom( BoardCtxt* board, XWEnv xwe, XP_S16 zoomBy, XP_Bool* canInOut )
 {
     XP_Bool changed;
     XP_S16 zoomCount = board->zoomCount;
@@ -949,7 +951,7 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut )
         vsd->offset = adjustOffset( vsd->offset, zoomBy );
 
         board->zoomCount = zoomCount;
-        figureBoardRect( board );
+        figureBoardRect( board, xwe );
         board_invalAll( board );
     }
 
@@ -1052,7 +1054,7 @@ saveBadWords( const WNParams* wnp, void* closure )
 } /* saveBadWords */
 
 static void
-boardNotifyTrade( BoardCtxt* board, const TrayTileSet* tiles )
+boardNotifyTrade( BoardCtxt* board, XWEnv xwe, const TrayTileSet* tiles )
 {
     const XP_UCHAR* tfaces[MAX_TRAY_TILES];
     XP_U16 ii;
@@ -1062,7 +1064,7 @@ boardNotifyTrade( BoardCtxt* board, const TrayTileSet* tiles )
         tfaces[ii] = dict_getTileString( dict, tiles->tiles[ii] );
     }
 
-    util_notifyTrade( board->util, tfaces, tiles->nTiles );
+    util_notifyTrade( board->util, xwe, tfaces, tiles->nTiles );
 }
 
 XP_Bool
@@ -1078,11 +1080,11 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
     } else if ( !server_isPlayersTurn( board->server, selPlayer ) ) {
-        util_userError( board->util, ERR_NOT_YOUR_TURN );
+        util_userError( board->util, xwe, ERR_NOT_YOUR_TURN );
     } else if ( 0 == model_getNumTilesTotal( model, selPlayer ) ) {
         /* game's over but still undoable so turn hasn't changed; do
            nothing */
-    } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board ) ) {
+    } else if ( phoniesConfirmed || turnConfirmed || checkRevealTray( board, xwe ) ) {
         PerTurnInfo* pti = board->pti + selPlayer;
         if ( pti->tradeInProgress ) {
             TileBit traySelBits = pti->traySelBits;
@@ -1094,14 +1096,14 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
                                  after */
 
             if ( NO_TILES == traySelBits ) {
-                util_userError( board->util, ERR_NO_EMPTY_TRADE );
+                util_userError( board->util, xwe, ERR_NO_EMPTY_TRADE );
             } else if ( count > server_countTilesInPool(board->server) ) {
-                util_userError( board->util, ERR_TOO_MANY_TRADE );
+                util_userError( board->util, xwe, ERR_TOO_MANY_TRADE );
             } else {
                 TrayTileSet selTiles;
                 getSelTiles( board, traySelBits, &selTiles );
                 if ( turnConfirmed ) {
-                    if ( !server_askPickTiles( board->server, selPlayer, newTiles,
+                    if ( !server_askPickTiles( board->server, xwe, selPlayer, newTiles,
                                                selTiles.nTiles ) ) {
                         /* server_commitTrade() changes selPlayer, so board_endTrade
                            must be called first() */
@@ -1111,7 +1113,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
                                                   newTiles );
                     }
                 } else {
-                    boardNotifyTrade( board, &selTiles );
+                    boardNotifyTrade( board, xwe, &selTiles );
                 }
             }
         } else {
@@ -1126,7 +1128,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
 
                 XP_U16 stringCode = board->gi->inDuplicateMode
                     ? STR_SUBMIT_CONFIRM : STR_COMMIT_CONFIRM;
-                const XP_UCHAR* str = dutil_getUserString( board->dutil, stringCode );
+                const XP_UCHAR* str = dutil_getUserString( board->dutil, xwe, stringCode );
                 stream_catString( stream, str );
 
                 XP_Bool warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
@@ -1142,20 +1144,20 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
             if ( 0 < bwl.bwi.nWords && !phoniesConfirmed ) {
                 bwl.bwi.dictName =
                     dict_getShortName( model_getPlayerDict( model, selPlayer ) );
-                util_notifyIllegalWords( board->util, &bwl.bwi, selPlayer, XP_FALSE );
+                util_notifyIllegalWords( board->util, xwe, &bwl.bwi, selPlayer, XP_FALSE );
             } else if ( legal ) {
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
                    passwords and peek at tiles. */
                 if ( !turnConfirmed
                      && gi_countLocalPlayers( board->gi, XP_TRUE ) > 1 ) {
-                    result = board_hideTray( board );
+                    result = board_hideTray( board, xwe );
                 }
 
                 if ( board->skipCommitConfirm || turnConfirmed ) {
                     XP_U16 nToPick = MAX_TRAY_TILES -
                         model_getNumTilesInTray( model, selPlayer );
-                    if ( !server_askPickTiles( board->server, selPlayer, newTiles,
+                    if ( !server_askPickTiles( board->server, xwe, selPlayer, newTiles,
                                                nToPick ) ) {
                         result = server_commitMove( board->server, xwe, selPlayer,
                                                     newTiles )
@@ -1169,7 +1171,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
                         pti->traySelBits = 0x00;
                     }
                 } else {
-                    util_notifyMove( board->util, stream );
+                    util_notifyMove( board->util, xwe, stream );
                 }
             }
 
@@ -1191,7 +1193,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
  * singletons that may have to be hidden or shown.
  */
 static void
-selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
+selectPlayerImpl( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer, XP_Bool reveal,
                   XP_Bool canPeek )
 {
     XP_Bool isLocal;
@@ -1200,14 +1202,14 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
         /* game not started yet; do nothing */
     } else if ( board->selPlayer == newPlayer ) {
         if ( reveal ) {
-            checkRevealTray( board );
+            checkRevealTray( board, xwe );
         }
     } else if ( canPeek || ((newPlayer == curTurn) && isLocal)) {
         PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
-        model_foreachPendingCell( board->model, newPlayer,
+        model_foreachPendingCell( board->model, xwe, newPlayer,
                                   boardCellChanged, board );
-        model_foreachPendingCell( board->model, oldPlayer,
+        model_foreachPendingCell( board->model, xwe, oldPlayer,
                                   boardCellChanged, board );
 
         /* if there are pending cells on one view and not the other, then the
@@ -1215,7 +1217,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
            and so needs to be invalidated so it'll get redrawn.*/
         if ( (0 == model_getCurrentMoveCount( board->model, newPlayer ))
              != (0 == model_getCurrentMoveCount( board->model, oldPlayer )) ) {
-            model_foreachPrevCell( board->model, boardCellChanged, board );
+            model_foreachPrevCell( board->model, xwe, boardCellChanged, board );
         }
 
         /* Just in case somebody started a trade when it wasn't his turn and
@@ -1245,16 +1247,16 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal,
         board_invalTrayTiles( board, ALLTILES );
         board->dividerInvalid = XP_TRUE;
 
-        setTrayVisState( board, TRAY_REVERSED );
+        setTrayVisState( board, xwe, TRAY_REVERSED );
     }
     board->scoreBoardInvalid = XP_TRUE; /* if only one player, number of
                                            tiles remaining may have changed*/
 } /* selectPlayerImpl */
 
 void
-board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer, XP_Bool canSwitch )
+board_selectPlayer( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer, XP_Bool canSwitch )
 {
-    selectPlayerImpl( board, newPlayer, XP_TRUE, canSwitch );
+    selectPlayerImpl( board, xwe, newPlayer, XP_TRUE, canSwitch );
 } /* board_selectPlayer */
 
 void
@@ -1358,9 +1360,9 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
                 listWords = model_listWordsThrough( board->model, xwe, modelCol, modelRow,
                                                     board->selPlayer, stream );
                 if ( listWords ) {
-                    util_cellSquareHeld( board->util, stream );
+                    util_cellSquareHeld( board->util, xwe, stream );
                     if ( dragDropInProgress( board ) ) {
-                        dragDropEnd( board, board->penDownX, board->penDownY, NULL );
+                        dragDropEnd( board, xwe, board->penDownX, board->penDownY, NULL );
                     }
                 }
                 stream_destroy( stream, xwe );
@@ -1368,20 +1370,20 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
 #endif
             if ( !listWords ) {
                 XWBonusType bonus;
-                bonus = model_getSquareBonus( board->model, col, row );
+                bonus = model_getSquareBonus( board->model, xwe, col, row );
                 if ( bonus != BONUS_NONE ) {
 #ifdef XWFEATURE_MINIWIN
                     text = draw_getMiniWText( board->draw,
                                               (XWMiniTextType)bonus );
 #else
-                    util_bonusSquareHeld( board->util, bonus );
+                    util_bonusSquareHeld( board->util, xwe, bonus );
 #endif
                 }
             }
             board->penTimerFired = XP_TRUE;
         }
     } else if ( board->penDownObject == OBJ_SCORE ) {
-        penTimerFiredScore( board );
+        penTimerFiredScore( board, xwe );
         board->penTimerFired = XP_TRUE;
     }
 
@@ -1403,14 +1405,14 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
 } /* timerFiredForPen */
 
 static void
-setTimerIf( BoardCtxt* board )
+setTimerIf( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool timerWanted = board->gi->timerEnabled
         && !board->gameOver
         && !server_canUnpause( board->server );
 
     if ( timerWanted && !board->timerPending ) {
-        util_setTimer( board->util, TIMER_TIMERTICK, 0, 
+        util_setTimer( board->util, xwe, TIMER_TIMERTICK, 0,
                        p_board_timerFired, board ); 
         board->timerPending = XP_TRUE;
     }
@@ -1435,7 +1437,7 @@ timerFiredForTimer( BoardCtxt* board, XWEnv xwe )
             drawTimer( board, xwe );
         }
     }
-    setTimerIf( board );
+    setTimerIf( board, xwe );
 } /* timerFiredForTimer */
 
 static XP_Bool
@@ -1466,11 +1468,11 @@ p_tray_timerFired( void* closure, XWEnv xwe, XWTimerReason why )
 #endif
 
 void
-board_pushTimerSave( BoardCtxt* board )
+board_pushTimerSave( BoardCtxt* board, XWEnv xwe )
 {
     if ( board->gi->timerEnabled ) {
         if ( board->timerSaveCount++ == 0 ) {
-            board->timerStoppedTime = dutil_getCurSeconds( board->dutil );
+            board->timerStoppedTime = dutil_getCurSeconds( board->dutil, xwe );
 #ifdef DEBUG
             board->timerStoppedTurn = server_getCurrentTurn( board->server,
                                                              NULL );
@@ -1480,7 +1482,7 @@ board_pushTimerSave( BoardCtxt* board )
 } /* board_pushTimerSave */
 
 void
-board_popTimerSave( BoardCtxt* board )
+board_popTimerSave( BoardCtxt* board, XWEnv xwe )
 {
     if ( board->gi->timerEnabled ) {
 
@@ -1493,7 +1495,7 @@ board_popTimerSave( BoardCtxt* board )
             XP_ASSERT( board->timerStoppedTurn == turn );
 
             if ( --board->timerSaveCount == 0 && turn >= 0 ) {
-                XP_U32 curTime = dutil_getCurSeconds( board->dutil );
+                XP_U32 curTime = dutil_getCurSeconds( board->dutil, xwe );
                 XP_U32 elapsed;
 
                 XP_ASSERT( board->timerStoppedTime != 0 );
@@ -1510,13 +1512,13 @@ board_popTimerSave( BoardCtxt* board )
  * server to format.
  */
 void
-board_formatRemainingTiles( BoardCtxt* board, XWStreamCtxt* stream )
+board_formatRemainingTiles( BoardCtxt* board, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_S16 curPlayer = board->selPlayer;
     if ( board->trayVisState != TRAY_REVEALED ) {
         curPlayer = -1;
     }
-    server_formatRemainingTiles( board->server, stream, curPlayer );
+    server_formatRemainingTiles( board->server, xwe, stream, curPlayer );
 } /* board_formatRemainingTiles */
 
 static void
@@ -1650,7 +1652,7 @@ figureOffset(const BoardCtxt* board, SDIndex indx, XP_U16 col )
 }
 
 XP_Bool
-scrollIntoView( BoardCtxt* board, XP_U16 col, XP_U16 row )
+scrollIntoView( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row )
 {
     XP_Bool moved;
     XP_S16 newOffset;
@@ -1659,7 +1661,7 @@ scrollIntoView( BoardCtxt* board, XP_U16 col, XP_U16 row )
     moved = adjustXOffset( board, newOffset );
 
     newOffset = figureOffset( board, SCROLL_V, row );
-    moved = adjustYOffset( board, newOffset ) || moved;
+    moved = adjustYOffset( board, xwe, newOffset ) || moved;
 
     return moved;
 } /* scrollIntoView */
@@ -1688,7 +1690,7 @@ onBorderCanScroll( const BoardCtxt* board, SDIndex indx,
 }
 
 void
-board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
+board_setTrayLoc( BoardCtxt* board, XWEnv xwe, XP_U16 trayLeft, XP_U16 trayTop,
                   XP_U16 trayWidth, XP_U16 trayHeight )
 {
     /* XP_LOGF( "%s(%d,%d,%d,%d)", __func__, trayLeft, trayTop,  */
@@ -1711,7 +1713,7 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
 
     board->dividerWidth = dividerWidth;
 
-    figureBoardRect( board );
+    figureBoardRect( board, xwe );
 } /* board_setTrayLoc */
 
 void
@@ -1857,7 +1859,7 @@ board_getActiveRect( const BoardCtxt* board, XP_Rect* rect,
  * be drawn with tiles face-up.
  */
 XP_Bool
-board_hideTray( BoardCtxt* board )
+board_hideTray( BoardCtxt* board, XWEnv xwe )
 {
     XW_TrayVisState soughtState;
     if ( board->boardObscuresTray ) {
@@ -1865,7 +1867,7 @@ board_hideTray( BoardCtxt* board )
     } else {
         soughtState = TRAY_REVERSED;
     }
-    return setTrayVisState( board, soughtState );
+    return setTrayVisState( board, xwe, soughtState );
 } /* board_hideTray */
 
 static XP_S16
@@ -1901,9 +1903,9 @@ chooseBestSelPlayer( BoardCtxt* board )
  * code should flag the error.
  */
 XP_Bool
-board_showTray( BoardCtxt* board )
+board_showTray( BoardCtxt* board, XWEnv xwe )
 {
-    return checkRevealTray( board );
+    return checkRevealTray( board, xwe );
 } /* board_showTray */
 
 static XP_Bool
@@ -1926,7 +1928,7 @@ board_getTrayVisState( const BoardCtxt* board )
 } /* board_getTrayVisible */
 
 static XP_Bool
-setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
+setTrayVisState( BoardCtxt* board, XWEnv xwe, XW_TrayVisState newState )
 {
     XP_Bool changed;
 
@@ -1943,10 +1945,10 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
 
         /* redraw cells that are pending; whether tile is visible may
            change */
-        model_foreachPendingCell( board->model, selPlayer,
+        model_foreachPendingCell( board->model, xwe, selPlayer,
                                   boardCellChanged, board );
         /* ditto -- if there's a pending move */
-        model_foreachPrevCell( board->model, boardCellChanged, board );
+        model_foreachPrevCell( board->model, xwe, boardCellChanged, board );
 
         board_invalTrayTiles( board, ALLTILES );
         board->dividerInvalid = XP_TRUE;
@@ -1954,18 +1956,18 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
         board->trayVisState = newState;
 
         invalSelTradeWindow( board );
-        (void)invalFocusOwner( board ); /* must be done before and after rect
+        (void)invalFocusOwner( board, xwe ); /* must be done before and after rect
                                            recalculated */
-        figureBoardRect( board ); /* comes before setYOffset since that
+        figureBoardRect( board, xwe ); /* comes before setYOffset since that
                                      uses rects to calc scroll */
-        (void)invalFocusOwner( board );
+        (void)invalFocusOwner( board, xwe );
 
         if ( board->boardObscuresTray ) {
             if ( nowHidden && !trayOnTop(board) ) { 
                 board->preHideYOffset = board_getYOffset( board );
-                board_setYOffset( board, 0 );
+                board_setYOffset( board, xwe, 0 );
             } else {
-                board_setYOffset( board, board->preHideYOffset );
+                board_setYOffset( board, xwe, board->preHideYOffset );
             }
         }
 
@@ -1983,7 +1985,7 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
 #endif
 
         nVisible = vsd->lastVisible - vsd->offset + 1;
-        util_trayHiddenChange( board->util, board->trayVisState, nVisible );
+        util_trayHiddenChange( board->util, xwe, board->trayVisState, nVisible );
     }
     return changed;
 } /* setTrayVisState */
@@ -2081,10 +2083,10 @@ board_toggle_showValues( BoardCtxt* board )
 } /* board_toggle_showValues */
 
 XP_Bool
-board_replaceNTiles( BoardCtxt* board, XP_U16 nTiles )
+board_replaceNTiles( BoardCtxt* board, XWEnv xwe, XP_U16 nTiles )
 {
     XP_Bool result = XP_FALSE;
-    while ( 0 < nTiles-- && replaceLastTile( board ) ) {
+    while ( 0 < nTiles-- && replaceLastTile( board, xwe ) ) {
         result = XP_TRUE;
     } 
 
@@ -2092,25 +2094,25 @@ board_replaceNTiles( BoardCtxt* board, XP_U16 nTiles )
 }
 
 XP_Bool
-board_replaceTiles( BoardCtxt* board )
+board_replaceTiles( BoardCtxt* board, XWEnv xwe )
 {
-    return board_replaceNTiles( board, MAX_TRAY_TILES );
+    return board_replaceNTiles( board, xwe, MAX_TRAY_TILES );
 } /* board_replaceTiles */
 
 XP_Bool
-board_redoReplacedTiles( BoardCtxt* board )
+board_redoReplacedTiles( BoardCtxt* board, XWEnv xwe )
 {
-    return model_redoPendingTiles( board->model, board->selPlayer );
+    return model_redoPendingTiles( board->model, xwe, board->selPlayer );
 }
 
 /* There are a few conditions that must be true for any of several actions
    to be allowed.  Check them here.  */
 static XP_Bool
-preflight( BoardCtxt* board, XP_Bool reveal )
+preflight( BoardCtxt* board, XWEnv xwe, XP_Bool reveal )
 {
     return !board->gameOver
         && server_getCurrentTurn( board->server, NULL) >= 0
-        && ( !reveal || checkRevealTray( board ) )
+        && ( !reveal || checkRevealTray( board, xwe ) )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
 
@@ -2140,7 +2142,7 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
     *workRemainsP = XP_FALSE; /* in case we exit without calling engine */
 
     if ( board->gi->hintsNotAllowed ) {
-        util_userError( board->util, ERR_CANT_HINT_WHILE_DISABLED );
+        util_userError( board->util, xwe, ERR_CANT_HINT_WHILE_DISABLED );
     } else {
         MoveInfo newMove;
         XP_S16 nTiles;
@@ -2155,13 +2157,13 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
         ModelCtxt* model = board->model;
         XP_U16 dividerLoc = model_getDividerLoc( model, selPlayer );
 
-        if ( !!engine && preflight( board, XP_TRUE ) ) {
+        if ( !!engine && preflight( board, xwe, XP_TRUE ) ) {
 
             /* undo any current move.  otherwise we won't pass the full tray
                to the engine.  Would it be better, though, to pass the whole
                tray regardless where its contents are? */
             if ( model_getCurrentMoveCount( model, selPlayer ) > 0 ) {
-                model_resetCurrentTurn( model, selPlayer );
+                model_resetCurrentTurn( model, xwe, selPlayer );
                 /* Draw's a no-op on Wince with a null hdc, but it'll draw again.
                    Should probably define OS_INITS_DRAW on Wince...*/
 #ifdef OS_INITS_DRAW
@@ -2189,11 +2191,11 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
 
             wasVisible = setArrowVisible( board, XP_FALSE );
 
-            (void)board_replaceTiles( board );
+            (void)board_replaceTiles( board, xwe );
 
             tiles = tileSet->tiles + dividerLoc;
 
-            board_pushTimerSave( board );
+            board_pushTimerSave( board, xwe );
 
 #ifdef XWFEATURE_SEARCHLIMIT
             XP_ASSERT( board->gi->allowHintRect || !pti->hasHintRect );
@@ -2215,8 +2217,8 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
 # endif
 #endif
             searchComplete = 
-                engine_findMove( engine, model, selPlayer, XP_FALSE, XP_FALSE,
-                                 tiles, nTiles, usePrev,
+                engine_findMove( engine, xwe, model, selPlayer,
+                                 XP_FALSE, XP_FALSE, tiles, nTiles, usePrev,
 #ifdef XWFEATURE_BONUSALL
                                  allTilesBonus, 
 #endif
@@ -2225,12 +2227,12 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
 #endif
                                  0, /* 0: not a robot */
                                  &canMove, &newMove, NULL );
-            board_popTimerSave( board );
+            board_popTimerSave( board, xwe );
 
             if ( searchComplete && canMove ) {
                 // assertTilesInTiles( board, &newMove, tiles, nTiles );
                 juggleMoveIfDebug( &newMove );
-                model_makeTurnFromMoveInfo( model, selPlayer, &newMove );
+                model_makeTurnFromMoveInfo( model, xwe, selPlayer, &newMove );
             } else {
                 result = XP_FALSE;
                 XP_STATUSF( "unable to complete hint request\n" );
@@ -2250,7 +2252,7 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
         }
 
         if ( !canMove ) {
-            util_userError( board->util, ERR_NO_HINT_FOUND );
+            util_userError( board->util, xwe, ERR_NO_HINT_FOUND );
         }
     }
     return result || redraw;
@@ -2322,7 +2324,7 @@ figureScales( BoardCtxt* board, XP_U16* scaleHP, XP_U16* scaleVP )
 } /* figureScales */
 
 static void
-figureBoardRect( BoardCtxt* board )
+figureBoardRect( BoardCtxt* board, XWEnv xwe )
 {
     if ( board->boardBounds.width > 0 && board->trayBounds.width > 0 ) {
         XP_Rect boardBounds = board->boardBounds;
@@ -2378,7 +2380,7 @@ figureBoardRect( BoardCtxt* board )
             board->boardObscuresTray = board->trayBounds.top < wantHeight
                 && board->trayBounds.left < (boardBounds.left + boardBounds.width);
         }
-        util_yOffsetChange( board->util, nRows - nVisible, oldYOffset, 
+        util_yOffsetChange( board->util, xwe, nRows - nVisible, oldYOffset,
                             vsd->offset );
 
         vsd->lastVisible = nVisible + vsd->offset - 1;
@@ -2533,15 +2535,15 @@ pointOnSomething( const BoardCtxt* board, XP_U16 xx, XP_U16 yy,
  * what to call it first.
  */
 XP_Bool
-moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
+moveTileToArrowLoc( BoardCtxt* board, XWEnv xwe, XP_U8 index )
 {
     XP_Bool result;
     BoardArrow* arrow = &board->selInfo->boardArrow;
     if ( arrow->visible ) {
-        result = moveTileToBoard( board, arrow->col, arrow->row,
+        result = moveTileToBoard( board, xwe, arrow->col, arrow->row,
                                   (XP_U16)index, EMPTY_TILE );
         if ( result ) {
-            XP_Bool moved = advanceArrow( board );
+            XP_Bool moved = advanceArrow( board, xwe );
             if ( !moved ) {
                 /* If the arrow didn't move, we can't leave it in place or
                    it'll get drawn over the new tile. */
@@ -2573,17 +2575,17 @@ makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text,
 #endif
 
 XP_Bool
-board_beginTrade( BoardCtxt* board )
+board_beginTrade( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool result;
 
-    result = preflight( board, XP_TRUE );
+    result = preflight( board, xwe, XP_TRUE );
     if ( result ) {
         XP_S16 tilesLeft = server_countTilesInPool(board->server);
         if ( tilesLeft < MIN_TRADE_TILES( board ) ) {
-            util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
+            util_userError( board->util, xwe, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
-            model_resetCurrentTurn( board->model, board->selPlayer );
+            model_resetCurrentTurn( board->model, xwe, board->selPlayer );
             XP_ASSERT( 0 == model_getCurrentMoveCount( board->model, 
                                                        board->selPlayer ) );
 #ifdef XWFEATURE_MINIWIN
@@ -2679,18 +2681,18 @@ clearCurHintRect( BoardCtxt* board )
 #endif /* XWFEATURE_SEARCHLIMIT */
 
 static XP_Bool
-handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
+handlePenDownOnBoard( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy )
 {
     XP_Bool result = XP_FALSE;
 
     if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, xx, yy ) ) {
         /* do nothing */
     } else {
-        util_setTimer( board->util, TIMER_PENDOWN, 0, 
+        util_setTimer( board->util, xwe, TIMER_PENDOWN, 0,
                        p_board_timerFired, board );
 
         if ( !board->selInfo->tradeInProgress ) {
-            result = dragDropStart( board, OBJ_BOARD, xx, yy );
+            result = dragDropStart( board, xwe, OBJ_BOARD, xx, yy );
         }
     }
 
@@ -2703,7 +2705,7 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
  * the password compare.
  */
 static XP_Bool
-askRevealTray( BoardCtxt* board )
+askRevealTray( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool revealed = XP_FALSE;
     XP_Bool reversed = board->trayVisState == TRAY_REVERSED;
@@ -2717,11 +2719,11 @@ askRevealTray( BoardCtxt* board )
         revealed = XP_FALSE;
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( !lp->isLocal ) {
-        util_userError( board->util, ERR_NO_PEEK_REMOTE_TILES );
+        util_userError( board->util, xwe, ERR_NO_PEEK_REMOTE_TILES );
 #endif
     } else if ( LP_IS_ROBOT(lp) ) {
         if ( reversed ) {
-            util_userError( board->util, ERR_NO_PEEK_ROBOT_TILES );
+            util_userError( board->util, xwe, ERR_NO_PEEK_ROBOT_TILES );
         } else {
             justReverse = XP_TRUE;
         }
@@ -2729,65 +2731,67 @@ askRevealTray( BoardCtxt* board )
         revealed = !player_hasPasswd( lp );
 
         if ( !revealed ) {
-            util_informNeedPassword( board->util, selPlayer, lp->name );
+            util_informNeedPassword( board->util, xwe, selPlayer, lp->name );
         }
     }
 
     if ( revealed ) {
-        setTrayVisState( board, TRAY_REVEALED );
+        setTrayVisState( board, xwe, TRAY_REVEALED );
     } else if ( justReverse ) {
-        setTrayVisState( board, TRAY_REVERSED );
+        setTrayVisState( board, xwe, TRAY_REVERSED );
     }
     return justReverse || revealed;
 } /* askRevealTray */
 
 XP_Bool
-board_passwordProvided( BoardCtxt* board, XP_U16 player, const XP_UCHAR* passwd )
+board_passwordProvided( BoardCtxt* board, XWEnv xwe, XP_U16 player,
+                        const XP_UCHAR* passwd )
 {
     LocalPlayer* lp = &board->gi->players[player];
     XP_Bool draw = player_passwordMatches( lp, passwd );
     if ( draw ) {
-        setTrayVisState( board, TRAY_REVEALED );
+        setTrayVisState( board, xwe, TRAY_REVEALED );
     } else {
-        util_informNeedPassword( board->util, player, lp->name );
+        util_informNeedPassword( board->util, xwe, player, lp->name );
     }
     return draw;
 }
 
 XP_Bool
-checkRevealTray( BoardCtxt* board )
+checkRevealTray( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool result = board->trayVisState == TRAY_REVEALED;
     if ( !result ) {
-        result = askRevealTray( board );
+        result = askRevealTray( board, xwe );
     }
     return result;
 } /* checkRevealTray */
 
 static XP_Bool
-handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
+handleLikeDown( BoardCtxt* board, XWEnv xwe, BoardObjectType onWhich,
+                XP_U16 xx, XP_U16 yy )
 {
     XP_Bool result = XP_FALSE;
 
     switch ( onWhich ) {
     case OBJ_BOARD:
-        result = handlePenDownOnBoard( board, x, y ) || result;
+        result = handlePenDownOnBoard( board, xwe, xx, yy ) || result;
         break;
 
     case OBJ_TRAY:
       if ( (board->trayVisState == TRAY_REVEALED)
            && !board->selInfo->tradeInProgress ) {
 #ifdef XWFEATURE_RAISETILE
-          util_setTimer( board->util, TIMER_PENDOWN, 0, 
+          util_setTimer( board->util, xwe, TIMER_PENDOWN, 0,
                          p_tray_timerFired, board );
 #endif
-          result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
+          result = dragDropStart( board, xwe, OBJ_TRAY, xx, yy ) || result;
         }
         break;
 
     case OBJ_SCORE:
-        if ( figureScoreRectTapped( board, x, y ) > CURSOR_LOC_REM ) {
-            util_setTimer( board->util, TIMER_PENDOWN, 0, 
+        if ( figureScoreRectTapped( board, xx, yy ) > CURSOR_LOC_REM ) {
+            util_setTimer( board->util, xwe, TIMER_PENDOWN, 0,
                            p_board_timerFired, board );
         }
         break;
@@ -2795,8 +2799,8 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
         break;
     }
 
-    board->penDownX = x;
-    board->penDownY = y;
+    board->penDownX = xx;
+    board->penDownY = yy;
     board->penDownObject = onWhich;
 
     return result;
@@ -2804,7 +2808,8 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
 
 #ifdef POINTER_SUPPORT
 XP_Bool
-board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
+board_handlePenDown( BoardCtxt* board, XWEnv xwe, XP_U16 xx,
+                     XP_U16 yy, XP_Bool* handled )
 {
     XP_Bool result = XP_FALSE;
     XP_Bool penDidSomething;
@@ -2812,7 +2817,7 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
 
     board->srcIsPen = XP_TRUE; 
 
-    penDidSomething = pointOnSomething( board, x, y, &onWhich );
+    penDidSomething = pointOnSomething( board, xx, yy, &onWhich );
 
     if ( !penDidSomething ) {
         board->penDownObject = OBJ_NONE;
@@ -2820,14 +2825,14 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
 
 #ifdef KEYBOARD_NAV
         /* clear focus as soon as pen touches board */
-        result = invalFocusOwner( board );
+        result = invalFocusOwner( board, xwe );
         board->hideFocus = XP_TRUE;
         if ( board->boardObscuresTray ) {
-            figureBoardRect( board );
+            figureBoardRect( board, xwe );
         }
 #endif
 
-        result = handleLikeDown( board, onWhich, x, y ) || result;
+        result = handleLikeDown( board, xwe, onWhich, xx, yy ) || result;
     }
     *handled = penDidSomething;
 
@@ -2836,10 +2841,10 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
 #endif
 
 XP_Bool
-board_handlePenMove( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
+board_handlePenMove( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy )
 {
     XP_Bool result = dragDropInProgress(board)
-        && dragDropContinue( board, xx, yy );
+        && dragDropContinue( board, xwe, xx, yy );
     return result;
 } /* board_handlePenMove */
 
@@ -2933,7 +2938,7 @@ tryMoveArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
 } /* tryMoveArrow */
 
 static XP_Bool
-tryChangeBlank( const BoardCtxt* board, XP_U16 col, XP_U16 row )
+tryChangeBlank( const BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row )
 {
     XP_Bool handled = XP_FALSE;
     XP_Bool isBlank, isPending;
@@ -2941,7 +2946,8 @@ tryChangeBlank( const BoardCtxt* board, XP_U16 col, XP_U16 row )
                    &isBlank, &isPending, NULL );
     handled = isBlank && isPending;
     if ( handled ) {
-        (void)model_askBlankTile( board->model, board->selPlayer, col, row );
+        (void)model_askBlankTile( board->model, xwe, board->selPlayer,
+                                  col, row );
     }
 
     return handled;
@@ -2966,7 +2972,7 @@ holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
  * too easy to accidentally tap and there are better ways.
  */
 static XP_Bool
-tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
+tryReplaceTile( BoardCtxt* board, XWEnv xwe, XP_U16 pencol, XP_U16 penrow )
 {
     XP_Bool result = XP_FALSE;
 
@@ -2974,9 +2980,9 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
         XP_U16 modcol, modrow;
         flipIf( board, pencol, penrow, &modcol, &modrow );
 
-        model_moveBoardToTray( board->model, board->selPlayer, 
+        model_moveBoardToTray( board->model, xwe, board->selPlayer,
                                modcol, modrow, -1 );
-        setArrow( board, pencol, penrow, NULL );
+        setArrow( board, xwe, pencol, penrow, NULL );
         result = XP_TRUE;
 
     }
@@ -2984,15 +2990,15 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 } /* tryReplaceTile */
 
 static XP_Bool
-handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool isPen )
+handleActionInCell( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row, XP_Bool isPen )
 {
     return XP_FALSE
 #ifndef DISABLE_TILE_SEL
         || moveSelTileToBoardXY( board, col, row )
 #endif
         || tryMoveArrow( board, col, row )
-        || tryChangeBlank( board, col, row )
-        || (!isPen && tryReplaceTile( board, col, row ))
+        || tryChangeBlank( board, xwe, col, row )
+        || (!isPen && tryReplaceTile( board, xwe, col, row ))
         ;
 } /* handleActionInCell */
 #endif /* POINTER_SUPPORT || KEYBOARD_NAV */
@@ -3037,7 +3043,7 @@ handlePenUpInternal( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
 
     XP_Bool dragged = XP_FALSE;
     if ( dragDropInProgress(board) ) {
-        draw = dragDropEnd( board, xx, yy, &dragged );
+        draw = dragDropEnd( board, xwe, xx, yy, &dragged );
     }
     if ( dragged ) {
         /* do nothing further */
@@ -3057,11 +3063,12 @@ handlePenUpInternal( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
             switch( onWhich ) {
             case OBJ_SCORE:
                 if ( prevObj == OBJ_SCORE ) {
-                    draw = handlePenUpScore( board, xx, yy, altDown ) || draw;
+                    draw = handlePenUpScore( board, xwe, xx,
+                                             yy, altDown ) || draw;
                 }
                 break;
             case OBJ_BOARD:
-                if ( prevObj == OBJ_BOARD && checkRevealTray(board) ) {
+                if ( prevObj == OBJ_BOARD && checkRevealTray( board, xwe ) ) {
 
                     if ( TRADE_IN_PROGRESS(board) ) {
                         if ( ptOnTradeWindow( board, xx, yy )) {
@@ -3071,7 +3078,7 @@ handlePenUpInternal( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
                         XP_U16 col, row;
                         coordToCell( board, xx, yy, &col, &row );
                         if ( !penMoved( board, col, row ) ) {
-                            draw = handleActionInCell( board, col, row, 
+                            draw = handleActionInCell( board, xwe, col, row,
                                                        isPen ) || draw;
                         }
                     }
@@ -3079,13 +3086,13 @@ handlePenUpInternal( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
                 break;
             case OBJ_TRAY:
                 if ( board->trayVisState != TRAY_REVEALED ) {
-                    draw = askRevealTray( board ) || draw;
+                    draw = askRevealTray( board, xwe ) || draw;
                 } else {
                     draw = handlePenUpTray( board, xwe, xx, yy ) || draw;
                 }
                 break;
             case OBJ_TIMER:
-                util_timerSelected( board->util, board->gi->inDuplicateMode,
+                util_timerSelected( board->util, xwe, board->gi->inDuplicateMode,
                                     server_canPause( board->server ) );
                 break;
             default:
@@ -3176,14 +3183,14 @@ focusToCoords( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
  * chance not to generate a keyUp event at all.
  */
 static XP_Bool
-handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
+handleFocusKeyUp( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool preflightOnly,
                   XP_Bool* pHandled )
 {
     XP_Bool redraw = XP_FALSE;
     if ( board->focusHasDived ) {
         XP_Bool up = XP_FALSE;
         if ( board->focussed == OBJ_BOARD ) {
-            redraw = board_moveCursor( board, key, preflightOnly, &up );
+            redraw = board_moveCursor( board, xwe, key, preflightOnly, &up );
         } else if ( board->focussed == OBJ_SCORE ) {
             redraw = moveScoreCursor( board, key, preflightOnly, &up );
         } else if ( board->focussed == OBJ_TRAY/* && checkRevealTray(board)*/ ) {
@@ -3191,9 +3198,9 @@ handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
         }
         if ( up ) {
             if ( !preflightOnly ) {
-                (void)invalFocusOwner( board );
+                (void)invalFocusOwner( board, xwe );
                 board->focusHasDived = XP_FALSE;
-                (void)invalFocusOwner( board );
+                (void)invalFocusOwner( board, xwe );
             }
         } else {
             *pHandled = redraw;
@@ -3216,19 +3223,19 @@ board_handleKeyRepeat( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled
     } else {
         XP_Bool upHandled, downHandled;
         draw = board_handleKeyUp( board, xwe, key, &upHandled );
-        draw = board_handleKeyDown( board, key, &downHandled ) || draw;
+        draw = board_handleKeyDown( board, xwe, key, &downHandled ) || draw;
         *handled = upHandled || downHandled;
     }
     return draw;
 }
 
 static XP_Bool
-unhideFocus( BoardCtxt* board )
+unhideFocus( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool changing = board->hideFocus;
     if ( changing ) {
         board->hideFocus = XP_FALSE;
-        (void)invalFocusOwner( board );
+        (void)invalFocusOwner( board, xwe );
     }
     return changing;
 }
@@ -3236,8 +3243,8 @@ unhideFocus( BoardCtxt* board )
 
 #ifdef KEY_SUPPORT
 XP_Bool
-board_handleKeyDown( BoardCtxt* XP_UNUSED_KEYBOARD_NAV(board), 
-                     XP_Key XP_UNUSED_KEYBOARD_NAV(key),
+board_handleKeyDown( BoardCtxt* XP_UNUSED_KEYBOARD_NAV(board),
+                     XWEnv xwe, XP_Key XP_UNUSED_KEYBOARD_NAV(key),
                      XP_Bool* XP_UNUSED_KEYBOARD_NAV(pHandled) )
 {
     XP_Bool draw = XP_FALSE;
@@ -3250,14 +3257,14 @@ board_handleKeyDown( BoardCtxt* XP_UNUSED_KEYBOARD_NAV(board),
 
     if ( key == XP_RETURN_KEY || key == XP_ALTRETURN_KEY ) {
         if ( focusToCoords( board, &xx, &yy ) ) {
-            draw = handleLikeDown( board, board->focussed, xx, yy );
+            draw = handleLikeDown( board, xwe, board->focussed, xx, yy );
             *pHandled = draw;
         }
     } else if ( board->focussed != OBJ_NONE ) {
         if ( board->focusHasDived && (key == XP_RAISEFOCUS_KEY) ) {
             *pHandled = XP_TRUE;
         } else {
-            draw = handleFocusKeyUp( board, key, XP_TRUE, pHandled ) || draw;
+            draw = handleFocusKeyUp( board, xwe, key, XP_TRUE, pHandled ) || draw;
         }
     }
 #endif
@@ -3282,28 +3289,28 @@ board_handleKeyUp( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* pHandled )
     case XP_CURSOR_KEY_RIGHT:
     case XP_CURSOR_KEY_ALTRIGHT:
         /* If focus is hidden, all we do is show it */
-        if ( unhideFocus( board ) ) {
+        if ( unhideFocus( board, xwe ) ) {
             redraw = handled = XP_TRUE;
         } else {
-            redraw = handleFocusKeyUp( board, key, XP_FALSE, &handled );
+            redraw = handleFocusKeyUp( board, xwe, key, XP_FALSE, &handled );
         }
         break;
 #endif
 
     case XP_CURSOR_KEY_DEL:
         if ( trayVisible ) {
-            handled = redraw = replaceLastTile( board );
+            handled = redraw = replaceLastTile( board, xwe );
         }
         break;
 
 #ifdef KEYBOARD_NAV
     case XP_RAISEFOCUS_KEY:
-        if ( unhideFocus( board ) ) {
+        if ( unhideFocus( board, xwe ) ) {
             /* do nothing */
         } else if ( board->focussed != OBJ_NONE && board->focusHasDived ) {
-            (void)invalFocusOwner( board );
+            (void)invalFocusOwner( board, xwe );
             board->focusHasDived = XP_FALSE;
-            (void)invalFocusOwner( board );
+            (void)invalFocusOwner( board, xwe );
         } else {
             break;              /* skip setting handled */
         }
@@ -3313,7 +3320,7 @@ board_handleKeyUp( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* pHandled )
     case XP_RETURN_KEY:
     case XP_ALTRETURN_KEY: {
         XP_Bool altDown = XP_ALTRETURN_KEY == key;
-        if ( unhideFocus( board ) ) {
+        if ( unhideFocus( board, xwe ) ) {
             handled = XP_TRUE;
         } else if ( board->focussed != OBJ_NONE ) {
             if ( board->focusHasDived ) {
@@ -3323,9 +3330,9 @@ board_handleKeyUp( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* pHandled )
                     handled = XP_TRUE;
                 }
             } else {
-                (void)invalFocusOwner( board );
+                (void)invalFocusOwner( board, xwe );
                 board->focusHasDived = XP_TRUE;
-                redraw = invalFocusOwner( board );
+                redraw = invalFocusOwner( board, xwe );
                 handled = XP_TRUE;
             }
         }
@@ -3343,8 +3350,8 @@ board_handleKeyUp( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* pHandled )
                     && handleTrayDuringTrade( board, tileIndex );
             } else {
                 XP_Bool gotArrow;
-                handled = moveKeyTileToBoard( board, key, &gotArrow );
-                if ( handled && gotArrow && !advanceArrow( board ) ) {
+                handled = moveKeyTileToBoard( board, xwe, key, &gotArrow );
+                if ( handled && gotArrow && !advanceArrow( board, xwe ) ) {
                     setArrowVisible( board, XP_FALSE );
                 }
             }
@@ -3365,7 +3372,7 @@ board_handleKey( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled )
     XP_Bool handled2;
     XP_Bool draw;
 
-    draw = board_handleKeyDown( board, key, &handled1 );
+    draw = board_handleKeyDown( board, xwe, key, &handled1 );
     draw = board_handleKeyUp( board, xwe, key, &handled2 ) || draw;
     if ( !!handled ) {
         *handled = handled1 || handled2;
@@ -3377,7 +3384,7 @@ board_handleKey( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled )
 
 #ifdef KEYBOARD_NAV
 static XP_Bool
-invalFocusOwner( BoardCtxt* board )
+invalFocusOwner( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool draw = XP_TRUE;
     PerTurnInfo* pti = board->selInfo;
@@ -3389,7 +3396,7 @@ invalFocusOwner( BoardCtxt* board )
         if ( board->focusHasDived ) {
             BdCursorLoc loc = pti->bdCursor;
             invalCell( board, loc.col, loc.row );
-            scrollIntoView( board, loc.col, loc.row );
+            scrollIntoView( board, xwe, loc.col, loc.row );
         } else {
 #ifdef PERIMETER_FOCUS
             invalPerimeter( board );
@@ -3423,7 +3430,8 @@ invalFocusOwner( BoardCtxt* board )
 } /* invalFocusOwner */
 
 XP_Bool
-board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
+board_focusChanged( BoardCtxt* board, XWEnv xwe,
+                    BoardObjectType typ, XP_Bool gained )
 {
     XP_Bool draw = XP_FALSE;
     /* Called when there's been a decision to advance the focus to a new
@@ -3452,38 +3460,38 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
         /* prefer to get !gained followed by gained.  If caller doesn't do
            that, do it for 'em. */
         if ( board->focussed != OBJ_NONE ) {
-            draw = board_focusChanged( board, board->focussed, XP_FALSE );
+            draw = board_focusChanged( board, xwe, board->focussed, XP_FALSE );
         }
 
         /* Are we losing focus we currently have elsewhere? */
         if ( typ != board->focussed ) {
-            draw = invalFocusOwner( board ) || draw;
+            draw = invalFocusOwner( board, xwe ) || draw;
         }
         board->focussed = typ;
         board->focusHasDived = XP_FALSE;
         if ( OBJ_TRAY == typ) {
             board->trayHiddenPreFocus = board->trayVisState == TRAY_HIDDEN;
             if ( board->trayHiddenPreFocus ) {
-                setTrayVisState( board, TRAY_REVERSED );
+                setTrayVisState( board, xwe, TRAY_REVERSED );
             }
         }
-        draw = invalFocusOwner( board ) || draw;
+        draw = invalFocusOwner( board, xwe ) || draw;
     } else {
         /* we're losing it; inval and clear IFF we currently have same focus,
            otherwise ignore */
         if ( typ == board->focussed ) {
-            draw = invalFocusOwner( board ) || draw;
+            draw = invalFocusOwner( board, xwe ) || draw;
             board->focussed = OBJ_NONE;
 
             if ( (OBJ_TRAY == typ) && (board->trayVisState == TRAY_REVERSED)
                  && board->trayHiddenPreFocus ) {
-                setTrayVisState( board, TRAY_HIDDEN );
+                setTrayVisState( board, xwe, TRAY_HIDDEN );
             }
         }
     }
 
     if ( draw ) {
-        figureBoardRect( board );
+        figureBoardRect( board, xwe );
     }
 
     return draw;
@@ -3492,14 +3500,14 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
 #endif /* KEYBOARD_NAV */
 
 static XP_Bool
-advanceArrow( BoardCtxt* board )
+advanceArrow( BoardCtxt* board, XWEnv xwe )
 {
     XP_Key key = board->selInfo->boardArrow.vert ?
         XP_CURSOR_KEY_DOWN :  XP_CURSOR_KEY_RIGHT;
 
     XP_ASSERT( board->trayVisState == TRAY_REVEALED );
 
-    return board_moveArrow( board, key );
+    return board_moveArrow( board, xwe, key );
 } /* advanceArrow */
 
 static XP_Bool
@@ -3576,7 +3584,7 @@ figureNextLoc( const BoardCtxt* board, XP_Key cursorKey,
 } /* figureNextLoc */
 
 static XP_Bool
-board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
+board_moveArrow( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey )
 {
     XP_U16 col, row;
     XP_Bool changed;
@@ -3586,7 +3594,7 @@ board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
     changed = figureNextLoc( board, cursorKey, XP_TRUE, XP_FALSE, 
                              &col, &row, NULL );
     if ( changed ) {
-        (void)setArrow( board, col, row, NULL );
+        (void)setArrow( board, xwe, col, row, NULL );
     }
     return changed;
 } /* board_moveArrow */
@@ -3614,8 +3622,8 @@ stripAlt( XP_Key key, XP_Bool* wasAlt )
 } /* stripAlt */
 
 static XP_Bool
-board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
-                  XP_Bool* up )
+board_moveCursor( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey,
+                  XP_Bool preflightOnly, XP_Bool* up )
 {
     PerTurnInfo* pti = board->selInfo;
     BdCursorLoc loc = pti->bdCursor;
@@ -3634,7 +3642,7 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         loc.col = col;
         loc.row = row;
         pti->bdCursor = loc;
-        scrollIntoView( board, col, row );
+        scrollIntoView( board, xwe, col, row );
     }
     return changed;
 } /* board_moveCursor */
@@ -3672,7 +3680,7 @@ rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 )
 } /* rectsIntersect */
 
 static XP_Bool
-replaceLastTile( BoardCtxt* board )
+replaceLastTile( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool result = XP_FALSE;
     XP_S16 turn = board->selPlayer;
@@ -3692,10 +3700,10 @@ replaceLastTile( BoardCtxt* board )
         index = -1;
         model_getCurrentMoveTile( board->model, board->selPlayer, &index,
                                   &tile, &col, &row, &isBlank );
-        model_moveBoardToTray( board->model, board->selPlayer, col, row, -1 );
+        model_moveBoardToTray( board->model, xwe, board->selPlayer, col, row, -1 );
 
         flipIf( board, col, row, &col, &row );
-        setArrow( board, col, row, directionKnown? &isVertical : NULL );
+        setArrow( board, xwe, col, row, directionKnown? &isVertical : NULL );
         result = XP_TRUE;
     }
 
@@ -3703,15 +3711,15 @@ replaceLastTile( BoardCtxt* board )
 } /* replaceLastTile */
 
 XP_Bool
-moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_U16 tileIndex,
-                 Tile blankFace )
+moveTileToBoard( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row,
+                 XP_U16 tileIndex, Tile blankFace )
 {
     if ( cellOccupied( board, col, row, XP_TRUE ) ) {
         return XP_FALSE;
     }
 
     flipIf( board, col, row, &col, &row );
-    model_moveTrayToBoard( board->model, board->selPlayer, col, row, 
+    model_moveTrayToBoard( board->model, xwe, board->selPlayer, col, row,
                            tileIndex, blankFace );
 
     return XP_TRUE;
@@ -3757,7 +3765,7 @@ keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
 } /* keyToIndex */
 
 static XP_Bool
-moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
+moveKeyTileToBoard( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey, XP_Bool* gotArrow )
 {
     XP_U16 col, row;
     XP_Bool haveDest;
@@ -3781,7 +3789,7 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
         XP_S16 tileIndex = keyToIndex( board, cursorKey, &blankFace );
 
         haveDest = (tileIndex >= 0)
-            && moveTileToBoard( board, col, row, tileIndex, blankFace );
+            && moveTileToBoard( board, xwe, col, row, tileIndex, blankFace );
     }
 
     return haveDest;
@@ -3789,7 +3797,7 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
 #endif  /* #ifdef KEY_SUPPORT */
 
 static void
-setArrow( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool* vertp )
+setArrow( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row, XP_Bool* vertp )
 {
     XP_U16 player = board->selPlayer;
     BoardArrow* arrow = &board->pti[player].boardArrow;
@@ -3802,7 +3810,7 @@ setArrow( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool* vertp )
         arrow->vert = *vertp;
     }
 
-    scrollIntoView( board, col, row );
+    scrollIntoView( board, xwe, col, row );
 } /* setArrow */
 
 static XP_Bool
@@ -3842,8 +3850,8 @@ setArrowVisibleFor( BoardCtxt* board, XP_U16 player, XP_Bool visible )
  * Listener callbacks
  ****************************************************************************/
 static void
-boardCellChanged( void* p_board, XP_U16 turn, XP_U16 modelCol, XP_U16 modelRow,
-                  XP_Bool added )
+boardCellChanged( XWEnv xwe, void* p_board, XP_U16 turn, XP_U16 modelCol,
+                  XP_U16 modelRow, XP_Bool added )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     XP_Bool pending, found;
@@ -3883,7 +3891,7 @@ boardCellChanged( void* p_board, XP_U16 turn, XP_U16 modelCol, XP_U16 modelRow,
             }
         }
 
-        scrollIntoView( board, col, row );
+        scrollIntoView( board, xwe, col, row );
     }
 
     invalCell( (BoardCtxt*)p_board, col, row );
@@ -3920,7 +3928,7 @@ dictChanged( void* p_board, XWEnv xwe, XP_S16 playerNum,
 }
 
 static void
-boardTurnChanged( void* p_board )
+boardTurnChanged( XWEnv xwe, void* p_board )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     XP_S16 nextPlayer;
@@ -3932,21 +3940,21 @@ boardTurnChanged( void* p_board )
     nextPlayer = chooseBestSelPlayer( board );
     if ( nextPlayer >= 0 ) {
         XP_U16 nHumans = gi_countLocalPlayers( board->gi, XP_TRUE );
-        selectPlayerImpl( board, nextPlayer, nHumans <= 1, XP_TRUE );
+        selectPlayerImpl( board, xwe, nextPlayer, nHumans <= 1, XP_TRUE );
     }
 
-    setTimerIf( board );
+    setTimerIf( board, xwe );
 
     board->scoreBoardInvalid = XP_TRUE;
 } /* boardTurnChanged */
 
 static void
-boardGameOver( void* closure, XP_S16 quitter )
+boardGameOver( XWEnv xwe, void* closure, XP_S16 quitter )
 {
     BoardCtxt* board = (BoardCtxt*)closure;    
     board->scoreBoardInvalid = XP_TRUE; /* not sure if this will do it. */
     board->gameOver = XP_TRUE;
-    util_notifyGameOver( board->util, quitter );
+    util_notifyGameOver( board->util, xwe, quitter );
 } /* boardGameOver */
 
 static void

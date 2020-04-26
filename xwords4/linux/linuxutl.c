@@ -239,7 +239,7 @@ parseBonusFile( XP_U16 nCols, const char* bonusFile )
 }
 
 static XWBonusType
-linux_util_getSquareBonus( XW_UtilCtxt* uc, XP_U16 nCols,
+linux_util_getSquareBonus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 nCols,
                            XP_U16 col, XP_U16 row )
 {
     static XWBonusType* parsedFile = NULL;
@@ -278,7 +278,7 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, XP_U16 nCols,
 } /* linux_util_getSquareBonus */
 
 static XW_DUtilCtxt*
-linux_util_getDevUtilCtxt( XW_UtilCtxt* uc )
+linux_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     return cGlobals->params->dutil;

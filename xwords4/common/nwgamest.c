@@ -62,16 +62,16 @@ static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
                        XP_TriEnable enable, XP_Bool force );
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
-static void setRoleStrings( NewGameCtx* ngc );
+static void setRoleStrings( NewGameCtx* ngc, XWEnv xwe );
 static void considerEnable( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
                         const LocalPlayer* lp );
 #ifndef XWFEATURE_STANDALONE_ONLY
-static XP_Bool changeRole( NewGameCtx* ngc, DeviceRole role );
-static XP_Bool checkConsistent( NewGameCtx* ngc, XP_Bool warnUser );
+static XP_Bool changeRole( NewGameCtx* ngc, XWEnv xwe,  DeviceRole role );
+static XP_Bool checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser );
 #else
-# define checkConsistent( ngc, warnUser ) XP_TRUE
+# define checkConsistent( ngc, xwe, warnUser ) XP_TRUE
 #endif
 
 NewGameCtx*
@@ -105,7 +105,7 @@ newg_destroy( NewGameCtx* ngc )
 } /* newg_destroy */
 
 void
-newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
+newg_load( NewGameCtx* ngc, XWEnv xwe, const CurGameInfo* gi )
 {
     void* closure = ngc->closure;
     NGValue value;
@@ -164,7 +164,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     value.ng_u16 = ngc->timerSeconds;
     (*ngc->setAttrProc)( closure, NG_ATTR_TIMER, value );
 
-    setRoleStrings( ngc );
+    setRoleStrings( ngc, xwe );
     considerEnable( ngc );   
 
     /* Load local players first */
@@ -227,10 +227,10 @@ cpToLP( NGValue value, const void* cbClosure )
 } /* cpToLP */
 
 XP_Bool
-newg_store( NewGameCtx* ngc, CurGameInfo* gi, 
+newg_store( NewGameCtx* ngc, XWEnv xwe, CurGameInfo* gi,
             XP_Bool XP_UNUSED_STANDALONE(warn) )
 {
-    XP_Bool consistent = checkConsistent( ngc, warn );
+    XP_Bool consistent = checkConsistent( ngc, xwe, warn );
 
     if ( consistent ) {
         XP_Bool makeLocal = XP_FALSE;
@@ -268,7 +268,8 @@ newg_colChanged( NewGameCtx* ngc, XP_U16 player )
 }
 
 void
-newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
+newg_attrChanged( NewGameCtx* ngc, XWEnv xwe,
+                  NewGameAttr attr, NGValue value )
 {
     XP_Bool changed = XP_FALSE;
     switch ( attr ) {
@@ -281,7 +282,7 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
         break;
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
-        changed = changeRole( ngc, value.ng_role );
+        changed = changeRole( ngc, xwe, value.ng_role );
         break;
 #endif
     case NG_ATTR_TIMER:
@@ -373,7 +374,7 @@ newg_juggle( NewGameCtx* ngc )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
-checkConsistent( NewGameCtx* ngc, XP_Bool warnUser )
+checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser )
 {
     XP_Bool consistent;
     XP_U16 ii;
@@ -390,7 +391,7 @@ checkConsistent( NewGameCtx* ngc, XP_Bool warnUser )
         }
     }
     if ( !consistent && warnUser ) {
-        util_userError( ngc->util, ERR_REG_SERVER_SANS_REMOTE );
+        util_userError( ngc->util, xwe, ERR_REG_SERVER_SANS_REMOTE );
     }
 
     /* Add other consistency checks, and error messages, here. */
@@ -511,7 +512,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
  */
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
-changeRole( NewGameCtx* ngc, DeviceRole newRole )
+changeRole( NewGameCtx* ngc, XWEnv xwe, DeviceRole newRole )
 {
     DeviceRole oldRole = ngc->role;
     XP_Bool changing = oldRole != newRole;
@@ -529,14 +530,14 @@ changeRole( NewGameCtx* ngc, DeviceRole newRole )
             }
         }
         ngc->role = newRole;
-        setRoleStrings( ngc );
+        setRoleStrings( ngc, xwe );
     }
     return changing;
 }
 #endif
 
 static void
-setRoleStrings( NewGameCtx* ngc )
+setRoleStrings( NewGameCtx* ngc, XWEnv xwe )
 {
     XP_U16 strID;
     NGValue value;
@@ -561,7 +562,8 @@ setRoleStrings( NewGameCtx* ngc )
         strID = STR_TOTALPLAYERS;
     }
 
-    value.ng_cp = dutil_getUserString( util_getDevUtilCtxt(ngc->util), strID );
+    value.ng_cp = dutil_getUserString( util_getDevUtilCtxt(ngc->util, xwe),
+                                       xwe, strID );
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYHEADER, value );
 } /* setRoleStrings */
 

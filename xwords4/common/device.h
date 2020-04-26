@@ -25,9 +25,9 @@
 
 // void device_load( XW_DUtilCtxt dctxt );
 # ifdef XWFEATURE_DEVICE
-void device_store( XW_DUtilCtxt* dctxt );
+void device_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
 # else
-#  define device_store(dctxt)
+#  define device_store(dctxt, xwe)
 # endif
 
 #endif

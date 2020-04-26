@@ -78,7 +78,7 @@ typedef struct _SMSMsgArray {
     } u;
 } SMSMsgArray;
 
-struct SMSProto* smsproto_init( MPFORMAL XW_DUtilCtxt* dutil );
+struct SMSProto* smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil );
 void smsproto_free( SMSProto* state );
 
 
@@ -90,20 +90,20 @@ void smsproto_free( SMSProto* state );
  * freeMsgArray() or there will be leakage.
 */
 
-SMSMsgArray* smsproto_prepOutbound( SMSProto* state, SMS_CMD cmd,
+SMSMsgArray* smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd,
                                     XP_U32 gameID, const void* buf, XP_U16 buflen,
                                     const XP_UCHAR* toPhone, int port,
                                     XP_Bool forceOld, XP_U16* waitSecs );
 
 /* When a message is received, pass it in for reassambly. Non-null return
    means one or more messages is ready for consumption. */
-SMSMsgArray* smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
+SMSMsgArray* smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
                                    XP_U16 wantPort, const XP_U8* data, XP_U16 len );
 
 void smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr );
 
 # ifdef DEBUG
-void smsproto_runTests( MPFORMAL XW_DUtilCtxt* dutil );
+void smsproto_runTests( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil );
 # else
 #  define smsproto_runTests( p1, p2 )
 # endif

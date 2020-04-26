@@ -25,40 +25,41 @@
 #include "gamesdb.h"
 #include "LocalizedStrIncludes.h"
 
-static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc );
-static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XP_U16 code );
-static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code,
+static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc, XWEnv xwe );
+static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code );
+static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
                                                           XP_U16 quantity );
 
-static void linux_dutil_storeStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+static void linux_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                XWStreamCtxt* data );
-static void linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+static void linux_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                     XWStreamCtxt* inOut );
-static void linux_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                   const void* data, XP_U16 len );
-static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                  void* data, XP_U16* lenp );
 
 
 #ifdef XWFEATURE_SMS
-static XP_Bool  linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc,
+static XP_Bool  linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv xwe,
                                               const XP_UCHAR* p1,
                                               const XP_UCHAR* p2 );
 #endif
 
 #ifdef XWFEATURE_DEVID
-static const XP_UCHAR* linux_dutil_getDevID( XW_DUtilCtxt* duc, DevIDType* typ );
-static void linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, DevIDType typ,
+static const XP_UCHAR* linux_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ );
+static void linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
                                           const XP_UCHAR* idRelay );
 #endif
 
 #ifdef COMMS_CHECKSUM
-static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr,
+static XP_UCHAR* linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
                                      XP_U16 len );
 #endif
 
 static void
-linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XP_U32 XP_UNUSED_DBG(gameID),
+linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
+                         XP_U32 XP_UNUSED_DBG(gameID),
                          DupPauseType XP_UNUSED_DBG(pauseTyp),
                          XP_U16 XP_UNUSED_DBG(pauser),
                          const XP_UCHAR* XP_UNUSED_DBG(name),
@@ -69,7 +70,7 @@ linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XP_U32 XP_UNUSED_DBG(game
 }
 
 static void
-linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc),
+linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                                XP_U32 XP_UNUSED_DBG(gameID),
                                XP_U32 XP_UNUSED_DBG(oldVal),
                                XP_U32 XP_UNUSED_DBG(newVal) )
@@ -125,13 +126,14 @@ void dutils_free( XW_DUtilCtxt** XP_UNUSED_DBG(ducp) )
 }
 
 static XP_U32
-linux_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc) )
+linux_dutil_getCurSeconds( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe) )
 {
     return linux_getCurSeconds();
 }
 
 static const XP_UCHAR*
-linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
+linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc),
+                           XWEnv XP_UNUSED(xwe), XP_U16 code )
 {
     switch( code ) {
     case STRD_REMAINING_TILES_ADD:
@@ -216,29 +218,30 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc), XP_U16 code )
 } /* linux_dutil_getUserString */
 
 static const XP_UCHAR*
-linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XP_U16 code, 
+linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
                                    XP_U16 XP_UNUSED(quantity) )
 {
-    return linux_dutil_getUserString( duc, code );
+    return linux_dutil_getUserString( duc, xwe, code );
 }
 
 static void
-linux_dutil_storeStream( XW_DUtilCtxt* duc, const XP_UCHAR* key, XWStreamCtxt* stream )
+linux_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe,
+                         const XP_UCHAR* key, XWStreamCtxt* stream )
 {
     const void* ptr = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
-    linux_dutil_storePtr( duc, key, ptr, len );
+    linux_dutil_storePtr( duc, xwe, key, ptr, len );
 }
 
 static void
-linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+linux_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                         XWStreamCtxt* stream )
 {
     XP_U16 len = 0;
-    linux_dutil_loadPtr( duc, key, NULL, &len );
+    linux_dutil_loadPtr( duc, xwe, key, NULL, &len );
     if ( 0 < len ) {
         XP_U8 buf[len];
-        linux_dutil_loadPtr( duc, key, buf, &len );
+        linux_dutil_loadPtr( duc, xwe, key, buf, &len );
 
         stream_putBytes( stream, buf, len );
     }
@@ -247,7 +250,7 @@ linux_dutil_loadStream( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 }
 
 static void
-linux_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* key,
                       const void* data, const XP_U16 len )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
@@ -259,7 +262,7 @@ linux_dutil_storePtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 }
 
 static void
-linux_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
+linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* key,
                      void* data, XP_U16* lenp )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
@@ -294,8 +297,8 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, const XP_UCHAR* key,
 
 #ifdef XWFEATURE_SMS
 static XP_Bool
-linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, const XP_UCHAR* p1,
-                              const XP_UCHAR* p2 )
+linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                              const XP_UCHAR* p1, const XP_UCHAR* p2 )
 {
     LOG_FUNC();
     XP_USE( duc );
@@ -307,14 +310,14 @@ linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, const XP_UCHAR* p1,
 
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
-linux_dutil_getDevID( XW_DUtilCtxt* duc, DevIDType* typ )
+linux_dutil_getDevID( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType* typ )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     return linux_getDevID( params, typ );
 }
 
 static void
-linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, DevIDType typ,
+linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), DevIDType typ,
                              const XP_UCHAR* idRelay )
 {
     /* Script discon_ok2.sh is grepping for these strings in logs, so don't
@@ -340,7 +343,8 @@ linux_dutil_deviceRegistered( XW_DUtilCtxt* duc, DevIDType typ,
 
 #ifdef COMMS_CHECKSUM
 static XP_UCHAR*
-linux_dutil_md5sum( XW_DUtilCtxt* duc, const XP_U8* ptr, XP_U16 len )
+linux_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                    const XP_U8* ptr, XP_U16 len )
 {
     gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
     XP_U16 sumlen = 1 + strlen( sum );

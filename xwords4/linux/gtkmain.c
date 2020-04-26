@@ -922,7 +922,7 @@ gtkmain( LaunchParams* params )
         if ( params->runSMSTest ) {
             CommonGlobals cGlobals = {.params = params };
             setupUtil( &cGlobals );
-            smsproto_runTests( params->mpool, cGlobals.params->dutil );
+            smsproto_runTests( params->mpool, NULL_XWE, cGlobals.params->dutil );
             linux_util_vt_destroy( cGlobals.util );
             free( cGlobals.util );
         }
@@ -933,7 +933,7 @@ gtkmain( LaunchParams* params )
     }
 
     gtk_main();
-    device_store( params->dutil );
+    device_store( params->dutil, NULL_XWE );
     /* closeGamesDB( params->pDb ); */
     /* params->pDb = NULL; */
     relaycon_cleanup( params );
