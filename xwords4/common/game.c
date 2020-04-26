@@ -131,7 +131,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( gi->serverRole != SERVER_STANDALONE ) {
-        game->comms = comms_make( MPPARM(mpool) util,
+        game->comms = comms_make( MPPARM(mpool) xwe, util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   nPlayersHere, nPlayersTotal, 
                                   procs, gi->forceChannel
@@ -159,7 +159,7 @@ game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
 } /* game_makeNewGame */
 
 XP_Bool
-game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
+game_reset( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, XW_UtilCtxt* util,
             CommonPrefs* cp, const TransportProcs* procs )
 {
     XP_ASSERT( util == game->util );
@@ -182,11 +182,11 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
                 comms_destroy( game->comms );
                 game->comms = NULL;
             } else {
-                comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT,
+                comms_reset( game->comms, xwe, gi->serverRole != SERVER_ISCLIENT,
                              nPlayersHere, nPlayersTotal );
             }
         } else if ( gi->serverRole != SERVER_STANDALONE ) {
-            game->comms = comms_make( MPPARM(mpool) util,
+            game->comms = comms_make( MPPARM(mpool) xwe, util,
                                       gi->serverRole != SERVER_ISCLIENT, 
                                       nPlayersHere, nPlayersTotal, procs,
                                       gi->forceChannel
@@ -202,7 +202,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
 #endif
 
         model_setSize( game->model, gi->boardSize );
-        server_reset( game->server, 
+        server_reset( game->server, xwe,
 #ifndef XWFEATURE_STANDALONE_ONLY
                       game->comms
 #else
@@ -278,7 +278,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream, XWGame* game,
             }
 
             if ( hasComms ) {
-                game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
+                game->comms = comms_makeFromStream( MPPARM(mpool) xwe, stream, util,
                                                     procs, gi->forceChannel );
             } else {
                 game->comms = NULL;
@@ -318,14 +318,14 @@ game_saveNewGame( MPFORMAL XWEnv xwe, const CurGameInfo* gi, XW_UtilCtxt* util,
 #endif
                       );
 
-    game_saveToStream( &newGame, &newGI, out, 1 );
-    game_saveSucceeded( &newGame, 1 );
+    game_saveToStream( &newGame, xwe, &newGI, out, 1 );
+    game_saveSucceeded( &newGame, xwe, 1 );
     game_dispose( &newGame, xwe );
     gi_disposePlayerInfo( MPPARM(mpool) &newGI );
 }
 
 void
-game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
+game_saveToStream( const XWGame* game, XWEnv xwe, const CurGameInfo* gi,
                    XWStreamCtxt* stream, XP_U16 saveToken )
 {
     stream_putU8( stream, CUR_STREAM_VERS );
@@ -340,7 +340,7 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
         XP_ASSERT( !game->comms );
 #endif
         if ( !!game->comms ) {
-            comms_writeToStream( game->comms, stream, saveToken );
+            comms_writeToStream( game->comms, xwe, stream, saveToken );
         }
 
         model_writeToStream( game->model, stream );
@@ -350,10 +350,10 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
 } /* game_saveToStream */
 
 void
-game_saveSucceeded( const XWGame* game, XP_U16 saveToken )
+game_saveSucceeded( const XWGame* game, XWEnv xwe, XP_U16 saveToken )
 {
     if ( !!game->comms ) {
-        comms_saveSucceeded( game->comms, saveToken );
+        comms_saveSucceeded( game->comms, xwe, saveToken );
     }
 }
 
@@ -363,14 +363,14 @@ game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
 {
     ServerCtxt* server = game->server;
     CommsMsgState commsState;
-    XP_Bool result = comms_checkIncomingStream( game->comms, stream, retAddr,
+    XP_Bool result = comms_checkIncomingStream( game->comms, xwe, stream, retAddr,
                                                 &commsState );
     if ( result ) {
-        (void)server_do( server );
+        (void)server_do( server, xwe );
 
         result = server_receiveMessage( server, xwe, stream );
     }
-    comms_msgProcessed( game->comms, &commsState, !result );
+    comms_msgProcessed( game->comms, xwe, &commsState, !result );
 
     if ( result ) {
         /* in case MORE work's pending.  Multiple calls are required in at
@@ -379,7 +379,7 @@ game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
            robot move.  That's because comms can't detect a duplicate initial
            packet (in validateInitialMessage()). */
         for ( int ii = 0; ii < 5; ++ii ) {
-            (void)server_do( server );
+            (void)server_do( server, xwe );
         }
     }
 
@@ -429,7 +429,7 @@ game_dispose( XWGame* game, XWEnv xwe )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!game->comms ) {
-        comms_stop( game->comms );
+        comms_stop( game->comms, xwe );
         comms_destroy( game->comms );
         game->comms = NULL;
     }
@@ -439,7 +439,7 @@ game_dispose( XWGame* game, XWEnv xwe )
         game->model = NULL;
     }
     if ( !!game->server ) {
-        server_destroy( game->server ); 
+        server_destroy( game->server, xwe );
         game->server = NULL;
     }
 } /* game_dispose */

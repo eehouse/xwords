@@ -55,7 +55,7 @@ typedef struct _GameInfo {
 sqlite3* openGamesDB( const char* dbName );
 void closeGamesDB( sqlite3* pDb );
 
-void writeToDB( XWStreamCtxt* stream, void* closure );
+void writeToDB( XWStreamCtxt* stream, XWEnv xwe, void* closure );
 sqlite3_int64 writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb );
 
 void summarize( CommonGlobals* cGlobals );

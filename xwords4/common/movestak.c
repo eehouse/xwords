@@ -113,7 +113,7 @@ void
 stack_destroy( StackCtxt* stack )
 {
     if ( !!stack->data ) {
-        stream_destroy( stack->data );
+        stream_destroy( stack->data, NULL );
     }
     /* Ok to close with a dirty stack, e.g. if not saving a deleted game */
     // ASSERT_NOT_DIRTY( stack );
@@ -201,7 +201,7 @@ stack_copy( const StackCtxt* stack )
                            stack->nPlayers, stack->inDuplicateMode );
     stack_loadFromStream( newStack, stream );
     stack_setBitsPerTile( newStack, stack->bitsPerTile );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL );
     return newStack;
 }
 

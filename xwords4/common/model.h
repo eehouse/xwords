@@ -202,9 +202,10 @@ void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
                                Tile* tile, XP_U16* col, XP_U16* row, 
                                XP_Bool* isBlank );
 
-XP_Bool model_commitTurn( ModelCtxt* model, XP_S16 player, 
+XP_Bool model_commitTurn( ModelCtxt* model, XWEnv xwe, XP_S16 player,
                           TrayTileSet* newTiles );
-void model_commitDupeTurn( ModelCtxt* model, const MoveInfo* moveInfo,
+void model_commitDupeTurn( ModelCtxt* model, XWEnv xwe,
+                           const MoveInfo* moveInfo,
                            XP_U16 nScores, XP_U16* scores,
                            TrayTileSet* newTiles );
 void model_commitDupeTrade( ModelCtxt* model, const TrayTileSet* oldTiles,
@@ -300,16 +301,16 @@ typedef struct WordNotifierInfo {
     void* closure;
 } WordNotifierInfo;
 
-XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn, 
-                                    XWStreamCtxt* stream, 
+XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XWEnv xwe,
+                                    XP_S16 turn, XWStreamCtxt* stream,
                                     WordNotifierInfo* wni, XP_S16* score );
 XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XWEnv xwe, XP_S16 player,
                                    LastMoveInfo* info );
 #ifdef XWFEATURE_BOARDWORDS
-XP_Bool model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
-                                XP_S16 turn, XWStreamCtxt* stream );
+XP_Bool model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col,
+                                XP_U16 row, XP_S16 turn, XWStreamCtxt* stream );
 #endif
 
 /* Have there been too many passes (so game should end)? */
@@ -322,7 +323,7 @@ void model_setSquareBonuses( ModelCtxt* model, XWBonusType* bonuses,
                              XP_U16 nBonuses );
 #endif
                                   
-XP_Bool model_checkMoveLegal( ModelCtxt* model, XP_S16 player, 
+XP_Bool model_checkMoveLegal( ModelCtxt* model, XWEnv xwe, XP_S16 player,
                               XWStreamCtxt* stream,
                               WordNotifierInfo* notifyInfo );
 

@@ -39,7 +39,7 @@ static XP_U16 find_end( const ModelCtxt* model, XP_U16 col, XP_U16 row,
                         XP_Bool isHorizontal );
 static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
                           XP_Bool isHorizontal );
-static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn, 
+static XP_S16 checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                               EngineCtxt* engine, XWStreamCtxt* stream, 
                               XP_Bool silent, WordNotifierInfo* notifyInfo );
 static XP_U16 scoreWord( const ModelCtxt* model, XP_U16 turn, 
@@ -77,7 +77,7 @@ static void formatSummary( XWStreamCtxt* stream, const ModelCtxt* model,
  * invalidate the score.
  */
 static void
-scoreCurrentMove( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream,
+scoreCurrentMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, XWStreamCtxt* stream,
                   WordNotifierInfo* notifyInfo )
 {
     PlayerCtxt* player = &model->players[turn];
@@ -86,7 +86,7 @@ scoreCurrentMove( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream,
     XP_ASSERT( !player->curMoveValid );
 
     /* recalc goes here */
-    score = checkScoreMove( model, turn, (EngineCtxt*)NULL, stream,
+    score = checkScoreMove( model, xwe, turn, (EngineCtxt*)NULL, stream,
                             XP_TRUE, notifyInfo );
     XP_ASSERT( score >= 0 || score == ILLEGAL_MOVE_SCORE );
 
@@ -113,11 +113,11 @@ adjustScoreForUndone( ModelCtxt* model, const MoveInfo* mi, XP_U16 turn )
 } /* adjustScoreForUndone */
 
 XP_Bool
-model_checkMoveLegal( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream,
+model_checkMoveLegal( ModelCtxt* model, XWEnv xwe, XP_S16 turn, XWStreamCtxt* stream,
                       WordNotifierInfo* notifyInfo )
 {
     XP_S16 score;
-    score = checkScoreMove( model, turn, (EngineCtxt*)NULL, stream, XP_FALSE, 
+    score = checkScoreMove( model, xwe, turn, (EngineCtxt*)NULL, stream, XP_FALSE,
                             notifyInfo );
     return score != ILLEGAL_MOVE_SCORE;
 } /* model_checkMoveLegal */
@@ -129,13 +129,13 @@ invalidateScore( ModelCtxt* model, XP_S16 turn )
 } /* invalidateScore */
 
 XP_Bool
-getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
+getCurrentMoveScoreIfLegal( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                             XWStreamCtxt* stream, 
                             WordNotifierInfo* wni, XP_S16* scoreP )
 {
     PlayerCtxt* player = &model->players[turn];
     if ( !player->curMoveValid ) {
-        scoreCurrentMove( model, turn, stream, wni );
+        scoreCurrentMove( model, xwe, turn, stream, wni );
     }
 
     if ( !!scoreP ) {
@@ -251,7 +251,7 @@ blockCheck( const WNParams* wnp, void* closure )
  * Negative score means illegal.
  */
 static XP_S16
-checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine, 
+checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
                 XWStreamCtxt* stream, XP_Bool silent, 
                 WordNotifierInfo* notifyInfo ) 
 {
@@ -300,7 +300,7 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
                     DictionaryCtxt* dict = model_getPlayerDict( model, turn );
                     util_informWordsBlocked( model->vol.util, bcs.nBadWords,
                                              bcs.stream, dict_getName( dict ) );
-                    stream_destroy( bcs.stream );
+                    stream_destroy( bcs.stream, xwe );
                 }
             } else {
                 score = tmpScore;

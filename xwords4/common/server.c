@@ -158,7 +158,7 @@ static XP_S8 getIndexForStream( const ServerCtxt* server,
 static void nextTurn( ServerCtxt* server, XP_S16 nxtTurn );
 
 static void doEndGame( ServerCtxt* server, XP_S16 quitter );
-static void endGameInternal( ServerCtxt* server, GameEndReason why, XP_S16 quitter );
+static void endGameInternal( ServerCtxt* server, XWEnv xwe, GameEndReason why, XP_S16 quitter );
 static void badWordMoveUndoAndTellUser( ServerCtxt* server, BadWordInfo* bwi );
 static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XP_S16 turn );
@@ -166,20 +166,20 @@ static XWStreamCtxt* mkServerStream( ServerCtxt* server );
 static void fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
                         const TrayTileSet* tradedTiles,
                         TrayTileSet* resultTiles );
-static void finishMove( ServerCtxt* server, TrayTileSet* newTiles,
-                        XP_U16 turn );
-static XP_Bool dupe_checkTurns( ServerCtxt* server );
-static void dupe_forceCommits( ServerCtxt* server );
+static void finishMove( ServerCtxt* server, XWEnv xwe,
+                        TrayTileSet* newTiles, XP_U16 turn );
+static XP_Bool dupe_checkTurns( ServerCtxt* server, XWEnv xwe );
+static void dupe_forceCommits( ServerCtxt* server, XWEnv xwe );
 
 static void dupe_clearState( ServerCtxt* server );
 static XP_U16 dupe_nextTurn( const ServerCtxt* server );
-static void dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
-                                      XP_U16 nPlayers, XP_U16* scores,
-                                      XP_U16 nTiles );
-static XP_Bool commitMoveImpl( ServerCtxt* server, XP_U16 player,
+static void dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe,
+                                      XP_U16 winner, XP_U16 nPlayers,
+                                      XP_U16* scores, XP_U16 nTiles );
+static XP_Bool commitMoveImpl( ServerCtxt* server, XWEnv xwe, XP_U16 player,
                                TrayTileSet* newTilesP, XP_Bool forced );
-static void dupe_makeAndReportTrade( ServerCtxt* server );
-static void dupe_transmitPause( ServerCtxt* server, DupPauseType typ,
+static void dupe_makeAndReportTrade( ServerCtxt* server, XWEnv xwe );
+static void dupe_transmitPause( ServerCtxt* server, XWEnv xwe, DupPauseType typ,
                                 XP_U16 turn, const XP_UCHAR* msg,
                                 XP_S16 skipDev );
 static void dupe_resetTimer( ServerCtxt* server );
@@ -192,11 +192,11 @@ static XWStreamCtxt* messageStreamWithHeader( ServerCtxt* server,
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, 
                                       XWStreamCtxt* stream );
 static XP_S8 registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream );
-static void server_sendInitialMessage( ServerCtxt* server );
-static void sendBadWordMsgs( ServerCtxt* server );
+static void sendInitialMessage( ServerCtxt* server, XWEnv xwe );
+static void sendBadWordMsgs( ServerCtxt* server, XWEnv xwe );
 static XP_Bool handleIllegalWord( ServerCtxt* server, 
                                   XWStreamCtxt* incoming );
-static void tellMoveWasLegal( ServerCtxt* server );
+static void tellMoveWasLegal( ServerCtxt* server, XWEnv xwe );
 static void writeProto( const ServerCtxt* server, XWStreamCtxt* stream, 
                         XW_Proto proto );
 #endif
@@ -553,7 +553,7 @@ server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream )
 } /* server_writeToStream */
 
 static void
-cleanupServer( ServerCtxt* server )
+cleanupServer( ServerCtxt* server, XWEnv xwe )
 {
     XP_U16 ii;
     for ( ii = 0; ii < VSIZE(server->players); ++ii ){
@@ -570,21 +570,21 @@ cleanupServer( ServerCtxt* server )
     }
 
     if ( !!server->nv.prevMoveStream ) {
-        stream_destroy( server->nv.prevMoveStream );
+        stream_destroy( server->nv.prevMoveStream, xwe );
     }
     if ( !!server->nv.prevWordsStream ) {
-        stream_destroy( server->nv.prevWordsStream );
+        stream_destroy( server->nv.prevWordsStream, xwe );
     }
 
     XP_MEMSET( &server->nv, 0, sizeof(server->nv) );
 } /* cleanupServer */
 
 void
-server_reset( ServerCtxt* server, CommsCtxt* comms )
+server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms )
 {
     ServerVolatiles vol = server->vol;
 
-    cleanupServer( server );
+    cleanupServer( server, xwe );
 
     vol.comms = comms;
     server->vol = vol;
@@ -593,9 +593,9 @@ server_reset( ServerCtxt* server, CommsCtxt* comms )
 } /* server_reset */
 
 void
-server_destroy( ServerCtxt* server )
+server_destroy( ServerCtxt* server, XWEnv xwe )
 {
-    cleanupServer( server );
+    cleanupServer( server, xwe );
 
     XP_FREE( server->mpool, server );
 } /* server_destroy */
@@ -651,7 +651,7 @@ server_countTilesInPool( ServerCtxt* server )
 #define MAX_NAME_LEN ((1<<(NAME_LEN_NBITS-1))-1)
 #ifndef XWFEATURE_STANDALONE_ONLY
 XP_Bool
-server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
+server_initClientConnection( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_Bool result;
     LOG_FUNC();
@@ -709,14 +709,14 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
         XP_LOGF( "%s: wierd state: %s (expected XWSTATE_NONE); dropping message",
                  __func__, getStateStr(server->nv.gameState) );
     }
-    stream_destroy( stream );
+    stream_destroy( stream, xwe );
     return result;
 } /* server_initClientConnection */
 #endif
 
 #ifdef XWFEATURE_CHAT
 static void
-sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR* msg,
+sendChatTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, const XP_UCHAR* msg,
             XP_S8 from, XP_U32 timestamp )
 {
     if ( comms_canChat( server->vol.comms ) ) {
@@ -725,36 +725,36 @@ sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR* msg,
         stringToStream( stream, msg );
         stream_putU8( stream, from );
         stream_putU32( stream, timestamp );
-        stream_destroy( stream );
+        stream_destroy( stream, xwe );
     } else {
         XP_LOGF( "%s: dropping chat %s; queue too full?", __func__, msg );
     }
 }
 
 static void
-sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, const XP_UCHAR* msg,
-                         XP_S8 from, XP_U32 timestamp )
+sendChatToClientsExcept( ServerCtxt* server, XWEnv xwe, XP_U16 skip,
+                         const XP_UCHAR* msg, XP_S8 from, XP_U32 timestamp )
 {
     for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
-            sendChatTo( server, devIndex, msg, from, timestamp );
+            sendChatTo( server, xwe, devIndex, msg, from, timestamp );
         }
     }
 }
 
 void
-server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from )
+server_sendChat( ServerCtxt* server, XWEnv xwe, const XP_UCHAR* msg, XP_S16 from )
 {
     XP_U32 timestamp = dutil_getCurSeconds( server->vol.dutil );
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-        sendChatTo( server, SERVER_DEVICE, msg, from, timestamp );
+        sendChatTo( server, xwe, SERVER_DEVICE, msg, from, timestamp );
     } else {
-        sendChatToClientsExcept( server, SERVER_DEVICE, msg, from, timestamp );
+        sendChatToClientsExcept( server, xwe, SERVER_DEVICE, msg, from, timestamp );
     }
 }
 
 static XP_Bool
-receiveChat( ServerCtxt* server, XWStreamCtxt* incoming )
+receiveChat( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 {
     XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
     XP_S16 from = 1 <= stream_getSize( incoming )
@@ -763,7 +763,7 @@ receiveChat( ServerCtxt* server, XWStreamCtxt* incoming )
         ? stream_getU32( incoming ) : 0;
     if ( amServer( server ) ) {
         XP_U16 sourceClientIndex = getIndexForStream( server, incoming );
-        sendChatToClientsExcept( server, sourceClientIndex, msg, from,
+        sendChatToClientsExcept( server, xwe, sourceClientIndex, msg, from,
                                  timestamp );
     }
     util_showChat( server->vol.util, msg, from, timestamp );
@@ -972,7 +972,7 @@ getDupeStuffMark( XWStreamCtxt* stream )
 /* Called on server when client has sent a message giving its local players'
    duplicate moves for a single turn. */
 static XP_Bool
-dupe_handleClientMoves( ServerCtxt* server, XWStreamCtxt* stream )
+dupe_handleClientMoves( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     ModelCtxt* model = server->vol.model;
@@ -996,7 +996,7 @@ dupe_handleClientMoves( ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     if ( success ) {
-        dupe_checkTurns( server );
+        dupe_checkTurns( server, xwe );
         nextTurn( server, PICK_NEXT );
     }
 
@@ -1012,13 +1012,13 @@ updateOthersTiles( ServerCtxt* server )
 }
 
 static XP_Bool
-checkDupTimerProc( void* closure, XWEnv XP_UNUSED(xwe), XWTimerReason XP_UNUSED_DBG(XP_why) )
+checkDupTimerProc( void* closure, XWEnv xwe, XWTimerReason XP_UNUSED_DBG(XP_why) )
 {
     XP_ASSERT( XP_why == TIMER_DUP_TIMERCHECK );
     ServerCtxt* server = (ServerCtxt*)closure;
     XP_ASSERT( inDuplicateMode( server ) );
     // Don't call server_do() if the timer hasn't fired yet
-    return setDupCheckTimer( server ) || server_do( server );
+    return setDupCheckTimer( server ) || server_do( server, xwe );
 }
 
 static XP_Bool
@@ -1130,19 +1130,19 @@ pauseImpl( ServerCtxt* server )
 }
 
 void
-server_pause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg )
+server_pause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg )
 {
     XP_LOGF( "%s(turn=%d)", __func__, turn );
     pauseImpl( server );
     /* Figure out how many seconds are left on the timer, and set timer to the
        negative of that (since negative is the flag) */
-    dupe_transmitPause( server, PAUSED, turn, msg, -1 );
+    dupe_transmitPause( server, xwe, PAUSED, turn, msg, -1 );
     model_noteDupePause( server->vol.model, PAUSED, turn, msg );
     LOG_RETURN_VOID();
 }
 
 static void
-dupe_autoPause( ServerCtxt* server )
+dupe_autoPause( ServerCtxt* server, XWEnv xwe )
 {
     XP_LOGF( "%s()", __func__ );
 
@@ -1153,13 +1153,13 @@ dupe_autoPause( ServerCtxt* server )
     /* Then pause us */
     pauseImpl( server );
 
-    dupe_transmitPause( server, AUTOPAUSED, 0, NULL, -1 );
+    dupe_transmitPause( server, xwe, AUTOPAUSED, 0, NULL, -1 );
     model_noteDupePause( server->vol.model, AUTOPAUSED, -1, NULL );
     LOG_RETURN_VOID();
 }
 
 void
-server_unpause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg )
+server_unpause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg )
 {
     XP_LOGF( "%s(turn=%d)", __func__, turn );
     XP_ASSERT( server_canUnpause( server ) );
@@ -1167,14 +1167,14 @@ server_unpause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg )
     /* subtract because it's negative */
     setDupTimerExpires( server, now - server->nv.dupTimerExpires );
     XP_ASSERT( server_canPause( server ) );
-    dupe_transmitPause( server, UNPAUSED, turn, msg, -1 );
+    dupe_transmitPause( server, xwe, UNPAUSED, turn, msg, -1 );
     model_noteDupePause( server->vol.model, UNPAUSED, turn, msg );
     LOG_RETURN_VOID();
 }
 
 /* Called on client. Unpacks DUP move data and applies it. */
 static XP_Bool
-dupe_handleServerMoves( ServerCtxt* server, XWStreamCtxt* stream )
+dupe_handleServerMoves( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     MoveInfo moveInfo;
@@ -1192,7 +1192,7 @@ dupe_handleServerMoves( ServerCtxt* server, XWStreamCtxt* stream )
     dupe_resetTimer( server );
 
     pool_removeTiles( server->pool, &newTiles );
-    model_commitDupeTurn( server->vol.model, &moveInfo, nScores, scores,
+    model_commitDupeTurn( server->vol.model, xwe, &moveInfo, nScores, scores,
                           &newTiles );
 
     /* Need to remove the played tiles from all local trays */
@@ -1280,7 +1280,7 @@ mkServerStream( ServerCtxt* server )
 } /* mkServerStream */
 
 static XP_Bool
-makeRobotMove( ServerCtxt* server )
+makeRobotMove( ServerCtxt* server, XWEnv xwe )
 {
     LOG_FUNC();
     XP_Bool result = XP_FALSE;
@@ -1353,7 +1353,7 @@ makeRobotMove( ServerCtxt* server )
         if ( trade ) {
             TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
             XP_LOGFF( "robot trading %d tiles", oldTiles.nTiles );
-            result = server_commitTrade( server, &oldTiles, NULL );
+            result = server_commitTrade( server, xwe, &oldTiles, NULL );
 
             /* Quick hack to fix gremlin bug where all-robot game seen none
                able to trade for tiles to move and blowing the undo stack.
@@ -1387,12 +1387,12 @@ makeRobotMove( ServerCtxt* server )
                     XWStreamCtxt* wordsStream = mkServerStream( server );
                     WordNotifierInfo* ni = 
                         model_initWordCounter( model, wordsStream );
-                    (void)model_checkMoveLegal( model, turn, stream, ni );
+                    (void)model_checkMoveLegal( model, xwe, turn, stream, ni );
                     XP_ASSERT( !server->nv.prevMoveStream );
                     server->nv.prevMoveStream = stream;
                     server->nv.prevWordsStream = wordsStream;
                 }
-                result = server_commitMove( server, turn, NULL );
+                result = server_commitMove( server, xwe, turn, NULL );
             } else {
                 result = XP_FALSE;
             }
@@ -1460,7 +1460,7 @@ postponeRobotMove( ServerCtxt* server )
 #endif
 
 static void
-showPrevScore( ServerCtxt* server )
+showPrevScore( ServerCtxt* server, XWEnv xwe )
 {
     /* showRobotScores can be changed between turns */
     if ( inDuplicateMode( server ) || server->nv.showRobotScores ) {
@@ -1497,14 +1497,14 @@ showPrevScore( ServerCtxt* server )
 
             XP_U16 len = stream_getSize( prevStream );
             stream_putBytes( stream, stream_getPtr( prevStream ), len );
-            stream_destroy( prevStream );
+            stream_destroy( prevStream, xwe );
         }
 
         util_informMove( util, prevTurn, stream, server->nv.prevWordsStream );
-        stream_destroy( stream );
+        stream_destroy( stream, xwe );
 
         if ( !!server->nv.prevWordsStream ) {
-            stream_destroy( server->nv.prevWordsStream );
+            stream_destroy( server->nv.prevWordsStream, xwe );
             server->nv.prevWordsStream = NULL;
         }
     }
@@ -1564,7 +1564,7 @@ informNeedPickTiles( ServerCtxt* server, XP_Bool initial, XP_U16 turn,
 }
 
 XP_Bool
-server_do( ServerCtxt* server )
+server_do( ServerCtxt* server, XWEnv xwe )
 {
     XP_Bool result = XP_TRUE;
 
@@ -1593,7 +1593,7 @@ server_do( ServerCtxt* server )
             XP_ASSERT( server->vol.gi->serverRole == SERVER_ISSERVER );
             badWordMoveUndoAndTellUser( server, &server->illegalWordInfo );
 #ifndef XWFEATURE_STANDALONE_ONLY
-            sendBadWordMsgs( server );
+            sendBadWordMsgs( server, xwe );
 #endif
             nextTurn( server, PICK_NEXT );
             //moreToDo = XP_TRUE;   /* why? */
@@ -1601,7 +1601,7 @@ server_do( ServerCtxt* server )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         case XWSTATE_RECEIVED_ALL_REG:
-            server_sendInitialMessage( server ); 
+            sendInitialMessage( server, xwe );
             /* PENDING isn't INTURN_OFFDEVICE possible too?  Or just
                INTURN?  */
             SETSTATE( server, XWSTATE_INTURN );
@@ -1611,18 +1611,18 @@ server_do( ServerCtxt* server )
 
         case XWSTATE_MOVE_CONFIRM_MUSTSEND:
             XP_ASSERT( server->vol.gi->serverRole == SERVER_ISSERVER );
-            tellMoveWasLegal( server ); /* sets state */
+            tellMoveWasLegal( server, xwe ); /* sets state */
             nextTurn( server, PICK_NEXT );
             break;
 
 #endif /* XWFEATURE_STANDALONE_ONLY */
 
         case XWSTATE_NEEDSEND_ENDGAME:
-            endGameInternal( server, END_REASON_OUT_OF_TILES, -1 );
+            endGameInternal( server, xwe, END_REASON_OUT_OF_TILES, -1 );
             break;
 
         case XWSTATE_NEED_SHOWSCORE:
-            showPrevScore( server );
+            showPrevScore( server, xwe );
             /* state better have changed or we'll infinite loop... */
             XP_ASSERT( XWSTATE_NEED_SHOWSCORE != server->nv.gameState );
             /* either process turn or end game should come next... */
@@ -1631,12 +1631,12 @@ server_do( ServerCtxt* server )
         case XWSTATE_INTURN:
             if ( inDuplicateMode( server ) ) {
                 /* For now, anyway; makes dev easier */
-                dupe_forceCommits( server );
-                dupe_checkTurns( server );
+                dupe_forceCommits( server, xwe );
+                dupe_checkTurns( server, xwe );
             }
 
             if ( robotMovePending( server ) && !ROBOTWAITING(server) ) {
-                result = makeRobotMove( server );
+                result = makeRobotMove( server, xwe );
                 /* if robot was interrupted, we need to schedule again */
                 moreToDo = !result || 
                     (robotMovePending( server ) && !POSTPONEROBOTMOVE(server));
@@ -1964,7 +1964,7 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
 } /* makeSendableGICopy */
 
 static void
-server_sendInitialMessage( ServerCtxt* server )
+sendInitialMessage( ServerCtxt* server, XWEnv xwe )
 {
     ModelCtxt* model = server->vol.model;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
@@ -2010,7 +2010,7 @@ server_sendInitialMessage( ServerCtxt* server )
             }
         }
 
-        stream_destroy( stream );
+        stream_destroy( stream, xwe );
     }
 
     /* Set after messages are built so their connID will be 0, but all
@@ -2018,7 +2018,7 @@ server_sendInitialMessage( ServerCtxt* server )
     comms_setConnID( server->vol.comms, gameID );
 
     dupe_resetTimer( server );
-} /* server_sendInitialMessage */
+} /* sendInitialMessage */
 #endif
 
 static void
@@ -2115,7 +2115,7 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
 } /* messageStreamWithHeader */
 
 static void
-sendBadWordMsgs( ServerCtxt* server )
+sendBadWordMsgs( ServerCtxt* server, XWEnv xwe )
 {
     XP_ASSERT( server->illegalWordInfo.nWords > 0 );
 
@@ -2131,7 +2131,7 @@ sendBadWordMsgs( ServerCtxt* server )
         /* stream_putU32( stream, hash ); */
         /* XP_LOGFF( "wrote hash: %X", hash ); */
 
-        stream_destroy( stream );
+        stream_destroy( stream, xwe );
 
         freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
     }
@@ -2639,7 +2639,7 @@ storeBadWords( const WNParams* wnp, void* closure )
 } /* storeBadWords */
 
 static XP_Bool
-checkMoveAllowed( ServerCtxt* server, XP_U16 playerNum )
+checkMoveAllowed( ServerCtxt* server, XWEnv xwe, XP_U16 playerNum )
 {
     CurGameInfo* gi = server->vol.gi;
     XP_ASSERT( server->illegalWordInfo.nWords == 0 );
@@ -2648,7 +2648,7 @@ checkMoveAllowed( ServerCtxt* server, XP_U16 playerNum )
         WordNotifierInfo info;
         info.proc = storeBadWords;
         info.closure = server;
-        (void)model_checkMoveLegal( server->vol.model, playerNum, 
+        (void)model_checkMoveLegal( server->vol.model, xwe, playerNum,
                                     (XWStreamCtxt*)NULL, &info );
     }
 
@@ -2657,7 +2657,7 @@ checkMoveAllowed( ServerCtxt* server, XP_U16 playerNum )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
+sendMoveTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
             XP_Bool legal, TrayTileSet* newTiles, 
             const TrayTileSet* tradedTiles ) /* null if a move, set if a trade */
 {
@@ -2708,7 +2708,7 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
         }
     }
 
-    stream_destroy( stream );
+    stream_destroy( stream, xwe );
 } /* sendMoveTo */
 
 static XP_Bool
@@ -2771,13 +2771,13 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 } /* readMoveInfo */
 
 static void
-sendMoveToClientsExcept( ServerCtxt* server, XP_U16 whoMoved, XP_Bool legal,
+sendMoveToClientsExcept( ServerCtxt* server, XWEnv xwe, XP_U16 whoMoved, XP_Bool legal,
                          TrayTileSet* newTiles, const TrayTileSet* tradedTiles,
                          XP_U16 skip )
 {
     for ( XP_U16 devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
-            sendMoveTo( server, devIndex, whoMoved, legal, 
+            sendMoveTo( server, xwe, devIndex, whoMoved, legal,
                         newTiles, tradedTiles );
         }
     }
@@ -2801,7 +2801,7 @@ makeTradeReportIf( ServerCtxt* server, const TrayTileSet* tradedTiles )
 } /* makeTradeReportIf */
 
 static XWStreamCtxt*
-makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
+makeMoveReportIf( ServerCtxt* server, XWEnv xwe, XWStreamCtxt** wordsStream )
 {
     XWStreamCtxt* stream = NULL;
     if ( inDuplicateMode(server) || server->nv.showRobotScores ) {
@@ -2809,7 +2809,7 @@ makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
         stream = mkServerStream( server );
         *wordsStream = mkServerStream( server );
         WordNotifierInfo* ni = model_initWordCounter( model, *wordsStream );
-        (void)model_checkMoveLegal( model, server->nv.currentTurn, stream, ni );
+        (void)model_checkMoveLegal( model, xwe, server->nv.currentTurn, stream, ni );
     }
     return stream;
 } /* makeMoveReportIf */
@@ -2820,7 +2820,7 @@ makeMoveReportIf( ServerCtxt* server, XWStreamCtxt** wordsStream )
  * here.
  */
 static XP_Bool
-reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
+reflectMoveAndInform( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_Bool success;
     ModelCtxt* model = server->vol.model;
@@ -2846,7 +2846,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 
     if ( success ) {
         if ( isTrade ) {
-            sendMoveToClientsExcept( server, whoMoved, XP_TRUE, &newTiles, 
+            sendMoveToClientsExcept( server, xwe, whoMoved, XP_TRUE, &newTiles,
                                      &tradedTiles, sourceClientIndex );
 
             model_makeTileTrade( model, whoMoved,
@@ -2859,20 +2859,20 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
         } else {
             nTilesMoved = model_getCurrentMoveCount( model, whoMoved );
             isLegalMove = (nTilesMoved == 0)
-                || checkMoveAllowed( server, whoMoved );
+                || checkMoveAllowed( server, xwe, whoMoved );
 
             /* I don't think this will work if there are more than two devices in
                a palm game; need to change state and get out of here before
                returning to send additional messages.  PENDING(ehouse) */
-            sendMoveToClientsExcept( server, whoMoved, isLegalMove, &newTiles, 
+            sendMoveToClientsExcept( server, xwe, whoMoved, isLegalMove, &newTiles,
                                      (TrayTileSet*)NULL, sourceClientIndex );
 
             server->vol.showPrevMove = XP_TRUE;
             if ( isLegalMove ) {
-                mvStream = makeMoveReportIf( server, &wordsStream );
+                mvStream = makeMoveReportIf( server, xwe, &wordsStream );
             }
 
-            success = model_commitTurn( model, whoMoved, &newTiles );
+            success = model_commitTurn( model, xwe, whoMoved, &newTiles );
             server_resetEngines( server );
         }
 
@@ -2916,7 +2916,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 } /* reflectMoveAndInform */
 
 static XP_Bool
-reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
+reflectMove( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_Bool isTrade;
     XP_Bool isLegal;
@@ -2950,8 +2950,8 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
             mvStream = makeTradeReportIf( server, &tradedTiles );
         } else {
             server->vol.showPrevMove = XP_TRUE;
-            mvStream = makeMoveReportIf( server, &wordsStream );
-            model_commitTurn( model, whoMoved, &newTiles );
+            mvStream = makeMoveReportIf( server, xwe, &wordsStream );
+            model_commitTurn( model, xwe, whoMoved, &newTiles );
         }
 
         if ( !!mvStream ) {
@@ -2975,8 +2975,8 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
 #endif /* XWFEATURE_STANDALONE_ONLY */
 
 static void
-dupe_chooseMove( const ServerCtxt* server, XP_U16 nPlayers, XP_U16 scores[],
-            XP_U16* winner, XP_U16* winningNTiles )
+dupe_chooseMove( const ServerCtxt* server, XWEnv xwe, XP_U16 nPlayers,
+                 XP_U16 scores[], XP_U16* winner, XP_U16* winningNTiles )
 {
     ModelCtxt* model = server->vol.model;
     struct {
@@ -2991,7 +2991,7 @@ dupe_chooseMove( const ServerCtxt* server, XP_U16 nPlayers, XP_U16 scores[],
        random. :-) */
     for ( XP_U16 player = 0; player < nPlayers; ++player ) {
         XP_S16 score;
-        if ( !getCurrentMoveScoreIfLegal( model, player, NULL, NULL, &score ) ) {
+        if ( !getCurrentMoveScoreIfLegal( model, xwe, player, NULL, NULL, &score ) ) {
             score = 0;
         }
         scores[player] = score;
@@ -3051,39 +3051,39 @@ dupe_allForced( const ServerCtxt* server )
    present. Pick the best one and commit locally. In server case, transmit to
    each guest device as well. */
 static void
-dupe_commitAndReport( ServerCtxt* server )
+dupe_commitAndReport( ServerCtxt* server, XWEnv xwe )
 {
     const XP_U16 nPlayers = server->vol.gi->nPlayers;
     XP_U16 scores[nPlayers];
 
     XP_U16 winner;
     XP_U16 nTiles;
-    dupe_chooseMove( server, nPlayers, scores, &winner, &nTiles );
+    dupe_chooseMove( server, xwe, nPlayers, scores, &winner, &nTiles );
 
     /* If nobody can move AND there are tiles left, trade instead of recording
        a 0. Unless we're running a timer, in which case it's most likely
        noboby's playing, so pause the game instead. */
     if ( 0 == scores[winner] && 0 < pool_getNTilesLeft(server->pool) ) {
         if ( dupe_timerRunning() && dupe_allForced( server ) ) {
-            dupe_autoPause( server );
+            dupe_autoPause( server, xwe );
         } else {
-            dupe_makeAndReportTrade( server );
+            dupe_makeAndReportTrade( server, xwe );
         }
     } else {
-        dupe_commitAndReportMove( server, winner, nPlayers, scores, nTiles );
+        dupe_commitAndReportMove( server, xwe, winner, nPlayers, scores, nTiles );
     }
     dupe_clearState( server );
 } /* dupe_commitAndReport */
 
 static void
-sendStreamToDev( ServerCtxt* server, XP_U16 dev, XW_Proto code,
+sendStreamToDev( ServerCtxt* server, XWEnv xwe, XP_U16 dev, XW_Proto code,
                  XWStreamCtxt* data )
 {
     XWStreamCtxt* stream = messageStreamWithHeader( server, dev, code );
     const XP_U16 dataLen = stream_getSize( data );
     const XP_U8* dataPtr = stream_getPtr( data );
     stream_putBytes( stream, dataPtr, dataLen );
-    stream_destroy( stream );
+    stream_destroy( stream, xwe );
 }
 
 /* Called in the case where nobody was able to move, does a trade. The goal is
@@ -3092,7 +3092,7 @@ sendStreamToDev( ServerCtxt* server, XP_U16 dev, XW_Proto code,
    of the same back.
 */
 static void
-dupe_makeAndReportTrade( ServerCtxt* server )
+dupe_makeAndReportTrade( ServerCtxt* server, XWEnv xwe )
 {
     LOG_FUNC();
     PoolContext* pool = server->pool;
@@ -3124,10 +3124,10 @@ dupe_makeAndReportTrade( ServerCtxt* server )
 
         /* Send it to each one */
         for ( XP_U16 dev = 1; dev < server->nv.nDevices; ++dev ) {
-            sendStreamToDev( server, dev, XWPROTO_DUPE_STUFF, tmpStream );
+            sendStreamToDev( server, xwe, dev, XWPROTO_DUPE_STUFF, tmpStream );
         }
 
-        stream_destroy( tmpStream );
+        stream_destroy( tmpStream, xwe );
     }
 
     dupe_resetTimer( server );
@@ -3137,7 +3137,7 @@ dupe_makeAndReportTrade( ServerCtxt* server )
 } /* dupe_makeAndReportTrade */
 
 static void
-dupe_transmitPause( ServerCtxt* server, DupPauseType typ, XP_U16 turn,
+dupe_transmitPause( ServerCtxt* server, XWEnv xwe, DupPauseType typ, XP_U16 turn,
                     const XP_UCHAR* msg, XP_S16 skipDev )
 {
     XP_LOGF( "%s(type=%d, msg=%s)", __func__, typ, msg );
@@ -3161,20 +3161,20 @@ dupe_transmitPause( ServerCtxt* server, DupPauseType typ, XP_U16 turn,
         }
 
         if ( amClient ) {
-            sendStreamToDev( server, SERVER_DEVICE, XWPROTO_DUPE_STUFF, tmpStream );
+            sendStreamToDev( server, xwe, SERVER_DEVICE, XWPROTO_DUPE_STUFF, tmpStream );
         } else {
             for ( XP_U16 dev = 1; dev < server->nv.nDevices; ++dev ) {
                 if ( dev != skipDev ) {
-                    sendStreamToDev( server, dev, XWPROTO_DUPE_STUFF, tmpStream );
+                    sendStreamToDev( server, xwe, dev, XWPROTO_DUPE_STUFF, tmpStream );
                 }
             }
         }
-        stream_destroy( tmpStream );
+        stream_destroy( tmpStream, xwe );
     }
 }
 
 static XP_Bool
-dupe_receivePause( ServerCtxt* server, XWStreamCtxt* stream )
+dupe_receivePause( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     XP_Bool isClient = (XP_Bool)stream_getBits( stream, 1 );
@@ -3201,7 +3201,7 @@ dupe_receivePause( ServerCtxt* server, XWStreamCtxt* stream )
 
         if ( amServer( server ) ) {
             XP_U16 senderDev = getIndexForStream( server, stream );
-            dupe_transmitPause( server, pauseType, turn, msg, senderDev );
+            dupe_transmitPause( server, xwe, pauseType, turn, msg, senderDev );
         }
 
         model_noteDupePause( server->vol.model, pauseType, turn, msg );
@@ -3221,23 +3221,23 @@ dupe_receivePause( ServerCtxt* server, XWStreamCtxt* stream )
 }
 
 static XP_Bool
-dupe_handleStuff( ServerCtxt* server, XWStreamCtxt* stream )
+dupe_handleStuff( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_Bool accepted;
     XP_Bool isServer = amServer( server );
     DUPE_STUFF typ = getDupeStuffMark( stream );
     switch ( typ ) {
     case DUPE_STUFF_MOVE_CLIENT:
-        accepted = isServer && dupe_handleClientMoves( server, stream );
+        accepted = isServer && dupe_handleClientMoves( server, xwe, stream );
         break;
     case DUPE_STUFF_MOVES_SERVER:
-        accepted = !isServer && dupe_handleServerMoves( server, stream );
+        accepted = !isServer && dupe_handleServerMoves( server, xwe, stream );
         break;
     case DUPE_STUFF_TRADES_SERVER:
         accepted = !isServer && dupe_handleServerTrade( server, stream );
         break;
     case DUPE_STUFF_PAUSE:
-        accepted = dupe_receivePause( server, stream );
+        accepted = dupe_receivePause( server, xwe, stream );
         break;
     default:
         XP_ASSERT(0);
@@ -3247,7 +3247,7 @@ dupe_handleStuff( ServerCtxt* server, XWStreamCtxt* stream )
 }
 
 static void
-dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
+dupe_commitAndReportMove( ServerCtxt* server, XWEnv xwe, XP_U16 winner,
                           XP_U16 nPlayers, XP_U16* scores,
                           XP_U16 nTiles )
 {
@@ -3265,7 +3265,8 @@ dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
         model_resetCurrentTurn( model, player );
     }
 
-    model_commitDupeTurn( model, &moveInfo, nPlayers, scores, &newTiles );
+    model_commitDupeTurn( model, xwe, &moveInfo, nPlayers,
+                          scores, &newTiles );
 
     updateOthersTiles( server );
 
@@ -3285,10 +3286,10 @@ dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
 
         /* Send it to each one */
         for ( XP_U16 dev = 1; dev < server->nv.nDevices; ++dev ) {
-            sendStreamToDev( server, dev, XWPROTO_DUPE_STUFF, tmpStream );
+            sendStreamToDev( server, xwe, dev, XWPROTO_DUPE_STUFF, tmpStream );
         }
 
-        stream_destroy( tmpStream );
+        stream_destroy( tmpStream, xwe );
     }
 
     dupe_resetTimer( server );
@@ -3297,7 +3298,7 @@ dupe_commitAndReportMove( ServerCtxt* server, XP_U16 winner,
 } /* dupe_commitAndReportMove */
 
 static void
-dupe_forceCommits( ServerCtxt* server )
+dupe_forceCommits( ServerCtxt* server, XWEnv xwe )
 {
     if ( dupe_timerRunning() ) {
         XP_U32 now = dutil_getCurSeconds( server->vol.dutil );
@@ -3307,11 +3308,11 @@ dupe_forceCommits( ServerCtxt* server )
             for ( XP_U16 ii = 0; ii < server->vol.gi->nPlayers; ++ii ) {
                 if ( server->vol.gi->players[ii].isLocal
                      && !server->nv.dupTurnsMade[ii] ) {
-                    if ( !model_checkMoveLegal( model, ii, (XWStreamCtxt*)NULL,
+                    if ( !model_checkMoveLegal( model, xwe, ii, (XWStreamCtxt*)NULL,
                                                 (WordNotifierInfo*)NULL ) ) {
                         model_resetCurrentTurn( model, ii );
                     }
-                    commitMoveImpl( server, ii, NULL, XP_TRUE );
+                    commitMoveImpl( server, xwe, ii, NULL, XP_TRUE );
                 }
             }
         }
@@ -3353,7 +3354,7 @@ server_dupTurnDone( const ServerCtxt* server, XP_U16 turn )
 }
 
 static XP_Bool
-dupe_checkTurns( ServerCtxt* server )
+dupe_checkTurns( ServerCtxt* server, XWEnv xwe )
 {
     /* If all local players have made moves, it's time to commit the moves
        locally or notifiy the host */
@@ -3368,7 +3369,7 @@ dupe_checkTurns( ServerCtxt* server )
     if ( allDone ) {            /* Yep: commit time */
         if ( amServer ) {       /* I now have everything I need to move the
                                    game foreward */
-            dupe_commitAndReport( server );
+            dupe_commitAndReport( server, xwe );
         } else if ( ! server->nv.dupTurnsSent ) { /* I need to send info for
                                                      local players to host */
             XWStreamCtxt* stream =
@@ -3392,7 +3393,7 @@ dupe_checkTurns( ServerCtxt* server )
                 }
             }
 
-            stream_destroy( stream ); /* sends it */
+            stream_destroy( stream, xwe ); /* sends it */
             server->nv.dupTurnsSent = XP_TRUE;
         }
     }
@@ -3447,14 +3448,14 @@ dupe_postStatus( const ServerCtxt* server, XP_Bool allDone )
 
 /* Called on client only? */
 static void
-dupe_storeTurn( ServerCtxt* server, XP_U16 turn, XP_Bool forced )
+dupe_storeTurn( ServerCtxt* server, XWEnv xwe, XP_U16 turn, XP_Bool forced )
 {
     XP_ASSERT( !server->nv.dupTurnsMade[turn] );
     XP_ASSERT( server->vol.gi->players[turn].isLocal ); /* not if I'm the host! */
     server->nv.dupTurnsMade[turn] = XP_TRUE;
     server->nv.dupTurnsForced[turn] = forced;
 
-    XP_Bool allDone = dupe_checkTurns( server );
+    XP_Bool allDone = dupe_checkTurns( server, xwe );
     dupe_postStatus( server, allDone );
     nextTurn( server, PICK_NEXT );
 
@@ -3517,8 +3518,8 @@ dupe_nextTurn( const ServerCtxt* server )
  * if it was legal -- but only if DISALLOW is set.
  */
 static XP_Bool
-commitMoveImpl( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP,
-                XP_Bool forced )
+commitMoveImpl( ServerCtxt* server, XWEnv xwe, XP_U16 player,
+                TrayTileSet* newTilesP, XP_Bool forced )
 {
     XP_Bool inDupeMode = inDuplicateMode(server);
     XP_ASSERT( server->nv.currentTurn == player || inDupeMode );
@@ -3533,7 +3534,7 @@ commitMoveImpl( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP,
     CurGameInfo* gi = server->vol.gi;
     if ( LP_IS_ROBOT( &gi->players[turn] ) ) {
         ModelCtxt* model = server->vol.model;
-        XP_ASSERT( model_checkMoveLegal( model, turn, (XWStreamCtxt*)NULL,
+        XP_ASSERT( model_checkMoveLegal( model, xwe, turn, (XWStreamCtxt*)NULL,
                                          (WordNotifierInfo*)NULL ) );
     }
 #endif
@@ -3543,22 +3544,22 @@ commitMoveImpl( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP,
     XP_ASSERT( turn >= 0 );
 
     if ( inDupeMode ) {
-        dupe_storeTurn( server, turn, forced );
+        dupe_storeTurn( server, xwe, turn, forced );
     } else {
-        finishMove( server, &newTiles, turn );
+        finishMove( server, xwe, &newTiles, turn );
     }
 
     return XP_TRUE;
 }
 
 XP_Bool
-server_commitMove( ServerCtxt* server, XP_U16 player, TrayTileSet* newTilesP )
+server_commitMove( ServerCtxt* server, XWEnv xwe, XP_U16 player, TrayTileSet* newTilesP )
 {
-    return commitMoveImpl( server, player, newTilesP, XP_FALSE );
+    return commitMoveImpl( server, xwe, player, newTilesP, XP_FALSE );
 }
 
 static void
-finishMove( ServerCtxt* server, TrayTileSet* newTiles, XP_U16 turn )
+finishMove( ServerCtxt* server, XWEnv xwe, TrayTileSet* newTiles, XP_U16 turn )
 {
     LOG_FUNC();
     ModelCtxt* model = server->vol.model;
@@ -3575,18 +3576,18 @@ finishMove( ServerCtxt* server, TrayTileSet* newTiles, XP_U16 turn )
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( isClient ) {
         /* just send to server */
-        sendMoveTo( server, SERVER_DEVICE, turn, XP_TRUE, newTiles,
+        sendMoveTo( server, xwe, SERVER_DEVICE, turn, XP_TRUE, newTiles,
                     (TrayTileSet*)NULL );
     } else {
-        isLegalMove = checkMoveAllowed( server, turn );
-        sendMoveToClientsExcept( server, turn, isLegalMove, newTiles,
+        isLegalMove = checkMoveAllowed( server, xwe, turn );
+        sendMoveToClientsExcept( server, xwe, turn, isLegalMove, newTiles,
                                  (TrayTileSet*)NULL, SERVER_DEVICE );
     }
 #else
-    isLegalMove = checkMoveAllowed( server, turn );
+    isLegalMove = checkMoveAllowed( server, xwe, turn );
 #endif
 
-    model_commitTurn( model, turn, newTiles );
+    model_commitTurn( model, xwe, turn, newTiles );
     sortTilesIf( server, turn );
 
     if ( !isLegalMove && !isClient ) {
@@ -3612,7 +3613,7 @@ finishMove( ServerCtxt* server, TrayTileSet* newTiles, XP_U16 turn )
 } /* finishMove */
     
 XP_Bool
-server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
+server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
                     TrayTileSet* newTilesP )
 {
     TrayTileSet newTiles = {0};
@@ -3626,9 +3627,9 @@ server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         /* just send to server */
-        sendMoveTo(server, SERVER_DEVICE, turn, XP_TRUE, &newTiles, oldTiles);
+        sendMoveTo(server, xwe, SERVER_DEVICE, turn, XP_TRUE, &newTiles, oldTiles);
     } else {
-        sendMoveToClientsExcept( server, turn, XP_TRUE, &newTiles, oldTiles, 
+        sendMoveToClientsExcept( server, xwe, turn, XP_TRUE, &newTiles, oldTiles,
                                  SERVER_DEVICE );
     }
 #endif
@@ -3757,7 +3758,8 @@ getQuitter( const ServerCtxt* server, XWStreamCtxt* stream, XP_S8* quitter )
  * GAME_OVER message to all clients including the one that requested it.
  */
 static void
-endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why), XP_S16 quitter )
+endGameInternal( ServerCtxt* server, XWEnv xwe, GameEndReason XP_UNUSED(why),
+                 XP_S16 quitter )
 {
     XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
     XP_ASSERT( quitter < server->vol.gi->nPlayers );
@@ -3771,7 +3773,7 @@ endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why), XP_S16 quitte
             stream = messageStreamWithHeader( server, devIndex,
                                               XWPROTO_END_GAME );
             putQuitter( server, stream, quitter );
-            stream_destroy( stream );
+            stream_destroy( stream, xwe );
         }
 #endif
         doEndGame( server, quitter );
@@ -3782,7 +3784,7 @@ endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why), XP_S16 quitte
         stream = messageStreamWithHeader( server, SERVER_DEVICE,
                                           XWPROTO_CLIENT_REQ_END_GAME );
         putQuitter( server, stream, quitter );
-        stream_destroy( stream );
+        stream_destroy( stream, xwe );
 
         /* Do I want to change the state I'm in?  I don't think so.... */
 #endif
@@ -3790,11 +3792,11 @@ endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why), XP_S16 quitte
 } /* endGameInternal */
 
 void
-server_endGame( ServerCtxt* server )
+server_endGame( ServerCtxt* server, XWEnv xwe )
 {
     XW_State gameState = server->nv.gameState;
     if ( gameState < XWSTATE_GAMEOVER && gameState >= XWSTATE_INTURN ) {
-        endGameInternal( server, END_REASON_USER_REQUEST, server->nv.currentTurn );
+        endGameInternal( server, xwe, END_REASON_USER_REQUEST, server->nv.currentTurn );
     }
 } /* server_endGame */
 
@@ -3851,13 +3853,13 @@ setTurn( ServerCtxt* server, XP_S16 turn )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-tellMoveWasLegal( ServerCtxt* server )
+tellMoveWasLegal( ServerCtxt* server, XWEnv xwe )
 {
     XWStreamCtxt* stream =
         messageStreamWithHeader( server, server->lastMoveSource,
                                  XWPROTO_MOVE_CONFIRM );
 
-    stream_destroy( stream );
+    stream_destroy( stream, xwe );
 
     SETSTATE( server, XWSTATE_INTURN );
 } /* tellMoveWasLegal */
@@ -3892,7 +3894,7 @@ handleMoveOk( ServerCtxt* server, XWStreamCtxt* XP_UNUSED(incoming) )
 } /* handleMoveOk */
 
 static void
-sendUndoTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 nUndone, 
+sendUndoTo( ServerCtxt* server, XWEnv xwe, XP_U16 devIndex, XP_U16 nUndone,
             XP_U16 lastUndone, XP_U32 newHash )
 {
     XWStreamCtxt* stream;
@@ -3906,24 +3908,24 @@ sendUndoTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 nUndone,
     stream_putU16( stream, lastUndone );
     stream_putU32( stream, newHash );
 
-    stream_destroy( stream );
+    stream_destroy( stream, xwe );
 } /* sendUndoTo */
 
 static void
-sendUndoToClientsExcept( ServerCtxt* server, XP_U16 skip, XP_U16 nUndone,
+sendUndoToClientsExcept( ServerCtxt* server, XWEnv xwe, XP_U16 skip, XP_U16 nUndone,
                          XP_U16 lastUndone, XP_U32 newHash )
 {
     XP_U16 devIndex;
 
     for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
-            sendUndoTo( server, devIndex, nUndone, lastUndone, newHash );
+            sendUndoTo( server, xwe, devIndex, nUndone, lastUndone, newHash );
         }
     }
 } /* sendUndoToClientsExcept */
 
 static XP_Bool
-reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
+reflectUndos( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* stream, XW_Proto code )
 {
     LOG_FUNC();
     XP_U16 nUndone;
@@ -3956,7 +3958,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */
             XP_U16 sourceClientIndex = getIndexForStream( server, stream );
 
-            sendUndoToClientsExcept( server, sourceClientIndex, nUndone, 
+            sendUndoToClientsExcept( server, xwe, sourceClientIndex, nUndone,
                                      lastUndone, newHash );
         }
 
@@ -3974,7 +3976,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
 #endif
 
 XP_Bool
-server_handleUndo( ServerCtxt* server, XP_U16 limit )
+server_handleUndo( ServerCtxt* server, XWEnv xwe, XP_U16 limit )
 {
     LOG_FUNC();
     XP_Bool result = XP_FALSE;
@@ -4015,9 +4017,9 @@ server_handleUndo( ServerCtxt* server, XP_U16 limit )
         XP_ASSERT( lastUndone != 0xFFFF );
         XP_LOGFF( "popped to hash %X", newHash );
         if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-            sendUndoTo( server, SERVER_DEVICE, nUndone, lastUndone, newHash );
+            sendUndoTo( server, xwe, SERVER_DEVICE, nUndone, lastUndone, newHash );
         } else {
-            sendUndoToClientsExcept( server, SERVER_DEVICE, nUndone, 
+            sendUndoToClientsExcept( server, xwe, SERVER_DEVICE, nUndone,
                                      lastUndone, newHash );
         }
 #endif
@@ -4098,12 +4100,12 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
         break;
 #ifdef XWFEATURE_CHAT
     case XWPROTO_CHAT:
-        accepted = receiveChat( server, incoming );
+        accepted = receiveChat( server, xwe, incoming );
         break;
 #endif
     case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
         if ( XWSTATE_INTURN == server->nv.gameState ) {
-            accepted = reflectMoveAndInform( server, incoming );
+            accepted = reflectMoveAndInform( server, xwe, incoming );
         } else {
             XP_LOGFF( "bad state: %s; dropping", getStateStr( server->nv.gameState ) );
             accepted = XP_TRUE;
@@ -4115,7 +4117,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
             XP_LOGF( "%s(): %s received by server!", __func__, codeToStr(code) );
             accepted = XP_FALSE;
         } else {
-            accepted = reflectMove( server, incoming );
+            accepted = reflectMove( server, xwe, incoming );
         }
         if ( accepted ) {
             nextTurn( server, PICK_NEXT );
@@ -4127,7 +4129,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
 
     case XWPROTO_UNDO_INFO_CLIENT:
     case XWPROTO_UNDO_INFO_SERVER:
-        accepted = reflectUndos( server, incoming, code );
+        accepted = reflectUndos( server, xwe, incoming, code );
         /* nextTurn is called by reflectUndos */
         break;
 
@@ -4145,7 +4147,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     case XWPROTO_CLIENT_REQ_END_GAME: {
         XP_S8 quitter;
         getQuitter( server, incoming, &quitter );
-        endGameInternal( server, END_REASON_USER_REQUEST, quitter );
+        endGameInternal( server, xwe, END_REASON_USER_REQUEST, quitter );
         accepted = XP_TRUE;
     }
         break;
@@ -4157,7 +4159,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     }
         break;
     case XWPROTO_DUPE_STUFF:
-        accepted = dupe_handleStuff( server, incoming );
+        accepted = dupe_handleStuff( server, xwe, incoming );
         break;
     default:
         XP_WARNF( "%s: Unknown code on incoming message: %d\n",
@@ -4167,7 +4169,7 @@ server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming )
     } /* switch */
 
     XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
-    stream_close( incoming );
+    stream_close( incoming, xwe );
 
     XP_LOGFF( "=> %d (code=%s)", accepted, codeToStr(code) );
     // XP_ASSERT( accepted );      /* do not commit!!! */

@@ -29,8 +29,8 @@
 extern "C" {
 #endif
 
-typedef void (*MemStreamCloseCallback)( XWStreamCtxt* stream, 
-                                        void* closure );
+typedef void (*MemStreamCloseCallback)( XWStreamCtxt* stream,
+                                        XWEnv env, void* closure );
 
 XWStreamCtxt* mem_stream_make_raw( MPFORMAL VTableMgr* vtmgr);
 

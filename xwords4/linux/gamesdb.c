@@ -261,7 +261,7 @@ writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb )
 }
 
 void
-writeToDB( XWStreamCtxt* stream, void* closure )
+writeToDB( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
     sqlite3_int64 selRow = cGlobals->rowid;
@@ -298,7 +298,7 @@ addSnapshot( CommonGlobals* cGlobals )
         removeSurface( dctx );
         cGlobals->rowid = writeBlobColumnStream( stream, cGlobals->params->pDb,
                                                  cGlobals->rowid, "snap" );
-        stream_destroy( stream );
+        stream_destroy( stream, NULL_XWE );
     }
 
     LOG_RETURN_VOID();

@@ -346,7 +346,7 @@ relaycon_invite( LaunchParams* params, XP_U32 destRelayDevID,
     XP_ASSERT( indx + len < sizeof(tmpbuf) );
     const XP_U8* ptr = stream_getPtr( stream );
     indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, ptr, len );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL_XWE );
 
     sendIt( storage, tmpbuf, indx, 0.5 );
     LOG_RETURN_VOID();
@@ -690,7 +690,7 @@ process( RelayConStorage* storage, XP_U8* buf, ssize_t nRead )
                 NetLaunchInfo invit;
                 XP_Bool success = nli_makeFromStream( &invit, stream );
                 XP_LOGF( "sender: %d", sender );
-                stream_destroy( stream );
+                stream_destroy( stream, NULL );
 
                 if ( success ) {
                     (*storage->procs.inviteReceived)( storage->procsClosure, 

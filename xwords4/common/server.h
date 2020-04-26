@@ -39,8 +39,8 @@ ServerCtxt* server_makeFromStream( MPFORMAL XWStreamCtxt* stream,
 
 void server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream );
 
-void server_reset( ServerCtxt* server, CommsCtxt* comms );
-void server_destroy( ServerCtxt* server );
+void server_reset( ServerCtxt* server, XWEnv xwe, CommsCtxt* comms );
+void server_destroy( ServerCtxt* server, XWEnv xwe );
 
 void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
 
@@ -71,7 +71,7 @@ XP_U16 server_secondsUsedBy( ServerCtxt* server, XP_U16 playerNum );
 
 /* It might make more sense to have the board supply the undo method clients
    call... */
-XP_Bool server_handleUndo( ServerCtxt* server, XP_U16 limit );
+XP_Bool server_handleUndo( ServerCtxt* server, XWEnv xwe, XP_U16 limit );
 
 /* signed because negative number means nobody's turn yet */
 XP_S16 server_getCurrentTurn( const ServerCtxt* server, XP_Bool* isLocal );
@@ -82,8 +82,8 @@ XP_S16 server_getTimerSeconds( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_dupTurnDone( const ServerCtxt* server, XP_U16 turn );
 XP_Bool server_canPause( const ServerCtxt* server );
 XP_Bool server_canUnpause( const ServerCtxt* server );
-void server_pause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg );
-void server_unpause( ServerCtxt* server, XP_S16 turn, const XP_UCHAR* msg );
+void server_pause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg );
+void server_unpause( ServerCtxt* server, XWEnv xwe, XP_S16 turn, const XP_UCHAR* msg );
 
 /* return bitvector marking players still not arrived in networked game */
 XP_U16 server_getMissingPlayers( const ServerCtxt* server );
@@ -98,15 +98,16 @@ void server_tilesPicked( ServerCtxt* server, XP_U16 player,
 
 XP_U16 server_getPendingRegs( const ServerCtxt* server );
 
-XP_Bool server_do( ServerCtxt* server );
+XP_Bool server_do( ServerCtxt* server, XWEnv xwe );
 
-XP_Bool server_commitMove( ServerCtxt* server, XP_U16 player,
+XP_Bool server_commitMove( ServerCtxt* server, XWEnv xwe, XP_U16 player,
                            TrayTileSet* newTiles );
-XP_Bool server_commitTrade( ServerCtxt* server, const TrayTileSet* oldTiles,
+XP_Bool server_commitTrade( ServerCtxt* server, XWEnv xwe,
+                            const TrayTileSet* oldTiles,
                             TrayTileSet* newTiles );
 
 /* call this when user wants to end the game */
-void server_endGame( ServerCtxt* server );
+void server_endGame( ServerCtxt* server, XWEnv xwe );
 
 /* called when running as either client or server */
 XP_Bool server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* incoming );
@@ -114,11 +115,13 @@ XP_Bool server_receiveMessage( ServerCtxt* server, XWEnv xwe, XWStreamCtxt* inco
 /* client-side messages.  Client (platform code)owns the stream used to talk
  * to the server, and passes it in. */
 #ifndef XWFEATURE_STANDALONE_ONLY
-XP_Bool server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream );
+XP_Bool server_initClientConnection( ServerCtxt* server, XWEnv xwe,
+                                     XWStreamCtxt* stream );
 #endif
 
 #ifdef XWFEATURE_CHAT
-void server_sendChat( ServerCtxt* server, const XP_UCHAR* msg, XP_S16 from );
+void server_sendChat( ServerCtxt* server, XWEnv xwe,
+                      const XP_UCHAR* msg, XP_S16 from );
 #endif
 
 void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,

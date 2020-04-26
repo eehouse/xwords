@@ -135,7 +135,7 @@ tryConnectToServer( CommonGlobals* cGlobals )
         mem_stream_make( MPPARM(cGlobals->util->mpool) params->vtMgr,
                          cGlobals, CHANNEL_NONE,
                          sendOnClose );
-    (void)server_initClientConnection( cGlobals->game.server,
+    (void)server_initClientConnection( cGlobals->game.server, NULL_XWE,
                                        stream );
 }
 
@@ -199,7 +199,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                       params->vtMgr );
         if ( !loadGame( stream, params->pDb, cGlobals->rowid ) ) {
-            stream_destroy( stream );
+            stream_destroy( stream, NULL_XWE);
             stream = NULL;
         }
     }
@@ -216,7 +216,7 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
                                       cGlobals->draw,
                                       &cGlobals->cp, procs );
         XP_LOGF( "%s: loaded gi at %p", __func__, &cGlobals->gi );
-        stream_destroy( stream );
+        stream_destroy( stream, NULL_XWE );
     }
 
     if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
@@ -313,14 +313,14 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
                        1 + XP_STRLEN(params->connInfo.relay.invite) );
             addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
             addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-            comms_augmentHostAddr( cGlobals->game.comms, &addr ); /* sends stuff */
+            comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr ); /* sends stuff */
         }
 
         if ( !!returnAddrP ) {
             /* This may trigger network activity */
             CommsCtxt* comms = cGlobals->game.comms;
             if ( !!comms ) {
-                comms_augmentHostAddr( cGlobals->game.comms, &returnAddr );
+                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &returnAddr );
             }
         }
 #endif
@@ -346,10 +346,10 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!cGlobals->game.comms ) {
-            comms_start( cGlobals->game.comms );
+            comms_start( cGlobals->game.comms, NULL_XWE );
         }
 #endif
-        server_do( cGlobals->game.server );
+        server_do( cGlobals->game.server, NULL_XWE );
         linuxSaveGame( cGlobals );   /* again, to include address etc. */
     }
     return opened;
@@ -426,7 +426,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
         if ( redraw ) {
             linuxSaveGame( cGlobals );
         }
-        stream_destroy( stream );
+        stream_destroy( stream, NULL_XWE );
 
         /* if there's something to draw resulting from the message, we
            need to give the main loop time to reflect that on the screen
@@ -436,7 +436,7 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
             util_requestTime( cGlobals->util );
         } else {
             for ( int ii = 0; ii < 4; ++ii ) {
-                redraw = server_do( game->server ) || redraw;
+                redraw = server_do( game->server, NULL_XWE ) || redraw;
             }
         }
         if ( hasDraw && redraw ) {
@@ -460,7 +460,7 @@ requestMsgsIdle( gpointer data )
 }
 
 void
-writeToFile( XWStreamCtxt* stream, void* closure )
+writeToFile( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 {
     void* buf;
     int fd;
@@ -492,7 +492,8 @@ writeToFile( XWStreamCtxt* stream, void* closure )
 } /* writeToFile */
 
 void
-catOnClose( XWStreamCtxt* stream, void* XP_UNUSED(closure) )
+catOnClose( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe),
+            void* XP_UNUSED(closure) )
 {
     XP_U16 nBytes;
     char* buffer;
@@ -508,11 +509,11 @@ catOnClose( XWStreamCtxt* stream, void* XP_UNUSED(closure) )
 } /* catOnClose */
 
 void
-sendOnClose( XWStreamCtxt* stream, void* closure )
+sendOnClose( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
     XP_LOGF( "%s called with msg of len %d", __func__, stream_getSize(stream) );
-    (void)comms_send( cGlobals->game.comms, stream );
+    (void)comms_send( cGlobals->game.comms, NULL_XWE, stream );
 }
 
 void
@@ -527,7 +528,7 @@ catGameHistory( CommonGlobals* cGlobals )
         model_writeGameHistory( cGlobals->game.model, NULL_XWE, stream,
                                 cGlobals->game.server, gameOver );
         stream_putU8( stream, '\n' );
-        stream_destroy( stream );
+        stream_destroy( stream, NULL_XWE );
     }
 } /* catGameHistory */
 
@@ -548,7 +549,7 @@ catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
     }
     server_writeFinalScores( cGlobals->game.server, stream );
     stream_putU8( stream, '\n' );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL_XWE );
 } /* printFinalScores */
 
 XP_UCHAR*
@@ -592,12 +593,12 @@ linuxSaveGame( CommonGlobals* cGlobals )
                                        cGlobals, 0, onClose );
             stream_open( outStream );
 
-            game_saveToStream( &cGlobals->game, cGlobals->gi, 
+            game_saveToStream( &cGlobals->game, NULL_XWE, cGlobals->gi,
                                outStream, ++cGlobals->curSaveToken );
             cGlobals->lastStreamSize = stream_getSize( outStream );
-            stream_destroy( outStream );
+            stream_destroy( outStream, NULL_XWE );
 
-            game_saveSucceeded( &cGlobals->game, cGlobals->curSaveToken );
+            game_saveSucceeded( &cGlobals->game, NULL_XWE, cGlobals->curSaveToken );
             XP_LOGF( "%s: saved", __func__ );
 
         } else {
@@ -624,7 +625,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                              NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL_XWE );
 
     unsigned short len;
     for ( ; ; ) {
@@ -648,7 +649,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                                       params->vtMgr );
         stream_putBytes( stream, buf, len );
         (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
-        stream_destroy( stream );
+        stream_destroy( stream, NULL_XWE );
     }
 
     LOG_RETURN_VOID();
@@ -671,7 +672,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                              NULL /*draw*/,
                              &cGlobals->cp, procs );
     XP_ASSERT( opened );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL_XWE );
 
     int fd = open( params->pipe, O_RDWR );
     XP_ASSERT( fd >= 0 );
@@ -698,7 +699,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                                           params->vtMgr );
             stream_putBytes( stream, buf, len );
             (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
-            stream_destroy( stream );
+            stream_destroy( stream, NULL_XWE );
         }
 
         /* 0-length packet closes it off */
@@ -772,7 +773,7 @@ secondTimerFired( gpointer data )
         if ( 0 != undoRatio ) {
             if ( (XP_RANDOM() % 1000) < undoRatio ) {
                 XP_LOGFF( "calling server_handleUndo()" );
-                if ( server_handleUndo( game->server, 1 ) ) {
+                if ( server_handleUndo( game->server, NULL_XWE, 1 ) ) {
                     board_draw( game->board, NULL_XWE );
                 }
             } 
@@ -1433,7 +1434,7 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
                 addr_addType( &addr, COMMS_CONN_RELAY );
                 redraw = game_receiveMessage( &cGlobals->game, NULL_XWE, inboundS, &addr );
 
-                stream_destroy( inboundS );
+                stream_destroy( inboundS, NULL_XWE );
             }
                 
             /* if there's something to draw resulting from the
@@ -1500,7 +1501,7 @@ linux_tcp_reset( CommonGlobals* globals )
 # endif
 
 void
-linux_reset( void* closure )
+linux_reset( XWEnv xwe, void* closure )
 {
     CommonGlobals* globals = (CommonGlobals*)closure;
     CommsConnType conType = globals->params->conType;
@@ -1523,9 +1524,9 @@ linux_reset( void* closure )
 #endif
 
 XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
-            const CommsAddrRec* addrRec, CommsConnType conType, XP_U32 gameID, 
-            void* closure )
+linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
+            const XP_UCHAR* msgNo, const CommsAddrRec* addrRec, CommsConnType conType,
+            XP_U32 gameID, void* closure )
 {
     XP_LOGF( "%s(mid=%s)", __func__, msgNo );
     XP_S16 nSent = -1;
@@ -1644,7 +1645,7 @@ linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int 
         if ( nRead != 2 ) {
             linux_close_socket( cGlobals );
 
-            comms_transportFailed( cGlobals->game.comms, COMMS_CONN_RELAY );
+            comms_transportFailed( cGlobals->game.comms, NULL_XWE, COMMS_CONN_RELAY );
             nRead = -1;
         } else {
             unsigned short packetSize = ntohs( tmp );
@@ -1697,7 +1698,7 @@ linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int 
 
             if ( -1 == nRead ) {
                 linux_close_socket( cGlobals );
-                comms_transportFailed( cGlobals->game.comms, COMMS_CONN_RELAY );
+                comms_transportFailed( cGlobals->game.comms, NULL_XWE, COMMS_CONN_RELAY );
             }
         }
     }
@@ -1822,14 +1823,14 @@ changeRolesIdle( gpointer data )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)data;
     ServerCtxt* server = cGlobals->game.server;
-    server_reset( server, cGlobals->game.comms );
+    server_reset( server, NULL_XWE, cGlobals->game.comms );
     if ( SERVER_ISCLIENT == cGlobals->gi->serverRole ) {
         XWStreamCtxt* stream =
             mem_stream_make( MPPARM(cGlobals->util->mpool) cGlobals->params->vtMgr,
                              cGlobals, CHANNEL_NONE, sendOnClose );
-        (void)server_initClientConnection( server, stream );
+        (void)server_initClientConnection( server, NULL_XWE, stream );
     }
-    (void)server_do( server );
+    (void)server_do( server, NULL_XWE );
     return 0;
 }
 
@@ -2377,7 +2378,7 @@ idle_func( gpointer data )
     cGlobals->idleID = 0;        /* 0 is illegal event source ID */
 
     ServerCtxt* server = cGlobals->game.server;
-    if ( !!server && server_do( server ) ) {
+    if ( !!server && server_do( server, NULL_XWE ) ) {
         if ( !!cGlobals->game.board ) {
             board_draw( cGlobals->game.board, NULL_XWE );
         }

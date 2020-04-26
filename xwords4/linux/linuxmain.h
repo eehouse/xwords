@@ -38,9 +38,9 @@ typedef struct LinuxBMStruct {
 } LinuxBMStruct;
 
 int initListenerSocket( int port );
-XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
-                   const CommsAddrRec* addrRec, CommsConnType conType,
-                   XP_U32 gameID, void* closure );
+XP_S16 linux_send( XWEnv xwe, const XP_U8* buf, XP_U16 buflen,
+                   const XP_UCHAR* msgNo, const CommsAddrRec* addrRec,
+                   CommsConnType conType, XP_U32 gameID, void* closure );
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define LINUX_SEND linux_send
 #else
@@ -61,14 +61,14 @@ XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals,
 XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 
 void catGameHistory( CommonGlobals* cGlobals );
-void catOnClose( XWStreamCtxt* stream, void* closure );
-void sendOnClose( XWStreamCtxt* stream, void* closure );
+void catOnClose( XWStreamCtxt* stream, XWEnv xwe, void* closure );
+void sendOnClose( XWStreamCtxt* stream, XWEnv xwe, void* closure );
 
 void catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter );
 XP_Bool file_exists( const char* fileName );
 XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name );
 XWStreamCtxt* streamFromDB( CommonGlobals* cGlobals );
-void writeToFile( XWStreamCtxt* stream, void* closure );
+void writeToFile( XWStreamCtxt* stream, XWEnv xwe, void* closure );
 XP_Bool getDictPath( const LaunchParams *params, const char* name, 
                      char* result, int resultLen );
 GSList* listDicts( const LaunchParams *params );

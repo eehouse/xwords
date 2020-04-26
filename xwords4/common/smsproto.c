@@ -89,6 +89,7 @@ struct SMSProto {
 
 static int nextMsgID( SMSProto* state );
 static XWStreamCtxt* mkStream( SMSProto* state );
+static void destroyStream( XWStreamCtxt* stream );
 static SMSMsgArray* toNetMsgs( SMSProto* state, ToPhoneRec* rec, XP_Bool forceOld );
 static ToPhoneRec* getForPhone( SMSProto* state, const XP_UCHAR* phone,
                                 XP_Bool create );
@@ -361,7 +362,7 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
                         }
                     }
                 }
-                stream_destroy( msgStream );
+                destroyStream( msgStream );
             }
         }
             break;
@@ -372,7 +373,7 @@ smsproto_prepInbound( SMSProto* state, const XP_UCHAR* fromPhone,
         }
     }
 
-    stream_destroy( stream );
+    destroyStream( stream );
 
     XP_LOGFF( "=> %p (len=%d)", result, (!!result) ? result->nMsgs : 0 );
     logResult( state, result, __func__ );
@@ -518,7 +519,7 @@ addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
     mRec->msgNet.len = len;
     mRec->msgNet.data = XP_MALLOC( state->mpool, len );
     XP_MEMCPY( mRec->msgNet.data, stream_getPtr(stream), len );
-    stream_destroy( stream );
+    destroyStream( stream );
 
     mRec->createSeconds = nowSeconds;
 
@@ -701,7 +702,7 @@ savePartials( SMSProto* state )
         state->lastStoredSize = newSize;
     }
 
-    stream_destroy( stream );
+    destroyStream( stream );
 
     LOG_RETURN_VOID();
 } /* savePartials */
@@ -736,7 +737,7 @@ restorePartials( SMSProto* state )
             }
         }
     }
-    stream_destroy( stream );
+    destroyStream( stream );
 }
 
 static SMSMsgArray*
@@ -785,7 +786,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
                 XP_FREEP( state->mpool, &msg.data );
             }
         }
-        stream_destroy( stream );
+        destroyStream( stream );
 
         freeMsgIDRec( state, rec, fromPhoneIndex, msgIDIndex );
     }
@@ -884,6 +885,12 @@ mkStream( SMSProto* state )
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(state->mpool)
                                                 dutil_getVTManager(state->dutil) );
     return stream;
+}
+
+static void
+destroyStream( XWStreamCtxt* stream )
+{
+    stream_destroy( stream, NULL );
 }
 
 #ifdef DEBUG

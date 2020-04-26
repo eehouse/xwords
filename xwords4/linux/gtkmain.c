@@ -348,7 +348,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
                       cGlobals->util, &cGlobals->cp, stream );
 
     sqlite3_int64 rowID = writeNewGameToDB( stream, params->pDb );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL_XWE );
     gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
 
     /* If it's a multi-device game, save enough information with it than when
@@ -362,7 +362,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 
         CommsAddrRec addrs[4];
         XP_U16 nRecs = VSIZE(addrs);
-        comms_getAddrs( comms, addrs, &nRecs );
+        comms_getAddrs( comms, NULL_XWE, addrs, &nRecs );
 
         stream_putU8( stream, nRecs );
         for ( int ii = 0; ii < nRecs; ++ii ) {
@@ -378,7 +378,7 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
             addrToStream( stream, &addrs[ii] );
         }
         saveInviteAddrs( stream, params->pDb, rowID );
-        stream_destroy( stream );
+        stream_destroy( stream, NULL_XWE );
     }
 
     open_row( apg, rowID, XP_TRUE );

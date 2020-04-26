@@ -584,7 +584,7 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
 #endif
             write( fd, stream_getPtr( stream ), siz );
         XP_ASSERT( nwritten == siz );
-        stream_destroy( stream );
+        stream_destroy( stream, NULL_XWE );
     }
     g_list_free( keys );
     g_hash_table_unref( hash );

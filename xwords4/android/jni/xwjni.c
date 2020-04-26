@@ -648,11 +648,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
                                             NULL, 0, NULL );
 
-    game_saveToStream( NULL, gi, stream, 0 );
+    game_saveToStream( NULL, env, gi, stream, 0 );
     destroyGI( MPPARM(mpool) &gi );
 
     result = streamToBArray( env, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     releaseMPool( globalState );
     return result;
 }
@@ -679,7 +679,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 
     gi_disposePlayerInfo( MPPARM(mpool) &gi );
 
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     releaseMPool( globalState );
 }
 
@@ -703,7 +703,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
     nli_saveToStream( &nli, stream );
 
     result = streamToBArray( env, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     releaseMPool( globalState );
     return result;
 }
@@ -727,7 +727,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
         XP_LOGF( "%s: game_makeFromStream failed", __func__ );
     }
 
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     releaseMPool( globalState );
 }
 
@@ -1024,7 +1024,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
         dctx = makeDraw( MPPARM(mpool) env, j_draw );
     }
     globals->dctx = dctx;
-    globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, j_procs );
+    globals->xportProcs = makeXportProcs( MPPARM(mpool) env, j_procs );
     CommonPrefs cp = {0};
     loadCommonPrefs( env, &cp, j_cp );
 
@@ -1065,7 +1065,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     game_dispose( &state->game, env );
 
     destroyDraw( &globals->dctx, env );
-    destroyXportProcs( &globals->xportProcs );
+    destroyXportProcs( &globals->xportProcs, env );
     destroyUtil( &globals->util );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
@@ -1095,7 +1095,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     if ( !!jdraw ) {
         globals->dctx = makeDraw( MPPARM(mpool) env, jdraw );
     }
-    globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, jprocs );
+    globals->xportProcs = makeXportProcs( MPPARM(mpool) env, jprocs );
 
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, 
                                               globals->vtMgr, jstream );
@@ -1106,7 +1106,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
                                   globals->gi, dict, &dicts,
                                   globals->util, globals->dctx, &cp,
                                   globals->xportProcs );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     dict_unref( dict, env );         /* game owns it now */
     dict_unref_all( &dicts, env );
 
@@ -1140,7 +1140,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
                                                   state->lastSavedSize,
                                                   NULL, 0, NULL );
 
-    game_saveToStream( &state->game, gi, stream, ++state->curSaveCount );
+    game_saveToStream( &state->game, env, gi, stream, ++state->curSaveCount );
 
     if ( NULL != jgi ) {
         destroyGI( MPPARM(mpool) &gi );
@@ -1148,7 +1148,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
 
     state->lastSavedSize = stream_getSize( stream );
     result = streamToBArray( env, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
 
     XWJNI_END();
     return result;
@@ -1159,7 +1159,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveSucceeded
 ( JNIEnv* env, jclass C, GamePtrType gamePtr )
 {
     XWJNI_START();
-    game_saveSucceeded( &state->game, state->curSaveCount );
+    game_saveSucceeded( &state->game, env, state->curSaveCount );
     XWJNI_END();
 }
 
@@ -1350,7 +1350,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenUp
 {
     jboolean result;
     XWJNI_START();
-    result = board_handlePenUp( state->game.board, xx, yy );
+    result = board_handlePenUp( state->game.board, env, xx, yy );
     XWJNI_END();
     return result;
 }
@@ -1495,7 +1495,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1commitTurn
         newTilesP = &newTiles;
     }
 
-    result = board_commitTurn( state->game.board, phoniesConfirmed,
+    result = board_commitTurn( state->game.board, env, phoniesConfirmed,
                                turnConfirmed, newTilesP );
     XWJNI_END();
     return result;
@@ -1539,7 +1539,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1reset
 (JNIEnv* env, jclass C, GamePtrType gamePtr )
 {
     XWJNI_START();
-    server_reset( state->game.server, state->game.comms );
+    server_reset( state->game.server, env, state->game.comms );
     XWJNI_END();
 }
 
@@ -1548,7 +1548,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1handleUndo
 (JNIEnv* env, jclass C, GamePtrType gamePtr)
 {
     XWJNI_START();
-    server_handleUndo( state->game.server, 0 );
+    server_handleUndo( state->game.server, env, 0 );
     XWJNI_END();
 }
 
@@ -1559,7 +1559,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1do
     jboolean result;
     XWJNI_START();
     XP_ASSERT( !!state->game.server );
-    result = server_do( state->game.server );
+    result = server_do( state->game.server, env );
     XWJNI_END();
     return result;
 }
@@ -1639,7 +1639,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1formatRemainingTiles
                                             NULL, 0, NULL );
     board_formatRemainingTiles( state->game.board, stream );
     result = streamToJString( env, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
 
     XWJNI_END();
     return result;
@@ -1654,7 +1654,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_formatDictCounts( state->game.server, stream, nCols, XP_FALSE );
     result = streamToJString( env, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     XWJNI_END();
     return result;
 }
@@ -1680,7 +1680,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
     model_writeGameHistory( state->game.model, env, stream,
                             state->game.server, gameOver );
     result = streamToJString( env, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     XWJNI_END();
     return result;
 }
@@ -1740,19 +1740,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_writeFinalScores( state->game.server, stream );
     result = streamToJString( env, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, env );
     XWJNI_END();
     return result;
 }
 
 void
-and_send_on_close( XWStreamCtxt* stream, void* closure )
+and_send_on_close( XWStreamCtxt* stream, XWEnv xwe, void* closure )
 {
     AndGameGlobals* globals = (AndGameGlobals*)closure;
     JNIState* state = (JNIState*)globals->state;
 
     XP_ASSERT( !!state->game.comms );
-    comms_send( state->game.comms, stream );
+    comms_send( state->game.comms, xwe, stream );
 }
 
 JNIEXPORT jboolean JNICALL
@@ -1764,7 +1764,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
     XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     stream_setOnCloseProc( stream, and_send_on_close );
-    result = server_initClientConnection( state->game.server, stream );
+    result = server_initClientConnection( state->game.server, env, stream );
     XWJNI_END();
     LOG_RETURNF( "%s", boolToStr(result) );
     return result;
@@ -1777,7 +1777,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1start
     XWJNI_START();
     CommsCtxt* comms = state->game.comms;
     if ( !!comms ) {
-        comms_start( comms );
+        comms_start( comms, env );
     }
     XWJNI_END();
 }
@@ -1789,7 +1789,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1stop
     XWJNI_START();
     CommsCtxt* comms = state->game.comms;
     if ( !!comms ) {
-        comms_stop( comms );
+        comms_stop( comms, env );
     }
     XWJNI_END();
 }
@@ -1800,7 +1800,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resetSame
 {
     XWJNI_START();
     if ( !!state->game.comms ) {
-        comms_resetSame( state->game.comms );
+        comms_resetSame( state->game.comms, env );
     }
     XWJNI_END();
 }
@@ -1827,7 +1827,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
     if ( !!state->game.comms ) {
         CommsAddrRec addrs[MAX_NUM_PLAYERS];
         XP_U16 count = VSIZE(addrs);
-        comms_getAddrs( state->game.comms, addrs, &count );
+        comms_getAddrs( state->game.comms, env, addrs, &count );
 
         jclass clas = (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec") );
         result = (*env)->NewObjectArray( env, count, clas, NULL );
@@ -1853,7 +1853,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1augmentHostAddr
     if ( state->game.comms ) {
         CommsAddrRec addr = {0};
         getJAddrRec( env, &addr, jaddr );
-        comms_augmentHostAddr( state->game.comms, &addr );
+        comms_augmentHostAddr( state->game.comms, env, &addr );
     } else {
         XP_LOGF( "%s: no comms this game", __func__ );
     }
@@ -1879,7 +1879,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 
     result = game_receiveMessage( &state->game, env, stream, addrp );
 
-    stream_destroy( stream );
+    stream_destroy( stream, env );
 
     XWJNI_END();
     return result;
@@ -1938,7 +1938,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             case COMMS_CONN_SMS: {
                 CommsAddrRec addrs[MAX_NUM_PLAYERS];
                 XP_U16 count = VSIZE(addrs);
-                comms_getAddrs( comms, addrs, &count );
+                comms_getAddrs( comms, env, addrs, &count );
             
                 const XP_UCHAR* addrps[count];
                 for ( int ii = 0; ii < count; ++ii ) {
@@ -2127,10 +2127,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
     XP_ASSERT( !!comms );
     CommsConnType filter =
         NULL == jFilter ? COMMS_CONN_NONE : jEnumToInt( env, jFilter );
-    result = comms_resendAll( comms, filter, force );
+    result = comms_resendAll( comms, env, filter, force );
     if ( thenAck ) {
 #ifdef XWFEATURE_COMMSACK
-        comms_ackAny( comms );
+        comms_ackAny( comms, env );
 #endif
     }
     XWJNI_END();
@@ -2144,11 +2144,12 @@ typedef struct _GotOneClosure {
 } GotOneClosure;
 
 static void
-onGotOne( void* closure, XP_U8* msg, XP_U16 len, MsgID XP_UNUSED(msgID) )
+onGotOne( void* closure, XWEnv xwe, XP_U8* msg, XP_U16 len, MsgID XP_UNUSED(msgID) )
 {
     GotOneClosure* goc = (GotOneClosure*)closure;
+    XP_ASSERT( goc->env == xwe );
     if ( goc->count < VSIZE(goc->msgs) ) {
-        jbyteArray arr = makeByteArray( goc->env, len, (const jbyte*)msg );
+        jbyteArray arr = makeByteArray( xwe, len, (const jbyte*)msg );
         goc->msgs[goc->count++] = arr;
     } else {
         XP_ASSERT( 0 );
@@ -2163,7 +2164,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getPending
     XWJNI_START();
     GotOneClosure goc = { .env = env, .count = 0 };
     XP_ASSERT( !!state->game.comms );
-    comms_getPending( state->game.comms, onGotOne, &goc );
+    comms_getPending( state->game.comms, env, onGotOne, &goc );
 
     result = makeByteArrayArray( env, goc.count );
     for ( int ii = 0; ii < goc.count; ++ii ) {
@@ -2182,7 +2183,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1ackAny
 {
     XWJNI_START();
     XP_ASSERT( !!state->game.comms );
-    (void)comms_ackAny( state->game.comms );
+    (void)comms_ackAny( state->game.comms, env );
     XWJNI_END();
 }
 #endif
@@ -2195,7 +2196,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1transportFailed
     XP_ASSERT( !!state->game.comms );
 
     CommsConnType typ = jEnumToInt( env, failedTyp );
-    (void)comms_transportFailed( state->game.comms, typ );
+    (void)comms_transportFailed( state->game.comms, env, typ );
     XWJNI_END();
 }
 
@@ -2241,7 +2242,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
                                                 NULL, 0, NULL );
         comms_getStats( state->game.comms, stream );
         result = streamToJString( env, stream );
-        stream_destroy( stream );
+        stream_destroy( stream, env );
     }
     XWJNI_END();
 #endif
@@ -2309,7 +2310,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
 {
     XWJNI_START();
     XP_ASSERT( !!state->game.server );
-    server_endGame( state->game.server );
+    server_endGame( state->game.server, env );
     XWJNI_END();
 }
 
@@ -2320,7 +2321,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_board_1pause
     XP_ASSERT( !!state->game.board );
 
     const char* msg = (*env)->GetStringUTFChars( env, jmsg, NULL );
-    board_pause( state->game.board, msg );
+    board_pause( state->game.board, env, msg );
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
 
     XWJNI_END();
@@ -2332,7 +2333,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_board_1unpause
     XWJNI_START();
     XP_ASSERT( !!state->game.board );
     const char* msg = (*env)->GetStringUTFChars( env, jmsg, NULL );
-    board_unpause( state->game.board, msg );
+    board_unpause( state->game.board, env, msg );
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }
@@ -2345,7 +2346,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
     XWJNI_START();
     XP_ASSERT( !!state->game.server );
     const char* msg = (*env)->GetStringUTFChars( env, jmsg, NULL );
-    board_sendChat( state->game.board, msg );
+    board_sendChat( state->game.board, env, msg );
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }

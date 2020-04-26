@@ -126,14 +126,14 @@ XP_U16 board_getYOffset( const BoardCtxt* board );
 
 XP_Bool board_curTurnSelected( const BoardCtxt* board );
 XP_U16 board_visTileCount( const BoardCtxt* board );
-void board_pause( BoardCtxt* board, const XP_UCHAR* msg );
-void board_unpause( BoardCtxt* board, const XP_UCHAR* msg );
+void board_pause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg );
+void board_unpause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg );
 XP_Bool board_canShuffle( const BoardCtxt* board );
 XP_Bool board_canHideRack( const BoardCtxt* board );
 XP_Bool board_canTrade( BoardCtxt* board );
 XP_Bool board_canTogglePending( const BoardCtxt* board );
 XP_Bool board_canHint( const BoardCtxt* board );
-void board_sendChat( const BoardCtxt* board, const XP_UCHAR* msg );
+void board_sendChat( const BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg );
 
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );
@@ -176,7 +176,7 @@ XP_Bool board_setBlankValue( BoardCtxt* board, XP_U16 XP_UNUSED(player),
 
 void board_resetEngine( BoardCtxt* board );
 
-XP_Bool board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
+XP_Bool board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
                           XP_Bool turnConfirmed, TrayTileSet* newTiles );
 
 void board_pushTimerSave( BoardCtxt* board );
@@ -188,16 +188,16 @@ void board_formatRemainingTiles( BoardCtxt* board, XWStreamCtxt* stream );
 XP_Bool board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, 
                              XP_Bool* handled );
 XP_Bool board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y );
-XP_Bool board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y );
+XP_Bool board_handlePenUp( BoardCtxt* board, XWEnv xwe, XP_U16 x, XP_U16 y );
 XP_Bool board_containsPt( const BoardCtxt* board, XP_U16 xx, XP_U16 yy );
 #endif
 
 #ifdef KEY_SUPPORT
-XP_Bool board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* handled );
+XP_Bool board_handleKey( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled );
 
-XP_Bool board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* handled );
+XP_Bool board_handleKeyUp( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled );
 XP_Bool board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* handled );
-XP_Bool board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled );
+XP_Bool board_handleKeyRepeat( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled );
 # ifdef KEYBOARD_NAV
 XP_Bool board_focusChanged( BoardCtxt* board, BoardObjectType typ, 
                             XP_Bool gained );

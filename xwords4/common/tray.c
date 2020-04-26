@@ -31,7 +31,7 @@ extern "C" {
 /****************************** prototypes ******************************/
 static void drawPendingScore( BoardCtxt* board, XWEnv xwe, XP_S16 turnScore,
                               XP_Bool hasCursor );
-static XP_S16 figurePendingScore( const BoardCtxt* board );
+static XP_S16 figurePendingScore( const BoardCtxt* board, XWEnv xwe );
 static XP_U16 countTilesToShow( BoardCtxt* board );
 static void figureDividerRect( BoardCtxt* board, XP_Rect* rect );
 
@@ -138,7 +138,7 @@ drawTray( BoardCtxt* board, XWEnv xwe )
         const XP_S16 turn = board->selPlayer;
         PerTurnInfo* pti = board->selInfo;
 
-        XP_S16 turnScore = figurePendingScore( board );
+        XP_S16 turnScore = figurePendingScore( board, xwe );
 
         if ( draw_trayBegin( board->draw, xwe, &board->trayBounds, turn,
                              turnScore, dfsFor( board, OBJ_TRAY ) ) ) {
@@ -322,10 +322,10 @@ countTilesToShow( BoardCtxt* board )
 } /* countTilesToShow */
 
 static XP_S16
-figurePendingScore( const BoardCtxt* board )
+figurePendingScore( const BoardCtxt* board, XWEnv xwe )
 {
     XP_S16 turnScore;
-    (void)getCurrentMoveScoreIfLegal( board->model, board->selPlayer,
+    (void)getCurrentMoveScoreIfLegal( board->model, xwe, board->selPlayer,
                                       (XWStreamCtxt*)NULL, 
                                       (WordNotifierInfo*)NULL, 
                                       &turnScore );
@@ -416,7 +416,7 @@ getSelTiles( const BoardCtxt* board, TileBit selBits, TrayTileSet* selTiles )
 }
 
 static XP_Bool
-handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
+handleActionInTray( BoardCtxt* board, XWEnv xwe, XP_S16 index, XP_Bool onDivider )
 {
     XP_Bool result = XP_FALSE;
     PerTurnInfo* pti = board->selInfo;
@@ -459,7 +459,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
         }
 #endif
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
-        result = board_commitTurn( board, XP_FALSE, XP_FALSE, NULL );
+        result = board_commitTurn( board, xwe, XP_FALSE, XP_FALSE, NULL );
 #if defined XWFEATURE_TRAYUNDO_ALL
     } else if ( index < 0 ) { /* other empty area */
         /* it better be true */
@@ -476,11 +476,11 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
 } /* handleActionInTray */
 
 XP_Bool
-handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
+handlePenUpTray( BoardCtxt* board, XWEnv xwe, XP_U16 x, XP_U16 y )
 {
     XP_Bool onDivider;
     XP_S16 index = pointToTileIndex( board, x, y, &onDivider );
-    return handleActionInTray( board, index, onDivider );
+    return handleActionInTray( board, xwe, index, onDivider );
 } /* handlePenUpTray */
 
 XP_U16 

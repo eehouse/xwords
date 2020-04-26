@@ -825,16 +825,16 @@ board_visTileCount( const BoardCtxt* board )
 }
 
 void
-board_pause( BoardCtxt* board, const XP_UCHAR* msg )
+board_pause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    server_pause( board->server, board->selPlayer, msg );
+    server_pause( board->server, xwe, board->selPlayer, msg );
     board_invalAll( board );
 }
 
 void
-board_unpause( BoardCtxt* board, const XP_UCHAR* msg )
+board_unpause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    server_unpause( board->server, board->selPlayer, msg );
+    server_unpause( board->server, xwe, board->selPlayer, msg );
     setTimerIf( board );
     board_invalAll( board );
 }
@@ -884,9 +884,9 @@ board_canHint( const BoardCtxt* board )
 }
 
 void
-board_sendChat( const BoardCtxt* board, const XP_UCHAR* msg )
+board_sendChat( const BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    server_sendChat( board->server, msg, board->selPlayer );
+    server_sendChat( board->server, xwe, msg, board->selPlayer );
 }
 
 static XP_U16
@@ -1066,7 +1066,7 @@ boardNotifyTrade( BoardCtxt* board, const TrayTileSet* tiles )
 }
 
 XP_Bool
-board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
+board_commitTurn( BoardCtxt* board, XWEnv xwe, XP_Bool phoniesConfirmed,
                   XP_Bool turnConfirmed /* includes trade */,
                   TrayTileSet* newTiles )
 {
@@ -1107,7 +1107,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                            must be called first() */
                         (void)board_endTrade( board );
 
-                        (void)server_commitTrade( board->server, &selTiles,
+                        (void)server_commitTrade( board->server, xwe, &selTiles,
                                                   newTiles );
                     }
                 } else {
@@ -1135,7 +1135,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                     info.proc = saveBadWords;
                     info.closure = &bwl;
                 }
-                legal = model_checkMoveLegal( model, selPlayer, stream,
+                legal = model_checkMoveLegal( model, xwe, selPlayer, stream,
                                               warn? &info:(WordNotifierInfo*)NULL);
             }
 
@@ -1157,7 +1157,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
                         model_getNumTilesInTray( model, selPlayer );
                     if ( !server_askPickTiles( board->server, selPlayer, newTiles,
                                                nToPick ) ) {
-                        result = server_commitMove( board->server, selPlayer,
+                        result = server_commitMove( board->server, xwe, selPlayer,
                                                     newTiles )
                             || result;
                         /* invalidate all tiles in case we'll be drawing this tray
@@ -1174,7 +1174,7 @@ board_commitTurn( BoardCtxt* board, XP_Bool phoniesConfirmed,
             }
 
             if ( NULL != stream ) {
-                stream_destroy( stream );
+                stream_destroy( stream, xwe );
             }
 
             if ( result ) {
@@ -1363,7 +1363,7 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
                         dragDropEnd( board, board->penDownX, board->penDownY, NULL );
                     }
                 }
-                stream_destroy( stream );
+                stream_destroy( stream, xwe );
             }
 #endif
             if ( !listWords ) {
@@ -3024,8 +3024,8 @@ penMoved( const BoardCtxt* board, XP_U16 curCol, XP_U16 curRow )
 }
 
 static XP_Bool
-handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
-                     XP_Bool altDown )
+handlePenUpInternal( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
+                     XP_Bool isPen, XP_Bool altDown )
 {
     XP_Bool draw = XP_FALSE;
     BoardObjectType prevObj = board->penDownObject;
@@ -3081,7 +3081,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
                 if ( board->trayVisState != TRAY_REVEALED ) {
                     draw = askRevealTray( board ) || draw;
                 } else {
-                    draw = handlePenUpTray( board, xx, yy ) || draw;
+                    draw = handlePenUpTray( board, xwe, xx, yy ) || draw;
                 }
                 break;
             case OBJ_TIMER:
@@ -3098,9 +3098,9 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen,
 } /* handlePenUpInternal */
 
 XP_Bool
-board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
+board_handlePenUp( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy )
 {
-    return handlePenUpInternal( board, x, y, XP_TRUE, XP_FALSE );
+    return handlePenUpInternal( board, xwe, xx, yy, XP_TRUE, XP_FALSE );
 }
 
 XP_Bool
@@ -3206,7 +3206,7 @@ handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
 } /* handleFocusKeyUp */
 
 XP_Bool
-board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
+board_handleKeyRepeat( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled )
 {
     XP_Bool draw;
 
@@ -3215,7 +3215,7 @@ board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
         draw = XP_FALSE;
     } else {
         XP_Bool upHandled, downHandled;
-        draw = board_handleKeyUp( board, key, &upHandled );
+        draw = board_handleKeyUp( board, xwe, key, &upHandled );
         draw = board_handleKeyDown( board, key, &downHandled ) || draw;
         *handled = upHandled || downHandled;
     }
@@ -3265,7 +3265,7 @@ board_handleKeyDown( BoardCtxt* XP_UNUSED_KEYBOARD_NAV(board),
 } /* board_handleKeyDown */
 
 XP_Bool
-board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
+board_handleKeyUp( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* pHandled )
 {
     XP_Bool redraw = XP_FALSE;
     XP_Bool handled = XP_FALSE;
@@ -3319,7 +3319,7 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
             if ( board->focusHasDived ) {
                 XP_U16 xx, yy;
                 if ( focusToCoords( board, &xx, &yy ) ) {
-                    redraw = handlePenUpInternal( board, xx, yy, XP_FALSE, altDown );
+                    redraw = handlePenUpInternal( board, xwe, xx, yy, XP_FALSE, altDown );
                     handled = XP_TRUE;
                 }
             } else {
@@ -3359,14 +3359,14 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 } /* board_handleKeyUp */
 
 XP_Bool
-board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* handled )
+board_handleKey( BoardCtxt* board, XWEnv xwe, XP_Key key, XP_Bool* handled )
 {
     XP_Bool handled1;
     XP_Bool handled2;
     XP_Bool draw;
 
     draw = board_handleKeyDown( board, key, &handled1 );
-    draw = board_handleKeyUp( board, key, &handled2 ) || draw;
+    draw = board_handleKeyUp( board, xwe, key, &handled2 ) || draw;
     if ( !!handled ) {
         *handled = handled1 || handled2;
     }

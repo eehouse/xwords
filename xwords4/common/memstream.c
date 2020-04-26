@@ -370,14 +370,14 @@ mem_stream_open( XWStreamCtxt* p_sctx )
 } /* mem_stream_open */
 
 static void
-mem_stream_close( XWStreamCtxt* p_sctx )
+mem_stream_close( XWStreamCtxt* p_sctx, XWEnv xwe )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
 
     XP_ASSERT( stream->isOpen );
 
     if ( !!stream->onClose ) {
-        (*stream->onClose)( p_sctx, stream->closure );
+        (*stream->onClose)( p_sctx, xwe, stream->closure );
     }
     stream->isOpen = XP_FALSE;
 } /* mem_stream_close */
@@ -493,12 +493,12 @@ mem_stream_setPos( XWStreamCtxt* p_sctx, PosWhich which, XWStreamPos newpos )
 } /* mem_stream_setPos */
 
 static void
-mem_stream_destroy( XWStreamCtxt* p_sctx )
+mem_stream_destroy( XWStreamCtxt* p_sctx, XWEnv xwe )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
 
     if ( stream->isOpen ) {
-        stream_close( p_sctx );
+        stream_close( p_sctx, xwe );
     }
 
     XP_FREEP( stream->mpool, &stream->buf );

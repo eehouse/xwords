@@ -243,7 +243,7 @@ struct BoardCtxt {
 #define TRADE_IN_PROGRESS(b) ((b)->selInfo->tradeInProgress==XP_TRUE)
 
 /* tray-related functions */
-XP_Bool handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
+XP_Bool handlePenUpTray( BoardCtxt* board, XWEnv xwe, XP_U16 x, XP_U16 y );
 void drawTray( BoardCtxt* board, XWEnv xwe );
 XP_Bool moveTileToArrowLoc( BoardCtxt* board, XP_U8 index );
 XP_U16 indexForBits( XP_U8 bits );

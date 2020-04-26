@@ -117,16 +117,16 @@ static bool handleRootKeyHide( void* closure, int key );
 #endif
 static bool handleInvite( void* closure, int key );
 
-static void relay_connd_curses( void* closure, XP_UCHAR* const room,
+static void relay_connd_curses( XWEnv xwe, void* closure, XP_UCHAR* const room,
                                 XP_Bool reconnect, XP_U16 devOrder,
                                 XP_Bool allHere, XP_U16 nMissing );
-static void relay_status_curses( void* closure, CommsRelayState state );
-static void relay_error_curses( void* closure, XWREASON relayErr );
-static XP_Bool relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
+static void relay_status_curses( XWEnv xwe, void* closure, CommsRelayState state );
+static void relay_error_curses( XWEnv xwe, void* closure, XWREASON relayErr );
+static XP_Bool relay_sendNoConn_curses( XWEnv xwe, const XP_U8* msg, XP_U16 len,
                                         const XP_UCHAR* msgNo,
                                         const XP_UCHAR* relayID, void* closure );
-static void curses_countChanged( void* closure, XP_U16 newCount );
-static XP_U32 curses_getFlags( void* closure );
+static void curses_countChanged( XWEnv xwe, void* closure, XP_U16 newCount );
+static XP_U32 curses_getFlags( XWEnv xwe, void* closure );
 #ifdef RELAY_VIA_HTTP
 static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
                                       const XP_UCHAR* room, XP_U16 nPlayersHere,
@@ -178,7 +178,7 @@ cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
 
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if ( !!cGlobals->game.comms ) {
-        comms_resendAll( cGlobals->game.comms, COMMS_CONN_NONE, XP_FALSE );
+        comms_resendAll( cGlobals->game.comms, NULL_XWE, COMMS_CONN_NONE, XP_FALSE );
     }
     if ( bGlobals->cGlobals.params->forceInvite ) {
         (void)ADD_ONETIME_IDLE( inviteIdle, bGlobals);
@@ -773,7 +773,7 @@ ask_move( gpointer data )
     if (0 == cursesask(bGlobals->boardWin, cGlobals->question,
                        VSIZE(answers)-1, answers) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
+        if ( board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE, NULL ) ) {
             board_draw( board, NULL_XWE );
             linuxSaveGame( &bGlobals->cGlobals );
         }
@@ -855,7 +855,7 @@ ask_trade( gpointer data )
     if (0 == cursesask( bGlobals->boardWin, cGlobals->question,
                         VSIZE(buttons), buttons ) ) {
         BoardCtxt* board = cGlobals->game.board;
-        if ( board_commitTurn( board, XP_TRUE, XP_TRUE, NULL ) ) {
+        if ( board_commitTurn( board, NULL_XWE, XP_TRUE, XP_TRUE, NULL ) ) {
             board_draw( board, NULL_XWE );
             linuxSaveGame( cGlobals );
         }
@@ -895,7 +895,7 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
     (void)ca_inform( bGlobals->boardWin, text );
 
     free( text );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL_XWE );
 } /* cursesShowFinalScores */
 
 static void
@@ -949,7 +949,7 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
         sleep( params->quitAfter );
         handleQuit( bGlobals->cbState->aGlobals, 0 );
     } else if ( params->undoWhenDone ) {
-        server_handleUndo( cGlobals->game.server, 0 );
+        server_handleUndo( cGlobals->game.server, NULL_XWE, 0 );
     } else if ( !params->skipGameOver && !!bGlobals->boardWin ) {
         /* This is modal.  Don't show if quitting */
         cursesShowFinalScores( bGlobals );
@@ -1058,7 +1058,7 @@ static void
 curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 {
     XP_USE( uc );
-    catOnClose( words, NULL );
+    catOnClose( words, NULL_XWE, NULL );
     fprintf( stderr, "\n" );
 }
 #endif
@@ -1183,7 +1183,7 @@ handleBackspace( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
     XP_Bool handled;
-    if ( board_handleKey( cGlobals->game.board,
+    if ( board_handleKey( cGlobals->game.board, NULL_XWE,
                           XP_CURSOR_KEY_DEL, &handled ) ) {
         board_draw( cGlobals->game.board, NULL_XWE );
     }
@@ -1195,7 +1195,7 @@ handleUndo( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( server_handleUndo( cGlobals->game.server, 0 ) ) {
+    if ( server_handleUndo( cGlobals->game.server, NULL_XWE, 0 ) ) {
         board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
@@ -1284,7 +1284,8 @@ handleCommit( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( board_commitTurn( cGlobals->game.board, XP_FALSE, XP_FALSE, NULL ) ) {
+    if ( board_commitTurn( cGlobals->game.board, NULL_XWE, XP_FALSE,
+                           XP_FALSE, NULL ) ) {
         board_draw( cGlobals->game.board, NULL_XWE );
     }
     return XP_TRUE;
@@ -1333,7 +1334,8 @@ handleFocusKey( CursesBoardGlobals* bGlobals, XP_Key key )
     checkAssignFocus( cGlobals->game.board );
 
     XP_Bool handled;
-    XP_Bool draw = board_handleKey( cGlobals->game.board, key, &handled );
+    XP_Bool draw = board_handleKey( cGlobals->game.board, NULL_XWE,
+                                    key, &handled );
     if ( !handled ) {
         BoardObjectType nxt;
         BoardObjectType order[] = { OBJ_BOARD, OBJ_SCORE, OBJ_TRAY };
@@ -1448,7 +1450,7 @@ handleSpace( void* closure, int XP_UNUSED(key) )
     BoardCtxt* board = bGlobals->cGlobals.game.board;
     checkAssignFocus( board );
     XP_Bool handled;
-    (void)board_handleKey( board, XP_RAISEFOCUS_KEY, &handled );
+    (void)board_handleKey( board, NULL_XWE, XP_RAISEFOCUS_KEY, &handled );
     board_draw( board, NULL_XWE );
     return XP_TRUE;
 } /* handleSpace */
@@ -1460,7 +1462,7 @@ handleRet( void* closure, int key )
     BoardCtxt* board = bGlobals->cGlobals.game.board;
     XP_Bool handled;
     XP_Key xpKey = (key & ALT_BIT) == 0 ? XP_RETURN_KEY : XP_ALTRETURN_KEY;
-    if ( board_handleKey( board, xpKey, &handled ) ) {
+    if ( board_handleKey( board, NULL_XWE, xpKey, &handled ) ) {
         board_draw( board, NULL_XWE );
     }
     return XP_TRUE;
@@ -1482,7 +1484,7 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
     buf[len] = '\0';
 
     (void)ca_inform( bGlobals->boardWin, buf );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL_XWE );
 
     return XP_TRUE;
 }
@@ -1491,7 +1493,7 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
 #endif
 
 static void
-relay_connd_curses( void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
+relay_connd_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
                     XP_Bool XP_UNUSED(reconnect), XP_U16 XP_UNUSED(devOrder),
                     XP_Bool XP_UNUSED_DBG(allHere),
                     XP_U16 XP_UNUSED_DBG(nMissing) )
@@ -1501,7 +1503,8 @@ relay_connd_curses( void* XP_UNUSED(closure), XP_UCHAR* const XP_UNUSED(room),
 }
 
 static void
-relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
+relay_error_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
+                    XWREASON XP_UNUSED_DBG(relayErr) )
 {
 #ifdef DEBUG
     XP_LOGF( "%s(%s)", __func__, XWREASON2Str( relayErr ) );
@@ -1509,7 +1512,7 @@ relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED_DBG(relayErr) )
 }
 
 static XP_Bool
-relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
+relay_sendNoConn_curses( XWEnv XP_UNUSED(xwe), const XP_U8* msg, XP_U16 len,
                          const XP_UCHAR* XP_UNUSED(msgNo),
                          const XP_UCHAR* relayID, void* closure )
 {
@@ -1540,21 +1543,23 @@ relay_requestJoin_curses( void* closure, const XP_UCHAR* devID, const XP_UCHAR* 
 #endif
 
 static void
-curses_countChanged( void* XP_UNUSED(closure), XP_U16 XP_UNUSED_DBG(newCount) )
+curses_countChanged( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
+                     XP_U16 XP_UNUSED_DBG(newCount) )
 {
     XP_LOGF( "%s(newCount=%d)", __func__, newCount );
 }
 
 #ifdef COMMS_XPORT_FLAGSPROC
 static XP_U32
-curses_getFlags( void* XP_UNUSED(closure) )
+curses_getFlags( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure) )
 {
     return COMMS_XPORT_FLAGS_HASNOCONN;
 }
 #endif
 
 static void
-relay_status_curses( void* XP_UNUSED(closure), CommsRelayState XP_UNUSED_DBG(state) )
+relay_status_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
+                     CommsRelayState XP_UNUSED_DBG(state) )
 {
     /* CommonGlobals* cGlobals = (CommonGlobals*)closure; */
     // bGlobals->commsRelayState = state;

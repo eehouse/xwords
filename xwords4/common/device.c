@@ -57,7 +57,7 @@ load( XW_DUtilCtxt* dutil )
         } else {
             XP_LOGF( "%s(): empty stream!!", __func__ );
         }
-        stream_destroy( stream );
+        stream_destroy( stream, NULL );
     }
 
     return state;
@@ -71,7 +71,7 @@ device_store( XW_DUtilCtxt* dutil )
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putU16( stream, state->devCount );
     dutil_storeStream( dutil, KEY_DEVSTATE, stream );
-    stream_destroy( stream );
+    stream_destroy( stream, NULL );
 
     XP_FREEP( dutil->mpool, &dutil->devCtxt );
 }
