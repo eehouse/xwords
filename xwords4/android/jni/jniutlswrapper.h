@@ -28,7 +28,10 @@
 
 typedef struct JNIUtilCtxt JNIUtilCtxt;
 
-JNIUtilCtxt* makeJNIUtil( MPFORMAL JNIEnv* env, EnvThreadInfo* ti,
+JNIUtilCtxt* makeJNIUtil( MPFORMAL JNIEnv* env,
+#ifdef MAP_THREAD_TO_ENV
+                          EnvThreadInfo* ti,
+#endif
                           jobject jniutls );
 void destroyJNIUtil( JNIEnv* env, JNIUtilCtxt** jniu );
 

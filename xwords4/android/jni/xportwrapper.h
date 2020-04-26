@@ -27,7 +27,11 @@
 
 #include "comms.h"
 
-TransportProcs* makeXportProcs( MPFORMAL JNIEnv* env, jobject jxport );
+TransportProcs* makeXportProcs( MPFORMAL JNIEnv* env,
+#ifdef MAP_THREAD_TO_ENV
+                                EnvThreadInfo* ti,
+#endif
+                                jobject jxport );
 
 void destroyXportProcs( TransportProcs** xport, JNIEnv* env );
 

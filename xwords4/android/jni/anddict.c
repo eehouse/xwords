@@ -37,6 +37,9 @@
 
 typedef struct _AndDictionaryCtxt {
     DictionaryCtxt super;
+#ifdef MAP_THREAD_TO_ENV
+    EnvThreadInfo* ti;
+#endif
     JNIUtilCtxt* jniutil;
     off_t bytesSize;
     jbyte* bytes;
@@ -61,6 +64,7 @@ dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
+    ASSERT_ENV( ctxt->ti, xwe );
     splitFaces_via_java( xwe, ctxt, bytes, nBytes, nFaces,
                          dict->isUTF8 );
 }
@@ -304,6 +308,7 @@ parseDict( AndDictionaryCtxt* ctxt, XWEnv xwe, XP_U8 const* ptr,
 {
     XP_Bool success = XP_TRUE;
     XP_ASSERT( !!ptr );
+    ASSERT_ENV( ctxt->ti, xwe );
     const XP_U8* end = ptr + dictLength;
     XP_U32 offset;
     XP_U16 nFaces, numFaceBytes = 0;
@@ -482,6 +487,7 @@ static void
 and_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
 {
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
+    ASSERT_ENV( ctxt->ti, xwe );
     XP_LOGF( "%s(dict=%p); code=%x", __func__, ctxt, ctxt->dbgid );
     XP_U16 nSpecials = andCountSpecials( ctxt );
     JNIEnv* env = xwe;
@@ -561,7 +567,11 @@ and_dictionary_make_empty( MPFORMAL JNIUtilCtxt* jniutil )
 }
 
 void
-makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, 
+makeDicts( MPFORMAL JNIEnv *env,
+#ifdef MAP_THREAD_TO_ENV
+           EnvThreadInfo* ti,
+#endif
+           DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
            DictionaryCtxt** dictp, PlayerDicts* dicts,
            jobjectArray jnames, jobjectArray jdicts, jobjectArray jpaths,
            jstring jlang )
@@ -577,8 +587,8 @@ makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
                     NULL : (*env)->GetObjectArrayElement( env, jpaths, ii );
             if ( NULL != jdict || NULL != jpath ) { 
                 jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
-                dict = makeDict( MPPARM(mpool) env, dictMgr, jniutil, jname, jdict, 
-                                 jpath, jlang, false );
+                dict = makeDict( MPPARM(mpool) env, TI_IF(ti) dictMgr, jniutil,
+                                 jname, jdict, jpath, jlang, false );
                 XP_ASSERT( !!dict );
                 deleteLocalRefs( env, jdict, jname, DELETE_NO_REF );
             }
@@ -594,8 +604,12 @@ makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
 }
 
 DictionaryCtxt* 
-makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
-          jstring jname, jbyteArray jbytes, jstring jpath, jstring jlangname, jboolean check )
+makeDict( MPFORMAL JNIEnv *env,
+#ifdef MAP_THREAD_TO_ENV
+          EnvThreadInfo* ti,
+#endif
+          DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstring jname,
+          jbyteArray jbytes, jstring jpath, jstring jlangname, jboolean check )
 {
     jbyte* bytes = NULL;
     jbyteArray byteArray = NULL;
@@ -633,6 +647,9 @@ makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
         if ( NULL != bytes ) {
             anddict = (AndDictionaryCtxt*)
                 and_dictionary_make_empty( MPPARM(mpool) jniutil );
+#ifdef MAP_THREAD_TO_ENV
+            anddict->ti = ti;
+#endif
             anddict->bytes = bytes;
             anddict->byteArray = byteArray;
             anddict->bytesSize = bytesSize;

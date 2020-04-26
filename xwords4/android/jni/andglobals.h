@@ -26,6 +26,10 @@
 
 typedef struct _JNIState JNIState;
 
+#ifdef DEBUG
+# define MAP_THREAD_TO_ENV
+#endif
+
 typedef struct _AndGameGlobals {
     VTableMgr* vtMgr;
     CurGameInfo* gi;
@@ -39,7 +43,14 @@ typedef struct _AndGameGlobals {
 
 typedef struct _EnvThreadInfo EnvThreadInfo;
 
+# ifdef MAP_THREAD_TO_ENV
 JNIEnv* envForMe( EnvThreadInfo* ti, const char* caller );
-#define ENVFORME( ti ) envForMe( (ti), __func__ )
+#  define ENVFORME( ti ) envForMe( (ti), __func__ )
+#  define ASSERT_ENV(TI, ENV) XP_ASSERT( ENVFORME(TI) == ENV )
+#  define TI_IF(tip) (tip),
+# else
+#  define ASSERT_ENV(TI, ENV)
+#  define TI_IF(tip)
+# endif
 
 #endif

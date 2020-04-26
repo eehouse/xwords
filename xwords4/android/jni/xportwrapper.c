@@ -25,6 +25,9 @@
 
 typedef struct _AndTransportProcs {
     TransportProcs tp;
+#ifdef MAP_THREAD_TO_ENV
+    EnvThreadInfo* ti;
+#endif
     jobject jxport;
     MPSLOT
 } AndTransportProcs;
@@ -55,6 +58,7 @@ and_xport_getFlags( XWEnv xwe, void* closure )
 {
     jint result = COMMS_XPORT_FLAGS_NONE;
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
         const char* sig = "()I";
@@ -73,6 +77,7 @@ and_xport_send( XWEnv xwe, const XP_U8* buf, XP_U16 len,
     jint result = -1;
     LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
         const char* sig = "([BLjava/lang/String;L" PKG_PATH("jni/CommsAddrRec")
@@ -111,6 +116,7 @@ and_xport_relayConnd( XWEnv xwe, void* closure, XP_UCHAR* const room,
                       XP_U16 nMissing )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
         const char* sig = "(Ljava/lang/String;IZI)V";
@@ -130,6 +136,7 @@ and_xport_sendNoConn( XWEnv xwe, const XP_U8* buf, XP_U16 len,
 {
     jboolean result = false;
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs && NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
 
@@ -151,6 +158,7 @@ static void
 and_xport_countChanged( XWEnv xwe, void* closure, XP_U16 count )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs && NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
         const char* sig = "(I)V";
@@ -163,6 +171,7 @@ static void
 and_xport_relayError( XWEnv xwe, void* closure, XWREASON relayErr )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    ASSERT_ENV( aprocs->ti, xwe );
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = xwe;
         jmethodID mid;
@@ -179,11 +188,18 @@ and_xport_relayError( XWEnv xwe, void* closure, XWREASON relayErr )
 }
 
 TransportProcs*
-makeXportProcs( MPFORMAL JNIEnv* env, jobject jxport )
+makeXportProcs( MPFORMAL JNIEnv* env,
+#ifdef MAP_THREAD_TO_ENV
+                EnvThreadInfo* ti,
+#endif
+                jobject jxport )
 {
     AndTransportProcs* aprocs = NULL;
 
     aprocs = (AndTransportProcs*)XP_CALLOC( mpool, sizeof(*aprocs) );
+#ifdef MAP_THREAD_TO_ENV
+    aprocs->ti = ti;
+#endif
     if ( NULL != jxport ) {
         aprocs->jxport = (*env)->NewGlobalRef( env, jxport );
     }

@@ -24,16 +24,24 @@
 
 
 struct JNIUtilCtxt {
+#ifdef MAP_THREAD_TO_ENV
     EnvThreadInfo* ti;
+#endif
     jobject jjniutil;
     MPSLOT;
 };
 
 JNIUtilCtxt* 
-makeJNIUtil( MPFORMAL JNIEnv* env, EnvThreadInfo* ti, jobject jniutls )
+makeJNIUtil( MPFORMAL JNIEnv* env,
+#ifdef MAP_THREAD_TO_ENV
+             EnvThreadInfo* ti,
+#endif
+             jobject jniutls )
 {
     JNIUtilCtxt* ctxt = (JNIUtilCtxt*)XP_CALLOC( mpool, sizeof( *ctxt ) );
+#ifdef MAP_THREAD_TO_ENV
     ctxt->ti = ti;
+#endif
     ctxt->jjniutil = (*env)->NewGlobalRef( env, jniutls );
     MPASSIGN( ctxt->mpool, mpool );
     return ctxt;

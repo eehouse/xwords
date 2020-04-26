@@ -30,11 +30,19 @@ void
 dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces );
 
-DictionaryCtxt* makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, 
-                          JNIUtilCtxt* jniutil, jstring jname, jbyteArray bytes,
+DictionaryCtxt* makeDict( MPFORMAL JNIEnv *env,
+#ifdef MAP_THREAD_TO_ENV
+                          EnvThreadInfo* ti,
+#endif
+                          DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
+                          jstring jname, jbyteArray bytes,
                           jstring path, jstring jlang, jboolean check );
 
-void makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, 
+void makeDicts( MPFORMAL JNIEnv *env,
+#ifdef MAP_THREAD_TO_ENV
+                EnvThreadInfo* ti,
+#endif
+                DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
                 DictionaryCtxt** dict, PlayerDicts* dicts, jobjectArray jnames, 
                 jobjectArray jdicts, jobjectArray jpaths, jstring jlang );
 

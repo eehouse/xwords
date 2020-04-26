@@ -37,6 +37,9 @@ typedef struct _AndDUtil {
     jobject jdutil;  /* global ref to object implementing XW_DUtilCtxt */
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
     XP_U32 userStringsBits;
+#ifdef MAP_THREAD_TO_ENV
+    EnvThreadInfo* ti;
+#endif
 #ifdef XWFEATURE_DEVID
     XP_UCHAR* devIDStorage;
 #endif
@@ -49,6 +52,9 @@ typedef struct _TimerStorage {
 
 typedef struct _AndUtil {
     XW_UtilCtxt util;
+#ifdef MAP_THREAD_TO_ENV
+    EnvThreadInfo* ti;
+#endif
     jobject jutil;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
 } AndUtil;
@@ -73,6 +79,7 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 #define UTIL_CBK_HEADER(nam,sig)                                        \
     AndUtil* util = (AndUtil*)uc;                                       \
     JNIEnv* env = xwe;                                                  \
+    ASSERT_ENV(util->ti, env);                                          \
     if ( NULL != util->jutil ) {                                        \
         jmethodID mid = getMethodID( env, util->jutil, nam, sig )
 
@@ -85,6 +92,7 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 #define DUTIL_CBK_HEADER(nam,sig)                                       \
     AndDUtil* dutil = (AndDUtil*)duc;                                   \
     JNIEnv* env = xwe;                                                  \
+    ASSERT_ENV(dutil->ti, env);                                         \
     if ( NULL != dutil->jdutil ) {                                      \
         jmethodID mid = getMethodID( env, dutil->jdutil, nam, sig )
 
@@ -840,10 +848,17 @@ and_dutil_onDupTimerChanged( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
 }
 
 XW_UtilCtxt*
-makeUtil( MPFORMAL JNIEnv* env, jobject jutil, CurGameInfo* gi,
+makeUtil( MPFORMAL JNIEnv* env,
+#ifdef MAP_THREAD_TO_ENV
+          EnvThreadInfo* ti,
+#endif
+          jobject jutil, CurGameInfo* gi,
           AndGameGlobals* closure )
 {
     AndUtil* util = (AndUtil*)XP_CALLOC( mpool, sizeof(*util) );
+#ifdef MAP_THREAD_TO_ENV
+    util->ti = ti;
+#endif
     UtilVtable* vtable = (UtilVtable*)XP_CALLOC( mpool, sizeof(*vtable) );
     if ( NULL != jutil ) {
         util->jutil = (*env)->NewGlobalRef( env, jutil );
@@ -936,10 +951,17 @@ destroyUtil( XW_UtilCtxt** utilc, JNIEnv* env )
 }
 
 XW_DUtilCtxt*
-makeDUtil( MPFORMAL JNIEnv* env, jobject jdutil, VTableMgr* vtMgr,
+makeDUtil( MPFORMAL JNIEnv* env,
+#ifdef MAP_THREAD_TO_ENV
+           EnvThreadInfo* ti,
+#endif
+           jobject jdutil, VTableMgr* vtMgr,
            JNIUtilCtxt* jniutil, void* closure )
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
+#ifdef MAP_THREAD_TO_ENV
+    dutil->ti = ti;
+#endif
     dutil->jniutil = jniutil;
     dutil->dutil.closure = closure;
     dutil->dutil.vtMgr = vtMgr;

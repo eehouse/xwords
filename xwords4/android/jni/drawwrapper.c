@@ -37,6 +37,9 @@ enum {
 
 typedef struct _AndDraw {
     DrawCtxVTable* vtable;
+#ifdef MAP_THREAD_TO_ENV
+    EnvThreadInfo* ti;
+#endif
     jobject jdraw;             /* global ref; free it! */
     XP_LangCode curLang;
     jobject jCache[JCACHE_COUNT];
@@ -210,6 +213,7 @@ makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
 #define DRAW_CBK_HEADER(nam,sig)                                \
     JNIEnv* env = xwe;                                          \
     AndDraw* draw = (AndDraw*)dctx;                             \
+    ASSERT_ENV( draw->ti, env );                                \
     XP_ASSERT( !!draw->jdraw );                                 \
     jmethodID mid = getMethodID( xwe, draw->jdraw, nam, sig );
 
@@ -648,9 +652,16 @@ draw_doNothing( DrawCtx* dctx, XWEnv xwe, ... )
 } /* draw_doNothing */
 
 DrawCtx* 
-makeDraw( MPFORMAL JNIEnv* env, jobject jdraw )
+makeDraw( MPFORMAL JNIEnv* env,
+#ifdef MAP_THREAD_TO_ENV
+          EnvThreadInfo* ti,
+#endif
+          jobject jdraw )
 {
     AndDraw* draw = (AndDraw*)XP_CALLOC( mpool, sizeof(*draw) );
+#ifdef MAP_THREAD_TO_ENV
+    draw->ti = ti;
+#endif
     draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
     if ( NULL != jdraw ) {
         draw->jdraw = (*env)->NewGlobalRef( env, jdraw );
