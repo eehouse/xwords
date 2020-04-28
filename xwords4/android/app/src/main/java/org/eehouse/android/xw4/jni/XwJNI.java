@@ -514,25 +514,21 @@ public class XwJNI {
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static long dict_iter_init( byte[] dict, String name,
-                                       String path )
+    public static long di_init( byte[] dict, String name, String path )
     {
-        return dict_iter_init( getJNI().m_ptrGlobals, dict, name, path );
+        return di_init( getJNI().m_ptrGlobals, dict, name, path );
     }
-    public static native void dict_iter_setMinMax( long closure,
-                                                   int min, int max );
-    public static native void dict_iter_destroy( long closure );
-    public static native int dict_iter_wordCount( long closure );
-    public static native int[] dict_iter_getCounts( long closure );
-    public static native String dict_iter_nthWord( long closure, int nn, String delim );
-    public static native String[] dict_iter_getPrefixes( long closure );
-    public static native int[] dict_iter_getIndices( long closure );
-    public static native byte[][] dict_iter_strToTiles( long closure,
-                                                        String str );
-    public static native int dict_iter_getStartsWith( long closure,
-                                                      byte[] prefix );
-    public static native String dict_iter_getDesc( long closure );
-    public static native String dict_iter_tilesToStr( long closure, byte[] tiles, String delim );
+    public static native void di_setMinMax( long closure, int min, int max );
+    public static native void di_destroy( long closure );
+    public static native int di_wordCount( long closure );
+    public static native int[] di_getCounts( long closure );
+    public static native String di_nthWord( long closure, int nn, String delim );
+    public static native String[] di_getPrefixes( long closure );
+    public static native int[] di_getIndices( long closure );
+    public static native byte[][] di_strToTiles( long closure, String str );
+    public static native int di_getStartsWith( long closure, byte[] prefix );
+    public static native String di_getDesc( long closure );
+    public static native String di_tilesToStr( long closure, byte[] tiles, String delim );
 
     // Private methods -- called only here
     private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );
@@ -551,8 +547,8 @@ public class XwJNI {
                                                 String name, String path,
                                                 boolean check,
                                                 DictInfo info );
-    private static native long dict_iter_init( long jniState, byte[] dict,
-                                               String name, String path );
+    private static native long di_init( long jniState, byte[] dict,
+                                        String name, String path );
 
     private static native byte[][]
         smsproto_prepOutbound( long jniState, SMS_CMD cmd, int gameID, byte[] buf,

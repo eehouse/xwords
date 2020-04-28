@@ -2414,7 +2414,7 @@ static void makeIndex( DictIterData* data );
 static void freeIndices( DictIterData* data );
 
 JNIEXPORT jlong JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jDictBytes,
   jstring jname, jstring jpath )
 {
@@ -2443,19 +2443,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 }
 
 JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1setMinMax
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1setMinMax
 ( JNIEnv* env, jclass C, jlong closure, jint min, jint max )
 {
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        dict_initIter( &data->iter, data->dict, min, max );
+        di_initIter( &data->iter, data->dict, min, max );
         makeIndex( data );
-        (void)dict_firstWord( &data->iter );
+        (void)di_firstWord( &data->iter );
     }
 }
 
 JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1destroy
 ( JNIEnv* env, jclass C, jlong closure )
 {
     DictIterData* data = (DictIterData*)closure;
@@ -2474,7 +2474,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 }
 
 JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1wordCount
 (JNIEnv* env, jclass C, jlong closure )
 {
     jint result = 0;
@@ -2486,17 +2486,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1wordCount
 }
 
 JNIEXPORT jintArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1getCounts
 (JNIEnv* env, jclass C, jlong closure )
 {
     jintArray result = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
         DictIter iter;
-        dict_initIter( &iter, data->dict, 0, MAX_COLS_DICT );
+        di_initIter( &iter, data->dict, 0, MAX_COLS_DICT );
 
         LengthsArray lens;
-        if ( 0 < dict_countWords( &iter, &lens ) ) {
+        if ( 0 < di_countWords( &iter, &lens ) ) {
             XP_ASSERT( sizeof(jint) == sizeof(lens.lens[0]) );
             result = makeIntArray( env, VSIZE(lens.lens), (jint*)&lens.lens,
                                    sizeof(lens.lens[0]) );
@@ -2506,7 +2506,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getCounts
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1getPrefixes
 ( JNIEnv* env, jclass C, jlong closure )
 {
     jobjectArray result = NULL;
@@ -2529,7 +2529,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
 }
 
 JNIEXPORT jintArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1getIndices
 ( JNIEnv* env, jclass C, jlong closure )
 {
     jintArray jindices = NULL;
@@ -2545,17 +2545,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
 }
 
 JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1nthWord
 ( JNIEnv* env, jclass C, jlong closure, jint nn, jstring jdelim )
 {
     jstring result = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
-        if ( dict_getNthWord( &data->iter, nn, data->depth, &data->idata ) ) {
+        if ( di_getNthWord( &data->iter, nn, data->depth, &data->idata ) ) {
             XP_UCHAR buf[64];
             const XP_UCHAR* delim = NULL == jdelim ? NULL
                 : (*env)->GetStringUTFChars( env, jdelim, NULL );
-            dict_wordToString( &data->iter, buf, VSIZE(buf), delim );
+            di_wordToString( &data->iter, buf, VSIZE(buf), delim );
             result = (*env)->NewStringUTF( env, buf );
             if ( !!delim ) {
                 (*env)->ReleaseStringUTFChars( env, jdelim, delim );
@@ -2581,7 +2581,7 @@ onFoundTiles( void* closure, const Tile* tiles, int nTiles )
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1strToTiles
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1strToTiles
 ( JNIEnv* env, jclass C, jlong closure, jstring jstr )
 {
     jobjectArray result = NULL;
@@ -2605,7 +2605,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1strToTiles
 }
 
 JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1getStartsWith
 ( JNIEnv* env, jclass C, jlong closure, jbyteArray jtiles )
 {
     jint result = -1;
@@ -2613,8 +2613,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
     XP_U16 nTiles = (*env)->GetArrayLength( env, jtiles );
     jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
 
-    if ( 0 <= dict_findStartsWith( &data->iter, (Tile*)tiles, nTiles ) ) {
-        result = dict_getPosition( &data->iter );
+    if ( 0 <= di_findStartsWith( &data->iter, (Tile*)tiles, nTiles ) ) {
+        result = di_getPosition( &data->iter );
     }
 
     (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
@@ -2623,7 +2623,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
 }
 
 JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1tilesToStr
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1tilesToStr
 ( JNIEnv* env, jclass C, jlong closure, jbyteArray jtiles, jstring jdelim )
 {
     jstring result = NULL;
@@ -2654,7 +2654,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1tilesToStr
 }
 
 JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getDesc
+Java_org_eehouse_android_xw4_jni_XwJNI_di_1getDesc
 ( JNIEnv* env, jclass C, jlong closure )
 {
     jstring result = NULL;
@@ -2701,7 +2701,7 @@ makeIndex( DictIterData* data )
                                 count * sizeof(*idata->indices) );
     idata->count = count;
 
-    dict_makeIndex( &data->iter, data->depth, idata );
+    di_makeIndex( &data->iter, data->depth, idata );
     if ( 0 < idata->count ) {
         idata->prefixes = XP_REALLOC( data->mpool, idata->prefixes,
                                       idata->count * data->depth *
