@@ -2397,10 +2397,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
 ////////////////////////////////////////////////////////////
 
 typedef struct _DictIterData {
-    JNIEnv* env;                /* GET RID OF THIS!!!! */
     JNIGlobalState* globalState;
-    JNIUtilCtxt* jniutil;
-    VTableMgr* vtMgr;
     DictionaryCtxt* dict;
     DictIter iter;
     IndexData idata;
@@ -2428,10 +2425,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1init
                                      jname, jDictBytes, jpath, NULL, false );
     if ( !!dict ) {
         DictIterData* data = XP_CALLOC( globalState->mpool, sizeof(*data) );
-        data->env = env;
         data->globalState = globalState;
-        data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globalState->mpool) );
-        data->jniutil = globalState->jniutil;
         data->dict = dict;
         data->depth = 2;
 #ifdef MEM_DEBUG
@@ -2468,7 +2462,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_di_1destroy
 
         MAP_REMOVE( &data->globalState->ti, env );
 
-        vtmgr_destroy( MPPARM(mpool) data->vtMgr );
         XP_FREE( mpool, data );
     }
 }
