@@ -189,57 +189,6 @@ findStartsWithTiles( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
     return 0 == nTiles;
 }
 
-static XP_S16
-findStartsWithChars( DictIter* iter, const XP_UCHAR* chars, XP_U16 charsOffset, 
-                     array_edge* edge, XP_U16 nTilesUsed )
-{
-    XP_S16 result = -1;
-    XP_U16 charsLen = XP_STRLEN( &chars[charsOffset] );
-    if ( NULL == edge ) {
-        if ( 0 == charsLen ) {
-            iter->nEdges = nTilesUsed;
-            result = charsOffset;
-        } 
-    } else if ( 0 == charsLen ) {
-        iter->nEdges = nTilesUsed;
-        result = charsOffset;
-    } else {
-        const DictionaryCtxt* dict = iter->dict;
-        XP_U16 nodeSize = dict->nodeSize;
-        for ( ; ; ) {       /* for all the tiles */
-            Tile tile = EDGETILE( dict, edge );
-            const XP_UCHAR* facep = NULL;
-            for ( ; ; ) {       /* for each string that tile can be */
-                facep = dict_getNextTileString( dict, tile, facep );
-                if ( NULL == facep ) {
-                    break;
-                }
-                XP_U16 faceLen = XP_STRLEN( facep );
-                if ( faceLen > charsLen ) {
-                    faceLen = charsLen;
-                } 
-                if ( 0 == XP_STRNCMP( facep, &chars[charsOffset], faceLen ) ) {
-                    XP_S16 newOffset = 
-                        findStartsWithChars( iter, chars, 
-                                             charsOffset + faceLen, 
-                                             dict_follow( dict, edge ), 
-                                             nTilesUsed + 1 );
-                    if ( result < newOffset ) {
-                        iter->edges[nTilesUsed] = edge;
-                        result = newOffset;
-                    }
-                    break;
-                }
-            }
-            if ( IS_LAST_EDGE( dict, edge ) ) {
-                break;
-            }
-            edge += nodeSize;
-        }
-    }
-    return result;
-}
-
 static XP_Bool
 startsWith( const DictIter* iter, const Tile* tiles, XP_U16 nTiles )
 {
@@ -388,7 +337,8 @@ placeWordClose( DictIter* iter, const DictPosition position, XP_U16 depth,
 } /* placeWordClose */
 
 static void
-iterToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
+iterToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
+              const XP_UCHAR* delim )
 {
     XP_U16 ii;
     XP_U16 nEdges = iter->nEdges;
@@ -396,7 +346,7 @@ iterToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
     for ( ii = 0; ii < nEdges; ++ii ) {
         tiles[ii] = EDGETILE( iter->dict, iter->edges[ii] );
     }
-    (void)dict_tilesToString( iter->dict, tiles, nEdges, buf, buflen );
+    (void)dict_tilesToString( iter->dict, tiles, nEdges, buf, buflen, delim );
 }
 
 #if 0
@@ -658,11 +608,10 @@ figurePosition( DictIter* iter )
 }
 
 XP_S16
-dict_findStartsWith( DictIter* iter, const XP_UCHAR* prefix )
+dict_findStartsWith( DictIter* iter, const Tile* prefix, XP_U16 len )
 {
     ASSERT_INITED( iter );
-    array_edge* edge = dict_getTopEdge( iter->dict );
-    XP_S16 offset = findStartsWithChars( iter, prefix, 0, edge, 0 );
+    XP_S16 offset = findStartsWithTiles( iter, prefix, len );
     if ( 0 > offset ) {
         /* not found; do nothing */
     } else if ( 0 == offset ) {
@@ -681,10 +630,11 @@ dict_findStartsWith( DictIter* iter, const XP_UCHAR* prefix )
 }
 
 void
-dict_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
+dict_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
+                   const XP_UCHAR* delim )
 {
     ASSERT_INITED( iter );
-    iterToString( iter, buf, buflen );
+    iterToString( iter, buf, buflen, delim );
 }
 
 DictPosition

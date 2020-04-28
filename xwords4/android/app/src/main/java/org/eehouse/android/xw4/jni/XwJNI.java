@@ -524,12 +524,15 @@ public class XwJNI {
     public static native void dict_iter_destroy( long closure );
     public static native int dict_iter_wordCount( long closure );
     public static native int[] dict_iter_getCounts( long closure );
-    public static native String dict_iter_nthWord( long closure, int nn );
+    public static native String dict_iter_nthWord( long closure, int nn, String delim );
     public static native String[] dict_iter_getPrefixes( long closure );
     public static native int[] dict_iter_getIndices( long closure );
+    public static native byte[][] dict_iter_strToTiles( long closure,
+                                                        String str );
     public static native int dict_iter_getStartsWith( long closure,
-                                                      String prefix );
+                                                      byte[] prefix );
     public static native String dict_iter_getDesc( long closure );
+    public static native String dict_iter_tilesToStr( long closure, byte[] tiles, String delim );
 
     // Private methods -- called only here
     private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );

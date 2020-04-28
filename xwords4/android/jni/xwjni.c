@@ -2397,7 +2397,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
 ////////////////////////////////////////////////////////////
 
 typedef struct _DictIterData {
-    JNIEnv* env;
+    JNIEnv* env;                /* GET RID OF THIS!!!! */
     JNIGlobalState* globalState;
     JNIUtilCtxt* jniutil;
     VTableMgr* vtMgr;
@@ -2519,7 +2519,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
             XP_UCHAR buf[16];
             (void)dict_tilesToString( data->dict, 
                                       &data->idata.prefixes[depth*ii], 
-                                      depth, buf, VSIZE(buf) );
+                                      depth, buf, VSIZE(buf), NULL );
             jstring jstr = (*env)->NewStringUTF( env, buf );
             (*env)->SetObjectArrayElement( env, result, ii, jstr );
             deleteLocalRef( env, jstr );
@@ -2546,33 +2546,110 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getIndices
 
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1nthWord
-( JNIEnv* env, jclass C, jlong closure, jint nn)
+( JNIEnv* env, jclass C, jlong closure, jint nn, jstring jdelim )
 {
     jstring result = NULL;
     DictIterData* data = (DictIterData*)closure;
     if ( NULL != data ) {
         if ( dict_getNthWord( &data->iter, nn, data->depth, &data->idata ) ) {
             XP_UCHAR buf[64];
-            dict_wordToString( &data->iter, buf, VSIZE(buf) );
+            const XP_UCHAR* delim = NULL == jdelim ? NULL
+                : (*env)->GetStringUTFChars( env, jdelim, NULL );
+            dict_wordToString( &data->iter, buf, VSIZE(buf), delim );
             result = (*env)->NewStringUTF( env, buf );
+            if ( !!delim ) {
+                (*env)->ReleaseStringUTFChars( env, jdelim, delim );
+            }
         }
     }
     return result;
 }
 
+typedef struct _FTData {
+    JNIEnv* env;
+    jbyteArray arrays[16];
+    int nArrays;
+} FTData;
+
+static XP_Bool
+onFoundTiles( void* closure, const Tile* tiles, int nTiles )
+{
+    FTData* ftd = (FTData*)closure;
+    ftd->arrays[ftd->nArrays++] = makeByteArray( ftd->env, nTiles,
+                                                 (const jbyte*)tiles );
+    return ftd->nArrays < VSIZE(ftd->arrays); /* still have room? */
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1strToTiles
+( JNIEnv* env, jclass C, jlong closure, jstring jstr )
+{
+    jobjectArray result = NULL;
+    DictIterData* data = (DictIterData*)closure;
+    const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
+
+    FTData ftd = { .env = env, };
+    dict_tilesForString( data->dict, str, onFoundTiles, &ftd );
+
+    if ( ftd.nArrays > 0 ) {
+        result = makeByteArrayArray( env, ftd.nArrays );
+        for ( int ii = 0; ii < ftd.nArrays; ++ii ) {
+            (*env)->SetObjectArrayElement( env, result, ii, ftd.arrays[ii] );
+            deleteLocalRef( env, ftd.arrays[ii] );
+        }
+    }
+
+    (*env)->ReleaseStringUTFChars( env, jstr, str );
+
+    return result;
+}
+
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getStartsWith
-( JNIEnv* env, jclass C, jlong closure, jstring jprefix )
+( JNIEnv* env, jclass C, jlong closure, jbyteArray jtiles )
 {
     jint result = -1;
     DictIterData* data = (DictIterData*)closure;
-    if ( NULL != data ) {
-        const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
-        if ( 0 <= dict_findStartsWith( &data->iter, prefix ) ) {
-            result = dict_getPosition( &data->iter );
-        }
-        (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
+    XP_U16 nTiles = (*env)->GetArrayLength( env, jtiles );
+    jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
+
+    if ( 0 <= dict_findStartsWith( &data->iter, (Tile*)tiles, nTiles ) ) {
+        result = dict_getPosition( &data->iter );
     }
+
+    (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
+
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1tilesToStr
+( JNIEnv* env, jclass C, jlong closure, jbyteArray jtiles, jstring jdelim )
+{
+    jstring result = NULL;
+
+    XP_UCHAR buf[64];
+    const XP_UCHAR* delim = NULL;
+    if ( !!jdelim ) {
+        delim = (*env)->GetStringUTFChars( env, jdelim, NULL );
+    }
+    DictIterData* data = (DictIterData*)closure;
+
+    XP_U16 nTiles = (*env)->GetArrayLength( env, jtiles );
+    jbyte* tiles = (*env)->GetByteArrayElements( env, jtiles, NULL );
+
+    XP_U16 strLen = dict_tilesToString( data->dict, (Tile*)tiles, nTiles,
+                                        buf, VSIZE(buf), delim );
+    if ( 0 < strLen ) {
+        buf[strLen] = '\0';
+        result = (*env)->NewStringUTF( env, buf );
+    }
+
+    if ( !!jdelim ) {
+        (*env)->ReleaseStringUTFChars( env, jdelim, delim );
+    }
+    (*env)->ReleaseByteArrayElements( env, jtiles, tiles, 0 );
+
     return result;
 }
 

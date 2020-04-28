@@ -200,40 +200,48 @@ dict_numTileFaces( const DictionaryCtxt* dict )
     return dict->nFaces;
 } /* dict_numTileFaces */
 
+static void
+appendIfSpace( XP_UCHAR** bufp, const XP_UCHAR* end, const XP_UCHAR* newtxt )
+{
+    XP_U16 len = XP_STRLEN( newtxt );
+    if ( *bufp + len < end ) {
+        XP_MEMCPY( *bufp, newtxt, len );
+        *bufp += len;
+    } else {
+        *bufp = NULL;
+    }
+}
+
 XP_U16
 dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles, 
-                    XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize )
+                    XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize,
+                    const XP_UCHAR* delim )
 {
     XP_UCHAR* bufp = buf;
-    XP_UCHAR* end = bufp + bufSize;
-    XP_U16 result = 0;
+    const XP_UCHAR* end = bufp + bufSize;
+    XP_U16 delimLen = NULL == delim ? 0 : XP_STRLEN(delim);
 
-    while ( nTiles-- ) {
-        Tile tile = *tiles++;
+    for ( int ii = 0; ii < nTiles && !!bufp; ++ii ) {
+
+        if ( 0 < delimLen && 0 < ii ) {
+            appendIfSpace( &bufp, end, delim );
+        }
+
+        Tile tile = tiles[ii];
         const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
-
         if ( IS_SPECIAL(*facep) ) {
             XP_UCHAR* chars = dict->chars[(XP_U16)*facep];
-            XP_U16 len = XP_STRLEN( chars );
-            if ( bufp + len >= end ) {
-                bufp = NULL;
-                break;
-            }
-            XP_MEMCPY( bufp, chars, len );
-            bufp += len;
+            appendIfSpace( &bufp, end, chars );
         } else {
             XP_ASSERT ( tile != dict->blankTile ); /* printing blank should be
                                                       handled by specials
                                                       mechanism */
-            if ( bufp + 1 >= end ) {
-                bufp = NULL;
-                break;
-            }
-            bufp += XP_SNPRINTF( bufp, end - bufp, XP_S, facep );
+            appendIfSpace( &bufp, end, facep );
         }
     }
     
-    if ( bufp != NULL && bufp < end ) {
+    XP_U16 result = 0;
+    if ( !!bufp && bufp < end ) {
         *bufp = '\0';
         result = bufp - buf;
     }
@@ -244,46 +252,48 @@ dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles,
  * run out of room in which to return tiles.  Failure to match means return of
  * XP_FALSE, but if we run out of room before failing we return XP_TRUE.
  */
-static XP_S16
+
+static XP_Bool
 tilesForStringImpl( const DictionaryCtxt* dict, const XP_UCHAR* str,
-                    Tile* tiles, XP_U16 nTiles, XP_U16 nFound )
+                    Tile* tiles, XP_U16 nTiles, XP_U16 nFound,
+                    OnFoundTiles proc, void* closure )
 {
-    XP_S16 result = -1;
+    XP_Bool goOn;
     if ( nFound == nTiles || '\0' == str[0] ) {
-        result = nFound;
+        /* We've recursed to the end and have found a tile! */
+        goOn = (*proc)( closure, tiles, nFound );
     } else {
+        goOn = XP_TRUE;
+
         XP_U16 nFaces = dict_numTileFaces( dict );
-        Tile tile;
-        for ( tile = 0; tile < nFaces; ++tile ) {
+        for ( Tile tile = 0; goOn && tile < nFaces; ++tile ) {
             if ( tile != dict->blankTile ) {
-                const XP_UCHAR* facep = dict_getTileString( dict, tile );
-                XP_U16 faceLen = XP_STRLEN( facep );
-                if ( 0 == XP_STRNCMP( facep, str, faceLen ) ) {
-                    XP_S16 maxFound = tilesForStringImpl( dict, str + faceLen, 
-                                                          tiles, nTiles, 
-                                                          nFound + 1 );
-                    if ( 0 <= maxFound ) {
-                        tiles[nFound] = tile;
-                        result = maxFound;
+                for ( const XP_UCHAR* facep = NULL; ; ) {
+                    facep = dict_getNextTileString( dict, tile, facep );
+                    if ( !facep ) {
                         break;
+                    }
+                    XP_U16 faceLen = XP_STRLEN( facep );
+                    if ( 0 == XP_STRNCMP( facep, str, faceLen ) ) {
+                        tiles[nFound] = tile;
+                        goOn = tilesForStringImpl( dict, str + faceLen,
+                                                   tiles, nTiles, nFound + 1,
+                                                   proc, closure );
+                        break;  /* impossible to have than one match per tile */
                     }
                 }
             }
         }
     }
-    return result;
+    return goOn;
 } /* tilesForStringImpl */
 
-XP_Bool
+void
 dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* str,
-                     Tile* tiles, XP_U16* nTilesP )
+                     OnFoundTiles proc, void* closure )
 {
-    XP_S16 nFound = tilesForStringImpl( dict, str, tiles, *nTilesP, 0 );
-    XP_Bool success = 0 <= nFound;
-    if ( success ) {
-        *nTilesP = nFound;
-    }
-    return success;
+    Tile tiles[32];
+    tilesForStringImpl( dict, str, tiles, VSIZE(tiles), 0, proc, closure );
 } /* dict_tilesForString */
 
 XP_Bool
