@@ -447,7 +447,7 @@ changements ?</string>
          constrains the choice of wordlists) is substituted in for
          "%1$s". -->
     <!--<string name="dict_lang_label_fmt">Wordlist (in %1$s)</string>-->
-    <string name="dict_lang_label_fmt">Liste de mots (en %1$s)</string>
+    <string name="dict_lang_label_fmt">Liste de mots (%1$s)</string>
     <!-- If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
          will use is substituted in for "%1$s". -->
@@ -464,7 +464,7 @@ changements ?</string>
          player on a device, so they are infrequently used in network
          games as well. -->
     <!--<string name="password_label">Password</string>-->
-    <string name="password_label">Mot de passe</string>
+    <string name="password_label">Mot de passe :</string>
     <!--
        ############################################################
        # :Screens:
@@ -1241,7 +1241,7 @@ arrivent</string>
     \u003Cbr \\\u003E
     (full link: %1$s )
     </string>-->
-    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Toucher ici&lt;/a&gt; (ou suivez le lien complet ci-dessous pour rejoindre cette partie. Si vous déjà installé CrossWords vous pouvez ouvrir l\'attachement pour ce faire) .&lt;br \\&gt; &lt;br \\&gt; (lien complet : %1$s )</string>
+    <string name="invite_htm_fmt">Tapez le lien complet ci-dessous pour rejoindre cette partie. &lt;br \\&gt; &lt;br \\&gt; (lien complet : %1$s )</string>
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
@@ -2659,7 +2659,9 @@ pour voir ce qui est disponible.</string>
 	devices. Would you like to open the Android Settings Panel to add
 	one or more?\n\n(You may also need to open it on the device you
 	want to pair with.)</string>-->
-    <string name="bt_no_devs">Vous n\'avez pour l\'instant aucun appareil Bluetooth appairé. Voulez-vous ouvrir les paramètres d\'Android pour en ajouter un ou plusieurs ?\n\n(Vous pouvez aussi avoir besoin de les ouvrir sur l\'appareil auquel vous voulez vous appairer.)</string>
+    <string name="bt_no_devs">Vous n\'avez pour l\'instant aucun appareil Bluetooth appairé. Voulez-vous ouvrir les paramètres d\'Android pour en ajouter un ou plusieurs \?
+\n
+\n(Vous pouvez aussi avoir besoin d\'ouvrir le panneau de configuration sur l\'appareil auquel vous voulez vous appairer.)</string>
     <!--<string name="app_not_found_fmt">Unable to connect to CrossWords
 	on the device %1$s.  Please check that the device is within range
 	and that CrossWords is installed on it.</string>-->
@@ -3122,9 +3124,9 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
     <string name="invite_p2p_desc_extra">Seuls les appareils actuellement disponibles sont affichés. Si un appareil à proximité ne s\'affiche pas, assurez-vous que le WiFi est allumé, que CrossWords est installé, et que le WiFi Direct est activé.</string>
     <string name="empty_p2p_inviter">Il n\'y a actuellement pas d\'appareils accessibles par WiFi Direct qui ont CrossWords installé.</string>
     <string name="not_again_comms_p2p">Utiliser le WiFi Direct pour jouer contre un appareil faisant du WiFi Direct, sur lequel CrossWords est installé.</string>
-    <string name="missing_sms_perms">Cette partie est configurée pour communiquer par SMS mais CrossWords n\'a pas la permission de le faire. Vous pouvez toujours ouvrir cette partie, mais elle pourrait ne pas être en capacité d\'envoyer ou recevoir des coups.
-
-Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouvez retirer le réglage de communication par SMS.</string>
+    <string name="missing_sms_perms">Cette partie est configurée pour communiquer par SMS mais CrossWords n\'a pas la permission de le faire.
+\n
+\nVous pouvez toujours ouvrir cette partie, mais elle pourrait ne pas être en capacité d\'envoyer ou recevoir des coups. Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouvez retirer le réglage de communication par SMS.</string>
     <string name="download_rationale">CrossWords a besoin d\'accéder à un stockage temporaire pour conserver ce que vous êtes sur le point de télécharger.</string>
     <string name="sms_invite_rationale">CrossWords a besoin de la permission d\'envoyer une invitation par MMS.</string>
     <string name="toast_no_permission">Permission non accordée</string>
@@ -3225,4 +3227,8 @@ Vous pouvez la ré-ouvrir pour que la permission soit redemandée. Ou vous pouve
     <string name="dup_minutes_label">Minutes par tour</string>
     <string name="robot_iq_label">QI du robot</string>
     <string name="enable_pending_count_title">Montrer les messages en attente</string>
+    <plurals name="invite_p2p_desc_fmt">
+        <item quantity="one">Veuillez choisir le nom du périphérique WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
+        <item quantity="other">Veuillez choisir les noms des périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
+    </plurals>
 </resources>
