@@ -611,22 +611,18 @@ XP_S16
 di_findStartsWith( DictIter* iter, const Tile* prefix, XP_U16 len )
 {
     ASSERT_INITED( iter );
-    XP_S16 offset = findStartsWithTiles( iter, prefix, len );
-    if ( 0 > offset ) {
-        /* not found; do nothing */
-    } else if ( 0 == offset ) {
-        if ( !firstWord( iter ) ) {
-            offset = -1;
-        }
-    } else {
+    XP_S16 result = -1;
+
+    if ( findStartsWithTiles( iter, prefix, len ) ) {
+        XP_UCHAR buf[32];
+        XP_U16 offset = dict_tilesToString( iter->dict, prefix, 
+                                            len, buf, VSIZE(buf), NULL );
         if ( ACCEPT_ITER( iter, iter->nEdges ) || nextWord( iter ) ) {
-            DictPosition result = figurePosition( iter );
-            iter->position = result;
-        } else {
-            offset = -1;
+            iter->position = figurePosition( iter );
+            result = offset;
         }
     }
-    return offset;
+    return result;
 }
 
 void
