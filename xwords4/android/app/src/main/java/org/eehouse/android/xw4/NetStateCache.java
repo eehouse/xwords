@@ -243,22 +243,23 @@ public class NetStateCache {
                 mNotifyLater = new Runnable() {
                         @Override
                         public void run() {
-                            Assert.assertTrue( mLastStateSent != s_netAvail );
-                            mLastStateSent = s_netAvail;
+                            if ( mLastStateSent != s_netAvail ) {
+                                mLastStateSent = s_netAvail;
 
-                            Log.i( TAG, "notifyStateChanged(%b)", s_netAvail );
+                                Log.i( TAG, "notifyStateChanged(%b)", s_netAvail );
 
-                            synchronized( s_ifs ) {
-                                Iterator<StateChangedIf> iter = s_ifs.iterator();
-                                while ( iter.hasNext() ) {
-                                    iter.next().onNetAvail( s_netAvail );
+                                synchronized( s_ifs ) {
+                                    Iterator<StateChangedIf> iter = s_ifs.iterator();
+                                    while ( iter.hasNext() ) {
+                                        iter.next().onNetAvail( s_netAvail );
+                                    }
                                 }
-                            }
 
-                            if ( s_netAvail ) {
-                                CommsConnType typ = CommsConnType
-                                    .COMMS_CONN_RELAY;
-                                GameUtils.resendAllIf( context, typ );
+                                if ( s_netAvail ) {
+                                    CommsConnType typ = CommsConnType
+                                        .COMMS_CONN_RELAY;
+                                    GameUtils.resendAllIf( context, typ );
+                                }
                             }
                         }
                     };
