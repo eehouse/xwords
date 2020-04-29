@@ -865,7 +865,7 @@ public class GameConfigDelegate extends DelegateBase
     protected boolean handleBackPressed()
     {
         boolean consumed = false;
-        if ( ! isFinishing() ) {
+        if ( ! isFinishing() && null != m_gi ) {
             if ( m_isNewGame ) {
                 deleteGame();
             } else {
