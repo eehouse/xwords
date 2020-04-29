@@ -34,22 +34,49 @@ LANG_SPECIAL_INFO = \
 
 include ../Makefile.langcommon
 
+GIT_DIR = ./magyarispell
+SRC_COMMIT = 39ee7f3f8631b953d44ed6f12cfe8ae7193fbf13
+
+SRC = \
+	${GIT_DIR}/szotar/alap/fonev.1 \
+	${GIT_DIR}/szotar/alap/melleknev.1 \
+	${GIT_DIR}/szotar/alap/ige_alanyi.1 \
+	${GIT_DIR}/szotar/alap/ige_targy.1 \
+	${GIT_DIR}/szotar/alap/ragozatlan.2
+
+PHONY: GIT_TREE
+
+$(SRC) : GIT_TREE
+
+GIT_TREE:
+	if [ ! -d $(GIT_DIR) ]; then \
+		mkdir -p $(GIT_DIR); \
+		git clone https://github.com/laszlonemeth/magyarispell.git $(GIT_DIR); \
+	fi
+	(cd $(GIT_DIR) && git checkout $(SRC_COMMIT))
+
+hungarian_wordlist.txt: $(SRC)
+	cat $^ | \
+		sed -e 's/#.*$$//' -e 's/\[.*$$//' -e 's/ .*$$//' |\
+		grep -v '^$$' |\
+		sort -u > $@
+
 # Filtering wordlist: When a word can be spelled with either a
 # double-letter tile or two single-letter tiles, it's in the list with
 # both spellings. That's what the longer sed expressions are doing
 # (emitting two words)
-$(XWLANG)Main.dict.gz:
-	cat hungarian_wordlist.txt \
+$(XWLANG)Main.dict.gz: hungarian_wordlist.txt
+	cat $< \
 	| tr -d '\r' \
 	| tr [aábcdeéfghiíjklmnnyoóöőprtuúüűvzs] [AÁBCDEÉFGHIÍJKLMNNYOÓÖŐPRTUÚÜŰVZS] \
 	| grep -v '1\|2\|3\|4\|5\|6\|7' \
-	| sed -e 's,^\(.*\)CS\(.*\)$$,\11\2\n\1CS\2,g' \
+	| sed -e 's,CS,1,g' \
 	| sed -e 's,GY,2,g' \
 	| sed -e 's,LY,3,g' \
 	| sed -e 's,NY,4,g' \
-	| sed -e 's,^\(.*\)SZ\(.*\)$$,\15\2\n\1SZ\2,g' \
+	| sed -e 's,SZ,5,g' \
 	| sed -e 's,TY,6,g' \
-	| sed -e 's,^\(.*\)ZS\(.*\)$$,\17\2\n\1ZS\2,g' \
+	| sed -e 's,ZS,7,g' \
 	| grep '^[1-7AÁBCDEÉFGHIÍJKLMNOÓÖŐPRSTUÚÜŰVZ]*$$' \
 	| tr '1234567' '\001\002\003\004\005\006\007' \
 	| gzip -c > $@
@@ -58,4 +85,4 @@ $(XWLANG)Main.dict.gz:
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb hungarian_wordlist.txt
