@@ -2058,6 +2058,7 @@ static void
 bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
 {
     XP_U16 nWords = stream_getBits( stream, 4 );
+    XP_ASSERT( nWords < VSIZE(bwi->words) - 1 );
 
     bwi->nWords = nWords;
     bwi->dictName = ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) )
@@ -3843,8 +3844,7 @@ setTurn( ServerCtxt* server, XWEnv xwe, XP_S16 turn )
         if ( DUP_PLAYER == turn && inDupMode ) {
             turn = dupe_nextTurn( server );
         } else if ( PICK_CUR == turn ) {
-            XP_ASSERT( !inDupMode );
-            turn = model_getNextTurn( server->vol.model );
+            XP_ASSERT(0);       /* this should never happen */
         } else if ( 0 <= turn && !inDupMode ) {
             XP_ASSERT( turn == model_getNextTurn( server->vol.model ) );
         }
