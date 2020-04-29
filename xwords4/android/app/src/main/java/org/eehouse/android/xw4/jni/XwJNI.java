@@ -36,58 +36,99 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 public class XwJNI {
     private static final String TAG = XwJNI.class.getSimpleName();
 
-    public static class GamePtr implements AutoCloseable {
-        private long m_ptrGame = 0;
+    abstract static class PtrWrapper {
+        // This class provides ref counting and wrapping of a long that's
+        // really a pointer returned by jni code. In addition to the
+        // refcounting, which doesn't have to be used in a meaningful way, it
+        // provides type safety (avoids a long representing every jni
+        // datatype. BUT there's cost to the jni code calling back into java
+        // (the ptr() method) to get the long. I originally did this to wrap
+        // the long that represents DictIter state, then pulled that on
+        // noticing a slowdown in wordlist browsing. Still, I like having two
+        // classes here so I'm keeping that.
+        private long m_ptr;
         private int m_refCount = 0;
-        private long m_rowid;
         private String mStack;
 
-        private GamePtr( long ptr, long rowid )
+        PtrWrapper( long ptr )
         {
-            m_ptrGame = ptr;
-            m_rowid = rowid;
-            mStack = android.util.Log.getStackTraceString(new Exception());
-            Quarantine.recordOpened( rowid );
+            m_ptr = ptr;
+            if ( BuildConfig.DEBUG ) {
+                mStack = android.util.Log.getStackTraceString(new Exception());
+            }
         }
 
-        public synchronized long ptr()
+        public long ptr()
         {
-            Assert.assertTrue( 0 != m_ptrGame );
-            return m_ptrGame;
+            Assert.assertTrueNR( 0 != m_ptr );
+            return m_ptr;
         }
 
-        public synchronized GamePtr retain()
+        public synchronized PtrWrapper retain()
         {
             ++m_refCount;
-            Log.d( TAG, "retain(this=%H, rowid=%d): refCount now %d",
-                   this, m_rowid, m_refCount );
             return this;
         }
 
-        public long getRowid() { return m_rowid; }
+        abstract void onFinalRelease( long ptr );
 
-        // Force (via an assert in finalize() below) that this is called. It's
+                // Force (via an assert in finalize() below) that this is called. It's
         // better if jni stuff isn't being done on the finalizer thread
         public synchronized void release()
         {
             --m_refCount;
-            // Log.d( TAG, "%s.release(this=%H, rowid=%d): refCount now %d",
-            //        getClass().getName(), this, m_rowid, m_refCount );
             if ( 0 == m_refCount ) {
-                if ( 0 != m_ptrGame ) {
-                    Quarantine.recordClosed( m_rowid );
-                    if ( haveEnv( getJNI().m_ptrGlobals ) ) {
-                        game_dispose( this ); // will crash if haveEnv fails
-                    } else {
-                        Log.d( TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
-                               this, m_rowid );
-                        Assert.failDbg(); // seen on Play Store console
-                    }
-                    m_ptrGame = 0;
-                }
+                onFinalRelease( m_ptr );
+                m_ptr = 0;
             } else {
                 Assert.assertTrue( m_refCount > 0 || !BuildConfig.DEBUG );
             }
+        }
+
+        // @Override
+        public void finalize() throws java.lang.Throwable
+        {
+            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptr) ) {
+                Log.e( TAG, "finalize(): called prematurely: refCount: %d"
+                       + "; ptr: %d; creator: %s", m_refCount, m_ptr, mStack );
+            }
+            super.finalize();
+        }
+    }
+
+    public static class GamePtr extends PtrWrapper implements AutoCloseable {
+        private long m_rowid;
+
+        private GamePtr( long ptr, long rowid )
+        {
+            super( ptr );
+            m_rowid = rowid;
+            Quarantine.recordOpened( rowid );
+        }
+
+        public long getRowid() { return m_rowid; }
+
+        @Override
+        void onFinalRelease( long ptr )
+        {
+            if ( 0 != ptr ) {
+                Quarantine.recordClosed( m_rowid );
+                if ( haveEnv( getJNI().m_ptrGlobals ) ) {
+                    game_dispose( this ); // will crash if haveEnv fails
+                } else {
+                    Log.d( TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
+                           this, m_rowid );
+                    Assert.failDbg(); // seen on Play Store console
+                }
+            }
+        }
+
+        public GamePtr retain()
+        {
+            super.retain();
+            // Log.d( TAG, "retain(this=%H, rowid=%d): refCount now %d",
+            //        this, m_rowid, m_refCount );
+            return this;
         }
 
         @Override
@@ -95,17 +136,7 @@ public class XwJNI {
         {
             release();
         }
-
-        // @Override
-        public void finalize() throws java.lang.Throwable
-        {
-            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptrGame) ) {
-                Log.e( TAG, "finalize(): called prematurely: refCount: %d"
-                       + "; ptr: %d; creator: %s", m_refCount, m_ptrGame, mStack );
-            }
-            super.finalize();
-        }
-    }
+    } // GamePtr
 
     private static XwJNI s_JNI = null;
     private static synchronized XwJNI getJNI()
@@ -559,5 +590,6 @@ public class XwJNI {
                                                               String fromPhone,
                                                               int wantPort);
 
+    // This always returns true on release builds now.
     private static native boolean haveEnv( long jniState );
 }
