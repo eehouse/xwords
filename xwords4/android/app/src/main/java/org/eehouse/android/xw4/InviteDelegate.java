@@ -251,16 +251,17 @@ abstract class InviteDelegate extends DelegateBase
 
     private InviterItem[] getSelItems()
     {
-        InviterItem[] result = new InviterItem[m_checked.size()];
+        List<InviterItem> list = new ArrayList<>();
         int next = 0;
         for ( int ii = 0; ii < m_lv.getChildCount(); ++ii ) {
             InviterItemFrame child = (InviterItemFrame)m_lv.getChildAt( ii );
             InviterItem item = child.getItem();
             if ( m_checked.contains( item.getDev() ) ) {
-                result[next++] = item;
+                list.add( item );
                 Assert.assertTrue( child.isChecked() || !BuildConfig.DEBUG );
             }
         }
+        InviterItem[] result = list.toArray( new InviterItem[list.size()] );
         return result;
     }
 
