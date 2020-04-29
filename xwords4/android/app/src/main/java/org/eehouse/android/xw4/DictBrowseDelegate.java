@@ -21,8 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -83,9 +81,9 @@ public class DictBrowseDelegate extends DelegateBase
         {
             super();
 
-            XwJNI.di_setMinMax( m_dictClosure, m_browseState.m_minShown,
+            XwJNI.dict_iter_setMinMax( m_dictClosure, m_browseState.m_minShown,
                                        m_browseState.m_maxShown );
-            m_nWords = XwJNI.di_wordCount( m_dictClosure );
+            m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
 
             int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
                 R.string.dict_browse_title1_fmt : R.string.dict_browse_title_fmt;
@@ -98,7 +96,7 @@ public class DictBrowseDelegate extends DelegateBase
         {
             TextView text = (TextView)
                 inflate( android.R.layout.simple_list_item_1 );
-            String str = XwJNI.di_nthWord( m_dictClosure, position, null );
+            String str = XwJNI.dict_iter_nthWord( m_dictClosure, position );
             if ( null != str ) {
                 text.setText( str );
                 text.setOnClickListener( DictBrowseDelegate.this );
@@ -138,11 +136,10 @@ public class DictBrowseDelegate extends DelegateBase
             return section;
         }
 
-        @Override
         public Object[] getSections()
         {
-            m_prefixes = XwJNI.di_getPrefixes( m_dictClosure );
-            m_indices = XwJNI.di_getIndices( m_dictClosure );
+            m_prefixes = XwJNI.dict_iter_getPrefixes( m_dictClosure );
+            m_indices = XwJNI.dict_iter_getIndices( m_dictClosure );
             return m_prefixes;
         }
     }
@@ -169,10 +166,10 @@ public class DictBrowseDelegate extends DelegateBase
 
             String[] names = { name };
             DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, names );
-            m_dictClosure = XwJNI.di_init( pairs.m_bytes[0],
+            m_dictClosure = XwJNI.dict_iter_init( pairs.m_bytes[0],
                                                   name, pairs.m_paths[0] );
 
-            String desc = XwJNI.di_getDesc( m_dictClosure );
+            String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
             Log.d( TAG, "got desc: %s", desc );
             if ( null != desc ) {
                 TextView view = (TextView)findViewById( R.id.desc );
@@ -190,7 +187,7 @@ public class DictBrowseDelegate extends DelegateBase
             }
             if ( null == m_browseState.m_counts ) {
                 m_browseState.m_counts =
-                    XwJNI.di_getCounts( m_dictClosure );
+                    XwJNI.dict_iter_getCounts( m_dictClosure );
             }
 
             if ( null == m_browseState.m_counts ) {
@@ -246,10 +243,10 @@ public class DictBrowseDelegate extends DelegateBase
         setFindText( m_browseState.m_prefix );
     }
 
-    @Override
+
     protected void onDestroy()
     {
-        XwJNI.di_destroy( m_dictClosure );
+        XwJNI.dict_iter_destroy( m_dictClosure );
         m_dictClosure = 0;
     }
 
@@ -257,54 +254,12 @@ public class DictBrowseDelegate extends DelegateBase
     @Override
     public void finalize()
     {
-        Assert.assertTrueNR( m_dictClosure == 0 );
-        XwJNI.di_destroy( m_dictClosure );
+        XwJNI.dict_iter_destroy( m_dictClosure );
         try {
             super.finalize();
         } catch ( java.lang.Throwable err ){
             Log.i( TAG, "%s", err.toString() );
         }
-    }
-
-    @Override
-    protected Dialog makeDialog( DBAlert alert, Object[] params )
-    {
-        Dialog dialog = null;
-        DlgID dlgID = alert.getDlgID();
-        switch ( dlgID ) {
-        case CHOOSE_TILES:
-            final byte[][] choices = (byte[][])params[0];
-            final String[] strs = new String[choices.length];
-            for ( int ii = 0; ii < choices.length; ++ii ) {
-                strs[ii] = XwJNI.di_tilesToStr( m_dictClosure, choices[ii], "." );
-            }
-            final int[] chosen = {0};
-            dialog = makeAlertBuilder()
-                .setSingleChoiceItems( strs, chosen[0], new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick( DialogInterface dialog, int which )
-                        {
-                            chosen[0] = which;
-                        }
-                    } )
-                .setPositiveButton( android.R.string.ok,
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick( DialogInterface dialog, int which )
-                                        {
-                                            if ( 0 <= chosen[0] ) {
-                                                showPrefix( choices[chosen[0]] );
-                                            }
-                                        }
-                                    } )
-                .setTitle( R.string.pick_tiles_title )
-                .create();
-            break;
-        default:
-            dialog = super.makeDialog( alert, params );
-            break;
-        }
-        return dialog;
     }
 
     //////////////////////////////////////////////////
@@ -373,16 +328,7 @@ public class DictBrowseDelegate extends DelegateBase
         String text = getFindText();
         if ( null != text && 0 < text.length() ) {
             m_browseState.m_prefix = text;
-
-            byte[][] choices = XwJNI.di_strToTiles( m_dictClosure, text );
-            if ( null == choices || 0 == choices.length ) {
-                String msg = getString( R.string.no_tiles_exist, text, m_name );
-                makeOkOnlyBuilder( msg ).show();
-            } else if ( 1 == choices.length ) {
-                showPrefix( choices[0] );
-            } else {
-                showDialogFragment( DlgID.CHOOSE_TILES, (Object)choices );
-            }
+            showPrefix();
         }
     }
 
@@ -398,15 +344,14 @@ public class DictBrowseDelegate extends DelegateBase
         edit.setText( text );
     }
 
-    private void showPrefix( byte[] prefix )
+    private void showPrefix()
     {
-        if ( null != prefix && 0 < prefix.length ) {
-            // Here's the search
-            int pos = XwJNI.di_getStartsWith( m_dictClosure, prefix );
+        String text = m_browseState.m_prefix;
+        if ( null != text && 0 < text.length() ) {
+            int pos = XwJNI.dict_iter_getStartsWith( m_dictClosure, text );
             if ( 0 <= pos ) {
                 m_list.setSelection( pos );
             } else {
-                String text = XwJNI.di_tilesToStr( m_dictClosure, prefix, null );
                 DbgUtils.showf( m_activity, R.string.dict_browse_nowords_fmt,
                                 m_name, text );
             }

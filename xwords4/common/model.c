@@ -2245,7 +2245,7 @@ formatTray( const TrayTileSet* tiles, DictionaryCtxt* dict, XP_UCHAR* buf,
         buf[ii] = '\0';
     } else {
         dict_tilesToString( dict, (Tile*)tiles->tiles, tiles->nTiles, 
-                            buf, bufSize, NULL );
+                            buf, bufSize );
     }
 
     return buf;

@@ -3726,22 +3726,6 @@ moveTileToBoard( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row,
 } /* moveTileToBoard */
 
 #ifdef KEY_SUPPORT
-
-typedef struct _FTData {
-    Tile tile;
-    XP_Bool found;
-} FTData;
-
-static XP_Bool
-foundTiles( void* closure, const Tile* tiles, int len )
-{
-    XP_ASSERT( 1 == len );
-    FTData* ftp = (FTData*)closure;
-    ftp->tile = tiles[0];
-    ftp->found = XP_TRUE;
-    return XP_FALSE;
-}
-
 /* Return number between 0 and MAX_TRAY_TILES-1 for valid index, < 0 otherwise */
 static XP_S16
 keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
@@ -3759,19 +3743,19 @@ keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
 
     if ( tileIndex < 0 ) {
         DictionaryCtxt* dict = model_getDictionary( model );
+        Tile tile;
         XP_UCHAR buf[2] = { key, '\0' };
 
         /* Figure out if we have the tile in the tray  */
-        FTData ftd = {0};
-        dict_tilesForString( dict, buf, foundTiles, &ftd );
-        if ( ftd.found ) {
+        XP_U16 nTiles = 1;
+        if ( dict_tilesForString( dict, buf, &tile, &nTiles ) ) { /* in dict? */
             XP_S16 turn = board->selPlayer;
-            tileIndex = model_trayContains( model, turn, ftd.tile );
+            tileIndex = model_trayContains( model, turn, tile );
             if ( tileIndex < 0 ) {
                 Tile blankTile = dict_getBlankTile( dict );
                 tileIndex = model_trayContains( model, turn, blankTile );
                 if ( tileIndex >= 0 && !!blankFace ) { /* there's a blank for it */
-                    *blankFace = ftd.tile;
+                    *blankFace = tile;
                 }
             }
         }

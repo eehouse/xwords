@@ -753,7 +753,7 @@ scoreWord( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
 
                 XP_UCHAR buf[(MAX_ROWS*2)+1];
                 dict_tilesToString( dict, checkWordBuf, len, buf, 
-                                    sizeof(buf), NULL );
+                                    sizeof(buf) );
 
                 WNParams wnp = { .word = buf, .isLegal = legal, .dict = dict,
 #ifdef XWFEATURE_BOARDWORDS
@@ -889,7 +889,7 @@ wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word,
 {
     XP_UCHAR buf[(MAX_ROWS*2)+1];
     XP_U16 len = dict_tilesToString( fmtr->dict, word, fmtr->nTiles, 
-                                     buf, sizeof(buf), NULL );
+                                     buf, sizeof(buf) );
 
     if ( !!stream ) {
         stream_putBytes( stream, buf, len );

@@ -36,99 +36,58 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 public class XwJNI {
     private static final String TAG = XwJNI.class.getSimpleName();
 
-    abstract static class PtrWrapper {
-        // This class provides ref counting and wrapping of a long that's
-        // really a pointer returned by jni code. In addition to the
-        // refcounting, which doesn't have to be used in a meaningful way, it
-        // provides type safety (avoids a long representing every jni
-        // datatype. BUT there's cost to the jni code calling back into java
-        // (the ptr() method) to get the long. I originally did this to wrap
-        // the long that represents DictIter state, then pulled that on
-        // noticing a slowdown in wordlist browsing. Still, I like having two
-        // classes here so I'm keeping that.
-        private long m_ptr;
+    public static class GamePtr implements AutoCloseable {
+        private long m_ptrGame = 0;
         private int m_refCount = 0;
-        private String mStack;
-
-        PtrWrapper( long ptr )
-        {
-            m_ptr = ptr;
-            if ( BuildConfig.DEBUG ) {
-                mStack = android.util.Log.getStackTraceString(new Exception());
-            }
-        }
-
-        public long ptr()
-        {
-            Assert.assertTrueNR( 0 != m_ptr );
-            return m_ptr;
-        }
-
-        public synchronized PtrWrapper retain()
-        {
-            ++m_refCount;
-            return this;
-        }
-
-        abstract void onFinalRelease( long ptr );
-
-                // Force (via an assert in finalize() below) that this is called. It's
-        // better if jni stuff isn't being done on the finalizer thread
-        public synchronized void release()
-        {
-            --m_refCount;
-            if ( 0 == m_refCount ) {
-                onFinalRelease( m_ptr );
-                m_ptr = 0;
-            } else {
-                Assert.assertTrue( m_refCount > 0 || !BuildConfig.DEBUG );
-            }
-        }
-
-        // @Override
-        public void finalize() throws java.lang.Throwable
-        {
-            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptr) ) {
-                Log.e( TAG, "finalize(): called prematurely: refCount: %d"
-                       + "; ptr: %d; creator: %s", m_refCount, m_ptr, mStack );
-            }
-            super.finalize();
-        }
-    }
-
-    public static class GamePtr extends PtrWrapper implements AutoCloseable {
         private long m_rowid;
+        private String mStack;
 
         private GamePtr( long ptr, long rowid )
         {
-            super( ptr );
+            m_ptrGame = ptr;
             m_rowid = rowid;
+            mStack = android.util.Log.getStackTraceString(new Exception());
             Quarantine.recordOpened( rowid );
+        }
+
+        public synchronized long ptr()
+        {
+            Assert.assertTrue( 0 != m_ptrGame );
+            return m_ptrGame;
+        }
+
+        public synchronized GamePtr retain()
+        {
+            ++m_refCount;
+            Log.d( TAG, "retain(this=%H, rowid=%d): refCount now %d",
+                   this, m_rowid, m_refCount );
+            return this;
         }
 
         public long getRowid() { return m_rowid; }
 
-        @Override
-        void onFinalRelease( long ptr )
+        // Force (via an assert in finalize() below) that this is called. It's
+        // better if jni stuff isn't being done on the finalizer thread
+        public synchronized void release()
         {
-            if ( 0 != ptr ) {
-                Quarantine.recordClosed( m_rowid );
-                if ( haveEnv( getJNI().m_ptrGlobals ) ) {
-                    game_dispose( this ); // will crash if haveEnv fails
-                } else {
-                    Log.d( TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
-                           this, m_rowid );
-                    Assert.failDbg(); // seen on Play Store console
+            --m_refCount;
+            // Log.d( TAG, "%s.release(this=%H, rowid=%d): refCount now %d",
+            //        getClass().getName(), this, m_rowid, m_refCount );
+            if ( 0 == m_refCount ) {
+                if ( 0 != m_ptrGame ) {
+                    Quarantine.recordClosed( m_rowid );
+                    if ( haveEnv( getJNI().m_ptrGlobals ) ) {
+                        game_dispose( this ); // will crash if haveEnv fails
+                    } else {
+                        Log.d( TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
+                               this, m_rowid );
+                        Assert.failDbg(); // seen on Play Store console
+                    }
+                    m_ptrGame = 0;
                 }
+            } else {
+                Assert.assertTrue( m_refCount > 0 || !BuildConfig.DEBUG );
             }
-        }
-
-        public GamePtr retain()
-        {
-            super.retain();
-            // Log.d( TAG, "retain(this=%H, rowid=%d): refCount now %d",
-            //        this, m_rowid, m_refCount );
-            return this;
         }
 
         @Override
@@ -136,7 +95,17 @@ public class XwJNI {
         {
             release();
         }
-    } // GamePtr
+
+        // @Override
+        public void finalize() throws java.lang.Throwable
+        {
+            if ( BuildConfig.DEBUG && (0 != m_refCount || 0 != m_ptrGame) ) {
+                Log.e( TAG, "finalize(): called prematurely: refCount: %d"
+                       + "; ptr: %d; creator: %s", m_refCount, m_ptrGame, mStack );
+            }
+            super.finalize();
+        }
+    }
 
     private static XwJNI s_JNI = null;
     private static synchronized XwJNI getJNI()
@@ -545,21 +514,22 @@ public class XwJNI {
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static long di_init( byte[] dict, String name, String path )
+    public static long dict_iter_init( byte[] dict, String name,
+                                       String path )
     {
-        return di_init( getJNI().m_ptrGlobals, dict, name, path );
+        return dict_iter_init( getJNI().m_ptrGlobals, dict, name, path );
     }
-    public static native void di_setMinMax( long closure, int min, int max );
-    public static native void di_destroy( long closure );
-    public static native int di_wordCount( long closure );
-    public static native int[] di_getCounts( long closure );
-    public static native String di_nthWord( long closure, int nn, String delim );
-    public static native String[] di_getPrefixes( long closure );
-    public static native int[] di_getIndices( long closure );
-    public static native byte[][] di_strToTiles( long closure, String str );
-    public static native int di_getStartsWith( long closure, byte[] prefix );
-    public static native String di_getDesc( long closure );
-    public static native String di_tilesToStr( long closure, byte[] tiles, String delim );
+    public static native void dict_iter_setMinMax( long closure,
+                                                   int min, int max );
+    public static native void dict_iter_destroy( long closure );
+    public static native int dict_iter_wordCount( long closure );
+    public static native int[] dict_iter_getCounts( long closure );
+    public static native String dict_iter_nthWord( long closure, int nn );
+    public static native String[] dict_iter_getPrefixes( long closure );
+    public static native int[] dict_iter_getIndices( long closure );
+    public static native int dict_iter_getStartsWith( long closure,
+                                                      String prefix );
+    public static native String dict_iter_getDesc( long closure );
 
     // Private methods -- called only here
     private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );
@@ -578,8 +548,8 @@ public class XwJNI {
                                                 String name, String path,
                                                 boolean check,
                                                 DictInfo info );
-    private static native long di_init( long jniState, byte[] dict,
-                                        String name, String path );
+    private static native long dict_iter_init( long jniState, byte[] dict,
+                                               String name, String path );
 
     private static native byte[][]
         smsproto_prepOutbound( long jniState, SMS_CMD cmd, int gameID, byte[] buf,
@@ -590,6 +560,5 @@ public class XwJNI {
                                                               String fromPhone,
                                                               int wantPort);
 
-    // This always returns true on release builds now.
     private static native boolean haveEnv( long jniState );
 }

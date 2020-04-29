@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
  * Copyright 1997 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -177,8 +177,7 @@ XP_U16 dict_numTiles( const DictionaryCtxt* ctxt, Tile tile );
 XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 
 XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
-                           XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize,
-                           const XP_UCHAR* delim );
+                           XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize );
 const XP_UCHAR* dict_getTileString( const DictionaryCtxt* ctxt, Tile tile );
 const XP_UCHAR* dict_getNextTileString( const DictionaryCtxt* ctxt, Tile tile,
                                         const XP_UCHAR* cur );
@@ -187,9 +186,8 @@ const XP_UCHAR* dict_getLangName(const DictionaryCtxt* ctxt );
 
 XP_Bool dict_isUTF8( const DictionaryCtxt* ctxt );
 
-typedef XP_Bool (*OnFoundTiles)(void* closure, const Tile* tiles, int len);
-void dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* key,
-                          OnFoundTiles proc, void* closure );
+XP_Bool dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* key,
+                             Tile* tiles, XP_U16* nTiles );
 
 XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
 void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 
