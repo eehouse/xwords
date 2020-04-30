@@ -2397,7 +2397,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1sendChat
 ////////////////////////////////////////////////////////////
 
 typedef struct _DictIterData {
-    JNIEnv* env;
     JNIGlobalState* globalState;
     JNIUtilCtxt* jniutil;
     VTableMgr* vtMgr;
@@ -2428,7 +2427,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
                                      jname, jDictBytes, jpath, NULL, false );
     if ( !!dict ) {
         DictIterData* data = XP_CALLOC( globalState->mpool, sizeof(*data) );
-        data->env = env;
         data->globalState = globalState;
         data->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globalState->mpool) );
         data->jniutil = globalState->jniutil;
