@@ -1797,8 +1797,10 @@ public class GamesListDelegate extends ListDelegateBase
                         && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
                 }
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
-                Utils.setItemVisible( menu, R.id.games_game_markbad, enable );
                 Utils.setItemVisible( menu, R.id.games_game_netstats, isMultiGame );
+
+                enable = BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity );
+                Utils.setItemVisible( menu, R.id.games_game_markbad, enable );
 
                 enable = !m_launchedGames.contains( rowID );
                 Utils.setItemVisible( menu, R.id.games_game_delete, enable );
