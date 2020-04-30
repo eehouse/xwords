@@ -33,19 +33,19 @@ endif
 endif
 
 LANG_SPECIAL_INFO = \
-		"CH" $(PBITMS)/large_ch.pbitm $(PBITMS)/small_ch.pbitm \
-		"LL" $(PBITMS)/large_ll.pbitm $(PBITMS)/small_ll.pbitm \
-		"RR" $(PBITMS)/large_rr.pbitm $(PBITMS)/small_rr.pbitm \
+		"CH ch Ch cH" $(PBITMS)/large_ch.pbitm $(PBITMS)/small_ch.pbitm \
+		"LL ll Ll lL" $(PBITMS)/large_ll.pbitm $(PBITMS)/small_ll.pbitm \
+		"RR rr Rr rR" $(PBITMS)/large_rr.pbitm $(PBITMS)/small_rr.pbitm \
 
 include ../Makefile.langcommon
 
 #$(LANG)Main.dict.gz: SpanishMain.dict.gz
 #	ln -s $< $@
 
-SOURCEDICT ?= $(XWDICTPATH)/Spanish/FAA_4.1.utf8.gz
+SOURCEDICT ?= $(XWDICTPATH)/Spanish/FAA_4.1.txt
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< \
+	cat $< \
 	| tr -d '\r' \
 	| tr [a-zñ] [A-ZÑ] \
 	| LANG=$(LANGCODE):$(ENC) grep '^[A-JL-VX-ZÑ]*$$' \
