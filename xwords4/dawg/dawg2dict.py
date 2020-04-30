@@ -222,7 +222,9 @@ def process(args):
         words = []
         if nodes:
             expandDAWG( nodes, nodeSize, args.DELIM, offset, data, words )
-            assert len(words) == nWords
+            if not len(words) == nWords:
+                print("loaded {} words but header claims {}".format(len(words), nWords), file=sys.stderr)
+                # assert len(words) == nWords
         if args.DUMP_WORDS:
             for word in words:
                 print(word)
