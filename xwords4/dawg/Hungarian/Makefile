@@ -44,6 +44,8 @@ SRC = \
 	${GIT_DIR}/szotar/alap/ige_targy.1 \
 	${GIT_DIR}/szotar/alap/ragozatlan.2
 
+TMP_LIST = tmp_wordlist.txt
+
 PHONY: GIT_TREE
 
 $(SRC) : GIT_TREE
@@ -55,7 +57,7 @@ GIT_TREE:
 	fi
 	(cd $(GIT_DIR) && git checkout $(SRC_COMMIT))
 
-hungarian_wordlist.txt: $(SRC)
+$(TMP_LIST): $(SRC)
 	cat $^ | \
 		sed -e 's/#.*$$//' -e 's/\[.*$$//' -e 's/ .*$$//' |\
 		grep -v '^$$' |\
@@ -65,7 +67,7 @@ hungarian_wordlist.txt: $(SRC)
 # double-letter tile or two single-letter tiles, it's in the list with
 # both spellings. That's what the longer sed expressions are doing
 # (emitting two words)
-$(XWLANG)Main.dict.gz: hungarian_wordlist.txt
+$(XWLANG)Main.dict.gz: $(TMP_LIST)
 	cat $< \
 	| tr -d '\r' \
 	| tr [aábcdeéfghiíjklmnnyoóöőprtuúüűvzs] [AÁBCDEÉFGHIÍJKLMNNYOÓÖŐPRTUÚÜŰVZS] \
@@ -85,4 +87,4 @@ $(XWLANG)Main.dict.gz: hungarian_wordlist.txt
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb hungarian_wordlist.txt
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb $(TMP_LIST)
