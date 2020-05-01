@@ -26,6 +26,7 @@
 
 #include "comtypes.h"
 #include "xwstream.h"
+#include "strutils.h"
 
 void
 and_assert( const char* test, int line, const char* file, const char* func )
@@ -251,10 +252,8 @@ getStringCopy( MPFORMAL JNIEnv* env, jstring jstr )
 {
     XP_UCHAR* result = NULL;
     if ( NULL != jstr ) {
-        jsize len = 1 + (*env)->GetStringUTFLength( env, jstr );
         const char* chars = (*env)->GetStringUTFChars( env, jstr, NULL );
-        result = XP_MALLOC( mpool, len );
-        XP_MEMCPY( result, chars, len );
+        result = copyString( mpool, chars );
         (*env)->ReleaseStringUTFChars( env, jstr, chars );
     }
     return result;

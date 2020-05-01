@@ -98,121 +98,14 @@ linux_dictionary_make( MPFORMAL XWEnv xwe, const LaunchParams* params,
     return &result->super;
 } /* gtk_dictionary_make */
 
-static XP_UCHAR*
-getNullTermParam( LinuxDictionaryCtxt* XP_UNUSED_DBG(dctx), const XP_U8** ptr,
-                  XP_U16* headerLen )
+void
+computeChecksum( DictionaryCtxt* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
+                 const XP_U8* ptr, XP_U32 len, XP_UCHAR* out )
 {
-    XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
-    XP_UCHAR* result = XP_MALLOC( dctx->super.mpool, len );
-    XP_MEMCPY( result, *ptr, len );
-    *ptr += len;
-    *headerLen -= len;
-    return result;
+    gchar* checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, len );
+    XP_MEMCPY( out, checksum, XP_STRLEN(checksum) + 1 );
+    g_free( checksum );
 }
-
-static XP_U16
-countSpecials( LinuxDictionaryCtxt* ctxt )
-{
-    XP_U16 result = 0;
-    XP_U16 ii;
-
-    for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
-        if ( IS_SPECIAL(ctxt->super.facePtrs[ii][0]) ) {
-            ++result;
-        }
-    }
-
-    return result;
-} /* countSpecials */
-
-static XP_Bitmap
-skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), const XP_U8** ptrp )
-{
-    XP_U8 nCols, nRows, nBytes;
-    LinuxBMStruct* lbs = NULL;
-    const XP_U8* ptr = *ptrp;
-    
-    nCols = *ptr++;
-    if ( nCols > 0 ) {
-        nRows = *ptr++;
-
-        nBytes = ((nRows * nCols) + 7) / 8;
-
-        lbs = XP_MALLOC( ctxt->super.mpool, sizeof(*lbs) + nBytes );
-        lbs->nRows = nRows;
-        lbs->nCols = nCols;
-        lbs->nBytes = nBytes;
-	
-        memcpy( lbs + 1, ptr, nBytes );
-        ptr += nBytes;
-    }
-
-    *ptrp = ptr;
-    return lbs;
-} /* skipBitmap */
-
-static void
-skipBitmaps( LinuxDictionaryCtxt* ctxt, const XP_U8** ptrp )
-{
-    XP_U16 nSpecials;
-    XP_UCHAR* text;
-    XP_UCHAR** texts;
-    XP_UCHAR** textEnds;
-    SpecialBitmaps* bitmaps;
-    Tile tile;
-    const XP_U8* ptr = *ptrp;
-
-    nSpecials = countSpecials( ctxt );
-
-    texts = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
-                                   nSpecials * sizeof(*texts) );
-    textEnds = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
-                                      nSpecials * sizeof(*textEnds) );
-    bitmaps = (SpecialBitmaps*)XP_MALLOC( ctxt->super.mpool, 
-                                          nSpecials * sizeof(*bitmaps) );
-    XP_MEMSET( bitmaps, 0, nSpecials * sizeof(*bitmaps) );
-
-    for ( tile = 0; tile < ctxt->super.nFaces; ++tile ) {
-	
-        const XP_UCHAR* facep = ctxt->super.facePtrs[(short)tile];
-        if ( IS_SPECIAL(*facep) ) {
-            XP_U16 asIndex = (XP_U16)*facep;
-            XP_U8 txtlen;
-            XP_ASSERT( *facep < nSpecials );
-
-            /* get the string */
-            txtlen = *ptr++;
-            text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
-            memcpy( text, ptr, txtlen );
-            ptr += txtlen;
-
-            text[txtlen] = '\0';
-            texts[(XP_U16)*facep] = text;
-            textEnds[(XP_U16)*facep] = text + txtlen + 1;
-            
-            /* Now replace the delimiter char with \0.  It must be one byte in
-               length and of course equal to the delimiter */
-            XP_ASSERT( 0 == (SYNONYM_DELIM & 0x80) );
-            while ( '\0' != *text ) {
-                XP_UCHAR* cp = g_utf8_offset_to_pointer( text, 1 );
-                if ( 1 == (cp - text) && *text == SYNONYM_DELIM ) {
-                    *text = '\0';
-                }
-                text = cp;
-            }
-
-            XP_DEBUGF( "skipping bitmaps for " XP_S, texts[asIndex] );
-
-            bitmaps[asIndex].largeBM = skipBitmap( ctxt, &ptr );
-            bitmaps[asIndex].smallBM = skipBitmap( ctxt, &ptr );
-        }
-    }
-    *ptrp = ptr;
-
-    ctxt->super.chars = texts;
-    ctxt->super.charEnds = textEnds;
-    ctxt->super.bitmaps = bitmaps;
-} /* skipBitmaps */
 
 void
 dict_splitFaces( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe), const XP_U8* utf8,
@@ -263,13 +156,6 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
     XP_Bool formatOk = XP_TRUE;
     size_t dictLength;
     XP_U32 topOffset;
-    unsigned short xloc;
-    XP_U16 flags;
-    XP_U16 facesSize;
-    XP_U16 charSize;
-    XP_Bool isUTF8 = XP_FALSE;
-    XP_Bool hasHeader = XP_FALSE;
-    const XP_U8* ptr;
     char path[256];
 
     if ( !getDictPath( params, fileName, path, VSIZE(path) ) ) {
@@ -298,130 +184,12 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
         fclose( dictF );
     }
 
-    ptr = dctx->dictBase;
-
-    memcpy( &flags, ptr, sizeof(flags) );
-    ptr += sizeof( flags );
-    flags = ntohs(flags);
-
-    XP_DEBUGF( "flags=0X%X", flags );
-    hasHeader = 0 != (DICT_HEADER_MASK & flags);
-    if ( hasHeader ) {
-        flags &= ~DICT_HEADER_MASK;
-    }
-
-    flags &= ~DICT_SYNONYMS_MASK;
-
-    if ( flags == 0x0001 ) {
-        dctx->super.nodeSize = 3;
-        charSize = 1;
-        dctx->super.is_4_byte = XP_FALSE;
-    } else if ( flags == 0x0002 ) {
-        dctx->super.nodeSize = 3;
-        charSize = 2;
-        dctx->super.is_4_byte = XP_FALSE;
-    } else if ( flags == 0x0003 ) {
-        dctx->super.nodeSize = 4;
-        charSize = 2;
-        dctx->super.is_4_byte = XP_TRUE;
-    } else if ( flags == 0x0004 ) {
-        dctx->super.nodeSize = 3;
-        dctx->super.isUTF8 = XP_TRUE;
-        isUTF8 = XP_TRUE;
-        dctx->super.is_4_byte = XP_FALSE;
-    } else if ( flags == 0x0005 ) {
-        dctx->super.nodeSize = 4;
-        dctx->super.isUTF8 = XP_TRUE;
-        isUTF8 = XP_TRUE;
-        dctx->super.is_4_byte = XP_TRUE;
-    } else {
-        /* case I don't know how to deal with */
-        formatOk = XP_FALSE;
-        XP_ASSERT(0);
-    }
+    const XP_U8* ptr = dctx->dictBase;
+    const XP_U8* end = ptr + dctx->dictLength;
+    formatOk = parseCommon( &dctx->super, NULL_XWE, &ptr, end );
+        /* && loadSpecialData( &dctx->super, &ptr, end ); */
 
     if ( formatOk ) {
-        XP_U8 numFaceBytes, numFaces;
-
-        if ( hasHeader ) {
-            XP_U16 headerLen;
-            XP_U32 wordCount;
-
-            memcpy( &headerLen, ptr, sizeof(headerLen) );
-            ptr += sizeof(headerLen);
-            headerLen = ntohs( headerLen );
-
-            memcpy( &wordCount, ptr, sizeof(wordCount) );
-            ptr += sizeof(wordCount);
-            headerLen -= sizeof(wordCount);
-            dctx->super.nWords = ntohl( wordCount );
-            XP_DEBUGF( "dict contains %d words", dctx->super.nWords );
-
-            if ( 0 < headerLen ) {
-                dctx->super.desc = getNullTermParam( dctx, &ptr, &headerLen );
-            } else {
-                XP_LOGF( "%s: no note", __func__ );
-            }
-            if ( 0 < headerLen ) {
-                dctx->super.md5Sum = getNullTermParam( dctx, &ptr, &headerLen );
-            } else {
-                XP_LOGF( "%s: no md5Sum", __func__ );
-            }
-            ptr += headerLen;
-        }
-
-        if ( isUTF8 ) {
-            numFaceBytes = *ptr++;
-        }
-        numFaces = *ptr++;
-        if ( !isUTF8 ) {
-            numFaceBytes = numFaces * charSize;
-        }
-
-        if ( NULL == dctx->super.md5Sum
-#ifdef DEBUG
-             || XP_TRUE 
-#endif
-             ) {
-            size_t curPos = ptr - dctx->dictBase;
-            gssize dictLength = dctx->dictLength - curPos;
-
-            gchar* checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, dictLength );
-            if ( NULL == dctx->super.md5Sum ) {
-                dctx->super.md5Sum = copyString( dctx->super.mpool, checksum );
-            } else {
-                XP_ASSERT( 0 == XP_STRCMP( dctx->super.md5Sum, checksum ) );
-            }
-            g_free( checksum );
-        }
-
-        dctx->super.nFaces = numFaces;
-
-        dctx->super.countsAndValues = XP_MALLOC( dctx->super.mpool, 
-                                                 numFaces*2 );
-        facesSize = numFaceBytes;
-        if ( !isUTF8 ) {
-            facesSize /= 2;
-        }
-
-        XP_U8 tmp[numFaceBytes];
-        memcpy( tmp, ptr, numFaceBytes );
-        ptr += numFaceBytes;
-
-        dict_splitFaces( &dctx->super, NULL, tmp, numFaceBytes, numFaces );
-
-        memcpy( &xloc, ptr, sizeof(xloc) );
-        ptr += sizeof(xloc);
-        memcpy( dctx->super.countsAndValues, ptr, numFaces*2 );
-        ptr += numFaces*2;
-    }
-    
-    dctx->super.langCode = xloc & 0x7F;
-
-    if ( formatOk ) {
-        XP_U32 numEdges;
-        skipBitmaps( dctx, &ptr );
-
         size_t curPos = ptr - dctx->dictBase;
         dictLength = dctx->dictLength - curPos;
 
@@ -433,6 +201,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
             ptr += sizeof(topOffset);
         }
 
+        XP_U32 numEdges;
         if ( dictLength > 0 ) {
             numEdges = dictLength / dctx->super.nodeSize;
 #ifdef DEBUG
@@ -509,6 +278,7 @@ linux_dictionary_destroy( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
         }
     }
 
+    /* super's destructor should do this!!!! */
     XP_FREEP( dict->mpool, &ctxt->super.desc );
     XP_FREEP( dict->mpool, &ctxt->super.md5Sum );
     XP_FREEP( dict->mpool, &ctxt->super.countsAndValues );

@@ -49,12 +49,6 @@ typedef struct _AndDictionaryCtxt {
 #endif
 } AndDictionaryCtxt;
 
-#define CHECK_PTR(p,c,e)                                                \
-    if ( ((p)+(c)) > (e) ) {                                            \
-        XP_LOGF( "%s (line %d); out of bytes", __func__, __LINE__ );    \
-        goto error;                                                     \
-    }
-
 static void splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, 
                                  const XP_U8* ptr, 
                                  int nFaceBytes, int nFaces, XP_Bool isUTF8 );
@@ -79,152 +73,6 @@ n_ptr_tohl( XP_U8 const** inp )
 
     return XP_NTOHL(t);
 } /* n_ptr_tohl */
-
-static XP_U16
-n_ptr_tohs( XP_U8 const ** inp )
-{
-    XP_U16 t;
-    XP_MEMCPY( &t, *inp, sizeof(t) );
-
-    *inp += sizeof(t);
-
-    return XP_NTOHS(t);
-} /* n_ptr_tohs */
-
-static XP_U16
-andCountSpecials( AndDictionaryCtxt* ctxt )
-{
-    XP_U16 result = 0;
-
-    for ( int ii = 0; ii < ctxt->super.nFaces; ++ii ) {
-        if ( IS_SPECIAL( ctxt->super.facePtrs[ii][0] ) ) {
-            ++result;
-        }
-    }
-
-    return result;
-} /* andCountSpecials */
-
-static XP_Bool
-andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
-               const XP_U8* end, XP_Bitmap* result )
-{
-    XP_Bool success = XP_TRUE;
-    XP_U8 const* ptr = *ptrp;
-    jobject bitmap = NULL;
-    CHECK_PTR( ptr, 1, end );
-    XP_U8 nCols = *ptr++;
-    if ( nCols > 0 ) {
-        CHECK_PTR( ptr, 1, end );
-        XP_U8 nRows = *ptr++;
-        CHECK_PTR( ptr, ((nRows*nCols)+7) / 8, end );
-#ifdef DROP_BITMAPS
-        ptr += ((nRows*nCols)+7) / 8;
-#else
-        XP_U8 srcByte = 0;
-        XP_U8 nBits;
-
-        jboolean* colors = (jboolean*)XP_CALLOC( ctxt->super.mpool, 
-                                                 nCols * nRows * sizeof(*colors) );
-        jboolean* next = colors;
-
-        nBits = nRows * nCols;
-        for ( int ii = 0; ii < nBits; ++ii ) {
-            XP_U8 srcBitIndex = ii % 8;
-            XP_U8 srcMask;
-
-            if ( srcBitIndex == 0 ) {
-                srcByte = *ptr++;
-            }
-
-            srcMask = 1 << (7 - srcBitIndex);
-            XP_ASSERT( next < (colors + (nRows * nCols)) );
-            *next++ = ((srcByte & srcMask) == 0) ? JNI_FALSE : JNI_TRUE;
-        }
-
-        JNIEnv* env = ctxt->env;
-        jobject tmp = and_util_makeJBitmap( ctxt->jniutil, nCols, nRows, colors );
-        bitmap = (*env)->NewGlobalRef( env, tmp );
-        deleteLocalRef( env, tmp );
-        XP_FREE( ctxt->super.mpool, colors );
-#endif
-    }
-    goto done;
- error:
-    success = XP_FALSE;
- done:
-    *ptrp = ptr;
-    *result = bitmap;
-    return success;
-} /* andMakeBitmap */
-
-static XP_Bool
-andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
-                    const XP_U8* end )
-{
-    XP_Bool success = XP_TRUE;
-    XP_U16 nSpecials = andCountSpecials( ctxt );
-    XP_U8 const* ptr = *ptrp;
-    XP_UCHAR** texts;
-    XP_UCHAR** textEnds;
-    SpecialBitmaps* bitmaps;
-
-    texts = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
-                                   nSpecials * sizeof(*texts) );
-    textEnds = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
-                                      nSpecials * sizeof(*textEnds) );
-
-    bitmaps = (SpecialBitmaps*)
-        XP_CALLOC( ctxt->super.mpool, nSpecials * sizeof(*bitmaps) );
-
-    for ( Tile ii = 0; ii < ctxt->super.nFaces; ++ii ) {
-	
-        const XP_UCHAR* facep = ctxt->super.facePtrs[(short)ii];
-        if ( IS_SPECIAL(*facep) ) {
-            /* get the string */
-            CHECK_PTR( ptr, 1, end );
-            XP_U8 txtlen = *ptr++;
-            CHECK_PTR( ptr, txtlen, end );
-            XP_UCHAR* text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
-            texts[(int)*facep] = text;
-            textEnds[(int)*facep] = text + txtlen + 1;
-            XP_MEMCPY( text, ptr, txtlen );
-            ptr += txtlen;
-            text[txtlen] = '\0';
-            XP_ASSERT( *facep < nSpecials ); /* firing */
-
-            /* This little hack is safe because all bytes but the first in a
-               multi-byte utf-8 char have the high bit set.  SYNONYM_DELIM
-               does not have its high bit set */
-            XP_ASSERT( 0 == (SYNONYM_DELIM & 0x80) );
-            for ( ; '\0' != *text; ++text ) {
-                if ( *text == SYNONYM_DELIM ) {
-                    *text = '\0';
-                }
-            }
-
-            if ( !andMakeBitmap( ctxt, &ptr, end, 
-                                 &bitmaps[(int)*facep].largeBM ) ) {
-                goto error;
-            }
-            if ( !andMakeBitmap( ctxt, &ptr, end, 
-                                 &bitmaps[(int)*facep].smallBM ) ) {
-                goto error;
-            }
-        }
-    }
-
-    goto done;
- error:
-    success = XP_FALSE;
- done:
-    ctxt->super.chars = texts;
-    ctxt->super.charEnds = textEnds;
-    ctxt->super.bitmaps = bitmaps;
-
-    *ptrp = ptr;
-    return success;
-} /* andLoadSpecialData */
 
 /** Android doesn't include iconv for C code to use, so we'll have java do it.
  * Cons up a string with all the tile faces (skipping the specials to make
@@ -290,16 +138,18 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
     ctxt->super.facePtrs = ptrs;
 } /* splitFaces_via_java */
 
-static XP_UCHAR*
-getNullTermParam( AndDictionaryCtxt* dctx, const XP_U8** ptr, 
-                  XP_U16* headerLen )
+void
+computeChecksum( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8* ptr,
+                 XP_U32 len, XP_UCHAR* out )
 {
-    XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
-    XP_UCHAR* result = XP_MALLOC( dctx->super.mpool, len );
-    XP_MEMCPY( result, *ptr, len );
-    *ptr += len;
-    *headerLen -= len;
-    return result;
+    AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dctx;
+    JNIEnv* env = xwe;
+    jstring jsum = and_util_getMD5SumForDict( ctxt->jniutil, env,
+                                              ctxt->super.name, ptr, len );
+    const char* sum = (*env)->GetStringUTFChars( env, jsum, NULL );
+    XP_MEMCPY( out, sum, 1 + XP_STRLEN(sum) );
+    (*env)->ReleaseStringUTFChars( env, jsum, sum );
+    deleteLocalRef( env, jsum );
 }
 
 static XP_Bool
@@ -311,149 +161,15 @@ parseDict( AndDictionaryCtxt* ctxt, XWEnv xwe, XP_U8 const* ptr,
     ASSERT_ENV( ctxt->ti, xwe );
     const XP_U8* end = ptr + dictLength;
     XP_U32 offset;
-    XP_U16 nFaces, numFaceBytes = 0;
-    XP_U16 flags;
     void* mappedBase = (void*)ptr;
-    XP_U8 nodeSize;
-    XP_Bool isUTF8 = XP_FALSE;
 
-    CHECK_PTR( ptr, sizeof(flags), end );
-    flags = n_ptr_tohs( &ptr );
-    if ( 0 != (DICT_HEADER_MASK & flags) ) {
-        XP_U16 headerLen;
-        flags &= ~DICT_HEADER_MASK;
-        CHECK_PTR( ptr, sizeof(headerLen), end );
-        headerLen = n_ptr_tohs( &ptr );
-        if ( 4 <= headerLen ) { /* have word count? */
-            CHECK_PTR( ptr, sizeof(ctxt->super.nWords), end );
-            ctxt->super.nWords = n_ptr_tohl( &ptr );
-            headerLen -= 4; /* don't skip it */
-        }
-
-        if ( 1 <= headerLen ) { /* have description? */
-            ctxt->super.desc = getNullTermParam( ctxt, &ptr, &headerLen );
-        }
-        if ( 1 <= headerLen ) { /* have md5sum? */
-            ctxt->super.md5Sum = getNullTermParam( ctxt, &ptr, &headerLen );
-        }
-
-        CHECK_PTR( ptr, headerLen, end );
-        ptr += headerLen;
-    }
-
-    flags &= ~DICT_SYNONYMS_MASK;
-    if ( flags == 0x0002 ) {
-        nodeSize = 3;
-    } else if ( flags == 0x0003 ) {
-        nodeSize = 4;
-    } else if ( flags == 0x0004 ) {
-        isUTF8 = XP_TRUE;
-        nodeSize = 3;
-    } else if ( flags == 0x0005 ) {
-        isUTF8 = XP_TRUE;
-        nodeSize = 4;
-    } else {
-        goto error;
-    }
-
-    if ( isUTF8 ) {
-        CHECK_PTR( ptr, 1, end );
-        numFaceBytes = (XP_U16)(*ptr++);
-    }
-    CHECK_PTR( ptr, 1, end );
-    nFaces = (XP_U16)(*ptr++);
-    if ( nFaces > 64 ) {
-        goto error;
-    }
-
-    JNIEnv* env = xwe;
-    if ( NULL == ctxt->super.md5Sum
-#ifdef DEBUG
-         || XP_TRUE 
-#endif
-         ) {
-        jstring jsum = and_util_getMD5SumForDict( ctxt->jniutil, env,
-                                                  ctxt->super.name, NULL, 0 );
-        XP_UCHAR* md5Sum = NULL;
-        /* If we have a cached sum, check that it's correct. */
-        if ( NULL != jsum && NULL != ctxt->super.md5Sum ) {
-            md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
-            if ( 0 != XP_STRCMP( ctxt->super.md5Sum, md5Sum ) ) {
-                deleteLocalRef( env, jsum );
-                jsum = NULL;
-                XP_FREE( ctxt->super.mpool, md5Sum );
-                md5Sum = NULL;
-            }
-        }
-
-        if ( NULL == jsum ) {
-            jsum = and_util_getMD5SumForDict( ctxt->jniutil, env,
-                                              ctxt->super.name, ptr, end - ptr );
-        }
-        if ( NULL == md5Sum ) {
-            md5Sum = getStringCopy( MPPARM(ctxt->super.mpool) env, jsum );
-        }
-        deleteLocalRef( env, jsum );
-
-        if ( NULL == ctxt->super.md5Sum ) {
-            ctxt->super.md5Sum = md5Sum;
-        } else {
-            XP_FREE( ctxt->super.mpool, md5Sum );
-        }
-    }
-
-    ctxt->super.nodeSize = nodeSize;
-
-    if ( !isUTF8 ) {
-        numFaceBytes = nFaces * 2;
-    }
-
-    ctxt->super.nFaces = (XP_U8)nFaces;
-    ctxt->super.isUTF8 = isUTF8;
-
-    if ( isUTF8 ) {
-        CHECK_PTR( ptr, numFaceBytes, end );
-        splitFaces_via_java( env, ctxt, ptr, numFaceBytes, nFaces,
-                             XP_TRUE );
-        ptr += numFaceBytes;
-    } else {
-        XP_U8 tmp[nFaces*4]; /* should be enough... */
-        XP_U16 nBytes = 0;
-        /* Need to translate from iso-8859-n to utf8 */
-        CHECK_PTR( ptr, 2 * nFaces, end );
-        for ( int ii = 0; ii < nFaces; ++ii ) {
-            XP_UCHAR ch = ptr[1];
-
-            ptr += 2;
-
-            tmp[nBytes] = ch;
-            nBytes += 1;
-        }
-        XP_ASSERT( nFaces == nBytes );
-        splitFaces_via_java( env, ctxt, tmp, nBytes, nFaces, XP_FALSE );
-    }
-
-    ctxt->super.is_4_byte = (ctxt->super.nodeSize == 4);
-
-    ctxt->super.countsAndValues = 
-        (XP_U8*)XP_MALLOC(ctxt->super.mpool, nFaces*2);
-
-    CHECK_PTR( ptr, 2, end );
-    ctxt->super.langCode = ptr[0] & 0x7F;
-    ptr += 2;		/* skip xloc header */
-    CHECK_PTR( ptr, 2 * nFaces, end );
-    for ( int ii = 0; ii < nFaces*2; ii += 2 ) {
-        ctxt->super.countsAndValues[ii] = *ptr++;
-        ctxt->super.countsAndValues[ii+1] = *ptr++;
-    }
-
-    if ( !andLoadSpecialData( ctxt, &ptr, end ) ) {
+    if ( !parseCommon( &ctxt->super, xwe, &ptr, end ) ) {
         goto error;
     }
 
     dictLength -= ptr - (XP_U8*)mappedBase;
     if ( dictLength >= sizeof(offset) ) {
-        CHECK_PTR( ptr, sizeof(offset), end );
+        CHECK_PTR( ptr, sizeof(offset), end, error );
         offset = n_ptr_tohl( &ptr );
         dictLength -= sizeof(offset);
         XP_ASSERT( dictLength % ctxt->super.nodeSize == 0 );
@@ -470,6 +186,8 @@ parseDict( AndDictionaryCtxt* ctxt, XWEnv xwe, XP_U8 const* ptr,
         ctxt->super.topEdge = ctxt->super.base 
             + (offset * ctxt->super.nodeSize);
     } else {
+        XP_ASSERT( !ctxt->super.topEdge );
+        XP_ASSERT( !ctxt->super.base );
         ctxt->super.topEdge = (array_edge*)NULL;
         ctxt->super.base = (array_edge*)NULL;
     }
@@ -489,7 +207,7 @@ and_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe )
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
     ASSERT_ENV( ctxt->ti, xwe );
     XP_LOGF( "%s(dict=%p); code=%x", __func__, ctxt, ctxt->dbgid );
-    XP_U16 nSpecials = andCountSpecials( ctxt );
+    XP_U16 nSpecials = countSpecials( &ctxt->super );
     JNIEnv* env = xwe;
 
     if ( !!ctxt->super.chars ) {

@@ -260,6 +260,7 @@ CFLAGS += `pkg-config --cflags glib-2.0`
 LIBS += `pkg-config --libs glib-2.0`
 
 CFLAGS += $(POINTER_SUPPORT)
+CFLAGS += -DDROP_BITMAPS
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
 	LIBS += $(OE_LIBDIR) -lncursesw

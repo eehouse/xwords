@@ -215,14 +215,25 @@ XP_U16 dict_getMaxWidth( const DictionaryCtxt* dict );
 #ifdef STUBBED_DICT
 DictionaryCtxt* make_stubbed_dict( MPFORMAL_NOCOMMA );
 #endif
+XP_U16 countSpecials( DictionaryCtxt* ctxt );
+XP_Bool parseCommon( DictionaryCtxt* dict, XWEnv xwe, const XP_U8** ptrp,
+                     const XP_U8* end );
+XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
 
 /* To be called only by subclasses!!! */
 void dict_super_init( DictionaryCtxt* ctxt );
-/* Must be implemented by subclass */
+/* Must be implemented by subclasses */
 void dict_splitFaces( DictionaryCtxt* dict, XWEnv xwe, const XP_U8* bytes,
                       XP_U16 nBytes, XP_U16 nFaceos );
+void computeChecksum( DictionaryCtxt* dctxt, XWEnv xwe, const XP_U8* ptr,
+                      XP_U32 len, XP_UCHAR* out );
 
-XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
+/* Utility  used only by dict-parsing code for now */
+#define CHECK_PTR(p,c,e,lab)                                            \
+    if ( ((p)+(c)) > (e) ) {                                            \
+        XP_LOGF( "%s (line %d); out of bytes", __func__, __LINE__ );    \
+        goto lab;                                                       \
+    }
 
 #ifdef CPLUS
 }
