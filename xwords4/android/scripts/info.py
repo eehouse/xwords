@@ -15,9 +15,12 @@ except:
 from stat import ST_CTIME
 try:
     from mod_python import apache
-    apacheAvailable = True
 except ImportError:
-    apacheAvailable = False
+    apache = None
+
+def apache_log_error(msg):
+    if apache:
+        apache.log_error(msg)
 
 # constants that are also used in UpdateCheckReceiver.java
 VERBOSE = False
@@ -50,11 +53,13 @@ k_PAIRS = 'pairs'
 k_LANG = 'lang'
 k_MD5SUM = 'md5sum'
 k_INDEX = 'index'
+k_LEN = 'len'
 k_ISUM = 'isum'
 k_SUCCESS = 'success'
 k_URL = 'url'
 
 k_SUMS = 'sums'
+k_LENS = 'lens'
 k_COUNT = 'count'
 k_LANGS = 'langs'
 k_LANGSVERS = 'lvers'
@@ -106,7 +111,7 @@ def getInternalSum( filePath ):
                             stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE)
     results = proc.communicate()
-    # apache.log_error(filePath + ': ' + results[1].strip())
+    # apache_log_error(filePath + ': ' + results[1].strip())
     return results[0].strip()
 
 def md5Checksums( sums, filePath ):
@@ -125,11 +130,11 @@ def md5Checksums( sums, filePath ):
 
             sums[filePath] = [ md5.hexdigest(), 
                                getInternalSum( filePath ) ]
-            apache.log_error( "figured sum for %s: %s" % (filePath, 
+            apache_log_error( "figured sum for %s: %s" % (filePath,
                                                        sums[filePath] ) )
             result = sums[filePath]
         except:
-            # apache.log_error( "Unexpected error: " + sys.exc_info()[0] )
+            # apache_log_error( "Unexpected error: " + sys.exc_info()[0] )
             result = None
     return result
 
@@ -143,9 +148,10 @@ def openShelf():
         except:
             s_shelf = {}
         if not k_SUMS in s_shelf: s_shelf[k_SUMS] = {}
+        if not k_LENS in s_shelf: s_shelf[k_LENS] = {}
         if not k_COUNT in s_shelf: s_shelf[k_COUNT] = 0
     s_shelf[k_COUNT] += 1
-    # apache.log_error( "Count now %d" % s_shelf[k_COUNT] )
+    # apache_log_error( "Count now %d" % s_shelf[k_COUNT] )
 
 def closeShelf():
     global s_shelf
@@ -156,9 +162,14 @@ def getDictSums():
     openShelf()
     return s_shelf[k_SUMS]
 
+def getDictLens():
+    global s_shelf
+    openShelf()
+    return s_shelf[k_LENS]
+
 def getGitRevFor(file, repo):
     result = None
-    zip = zipfile.ZipFile(file);
+    zip = zipfile.ZipFile(file)
 
     try:
         result = zip.read('assets/gitvers.txt').split("\n")[0]
@@ -243,48 +254,47 @@ def getVariantDir( name ):
     splits = string.split( name, '.' )
     last = splits[-1]
     if not last == 'xw4': result = last + '/'
-    # apache.log_error( 'getVariantDir(' + name + ") => " + result )
+    # apache_log_error( 'getVariantDir(' + name + ") => " + result )
     return result
 
 # public, but deprecated
 def curVersion( req, name, avers = 41, gvers = None, installer = None ):
     global k_versions
     result = { k_SUCCESS : True }
-    if apacheAvailable:
-        apache.log_error( 'IP address of requester is %s'
-                       % req.get_remote_host(apache.REMOTE_NAME) )
+    apache_log_error( 'IP address of requester is %s'
+                      % req.get_remote_host(apache.REMOTE_NAME) )
 
-    apache.log_error( "name: %s; avers: %s; installer: %s; gvers: %s"
+    apache_log_error( "name: %s; avers: %s; installer: %s; gvers: %s"
                    % (name, avers, installer, gvers) )
     if name in k_versions:
         versions = k_versions[name]
         if versions[k_AVERS] > int(avers):
-            apache.log_error( avers + " is old" )
+            apache_log_error( avers + " is old" )
             result[k_URL] = k_urlbase + '/' + versions[k_URL]
         else:
-            apache.log_error(name + " is up-to-date")
+            apache_log_error(name + " is up-to-date")
     else:
-        apache.log_error( 'Error: bad name ' + name )
+        apache_log_error( 'Error: bad name ' + name )
     return json.dumps( result )
 
 # public, but deprecated
-def dictVersion( req, name, lang, md5sum ):
-    result = { k_SUCCESS : True }
-    if not name.endswith(k_suffix): name += k_suffix
-    dictSums = getDictSums()
-    path = lang + "/" + name
-    if not path in dictSums:
-        sums = md5Checksums( dictSums, path )
-        if sums:
-            dictSums[path] = sums
-            s_shelf[k_SUMS] = dictSums
-    if path in dictSums:
-        if not md5sum in dictSums[path]:
-            result[k_URL] = k_urlbase + "/and_wordlists/" + path
-    else:
-        apache.log_error( path + " not known" )
-    closeShelf()
-    return json.dumps( result )
+# def dictVersion( req, name, lang, md5sum ):
+#     result = { k_SUCCESS : True }
+#     if not name.endswith(k_suffix): name += k_suffix
+#     dictSums = getDictSums()
+#     path = lang + "/" + name
+#     if not path in dictSums:
+#         sums = md5Checksums( dictSums, path )
+#         if sums:
+#             dictSums[path] = sums
+#             s_shelf[k_SUMS] = dictSums
+#     if path in dictSums:
+#         if not md5sum in dictSums[path]:
+#             result[k_URL] = k_urlbase + "/and_wordlists/" + path
+#     else:
+#         apache_log_error( path + " not known" )
+#     closeShelf()
+#     return json.dumps( result )
 
 def getApp( params, name = None, debug = False):
     result = None
@@ -300,10 +310,10 @@ def getApp( params, name = None, debug = False):
                 apk = apks[0]
                 curApk = params[k_GVERS] + '.apk'
                 if curApk in apk:
-                    apache.log_error( "already have " + curApk )
+                    apache_log_error( "already have " + curApk )
                 else:
                     url = k_urlbase + '/' + k_apkDir + variantDir + apk[len(dir):]
-                    apache.log_error("url: " + url)
+                    apache_log_error("url: " + url)
                     result = {k_URL: url}
         elif k_DEVOK in params and params[k_DEVOK]:
             apks = getOrderedApks( k_filebase + k_apkDir, name, False )
@@ -312,18 +322,18 @@ def getApp( params, name = None, debug = False):
                 # Does path NOT contain name of installed file
                 curApk = params[k_GVERS] + '.apk'
                 if curApk in apk:
-                    apache.log_error( "already have " + curApk )
+                    apache_log_error( "already have " + curApk )
                 else:
                     url = k_urlbase + '/' + apk[len(k_filebase):]
                     result = {k_URL: url}
-                    apache.log_error( result )
+                    apache_log_error( result )
                     
         elif k_AVERS in params:
             vers = params[k_AVERS]
             if k_INSTALLER in params: installer = params[k_INSTALLER]
             else: installer = ''
 
-            apache.log_error( "name: %s; installer: %s; gvers: %s"
+            apache_log_error( "name: %s; installer: %s; gvers: %s"
                            % (name, installer, vers) )
             print "name: %s; installer: %s; vers: %s" % (name, installer, vers)
             dir = k_filebase + k_apkDir
@@ -332,11 +342,11 @@ def getApp( params, name = None, debug = False):
                 apk = apk[len(k_filebase):] # strip fs path
                 result = {k_URL: k_urlbase + '/' + apk}
             else:
-                apache.log_error(name + " is up-to-date")
+                apache_log_error(name + " is up-to-date")
         else:
-            apache.log_error( 'Error: bad name ' + name )
+            apache_log_error( 'Error: bad name ' + name )
     else:
-        apache.log_error( 'missing param' )
+        apache_log_error( 'missing param' )
     return result
 
 def getStats( path ):
@@ -402,7 +412,7 @@ def listDicts( lc = None ):
         s_shelf[k_LANGSVERS] = langsVers
 
     result = { 'langs' : s_shelf[k_LANGS] }
-    closeShelf();
+    closeShelf()
 
     print "looking for", lc
     if lc:
@@ -413,13 +423,27 @@ def listDicts( lc = None ):
 def getDicts( params ):
     result = []
     dictSums = getDictSums()
+    dictLens = getDictLens()
     for param in params:
         name = param[k_NAME]
         lang = param[k_LANG]
         md5sum = param[k_MD5SUM]
         index = param[k_INDEX]
+        if k_LEN in param: dictLen = int(param[k_LEN])
+        else: dictLen = 0
+
         if not name.endswith(k_suffix): name += k_suffix
         path = lang + "/" + name
+        try:
+            fullPath = k_filebase + "and_wordlists/" + path
+            # Use this as an excuse to check for existance
+            dictLens[path] = int(os.stat( fullPath ).st_size)
+        except:
+            apache_log_error( 'dropping for non-existant file: {}'.format(fullPath) )
+            continue
+
+        needsUpgrade = False
+
         if not path in dictSums:
             sums = md5Checksums( dictSums, path )
             if sums:
@@ -427,11 +451,19 @@ def getDicts( params ):
                 s_shelf[k_SUMS] = dictSums
         if path in dictSums:
             if not md5sum in dictSums[path]:
-                cur = { k_URL : k_urlbase + "/and_wordlists/" + path,
-                        k_INDEX : index, k_ISUM: dictSums[path][1] }
-                result.append( cur )
+                needsUpgrade = True
+
+        if not needsUpgrade and dictLen > 0:
+            if not dictLens[path] == dictLen: needsUpgrade = True
+
+        if needsUpgrade:
+            cur = { k_URL : k_urlbase + "/and_wordlists/" + path,
+                    k_INDEX : index, k_ISUM: dictSums[path][1],
+                    k_LEN : dictLens[path],
+            }
+            result.append( cur )
         else:
-            apache.log_error( path + " not known" )
+            apache_log_error( path + " not known" )
 
     closeShelf()
     if 0 == len(result): result = None
@@ -439,22 +471,22 @@ def getDicts( params ):
 
 def variantFor( name ):
     if name == 'xw4': result = 'XWords4'
-    apache.log_error( 'variantFor(%s)=>%s' % (name, result))
+    apache_log_error( 'variantFor(%s)=>%s' % (name, result))
     return result
 
 def getXlate( params, name, stringsHash ):
     result = []
     path = xwconfig.k_REPOPATH
-    apache.log_error('creating repo with path ' + path)
+    apache_log_error('creating repo with path ' + path)
     repo = mygit.GitRepo( path )
-    apache.log_error( "getXlate: %s, hash=%s" % (json.dumps(params), stringsHash) )
-    # apache.log_error( 'status: ' + repo.status() )
+    apache_log_error( "getXlate: %s, hash=%s" % (json.dumps(params), stringsHash) )
+    # apache_log_error( 'status: ' + repo.status() )
 
     # reduce org.eehouse.anroid.xxx to xxx, then turn it into a
     # variant and get the contents of the R.java file
     splits = name.split('.')
     name = splits[-1]
-    variant = variantFor( name );
+    variant = variantFor( name )
     rPath = '%s/archive/R.java' % variant
     rDotJava = repo.cat( rPath, stringsHash )
 
@@ -463,7 +495,7 @@ def getXlate( params, name, stringsHash ):
     # the revision BEFORE the revision that changed R.java
 
     head = repo.getHeadRev()
-    apache.log_error('head = %s' % head)
+    apache_log_error('head = %s' % head)
     rjavarevs = repo.getRevsBetween(head, stringsHash, rPath)
     if rjavarevs:
         assert( 1 >= len(rjavarevs) )
@@ -474,7 +506,7 @@ def getXlate( params, name, stringsHash ):
             firstPossible = rjavarevs[-2] + '^'
             # get actual number for rev^
             firstPossible = repo.getRevsBetween( firstPossible, firstPossible )[0]
-        apache.log_error('firstPossible: %s' % firstPossible)
+        apache_log_error('firstPossible: %s' % firstPossible)
 
         for entry in params:
             curVers = entry[k_XLATEVERS]
@@ -490,7 +522,7 @@ def getXlate( params, name, stringsHash ):
                                           } )
 
     if 0 == len(result): result = None
-    apache.log_error( "getXlate=>%s" % (json.dumps(result)) )
+    apache_log_error( "getXlate=>%s" % (json.dumps(result)) )
     return result
 
 def init():
@@ -546,7 +578,7 @@ def opponentIDsFor( req, params ):
 def getUpdates( req, params ):
     result = { k_SUCCESS : True }
     appResult = None
-    apache.log_error( "getUpdates: got params: %s" % params )
+    apache_log_error( "getUpdates: got params: %s" % params )
     asJson = json.loads( params )
     if k_APP in asJson:
         name = None
@@ -561,15 +593,15 @@ def getUpdates( req, params ):
 
     # Let's not upgrade strings at the same time as we're upgrading the app
     # if appResult:
-    #     apache.log_error( 'skipping xlation upgrade because app being updated' )
+    #     apache_log_error( 'skipping xlation upgrade because app being updated' )
     # elif k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
     #     xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
     #     if xlateResult:
-    #         apache.log_error( xlateResult )
+    #         apache_log_error( xlateResult )
     #         result[k_XLATEINFO] = xlateResult;
         
     result = json.dumps( result )
-    apache.log_error( 'getUpdates() => ' + result )
+    apache_log_error( 'getUpdates() => ' + result )
     return result
 
 def clearShelf():
@@ -581,7 +613,7 @@ def usage(msg=None):
     if msg: print "ERROR:", msg
     print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
     print '                    | --get-app --appID <org.something> --vers <avers> --gvers <gvers> [--debug]'
-    print '                    | --test-get-dicts name lang curSum'
+    print '                    | --test-get-dicts name lang curSum curLen/0'
     print '                    | --list-apks [--path <path/to/apks>] [--debug] --appID org.something'
     print '                    | --list-dicts'
     print '                    | --opponent-ids-for'
@@ -625,10 +657,11 @@ def main():
                    }
         print getApp( params )
     elif arg == '--test-get-dicts':
-        if not 5 == argc: usage()
+        if not 6 == argc: usage()
         params = { k_NAME: sys.argv[2], 
                    k_LANG : sys.argv[3], 
                    k_MD5SUM : sys.argv[4], 
+                   k_LEN : sys.argv[5],
                    k_INDEX : 0,
                    }
         print getDicts( [params] )
@@ -661,6 +694,8 @@ def main():
         print json.dumps(result)
     else:
         usage()
+
+    print("normal exit")
 
 ##############################################################################
 if __name__ == '__main__':

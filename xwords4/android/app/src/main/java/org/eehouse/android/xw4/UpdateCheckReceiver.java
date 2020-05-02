@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String TAG = UpdateCheckReceiver.class.getSimpleName();
+    private static final boolean LOG_QUERIES = false;
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
@@ -175,7 +176,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_STRINGSHASH, BuildConfig.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
-                // Log.d( TAG, "current update: %s", params );
+                if ( LOG_QUERIES ) {
+                    Log.d( TAG, "checkVersions(): sending: %s", params );
+                }
                 new UpdateQueryTask( context, params, fromUI, pm,
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {
@@ -272,6 +275,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         protected void onPostExecute( String json )
         {
             if ( null != json ) {
+                if ( LOG_QUERIES ) {
+                    Log.d( TAG, "onPostExecute(): received: %s", json );
+                }
                 makeNotificationsIf( json, m_params );
                 XWPrefs.setHaveCheckedUpgrades( m_context, true );
             }
