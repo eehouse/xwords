@@ -117,6 +117,12 @@ public class DictUtils {
         public String name;
         public DictLoc loc;
 
+        public File getPath( Context context )
+        {
+            File path = getDictFile( context, addDictExtn(name), loc );
+            return path;
+        }
+
         @Override
         public boolean equals( Object obj )
         {
