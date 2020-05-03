@@ -3229,6 +3229,6 @@ Merci de me faire savoir si vous aimez cette fonctionnalité, de signaler les pl
     <string name="enable_pending_count_title">Montrer les messages en attente</string>
     <plurals name="invite_p2p_desc_fmt">
         <item quantity="one">Veuillez choisir le nom du périphérique WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
-        <item quantity="other">Veuillez choisir les noms des périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
+        <item quantity="other">Veuillez choisir les noms des %1$d périphériques WiFiDirect que vous voulez inviter à votre nouvelle partie, puis tapez « %2$s ».</item>
     </plurals>
 </resources>
