@@ -107,7 +107,7 @@ def getInternalSum( filePath ):
                              '--',
                              k_filebase + 'xw4/dawg2dict.py',
                              '--get-sum',
-                             '--dict', filePath ],
+                             '--dawg', filePath ],
                             stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE)
     results = proc.communicate()
@@ -458,7 +458,7 @@ def getDicts( params ):
 
         if needsUpgrade:
             cur = { k_URL : k_urlbase + "/and_wordlists/" + path,
-                    k_INDEX : index, k_ISUM: dictSums[path][1],
+                    k_INDEX : index, k_ISUM: dictSums[path][-1],
                     k_LEN : dictLens[path],
             }
             result.append( cur )
