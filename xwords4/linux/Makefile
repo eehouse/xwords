@@ -22,6 +22,7 @@ ifeq ($(MEMDEBUG),TRUE)
 DEFINES = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DNUMBER_KEY_AS_INDEX 
 DEFINES += -DCOMMS_CHECKSUM
 DEFINES += -DLOG_COMMS_MSGNOS
+DEFINES += -DDI_DEBUG
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 DEFINES += -DDEBUG_HASHING
 CFLAGS += -DDEBUG_TS -rdynamic 
@@ -260,6 +261,7 @@ CFLAGS += `pkg-config --cflags glib-2.0`
 LIBS += `pkg-config --libs glib-2.0`
 
 CFLAGS += $(POINTER_SUPPORT)
+CFLAGS += -DDROP_BITMAPS
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
 	LIBS += $(OE_LIBDIR) -lncursesw

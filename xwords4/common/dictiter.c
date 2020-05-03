@@ -33,6 +33,13 @@
 #include "dictiter.h"
 #include "game.h"
 
+/* Define DI_DEBUG in Makefile. It's makes iteration really slow on Android */
+#ifdef DI_DEBUG
+# define DI_ASSERT(...) XP_ASSERT(__VA_ARGS__)
+#else
+# define DI_ASSERT(...)
+#endif
+
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -455,7 +462,7 @@ dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
 {
     ASSERT_INITED( iter );
     const DictionaryCtxt* dict = iter->dict;
-    XP_ASSERT( depth < MAX_COLS_DICT );
+    DI_ASSERT( depth < MAX_COLS_DICT );
     XP_U16 ii, needCount;
     const XP_U16 nFaces = dict_numTileFaces( dict );
     XP_U16 nNonBlankFaces = nFaces;
@@ -466,7 +473,7 @@ dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
     for ( ii = 1, needCount = nNonBlankFaces; ii < depth; ++ii ) {
         needCount *= nNonBlankFaces;
     }
-    XP_ASSERT( needCount <= data->count );
+    DI_ASSERT( needCount <= data->count );
 
     Tile allTiles[nNonBlankFaces];
     XP_U16 nTiles = 0;
@@ -491,10 +498,10 @@ dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
                     data, &prevIter, &prevIndex );
     }
 
-#ifdef DEBUG
+#ifdef DI_DEBUG
     DictPosition pos;
     for ( pos = 1; pos < data->count; ++pos ) {
-        XP_ASSERT( data->indices[pos-1] < data->indices[pos] );
+        DI_ASSERT( data->indices[pos-1] < data->indices[pos] );
     }
 #endif
 } /* dict_makeIndex */
@@ -569,7 +576,7 @@ dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
     XP_Bool validWord = 0 < iter->nEdges;
     if ( validWord ) {        /* uninitialized */
         wordCount = iter->nWords;
-        XP_ASSERT( wordCount == dict_countWords( iter, NULL ) );
+        DI_ASSERT( wordCount == dict_countWords( iter, NULL ) );
     } else {
         wordCount = dict_getWordCount( dict );
     }

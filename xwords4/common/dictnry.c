@@ -30,6 +30,7 @@
 #include "strutils.h"
 #include "dictiter.h"
 #include "game.h"
+#include "dbgutil.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -38,6 +39,8 @@ extern "C" {
 /*****************************************************************************
  *
  ****************************************************************************/
+
+static XP_Bool makeBitmap( XP_U8 const** ptrp, const XP_U8* end );
 
 DictionaryCtxt*
 p_dict_ref( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
@@ -89,6 +92,266 @@ dict_unref_all( PlayerDicts* pd, XWEnv xwe )
         dict_unref( pd->dicts[ii], xwe );
     }
 }
+
+static XP_UCHAR*
+getNullTermParam( DictionaryCtxt* XP_UNUSED_DBG(dctx), const XP_U8** ptr,
+                  XP_U16* headerLen )
+{
+    XP_U16 len = 1 + XP_STRLEN( (XP_UCHAR*)*ptr );
+    XP_UCHAR* result = XP_MALLOC( dctx->mpool, len );
+    XP_MEMCPY( result, *ptr, len );
+    *ptr += len;
+    *headerLen -= len;
+    return result;
+}
+
+static XP_Bool
+loadSpecialData( DictionaryCtxt* ctxt, XP_U8 const** ptrp,
+                 const XP_U8* end )
+{
+    LOG_FUNC();
+    XP_Bool success = XP_TRUE;
+    XP_U16 nSpecials = countSpecials( ctxt );
+    XP_U8 const* ptr = *ptrp;
+    XP_UCHAR** texts;
+    XP_UCHAR** textEnds;
+    SpecialBitmaps* bitmaps;
+
+    texts = (XP_UCHAR**)XP_MALLOC( ctxt->mpool,
+                                   nSpecials * sizeof(*texts) );
+    textEnds = (XP_UCHAR**)XP_MALLOC( ctxt->mpool,
+                                      nSpecials * sizeof(*textEnds) );
+
+    bitmaps = (SpecialBitmaps*)
+        XP_CALLOC( ctxt->mpool, nSpecials * sizeof(*bitmaps) );
+
+    for ( Tile ii = 0; ii < ctxt->nFaces; ++ii ) {
+        const XP_UCHAR* facep = ctxt->facePtrs[(short)ii];
+        if ( IS_SPECIAL(*facep) ) {
+            /* get the string */
+            CHECK_PTR( ptr, 1, end, error );
+            XP_U8 txtlen = *ptr++;
+            CHECK_PTR( ptr, txtlen, end, error );
+            XP_UCHAR* text = (XP_UCHAR*)XP_MALLOC(ctxt->mpool, txtlen+1);
+            texts[(int)*facep] = text;
+            textEnds[(int)*facep] = text + txtlen + 1;
+            XP_MEMCPY( text, ptr, txtlen );
+            ptr += txtlen;
+            text[txtlen] = '\0';
+            XP_ASSERT( *facep < nSpecials ); /* firing */
+
+            /* This little hack is safe because all bytes but the first in a
+               multi-byte utf-8 char have the high bit set.  SYNONYM_DELIM
+               does not have its high bit set */
+            XP_ASSERT( 0 == (SYNONYM_DELIM & 0x80) );
+            for ( ; '\0' != *text; ++text ) {
+                if ( *text == SYNONYM_DELIM ) {
+                    *text = '\0';
+                }
+            }
+
+            if ( !makeBitmap( &ptr, end ) ) {
+                goto error;
+            }
+            if ( !makeBitmap( &ptr, end ) ) {
+                goto error;
+            }
+        }
+    }
+
+    goto done;
+ error:
+    success = XP_FALSE;
+ done:
+    ctxt->chars = texts;
+    ctxt->charEnds = textEnds;
+    ctxt->bitmaps = bitmaps;
+
+    *ptrp = ptr;
+    return success;
+} /* loadSpecialData */
+    
+XP_Bool
+parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* end )
+{
+    const XP_U8* ptr = *ptrp;
+    XP_Bool hasHeader = XP_FALSE;
+    XP_Bool isUTF8 = XP_FALSE;
+    XP_U16 charSize;
+
+    XP_U16 flags;
+    XP_Bool formatOk = sizeof(flags) <= end - ptr;
+    if ( formatOk ) {
+        XP_MEMCPY( &flags, ptr, sizeof(flags) );
+        ptr += sizeof( flags );
+        flags = XP_NTOHS(flags);
+
+        XP_LOGFF( "flags=0X%X", flags );
+        hasHeader = 0 != (DICT_HEADER_MASK & flags);
+        /* if ( hasHeader ) { */
+        /*     flags &= ~DICT_HEADER_MASK; */
+        /* } */
+
+        XP_U8 nodeSize = 4;
+        switch ( flags & 0x0007 ) {
+        case 0x0001:
+            nodeSize = 3;
+            charSize = 1;
+            dctx->is_4_byte = XP_FALSE;
+            break;
+        case 0x0002:
+            nodeSize = 3;
+            charSize = 2;
+            dctx->is_4_byte = XP_FALSE;
+            break;
+        case 0x0003:
+            charSize = 2;
+            dctx->is_4_byte = XP_TRUE;
+            break;
+        case 0x0004:
+            nodeSize = 3;
+            isUTF8 = XP_TRUE;
+            dctx->is_4_byte = XP_FALSE;
+            break;
+        case 0x0005:
+            isUTF8 = XP_TRUE;
+            dctx->is_4_byte = XP_TRUE;
+            break;
+        default:
+            formatOk = XP_FALSE;
+            break;
+        }
+        dctx->isUTF8 = isUTF8;
+        dctx->nodeSize = nodeSize;
+    }
+
+    if ( formatOk ) {
+        XP_U8 numFaceBytes, numFaces;
+
+        if ( hasHeader ) {
+            XP_U16 headerLen;
+            XP_U32 wordCount;
+
+            memcpy( &headerLen, ptr, sizeof(headerLen) );
+            ptr += sizeof(headerLen);
+            headerLen = XP_NTOHS( headerLen );
+
+            memcpy( &wordCount, ptr, sizeof(wordCount) );
+            ptr += sizeof(wordCount);
+            headerLen -= sizeof(wordCount);
+            dctx->nWords = XP_NTOHL( wordCount );
+            XP_DEBUGF( "dict contains %d words", dctx->nWords );
+
+            if ( 0 < headerLen ) {
+                dctx->desc = getNullTermParam( dctx, &ptr, &headerLen );
+            } else {
+                XP_LOGF( "%s: no note", __func__ );
+            }
+            if ( 0 < headerLen ) {
+                dctx->md5Sum = getNullTermParam( dctx, &ptr, &headerLen );
+            } else {
+                XP_LOGF( "%s: no md5Sum", __func__ );
+            }
+            ptr += headerLen;
+        }
+
+        if ( isUTF8 ) {
+            numFaceBytes = *ptr++;
+        }
+        numFaces = *ptr++;
+        if ( !isUTF8 ) {
+            numFaceBytes = numFaces * charSize;
+        }
+
+        if ( NULL == dctx->md5Sum
+#ifdef DEBUG
+             || XP_TRUE
+#endif
+             ) {
+            XP_UCHAR checksum[256];
+            // XP_LOGFF( "figuring checksum with len: %uz", end - ptr );
+            computeChecksum( dctx, xwe, ptr, end - ptr, checksum );
+            if ( NULL == dctx->md5Sum ) {
+                dctx->md5Sum = copyString( dctx->mpool, checksum );
+            } else {
+                XP_ASSERT( 0 == XP_STRCMP( dctx->md5Sum, checksum ) );
+            }
+        }
+
+        dctx->nFaces = numFaces;
+
+        dctx->countsAndValues = XP_MALLOC( dctx->mpool, numFaces * 2 );
+        XP_U16 facesSize = numFaceBytes;
+        if ( !isUTF8 ) {
+            facesSize /= 2;
+        }
+
+        XP_U8 tmp[numFaceBytes];
+        XP_MEMCPY( tmp, ptr, numFaceBytes );
+        ptr += numFaceBytes;
+
+        dict_splitFaces( dctx, xwe, tmp, numFaceBytes, numFaces );
+
+        unsigned short xloc;
+        XP_MEMCPY( &xloc, ptr, sizeof(xloc) );
+        ptr += sizeof(xloc);
+        XP_MEMCPY( dctx->countsAndValues, ptr, numFaces*2 );
+        ptr += numFaces*2;
+
+        dctx->langCode = xloc & 0x7F;
+    }
+
+    if ( formatOk ) {
+        formatOk = loadSpecialData( dctx, &ptr, end );
+    }
+
+    if ( formatOk ) {
+        XP_ASSERT( ptr < end );
+        *ptrp = ptr;
+    }
+
+    LOG_RETURNF( "%s", boolToStr(formatOk) );
+    return formatOk;
+}
+
+static XP_Bool
+makeBitmap( XP_U8 const** ptrp, const XP_U8* end )
+{
+    XP_Bool success = XP_TRUE;
+    XP_U8 const* ptr = *ptrp;
+    CHECK_PTR( ptr, 1, end, error );
+    XP_U8 nCols = *ptr++;
+    if ( nCols > 0 ) {
+        CHECK_PTR( ptr, 1, end, error );
+        XP_U8 nRows = *ptr++;
+        CHECK_PTR( ptr, ((nRows*nCols)+7) / 8, end, error );
+#ifdef DROP_BITMAPS
+        ptr += ((nRows*nCols)+7) / 8;
+#else
+        do not compile
+#endif
+    }
+    goto done;
+ error:
+    success = XP_FALSE;
+ done:
+    *ptrp = ptr;
+    return success;
+}
+
+XP_U16
+countSpecials( DictionaryCtxt* ctxt )
+{
+    XP_U16 result = 0;
+
+    for ( int ii = 0; ii < ctxt->nFaces; ++ii ) {
+        if ( IS_SPECIAL( ctxt->facePtrs[ii][0] ) ) {
+            ++result;
+        }
+    }
+
+    return result;
+} /* countSpecials */
 
 void
 setBlankTile( DictionaryCtxt* dict ) 

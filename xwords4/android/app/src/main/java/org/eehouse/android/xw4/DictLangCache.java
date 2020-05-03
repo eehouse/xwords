@@ -34,6 +34,7 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -297,6 +298,12 @@ public class DictLangCache {
             result = info.md5Sum;
         }
         return result;
+    }
+
+    public static long getFileLen( Context context, DictAndLoc dal )
+    {
+        File path = dal.getPath( context );
+        return path.length();
     }
 
     public static int getDictLangCode( Context context, String dict )
