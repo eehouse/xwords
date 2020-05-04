@@ -1903,16 +1903,16 @@ testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
     XP_U32 ii, jj;
     DictIter iter;
 
-    dict_initIter( &iter, dict, min, max );
-    XP_U32 half = dict_countWords( &iter, NULL ) / 2;
+    di_initIter( &iter, dict, min, max );
+    XP_U32 half = di_countWords( &iter, NULL ) / 2;
     XP_U32 interval = half / 100;
     if ( interval == 0 ) {
         ++interval;
     }
 
     for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
-        if ( dict_getNthWord( &iter, ii, depth, data ) ) {
-            dict_wordToString( &iter, buf, VSIZE(buf) );
+        if ( di_getNthWord( &iter, ii, depth, data ) ) {
+            di_wordToString( &iter, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
 # ifdef PRINT_ALL
             XP_LOGF( "%s: word[%ld]: %s", __func__, ii, buf );
@@ -1920,8 +1920,8 @@ testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
         } else {
             XP_ASSERT( 0 );
         }
-        if ( dict_getNthWord( &iter, jj, depth, data ) ) {
-            dict_wordToString( &iter, buf, VSIZE(buf) );
+        if ( di_getNthWord( &iter, jj, depth, data ) ) {
+            di_wordToString( &iter, buf, VSIZE(buf) );
             XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
 # ifdef PRINT_ALL
             XP_LOGF( "%s: word[%ld]: %s", __func__, jj, buf );
@@ -1948,9 +1948,9 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
         max = MAX_COLS_DICT;
     }
 
-    dict_initIter( &iter, dict, min, max  );
+    di_initIter( &iter, dict, min, max  );
     LengthsArray lens;
-    XP_U32 count = dict_countWords( &iter, &lens );
+    XP_U32 count = di_countWords( &iter, &lens );
 
     XP_U32 sum = 0;
     for ( jj = 0; jj < VSIZE(lens.lens); ++jj ) {
@@ -1963,12 +1963,12 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
         char** words = g_malloc( count * sizeof(char*) );
         XP_ASSERT( !!words );
 
-        for ( jj = 0, gotOne = dict_firstWord( &iter );
+        for ( jj = 0, gotOne = di_firstWord( &iter );
               gotOne;
-              gotOne = dict_getNextWord( &iter ) ) {
-            XP_ASSERT( dict_getPosition( &iter ) == jj );
+              gotOne = di_getNextWord( &iter ) ) {
+            XP_ASSERT( di_getPosition( &iter ) == jj );
             XP_UCHAR buf[64];
-            dict_wordToString( &iter, buf, VSIZE(buf) );
+            di_wordToString( &iter, buf, VSIZE(buf) );
 # ifdef PRINT_ALL
             fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
@@ -1979,12 +1979,12 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
         }
         XP_ASSERT( count == jj );
 
-        for ( jj = 0, gotOne = dict_lastWord( &iter );
+        for ( jj = 0, gotOne = di_lastWord( &iter );
               gotOne;
-              ++jj, gotOne = dict_getPrevWord( &iter ) ) {
-            XP_ASSERT( dict_getPosition(&iter) == count-jj-1 );
+              ++jj, gotOne = di_getPrevWord( &iter ) ) {
+            XP_ASSERT( di_getPosition(&iter) == count-jj-1 );
             XP_UCHAR buf[64];
-            dict_wordToString( &iter, buf, VSIZE(buf) );
+            di_wordToString( &iter, buf, VSIZE(buf) );
 # ifdef PRINT_ALL
             fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
@@ -2012,7 +2012,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
                                    depth * data.count * sizeof(data.prefixes[0]) );
 
         XP_LOGF( "making index..." );
-        dict_makeIndex( &iter, depth, &data );
+        di_makeIndex( &iter, depth, &data );
         XP_LOGF( "DONE making index" );
 
         data.indices = XP_REALLOC( mpool, data.indices, 
@@ -2047,22 +2047,22 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
             guint count = g_slist_length( testPrefixes );
             for ( ii = 0; ii < count; ++ii ) {
                 gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
-                XP_S16 lenMatched = dict_findStartsWith( &iter, prefix );
+                XP_S16 lenMatched = di_findStartsWith( &iter, prefix );
                 if ( 0 <= lenMatched ) {
                     XP_UCHAR buf[32];
                     XP_UCHAR bufPrev[32] = {0};
-                    dict_wordToString( &iter, buf, VSIZE(buf) );
+                    di_wordToString( &iter, buf, VSIZE(buf) );
 
                     /* This doesn't work with synonyms like "L-L" for "L·L" */
                     // XP_ASSERT( 0 == strncasecmp( buf, prefix, lenMatched ) );
 
-                    DictPosition pos = dict_getPosition( &iter );
+                    DictPosition pos = di_getPosition( &iter );
                     XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
                     if ( pos > 0 ) {
-                        if ( !dict_getNthWord( &iter, pos-1, depth, &data ) ) {
+                        if ( !di_getNthWord( &iter, pos-1, depth, &data ) ) {
                             XP_ASSERT( 0 );
                         }
-                        dict_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
+                        di_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
                         XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
                     }
                     XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
@@ -2103,12 +2103,12 @@ static void
 dumpDict( DictionaryCtxt* dict )
 {
     DictIter iter;
-    dict_initIter( &iter, dict, 0, MAX_COLS_DICT );
-    for ( XP_Bool result = dict_firstWord( &iter ); 
+    di_initIter( &iter, dict, 0, MAX_COLS_DICT );
+    for ( XP_Bool result = di_firstWord( &iter );
           result; 
-          result = dict_getNextWord( &iter ) ) {
+          result = di_getNextWord( &iter ) ) {
         XP_UCHAR buf[32];
-        dict_wordToString( &iter, buf, VSIZE(buf) );
+        di_wordToString( &iter, buf, VSIZE(buf) );
         fprintf( stdout, "%s\n", buf );
     }
 }
