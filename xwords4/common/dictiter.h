@@ -73,8 +73,10 @@ XP_Bool di_getNextWord( DictIter* iter );
 XP_Bool di_getPrevWord( DictIter* iter );
 XP_Bool di_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
                        const IndexData* data );
-void di_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen );
-XP_S16 di_findStartsWith( DictIter* iter, const XP_UCHAR* prefix );
+void di_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
+                      const XP_UCHAR* delim );
+XP_S16 di_findStartsWith( DictIter* iter, const Tile* prefix, XP_U16 nTiles );
+void di_stringToTiles( const XP_UCHAR* str, Tile out[], XP_U16* nTiles );
 DictPosition di_getPosition( const DictIter* iter );
 #ifdef CPLUS
 }

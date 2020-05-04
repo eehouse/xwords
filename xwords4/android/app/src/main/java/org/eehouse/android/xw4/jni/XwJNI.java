@@ -514,22 +514,22 @@ public class XwJNI {
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static long di_init( byte[] dict, String name,
-                                String path )
+    public static long di_init( byte[] dict, String name, String path )
     {
         return di_init( getJNI().m_ptrGlobals, dict, name, path );
     }
-    public static native void di_setMinMax( long closure,
-                                            int min, int max );
+    public static native void di_setMinMax( long closure, int min, int max );
     public static native void di_destroy( long closure );
     public static native int di_wordCount( long closure );
     public static native int[] di_getCounts( long closure );
-    public static native String di_nthWord( long closure, int nn );
+    public static native String di_nthWord( long closure, int nn, String delim );
     public static native String[] di_getPrefixes( long closure );
     public static native int[] di_getIndices( long closure );
-    public static native int di_getStartsWith( long closure,
-                                               String prefix );
+    public static native byte[][] di_strToTiles( long closure, String str );
+    public static native int di_getStartsWith( long closure, byte[][] prefix );
     public static native String di_getDesc( long closure );
+    public static native String di_tilesToStr( long closure, byte[] tiles, String delim );
+    public static native boolean di_hasDuplicates( long closure );
 
     // Private methods -- called only here
     private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );
@@ -560,5 +560,6 @@ public class XwJNI {
                                                               String fromPhone,
                                                               int wantPort);
 
+    // This always returns true on release builds now.
     private static native boolean haveEnv( long jniState );
 }

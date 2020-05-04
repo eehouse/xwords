@@ -23,6 +23,9 @@ TARGET_TYPE ?= WINCE
 
 DICTNOTE = "Derived from szotar/alap/ in https://github.com/laszlonemeth/magyarispell.git"
 
+# Needs only to be defined
+ALLOWS_DUPLICATES = TRUE
+
 LANG_SPECIAL_INFO = \
 		"CS Cs cS cs" /dev/null /dev/null \
 		"GY Gy gY gy" /dev/null /dev/null \
@@ -70,16 +73,16 @@ $(TMP_LIST): $(SRC)
 $(XWLANG)Main.dict.gz: $(TMP_LIST)
 	cat $< \
 	| tr -d '\r' \
+	| grep -v '[1-7]' \
 	| tr [aábcdeéfghiíjklmnnyoóöőprtuúüűvzs] [AÁBCDEÉFGHIÍJKLMNNYOÓÖŐPRTUÚÜŰVZS] \
-	| grep -v '1\|2\|3\|4\|5\|6\|7' \
-	| sed -e 's,CS,1,g' \
+	| sed -e 's,^\(.*\)CS\(.*\)$$,\11\2\n\1CS\2,g' \
 	| sed -e 's,GY,2,g' \
 	| sed -e 's,LY,3,g' \
 	| sed -e 's,NY,4,g' \
-	| sed -e 's,SZ,5,g' \
+	| sed -e 's,^\(.*\)SZ\(.*\)$$,\15\2\n\1SZ\2,g' \
 	| sed -e 's,TY,6,g' \
-	| sed -e 's,ZS,7,g' \
-	| grep '^[1-7AÁBCDEÉFGHIÍJKLMNOÓÖŐPRSTUÚÜŰVZ]*$$' \
+	| sed -e 's,^\(.*\)ZS\(.*\)$$,\17\2\n\1ZS\2,g' \
+	| grep '^[1-7AÁBCDEÉFGHIÍJKLMNOÓÖŐPRSTUÚÜŰVZ]\{2,15\}$$' \
 	| tr '1234567' '\001\002\003\004\005\006\007' \
 	| gzip -c > $@
 

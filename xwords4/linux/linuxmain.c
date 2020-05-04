@@ -1912,7 +1912,7 @@ testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
 
     for ( ii = 0, jj = half; ii < half; ii += interval, jj += interval ) {
         if ( di_getNthWord( &iter, ii, depth, data ) ) {
-            di_wordToString( &iter, buf, VSIZE(buf) );
+            di_wordToString( &iter, buf, VSIZE(buf), "." );
             XP_ASSERT( 0 == strcmp( buf, words[ii] ) );
 # ifdef PRINT_ALL
             XP_LOGF( "%s: word[%ld]: %s", __func__, ii, buf );
@@ -1921,7 +1921,7 @@ testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
             XP_ASSERT( 0 );
         }
         if ( di_getNthWord( &iter, jj, depth, data ) ) {
-            di_wordToString( &iter, buf, VSIZE(buf) );
+            di_wordToString( &iter, buf, VSIZE(buf), "." );
             XP_ASSERT( 0 == strcmp( buf, words[jj] ) );
 # ifdef PRINT_ALL
             XP_LOGF( "%s: word[%ld]: %s", __func__, jj, buf );
@@ -1930,6 +1930,43 @@ testGetNthWord( const DictionaryCtxt* dict, char** XP_UNUSED_DBG(words),
             XP_ASSERT( 0 );
         }
     }
+}
+typedef struct _FTData {
+    DictIter* iter;
+    IndexData* data;
+    char** words;
+    gchar* prefix;
+    XP_U16 depth;
+} FTData;
+
+static XP_Bool
+onFoundTiles( void* closure, const Tile* tiles, int nTiles )
+{
+    FTData* ftp = (FTData*)closure;
+    XP_S16 lenMatched = di_findStartsWith( ftp->iter, tiles, nTiles );
+    if ( 0 <= lenMatched ) {
+        XP_UCHAR buf[32];
+        XP_UCHAR bufPrev[32] = {0};
+        di_wordToString( ftp->iter, buf, VSIZE(buf), "." );
+
+        /* This doesn't work with synonyms like "L-L" for "L·L" */
+        // XP_ASSERT( 0 == strncasecmp( buf, prefix, lenMatched ) );
+
+        DictPosition pos = di_getPosition( ftp->iter );
+        XP_ASSERT( 0 == strcmp( buf, ftp->words[pos] ) );
+        if ( pos > 0 ) {
+            if ( !di_getNthWord( ftp->iter, pos-1, ftp->depth, ftp->data ) ) {
+                XP_ASSERT( 0 );
+            }
+            di_wordToString( ftp->iter, bufPrev, VSIZE(bufPrev), "." );
+            XP_ASSERT( 0 == strcmp( bufPrev, ftp->words[pos-1] ) );
+        }
+        XP_LOGF( "di_getStartsWith(%s) => %s (prev=%s)",
+                 ftp->prefix, buf, bufPrev );
+    } else {
+        XP_LOGFF( "nothing starts with %s", ftp->prefix );
+    }
+    return XP_TRUE;
 }
 
 static void
@@ -1948,7 +1985,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
         max = MAX_COLS_DICT;
     }
 
-    di_initIter( &iter, dict, min, max  );
+    di_initIter( &iter, dict, min, max );
     LengthsArray lens;
     XP_U32 count = di_countWords( &iter, &lens );
 
@@ -1968,7 +2005,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
               gotOne = di_getNextWord( &iter ) ) {
             XP_ASSERT( di_getPosition( &iter ) == jj );
             XP_UCHAR buf[64];
-            di_wordToString( &iter, buf, VSIZE(buf) );
+            di_wordToString( &iter, buf, VSIZE(buf), "." );
 # ifdef PRINT_ALL
             fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
@@ -1984,7 +2021,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
               ++jj, gotOne = di_getPrevWord( &iter ) ) {
             XP_ASSERT( di_getPosition(&iter) == count-jj-1 );
             XP_UCHAR buf[64];
-            di_wordToString( &iter, buf, VSIZE(buf) );
+            di_wordToString( &iter, buf, VSIZE(buf), "." );
 # ifdef PRINT_ALL
             fprintf( stderr, "%.6ld: %s\n", jj, buf );
 # endif
@@ -2026,20 +2063,20 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
             }
             XP_ASSERT( word.index == indices[ii] );
             XP_UCHAR buf1[64];
-            dict_wordToString( dict, &word, buf1, VSIZE(buf1) );
+            dict_wordToString( dict, &word, buf1, VSIZE(buf1), "." );
             XP_UCHAR buf2[64] = {0};
             if ( ii > 0 && dict_getNthWord( dict, &word, indices[ii]-1 ) ) {
-                dict_wordToString( dict, &word, buf2, VSIZE(buf2) );
+                dict_wordToString( dict, &word, buf2, VSIZE(buf2), "." );
             }
             char prfx[8];
             dict_tilesToString( dict, &prefixes[depth*ii], depth, prfx, 
-                                VSIZE(prfx) );
+                                VSIZE(prfx), NULL );
             fprintf( stderr, "%d: index: %ld; prefix: %s; word: %s (prev: %s)\n", 
                      ii, indices[ii], prfx, buf1, buf2 );
         }
 #endif
 
-        XP_LOGF( "testing getNth WITH INDEXING" );
+        XP_LOGFF( "testing getNth WITH INDEXING" );
         testGetNthWord( dict, words, depth, &data, min, max );
 
         if ( !!testPrefixes ) {
@@ -2047,31 +2084,13 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
             guint count = g_slist_length( testPrefixes );
             for ( ii = 0; ii < count; ++ii ) {
                 gchar* prefix = (gchar*)g_slist_nth_data( testPrefixes, ii );
-                XP_S16 lenMatched = di_findStartsWith( &iter, prefix );
-                if ( 0 <= lenMatched ) {
-                    XP_UCHAR buf[32];
-                    XP_UCHAR bufPrev[32] = {0};
-                    di_wordToString( &iter, buf, VSIZE(buf) );
+                XP_LOGFF( "prefix %d: %s", ii, prefix );
 
-                    /* This doesn't work with synonyms like "L-L" for "L·L" */
-                    // XP_ASSERT( 0 == strncasecmp( buf, prefix, lenMatched ) );
-
-                    DictPosition pos = di_getPosition( &iter );
-                    XP_ASSERT( 0 == strcmp( buf, words[pos] ) );
-                    if ( pos > 0 ) {
-                        if ( !di_getNthWord( &iter, pos-1, depth, &data ) ) {
-                            XP_ASSERT( 0 );
-                        }
-                        di_wordToString( &iter, bufPrev, VSIZE(bufPrev) );
-                        XP_ASSERT( 0 == strcmp( bufPrev, words[pos-1] ) );
-                    }
-                    XP_LOGF( "dict_getStartsWith(%s) => %s (prev=%s)", 
-                             prefix, buf, bufPrev );
-                } else {
-                    XP_LOGF( "nothing starts with %s", prefix );
-                }
+                FTData foundTilesData = { .iter = &iter, .words = words,
+                                          .depth = depth, .data = &data,
+                                          .prefix = prefix, };
+                dict_tilesForString( dict, prefix, onFoundTiles, &foundTilesData );
             }
-
         }
         XP_FREE( mpool, data.indices );
         XP_FREE( mpool, data.prefixes );
@@ -2108,7 +2127,7 @@ dumpDict( DictionaryCtxt* dict )
           result; 
           result = di_getNextWord( &iter ) ) {
         XP_UCHAR buf[32];
-        di_wordToString( &iter, buf, VSIZE(buf) );
+        di_wordToString( &iter, buf, VSIZE(buf), "." );
         fprintf( stdout, "%s\n", buf );
     }
 }
@@ -2594,8 +2613,10 @@ main( int argc, char** argv )
     mainParams.dbName = "xwgames.sqldb";
     mainParams.cursesListWinHt = 5;
 
-    trimDictPath( "./dict.xwd", dictbuf, VSIZE(dictbuf), &path, &dict );
-    mainParams.pgi.dictName = copyString( mainParams.mpool, dict );
+    if ( file_exists( "./dict.xwd" ) )  {
+        trimDictPath( "./dict.xwd", dictbuf, VSIZE(dictbuf), &path, &dict );
+        mainParams.pgi.dictName = copyString( mainParams.mpool, dict );
+    }
 
     char* envDictPath = getenv( "XW_DICTDIR" );
     XP_LOGFF( "envDictPath=%s", envDictPath );
