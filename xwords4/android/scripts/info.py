@@ -64,9 +64,6 @@ k_COUNT = 'count'
 k_LANGS = 'langs'
 k_LANGSVERS = 'lvers'
 
-# Version for those sticking with RELEASES
-k_REL_REV = 'android_beta_98'
-
 # newer build-info.txt file contain lines like this:
 # git: android_beta_123
 pat_git_tag = re.compile( 'git: (\S*)', re.DOTALL | re.MULTILINE )
@@ -189,7 +186,6 @@ def getGitRevFor(file, repo):
 
     # print "getGitRevFor(", file, "->", result
     return result
-
 
 pat_badge_info = re.compile("package: name='([^']*)' versionCode='([^']*)' versionName='([^']*)'", re.DOTALL )
 
@@ -612,7 +608,7 @@ def clearShelf():
 def usage(msg=None):
     if msg: print "ERROR:", msg
     print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
-    print '                    | --get-app --appID <org.something> --vers <avers> --gvers <gvers> [--debug]'
+    print '                    | --get-app --appID <org.something> --vers <avers> [--debug]'
     print '                    | --test-get-dicts name lang curSum curLen/0'
     print '                    | --list-apks [--path <path/to/apks>] [--debug] --appID org.something'
     print '                    | --list-dicts'
