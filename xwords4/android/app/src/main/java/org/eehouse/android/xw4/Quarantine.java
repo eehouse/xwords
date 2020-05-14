@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.io.Serializable;
 
@@ -97,17 +98,29 @@ public class Quarantine {
             mCounts.put( rowid, 0 );
         }
 
+        synchronized void removeZeros()
+        {
+            for ( Iterator<Integer> iter = mCounts.values().iterator();
+                  iter.hasNext(); ) {
+                if ( 0 == iter.next() ) {
+                    iter.remove();
+                }
+            }
+        }
+
         @Override
         synchronized public String toString()
         {
-            StringBuilder sb = new StringBuilder().append("[");
+            StringBuilder sb = new StringBuilder();
             synchronized ( mCounts ) {
+                sb.append("{len:").append(mCounts.size())
+                    .append(", data:[");
                 for ( long rowid : mCounts.keySet() ) {
                     int count = mCounts.get(rowid);
                     sb.append( String.format("{%d: %d}", rowid, count ) );
                 }
             }
-            return sb.append("]").toString();
+            return sb.append("]}").toString();
         }
     }
 
@@ -131,6 +144,7 @@ public class Quarantine {
                     data = new Data();
                 } else {
                     Log.d( TAG, "loading existing: %s", data );
+                    data.removeZeros();
                 }
                 sDataRef[0] = data;
             }
