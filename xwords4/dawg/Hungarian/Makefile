@@ -37,21 +37,55 @@ LANG_SPECIAL_INFO = \
 
 include ../Makefile.langcommon
 
-GIT_DIR = ./magyarispell
 SRC_COMMIT = 39ee7f3f8631b953d44ed6f12cfe8ae7193fbf13
+GIT_DIR = ./magyarispell/szotar/alap/
+SRC = $(GIT_DIR)/fonev.1 \
+	$(GIT_DIR)/fonev_a.1 \
+	$(GIT_DIR)/fonev_ae.1 \
+	$(GIT_DIR)/fonev_igemorfo.1 \
+	$(GIT_DIR)/fonev_ing.1 \
+	$(GIT_DIR)/fonev_jaje.1 \
+	$(GIT_DIR)/fonev_jajeae.1 \
+	$(GIT_DIR)/fonev_kulon.1 \
+	$(GIT_DIR)/fonev_magas.1 \
+	$(GIT_DIR)/fonev_mely.1 \
+	$(GIT_DIR)/fonev_morfo.2 \
+	$(GIT_DIR)/fonev_morfo2.2 \
+	$(GIT_DIR)/fonev_oe.1 \
+	$(GIT_DIR)/fonev_osszetett.1 \
+	$(GIT_DIR)/fonev_vege.1 \
+	$(GIT_DIR)/fonev_y_i.1 \
+	$(GIT_DIR)/fonev_y_j.1 \
+	$(GIT_DIR)/ige_alanyi.1 \
+	$(GIT_DIR)/ige_ikes_kiv.1 \
+	$(GIT_DIR)/ige_koto.1 \
+	$(GIT_DIR)/ige_mely.1 \
+	$(GIT_DIR)/ige_morfo.1 \
+	$(GIT_DIR)/ige_osszetett.1 \
+	$(GIT_DIR)/ige_targy.1 \
+	$(GIT_DIR)/ige_tat_kiv.1 \
+	$(GIT_DIR)/kotojeles_osszetett.1 \
+	$(GIT_DIR)/melleknev-igemorfo.1 \
+	$(GIT_DIR)/melleknev-szam.1 \
+	$(GIT_DIR)/melleknev.1 \
+	$(GIT_DIR)/melleknev_a.1 \
+	$(GIT_DIR)/melleknev_ae.1 \
+	$(GIT_DIR)/melleknev_ae.1 \
+	$(GIT_DIR)/melleknev_igemorfo.1 \
+	$(GIT_DIR)/melleknev_ing.1 \
+	$(GIT_DIR)/melleknev_jaje.1 \
+	$(GIT_DIR)/melleknev_jajeae.1 \
+	$(GIT_DIR)/melleknev_mely.1 \
+	$(GIT_DIR)/melleknev_nyelv.1 \
+	$(GIT_DIR)/melleknev_oe.1 \
+	$(GIT_DIR)/melleknev_osszetett.1 \
+	$(GIT_DIR)/ragozatlan.2 \
 
-SRC = \
-	${GIT_DIR}/szotar/alap/fonev.1 \
-	${GIT_DIR}/szotar/alap/melleknev.1 \
-	${GIT_DIR}/szotar/alap/ige_alanyi.1 \
-	${GIT_DIR}/szotar/alap/ige_targy.1 \
-	${GIT_DIR}/szotar/alap/ragozatlan.2
+
 
 TMP_LIST = tmp_wordlist.txt
 
 PHONY: GIT_TREE
-
-$(SRC) : GIT_TREE
 
 GIT_TREE:
 	if [ ! -d $(GIT_DIR) ]; then \
@@ -60,11 +94,14 @@ GIT_TREE:
 	fi
 	(cd $(GIT_DIR) && git checkout $(SRC_COMMIT))
 
+$(SRC) : GIT_TREE
+
 $(TMP_LIST): $(SRC)
-	cat $^ | \
-		sed -e 's/#.*$$//' -e 's/\[.*$$//' -e 's/ .*$$//' |\
-		grep -v '^$$' |\
-		sort -u > $@
+	cat $^ |\
+		sed -e '/^-/d' -e '/^[A-ZÁÉÍÓÖŐÚÜŰ]/d' \
+			-e 's/\/.*$$//' -e 's/#.*$$//' -e 's/\[.*$$//' \
+			-e 's/\s.*$$//' -e '/_/d' -e '/-/d' |\
+		grep -v '^$$' | sort -u > $@
 
 # Filtering wordlist: When a word can be spelled with either a
 # double-letter tile or two single-letter tiles, it's in the list with
