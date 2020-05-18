@@ -27,7 +27,17 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-cd $(dirname $0)/../app/build/intermediates/classes/${VARIANT}/debug
+if [ -d $(dirname $0)/../app/build/intermediates/javac/${VARIANT} ]; then
+	cd $(dirname $0)/../app/build/intermediates/javac/${VARIANT}/classes
+else
+	echo "no such variant $VARIANT; try"
+	ALL=''
+	for DIR in $(ls -d $(dirname $0)/../app/build/intermediates/javac/*); do
+		ALL="$ALL $(basename $DIR)"
+	done
+	echo "$ALL"
+	exit 1
+fi
 
 javah -o /tmp/javah$$.txt org.eehouse.android.${NODE}.jni.XwJNI
 javap -s org.eehouse.android.${NODE}.jni.XwJNI
