@@ -250,8 +250,9 @@ public class NetLaunchInfo implements Serializable {
                     dupeMode = null != val && Integer.decode(val) != 0;
                 }
                 calcValid();
-            } catch ( Exception e ) {
-                Log.e( TAG, "unable to parse \"%s\"", data.toString() );
+            } catch ( Exception ex ) {
+                Log.e( TAG, "%s: (in \"%s\")", ex, data.toString() );
+                DbgUtils.printStack( TAG, ex );
             }
         }
         calcValid();
