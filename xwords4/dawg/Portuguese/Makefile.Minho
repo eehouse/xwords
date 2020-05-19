@@ -25,10 +25,10 @@ TARGET_TYPE ?= WINCE
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portuguese_pt.bz2
+SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portuguese_pt.txt
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile.Minho
-	bzcat $< | \
+	cat $< | \
 		iconv -f iso88591 -t utf8 | \
 		sed 's,.,\U\0,g' | \
 		grep '^[ABCÇDEFGHIJLMNOPQRSTUVXZ]\+$$' | \

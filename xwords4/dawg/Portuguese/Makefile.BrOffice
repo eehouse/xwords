@@ -24,10 +24,10 @@ TARGET_TYPE ?= WINCE
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portugueseBR.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portugueseBR.txt
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile.BrOffice
-	zcat $< | \
+	cat $< | \
 		iconv -f iso88591 -t utf8 | \
 		sed 's,.,\U\0,g' | \
 		grep '^[ABCÇDEFGHIJLMNOPQRSTUVXZ]\+$$' | \
