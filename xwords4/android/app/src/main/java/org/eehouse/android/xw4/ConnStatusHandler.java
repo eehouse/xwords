@@ -168,6 +168,7 @@ public class ConnStatusHandler {
 
     private static final CommsConnType[] sDisplayOrder = {
         CommsConnType.COMMS_CONN_RELAY,
+        CommsConnType.COMMS_CONN_MQTT,
         CommsConnType.COMMS_CONN_BT,
         CommsConnType.COMMS_CONN_IR,
         CommsConnType.COMMS_CONN_IP_DIRECT,
@@ -688,6 +689,9 @@ public class ConnStatusHandler {
         case COMMS_CONN_NFC:
             result = NFCUtils.nfcAvail( context )[1];
             break;
+        case COMMS_CONN_MQTT:
+            result = BuildConfig.OFFER_MQTT;
+            break;
         default:
             Log.w( TAG, "connTypeEnabled: %s not handled", connType.toString() );
             break;
@@ -716,6 +720,9 @@ public class ConnStatusHandler {
                                         DevID.getRelayDevIDInt(context),
                                         XWPrefs.getDefaultRelayHost(context),
                                         fcmMsg );
+                break;
+            case COMMS_CONN_MQTT:
+                result = String.format("DevID: %s", XwJNI.dvc_getMQTTDevID(null));
                 break;
             case COMMS_CONN_P2P:
                 result = WiDirService.formatNetStateInfo();

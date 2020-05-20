@@ -100,6 +100,9 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_RELAYID_EXTRA = "rm_relayid";
     private static final String REMATCH_P2PADDR_EXTRA = "rm_p2pma";
 
+    private static final String INVITE_ACTION = "org.eehouse.action_invite";
+    private static final String INVITE_DATA = "data_invite";
+
     private static final String ALERT_MSG = "alert_msg";
     private static final String WITH_EMAIL = "with_email";
 
@@ -2417,12 +2420,13 @@ public class GamesListDelegate extends ListDelegateBase
                 String p2pMacAddress = extras.getString( REMATCH_P2PADDR_EXTRA );
                 String dict = extras.getString( REMATCH_DICT_EXTRA );
                 int lang = extras.getInt( REMATCH_LANG_EXTRA, -1 );
+                String mqttDevID = extras.getString( GameSummary.EXTRA_REMATCH_MQTT );
                 String json = extras.getString( REMATCH_PREFS_EXTRA );
 
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
                                                     lang, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone,
-                                        relayID, p2pMacAddress );
+                                        relayID, p2pMacAddress, mqttDevID );
             }
             launchGame( newid );
         }
@@ -2446,10 +2450,10 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;
     }
 
-    private boolean tryNFCIntent( Intent intent )
+    private boolean tryInviteIntent( Intent intent )
     {
         boolean result = false;
-        byte[] data = NFCUtils.getFromIntent( intent );
+        byte[] data = getFromIntent( intent );
         if ( null != data ) {
             NetLaunchInfo nli = NetLaunchInfo.makeFrom( m_activity, data );
             if ( null != nli && nli.isValid() ) {
@@ -2681,7 +2685,7 @@ public class GamesListDelegate extends ListDelegateBase
             || startHasGameID( intent )
             || startRematch( intent )
             || tryAlert( intent )
-            || tryNFCIntent( intent )
+            || tryInviteIntent( intent )
             ;
         Log.d( TAG, "tryStartsFromIntent() => handled: %b", handled );
     }
@@ -2895,7 +2899,7 @@ public class GamesListDelegate extends ListDelegateBase
                                             CommsConnTypeSet addrTypes,
                                             String btAddr, String phone,
                                             String relayID, String p2pMacAddress,
-                                            String newName )
+                                            String mqttDevID, String newName )
     {
         Intent intent = null;
         boolean isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE;
@@ -2926,6 +2930,9 @@ public class GamesListDelegate extends ListDelegateBase
                 Assert.assertTrue( addrTypes.contains( CommsConnType.COMMS_CONN_P2P ) );
                 intent.putExtra( REMATCH_P2PADDR_EXTRA, p2pMacAddress );
             }
+            if ( null != mqttDevID ) {
+                intent.putExtra( GameSummary.EXTRA_REMATCH_MQTT, mqttDevID );
+            }
         }
         return intent;
     }
@@ -2944,13 +2951,38 @@ public class GamesListDelegate extends ListDelegateBase
             ;
     }
 
-    public static void postNFCInvite( Context context, byte[] data )
+    public static void postReceivedInvite( Context context, byte[] data )
     {
         Intent intent = makeSelfIntent( context )
             .addFlags( Intent.FLAG_ACTIVITY_NEW_TASK )
             ;
-        NFCUtils.populateIntent( context, intent, data );
+        populateInviteIntent( context, intent, data );
         context.startActivity( intent );
+    }
+
+    private static void populateInviteIntent( Context context, Intent intent,
+                                              byte[] data )
+    {
+        NetLaunchInfo nli = NetLaunchInfo.makeFrom( context, data );
+        if ( null != nli ) {
+            intent.setAction( INVITE_ACTION )
+                .putExtra( INVITE_DATA, data );
+        } else {
+            Assert.failDbg();
+        }
+    }
+
+    private byte[] getFromIntent( Intent intent )
+    {
+        byte[] result = null;
+
+        String action = intent.getAction();
+        if ( INVITE_ACTION.equals( action ) ) {
+            result = intent.getByteArrayExtra( INVITE_DATA );
+        }
+
+        // Log.d( TAG, "getFromIntent() => %s", result );
+        return result;
     }
 
     public static void openGame( Context context, Uri data )

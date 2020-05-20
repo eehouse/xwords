@@ -33,7 +33,7 @@ typedef struct _Procs {
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
                            XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
-    void (*inviteReceived)( void* closure, NetLaunchInfo* invit );
+    void (*inviteReceived)( void* closure, const NetLaunchInfo* invit );
 } RelayConnProcs;
 
 void relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 

@@ -24,7 +24,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.telephony.PhoneNumberUtils;
 
+import java.util.Arrays;
+
 import org.eehouse.android.xw4.Assert;
+import org.eehouse.android.xw4.BuildConfig;
 import org.eehouse.android.xw4.Channels;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DevID;
@@ -33,6 +36,8 @@ import org.eehouse.android.xw4.FBMService;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.GamesListDelegate;
 import org.eehouse.android.xw4.Log;
+import org.eehouse.android.xw4.MQTTUtils;
+import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWApp;
@@ -253,21 +258,19 @@ public class DUtilCtxt {
         // Log.d( TAG, "store(key=%s)", key );
         if ( null != data ) {
             DBUtils.setBytesFor( m_context, key, data );
+            if ( BuildConfig.DEBUG ) {
+                byte[] tmp = load( key );
+                Assert.assertTrue( Arrays.equals( tmp, data ) );
+            }
         }
     }
 
     public byte[] load( String key )
     {
-        byte[] result = null;
-        int resultLen = 0;
-        Log.d( TAG, "load(key=%s)", key );
+        byte[] result = DBUtils.getBytesFor( m_context, key );
 
-        result = DBUtils.getBytesFor( m_context, key );
-        if ( result != null ) {
-            resultLen = result.length;
-        }
-
-        Log.d( TAG, "load(%s) returning %d bytes", key, resultLen );
+        // Log.d( TAG, "load(%s) returning %d bytes", key,
+        //        null == result ? 0 : result.length );
         return result;
     }
 
@@ -336,5 +339,24 @@ public class DUtilCtxt {
     public void onDupTimerChanged( int gameID, int oldVal, int newVal )
     {
         DupeModeTimer.timerChanged( m_context, gameID, newVal );
+    }
+
+    public void onInviteReceived( NetLaunchInfo nli )
+    {
+        Log.d( TAG, "onInviteReceived(%s)", nli );
+        GamesListDelegate.postReceivedInvite( m_context, nli.asByteArray() );
+    }
+
+    public void onMessageReceived( int gameID, CommsAddrRec from, byte[] msg )
+    {
+        Log.d( TAG, "onMessageReceived()" );
+        Assert.assertTrueNR( from.contains( CommsAddrRec.CommsConnType.COMMS_CONN_MQTT ) );
+        MQTTUtils.handleMessage( m_context, from, gameID, msg );
+    }
+
+    public void onGameGoneReceived( int gameID, CommsAddrRec from )
+    {
+        Assert.assertTrueNR( from.contains( CommsAddrRec.CommsConnType.COMMS_CONN_MQTT ) );
+        MQTTUtils.handleGameGone( m_context, from, gameID );
     }
 }

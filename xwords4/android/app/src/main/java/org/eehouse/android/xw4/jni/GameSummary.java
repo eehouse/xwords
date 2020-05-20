@@ -50,6 +50,7 @@ public class GameSummary implements Serializable {
     public static final String EXTRA_REMATCH_PHONE = "rm_phone";
     public static final String EXTRA_REMATCH_RELAY = "rm_relay";
     public static final String EXTRA_REMATCH_P2P = "rm_p2p";
+    public static final String EXTRA_REMATCH_MQTT = "rm_mqtt";
 
     public static final int MSG_FLAGS_NONE = 0;
     public static final int MSG_FLAGS_TURN = 1;
@@ -279,7 +280,8 @@ public class GameSummary implements Serializable {
             // Otherwise, use BT or SMS
             if ( null == result ) {
                 if ( conTypes.contains( CommsConnType.COMMS_CONN_BT )
-                     || ( conTypes.contains( CommsConnType.COMMS_CONN_SMS))){
+                     || conTypes.contains( CommsConnType.COMMS_CONN_SMS)
+                     || conTypes.contains( CommsConnType.COMMS_CONN_MQTT )) {
                     if ( 0 < missing ) {
                         if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
                             fmtID = R.string.summary_wait_host;
@@ -469,21 +471,24 @@ public class GameSummary implements Serializable {
         m_extras = data;
     }
 
-    public void putStringExtra( String key, String value )
+    public GameSummary putStringExtra( String key, String value )
     {
-        String extras = (null == m_extras) ? "{}" : m_extras;
-        try {
-            JSONObject asObj = new JSONObject( extras );
-            if ( null == value ) {
-                asObj.remove( key );
-            } else {
-                asObj.put( key, value );
+        if ( null != value ) {
+            String extras = (null == m_extras) ? "{}" : m_extras;
+            try {
+                JSONObject asObj = new JSONObject( extras );
+                if ( null == value ) {
+                    asObj.remove( key );
+                } else {
+                    asObj.put( key, value );
+                }
+                m_extras = asObj.toString();
+            } catch( org.json.JSONException ex ) {
+                Log.ex( TAG, ex );
             }
-            m_extras = asObj.toString();
-        } catch( org.json.JSONException ex ) {
-            Log.ex( TAG, ex );
+            Log.i( TAG, "putStringExtra(%s,%s) => %s", key, value, m_extras );
         }
-        Log.i( TAG, "putStringExtra(%s,%s) => %s", key, value, m_extras );
+        return this;
     }
 
     public String getStringExtra( String key )
@@ -511,6 +516,7 @@ public class GameSummary implements Serializable {
                           EXTRA_REMATCH_PHONE,
                           EXTRA_REMATCH_RELAY,
                           EXTRA_REMATCH_P2P,
+                          EXTRA_REMATCH_MQTT,
         };
         for ( String key : keys ) {
             found = null != getStringExtra( key );

@@ -300,6 +300,7 @@ public class DlgDelegate {
             SMS_DATA, // classic NBS-based data sms
             EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY, WIFIDIRECT,
             SMS_USER, // just launch the SMS app, as with email
+            MQTT,
         };
         boolean onPosButton( Action action, Object... params );
         boolean onNegButton( Action action, Object... params );

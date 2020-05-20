@@ -127,6 +127,32 @@ public class XwJNI {
         cleanGlobals();
     }
 
+    public static String dvc_getMQTTDevID( String[] topic )
+    {
+        return dvc_getMQTTDevID( getJNI().m_ptrGlobals, topic );
+    }
+
+    public static byte[] dvc_makeMQTTInvite( NetLaunchInfo nli, String[] addrToTopic )
+    {
+        return dvc_makeMQTTInvite( getJNI().m_ptrGlobals, nli, addrToTopic );
+    }
+
+    public static byte[] dvc_makeMQTTMessage( int gameID, byte[] buf,
+                                              String[] addrToTopic )
+    {
+        return dvc_makeMQTTMessage( getJNI().m_ptrGlobals, gameID, buf, addrToTopic );
+    }
+
+    public static byte[] dvc_makeMQTTNoSuchGame( int gameID, String[] addrToTopic )
+    {
+        return dvc_makeMQTTNoSuchGame( getJNI().m_ptrGlobals, gameID, addrToTopic );
+    }
+
+    public static void dvc_parseMQTTPacket( byte[] buf )
+    {
+        dvc_parseMQTTPacket( getJNI().m_ptrGlobals, buf );
+    }
+
     private static void cleanGlobals()
     {
         synchronized( XwJNI.class ) { // let's be safe here
@@ -174,7 +200,6 @@ public class XwJNI {
 
     public static byte[] nliToStream( NetLaunchInfo nli )
     {
-        nli.freezeAddrs();
         return nli_to_stream( getJNI().m_ptrGlobals, nli );
     }
 
@@ -182,7 +207,6 @@ public class XwJNI {
     {
         NetLaunchInfo nli = new NetLaunchInfo();
         nli_from_stream( getJNI().m_ptrGlobals, nli, stream );
-        nli.unfreezeAddrs();
         return nli;
     }
 
@@ -533,6 +557,15 @@ public class XwJNI {
 
     // Private methods -- called only here
     private static native long initGlobals( DUtilCtxt dutil, JNIUtils jniu );
+    private static native String dvc_getMQTTDevID( long jniState, String[] topic );
+    private static native byte[] dvc_makeMQTTInvite( long jniState, NetLaunchInfo nli,
+                                                     String[] addrToTopic );
+    private static native byte[] dvc_makeMQTTMessage( long jniState, int gameID, byte[] buf,
+                                                      String[] addrToTopic );
+    private static native byte[] dvc_makeMQTTNoSuchGame( long jniState, int gameID,
+                                                         String[] addrToTopic );
+
+    private static native void dvc_parseMQTTPacket( long jniState, byte[] buf );
     private static native void cleanGlobals( long jniState );
     private static native byte[] gi_to_stream( long jniState, CurGameInfo gi );
     private static native void gi_from_stream( long jniState, CurGameInfo gi,

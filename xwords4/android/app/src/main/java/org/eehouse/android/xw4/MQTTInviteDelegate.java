@@ -25,29 +25,29 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+import org.eehouse.android.xw4.jni.XwJNI;
 
-public class RelayInviteDelegate extends DevIDInviteDelegate {
-    private static final String TAG = RelayInviteDelegate.class.getSimpleName();
+public class MQTTInviteDelegate extends DevIDInviteDelegate {
+    private static final String TAG = MQTTInviteDelegate.class.getSimpleName();
     private static final String RECS_KEY = TAG + "/recs";
-    private static final boolean RELAYINVITE_SUPPORTED
+    private static final boolean MQTTINVITE_SUPPORTED
         = BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD;
 
-    private boolean m_immobileConfirmed;
-    private String mRelayDevIDStr;
+    private String m_devIDStr;
 
     public static void launchForResult( Activity activity, int nMissing,
                                         SentInvitesInfo info,
                                         RequestCode requestCode )
     {
-        if ( RELAYINVITE_SUPPORTED ) {
+        if ( MQTTINVITE_SUPPORTED ) {
             Intent intent =
-                InviteDelegate.makeIntent( activity, RelayInviteActivity.class,
+                InviteDelegate.makeIntent( activity, MQTTInviteActivity.class,
                                            nMissing, info );
             activity.startActivityForResult( intent, requestCode.ordinal() );
         }
     }
 
-    public RelayInviteDelegate( Delegator delegator, Bundle savedInstanceState )
+    public MQTTInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState );
     }
@@ -61,9 +61,9 @@ public class RelayInviteDelegate extends DevIDInviteDelegate {
     @Override
     String getMeDevID()
     {
-        if ( null == mRelayDevIDStr ) {
-            mRelayDevIDStr = String.format( "%d", DevID.getRelayDevIDInt(getActivity()) );
+        if ( null == m_devIDStr ) {
+            m_devIDStr = XwJNI.dvc_getMQTTDevID(null);
         }
-        return mRelayDevIDStr;
+        return m_devIDStr;
     }
 }

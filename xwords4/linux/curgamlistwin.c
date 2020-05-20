@@ -24,6 +24,8 @@
 
 #include "curgamlistwin.h"
 #include "linuxmain.h"
+#include "device.h"
+#include "strutils.h"
 
 struct CursGameList {
     WINDOW* window;
@@ -295,8 +297,12 @@ cgl_draw( CursGameList* cgl )
 
     XP_U32 relayID = linux_getDevIDRelay( cgl->params );
     char buf[cgl->width + 1];
-    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d, relayid: %d",
-              cgl->pid, nGames, relayID );
+
+    MQTTDevID devID;
+    dvc_getMQTTDevID( cgl->params->dutil, NULL_XWE, &devID );
+    XP_UCHAR didBuf[32];
+    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d, relayid: %d, mqttid: %s",
+              cgl->pid, nGames, relayID, formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ) );
     mvwaddstr( win, 0, 0, buf );
     
     wrefresh( win );

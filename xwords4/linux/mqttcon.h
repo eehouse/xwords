@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -17,25 +17,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef _MQTTCON_H_
+#define _MQTTCON_H_
 
-#ifndef _DEVICE_H_
-#define _DEVICE_H_
+#include "main.h"
+#include "nli.h"
 
-#include "dutil.h"
+void mqttc_init( LaunchParams* params );
+void mqttc_cleanup( LaunchParams* params );
 
-// void device_load( XW_DUtilCtxt dctxt );
-# ifdef XWFEATURE_DEVICE
-void dvc_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
-# else
-#  define dvc_store(dctxt, xwe)
-# endif
+const MQTTDevID* mqttc_getDevID( LaunchParams* params );
+const gchar* mqttc_getDevIDStr( LaunchParams* params );
+void mqttc_invite( LaunchParams* params, NetLaunchInfo*  nli, const MQTTDevID* mqttInvitee );
+XP_S16 mqttc_send( LaunchParams* params, XP_U32 gameID, const XP_U8* buf, XP_U16 len,
+                   const MQTTDevID* addressee );
+void mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 gameID );
 
-void dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID );
+bool mqttc_strToDevID( const gchar* str, MQTTDevID* result );
 
-void dvc_makeMQTTInvite( XWStreamCtxt* stream, const NetLaunchInfo* nli);
-void dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
-                          XP_U32 gameID, const XP_U8* buf, XP_U16 len );
-void dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
-                             XWStreamCtxt* stream, XP_U32 gameID );
-void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len );
 #endif

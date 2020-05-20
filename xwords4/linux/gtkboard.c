@@ -72,6 +72,7 @@
 #include "filestream.h"
 #include "gamesdb.h"
 #include "relaycon.h"
+#include "mqttcon.h"
 
 /* static guint gtkSetupClientSocket( GtkGameGlobals* globals, int sock ); */
 static void setCtrlsForTray( GtkGameGlobals* globals );
@@ -86,6 +87,7 @@ static void gtkShowFinalScores( const GtkGameGlobals* globals,
                                 XP_Bool ignoreTimeout );
 static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
                           XP_U32 relayDevID, const XP_UCHAR* relayID,
+                          MQTTDevID* mqttInviteeID,
                           const CommsAddrRec* addrs );
 
 #define GTK_TRAY_HT_ROWS 3
@@ -677,7 +679,7 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                 CommsAddrRec addr = {0};
                 addrFromStream( &addr, stream );
 
-                send_invites( cGlobals, 1, 0, relayID, NULL );
+                send_invites( cGlobals, 1, 0, relayID, &addr.u.mqtt.devID, &addr );
             }
         }
         stream_destroy( stream, NULL_XWE );
@@ -1403,18 +1405,20 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;
     XP_U32 relayDevID = 0;
+    MQTTDevID mqttInviteeID;
     XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers,
-                                      &relayDevID );
+                                      &relayDevID, &mqttInviteeID );
     XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
 
     if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, relayDevID, NULL, &inviteAddr );
+        send_invites( cGlobals, nPlayers, relayDevID, NULL, &mqttInviteeID, &inviteAddr );
     }
 } /* handle_invite_button */
 
 static void
 send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
               XP_U32 relayDevID, const XP_UCHAR* relayID,
+              MQTTDevID* mqttInviteeID,
               const CommsAddrRec* addrs )
 {
     CommsAddrRec addr = {0};
@@ -1432,6 +1436,11 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
         nli_setInviteID( &nli, buf ); /* should not be relay only!!! */
     }
     // nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
+
+    if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
+        const MQTTDevID* devid = mqttc_getDevID( cGlobals->params );
+        nli_setMQTTDevID( &nli, devid );
+    }
 
 #ifdef DEBUG
     {
@@ -1456,6 +1465,10 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
     if ( 0 != relayDevID || !!relayID ) {
         XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
         relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
+    }
+
+    if ( addr_hasType( addrs, COMMS_CONN_MQTT ) ) {
+        mqttc_invite( cGlobals->params, &nli, mqttInviteeID );
     }
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */
@@ -1955,7 +1968,7 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_PlayerAddr
 static void
 gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                    const XP_UCHAR* const msg, XP_S16 from,
-                   XP_U32 timestamp )
+                   XP_U32 tsSecs )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     XP_UCHAR buf[1024];
@@ -1963,7 +1976,13 @@ gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
     if ( 0 <= from ) {
         name = globals->cGlobals.gi->players[from].name;
     }
-    XP_SNPRINTF( buf, VSIZE(buf), "quoth %s at %d: %s", name, timestamp, msg );
+
+    GDateTime* dt = g_date_time_new_from_unix_utc( tsSecs );
+    gchar* tsStr = g_date_time_format( dt, "%T" );
+    XP_SNPRINTF( buf, VSIZE(buf), "Quoth %s at %s: \"%s\"", name, tsStr, msg );
+    g_free( tsStr );
+    g_date_time_unref (dt);
+
     (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 }
 #endif

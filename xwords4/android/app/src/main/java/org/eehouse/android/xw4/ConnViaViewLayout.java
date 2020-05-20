@@ -130,6 +130,9 @@ public class ConnViaViewLayout extends LinearLayout {
         case COMMS_CONN_P2P:
             enabled = WiDirWrapper.enabled();
             break;
+        case COMMS_CONN_MQTT:
+            enabled = BuildConfig.OFFER_MQTT;
+            break;
         default:
             Assert.failDbg();
             break;
@@ -168,6 +171,10 @@ public class ConnViaViewLayout extends LinearLayout {
             case COMMS_CONN_P2P:
                 msgID = R.string.not_again_comms_p2p;
                 keyID = R.string.key_na_comms_p2p;
+                break;
+            case COMMS_CONN_MQTT:
+                msgID = R.string.not_again_comms_mqtt;
+                keyID = R.string.key_na_comms_mqtt;
                 break;
             default:
                 Assert.failDbg();

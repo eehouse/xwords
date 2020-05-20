@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2015 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2015 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,33 +20,15 @@
 
 package org.eehouse.android.xw4;
 
-// Just make sure all calls to startActivityForResult are using unique codes.
+import android.os.Bundle;
 
-public enum RequestCode {
-    __UNUSED,
+public class MQTTInviteActivity extends InviteActivity {
+    private MQTTInviteDelegate m_dlgt;
 
-    // BoardDelegate
-    BT_INVITE_RESULT,
-    SMS_USER_INVITE_RESULT,
-    SMS_DATA_INVITE_RESULT,
-    RELAY_INVITE_RESULT,
-    P2P_INVITE_RESULT,
-    MQTT_INVITE_RESULT,
-
-    // PermUtils
-    PERM_REQUEST,
-
-    // GameConfig
-    REQUEST_LANG_GC,
-    REQUEST_DICT,
-
-    // Games list
-    REQUEST_LANG_GL,
-    CONFIG_GAME,
-
-    // SMSInviteDelegate
-    GET_CONTACT,
-
-    // HostDelegate
-    HOST_DIALOG,
+    @Override
+    protected void onCreate( Bundle savedInstanceState )
+    {
+        m_dlgt = new MQTTInviteDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
+    }
 }

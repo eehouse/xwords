@@ -749,6 +749,9 @@ public class BoardDelegate extends DelegateBase
             case RELAY_INVITE_RESULT:
                 missingMeans = InviteMeans.RELAY;
                 break;
+            case MQTT_INVITE_RESULT:
+                missingMeans = InviteMeans.MQTT;
+                break;
             case P2P_INVITE_RESULT:
                 missingMeans = InviteMeans.WIFIDIRECT;
                 break;
@@ -1351,6 +1354,10 @@ public class BoardDelegate extends DelegateBase
                 RelayInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
                                                      RequestCode.RELAY_INVITE_RESULT );
                 break;
+            case MQTT:
+                MQTTInviteDelegate.launchForResult( m_activity, m_mySIS.nMissing, info,
+                                                    RequestCode.MQTT_INVITE_RESULT );
+                break;
             case WIFIDIRECT:
                 WiDirInviteDelegate.launchForResult( m_activity,
                                                      m_mySIS.nMissing, info,
@@ -1630,6 +1637,9 @@ public class BoardDelegate extends DelegateBase
                     break;
                 case COMMS_CONN_NFC:
                     nli.addNFCInfo();
+                    break;
+                case COMMS_CONN_MQTT:
+                    nli.addMQTTInfo();
                     break;
                 default:
                     Log.w( TAG, "Not doing NFC join for conn type %s",
@@ -2512,6 +2522,7 @@ public class BoardDelegate extends DelegateBase
             case COMMS_CONN_SMS:
             case COMMS_CONN_P2P:
             case COMMS_CONN_NFC:
+            case COMMS_CONN_MQTT:
                 break;
             default:
                 Log.w( TAG, "tickle: unexpected type %s", typ.toString() );
@@ -2808,6 +2819,9 @@ public class BoardDelegate extends DelegateBase
                 case WIFIDIRECT:
                     WiDirService.inviteRemote( m_activity, dev, nli );
                     break;
+                case MQTT:
+                    MQTTUtils.inviteRemote( m_activity, dev, nli );
+                    break;
                 }
 
                 if ( null != dev ) {
@@ -2993,6 +3007,7 @@ public class BoardDelegate extends DelegateBase
                     supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
                         || connTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+                        || connTypes.contains( CommsConnType.COMMS_CONN_MQTT )
                         || connTypes.contains( CommsConnType.COMMS_CONN_P2P );
                 }
             } else if ( null != context ) {
@@ -3027,6 +3042,7 @@ public class BoardDelegate extends DelegateBase
         String btAddr = null;
         String relayID = null;
         String p2pMacAddress = null;
+        String mqttDevID = null;
         if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
             // nothing to do??
         } else if ( 2 != gi.nPlayers ) {
@@ -3057,6 +3073,10 @@ public class BoardDelegate extends DelegateBase
                     Assert.assertNull( p2pMacAddress );
                     p2pMacAddress = addr.p2p_addr;
                 }
+                if ( addr.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
+                    Assert.assertNull( mqttDevID );
+                    mqttDevID = addr.mqtt_devID;
+                }
             }
         }
 
@@ -3065,7 +3085,8 @@ public class BoardDelegate extends DelegateBase
             String newName = summary.getRematchName( activity );
             Intent intent = GamesListDelegate
                 .makeRematchIntent( activity, rowid, groupID, gi, connTypes,
-                                    btAddr, phone, relayID, p2pMacAddress, newName );
+                                    btAddr, phone, relayID, p2pMacAddress,
+                                    mqttDevID, newName );
             if ( null != intent ) {
                 activity.startActivity( intent );
             }
@@ -3149,6 +3170,11 @@ public class BoardDelegate extends DelegateBase
             if ( null != value ) {
                 WiDirService.inviteRemote( m_activity, value, nli );
                 recordInviteSent( InviteMeans.WIFIDIRECT, value );
+            }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_MQTT );
+            if ( null != value ) {
+                MQTTUtils.inviteRemote( m_activity, value, nli );
+                recordInviteSent( InviteMeans.MQTT, value );
             }
 
             showToast( R.string.rematch_sent_toast );

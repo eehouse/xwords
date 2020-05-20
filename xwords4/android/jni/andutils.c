@@ -150,8 +150,8 @@ setInts( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis 
             XP_ASSERT(0);
         }
         setInt( env, jobj, si->name, val );
-        /* XP_LOGF( "%s: read int %s of size %d with val %d from offset %d",  */
-        /*          __func__, si->name, si->siz, val, si->offset ); */
+        /* XP_LOGFF( "read int %s of size %d with val %d/0x%x from offset %d", */
+        /*           si->name, si->siz, val, val, si->offset ); */
     }
 }
 
@@ -185,7 +185,7 @@ setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis
 bool
 setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
 {
-    // XP_LOGF( "%s(%s)", __func__, name );
+    /* XP_LOGFF( "(name=%s, val=%s)", name, value ); */
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -226,7 +226,7 @@ void
 getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
            int bufLen )
 {
-    // XP_LOGF( "%s(%s)", __func__, name );
+    /* XP_LOGFF( "(name=%s, bufLen=%d)", name, bufLen ); */
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -509,8 +509,27 @@ setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget,
     deleteLocalRef( env, jtypset );
 }
 
+jobject
+makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
+{
+    jobject jaddr = NULL;
+    if ( NULL != addr ) {
+        jclass clazz
+            = (*env)->FindClass(env, PKG_PATH("jni/CommsAddrRec") );
+        XP_ASSERT( !!clazz );
+        jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
+        XP_ASSERT( !!mid );
+
+        jaddr = (*env)->NewObject( env, clazz, mid );
+        setJAddrRec( env, jaddr, addr );
+
+        deleteLocalRef( env, clazz );
+    }
+    return jaddr;
+}
+
 /* Copy C object data into Java object */
-void
+jobject
 setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
@@ -543,10 +562,17 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
             break;
         case COMMS_CONN_NFC:
             break;
+        case COMMS_CONN_MQTT: {
+            XP_UCHAR buf[32];
+            formatMQTTDevID( &addr->u.mqtt.devID, buf, VSIZE(buf) );
+            setString( env, jaddr, "mqtt_devID", buf );
+        }
+            break;
         default:
             XP_ASSERT(0);
         }
     }
+    return jaddr;
 }
 
 jobject
@@ -636,6 +662,12 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
             break;
         case COMMS_CONN_NFC:
             break;
+        case COMMS_CONN_MQTT: {
+            XP_UCHAR buf[32];
+            getString( env, jaddr, "mqtt_devID", buf, VSIZE(buf) );
+            sscanf( buf, MQTTDevID_FMT, &addr->u.mqtt.devID );
+        }
+            break;
         default:
             XP_ASSERT(0);
         }
@@ -723,6 +755,48 @@ jEnumToInt( JNIEnv* env, jobject jenum )
     return (*env)->CallIntMethod( env, jenum, mid );
 }
 
+static const SetInfo nli_ints[] = {
+    ARR_MEMBER( NetLaunchInfo, _conTypes ),
+    ARR_MEMBER( NetLaunchInfo, lang ),
+    ARR_MEMBER( NetLaunchInfo, forceChannel ),
+    ARR_MEMBER( NetLaunchInfo, nPlayersT ),
+    ARR_MEMBER( NetLaunchInfo, nPlayersH ),
+    ARR_MEMBER( NetLaunchInfo, gameID ),
+    ARR_MEMBER( NetLaunchInfo, osVers ),
+};
+
+static const SetInfo nli_bools[] = {
+    ARR_MEMBER( NetLaunchInfo, isGSM ),
+    ARR_MEMBER( NetLaunchInfo, remotesAreRobots ),
+};
+
+static const SetInfo nli_strs[] = {
+    ARR_MEMBER( NetLaunchInfo, dict ),
+    ARR_MEMBER( NetLaunchInfo, gameName ),
+    ARR_MEMBER( NetLaunchInfo, room ),
+    ARR_MEMBER( NetLaunchInfo, btName ),
+    ARR_MEMBER( NetLaunchInfo, btAddress ),
+    ARR_MEMBER( NetLaunchInfo, phone ),
+    ARR_MEMBER( NetLaunchInfo, inviteID ),
+    ARR_MEMBER( NetLaunchInfo, mqttDevID ),
+};
+
+void
+loadNLI( JNIEnv* env, NetLaunchInfo* nli, jobject jnli )
+{
+    getInts( env, (void*)nli, jnli, AANDS(nli_ints) );
+    getBools( env, (void*)nli, jnli, AANDS(nli_bools) );
+    getStrings( env, (void*)nli, jnli, AANDS(nli_strs) );
+}
+
+void
+setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli )
+{
+    setInts( env, jnli, (void*)nli, AANDS(nli_ints) );
+    setBools( env, jnli, (void*)nli, AANDS(nli_bools) );
+    setStrings( env, jnli, (void*)nli, AANDS(nli_strs) );
+}
+
 XWStreamCtxt*
 and_empty_stream( MPFORMAL AndGameGlobals* globals )
 {
@@ -785,7 +859,7 @@ passToJava( const char* tag, const char* msg )
 
         releaseEnvFromGlobals( env );
     } else {
-        RAW_LOG( "env is NULL; dropping" );
+        // RAW_LOG( "env is NULL; dropping" );
     }
 }
 

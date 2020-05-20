@@ -32,27 +32,6 @@ typedef struct _AndTransportProcs {
     MPSLOT
 } AndTransportProcs;
 
-static jobject
-makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
-{
-    jobject jaddr = NULL;
-    if ( NULL != addr ) {
-        jclass clazz
-            = (*env)->FindClass(env, PKG_PATH("jni/CommsAddrRec") );
-        XP_ASSERT( !!clazz );
-        jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
-        XP_ASSERT( !!mid );
-
-        jaddr = (*env)->NewObject( env, clazz, mid );
-        XP_ASSERT( !!jaddr );
-
-        setJAddrRec( env, jaddr, addr );
-    
-        deleteLocalRef( env, clazz );
-    }
-    return jaddr;
-}
-
 static XP_U32
 and_xport_getFlags( XWEnv xwe, void* closure )
 {

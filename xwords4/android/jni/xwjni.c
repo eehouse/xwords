@@ -35,6 +35,7 @@
 #include "dictmgr.h"
 #include "nli.h"
 #include "smsproto.h"
+#include "device.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -434,9 +435,6 @@ static const SetInfo pl_ints[] = {
     ,ARR_MEMBER( LocalPlayer, secondsUsed )
 };
 
-#define AANDS(a)                                \
-    (a), VSIZE(a)
-
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 {
@@ -497,47 +495,6 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 
     return gi;
 } /* makeGI */
-
-static const SetInfo nli_ints[] = {
-    ARR_MEMBER( NetLaunchInfo, _conTypes ),
-    ARR_MEMBER( NetLaunchInfo, lang ),
-    ARR_MEMBER( NetLaunchInfo, forceChannel ),
-    ARR_MEMBER( NetLaunchInfo, nPlayersT ),
-    ARR_MEMBER( NetLaunchInfo, nPlayersH ),
-    ARR_MEMBER( NetLaunchInfo, gameID ),
-    ARR_MEMBER( NetLaunchInfo, osVers ),
-};
-
-static const SetInfo nli_bools[] = {
-    ARR_MEMBER( NetLaunchInfo, isGSM ),
-    ARR_MEMBER( NetLaunchInfo, remotesAreRobots ),
-};
-
-static const SetInfo nli_strs[] = {
-    ARR_MEMBER( NetLaunchInfo, dict ),
-    ARR_MEMBER( NetLaunchInfo, gameName ),
-    ARR_MEMBER( NetLaunchInfo, room ),
-    ARR_MEMBER( NetLaunchInfo, btName ),
-    ARR_MEMBER( NetLaunchInfo, btAddress ),
-    ARR_MEMBER( NetLaunchInfo, phone ),
-    ARR_MEMBER( NetLaunchInfo, inviteID ),
-};
-
-static void
-loadNLI( JNIEnv* env, NetLaunchInfo* nli, jobject jnli )
-{
-    getInts( env, (void*)nli, jnli, AANDS(nli_ints) );
-    getBools( env, (void*)nli, jnli, AANDS(nli_bools) );
-    getStrings( env, (void*)nli, jnli, AANDS(nli_strs) );
-}
-
-static void
-setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli )
-{
-    setInts( env, jnli, (void*)nli, AANDS(nli_ints) );
-    setBools( env, jnli, (void*)nli, AANDS(nli_bools) );
-    setStrings( env, jnli, (void*)nli, AANDS(nli_strs) );
-}
 
 static void
 setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
@@ -653,8 +610,153 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 } /* streamFromJStream */
 
 /****************************************************
- * These three methods are stateless: no gamePtr
+ * These methods are stateless: no gamePtr
  ****************************************************/
+
+#define DVC_HEADER(PTR) {                                              \
+    JNIGlobalState* globalState = (JNIGlobalState*)(PTR);              \
+
+#define DVC_HEADER_END() }                      \
+
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getMQTTDevID
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobjectArray jTopicOut )
+{
+    jstring result;
+    DVC_HEADER(jniGlobalPtr);
+    MQTTDevID devID;
+    dvc_getMQTTDevID( globalState->dutil, env, &devID );
+
+    XP_UCHAR buf[64];
+
+    if ( !!jTopicOut ) {
+        formatMQTTTopic( &devID, buf, VSIZE(buf) );
+        jstring jtopic = (*env)->NewStringUTF( env, buf );
+        XP_ASSERT( 1 == (*env)->GetArrayLength( env, jTopicOut ) ); /* fired */
+        (*env)->SetObjectArrayElement( env, jTopicOut, 0, jtopic );
+        deleteLocalRef( env, jtopic );
+    }
+
+    formatMQTTDevID( &devID, buf, VSIZE(buf) );
+    result = (*env)->NewStringUTF( env, buf );
+    DVC_HEADER_END();
+    return result;
+}
+
+static void
+addrToTopic( JNIEnv* env, jobjectArray jAddrToTopic )
+{
+    XP_ASSERT( 1 == (*env)->GetArrayLength( env, jAddrToTopic ) );
+    jstring jaddr = (*env)->GetObjectArrayElement( env, jAddrToTopic, 0 );
+    const char* addr = (*env)->GetStringUTFChars( env, jaddr, NULL );
+
+    MQTTDevID devID;
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        strToMQTTCDevID( addr, &devID );
+    XP_ASSERT( success );
+
+    XP_UCHAR buf[64];
+    formatMQTTTopic( &devID, buf, VSIZE(buf) );
+    jstring jTopic = (*env)->NewStringUTF( env, buf );
+    (*env)->SetObjectArrayElement( env, jAddrToTopic, 0, jTopic );
+
+    (*env)->ReleaseStringUTFChars( env, jaddr, addr );
+    deleteLocalRefs( env, jaddr, jTopic, DELETE_NO_REF );
+}
+
+JNIEXPORT jbyteArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli,
+  jobjectArray jAddrToTopic )
+{
+    jbyteArray result;
+    DVC_HEADER(jniGlobalPtr);
+    NetLaunchInfo nli = {0};
+    loadNLI( env, &nli, jnli );
+    LOGNLI( &nli );
+
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(globalState->mpool)
+                                            globalState->vtMgr,
+                                            NULL, 0, NULL );
+    dvc_makeMQTTInvite( stream, &nli );
+
+    result = streamToBArray( env, stream );
+    stream_destroy( stream, env );
+
+    addrToTopic( env, jAddrToTopic );
+
+    DVC_HEADER_END();
+    return result;
+}
+
+JNIEXPORT jbyteArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTMessage
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jGameID,
+  jbyteArray jmsg, jobjectArray jAddrToTopic )
+{
+    jbyteArray result;
+    LOG_FUNC();
+    DVC_HEADER(jniGlobalPtr);
+
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(globalState->mpool)
+                                            globalState->vtMgr,
+                                            NULL, 0, NULL );
+
+    XP_U16 len = (*env)->GetArrayLength( env, jmsg );
+    jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
+    dvc_makeMQTTMessage( globalState->dutil, env, stream, jGameID,
+                         (const XP_U8*)buf, len );
+    (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
+
+    result = streamToBArray( env, stream );
+    stream_destroy( stream, env );
+
+    addrToTopic( env, jAddrToTopic );
+
+    DVC_HEADER_END();
+    return result;
+}
+
+JNIEXPORT jbyteArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNoSuchGame
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jgameid, jobjectArray jAddrToTopic )
+{
+    jbyteArray result;
+    DVC_HEADER(jniGlobalPtr);
+
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(globalState->mpool)
+                                            globalState->vtMgr,
+                                            NULL, 0, NULL );
+    dvc_makeMQTTNoSuchGame( globalState->dutil, env, stream, jgameid );
+
+    result = streamToBArray( env, stream );
+    stream_destroy( stream, env );
+
+    addrToTopic( env, jAddrToTopic );
+
+    DVC_HEADER_END();
+    LOG_RETURN_VOID();
+    return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1parseMQTTPacket
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jmsg )
+{
+    DVC_HEADER(jniGlobalPtr);
+
+    XP_U16 len = (*env)->GetArrayLength( env, jmsg );
+    jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
+
+    dvc_parseMQTTPacket( globalState->dutil, env, (XP_U8*)buf, len );
+
+    (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
+    DVC_HEADER_END();
+}
+
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jgi )
@@ -705,7 +807,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject njli )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli )
 {
     LOG_FUNC();
     JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;
@@ -715,7 +817,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
 
     jbyteArray result;
     NetLaunchInfo nli = {0};
-    loadNLI( env, &nli, njli );
+    loadNLI( env, &nli, jnli );
     /* CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi ); */
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr,
                                             NULL, 0, NULL );
@@ -1877,10 +1979,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
         jclass clas = (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec") );
         result = (*env)->NewObjectArray( env, count, clas, NULL );
 
-        jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
         for ( int ii = 0; ii < count; ++ii ) {
-            jobject jaddr = (*env)->NewObject( env, clas, initId );
-            setJAddrRec( env, jaddr, &addrs[ii] );
+            jobject jaddr = makeJAddr( env, &addrs[ii] );
             (*env)->SetObjectArrayElement( env, result, ii, jaddr );
             deleteLocalRef( env, jaddr );
         }
@@ -1976,6 +2076,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             }
                 break;
             case COMMS_CONN_NFC:
+            case COMMS_CONN_MQTT:
                 break;
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_SMS || defined XWFEATURE_P2P
             case COMMS_CONN_BT:

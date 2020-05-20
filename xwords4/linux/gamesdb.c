@@ -372,6 +372,12 @@ summarize( CommonGlobals* cGlobals )
             case COMMS_CONN_IP_DIRECT:
                 strcat( connvia, "IP" );
                 break;
+            case COMMS_CONN_MQTT:
+                strcat( connvia, "MQTT" );
+                break;
+            case COMMS_CONN_NFC: /* this should be filtered out!!! */
+                strcat( connvia, "NFC" );
+                break;
             default:
                 XP_ASSERT(0);
                 break;
@@ -703,7 +709,7 @@ FetchResult
 db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
 {
     XP_ASSERT( !!pDb );
-    FetchResult result = NOT_THERE;
+    FetchResult fetchRes = NOT_THERE;
     char query[256];
 #ifdef DEBUG
     int len =
@@ -715,20 +721,20 @@ db_fetch( sqlite3* pDb, const gchar* key, gchar* buf, gint* buflen )
     int sqlResult = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
     XP_Bool found = SQLITE_OK == sqlResult;
     if ( found ) {
-        result = sqlite3_step( ppStmt );
-        found = SQLITE_ROW == result;
+        sqlResult = sqlite3_step( ppStmt );
+        found = SQLITE_ROW == sqlResult;
         if ( found ) {
             if ( getColumnText( ppStmt, 0, buf, buflen ) ) {
-                result = SUCCESS;
+                fetchRes = SUCCESS;
             } else {
-                result = BUFFER_TOO_SMALL;
+                fetchRes = BUFFER_TOO_SMALL;
             }
         } else if ( !!buf ) {
             buf[0] = '\0';
         }
     }
     sqlite3_finalize( ppStmt );
-    return result;
+    return fetchRes;
 }
 
 XP_Bool

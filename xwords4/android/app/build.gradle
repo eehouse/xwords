@@ -37,6 +37,9 @@ if ( FABRIC_API_KEY && hasProperty('useCrashlytics') ) { // rm-for-fdroid
 repositories {
     google()
     maven { url 'https://maven.fabric.io/public' }       // rm-for-fdroid
+    maven {
+    	url "https://repo.eclipse.org/content/repositories/paho-releases/"
+    }
 }
 
 android {
@@ -87,6 +90,7 @@ android {
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
             buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid\""
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
+            buildConfigField "boolean", "OFFER_MQTT", "false"
         }
 
         xw4NoSMS {
@@ -119,6 +123,7 @@ android {
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4fdroid']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XW_UUID]
         }
+
         xw4d {
             dimension "variant"
             buildConfigField "String", "DB_NAME", "\"xwddb\""
@@ -133,6 +138,7 @@ android {
             buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid1\""
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
+            buildConfigField "boolean", "OFFER_MQTT", "true"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
         }
@@ -150,6 +156,7 @@ android {
             buildConfigField "boolean", "REPORT_LOCKS", "true"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
+            buildConfigField "boolean", "OFFER_MQTT", "true"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dNoSMS']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
         }
@@ -331,6 +338,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:16.0.6'      // rm-for-fdroid
 
     implementation 'com.github.eehouse:nbsproxy:v0.2.2'
+
+    implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.+"
 }
 
 task mkImages(type: Exec) {

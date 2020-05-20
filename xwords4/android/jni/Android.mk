@@ -86,6 +86,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/dbgutil.c    \
 	$(COMMON_PATH)/nli.c    	\
 	$(COMMON_PATH)/smsproto.c  	\
+	$(COMMON_PATH)/device.c  	\
 
 LOCAL_CFLAGS+=$(LOCAL_C_INCLUDES) $(LOCAL_DEFINES) -Wall -std=c99
 LOCAL_SRC_FILES := $(linux_SRC_FILES) $(LOCAL_SRC_FILES) $(COMMON_SRC_FILES)

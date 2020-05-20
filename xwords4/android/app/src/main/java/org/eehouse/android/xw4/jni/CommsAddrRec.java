@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2020 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -54,7 +54,8 @@ public class CommsAddrRec {
         COMMS_CONN_BT,
         COMMS_CONN_SMS,
         COMMS_CONN_P2P,
-        COMMS_CONN_NFC(false);
+        COMMS_CONN_NFC(false),
+        COMMS_CONN_MQTT;
 
         private boolean mIsSelectable = true;
 
@@ -82,6 +83,8 @@ public class CommsAddrRec {
                 id = R.string.invite_choice_p2p; break;
             case COMMS_CONN_NFC:
                 id = R.string.invite_choice_nfc; break;
+            case COMMS_CONN_MQTT:
+                id = R.string.invite_choice_mqtt; break;
             default:
                 Assert.failDbg();
             }
@@ -101,17 +104,16 @@ public class CommsAddrRec {
 
         public CommsConnTypeSet() { this(BIT_VECTOR_MASK); }
 
-        public CommsConnTypeSet( int bits, boolean isVector )
+        public CommsConnTypeSet( final int inBits )
         {
-            this( bits | BIT_VECTOR_MASK );
-            Assert.assertTrue( isVector );
-        }
-
-        public CommsConnTypeSet( int bits )
-        {
-            boolean isVector = 0 != (BIT_VECTOR_MASK & bits);
-            bits &= ~BIT_VECTOR_MASK;
+            boolean isVector = 0 != (BIT_VECTOR_MASK & inBits);
+            int bits = inBits & ~BIT_VECTOR_MASK;
             CommsConnType[] values = CommsConnType.values();
+            // Deal with games saved before I added the BIT_VECTOR_MASK back
+            // in. This should be removable before ship. Or later of course.
+            if ( !isVector && bits >= values.length ) {
+                isVector = true;
+            }
             if ( isVector ) {
                 for ( CommsConnType value : values ) {
                     int ord = value.ordinal();
@@ -119,8 +121,10 @@ public class CommsAddrRec {
                         add( value );
                     }
                 }
-            } else {
+            } else if ( bits < values.length ) { // don't crash
                 add( values[bits] );
+            } else {
+                Log.e( TAG, "<init>: bad bits value: 0x%x", inBits );
             }
         }
 
@@ -147,6 +151,9 @@ public class CommsAddrRec {
         {
             List<CommsConnType> supported = new ArrayList<>();
             supported.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( BuildConfig.OFFER_MQTT ) {
+                supported.add( CommsConnType.COMMS_CONN_MQTT );
+            }
             if ( BTService.BTAvailable() ) {
                 supported.add( CommsConnType.COMMS_CONN_BT );
             }
@@ -216,9 +223,6 @@ public class CommsAddrRec {
         private static final CommsConnType[] s_hint = new CommsConnType[0];
     }
 
-    // The C equivalent of this struct uses a union for the various
-    // data sets below.  So don't assume that any fields will be valid
-    // except those for the current conType.
     public CommsConnTypeSet conTypes;
 
     // relay case
@@ -239,6 +243,9 @@ public class CommsAddrRec {
 
     // wifi-direct
     public String p2p_addr;
+
+    // mqtt
+    public String mqtt_devID;
 
     public CommsAddrRec( CommsConnType cTyp )
     {
@@ -315,6 +322,12 @@ public class CommsAddrRec {
     public CommsAddrRec setP2PParams( String macAddress )
     {
         p2p_addr = macAddress;
+        return this;
+    }
+
+    public CommsAddrRec setMQTTParams( String devID )
+    {
+        mqtt_devID = devID;
         return this;
     }
 
@@ -404,6 +417,9 @@ public class CommsAddrRec {
             break;
         case COMMS_CONN_P2P:
             p2p_addr = WiDirService.getMyMacAddress( context );
+            break;
+        case COMMS_CONN_MQTT:
+            mqtt_devID = XwJNI.dvc_getMQTTDevID( null );
             break;
         case COMMS_CONN_NFC:
             break;

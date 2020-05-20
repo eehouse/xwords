@@ -377,23 +377,18 @@ public class DBUtils {
     } // saveSummary
 
     public static void addRematchInfo( Context context, long rowid, String btAddr,
-                                       String phone, String relayID, String p2pAddr )
+                                       String phone, String relayID, String p2pAddr,
+                                       String mqttDevID )
     {
         try ( GameLock lock = GameLock.tryLock(rowid) ) {
             if ( null != lock ) {
-                GameSummary summary = getSummary( context, lock );
-                if ( null != btAddr ) {
-                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
-                }
-                if ( null != phone ) {
-                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
-                }
-                if ( null != relayID ) {
-                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
-                }
-                if ( null != p2pAddr ) {
-                    summary.putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr );
-                }
+                GameSummary summary = getSummary( context, lock )
+                    .putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr )
+                    .putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone )
+                    .putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID )
+                    .putStringExtra( GameSummary.EXTRA_REMATCH_P2P, p2pAddr )
+                    .putStringExtra( GameSummary.EXTRA_REMATCH_MQTT, mqttDevID )
+                    ;
                 saveSummary( context, lock, summary );
             } else {
                 Assert.failDbg();

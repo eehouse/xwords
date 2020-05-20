@@ -50,6 +50,7 @@ public class MultiService {
     public static final String BT_NAME = "BT_NAME";
     public static final String BT_ADDRESS = "BT_ADDRESS";
     public static final String P2P_MAC_ADDRESS = "P2P_MAC_ADDRESS";
+    public static final String MQTT_DEVID = "MQTT_DEVID";
     private static final String NLI_DATA = "nli";
     public static final String DUPEMODE = "du";
 

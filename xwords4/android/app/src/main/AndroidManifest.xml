@@ -106,6 +106,9 @@
     <activity android:name="RelayInviteActivity"
 			  android:label="@string/relay_invite_title"
               />
+    <activity android:name="MQTTInviteActivity"
+			  android:label="@string/mqtt_invite_title"
+              />
 
     <activity android:name="GameConfigActivity"
               android:screenOrientation="sensor"

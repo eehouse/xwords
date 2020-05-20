@@ -28,6 +28,7 @@
 #include "paths.h"
 #include "LocalizedStrIncludes.h"
 #include "dbgutil.h"
+#include "nli.h"
 
 #define MAX_QUANTITY_STRS 4
 
@@ -523,16 +524,17 @@ and_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
 {
     JNIEnv* env = xwe;
     jbyteArray jvalue = loadToByteArray( duc, env, key );
+    jsize len = 0;
     if ( jvalue != NULL ) {
-        jsize len = (*env)->GetArrayLength( env, jvalue );
+        len = (*env)->GetArrayLength( env, jvalue );
         if ( len <= *lenp ) {
             jbyte* jelems = (*env)->GetByteArrayElements( env, jvalue, NULL );
             XP_MEMCPY( data, jelems, len );
             (*env)->ReleaseByteArrayElements( env, jvalue, jelems, 0 );
         }
-        *lenp = len;
         deleteLocalRef( env, jvalue );
     }
+    *lenp = len;
 }
 
 static void
@@ -847,6 +849,64 @@ and_dutil_onDupTimerChanged( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
     DUTIL_CBK_TAIL();
 }
 
+static void
+and_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv xwe, const NetLaunchInfo* nli )
+{
+    LOGNLI( nli );
+    DUTIL_CBK_HEADER( "onInviteReceived", "(L" PKG_PATH("NetLaunchInfo") ";)V" );
+
+    /* Allocate a new NetLaunchInfo */
+    jclass cls = (*env)->FindClass( env, PKG_PATH("NetLaunchInfo") );
+    XP_ASSERT( !!cls );
+    jmethodID initId = (*env)->GetMethodID( env, cls, "<init>", "()V" );
+    XP_ASSERT( !!initId );
+    jobject jnli = (*env)->NewObject( env, cls, initId );
+    XP_ASSERT( !!jnli );
+    setNLI( env, jnli, nli );
+
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jnli );
+
+    deleteLocalRefs( env, jnli, cls, DELETE_NO_REF );
+    DUTIL_CBK_TAIL();
+}
+
+static void
+and_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                             const CommsAddrRec* from, XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+    DUTIL_CBK_HEADER( "onMessageReceived",
+                      "(IL" PKG_PATH("jni/CommsAddrRec") ";[B)V" );
+
+    XP_U16 len = stream_getSize( stream );
+    XP_U8 data[len];
+    stream_getBytes( stream, data, len );
+
+    jbyteArray jmsg = makeByteArray( env, len, (jbyte*)data );
+
+    jobject jaddr = makeJAddr( env, from );
+
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID, jaddr, jmsg );
+
+    deleteLocalRefs( env, jmsg, jaddr, DELETE_NO_REF );
+
+    DUTIL_CBK_TAIL();
+    LOG_RETURN_VOID();
+}
+
+static void
+and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                              const CommsAddrRec* from )
+{
+    DUTIL_CBK_HEADER( "onGameGoneReceived",
+                      "(IL" PKG_PATH("jni/CommsAddrRec") ";)V" );
+    jobject jaddr = makeJAddr( env, from );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID, jaddr );
+
+    deleteLocalRefs( env, jaddr, DELETE_NO_REF );
+    DUTIL_CBK_TAIL();
+}
+
 XW_UtilCtxt*
 makeUtil( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
@@ -993,6 +1053,10 @@ makeDUtil( MPFORMAL JNIEnv* env,
 #endif
     SET_DPROC(notifyPause);
     SET_DPROC(onDupTimerChanged);
+
+    SET_DPROC(onInviteReceived);
+    SET_DPROC(onMessageReceived);
+    SET_DPROC(onGameGoneReceived);
 
 #undef SET_DPROC
 

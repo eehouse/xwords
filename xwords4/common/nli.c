@@ -55,6 +55,9 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
             XP_STRCAT( nli->phone, addr->u.sms.phone );
             // nli->port = addr->u.sms.port; <-- I wish
             break;
+        case COMMS_CONN_MQTT:
+            nli_setMQTTDevID( nli, &addr->u.mqtt.devID );
+            break;
         default:
             XP_ASSERT(0);
             break;
@@ -84,6 +87,13 @@ nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID )
 {
     nli->inviteID[0] = '\0';
     XP_STRCAT( nli->inviteID, inviteID );
+}
+
+void
+nli_setMQTTDevID( NetLaunchInfo* nli, const MQTTDevID* mqttDevID )
+{
+    types_addType( &nli->_conTypes, COMMS_CONN_MQTT );
+    formatMQTTDevID( mqttDevID, nli->mqttDevID, VSIZE(nli->mqttDevID) );
 }
 
 void 
@@ -117,6 +127,9 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
         stream_putU8( stream, nli->isGSM );
         stream_putU8( stream, nli->osType );
         stream_putU32( stream, nli->osVers );
+    }
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
+        stringToStream( stream, nli->mqttDevID );
     }
 
     if ( NLI_VERSION > 0 ) {
@@ -160,6 +173,9 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
         nli->osType= stream_getU8( stream );
         nli->osVers = stream_getU32( stream );
     }
+    if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
+        stringFromStreamHere( stream, nli->mqttDevID, sizeof(nli->mqttDevID) );
+    }
 
     if ( version > 0 && 0 < stream_getSize( stream ) ) {
         nli->remotesAreRobots = 0 != stream_getBits( stream, 1 );
@@ -198,6 +214,16 @@ nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
             XP_STRCAT( addr->u.sms.phone, nli->phone );
             addr->u.sms.port = 1; /* BAD, but 0 is worse */
             break;
+        case COMMS_CONN_MQTT: {
+#ifdef DEBUG
+            XP_Bool success =
+#endif
+                strToMQTTCDevID( nli->mqttDevID, &addr->u.mqtt.devID );
+            XP_ASSERT( success );
+        }
+            break;
+        case COMMS_CONN_NFC:
+            break;
         default:
             XP_ASSERT(0);
             break;
@@ -212,9 +238,10 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
     XP_LOGFF( "called by %s(), line %d", callerFunc, callerLine );
 
     XP_UCHAR buf[256];
-    XP_SNPRINTF( buf, VSIZE(buf), "{nPlayersT: %d; nPlayersH: %d; "
-                 "gameID: %d; inviteID: %s}",
-                 nli->nPlayersT, nli->nPlayersH, nli->gameID, nli->inviteID );
+    XP_SNPRINTF( buf, VSIZE(buf), "{ctyps: %x, nPlayersT: %d; nPlayersH: %d; "
+                 "gameID: %d; inviteID: %s, mqttid: %s}", nli->_conTypes,
+                 nli->nPlayersT, nli->nPlayersH, nli->gameID, nli->inviteID,
+                 nli->mqttDevID );
     XP_LOGF( "%s", buf );
 }
 # endif

@@ -23,7 +23,11 @@
 #include "linuxutl.h"
 #include "linuxmain.h"
 #include "gamesdb.h"
+#include "dbgutil.h"
 #include "LocalizedStrIncludes.h"
+#include "nli.h"
+#include "cursesmain.h"
+#include "gtkmain.h"
 
 static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc, XWEnv xwe );
 static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code );
@@ -78,6 +82,52 @@ linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe
     XP_LOGF( "%s(id=%d, oldVal=%d, newVal=%d)", __func__, gameID, oldVal, newVal );
 }
 
+static void
+linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                              const NetLaunchInfo* nli )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+
+    if ( params->useCurses ) {
+        CommsAddrRec addr = {0};
+        nli_makeAddrRec( nli, &addr );
+        inviteReceivedCurses( params->appGlobals, nli, &addr );
+    } else {
+        relayInviteReceivedGTK( params->appGlobals, nli );
+    }
+}
+
+static void
+linux_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                               XP_U32 gameID, const CommsAddrRec* from,
+                               XWStreamCtxt* stream )
+{
+    XP_LOGFF( "(gameID=%d)", gameID );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+
+    XP_U16 len = stream_getSize( stream );
+    XP_U8 buf[len];
+    stream_getBytes( stream, buf, len );
+
+    if ( params->useCurses ) {
+        mqttMsgReceivedCurses( params->appGlobals, from, gameID, buf, len );
+    } else {
+        msgReceivedGTK( params->appGlobals, from, gameID, buf, len );
+    }
+}
+
+static void
+linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                                XP_U32 gameID, const CommsAddrRec* from )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( params->useCurses ) {
+        gameGoneCurses( params->appGlobals, from, gameID );
+    } else {
+        gameGoneGTK( params->appGlobals, from, gameID );
+    }
+}
+
 XW_DUtilCtxt*
 dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 {
@@ -111,8 +161,13 @@ dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
     SET_PROC(notifyPause);
     SET_PROC(onDupTimerChanged);
+    SET_PROC(onInviteReceived);
+    SET_PROC(onMessageReceived);
+    SET_PROC(onGameGoneReceived);
 
 # undef SET_PROC
+
+    assertTableFull( &result->vtable, sizeof(result->vtable), "lindutil" );
 
     MPASSIGN( result->mpool, mpool );
     return result;

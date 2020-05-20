@@ -446,6 +446,9 @@ public class CommsTransport implements TransportProcs,
         case COMMS_CONN_NFC:
             nSent = NFCUtils.addMsgFor( buf, gameID );
             break;
+        case COMMS_CONN_MQTT:
+            nSent = MQTTUtils.send( context, addr.mqtt_devID, gameID, buf );
+            break;
         default:
             Assert.failDbg();
             break;

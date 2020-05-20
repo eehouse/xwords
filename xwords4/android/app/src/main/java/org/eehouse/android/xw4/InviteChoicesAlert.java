@@ -68,6 +68,9 @@ public class InviteChoicesAlert extends DlgDelegateAlert {
         if ( BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD ) {
             add( items, means, R.string.invite_choice_relay, InviteMeans.RELAY );
         }
+        if ( BuildConfig.OFFER_MQTT ) {
+            add( items, means, R.string.invite_choice_mqtt, InviteMeans.MQTT );
+        }
         if ( WiDirWrapper.enabled() ) {
             add( items, means, R.string.invite_choice_p2p, InviteMeans.WIFIDIRECT );
         }

@@ -1048,6 +1048,7 @@
     <!-- <string name="button_nfc">NFC</string> -->
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
+    <string name="invite_subject">Let\'s play CrossWords</string>
     <string name="invite_subject_fmt">Let\'s play CrossWords (room %1$s)</string>
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
@@ -1602,7 +1603,7 @@
     <string name="invite_progress_title">Connecting…</string>
     <string name="invite_progress_fmt">Sending invitation to CrossWords on %1$s</string>
     <!--  -->
-    <string name="summary_wait_host">Waiting for connection[s]</string>
+    <string name="summary_wait_host">Waiting for guest[s]</string>
     <!--  -->
     <string name="summary_wait_guest">Unconnected</string>
     <!--  -->
@@ -2195,6 +2196,7 @@
     <string name="advanced">For debugging</string>
     <string name="advanced_summary">You should never need these…</string>
     <string name="relay_host">Relay host</string>
+    <string name="mqtt_host">MQTT host</string>
     <string name="relay_via_http_first">Use Web APIs first</string>
     <string name="relay_via_http_first_summary">(instead of as fallback for custom protocol)</string>
     <string name="dict_host">Wordlist download URL</string>
@@ -2207,6 +2209,8 @@
     <string name="git_rev_title">Source version id</string>
     <string name="devid_title">Device ID (on relay)</string>
     <string name="relay_port">Relay game port</string>
+    <string name="mqtt_port">MQTT port</string>
+    <string name="mqtt_qos">MQTT QOS</string>
     <string name="proxy_port">Relay device port</string>
     <string name="name_dict_fmt">%1$s/%2$s</string>
     <string name="gamel_menu_storedb">Write games to SD card</string>
@@ -2551,4 +2555,10 @@
 
     <string name="pick_tiles_title">Pick a tile \"spelling\"</string>
     <string name="no_tiles_exist">\"%1$s\" cannot be spelled with tiles in %2$s.</string>
+
+    <!-- MQTT stuff. May not see the light of day -->
+    <string name="invite_choice_mqtt">Internet/MQTT</string>
+    <string name="mqtt_invite_title">MQTT Invitation</string>
+    <string name="not_again_comms_mqtt">I\'m experimenting with this
+    as a replacement for the relay.</string>
 </resources>

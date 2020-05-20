@@ -84,6 +84,11 @@ public class MultiMsgSink implements TransportProcs {
         return NFCUtils.addMsgFor( buf, gameID );
     }
 
+    int sendViaMQTT( String addressee, byte[] buf, int gameID )
+    {
+        return MQTTUtils.send( m_context, addressee, gameID, buf );
+    }
+
     public int numSent()
     {
         return m_sentSet.size();
@@ -113,6 +118,9 @@ public class MultiMsgSink implements TransportProcs {
             break;
         case COMMS_CONN_NFC:
             nSent = sendViaNFC( buf, gameID );
+            break;
+        case COMMS_CONN_MQTT:
+            nSent = sendViaMQTT( addr.mqtt_devID, buf, gameID );
             break;
         default:
             Assert.failDbg();

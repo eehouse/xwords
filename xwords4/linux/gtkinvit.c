@@ -23,6 +23,8 @@
 #include "gtkutils.h"
 #include "linuxbt.h"
 #include "comtypes.h"
+#include "mqttcon.h"
+#include "strutils.h"
 
 typedef struct _PageData {
     CommsConnType pageType;
@@ -39,6 +41,7 @@ typedef struct _GtkInviteState {
     CommsAddrRec* addr;
     gint* nPlayersP;
     XP_U32* relayDevIDp;
+    MQTTDevID* mqttDevIDp;
     gint maxPlayers;
 
     GtkWidget* nPlayersCombo;
@@ -49,6 +52,8 @@ typedef struct _GtkInviteState {
     /* SMS */
     GtkWidget* smsphone;
     GtkWidget* smsport;
+
+    GtkWidget* mqttDevID;
 
     GtkWidget* bgScanButton;
     GtkWidget* okButton;
@@ -107,11 +112,16 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
         break;
 #endif
     case COMMS_CONN_SMS:
-        txt = gtk_entry_get_text( GTK_ENTRY(state->smsphone) );
-        XP_STRNCPY( state->addr->u.sms.phone, txt, 
-                    sizeof(state->addr->u.sms.phone) );
         txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
         state->addr->u.sms.port = atoi( txt );
+        break;
+    case COMMS_CONN_MQTT:
+        txt = gtk_entry_get_text( GTK_ENTRY(state->mqttDevID) );
+        if ( strToMQTTCDevID( txt, &state->addr->u.mqtt.devID ) ) {
+            *state->mqttDevIDp = state->addr->u.mqtt.devID;
+        } else {
+            XP_ASSERT(0);
+        }
         break;
     default:
         XP_ASSERT( 0 );     /* keep compiler happy */
@@ -253,6 +263,23 @@ makeSMSPage( GtkInviteState* state, PageData* data )
     return vbox;
 } /* makeBTPage */
 
+static GtkWidget*
+makeMQTTPage( GtkInviteState* state, PageData* data )
+{
+    data->okButtonTxt = "Invite via MQTT";
+
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
+    GtkWidget* hbox;
+
+    hbox = makeLabeledField( "Invitee MQTT DevID", &state->mqttDevID, NULL );
+    // gtk_entry_set_text( GTK_ENTRY(state->mqttDevID), s_mqttIDBuf );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+
+    gtk_widget_show( vbox );
+
+    return vbox;
+}
+
 static PageData*
 getNextData( GtkInviteState* state, CommsConnType typ, gchar* label )
 {
@@ -275,7 +302,8 @@ onPageChanged( GtkNotebook* XP_UNUSED(notebook), gpointer XP_UNUSED(arg1),
 
 XP_Bool
 gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, 
-              gint* nPlayersP, XP_U32* relayDevIDp )
+              gint* nPlayersP, XP_U32* relayDevIDp,
+              MQTTDevID* mqttDevIDp )
 {
     GtkInviteState state = {
         .globals = globals,
@@ -283,6 +311,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
         .nPlayersP = nPlayersP,
         .relayDevIDp = relayDevIDp,
         .maxPlayers = *nPlayersP,
+        .mqttDevIDp = mqttDevIDp,
     };
 
     GtkWidget* dialog;
@@ -310,6 +339,10 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr,
 
     PageData* data;
 
+    data = getNextData( &state, COMMS_CONN_MQTT, "MQTT" );
+    (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
+                                    makeMQTTPage( &state, data ),
+                                    data->label );
 #ifdef XWFEATURE_RELAY
     data = getNextData( &state, COMMS_CONN_RELAY, "Relay" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook), 

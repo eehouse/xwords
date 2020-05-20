@@ -210,12 +210,14 @@ makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
 }
 #endif
 
-#define DRAW_CBK_HEADER(nam,sig)                                \
+#define DRAW_CBK_HEADER(nam,sig) {                              \
     JNIEnv* env = xwe;                                          \
     AndDraw* draw = (AndDraw*)dctx;                             \
     ASSERT_ENV( draw->ti, env );                                \
     XP_ASSERT( !!draw->jdraw );                                 \
-    jmethodID mid = getMethodID( xwe, draw->jdraw, nam, sig );
+    jmethodID mid = getMethodID( xwe, draw->jdraw, nam, sig )   \
+
+#define DRAW_CBK_HEADER_END() }
 
 static XP_Bool
 and_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
@@ -238,6 +240,7 @@ and_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 
     returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jscores );
+    DRAW_CBK_HEADER_END();
     return result;
 }
 
@@ -255,6 +258,7 @@ and_draw_drawRemText( DrawCtx* dctx, XP_S16 nTilesLeft,
         readJRect( env, rect, jrect );
     }
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
     return result;
 }
 
@@ -277,6 +281,7 @@ and_draw_score_drawPlayers( DrawCtx* dctx, XWEnv xwe, const XP_Rect* scoreRect,
         readJRect( env, &playerRects[ii], jrect );
     }
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
 }
 
 #else
@@ -286,15 +291,16 @@ and_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                          XP_S16 nTilesLeft, 
                          XP_U16* width, XP_U16* height )
 {
+    jboolean result;
     DRAW_CBK_HEADER("measureRemText", "(Landroid/graphics/Rect;I[I[I)Z" );
 
     jintArray widthArray = (*env)->NewIntArray( env, 1 );
     jintArray heightArray = (*env)->NewIntArray( env, 1 );
     jobject jrect = makeJRect( draw, xwe, JCACHE_RECT0, rect );
 
-    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, 
-                                                 nTilesLeft, widthArray, 
-                                                 heightArray );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect,
+                                        nTilesLeft, widthArray,
+                                        heightArray );
     if ( result ) {
         int tmp;
         getIntsFromArray( env, &tmp, widthArray, 1, true );
@@ -303,6 +309,7 @@ and_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         *height = tmp;
     }
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
     return result;
 } /* and_draw_measureRemText */
 
@@ -321,6 +328,7 @@ and_draw_drawRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
                             nTilesLeft, focussed );
     returnJRect( draw, JCACHE_RECT0, jrinner );
     returnJRect( draw, JCACHE_RECT1, jrouter );
+    DRAW_CBK_HEADER_END();
 }
 
 static void
@@ -347,6 +355,7 @@ and_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* r,
     *width = tmp;
     getIntsFromArray( env, &tmp, heightArray, 1, true );
     *height = tmp;
+    DRAW_CBK_HEADER_END();
 } /* and_draw_measureScoreText */
 
 static void
@@ -366,6 +375,7 @@ and_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
                             jdsi );
     returnJRect( draw, JCACHE_RECT0, jrinner );
     returnJRect( draw, JCACHE_RECT1, jrouter );
+    DRAW_CBK_HEADER_END();
 } /* and_draw_score_drawPlayer */
 #endif
 
@@ -382,6 +392,7 @@ and_draw_drawTimer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, XP_U16 player
         (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                                 jrect, player, secondsLeft, inDuplicateMode );
         returnJRect( draw, JCACHE_RECT0, jrect );
+        DRAW_CBK_HEADER_END();
     }
 }
 
@@ -408,6 +419,7 @@ and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                    XP_S16 owner, XWBonusType bonus, HintAtts hintAtts, 
                    CellFlags flags )
 {
+    jboolean result;
     DRAW_CBK_HEADER("drawCell",
                     "(Landroid/graphics/Rect;Ljava/lang/String;IIIIII)Z" );
     jobject jrect = makeJRect( draw, xwe, JCACHE_RECT0, rect );
@@ -419,13 +431,14 @@ and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         jtext = (*env)->NewStringUTF( env, text );
     }
 
-    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                                 jrect, jtext, tile, value,
-                                                 owner, bonus, hintAtts, 
-                                                 flags );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid,
+                                        jrect, jtext, tile, value,
+                                        owner, bonus, hintAtts,
+                                        flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jtext );
 
+    DRAW_CBK_HEADER_END();
     return result;
 }
 
@@ -440,6 +453,7 @@ and_draw_drawBoardArrow( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, bonus, vert, hintAtts, flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
 }
 
 static XP_Bool
@@ -456,13 +470,14 @@ static XP_Bool
 and_draw_trayBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, XP_U16 owner,
                     XP_S16 score, DrawFocusState XP_UNUSED(dfs) )
 {
+    jboolean result;
     DRAW_CBK_HEADER( "trayBegin", "(Landroid/graphics/Rect;II)Z" );
 
     jobject jrect = makeJRect( draw, xwe, JCACHE_RECT0, rect );
 
-    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                                 jrect, owner, score );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, owner, score );
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
     return result;
 }
 
@@ -484,6 +499,7 @@ and_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                         jrect, jtext, val, flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jtext );
+    DRAW_CBK_HEADER_END();
     return result;
 }
 
@@ -506,18 +522,21 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                                         jrect, jtext, val, owner, flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jtext );
+    DRAW_CBK_HEADER_END();
     return result;
 }
 
 static XP_Bool
 and_draw_drawTileBack( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, CellFlags flags )
 {
+    XP_Bool result;
     DRAW_CBK_HEADER( "drawTileBack", "(Landroid/graphics/Rect;I)Z" );
 
     jobject jrect = makeJRect( draw, xwe, JCACHE_RECT0, rect );
 
-    XP_Bool result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, flags );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
     return result;
 }
 
@@ -531,6 +550,7 @@ and_draw_drawTrayDivider( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, CellFla
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
 }
 
 static void
@@ -545,6 +565,7 @@ and_draw_score_pendingScore( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, score, playerNum, curTurn, flags );
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
 }
 
 static void
@@ -559,6 +580,7 @@ and_draw_objFinished( DrawCtx* dctx, XWEnv xwe, BoardObjectType typ,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             (jint)typ, jrect );
     returnJRect( draw, JCACHE_RECT0, jrect );
+    DRAW_CBK_HEADER_END();
 #endif
 }
 
@@ -568,7 +590,7 @@ and_draw_dictChanged( DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
 {
     AndDraw* draw = (AndDraw*)dctx;
     if ( !!dict && !!draw->jdraw ) {
-        XP_LOGF( "%s(dict=%p); code=%x", __func__, dict, andDictID(dict) );
+        XP_LOGFF( "(dict=%p/%s); code=%x", dict, dict_getName(dict), andDictID(dict) );
         XP_LangCode code = 0;   /* A null dict means no-lang */
         if ( NULL != dict ) {
             code = dict_getLangCode( dict );
@@ -587,6 +609,7 @@ and_draw_dictChanged( DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
             /* jobject jdict = (*env)->NewObject( env, rclass, initId, (int)dict ); */
 
             (*env)->CallVoidMethod( env, draw->jdraw, mid, (jlong)dict );
+            DRAW_CBK_HEADER_END();
         }
     }
 }
@@ -602,6 +625,7 @@ and_draw_getMiniWText( DrawCtx* dctx, XWEnv xwe, XWMiniTextType textHint )
     snprintf( draw->miniTextBuf, VSIZE(draw->miniTextBuf), "%s", str );
     (*env)->ReleaseStringUTFChars( env, jstr, str );
     deleteLocalRef( env, jstr );
+    DRAW_CBK_HEADER_END();
     return draw->miniTextBuf;
 }
 
@@ -625,6 +649,7 @@ and_draw_measureMiniWText( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* textP,
     *width = tmp;
     getIntsFromArray( env, &tmp, heightArray, 1, true );
     *height = tmp;
+    DRAW_CBK_HEADER_END();
 }
 
 static void 
@@ -641,6 +666,7 @@ and_draw_drawMiniWindow( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* text,
                             jstr, jrect );
     returnJRect( draw, JCACHE_RECT0, jrect );
     deleteLocalRef( env, jstr );
+    DRAW_CBK_HEADER_END();
 }
 #endif
 

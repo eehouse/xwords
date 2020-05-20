@@ -92,7 +92,8 @@ jbyteArray streamToBArray( JNIEnv *env, XWStreamCtxt* stream );
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
                        const char* sig );
 
-void setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );
+jobject makeJAddr( JNIEnv* env, const CommsAddrRec* addr );
+jobject setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );
 void getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr );
 void setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget, 
                         const char* fldName );
@@ -103,6 +104,10 @@ void intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
                       const char* fieldSig );
 jobject intToJEnum( JNIEnv* env, int val, const char* enumSig );
 jint jEnumToInt( JNIEnv* env, jobject jenum );
+
+#define AANDS(a) (a), VSIZE(a)
+void loadNLI( JNIEnv* env, NetLaunchInfo* nli, jobject jnli );
+void setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli );
 
 XP_U32 getCurSeconds( JNIEnv* env );
 

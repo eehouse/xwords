@@ -555,6 +555,33 @@ smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 
 #endif
 
+const XP_UCHAR*
+formatMQTTDevID( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
+{
+    XP_SNPRINTF( buf, bufLen, MQTTDevID_FMT, *devid );
+    return buf;
+}
+
+const XP_UCHAR*
+formatMQTTTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
+{
+    XP_SNPRINTF( buf, bufLen, MQTTTopic_FMT, *devid );
+    // LOG_RETURNF( "%s", buf );
+    return buf;
+}
+
+XP_Bool
+strToMQTTCDevID( const XP_UCHAR* str, MQTTDevID* result )
+{
+    MQTTDevID tmp;
+    int nMatched = sscanf( str, MQTTDevID_FMT, &tmp );
+    XP_Bool success = nMatched == 1;
+    if ( success ) {
+        *result = tmp;
+    }
+    return success;
+}
+
 #ifdef DEBUG
 #define NUM_PER_LINE 8
 void

@@ -246,6 +246,47 @@ typedef struct _PlayerDicts {
     DictionaryCtxt* dicts[MAX_NUM_PLAYERS];
 } PlayerDicts;
 
+typedef uint64_t MQTTDevID;
+
+#if __WORDSIZE == 64
+# define MQTTDevID_FMT "%lX"
+#elif __WORDSIZE == 32
+# define MQTTDevID_FMT "%llX"
+#endif
+# define MQTTTopic_FMT "xw4/device/" MQTTDevID_FMT
+
+/* Used by scoring code and engine as fast representation of moves. */
+typedef struct _MoveInfoTile {
+    XP_U8 varCoord; /* 5 bits ok (0-16 for 17x17 board) */
+    Tile tile;      /* 6 bits will do */
+} MoveInfoTile;
+
+typedef struct MoveInfo {
+    XP_U8 nTiles;         /* 4 bits: 0-7 */
+    XP_U8 commonCoord;    /* 5 bits: 0-16 if 17x17 possible */
+    XP_Bool isHorizontal; /* 1 bit */
+    /* If this is to go on an undo stack, we need player num here, or the code
+       has to keep track of it *and* there must be exactly one entry per
+       player per turn. */
+    MoveInfoTile tiles[MAX_TRAY_TILES];
+} MoveInfo;
+
+typedef struct _LastMoveInfo {
+    const XP_UCHAR* names[MAX_NUM_PLAYERS];
+    XP_U16 nWinners;            /* >1 possible in duplicate case only */
+    XP_U16 score;
+    XP_U16 nTiles;
+    XP_UCHAR word[MAX_COLS * 2]; /* be safe */
+    XP_U8 moveType;
+    XP_Bool inDuplicateMode;
+} LastMoveInfo;
+
+typedef XP_U8 TrayTile;
+typedef struct _TrayTileSet {
+    XP_U8 nTiles;
+    TrayTile tiles[MAX_TRAY_TILES];
+} TrayTileSet;
+
 #ifdef XWFEATURE_BLUETOOTH
 /* temporary debugging hack */
 

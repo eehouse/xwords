@@ -205,7 +205,19 @@ public class XWPrefs {
         String key = context.getString( keyID );
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
-        return sp.getInt( key, defaultValue );
+        int result;
+        try {
+            result = sp.getInt( key, defaultValue );
+            // If it's in a pref, it'll be a string (editable) So will get CCE
+        } catch ( ClassCastException cce ) {
+            String asStr = sp.getString( key, String.format( "%d", defaultValue ) );
+            try {
+                result = Integer.parseInt( asStr );
+            } catch ( Exception ex ) {
+                result = defaultValue;
+            }
+        }
+        return result;
     }
 
     public static void setPrefsInt( Context context, int keyID, int newValue )
@@ -520,6 +532,9 @@ public class XWPrefs {
             result = new CommsConnTypeSet();
             if ( RelayService.relayEnabled( context ) ) {
                 result.add( CommsConnType.COMMS_CONN_RELAY );
+            }
+            if ( BuildConfig.OFFER_MQTT ) {
+                result.add( CommsConnType.COMMS_CONN_MQTT );
             }
             if ( BTService.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );

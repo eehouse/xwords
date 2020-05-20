@@ -75,5 +75,10 @@ void cursesDrawCtxtFree( DrawCtx* dctx );
 
 void cursesmain( XP_Bool isServer, LaunchParams* params );
 bool handleQuit( void* closure, int unused_key );
+void inviteReceivedCurses( void* aGlobals, const NetLaunchInfo* invite,
+                           const CommsAddrRec* returnAddr );
+void mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,
+                            XP_U32 gameID, const XP_U8* buf, XP_U16 len );
+void gameGoneCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID );
 
 #endif

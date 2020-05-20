@@ -59,6 +59,7 @@
 #include "linuxdict.h"
 #include "lindutil.h"
 #include "relaycon.h"
+#include "mqttcon.h"
 #include "smsproto.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
@@ -299,21 +300,37 @@ linuxOpenGame( CommonGlobals* cGlobals, const TransportProcs* procs,
         /* If this is to be a relay connected game, tell it so. Otherwise
            let the invitation process and receipt of messages populate
            comms' addressbook */
-        if ( cGlobals->gi->serverRole != SERVER_STANDALONE
-             && addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) {
+        if ( cGlobals->gi->serverRole != SERVER_STANDALONE ) {
+            if ( addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) {
             
-            if ( ! savedGame ) {
-                linuxSaveGame( cGlobals );
-                savedGame = true;
+                if ( ! savedGame ) {
+                    linuxSaveGame( cGlobals );
+                    savedGame = true;
+                }
+                CommsAddrRec addr = {0};
+                comms_getInitialAddr( &addr, params->connInfo.relay.relayName,
+                                      params->connInfo.relay.defaultSendPort );
+                XP_MEMCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
+                           1 + XP_STRLEN(params->connInfo.relay.invite) );
+                addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
+                addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
+                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr ); /* sends stuff */
             }
-            CommsAddrRec addr = {0};
-            comms_getInitialAddr( &addr, params->connInfo.relay.relayName,
-                                  params->connInfo.relay.defaultSendPort );
-            XP_MEMCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
-                       1 + XP_STRLEN(params->connInfo.relay.invite) );
-            addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
-            addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-            comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr ); /* sends stuff */
+
+            if ( addr_hasType( &params->addr, COMMS_CONN_SMS ) ) {
+                CommsAddrRec addr = {0};
+                addr_addType( &addr, COMMS_CONN_SMS );
+                XP_STRCAT( addr.u.sms.phone, params->connInfo.sms.myPhone );
+                addr.u.sms.port = params->connInfo.sms.port;
+                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
+            }
+
+            if ( addr_hasType( &params->addr, COMMS_CONN_MQTT ) ) {
+                CommsAddrRec addr = {0};
+                addr_addType( &addr, COMMS_CONN_MQTT );
+                addr.u.mqtt.devID = *mqttc_getDevID( params );
+                comms_augmentHostAddr( cGlobals->game.comms, NULL_XWE, &addr );
+            }
         }
 
         if ( !!returnAddrP ) {
@@ -882,6 +899,11 @@ typedef enum {
     ,CMD_INVITEE_SMSNUMBER
     ,CMD_SMSPORT
 #endif
+    ,CMD_WITHMQTT
+    ,CMD_MQTTHOST
+    ,CMD_MQTTPORT
+
+    ,CMD_INVITEE_MQTTDEVID
     ,CMD_INVITEE_COUNTS
 #ifdef XWFEATURE_RELAY
     ,CMD_ROOMNAME
@@ -1018,6 +1040,10 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_INVITEE_SMSNUMBER, true, "invitee-sms-number", "number to send any invitation to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
+    ,{ CMD_WITHMQTT, false, "with-mqtt", "enable connecting via mqtt" }
+    ,{ CMD_MQTTHOST, true, "mqtt-host", "server mosquitto is running on" }
+    ,{ CMD_MQTTPORT, true, "mqtt-port", "port mosquitto is listening on" }
+    ,{ CMD_INVITEE_MQTTDEVID, true, "invitee-mqtt-devid", "upper-case hex devID to send any invitation to" }
     ,{ CMD_INVITEE_COUNTS, true, "invitee-counts",
        "When invitations sent, how many on each device? e.g. \"1:2\" for a "
        "three-dev game with two players on second guest" }
@@ -1586,6 +1612,15 @@ linux_send( XWEnv XP_UNUSED(xwe), const XP_U8* buf, XP_U16 buflen,
     }
         break;
 #endif
+
+    case COMMS_CONN_MQTT:
+        nSent = mqttc_send( cGlobals->params, gameID, buf, buflen, &addrRec->u.mqtt.devID );
+        break;
+
+    case COMMS_CONN_NFC:
+        XP_LOGFF( "I don't do nfc! Should be filtering it on invitation receipt" );
+        break;
+
     default:
         XP_ASSERT(0);
     }
@@ -2587,6 +2622,8 @@ main( int argc, char** argv )
     mainParams.connInfo.ip.port = DEFAULT_PORT;
     mainParams.connInfo.ip.hostName = "localhost";
 #endif
+    mainParams.connInfo.mqtt.hostName = "localhost";
+    mainParams.connInfo.mqtt.port = 1883;
 #ifdef XWFEATURE_SMS
     mainParams.connInfo.sms.port = 1;
 #endif
@@ -2795,6 +2832,22 @@ main( int argc, char** argv )
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
 #endif
+        case CMD_WITHMQTT:
+            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
+            break;
+        case CMD_MQTTHOST:
+            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
+            mainParams.connInfo.mqtt.hostName = optarg;
+            break;
+        case CMD_MQTTPORT:
+            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
+            mainParams.connInfo.mqtt.port = atoi(optarg);
+            break;
+        case CMD_INVITEE_MQTTDEVID:
+            mainParams.connInfo.mqtt.inviteeDevIDs =
+                g_slist_append( mainParams.connInfo.mqtt.inviteeDevIDs, optarg );
+            addr_addType( &mainParams.addr, COMMS_CONN_MQTT );
+            break;
         case CMD_DUPPACKETS:
             mainParams.duplicatePackets = XP_TRUE;
             break;

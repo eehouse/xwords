@@ -39,6 +39,9 @@
   <string name="key_relay_via_http_first">key_relay_via_http_first</string>
   <string name="key_update_url">key_update_url2</string>
   <string name="key_relay_url">key_relay_url2</string>
+  <string name="key_mqtt_host">key_mqtt_host</string>
+  <string name="key_mqtt_port">key_mqtt_port</string>
+  <string name="key_mqtt_qos">key_mqtt_qos</string>
   <string name="key_update_prerel">key_update_prerel</string>
   <string name="key_proxy_port">key_proxy_port</string>
   <string name="key_sms_port">key_sms_port</string>
@@ -143,6 +146,7 @@
   <string name="key_notagain_nbsGamesOnUpgrade">key_notagain_nbsGamesOnUpgrade</string>
   <string name="key_na_comms_bt">key_na_comms_bt</string>
   <string name="key_na_comms_p2p">key_na_comms_p2p</string>
+  <string name="key_na_comms_mqtt">key_na_comms_mqtt</string>
   <string name="key_na_comms_sms">key_na_comms_sms</string>
   <string name="key_na_comms_relay">key_na_comms_relay</string>
   <string name="key_na_bt_badproto">key_na_bt_badproto</string>
@@ -337,6 +341,12 @@
     <item>@string/relay_poll_name_no_fcm</item>
     <item>@string/relay_poll_name_no_polling</item>
     <item>@string/relay_poll_name_both</item>
+  </string-array>
+
+  <string-array name="mqtt_qos_values">
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
   </string-array>
 
   <string-array name="force_tablet_names">

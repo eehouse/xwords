@@ -21,10 +21,12 @@
 #ifndef _DEVUTIL_H_
 #define _DEVUTIL_H_
 
-#include "mempool.h"
 #include "comtypes.h"
+#include "mempool.h"
 #include "xwrelay.h"
 #include "vtabmgr.h"
+#include "commstyp.h"
+#include "nlityp.h"
 
 typedef enum { UNPAUSED,
                PAUSED,
@@ -68,6 +70,13 @@ typedef struct _DUtilVtable {
                                  const XP_UCHAR* name, const XP_UCHAR* msg );
     void (*m_dutil_onDupTimerChanged)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        XP_U32 oldVal, XP_U32 newVal );
+
+    void (*m_dutil_onInviteReceived)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                      const NetLaunchInfo* nli );
+    void (*m_dutil_onMessageReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                                       const CommsAddrRec* from, XWStreamCtxt* stream );
+    void (*m_dutil_onGameGoneReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                                       const CommsAddrRec* from );
 } DUtilVtable;
 
 struct XW_DUtilCtxt {
@@ -119,4 +128,13 @@ struct XW_DUtilCtxt {
 
 #define dutil_onDupTimerChanged(duc, e, id, ov, nv)                      \
     (duc)->vtable.m_dutil_onDupTimerChanged( (duc), (e), (id), (ov), (nv))
+
+
+#define dutil_onInviteReceived(duc, xwe, nli)                       \
+    (duc)->vtable.m_dutil_onInviteReceived( (duc), (xwe), (nli) )
+#define dutil_onMessageReceived(duc, xwe, gameID, from, stream)         \
+    (duc)->vtable.m_dutil_onMessageReceived((duc),(xwe),(gameID),(from),(stream))
+#define dutil_onGameGoneReceived(duc, xwe, gameID, from)         \
+    (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
+
 #endif

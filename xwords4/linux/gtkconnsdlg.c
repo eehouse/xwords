@@ -125,6 +125,8 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
                 txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
                 state->addr->u.sms.port = atoi( txt );
                 break;
+            case COMMS_CONN_MQTT:
+                break;
             default:
                 XP_ASSERT( 0 );     /* keep compiler happy */
                 break;
@@ -321,7 +323,14 @@ makeSMSPage( GtkConnsState* state, PageData* data )
     gtk_widget_show( vbox );
 
     return vbox;
-} /* makeBTPage */
+} /* makeSMSPage */
+
+static GtkWidget*
+makeMQTTPage( GtkConnsState* state, PageData* data )
+{
+    GtkWidget* vbox = boxWithUseCheck( state, data );
+    return vbox;
+} /* makeMQTTPage */
 
 static PageData*
 getNextData( GtkConnsState* state, CommsConnType typ, gchar* label )
@@ -352,6 +361,10 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     state.notebook = gtk_notebook_new();
     PageData* data;
 
+    data = getNextData( &state, COMMS_CONN_MQTT, "MQTT" );
+    (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
+                                    makeMQTTPage( &state, data ),
+                                    data->label );
 #ifdef XWFEATURE_RELAY
     data = getNextData( &state, COMMS_CONN_RELAY, "Relay" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook), 

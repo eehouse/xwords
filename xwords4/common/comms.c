@@ -622,6 +622,9 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         break;
     case COMMS_CONN_NFC:
         break;
+    case COMMS_CONN_MQTT:
+        stream_getBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
+        break;
     default:
         /* shut up, compiler */
         break;
@@ -871,6 +874,9 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
         stringToStream( stream, addrP->u.p2p.mac_addr );
         break;
     case COMMS_CONN_NFC:
+        break;
+    case COMMS_CONN_MQTT:
+        stream_putBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
         break;
     default:
         XP_ASSERT(0);
@@ -2021,6 +2027,7 @@ preProcess( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* useAddr,
     case COMMS_CONN_P2P:
         break;    /* nothing to grab?? */
     case COMMS_CONN_NFC:
+    case COMMS_CONN_MQTT:
         break;    /* nothing to grab?? */
     default:
         XP_ASSERT(0);
@@ -2109,8 +2116,8 @@ getRecordFor( CommsCtxt* comms, XWEnv xwe, const CommsAddrRec* addr,
         }
     }
 
-    XP_LOGF( "%s(%s, maskChannel=%s) => %p", __func__, 
-             cbuf, maskChannel? "true":"false", rec );
+    XP_LOGFF( "(%s, maskChannel=%s) => %p", cbuf,
+              maskChannel? "true":"false", rec );
     return rec;
 } /* getRecordFor */
 
@@ -2503,16 +2510,23 @@ comms_isConnected( const CommsCtxt* const comms )
     XP_Bool result = XP_FALSE;
     CommsConnType typ;
     for ( XP_U32 st = 0; !result && addr_iter( &comms->addr, &typ, &st ); ) {
+        XP_Bool expected = XP_FALSE;
         switch ( typ ) {
         case COMMS_CONN_RELAY:
             result = 0 != comms->rr.connName[0];
+            expected = XP_TRUE;
             break;
         case COMMS_CONN_SMS:
         case COMMS_CONN_BT:
         case COMMS_CONN_P2P:
-            result = comms->connID != CONN_ID_NONE;
+        case COMMS_CONN_MQTT:
+            expected = XP_TRUE;
         default:
+            result = comms->connID != CONN_ID_NONE;
             break;
+        }
+        if ( ! expected ) {
+            XP_LOGFF( "unexpected type %s", ConnType2Str(typ) );
         }
     }
     return result;
@@ -2666,6 +2680,7 @@ ConnType2Str( CommsConnType typ )
         CASESTR( COMMS_CONN_P2P );
         CASESTR( COMMS_CONN_NTYPES );
         CASESTR( COMMS_CONN_NFC );
+        CASESTR( COMMS_CONN_MQTT );
     default:
         XP_ASSERT(0);
     }
@@ -2819,6 +2834,13 @@ logAddr( const CommsCtxt* comms, XWEnv xwe,
                 break;
             case COMMS_CONN_NFC:
                 break;
+            case COMMS_CONN_MQTT: {
+                stream_catString( stream, "mqtt devID: " );
+                XP_UCHAR buf[32];
+                XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, addr->u.mqtt.devID );
+                stream_catString( stream, buf );
+            }
+                break;
             default:
                 XP_ASSERT(0);
             }
@@ -2898,6 +2920,11 @@ augmentAddr( CommsAddrRec* destAddr, const CommsAddrRec* srcAddr )
                 break;
 #endif
             case COMMS_CONN_NFC:
+                break;
+            case COMMS_CONN_MQTT:
+                dest = &destAddr->u.mqtt;
+                src = &srcAddr->u.mqtt;
+                siz = sizeof(destAddr->u.mqtt);
                 break;
             default:
                 XP_ASSERT(0);

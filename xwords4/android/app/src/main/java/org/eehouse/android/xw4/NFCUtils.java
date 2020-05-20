@@ -59,9 +59,6 @@ public class NFCUtils {
     private static final String TAG = NFCUtils.class.getSimpleName();
     private static final boolean USE_BIGINTEGER = true;
 
-    private static final String NFC_TO_SELF_ACTION = "org.eehouse.nfc_to_self";
-    private static final String NFC_TO_SELF_DATA = "nfc_data";
-
     static final byte VERSION_1 = (byte)0x01;
 
     private static final byte MESSAGE = 0x01;
@@ -89,31 +86,6 @@ public class NFCUtils {
         }
         // Log.d( TAG, "nfcAvail() => {%b,%b}", s_nfcAvail[0], s_nfcAvail[1] );
         return s_nfcAvail;
-    }
-
-    public static byte[] getFromIntent( Intent intent )
-    {
-        byte[] result = null;
-
-        String action = intent.getAction();
-        if ( NFC_TO_SELF_ACTION.equals( action ) ) {
-            result = intent.getByteArrayExtra( NFC_TO_SELF_DATA );
-        }
-
-        // Log.d( TAG, "getFromIntent() => %s", result );
-        return result;
-    }
-
-    public static void populateIntent( Context context, Intent intent,
-                                       byte[] data )
-    {
-        NetLaunchInfo nli = NetLaunchInfo.makeFrom( context, data );
-        if ( null != nli ) {
-            intent.setAction( NFC_TO_SELF_ACTION )
-                .putExtra( NFC_TO_SELF_DATA, data );
-        } else {
-            Assert.failDbg();
-        }
     }
 
     public static Dialog makeEnableNFCDialog( final Activity activity )
@@ -415,7 +387,7 @@ public class NFCUtils {
                     }
                     break;
                 case INVITE:
-                    GamesListDelegate.postNFCInvite( context, body );
+                    GamesListDelegate.postReceivedInvite( context, body );
                     break;
                 case REPLY:
                     switch( body[0] ) {

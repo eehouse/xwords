@@ -165,6 +165,7 @@ class Device():
     sTilesLeftTrayPat = re.compile('.*player \d+ now has (\d+) tiles')
     sRelayIDPat = re.compile('.*UPDATE games.*seed=(\d+),.*relayid=\'([^\']+)\'.*')
     sDevIDPat = re.compile('.*storing new devid: ([\da-fA-F]+).*')
+    sMQTTDevIDPat = re.compile('.*dvc_getMQTTDevID.*: generated id: ([\d[A-F]+).*')
     sConnPat = re.compile('.*linux_util_informMissing\(isServer.*nMissing=0\).*')
 
     sScoresDup = []
@@ -198,6 +199,8 @@ class Device():
         self.relayID = None
         self.inviteeDevID = None
         self.inviteeDevIDs = [] # only servers use this
+        self.inviteeMQTTDevID = None
+        self.inviteeMQTTDevIDs = []
         self.connected = False
         self.relaySeed = 0
         self.locked = False
@@ -261,6 +264,12 @@ class Device():
                     match = Device.sDevIDPat.match(line)
                     if match: self.inviteeDevID = int(match.group(1), 16)
 
+                if self.args.ADD_MQTT and not self.inviteeMQTTDevID:
+                    match = Device.sMQTTDevIDPat.match(line)
+                    if match:
+                        self.inviteeMQTTDevID = int(match.group(1), 16)
+                        # print('read mqtt devid: {:16X}'.format(self.inviteeMQTTDevID))
+
                 if not self.connected:
                     match = Device.sConnPat.match(line)
                     if match: self.connected = True
@@ -307,6 +316,18 @@ class Device():
                     args += [ '--force-invite' ]
                     for inviteeDevID in self.inviteeDevIDs:
                         args += ['--invitee-relayid', str(inviteeDevID)]
+
+        if self.args.ADD_MQTT:
+            if self.order == 1 and not self.connected:
+                for peer in self.peers:
+                    if peer.inviteeMQTTDevID and not peer == self:
+                        if not peer.inviteeMQTTDevID in self.inviteeMQTTDevIDs:
+                            self.inviteeMQTTDevIDs.append(peer.inviteeMQTTDevID)
+                if self.inviteeMQTTDevIDs:
+                    args += [ '--force-invite' ]
+                    for idid in self.inviteeMQTTDevIDs:
+                        asHexStr = '{:16X}'.format(idid)
+                        args += ['--invitee-mqtt-devid', asHexStr]
 
         self.proc = subprocess.Popen(args, stdout = subprocess.DEVNULL,
                                      stderr = subprocess.PIPE, universal_newlines = True)
@@ -449,6 +470,11 @@ def build_cmds(args):
                     PARAMS += [ '--force-invite' ]
                     for dev in range(2, NDEVS + 1):
                         PARAMS += [ '--invitee-sms-number', makeSMSPhoneNo(GAME, dev) ]
+
+            if args.ADD_MQTT:
+                PARAMS += [ '--mqtt-port', args.MQTT_PORT, '--mqtt-host', args.MQTT_HOST ]
+                if DEV == 1:
+                    PARAMS += [ '--force-invite' ]
 
             if args.UNDO_PCT > 0:
                 PARAMS += ['--undo-pct', args.UNDO_PCT]
@@ -755,6 +781,11 @@ def mkParser():
 
     parser.add_argument('--add-sms', dest = 'ADD_SMS', default = False, action = 'store_true')
     parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
+
+    parser.add_argument('--add-mqtt', dest = 'ADD_MQTT', default = False, action = 'store_true')
+    parser.add_argument('--mqtt-port', dest = 'MQTT_PORT', default = 1883 )
+    parser.add_argument('--mqtt-host', dest = 'MQTT_HOST', default = 'localhost' )
+
     parser.add_argument('--remove-relay', dest = 'ADD_RELAY', default = True, action = 'store_false')
 
     parser.add_argument('--core-pat', dest = 'CORE_PAT', default = os.environ.get('DISCON_COREPAT'),

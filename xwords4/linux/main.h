@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2013 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -51,7 +51,7 @@ typedef void (*SockReceiver)( void* closure, int socket );
 typedef void (*NewSocketProc)( void* closure, int newSock, int oldSock, 
                                SockReceiver proc, void* procClosure );
 
-typedef struct LaunchParams {
+typedef struct _LaunchParams {
 /*     CommPipeCtxt* pipe; */
     CurGameInfo pgi;
 
@@ -67,6 +67,7 @@ typedef struct LaunchParams {
     XP_U32 dbFileID;
 #endif
     void* relayConStorage;      /* opaque outside of relaycon.c */
+    void* mqttConStorage;
 #ifdef XWFEATURE_SMS
     void* smsStorage;
 #endif
@@ -107,7 +108,10 @@ typedef struct LaunchParams {
     XP_Bool skipGameOver;
     XP_Bool useMmap;
     XP_Bool closeStdin;
+
     XP_Bool useCurses;
+    void* appGlobals;           /* cursesmain or gtkmain sets this */
+
     XP_Bool useUdp;
     XP_Bool useHTTP;
     XP_Bool runSMSTest;
@@ -168,6 +172,12 @@ typedef struct LaunchParams {
             int port;
         } sms;
 #endif
+        struct {
+            MQTTDevID devID;
+            GSList* inviteeDevIDs;
+            const char* hostName;
+            int port;
+        } mqtt;
     } connInfo;
 
     union {

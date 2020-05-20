@@ -22,13 +22,9 @@
 #define _INVIT_H_
 
 // #include "comms.h"
+#include "nlityp.h"
 #include "xwstream.h"
 #include "game.h"
-
-#define MAX_GAME_NAME_LEN 64
-#define MAX_DICT_NAME_LEN 32
-
-typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
 
 /* InviteInfo
  *
@@ -36,49 +32,20 @@ typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
  * recipient has all it needs to create a game and connect back.
  */
 
-typedef struct _InviteInfo {
-    XP_U16 _conTypes;
-
-    XP_UCHAR gameName[MAX_GAME_NAME_LEN];
-    XP_UCHAR dict[MAX_DICT_NAME_LEN];
-    XP_LangCode lang;
-    XP_U8 forceChannel;
-    XP_U8 nPlayersT;
-    XP_U8 nPlayersH;
-    XP_Bool remotesAreRobots;
-    XP_Bool inDuplicateMode;
-
-    /* Relay */
-    XP_UCHAR room[MAX_INVITE_LEN + 1];
-    XP_U32 devID;               /* not used on android; remove?? */
-
-    /* BT */
-    XP_UCHAR btName[32];
-    XP_UCHAR btAddress[32];
-
-    // SMS
-    XP_UCHAR phone[32];
-    XP_Bool isGSM;
-    XP_OSType osType;
-    XP_U32 osVers;
-
-    XP_U32 gameID;
-    XP_UCHAR inviteID[32];
-} NetLaunchInfo;
-
 void
-nli_init( NetLaunchInfo* invit, const CurGameInfo* gi, const CommsAddrRec* addr,
+nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
           XP_U16 nPlayers, XP_U16 forceChannel );
 
 
-XP_Bool nli_makeFromStream( NetLaunchInfo* invit, XWStreamCtxt* stream );
-void nli_saveToStream( const NetLaunchInfo* invit, XWStreamCtxt* stream );
+XP_Bool nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream );
+void nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream );
 
-void nli_makeAddrRec( const NetLaunchInfo* invit, CommsAddrRec* addr );
+void nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr );
 
-void nli_setDevID( NetLaunchInfo* invit, XP_U32 devID );
-void nli_setInviteID( NetLaunchInfo* invit, const XP_UCHAR* inviteID );
-void nli_setGameName( NetLaunchInfo* invit, const XP_UCHAR* gameName );
+void nli_setDevID( NetLaunchInfo* nli, XP_U32 devID );
+void nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID );
+void nli_setGameName( NetLaunchInfo* nli, const XP_UCHAR* gameName );
+void nli_setMQTTDevID( NetLaunchInfo* nli, const MQTTDevID* mqttDevID );
 
 # ifdef DEBUG
 void logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine );

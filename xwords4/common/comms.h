@@ -22,6 +22,7 @@
 #define _COMMS_H_
 
 #include "comtypes.h"
+#include "commstyp.h"
 #include "mempool.h"
 #include "xwrelay.h"
 #include "server.h"
@@ -43,6 +44,7 @@ typedef enum {
     ,COMMS_CONN_SMS
     ,COMMS_CONN_P2P             /* a.k.a. Wifi direct */
     ,COMMS_CONN_NFC
+    ,COMMS_CONN_MQTT
 
     ,COMMS_CONN_NTYPES
 } CommsConnType;
@@ -66,56 +68,11 @@ typedef enum {
 # define XW_BT_NAME "CrossWords"
 #endif
 
-/* on Palm BtLibDeviceAddressType is a 48-bit quantity.  Linux's typeis the
-   same size.  Goal is something all platforms support */
-typedef struct XP_BtAddr { XP_U8 bits[6]; } XP_BtAddr;
-typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
-
 #ifdef COMMS_HEARTBEAT
 # define IF_CH(a) a,
 #else
 # define IF_CH(a)
 #endif
-
-#define MAX_HOSTNAME_LEN 63
-#define MAX_PHONE_LEN    31
-#define MAX_P2P_MAC_LEN 17
-
-typedef struct _CommsAddrRec {
-    XP_U16 _conTypes;
-
-    struct {
-        struct {
-            XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1];
-            XP_U32 ipAddr_ip;      /* looked up from above */
-            XP_U16 port_ip;
-        } ip;
-        struct {
-            XP_UCHAR invite[MAX_INVITE_LEN + 1]; /* room!!!! */
-            XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
-            XP_U32 ipAddr;      /* looked up from above */
-            XP_U16 port;
-            XP_Bool seeksPublicRoom;
-            XP_Bool advertiseRoom;
-        } ip_relay;
-        struct {
-            /* nothing? */
-            XP_UCHAR foo;       /* wince doesn't like nothing here */
-        } ir;
-        struct {
-            /* guests can browse for the host to connect to */
-            XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
-            XP_BtAddrStr btAddr;
-        } bt;
-        struct {
-            XP_UCHAR phone[MAX_PHONE_LEN + 1];
-            XP_U16   port;
-        } sms;
-        struct {
-            XP_UCHAR mac_addr[MAX_P2P_MAC_LEN + 1];
-        } p2p;
-    } u;
-} CommsAddrRec;
 
 typedef XP_S16 (*TransportSend)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
                                  const XP_UCHAR* msgNo,

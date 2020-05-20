@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4Deb"; -*- */
 /*
- * Copyright 2009 - 2018 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -45,6 +45,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NetLaunchInfo implements Serializable {
@@ -65,7 +66,10 @@ public class NetLaunchInfo implements Serializable {
     private static final String FORCECHANNEL_KEY = "fc";
     private static final String NAME_KEY = "nm";
     private static final String P2P_MAC_KEY = "p2";
+    private static final String MQTT_DEVID_KEY = "r2id";
     private static final String DUPMODE_KEY = "du";
+
+    private static final int EMPTY_SET = new CommsConnTypeSet().toInt();
 
     protected String gameName;
     protected String dict;
@@ -83,17 +87,18 @@ public class NetLaunchInfo implements Serializable {
     protected boolean isGSM;
     protected int osVers;
 
-    private int _conTypes;      // for syncing with the c version only!!
+    // MQTT
+    protected String mqttDevID;
+
+    private int _conTypes;
     private int gameID = 0;
-    private CommsConnTypeSet m_addrs;
     private boolean m_valid;
     private String inviteID;
     private boolean dupeMode;
 
     public NetLaunchInfo()
     {
-        m_addrs = new CommsConnTypeSet();
-        // Give it a random number. It may be overwritten, but so what.
+        _conTypes = EMPTY_SET;
         inviteID = GameUtils.formatGameID( Utils.nextRandomInt() );
     }
 
@@ -117,8 +122,9 @@ public class NetLaunchInfo implements Serializable {
         btName = bundle.getString( MultiService.BT_NAME );
         btAddress = bundle.getString( MultiService.BT_ADDRESS );
         p2pMacAddress = bundle.getString( MultiService.P2P_MAC_ADDRESS );
+        mqttDevID = bundle.getString( MultiService.MQTT_DEVID );
 
-        m_addrs = new CommsConnTypeSet( bundle.getInt( ADDRS_KEY ) );
+        _conTypes = bundle.getInt( ADDRS_KEY );
 
         Utils.testSerialization( this );
     }
@@ -183,14 +189,15 @@ public class NetLaunchInfo implements Serializable {
                     String val = data.getQueryParameter( ADDRS_KEY );
                     boolean hasAddrs = null != val;
                     if ( hasAddrs ) {
-                        m_addrs = new CommsConnTypeSet( Integer.decode( val ) );
+                        _conTypes = Integer.decode( val );
                     } else {
-                        m_addrs = new CommsConnTypeSet();
+                        _conTypes = EMPTY_SET;
                     }
 
                     List<CommsConnType> supported = CommsConnTypeSet.getSupported( context );
+                    CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );
                     for ( CommsConnType typ : supported ) {
-                        if ( hasAddrs && !m_addrs.contains( typ ) ) {
+                        if ( hasAddrs && !addrs.contains( typ ) ) {
                             continue;
                         }
                         boolean doAdd;
@@ -222,15 +229,20 @@ public class NetLaunchInfo implements Serializable {
                         case COMMS_CONN_NFC:
                             doAdd = true;
                             break;
+                        case COMMS_CONN_MQTT:
+                            mqttDevID = data.getQueryParameter( MQTT_DEVID_KEY );
+                            doAdd = !hasAddrs && null != mqttDevID;
+                            break;
                         default:
                             doAdd = false;
                             Log.d( TAG, "unexpected type: %s", typ );
                             Assert.failDbg();
                         }
                         if ( doAdd ) {
-                            m_addrs.add( typ );
+                            addrs.add( typ );
                         }
                     }
+                    _conTypes = addrs.toInt();
 
                     removeUnsupported( supported );
 
@@ -307,6 +319,9 @@ public class NetLaunchInfo implements Serializable {
             case COMMS_CONN_NFC:
                 addNFCInfo();
                 break;
+            case COMMS_CONN_MQTT:
+                addMQTTInfo();
+                break;
             default:
                 Assert.failDbg();
                 break;
@@ -316,12 +331,14 @@ public class NetLaunchInfo implements Serializable {
 
     public boolean contains( CommsConnType typ )
     {
-        return m_addrs.contains( typ );
+        return new CommsConnTypeSet( _conTypes ).contains( typ );
     }
 
     public void removeAddress( CommsConnType typ )
     {
-        m_addrs.remove( typ );
+        CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );
+        addrs.remove( typ );
+        _conTypes = addrs.toInt();
     }
 
     public String inviteID()
@@ -365,12 +382,12 @@ public class NetLaunchInfo implements Serializable {
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
         bundle.putString( MultiService.P2P_MAC_ADDRESS, p2pMacAddress );
         bundle.putInt( MultiService.FORCECHANNEL, forceChannel );
+        bundle.putString( MultiService.MQTT_DEVID, mqttDevID );
         if ( dupeMode ) {
             bundle.putBoolean( MultiService.DUPEMODE, true );
         }
 
-        int flags = m_addrs.toInt();
-        bundle.putInt( ADDRS_KEY, flags );
+        bundle.putInt( ADDRS_KEY, _conTypes );
     }
 
     @Override
@@ -391,14 +408,14 @@ public class NetLaunchInfo implements Serializable {
                 && TextUtils.equals( room, other.room )
                 && TextUtils.equals( btName, other.btName )
                 && TextUtils.equals( btAddress, other.btAddress )
+                && TextUtils.equals( mqttDevID, other.mqttDevID )
                 && TextUtils.equals( p2pMacAddress, other.p2pMacAddress )
                 && TextUtils.equals( phone, other.phone )
                 && isGSM == other. isGSM
                 && osVers == other.osVers
                 && _conTypes == other._conTypes
                 && gameID == other.gameID
-                && ((null == m_addrs ? (null == other.m_addrs)
-                     : m_addrs.equals(other.m_addrs)))
+                && _conTypes == other._conTypes
                 && m_valid == other.m_valid
                 && TextUtils.equals( inviteID, other.inviteID )
                 ;
@@ -411,7 +428,7 @@ public class NetLaunchInfo implements Serializable {
         String result = null;
         try {
             JSONObject obj = new JSONObject()
-                .put( ADDRS_KEY, m_addrs.toInt() )
+                .put( ADDRS_KEY, _conTypes )
                 .put( MultiService.LANG, lang )
                 .put( MultiService.DICT, dict )
                 .put( MultiService.GAMENAME, gameName )
@@ -426,22 +443,27 @@ public class NetLaunchInfo implements Serializable {
                 obj.put( MultiService.DUPEMODE, dupeMode );
             }
 
-            if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );
+            if ( addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                 obj.put( MultiService.ROOM, room )
                     .put( MultiService.INVITEID, inviteID );
             }
 
-            if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
+            if ( addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
                 obj.put( MultiService.BT_NAME, btName )
                     .put( MultiService.BT_ADDRESS, btAddress );
             }
-            if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+            if ( addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
                 obj.put( PHONE_KEY, phone )
                     .put( GSM_KEY, isGSM )
                     .put( OSVERS_KEY, osVers );
             }
-            if ( m_addrs.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+            if ( addrs.contains( CommsConnType.COMMS_CONN_P2P ) ) {
                 obj.put( P2P_MAC_KEY, p2pMacAddress );
+            }
+
+            if ( addrs.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
+                obj.put( MQTT_DEVID_KEY, mqttDevID );
             }
             result = obj.toString();
 
@@ -455,7 +477,8 @@ public class NetLaunchInfo implements Serializable {
     public CommsAddrRec makeAddrRec( Context context )
     {
         CommsAddrRec result = new CommsAddrRec();
-        for ( CommsConnType typ : m_addrs.getTypes() ) {
+        CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );
+        for ( CommsConnType typ : addrs.getTypes() ) {
             result.conTypes.add( typ );
             switch( typ ) {
             case COMMS_CONN_RELAY:
@@ -474,6 +497,9 @@ public class NetLaunchInfo implements Serializable {
                 break;
             case COMMS_CONN_NFC:
                 break;
+            case COMMS_CONN_MQTT:
+                result.setMQTTParams( mqttDevID );
+                break;
             default:
                 Assert.failDbg();
                 break;
@@ -490,8 +516,7 @@ public class NetLaunchInfo implements Serializable {
 
         int flags = json.optInt(ADDRS_KEY, -1);
         boolean hasAddrs = -1 != flags;
-        m_addrs = hasAddrs ?
-            new CommsConnTypeSet( flags ) : new CommsConnTypeSet();
+        _conTypes = hasAddrs ? flags : EMPTY_SET;
 
         lang = json.optInt( MultiService.LANG, -1 );
         forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
@@ -504,8 +529,9 @@ public class NetLaunchInfo implements Serializable {
         gameID = json.optInt( MultiService.GAMEID, 0 );
 
         // Try each type
+        CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );
         for ( CommsConnType typ : supported ) {
-            if ( hasAddrs && !m_addrs.contains( typ ) ) {
+            if ( hasAddrs && !addrs.contains( typ ) ) {
                 continue;
             }
             boolean doAdd;
@@ -533,16 +559,21 @@ public class NetLaunchInfo implements Serializable {
             case COMMS_CONN_NFC:
                 doAdd = NFCUtils.nfcAvail( context )[0];
                 break;
+            case COMMS_CONN_MQTT:
+                mqttDevID = json.optString( MQTT_DEVID_KEY );
+                doAdd = BuildConfig.OFFER_MQTT && null != mqttDevID;
+                break;
             default:
                 doAdd = false;
                 Assert.failDbg();
             }
             if ( doAdd ) {
-                m_addrs.add( typ );
+                addrs.add( typ );
             }
         }
 
         removeUnsupported( supported );
+        _conTypes = addrs.toInt();
 
         calcValid();
     }
@@ -554,7 +585,6 @@ public class NetLaunchInfo implements Serializable {
 
     public Uri makeLaunchUri( Context context )
     {
-        int addrs = m_addrs.toInt();
         String host = LocUtils.getString( context, R.string.invite_host );
         host = NetUtils.forceHost( host );
         Uri.Builder ub = new Uri.Builder()
@@ -566,7 +596,7 @@ public class NetLaunchInfo implements Serializable {
         appendInt( ub, HEREPLAYERS_KEY, nPlayersH );
         appendInt( ub, GID_KEY, gameID() );
         appendInt( ub, FORCECHANNEL_KEY, forceChannel );
-        appendInt( ub, ADDRS_KEY, addrs );
+        appendInt( ub, ADDRS_KEY, _conTypes );
         ub.appendQueryParameter( NAME_KEY, gameName );
         if ( dupeMode ) {
             appendInt( ub, DUPMODE_KEY, 1 );
@@ -576,21 +606,25 @@ public class NetLaunchInfo implements Serializable {
             ub.appendQueryParameter( WORDLIST_KEY, dict );
         }
 
-        if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+        CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );
+        if ( addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             ub.appendQueryParameter( ROOM_KEY, room );
             ub.appendQueryParameter( ID_KEY, inviteID );
         }
-        if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
+        if ( addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
             ub.appendQueryParameter( BTADDR_KEY, btAddress );
             ub.appendQueryParameter( BTNAME_KEY, btName );
         }
-        if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+        if ( addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             ub.appendQueryParameter( PHONE_KEY, phone );
             appendInt( ub, GSM_KEY, (isGSM? 1 : 0) );
             appendInt( ub, OSVERS_KEY, osVers );
         }
-        if ( m_addrs.contains( CommsConnType.COMMS_CONN_P2P ) ) {
+        if ( addrs.contains( CommsConnType.COMMS_CONN_P2P ) ) {
             ub.appendQueryParameter( P2P_MAC_KEY, p2pMacAddress );
+        }
+        if ( addrs.contains( CommsConnType.COMMS_CONN_MQTT ) ) {
+            ub.appendQueryParameter( MQTT_DEVID_KEY, mqttDevID );
         }
         Uri result = ub.build();
 
@@ -603,11 +637,18 @@ public class NetLaunchInfo implements Serializable {
         return result;
     }
 
+    private void add( CommsConnType typ )
+    {
+        CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );
+        addrs.add( typ );
+        _conTypes = addrs.toInt();
+    }
+
     public void addRelayInfo( String aRoom, String inviteID )
     {
         room = aRoom;
         inviteID = inviteID;
-        m_addrs.add( CommsConnType.COMMS_CONN_RELAY );
+        add( CommsConnType.COMMS_CONN_RELAY );
     }
 
     public void addBTInfo()
@@ -616,7 +657,7 @@ public class NetLaunchInfo implements Serializable {
         if ( null != got ) {
             btName = got[0];
             btAddress = got[1];
-            m_addrs.add( CommsConnType.COMMS_CONN_BT );
+            add( CommsConnType.COMMS_CONN_BT );
         } else {
             Log.w( TAG, "addBTInfo(): no BT info available" );
         }
@@ -631,19 +672,25 @@ public class NetLaunchInfo implements Serializable {
 
             osVers = Integer.valueOf( android.os.Build.VERSION.SDK );
 
-            m_addrs.add( CommsConnType.COMMS_CONN_SMS );
+            add( CommsConnType.COMMS_CONN_SMS );
         }
     }
 
     public void addP2PInfo( Context context )
     {
         p2pMacAddress = WiDirService.getMyMacAddress( context );
-        m_addrs.add( CommsConnType.COMMS_CONN_P2P );
+        add( CommsConnType.COMMS_CONN_P2P );
     }
 
     public void addNFCInfo()
     {
-        m_addrs.add( CommsConnType.COMMS_CONN_NFC );
+        add( CommsConnType.COMMS_CONN_NFC );
+    }
+
+    public void addMQTTInfo()
+    {
+        add( CommsConnType.COMMS_CONN_MQTT );
+        mqttDevID = XwJNI.dvc_getMQTTDevID( null );
     }
 
     public boolean isValid()
@@ -686,16 +733,6 @@ public class NetLaunchInfo implements Serializable {
         Assert.failDbg();
     }
 
-    public void freezeAddrs()
-    {
-        _conTypes = m_addrs.toInt();
-    }
-
-    public void unfreezeAddrs()
-    {
-        m_addrs = new CommsConnTypeSet( _conTypes, true );
-    }
-
     private boolean hasCommon()
     {
         return null != dict
@@ -706,20 +743,25 @@ public class NetLaunchInfo implements Serializable {
 
     private void removeUnsupported( List<CommsConnType> supported )
     {
-        for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+        CommsConnTypeSet addrs = new CommsConnTypeSet( _conTypes );// , true );
+        for ( Iterator<CommsConnType> iter = addrs.iterator();
               iter.hasNext(); ) {
-            if ( !supported.contains( iter.next() ) ) {
+            CommsConnType typ = iter.next();
+            if ( !supported.contains( typ ) ) {
+                Log.d( TAG, "removing %s", typ );
                 iter.remove();
             }
         }
+        _conTypes = addrs.toInt();
     }
 
     private void calcValid()
     {
-        boolean valid = hasCommon() && null != m_addrs;
+        boolean valid = hasCommon();
         // Log.d( TAG, "calcValid(%s); valid (so far): %b", this, valid );
         if ( valid ) {
-            for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+            for ( Iterator<CommsConnType> iter
+                      = new CommsConnTypeSet( _conTypes ).iterator();
                   valid && iter.hasNext(); ) {
                 CommsConnType typ = iter.next();
                 switch ( typ ) {
@@ -731,6 +773,9 @@ public class NetLaunchInfo implements Serializable {
                     break;
                 case COMMS_CONN_SMS:
                     valid = null != phone && 0 < osVers;
+                    break;
+                case COMMS_CONN_MQTT:
+                    valid = null != mqttDevID;
                     break;
                 }
             }

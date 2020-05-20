@@ -735,9 +735,10 @@ public class GameUtils {
         if ( null != message ) {
             Intent intent = new Intent();
             intent.setAction( Intent.ACTION_SEND );
-            String subject =
+            String subject = null != nli.room ?
                 LocUtils.getString( activity, R.string.invite_subject_fmt,
-                                    nli.room );
+                                    nli.room )
+                : LocUtils.getString( activity, R.string.invite_subject );
             intent.putExtra( Intent.EXTRA_SUBJECT, subject );
             intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
@@ -1322,6 +1323,9 @@ public class GameUtils {
                                 break;
                             case COMMS_CONN_P2P:
                                 WiDirService.gameDied( addr.p2p_addr, gameID );
+                                break;
+                            case COMMS_CONN_MQTT:
+                                MQTTUtils.gameDied( addr.mqtt_devID, gameID );
                                 break;
                             }
                         }

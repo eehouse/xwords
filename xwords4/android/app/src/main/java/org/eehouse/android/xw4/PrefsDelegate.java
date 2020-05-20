@@ -62,6 +62,9 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_disable_nag_solo,
         R.string.key_disable_relay,
         R.string.key_force_tablet,
+        R.string.key_mqtt_host,
+        R.string.key_mqtt_port,
+        R.string.key_mqtt_qos,
     };
     private static Map<String, Integer> s_keysHash = null;
 
@@ -235,6 +238,11 @@ public class PrefsDelegate extends DelegateBase
                 break;
             case R.string.key_force_tablet:
                 makeOkOnlyBuilder( R.string.after_restart ).show();
+                break;
+            case R.string.key_mqtt_host:
+            case R.string.key_mqtt_port:
+            case R.string.key_mqtt_qos:
+                MQTTUtils.onConfigChanged( m_activity );
                 break;
             default:
                 Assert.failDbg();

@@ -21,14 +21,8 @@
 #include "comtypes.h"
 #include "memstream.h"
 #include "xwstream.h"
-
-#ifdef XWFEATURE_DEVICE
-
-# define KEY_DEVSTATE PERSIST_KEY("devState")
-
-typedef struct _DevCtxt {
-    XP_U16 devCount;
-} DevCtxt;
+#include "strutils.h"
+#include "nli.h"
 
 static XWStreamCtxt*
 mkStream( XW_DUtilCtxt* dutil )
@@ -37,6 +31,13 @@ mkStream( XW_DUtilCtxt* dutil )
                                                 dutil_getVTManager(dutil) );
     return stream;
 }
+
+#ifdef XWFEATURE_DEVICE
+# define KEY_DEVSTATE PERSIST_KEY("devState")
+
+typedef struct _DevCtxt {
+    XP_U16 devCount;
+} DevCtxt;
 
 static DevCtxt*
 load( XW_DUtilCtxt* dutil, XWEnv xwe )
@@ -64,7 +65,7 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
 }
 
 void
-device_store( XW_DUtilCtxt* dutil, XWEnv xwe )
+dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
     DevCtxt* state = load( dutil, xwe );
@@ -77,3 +78,100 @@ device_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 }
 
 #endif
+
+#define MQTT_DEVID_KEY "mqtt_devid_key"
+
+void
+dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
+{
+    MQTTDevID tmp = 0;
+    XP_U16 len = sizeof(tmp);
+    dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, &len );
+    // XP_LOGFF( "len: %d; sizeof(tmp): %d", len, sizeof(tmp) );
+    if ( len != sizeof(tmp) ) { /* we have it!!! */
+        tmp = XP_RANDOM();
+        tmp <<= 32;
+        tmp |= XP_RANDOM();
+        dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
+#ifdef DEBUG
+        XP_UCHAR buf[32];
+        formatMQTTDevID( &tmp, buf, VSIZE(buf) );
+        /* This log statement is required by discon_ok2.py!!! (keep in sync) */
+        XP_LOGFF( "generated id: %s", buf );
+#endif
+    }
+    *devID = tmp;
+    // LOG_RETURNF( MQTTDevID_FMT, *devID );
+}
+
+typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
+
+void
+dvc_makeMQTTInvite( XWStreamCtxt* stream, const NetLaunchInfo* nli )
+{
+    stream_putU8( stream, CMD_INVITE );
+    nli_saveToStream( nli, stream );
+}
+
+static void
+addCmdAddrAndGameID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd, XP_U32 gameID,
+                     XWStreamCtxt* stream)
+{
+    stream_putU8( stream, cmd );
+
+    MQTTDevID myID;
+    dvc_getMQTTDevID( dutil, xwe, &myID );
+    stream_putBytes( stream, &myID, sizeof(myID) );
+
+    stream_putU32( stream, gameID );
+}
+
+void
+dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
+                     XP_U32 gameID, const XP_U8* buf, XP_U16 len )
+{
+    addCmdAddrAndGameID( dutil, xwe, CMD_MSG, gameID, stream);
+    stream_putBytes( stream, buf, len );
+}
+
+void
+dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
+                        XWStreamCtxt* stream, XP_U32 gameID )
+{
+    addCmdAddrAndGameID( dutil, xwe, CMD_DEVGONE, gameID, stream);
+}
+
+void
+dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
+{
+    XWStreamCtxt* stream = mkStream( dutil );
+    stream_putBytes( stream, buf, len );
+
+    MQTTCmd cmd = stream_getU8( stream );
+    switch ( cmd ) {
+    case CMD_INVITE: {
+        NetLaunchInfo nli = {0};
+        if ( nli_makeFromStream( &nli, stream ) ) {
+            dutil_onInviteReceived( dutil, xwe, &nli );
+        }
+    }
+        break;
+    case CMD_DEVGONE:
+    case CMD_MSG: {
+        CommsAddrRec from = {0};
+        addr_addType( &from, COMMS_CONN_MQTT );
+        stream_getBytes( stream, &from.u.mqtt.devID, sizeof(from.u.mqtt.devID) );
+        XP_U32 gameID = stream_getU32( stream );
+        if ( CMD_MSG == cmd ) {
+            dutil_onMessageReceived( dutil, xwe, gameID, &from, stream );
+        } else if ( CMD_DEVGONE == cmd ) {
+            dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
+        }
+    }
+        break;
+    default:
+        XP_LOGFF( "unknown command %d; dropping message", cmd );
+        XP_ASSERT(0);
+    }
+    stream_destroy( stream, xwe );
+}

@@ -25,6 +25,7 @@
 #include "linuxmain.h"
 #include "linuxutl.h"
 #include "relaycon.h"
+#include "mqttcon.h"
 #include "cursesask.h"
 #include "cursesmenu.h"
 #include "cursesletterask.h"
@@ -161,7 +162,8 @@ inviteIdle( gpointer data )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
     LaunchParams* params = bGlobals->cGlobals.params;
     if ( !!params->connInfo.relay.inviteeRelayIDs
-         || !!params->connInfo.sms.inviteePhones ) {
+         || !!params->connInfo.sms.inviteePhones
+         || !!params->connInfo.mqtt.inviteeDevIDs ) {
         handleInvite( bGlobals, 0 );
     }
     return FALSE;
@@ -1223,7 +1225,7 @@ handleReplace( void* closure, int XP_UNUSED(key) )
 
 static bool
 inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
-            bool useRelay )
+            CommsConnType typ )
 {
     bool haveAddressees = !!invitees;
     if ( haveAddressees ) {
@@ -1235,13 +1237,30 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* addr, GSList* invitees,
                       nPlayersH, forceChannel, ii );
             NetLaunchInfo nli = {0};
             nli_init( &nli, cGlobals->gi, addr, nPlayersH, forceChannel );
-            if ( useRelay ) {
+            switch ( typ ) {
+            case COMMS_CONN_RELAY: {
                 uint64_t inviteeRelayID = (uint64_t)g_slist_nth_data( invitees, ii );
                 relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
-            } else {
+            }
+                break;
+            case COMMS_CONN_SMS: {
                 const gchar* inviteePhone = (const gchar*)g_slist_nth_data( invitees, ii );
                 linux_sms_invite( params, &nli, inviteePhone,
                                   params->connInfo.sms.port );
+            }
+                break;
+            case COMMS_CONN_MQTT: {
+                MQTTDevID devID;
+                const gchar* str = g_slist_nth_data( invitees, ii );
+                if ( strToMQTTCDevID( str, &devID ) ) {
+                    mqttc_invite( params, &nli, &devID );
+                } else {
+                    XP_LOGFF( "unable to convert devid %s", str );
+                }
+            }
+                break;
+            default:
+                XP_ASSERT(0);
             }
         }
     }
@@ -1270,20 +1289,24 @@ handleInvite( void* closure, int XP_UNUSED(key) )
         /* Invite first based on an invitee provided. Otherwise, fall back to
            doing a send-to-self. Let the recipient code reject a duplicate if
            the user so desires. */
-    } else if ( inviteList( cGlobals, &addr, params->connInfo.sms.inviteePhones, false ) ) {
+    } else if ( inviteList( cGlobals, &addr, params->connInfo.sms.inviteePhones, COMMS_CONN_SMS ) ) {
         /* do nothing */
-    } else if ( inviteList( cGlobals, &addr, params->connInfo.relay.inviteeRelayIDs, true ) ) {
+    } else if ( inviteList( cGlobals, &addr, params->connInfo.relay.inviteeRelayIDs, COMMS_CONN_RELAY ) ) {
+        /* do nothing */
+    } else if ( inviteList( cGlobals, &addr, params->connInfo.mqtt.inviteeDevIDs, COMMS_CONN_MQTT ) ) {
         /* do nothing */
     /* Try sending to self, using the phone number or relayID of this device */
     } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) {
         linux_sms_invite( params, &nli, addr.u.sms.phone, addr.u.sms.port );
+    } else if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
+        mqttc_invite( params, &nli, mqttc_getDevID( params ) );
     } else if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
         XP_U32 relayID = linux_getDevIDRelay( params );
         if ( 0 != relayID ) {
             relaycon_invite( params, relayID, NULL, &nli );
         }
     } else {
-        ca_inform( bGlobals->boardWin, "Cannot invite via relayID or by \"sms phone\"." );
+        ca_inform( bGlobals->boardWin, "Cannot invite via relayID, MQTT or by \"sms phone\"." );
     }
     LOG_RETURNF( "%s", "TRUE" );
     return XP_TRUE;

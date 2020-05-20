@@ -27,9 +27,6 @@
 #include "draw.h"
 #include "xwstream.h"
 
-/* typedef struct BoardVTable { */
-/* } BoardVTable; */
-
 #ifdef CPLUS
 extern "C" {
 #endif

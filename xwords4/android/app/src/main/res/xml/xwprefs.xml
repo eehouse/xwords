@@ -456,6 +456,26 @@
           android:defaultValue="10998"
           android:numeric="decimal"
           />
+
+      <org.eehouse.android.xw4.XWEditTextPreference
+          android:key="@string/key_mqtt_host"
+          android:title="@string/mqtt_host"
+          android:defaultValue="@string/default_host"
+          />
+      <org.eehouse.android.xw4.XWEditTextPreference
+          android:key="@string/key_mqtt_port"
+          android:title="@string/mqtt_port"
+          android:defaultValue="1883"
+          android:numeric="decimal"
+          />
+      <org.eehouse.android.xw4.XWListPreference
+          android:key="@string/key_mqtt_qos"
+          android:title="@string/mqtt_qos"
+          android:entries="@array/mqtt_qos_values"
+          android:entryValues="@array/mqtt_qos_values"
+          android:defaultValue="2"
+          />
+
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/pref_group_sms_title"

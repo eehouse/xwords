@@ -101,6 +101,8 @@ public class XWApp extends Application
         NBSProxy.register( this, mPort, BuildConfig.APPLICATION_ID, this );
 
         DupeModeTimer.init( this );
+
+        MQTTUtils.init( this );
     }
 
     @OnLifecycleEvent(ON_ANY)
@@ -109,11 +111,15 @@ public class XWApp extends Application
         Log.d( TAG, "onAny(%s)", event );
         switch( event ) {
         case ON_RESUME:
+            MQTTUtils.onResume( this );
             // Do here what checkForMoves does
             if ( null != DBUtils.getRelayIDs( this, null ) ) {
                 RelayService.timerFired( this );
             }
             GameUtils.resendAllIf( this, null );
+            break;
+        case ON_PAUSE:
+            MQTTUtils.onPause();
             break;
         }
     }

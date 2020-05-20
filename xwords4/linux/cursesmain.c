@@ -64,6 +64,7 @@
 #include "linuxudp.h"
 #include "gamesdb.h"
 #include "relaycon.h"
+#include "mqttcon.h"
 #include "smsproto.h"
 #include "device.h"
 #include "cursesmenu.h"
@@ -1152,10 +1153,11 @@ onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
 /* } */
 #endif
 
-static void
-inviteReceivedCurses( CursesAppGlobals* aGlobals, const NetLaunchInfo* invite,
+void
+inviteReceivedCurses( void* closure, const NetLaunchInfo* invite,
                       const CommsAddrRec* returnAddr )
 {
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     sqlite3_int64 rowids[1];
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
@@ -1176,7 +1178,7 @@ inviteReceivedCurses( CursesAppGlobals* aGlobals, const NetLaunchInfo* invite,
 }
 
 static void
-relayInviteReceivedCurses( void* closure, NetLaunchInfo* invite )
+relayInviteReceivedCurses( void* closure, const NetLaunchInfo* invite )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     CommsAddrRec addr = {0};
@@ -1226,6 +1228,21 @@ smsMsgReceivedCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID,
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     cb_feedGame( aGlobals->cbState, gameID, buf, len, from );
+}
+
+void
+mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,
+                       XP_U32 gameID, const XP_U8* buf, XP_U16 len )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    cb_feedGame( aGlobals->cbState, gameID, buf, len, from );
+}
+
+void
+gameGoneCurses( void* XP_UNUSED(closure), const CommsAddrRec* XP_UNUSED(from),
+                XP_U32 XP_UNUSED_DBG(gameID) )
+{
+    XP_LOGFF( "(gameID=%d)", gameID );
 }
 
 static void
@@ -1401,6 +1418,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 {
     memset( &g_globals, 0, sizeof(g_globals) );
     g_globals.cag.params = params;
+    params->appGlobals = &g_globals;
 
     initCurses( &g_globals );
     if ( !params->closeStdin ) {
@@ -1494,6 +1512,8 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
         linux_doInitialReg( params, idIsNew );
     }
 
+    mqttc_init( params );
+
 #ifdef XWFEATURE_SMS
     gchar* myPhone = NULL;
     XP_U16 myPort = 0;
@@ -1535,12 +1555,13 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     endwin();
 
-    device_store( params->dutil, NULL_XWE );
+    dvc_store( params->dutil, NULL_XWE );
 
     if ( params->useUdp ) {
         relaycon_cleanup( params );
     }
 
     linux_sms_cleanup( params );
+    mqttc_cleanup( params );
 } /* cursesmain */
 #endif /* PLATFORM_NCURSES */

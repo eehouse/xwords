@@ -29,6 +29,7 @@
 #include "linuxmain.h"
 #include "linuxutl.h"
 #include "relaycon.h"
+#include "mqttcon.h"
 #include "linuxsms.h"
 #include "gtkask.h"
 #include "device.h"
@@ -502,6 +503,13 @@ setWindowTitle( GtkAppGlobals* apg )
     len = strlen( title );
     snprintf( &title[len], VSIZE(title) - len, " (relayid: %d)", relayID );
 #endif
+    len = strlen( title );
+    MQTTDevID devID;
+    dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
+    XP_UCHAR didBuf[32];
+    snprintf( &title[len], VSIZE(title) - len, " (mqtt: %s)",
+              formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ) );
+
     gtk_window_set_title( GTK_WINDOW(window), title );
 }
 
@@ -536,8 +544,17 @@ handle_relayid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
     XP_U32 relayID = linux_getDevIDRelay( params );
     gchar str[32];
     snprintf( &str[0], VSIZE(str), "%d", relayID );
-    GtkClipboard *clipboard = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
+    GtkClipboard* clipboard = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
     gtk_clipboard_set_text( clipboard, str, strlen(str) );
+}
+
+static void
+handle_mqttid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    LaunchParams* params = apg->cag.params;
+    const gchar* devIDStr = mqttc_getDevIDStr( params );
+    GtkClipboard* clipboard = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
+    gtk_clipboard_set_text( clipboard, devIDStr, strlen(devIDStr) );
 }
 
 static void
@@ -573,6 +590,8 @@ makeGamesWindow( GtkAppGlobals* apg )
     }
     (void)createAddItem( netMenu, "copy relayid",
                          (GCallback)handle_relayid_to_clip, apg );
+    (void)createAddItem( netMenu, "copy mqtt devid",
+                         (GCallback)handle_mqttid_to_clip, apg );
     gtk_widget_show( menubar );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
 
@@ -707,8 +726,8 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* invite,
     gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
 }
 
-static void
-relayInviteReceived( void* closure, NetLaunchInfo* invite )
+void
+relayInviteReceivedGTK( void* closure, const NetLaunchInfo* invite )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
 
@@ -795,9 +814,9 @@ smsInviteReceived( void* closure, const NetLaunchInfo* nli,
     gameFromInvite( apg, nli, returnAddr );
 }
 
-static void
-smsMsgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID, 
-                   const XP_U8* buf, XP_U16 len )
+void
+msgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
+                const XP_U8* buf, XP_U16 len )
 {
     LOG_FUNC();
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
@@ -807,9 +826,22 @@ smsMsgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
     XP_LOGF( "%s: found %d rows for gameID %d", __func__, nRowIDs, gameID );
-    for ( int ii = 0; ii < nRowIDs; ++ii ) {
-        feedBufferGTK( apg, rowids[ii], buf, len, from );
+    if ( 0 == nRowIDs ) {
+        mqttc_notifyGameGone( params, &from->u.mqtt.devID, gameID );
+    } else {
+        for ( int ii = 0; ii < nRowIDs; ++ii ) {
+            feedBufferGTK( apg, rowids[ii], buf, len, from );
+        }
     }
+}
+
+void
+gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    gchar buf[64];
+    snprintf( buf, VSIZE(buf), "game %d has been deleted on a remote device", gameID );
+    gtktell( apg->window, buf );
 }
 
 static gboolean
@@ -872,6 +904,7 @@ int
 gtkmain( LaunchParams* params )
 {
     GtkAppGlobals apg = {0};
+    params->appGlobals = &apg;
 
     g_globals_for_signal = &apg;
 
@@ -896,7 +929,7 @@ gtkmain( LaunchParams* params )
                 .msgNoticeReceived = gtkNoticeRcvd,
                 .devIDReceived = gtkDevIDReceived,
                 .msgErrorMsg = gtkErrorMsgRcvd,
-                .inviteReceived = relayInviteReceived,
+                .inviteReceived = relayInviteReceivedGTK,
             };
 
             relaycon_init( params, &procs, &apg, 
@@ -904,6 +937,8 @@ gtkmain( LaunchParams* params )
                            params->connInfo.relay.defaultSendPort );
 
             linux_doInitialReg( params, idIsNew );
+
+            mqttc_init( params );
         }
 
 #ifdef XWFEATURE_SMS
@@ -912,7 +947,7 @@ gtkmain( LaunchParams* params )
         if ( parseSMSParams( params, &myPhone, &myPort ) ) {
             SMSProcs smsProcs = {
                 .inviteReceived = smsInviteReceived,
-                .msgReceived = smsMsgReceivedGTK,
+                .msgReceived = msgReceivedGTK,
             };
             linux_sms_init( params, myPhone, myPort, &smsProcs, &apg );
         } else {
@@ -933,13 +968,14 @@ gtkmain( LaunchParams* params )
     }
 
     gtk_main();
-    device_store( params->dutil, NULL_XWE );
+    dvc_store( params->dutil, NULL_XWE );
     /* closeGamesDB( params->pDb ); */
     /* params->pDb = NULL; */
     relaycon_cleanup( params );
 #ifdef XWFEATURE_SMS
     linux_sms_cleanup( params );
 #endif
+    mqttc_cleanup( params );
     return 0;
 } /* gtkmain */
 
