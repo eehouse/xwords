@@ -327,13 +327,22 @@ public class GameListItem extends LinearLayout
                 R.drawable.ic_multigame : R.drawable.ic_sologame;
             m_gameTypeImage.setImageResource( iconID );
 
-            boolean hasChat = summary.isMultiGame();
-            if ( hasChat ) {
+            // Let's use the chat-icon space for an ALERT icon when we're
+            // quarantined. Not ready for non-debug use though, as it shows up
+            // temporarily after every game closes because an *already-open*
+            // game always tests as not safe-to-open.
+            boolean doShow = false;
+            boolean quarantined = (BuildConfig.DEBUG || !BuildConfig.IS_TAGGED_BUILD)
+                && !Quarantine.safeToOpen( m_rowid );
+            ImageView iv = (ImageView)findViewById( R.id.has_chat_marker );
+            if ( quarantined ) {
+                iv.setImageResource( android.R.drawable.stat_sys_warning );
+                doShow = true;
+            } else if ( summary.isMultiGame() ) {
                 int flags = DBUtils.getMsgFlags( m_context, m_rowid );
-                hasChat = 0 != (flags & GameSummary.MSG_FLAGS_CHAT);
+                doShow = 0 != (flags & GameSummary.MSG_FLAGS_CHAT);
             }
-            findViewById( R.id.has_chat_marker )
-                .setVisibility( hasChat ? View.VISIBLE : View.GONE );
+            iv.setVisibility( doShow ? View.VISIBLE : View.GONE );
 
             if ( XWPrefs.moveCountEnabled( m_context ) ) {
                 TextView tv = (TextView)findViewById( R.id.n_pending );
