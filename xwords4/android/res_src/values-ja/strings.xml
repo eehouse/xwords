@@ -99,10 +99,10 @@
     <string name="player_edit_title">プレイヤーを編集</string>
     <string name="remote_label">他のデバイスのプレイヤー</string>
     <string name="player_label">名前:</string>
-    <string name="dict_lang_label_fmt">単語リスト (%1$s に)</string>
+    <string name="dict_lang_label_fmt">単語リスト (%1$s)</string>
     <string name="dicts_list_prompt_fmt">インストールされている単語リスト (%1$s に)</string>
     <string name="robot_label">ロボット プレイヤー</string>
-    <string name="password_label">パスワード</string>
+    <string name="password_label">パスワード:</string>
     <string name="button_trade_commit">取引をコミット</string>
     <string name="button_trade_cancel">取引をキャンセル</string>
     <string name="entering_trade">タイルをタップして選択…</string>
@@ -490,9 +490,9 @@
 \n今すぐ、または後で、Bluetooth を有効にできます。</string>
     <string name="enable_nfc">このデバイスで NFC がオフになっています。Android の設定アプリを使用するとオンにできます。</string>
     <string name="sms_ready_text">受信側のデバイスを今すぐタップしてください</string>
-    <string name="bt_no_devs">現在、対の Bluetooth デバイスはありません。Android の設定パネルを開いて、1 つまたは複数を追加しますか\?
-\n
-\n(ペアにするデバイスでもそれを開く必要があります)</string>
+    <string name="bt_no_devs">現在、ペアの Bluetooth デバイスはありません (または Bluetooth がオフになっています)。Android の設定パネルを開いて、追加しますか\? 
+\n 
+\n(ペアにするデバイスでも設定パネルを開く必要があります)</string>
     <string name="app_not_found_fmt">デバイス %1$s のクロスワードに Bluetooth で接続できません。デバイスが Bluetooth の範囲内にあること、クロスワードがインストールされていることを確認してください。</string>
     <string name="new_game">1 デバイスの新しいゲーム</string>
     <string name="nplayers_prompt">このデバイスの番号</string>
@@ -982,10 +982,10 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="title_enable_stallnotify">停止したネットワーク通知を表示</string>
     <string name="summary_enable_stallnotify">Android が招待の発信や移動を処理するのが遅いときに通知します</string>
     <string name="notify_stall_title">メッセージの送信が停止しています</string>
-    <string name="notify_stall_body_fmt">%1$s: %2$d 秒間メッセージを 送信できませんでした。
-\n
-\n再度発生する場合は、開発者ログとデバイスに関する情報をメールで送ってください。
-\n
+    <string name="notify_stall_body_fmt">%1$s (その他\?) %2$d 秒間メッセージを 送信できませんでした。 
+\n 
+\n再度発生する場合は、開発者ログとデバイスに関する情報をメールで送ってください。 
+\n 
 \nこのメッセージは、最大 %3$d 分に 1 回表示されます。</string>
     <string name="sms_banned_ok_only">Google Play バージョンのクロスワードは、データ SMS 経由で招待やプレイできなくなりました。</string>
     <string name="button_more_info">続きを読む</string>
@@ -1055,4 +1055,17 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="history_pause_fmt">一時停止：%1$s。</string>
     <string name="history_msg_fmt">メッセージ: %1$s。</string>
     <string name="history_autopause">自動一時停止。</string>
+    <string name="logstore_clear_confirm">デバッグログを消去しますか？この操作は元に戻すことはできません。</string>
+    <string name="logstore_cleared_fmt">%1$d ログエントリーを削除しました</string>
+    <string name="logstore_notdumped">ログの書き込みができません</string>
+    <string name="logstore_dumped_fmt">ログをファイル %1$s に書き込みました</string>
+    <string name="gamel_menu_logstore_dump">保存されたログをファイルに書き込む</string>
+    <string name="gamel_menu_logstore_clear">保存されたログを消去する</string>
+    <string name="gamel_menu_logstore_off">ログの保存を無効にする</string>
+    <string name="gamel_menu_logstore_on">ログの保存を有効にする</string>
+    <string name="gamel_menu_logs">デバッグログ</string>
+    <string name="word_blocked_by_phony">単語 %1$s が単語リスト %2$s 内に見つかりません。</string>
+    <string name="unsafe_open_disregard">とにかく開く</string>
+    <string name="unsafe_open_warning">このゲームは最近 CrossWords がクラッシュする原因となっており、破損している可能性があります。開くとまたクラッシュするかもしれません。とりあえず開いてみますか？</string>
+    <string name="list_item_markbad">破損としてマーク</string>
 </resources>
