@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 1997 - 2020 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -58,6 +58,8 @@ typedef struct _XP_Bitmaps {
     XP_Bitmap bmps[2];      /* 2 is private, may change */
 } XP_Bitmaps;
 
+#define HEADERFLAGS_DUPS_SUPPORTED_BIT 0x0001
+
 struct DictionaryCtxt {
     void (*destructor)( DictionaryCtxt* dict, XWEnv xwe );
 
@@ -94,6 +96,7 @@ struct DictionaryCtxt {
     XP_LangCode langCode;
 
     XP_U16 refCount;
+    XP_U16 headerFlags;
     XP_U8 nFaces;
     XP_U8 nodeSize;
     XP_Bool is_4_byte;
@@ -177,7 +180,8 @@ XP_U16 dict_numTiles( const DictionaryCtxt* ctxt, Tile tile );
 XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 
 XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
-                           XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize );
+                           XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize,
+                           const XP_UCHAR* delim );
 const XP_UCHAR* dict_getTileString( const DictionaryCtxt* ctxt, Tile tile );
 const XP_UCHAR* dict_getNextTileString( const DictionaryCtxt* ctxt, Tile tile,
                                         const XP_UCHAR* cur );
@@ -186,8 +190,9 @@ const XP_UCHAR* dict_getLangName(const DictionaryCtxt* ctxt );
 
 XP_Bool dict_isUTF8( const DictionaryCtxt* ctxt );
 
-XP_Bool dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* key,
-                             Tile* tiles, XP_U16* nTiles );
+typedef XP_Bool (*OnFoundTiles)(void* closure, const Tile* tiles, int len);
+void dict_tilesForString( const DictionaryCtxt* dict, const XP_UCHAR* key,
+                          OnFoundTiles proc, void* closure );
 
 XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
 void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 
@@ -198,6 +203,7 @@ XP_U32 dict_getWordCount( const DictionaryCtxt* dict );
 
 const XP_UCHAR* dict_getDesc( const DictionaryCtxt* dict );
 const XP_UCHAR* dict_getMd5Sum( const DictionaryCtxt* dict );
+XP_Bool dict_hasDuplicates( const DictionaryCtxt* dict );
 
 void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream );

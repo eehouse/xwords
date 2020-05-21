@@ -63,19 +63,21 @@ typedef struct _LengthsArray {
     XP_U32 lens[MAX_COLS_DICT+1];
 } LengthsArray;
 
-void dict_initIter( DictIter* iter, const DictionaryCtxt* dict, 
-                    XP_U16 min, XP_U16 max );
-XP_U32 dict_countWords( const DictIter* iter, LengthsArray* lens );
-void dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data );
-XP_Bool dict_firstWord( DictIter* iter );
-XP_Bool dict_lastWord( DictIter* iter );
-XP_Bool dict_getNextWord( DictIter* iter );
-XP_Bool dict_getPrevWord( DictIter* iter );
-XP_Bool dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth, 
-                         const IndexData* data );
-void dict_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen );
-XP_S16 dict_findStartsWith( DictIter* iter, const XP_UCHAR* prefix );
-DictPosition dict_getPosition( const DictIter* iter );
+void di_initIter( DictIter* iter, const DictionaryCtxt* dict,
+                  XP_U16 min, XP_U16 max );
+XP_U32 di_countWords( const DictIter* iter, LengthsArray* lens );
+void di_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data );
+XP_Bool di_firstWord( DictIter* iter );
+XP_Bool di_lastWord( DictIter* iter );
+XP_Bool di_getNextWord( DictIter* iter );
+XP_Bool di_getPrevWord( DictIter* iter );
+XP_Bool di_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
+                       const IndexData* data );
+void di_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
+                      const XP_UCHAR* delim );
+XP_S16 di_findStartsWith( DictIter* iter, const Tile* prefix, XP_U16 nTiles );
+void di_stringToTiles( const XP_UCHAR* str, Tile out[], XP_U16* nTiles );
+DictPosition di_getPosition( const DictIter* iter );
 #ifdef CPLUS
 }
 #endif

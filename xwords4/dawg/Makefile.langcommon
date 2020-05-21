@@ -299,7 +299,12 @@ $(XWLANG)%_md5sum.bin:
 		dawg$(XWLANG)$*_*.bin | md5sum | awk '{print $$1}' | tr -d '\n' > $@
 	perl -e "print pack(\"c\",0)" >> $@
 
-$(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_note.bin $(XWLANG)%_md5sum.bin
+$(XWLANG)%_headerFlags.bin:
+	[ -n "$(ALLOWS_DUPLICATES)" ] && FLAGS=1 || FLAGS=0; \
+	perl -e "print pack(\"n\",$$FLAGS)" > $@
+
+$(XWLANG)%_newheader.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_note.bin \
+		$(XWLANG)%_md5sum.bin $(XWLANG)%_headerFlags.bin
 	SIZ=0; \
 	for FILE in $+; do \
 		SIZ=$$(($$SIZ + $$(ls -l $$FILE | awk '{print $$5}'))); \

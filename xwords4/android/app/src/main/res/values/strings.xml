@@ -2548,4 +2548,7 @@
     <!-- Debug-build-only question asked to confirm deletion of saved logs -->
     <string name="logstore_clear_confirm">Are you sure you want to
     erase your debug logs? This action cannot be undone.</string>
+
+    <string name="pick_tiles_title">Pick a tile \"spelling\"</string>
+    <string name="no_tiles_exist">\"%1$s\" cannot be spelled with tiles in %2$s.</string>
 </resources>

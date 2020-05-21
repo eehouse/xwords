@@ -196,57 +196,6 @@ findStartsWithTiles( DictIter* iter, const Tile* tiles, XP_U16 nTiles )
     return 0 == nTiles;
 }
 
-static XP_S16
-findStartsWithChars( DictIter* iter, const XP_UCHAR* chars, XP_U16 charsOffset, 
-                     array_edge* edge, XP_U16 nTilesUsed )
-{
-    XP_S16 result = -1;
-    XP_U16 charsLen = XP_STRLEN( &chars[charsOffset] );
-    if ( NULL == edge ) {
-        if ( 0 == charsLen ) {
-            iter->nEdges = nTilesUsed;
-            result = charsOffset;
-        } 
-    } else if ( 0 == charsLen ) {
-        iter->nEdges = nTilesUsed;
-        result = charsOffset;
-    } else {
-        const DictionaryCtxt* dict = iter->dict;
-        XP_U16 nodeSize = dict->nodeSize;
-        for ( ; ; ) {       /* for all the tiles */
-            Tile tile = EDGETILE( dict, edge );
-            const XP_UCHAR* facep = NULL;
-            for ( ; ; ) {       /* for each string that tile can be */
-                facep = dict_getNextTileString( dict, tile, facep );
-                if ( NULL == facep ) {
-                    break;
-                }
-                XP_U16 faceLen = XP_STRLEN( facep );
-                if ( faceLen > charsLen ) {
-                    faceLen = charsLen;
-                } 
-                if ( 0 == XP_STRNCMP( facep, &chars[charsOffset], faceLen ) ) {
-                    XP_S16 newOffset = 
-                        findStartsWithChars( iter, chars, 
-                                             charsOffset + faceLen, 
-                                             dict_follow( dict, edge ), 
-                                             nTilesUsed + 1 );
-                    if ( result < newOffset ) {
-                        iter->edges[nTilesUsed] = edge;
-                        result = newOffset;
-                    }
-                    break;
-                }
-            }
-            if ( IS_LAST_EDGE( dict, edge ) ) {
-                break;
-            }
-            edge += nodeSize;
-        }
-    }
-    return result;
-}
-
 static XP_Bool
 startsWith( const DictIter* iter, const Tile* tiles, XP_U16 nTiles )
 {
@@ -282,15 +231,15 @@ wordsEqual( const DictIter* word1, const DictIter* word2 )
 }
 
 static void 
-dict_initIterFrom( DictIter* dest, const DictIter* src )
+initIterFrom( DictIter* dest, const DictIter* src )
 {
-    dict_initIter( dest, src->dict,
+    di_initIter( dest, src->dict,
 #ifdef XWFEATURE_WALKDICT_FILTER
-                   src->min, src->max 
+                 src->min, src->max
 #else
-                   0, 0
+                 0, 0
 #endif
-                   );
+                 );
 }
 
 static XP_Bool
@@ -307,10 +256,10 @@ firstWord( DictIter* iter )
 }
 
 XP_U32
-dict_countWords( const DictIter* iter, LengthsArray* lens )
+di_countWords( const DictIter* iter, LengthsArray* lens )
 {
     DictIter counter;
-    dict_initIterFrom( &counter, iter );
+    initIterFrom( &counter, iter );
 
     if ( NULL != lens ) {
         XP_MEMSET( lens, 0, sizeof(*lens) );
@@ -333,8 +282,8 @@ dict_countWords( const DictIter* iter, LengthsArray* lens )
 #define ASSERT_INITED( iter ) XP_ASSERT( (iter)->guard == GUARD_VALUE )
 
 void 
-dict_initIter( DictIter* iter, const DictionaryCtxt* dict,
-               XP_U16 min, XP_U16 max )
+di_initIter( DictIter* iter, const DictionaryCtxt* dict,
+             XP_U16 min, XP_U16 max )
 {
     XP_MEMSET( iter, 0, sizeof(*iter) );
     iter->dict = dict;
@@ -395,7 +344,8 @@ placeWordClose( DictIter* iter, const DictPosition position, XP_U16 depth,
 } /* placeWordClose */
 
 static void
-iterToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
+iterToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
+              const XP_UCHAR* delim )
 {
     XP_U16 ii;
     XP_U16 nEdges = iter->nEdges;
@@ -403,7 +353,7 @@ iterToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
     for ( ii = 0; ii < nEdges; ++ii ) {
         tiles[ii] = EDGETILE( iter->dict, iter->edges[ii] );
     }
-    (void)dict_tilesToString( iter->dict, tiles, nEdges, buf, buflen );
+    (void)dict_tilesToString( iter->dict, tiles, nEdges, buf, buflen, delim );
 }
 
 #if 0
@@ -421,7 +371,7 @@ indexOne( XP_U16 depth, Tile* tiles, IndexData* data, DictIter* prevIter,
           DictPosition* prevIndex )
 {
     DictIter curIter;
-    dict_initIterFrom( &curIter, prevIter );
+    initIterFrom( &curIter, prevIter );
     if ( findWordStartsWith( &curIter, tiles, depth ) ) {
         while ( !wordsEqual( &curIter, prevIter ) ) {
             ++*prevIndex;
@@ -458,7 +408,7 @@ doOneDepth( const Tile* allTiles, XP_U16 nTiles, Tile* prefix,
 }
 
 void
-dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
+di_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
 {
     ASSERT_INITED( iter );
     const DictionaryCtxt* dict = iter->dict;
@@ -490,7 +440,7 @@ dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
      */
     data->count = 0;
     DictIter prevIter;
-    dict_initIterFrom( &prevIter, iter );
+    initIterFrom( &prevIter, iter );
     if ( firstWord( &prevIter ) ) {
         DictPosition prevIndex = 0;
         Tile prefix[depth];
@@ -509,11 +459,11 @@ dict_makeIndex( const DictIter* iter, XP_U16 depth, IndexData* data )
 static void
 initWord( DictIter* iter )
 {
-    iter->nWords = dict_countWords( iter, NULL );
+    iter->nWords = di_countWords( iter, NULL );
 }
 
 XP_Bool
-dict_firstWord( DictIter* iter )
+di_firstWord( DictIter* iter )
 {
     ASSERT_INITED( iter );
     XP_Bool success = firstWord( iter );
@@ -526,7 +476,7 @@ dict_firstWord( DictIter* iter )
 }
 
 XP_Bool
-dict_getNextWord( DictIter* iter )
+di_getNextWord( DictIter* iter )
 {
     ASSERT_INITED( iter );
     XP_Bool success = nextWord( iter );
@@ -537,7 +487,7 @@ dict_getNextWord( DictIter* iter )
 }
 
 XP_Bool
-dict_lastWord( DictIter* iter )
+di_lastWord( DictIter* iter )
 {
     ASSERT_INITED( iter );
     iter->nEdges = 1;
@@ -553,7 +503,7 @@ dict_lastWord( DictIter* iter )
 }
 
 XP_Bool
-dict_getPrevWord( DictIter* iter )
+di_getPrevWord( DictIter* iter )
 {
     ASSERT_INITED( iter );
     XP_Bool success = prevWord( iter );
@@ -567,8 +517,8 @@ dict_getPrevWord( DictIter* iter )
    sought.  OR if we're father than necessary from what's sought, start over
    at the closer end.  Then move as many steps as necessary to reach it. */
 XP_Bool
-dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth, 
-                 const IndexData* data )
+di_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
+               const IndexData* data )
 {
     ASSERT_INITED( iter );
     const DictionaryCtxt* dict = iter->dict;
@@ -576,7 +526,7 @@ dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
     XP_Bool validWord = 0 < iter->nEdges;
     if ( validWord ) {        /* uninitialized */
         wordCount = iter->nWords;
-        DI_ASSERT( wordCount == dict_countWords( iter, NULL ) );
+        DI_ASSERT( wordCount == di_countWords( iter, NULL ) );
     } else {
         wordCount = dict_getWordCount( dict );
     }
@@ -589,9 +539,9 @@ dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
                 success = XP_TRUE;
                 /* do nothing; we're done */
             } else if ( iter->position == position - 1 ) {
-                success = dict_getNextWord( iter );
+                success = di_getNextWord( iter );
             } else if ( iter->position == position + 1 ) {
-                success = dict_getPrevWord( iter );
+                success = di_getPrevWord( iter );
             }
         }
 
@@ -614,9 +564,9 @@ dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
 
                 if ( !validWord ) {
                     if ( position >= wordCount ) {
-                        dict_lastWord( iter );
+                        di_lastWord( iter );
                     } else {
-                        dict_firstWord( iter );
+                        di_firstWord( iter );
                     }
                 }
                 wordIndex = iter->position;
@@ -642,14 +592,14 @@ dict_getNthWord( DictIter* iter, DictPosition position, XP_U16 depth,
         }
     }
     return success;
-} /* dict_getNthWord */
+} /* di_getNthWord */
 
 static DictPosition 
 figurePosition( DictIter* iter )
 {
     DictPosition result = 0;
     DictIter iterZero;
-    dict_initIterFrom( &iterZero, iter );
+    initIterFrom( &iterZero, iter );
     if ( !firstWord( &iterZero ) ) {
         XP_ASSERT( 0 );
     }
@@ -665,37 +615,33 @@ figurePosition( DictIter* iter )
 }
 
 XP_S16
-dict_findStartsWith( DictIter* iter, const XP_UCHAR* prefix )
+di_findStartsWith( DictIter* iter, const Tile* prefix, XP_U16 len )
 {
     ASSERT_INITED( iter );
-    array_edge* edge = dict_getTopEdge( iter->dict );
-    XP_S16 offset = findStartsWithChars( iter, prefix, 0, edge, 0 );
-    if ( 0 > offset ) {
-        /* not found; do nothing */
-    } else if ( 0 == offset ) {
-        if ( !firstWord( iter ) ) {
-            offset = -1;
-        }
-    } else {
+    XP_S16 result = -1;
+
+    if ( findStartsWithTiles( iter, prefix, len ) ) {
+        XP_UCHAR buf[32];
+        XP_U16 offset = dict_tilesToString( iter->dict, prefix,
+                                            len, buf, VSIZE(buf), NULL );
         if ( ACCEPT_ITER( iter, iter->nEdges ) || nextWord( iter ) ) {
-            DictPosition result = figurePosition( iter );
-            iter->position = result;
-        } else {
-            offset = -1;
+            iter->position = figurePosition( iter );
+            result = offset;
         }
     }
-    return offset;
+    return result;
 }
 
 void
-dict_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen )
+di_wordToString( const DictIter* iter, XP_UCHAR* buf, XP_U16 buflen,
+                 const XP_UCHAR* delim )
 {
     ASSERT_INITED( iter );
-    iterToString( iter, buf, buflen );
+    iterToString( iter, buf, buflen, delim );
 }
 
 DictPosition
-dict_getPosition( const DictIter* iter )
+di_getPosition( const DictIter* iter )
 {
     ASSERT_INITED( iter );
     return iter->position;
