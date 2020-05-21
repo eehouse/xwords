@@ -675,8 +675,8 @@ public class DBUtils {
         setSummaryInt( rowid, DBHelper.CONTRACTED, expanded?0:1 );
     }
 
-    private static int getInt( Context context, long rowid, String column,
-                               int dflt )
+    private static int getSummaryInt( Context context, long rowid, String column,
+                                      int dflt )
     {
         int result = dflt;
         String selection = String.format( ROW_ID_FMT, rowid );
@@ -695,18 +695,18 @@ public class DBUtils {
 
     public static int getMsgFlags( Context context, long rowid )
     {
-        return getInt( context, rowid, DBHelper.HASMSGS,
-                       GameSummary.MSG_FLAGS_NONE );
+        return getSummaryInt( context, rowid, DBHelper.HASMSGS,
+                              GameSummary.MSG_FLAGS_NONE );
     }
 
     public static boolean getExpanded( Context context, long rowid )
     {
-        return 0 == getInt( context, rowid, DBHelper.CONTRACTED, 0 );
+        return 0 == getSummaryInt( context, rowid, DBHelper.CONTRACTED, 0 );
     }
 
     public static boolean gameOver( Context context, long rowid )
     {
-        return 0 != getInt( context, rowid, DBHelper.GAME_OVER, 0 );
+        return 0 != getSummaryInt( context, rowid, DBHelper.GAME_OVER, 0 );
     }
 
     public static void saveThumbnail( Context context, GameLock lock,
