@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <endian.h>
+
 #include "device.h"
 #include "comtypes.h"
 #include "memstream.h"
@@ -106,31 +108,41 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
 
-void
-dvc_makeMQTTInvite( XWStreamCtxt* stream, const NetLaunchInfo* nli )
-{
-    stream_putU8( stream, CMD_INVITE );
-    nli_saveToStream( nli, stream );
-}
+#define PROTO_0 0
 
 static void
-addCmdAddrAndGameID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd, XP_U32 gameID,
-                     XWStreamCtxt* stream)
+addHeaderCmdAndGameID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
+                       XP_U32 gameID, XWStreamCtxt* stream )
 {
-    stream_putU8( stream, cmd );
+    stream_putU8( stream, PROTO_0 );
 
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
+    myID = htobe64( myID );
     stream_putBytes( stream, &myID, sizeof(myID) );
 
-    stream_putU32( stream, gameID );
+    stream_putU8( stream, cmd );
+
+    if ( gameID != 0 ) {
+        stream_putU32( stream, gameID );
+    }
+}
+
+void
+dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
+                    const NetLaunchInfo* nli )
+{
+    LOG_FUNC();
+    addHeaderCmdAndGameID( dutil, xwe, CMD_INVITE, 0, stream );
+    nli_saveToStream( nli, stream );
 }
 
 void
 dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                      XP_U32 gameID, const XP_U8* buf, XP_U16 len )
 {
-    addCmdAddrAndGameID( dutil, xwe, CMD_MSG, gameID, stream);
+    LOG_FUNC();
+    addHeaderCmdAndGameID( dutil, xwe, CMD_MSG, gameID, stream );
     stream_putBytes( stream, buf, len );
 }
 
@@ -138,40 +150,49 @@ void
 dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
                         XWStreamCtxt* stream, XP_U32 gameID )
 {
-    addCmdAddrAndGameID( dutil, xwe, CMD_DEVGONE, gameID, stream);
+    addHeaderCmdAndGameID( dutil, xwe, CMD_DEVGONE, gameID, stream );
 }
 
 void
 dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
 {
+    LOG_FUNC();
     XWStreamCtxt* stream = mkStream( dutil );
     stream_putBytes( stream, buf, len );
 
-    MQTTCmd cmd = stream_getU8( stream );
-    switch ( cmd ) {
-    case CMD_INVITE: {
-        NetLaunchInfo nli = {0};
-        if ( nli_makeFromStream( &nli, stream ) ) {
-            dutil_onInviteReceived( dutil, xwe, &nli );
+    XP_U8 proto = stream_getU8( stream );
+    if ( PROTO_0 != proto ) {
+        XP_LOGFF( "read proto %d, expected %d; dropping packet", proto, PROTO_0 );
+    } else {
+        MQTTDevID myID;
+        stream_getBytes( stream, &myID, sizeof(myID) );
+        myID = be64toh( myID );
+        MQTTCmd cmd = stream_getU8( stream );
+        switch ( cmd ) {
+        case CMD_INVITE: {
+            NetLaunchInfo nli = {0};
+            if ( nli_makeFromStream( &nli, stream ) ) {
+                dutil_onInviteReceived( dutil, xwe, &nli );
+            }
         }
-    }
-        break;
-    case CMD_DEVGONE:
-    case CMD_MSG: {
-        CommsAddrRec from = {0};
-        addr_addType( &from, COMMS_CONN_MQTT );
-        stream_getBytes( stream, &from.u.mqtt.devID, sizeof(from.u.mqtt.devID) );
-        XP_U32 gameID = stream_getU32( stream );
-        if ( CMD_MSG == cmd ) {
-            dutil_onMessageReceived( dutil, xwe, gameID, &from, stream );
-        } else if ( CMD_DEVGONE == cmd ) {
-            dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
+            break;
+        case CMD_DEVGONE:
+        case CMD_MSG: {
+            CommsAddrRec from = {0};
+            addr_addType( &from, COMMS_CONN_MQTT );
+            from.u.mqtt.devID = myID;
+            XP_U32 gameID = stream_getU32( stream );
+            if ( CMD_MSG == cmd ) {
+                dutil_onMessageReceived( dutil, xwe, gameID, &from, stream );
+            } else if ( CMD_DEVGONE == cmd ) {
+                dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
+            }
         }
-    }
-        break;
-    default:
-        XP_LOGFF( "unknown command %d; dropping message", cmd );
-        XP_ASSERT(0);
+            break;
+        default:
+            XP_LOGFF( "unknown command %d; dropping message", cmd );
+            XP_ASSERT(0);
+        }
     }
     stream_destroy( stream, xwe );
 }

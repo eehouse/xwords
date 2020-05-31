@@ -681,7 +681,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTInvite
     XWStreamCtxt* stream = mem_stream_make( MPPARM(globalState->mpool)
                                             globalState->vtMgr,
                                             NULL, 0, NULL );
-    dvc_makeMQTTInvite( stream, &nli );
+    dvc_makeMQTTInvite( globalState->dutil, env, stream, &nli );
 
     result = streamToBArray( env, stream );
     stream_destroy( stream, env );

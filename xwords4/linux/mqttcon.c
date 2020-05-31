@@ -242,7 +242,7 @@ mqttc_invite( LaunchParams* params, NetLaunchInfo* nli, const MQTTDevID* invitee
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );
 
-    dvc_makeMQTTInvite( stream, nli );
+    dvc_makeMQTTInvite( params->dutil, NULL_XWE, stream, nli );
 
     postMsg( storage, stream, invitee );
 }

@@ -32,7 +32,8 @@ void dvc_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
 
 void dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID );
 
-void dvc_makeMQTTInvite( XWStreamCtxt* stream, const NetLaunchInfo* nli);
+void dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
+                         const NetLaunchInfo* nli );
 void dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                           XP_U32 gameID, const XP_U8* buf, XP_U16 len );
 void dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,

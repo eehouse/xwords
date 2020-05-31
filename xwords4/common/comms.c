@@ -2972,7 +2972,6 @@ XP_Bool
 types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state )
 {
     CommsConnType typ = *state;
-    XP_ASSERT( (conTypes & 0xFF) == conTypes );
     XP_ASSERT( typ < COMMS_CONN_NTYPES );
     while ( ++typ < COMMS_CONN_NTYPES ) {
         *state = typ;
