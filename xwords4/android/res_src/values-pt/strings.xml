@@ -762,7 +762,7 @@
          if the board screen is what's displayed.  This is to allow
          users to think about a move without having to touch the
          screen all the time.-->
-    <string name="keep_screenon">Manter ecrã ligado</string>
+    <string name="keep_screenon">Manter o ecrã ligado</string>
     <!-- clarification of above -->
     <string name="keep_screenon_summary">Manter o ecrã do tabuleiro ligado por 10 minutos</string>
     <!--
