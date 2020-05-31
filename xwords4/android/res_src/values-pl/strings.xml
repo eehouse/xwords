@@ -1002,7 +1002,22 @@
 \n
 \nUżyj tej funkcji, aby sprawdzić poprawność słów, którymi zamierzasz zagrać, lub poszukaj nieznanego słowa podanego jako wskazówka.</string>
     <string name="str_winner_fmt" formatted="false">[Zwycięzca] %1$s: %2$d</string>
-    <string name="robot_iq_label">Robot IQ</string>
+    <string name="robot_iq_label">IQ Robota</string>
     <string name="game_paused_title">Gra zatrzymana</string>
     <string name="pause_title">Pauza gry</string>
+    <string name="dup_minutes_label">Minuty na rundę</string>
+    <string name="pause_notify_fmt">Gracz %1$s zatrzymał tę grę.</string>
+    <string name="pause_expl_hint">Czemu to robię</string>
+    <string name="game_unpaused_title">Gra odpauzowana</string>
+    <plurals name="groups_confirm_del_fmt">
+        <item quantity="one">Czy jesteś pewien, że chcesz usunąć wybraną grupę\?</item>
+        <item quantity="few">Czy jesteś pewien, że chcesz usunąć %1$d wybrane grupy\?</item>
+        <item quantity="many">Czy jesteś pewien, że chcesz usunąć %1$d wybranych grup\?</item>
+        <item quantity="other">Czy jesteś pewien, że chcesz usunąć %1$d wybranych grup\?</item>
+    </plurals>
+    <string name="bonus_w3x_summary">3W</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="use_duptimer">Włącz licznik na ruch</string>
 </resources>
