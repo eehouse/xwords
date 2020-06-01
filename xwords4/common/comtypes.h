@@ -249,9 +249,9 @@ typedef struct _PlayerDicts {
 typedef uint64_t MQTTDevID;
 
 #if __WORDSIZE == 64
-# define MQTTDevID_FMT "%lX"
+# define MQTTDevID_FMT "%016lX"
 #elif __WORDSIZE == 32
-# define MQTTDevID_FMT "%llX"
+# define MQTTDevID_FMT "%016llX"
 #endif
 # define MQTTTopic_FMT "xw4/device/" MQTTDevID_FMT
 

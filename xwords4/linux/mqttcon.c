@@ -52,6 +52,7 @@ loadClientID( LaunchParams* params, MQTTConStorage* storage )
     dvc_getMQTTDevID( params->dutil, NULL_XWE, &storage->clientID );
     formatMQTTDevID( &storage->clientID, storage->clientIDStr,
                      VSIZE(storage->clientIDStr) );
+    XP_ASSERT( 16 == strlen(storage->clientIDStr) );
     formatMQTTTopic( &storage->clientID, storage->topic, VSIZE(storage->topic) );
 }
 
@@ -238,6 +239,7 @@ mqttc_invite( LaunchParams* params, NetLaunchInfo* nli, const MQTTDevID* invitee
     MQTTConStorage* storage = getStorage( params );
     gchar buf[32];
     XP_LOGFF( "need to send to %s", formatMQTTDevID(invitee, buf, sizeof(buf) ) );
+    XP_ASSERT( 16 == strlen(buf) );
 
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                 params->vtMgr );
