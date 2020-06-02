@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.os.Build;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -34,6 +35,10 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.net.ssl.HttpsURLConnection;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -42,7 +47,10 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallbackExtended {
     private static final String TAG = MQTTUtils.class.getSimpleName();
+    private static final String KEY_NEXT_REG = TAG + "/next_reg";
+
     private static AtomicReference<MQTTUtils> sInstance = new AtomicReference<>();
+    private static long sNextReg = 0;
 
     private MqttAsyncClient mClient;
     private long mPauseTime = 0L;
@@ -169,6 +177,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         mContext = context;
         String[] topic = {null};
         mDevID = XwJNI.dvc_getMQTTDevID( topic );
+        Assert.assertTrueNR( 16 == mDevID.length() );
         mTopic = topic[0];
         mMsgThread = new MsgThread();
 
@@ -221,6 +230,55 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         } catch ( Exception ise ) {
             ise.printStackTrace();
             clearInstance();
+        }
+
+        registerOnce();
+    }
+
+    private void registerOnce()
+    {
+        if ( 0 == sNextReg ) {
+            sNextReg = DBUtils.getLongFor( mContext, KEY_NEXT_REG, 1 );
+        }
+        long now = Utils.getCurSeconds();
+        Log.d( TAG, "registerOnce(): now: %d; nextReg: %d", now, sNextReg );
+        if ( now > sNextReg ) {
+            try {
+                JSONObject params = new JSONObject();
+                params.put( "devid", mDevID );
+                params.put( "gitrev", BuildConfig.GIT_REV );
+                params.put( "os", Build.MODEL );
+                params.put( "vers", Build.VERSION.RELEASE );
+                params.put( "vrntCode", BuildConfig.VARIANT_CODE );
+                params.put( "vrntName", BuildConfig.VARIANT_NAME );
+                params.put( "myNow", now );
+
+                String fcmid = FBMService.getFCMDevID( mContext );
+                if ( null != fcmid ) {
+                    params.put( "fcmid", fcmid );
+                }
+
+                Log.d( TAG, "registerOnce(): sending %s", params );
+                HttpsURLConnection conn
+                    = NetUtils.makeHttpsMQTTConn( mContext, "register" );
+                String resStr = NetUtils.runConn( conn, params, true );
+                if ( null != resStr ) {
+                    JSONObject response = new JSONObject( resStr );
+                    Log.d( TAG, "registerOnce(): got %s", response );
+
+                    if ( response.optBoolean( "success", true ) ) {
+                        long atNext = response.optLong( "atNext", 0 );
+                        if ( 0 < atNext ) {
+                            DBUtils.setLongFor( mContext, KEY_NEXT_REG, atNext );
+                            sNextReg = atNext;
+                        }
+                    }
+                } else {
+                    Log.e( TAG, "registerOnce(): null back from runConn()" );
+                }
+            } catch ( JSONException je ) {
+                Log.e( TAG, "registerOnce() ex: %s", je );
+            }
         }
     }
 
@@ -279,6 +337,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     public static int send( Context context, String addressee, int gameID, byte[] buf )
     {
         Log.d( TAG, "send(to:%s, len: %d)", addressee, buf.length );
+        Assert.assertTrueNR( 16 == addressee.length() );
         String[] topic = {addressee};
         byte[] packet = XwJNI.dvc_makeMQTTMessage( gameID, buf, topic );
         addToSendQueue( context, topic[0], packet );
@@ -386,6 +445,13 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     {
         new MQTTServiceHelper( context, from )
             .postEvent( MultiService.MultiEvent.MESSAGE_NOGAME, gameID );
+    }
+
+    public static void fcmConfirmed( Context context, boolean working )
+    {
+        if ( working ) {
+            DBUtils.setLongFor( context, KEY_NEXT_REG, 0 );
+        }
     }
 
     private static class MQTTServiceHelper extends XWServiceHelper {

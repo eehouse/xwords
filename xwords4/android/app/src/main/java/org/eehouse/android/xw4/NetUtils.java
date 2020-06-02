@@ -223,6 +223,14 @@ public class NetUtils {
         return makeHttpsConn( context, url, proc );
     }
 
+    protected static HttpsURLConnection makeHttpsMQTTConn( Context context,
+                                                           String proc )
+    {
+        // String url = XWPrefs.getDefaultMQTTUrl( context );
+        String url = "https://liquidsugar.net/xw4/api/v1";
+        return makeHttpsConn( context, url, proc );
+    }
+
     protected static HttpsURLConnection makeHttpsUpdateConn( Context context,
                                                              String proc )
     {
@@ -249,34 +257,47 @@ public class NetUtils {
 
     protected static String runConn( HttpsURLConnection conn, JSONArray param )
     {
-        return runConn( conn, param.toString() );
+        return runConn( conn, param.toString(), false );
     }
 
     protected static String runConn( HttpsURLConnection conn, JSONObject param )
     {
-        return runConn( conn, param.toString() );
+        return runConn( conn, param.toString(), false );
     }
 
-    private static String runConn( HttpsURLConnection conn, String param )
+    protected static String runConn( HttpsURLConnection conn, JSONObject param,
+                                     boolean directJson )
+    {
+        return runConn( conn, param.toString(), directJson );
+    }
+
+    private static String runConn( HttpsURLConnection conn, String param,
+                                   boolean directJson )
     {
         String result = null;
-        Map<String, String> params = new HashMap<>();
-        params.put( k_PARAMS, param );
-        String paramsString = getPostDataString( params );
+        if ( ! directJson ) {
+            Map<String, String> params = new HashMap<>();
+            params.put( k_PARAMS, param );
+            param = getPostDataString( params );
+        }
 
-        if ( null != conn && null != paramsString ) {
+        if ( null != conn && null != param ) {
             try {
                 conn.setReadTimeout( 15000 );
                 conn.setConnectTimeout( 15000 );
                 conn.setRequestMethod( "POST" );
+                if ( directJson ) {
+                    conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+                } else {
+                    conn.setFixedLengthStreamingMode( param.length() );
+                }
                 conn.setDoInput( true );
                 conn.setDoOutput( true );
-                conn.setFixedLengthStreamingMode( paramsString.length() );
 
                 OutputStream os = conn.getOutputStream();
                 BufferedWriter writer
                     = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                writer.write( paramsString );
+                writer.write( param );
                 writer.flush();
                 writer.close();
                 os.close();
@@ -308,8 +329,7 @@ public class NetUtils {
                 Log.ex( TAG, ioe );
             }
         } else {
-            Log.e( TAG, "not running conn %s with params %s", conn,
-                   paramsString );
+            Log.e( TAG, "not running conn %s with params %s", conn, param );
         }
 
         return result;

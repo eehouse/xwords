@@ -55,7 +55,7 @@ public class FBMService extends FirebaseMessagingService {
         if ( XWPrefs.getIgnoreFCM( this ) ) {
             Log.d( TAG, "onMessageReceived(): ignoring" );
         } else {
-            RelayService.fcmConfirmed( this, true );
+            callFcmConfirmed( this, true );
 
             Map<String, String>	data = message.getData();
             Log.d( TAG, "onMessageReceived(data=%s)", data );
@@ -137,7 +137,7 @@ public class FBMService extends FirebaseMessagingService {
                         if (!task.isSuccessful()) {
                             Log.w(TAG, "getInstanceId failed: %s", task.getException());
                             if ( !XWPrefs.getIgnoreFCM( context ) ) {
-                                RelayService.fcmConfirmed( context, false );
+                                callFcmConfirmed( context, false );
                             }
                         } else {
 
@@ -160,6 +160,12 @@ public class FBMService extends FirebaseMessagingService {
         DBUtils.setStringFor( context, BuildConfig.KEY_FCMID, token );
         DevID.setFCMDevID( context, token );
 
-        RelayService.fcmConfirmed( context, true );
+        callFcmConfirmed( context, true );
+    }
+
+    private static void callFcmConfirmed( Context context, boolean working )
+    {
+        RelayService.fcmConfirmed( context, working );
+        MQTTUtils.fcmConfirmed( context, working );
     }
 }
