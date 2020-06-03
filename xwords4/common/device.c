@@ -109,23 +109,22 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
 
 #define PROTO_0 0
+#define PROTO_1 1        /* moves gameID into "header" relay2 knows about */
 
 static void
-addHeaderCmdAndGameID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
+addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
                        XP_U32 gameID, XWStreamCtxt* stream )
 {
-    stream_putU8( stream, PROTO_0 );
+    stream_putU8( stream, PROTO_1 );
 
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
     myID = htobe64( myID );
     stream_putBytes( stream, &myID, sizeof(myID) );
 
-    stream_putU8( stream, cmd );
+    stream_putU32( stream, gameID );
 
-    if ( gameID != 0 ) {
-        stream_putU32( stream, gameID );
-    }
+    stream_putU8( stream, cmd );
 }
 
 void
@@ -133,7 +132,7 @@ dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                     const NetLaunchInfo* nli )
 {
     LOG_FUNC();
-    addHeaderCmdAndGameID( dutil, xwe, CMD_INVITE, 0, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, 0, stream );
     nli_saveToStream( nli, stream );
 }
 
@@ -142,7 +141,7 @@ dvc_makeMQTTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                      XP_U32 gameID, const XP_U8* buf, XP_U16 len )
 {
     LOG_FUNC();
-    addHeaderCmdAndGameID( dutil, xwe, CMD_MSG, gameID, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
     stream_putBytes( stream, buf, len );
 }
 
@@ -150,7 +149,7 @@ void
 dvc_makeMQTTNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe,
                         XWStreamCtxt* stream, XP_U32 gameID )
 {
-    addHeaderCmdAndGameID( dutil, xwe, CMD_DEVGONE, gameID, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
 }
 
 void
@@ -161,13 +160,27 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
     stream_putBytes( stream, buf, len );
 
     XP_U8 proto = stream_getU8( stream );
-    if ( PROTO_0 != proto ) {
-        XP_LOGFF( "read proto %d, expected %d; dropping packet", proto, PROTO_0 );
+    if ( proto != PROTO_0 && proto != PROTO_1 ) {
+        XP_LOGFF( "read proto %d, expected %d or %d; dropping packet",
+                  proto, PROTO_0, PROTO_1 );
     } else {
         MQTTDevID myID;
         stream_getBytes( stream, &myID, sizeof(myID) );
         myID = be64toh( myID );
-        MQTTCmd cmd = stream_getU8( stream );
+
+        MQTTCmd cmd;
+        XP_U32 gameID = 0;
+
+        if ( PROTO_0 == proto ) {
+            cmd = stream_getU8( stream );
+            if ( CMD_INVITE != cmd ) {
+                gameID = stream_getU32( stream );
+            }
+        } else {
+            gameID = stream_getU32( stream );
+            cmd = stream_getU8( stream );
+        }
+
         switch ( cmd ) {
         case CMD_INVITE: {
             NetLaunchInfo nli = {0};
@@ -181,7 +194,6 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 le
             CommsAddrRec from = {0};
             addr_addType( &from, COMMS_CONN_MQTT );
             from.u.mqtt.devID = myID;
-            XP_U32 gameID = stream_getU32( stream );
             if ( CMD_MSG == cmd ) {
                 dutil_onMessageReceived( dutil, xwe, gameID, &from, stream );
             } else if ( CMD_DEVGONE == cmd ) {
