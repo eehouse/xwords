@@ -289,10 +289,10 @@ lbt_register( LinBtStuff* btStuff, unsigned short l2_psm,
         // and disconnect
         session = sdp_connect( BDADDR_ANY, BDADDR_LOCAL, SDP_RETRY_IF_BUSY );
         if ( NULL == session ) {
-            XP_LOGF( "%s: sdp_connect->%s", __func__, strerror(errno) );
+            XP_LOGFF( "sdp_connect->%s", strerror(errno) );
+        } else {
+            sdp_record_register( session, &record, 0 );
         }
-        XP_ASSERT( NULL != session );
-        sdp_record_register( session, &record, 0 );
 
         // cleanup
         sdp_data_free( psm );

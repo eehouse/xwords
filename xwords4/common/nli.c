@@ -58,6 +58,12 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
         case COMMS_CONN_MQTT:
             nli_setMQTTDevID( nli, &addr->u.mqtt.devID );
             break;
+        case COMMS_CONN_BT:
+            XP_STRCAT( nli->btAddress, addr->u.bt.btAddr.chars );
+            XP_STRCAT( nli->btName, addr->u.bt.hostName );
+            break;
+        case COMMS_CONN_NFC:
+            break;
         default:
             XP_ASSERT(0);
             break;
