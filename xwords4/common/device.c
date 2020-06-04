@@ -132,7 +132,7 @@ dvc_makeMQTTInvite( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
                     const NetLaunchInfo* nli )
 {
     LOG_FUNC();
-    addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, 0, stream );
+    addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID, stream );
     nli_saveToStream( nli, stream );
 }
 

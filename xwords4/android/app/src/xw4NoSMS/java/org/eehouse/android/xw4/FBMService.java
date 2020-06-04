@@ -58,7 +58,7 @@ public class FBMService extends FirebaseMessagingService {
             callFcmConfirmed( this, true );
 
             Map<String, String>	data = message.getData();
-            Log.d( TAG, "onMessageReceived(data=%s)", data );
+            Log.d( TAG, "onMessageReceived(data=\"%s\")", data );
             boolean toastFCM = XWPrefs.getToastFCM( this );
 
             String value = data.get( "msgs64" );
@@ -96,6 +96,15 @@ public class FBMService extends FirebaseMessagingService {
                 RelayService.timerFired( this );
                 if ( toastFCM ) {
                     DbgUtils.showf( this, "%s.onMessageReceived(): got 'getMoves'",
+                                    TAG );
+                }
+            }
+
+            value = data.get( "getMQTT" );
+            if ( null != value && Boolean.parseBoolean( value ) ) {
+                MQTTUtils.onFCMReceived( this );
+                if ( toastFCM ) {
+                    DbgUtils.showf( this, "%s.onMessageReceived(): got 'getMQTT'",
                                     TAG );
                 }
             }

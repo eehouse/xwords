@@ -73,6 +73,19 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         getOrStart( context );
     }
 
+    public static void onFCMReceived( Context context )
+    {
+        Log.d( TAG, "onFCMReceived()" );
+        // If we have an instance now, it's not working, so kill it. And start
+        // another
+        MQTTUtils instance = sInstance.get();
+        if ( null != instance ) {
+            clearInstance( instance );
+        }
+        getOrStart( context );
+        Log.d( TAG, "onFCMReceived() DONE" );
+    }
+
     static void onConfigChanged( Context context )
     {
         MQTTUtils instance = sInstance.get();
@@ -154,6 +167,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         MQTTUtils oldInstance = sInstance.getAndSet(null);
         if ( curInstance == oldInstance ) {
             oldInstance.disconnect();
+        } else {
+            Log.e( TAG, "unreachable instance still running???" );
         }
         // if ( sResumed ) {
         //     Log.d( TAG, "clearInstance(); looks like I could start another!!" );
@@ -390,7 +405,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     }
 
     @Override
-    public void onSuccess(IMqttToken asyncActionToken)
+    public void onSuccess( IMqttToken asyncActionToken )
     {
         Log.d( TAG, "onSuccess(%s)", asyncActionToken );
     }
@@ -403,6 +418,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
 
     private class MsgThread extends Thread {
         private LinkedBlockingQueue<byte[]> mQueue = new LinkedBlockingQueue<>();
+        private long mStartTime = Utils.getCurSeconds();
 
         void add( byte[] msg ) {
             mQueue.add( msg );
@@ -420,7 +436,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
                     break;
                 }
             }
-            Log.d( TAG, "%H.run() exiting", this );
+            long now = Utils.getCurSeconds();
+            Log.d( TAG, "%H.run() exiting after %d seconds", this, now - mStartTime );
         }
     }
 
