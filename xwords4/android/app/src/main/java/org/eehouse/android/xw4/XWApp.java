@@ -118,9 +118,6 @@ public class XWApp extends Application
             }
             GameUtils.resendAllIf( this, null );
             break;
-        case ON_PAUSE:
-            MQTTUtils.onPause();
-            break;
         }
     }
 
