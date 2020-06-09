@@ -138,7 +138,7 @@
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
       </intent-filter>
     </receiver>
-    <receiver android:name="RelayReceiver"/>
+    <receiver android:name="RelayTimerReceiver"/>
     <receiver android:name="NagTurnReceiver"/>
     <receiver android:name="SMSResendReceiver"/>
     <receiver android:name="DupeModeTimer"/>

@@ -372,7 +372,7 @@ public class DBUtils {
         }
 
         if ( needsTimer ) {
-            RelayReceiver.setTimer( context );
+            RelayTimerReceiver.setTimer( context );
         }
     } // saveSummary
 

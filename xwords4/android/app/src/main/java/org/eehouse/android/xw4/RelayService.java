@@ -423,7 +423,7 @@ public class RelayService extends XWJIService
 
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
-            RelayReceiver.setTimer( this, interval_millis );
+            RelayTimerReceiver.setTimer( this, interval_millis );
             // Log.d( TAG, "onDestroy(): rescheduling in %d ms",
             //        interval_millis );
         }
@@ -517,7 +517,7 @@ public class RelayService extends XWJIService
             } else if ( registerWithRelayIfNot( timestamp ) ) {
                 requestMessages( timestamp );
             }
-            RelayReceiver.setTimer( this );
+            RelayTimerReceiver.setTimer( this );
             break;
         case STOP:
             stopThreads();
@@ -1713,7 +1713,7 @@ public class RelayService extends XWJIService
      *
      * Goal: maintain connection by keeping this service alive with
      * its periodic pings to relay.  When it dies or is killed,
-     * notice, and use RelayReceiver's timer to get it restarted a bit
+     * notice, and use RelayTimerReceiver's timer to get it restarted a bit
      * later.  But note: s_lastFCM will not be set when the app is
      * relaunched.
      */

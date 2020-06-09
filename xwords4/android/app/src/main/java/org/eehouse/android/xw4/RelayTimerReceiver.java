@@ -27,8 +27,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 
-public class RelayReceiver extends BroadcastReceiver {
-    private static final String TAG = RelayReceiver.class.getSimpleName();
+public class RelayTimerReceiver extends BroadcastReceiver {
+    private static final String TAG = RelayTimerReceiver.class.getSimpleName();
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -47,7 +47,7 @@ public class RelayReceiver extends BroadcastReceiver {
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
 
-        Intent intent = new Intent( context, RelayReceiver.class );
+        Intent intent = new Intent( context, RelayTimerReceiver.class );
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
         // Check if we have any relay IDs, since we'll be using them to
