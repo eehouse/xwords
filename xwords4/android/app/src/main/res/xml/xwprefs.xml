@@ -32,6 +32,11 @@
           />
     </PreferenceScreen>
 
+    <org.eehouse.android.xw4.XWConnAddrPreference
+        android:key="@string/key_addrs_pref"
+        android:title="@string/title_addrs_pref"
+        />
+
     <PreferenceScreen android:title="@string/prefs_dicts"
                       android:summary="@string/prefs_dicts_summary"
                       >
@@ -311,11 +316,6 @@
         android:title="@string/enable_sms"
         android:summary="@string/enable_sms_summary"
         android:defaultValue="false"
-        />
-
-    <org.eehouse.android.xw4.XWConnAddrPreference
-        android:key="@string/key_addrs_pref"
-        android:title="@string/title_addrs_pref"
         />
 
     <PreferenceScreen android:title="@string/relay_behavior"
