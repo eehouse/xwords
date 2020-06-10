@@ -118,11 +118,11 @@ public class CommsAddrRec {
                 for ( CommsConnType value : values ) {
                     int ord = value.ordinal();
                     if ( 0 != (bits & (1 << (ord - 1)))) {
-                        add( value );
+                        addWithCheck( value );
                     }
                 }
             } else if ( bits < values.length ) { // don't crash
-                add( values[bits] );
+                addWithCheck( values[bits] );
             } else {
                 Log.e( TAG, "<init>: bad bits value: 0x%x", inBits );
             }

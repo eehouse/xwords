@@ -355,6 +355,8 @@
     <!-- Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. -->
     <string name="phonies_disallow">Disallow phonies</string>
+    <!-- Don't allow phonies to be played -->
+    <string name="phonies_block">Block phonies</string>
     <!-- Shown when using the Game configure screen to configure a
          networked game and you try to make all players local. -->
     <string name="str_reg_server_sans_remote">At least one player must

@@ -374,13 +374,6 @@
                         android:defaultValue="false"
                         />
 
-    <!-- Keep all dup-mode related stuff hidden -->
-    <CheckBoxPreference android:key="@string/key_unhide_dupmode"
-                        android:title="@string/unhide_dupmode_title"
-                        android:summary="@string/unhide_dupmode_summary"
-                        android:defaultValue="false"
-                        />
-
     <org.eehouse.android.xw4.XWEditTextPreference 
         android:key="@string/key_nag_intervals"
         android:title="@string/nag_intervals"
@@ -533,6 +526,13 @@
     <CheckBoxPreference android:key="@string/key_update_prerel"
                         android:title="@string/pref_item_update_title"
                         android:summary="@string/pref_item_update_summary"
+                        android:defaultValue="false"
+                        />
+
+    <!-- Keep all dup-mode related stuff hidden -->
+    <CheckBoxPreference android:key="@string/key_unhide_dupmode"
+                        android:title="@string/unhide_dupmode_title"
+                        android:summary="@string/unhide_dupmode_summary"
                         android:defaultValue="false"
                         />
 

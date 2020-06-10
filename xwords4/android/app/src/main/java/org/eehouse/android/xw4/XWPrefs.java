@@ -543,6 +543,7 @@ public class XWPrefs {
             setAddrTypes( context, result );
         }
 
+        // Log.d( TAG, "getAddrTypes() => %s", result.toString( context, false) );
         return result;
     }
 

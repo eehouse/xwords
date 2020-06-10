@@ -90,7 +90,7 @@ android {
             buildConfigField "boolean", "LOG_LIFECYLE", "false"
             buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid\""
             buildConfigField "boolean", "ATTACH_SUPPORTED", "false"
-            buildConfigField "boolean", "OFFER_MQTT", "false"
+            buildConfigField "boolean", "OFFER_MQTT", "true"
         }
 
         xw4NoSMS {
@@ -138,7 +138,6 @@ android {
             buildConfigField "String", "KEY_FCMID", "\"FBMService_fcmid1\""
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
-            buildConfigField "boolean", "OFFER_MQTT", "true"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4d']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
         }
@@ -156,7 +155,6 @@ android {
             buildConfigField "boolean", "REPORT_LOCKS", "true"
             buildConfigField "String", "NFC_AID", "\"${NFC_AID_XW4d}\""
             resValue "string", "nfc_aid", "$NFC_AID_XW4d"
-            buildConfigField "boolean", "OFFER_MQTT", "true"
             externalNativeBuild.ndkBuild.cFlags += ['-DVARIANT_xw4dNoSMS']
             externalNativeBuild.ndkBuild.arguments += ['XW_BT_UUID=' + XWD_UUID]
         }
