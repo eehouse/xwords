@@ -2264,7 +2264,7 @@
   connection, but might have problems on restricted WiFi
   networks.</string>
     <string name="not_again_comms_sms">Play via Data SMS uses the
-  technology on which as \"texting\" is built. Though the messages are
+  technology on which \"texting\" is built. Though the messages are
   invisible to you, your carrier bills them as texts, so you want to
   avoid this feature unless you have an unlimited texting plan (or
   budget.) Note that Android only supports this feature on devices on
