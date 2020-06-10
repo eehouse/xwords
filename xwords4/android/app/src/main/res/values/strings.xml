@@ -976,16 +976,6 @@
          CrossWords wakes up periodically to check if there are any
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
-    <string name="connect_frequency">Background move check</string>
-    <!-- These are the possible values for the connect_frequency
-         setting presented as a drop-down list. -->
-    <string name="connect_never">Never check</string>
-    <string name="connect_five_mins">Every 5 minutes</string>
-    <string name="connect_fifteen_mins">Every 15 minutes</string>
-    <string name="connect_thirty_mins">Every 30 minutes</string>
-    <string name="connect_one_hour">Every hour</string>
-    <string name="connect_six_hours">Every six hours</string>
-    <string name="connect_daily">Once every day</string>
     <!-- When one or more new moves is found, should I play a
          notification sound -->
     <string name="notify_sound">Play sound</string>
@@ -1839,10 +1829,14 @@
     <string name="warn_relay_remove">You can enable relay play now, or
     remove it from this game.</string>
     <string name="warn_relay_havegames">Are you sure you want to
-    disable play using the relay?</string>
+    disable play using the relay (internet)?
+    \n\n
+    Most networked games exchange moves via the relay, so only do this
+    if you plan to play ALL games against a robot on this same
+    device.</string>
     <plurals name="warn_relay_games_fmt">
-        <item quantity="one">\n\n(You have one game using it.)</item>
-        <item quantity="other">\n\n(You have %1$d games using it.)</item>
+        <item quantity="one">\n\n(You have one active game using the relay now.)</item>
+        <item quantity="other">\n\n(You have %1$d active games using the relay now.)</item>
     </plurals>
     <string name="button_enable_sms">Enable Data SMS</string>
     <string name="button_enable_bt">Enable Bluetooth</string>

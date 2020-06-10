@@ -188,18 +188,6 @@ public class XWPrefs {
         return result;
     }
 
-    public static long getProxyIntervalSeconds( Context context )
-    {
-        String value = getPrefsString( context, R.string.key_connect_frequency );
-        long result;
-        try {
-            result = Long.parseLong( value );
-        } catch ( Exception ex ) {
-            result = -1;
-        }
-        return result;
-    }
-
     public static int getPrefsInt( Context context, int keyID, int defaultValue )
     {
         String key = context.getString( keyID );

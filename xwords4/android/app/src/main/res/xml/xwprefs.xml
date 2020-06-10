@@ -318,25 +318,6 @@
         android:defaultValue="false"
         />
 
-    <PreferenceScreen android:title="@string/relay_behavior"
-                      android:summary="@string/relay_behavior_summary"
-                      >
-      <org.eehouse.android.xw4.PollListPreference
-          android:key="@string/key_connect_frequency"
-          android:title="@string/connect_frequency"
-          android:entries="@array/connect_frequencies"
-          android:entryValues="@array/connect_frequencies_values"
-          android:defaultValue="900"
-          />
-
-      <org.eehouse.android.xw4.RelayCheckBoxPreference
-          android:key="@string/key_disable_relay"
-          android:title="@string/disable_relay"
-          android:summary="@string/disable_relay_summary"
-          android:defaultValue="false"
-          />
-    </PreferenceScreen>
-
     <CheckBoxPreference android:key="@string/key_notify_vibrate"
                         android:title="@string/notify_vibrate"
                         android:summary="@string/notify_other_summary"
@@ -367,6 +348,13 @@
                           android:defaultValue="false"
                           />
     </PreferenceScreen>
+
+    <org.eehouse.android.xw4.RelayCheckBoxPreference
+        android:key="@string/key_disable_relay"
+        android:title="@string/disable_relay"
+        android:summary="@string/disable_relay_summary"
+        android:defaultValue="false"
+        />
 
   </PreferenceScreen>
 

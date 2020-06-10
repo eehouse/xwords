@@ -63,7 +63,6 @@
   <string name="key_default_phonies">key_default_phonies2</string>
   <string name="key_relay_poll">key_relay_poll</string>
   <string name="key_default_timerenabled">key_default_timerenabled</string>
-  <string name="key_connect_frequency">key_connect_frequency</string>
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_disable_relay">key_disable_relay</string>
   <string name="key_notify_vibrate">key_notify_vibrate</string>
@@ -193,17 +192,6 @@
     <item>@string/robot_smart</item>
   </string-array>
 
-  <string-array name="connect_frequencies">
-    <item>@string/connect_never</item>
-    <!-- <item>@string/connect_thirty_seconds</item> -->
-    <item>@string/connect_five_mins</item>
-    <item>@string/connect_fifteen_mins</item>
-    <item>@string/connect_thirty_mins</item>
-    <item>@string/connect_one_hour</item>
-    <item>@string/connect_six_hours</item>
-    <item>@string/connect_daily</item>
-  </string-array>
-
   <!-- Keep in sync with DictUtils.DictLoc enum -->
   <string-array name="loc_names">
     <item></item>
@@ -211,17 +199,6 @@
     <item>@string/loc_internal</item>
     <item>@string/loc_external</item>
     <item>@string/loc_downloads</item>
-  </string-array>
-
-  <string-array name="connect_frequencies_values">
-    <item>-1</item>
-    <!-- <item>60</item> -->
-    <item>300</item>
-    <item>900</item>
-    <item>1800</item>
-    <item>3600</item>
-    <item>21600</item>
-    <item>86400</item>
   </string-array>
 
   <!-- These two arrays need to be kept in sync -->
