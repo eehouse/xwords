@@ -55,7 +55,7 @@ public class CommsAddrRec {
         COMMS_CONN_SMS,
         COMMS_CONN_P2P,
         COMMS_CONN_NFC(false),
-        COMMS_CONN_MQTT;
+        COMMS_CONN_MQTT(false);
 
         private boolean mIsSelectable = true;
 
@@ -197,6 +197,20 @@ public class CommsAddrRec {
             boolean result = CommsConnType._COMMS_CONN_NONE == typ ? true
                 : super.add( typ );
             return result;
+        }
+
+        public void addWithCheck( CommsConnType typ ) {
+            add( typ );
+            if ( BuildConfig.OFFER_MQTT && typ == CommsConnType.COMMS_CONN_RELAY ) {
+                add( CommsConnType.COMMS_CONN_MQTT );
+            }
+        }
+
+        public void removeWithCheck( CommsConnType typ ) {
+            remove( typ );
+            if ( typ == CommsConnType.COMMS_CONN_RELAY ) {
+                remove( CommsConnType.COMMS_CONN_MQTT );
+            }
         }
 
         public String toString( Context context, boolean longVersion )

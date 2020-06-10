@@ -101,9 +101,9 @@ public class ConnViaViewLayout extends LinearLayout {
                         if ( isChecked ) {
                             showNotAgainTypeTip( typf );
                             enabledElseWarn( typf );
-                            m_curSet.add( typf );
+                            m_curSet.addWithCheck( typf );
                         } else {
-                            m_curSet.remove( typf );
+                            m_curSet.removeWithCheck( typf );
                             if ( null != m_emptyWarner && 0 == m_curSet.size()) {
                                 m_emptyWarner.typeSetEmpty();
                             }

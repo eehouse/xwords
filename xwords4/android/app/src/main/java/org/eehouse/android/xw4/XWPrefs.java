@@ -527,10 +527,7 @@ public class XWPrefs {
         if ( -1 == flags ) {
             result = new CommsConnTypeSet();
             if ( getRelayEnabled( context ) ) {
-                result.add( CommsConnType.COMMS_CONN_RELAY );
-            }
-            if ( BuildConfig.OFFER_MQTT ) {
-                result.add( CommsConnType.COMMS_CONN_MQTT );
+                result.addWithCheck( CommsConnType.COMMS_CONN_RELAY );
             }
             if ( BTService.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );
