@@ -680,7 +680,7 @@ public class ConnStatusHandler {
             //!getAirplaneModeOn( context );
             break;
         case COMMS_CONN_RELAY:
-            result = RelayService.relayEnabled( context )
+            result = XWPrefs.getRelayEnabled( context )
                 && NetStateCache.netAvail( context );
             break;
         case COMMS_CONN_P2P:

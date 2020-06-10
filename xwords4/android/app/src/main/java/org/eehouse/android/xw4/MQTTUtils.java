@@ -82,6 +82,19 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         getOrStart( context );
     }
 
+    public static void timerFired( Context context )
+    {
+        MQTTUtils instance;
+        synchronized ( sInstance ) {
+            instance = sInstance[0];
+        }
+
+        if ( null != instance && !instance.isConnected() ) {
+            clearInstance( instance );
+        }
+        getOrStart( context );  // no-op if have instance
+    }
+
     static void onConfigChanged( Context context )
     {
         MQTTUtils instance;
@@ -158,6 +171,16 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         long now = Utils.getCurSeconds();
         Log.d( TAG, "%H.run() exiting after %d seconds", this,
                now - startTime );
+    }
+
+    private boolean isConnected()
+    {
+        MqttAsyncClient client = mClient;
+        boolean result = null != client
+            && client.isConnected()
+            && mState != State.CLOSING;
+        Log.d( TAG, "isConnected() => %b", result );
+        return result;
     }
 
     private void enqueue( String topic, byte[] packet )
@@ -435,6 +458,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         mMsgThread.add( message.getPayload() );
         ConnStatusHandler
             .updateStatusIn( mContext, CommsConnType.COMMS_CONN_MQTT, true );
+
+        RelayTimerReceiver.restartBackoff( mContext, TAG );
     }
 
     @Override
@@ -443,6 +468,7 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         Log.d( TAG, "%H.deliveryComplete(token=%s)", this, token );
         ConnStatusHandler
             .updateStatusOut( mContext, CommsConnType.COMMS_CONN_MQTT, true );
+        RelayTimerReceiver.restartBackoff( mContext, TAG );
     }
 
     private void subscribe()

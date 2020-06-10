@@ -370,10 +370,6 @@ public class DBUtils {
         if ( null != summary ) { // nag time may have changed
             NagTurnReceiver.setNagTimer( context );
         }
-
-        if ( needsTimer ) {
-            RelayTimerReceiver.setTimer( context );
-        }
     } // saveSummary
 
     public static void addRematchInfo( Context context, long rowid, String btAddr,

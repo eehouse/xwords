@@ -29,36 +29,65 @@ import android.os.SystemClock;
 
 public class RelayTimerReceiver extends BroadcastReceiver {
     private static final String TAG = RelayTimerReceiver.class.getSimpleName();
+    private static final String KEY_BACKOFF = TAG + "/backoff";
+    private static final String KEY_NEXT_BACKOFF = TAG + "/next_backoff";
+    private static final long MIN_BACKOFF = 1000 * 10; // 10 seconds
+    private static final long MAX_BACKOFF = 1000 * 60 * 60 * 32; // 23 hours
 
     @Override
     public void onReceive( Context context, Intent intent )
     {
         Log.d( TAG, "onReceive(intent=%s)", intent );
         RelayService.timerFired( context );
-    }
+        MQTTUtils.timerFired( context );
 
-    public static void setTimer( Context context )
-    {
-        setTimer( context, 1000 * 1800 ); // to be changed shortly
-    }
-
-    public static void setTimer( Context context, long interval_millis )
-    {
-        AlarmManager am =
-            (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
-
-        Intent intent = new Intent( context, RelayTimerReceiver.class );
-        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
-
-        // Check if we have any relay IDs, since we'll be using them to
-        // identify connected games for which we can fetch messages
-        if ( interval_millis > 0 && DBUtils.haveRelayIDs( context ) ) {
-            long fire_millis = SystemClock.elapsedRealtime() + interval_millis;
-            am.set( AlarmManager.ELAPSED_REALTIME_WAKEUP, fire_millis, pi );
+        long nextBackoff = DBUtils.getLongFor( context, KEY_BACKOFF, MIN_BACKOFF );
+        if ( nextBackoff == MAX_BACKOFF ) {
+            // at max, so no change and nothing to save
         } else {
-            // will happen if user's set getProxyIntervalSeconds to return 0
-            am.cancel( pi );
+            nextBackoff *= 2;
+            if ( nextBackoff > MAX_BACKOFF ) {
+                nextBackoff = MAX_BACKOFF;
+            }
+            DBUtils.setLongFor( context, KEY_BACKOFF, nextBackoff );
+        }
+        setTimer( context, nextBackoff, true );
+    }
+
+    static void restartBackoff( Context context, String tag )
+    {
+        DBUtils.setLongFor( context, KEY_BACKOFF, MIN_BACKOFF );
+        setTimer( context, MIN_BACKOFF, false );
+    }
+
+    static void setTimer( Context context, boolean force )
+    {
+        long backoff = DBUtils.getLongFor( context, KEY_BACKOFF, MIN_BACKOFF );
+        setTimer( context, backoff, force );
+    }
+
+    private synchronized static void setTimer( Context context, long backoff, boolean force )
+    {
+        if ( XWPrefs.getRelayEnabled( context ) ) {
+            if ( !force ) {
+                long curBackoff = DBUtils.getLongFor( context, KEY_NEXT_BACKOFF, MIN_BACKOFF );
+                force = backoff != curBackoff;
+            }
+            if ( force ) {
+                long now = SystemClock.elapsedRealtime();
+                long fireMillis = now + backoff;
+
+                AlarmManager am =
+                    (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
+
+                Intent intent = new Intent( context, RelayTimerReceiver.class );
+                PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
+                am.set( AlarmManager.ELAPSED_REALTIME_WAKEUP, fireMillis, pi );
+                Log.d( TAG, "setTimer() set for %d seconds from now (%d)", backoff / 1000, now / 1000 );
+                DBUtils.setLongFor( context, KEY_NEXT_BACKOFF, backoff );
+            }
+        } else {
+            Log.d( TAG, "setTimer(): relay disabled, so dropping" );
         }
     }
-
 }

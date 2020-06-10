@@ -433,6 +433,7 @@ public class DlgDelegate {
             makeOkOnlyBuilder( R.string.no_games_to_refresh ).show();
         } else {
             RelayService.timerFired( m_activity );
+            MQTTUtils.timerFired( m_activity );
             Utils.showToast( m_activity, R.string.msgs_progress );
         }
     }

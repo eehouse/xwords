@@ -1334,12 +1334,10 @@
     <!-- The following strings (all whose names start with
          "not_again") appear in the New user info dialog.
       -->
-    <!-- shown when user chooses the gamel_menu_checkmoves menu -->
+    <!-- shown when user chooses the gamel_menu_checkmoves ("check for
+         moves") menu -->
     <string name="not_again_sync">This action checks the relay for
-      pending moves/messages for all networked games and flags those
-      with pending moves. When you open a flagged game it will connect
-      and sync. (In a later release these moves will be downloaded in
-      the background.)</string>
+    pending moves/messages for all networked games.</string>
     <!-- Shown when the user chooses the "board_menu_trade" menu -->
     <string name="not_again_trading">You are entering tile-exchange
       mode.\n\nTap tiles to add/remove them from the set to be

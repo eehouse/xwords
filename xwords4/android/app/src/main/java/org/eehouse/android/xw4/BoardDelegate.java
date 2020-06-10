@@ -2745,7 +2745,7 @@ public class BoardDelegate extends DelegateBase
                 }
             }
             if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                if ( !RelayService.relayEnabled( m_activity ) ) {
+                if ( !XWPrefs.getRelayEnabled( m_activity ) ) {
                     m_dropRelayOnDismiss = false;
                     String msg = getString( R.string.warn_relay_disabled )
                         + "\n\n" + getString( R.string.warn_relay_remove );

@@ -125,7 +125,7 @@ public class ConnViaViewLayout extends LinearLayout {
             enabled = BTService.BTEnabled();
             break;
         case COMMS_CONN_RELAY:
-            enabled = RelayService.relayEnabled( context );
+            enabled = XWPrefs.getRelayEnabled( context );
             break;
         case COMMS_CONN_P2P:
             enabled = WiDirWrapper.enabled();

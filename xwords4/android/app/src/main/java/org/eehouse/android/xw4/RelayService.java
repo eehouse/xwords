@@ -192,16 +192,8 @@ public class RelayService extends XWJIService
         return s_lastFCM;
     }
 
-    public static boolean relayEnabled( Context context )
-    {
-        boolean enabled = ! XWPrefs
-            .getPrefsBoolean( context, R.string.key_disable_relay, false );
-        // Log.d( TAG, "relayEnabled() => %b", enabled );
-        return enabled;
-    }
-
     public static void enabledChanged( Context context ) {
-        boolean enabled = relayEnabled( context );
+        boolean enabled = XWPrefs.getRelayEnabled( context );
         if ( enabled ) {
             startService( context );
         } else {
@@ -421,13 +413,6 @@ public class RelayService extends XWJIService
             }
         }
 
-        if ( shouldMaintainConnection() ) {
-            long interval_millis = getMaxIntervalSeconds() * 1000;
-            RelayTimerReceiver.setTimer( this, interval_millis );
-            // Log.d( TAG, "onDestroy(): rescheduling in %d ms",
-            //        interval_millis );
-        }
-
         super.onDestroy();
         // Log.d( TAG, "%s.onDestroy() DONE", this );
     }
@@ -517,7 +502,6 @@ public class RelayService extends XWJIService
             } else if ( registerWithRelayIfNot( timestamp ) ) {
                 requestMessages( timestamp );
             }
-            RelayTimerReceiver.setTimer( this );
             break;
         case STOP:
             stopThreads();
@@ -781,7 +765,7 @@ public class RelayService extends XWJIService
     private boolean startFetchThreadIfNotUDP()
     {
         // DbgUtils.logf( "startFetchThreadIfNotUDP()" );
-        boolean handled = relayEnabled( this ) && !BuildConfig.UDP_ENABLED;
+        boolean handled = XWPrefs.getRelayEnabled( this ) && !BuildConfig.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             Assert.failDbg(); // NOT using this now!
 
@@ -814,7 +798,7 @@ public class RelayService extends XWJIService
     private UDPReadThread startUDPReadThreadOnce()
     {
         UDPReadThread thread = null;
-        if ( BuildConfig.UDP_ENABLED && relayEnabled( this ) ) {
+        if ( BuildConfig.UDP_ENABLED && XWPrefs.getRelayEnabled( this ) ) {
             synchronized ( sUDPReadThreadRef ) {
                 thread = sUDPReadThreadRef.get();
                 if ( null == thread ) {
@@ -997,6 +981,7 @@ public class RelayService extends XWJIService
     private void gotPacket( DatagramPacket packet )
     {
         ConnStatusHandler.showSuccessIn();
+        RelayTimerReceiver.restartBackoff( this, TAG );
 
         int packetLen = packet.getLength();
         byte[] data = new byte[packetLen];
@@ -1007,7 +992,7 @@ public class RelayService extends XWJIService
 
     private boolean shouldRegister()
     {
-        boolean should = relayEnabled( this );
+        boolean should = XWPrefs.getRelayEnabled( this );
         if ( should ) {
             String relayID = DevID.getRelayDevID( this, true );
             boolean registered = null != relayID;
@@ -1588,7 +1573,7 @@ public class RelayService extends XWJIService
     private void startThreads()
     {
         Log.d( TAG, "startThreads()" );
-        if ( !relayEnabled( this ) || !NetStateCache.netAvail( this ) ) {
+        if ( !XWPrefs.getRelayEnabled( this ) || !NetStateCache.netAvail( this ) ) {
             stopThreads();
         } else if ( BuildConfig.UDP_ENABLED ) {
             stopFetchThreadIf();
@@ -1720,7 +1705,7 @@ public class RelayService extends XWJIService
 
     private boolean shouldMaintainConnection()
     {
-        boolean result = relayEnabled( this )
+        boolean result = XWPrefs.getRelayEnabled( this )
             && (0 == s_lastFCM || XWPrefs.getIgnoreFCM( this ));
 
         if ( result ) {

@@ -148,6 +148,14 @@ public class XWPrefs {
         return result;
     }
 
+    public static boolean getRelayEnabled( Context context )
+    {
+        boolean enabled = ! getPrefsBoolean( context, R.string.key_disable_relay,
+                                             false );
+        // Log.d( TAG, "getRelayEnabled() => %b", enabled );
+        return enabled;
+    }
+
     public static boolean getSkipToWebAPI( Context context )
     {
         return getPrefsBoolean( context, R.string.key_relay_via_http_first, false );
@@ -518,7 +526,7 @@ public class XWPrefs {
         int flags = getPrefsInt( context, R.string.key_addrs_pref, -1 );
         if ( -1 == flags ) {
             result = new CommsConnTypeSet();
-            if ( RelayService.relayEnabled( context ) ) {
+            if ( getRelayEnabled( context ) ) {
                 result.add( CommsConnType.COMMS_CONN_RELAY );
             }
             if ( BuildConfig.OFFER_MQTT ) {
