@@ -271,6 +271,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
+        mqttConnectOptions.setUserName("xwuser");
+        mqttConnectOptions.setPassword("xw4r0cks".toCharArray());
 
         try {
             setState( State.CONNECTING );
@@ -507,6 +509,8 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
     {
         Log.d( TAG, "%H.onFailure(%s, %s); cur state: %s", this, asyncActionToken,
                exception, mState );
+        ConnStatusHandler
+            .updateStatus( mContext, null, CommsConnType.COMMS_CONN_MQTT, false );
     }
 
     private class MsgThread extends Thread {

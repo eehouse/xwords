@@ -74,12 +74,11 @@ onMessageReceived( struct mosquitto *mosq, void *userdata,
 }
 
 static void
-connect_callback( struct mosquitto *mosq, void *userdata, int result )
+connect_callback( struct mosquitto *mosq, void *userdata, int err )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(err=%s)", mosquitto_strerror(err) );
     XP_USE(mosq);
     XP_USE(userdata);
-    XP_USE(result);
 	/* int i; */
 	/* if(!result){ */
 	/* 	/\* Subscribe to broker information topics on successful connect. *\/ */
@@ -99,13 +98,13 @@ subscribe_callback( struct mosquitto *mosq, void *userdata, int mid,
     XP_USE(qos_count);
     XP_USE(granted_qos);
 	XP_LOGFF ("Subscribed (mid: %d): %d", mid, granted_qos[0]);
-	for( int ii=1; ii < qos_count; ii++ ) {
+	for ( int ii = 1; ii < qos_count; ii++ ) {
 		XP_LOGFF(", %d", granted_qos[ii]);
 	}
 }
 
 static void
-log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str )
+log_callback( struct mosquitto *mosq, void *userdata, int level, const char *str )
 {
     XP_USE(mosq);
     XP_USE(userdata);
@@ -180,6 +179,9 @@ mqttc_init( LaunchParams* params )
     bool cleanSession = false;
     struct mosquitto* mosq = storage->mosq =
         mosquitto_new( storage->clientIDStr, cleanSession, storage );
+
+    err = mosquitto_username_pw_set( mosq, "xwuser", "xw4r0cks" );
+    XP_LOGFF( "mosquitto_username_pw_set() => %s", mosquitto_strerror(err) );
 
     mosquitto_log_callback_set( mosq, log_callback );
 	mosquitto_connect_callback_set( mosq, connect_callback );
