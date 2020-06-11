@@ -482,6 +482,7 @@ public class GameListItem extends LinearLayout
     private static Thread makeThumbThread()
     {
         return new Thread( new Runnable() {
+                @Override
                 public void run()
                 {
                     for ( ; ; ) {
