@@ -201,18 +201,20 @@ public class MQTTUtils extends Thread implements IMqttActionListener, MqttCallba
         }
     }
 
-    private static void clearInstance( MQTTUtils curInstance )
+    private static void clearInstance( final MQTTUtils curInstance )
     {
         synchronized ( sInstance ) {
             if ( sInstance[0] == curInstance ) {
                 sInstance[0] = null;
             } else {
-                curInstance = null; // protect from disconnect() call
+                Log.e( TAG, "clearInstance(): was NOT disconnecting %H because "
+                       + "not current", curInstance );
+                // I don't know why I was NOT disconnecting if the instance didn't match.
+                // If it was the right thing to do after all, add explanation here!!!!
+                // curInstance = null; // protect from disconnect() call -- ????? WHY DO THIS ?????
             }
         }
-        if ( null != curInstance ) {
-            curInstance.disconnect();
-        }
+        curInstance.disconnect();
     }
 
     private MQTTUtils( Context context ) throws MqttException
