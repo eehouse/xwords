@@ -456,6 +456,11 @@
           android:entryValues="@array/mqtt_qos_values"
           android:defaultValue="2"
           />
+      <org.eehouse.android.xw4.XWEditTextPreference
+        android:key="@string/key_mqtt_url"
+        android:title="@string/expl_mqtt_url"
+        android:defaultValue="@string/default_mqtt_url"
+        />
 
     </PreferenceScreen>
 

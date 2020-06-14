@@ -148,6 +148,15 @@ public class XWPrefs {
         return result;
     }
 
+    public static String getDefaultMQTTUrl( Context context )
+    {
+        String result = getPrefsString( context, R.string.key_mqtt_url );
+        if ( result == null || 0 == result.length() ) {
+            result = context.getString( R.string.default_mqtt_url );
+        }
+        return result;
+    }
+
     public static boolean getRelayEnabled( Context context )
     {
         boolean enabled = ! getPrefsBoolean( context, R.string.key_disable_relay,

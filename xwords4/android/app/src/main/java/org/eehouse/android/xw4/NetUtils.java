@@ -226,8 +226,7 @@ public class NetUtils {
     protected static HttpsURLConnection makeHttpsMQTTConn( Context context,
                                                            String proc )
     {
-        // String url = XWPrefs.getDefaultMQTTUrl( context );
-        String url = "https://liquidsugar.net/xw4/api/v1";
+        String url = XWPrefs.getDefaultMQTTUrl( context );
         return makeHttpsConn( context, url, proc );
     }
 

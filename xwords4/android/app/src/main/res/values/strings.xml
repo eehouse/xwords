@@ -2230,6 +2230,7 @@
     <string name="game_summary_field_npackets">Pending packet count</string>
     <string name="expl_update_url">Update checks URL</string>
     <string name="expl_relay_url">URL for relay web API</string>
+    <string name="expl_mqtt_url">URL for new mqtt-based relay API</string>
     <string name="got_langdict_title">Fetch default wordlist for language</string>
     <string name="got_langdict_summary">Don\'t try a second time</string>
     <string name="pref_group_sms_title">SMS Stuff</string>
