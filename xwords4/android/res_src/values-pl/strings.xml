@@ -62,8 +62,8 @@
     <string name="confirm_save_title">Potwierdź zapisanie</string>
     <string name="play">Zagraj w grę</string>
     <string name="player_label">Imię:</string>
-    <string name="dict_lang_label_fmt">Lista słów (w %1$s)</string>
-    <string name="password_label">Hasło</string>
+    <string name="dict_lang_label_fmt">Lista słów (%1$s)</string>
+    <string name="password_label">Hasło:</string>
     <string name="invite_if_nfc">Lub po prostu dotknij, aby zaprosić - jeśli inne urządzenie ma także Android Beaming i jest w pobliżu.</string>
     <string name="invite_multiple">" (Oczekujesz wielu zdalnych graczy. Nie musisz zapraszać ich wszystkich naraz, ale ten alert nie zostanie odrzucony, dopóki wszyscy nie zostaną zaproszeni i wszystkie zaproszenia nie zostaną zaakceptowane.)"</string>
     <string name="invit_expl_sms_fmt">Zaproszenie wysłane za pośrednictwem Data SMS na numer telefonu %1$s na %2$s</string>
@@ -1002,7 +1002,22 @@
 \n
 \nUżyj tej funkcji, aby sprawdzić poprawność słów, którymi zamierzasz zagrać, lub poszukaj nieznanego słowa podanego jako wskazówka.</string>
     <string name="str_winner_fmt" formatted="false">[Zwycięzca] %1$s: %2$d</string>
-    <string name="robot_iq_label">Robot IQ</string>
+    <string name="robot_iq_label">IQ Robota</string>
     <string name="game_paused_title">Gra zatrzymana</string>
     <string name="pause_title">Pauza gry</string>
+    <string name="dup_minutes_label">Minuty na rundę</string>
+    <string name="pause_notify_fmt">Gracz %1$s zatrzymał tę grę.</string>
+    <string name="pause_expl_hint">Czemu to robię</string>
+    <string name="game_unpaused_title">Gra odpauzowana</string>
+    <plurals name="groups_confirm_del_fmt">
+        <item quantity="one">Czy jesteś pewien, że chcesz usunąć wybraną grupę\?</item>
+        <item quantity="few">Czy jesteś pewien, że chcesz usunąć %1$d wybrane grupy\?</item>
+        <item quantity="many">Czy jesteś pewien, że chcesz usunąć %1$d wybranych grup\?</item>
+        <item quantity="other">Czy jesteś pewien, że chcesz usunąć %1$d wybranych grup\?</item>
+    </plurals>
+    <string name="bonus_w3x_summary">3W</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="use_duptimer">Włącz licznik na ruch</string>
 </resources>
