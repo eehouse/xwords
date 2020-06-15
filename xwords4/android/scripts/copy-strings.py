@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Go through all the res_src strings.xml files, and copy them over
 # into the world where they'll get used in a build. This is meant to
@@ -21,11 +21,11 @@ sComment = """
 """
 
 def exitWithError(msg):
-    print 'ERROR:', msg
+    print( 'ERROR:', msg )
     sys.exit(1)
 
 def usage():
-    print "usage:", sys.argv[0], '[-k <list-o-dirs>] [-f inFile]'
+    print( "usage:", sys.argv[0], '[-k <list-o-dirs>] [-f inFile]')
     sys.exit(1)
 
 def sameOrSameWithPrefix( str1, str2 ):
@@ -58,7 +58,7 @@ def tryConvertOne( plurals ):
             use = True
 
     if use:
-        print "converting", plurals.get('name')
+        print( "converting", plurals.get('name'))
         plurals.remove(quantities['other'])
         quantities['one'].set('quantity', 'other')
 
@@ -71,15 +71,15 @@ def pluralsIsBogus(engNames, plurals, verbose):
             bogus = True
             if verbose:
                 quantity = item.get("quantity")
-                print 'dropping plurals {name} because of empty/missing \"{quantity}\"' \
-                    .format(name=plurals.get("name"), quantity=quantity )
+                print( 'dropping plurals {name} because of empty/missing \"{quantity}\"' \
+                    .format(name=plurals.get("name"), quantity=quantity ))
             break
         if item.get("quantity") == "other":
             haveOther = True
 
     if verbose and not bogus and not haveOther:
-        print "dropping plurals {name} because no \"other\" quantity" \
-            .format(name=plurals.get("name"))
+        print( "dropping plurals {name} because no \"other\" quantity" \
+            .format(name=plurals.get("name")))
             
     return bogus or not haveOther
 
@@ -109,7 +109,7 @@ def checkPlurals( engNames, elem, src, verbose ):
     name = elem.get('name')
     ok = True
     if not name in engNames or not 'plurals' == engNames[name]['type']:
-        print 'plurals', name, 'not in engNames or not a plurals there'
+        print( 'plurals', name, 'not in engNames or not a plurals there')
         ok = False
 
     if ok and valuesDir(src) in g_oneToOthers:
@@ -138,8 +138,11 @@ def writeDoc(doc, src, dest):
     dir = os.path.dirname( dest )
     try: os.makedirs( dir )
     except: pass
-    out = open( dest, "w" )
-    out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
+    content = etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) \
+               .decode('utf-8' )
+    # print('writing:', content)
+    with open( dest, "w" ) as out:
+        out.write( content )
 
 def exitWithFormatError(engSet, otherSet, name, path):
     exitWithError( 'formats set mismatch: ' + str(engSet) \
@@ -163,12 +166,12 @@ def checkOrConvertString(engNames, elem, verbose):
                 elem.text = None
                 item.set('quantity', 'other')
                 elem.append( item )
-                if verbose: print 'translated string', name, 'to plural'
+                if verbose: print( 'translated string', name, 'to plural')
                 ok = True
         else:
             ok = False
     elif sameOrSameWithPrefix(engNames[name]['string'], elem.text ):
-        if verbose: print "Same as english: name: %s; text: %s" % (name, elem.text)
+        if verbose: print( "Same as english: name: %s; text: %s" % (name, elem.text))
         ok = False
     else:
         ok = True
@@ -202,7 +205,7 @@ def setForElem( elem, name ):
             part = splits[ii]
             if re.match( g_formatsPat, part ):
                 result.add( part )
-    # print 'setForElem(', name, ') =>', result
+    # print( 'setForElem(', name, ') =>', result)
     return result
 
 def getFormats( doc, path ):
@@ -220,7 +223,7 @@ def getFormats( doc, path ):
             else:
                 add = name + '/' + quantity
                 result[add] = setForElem( item, add )
-    # print 'getFormats(', path, ') => ', result
+    # print( 'getFormats(', path, ') => ', result)
     return result
 
 def main():
@@ -236,7 +239,7 @@ def main():
             if option == '-f': srcFiles.append(value)
             else: usage()
     except:
-        print "Unexpected error:", sys.exc_info()[0]
+        print( "Unexpected error:", sys.exc_info()[0])
         usage()
 
     # summarize the english file
@@ -257,7 +260,7 @@ def main():
             else:
                 item['strings'] = loadPlural(elem)
             engNames[name] = item
-    # print engNames
+    # print( engNames)
     
     # if -f option not used, iterate over src files to collect them all
     if not srcFiles:
