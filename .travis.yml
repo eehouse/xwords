@@ -23,7 +23,6 @@ before_script:
 - chmod u+x android-ndk-r10e-linux-x86_64.bin
 - "./android-ndk-r10e-linux-x86_64.bin > /dev/null"
 - rm android-ndk-r10e-linux-x86_64.bin
-- export ANDROID_NDK_HOME=`pwd`/android-ndk-r10e
 - export LOCAL_ANDROID_NDK_HOME="$ANDROID_NDK_HOME"
 - export LOCAL_ANDROID_NDK_HOST_PLATFORM="linux-x86_64"
 - export PATH=$PATH:${ANDROID_NDK_HOME}
@@ -34,7 +33,7 @@ before_install:
   -in id_rsa_uploader.enc -out /tmp/id_rsa_uploader -d
 - chmod 600 \/tmp\/id_rsa_uploader
 - sudo apt-get -qq update
-- sudo apt-get install -y python-lxml imagemagick
+- sudo apt-get install -y python3-lxml imagemagick
 script:
 - "./gradlew -PuseCrashlytics asXw4dNoSMSDeb"
 - scp -o "StrictHostKeyChecking no" -i /tmp/id_rsa_uploader -d app/build/outputs/apk/*/debug/*.apk
