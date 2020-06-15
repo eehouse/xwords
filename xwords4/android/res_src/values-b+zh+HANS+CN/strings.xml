@@ -23,13 +23,12 @@
     <string name="button_save">保存</string>
     <string name="tile_button_txt_fmt">%1$s（%2$d）</string>
     <string name="chat_sender_fmt">%1$s：</string>
-    <string name="bkng_settings_text">设置</string>
     <string name="str_placer_fmt" formatted="false">【#%1$d】%2$s：%3$d</string>
     <string name="group_cur_games">我的游戏</string>
     <string name="group_new_games">新游戏</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s（%2$d游戏）</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="loc_menu_xlate">翻译</string>
     <string name="loc_lang_local">%1$s（你的）</string>
@@ -42,11 +41,11 @@
     <string name="progress_title">正在下载</string>
     <plurals name="nag_minutes_fmt">
         <item quantity="one">%1$d分钟</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <plurals name="nag_hours_fmt">
         <item quantity="one">%1$d小时</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="rematch_name_fmt">%1$s</string>
     <string name="name_dict_fmt">%1$s／%2$s</string>

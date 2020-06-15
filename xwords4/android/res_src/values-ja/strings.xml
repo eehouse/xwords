@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="button_new_game">ゲームを追加</string>
     <string name="button_new_group">グループを追加</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (ロボット)</string>
@@ -21,7 +20,6 @@
     <string name="msgs_progress">リレーの動きなどをチェック中…</string>
     <string name="no_games_to_refresh">リレー経由で接続するゲームはありません。</string>
     <string name="board_menu_file_about">クロスワードについて…</string>
-    <string name="game_item_menu_title_fmt">\"%1$s\" 操作:</string>
     <string name="list_item_config">ゲームの設定…</string>
     <string name="list_item_rename">名前の変更…</string>
     <string name="list_item_move">グループに移動…</string>
@@ -42,7 +40,6 @@
 \n(リセットすると、すべての動きと接続情報を消去します。)</item>
     </plurals>
     <string name="title_dicts_list">クロスワードの単語リスト</string>
-    <string name="download_dicts">追加の言語をダウンロード…</string>
     <string name="loc_builtin">内蔵</string>
     <string name="loc_downloads">ダウンロード</string>
     <string name="dicts_item_move">保存場所を変更</string>
@@ -126,7 +123,6 @@
     <string name="msg_no_room">その名前のルームが登録されたホストはありません。</string>
     <string name="msg_dup_room">別のホストで、既にその名前を使用してルームが登録されています。名前を変更するか、後でやり直してください。</string>
     <string name="msg_lost_other">リレーが、このゲームで別のデバイスとの接続を失いました。</string>
-    <string name="msg_dev_deleted">このゲームが別のデバイスで削除されました。さらにプレイすることはできません。</string>
     <string name="ids_badwords_fmt">単語 %1$s は単語リスト %2$s 内に見つかりません。</string>
     <string name="badwords_accept">" この移動を反映してもよろしいですか?"</string>
     <string name="badwords_lost">順番を失いました。</string>
@@ -143,9 +139,6 @@
     <string name="board_menu_game_final">最終スコア</string>
     <string name="board_menu_game_resign">辞める</string>
     <string name="board_menu_game_resend">移動を再送信</string>
-    <plurals name="resend_finished_fmt">
-        <item quantity="other">再送信が終了しました。%1$d メッセージを送信しました。</item>
-    </plurals>
     <string name="str_robot_moved_fmt">"ロボット %1$s がこの移動を行いました: "</string>
     <plurals name="strd_robot_traded_fmt">
         <item quantity="other">タイルを %1$d つ交換しました。</item>
@@ -190,7 +183,6 @@
     <string name="pref_player3_name">3 番目のプレイヤー</string>
     <string name="pref_player4_name">4 番目のプレイヤー</string>
     <string name="pref_human_name">人間のプレイヤー (あなたの名前)</string>
-    <string name="tell_unused">まだ利用しません…</string>
     <string name="prefs_dicts">単語リスト</string>
     <string name="prefs_dicts_summary">デフォルトの単語リスト</string>
     <string name="default_dict">人間用の単語リスト</string>
@@ -239,8 +231,6 @@
     <string name="skip_confirm_turn_summary">人間の順番の後は、スコアの概要を表示しません</string>
     <string name="title_sort_tiles">新しいタイルを並べ替え</string>
     <string name="summary_sort_tiles">新しいタイルを追加した場合、ラックを並べ替えます</string>
-    <string name="ringer_zoom">音量キーでズーム</string>
-    <string name="ringer_zoom_summary">音量キーを使ってボードをズームします</string>
     <string name="peek_other">順番外のタイルを表示</string>
     <string name="peek_other_summary">スコアボードの名前をタップすると、そのプレイヤーのタイルを表示します</string>
     <string name="hide_crosshairs">十字カーソルを無効にする</string>
@@ -258,26 +248,17 @@
     <string name="notify_sound">サウンドを再生</string>
     <string name="notify_vibrate">振動</string>
     <string name="notify_other_summary">対戦相手の移動が届いたとき</string>
-    <string name="newgame_local_header">新しいローカル専用ゲーム</string>
-    <string name="newgame_local_desc_fmt">すべてのプレイヤーをこのデバイス上で、新しいゲームを作成します。デフォルトの設定 (%1$s などで) でロボットと対戦するには、\"今すぐプレイ\" を押してください。プレイヤーを追加したり、ゲームの設定を変更するには \"最初に設定\" を押してください。</string>
-    <string name="newgame_local">今すぐプレイ</string>
     <string name="newgame_configure_first">最初に設定</string>
-    <string name="newgame_networked_header">新しいネットワーク ゲーム</string>
-    <string name="newgame_networked_desc">ネットワークを介して対戦するゲームを作成します。\"今すぐ招待\" ボタンは 2 デバイスのゲームを開始して、それに参加する友人を招待することができます。または \"最初に設定\" を押して、ネットワーク ゲームを開始する前にデフォルトの設定を一部変更します。(後で招待を送信するチャンスがあります)</string>
     <string name="newgame_invite">今すぐ招待</string>
     <string name="newgame_drop_relay">リレーを落とす</string>
-    <string name="newgame_bt_header">新しい Bluetooth ゲーム</string>
-    <string name="invite_choice_sms">SMS (テキスト メッセージ)</string>
     <string name="invite_choice_email">メール</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (\"Android ビーム\")</string>
     <string name="invite_choice_title">プレイヤーの招待: 方法は?</string>
     <string name="invite_subject_fmt">クロスワードで遊びましょう (ルーム %1$s)</string>
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;ここをタップ&lt;/a&gt; (または下の完全なリンク。既にクロスワードをインストールしている場合は、添付を開くこともできます) して、このゲームに参加してください。 &lt;br \\&gt; &lt;br \\&gt; (完全なリンク: %1$s )</string>
-    <string name="invite_txt_fmt">クロスワードで遊びましょう! このゲームに参加してください: %1$s。</string>
     <string name="invite_chooser_fmt">%1$s で招待状を送信</string>
     <string name="invite_chooser_email">メール</string>
-    <string name="invite_chooser_sms">sms</string>
     <plurals name="query_trade_fmt">
         <item quantity="other">%1$d の選択したタイル (%2$s) を交換してもよろしいですか\?</item>
     </plurals>
@@ -286,8 +267,6 @@
     <string name="chat_other_id">"私以外: "</string>
     <string name="chat_send">送信</string>
     <string name="chat_menu_clear">履歴のクリア</string>
-    <string name="local_name_hint">プレイヤー名</string>
-    <string name="advanced_config">高度なゲームの設定</string>
     <string name="network_advanced_title">高度</string>
     <string name="no_empty_rooms">このゲームはルーム名を指定しないと
 接続できません。</string>
@@ -305,7 +284,6 @@
     <string name="str_server_dict_wins">ホストとゲスト間の単語リストが競合。ホストが優先されます。</string>
     <string name="downloading_dict_fmt">ダウンロード中 %1$s…</string>
     <string name="no_dict_title">単語リストが見つかりません</string>
-    <string name="no_dict_finish">このゲームで使用している単語リストが消えました。(通常、外部カードが利用できない場合など)</string>
     <string name="button_close_game">ゲームを閉じる</string>
     <string name="no_dict_fmt">ゲーム \"%1$s\" は、%2$s の単語リストが必要です。開く前にダウンロードしてください。</string>
     <string name="no_dict_subst_fmt">単語リスト %2$s が見つからないため、ゲーム\"%1$s\" を開くことができません。(削除されたか、格納されていた外部カードが利用できない可能性があります。)\n\n置き換えてダウンロードするか、別の %3$s 単語リストで代替してください。</string>
@@ -325,7 +303,6 @@
     <string name="button_retry">再試行</string>
     <string name="dup_game_query_fmt">既に同じ招待状から (%1$s) 作成されていると思われるゲームがあります。別に作成してもよろしいですか?</string>
     <string name="info_title">参考までに…</string>
-    <string name="title_tile_picker">空白の文字</string>
     <string name="tiles_left_title">残りのタイル</string>
     <string name="counts_values_title">タイルの数と値</string>
     <string name="history_title">ゲームの履歴</string>
@@ -347,7 +324,6 @@
     <string name="not_again_hintnext">このボタンは、降順ですべての可能な移動を示しています。(ラック区切りの右側にタイルを使用して)</string>
     <string name="not_again_juggle">このボタンは、ランダムにラック内のタイルを再配置します。</string>
     <string name="not_again_flip">このボタンは、斜め方向にボードを反転します。</string>
-    <string name="not_again_zoom">このボタンは、ズームと通常サイズのボードを切り替えます。隠れている部分にズームしたときはドラッグしてください。</string>
     <string name="not_again_undo">このボタンは、現在の手を元に戻したり、やり直しします。</string>
     <string name="not_again_chat">このボタンは、このゲームのデバイス間でのメッセージングの画面を開きます。メッセージは、それらが含まれるゲームを削除するまで保持されます。</string>
     <string name="not_again_values">このボタンは、配置されたタイルの文字数またはポイント値のどちらをボードに表示するか変更します。あなたがどのタイルに価値があるか覚えておくために使用します。</string>
@@ -383,9 +359,6 @@
     <string name="button_newgroup">新しいグループ</string>
     <string name="button_search">検索</string>
     <string name="word_search_hint">最初の文字</string>
-    <string name="tilepick_undo">元に戻す</string>
-    <string name="tilepick_all">私に選んで</string>
-    <string name="cur_tiles_fmt">タイル選択\n(これまで: %1$s)</string>
     <string name="pick_faceup">タイル面を選択</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d 単語 %3$d-%4$d タイル使用)</string>
     <string name="dict_browse_title1_fmt">%1$s (%2$d 単語 %3$d タイル使用)</string>
@@ -401,7 +374,6 @@
     <string name="email_author_subject">クロスワードについてのコメント</string>
     <string name="email_author_chooser">コメントを次で送信</string>
     <string name="email_body_rev_fmt">(該当する場合、バージョン: \"%1$s\" と、お使いの電話またはタブレットのメーカー/モデルを含めるようにしてください)</string>
-    <string name="bt_pick_addall_button">すべての対を追加</string>
     <string name="bt_pick_clear_button">削除</string>
     <string name="invite_progress_title">接続しています…</string>
     <string name="invite_progress_fmt">%1$s でクロスワードへの招待を送信しています</string>
@@ -409,43 +381,24 @@
     <string name="summary_wait_guest">未接続</string>
     <string name="summary_gameover">ゲームオーバー</string>
     <string name="summary_conn">ゲームのプレイ中</string>
-    <string name="new_bt_title">Bluetooth 経由の新しいゲーム</string>
     <string name="new_bt_body_fmt">デバイス %1$s を使用するプレイヤーがゲームの開始を待っています</string>
     <string name="bt_bad_proto_fmt">\"%1$s\" のクロスワードのバージョンは、この Bluetooth を使用するゲームと互換性がありません。続行する前にあなたのゲームをアップグレードする必要があるかもしれません。</string>
     <string name="sms_bad_proto_fmt">番号 \"%1$s\" の電話のクロスワードのバージョンは、データ SMS を使用するこのゲームと互換性がありません。続行する前にあなたのゲームをアップグレードする必要があるかもしれません。</string>
-    <string name="new_btmove_title">Bluetooth 経由で招待</string>
-    <string name="new_move_body">1 つ以上の移動が届きました</string>
-    <plurals name="invite_bt_desc_fmt">
-        <item quantity="one">このゲームに追加するデバイスを選択してください。期待したデバイスが表示されない場合は、\"%2$s\" ボタンを使用してください。</item>
-        <item quantity="other">このゲームに追加する%1$dつのデバイスを選択してください。期待したデバイスが表示されない場合は、\"%2$s\" ボタンを使用してください。</item>
-    </plurals>
     <string name="bt_resend_fmt">"%1$s への Bluetooth 送信に失敗しました。 %2$d 秒で  %3$d を再試行します。"</string>
     <string name="bt_fail_fmt">%1$s への Bluetooth 送信に何度も失敗しています。もう一度やり直すにはゲームを再度開いてください。</string>
     <string name="button_invite">チェック済を招待</string>
     <string name="bt_invite_title">Bluetooth 招待状</string>
     <string name="sms_invite_title">SMS 招待状</string>
-    <string name="game_btname_title">Bluetooth ゲーム名</string>
-    <string name="game_name_title">ゲームに名前をつけてください</string>
     <string name="game_name_label">新しいゲームの名前:</string>
-    <string name="name_copy_fmt">%1$s コピー</string>
-    <string name="newgame_sms_header">新しい SMS ゲーム</string>
-    <string name="dft_sms_name_fmt">SMS ゲーム %1$X</string>
-    <string name="new_sms_title">SMS 経由の新しいゲーム</string>
     <string name="new_name_body_fmt">%1$s からプレイに招待されました</string>
     <string name="button_sms_add">連絡先をインポート</string>
     <plurals name="invite_sms_desc_fmt">
         <item quantity="one">新しいゲームに招待する電話番号を確認して、\"%2$s\" をタップしてください。</item>
         <item quantity="other">新しいゲームに招待する%1$dつの電話番号を確認して、\"%2$s\" をタップしてください。</item>
     </plurals>
-    <string name="manual_owner_name">(連絡先になし)</string>
     <string name="warn_nomobile_fmt">%2$s の番号 %1$s は \"携帯\" 番号ではありません。インポートしますか?</string>
     <string name="empty_sms_inviter">この電話番号のリストは空です。招待する人を追加するには \"連絡先をインポート\" ボタンを使用するか、+ ボタンで直接番号を入力します。</string>
     <string name="get_sms_number">デバイスの電話番号:</string>
-    <plurals name="confirm_clear_fmt">
-        <item quantity="other">チェックした電話番号を削除してもよろしいですか?</item>
-    </plurals>
-    <string name="connect_label_sms">接続 (SMS/テキスト経由)</string>
-    <string name="phone_label">接続数:</string>
     <string name="summary_conn_sms_fmt">%1$s とゲームのプレイ中</string>
     <string name="warn_unlimited">この番号が無制限でテキスト メッセージできるアカウントであることを確認していますか\? そうでない場合は、\"キャンセル\" をタップしてください。</string>
     <string name="remote_undone">リモートのデバイスが手を元に戻しました。</string>
@@ -454,7 +407,6 @@
     <string name="board_menu_undo_current">元に戻す/やり直し</string>
     <string name="menu_juggle">ラックをシャッフル</string>
     <string name="menu_flip">ボードをフリップ</string>
-    <string name="menu_zoom">ズームイン/ズームアウト</string>
     <string name="menu_chat">チャット</string>
     <string name="menu_toggle_values">値の切り替え</string>
     <string name="board_menu_dict">単語リストを参照</string>
@@ -471,7 +423,6 @@
     <string name="connstat_lastreceipt_fmt">最後の受信 %1$s</string>
     <string name="connstat_noreceipt">メッセージは受信していません。</string>
     <string name="connstat_relay">インターネット/リレー</string>
-    <string name="connstat_sms">SMS/テキストメッセージ</string>
     <string name="enable_sms">データ SMS 経由のゲームを許可</string>
     <string name="enable_sms_summary">無制限にテキスト メッセージができる場合のみ!</string>
     <string name="confirm_sms_title">SMS の料金プランを確認</string>
@@ -489,7 +440,6 @@
 \n
 \n今すぐ、または後で、Bluetooth を有効にできます。</string>
     <string name="enable_nfc">このデバイスで NFC がオフになっています。Android の設定アプリを使用するとオンにできます。</string>
-    <string name="sms_ready_text">受信側のデバイスを今すぐタップしてください</string>
     <string name="bt_no_devs">現在、ペアの Bluetooth デバイスはありません (または Bluetooth がオフになっています)。Android の設定パネルを開いて、追加しますか\? 
 \n 
 \n(ペアにするデバイスでも設定パネルを開く必要があります)</string>
@@ -550,7 +500,6 @@
     <string name="square_tiles">正方形のラック タイル</string>
     <string name="square_tiles_summary">高くできる場合でも</string>
     <string name="change_group">選択したゲームを移動する先:</string>
-    <string name="show_wordlist_browser">単語リスト ブラウザー</string>
     <string name="relay_alert_title">リレーからのメッセージ</string>
     <string name="not_again_newselect">ゲームをタップすると開きます。\n\n代わりに、左にあるアイコンをタップしてゲームを選択または選択解除し、選択したゲームを操作することができます。例えば、削除する場合は、メニューまたは \"アクションバー\" を使用します</string>
     <string name="not_again_backclears">戻るボタンは、終了ではなくすべての選択がクリアされます。アプリを終了するには、もう一度押してください。</string>
@@ -598,7 +547,6 @@
     </plurals>
     <string name="xlations_enabled_title">ローカルの翻訳を有効にする</string>
     <string name="xlations_enabled_summary">各画面のメニューにオプションを追加します</string>
-    <string name="data_gsm_only">SMS データは GSM 携帯電話でのみ利用可能です。</string>
     <string name="loc_filters_prompt">フィルター:</string>
     <string name="loc_search_prompt">検索:</string>
     <string name="loc_filters_all">すべて</string>
@@ -633,7 +581,6 @@
     <string name="remote_empty">サーバーから単語リストの情報を取得しています…</string>
     <string name="remote_digesting">単語リストの情報を処理しています…</string>
     <string name="remote_no_net">サーバーから単語リストの情報を取得できません。</string>
-    <string name="getinfo">情報を取得</string>
     <string name="delete_dicts">単語リストを削除</string>
     <string name="show_remote">ダウンロード可能を表示</string>
     <string name="update_dicts_fmt">1 つまたは複数のインストールされている単語リストに更新があります。%1$s の新しいバージョンを今すぐダウンロードしますか?</string>
@@ -648,7 +595,6 @@
     <string name="lang_unknown">不明</string>
     <string name="not_again_dicts">この画面では、新しい単語リストをインストールしたり、既に持っているものを表示できます。\n\nインストールされている単語リストで決まること:\n • プレイできる言語\n • ロボット プレイヤーの賢さ\n • どの単語が正当か。\n\n上部にある \"ダウンロード可能を表示\" ボックスをチェックして、利用可能なものを参照してください。</string>
     <string name="force_tablet_title">タブレット (サイドバイサイド) レイアウトを使用する</string>
-    <string name="force_tablet_summary">画面が小さすぎる場合でも</string>
     <string name="nag_title">リマインダー: あなたの番です</string>
     <plurals name="nag_minutes_fmt">
         <item quantity="other">%1$d 分</item>
@@ -707,13 +653,10 @@
     <string name="advanced">デバッグ用</string>
     <string name="advanced_summary">これは必要ありません…</string>
     <string name="relay_host">リレーホスト</string>
-    <string name="redir_host">リダイレクト ホストを招待</string>
     <string name="dict_host">単語リストのダウンロード URL</string>
     <string name="logging_on">ログを有効にする</string>
     <string name="debug_features">デバッグ機能を有効にする</string>
     <string name="debug_features_summary">メニュー項目等 (リリース ビルドのみ)</string>
-    <string name="title_send_data_sms">データとして SMS を送信</string>
-    <string name="summary_send_data_sms">(GSM 携帯電話のみ)</string>
     <string name="board_menu_game_netstats">ネットワーク統計情報</string>
     <string name="netstats_title">ゲーム ネットワーク統計情報</string>
     <string name="git_rev_title">ソース バージョン id</string>
@@ -726,8 +669,6 @@
     <string name="xlations_locale">翻訳の擬似地域</string>
     <string name="enable_dupes_summary">2 回以上の招待を受け入れます</string>
     <string name="nag_intervals">リマインダーの間隔 (1分、2分、…)</string>
-    <string name="enable_nfc_toself_title">自分への NFC を有効にする</string>
-    <string name="enable_nfc_toself_summary">デバッグを支援するための擬似招待状</string>
     <string name="enable_sms_toself_title">自分に SMS を短絡させる</string>
     <string name="enable_sms_toself_summary">電話番号が同じときに無線をスキップします</string>
     <string name="force_radio_title">無線があるとみなす</string>
@@ -786,15 +727,11 @@
     <plurals name="confirm_clear_sms_fmt">
         <item quantity="other">%1$d のチェックした電話番号を削除してもよろしいですか\?</item>
     </plurals>
-    <string name="confirm_clear_relay">チェックしたデバイスを削除してもよろしいですか?</string>
     <string name="rematch_name_fmt">再戦: %1$s</string>
-    <string name="button_wait">待機</string>
     <string name="disable_nags_title">リマインダーの切り替え</string>
     <string name="disable_nag_solo_title">一人ゲーム リマインダーを無効にする</string>
     <string name="devid_title">デバイス ID (リレー上の)</string>
     <string name="not_again_rematch_two_only">再戦は2人のゲームに限られていますが、少なくとも今のところは、より多くのデバイスでは難しく、2人以上でプレイすることはまれだと思います。私が間違っているようであれば、優先順位を上げますのでお知らせください。</string>
-    <string name="enable_relay_toself_title">自分へのリレーの招待を有効にする</string>
-    <string name="enable_relay_toself_summary">(テストとデバッグの支援用)</string>
     <string name="rel_invite_title">招待タイトルのリレー</string>
     <string name="fetching_from_relay">リレーからゲームを取得中</string>
     <string name="processing_games">ゲームの処理中</string>
@@ -822,8 +759,6 @@
     <string name="chat_hint">ここに入力…</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">概要は利用できません</string>
-    <string name="activity_button">シングル ペイン</string>
-    <string name="fragment_button">デュアル ペイン</string>
     <string name="relay_behavior">リレー プレイ設定</string>
     <string name="relay_behavior_summary">インターネット接続したゲームに適用される設定</string>
     <string name="disable_relay">リレーを経由したプレイを無効にする</string>
@@ -837,20 +772,8 @@
     </plurals>
     <string name="button_enable_relay">リレー プレイを有効にする</string>
     <string name="button_disable_relay">リレー プレイを無効にする</string>
-    <string name="enable_dualpane_summary">タブレットでのサイド・バイ・サイド表示。非常に実験的です!</string>
-    <string name="invite_dualpane">この CrossWords の新しいバージョンは、2 つのペイン (ゲームリストや掲示板など) を左右で見るような大きい画面のデバイスを利用できます。お使いのデバイスが横向きのときに気づくと思いますが、縦向きの場合は変更はありません。
-\n
-\n 気に入っていただくことを願っています。気に入らない場合は、下またはアプリ設定の外観セクションで、無効にすることができます。</string>
-    <string name="dualpane_exit_now">変更を反映するために、クロスワードを終了します。
-再起動を知らせる通知を使用することができます。</string>
-    <string name="post_dualpane_title">クロスワードを再起動</string>
-    <string name="post_dualpane_off_body">サイド・バイ・サイドを無効にしてクロスワードを開始します</string>
-    <string name="dualpane_restart">アプリを終了しています…</string>
-    <string name="enable_dualpane">サイド・バイ・サイドを有効にする</string>
-    <string name="post_dualpane_on_body">サイド・バイ・サイドを有効にしてクロスワードを開始します!</string>
     <string name="after_restart">クロスワードを再起動するまで、
 この変更は有効になりません。</string>
-    <string name="db_enabled_toast">サイド・バイ・サイド モードを有効にします</string>
     <string name="invite_choice_p2p">Wifi ダイレクト</string>
     <string name="bt_pair_settings">ペアの詳細</string>
     <string name="p2p_invite_title">WiFi ダイレクトへの招待</string>
@@ -884,7 +807,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
 アクセス許可が必要です。</string>
     <string name="remove_sms">SMS を削除</string>
     <string name="button_ask_again">もう一度尋ねる</string>
-    <string name="contact_not_found">連絡先にありません</string>
     <string name="sms_send_failed">SMS 送信に失敗しました</string>
     <string name="button_skip">スキップ</string>
     <string name="perms_rationale_title">Android のアクセス許可</string>
@@ -918,13 +840,8 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="gamel_menu_writegit">Git の情報をクリップボードにコピー</string>
     <string name="relay_via_http_first">Web API から使用する</string>
     <string name="relay_via_http_first_summary">(カスタムプロトコルからのフォールバックとして)</string>
-    <string name="enable_smsproto_title">新しい/実験的な SMS コードを使用する</string>
-    <string name="enable_smsproto_summary">(相手も使用する必要があります)</string>
     <string name="expl_relay_url">Web API をリレーする URL</string>
-    <string name="ignore_gcm_title">受信した GCM メッセージを無視する</string>
-    <string name="ignore_gcm_summary">Google カウントを使用しないで同様のことを行います</string>
     <string name="show_sms_title">SMS 送信、受信を表示する</string>
-    <string name="show_gcm_title">GCM の受信を表示する</string>
     <string name="list_item_netstats">接続…</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="other">選択されたタイルが多すぎます。 %1$d 以下にしてください。</item>
@@ -945,13 +862,8 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Bluetooth の範囲内にあるデバイスだけ再追加できます)"</string>
-    <string name="bkng_notify_text">Bluetooth メッセージを受け付けています…</string>
-    <string name="bkng_stop_text">停止</string>
-    <string name="bkng_settings_text">設定</string>
     <string name="bt_scan_age_fmt">最後の受信: %1$s</string>
     <string name="button_close">閉じる</string>
-    <string name="btservice_expl">この通知は、クロスワードがバックグラウンドで実行されている場合に Bluetooth のメッセージを受け付けるために発生します。通常、クロスワードを開始または Bluetooth メッセージを受信した後、約 15 分間実行されます。</string>
-    <string name="foreground_channel_expl">バックグラウンドで Bluetooth を受け付けています</string>
     <string name="gameevent_channel_expl">ゲーム内イベント</string>
     <string name="not_again_emptybtscan">スキャンしても期待するデバイスが見つからない場合:
 \n • まず、再スキャンしてみます

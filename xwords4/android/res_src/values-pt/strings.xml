@@ -11,7 +11,6 @@
     <!-- Text of button at bottom of main games-list screen and of
          menuitem in main games-list screen's menu.  (The botton can
          be hidden in the same way as the above text.) -->
-    <string name="button_new_game">Novo jogo</string>
     <string name="button_new_group">Novo grupo</string>
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
@@ -98,7 +97,6 @@
       -->
     <!-- title of contextual menu.  Name of the selected game is
          substituted in. -->
-    <string name="game_item_menu_title_fmt">Ações para \"%1$s\":</string>
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
     <string name="list_item_config">Configurações do jogo...</string>
@@ -146,7 +144,6 @@
     <!-- text of button at the bottom of the screen.  It launches the
          browser pointed at the site where additional wordlists can be
          found. -->
-    <string name="download_dicts">Baixar mais...</string>
     <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          CrossWords and that cannot be uninstalled or moved.
@@ -483,8 +480,6 @@
          relay.  Once this happens there is no way to continue the
          game so you might as well delete it (unless you're saving it
          for its history etc.) -->
-    <string name="msg_dev_deleted">Esse jogo foi apagado em outro
-    dispositivo. Você não poderá jogá-lo mais.</string>
     <!-- Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
@@ -682,7 +677,6 @@
     <string name="pref_player4_name">Quarto jogador</string>
     <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
-    <string name="tell_unused">Ainda não usado...</string>
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
     <string name="prefs_dicts">Listas de palavras</string>
     <!-- clarification of above -->
@@ -856,10 +850,7 @@
          work to zoom the board in and out (and will not control
          volume) This only applies when the Board screen is
          frontmost. -->
-    <string name="ringer_zoom">Zoom com botões de volume</string>
     <!-- explanation of the above -->
-    <string name="ringer_zoom_summary">Aumentar ou diminuir o
-    tabuleiro com os botões de volume</string>
     <!-- If this preference is checked, tapping on the scoreboard
          entry for any player reveals that player's tiles and any
          pending move (after asking for his password if one is set.)
@@ -934,32 +925,18 @@
       -->
     <!-- section separator (white-on-gray bar) for first section:
          standalone games -->
-    <string name="newgame_local_header">Novo jogo local</string>
     <!-- This is one of two descriptions on this screen.  It explains
          what standalone games are and describes the two buttons used
          to create them.  The name of the language of the default
          wordlist is substituted in for %1$s. -->
-    <string name="newgame_local_desc_fmt">Criar um novo jogo onde todos
-    os jogadores usarão esse dispositivo. Para jogar contra um robô
-    e com as configurações padrão (em %1$s, etc.) pressione \"Jogar
-    agora\". Para adicionar jogadores ou mudar configurações,
-    pressione \"Configurar primeiro\".</string>
     <!-- Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.-->
-    <string name="newgame_local">Jogar agora</string>
     <!-- section separator (white-on-gray bar) for second section:
          networked games -->
-    <string name="newgame_networked_header">Novo jogo de rede</string>
     <!-- This is the second of two descriptions on this screen.  It
          explains what networked games are and describes the two
          buttons used to create them. -->
-    <string name="newgame_networked_desc">Criar um jogo através da
-    rede. O botão \"Convidar agora\" inicia um jogo com dois
-    dispositivos e permite a você convidar um amigo. Ou pressione
-    \"Configurar primeiro\" para modificar as configurações
-    padrão antes de iniciar o jogo de rede. (Você poderá enviar
-    convites depois.)</string>
     <!-- Text of first of two buttons for new networked games.  Tap
          this and a game will be created, but you probably won't see
          it immediately because an email or messaging app will be
@@ -967,7 +944,6 @@
     <string name="newgame_invite">Convidar agora</string>
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
-    <string name="newgame_bt_header">Novo jogo por Bluetooth</string>
     <!-- EXPLAIN ME -->
     <!-- EXPLAIN ME -->
     <!-- The invitation process begins with this query.  The choice is
@@ -996,8 +972,6 @@
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txt_fmt">Vamos jogar CrossWords! Participe desse
-    jogo: %1$s .</string>
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
          or messaging app.  Android then asks the user to choose which
@@ -1006,7 +980,6 @@
          as the title of the dialog that presents that choice. -->
     <string name="invite_chooser_fmt">Enviar convite por %1$s</string>
     <string name="invite_chooser_email">email</string>
-    <string name="invite_chooser_sms">sms</string>
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
     <!-- ############################################################
@@ -1064,10 +1037,7 @@
          instructions-->
     <!-- This is the "hint" printed in light text in the empty player
          name field -->
-    <string name="local_name_hint">Nome do jogador</string>
     <!-- This button takes you to the normal Game Configure screen -->
-    <string name="advanced_config">Configurações de jogo
-    avançadas</string>
     <!-- If you click on the Play button without having entered a room
          name you get an alert with this error message. -->
     <string name="no_empty_rooms">Esse jogo não pode se conectar sem
@@ -1157,9 +1127,6 @@
     <!-- If the wordlist disappears mid-game there are no choices,
          just an explanation and this button, after which the game
          closes. -->
-    <string name="no_dict_finish">Uma lista de palavras usada por
-    esse jogo desapareceu. (Geralmente isso significa que ela está num
-    cartão de memória externo que não está mais disponível.)</string>
     <!-- The only button available when the above message is displayed -->
     <string name="button_close_game">Fechar jogo</string>
     <!-- If the missing wordlist is discovered when trying to open the
@@ -1249,7 +1216,6 @@
     <string name="info_title">Para sua informação...</string>
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
-    <string name="title_tile_picker">Letra para pedra curinga</string>
     <!-- title of dialog brought up in response to the
          board_menu_game_left menu. The dialog lists all tiles
          remaining in the pool, i.e. not on the board or in the rack
@@ -1334,9 +1300,6 @@
     eixo diagonal.</string>
     <!-- Shown when you tap the zoom (+/-) button on the toolbar of
          the main Board screen -->
-    <string name="not_again_zoom">Esse botão alterna o tabuleiro entre
-    o tamanho normal e com zoom. Arraste-o durante o zoom para ver
-    as partes escondidas.</string>
     <!-- Shown when you tap the undo/redo button on the toolbar of the
          main Board screen -->
     <string name="not_again_undo">Esse botão desfaz ou refaz a jogada
@@ -1496,11 +1459,8 @@
     <!--  -->
     <string name="word_search_hint">Primeiras letras</string>
     <!--  -->
-    <string name="tilepick_undo">Desfazer última</string>
     <!--  -->
-    <string name="tilepick_all">Escolher para mim</string>
     <!--  -->
-    <string name="cur_tiles_fmt">Escolhedor de pedras\n(até agora: %1$s)</string>
     <!--  -->
     <string name="pick_faceup">Escolher pedras viradas para cima</string>
     <!--  -->
@@ -1547,16 +1507,13 @@
     <!--  -->
     <string name="summary_conn">Jogo em andamento</string>
     <!--  -->
-    <string name="new_bt_title">Novo jogo por Bluetooth</string>
     <!--  -->
     <string name="new_bt_body_fmt">Dispositivo pareado %1$s te convidou para jogar</string>
     <!--  -->
     <string name="bt_bad_proto_fmt">CrossWords em %1$s na versão errada para
       jogar por Bluetooth.</string>
     <!--  -->
-    <string name="new_btmove_title">Nova jogada por Bluetooth</string>
     <!--  -->
-    <string name="new_move_body">Uma ou mais jogadas chegaram</string>
     <!--  -->
     <!--  -->
     <string name="bt_resend_fmt">Envio por Bluetooth para %1$s falhou; nova
@@ -1569,15 +1526,12 @@
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="game_btname_title">Nome do jogo Bluetooth</string>
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="newgame_sms_header">Novo jogo SMS</string>
     <!--  -->
     <!--  -->
     <!--  -->
-    <string name="dft_sms_name_fmt">Jogo SMS %X</string>
     <!--  -->
     <string name="invite_notice_title">Novo jogo</string>
     <!--  -->
@@ -1587,7 +1541,6 @@
     <string name="button_sms_add">Importar contato</string>
     <!--  -->
     <!--  -->
-    <string name="manual_owner_name">(Não está nos contatos)</string>
     <!--  -->
     <string name="warn_nomobile_fmt">O número %1$s para %2$s não é um
     número \"móvel\". Importar mesmo assim?</string>
@@ -1599,9 +1552,7 @@
     <!--  -->
     <string name="get_sms_number">Entre o número telefônico:</string>
     <!--  -->
-    <string name="connect_label_sms">Conexão (por SMS/texto)</string>
     <!--  -->
-    <string name="phone_label">Número(s) conectado(s):</string>
     <!--  -->
     <string name="summary_conn_sms_fmt">Jogo em andamento com %1$s</string>
     <!--  -->
@@ -1621,7 +1572,6 @@
     <!--  -->
     <string name="menu_flip">Espelhar tabuleiro</string>
     <!--  -->
-    <string name="menu_zoom">Aumentar/diminuir zoom</string>
     <!--  -->
     <string name="menu_chat">Conversa</string>
     <!--  -->
@@ -1651,7 +1601,6 @@
     <!--  -->
     <string name="connstat_relay">internet/servidor</string>
     <!--  -->
-    <string name="connstat_sms">sms/texto</string>
     <!--  -->
     <!--  -->
     <string name="enable_sms">Permitir jogos por SMS</string>
@@ -1741,7 +1690,6 @@
     <string name="button_rematch">Revanche</string>
     <string name="square_tiles">Peças quadradas</string>
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
-    <string name="show_wordlist_browser">Listas de palavras</string>
     <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste dispositivo) para:</string>
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="one">Você tem certeza que deseja excluir o 1 jogo selecionado? Esta ação não poderá ser desfeita.</item>

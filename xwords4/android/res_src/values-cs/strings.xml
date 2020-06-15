@@ -13,7 +13,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 --><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="button_new_game">Přidat hru</string>
     <string name="list_item_config">Konfigurovat</string>
     <string name="list_item_delete">Vymazat</string>
     <string name="list_item_copy">Kopírovat</string>
@@ -30,7 +29,6 @@
     <string name="player_label">Jméno:</string>
     <string name="info_title">Pro vaši informaci...</string>
     <string name="query_title">Dotaz...</string>
-    <string name="title_tile_picker">Písmeno za žolíka</string>
     <string name="tiles_left_title">Zbývající kameny</string>
     <string name="counts_values_title">Počty a hodnoty kamenů</string>
     <string name="history_title">Historie hry</string>
@@ -58,8 +56,6 @@
     <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
     <string name="strd_cumulative_score_fmt">Souhrnné skóre: %1$d</string>
     <string name="strs_new_tiles_fmt">Nové kameny: %1$s</string>
-    <string name="str_passed">Prošel</string>
-    <string name="str_lostturn">Tah byl ztracen</string>
     <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
     <string name="str_bonus_all">Bonus za využití všech kamenů: 50\n</string>
     <string name="strd_turn_score_fmt">Skóre za tah: %1$d\n</string>
@@ -89,7 +85,6 @@
     <string name="dicts_item_select">Nastavit jako výchozí</string>
     <string name="settings_label">Nastavení hry</string>
     <string name="minutes_label">Minut ve hře</string>
-    <string name="download_dicts">Nahrát více...</string>
     <string name="confirm_save_title">Potvrdit uložení</string>
     <string name="confirm_save">Tato hra je rozehraná. Pokud tyto změny uložíte, musí být hra spuštěná znova.
     Chcete tyto změny uložit nebo je chcete zrušit?</string>
@@ -101,8 +96,6 @@
     <string name="explain_robot_summary">Ukázat skóre po každém tahu robota</string>
     <string name="skip_confirm_turn">Přeskočit potvrzení tahu</string>
     <string name="skip_confirm_turn_summary">Neukazovat skóre po každém tahu hráče</string>
-    <string name="ringer_zoom">Přiblížit tlačítky hlasitosti</string>
-    <string name="ringer_zoom_summary">Přiblížit hrací pole pomocí tlačítek ovládání hlasitosti zvuku</string>
     <string name="phonies_ignore">Ignorovat slovník</string>
     <string name="phonies_warn">Varovat pokud není ve slovníku</string>
     <string name="phonies_disallow">Zakázat pokud není ve slovníku</string>
