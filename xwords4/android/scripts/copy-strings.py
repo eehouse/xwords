@@ -187,43 +187,91 @@ def checkAndCopy( parser, engNames, engFormats, src, dest, verbose ):
 
     for elem in doc.findall('plurals'):
         if not checkPlurals(engNames, elem, src, verbose):
+            # print('checkAndCopy(): removing {}'.format(elem))
             elem.getparent().remove(elem)
 
+    # Languages don't have to provide the same set of plurals items:
+    # one, zero, few, other etc. (My English doesn't include "few" so
+    # far.) What can't happen is for there to be a format string in the
+    # totality of them that's not in the totality of English, or for
+    # there to be internal inconsistencies among their format strings,
+    # e.g. a %1$d in "one" and a %1$s in "other"
     formats = getFormats( doc, src )
     for name in formats:
-        if name in formats and not engFormats[name] == formats[name]:
+        if not engFormats[name].hasAll( formats[name] ):
             exitWithFormatError( engFormats[name], formats[name], name, dest )
 
     writeDoc(doc, src, dest)
 
+class FormatSet():
+    def __init__(self):
+        self.fmts = {
+            's': set(),
+            'd': set(),
+            }
+
+    def add(self, fmt):
+        assert(len(fmt) == 4)
+        typ = fmt[3]
+        indx = int(fmt[1])
+        # print('FormatSet.add({},{})'.format(fmt, typ))
+        self.fmts[typ].add(indx)
+
+    def append( self, ps ):
+        for ch in ['s', 'd']:
+            self.fmts[ch].update( ps.fmts[ch] )
+
+    # assert don't have any indices in BOTH sets
+    def check(self):
+        isOK = True
+        if self.fmts['d'].intersection(self.fmts['s']):
+            isOK = False
+            print('error!!!: same index in both: {}'.format(self))
+        return isOK
+
+    def hasAll(self, other):
+        result = True
+        for ch in ['s', 'd']:
+            result = result and 0 == len(other.fmts[ch] - self.fmts[ch])
+        return result
+
+    def __str__(self):
+        return '{}'.format(self.fmts)
+
 def setForElem( elem, name ):
-    result = set()
+    result = FormatSet()
     splits = re.split( g_formatsPat, elem.text )
     nParts = len(splits)
+    # print( 'setForElem({}): text: {}; nParts: {}'.format( name, elem.text, nParts ))
     if 1 < nParts:
         for ii in range(nParts):
             part = splits[ii]
             if re.match( g_formatsPat, part ):
                 result.add( part )
-    # print( 'setForElem(', name, ') =>', result)
+    # print( 'setForElem({}) => {}'.format( name, result))
     return result
 
 def getFormats( doc, path ):
     result = {}
-    for elem in doc.findall('string'):
-        name = elem.get('name')
+    typ = 'string'
+    for elem in doc.findall(typ):
+        name = typ + '/' + elem.get('name')
         result[name] = setForElem( elem, name )
-    for elem in doc.findall('plurals'):
-        name = elem.get('name')
+
+    typ = 'plurals'
+    for elem in doc.findall(typ):
+        name = typ + '/' + elem.get('name')
+        pluralsSet = FormatSet()
         for item in elem.findall('item'):
             quantity = item.get('quantity')
             if not item.text or 0 == len(item.text):
-                exitWithError( 'plurals ' + name + ' has empty quantity ' + quantity \
-                               + ' in file ' + lang )
+                exitWithError( '{} has empty quantity {} in file {}'.format( name, quantity, lang ) )
             else:
-                add = name + '/' + quantity
-                result[add] = setForElem( item, add )
-    # print( 'getFormats(', path, ') => ', result)
+                pluralsSet.append(setForElem( item, name ))
+        if not pluralsSet.check():
+            exitWithError( '{} has overlapping sets: {}'.format(name, pluralsSet))
+        result[name] = pluralsSet
+    # print( 'getFormats({}) => {}'.format( path, result ) )
     return result
 
 def main():
