@@ -179,7 +179,6 @@
     <string name="notify_other_summary">Når motstanderens trekk mottas</string>
     <string name="newgame_invite">Inviter nå</string>
     <string name="newgame_invite_more">Mer info</string>
-    <string name="invite_choice_sms">SMS (tekstmelding)</string>
     <string name="invite_choice_email">E-post</string>
     <string name="invite_choice_bt">Blåtann</string>
     <string name="invite_choice_title">Invitasjon av spillere: Hvordan?</string>
@@ -271,7 +270,6 @@
     <string name="connstat_lastsend_fmt">Siste forsendelse var %1$s (%2$s)</string>
     <string name="connstat_lastreceipt_fmt">Siste kvittering var %1$s</string>
     <string name="connstat_noreceipt">Ingen meldinger mottatt.</string>
-    <string name="connstat_sms">SMS/tekstmelding</string>
     <string name="enable_sms">Tillat spill via SMS</string>
     <string name="enable_sms_summary">Kun hvis du har ubegrensede tekstmeldinger!</string>
     <string name="confirm_sms_title">Bekreft din SMS-plan</string>
@@ -412,7 +410,6 @@
     <string name="waiting_title">Venter på spillere</string>
     <string name="waiting_invite_title">Venter på svar</string>
     <string name="waiting_rematch_title">Omkamp underveis</string>
-    <string name="button_wait">Vent</string>
     <string name="button_edit">Rediger</string>
     <string name="button_discard_changes">Forkast endringer</string>
     <string name="disable_nags_title">Turpåminnelser</string>
@@ -503,7 +500,6 @@
     <string name="msg_too_many">Du kommer med flere spillere enn verten forventer.</string>
     <string name="msg_dup_room">En annen vert har allerede registrert et rom som bruker det navnet. Gi ditt et nytt navn og prøv igjen senere.</string>
     <string name="msg_lost_other">Relé-et har mistet kontakten med en annen enhet i dette spillet.</string>
-    <string name="msg_dev_deleted">Dette spillet har blitt slettet på en annen enhet. Du vil ikke kunne spille videre.</string>
     <string name="ids_badwords_fmt">Ord[ene] %1$s ble ikke funnet i ordlisten %2$s.</string>
     <string name="badwords_lost">Tur tapt.</string>
     <string name="board_menu_tray_hide">Skjul stativ</string>
@@ -676,8 +672,6 @@
     <string name="enable_dupes_title">Godta duplikatinvitasjoner</string>
     <string name="xlations_locale">Juks til lokale for oversettelse</string>
     <string name="nag_intervals">Påminnelsesintervall (minutt1,minutt2,…)</string>
-    <string name="enable_smsproto_title">Bruk ny/eksperimentell SMS-kode</string>
-    <string name="enable_smsproto_summary">(Krever at motparten bruker det også)</string>
     <string name="nfc_to_self">Send via NFC til egen ehet?</string>
     <string name="game_summary_field_rowid">rad-ID</string>
     <string name="game_summary_field_gameid">spill-ID</string>
@@ -690,8 +684,6 @@
     <string name="seeking_relay">Kobler til relé…</string>
     <string name="confirm_drop_relay_bt">Blåtann fungerer kun for enheter i nærheten.</string>
     <string name="confirm_drop_relay_sms">Ikke alle tilbydere støtter spill via SMS.</string>
-    <string name="ignore_gcm_title">Se bort fra innkommende GCM-meldinger</string>
-    <string name="show_gcm_title">Vis GCM-mottak</string>
     <string name="invite_copied">Invitasjon klar til innliming</string>
     <string name="rel_invite_title">Reléinvitasjonstittel</string>
     <string name="fetching_from_relay">Henter spill fra relé-et</string>
@@ -727,18 +719,9 @@
     <string name="not_again_juggle">Denne knappen stokker om flis tilfeldig på stativet.</string>
     <string name="not_again_flip">Denne knappen dreier brettet om en diagonal akse.</string>
     <string name="not_again_conndall">Du har koblet til og tatt del i et spill på relé-et; rommet er nå fullt. Eneten som opprettet rommet vil nå tildele deg dine første flis, og spillet kan begynne.</string>
-    <string name="bt_pick_addall_button">Legg til alle parrede</string>
     <string name="bt_pair_settings">Parr flere</string>
     <string name="bt_bad_proto_fmt">Versjonen av CrossWords på \"%1$s\" er ukompatibel med den for spill ved bruk av Blåtann. Én av dere må oppgradere før du kan fortsette.</string>
     <string name="sms_bad_proto_fmt">Versjonen av CrossWords på telefonen med nummer \"%1$s\" er ikke kompatibel med den for spill ved bruk av SMS. Én av dere må oppgradere før du kan fortsette.</string>
-    <plurals name="invite_bt_desc_fmt">
-        <item quantity="one">Velg enheten du ønsker å inkludere i dette spillet.
-\n
-\nBruk \"%2$s\"-knappen hvis du ikke ser en enheten du forventer.</item>
-        <item quantity="other">Velg opptil %1$d enhet[er] du ønsker å inkludere i dette spillet.
-\n
-\nBruk \"%2$s\"-knappen hvis du ikke ser en enhet du forventer.</item>
-    </plurals>
     <string name="button_invite">Invitasjon sjekket</string>
     <string name="relay_invite_title">Relé-invitasjon</string>
     <plurals name="invite_sms_desc_fmt">
@@ -894,7 +877,6 @@
     <string name="not_again_comms_bt">Bruk Blåtann for å spille mot enheter i nærheten som er parret med din.</string>
     <string name="not_again_comms_p2p">Bruk Wi-Fi Direct for å spille mot enheter i nærheten som støtter det, og som har CrossWords installert.</string>
     <string name="not_again_rematch_two_only">Omkamp er begrenset til to-personersspill nå, fordi det er vanskeligere med flere enheter, og fordi spill med mer en to spillere er sjeldent. La det komme til kjenne hvis dette er en feilaktig begrensning.</string>
-    <string name="ignore_gcm_summary">Imiter livet uten en Google-konto</string>
     <string name="not_again_clip_expl_fmt">Valget \"%1$s\" kopierer en invitasjonsnettadresse til utklippstavlen. Lim det inn i ønsket program og send det til din venn.</string>
     <string name="confirm_clear_chat">Er du sikker på at du ønsker å slette all sludrehistorikk for dette spillet?
 \n
@@ -937,13 +919,8 @@
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Du kan kun legge til enheter som er innen Blåtannsrekkevidde på ny.)"</string>
-    <string name="bkng_notify_text">Godtar Blåtannsmeldinger…</string>
-    <string name="bkng_stop_text">Stopp</string>
-    <string name="bkng_settings_text">Innstillinger</string>
     <string name="bt_scan_age_fmt">Siste skanningsrespons: %1$s</string>
     <string name="button_close">Lukk</string>
-    <string name="btservice_expl">Denne merknaden er der når CrossWords kjører i bakgrunnen, for å godta Blåtannsmeldinger i bakgrunnen. Den kjører vanligvis i omentrent ett kvarter etter at CrossWords starter, eller en Blåtannsmelding mottas.</string>
-    <string name="foreground_channel_expl">Godtar Blåtann i bakgrunnen</string>
     <string name="gameevent_channel_expl">Hendelser inne i spillet</string>
     <string name="not_again_emptybtscan">Hvis en skanning ikke finner enheten du forventer:
 \n • Først, skann på ny

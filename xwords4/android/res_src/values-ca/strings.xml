@@ -13,7 +13,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 --><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="button_new_game">Afegeix una partida</string>
     <string name="list_item_config">Configuració de la partida…</string>
     <string name="list_item_delete">Suprimeix</string>
     <string name="list_item_copy">Copia</string>
@@ -31,7 +30,6 @@
     <string name="player_label">Nom:</string>
     <string name="info_title">Per a la vostra informació…</string>
     <string name="query_title">Una pregunta…</string>
-    <string name="title_tile_picker">Seleccioneu una fitxa</string>
     <string name="tiles_left_title">Fitxes romanents</string>
     <string name="counts_values_title">Quantitat i valor de les fitxes</string>
     <string name="history_title">Historial de la partida</string>
@@ -63,8 +61,6 @@
     <string name="str_phony_rejected">Hi ha una o més paraules no vàlides a la jugada; torn perdut!</string>
     <string name="strd_cumulative_score_fmt">Puntuació acumulada: %1$d</string>
     <string name="strs_new_tiles_fmt">Fitxes noves: %1$s</string>
-    <string name="str_passed">Ha passat</string>
-    <string name="str_lostturn">Torn perdut</string>
     <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
     <string name="str_bonus_all">Bonificació per usar totes les fitxes: 50\n</string>
     <string name="strd_turn_score_fmt">Puntuació del torn: %1$d\n</string>
@@ -95,7 +91,6 @@
     <string name="dicts_item_select">Estableix com a predeterminat</string>
     <string name="settings_label">Paràmetres de la partida</string>
     <string name="minutes_label">Minuts a la partida</string>
-    <string name="download_dicts">Baixa més llengües…</string>
     <string name="confirm_save_title">Confirmeu els canvis</string>
     <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
     <string name="hints_allowed">Permet pistes</string>
@@ -108,8 +103,6 @@
     <string name="skip_confirm_turn_summary">No mostra el resum de la jugada després del torn d\'un jugador humà</string>
     <string name="title_sort_tiles">Ordena les fitxes noves</string>
     <string name="summary_sort_tiles">Ordena el faristol en agafar noves fitxes</string>
-    <string name="ringer_zoom">Zoom amb els botons de volum</string>
-    <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum</string>
     <string name="hide_title">Amaga la capçalera</string>
     <string name="hide_title_summary">Ocultar el nom de la partida permet que el tauler sigui una mica més gran</string>
     <string name="phonies_ignore">Ignora-les</string>
@@ -196,7 +189,6 @@
 si hi ha jugades, …</string>
     <string name="no_games_to_refresh">No s\'ha trobat cap partida
 que connecti via el repetidor.</string>
-    <string name="game_item_menu_title_fmt">«%1$s» accions:</string>
     <string name="list_item_rename">Canvia el nom…</string>
     <string name="list_item_move">Mou al grup…</string>
     <string name="no_copy_network">Les partides que ja estan connectades
@@ -271,7 +263,6 @@ que connecti via el repetidor.</string>
     <string name="invite_if_nfc">O simplement toqueu per a convidar, si l\'altre aparell també té Android Beaming i és a prop.</string>
     <string name="invite_multiple">" (Esteu esperant més d\'un jugador remot. No els heu de convidar a tots a la vegada, però aquest avís no desapareixerà fins que hàgiu convidat a tothom i totes les invitacions s\'hagin acceptat.)"</string>
     <string name="msg_relay_all_here_fmt">Tots els jugadors són a la sala «%1$s».</string>
-    <string name="msg_dev_deleted">Aquesta partida s\'ha suprimit en un altre aparell. No podreu jugar-hi més.</string>
     <string name="board_menu_tray_hide">Amaga el faristol</string>
     <string name="board_menu_tray_show">Mostra el faristol</string>
     <string name="board_menu_undo_last">Desfés</string>
@@ -296,7 +287,6 @@ que connecti via el repetidor.</string>
     <string name="prefs_names">Noms dels jugadors</string>
     <string name="prefs_names_summary">Noms predeterminats dels jugadors</string>
     <string name="pref_human_name">Jugador humà (el vostre nom)</string>
-    <string name="tell_unused">Encara no s\'ha usat…</string>
     <string name="prefs_dicts">Diccionaris</string>
     <string name="prefs_dicts_summary">Diccionaris predeterminats</string>
     <string name="default_robodict">Diccionaris per als robots</string>
@@ -331,24 +321,15 @@ que connecti via el repetidor.</string>
     <string name="notify_sound">Reprodueix un so</string>
     <string name="notify_vibrate">Vibra</string>
     <string name="notify_other_summary">Quan arribi la jugada de l\'oponent</string>
-    <string name="newgame_local_header">Partida només local nova</string>
-    <string name="newgame_local_desc_fmt">Crea una partida nova on totes els jugadors seran en aquest aparell. Per a jugar contra un robot amb la configuració predeterminada (en %1$s, etc.) simplment pitgeu «Juga ara». Per a afegir jugadors o canviar els paràmetres de la partida, pitgeu «Configura primer».</string>
-    <string name="newgame_local">Juga ara</string>
     <string name="newgame_configure_first">Configura primer</string>
-    <string name="newgame_networked_header">Partida en xarxa nova</string>
-    <string name="newgame_networked_desc">Crea una partida per a jugar en xarxa. El botó «Convida ara» inicia una partida entre 2 aparells i us ajuda a convidar un amic a unir-s\'hi. O pitgeu «Configura primer» per a canviar alguns dels paràmetres predeterminats abans de començar la partida en xarxa. (Podreu enviar les invitacions després.)</string>
     <string name="newgame_invite">Convida ara</string>
-    <string name="newgame_bt_header">Partida Bluetooth nova</string>
-    <string name="invite_choice_sms">SMS (missatges)</string>
     <string name="invite_choice_email">Correu-e</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC («Android beaming»)</string>
     <string name="invite_choice_title">Invitació de jugadors: Com?</string>
     <string name="invite_subject_fmt">Juga al CrossWords (sala %1$s)</string>
-    <string name="invite_txt_fmt">Juga al CrossWords! Uneix-te a aquesta partida: %1$s.</string>
     <string name="invite_chooser_fmt">Envia la invitació via %1$s</string>
     <string name="invite_chooser_email">correu-e</string>
-    <string name="invite_chooser_sms">SMS</string>
     <plurals name="query_trade_fmt">
         <item quantity="one">Esteu segur que voleu canviar la fitxa seleccionada (%2$s)?</item>
         <item quantity="other">Esteu segur que voleu canviar les %1$d fitxes seleccionades (%2$s)?</item>
@@ -358,10 +339,7 @@ que connecti via el repetidor.</string>
     <string name="chat_other_id">"No jo: "</string>
     <string name="chat_send">Envia</string>
     <string name="chat_menu_clear">Buida l\'historial</string>
-    <string name="local_name_hint">Nom del jugador</string>
-    <string name="advanced_config">Paràmetres de partida avançats</string>
     <string name="no_empty_rooms">Aquesta partida no pot connectar sense un nom de sala.</string>
-    <string name="no_dict_finish">Ha desaparegut el diccionari que usava aquesta partida. (Habitualment això significa que és en una targeta externa que no es troba disponible.)</string>
     <string name="button_close_game">Tanca la partida</string>
     <string name="no_dict_fmt">La partida «%1$s» requereix un diccionari de %2$s. Baixeu-ne un abans d\'obrir-la.</string>
     <string name="button_substdict">Substitueix</string>
@@ -375,7 +353,6 @@ que connecti via el repetidor.</string>
     <string name="not_again_hintnext">Aquest botó mostra totes les jugades possibles en ordre descendent (usa les fitxes a la dreta del separador del faristol.)</string>
     <string name="not_again_juggle">Aquest botó barreja aleatòriament les fitxes del faristol.</string>
     <string name="not_again_flip">Aquest botó capgira el tauler pel seu eix diagonal.</string>
-    <string name="not_again_zoom">Aquest botó canvia l\'escala del tauler entre la mida normal i l\'ampliada. Si està ampliat, arrossegueu per a veure la part oculta.</string>
     <string name="not_again_undo">Aquest botó desfà o refà el torn actual.</string>
     <string name="not_again_chat">Aquest botó obre la pantalla per a enviar missatges entre els aparells d\'aquesta partida. Els missatges es conservaran fins que suprimiu la partida que els conté.</string>
     <string name="not_again_values">Aquest botó canvia si el tauler mostra les lletres de les fitxes jugades o els seu valor numèric. Useu-lo per a recordar quin valor té una fitxa.</string>
@@ -405,9 +382,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_newgroup">Grup nou</string>
     <string name="button_search">Cerca</string>
     <string name="word_search_hint">Primeres lletres</string>
-    <string name="tilepick_undo">Desfés</string>
-    <string name="tilepick_all">Tria-les per mi</string>
-    <string name="cur_tiles_fmt">Selector de fitxes\n(com a molt:%1$s)</string>
     <string name="pick_faceup">Tria les fitxes cara amunt</string>
     <string name="dict_browse_title_fmt">%1$s (%2$d paraules usant %3$d-%4$d fitxes)</string>
     <string name="dict_browse_title1_fmt">%1$s (%2$d paraules usant %3$d fitxes)</string>
@@ -430,21 +404,12 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="summary_wait_guest">Sense connexió</string>
     <string name="summary_gameover">Partida finalitzada</string>
     <string name="summary_conn">Partida en joc</string>
-    <string name="new_bt_title">Partida nova via Bluetooth</string>
     <string name="new_bt_body_fmt">Un jugador de l\'aparell %1$s vol iniciar una partida</string>
     <string name="bt_bad_proto_fmt">La versió del CrossWords en «%1$s» és incompatible amb aquesta per a jugar via Bluetooth. Cal que actualitzeu abans per a continuar.</string>
-    <string name="new_btmove_title">Invitació via Bluetooth</string>
-    <string name="new_move_body">Han arribat una o més jugades</string>
     <string name="newbie_title">Aquí teniu un consell</string>
     <string name="bt_invite_title">Invitació per Bluetooth</string>
     <string name="sms_invite_title">Invitació per SMS</string>
-    <string name="game_btname_title">Nom de la partida Bluetooth</string>
-    <string name="game_name_title">Poseu nom a la partida</string>
     <string name="game_name_label">Nom de la partida nova:</string>
-    <string name="name_copy_fmt">%1$s copia</string>
-    <string name="newgame_sms_header">Partida SMS nova</string>
-    <string name="dft_sms_name_fmt">Partida SMS %1$X</string>
-    <string name="new_sms_title">Partida via SMS nova</string>
     <string name="new_name_body_fmt">%1$s us ha convidat a jugar</string>
     <string name="button_sms_add">Importa el contacte</string>
     <string name="menu_hint_prev">Consell anterior</string>
@@ -452,7 +417,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="board_menu_undo_current">Desfés/Refés</string>
     <string name="menu_juggle">Remena el faristol</string>
     <string name="menu_flip">Gira el tauler</string>
-    <string name="menu_zoom">Apropa\'t o allunya\'t</string>
     <string name="menu_chat">Xat</string>
     <string name="board_menu_dict">Explora el diccionari</string>
     <string name="game_list_tmp">S\'està construint el resum de la partida…</string>
@@ -460,7 +424,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="connstat_unsucc">amb error</string>
     <string name="connstat_noreceipt">No s\'ha rebut cap missatge.</string>
     <string name="connstat_relay">Internet/repetidor</string>
-    <string name="connstat_sms">SMS/missatges</string>
     <string name="enable_sms">Permet partides via SMS de dades</string>
     <string name="enable_sms_summary">Només si teniu missatges SMS il·limitats!</string>
     <string name="confirm_sms_title">Confirmeu el vostre pla de SMS</string>
@@ -511,7 +474,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_rematch">Torna a jugar-hi</string>
     <string name="button_reconnect">Torna a connectar</string>
     <string name="change_group">Mou les partides seleccionades a:</string>
-    <string name="show_wordlist_browser">Explorador de diccionaris</string>
     <string name="relay_alert_title">Missatge del dia</string>
     <string name="sel_games_fmt">Partides: %1$d</string>
     <string name="sel_groups_fmt">Grups: %1$d</string>
@@ -569,7 +531,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="loc_item_check">Comprova</string>
     <string name="loc_item_copy_eng">Copia l\'anglès</string>
     <string name="loc_item_copy_bless">Copia l\'oficial</string>
-    <string name="getinfo">Obtén la informació</string>
     <string name="delete_dicts">Suprimeix els diccionaris</string>
     <string name="show_remote">Mostra els baixables</string>
     <string name="progress_title">S\'està baixant</string>
@@ -605,8 +566,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_discard_changes">Descarta els canvis</string>
     <string name="dict_host">URL de baixada de diccionari</string>
     <string name="logging_on">Habilita el registre</string>
-    <string name="title_send_data_sms">Envia SMS com a dades</string>
-    <string name="summary_send_data_sms">(Només telèfons GSM)</string>
     <string name="board_menu_game_netstats">Estadístiques de xarxa</string>
     <string name="relay_port">Port del repetidor de partides</string>
     <string name="gamel_menu_storedb">Escriu les partides a la targeta SD</string>
@@ -664,8 +623,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="button_enable">Habilita</string>
     <string name="warn_nomobile_fmt">El número %1$s de %2$s no sembla un número de mòbil. Voleu importar-lo igualment?</string>
     <string name="get_sms_number">Número de telèfon de l\'aparell:</string>
-    <string name="connect_label_sms">Connexió (via SMS/missatges)</string>
-    <string name="phone_label">Números connectats:</string>
     <string name="summary_conn_sms_fmt">Partida en joc amb %1$s</string>
     <string name="menu_toggle_values">Canvia els valors</string>
     <string name="invite_dict_missing_body_noname_fmt">Us han convidat a jugar al CrossWords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari?</string>
@@ -712,7 +669,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="warn_unlimited">Esteu segur que aquest número és d\'un compte amb SMS il·limitats? Feu clic a «Cancel·la si no ho esteu.</string>
     <string name="square_tiles_summary">Encara que pugin ser més altes</string>
     <string name="square_tiles">Fitxes els faristol quadrades</string>
-    <string name="data_gsm_only">Les dades SMS només són disponibles als telèfons GSM.</string>
     <string name="update_dicts_fmt">Les actualitzacions són disponibles per a algun dels diccionaris. Voleu baixar la versió nova de %1$s ara?</string>
     <string name="netstats_title">Estadístiques de la partida en xarxa</string>
     <string name="git_rev_title">ID de la versió de codi font</string>
@@ -730,7 +686,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="not_again_comms_sms">Jugar via SMS usa la mateixa tecnologia que els missatges SMS. Els missatges seran invisibles, l\'operadora els considera missatges de text, per tant potser preferiu inhabilitar aquesta característica llevat que tingueu missatges SMS il·limitats (o un bon pressupost). Noteu que l\'Android només permet aquesta característica en els dispositius amb operadora GSM, això és qualsevol operadora mundial, excepte Verizon i Sprint.</string>
     <string name="not_again_comms_bt">Useu Bluetooth per a jugar contra un aparell proper que estigui aparellat amb el vostre.</string>
     <string name="force_tablet_title">Voleu usar la disposició de tauleta (costat per costat)?</string>
-    <string name="force_tablet_summary">Encara que la pantalla sigui massa petita</string>
     <string name="dup_game_query_fmt">Ja teniu una partida que sembla s\'ha creat (el %1$s) amb la mateixa invitació. Esteu segur de voler crear-ne una altra?</string>
     <string name="not_again_sync">Aquesta acció comprova que no hi hagin jugades o missatges pendents al repetidor de totes partides i marca aquelles amb jugades pendents. Si obriu una partida marcada connectarà i sincronitzarà. (en una versió posterior aquestes jugades es baixaran en segon pla.)</string>
     <string name="not_again_conndfirst">Teniu una partida connectada i iniciada en una sala nova. Una vegada els aparells que falten s\'hagin unit a la vostra sala, i el CrossWords hagi assignat les fitxes, la partida pot començar.</string>
@@ -738,7 +693,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="not_again_conndall">Heu connectat i unit a una partida al repetidor. La sala ara és plena. L\'aparell que ha creat la sala ara assignarà les fitxes inicials i la partida podrà començar.</string>
     <string name="not_again_arrow">Moviment de fitxes al tauler:
 \nPodeu arrossegar les fitxes entre el faristol i el tauler, o podeu tocar una casella buida per a col·locar la fletxa del tauler. Les fitxes del faristol que toqueu substituiran la fletxa (es mourà una casella en la direcció que assenyali.) Toqueu la fletxa un cop per a canviar-ne l\'orientació, una segon cop per a amagar-la. Un casella de verificació a la secció Aparença de la Configuració permet amagar-la permanentment.</string>
-    <string name="manual_owner_name">(no és als contactes)</string>
     <string name="empty_sms_inviter">Aquest llistat telefònic és buit. Useu el botó «Importa un contacte» per a afegir persones que voleu convidar, el botó + per a introduir números directament.</string>
     <string name="connstat_net_noaddr">Aquesta partida en xarxa no té forma de connectar i no es podrà jugar mai.\n\n(probablement fou creada amb una invitació que no especifica cap via de connexió suportada pel vostre aparell.)</string>
     <string name="connstat_net_fmt">Estat de xarxa per a la partida connectada via %1$s:</string>
@@ -763,7 +717,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
 \nTambé podeu tocar les icones a l\'esquerra per a seleccionar o treure partides, i aleshores actuar en les partides seleccionades, p. ex. suprimir-les, fent servir el menú o la barra d\'accions.</string>
     <string name="not_again_backclears">El botó enrere anul·la qualsevol selecció en comptes de sortir. Toqueu-lo una altra vegada per a sortir de l\'aplicació.</string>
     <string name="dropped_dupe">Invitació rebuda però ignorada, ja s\'havia fet servir per a crear una partida.</string>
-    <string name="sms_ready_text">Toqueu l\'aparell receptor ara</string>
     <string name="new_game_message">Voleu crear aquesta partida usant els paràmetres predeterminats?\n\nO voleu configurar-la abans?</string>
     <string name="new_game_message_net">(Podreu convidar altres jugadors quan estigui oberta.)</string>
     <string name="nplayers_prompt">Número d\'aquest aparell</string>
@@ -781,7 +734,6 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="newgame_drop_relay">Treu el repetidor</string>
     <string name="invite_htm_fmt">"&lt;a href=%1$s&gt;Taca aquí&lt;/a&gt; (o toca l\'enllaç següent, o, si ja tens el CrossWords instal·lat, obre l\'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br  &lt;br  (enllaç: %1$s )"</string>
     <string name="no_dict_subst_fmt">No es pot obrir la partida «%1$s» perquè el diccionari %2$s no s\'ha trobat. (potser s\'ha suprimit o està emmagatzemat en una memòria externa que no es troba disponible.)\n\nPodeu baixar un substitut o substituir-lo amb un altre diccionari %3$s.</string>
-    <string name="bt_pick_addall_button">Afegeix tots els aparellats</string>
     <string name="button_invite">Convida els marcats</string>
     <string name="nfc_just_tap">Per a convidar via NFC només cal tocar la part del darrere d\'aquest aparell amb la de l\'aparell que voleu convidar ---només cal que la partida estigui oberta.</string>
     <string name="warn_no_comms">Qualsevol partida en xarxa ha de tenir almenys una via de comunicació. Si no teniu opcions de connexió predeterminades, caldrà configurar manualment cada partida en xarxa.</string>
@@ -800,10 +752,8 @@ Introduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu
     <string name="invite_stays">(Aquest diàleg es mostrarà fins que tots els jugadors remots hagin connectat. Podeu tancar la partida si penseu que pot trigar una mica. Podran connectar-hi igualment.)</string>
     <string name="expl_update_url">URL de comprovació d\'actualitzacions</string>
     <string name="rematch_msg">Gestió de les invitacions per a tornar a jugar la partida. Us mostrarem aquest missatge mentre no l\'accepteu.\n\nNo heu de tenir aquesta partida oberta mentre espereu. Rebreu una notificació quan la partida estigui preparada per a jugar.</string>
-    <string name="redir_host">Convida l\'amfitrió redirigit</string>
     <string name="str_no_hint_found">No puc trobar cap jugada</string>
     <string name="notify_chat_title_fmt">Missatge de xat a la partida %1$s</string>
-    <string name="invite_choice_clip">Ho triaré</string>
     <string name="invite_copied">Invitació preparada per a copiar</string>
     <string name="clip_label">URL de la invitació</string>
     <string name="not_again_clip_expl_fmt">L\'opció «%1$s» copia un URL d\'invitació al porta-retalls. Enganxeu-lo a l\'aplicació desitjada i envieu-lo al vostre amic.</string>
@@ -837,8 +787,6 @@ de %2$d destinataris. Useu el botó de tornar a
     <string name="relay_invite_title">Invitació via repetidor</string>
     <string name="p2p_invite_title">Invitació via mode directe per WiFi</string>
     <string name="get_relay_number">Introduïu l\'ID de l\'aparell:</string>
-    <string name="confirm_clear_relay">Esteu segur que voleu suprimir els
-aparells seleccionats?</string>
     <string name="chat_sender_fmt">%1$s:</string>
     <string name="summary_busy">Resum no disponible</string>
     <plurals name="warn_relay_games_fmt">
@@ -856,11 +804,8 @@ aparells seleccionats?</string>
     <string name="list_item_select">Selecciona</string>
     <string name="list_item_deselect">Treu la selecció</string>
     <string name="no_invites">Aquesta partida no té cap invitació</string>
-    <string name="post_dualpane_title">Tornar a iniciar el CrossWords</string>
-    <string name="dualpane_restart">S\'està sortint de l\'aplicació…</string>
     <string name="button_enable_relay">Habilita el joc via repetidor</string>
     <string name="button_disable_relay">Inhabilitat el joc via repetidor</string>
-    <string name="button_wait">Espereu</string>
     <string name="disable_nags_title">Recordatoris de torn</string>
     <string name="disable_nag_solo_title">Inhabilita els recordatoris de partides en solitari</string>
     <string name="move_dict_rationale">Baixar un diccionari en l\'àrea
@@ -923,7 +868,6 @@ aparells seleccionats?</string>
     <string name="gamel_menu_writegit">Copia la informació git al porta-retalls</string>
     <string name="expl_relay_url">URL per a l\'API web del repetidor</string>
     <string name="not_again_comms_p2p">Usa WiFi Direct per a jugar contra aparells propers amb WiFi Direct i el CrossWords instal·lat.</string>
-    <string name="ignore_gcm_title">Ignora els missatges GCM entrants</string>
     <string name="show_sms_title">Mostra els missatges SMS enviats i rebuts</string>
     <string name="rel_invite_title">Títol de la invitació per repetidor</string>
     <string name="fetching_from_relay">Recupera les partides del repetidor</string>
@@ -936,8 +880,6 @@ aparells seleccionats?</string>
     <string name="perms_rationale_title">Permisos d\'Android</string>
     <string name="toast_no_permission">Permís no atorgat</string>
     <string name="force_tablet_default">Usa els valors predeterminats per al meu aparell</string>
-    <string name="enable_smsproto_title">Usa el codi SMS experimental/nou</string>
-    <string name="enable_smsproto_summary">(Requereix que l\'oponent també l\'usi)</string>
     <string name="list_item_netstats">Connexions…</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Heu seleccionat massa fitxes. Seleccioneu-ne només una.</item>
@@ -955,9 +897,6 @@ aparells seleccionats?</string>
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Només podeu tornar a afegir els aparells que són accessibles via Bluetooth.)"</string>
-    <string name="bkng_notify_text">S\'estan acceptant missatges Bluetooth…</string>
-    <string name="bkng_stop_text">Atura\'t</string>
-    <string name="bkng_settings_text">Configuració</string>
     <string name="button_close">Tanca</string>
     <string name="gameevent_channel_expl">Esdeveniments durant la partida</string>
     <string name="invit_expl_usrsms_fmt">S\'ha enviat la invitació via SMS al telèfon %1$s a %2$s</string>

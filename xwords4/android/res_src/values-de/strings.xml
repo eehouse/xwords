@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="button_new_game">Spiel hinzufügen</string>
     <string name="button_new_group">Gruppe hinzufügen</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
     <string name="robot_name_fmt">%1$s (Computer)</string>
@@ -21,7 +20,6 @@
     <string name="menu_prefs">App-Einstellungen …</string>
     <string name="gamel_menu_checkmoves">Züge prüfen</string>
     <string name="board_menu_file_about">Über CrossWords…</string>
-    <string name="game_item_menu_title_fmt">Aktionen für „%1$s“:</string>
     <string name="list_item_config">Spieleinstellungen …</string>
     <string name="list_item_rename">Umbenennen …</string>
     <string name="list_item_move">In Gruppe verschieben …</string>
@@ -37,7 +35,6 @@
         <item quantity="other">Möchten Sie die %1$d ausgewählten Partien wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</item>
     </plurals>
     <string name="title_dicts_list">CrossWords-Wortlisten</string>
-    <string name="download_dicts">Weitere Sprachen herunterladen…</string>
     <string name="loc_builtin">Vorinstalliert</string>
     <string name="loc_downloads">Downloads</string>
     <string name="dicts_item_move">Speicherort ändern</string>
@@ -147,7 +144,6 @@
     <string name="msg_too_many">Sie stellen mehr Spieler bereit als der Server erwartet.</string>
     <string name="msg_no_room">Kein Server hat einen Raum mit diesem Namen angelegt.</string>
     <string name="msg_dup_room">Ein anderer Server hat bereits einen Raum mit diesem Namen angelegt. Benennen Sie Ihren um oder versuchen Sie es später noch einmal.</string>
-    <string name="msg_dev_deleted">Diese Partie wurde auf einem anderen Gerät gelöscht. Sie können nicht weiterspielen.</string>
     <string name="ids_badwords_fmt">Wort/Wörter %1$s nicht in Wortliste %2$s gefunden.</string>
     <string name="badwords_accept">" Wollen Sie diesen Zug trotzdem akzeptieren?"</string>
     <string name="badwords_lost">Zug verwirkt.</string>
@@ -276,7 +272,6 @@
     <string name="newgame_configure_first">Zuerst konfigurieren</string>
     <string name="newgame_invite">Jetzt einladen</string>
     <string name="newgame_invite_more">Weitere Informationen</string>
-    <string name="invite_choice_sms">SMS (Textnachrichten)</string>
     <string name="invite_choice_email">Email</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC („Android-Beaming“)</string>
@@ -475,7 +470,6 @@
     <string name="connstat_lastreceipt_fmt">Letzter Empfang war %1$s</string>
     <string name="connstat_noreceipt">Keine Nachrichten wurden empfangen.</string>
     <string name="connstat_relay">Internet/Zwischenstation</string>
-    <string name="connstat_sms">SMS/Textnachrichten</string>
     <string name="enable_sms">Partien über Daten-SMS zulassen</string>
     <string name="enable_sms_summary">Nur, wenn Sie unbegrenzt SMS versenden dürfen!</string>
     <string name="title_enable_p2p">Wi-Fi-Direct aktivieren</string>
@@ -718,7 +712,6 @@
     <string name="waiting_title">Warte auf Spieler</string>
     <string name="waiting_invite_title">Warte auf Antwort</string>
     <string name="waiting_rematch_title">Revanchepartie läuft</string>
-    <string name="button_wait">Warten</string>
     <string name="button_reinvite">Neu einladen</string>
     <string name="invite_stays">(Dieser Dialog bleibt sichtbar bis alle externen Spieler eine Verbindung aufgebaut haben. Sie können die Partie schließen, falls Sie erwarten, dass das länger dauert. Externe Spieler können dann immer noch eine Verbindung aufbauen und Sie werden benachrichtigt, sobald das der Fall ist.)</string>
     <string name="nfc_just_tap">Zum Einladen über NFC einfach mit der Rückseite dieses Geräts die des Geräts berühren, das Sie einladen wollen – wann immer die Partie geöffnet ist.</string>
@@ -762,11 +755,7 @@
     <string name="not_again_comms_p2p">"Benutzen Sie Wi-Fi-Direct, um gegen ein Gerät mit  Wi-Fi-Direct-Unterstützung in Reichweite zu spielen, auf dem CrossWords installiert ist."</string>
     <string name="str_no_hint_found">Keine Züge gefunden</string>
     <string name="not_again_rematch_two_only">Revanchepartien sind, zumindest im Moment, nur bei Zweispielerpartien möglich, weil es mit mehr Geräten schwieriger ist und meiner Meinung nach mehr als zwei Spieler selten sind. Kontaktieren Sie mich, falls ich Unrecht habe, und ich werde die Priorität für diese Funktion erhöhen.</string>
-    <string name="enable_relay_toself_summary">(Zur Unterstützung von Tests und der Fehlersuche)</string>
-    <string name="ignore_gcm_title">Eingehende GCM-Nachrichten ignorieren</string>
-    <string name="ignore_gcm_summary">Leben ohne Google-Konto imitieren</string>
     <string name="show_sms_title">SMS-Versand/Empfang anzeigen</string>
-    <string name="show_gcm_title">GCM-Empfang anzeigen</string>
     <plurals name="resent_msgs_fmt">
         <item quantity="one">Ein Zug neu gesendet</item>
         <item quantity="other">%1$s Züge neu gesendet</item>
@@ -822,7 +811,6 @@
 \nHalten Sie Ihren Finger auf einen Namen auf der Punktetafel, um Details über den letzten Zug dieses Spielers anzuzeigen.</string>
     <string name="not_again_newfrom">Eine neue Partie erzeugen, die bereit zum Spielen ist, mit allen Einstellungen aus dieser Partie. Das heißt, diese Partie als Vorlage verwenden.</string>
     <string name="about_vers_fmt">CrossWords für Android, %1$s Variant, Version %2$s, Rev. %3$s, Build-Datum %4$s.</string>
-    <string name="bt_pick_addall_button">Alle gepaarten hinzufügen</string>
     <string name="bt_pair_settings">Weitere paaren</string>
     <string name="invite_progress_title">Verbinde …</string>
     <string name="invite_progress_fmt">Sende Einladung an CrossWords auf %1$s</string>
@@ -830,14 +818,6 @@
     <string name="summary_wait_guest">Nicht verbunden</string>
     <string name="summary_gameover">Partie beendet</string>
     <string name="summary_conn">Partie läuft</string>
-    <plurals name="invite_bt_desc_fmt">
-        <item quantity="one">Bitte wählen Sie das Gerät, das Sie zu dieser Partie hinzufügen wollen.
-\n
-\nBenutzen Sie den Button „%2$s“, wenn Sie das Gerät nicht sehen, das Sie erwarten.</item>
-        <item quantity="other">"Bitte wählen Sie bis zu  %1$d Gerät(e), die Sie zu dieser Partie hinzufügen wollen.
-\n
-\nBenutzen Sie den Button „%2$s“, wenn Sie ein Gerät nicht sehen, das Sie erwarten."</item>
-    </plurals>
     <plurals name="warn_relay_games_fmt">
         <item quantity="one">"
 \n
@@ -896,7 +876,6 @@
     <string name="pref_group_l10n_summary">Einstellungen zur Lokalisierung aus der App heraus</string>
     <string name="pref_item_update_summary">Builds zwischen Veröffentlichungen holen</string>
     <string name="checking_title">Überprüfung</string>
-    <string name="enable_relay_toself_title">Zwischenstation-Einladungen an sich selbst aktivieren</string>
     <string name="phone_state_rationale">Einige Smartphones können SMS-„Daten“-Nachrichten austauschen. CrossWords will Ihnen diese Option anbieten, braucht dazu aber Informationen über Ihr Gerät (um zu wissen, ob es ein Telefon ist und falls ja, was für eines).
 \n
 \nWenn Ihr Gerät keine Daten-SMS senden kann (z. B. weil es kein Telefon ist) oder Sie nie über SMS spielen wollen (z. B. weil für jede Nachricht eine Gebühr anfällt), können Sie diese Berechtigung dauerhaft ablehnen.</string>
@@ -915,8 +894,6 @@
     <string name="slmenu_clear_sel">Ausgewählte löschen</string>
     <string name="slmenu_select_all">Alle auswählen</string>
     <string name="slmenu_deselect_all">Auswahl aufheben</string>
-    <string name="enable_smsproto_title">Neuen/experimentellen SMS-Code benutzen</string>
-    <string name="enable_smsproto_summary">(Muss auch vom Gegner benutzt werden)</string>
     <string name="button_move">Verschieben</string>
     <string name="loc_filters_screen">Neuester Bildschirm</string>
     <string name="loc_filters_menu">Aktuelles Menü</string>
@@ -946,15 +923,10 @@
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Sie können nur Geräte erneut hinzufügen, die sich in Bluetooth-Reichweite befinden.)"</string>
-    <string name="bkng_notify_text">Empfange Bluetooth-Nachrichten …</string>
-    <string name="bkng_stop_text">Stopp</string>
-    <string name="bkng_settings_text">Einstellungen</string>
     <string name="pct_suffix">" ％"</string>
     <string name="loc_item_copy_bless">Offiziell kopieren</string>
     <string name="bt_scan_age_fmt">Letzter Kontakt von: %1$s</string>
     <string name="button_close">Schließen</string>
-    <string name="btservice_expl">Diese Anzeige wird immer dann gezeigt, wenn CrossWords im Hintergrund läuft, um Bluetooth-Nachrichten zu empfangen. Normalerweise läuft es 15 Minuten lang nach dem Start oder nach Empfang der letzten Bluetooth-Nachricht.</string>
-    <string name="foreground_channel_expl">Bluetooth-Nachrichten im Hintergrund empfangen</string>
     <string name="gameevent_channel_expl">Ereignisse während der Partie</string>
     <string name="not_again_emptybtscan">Wenn beim Scannen das erwartete Gerät nicht gefunden wird:
 \n • Zuerst: Scannen Sie erneut

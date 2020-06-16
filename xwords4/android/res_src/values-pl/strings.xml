@@ -121,7 +121,6 @@
     <string name="newgame_configure_first">Najpierw skonfiguruj</string>
     <string name="newgame_invite">Zaproś teraz</string>
     <string name="newgame_invite_more">Więcej informacji</string>
-    <string name="invite_choice_sms">SMS (wiadomości tekstowe)</string>
     <string name="invite_choice_email">E-mail</string>
     <string name="invite_choice_title">Zapraszanie graczy: Jak\?</string>
     <string name="invite_chooser_fmt">Wyślij zaproszenie przez %1$s</string>
@@ -292,7 +291,6 @@
     <string name="msg_too_many">Udostępniasz więcej graczy niż oczekuje host.</string>
     <string name="msg_dup_room">Inny host już zarejestrował pokój używając tej nazwy. Zmień swoją nazwę lub spróbuj później.</string>
     <string name="msg_lost_other">Przekaźnik utracił kontakt z innym urządzeniem w tej grze.</string>
-    <string name="msg_dev_deleted">Ta gra została usunięta na innym urządzeniu. Nie będziesz mógł dalej grać.</string>
     <string name="ids_badwords_fmt">Słowa[ów] %1$s nie znaleziono na liście słów %2$s.</string>
     <string name="badwords_accept">" Czy chcesz zaakceptować ten ruch\?"</string>
     <string name="badwords_lost">Straciłeś swoją kolejkę.</string>
@@ -542,7 +540,6 @@
     <string name="connstat_lastreceipt_fmt">Ostatni odbiór odbył się %1$s</string>
     <string name="connstat_noreceipt">Nie otrzymano żadnych wiadomości.</string>
     <string name="connstat_relay">Internet/przekaźnik</string>
-    <string name="connstat_sms">SMS/wiadomości tekstowe</string>
     <string name="enable_sms_summary">Tylko jeśli masz nieograniczone SMS-y!</string>
     <string name="title_enable_p2p">Włącz WiFi Direct</string>
     <string name="summary_enable_p2p">Eksperymentalne, zużywa dużo baterii</string>
@@ -815,10 +812,7 @@
     <string name="not_again_comms_p2p">Użyj WiFi Direct, aby zagrać z pobliskim urządzeniem obsługującym WiFi Direct z zainstalowanym CrossWords.</string>
     <string name="str_no_hint_found">Nie można znaleźć żadnych ruchów</string>
     <string name="not_again_rematch_two_only">Rewanż jest ograniczony do gier dwuosobowych, przynajmniej na razie, ponieważ jest trudniejszy w przypadku większej liczby urządzeń i myślę, że rzadko zdarza się, aby ludzie bawili się więcej niż dwoma. Daj mi znać, jeśli się mylę, wtedy wezmę to za priorytet.</string>
-    <string name="ignore_gcm_title">Ignoruj przychodzące wiadomości GCM</string>
-    <string name="ignore_gcm_summary">Naśladuj życie bez konta google</string>
     <string name="show_sms_title">Pokaż wysyłanie/odbieranie SMS-ów</string>
-    <string name="show_gcm_title">Pokaż odbieranie GCM</string>
     <string name="invite_copied">Zaproszenie gotowe do wklejenia</string>
     <string name="clip_label">Adres URL zaproszenia</string>
     <string name="not_again_clip_expl_fmt">Opcja \"%1$s\" kopiuje adres URL zaproszenia do Schowka. Wklej go do wybranej aplikacji i wyślij do znajomego.</string>
@@ -832,9 +826,6 @@
     <string name="list_item_deselect">Odznacz</string>
     <string name="no_invites">Ta gra nie wysłała żadnych zaproszeń</string>
     <string name="after_restart">Ta zmiana zostanie zastosowana po ponownym uruchomieniu CrossWords.</string>
-    <string name="missing_perms">Ta gra jest skonfigurowana do komunikowania się za pomocą wiadomości SMS, ale CrossWords nie ma na to pozwolenia. Nadal możesz otworzyć grę, ale może nie być w stanie wysyłać ani odbierać ruchów.
-\n
-\nMożesz go ponownie otworzyć, aby ponownie poprosić o pozwolenie. Możesz też usunąć ustawienie komunikacji SMS.</string>
     <string name="download_rationale">CrossWords potrzebuje dostępu do tymczasowej pamięci, aby zachować to, co zamierzasz pobrać.</string>
     <string name="sms_invite_rationale">CrossWords potrzebuje zezwolenia na wysłanie zaproszenia za pośrednictwem Data SMS.</string>
     <string name="dicts_storage_rationale">"CrossWords może przechowywać i odczytywać listy słów w obszarze pobierania urządzenia, ale wymaga pozwolenia na dostęp do nich.
@@ -854,8 +845,6 @@
     <string name="button_skip">Pomiń</string>
     <string name="perms_rationale_title">Uprawnienia w systemie Android</string>
     <string name="toast_no_permission">Pozwolenie nie zostało udzielone</string>
-    <string name="enable_smsproto_title">Użyj nowego/eksperymentalnego kodu SMS</string>
-    <string name="enable_smsproto_summary">(Wymaga tego, aby przeciwnik też go używał)</string>
     <string name="list_item_netstats">Połączeń…</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Zbyt wiele wybranych kafelków. Wybierz tylko jeden.</item>
@@ -874,13 +863,8 @@
     <string name="confirm_clear_bt_postscript">"
 \n
 \n(Ponownie można dodać tylko te urządzenia, które są w zasięgu Bluetooth.)"</string>
-    <string name="bkng_notify_text">Odbiór wiadomości przez Bluetooth…</string>
-    <string name="bkng_stop_text">Zatrzymaj</string>
-    <string name="bkng_settings_text">Ustawienia</string>
     <string name="bt_scan_age_fmt">Ostatnio otrzymano od: %1$s</string>
     <string name="button_close">Zamknij</string>
-    <string name="btservice_expl">To powiadomienie jest dostępne zawsze, gdy CrossWords działa w tle, aby zaakceptować wiadomości przez Bluetooth. Zwykle trwa około 15 minut po rozpoczęciu CrossWords lub odebraniu wiadomości przez Bluetooth.</string>
-    <string name="foreground_channel_expl">Akceptuj Bluetooth w tle</string>
     <string name="gameevent_channel_expl">Wydarzenia w grze</string>
     <string name="not_again_emptybtscan">Jeśli skanowanie nie znajdzie oczekiwanego urządzenia:
 \n• Ponownie przeskanuj
