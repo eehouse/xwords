@@ -237,14 +237,6 @@
     <string name="hide_crosshairs_summary">ボードのどのマスをタッチしたかを表示しません</string>
     <string name="network_behavior">ネットワーク ゲームの設定</string>
     <string name="network_behavior_summary">ネットワーク ゲームに適用する設定</string>
-    <string name="connect_frequency">バックグラウンドで移動をチェック</string>
-    <string name="connect_never">チェックしない</string>
-    <string name="connect_five_mins">5 分ごと</string>
-    <string name="connect_fifteen_mins">15 分ごと</string>
-    <string name="connect_thirty_mins">30 分ごと</string>
-    <string name="connect_one_hour">1 時間ごと</string>
-    <string name="connect_six_hours">6 時間ごと</string>
-    <string name="connect_daily">毎日 1 回</string>
     <string name="notify_sound">サウンドを再生</string>
     <string name="notify_vibrate">振動</string>
     <string name="notify_other_summary">対戦相手の移動が届いたとき</string>

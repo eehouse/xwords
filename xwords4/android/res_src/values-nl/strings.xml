@@ -247,14 +247,6 @@
     <string name="hide_crosshairs_summary">Geef geen visuele indicatie van welke cel op het bord aangeraakt wordt</string>
     <string name="network_behavior">Netwerk instellingen</string>
     <string name="network_behavior_summary">Instellingen voor spellen gespeeld over een netwerk</string>
-    <string name="connect_frequency">Zoeken naar zetten op de achtergrond</string>
-    <string name="connect_never">Nooit zoeken</string>
-    <string name="connect_five_mins">Elke 5 minuten</string>
-    <string name="connect_fifteen_mins">Elke 15 minuten</string>
-    <string name="connect_thirty_mins">Elke 30 minuten</string>
-    <string name="connect_one_hour">Elk uur</string>
-    <string name="connect_six_hours">Elke 6 uur</string>
-    <string name="connect_daily">Elke 24 uur</string>
     <string name="notify_sound">Speel geluid</string>
     <string name="notify_vibrate">Vibreer</string>
     <string name="notify_other_summary">Als de tegenstander een zet doet</string>

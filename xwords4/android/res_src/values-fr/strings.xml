@@ -1118,23 +1118,15 @@ parties en réseau</string>
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
     <!--<string name="connect_frequency">Background move check</string>-->
-    <string name="connect_frequency">Vérification des coups</string>
     <!-- These are the possible values for the connect_frequency
          setting presented as a drop-down list. -->
     <!--<string name="connect_never">Never check</string>-->
-    <string name="connect_never">Ne jamais vérifier</string>
     <!--<string name="connect_five_mins">Every 5 minutes</string>-->
-    <string name="connect_five_mins">Toutes les 5 minutes</string>
     <!--<string name="connect_fifteen_mins">Every 15 minutes</string>-->
-    <string name="connect_fifteen_mins">Toutes les 15 minutes</string>
     <!--<string name="connect_thirty_mins">Every 30 minutes</string>-->
-    <string name="connect_thirty_mins">Toutes les 30 minutes</string>
     <!--<string name="connect_one_hour">Every hour</string>-->
-    <string name="connect_one_hour">Toutes les heures</string>
     <!--<string name="connect_six_hours">Every six hours</string>-->
-    <string name="connect_six_hours">Toutes les six heures</string>
     <!--<string name="connect_daily">Once every day</string>-->
-    <string name="connect_daily">Une fois par jour</string>
     <!-- When one or more new moves is found, should I play a
          notification sound -->
     <!--<string name="notify_sound">Play sound</string>-->

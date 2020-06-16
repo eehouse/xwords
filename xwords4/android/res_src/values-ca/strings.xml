@@ -310,14 +310,6 @@ que connecti via el repetidor.</string>
     <string name="hide_crosshairs_summary">No indica visualment la cel·la del tauler que es toca</string>
     <string name="network_behavior">Configuració de les partides en xarxa</string>
     <string name="network_behavior_summary">Configuració que s\'aplica a les partides en xarxa</string>
-    <string name="connect_frequency">Comprovació de jugades en segon pla</string>
-    <string name="connect_never">No ho comprovis mai</string>
-    <string name="connect_five_mins">Cada 5 minuts</string>
-    <string name="connect_fifteen_mins">Cada 15 minuts</string>
-    <string name="connect_thirty_mins">Cada 30 minuts</string>
-    <string name="connect_one_hour">Cada hora</string>
-    <string name="connect_six_hours">Cada 6 hores</string>
-    <string name="connect_daily">Un cop al dia</string>
     <string name="notify_sound">Reprodueix un so</string>
     <string name="notify_vibrate">Vibra</string>
     <string name="notify_other_summary">Quan arribi la jugada de l\'oponent</string>

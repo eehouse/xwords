@@ -258,14 +258,6 @@
     <string name="network_behavior">Netzwerk-Partie-Einstellungen</string>
     <string name="network_behavior_summary">Einstellungen für Netzwerk-Partien</string>
     <string name="disable_relay_summary">Alle Internet-Kommunikation deaktivieren</string>
-    <string name="connect_frequency">Züge holen im Hintergrund</string>
-    <string name="connect_never">Nie überprüfen</string>
-    <string name="connect_five_mins">Alle 5 Minuten</string>
-    <string name="connect_fifteen_mins">Alle 15 Minuten</string>
-    <string name="connect_thirty_mins">Alle 30 Minuten</string>
-    <string name="connect_one_hour">Jede Stunde</string>
-    <string name="connect_six_hours">Alle sechs Stunden</string>
-    <string name="connect_daily">Einmal täglich</string>
     <string name="notify_sound">Sound abspielen</string>
     <string name="notify_vibrate">Vibrieren</string>
     <string name="notify_other_summary">Wenn Züge des Gegners ankommen</string>

@@ -890,17 +890,8 @@
          CrossWords wakes up periodically to check if there are any
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
-    <string name="connect_frequency">Checagem de jogadas em
-    segundo plano</string>
     <!-- These are the possible values for the connect_frequency
          setting presented as a drop-down list. -->
-    <string name="connect_never">Nunca checar</string>
-    <string name="connect_five_mins">A cada 5 minutos</string>
-    <string name="connect_fifteen_mins">A cada 15 minutos</string>
-    <string name="connect_thirty_mins">A cada 30 minutos</string>
-    <string name="connect_one_hour">A cada hora</string>
-    <string name="connect_six_hours">A cada seis horas</string>
-    <string name="connect_daily">Uma vez por dia</string>
     <!-- When one or more new moves is found, should I play a
          notification sound -->
     <string name="notify_sound">Alerta sonoro</string>

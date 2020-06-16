@@ -167,13 +167,6 @@
     <string name="peek_other_summary">Å trykke noens navn på resultattavla viser vedkommendes flis</string>
     <string name="network_behavior">Innstillinger for nettverksspill</string>
     <string name="network_behavior_summary">Innstillinger som har innvirkning på nettverksspill</string>
-    <string name="connect_never">Aldri sjekk</string>
-    <string name="connect_five_mins">Hvert femte minutt</string>
-    <string name="connect_fifteen_mins">Hvert kvarter</string>
-    <string name="connect_thirty_mins">Hver halvtime</string>
-    <string name="connect_one_hour">Hver time</string>
-    <string name="connect_six_hours">Hver sjette time</string>
-    <string name="connect_daily">Én gang om dagen</string>
     <string name="notify_sound">Spill lyd</string>
     <string name="notify_vibrate">Vibrer</string>
     <string name="notify_other_summary">Når motstanderens trekk mottas</string>
@@ -553,7 +546,6 @@
     <string name="relay_behavior_summary">Innstillinger som har med internettilknyttede spill å gjøre</string>
     <string name="disable_relay">Skru av spill via relé-et</string>
     <string name="disable_relay_summary">Skru av all internettkommunikasjon</string>
-    <string name="connect_frequency">Sjekkfrekvens for trekk utført i bakgrunnen</string>
     <string name="newgame_configure_first">Sett opp først</string>
     <string name="newgame_drop_relay">Dropp relé</string>
     <string name="invite_choice_nfc">NFC (\"Android-stråling\")</string>

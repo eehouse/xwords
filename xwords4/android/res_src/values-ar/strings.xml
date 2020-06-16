@@ -1,103 +1,64 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="button_new_group">إضافة مجموعة</string>
-
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="button_new_group">إضافة مجموعة</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
-
     <string name="button_delete">حذف</string>
     <string name="menu_prefs">إعدادات التطبيق…</string>
-
     <string name="list_item_config">إعدادات اللعبة…</string>
     <string name="list_item_rename">إعادة تسمية…</string>
     <string name="list_item_move">نقل إلى مجموعة…</string>
-
     <string name="list_item_delete">حذف اللعبة</string>
     <string name="list_item_copy">نسخ</string>
     <string name="game_rename_title">إعادة تسمية اللعبة</string>
     <string name="rename_label">تغيير اسم هذه اللعبة إلى:</string>
     <string name="download_more">تنزيل المزيد…</string>
-
     <string name="loc_downloads">التنزيلات</string>
-
     <string name="loc_internal">داخلي</string>
     <string name="loc_external">خارجي</string>
-
     <string name="game_locked">إعدادات القفل</string>
-
     <string name="button_add_player">إضافة لاعب</string>
-
     <string name="lang_label">لغة اللعبة</string>
     <string name="connect_label_fmt">الإتصال (بواسطة %1$s)</string>
-
     <string name="join_room">الإنضمام للغرفة العامة</string>
-
     <string name="new_room_hint">اسم الغرفة</string>
-
     <string name="settings_label">إعدادت أخرى</string>
-
     <string name="hints_allowed">السماح بالتلميحات</string>
-
     <string name="use_timer">تفعيل مؤقت اللعبة</string>
-
     <string name="player_label">الإسم:</string>
-
     <string name="password_label">كلمة المرور</string>
-
-
     <string name="relay_alert">مشكلة في الإتصال</string>
-
     <string name="pref_player1_name">اللاعب الأول</string>
     <string name="pref_player2_name">اللاعب الثاني</string>
     <string name="pref_player3_name">اللاعب الثالث</string>
     <string name="pref_player4_name">اللاعب الرابع</string>
-
     <string name="prefs_appearance">المظهر</string>
     <string name="game_summary_field_empty">&lt;لا شيء&gt;</string>
     <string name="game_summary_field_language">لغة اللعبة</string>
     <string name="red">أحمر</string>
     <string name="green">أخضر</string>
     <string name="blue">أزرق</string>
-    
-
-    <string name="connect_five_mins">كل 5 دقائق</string>
-    <string name="connect_fifteen_mins">كل 15 دقيقة</string>
-    <string name="connect_thirty_mins">كل 30 دقيقة</string>
-    <string name="connect_one_hour">كل ساعة</string>
-    <string name="connect_six_hours">كل ستة ساعات</string>
-    <string name="connect_daily">مرة في اليوم</string>
-
     <string name="notify_vibrate">اهتزاز</string>
-
     <string name="newgame_invite">الدعوة الآن</string>
     <string name="newgame_invite_more">المزيد من المعلومات</string>
     <string name="invite_choice_email">البريد الإلكتروني</string>
-	<string name="invite_choice_bt">البلوتوث</string>
-	<string name="invite_choice_title">دعوة اللاعبين: كيف؟</string>
+    <string name="invite_choice_bt">البلوتوث</string>
+    <string name="invite_choice_title">دعوة اللاعبين: كيف؟</string>
     <string name="invite_chooser_fmt">إرسال الدعوة بواسطة %1$s</string>
     <string name="chat_send">إرسال</string>
     <string name="downloading_dict_fmt">تنزيل %1$s…</string>
-
     <string name="button_close_game">إغلاق اللعبة</string>
-
     <string name="button_download">تنزيل</string>
-
-    <string name="button_yes">نعم</string>  
-    <string name="button_no">لا</string>  
-
+    <string name="button_yes">نعم</string>
+    <string name="button_no">لا</string>
     <string name="button_save">حفظ</string>
     <string name="button_discard">تجاهل</string>
-
-    <string name="button_retry">إعادة المحاولة</string>  
-
+    <string name="button_retry">إعادة المحاولة</string>
     <string name="query_title">سؤال…</string>
-
     <string name="button_notagain">لا تعرض مجدداً</string>
-
     <string name="xlator">[فارغ]</string>
-
     <string name="button_newgroup">مجموعة جديدة</string>
-
-      <string name="word_search_hint">الأحرف الأولى</string>
-      <string name="slmenu_select_all">تحديد الكل</string>
+    <string name="word_search_hint">الأحرف الأولى</string>
+    <string name="slmenu_select_all">تحديد الكل</string>
     <string name="loc_menu_xlate">ترجمة</string>
     <string name="loc_filters_prompt">فرز حسب:</string>
     <string name="loc_search_prompt">البحث عن:</string>
@@ -119,10 +80,8 @@
     <string name="lang_name_czech">التشيكية</string>
     <string name="lang_name_greek">اليونانية</string>
     <string name="lang_name_slovak">السلوفاكية</string>
-
     <string name="nag_title">تذكير: إنه دورك</string>
     <string name="clip_label">رابط الدعوة</string>
-  <string name="list_item_select">تحديد</string>
-  <string name="button_skip">تخطي</string>
-
-  </resources>
+    <string name="list_item_select">تحديد</string>
+    <string name="button_skip">تخطي</string>
+</resources>

@@ -110,12 +110,6 @@
     <string name="network_behavior">Ustawienia gry sieciowej</string>
     <string name="network_behavior_summary">Ustawienia mające zastosowanie do gier sieciowych</string>
     <string name="relay_behavior_summary">Ustawienia, które mają zastosowanie do gier online</string>
-    <string name="connect_five_mins">Co 5 minut</string>
-    <string name="connect_fifteen_mins">Co 15 minut</string>
-    <string name="connect_thirty_mins">Co 30 minut</string>
-    <string name="connect_one_hour">Co godzinę</string>
-    <string name="connect_six_hours">Co sześć godzin</string>
-    <string name="connect_daily">Raz dziennie</string>
     <string name="notify_sound">Odtwórz dźwięk</string>
     <string name="notify_vibrate">Wibracje</string>
     <string name="newgame_configure_first">Najpierw skonfiguruj</string>
@@ -373,8 +367,6 @@
     <string name="relay_behavior">Ustawienia przekaźnika gry</string>
     <string name="disable_relay">Wyłącz gracza przez przekaźnik</string>
     <string name="disable_relay_summary">Wyłącz całą komunikację internetową</string>
-    <string name="connect_frequency">Sprawdzanie ruchu w tle</string>
-    <string name="connect_never">Nigdy nie sprawdzaj</string>
     <string name="notify_other_summary">Kiedy przeciwnik się rusza</string>
     <string name="newgame_drop_relay">Upuść przekaźnik</string>
     <string name="invite_choice_bt">Bluetooth</string>

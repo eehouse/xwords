@@ -711,15 +711,8 @@
     <!-- When one or more new moves is found, should I play a
          notification sound -->
     <string name="notify_sound">XLATE ME: Play sound</string>
-    <string name="connect_daily">XLATE ME: Once every day</string>
-    <string name="connect_six_hours">XLATE ME: Every six hours</string>
-    <string name="connect_one_hour">XLATE ME: Every hour</string>
-    <string name="connect_thirty_mins">XLATE ME: Every 30 minutes</string>
-    <string name="connect_fifteen_mins">XLATE ME: Every 15 minutes</string>
-    <string name="connect_five_mins">XLATE ME: Every 5 minutes</string>
     <!-- These are the possible values for the connect_frequency
          setting presented as a drop-down list. -->
-    <string name="connect_never">XLATE ME: Never check</string>
     <!--       
        ############################################################
        # :Screens:
@@ -731,7 +724,6 @@
          CrossWords wakes up periodically to check if there are any
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
-    <string name="connect_frequency">XLATE ME: Background move check</string>
     <!-- explanation of the above -->
     <string name="network_behavior_summary">XLATE ME: Settings that apply to
         networked games</string>
