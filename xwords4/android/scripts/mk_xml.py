@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import glob, sys, re, os, getopt, codecs
 
@@ -82,7 +82,7 @@ def checkText( text ):
 def printStrings( pairs, outfile, target ):
     match = CLASS_NAME.match(outfile)
     if not match:
-        print "did you give me a java file?:", outfile
+        print( "did you give me a java file?:", outfile )
         sys.exit(0)
     name = match.group(1)
     fil = codecs.open( outfile, "w", "utf-8" )
@@ -107,7 +107,7 @@ public class %s {
 """
     fil.write( lines % (sys.argv[0], name, name) )
 
-    keys = pairs.keys()
+    keys = [ key for key in pairs.keys() ]
     for ii in range( len( keys ) ):
         key = keys[ii]
         fil.write( "        /* %04d */ R.string.%s,\n" % (ii, key) )
@@ -153,13 +153,13 @@ def getStrings( path, dupesOK ):
     prevComments = []
     foundDupe = False
     for elem in etree.parse(path).getroot().iter():
-        if not isinstance( elem.tag, basestring ):
+        if not isinstance( elem.tag, str ):
             prevComments.append( elem.text )
         elif 'string' == elem.tag:
             name = elem.get('name')
             text = checkText( elem.text )
             if text in texts and not dupesOK:
-                print "duplicate string: name: %s, text: '%s'" % (name, text)
+                print( "duplicate string: name: {}, text: '{}'".format(name, text) )
                 foundDupe = True
             texts[text] = True
             rec = { 'text' : text }
@@ -170,7 +170,7 @@ def getStrings( path, dupesOK ):
             pairs[name] = rec
     
     if foundDupe:
-        print "Exiting: please remove duplicates listed above from", path
+        print( "Exiting: please remove duplicates listed above from", path )
         sys.exit(1);
 
     return pairs
