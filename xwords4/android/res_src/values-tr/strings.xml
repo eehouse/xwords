@@ -20,5 +20,5 @@
     <string name="summary_invites_out_fmt">Oyuncular oda \'\'%1$s\'\'e davet edildi</string>
     <string name="summary_invites_out">Oyuncular davet edildi</string>
     <string name="summary_relay_gameover_fmt">Oda \'\'%1$s\'\'de oyun bitti</string>
-    <string name="summary_relay_conn_fmt">Oda \'\'%1$s\'\'de oyun içinde oyun oynama</string>
+    <string name="summary_relay_conn_fmt">\'\'%1$s\'\' odasında oyun devam ediyor</string>
 </resources>
