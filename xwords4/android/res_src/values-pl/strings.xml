@@ -922,6 +922,9 @@
         <item quantity="many">"
 \n
 \n(Używasz %1$d gry.)"</item>
+        <item quantity="other">"
+\n
+\n(Używasz %1$d gry.)"</item>
     </plurals>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
