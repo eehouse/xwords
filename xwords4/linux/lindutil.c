@@ -330,18 +330,20 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* ke
             *lenp = buflen;
         } else {
             gchar* tmp = XP_MALLOC( duc->mpool, buflen );
-            res = db_fetch( pDb, key, tmp, &buflen );
+            gint tmpLen = buflen;
+            res = db_fetch( pDb, key, tmp, &tmpLen );
+            XP_ASSERT( buflen == tmpLen );
             XP_ASSERT( res == SUCCESS );
             XP_ASSERT( tmp[buflen-1] == '\0' );
 
             gsize out_len;
-            guchar* txt = g_base64_decode( (const gchar*)tmp, &out_len );
+            guchar* binp = g_base64_decode( tmp, &out_len );
             if ( out_len <= *lenp ) {
-                XP_MEMCPY( data, txt, out_len );
+                XP_MEMCPY( data, binp, out_len );
                 *lenp = out_len;
             }
             XP_FREEP( duc->mpool, &tmp );
-            g_free( txt );
+            g_free( binp );
         }
     } else {
         *lenp = 0;              /* doesn't exist */
