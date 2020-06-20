@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.Button;
@@ -74,7 +75,7 @@ public class BTInviteDelegate extends InviteDelegate {
                 pairs = new ArrayList<>();
             } else {
                 for ( TwoStringPair pair : pairs ) {
-                    alreadyHave = pair.str2.equals(devName);
+                    alreadyHave = TextUtils.equals(pair.str2, devName);
                     if ( alreadyHave ) {
                         break;
                     }
