@@ -97,10 +97,22 @@ public class BTInviteDelegate extends InviteDelegate {
                 for ( Iterator<TwoStringPair> iter = pairs.iterator();
                       iter.hasNext(); ) {
                     TwoStringPair pair = iter.next();
-                    if ( pair.str2.equals( dev ) ) {
+                    if ( TextUtils.equals( pair.str2, dev ) ) {
                         iter.remove();
                         break;
                     }
+                }
+            }
+        }
+
+        private void removeNulls()
+        {
+            for ( Iterator<TwoStringPair> iter = pairs.iterator();
+                  iter.hasNext(); ) {
+                TwoStringPair pair = iter.next();
+                if ( TextUtils.isEmpty( pair.str2 ) ) {
+                    Log.d( TAG, "removeNulls(): removing!!" );
+                    iter.remove();
                 }
             }
         }
@@ -316,6 +328,7 @@ public class BTInviteDelegate extends InviteDelegate {
         if ( null == sPersisted ) {
             try {
                 sPersisted = (Persisted)DBUtils.getSerializableFor( context, KEY_PERSIST );
+                sPersisted.removeNulls(); // clean up earlier mistakes
             } catch ( Exception ex ) {} // NPE, de-serialization problems, etc.
 
             if ( null == sPersisted ) {
