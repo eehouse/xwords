@@ -160,6 +160,7 @@ public class DlgDelegate {
         Builder( DlgID dlgID ) {
             mState = new DlgState( dlgID )
                 .setPosButton( android.R.string.ok ) // default
+                .setAction( Action.SKIP_CALLBACK )
                 ;
         }
 
