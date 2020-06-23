@@ -26,11 +26,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
-
 import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
-import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
-import org.eehouse.android.xw4.DlgDelegate.OkOnlyBuilder;
+import org.eehouse.android.xw4.DlgDelegate.Builder;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class PrefsActivity extends PreferenceActivity
@@ -102,32 +99,32 @@ public class PrefsActivity extends PreferenceActivity
         m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
-    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
+    public Builder makeOkOnlyBuilder( int msgID )
     {
-        return m_dlgt.makeOkOnlyBuilder( msgId );
+        return m_dlgt.makeOkOnlyBuilder( msgID );
     }
 
-    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
+    public Builder makeOkOnlyBuilder( String msg )
     {
         return m_dlgt.makeOkOnlyBuilder( msg );
     }
 
-    public NotAgainBuilder makeNotAgainBuilder(int msgId, int key, Action action)
+    public Builder makeNotAgainBuilder(int msgID, int key, Action action)
     {
-        return m_dlgt.makeNotAgainBuilder( msgId, key, action );
+        return m_dlgt.makeNotAgainBuilder( msgID, key, action );
     }
 
-    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key )
+    public Builder makeNotAgainBuilder( int msgID, int key )
     {
-        return m_dlgt.makeNotAgainBuilder( msgId, key );
+        return m_dlgt.makeNotAgainBuilder( msgID, key );
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder(String msg, Action action)
+    public Builder makeConfirmThenBuilder( String msg, Action action )
     {
         return m_dlgt.makeConfirmThenBuilder( msg, action );
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder(int msgID, Action action)
+    public Builder makeConfirmThenBuilder( int msgID, Action action )
     {
         return m_dlgt.makeConfirmThenBuilder( msgID, action );
     }

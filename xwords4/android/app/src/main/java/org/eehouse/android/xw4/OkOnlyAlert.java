@@ -1,6 +1,7 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDebug"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2017 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -40,9 +41,8 @@ public class OkOnlyAlert extends DlgDelegateAlert {
     public void populateBuilder( Context context, DlgState state,
                                  AlertDialog.Builder builder )
     {
-        builder.setTitle( state.m_titleId == 0 ? R.string.info_title : state.m_titleId )
-            .setMessage( state.m_msg )
-            .setPositiveButton( android.R.string.ok, null )
+        builder.setMessage( state.m_msg )
+            .setPositiveButton( state.m_posButton, null )
             ;
 
         ActionPair pair = state.m_pair;

@@ -181,7 +181,7 @@ public class ConnViaViewLayout extends LinearLayout {
                 break;
             }
 
-            DlgDelegate.DlgDelegateBuilder builder = 0 != keyID
+            DlgDelegate.Builder builder = 0 != keyID
                 ? m_dlgDlgt.makeNotAgainBuilder( msgID, keyID )
                 : m_dlgDlgt.makeOkOnlyBuilder( msgID )
                 .setActionPair( Action.PERMS_BANNED_INFO,

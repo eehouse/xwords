@@ -41,10 +41,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.DlgDelegate.ConfirmThenBuilder;
+import org.eehouse.android.xw4.DlgDelegate.Builder;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
-import org.eehouse.android.xw4.DlgDelegate.NotAgainBuilder;
-import org.eehouse.android.xw4.DlgDelegate.OkOnlyBuilder;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -521,33 +519,33 @@ public class DelegateBase implements DlgClickNotify,
         return LocUtils.makeAlertBuilder( m_activity );
     }
 
-    public NotAgainBuilder
+    public Builder
         makeNotAgainBuilder( String msg, int key, Action action )
     {
         return m_dlgDelegate.makeNotAgainBuilder( msg, key, action );
     }
 
-    public NotAgainBuilder
+    public Builder
         makeNotAgainBuilder( int msgId, int key, Action action )
     {
         return m_dlgDelegate.makeNotAgainBuilder( msgId, key, action );
     }
 
-    public NotAgainBuilder makeNotAgainBuilder( String msg, int key )
+    public Builder makeNotAgainBuilder( String msg, int key )
     {
         return m_dlgDelegate.makeNotAgainBuilder( msg, key );
     }
 
-    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key )
+    public Builder makeNotAgainBuilder( int msgID, int key )
     {
-        return m_dlgDelegate.makeNotAgainBuilder( msgId, key );
+        return m_dlgDelegate.makeNotAgainBuilder( msgID, key );
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action ) {
+    public Builder makeConfirmThenBuilder( String msg, Action action ) {
         return m_dlgDelegate.makeConfirmThenBuilder( msg, action );
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder( int msgId, Action action ) {
+    public Builder makeConfirmThenBuilder( int msgId, Action action ) {
         return m_dlgDelegate.makeConfirmThenBuilder( msgId, action );
     }
 
@@ -578,12 +576,12 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showInviteChoicesThen( action, info );
     }
 
-    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
+    public Builder makeOkOnlyBuilder( int msgID )
     {
-        return m_dlgDelegate.makeOkOnlyBuilder( msgId );
+        return m_dlgDelegate.makeOkOnlyBuilder( msgID );
     }
 
-    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
+    public Builder makeOkOnlyBuilder( String msg )
     {
         return m_dlgDelegate.makeOkOnlyBuilder( msg );
     }
@@ -722,12 +720,10 @@ public class DelegateBase implements DlgClickNotify,
             final int key = notAgainKey;
             runOnUiThread( new Runnable() {
                     public void run() {
-                        DlgDelegate.DlgDelegateBuilder builder;
-                        if ( 0 == key ) {
-                            builder = makeOkOnlyBuilder( msg );
-                        } else {
-                            builder = makeNotAgainBuilder( msg, key );
-                        }
+                        Builder builder = 0 == key
+                            ? makeOkOnlyBuilder( msg )
+                            : makeNotAgainBuilder( msg, key )
+                            ;
                         builder.show();
                     }
                 });
