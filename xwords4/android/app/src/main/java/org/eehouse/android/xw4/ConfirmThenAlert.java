@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDebug"; -*- */
 /*
- * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2017 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -29,6 +30,7 @@ import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConfirmThenAlert extends DlgDelegateAlert {
+    private static final String TAG = ConfirmThenAlert.class.getSimpleName();
 
     public static ConfirmThenAlert newInstance( DlgState state )
     {
@@ -46,8 +48,11 @@ public class ConfirmThenAlert extends DlgDelegateAlert {
         NotAgainView naView = addNAView( state, builder );
         OnClickListener lstnr = mkCallbackClickListener( naView );
 
-        builder.setTitle( state.m_titleId == 0 ? R.string.query_title : state.m_titleId )
-            .setPositiveButton( state.m_posButton, lstnr )
+        if ( 0 != state.m_titleId ) {
+            builder.setTitle( state.m_titleId );
+        }
+
+        builder.setPositiveButton( state.m_posButton, lstnr )
             .setNegativeButton( state.m_negButton, lstnr );
 
         if ( null != state.m_pair ) {

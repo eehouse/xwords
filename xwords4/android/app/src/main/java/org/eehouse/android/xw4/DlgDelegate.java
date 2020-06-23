@@ -154,139 +154,173 @@ public class DlgDelegate {
         }
     }
 
-    public abstract class DlgDelegateBuilder {
-        protected String m_msgString;
-        protected int m_prefsNAKey;
-        protected Action m_onNA;
-        protected int m_posButton = android.R.string.ok;
-        protected int m_negButton = android.R.string.cancel;
-        protected Action m_action;
-        protected Object[] m_params;
-        protected int m_titleId = 0;
-        protected ActionPair m_actionPair;
+    public class Builder {
+        private final DlgState mState;
 
-        public DlgDelegateBuilder( String msg, Action action )
-        { m_msgString = msg; m_action = action; }
+        Builder( DlgID dlgID ) {
+            mState = new DlgState( dlgID )
+                .setPosButton( android.R.string.ok ) // default
+                ;
+        }
 
-        public DlgDelegateBuilder( int msgId, Action action )
-        { this( getString(msgId), action );}
+        Builder setMessage( String msg )
+        {
+            mState.setMsg( msg );
+            return this;
+        }
 
-        public DlgDelegateBuilder setAction( Action action )
-        { m_action = action; return this; }
+        Builder setMessageID( int msgID )
+        {
+            mState.setMsg( getString( msgID ) );
+            return this;
+        }
 
-        public DlgDelegateBuilder setNAKey( int keyId )
-        {  m_prefsNAKey = keyId; return this; }
+        Builder setActionPair( Action action, int strID )
+        {
+            mState.setActionPair( new ActionPair( action, strID ) );
+            return this;
+        }
 
-        public DlgDelegateBuilder setOnNA( Action onNA )
-        { m_onNA = onNA; return this; }
+        Builder setAction( Action action )
+        {
+            mState.setAction( action );
+            return this;
+        }
 
-        public DlgDelegateBuilder setPosButton( int id )
-        { m_posButton = id; return this; }
+        Builder setPosButton( int strID )
+        {
+            mState.setPosButton( strID );
+            return this;
+        }
 
-        public DlgDelegateBuilder setNegButton( int id )
-        { m_negButton = id; return this; }
+        Builder setNegButton( int strID )
+        {
+            mState.setNegButton( strID );
+            return this;
+        }
 
-        public DlgDelegateBuilder setParams( Object... params )
-        { m_params = params; return this; }
+        Builder setTitle( int strID )
+        {
+            mState.setTitle( strID );
+            return this;
+        }
 
-        public DlgDelegateBuilder setTitle( int titleId )
-        { m_titleId = titleId; return this; }
+        Builder setParams( Object... params )
+        {
+            mState.setParams( params );
+            return this;
+        }
 
-        public DlgDelegateBuilder setActionPair( ActionPair pr )
-        { m_actionPair = pr; return this; }
+        Builder setNAKey( int keyID )
+        {
+            mState.setPrefsKey( keyID );
+            return this;
+        }
 
-        public DlgDelegateBuilder setActionPair( Action actn, int id )
-        { return setActionPair( new ActionPair( actn, id ) ); }
+        Builder setOnNA( Action onNAAction )
+        {
+            mState.setOnNA( onNAAction );
+            return this;
+        }
 
-        abstract void show();
-    }
-
-    public class OkOnlyBuilder extends DlgDelegateBuilder {
-
-        public OkOnlyBuilder(String msg) { super( msg, Action.SKIP_CALLBACK ); }
-        public OkOnlyBuilder(int msgId) { super( msgId, Action.SKIP_CALLBACK ); }
-
-        @Override
         public void show()
         {
-            showOKOnlyDialogThen( m_msgString, m_action, m_actionPair,
-                                  m_params, m_titleId );
+            int naKey = mState.m_prefsNAKey;
+            final Action action = mState.m_action;
+            // Log.d( TAG, "show(): key: %d; action: %s", naKey, action );
+
+            if ( 0 == naKey || ! XWPrefs.getPrefsBoolean( m_activity, naKey, false ) ) {
+                m_dlgt.show( mState );
+            } else if ( Action.SKIP_CALLBACK != action ) {
+                post( new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d( TAG, "calling onPosButton()" );
+                            XWActivity xwact = (XWActivity)m_activity;
+                            xwact.onPosButton( action, mState.m_params );
+                        }
+                    });
+            }
         }
     }
 
-    public class ConfirmThenBuilder extends DlgDelegateBuilder {
-        public ConfirmThenBuilder(String msg, Action action) {super(msg, action);}
-        public ConfirmThenBuilder(int msgId, Action action) {super(msgId, action);}
 
-        @Override
-        public void show()
-        {
-            showConfirmThen( m_prefsNAKey, m_onNA, m_msgString, m_posButton,
-                             m_negButton, m_action, m_titleId, m_actionPair,
-                             m_params );
-        }
-    }
-
-    public class NotAgainBuilder extends DlgDelegateBuilder {
-        public NotAgainBuilder(String msg, int key, Action action)
-        { super(msg, action); setNAKey( key ); }
-
-        public NotAgainBuilder(int msgId, int key, Action action)
-        { super(msgId, action); m_prefsNAKey = key; }
-
-        public NotAgainBuilder( String msg, int key )
-        { super( msg, Action.SKIP_CALLBACK ); m_prefsNAKey = key; }
-
-        public NotAgainBuilder( int msgId, int key )
-        { super( msgId, Action.SKIP_CALLBACK ); m_prefsNAKey = key; }
-
-        @Override
-        public void show()
-        {
-            showNotAgainDlgThen( m_msgString, m_prefsNAKey,
-                                 m_action, m_actionPair,
-                                 m_params );
-        }
-    }
-
-    public OkOnlyBuilder makeOkOnlyBuilder( String msg )
+    public Builder makeOkOnlyBuilder( String msg )
     {
-        return new OkOnlyBuilder( msg );
-    }
-    public OkOnlyBuilder makeOkOnlyBuilder( int msgId )
-    {
-        return new OkOnlyBuilder( msgId );
+        // return new OkOnlyBuilder( msg );
+
+        Builder builder = new Builder( DlgID.DIALOG_OKONLY )
+            .setMessage( msg )
+            ;
+        return builder;
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder( String msg, Action action )
+    public Builder makeOkOnlyBuilder( int msgID )
     {
-        return new ConfirmThenBuilder( msg, action );
+        Builder builder = new Builder( DlgID.DIALOG_OKONLY )
+            .setMessageID( msgID )
+            ;
+        return builder;
     }
 
-    public ConfirmThenBuilder makeConfirmThenBuilder(int msgId, Action action)
+    private Builder makeConfirmThenBuilder( Action action )
     {
-        return new ConfirmThenBuilder( msgId, action );
+        return new Builder( DlgID.CONFIRM_THEN )
+            .setAction( action )
+            .setNegButton( android.R.string.cancel )
+            ;
+    }
+    
+    public Builder makeConfirmThenBuilder( String msg, Action action )
+    {
+        return makeConfirmThenBuilder( action )
+            .setMessage( msg )
+            ;
     }
 
-    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key,
-                                                Action action )
+    public Builder makeConfirmThenBuilder( int msgID, Action action )
     {
-        return new NotAgainBuilder( msgId, key, action );
+        return makeConfirmThenBuilder( action )
+            .setMessageID( msgID )
+            ;
     }
 
-    public NotAgainBuilder makeNotAgainBuilder( String msg, int key,
-                                                Action action )
+    private Builder makeNotAgainBuilder( int key )
     {
-        return new NotAgainBuilder( msg, key, action );
+        return new Builder( DlgID.DIALOG_NOTAGAIN )
+            .setNAKey( key )
+            .setAction( Action.SKIP_CALLBACK )
+            ;
     }
 
-    public NotAgainBuilder makeNotAgainBuilder( String msg, int key )
+    public Builder makeNotAgainBuilder( String msg, int key, Action action )
     {
-        return new NotAgainBuilder( msg, key );
+        return makeNotAgainBuilder( key )
+            .setMessage( msg )
+            .setAction( action )
+            ;
     }
 
-    public NotAgainBuilder makeNotAgainBuilder( int msgId, int key ) {
-        return new NotAgainBuilder( msgId, key );
+    public Builder makeNotAgainBuilder( int msgID, int key, Action action )
+    {
+        return makeNotAgainBuilder( key )
+            .setMessageID( msgID )
+            .setAction( action )
+            ;
+    }
+
+    public Builder makeNotAgainBuilder( String msg, int key )
+    {
+        return makeNotAgainBuilder( key )
+            .setMessage( msg )
+            ;
+    }
+
+    public Builder makeNotAgainBuilder( int msgID, int key )
+    {
+        return makeNotAgainBuilder( key )
+            .setMessageID( msgID )
+            ;
     }
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
@@ -309,11 +343,10 @@ public class DlgDelegate {
         void inviteChoiceMade( Action action, InviteMeans means, Object... params );
     }
     public interface HasDlgDelegate {
-        OkOnlyBuilder makeOkOnlyBuilder( int msgID );
-        OkOnlyBuilder makeOkOnlyBuilder( String msg );
-        NotAgainBuilder makeNotAgainBuilder( int msgID, int prefsKey,
-                                             Action action );
-        NotAgainBuilder makeNotAgainBuilder( int msgID, int prefsKey );
+        Builder makeOkOnlyBuilder( int msgID );
+        Builder makeOkOnlyBuilder( String msg );
+        Builder makeNotAgainBuilder( int msgID, int prefsKey, Action action );
+        Builder makeNotAgainBuilder( int msgID, int prefsKey );
     }
 
     private Activity m_activity;
@@ -337,19 +370,6 @@ public class DlgDelegate {
         stopProgress();
     }
 
-    private void showOKOnlyDialogThen( String msg, Action action,
-                                       ActionPair more, Object[] params,
-                                       int titleId )
-    {
-        DlgState state = new DlgState( DlgID.DIALOG_OKONLY )
-            .setMsg( msg )
-            .setParams( params )
-            .setTitle( titleId )
-            .setActionPair( more )
-            .setAction(action);
-        m_dlgt.show( state );
-    }
-
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
     // calls onPosButton/onNegButton with the action and in params a Boolean
     // indicating whether enabling is now ok.
@@ -359,62 +379,6 @@ public class DlgDelegate {
             .setAction( action );
 
         m_dlgt.show( state );
-    }
-
-    private void showNotAgainDlgThen( String msg, int prefsKey,
-                                      final Action action, ActionPair more,
-                                      final Object[] params )
-    {
-        if ( 0 != prefsKey
-             && XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
-            // If it's set, do the action without bothering with the
-            // dialog
-            if ( Action.SKIP_CALLBACK != action ) {
-                post( new Runnable() {
-                        public void run() {
-                            XWActivity xwact = (XWActivity)m_activity;
-                            xwact.onPosButton( action, params );
-                        }
-                    });
-            }
-        } else {
-            DlgState state = new DlgState( DlgID.DIALOG_NOTAGAIN )
-                .setMsg( msg)
-                .setPrefsKey( prefsKey )
-                .setAction( action )
-                .setActionPair( more )
-                .setParams( params );
-            m_dlgt.show( state );
-        }
-    }
-
-    private void showConfirmThen( int nakey, Action onNA, String msg,
-                                  int posButton, int negButton,
-                                  final Action action, int titleId,
-                                  ActionPair more, final Object[] params )
-    {
-        if ( 0 == nakey ||
-             ! XWPrefs.getPrefsBoolean( m_activity, nakey, false ) ) {
-            DlgState state = new DlgState( DlgID.CONFIRM_THEN )
-                .setOnNA( onNA )
-                .setMsg( msg )
-                .setPosButton( posButton )
-                .setNegButton( negButton )
-                .setAction( action )
-                .setTitle( titleId )
-                .setActionPair( more )
-                .setParams( params )
-                .setPrefsKey( nakey )
-                ;
-            m_dlgt.show( state );
-        } else if ( Action.SKIP_CALLBACK != action ) {
-            post( new Runnable() {
-                    public void run() {
-                        XWActivity xwact = (XWActivity)m_activity;
-                        xwact.onDismissed( action, params );
-                    }
-                });
-        }
     }
 
     public void showInviteChoicesThen( final Action action,

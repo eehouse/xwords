@@ -2488,7 +2488,7 @@ public class BoardDelegate extends DelegateBase
                                 boolean banned = Perm.SEND_SMS.isBanned(m_activity);
                                 int explID = banned
                                     ? R.string.banned_nbs_perms : R.string.missing_sms_perms;
-                                DlgDelegate.ConfirmThenBuilder builder =
+                                DlgDelegate.Builder builder =
                                     makeConfirmThenBuilder( explID, Action.DROP_SMS_ACTION );
                                 if ( banned ) {
                                     builder.setActionPair( Action.PERMS_BANNED_INFO,

@@ -204,23 +204,22 @@ public class XWActivity extends FragmentActivity
 
     // This are a hack! I need some way to build fragment-based alerts from
     // inside fragment-based alerts.
-    public DlgDelegate.NotAgainBuilder makeNotAgainBuilder( String msg, int keyId )
+    public DlgDelegate.Builder makeNotAgainBuilder( String msg, int keyID )
     {
-        return m_dlgt.makeNotAgainBuilder( msg, keyId );
+        return m_dlgt.makeNotAgainBuilder( msg, keyID );
     }
 
-    public DlgDelegate.NotAgainBuilder makeNotAgainBuilder( int msgID, int keyId )
+    public DlgDelegate.Builder makeNotAgainBuilder( int msgID, int keyID )
     {
-        return m_dlgt.makeNotAgainBuilder( msgID, keyId );
+        return m_dlgt.makeNotAgainBuilder( msgID, keyID );
     }
 
-    public DlgDelegate.ConfirmThenBuilder makeConfirmThenBuilder( int msgID,
-                                                                  Action action )
+    public DlgDelegate.Builder makeConfirmThenBuilder( int msgID, Action action )
     {
         return m_dlgt.makeConfirmThenBuilder( msgID, action );
     }
 
-    public DlgDelegate.OkOnlyBuilder makeOkOnlyBuilder( int msgID )
+    public DlgDelegate.Builder makeOkOnlyBuilder( int msgID )
     {
         return m_dlgt.makeOkOnlyBuilder( msgID );
     }

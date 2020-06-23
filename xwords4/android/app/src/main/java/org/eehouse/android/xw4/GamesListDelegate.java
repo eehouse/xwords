@@ -2438,7 +2438,7 @@ public class GamesListDelegate extends ListDelegateBase
         boolean handled = false;
         String msg = intent.getStringExtra( ALERT_MSG );
         if ( null != msg ) {
-            DlgDelegate.DlgDelegateBuilder builder =
+            DlgDelegate.Builder builder =
                 makeOkOnlyBuilder( msg );
             if ( intent.getBooleanExtra( WITH_EMAIL, false ) ) {
                 builder.setActionPair( Action.SEND_EMAIL,

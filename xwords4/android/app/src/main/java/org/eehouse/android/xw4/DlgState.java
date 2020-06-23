@@ -168,7 +168,7 @@ public class DlgState implements Parcelable {
 
     private void testCanParcelize()
     {
-        if (BuildConfig.DEBUG) {
+        if ( BuildConfig.DEBUG ) {
             Parcel parcel = Parcel.obtain();
             writeToParcel(parcel, 0);
 
