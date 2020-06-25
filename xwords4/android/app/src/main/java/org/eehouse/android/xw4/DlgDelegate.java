@@ -214,7 +214,7 @@ public class DlgDelegate {
 
         Builder setNAKey( int keyID )
         {
-            mState.setPrefsKey( keyID );
+            mState.setPrefsNAKey( keyID );
             return this;
         }
 
@@ -291,6 +291,7 @@ public class DlgDelegate {
         return new Builder( DlgID.DIALOG_NOTAGAIN )
             .setNAKey( key )
             .setAction( Action.SKIP_CALLBACK )
+            .setTitle( R.string.newbie_title )
             ;
     }
 
