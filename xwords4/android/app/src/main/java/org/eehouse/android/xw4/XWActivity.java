@@ -287,7 +287,7 @@ public class XWActivity extends FragmentActivity
                 df.show( fm, tag );
             }
         } catch (IllegalStateException ise ) {
-            Log.d( TAG, "error showing tag %s (df: %s)", tag, df );
+            Log.d( TAG, "error showing tag %s (df: %s; msg: %s)", tag, df, ise );
             // DLG_SCORES is causing this for non-belongsOnBackStack() case
             // Assert.assertFalse( BuildConfig.DEBUG );
         }

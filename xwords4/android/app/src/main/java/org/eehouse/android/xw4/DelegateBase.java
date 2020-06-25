@@ -483,16 +483,12 @@ public class DelegateBase implements DlgClickNotify,
         DlgDelegateAlert df = null;
         switch ( state.m_id ) {
         case CONFIRM_THEN:
-            df = ConfirmThenAlert.newInstance( state );
+        case DIALOG_OKONLY:
+        case DIALOG_NOTAGAIN:
+            df = DlgDelegateAlert.newInstance( state );
             break;
         case DIALOG_ENABLESMS:
             df = EnableSMSAlert.newInstance( state );
-            break;
-        case DIALOG_OKONLY:
-            df = OkOnlyAlert.newInstance( state );
-            break;
-        case DIALOG_NOTAGAIN:
-            df = NotAgainAlert.newInstance( state );
             break;
         case INVITE_CHOICES_THEN:
             df = InviteChoicesAlert.newInstance( state );

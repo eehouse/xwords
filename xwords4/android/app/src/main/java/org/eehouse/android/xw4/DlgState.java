@@ -56,7 +56,7 @@ public class DlgState implements Parcelable {
 
     public DlgState setMsg( String msg )
     { m_msg = msg; return this; }
-    public DlgState setPrefsKey( int key )
+    public DlgState setPrefsNAKey( int key )
     { m_prefsNAKey = key; return this; }
     public DlgState setAction( Action action )
     { m_action = action; return this; }
@@ -203,7 +203,7 @@ public class DlgState implements Parcelable {
                     .setPosButton( posButton )
                     .setNegButton( negButton )
                     .setAction( action )
-                    .setPrefsKey( prefsKey )
+                    .setPrefsNAKey( prefsKey )
                     .setOnNA( onNA )
                     .setTitle(titleId)
                     .setParams(params)

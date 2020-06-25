@@ -1,6 +1,7 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDebug"; -*- */
+/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2017 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2017 - 2020 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -37,12 +38,19 @@ import org.eehouse.android.xw4.loc.LocUtils;
 /** Abstract superclass for Alerts that have moved from and are still created
  * inside DlgDelegate
  */
-abstract class DlgDelegateAlert extends XWDialogFragment {
+public class DlgDelegateAlert extends XWDialogFragment {
     private static final String TAG = DlgDelegateAlert.class.getSimpleName();
     private static final String STATE_KEY = "STATE_KEY";
     private DlgState m_state;
 
     public DlgDelegateAlert() {}
+
+    public static DlgDelegateAlert newInstance( DlgState state )
+    {
+        DlgDelegateAlert result = new DlgDelegateAlert();
+        result.addStateArgument( state );
+        return result;
+    }
 
     protected final DlgState getState( Bundle sis )
     {
@@ -63,18 +71,37 @@ abstract class DlgDelegateAlert extends XWDialogFragment {
         setArguments( state.toBundle() );
     }
 
-    abstract void populateBuilder( Context context, DlgState state,
-                                   AlertDialog.Builder builder );
+    protected void populateBuilder( Context context, DlgState state,
+                                    AlertDialog.Builder builder )
+    {
+        Log.d( TAG, "populateBuilder()" );
+        NotAgainView naView = addNAView( state, builder );
+
+        OnClickListener lstnr = mkCallbackClickListener( naView );
+        if ( 0 != state.m_posButton ) {
+            builder.setPositiveButton( state.m_posButton, lstnr );
+        }
+        if ( 0 != state.m_negButton ) {
+            builder.setNegativeButton( state.m_negButton, lstnr );
+        }
+
+        if ( null != state.m_pair ) {
+            ActionPair pair = state.m_pair;
+            builder.setNeutralButton( pair.buttonStr,
+                                      mkCallbackClickListener( pair, naView ) );
+        }
+    }
 
     Dialog create( AlertDialog.Builder builder ) { return builder.create(); }
 
-    protected NotAgainView addNAView( DlgState state, AlertDialog.Builder builder )
+    private NotAgainView addNAView( DlgState state, AlertDialog.Builder builder )
     {
         Context context = getActivity();
         NotAgainView naView =
             ((NotAgainView)LocUtils.inflate( context, R.layout.not_again_view ))
             .setMessage( state.m_msg )
-            .setShowNACheckbox( 0 != state.m_prefsNAKey );
+            .setShowNACheckbox( 0 != state.m_prefsNAKey )
+            ;
 
         builder.setView( naView );
 
