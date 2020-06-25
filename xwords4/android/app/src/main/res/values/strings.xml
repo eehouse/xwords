@@ -2058,7 +2058,7 @@
     wordlists and view the ones you already have.\n\nWhat wordlists
     you have installed determines:\n• What languages you can play
     in\n• How smart the robot player is\n• What words are
-    legal.\n\nCheck the \"Show downloadable\" box at the top to see
+    legal\n\nCheck the \"Show downloadable\" box at the top to see
     what\'s available.</string>
     <string name="force_tablet_title">Use tablet (side-by-side) layout?</string>
     <string name="force_tablet_default">Use default for my device</string>

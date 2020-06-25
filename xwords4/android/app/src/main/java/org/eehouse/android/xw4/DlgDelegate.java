@@ -123,10 +123,6 @@ public class DlgDelegate {
         ASKED_PHONE_STATE,
         PERMS_QUERY,
         PERMS_BANNED_INFO,
-
-        // Sent when not-again checkbox checked
-        SET_NA_DEFAULTNAME,
-        SET_GOT_LANGDICT,
     } // Action enum
 
     public static class ActionPair implements Serializable {
@@ -215,12 +211,6 @@ public class DlgDelegate {
         Builder setNAKey( int keyID )
         {
             mState.setPrefsNAKey( keyID );
-            return this;
-        }
-
-        Builder setOnNA( Action onNAAction )
-        {
-            mState.setOnNA( onNAAction );
             return this;
         }
 
