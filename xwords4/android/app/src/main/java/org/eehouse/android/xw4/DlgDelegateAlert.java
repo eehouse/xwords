@@ -162,9 +162,6 @@ public class DlgDelegateAlert extends XWDialogFragment {
             if ( 0 != state.m_prefsNAKey ) {
                 XWPrefs.setPrefsBoolean( getActivity(), m_state.m_prefsNAKey,
                                          true );
-            } else if ( null != state.m_onNAChecked ) {
-                DlgClickNotify notify = (DlgClickNotify)getActivity();
-                notify.onPosButton( m_state.m_onNAChecked );
             }
         }
     }
