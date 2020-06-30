@@ -269,24 +269,24 @@ allbins:
 	$(MAKE) TARGET_TYPE=FRANK byodbins
 	rm palmspecials.bin
 
-table.bin:  ../xloc.pl 
+table.bin:  ../xloc.py
 ifdef NEWDAWG
-	perl -I../ ../xloc.pl $(ENCP) -tn -out $@
+	../xloc.py $(ENCP) -tn -out $@
 else
-	perl -I../ ../xloc.pl -t -out $@
+	error
 endif
 
-values.bin: ../xloc.pl
-	perl -I../ ../xloc.pl -v -out $@
+values.bin: ../xloc.py
+	../xloc.py -v -out $@
 
 # a binary file, two bytes, one giving the size of tiles data and the
 #  other the number of tiles in the dict.  Tiles data is utf-8 and so
 #  number is not derivable from size.
-$(XWLANG)_charcount.bin: table.bin ../xloc.pl
+$(XWLANG)_charcount.bin: table.bin ../xloc.py
 	SIZ=$$(ls -l $< | awk '{print $$5}'); \
 	perl -e "print pack(\"c\",$$SIZ)" > $@
 	TMP=/tmp/tmp$$$$; \
-	perl -I../ ../xloc.pl -s -out $$TMP; \
+	../xloc.py -s -out $$TMP; \
 	cat $$TMP >> $@; \
 	rm -f $$TMP
 
