@@ -213,7 +213,7 @@ endif
 
 # For each entry in the table whose face < 32, there needs to be a pair of
 # pbitm files and a string giving the printing form
-frankspecials.bin: ../frank_mkspecials.pl  $(BMPFILES)
+frankspecials.bin: ../frank_mkspecials.py  $(BMPFILES)
 	$< $(BLANK_INFO) $(LANG_SPECIAL_INFO) > $@
 
 $(XWLANG)%.$(FRANK_EXT): dawg$(XWLANG)%.stamp $(XWLANG)%_flags.bin $(XWLANG)%_newheader.bin $(XWLANG)_charcount.bin table.bin values.bin frankspecials.bin 
