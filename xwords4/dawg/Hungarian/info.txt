@@ -3,6 +3,8 @@
 LANGCODE:hu_HU
 CHARSET: utf-8
 
+BUILD_FLAGS:ALLOWS_DUPLICATES
+
 # High bit means "official".  Next 7 bits are an enum where
 # Hungarian==0x14.  Low byte is padding
 XLOC_HEADER:0x9400

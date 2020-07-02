@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import re, os, sys, getopt, shutil, threading, requests, json, glob
+import re, os, sys, shutil, threading, requests, json, glob
 import argparse, datetime, random, signal, subprocess, time
 from shutil import rmtree
 

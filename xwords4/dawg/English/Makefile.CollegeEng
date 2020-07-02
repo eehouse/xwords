@@ -1,5 +1,6 @@
 # -*- mode: makefile; compile-command: "make -f Makefile.CollegeEng"; -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2002 - 2020 by Eric House (xwords@eehouse.org).  All
+# rights reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,10 +23,10 @@ DICTNOTE = "From the old PalmOS app Niggle"
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/English/CollegeEng.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/English/CollegeEng.dict
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | \
+	cat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
