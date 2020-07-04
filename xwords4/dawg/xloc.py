@@ -9,6 +9,7 @@ def mkParser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-enc', dest = 'ENCODING', type = str, help = 'use this encoding' )
     parser.add_argument('-tn', dest = 'DO_TABLE', action = 'store_true', help = 'output table file' )
+
     # parser.add_argument('-tn', dest = 'UNICODE', default = False,
     #                     action = 'store_true', help = 'assume unicode')
     # parser.add_argument('-t', dest = 'UNICODE', type = str, default = True,
@@ -16,6 +17,11 @@ def mkParser():
     parser.add_argument('-v', dest = 'DO_VALS', action = 'store_true', help = 'output values file' )
     parser.add_argument('-s', dest = 'DO_SIZE', action = 'store_true', help = 'output size file')
     parser.add_argument('-out', dest = 'OUTFILE', type = str, help = 'outfile path')
+
+    parser.add_argument('--table-file', dest = 'TABLE_FILE', type = str, help = 'write table file here')
+    parser.add_argument('--size-file', dest = 'SIZE_FILE', type = str, help = 'write size file here')
+    parser.add_argument('--vals-file', dest = 'VALS_FILE', type = str, help = 'write vals file here')
+
     return parser
 
 sPreComment = re.compile('^(.*)#.*$')
@@ -60,33 +66,6 @@ def parseTileInfo(infoFile, encoding):
 
     return result
             
-class XLOC():
-    None
-        
-def readXLOC():
-    return XLOC()
-
-# sub WriteMapFile($$$) {
-#     my ( $hashR, $unicode, $fhr ) = @_;
-
-#     my $count = GetNTiles($hashR);
-#     my $specialCount = 0;
-#     for ( my $i = 0; $i < $count; ++$i ) {
-#         my $tileR = GetNthTile( $hashR, $i );
-#         my $str = ${$tileR}[2];
-
-#         if ( $str =~ /\'(.(\|.)*)\'/ ) {
-#             printLetters( $1, $fhr );
-#         } elsif ( $str =~ /\"(.+)\"/ ) {
-#             print $fhr pack( "c", $specialCount++ );
-#         } elsif ( $str =~ /(\d+)/ ) {
-#             print $fhr pack( "n", $1 );
-#         } else {
-#             die "WriteMapFile: unrecognized face format $str, elem $i";
-#         }
-#     }
-# } # WriteMapFile
-
 def printLetters( letters, outfile ):
     letters = letters.split('|')
     letters = ' '.join(letters)
@@ -127,26 +106,27 @@ def writeValuesFile(xlocToken, outfile):
 def main():
     print('{}.main {} called'.format(sys.argv[0], sys.argv[1:]))
     args = mkParser().parse_args()
-    assert args.OUTFILE
 
     infoFile = 'info.txt'
     if not os.path.exists(infoFile):
         errorOut('{} not found'.format(infoFile))
     xlocToken = parseTileInfo(infoFile, args.ENCODING)
 
-    xloc = readXLOC()
-    
-    with open(args.OUTFILE, 'wb') as outfile:
-        if args.DO_TABLE:
+    if args.DO_TABLE or args.TABLE_FILE:
+        path = args.TABLE_FILE or args.OUTFILE
+        with open(path, 'wb') as outfile:
             writeMapFile(xlocToken, outfile);
-        elif args.DO_SIZE:
-            assert not args.DO_VALS
-            count = len(xlocToken['_TILES'])
-            outfile.write(struct.pack('!B', count))
-        elif args.DO_VALS:
-            assert not args.DO_SIZE
-            writeValuesFile( xlocToken, outfile )
 
+    if args.DO_SIZE or args.SIZE_FILE:
+        path = args.SIZE_FILE or args.OUTFILE
+        with open(path, 'wb') as outfile:
+            count = len(xlocToken['_TILES'])
+            outfile.write(struct.pack('B', count))
+
+    if args.DO_VALS or args.VALS_FILE:
+        path = args.VALS_FILE or args.OUTFILE
+        with open(path, 'wb') as outfile:
+            writeValuesFile( xlocToken, outfile )
 
 ##############################################################################
 if __name__ == '__main__':
